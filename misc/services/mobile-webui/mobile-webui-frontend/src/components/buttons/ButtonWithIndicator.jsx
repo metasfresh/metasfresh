@@ -148,8 +148,17 @@ const Indicators = ({ completeStatus, indicator1, indicator2 }) => {
 
   return (
     <div className={cx('right-btn-side', { 'is-justify-content-center': isJustifyContentInCenter })}>
-      <Indicator testId="indicator" indicator={indicator1} completeStatus={completeStatus} />
-      <Indicator testId="indicator2" indicator={indicator2} />
+      <Indicator
+        key={`indicator_${indicator1}_${completeStatus}`} // IMPORTANT: force remount because we use font awesome which converts <i> tags to <svg> but they are not updated in case of style changes
+        testId="indicator"
+        indicator={indicator1}
+        completeStatus={completeStatus}
+      />
+      <Indicator
+        key={`indicator_${indicator2}`} // IMPORTANT: force remount because we use font awesome which converts <i> tags to <svg> but they are not updated in case of style changes
+        testId="indicator2"
+        indicator={indicator2}
+      />
     </div>
   );
 };
@@ -198,7 +207,12 @@ const Indicator = ({ testId, indicator, completeStatus }) => {
 
   if (!className) return null;
 
-  return <i data-testid={testId} className={className} />;
+  // IMPORTANT: Wrap in <span> because FontAwesome mutates the <i> into <svg>; without a stable wrapper React throws removeChild errors.
+  return (
+    <span>
+      <i data-testid={testId} className={className} />
+    </span>
+  );
 };
 Indicator.propTypes = {
   testId: PropTypes.string,

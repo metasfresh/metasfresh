@@ -40,7 +40,6 @@ import {
   getQtyToPickForLine,
   getQtyToPickRemainingForLine,
 } from '../../../utils/picking';
-import { isShowBestBeforeDate, isShowLotNo } from './PickConfig';
 import { useSearchParams } from '../../../hooks/useSearchParams';
 import { useHeaderUpdate } from './PickLineScreen';
 import { pickingLineScanScreenLocation, pickingLineScreenLocation } from '../../../routes/picking';
@@ -51,6 +50,7 @@ import { isBarcodeProductNoMatching } from '../../../utils/qrCode/common';
 import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { PICKING_UNIT_TU } from '../../../reducers/wfProcesses/picking/PickingUnit';
+import { getReadAttributesFromActivity } from '../../../reducers/wfProcesses/picking/getReadAttributesFromActivity';
 
 export const NEXT_PickingJob = 'pickingJob';
 export const NEXT_NextPickingLine = 'nextPickingLine';
@@ -81,6 +81,7 @@ const PickLineScanScreen = () => {
     catchWeightUom,
     isShowPromptWhenOverPicking,
     customQRCodeFormats,
+    readAttributes,
   } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }), shallowEqual);
 
   const { luPickingTarget } = useCurrentPickingTargetInfo({ wfProcessId, activityId });
@@ -133,8 +134,7 @@ const PickLineScanScreen = () => {
       catchWeight={0}
       catchWeightUom={catchWeightUom}
       customQRCodeFormats={customQRCodeFormats}
-      isShowBestBeforeDate={isShowBestBeforeDate}
-      isShowLotNo={isShowLotNo}
+      readAttributes={readAttributes}
       isShowCloseTargetButton={!!luPickingTarget}
       //
       resolveScannedBarcode={resolveScannedBarcode}
@@ -155,7 +155,6 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
   const activity = getActivityById(state, wfProcessId, activityId);
   const qtyRejectedReasons = getQtyRejectedReasonsFromActivity(activity);
   const customQRCodeFormats = getCustomQRCodeFormats({ activity });
-
   const line = getLineById(state, wfProcessId, activityId, lineId);
 
   return {
@@ -174,8 +173,15 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     catchWeightUom: line.catchWeightUOM,
     isShowPromptWhenOverPicking: activity?.dataStored?.isShowPromptWhenOverPicking,
     customQRCodeFormats,
+    readAttributes: getReadAttributesFromActivity({ activity }),
   };
 };
+
+//
+//
+// -------------------------------------------------------------------------------------
+//
+//
 
 // @VisibleForTesting
 export const convertScannedBarcodeToResolvedResult = async ({
@@ -351,10 +357,8 @@ const usePostQtyPicked = ({
       scannedBarcode,
       catchWeight,
       catchWeightUom,
-      isShowBestBeforeDate,
       bestBeforeDate,
       productionDate,
-      isShowLotNo,
       lotNo,
       productNo,
       ean13ProductCode,
@@ -386,11 +390,11 @@ const usePostQtyPicked = ({
       qtyRejectedReasonCode: reason,
       qtyRejected,
       catchWeight,
-      pickWholeTU: resolvedBarcodeData.isTUToBePickedAsWhole,
+      pickWholeTU: resolvedBarcodeData?.isTUToBePickedAsWhole ?? false,
       checkIfAlreadyPacked: catchWeight == null, // in case we deal with a catch weight product, always split, else we won't be able to pick a CU from CU if last CU
-      setBestBeforeDate: isShowBestBeforeDate && bestBeforeDate !== undefined,
+      setBestBeforeDate: bestBeforeDate !== undefined,
       bestBeforeDate,
-      setLotNo: isShowLotNo && lotNo !== undefined,
+      setLotNo: lotNo !== undefined,
       lotNo,
       isCloseTarget,
     })

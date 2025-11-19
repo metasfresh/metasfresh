@@ -44,8 +44,7 @@ const ScanHUAndGetQtyComponent = ({
   catchWeight,
   catchWeightUom,
   customQRCodeFormats,
-  isShowBestBeforeDate = false,
-  isShowLotNo = false,
+  readAttributes = [],
   isShowCloseTargetButton = false,
   //
   invalidBarcodeMessageKey,
@@ -317,9 +316,8 @@ const ScanHUAndGetQtyComponent = ({
           customQRCodeFormats={customQRCodeFormats}
           readOnly={!!resolvedBarcodeData.isTUToBePickedAsWhole}
           hideQtyInput={!!resolvedBarcodeData.isTUToBePickedAsWhole}
-          isShowBestBeforeDate={isShowBestBeforeDate}
+          readAttributes={readAttributes}
           bestBeforeDate={resolvedBarcodeData.bestBeforeDate}
-          isShowLotNo={isShowLotNo}
           lotNo={resolvedBarcodeData.lotNo}
           isShowCloseTargetButton={isShowCloseTargetButton}
           //
@@ -362,8 +360,7 @@ ScanHUAndGetQtyComponent.propTypes = {
   catchWeight: PropTypes.number,
   catchWeightUom: PropTypes.string,
   customQRCodeFormats: PropTypes.array,
-  isShowBestBeforeDate: PropTypes.bool,
-  isShowLotNo: PropTypes.bool,
+  readAttributes: PropTypes.array,
   isShowCloseTargetButton: PropTypes.bool,
   //
   // Error messages:

@@ -66,3 +66,7 @@ export const isAllowPickingAnyHUForLine = ({ line }) => {
 };
 
 export const isLineNotCompleted = ({ line }) => line.completeStatus !== CompleteStatus.COMPLETED;
+
+export const isCatchWeight = ({ line }) => {
+  return !!line.catchWeightUOM;
+};

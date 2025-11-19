@@ -1,6 +1,7 @@
 package de.metas.frontend_testing.masterdata.mobile_configuration;
 
 import de.metas.frontend_testing.masterdata.Identifier;
+import de.metas.handlingunits.picking.config.mobileui.PickAttribute;
 import de.metas.handlingunits.picking.config.mobileui.PickToStructure;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
@@ -43,6 +44,7 @@ public class JsonMobileConfigRequest
 		@Nullable Boolean shipOnCloseLU;
 
 		@Nullable Set<PickToStructure> pickTo;
+		@Nullable Set<PickAttribute> readAttributes;
 		@Nullable @Deprecated Boolean pickWithNewLU;
 		@Nullable @Deprecated Boolean allowNewTU;
 
