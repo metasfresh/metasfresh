@@ -52,6 +52,7 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.InSetPredicate;
 import de.metas.util.Services;
+import de.metas.workflow.rest_api.service.Constants;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.QueryLimit;
@@ -697,4 +698,13 @@ public class ManufacturingJobService
 		return uomDAO.getBySymbol(receiveFrom.getCatchWeightUomSymbol())
 				.map(uom -> Quantity.of(receiveFrom.getCatchWeight(), uom));
 	}
+
+	public QueryLimit getLaunchersLimit()
+	{
+		final int limitInt = sysConfigBL.getIntValue(Constants.SYSCONFIG_LaunchersLimit, -100);
+		return limitInt == -100
+				? Constants.DEFAULT_LaunchersLimit
+				: QueryLimit.ofInt(limitInt);
+	}
+
 }
