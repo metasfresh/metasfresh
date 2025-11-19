@@ -262,6 +262,7 @@ public class PaymentAllocationServiceTest
 		final de.metas.interfaces.I_C_BPartner bpartner = newInstance(de.metas.interfaces.I_C_BPartner.class);
 		bpartner.setPO_PricingSystem_ID(purchasePricingSystemId.getRepoId());
 		bpartner.setPaymentRule(PaymentRule.OnCredit.getCode());
+		bpartner.setPaymentRulePO(PaymentRule.OnCredit.getCode());
 		saveRecord(bpartner);
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
 		feeCompanyId1 = bpartnerId;
