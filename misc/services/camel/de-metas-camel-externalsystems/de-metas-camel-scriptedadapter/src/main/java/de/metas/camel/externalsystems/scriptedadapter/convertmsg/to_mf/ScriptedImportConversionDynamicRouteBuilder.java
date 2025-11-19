@@ -109,7 +109,9 @@ public class ScriptedImportConversionDynamicRouteBuilder extends RouteBuilder
 		catch (final Exception e)
 		{
 			logger.log(Level.WARNING, "Exception caught when handling request: " + request, e);
-			exchange.getMessage().setBody(EXCEPTION_PREFIX + e.getCause().getMessage());
+			exchange.getMessage().setBody(EXCEPTION_PREFIX + Optional.ofNullable(e.getCause())
+					.map(Throwable::getMessage)
+					.orElse(e.getMessage()));
 		}
 	}
 
@@ -183,7 +185,7 @@ public class ScriptedImportConversionDynamicRouteBuilder extends RouteBuilder
 			}
 			catch (final JsonProcessingException e)
 			{
-				return Optional.of(Map.of(FIELD_ERROR_MESSAGE, e));
+				return Optional.of(Map.of(FIELD_ERROR_MESSAGE, e.getMessage()));
 			}
 		}
 	}
