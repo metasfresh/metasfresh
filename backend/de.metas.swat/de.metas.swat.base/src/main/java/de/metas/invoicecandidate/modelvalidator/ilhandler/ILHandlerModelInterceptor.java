@@ -23,6 +23,7 @@
 package de.metas.invoicecandidate.modelvalidator.ilhandler;
 
 import de.metas.document.engine.IDocumentBL;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.async.spi.impl.CreateMissingInvoiceCandidatesWorkpackageProcessor;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode;
@@ -106,10 +107,16 @@ public class ILHandlerModelInterceptor extends AbstractModelInterceptor
 	}
 
 	/**
-	 * Creates missing invoice candidates for given model, if this is enabled.
+	 * Creates missing invoice candidates for the given model if this is enabled.
 	 */
 	private void createMissingInvoiceCandidates(@NonNull final Object model)
 	{
+		// the current model might be updated **as part of** the creation of missing ICs. In that case, never enqueue a new WP
+		if(!Services.get(IInvoiceCandBL.class).isCreateMissingProcessInProgress(model))
+		{
+			return;
+		}
+		
 		final CandidatesAutoCreateMode modeForCurrentModel = handler.getSpecificCandidatesAutoCreateMode(model);
 		switch (modeForCurrentModel)
 		{

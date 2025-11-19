@@ -141,12 +141,13 @@ public class CreateMissingInvoiceCandidatesWorkpackageProcessor extends Workpack
 	@Override
 	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
-		try (final IAutoCloseable ignored = invoiceCandBL.setUpdateProcessInProgress())
+		try (final IAutoCloseable ignored1 = invoiceCandBL.setUpdateProcessInProgress())
 		{
 			final List<Object> models = queueDAO.retrieveAllItemsSkipMissing(workpackage, Object.class);
 			for (final Object model : models)
 			{
-				try (final MDCCloseable ignored1 = TableRecordMDC.putTableRecordReference(model))
+				try (final MDCCloseable ignored2 = TableRecordMDC.putTableRecordReference(model); 
+						final IAutoCloseable ignored3 = invoiceCandBL.setCreateMissingProcessInProgress(model))
 				{
 					final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandidateHandlerBL.createMissingCandidatesFor(model);
 					Loggables.addLog("Created {} invoice candidate for {}", invoiceCandidates.size(), model);

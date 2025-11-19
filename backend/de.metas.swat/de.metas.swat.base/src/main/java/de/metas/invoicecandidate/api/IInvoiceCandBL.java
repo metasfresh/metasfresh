@@ -216,9 +216,19 @@ public interface IInvoiceCandBL extends ISingletonService
 	IAutoCloseable setUpdateProcessInProgress();
 
 	/**
+	 * See the usage of this method as well as the usage of {@link #isCreateMissingProcessInProgress(Object)}.
+	 */
+	IAutoCloseable setCreateMissingProcessInProgress(@NonNull Object model);
+
+	/**
+	 * See the usage of this method as well as the usage of {@link #setCreateMissingProcessInProgress(Object)}.
+	 */
+	boolean isCreateMissingProcessInProgress(@NonNull Object model);
+	
+	/**
 	 * Creates initial {@link IInvoiceGenerateResult}
 	 *
-	 * @param shallStoreInvoices if true, a link to all invoices will be stored; if false then only some counting/aggregation info will be stored
+	 * @param shallStoreInvoices if true, a link to all invoices will be stored; if false, then only some counting/aggregation info will be stored
 	 * @return initial {@link IInvoiceGenerateResult} instance
 	 */
 	IInvoiceGenerateResult createInvoiceGenerateResult(boolean shallStoreInvoices);

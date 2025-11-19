@@ -37,7 +37,7 @@ public interface ReferenceableRecordsProvider
 	 *
 	 * @param newlyLinkedRecordRefs records that are to be just linked to an attachment entry.
 	 */
-	public ExpandResult expand(
+	ExpandResult expand(
 			AttachmentEntry attachmentEntry,
 			Collection<? extends ITableRecordReference> newlyLinkedRecordRefs);
 }

@@ -12,7 +12,7 @@ import java.util.Optional;
 
 /**
  * Convenient model's dynamic attribute accessor. This instance provides type-safe access to a model's dynamic attributes.
- * The it's recommended to use it rather that directly calling {@link InterfaceWrapperHelper#setDynAttribute(Object, String, Object)} etc.
+ * It is recommended to use this rather than directly calling {@link InterfaceWrapperHelper#setDynAttribute(Object, String, Object)} etc.
  * Neither the model not the attribute value is referenced by instance of this class.
  *
  * @param <ModelType>
