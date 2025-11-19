@@ -103,8 +103,7 @@ FROM M_InOut io
 
 WHERE io.IsSOTrx = 'N'
   AND io.MovementType IN ('V+', 'V-')
-  AND (p_MovementDate_From IS NULL OR io.MovementDate >= p_MovementDate_From)
-  AND (p_MovementDate_To IS NULL OR io.MovementDate <= p_MovementDate_To)
+  AND io.MovementDate BETWEEN p_MovementDate_From AND p_MovementDate_To
   AND io.DocStatus IN ('CO', 'CL')
   AND io.IsActive = 'Y'
   AND iol.IsActive = 'Y'
@@ -159,8 +158,7 @@ FROM M_InOut io
          INNER JOIN M_Warehouse wh ON io.M_Warehouse_ID = wh.M_Warehouse_ID
 
 WHERE io.IsSOTrx = 'N'
-  AND (p_MovementDate_From IS NULL OR io.MovementDate >= p_MovementDate_From)
-  AND (p_MovementDate_To IS NULL OR io.MovementDate <= p_MovementDate_To)
+  AND io.MovementDate BETWEEN p_MovementDate_From AND p_MovementDate_To
   AND io.DocStatus IN ('CO', 'CL')
   AND io.IsActive = 'Y'
   AND iol.IsActive = 'Y'
@@ -207,8 +205,7 @@ FROM M_InOut io
 
 WHERE io.IsSOTrx = 'Y'
   AND io.MovementType IN ('C+', 'C-')
-  AND (p_MovementDate_From IS NULL OR io.MovementDate >= p_MovementDate_From)
-  AND (p_MovementDate_To IS NULL OR io.MovementDate <= p_MovementDate_To)
+  AND io.MovementDate BETWEEN p_MovementDate_From AND p_MovementDate_To
   AND io.DocStatus IN ('CO', 'CL')
   AND io.IsActive = 'Y'
   AND iol.IsActive = 'Y'
