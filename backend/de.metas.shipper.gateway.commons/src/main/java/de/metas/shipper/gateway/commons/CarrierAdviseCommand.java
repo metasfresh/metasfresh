@@ -173,7 +173,7 @@ public class CarrierAdviseCommand
 				.numberOfItems(shipmentSchedule.getQuantityToDeliver().toBigDecimal().intValue())
 				.grossWeightKg(computeProductGrossWeight(shipmentSchedule))
 				.packageDimensions(JsonPackageDimensions.builder()
-						//TODO Adrian figure out from where we should retrieve this info
+						//TODO Adrian figure out from where we should retrieve this info (We know now why isn't it set?)
 						.heightInCM(30)
 						.widthInCM(40)
 						.lengthInCM(50)

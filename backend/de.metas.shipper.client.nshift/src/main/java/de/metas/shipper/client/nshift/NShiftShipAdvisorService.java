@@ -85,7 +85,8 @@ public class NShiftShipAdvisorService
 				.serviceLevel(deliveryAdvisorRequest.getShipperConfig().getAdditionalPropertyNotNull(NShiftConstants.SERVICE_LEVEL))
 				.build();
 
-		final JsonShipmentData.JsonShipmentDataBuilder dataBuilder = JsonShipmentData.builder();
+		final JsonShipmentData.JsonShipmentDataBuilder dataBuilder = JsonShipmentData.builder()
+				.orderNo("1"); //TODO figure out what would make sense here (Mandatory for gls germany already on advise). We currently use carrier_shipment_order_id on ship later
 
 		// Add Addresses
 		dataBuilder.address(NShiftUtil.buildNShiftAddressBuilder(deliveryAdvisorRequest.getPickupAddress(), JsonAddressKind.SENDER)
@@ -131,7 +132,7 @@ public class NShiftShipAdvisorService
 			final int lengthMM = item.getPackageDimensions().getLengthInCM() * 10;
 			final int widthMM = item.getPackageDimensions().getWidthInCM() * 10;
 			final int heightMM = item.getPackageDimensions().getHeightInCM() * 10;
-			lineBuilder.number(item.getNumberOfItems());
+			lineBuilder.number(item.getNumberOfItems()); //TODO number of packages, figure out what to set here instead of qtyToDeliver (Deutsche Post - DHL Paket allows max 1)
 			lineBuilder.length(lengthMM);
 			lineBuilder.width(widthMM);
 			lineBuilder.height(heightMM);
