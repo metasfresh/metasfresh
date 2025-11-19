@@ -3,6 +3,7 @@ package de.metas.distribution.config;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.compiere.model.X_MobileUI_UserProfile_DD_CaptionItem;
 
@@ -27,5 +28,7 @@ public enum DistributionJobCaptionField implements ReferenceListAwareEnum
 
 	private final String code;
 
-	public static DistributionJobCaptionField ofCode(final String code) {return index.ofCode(code);}
+	public static DistributionJobCaptionField ofCode(@NonNull final String code) {return index.ofCode(code);}
+
+	public static DistributionJobCaptionField ofCodeOrName(@NonNull final String code) {return index.ofCodeOrName(code);}
 }

@@ -28,6 +28,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -96,9 +97,14 @@ public class DDOrderCommand
 		ddOrder.setIsSOTrx(false);
 		ddOrder.setIsInTransit(false);
 		ddOrder.setDeliveryRule(X_DD_Order.DELIVERYRULE_Availability);
+		ddOrder.setC_DocType_ID(findDocTypeId().getRepoId());
+		ddOrder.setPriorityRule(StringUtils.trimBlankToNull(request.getPriority()));
 
-		final DocTypeId docTypeId = findDocTypeId();
-		ddOrder.setC_DocType_ID(docTypeId.getRepoId());
+		if (request.getSeqNo() != null)
+		{
+			ddOrder.setSeqNo(request.getSeqNo().toInt());
+		}
+
 		ddOrderService.save(ddOrder);
 
 		request.getLines().forEach(line -> createLine(line, ddOrder));

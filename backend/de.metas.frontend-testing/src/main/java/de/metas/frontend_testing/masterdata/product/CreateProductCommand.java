@@ -96,6 +96,7 @@ public class CreateProductCommand
 		return JsonCreateProductResponse.builder()
 				.id(ProductId.ofRepoId(productRecord.getM_Product_ID()))
 				.productCode(productRecord.getValue())
+				.productName(productRecord.getName())
 				.gtin(GTIN.ofNullableString(productRecord.getGTIN()))
 				.ean13ProductCode(EAN13ProductCode.ofNullableString(productRecord.getEAN13_ProductCode()))
 				.build();

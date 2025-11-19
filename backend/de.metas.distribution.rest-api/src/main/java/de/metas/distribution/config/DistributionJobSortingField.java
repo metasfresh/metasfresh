@@ -24,4 +24,5 @@ public enum DistributionJobSortingField implements ReferenceListAwareEnum
 
 	public static DistributionJobSortingField ofCode(final String code) {return index.ofCode(code);}
 
+	public static DistributionJobSortingField ofCodeOrName(@NonNull final String code) {return index.ofCodeOrName(code);}
 }
