@@ -18,6 +18,7 @@ import de.metas.handlingunits.picking.job.service.PickingJobLockService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.handlingunits.picking.job.service.external.shipmentschedule.PickingJobShipmentScheduleService;
+import de.metas.handlingunits.picking.job.service.external.warehouse.PickingJobWarehouseService;
 import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
 import de.metas.handlingunits.picking.plan.generator.CreatePickingPlanRequest;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHU;
@@ -40,7 +41,6 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import de.metas.workplace.Workplace;
-import de.metas.workplace.WorkplaceService;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -69,7 +69,7 @@ public class PickingJobCreateCommand
 	@NonNull private final PickingCandidateService pickingCandidateService;
 	private final PickingJobLoaderSupportingServices loadingSupportServices;
 	@NonNull private final PickingJobSlotService pickingJobSlotService;
-	@NonNull private final WorkplaceService workplaceService;
+	@NonNull private final PickingJobWarehouseService warehouseService;
 	@NonNull private final PickingJobScheduleService pickingJobScheduleService;
 	@NonNull private final PickingJobHUService huService;
 
@@ -130,7 +130,7 @@ public class PickingJobCreateCommand
 	@NonNull
 	private PickingJob allocatePickingSlotIfPossible(@NonNull final PickingJob pickingJob)
 	{
-		final PickingSlotId pickingSlotId = workplaceService.getWorkplaceByUserId(request.getPickerId())
+		final PickingSlotId pickingSlotId = warehouseService.getWorkplaceByUserId(request.getPickerId())
 				.map(Workplace::getPickingSlotId)
 				.orElse(null);
 

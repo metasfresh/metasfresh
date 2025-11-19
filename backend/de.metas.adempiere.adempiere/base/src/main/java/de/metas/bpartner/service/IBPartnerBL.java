@@ -46,6 +46,7 @@ import org.compiere.model.I_C_BPartner_Location;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
@@ -186,6 +187,10 @@ public interface IBPartnerBL extends ISingletonService
 	void setPreviousIdIfPossible(@NonNull I_C_BPartner_Location location);
 
 	boolean isInvoiceEmailCcToMember(@NonNull BPartnerId bpartnerId);
+
+	I_C_BPartner_Location getBPartnerLocationByIdEvenInactive(@NonNull BPartnerLocationId bpartnerLocationId);
+
+	List<I_C_BPartner_Location> getBPartnerLocationsByIds(Set<BPartnerLocationId> ids);
 
 	@Value
 	@Builder

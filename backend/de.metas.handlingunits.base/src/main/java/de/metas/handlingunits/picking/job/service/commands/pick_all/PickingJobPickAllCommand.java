@@ -29,7 +29,7 @@ public class PickingJobPickAllCommand
 	private PickingJob executeInTrx()
 	{
 		PickingJob pickingJob = pickingJobService.getById(pickingJobId);
-		pickingJob.assertNotProcessed();
+		pickingJob.assertCanBeEditedBy(callerId);
 
 		PickingJob pickingJobChanged = pickingJob;
 

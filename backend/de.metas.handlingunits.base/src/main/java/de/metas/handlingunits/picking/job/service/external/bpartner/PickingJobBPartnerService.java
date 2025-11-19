@@ -9,9 +9,11 @@ import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.location.RenderedAddressProvider;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.compiere.model.I_C_BPartner_Location;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -40,6 +42,16 @@ public class PickingJobBPartnerService
 	public Set<DocumentLocation> getDocumentLocations(@NonNull final Set<BPartnerLocationId> bpartnerLocationIds)
 	{
 		return documentLocationBL.getDocumentLocations(bpartnerLocationIds);
+	}
+
+	public I_C_BPartner_Location getBPartnerLocationByIdEvenInactive(final @NonNull BPartnerLocationId id)
+	{
+		return bpartnerBL.getBPartnerLocationByIdEvenInactive(id);
+	}
+
+	public List<I_C_BPartner_Location> getBPartnerLocationsByIds(final Set<BPartnerLocationId> ids)
+	{
+		return bpartnerBL.getBPartnerLocationsByIds(ids);
 	}
 
 	public RenderedAddressProvider newRenderedAddressProvider()

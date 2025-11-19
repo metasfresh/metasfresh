@@ -51,8 +51,9 @@ class PickingWorkflowLaunchersProviderTest
 				helper.configService,
 				helper.bpartnerService,
 				new PickingJobRestService(helper.pickingJobService, helper.configService),
-				helper.workplaceService,
-				new DisplayValueProviderService(helper.documentLocationBL),
+				helper.warehouseService,
+				helper.huService,
+				new DisplayValueProviderService(helper.bpartnerService),
 				new ScannedProductCodeResolver(new EDIProductLookupService())
 		);
 
