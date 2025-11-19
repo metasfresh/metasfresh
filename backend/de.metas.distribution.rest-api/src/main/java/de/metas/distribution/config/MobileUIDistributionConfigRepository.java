@@ -1,8 +1,11 @@
 package de.metas.distribution.config;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
 import de.metas.util.Services;
+import de.metas.util.lang.SeqNoProvider;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.QueryLimit;
@@ -12,7 +15,9 @@ import org.compiere.model.I_MobileUI_UserProfile_DD_CaptionItem;
 import org.compiere.model.I_MobileUI_UserProfile_DD_Sort;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Repository
 public class MobileUIDistributionConfigRepository
@@ -66,54 +71,146 @@ public class MobileUIDistributionConfigRepository
 
 	private Optional<DistributionJobCaptionFormat> retrieveCaptionFormat(final int MobileUI_UserProfile_DD_ID)
 	{
+		return retrieveCaptionFormatItemRecords(MobileUI_UserProfile_DD_ID)
+				.map(MobileUIDistributionConfigRepository::fromRecord)
+				.collect(DistributionJobCaptionFormat.collect());
+	}
+
+	private Stream<I_MobileUI_UserProfile_DD_CaptionItem> retrieveCaptionFormatItemRecords(final int MobileUI_UserProfile_DD_ID)
+	{
 		return queryBL.createQueryBuilder(I_MobileUI_UserProfile_DD_CaptionItem.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MobileUI_UserProfile_DD_CaptionItem.COLUMNNAME_MobileUI_UserProfile_DD_ID, MobileUI_UserProfile_DD_ID)
 				.orderBy(I_MobileUI_UserProfile_DD_CaptionItem.COLUMNNAME_SeqNo)
-				.stream()
-				.map(MobileUIDistributionConfigRepository::fromRecord)
-				.collect(DistributionJobCaptionFormat.collect());
+				.stream();
 	}
 
 	private static DistributionJobCaptionFormatItem fromRecord(I_MobileUI_UserProfile_DD_CaptionItem record)
 	{
 		return DistributionJobCaptionFormatItem.builder()
-				.field(DistributionJobCaptionField.ofCode(record.getFieldName()))
+				.field(extractField(record))
 				.build();
 	}
 
+	private static @NonNull DistributionJobCaptionField extractField(final I_MobileUI_UserProfile_DD_CaptionItem record)
+	{
+		return DistributionJobCaptionField.ofCode(record.getFieldName());
+	}
+
 	private Optional<DistributionJobSorting> retrieveSorting(final int MobileUI_UserProfile_DD_ID)
+	{
+		return retrieveSortingRecords(MobileUI_UserProfile_DD_ID)
+				.map(MobileUIDistributionConfigRepository::fromRecord)
+				.collect(DistributionJobSorting.collect());
+	}
+
+	private Stream<I_MobileUI_UserProfile_DD_Sort> retrieveSortingRecords(final int MobileUI_UserProfile_DD_ID)
 	{
 		return queryBL.createQueryBuilder(I_MobileUI_UserProfile_DD_Sort.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MobileUI_UserProfile_DD_Sort.COLUMNNAME_MobileUI_UserProfile_DD_ID, MobileUI_UserProfile_DD_ID)
 				.orderBy(I_MobileUI_UserProfile_DD_Sort.COLUMNNAME_SeqNo)
 				.orderBy(I_MobileUI_UserProfile_DD_Sort.COLUMNNAME_MobileUI_UserProfile_DD_Sort_ID)
-				.stream()
-				.map(MobileUIDistributionConfigRepository::fromRecord)
-				.collect(DistributionJobSorting.collect());
+				.stream();
 	}
 
 	private static DistributionJobSortingItem fromRecord(I_MobileUI_UserProfile_DD_Sort record)
 	{
 		return DistributionJobSortingItem.of(
-				DistributionJobSortingField.ofCode(record.getFieldName()),
+				extractField(record),
 				Direction.ofIsAscendingFlag(record.isAscending())
 		);
 	}
 
+	@NonNull
+	private static DistributionJobSortingField extractField(final I_MobileUI_UserProfile_DD_Sort record)
+	{
+		return DistributionJobSortingField.ofCode(record.getFieldName());
+	}
+
 	public void save(final MobileUIDistributionConfig newConfig)
 	{
-		final I_MobileUI_UserProfile_DD record = retrieveRecord()
-				.orElseGet(() -> InterfaceWrapperHelper.newInstance(I_MobileUI_UserProfile_DD.class));
+		//
+		// Config Header
+		final int configId;
+		{
+			final I_MobileUI_UserProfile_DD configRecord = retrieveRecord()
+					.orElseGet(() -> InterfaceWrapperHelper.newInstance(I_MobileUI_UserProfile_DD.class));
+			updateRecord(configRecord, newConfig);
+			InterfaceWrapperHelper.save(configRecord);
+			configId = configRecord.getMobileUI_UserProfile_DD_ID();
+		}
 
+		//
+		// Caption Format
+		{
+			final ArrayListMultimap<DistributionJobCaptionField, I_MobileUI_UserProfile_DD_CaptionItem> records = ArrayListMultimap.create();
+			retrieveCaptionFormatItemRecords(configId).forEach(record -> records.put(extractField(record), record));
+
+			final SeqNoProvider seqNoProvider = SeqNoProvider.ofInt(10);
+			newConfig.getCaptionFormat().getItems().forEach(item -> {
+				final List<I_MobileUI_UserProfile_DD_CaptionItem> recordsOfField = records.get(item.getField());
+				final I_MobileUI_UserProfile_DD_CaptionItem record;
+				if (!recordsOfField.isEmpty())
+				{
+					record = recordsOfField.remove(0);
+				}
+				else
+				{
+					record = InterfaceWrapperHelper.newInstance(I_MobileUI_UserProfile_DD_CaptionItem.class);
+					record.setMobileUI_UserProfile_DD_ID(configId);
+				}
+
+				record.setIsActive(true);
+				record.setFieldName(item.getField().getCode());
+				record.setSeqNo(seqNoProvider.getAndIncrement().toInt());
+
+				InterfaceWrapperHelper.save(record);
+			});
+
+			InterfaceWrapperHelper.deleteAll(records.values());
+		}
+
+		//
+		// Sorting
+		{
+			final ArrayListMultimap<DistributionJobSortingField, I_MobileUI_UserProfile_DD_Sort> records = ArrayListMultimap.create();
+			retrieveSortingRecords(configId).forEach(record -> records.put(extractField(record), record));
+
+			final SeqNoProvider seqNoProvider = SeqNoProvider.ofInt(10);
+			newConfig.getSorting().getItems().forEach(item -> {
+				final List<I_MobileUI_UserProfile_DD_Sort> recordsOfField = records.get(item.getField());
+				final I_MobileUI_UserProfile_DD_Sort record;
+				if (!recordsOfField.isEmpty())
+				{
+					record = recordsOfField.remove(0);
+				}
+				else
+				{
+					record = InterfaceWrapperHelper.newInstance(I_MobileUI_UserProfile_DD_Sort.class);
+					record.setMobileUI_UserProfile_DD_ID(configId);
+				}
+
+				record.setIsActive(true);
+				record.setFieldName(item.getField().getCode());
+				record.setIsAscending(item.getDirection().isAscending());
+				record.setSeqNo(seqNoProvider.getAndIncrement().toInt());
+
+				InterfaceWrapperHelper.save(record);
+			});
+
+			InterfaceWrapperHelper.deleteAll(records.values());
+		}
+
+	}
+
+	private static void updateRecord(final I_MobileUI_UserProfile_DD record, final MobileUIDistributionConfig from)
+	{
 		record.setIsActive(true);
-		record.setIsAllowPickingAnyHU(newConfig.isAllowPickingAnyHU());
+		record.setIsAllowPickingAnyHU(from.isAllowPickingAnyHU());
 
-		record.setMaxLaunchers(newConfig.getMaxLaunchers().toIntOrZero());
-		record.setMaxStartedLaunchers(newConfig.getMaxStartedLaunchers().toIntOrZero());
-		record.setIsAllowStartNextJobOnly(newConfig.isAllowStartNextJobOnly());
-
-		InterfaceWrapperHelper.save(record);
+		record.setMaxLaunchers(from.getMaxLaunchers().toIntOrZero());
+		record.setMaxStartedLaunchers(from.getMaxStartedLaunchers().toIntOrZero());
+		record.setIsAllowStartNextJobOnly(from.isAllowStartNextJobOnly());
 	}
 }
