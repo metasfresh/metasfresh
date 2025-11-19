@@ -9,6 +9,7 @@ import de.metas.greeting.GreetingId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.incoterms.IncotermsId;
 import de.metas.marketing.base.model.CampaignId;
 import de.metas.order.InvoiceRule;
 import de.metas.payment.PaymentRule;
@@ -74,9 +75,12 @@ public class BPartner
 	public static final String PAYMENT_RULE = "paymentRule";
 	public static final String INTERNAL_NAME = "internalName";
 	public static final String VAT_ID = "vatId";
+	public static final String EORI = "EORI";
+	public static final String E_INVOICE_BUYER_REFERENCE = "eInvoiceBuyerReference";
 	public static final String GREETING_ID = "greetingId";
 	public static final String CUSTOMER_PAYMENTTERM_ID = "customerPaymentTermId";
 	public static final String CUSTOMER_PRICING_SYSTEM_ID = "customerPricingSystemId";
+	public static final String CUSTOMER_INCOTERMS = "customerIncoterms";
 	public static final String VENDOR_PAYMENTTERM_ID = "vendorPaymentTermId";
 	public static final String VENDOR_PRICING_SYSTEM_ID = "vendorPricingSystemId";
 	public static final String EXCLUDE_FROM_PROMOTIONS = "excludeFromPromotions";
@@ -144,6 +148,10 @@ public class BPartner
 
 	private @Nullable String vatId;
 
+	private @Nullable String eori;
+
+	private @Nullable String eInvoiceBuyerReference;
+
 	private @Nullable OrgMappingId orgMappingId;
 
 	private final RecordChangeLog changeLog;
@@ -163,6 +171,7 @@ public class BPartner
 
 	private final PaymentTermId customerPaymentTermId;
 	private final PricingSystemId customerPricingSystemId;
+	private final IncotermsId customerIncotermsId;
 
 	private final PaymentTermId vendorPaymentTermId;
 	private final PricingSystemId vendorPricingSystemId;
@@ -206,6 +215,8 @@ public class BPartner
 			@Nullable final PaymentRule paymentRule,
 			@Nullable final String internalName,
 			@Nullable final String vatId,
+			@Nullable final String eori,
+			@Nullable final String eInvoiceBuyerReference,
 			@Nullable final RecordChangeLog changeLog,
 			@Nullable final String shipmentAllocationBestBeforePolicy,
 			@Nullable final Boolean identifiedByExternalReference,
@@ -213,6 +224,7 @@ public class BPartner
 			@Nullable final String memo,
 			@Nullable final PaymentTermId customerPaymentTermId,
 			@Nullable final PricingSystemId customerPricingSystemId,
+			@Nullable final  IncotermsId customerIncotermsId,
 			@Nullable final PaymentTermId vendorPaymentTermId,
 			@Nullable final PricingSystemId vendorPricingSystemId,
 			final boolean excludeFromPromotions,
@@ -253,6 +265,8 @@ public class BPartner
 		this.paymentRule = paymentRule;
 		this.internalName = internalName;
 		this.vatId = vatId;
+		this.eori = eori;
+		this.eInvoiceBuyerReference = eInvoiceBuyerReference;
 
 		this.changeLog = changeLog;
 		this.shipmentAllocationBestBeforePolicy = shipmentAllocationBestBeforePolicy;
@@ -262,6 +276,7 @@ public class BPartner
 
 		this.customerPaymentTermId = customerPaymentTermId;
 		this.customerPricingSystemId = customerPricingSystemId;
+		this.customerIncotermsId = customerIncotermsId;
 
 		this.vendorPaymentTermId = vendorPaymentTermId;
 		this.vendorPricingSystemId = vendorPricingSystemId;

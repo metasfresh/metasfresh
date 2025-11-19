@@ -31,6 +31,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.Language;
+import de.metas.incoterms.IncotermsId;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.job.JobId;
 import de.metas.location.CountryId;
@@ -324,11 +325,14 @@ final class BPartnerCompositesLoader
 				.paymentRule(PaymentRule.ofNullableCode(bpartnerRecord.getPaymentRule()))
 				.internalName(trimBlankToNull(bpartnerRecord.getInternalName()))
 				.vatId(trimBlankToNull(bpartnerRecord.getVATaxID()))
+				.eori(trimBlankToNull(bpartnerRecord.getEORI()))
+				.eInvoiceBuyerReference(trimBlankToNull(bpartnerRecord.getEInvoice_BuyerReference()))
 				.shipmentAllocationBestBeforePolicy(bpartnerRecord.getShipmentAllocation_BestBefore_Policy())
 				.orgMappingId(OrgMappingId.ofRepoIdOrNull(bpartnerRecord.getAD_Org_Mapping_ID()))
 				.memo(bpartnerRecord.getMemo())
 				.customerPaymentTermId(PaymentTermId.ofRepoIdOrNull(bpartnerRecord.getC_PaymentTerm_ID()))
 				.customerPricingSystemId(PricingSystemId.ofRepoIdOrNull(bpartnerRecord.getM_PricingSystem_ID()))
+				.customerIncotermsId(IncotermsId.ofRepoIdOrNull(bpartnerRecord.getC_Incoterms_Customer_ID()))
 				.vendorPaymentTermId(PaymentTermId.ofRepoIdOrNull(bpartnerRecord.getPO_PaymentTerm_ID()))
 				.vendorPricingSystemId(PricingSystemId.ofRepoIdOrNull(bpartnerRecord.getPO_PricingSystem_ID()))
 				//

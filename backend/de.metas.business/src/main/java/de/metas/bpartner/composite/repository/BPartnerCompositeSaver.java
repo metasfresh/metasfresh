@@ -210,6 +210,8 @@ final class BPartnerCompositeSaver
 
 		bpartnerRecord.setVATaxID(bpartner.getVatId());
 
+		bpartnerRecord.setEORI(bpartner.getEori());
+
 		if (!isBlank(bpartner.getValue()))
 		{
 			bpartnerRecord.setValue(bpartner.getValue());
@@ -224,6 +226,11 @@ final class BPartnerCompositeSaver
 		if (bpartner.getCustomerPaymentTermId() != null)
 		{
 			bpartnerRecord.setC_PaymentTerm_ID(bpartner.getCustomerPaymentTermId().getRepoId());
+		}
+
+		if (bpartner.getCustomerIncotermsId() != null)
+		{
+			bpartnerRecord.setC_Incoterms_Customer_ID(bpartner.getCustomerIncotermsId().getRepoId());
 		}
 
 		if (bpartner.getVendorPricingSystemId() != null)

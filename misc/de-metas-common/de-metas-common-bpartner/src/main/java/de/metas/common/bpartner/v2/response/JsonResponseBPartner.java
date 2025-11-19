@@ -69,6 +69,11 @@ public class JsonResponseBPartner
 	public static final String METASFRESH_URL = "metasfreshUrl";
 	public static final String CREDITOR_ID = "creditorId";
 	public static final String DEBTOR_ID = "debtorId";
+	public static final String EORI = "EORI";
+	public static final String E_INVOICE_BUYER_REFERENCE = "eInvoiceBuyerReference";
+	public static final String CUSTOMER_PAYMENTTERM = "customerPaymentTerm";
+	public static final String VENDOR_PAYMENTTERM = "vendorPaymentTerm";
+	public static final String CUSTOMER_INCOTERMS = "customerIncoterms";
 
 	private static final String CHANGE_INFO = "changeInfo";
 
@@ -207,6 +212,37 @@ public class JsonResponseBPartner
 	@JsonInclude(Include.NON_NULL)
 	Integer debtorId;
 
+	@ApiModelProperty(value = "This translates to `C_BPartner.EORI` ")
+	@JsonProperty(EORI)
+	@JsonInclude(Include.NON_NULL)
+	String eori;
+
+	@ApiModelProperty(value = "This translates to `C_BPartner.EInvoice_BuyerReference` ")
+	@JsonProperty(E_INVOICE_BUYER_REFERENCE)
+	@JsonInclude(Include.NON_NULL)
+	String eInvoiceBuyerReference;
+
+	@ApiModelProperty(
+			value = "This translates to `C_BPartner.C_PaymentTerm_ID` (lookup to C_PaymentTerm).\n"
+					+ "Sales payment term for this business partner.")
+	@JsonProperty(CUSTOMER_PAYMENTTERM)
+	@JsonInclude(Include.NON_NULL)
+	JsonResponsePaymentTerm customerPaymentTerm;
+
+	@ApiModelProperty(
+			value = "This translates to `C_BPartner.PO_PaymentTerm_ID` (lookup to C_PaymentTerm).\n"
+					+ "Purchase payment term for this business partner.")
+	@JsonProperty(VENDOR_PAYMENTTERM)
+	@JsonInclude(Include.NON_NULL)
+	JsonResponsePaymentTerm vednorPaymentTerm;
+
+	@ApiModelProperty(
+			value = "This translates to `C_BPartner.C_Incoterms_Customer_ID` (lookup to C_Incoterms).\n"
+					+ "Customer incoterms for this business partner.")
+	@JsonProperty(CUSTOMER_INCOTERMS)
+	@JsonInclude(Include.NON_NULL)
+	JsonResponseIncoterms customerIncoterms;
+
 	@ApiModelProperty(position = 9999) // shall be last
 	@JsonProperty(CHANGE_INFO)
 	@JsonInclude(Include.NON_NULL)
@@ -242,6 +278,11 @@ public class JsonResponseBPartner
 			@JsonProperty(METASFRESH_URL) @Nullable final String metasfreshUrl,
 			@JsonProperty(CREDITOR_ID) @Nullable final Integer creditorId,
 			@JsonProperty(DEBTOR_ID) @Nullable final Integer debtorId,
+			@JsonProperty(EORI) @Nullable final String eori,
+			@JsonProperty(E_INVOICE_BUYER_REFERENCE) @Nullable final String eInvoiceBuyerReference,
+			@JsonProperty(CUSTOMER_PAYMENTTERM) @Nullable final JsonResponsePaymentTerm customerPaymentTerm,
+			@JsonProperty(VENDOR_PAYMENTTERM) @Nullable final JsonResponsePaymentTerm vendorPaymentTerm,
+			@JsonProperty(CUSTOMER_INCOTERMS) @Nullable final JsonResponseIncoterms customerIncoterms,
 
 			//
 			@JsonProperty(CHANGE_INFO) @Nullable final JsonChangeInfo changeInfo)
@@ -283,6 +324,12 @@ public class JsonResponseBPartner
 
 		this.creditorId = creditorId;
 		this.debtorId = debtorId;
+
+		this.eori = eori;
+		this.eInvoiceBuyerReference = eInvoiceBuyerReference;
+		this.customerPaymentTerm = customerPaymentTerm;
+		this.vednorPaymentTerm = vendorPaymentTerm;
+		this.customerIncoterms = customerIncoterms;
 
 		this.changeInfo = changeInfo;
 	}

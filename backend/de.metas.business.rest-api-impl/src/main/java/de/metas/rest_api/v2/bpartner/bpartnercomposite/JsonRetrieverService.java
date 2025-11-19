@@ -57,7 +57,9 @@ import de.metas.common.bpartner.v2.response.JsonResponseComposite.JsonResponseCo
 import de.metas.common.bpartner.v2.response.JsonResponseContact;
 import de.metas.common.bpartner.v2.response.JsonResponseContactPosition;
 import de.metas.common.bpartner.v2.response.JsonResponseContactRole;
+import de.metas.common.bpartner.v2.response.JsonResponseIncoterms;
 import de.metas.common.bpartner.v2.response.JsonResponseLocation;
+import de.metas.common.bpartner.v2.response.JsonResponsePaymentTerm;
 import de.metas.common.bpartner.v2.response.JsonResponseSalesRep;
 import de.metas.common.changelog.JsonChangeInfo;
 import de.metas.common.changelog.JsonChangeInfo.JsonChangeInfoBuilder;
@@ -79,6 +81,8 @@ import de.metas.greeting.Greeting;
 import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.incoterms.IIncotermsDAO;
+import de.metas.incoterms.Incoterms;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.job.Job;
 import de.metas.job.JobRepository;
@@ -86,6 +90,8 @@ import de.metas.logging.TableRecordMDC;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.PaymentTerm;
+import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.MetasfreshId;
@@ -155,8 +161,13 @@ public class JsonRetrieverService
 			.put(BPartner.INTERNAL_NAME, JsonResponseBPartner.INTERNAL_NAME)
 			.put(BPartner.PAYMENT_RULE, JsonResponseBPartner.PAYMENT_RULE)
 			.put(BPartner.VAT_ID, JsonResponseBPartner.VAT_ID)
+			.put(BPartner.EORI, JsonResponseBPartner.EORI)
+			.put(BPartner.E_INVOICE_BUYER_REFERENCE, JsonResponseBPartner.E_INVOICE_BUYER_REFERENCE)
 			.put(BPartner.CREDITOR_ID, JsonResponseBPartner.CREDITOR_ID)
 			.put(BPartner.DEBTOR_ID, JsonResponseBPartner.DEBTOR_ID)
+			.put(BPartner.CUSTOMER_PAYMENTTERM_ID, JsonResponseBPartner.CUSTOMER_PAYMENTTERM)
+			.put(BPartner.VENDOR_PAYMENTTERM_ID, JsonResponseBPartner.VENDOR_PAYMENTTERM)
+			.put(BPartner.CUSTOMER_INCOTERMS, JsonResponseBPartner.CUSTOMER_INCOTERMS)
 			.build();
 
 	/**
@@ -252,6 +263,7 @@ public class JsonRetrieverService
 
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
+	private final IIncotermsDAO incotermsDAO = Services.get(IIncotermsDAO.class);
 
 	private final transient BPartnerQueryService bPartnerQueryService;
 	private final transient BPartnerCompositeRepository bpartnerCompositeRepository;
@@ -261,6 +273,7 @@ public class JsonRetrieverService
 	private final JobRepository jobRepository;
 	private final transient TitleRepository titleRepository;
 	private final ExternalReferenceRestControllerService externalReferenceService;
+	private final PaymentTermService paymentTermService;
 
 	private final transient BPartnerCompositeCacheByLookupKey cache;
 
@@ -274,6 +287,7 @@ public class JsonRetrieverService
 			@NonNull final GreetingRepository greetingRepository,
 			@NonNull final TitleRepository titleRepository,
 			@NonNull final JobRepository jobRepository,
+			@NonNull final PaymentTermService paymentTermService,
 			final ExternalReferenceRestControllerService externalReferenceService,
 			@NonNull final String identifier)
 	{
@@ -283,6 +297,7 @@ public class JsonRetrieverService
 		this.greetingRepository = greetingRepository;
 		this.titleRepository = titleRepository;
 		this.jobRepository = jobRepository;
+		this.paymentTermService = paymentTermService;
 		this.externalReferenceService = externalReferenceService;
 		this.identifier = identifier;
 
@@ -362,6 +377,24 @@ public class JsonRetrieverService
 
 		final TableRecordReference bPartnerRecordRef = TableRecordReference.of(I_C_BPartner.Table_Name, bpartner.getId());
 
+		PaymentTerm customerPaymentTerm = null;
+		if (bpartner.getCustomerPaymentTermId() != null)
+		{
+			customerPaymentTerm = paymentTermService.getById(bpartner.getCustomerPaymentTermId());
+		}
+
+		PaymentTerm vendorPaymentTerm = null;
+		if (bpartner.getVendorPaymentTermId() != null)
+		{
+			vendorPaymentTerm = paymentTermService.getById(bpartner.getVendorPaymentTermId());
+		}
+
+		Incoterms customerIncoterms = null;
+		if (bpartner.getCustomerIncotermsId() != null)
+		{
+			customerIncoterms = incotermsDAO.getById(bpartner.getCustomerIncotermsId());
+		}
+
 		return JsonResponseBPartner.builder()
 				.active(bpartner.isActive())
 				.code(bpartner.getValue())
@@ -389,6 +422,11 @@ public class JsonRetrieverService
 						.orElse(null))
 				.internalName(bpartner.getInternalName())
 				.vatId(bpartner.getVatId())
+				.eori(bpartner.getEori())
+				.eInvoiceBuyerReference(bpartner.getEInvoiceBuyerReference())
+				.customerPaymentTerm(toJson(customerPaymentTerm))
+				.vendorPaymentTerm(toJson(vendorPaymentTerm))
+				.customerIncoterms(toJson(customerIncoterms))
 				.changeInfo(jsonChangeInfo)
 				.metasfreshUrl(TableRecordUtil.getMetasfreshUrl(bPartnerRecordRef))
 				.creditorId(bpartner.getCreditorId())
@@ -439,8 +477,7 @@ public class JsonRetrieverService
 			return null;
 		}
 		final BPGroup bpGroup = bpGroupRepository.getbyId(bpGroupId);
-		final String groupName = bpGroup.getName();
-		return groupName;
+		return bpGroup.getName();
 	}
 
 	private JsonResponseContact toJson(
@@ -908,6 +945,34 @@ public class JsonRetrieverService
 				.metasfreshId(JsonMetasfreshId.of(job.getId().getRepoId()))
 				.name(job.getName())
 				.active(job.isActive())
+				.build();
+	}
+
+	@Nullable
+	private static JsonResponsePaymentTerm toJson(@Nullable final PaymentTerm paymentTerm)
+	{
+		if (paymentTerm == null)
+		{
+			return null;
+		}
+
+		return JsonResponsePaymentTerm.builder()
+				.metasfreshId(JsonMetasfreshId.of(paymentTerm.getId().getRepoId()))
+				.name(paymentTerm.getName())
+				.build();
+	}
+
+	@Nullable
+	private static JsonResponseIncoterms toJson(@Nullable final Incoterms incoterms)
+	{
+		if (incoterms == null)
+		{
+			return null;
+		}
+
+		return JsonResponseIncoterms.builder()
+				.metasfreshId(JsonMetasfreshId.of(incoterms.getId().getRepoId()))
+				.name(incoterms.getName())
 				.build();
 	}
 

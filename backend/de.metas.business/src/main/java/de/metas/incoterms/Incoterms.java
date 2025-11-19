@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2025 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,20 +22,15 @@
 
 package de.metas.incoterms;
 
-import de.metas.organization.OrgId;
-import de.metas.util.ISingletonService;
+import lombok.Builder;
 import lombok.NonNull;
-import org.compiere.model.I_C_Incoterms;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import lombok.Value;
 
-public interface IIncotermsDAO extends ISingletonService
+@Value
+@Builder
+public class Incoterms
 {
-	@Nullable
-	I_C_Incoterms getDefaultIncoterms(final @NotNull OrgId orgId);
-
-	void save(@NonNull I_C_Incoterms incoterms);
-
-	@NonNull
-	Incoterms getById(@NonNull IncotermsId incotermsId);
+	@NonNull IncotermsId id;
+	@NonNull String name;
+	@NonNull String value;
 }
