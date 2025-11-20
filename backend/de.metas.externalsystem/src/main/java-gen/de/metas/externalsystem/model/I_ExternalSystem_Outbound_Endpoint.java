@@ -316,6 +316,27 @@ public interface I_ExternalSystem_Outbound_Endpoint
 	String COLUMNNAME_Password = "Password";
 
 	/**
+	 * Set SAS-Signature.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSasSignature (@Nullable String SasSignature);
+
+	/**
+	 * Get SAS-Signature.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable String getSasSignature();
+
+	ModelColumn<I_ExternalSystem_Outbound_Endpoint, Object> COLUMN_SasSignature = new ModelColumn<>(I_ExternalSystem_Outbound_Endpoint.class, "SasSignature", null);
+	String COLUMNNAME_SasSignature = "SasSignature";
+
+	/**
 	 * Set Type.
 	 * Type of Validation (SQL, Java Script, Java Language)
 	 *

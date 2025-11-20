@@ -66,6 +66,7 @@ public class ExternalSystemOutboundEndpointRepository
 				.token(endpointRecord.getAuthToken())
 				.user(endpointRecord.getLoginUsername())
 				.password(endpointRecord.getPassword())
+				.sasSignature(endpointRecord.getSasSignature())
 				.build();
 	}
 }
