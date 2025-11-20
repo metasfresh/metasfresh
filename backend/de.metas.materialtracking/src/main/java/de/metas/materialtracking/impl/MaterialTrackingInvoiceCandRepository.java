@@ -48,6 +48,7 @@ public class MaterialTrackingInvoiceCandRepository
 	public Optional<I_C_Invoice_Candidate> getFirstForMaterialTrackingId(@NonNull final MaterialTrackingId materialTrackingId)
 	{
 		return getQueryForMaterialTrackingId(materialTrackingId)
+				.orderBy(I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID)
 				.create()
 				.firstOptional();
 	}

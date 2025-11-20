@@ -36,7 +36,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -90,9 +89,10 @@ public class MaterialTrackingInvoiceCandService
 			}
 		}
 
-		final Optional<I_C_Invoice_Candidate> existingICForMT = repo.getFirstForMaterialTrackingId(MaterialTrackingId.ofRepoId(materialTracking.getM_Material_Tracking_ID()));
+		final I_C_Invoice_Candidate existingICForMT = repo.getFirstForMaterialTrackingId(MaterialTrackingId.ofRepoId(materialTracking.getM_Material_Tracking_ID()))
+				.orElse(null);
 
-		if (existingICForMT.isPresent() && existingICForMT.get().getBill_BPartner_ID() != candidate.getBill_BPartner_ID())
+		if (existingICForMT == null || existingICForMT.getBill_BPartner_ID() != candidate.getBill_BPartner_ID())
 		{
 			//Not for the same BillBPartner as other ICs of the material tracking, can't add to group
 			return;
@@ -100,14 +100,12 @@ public class MaterialTrackingInvoiceCandService
 
 		candidate.setM_Material_Tracking_ID(materialTracking.getM_Material_Tracking_ID());
 
-		existingICForMT.map(IAggregationBL::getEffectiveHeaderAggregationKeyId)
-				.map(InvoiceCandidateHeaderAggregationId::toRepoId)
-				.ifPresent(candidate::setC_Invoice_Candidate_HeaderAggregation_Override_ID);
+		final InvoiceCandidateHeaderAggregationId effectiveHeaderAggregationKeyId = IAggregationBL.getEffectiveHeaderAggregationKeyId(existingICForMT);
+		candidate.setC_Invoice_Candidate_HeaderAggregation_Override_ID(InvoiceCandidateHeaderAggregationId.toRepoId(effectiveHeaderAggregationKeyId));
 
 		aggregationBL.getUpdateProcessor().process(candidate);
 
 		repo.save(candidate);
-
 
 		materialTrackingBL.linkModelToMaterialTracking(MTLinkRequest.builder()
 				.model(candidate)

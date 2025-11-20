@@ -65,7 +65,7 @@ public class InvoiceCandidateHeaderAggregationId implements RepoIdAware
 		return repoId;
 	}
 
-	public static int toRepoId(final InvoiceCandidateHeaderAggregationId id)
+	public static int toRepoId(@Nullable final InvoiceCandidateHeaderAggregationId id)
 	{
 		return id != null ? id.getRepoId() : -1;
 	}
