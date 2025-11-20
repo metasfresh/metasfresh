@@ -30,6 +30,7 @@ public class PickingJobOptions
 	boolean isAnonymousPickHUsOnTheFly;
 	@NonNull OptionalBoolean displayPickingSlotSuggestions;
 	@NonNull CreateShipmentPolicy createShipmentPolicy;
+	@NonNull OptionalBoolean completeJobAutomatically;
 	@Nullable PickingLineGroupBy pickingLineGroupBy;
 	@Nullable PickingLineSortBy pickingLineSortBy;
 
@@ -50,6 +51,7 @@ public class PickingJobOptions
 			final boolean isAnonymousPickHUsOnTheFly,
 			@Nullable final OptionalBoolean displayPickingSlotSuggestions,
 			@NonNull final CreateShipmentPolicy createShipmentPolicy,
+			@Nullable final OptionalBoolean completeJobAutomatically,
 			@Nullable final PickingLineGroupBy pickingLineGroupBy,
 			@Nullable final PickingLineSortBy pickingLineSortBy)
 	{
@@ -68,6 +70,7 @@ public class PickingJobOptions
 		this.isAnonymousPickHUsOnTheFly = isAnonymousPickHUsOnTheFly;
 		this.displayPickingSlotSuggestions = displayPickingSlotSuggestions != null ? displayPickingSlotSuggestions : OptionalBoolean.FALSE;
 		this.createShipmentPolicy = createShipmentPolicy;
+		this.completeJobAutomatically = completeJobAutomatically != null ? completeJobAutomatically : OptionalBoolean.UNKNOWN;
 		this.pickingLineGroupBy = pickingLineGroupBy;
 		this.pickingLineSortBy = pickingLineSortBy;
 	}
@@ -82,6 +85,7 @@ public class PickingJobOptions
 				.allowedPickToStructures(this.allowedPickToStructures.fallbackTo(fallback.allowedPickToStructures))
 				.pickAttributes(this.pickAttributes.fallbackTo(fallback.pickAttributes))
 				.displayPickingSlotSuggestions(this.displayPickingSlotSuggestions.ifUnknown(fallback.getDisplayPickingSlotSuggestions()))
+				.completeJobAutomatically(this.completeJobAutomatically.ifUnknown(fallback.getCompleteJobAutomatically()))
 				.build();
 
 		return Objects.equals(this, newValue) ? this : newValue;

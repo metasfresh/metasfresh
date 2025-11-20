@@ -129,6 +129,7 @@ public class MobileUIPickingUserProfileRepository
 				.isAnonymousPickHUsOnTheFly(profileRecord.isAnonymousHuPickedOnTheFly())
 				.displayPickingSlotSuggestions(OptionalBoolean.ofBoolean(profileRecord.isDisplayPickingSlotSuggestions()))
 				.createShipmentPolicy(CreateShipmentPolicy.ofCode(profileRecord.getCreateShipmentPolicy()))
+				.completeJobAutomatically(OptionalBoolean.ofBoolean(profileRecord.isCompleteJobAutomatically()))
 				.pickingLineGroupBy(PickingLineGroupBy.ofNullableCode(profileRecord.getPickingLineGroupBy()))
 				.pickingLineSortBy(PickingLineSortBy.ofNullableCode(profileRecord.getPickingLineSortBy()))
 				.build();
@@ -280,6 +281,7 @@ public class MobileUIPickingUserProfileRepository
 		record.setIsAnonymousHuPickedOnTheFly(from.isAnonymousPickHUsOnTheFly());
 		record.setIsDisplayPickingSlotSuggestions(from.getDisplayPickingSlotSuggestions().orElse(false));
 		record.setCreateShipmentPolicy(from.getCreateShipmentPolicy().getCode());
+		record.setIsCompleteJobAutomatically(from.getCompleteJobAutomatically().orElse(false));
 		record.setPickingLineGroupBy(from.getPickingLineGroupBy().map(PickingLineGroupBy::getCode).orElse(null));
 		record.setPickingLineSortBy(from.getPickingLineSortBy().map(PickingLineSortBy::getCode).orElse(null));
 	}
