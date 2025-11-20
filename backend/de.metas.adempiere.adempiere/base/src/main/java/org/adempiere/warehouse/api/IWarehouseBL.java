@@ -71,6 +71,8 @@ public interface IWarehouseBL extends ISingletonService
 	 */
 	LocatorId getOrCreateDefaultLocatorId(WarehouseId warehouse);
 
+	LocatorId createOrUpdateLocator(@NonNull CreateOrUpdateLocatorRequest request);
+
 	@NonNull
 	CountryId getCountryId(WarehouseId warehouseId);
 
