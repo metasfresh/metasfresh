@@ -32,12 +32,14 @@ import de.metas.bpartner.BPartnerSupplierApprovalService;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.lang.SOTrx;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
@@ -253,10 +255,10 @@ public class C_Order
 	}
 
 	/**
-	 * When creating a manual order: The new order must inherit the payment rule from the BPartner.
+	 * When creating a manual order: The new order must inherit the payment rule from the BillPartner (or BPartner if no BillPartner is set).
 	 * When cloning an order: all should be set as in the original order, so the payment rule should be the same as in the old order
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_Order.COLUMNNAME_C_BPartner_ID)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {I_C_Order.COLUMNNAME_C_BPartner_ID, I_C_Order.COLUMNNAME_Bill_BPartner_ID})
 	public void setPaymentRule(final I_C_Order order)
 	{
 		if (!InterfaceWrapperHelper.isUIAction(order) || InterfaceWrapperHelper.isCopying(order))
@@ -264,15 +266,13 @@ public class C_Order
 			return;
 		}
 
-		final I_C_BPartner bpartner = order.getC_BPartner();
+		final BPartnerId bpartnerId = CoalesceUtil.coalesce(BPartnerId.ofRepoIdOrNull(order.getBill_BPartner_ID()), BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID()));
+
 		final PaymentRule paymentRule;
-		if (order.isSOTrx() && bpartner != null && bpartner.getPaymentRule() != null)
+		if (bpartnerId != null)
 		{
-			paymentRule = PaymentRule.ofCode(bpartner.getPaymentRule());
-		}
-		else if (!order.isSOTrx() && bpartner != null && bpartner.getPaymentRulePO() != null)
-		{
-			paymentRule = PaymentRule.ofCode(bpartner.getPaymentRulePO());
+			paymentRule = bpartnerBL.getPaymentRuleForBPartner(bpartnerId, SOTrx.ofBoolean(order.isSOTrx()))
+					.orElseGet(invoiceBL::getDefaultPaymentRule);
 		}
 		else
 		{
@@ -281,6 +281,7 @@ public class C_Order
 
 		order.setPaymentRule(paymentRule.getCode());
 	}
+
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void beforeDelete(@NonNull final I_C_Order order)
