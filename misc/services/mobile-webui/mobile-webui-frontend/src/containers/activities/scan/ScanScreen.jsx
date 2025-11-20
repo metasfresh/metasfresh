@@ -106,7 +106,6 @@ const ScanScreen = () => {
             onClick={(suggestion) => onBarcodeScanned({ scannedBarcode: suggestion.qrCode })}
           />
         )}
-        )
       </>
     );
   }

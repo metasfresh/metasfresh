@@ -21,6 +21,8 @@ import de.metas.mobile.application.MobileApplicationInfo;
 import de.metas.product.ResourceId;
 import de.metas.report.PrintCopies;
 import de.metas.resource.UserWorkstationService;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupList;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetQuery;
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.WFActivityId;
 import de.metas.workflow.rest_api.model.WFProcess;
@@ -29,8 +31,6 @@ import de.metas.workflow.rest_api.model.WFProcessHeaderProperty;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
-import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupList;
-import de.metas.rest_workflows.facets.WorkflowLaunchersFacetQuery;
 import de.metas.workflow.rest_api.service.WorkflowBasedMobileApplication;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.NonNull;
@@ -53,7 +53,7 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 {
 	@VisibleForTesting
 	public static final MobileApplicationId APPLICATION_ID = MobileApplicationId.ofString("mfg");
-
+	
 	private final MobileUIManufacturingConfigRepository userProfileRepository;
 	private final ManufacturingRestService manufacturingRestService;
 	private final ManufacturingWorkflowLaunchersProvider wfLaunchersProvider;

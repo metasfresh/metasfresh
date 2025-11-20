@@ -24,6 +24,8 @@ public class JsonMobileApplication
 	@NonNull String id;
 	@NonNull String caption;
 	@NonNull ImmutableSet<String> actions;
+	int maxStartedLaunchers;
+	boolean allowStartNextJobOnly;
 	boolean requiresWorkstation;
 	boolean requiresWorkplace;
 	boolean showFilterByQRCode;
@@ -47,6 +49,8 @@ public class JsonMobileApplication
 						.filter(action -> mobileApplicationPermissions.isAllowAction(appInfo.getRepoId(), action.getId()))
 						.map(MobileApplicationAction::getInternalName)
 						.collect(ImmutableSet.toImmutableSet()))
+				.maxStartedLaunchers(appInfo.getMaxStartedLaunchers().toIntOrZero())
+				.allowStartNextJobOnly(appInfo.isAllowStartNextJobOnly())
 				.requiresWorkstation(appInfo.isRequiresWorkstation())
 				.requiresWorkplace(appInfo.isRequiresWorkplace())
 				.showFilterByQRCode(appInfo.isShowFilterByQRCode())

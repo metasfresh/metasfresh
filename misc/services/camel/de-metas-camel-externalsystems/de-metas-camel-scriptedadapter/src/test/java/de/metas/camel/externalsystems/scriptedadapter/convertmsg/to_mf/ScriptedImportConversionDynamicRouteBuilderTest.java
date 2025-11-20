@@ -167,7 +167,7 @@ public class ScriptedImportConversionDynamicRouteBuilderTest extends CamelTestSu
 		@SuppressWarnings("unchecked") final List<Object> result =
 				template.requestBody("direct:" + MOCK_ENDPOINT_NAME, JSON_ONE_VALID_ITEM_SCRIPT_RESPONSE, List.class);
 
-		assertThat(result.get(0)).isEqualTo(Map.of(FIELD_ERROR_MESSAGE, "exception"));
+		assertThat(result.get(0)).isEqualTo("Exception - exception");
 	}
 
 	@Test
@@ -188,7 +188,8 @@ public class ScriptedImportConversionDynamicRouteBuilderTest extends CamelTestSu
 
 		assertThat(list).hasSize(2);
 		assertThat(list.get(0)).isEqualTo(Map.of("valid", true));
-		assertThat(list.get(1)).isEqualTo(Map.of(FIELD_ERROR_MESSAGE, "not_json"));
+		assertThat(list.get(1)).isEqualTo(Map.of(FIELD_ERROR_MESSAGE, "Unrecognized token 'not_json': was expecting (JSON String, Number, Array, Object or token 'null', 'true' or 'false')\n"
+				+ " at [Source: REDACTED (`StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION` disabled); line: 1, column: 9]"));
 	}
 
 	@Test

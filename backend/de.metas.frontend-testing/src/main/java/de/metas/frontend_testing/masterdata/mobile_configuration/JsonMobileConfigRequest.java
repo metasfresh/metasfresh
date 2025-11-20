@@ -1,6 +1,7 @@
 package de.metas.frontend_testing.masterdata.mobile_configuration;
 
 import de.metas.frontend_testing.masterdata.Identifier;
+import de.metas.handlingunits.picking.config.mobileui.PickAttribute;
 import de.metas.handlingunits.picking.config.mobileui.PickToStructure;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
@@ -9,6 +10,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+import org.adempiere.ad.dao.QueryLimit;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -42,6 +44,7 @@ public class JsonMobileConfigRequest
 		@Nullable Boolean shipOnCloseLU;
 
 		@Nullable Set<PickToStructure> pickTo;
+		@Nullable Set<PickAttribute> readAttributes;
 		@Nullable @Deprecated Boolean pickWithNewLU;
 		@Nullable @Deprecated Boolean allowNewTU;
 
@@ -75,6 +78,13 @@ public class JsonMobileConfigRequest
 	public static class Distribution
 	{
 		@Nullable Boolean allowPickingAnyHU;
+		@Nullable String captionFormat;
+		@Nullable String orderBys;
+
+		@Nullable QueryLimit maxLaunchers;
+		@Nullable QueryLimit maxStartedLaunchers;
+		@Nullable Boolean allowStartNextJobOnly;
+
 	}
 
 	//

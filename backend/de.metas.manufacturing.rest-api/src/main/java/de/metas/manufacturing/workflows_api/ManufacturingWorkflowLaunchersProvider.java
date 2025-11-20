@@ -10,6 +10,8 @@ import de.metas.manufacturing.job.model.ManufacturingJobReference;
 import de.metas.manufacturing.job.service.ManufacturingJobReferenceQuery;
 import de.metas.product.ResourceId;
 import de.metas.resource.qrcode.ResourceQRCode;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupList;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetQuery;
 import de.metas.scannable_code.PrintableScannedCode;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.workflow.rest_api.model.WFProcessId;
@@ -17,10 +19,7 @@ import de.metas.workflow.rest_api.model.WorkflowLauncher;
 import de.metas.workflow.rest_api.model.WorkflowLauncherCaption;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
-import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupList;
-import de.metas.rest_workflows.facets.WorkflowLaunchersFacetQuery;
 import lombok.NonNull;
-import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
@@ -46,7 +45,7 @@ public class ManufacturingWorkflowLaunchersProvider
 		if (filterScannedCode == null)
 		{
 			plantOrWorkstationId = null;
-			
+
 			filterByPrintableQRCode = null;
 		}
 		else
@@ -71,7 +70,7 @@ public class ManufacturingWorkflowLaunchersProvider
 								.plantOrWorkstationId(plantOrWorkstationId)
 								.workstationId(workstationId)
 								.now(now)
-								.suggestedLimit(query.getLimit().orElse(QueryLimit.NO_LIMIT))
+								.suggestedLimit(query.getLimit().orElseGet(manufacturingRestService::getLaunchersLimit))
 								.activeFacetIds(ManufacturingJobFacets.FacetIdsCollection.ofWorkflowLaunchersFacetIds(query.getFacetIds()))
 								.build()
 				)
