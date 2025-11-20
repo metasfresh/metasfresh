@@ -51,9 +51,46 @@ INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Hel
 ;
 
 -- Process: C_Invoice_Candidate_Assign_MaterialTracking(de.metas.materialtracking.process.C_Invoice_Candidate_Assign_MaterialTracking)
--- Table: A_Asset
+-- 2025-11-20T18:18:27.829Z
+UPDATE AD_Process_Trl SET Description='If no material tracking is provided then all selected invoice candidates shall be removed from their assigned material tracking (if the material tracking has not been processed). If a material tracking is provided then all invoice candidates will be moved to the selected material tracking (if the "from" or "to" material tracking has not been processed).', Name='Assign to Material Tracking',Updated=TO_TIMESTAMP('2025-11-20 18:18:27.829000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585534
+;
+
+-- 2025-11-20T18:18:27.831Z
+UPDATE AD_Process base SET Description=trl.Description, Name=trl.Name, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Process_Trl trl  WHERE trl.AD_Process_ID=base.AD_Process_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- Process: C_Invoice_Candidate_Assign_MaterialTracking(de.metas.materialtracking.process.C_Invoice_Candidate_Assign_MaterialTracking)
+-- 2025-11-20T18:18:37.687Z
+UPDATE AD_Process_Trl SET Description='Wenn keine Materialverfolgung angegeben ist, werden alle ausgewählten Rechnungskandidaten aus ihrer zugewiesenen Materialverfolgung entfernt (sofern die Materialverfolgung noch nicht verarbeitet wurde). Wenn eine Materialverfolgung angegeben ist, werden alle Rechnungskandidaten auf die ausgewählte Materialverfolgung verschoben (sofern die „von“- bzw. „zu“-Materialverfolgung noch nicht verarbeitet wurde).',Updated=TO_TIMESTAMP('2025-11-20 18:18:37.687000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Process_ID=585534
+;
+
+-- 2025-11-20T18:18:37.690Z
+UPDATE AD_Process base SET Description=trl.Description, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Process_Trl trl  WHERE trl.AD_Process_ID=base.AD_Process_ID AND trl.AD_Language='fr_CH' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- Value: C_Invoice_Candidate_Assign_MaterialTracking
+-- Classname: de.metas.materialtracking.process.C_Invoice_Candidate_Assign_MaterialTracking
+-- 2025-11-20T18:20:54.332Z
+UPDATE AD_Process SET Description='Wenn keine Materialverfolgung angegeben ist, werden alle ausgewählten Rechnungskandidaten aus ihrer zugewiesenen Materialverfolgung entfernt (sofern die Materialverfolgung noch nicht verarbeitet wurde). Wenn eine Materialverfolgung angegeben ist, werden alle Rechnungskandidaten auf die ausgewählte Materialverfolgung verschoben (sofern die „von“- bzw. „zu“-Materialverfolgung noch nicht verarbeitet wurde).',Updated=TO_TIMESTAMP('2025-11-20 18:20:54.330000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_ID=585534
+;
+
+-- 2025-11-20T18:20:54.338Z
+UPDATE AD_Process_Trl trl SET Description='Wenn keine Materialverfolgung angegeben ist, werden alle ausgewählten Rechnungskandidaten aus ihrer zugewiesenen Materialverfolgung entfernt (sofern die Materialverfolgung noch nicht verarbeitet wurde). Wenn eine Materialverfolgung angegeben ist, werden alle Rechnungskandidaten auf die ausgewählte Materialverfolgung verschoben (sofern die „von“- bzw. „zu“-Materialverfolgung noch nicht verarbeitet wurde).' WHERE AD_Process_ID=585534 AND AD_Language='de_DE'
+;
+
+-- Process: C_Invoice_Candidate_Assign_MaterialTracking(de.metas.materialtracking.process.C_Invoice_Candidate_Assign_MaterialTracking)
+-- 2025-11-20T18:21:01.523Z
+UPDATE AD_Process_Trl SET Description='Wenn keine Materialverfolgung angegeben ist, werden alle ausgewählten Rechnungskandidaten aus ihrer zugewiesenen Materialverfolgung entfernt (sofern die Materialverfolgung noch nicht verarbeitet wurde). Wenn eine Materialverfolgung angegeben ist, werden alle Rechnungskandidaten auf die ausgewählte Materialverfolgung verschoben (sofern die „von“- bzw. „zu“-Materialverfolgung noch nicht verarbeitet wurde).',Updated=TO_TIMESTAMP('2025-11-20 18:21:01.523000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=585534
+;
+
+-- 2025-11-20T18:21:01.525Z
+UPDATE AD_Process base SET Description=trl.Description, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Process_Trl trl  WHERE trl.AD_Process_ID=base.AD_Process_ID AND trl.AD_Language='de_CH' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- Process: C_Invoice_Candidate_Assign_MaterialTracking(de.metas.materialtracking.process.C_Invoice_Candidate_Assign_MaterialTracking)
+-- Table: C_Invoice_Candidate
 -- EntityType: D
--- 2025-11-20T17:34:01.772Z
-INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Table_Process_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default) VALUES (0,0,585534,539,541588,TO_TIMESTAMP('2025-11-20 17:34:01.540000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y',TO_TIMESTAMP('2025-11-20 17:34:01.540000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','Y','N','N')
+-- 2025-11-20T18:27:03.320Z
+INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Table_Process_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default) VALUES (0,0,585534,540270,541589,TO_TIMESTAMP('2025-11-20 18:27:03.113000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y',TO_TIMESTAMP('2025-11-20 18:27:03.113000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','Y','N','N')
 ;
 

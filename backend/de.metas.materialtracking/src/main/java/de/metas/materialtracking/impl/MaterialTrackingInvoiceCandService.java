@@ -22,7 +22,7 @@
 
 package de.metas.materialtracking.impl;
 
-import de.metas.common.util.CoalesceUtil;
+import de.metas.invoicecandidate.InvoiceCandidateHeaderAggregationId;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.IMaterialTrackingDAO;
@@ -68,14 +68,29 @@ public class MaterialTrackingInvoiceCandService
 
 	public void linkMaterialTrackings(@NonNull final List<I_C_Invoice_Candidate> candidate, @NonNull final MaterialTrackingId materialTrackingId)
 	{
-		candidate.forEach(c -> linkMaterialTracking(c, materialTrackingId));
+		final I_M_Material_Tracking materialTracking = materialTrackingDAO.getById(materialTrackingId);
+		if (materialTracking.isProcessed())
+		{
+			//target material tracking is processed, so we can't link to it
+			return;
+		}
+		candidate.forEach(c -> linkMaterialTracking(c, materialTracking));
 	}
 
-	public void linkMaterialTracking(@NonNull final I_C_Invoice_Candidate candidate, @NonNull final MaterialTrackingId materialTrackingId)
+	public void linkMaterialTracking(@NonNull final I_C_Invoice_Candidate candidate, @NonNull final I_M_Material_Tracking materialTracking)
 	{
-		final MaterialTrackingId previousMaterialTrackingId = MaterialTrackingId.ofRepoIdOrNull(candidate.getM_Material_Tracking_ID());
+		final MaterialTrackingId oldMaterialTrackingId = MaterialTrackingId.ofRepoIdOrNull(candidate.getM_Material_Tracking_ID());
+		if (oldMaterialTrackingId != null)
+		{
+			final I_M_Material_Tracking oldMaterialTracking = materialTrackingDAO.getById(oldMaterialTrackingId);
+			if (oldMaterialTracking.isProcessed())
+			{
+				//old material tracking is processed, so we can't unlink from it
+				return;
+			}
+		}
 
-		final Optional<I_C_Invoice_Candidate> existingICForMT = repo.getFirstForMaterialTrackingId(materialTrackingId);
+		final Optional<I_C_Invoice_Candidate> existingICForMT = repo.getFirstForMaterialTrackingId(MaterialTrackingId.ofRepoId(materialTracking.getM_Material_Tracking_ID()));
 
 		if (existingICForMT.isPresent() && existingICForMT.get().getBill_BPartner_ID() != candidate.getBill_BPartner_ID())
 		{
@@ -83,21 +98,22 @@ public class MaterialTrackingInvoiceCandService
 			return;
 		}
 
-		candidate.setM_Material_Tracking_ID(MaterialTrackingId.toRepoId(materialTrackingId));
+		candidate.setM_Material_Tracking_ID(materialTracking.getM_Material_Tracking_ID());
 
-		existingICForMT.map(ic -> CoalesceUtil.coalesce(ic.getC_Invoice_Candidate_HeaderAggregation_Override(), ic.getC_Invoice_Candidate_HeaderAggregation()))
-				.ifPresent(candidate::setC_Invoice_Candidate_HeaderAggregation_Override);
+		existingICForMT.map(IAggregationBL::getEffectiveHeaderAggregationKeyId)
+				.map(InvoiceCandidateHeaderAggregationId::toRepoId)
+				.ifPresent(candidate::setC_Invoice_Candidate_HeaderAggregation_Override_ID);
 
 		aggregationBL.getUpdateProcessor().process(candidate);
 
 		repo.save(candidate);
 
-		final I_M_Material_Tracking newMaterialTracking = materialTrackingDAO.getById(materialTrackingId);
+
 		materialTrackingBL.linkModelToMaterialTracking(MTLinkRequest.builder()
 				.model(candidate)
-				.previousMaterialTrackingId(MaterialTrackingId.toRepoId(previousMaterialTrackingId))
+				.previousMaterialTrackingId(MaterialTrackingId.toRepoId(oldMaterialTrackingId))
 				.ifModelAlreadyLinked(MTLinkRequest.IfModelAlreadyLinked.UNLINK_FROM_PREVIOUS)
-				.materialTrackingRecord(newMaterialTracking)
+				.materialTrackingRecord(materialTracking)
 				.build());
 	}
 
