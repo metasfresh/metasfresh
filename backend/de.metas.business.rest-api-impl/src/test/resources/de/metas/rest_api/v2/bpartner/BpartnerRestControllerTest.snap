@@ -42,7 +42,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         "replicationLookupDefault": false,
         "shipTo": false,
         "shipToDefault": false,
-        "visitorsAddress": false
+        "visitorsAddress": false,
+        "visitorsAddressDefault": false
       }
     ]
   }
@@ -216,14 +217,16 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
           "billToDefault": false,
           "shipTo": false,
           "shipToDefault": false,
-          "visitorsAddress": false
+          "visitorsAddress": false,
+          "visitorsAddressDefault": false
         },
         "poBox": "l1_poBox",
         "postal": "l1_postal",
         "region": "l1_region",
         "remitTo": false,
         "replicationLookupDefault": false,
-        "visitorsAddress": false
+        "visitorsAddress": false,
+        "visitorsAddressDefault": false
       },
       {
         "active": true,
@@ -261,14 +264,16 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
           "billToDefault": false,
           "shipTo": false,
           "shipToDefault": false,
-          "visitorsAddress": false
+          "visitorsAddress": false,
+          "visitorsAddressDefault": false
         },
         "poBox": "l2_poBox",
         "postal": "l2_postal",
         "region": "l2_region",
         "remitTo": false,
         "replicationLookupDefault": false,
-        "visitorsAddress": false
+        "visitorsAddress": false,
+        "visitorsAddressDefault": false
       }
     ],
     "orgId": 10
@@ -642,14 +647,16 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           "billToDefault": false,
           "shipTo": false,
           "shipToDefault": false,
-          "visitorsAddress": false
+          "visitorsAddress": false,
+          "visitorsAddressDefault": false
         },
         "poBox": "locationRecord.poBox",
         "postal": "locationRecord.postal",
         "region": "locationRecord.regionName",
         "remitTo": false,
         "replicationLookupDefault": false,
-        "visitorsAddress": false
+        "visitorsAddress": false,
+        "visitorsAddressDefault": false
       }
     ],
     "orgId": 10
@@ -796,14 +803,16 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           "billToDefault": false,
           "shipTo": false,
           "shipToDefault": false,
-          "visitorsAddress": false
+          "visitorsAddress": false,
+          "visitorsAddressDefault": false
         },
         "poBox": "locationRecord.poBox",
         "postal": "locationRecord.postal",
         "region": "locationRecord.regionName",
         "remitTo": false,
         "replicationLookupDefault": false,
-        "visitorsAddress": false
+        "visitorsAddress": false,
+        "visitorsAddressDefault": false
       }
     ],
     "orgId": 10
@@ -950,14 +959,16 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
           "billToDefault": false,
           "shipTo": false,
           "shipToDefault": false,
-          "visitorsAddress": false
+          "visitorsAddress": false,
+          "visitorsAddressDefault": false
         },
         "poBox": "locationRecord.poBox",
         "postal": "locationRecord.postal",
         "region": "locationRecord.regionName",
         "remitTo": false,
         "replicationLookupDefault": false,
-        "visitorsAddress": false
+        "visitorsAddress": false,
+        "visitorsAddressDefault": false
       },
       {
         "active": true,
@@ -995,14 +1006,16 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
           "billToDefault": false,
           "shipTo": false,
           "shipToDefault": false,
-          "visitorsAddress": false
+          "visitorsAddress": false,
+          "visitorsAddressDefault": false
         },
         "poBox": "newLocation_poBox",
         "postal": "newLocation_postal",
         "region": "newLocation_region",
         "remitTo": false,
         "replicationLookupDefault": false,
-        "visitorsAddress": false
+        "visitorsAddress": false,
+        "visitorsAddressDefault": false
       }
     ],
     "orgId": 10
@@ -1100,7 +1113,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnerLocatio
     "replicationLookupDefault": false,
     "shipTo": false,
     "shipToDefault": false,
-    "visitorsAddress": false
+    "visitorsAddress": false,
+    "visitorsAddressDefault": false
   }
 ]
 
@@ -1133,7 +1147,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnerLocatio
     "replicationLookupDefault": false,
     "shipTo": false,
     "shipToDefault": false,
-    "visitorsAddress": false
+    "visitorsAddress": false,
+    "visitorsAddressDefault": false
   }
 ]
 
@@ -1166,7 +1181,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnerLocatio
     "replicationLookupDefault": false,
     "shipTo": false,
     "shipToDefault": false,
-    "visitorsAddress": false
+    "visitorsAddress": false,
+    "visitorsAddressDefault": false
   }
 ]
 
@@ -1264,7 +1280,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_ext=[
         "replicationLookupDefault": false,
         "shipTo": false,
         "shipToDefault": false,
-        "visitorsAddress": false
+        "visitorsAddress": false,
+        "visitorsAddressDefault": false
       }
     ]
   }
@@ -1364,7 +1381,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_gln=[
         "replicationLookupDefault": false,
         "shipTo": false,
         "shipToDefault": false,
-        "visitorsAddress": false
+        "visitorsAddress": false,
+        "visitorsAddressDefault": false
       }
     ]
   }
@@ -1464,7 +1482,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_id=[
         "replicationLookupDefault": false,
         "shipTo": false,
         "shipToDefault": false,
-        "visitorsAddress": false
+        "visitorsAddress": false,
+        "visitorsAddressDefault": false
       }
     ]
   }
@@ -1585,7 +1604,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
             "replicationLookupDefault": false,
             "shipTo": false,
             "shipToDefault": false,
-            "visitorsAddress": false
+            "visitorsAddress": false,
+            "visitorsAddressDefault": false
           }
         ]
       },
@@ -1681,7 +1701,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
             "replicationLookupDefault": false,
             "shipTo": false,
             "shipToDefault": false,
-            "visitorsAddress": false
+            "visitorsAddress": false,
+            "visitorsAddressDefault": false
           }
         ]
       }
@@ -1790,7 +1811,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
             "replicationLookupDefault": false,
             "shipTo": false,
             "shipToDefault": false,
-            "visitorsAddress": false
+            "visitorsAddress": false,
+            "visitorsAddressDefault": false
           }
         ]
       },
@@ -1886,7 +1908,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
             "replicationLookupDefault": false,
             "shipTo": false,
             "shipToDefault": false,
-            "visitorsAddress": false
+            "visitorsAddress": false,
+            "visitorsAddressDefault": false
           }
         ]
       }
@@ -1995,7 +2018,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
             "replicationLookupDefault": false,
             "shipTo": false,
             "shipToDefault": false,
-            "visitorsAddress": false
+            "visitorsAddress": false,
+            "visitorsAddressDefault": false
           }
         ]
       }
