@@ -39,6 +39,7 @@ import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerCompositeAndContactId;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerContactType;
+import de.metas.bpartner.composite.BPartnerCreditLimit;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.composite.SalesRep;
@@ -48,15 +49,18 @@ import de.metas.bpartner.composite.repository.SinceQuery;
 import de.metas.bpartner.service.BPartnerContactQuery;
 import de.metas.bpartner.service.BPartnerContactQuery.BPartnerContactQueryBuilder;
 import de.metas.bpartner.service.BPartnerQuery;
+import de.metas.bpartner.service.CreditLimitType;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.common.bpartner.v2.response.JsonResponseBPBankAccount;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartner;
+import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCreditLimit;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite.JsonResponseCompositeBuilder;
 import de.metas.common.bpartner.v2.response.JsonResponseContact;
 import de.metas.common.bpartner.v2.response.JsonResponseContactPosition;
 import de.metas.common.bpartner.v2.response.JsonResponseContactRole;
+import de.metas.common.bpartner.v2.response.JsonResponseCreditLimitType;
 import de.metas.common.bpartner.v2.response.JsonResponseIncoterms;
 import de.metas.common.bpartner.v2.response.JsonResponseLocation;
 import de.metas.common.bpartner.v2.response.JsonResponsePaymentTerm;
@@ -367,6 +371,13 @@ public class JsonRetrieverService
 			{
 				result.bankAccount(toJson(bankAccount));
 			}
+
+			// credit limit
+			for (final BPartnerCreditLimit creditLimit : bpartnerComposite.getCreditLimits())
+			{
+				result.creditLimit(toJson(creditLimit));
+			}
+
 			return result.build();
 		}
 	}
@@ -961,6 +972,37 @@ public class JsonRetrieverService
 		return JsonResponsePaymentTerm.builder()
 				.metasfreshId(JsonMetasfreshId.of(paymentTerm.getId().getRepoId()))
 				.name(paymentTerm.getName())
+				.build();
+	}
+
+	@Nullable
+	private static JsonResponseCreditLimitType toJson(@Nullable final CreditLimitType creditLimitType)
+	{
+		if (creditLimitType == null)
+		{
+			return null;
+		}
+
+		return JsonResponseCreditLimitType.builder()
+				.metasfreshId(JsonMetasfreshId.of(creditLimitType.getCreditLimitTypeId().getRepoId()))
+				.name(creditLimitType.getName())
+				.autoApproval(creditLimitType.isAutoApproval())
+				.build();
+	}
+
+	@Nullable
+	private static JsonResponseBPartnerCreditLimit toJson(@Nullable final BPartnerCreditLimit bpartnerCreditLimit)
+	{
+		if (bpartnerCreditLimit == null || bpartnerCreditLimit.getId() == null)
+		{
+			return null;
+		}
+
+		return JsonResponseBPartnerCreditLimit.builder()
+				.metasfreshId(JsonMetasfreshId.of(bpartnerCreditLimit.getId().getRepoId()))
+				.dateFrom(bpartnerCreditLimit.getDateFrom())
+				.amount(bpartnerCreditLimit.getAmount())
+				.creditLimitType(toJson(bpartnerCreditLimit.getCreditLimitType()))
 				.build();
 	}
 
