@@ -34,7 +34,7 @@ CREATE FUNCTION export_datev_csv_masterdata(
                 Ort         text, -- City
                 Land        text, -- Country code (ISO alpha-2)
                 Telefon     text, -- Phone number
-                Email       text, -- Email address
+                Email_Datev       text, -- Email address
                 Ustid       text, -- VAT ID
                 Zahlungsbed text  -- Payment terms
             )
@@ -76,7 +76,7 @@ BEGIN
             COALESCE(u.phone, '')::text AS "Telefon", -- Default to empty if no phone
 
             -- "Email" (Email address)
-            u.email::text               AS "Email",
+            u.email::text               AS "Email_Datev",
 
             -- "UStId" (VAT ID)
             bp.vataxid::text            AS "Ustid",
@@ -126,8 +126,7 @@ ALTER FUNCTION export_datev_csv_masterdata(
 
 /*
 SELECT *
-FROM export_datev_csv_masterdata('creditors', 1000000, 'Y', '2023-01-01', '2025-12-31'
+FROM export_datev_csv_masterdata('debitors', 1000000, 'Y', '2023-01-01', '2025-12-31'
      )
 ;
 */
-

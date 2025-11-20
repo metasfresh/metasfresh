@@ -701,3 +701,29 @@ UPDATE AD_Element SET EntityType='D',Updated=TO_TIMESTAMP('2025-11-20 15:51:40.6
 -- 2025-11-20T15:51:40.623Z
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584260,'de_DE')
 ;
+
+
+
+-- 2025-11-20T15:54:33.980Z
+UPDATE AD_Element SET ColumnName='Email_Datev',Updated=TO_TIMESTAMP('2025-11-20 15:54:33.980000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584258
+;
+
+-- 2025-11-20T15:54:33.980Z
+UPDATE AD_Column SET ColumnName='Email_Datev' WHERE AD_Element_ID=584258
+;
+
+-- 2025-11-20T15:54:33.980Z
+UPDATE AD_Process_Para SET ColumnName='Email_Datev' WHERE AD_Element_ID=584258
+;
+
+-- 2025-11-20T15:54:33.981Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584258,'de_DE')
+;
+
+-- 2025-11-20T15:54:36.024Z
+UPDATE AD_Element SET EntityType='D',Updated=TO_TIMESTAMP('2025-11-20 15:54:36.024000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584258
+;
+
+-- 2025-11-20T15:54:36.025Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584258,'de_DE')
+;
