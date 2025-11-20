@@ -48,7 +48,7 @@ public class CBPGroupTest
 	}
 
 	@Test
-	public void testSameOrg()
+	public void testSameOrgDefault()
 	{
 		final I_C_BP_Group org1Default = createGroup(true, REGULAR_ORG_1);
 		final I_C_BP_Group org2Default = createGroup(true, REGULAR_ORG_2);
@@ -70,22 +70,41 @@ public class CBPGroupTest
 	}
 
 	@Test
-	public void testAnyOrg()
+	public void testAnyOrgDefaultOnly()
 	{
-		final I_C_BP_Group org1Default = createGroup(false, REGULAR_ORG_1);
-		final I_C_BP_Group org2Default = createGroup(true, REGULAR_ORG_2);
-		final I_C_BP_Group org1NonDefault = createGroup(false, REGULAR_ORG_1);
+		final I_C_BP_Group org1NonDefault1 = createGroup(false, REGULAR_ORG_1);
+		final I_C_BP_Group anyOrgDefault = createGroup(true, ANY_ORG);
+		final I_C_BP_Group org1NonDefault2 = createGroup(false, REGULAR_ORG_1);
 
-		org1NonDefault.setIsDefault(true);
-		bpGroupMI.unsetPreviousDefault(org1NonDefault);
-		InterfaceWrapperHelper.save(org1NonDefault);
+		org1NonDefault2.setIsDefault(true);
+		bpGroupMI.unsetPreviousDefault(org1NonDefault2);
+		InterfaceWrapperHelper.save(org1NonDefault2);
 
-		//previous default is no longer
-		assertDefault(org1Default, false);
-		//any org is still default
-		assertDefault(org2Default, true);
-		// new group is now default
-		assertDefault(org1NonDefault, true);
+		// org1NonDefault1 is still not default
+		assertDefault(org1NonDefault1, false);
+		// anyOrgDefault is still default
+		assertDefault(anyOrgDefault, true);
+		// org1NonDefault2 is now default
+		assertDefault(org1NonDefault2, true);
+	}
+
+	@Test
+	public void testNoDefault()
+	{
+		final I_C_BP_Group org1NonDefault1 = createGroup(false, REGULAR_ORG_1);
+		final I_C_BP_Group anyOrgNonDefault = createGroup(false, ANY_ORG);
+		final I_C_BP_Group org1NonDefault2 = createGroup(false, REGULAR_ORG_1);
+
+		org1NonDefault2.setIsDefault(true);
+		bpGroupMI.unsetPreviousDefault(org1NonDefault2);
+		InterfaceWrapperHelper.save(org1NonDefault2);
+
+		// org1NonDefault1 is still not default
+		assertDefault(org1NonDefault1, false);
+		// anyOrgDefault is still not default
+		assertDefault(anyOrgNonDefault, true);
+		// org1NonDefault2 is now default
+		assertDefault(org1NonDefault2, true);
 	}
 
 	private void assertDefault(@NonNull final I_C_BP_Group group, final boolean expectedIsDefaultValue)
