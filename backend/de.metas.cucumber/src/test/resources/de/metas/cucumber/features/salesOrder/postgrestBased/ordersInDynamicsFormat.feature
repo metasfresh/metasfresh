@@ -77,7 +77,7 @@ Feature: Export Orders in specific format via postgREST
   "orgCode": "001",
   "orderNumber": @order_ID@,
   "dateOrdered": "2022-06-17T00:00:00",
-  "datePromised": "2025-05-01T00:00:00",
+  "datePromised": "2025-04-30T22:00:00",
   "partnerIdentifier": "@customer_ID@",
   "partnerValue": "customerValue",
   "partnerName": "customerName",
