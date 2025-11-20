@@ -31,6 +31,6 @@ public interface ScriptedAdapterConstants
 	String PROPERTY_SCRIPTED_SCRIPTED_IMPORTED_CONVERSION_CONTEXT = "ScriptedImportedConversionRouteContext";
 	String PREFIX_IMPORT_AUTHORITY = "IMPORT:";
 	String PROPERTY_ENDPOINT_NAME = "endpointName";
-	String FIELD_ERROR_MESSAGE = "errorMessage";
+	String FIELD_ERROR_MESSAGE = "errors";
 	String EXCEPTION_PREFIX = "Exception - ";
 }

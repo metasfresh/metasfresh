@@ -37,6 +37,7 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.attribute.M_Attribute_StepDefData;
+import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Conditions_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
@@ -132,6 +133,7 @@ public class C_OrderLine_StepDef
 	@NonNull private final C_Tax_StepDefData taxTable;
 	@NonNull private final M_Warehouse_StepDefData warehouseTable;
 	@NonNull private final IdentifierIds_StepDefData identifierIdsTable;
+	@NonNull private final TestContext restTestContext;
 
 	@Given("metasfresh contains C_OrderLines:")
 	public void metasfresh_contains_c_order_lines(@NonNull final DataTable dataTable)
@@ -237,6 +239,8 @@ public class C_OrderLine_StepDef
 
 		tableRow.getAsOptionalIdentifier()
 				.ifPresent(identifier -> orderLineTable.putOrReplace(identifier, orderLine));
+
+		restTestContext.setIntVariableFromRow(tableRow, orderLine::getC_OrderLine_ID);
 	}
 
 	@Then("the purchase order with document subtype {string} linked to order {string} has lines:")

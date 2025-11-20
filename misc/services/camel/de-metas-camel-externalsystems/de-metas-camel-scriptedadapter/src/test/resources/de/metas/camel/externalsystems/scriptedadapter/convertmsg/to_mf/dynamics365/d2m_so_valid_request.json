@@ -1,0 +1,69 @@
+{
+  "d2m_so": [
+    {
+      "orgCode": "orgCode",
+      "orderDocumentNo": "orderDocumentNo1",
+      "orderNumber": "1",
+      "dateOrdered": "2025-11-06",
+      "datePromised": "2025-05-20",
+      "partnerIdentifier": "partnerIdentifier1",
+      "partnerValue": "partnerValue1",
+      "partnerName": "partnerName1",
+      "currency": "EUR",
+      "lines": [
+        {
+          "orderLineId": "1",
+          "orderLineNumber": "orderLineNumber1",
+          "uom": "PCE",
+          "qty": "10",
+          "price": "181",
+          "discount": "0",
+          "catch-Or-Nominal": "Nominal",
+          "taxRate": "",
+          "productName": "productName",
+          "productDescription": "productDescription",
+          "productIdentifier": "productIdentifier1"
+        }
+      ]
+    },
+    {
+      "orgCode": "orgCode",
+      "orderDocumentNo": "orderDocumentNo2",
+      "orderNumber": "4",
+      "dateOrdered": "2025-11-06",
+      "datePromised": "2025-10-21",
+      "partnerIdentifier": "dt01",
+      "partnerValue": "partnerValue2",
+      "partnerName": "partnerName2",
+      "currency": "EUR",
+      "lines": [
+        {
+          "orderLineId": "2",
+          "orderLineNumber": "orderLineNumber2",
+          "uom": "PCE",
+          "qty": "10",
+          "price": "181",
+          "discount": "0",
+          "catch-Or-Nominal": "Nominal",
+          "taxRate": "",
+          "productName": "productName2",
+          "productDescription": "productDescription2",
+          "productIdentifier": "productIdentifier2"
+        },
+        {
+          "orderLineId": "3",
+          "orderLineNumber": "orderLineNumber3",
+          "uom": "PCE",
+          "qty": "3",
+          "price": "1548",
+          "discount": "0",
+          "catch-Or-Nominal": "Nominal",
+          "taxRate": "",
+          "productName": "productName3",
+          "productDescription": "productDescription3",
+          "productIdentifier": "productIdentifier3"
+        }
+      ]
+    }
+  ]
+}
