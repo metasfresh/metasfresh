@@ -316,3 +316,25 @@ UPDATE AD_Process SET SQLStatement='select * from export_datev_csv_masterdata(''
               );',Updated=TO_TIMESTAMP('2025-11-20 14:50:00.767000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_ID=585533
 ;
 
+
+-- Reference: PartnerType
+-- Value: creditors
+-- ValueName: Creditors
+-- 2025-11-20T15:27:28.782Z
+UPDATE AD_Ref_List SET Value='creditors',Updated=TO_TIMESTAMP('2025-11-20 15:27:28.782000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Ref_List_ID=544084
+;
+
+-- Reference: PartnerType
+-- Value: debitors
+-- ValueName: Debitors
+-- 2025-11-20T15:27:36.182Z
+UPDATE AD_Ref_List SET Value='debitors',Updated=TO_TIMESTAMP('2025-11-20 15:27:36.182000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Ref_List_ID=544083
+;
+
+
+
+-- Process: DATEV_Export_Materdata(de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess)
+-- ParameterName: PartnerType
+-- 2025-11-20T15:36:56.106Z
+UPDATE AD_Process_Para SET DefaultValue='debitors',Updated=TO_TIMESTAMP('2025-11-20 15:36:56.106000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_Para_ID=543046
+;
