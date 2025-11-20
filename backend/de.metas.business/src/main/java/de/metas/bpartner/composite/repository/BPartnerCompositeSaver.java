@@ -211,6 +211,7 @@ final class BPartnerCompositeSaver
 		bpartnerRecord.setVATaxID(bpartner.getVatId());
 
 		bpartnerRecord.setEORI(bpartner.getEori());
+		bpartnerRecord.setEInvoice_BuyerReference(bpartner.getEInvoiceBuyerReference());
 
 		if (!isBlank(bpartner.getValue()))
 		{

@@ -15,6 +15,7 @@ import de.metas.order.InvoiceRule;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.user.UserId;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.Data;
@@ -152,6 +153,8 @@ public class BPartner
 
 	private @Nullable String eInvoiceBuyerReference;
 
+	private @Nullable UserId salesRepId;
+
 	private @Nullable OrgMappingId orgMappingId;
 
 	private final RecordChangeLog changeLog;
@@ -217,6 +220,7 @@ public class BPartner
 			@Nullable final String vatId,
 			@Nullable final String eori,
 			@Nullable final String eInvoiceBuyerReference,
+			@Nullable final UserId salesRepId,
 			@Nullable final RecordChangeLog changeLog,
 			@Nullable final String shipmentAllocationBestBeforePolicy,
 			@Nullable final Boolean identifiedByExternalReference,
@@ -267,7 +271,7 @@ public class BPartner
 		this.vatId = vatId;
 		this.eori = eori;
 		this.eInvoiceBuyerReference = eInvoiceBuyerReference;
-
+		this.salesRepId = salesRepId;
 		this.changeLog = changeLog;
 		this.shipmentAllocationBestBeforePolicy = shipmentAllocationBestBeforePolicy;
 		this.orgMappingId = orgMappingId;

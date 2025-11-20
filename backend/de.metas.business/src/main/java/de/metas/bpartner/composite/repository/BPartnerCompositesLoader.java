@@ -322,6 +322,7 @@ final class BPartnerCompositesLoader
 				.customer(bpartnerRecord.isCustomer())
 				.salesPartnerCode(trimBlankToNull(bpartnerRecord.getSalesPartnerCode()))
 				.salesRep(getSalesRep(bpartnerRecord))
+				.salesRepId(UserId.ofRegularUserRepoIdOrNull(bpartnerRecord.getSalesRep_ID()))
 				.paymentRule(PaymentRule.ofNullableCode(bpartnerRecord.getPaymentRule()))
 				.internalName(trimBlankToNull(bpartnerRecord.getInternalName()))
 				.vatId(trimBlankToNull(bpartnerRecord.getVATaxID()))
