@@ -102,7 +102,7 @@ public class CBPGroupTest
 		// org1NonDefault1 is still not default
 		assertDefault(org1NonDefault1, false);
 		// anyOrgDefault is still not default
-		assertDefault(anyOrgNonDefault, true);
+		assertDefault(anyOrgNonDefault, false);
 		// org1NonDefault2 is now default
 		assertDefault(org1NonDefault2, true);
 	}
