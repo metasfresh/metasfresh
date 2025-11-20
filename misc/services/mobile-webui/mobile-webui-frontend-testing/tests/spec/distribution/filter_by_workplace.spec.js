@@ -52,9 +52,9 @@ const createMasterdata = async ({ workplace, distributionOrders }) => {
 }
 
 // noinspection JSUnusedLocalSymbols
-test('Show only jobs suitable for workplace1', async ({ page }) => {
+test('Show all jobs when no current workplace', async ({ page }) => {
     const masterdata = await createMasterdata({
-        workplace: 'workplace1',
+        workplace: null,
         distributionOrders: {
             "DD1": { warehouseFrom: "wh4", locatorFrom: "wh4_l1", warehouseTo: "wh1", locatorTo: "wh1_l1" },
             "DD2": { warehouseFrom: "wh4", locatorFrom: "wh4_l1", warehouseTo: "wh1", locatorTo: "wh1_l2" },
@@ -68,7 +68,51 @@ test('Show only jobs suitable for workplace1', async ({ page }) => {
     await ApplicationsListScreen.startApplication('distribution');
     await DistributionJobsListScreen.waitForScreen();
 
+    await DistributionJobsListScreen.filterByFacetId({
+        facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId, // i.e. wh4
+        expectHitCount: 4
+    });
     await DistributionJobsListScreen.expectJobButtons([
         { testId: masterdata.distributionOrders.DD1.launcherTestId },
+        { testId: masterdata.distributionOrders.DD2.launcherTestId },
+        { testId: masterdata.distributionOrders.DD3.launcherTestId },
+        { testId: masterdata.distributionOrders.DD4.launcherTestId },
     ]);
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Show only jobs suitable for workplace1', async ({ page }) => {
+    const masterdata = await createMasterdata({
+        workplace: 'workplace1',
+        distributionOrders: {
+            "DD1": { warehouseFrom: "wh4", locatorFrom: "wh4_l1", warehouseTo: "wh1", locatorTo: "wh1_l1" },
+            "DD2": { warehouseFrom: "wh4", locatorFrom: "wh4_l1", warehouseTo: "wh1", locatorTo: "wh1_l2" },
+            "DD3": { warehouseFrom: "wh3", locatorFrom: "wh3_l1", warehouseTo: "wh1", locatorTo: "wh1_l1" },
+            "DD4": { warehouseFrom: "wh3", locatorFrom: "wh3_l1", warehouseTo: "wh1", locatorTo: "wh2_l2" },
+        }
+    });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('distribution');
+    await DistributionJobsListScreen.waitForScreen();
+
+    await test.step('Expect only jobs that have locatorTo=wh1_l1 to be available', async () => {
+        await DistributionJobsListScreen.expectHeaderProperty({ caption: 'Workplace', value: masterdata.workplaces.workplace1.name });
+        await DistributionJobsListScreen.expectJobButtons([
+            { testId: masterdata.distributionOrders.DD1.launcherTestId },
+            { testId: masterdata.distributionOrders.DD3.launcherTestId },
+        ]);
+    });
+
+    await test.step('Filtering by warehouseFrom=wh4 shall narrow the results', async () => {
+        // Filtering by wh4 (the only available from warehouse) shall give the same results
+        await DistributionJobsListScreen.filterByFacetId({
+            facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId, // i.e. wh4
+            expectHitCount: 1
+        });
+        await DistributionJobsListScreen.expectJobButtons([
+            { testId: masterdata.distributionOrders.DD1.launcherTestId },
+        ]);
+    });
 });
