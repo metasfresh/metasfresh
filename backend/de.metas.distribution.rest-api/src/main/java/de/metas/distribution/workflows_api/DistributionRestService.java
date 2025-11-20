@@ -26,17 +26,22 @@ import de.metas.organization.IOrgDAO;
 import de.metas.product.IProductBL;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.user.UserId;
+import de.metas.util.InSetPredicate;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolverService;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.model.I_DD_Order;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
+import java.util.Set;
 import java.util.stream.Stream;
 
 @Service
@@ -150,12 +155,16 @@ public class DistributionRestService
 	private static DDOrderQuery toActiveNotAssignedDDOrderQuery(final @NonNull DDOrderReferenceQuery query)
 	{
 		final DistributionFacetIdsCollection activeFacetIds = query.getActiveFacetIds();
+
+		final InSetPredicate<WarehouseId> warehouseToIds = extractWarehouseToIds(query);
+
 		return DDOrderQuery.builder()
 				.orderBys(query.getSorting().toDDOrderQueryOrderBys())
 				.docStatus(DocStatus.Completed)
 				.responsibleId(ValueRestriction.isNull())
 				.warehouseFromIds(activeFacetIds.getWarehouseFromIds())
-				.warehouseToIds(activeFacetIds.getWarehouseToIds())
+				.warehouseToIds(warehouseToIds)
+				.locatorToIds(InSetPredicate.onlyOrAny(query.getLocatorToId()))
 				.salesOrderIds(activeFacetIds.getSalesOrderIds())
 				.manufacturingOrderIds(activeFacetIds.getManufacturingOrderIds())
 				.datesPromised(activeFacetIds.getDatesPromised())
@@ -163,6 +172,33 @@ public class DistributionRestService
 				.qtysEntered(activeFacetIds.getQuantities())
 				.plantIds(activeFacetIds.getPlantIds())
 				.build();
+	}
+
+	@Nullable
+	private static InSetPredicate<WarehouseId> extractWarehouseToIds(final @NotNull DDOrderReferenceQuery query)
+	{
+		final Set<WarehouseId> facetWarehouseToIds = query.getActiveFacetIds().getWarehouseToIds();
+
+		final WarehouseId onlyWarehouseToId = query.getWarehouseToId();
+		if (onlyWarehouseToId != null)
+		{
+			if (facetWarehouseToIds.isEmpty() || facetWarehouseToIds.contains(onlyWarehouseToId))
+			{
+				return InSetPredicate.only(onlyWarehouseToId);
+			}
+			else
+			{
+				return InSetPredicate.none();
+			}
+		}
+		else if (!facetWarehouseToIds.isEmpty())
+		{
+			return InSetPredicate.only(facetWarehouseToIds);
+		}
+		else
+		{
+			return InSetPredicate.any();
+		}
 	}
 
 	private Stream<I_DD_Order> streamDDOrdersAssignedTo(@NonNull final UserId responsibleId, @NonNull DistributionJobSorting sorting)

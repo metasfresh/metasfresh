@@ -9,6 +9,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -35,17 +37,14 @@ import lombok.Value;
 @Builder
 public class CreateOrUpdateLocatorRequest
 {
-	@NonNull
-	WarehouseId warehouseId;
-
-	@NonNull
-	String locatorValue;
+	@NonNull WarehouseId warehouseId;
+	@NonNull String locatorValue;
 
 	//
 	//
 	//
 
-	OrgId orgId;
+	@Nullable OrgId orgId;
 	String x;
 	String y;
 	String z;
