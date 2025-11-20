@@ -402,6 +402,7 @@ final class BPartnerCompositesLoader
 				.shipTo(bpartnerLocationRecord.isShipTo())
 				.shipToDefault(bpartnerLocationRecord.isShipToDefault())
 				.visitorsAddress(bpartnerLocationRecord.isVisitorsAddress())
+				.visitorsAddressDefault(bpartnerLocationRecord.isDefaultVisitorAdress())
 				.build();
 	}
 
@@ -504,6 +505,7 @@ final class BPartnerCompositesLoader
 				.fax(trimBlankToNull(contactRecord.getFax()))
 				.greetingId(GreetingId.ofRepoIdOrNull(contactRecord.getC_Greeting_ID()))
 				.titleId(TitleId.ofRepoIdOrNull(contactRecord.getC_Title_ID()))
+				.department(trimBlankToNull(contactRecord.getDepartment()))
 				.orgMappingId(OrgMappingId.ofRepoIdOrNull(contactRecord.getAD_Org_Mapping_ID()))
 				.roles(roles)
 				.changeLog(changeLog)

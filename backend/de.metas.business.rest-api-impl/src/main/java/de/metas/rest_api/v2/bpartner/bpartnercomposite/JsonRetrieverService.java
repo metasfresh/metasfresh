@@ -556,6 +556,7 @@ public class JsonRetrieverService
 					.title(contact.getTitle())
 					.phone2(contact.getPhone2())
 					.position(toJson(job))
+					.department(contact.getDepartment())
 					.build();
 		}
 		catch (final RuntimeException rte)
@@ -598,6 +599,7 @@ public class JsonRetrieverService
 					.replicationLookupDefault(location.isReplicationLookupDefault())
 					.handoverLocation(location.isHandOverLocation())
 					.visitorsAddress(location.isVisitorsAddress())
+					.visitorsAddressDefault(location.isVisitorsAddressDefault())
 					.changeInfo(jsonChangeInfo)
 					.ephemeral(location.isEphemeral())
 					.phone(location.getPhone())

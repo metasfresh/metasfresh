@@ -354,6 +354,7 @@ final class BPartnerCompositeSaver
 				locationType.getShipTo().ifPresent(bpartnerLocationRecord::setIsShipTo);
 				locationType.getShipToDefault().ifPresent(bpartnerLocationRecord::setIsShipToDefault);
 				locationType.getVisitorsAddress().ifPresent(bpartnerLocationRecord::setVisitorsAddress);
+				locationType.getVisitorsAddressDefault().ifPresent(bpartnerLocationRecord::setIsDefaultVisitorAdress);
 			}
 
 			final BPartnerLocationAddressPart address = saveLocationRecord(partnerLocation);
@@ -603,6 +604,7 @@ final class BPartnerCompositeSaver
 			bpartnerContactRecord.setFax(bpartnerContact.getFax());
 			bpartnerContactRecord.setMobilePhone(bpartnerContact.getMobilePhone());
 			bpartnerContactRecord.setTitle(bpartnerContact.getTitle());
+			bpartnerContactRecord.setDepartment(bpartnerContact.getDepartment());
 
 			String invoiceEmailEnabled = null;
 
