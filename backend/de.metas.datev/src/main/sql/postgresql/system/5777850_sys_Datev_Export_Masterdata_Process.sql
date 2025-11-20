@@ -338,3 +338,366 @@ UPDATE AD_Ref_List SET Value='debitors',Updated=TO_TIMESTAMP('2025-11-20 15:27:3
 -- 2025-11-20T15:36:56.106Z
 UPDATE AD_Process_Para SET DefaultValue='debitors',Updated=TO_TIMESTAMP('2025-11-20 15:36:56.106000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_Para_ID=543046
 ;
+
+-- Value: DATEV_Export_Materdata
+-- Classname: de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess
+-- 2025-11-20T15:41:42.579Z
+UPDATE AD_Process SET CSVFieldDelimiter=';',Updated=TO_TIMESTAMP('2025-11-20 15:41:42.579000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_ID=585533
+;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- 2025-11-20T15:00:21.178Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES 
+(0,584250,0,TO_TIMESTAMP('2025-11-20 15:00:21.177000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'U','Y','Konto','Konto',TO_TIMESTAMP('2025-11-20 15:00:21.177000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-11-20T15:00:21.187Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=584250 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- 2025-11-20T15:00:37.917Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy)
+ VALUES (0,584251,0,TO_TIMESTAMP('2025-11-20 15:00:37.915000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'U','Y','Matchcode','Matchcode',TO_TIMESTAMP('2025-11-20 15:00:37.915000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-11-20T15:00:37.919Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=584251 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- 2025-11-20T15:00:47.937Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) 
+VALUES (0,584252,0,TO_TIMESTAMP('2025-11-20 15:00:47.936000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'U','Y','Name1','Name1',TO_TIMESTAMP('2025-11-20 15:00:47.936000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-11-20T15:00:47.946Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=584252 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- 2025-11-20T15:00:56.345Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) 
+VALUES (0,584253,0,TO_TIMESTAMP('2025-11-20 15:00:56.344000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'U','Y','Strasse','Strasse',TO_TIMESTAMP('2025-11-20 15:00:56.344000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-11-20T15:00:56.346Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=584253 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- 2025-11-20T15:01:03.626Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy)
+ VALUES (0,584254,0,TO_TIMESTAMP('2025-11-20 15:01:03.625000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'U','Y','Plz','Plz',TO_TIMESTAMP('2025-11-20 15:01:03.625000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-11-20T15:01:03.627Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=584254 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- 2025-11-20T15:01:10.498Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) 
+VALUES (0,584255,0,TO_TIMESTAMP('2025-11-20 15:01:10.497000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'U','Y','Ort','Ort',TO_TIMESTAMP('2025-11-20 15:01:10.497000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-11-20T15:01:10.498Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=584255 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- 2025-11-20T15:01:16.754Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy)
+ VALUES (0,584256,0,TO_TIMESTAMP('2025-11-20 15:01:16.753000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'U','Y','Land','Land',TO_TIMESTAMP('2025-11-20 15:01:16.753000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-11-20T15:01:16.754Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=584256 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- 2025-11-20T15:01:24.860Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) 
+VALUES (0,584257,0,TO_TIMESTAMP('2025-11-20 15:01:24.860000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'U','Y','Telefon','Telefon',TO_TIMESTAMP('2025-11-20 15:01:24.860000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-11-20T15:01:24.861Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=584257 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- 2025-11-20T15:01:31.492Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy)
+ VALUES (0,584258,0,TO_TIMESTAMP('2025-11-20 15:01:31.491000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'U','Y','Email','Email',TO_TIMESTAMP('2025-11-20 15:01:31.491000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-11-20T15:01:31.493Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=584258 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- 2025-11-20T15:01:42.332Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) 
+VALUES (0,584259,0,TO_TIMESTAMP('2025-11-20 15:01:42.331000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'U','Y','UstId','UstId',TO_TIMESTAMP('2025-11-20 15:01:42.331000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-11-20T15:01:42.332Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=584259 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- 2025-11-20T15:01:48.588Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy)
+ VALUES (0,584260,0,TO_TIMESTAMP('2025-11-20 15:01:48.587000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'U','Y','Zahlungsbed','Zahlungsbed',TO_TIMESTAMP('2025-11-20 15:01:48.587000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-11-20T15:01:48.589Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=584260 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+
+
+
+
+
+-- 2025-11-20T15:46:24.969Z
+UPDATE AD_Element SET ColumnName='Konto',Updated=TO_TIMESTAMP('2025-11-20 15:46:24.969000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584250
+;
+
+-- 2025-11-20T15:46:24.970Z
+UPDATE AD_Column SET ColumnName='Konto' WHERE AD_Element_ID=584250
+;
+
+-- 2025-11-20T15:46:24.970Z
+UPDATE AD_Process_Para SET ColumnName='Konto' WHERE AD_Element_ID=584250
+;
+
+-- 2025-11-20T15:46:24.971Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584250,'de_DE')
+;
+
+-- 2025-11-20T15:46:27.725Z
+UPDATE AD_Element SET EntityType='D',Updated=TO_TIMESTAMP('2025-11-20 15:46:27.725000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584250
+;
+
+-- 2025-11-20T15:46:27.726Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584250,'de_DE')
+;
+
+-- 2025-11-20T15:46:42.348Z
+UPDATE AD_Element SET ColumnName='Matchcode',Updated=TO_TIMESTAMP('2025-11-20 15:46:42.348000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584251
+;
+
+-- 2025-11-20T15:46:42.357Z
+UPDATE AD_Column SET ColumnName='Matchcode' WHERE AD_Element_ID=584251
+;
+
+-- 2025-11-20T15:46:42.357Z
+UPDATE AD_Process_Para SET ColumnName='Matchcode' WHERE AD_Element_ID=584251
+;
+
+-- 2025-11-20T15:46:42.358Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584251,'de_DE')
+;
+
+-- 2025-11-20T15:46:44.083Z
+UPDATE AD_Element SET EntityType='D',Updated=TO_TIMESTAMP('2025-11-20 15:46:44.083000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584251
+;
+
+-- 2025-11-20T15:46:44.084Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584251,'de_DE')
+;
+
+-- 2025-11-20T15:47:36.922Z
+UPDATE AD_Element SET ColumnName='Name1',Updated=TO_TIMESTAMP('2025-11-20 15:47:36.922000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584252
+;
+
+-- 2025-11-20T15:47:36.923Z
+UPDATE AD_Column SET ColumnName='Name1' WHERE AD_Element_ID=584252
+;
+
+-- 2025-11-20T15:47:36.923Z
+UPDATE AD_Process_Para SET ColumnName='Name1' WHERE AD_Element_ID=584252
+;
+
+-- 2025-11-20T15:47:36.924Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584252,'de_DE')
+;
+
+-- 2025-11-20T15:47:39.434Z
+UPDATE AD_Element SET EntityType='D',Updated=TO_TIMESTAMP('2025-11-20 15:47:39.434000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584252
+;
+
+-- 2025-11-20T15:47:39.435Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584252,'de_DE')
+;
+
+-- 2025-11-20T15:47:54.314Z
+UPDATE AD_Element SET ColumnName='Strasse',Updated=TO_TIMESTAMP('2025-11-20 15:47:54.314000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584253
+;
+
+-- 2025-11-20T15:47:54.315Z
+UPDATE AD_Column SET ColumnName='Strasse' WHERE AD_Element_ID=584253
+;
+
+-- 2025-11-20T15:47:54.315Z
+UPDATE AD_Process_Para SET ColumnName='Strasse' WHERE AD_Element_ID=584253
+;
+
+-- 2025-11-20T15:47:54.315Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584253,'de_DE')
+;
+
+-- 2025-11-20T15:47:58.319Z
+UPDATE AD_Element SET EntityType='D',Updated=TO_TIMESTAMP('2025-11-20 15:47:58.319000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584253
+;
+
+-- 2025-11-20T15:47:58.320Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584253,'de_DE')
+;
+
+-- 2025-11-20T15:48:12.953Z
+UPDATE AD_Element SET ColumnName='Plz',Updated=TO_TIMESTAMP('2025-11-20 15:48:12.953000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584254
+;
+
+-- 2025-11-20T15:48:12.962Z
+UPDATE AD_Column SET ColumnName='Plz' WHERE AD_Element_ID=584254
+;
+
+-- 2025-11-20T15:48:12.962Z
+UPDATE AD_Process_Para SET ColumnName='Plz' WHERE AD_Element_ID=584254
+;
+
+-- 2025-11-20T15:48:12.963Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584254,'de_DE')
+;
+
+-- 2025-11-20T15:48:15.343Z
+UPDATE AD_Element SET EntityType='D',Updated=TO_TIMESTAMP('2025-11-20 15:48:15.343000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584254
+;
+
+-- 2025-11-20T15:48:15.344Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584254,'de_DE')
+;
+
+-- 2025-11-20T15:49:11.547Z
+UPDATE AD_Element SET ColumnName='Ort',Updated=TO_TIMESTAMP('2025-11-20 15:49:11.547000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584255
+;
+
+-- 2025-11-20T15:49:11.547Z
+UPDATE AD_Column SET ColumnName='Ort' WHERE AD_Element_ID=584255
+;
+
+-- 2025-11-20T15:49:11.547Z
+UPDATE AD_Process_Para SET ColumnName='Ort' WHERE AD_Element_ID=584255
+;
+
+-- 2025-11-20T15:49:11.548Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584255,'de_DE')
+;
+
+-- 2025-11-20T15:49:14.730Z
+UPDATE AD_Element SET EntityType='D',Updated=TO_TIMESTAMP('2025-11-20 15:49:14.730000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584255
+;
+
+-- 2025-11-20T15:49:14.731Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584255,'de_DE')
+;
+
+-- 2025-11-20T15:49:38.132Z
+UPDATE AD_Element SET ColumnName='Land',Updated=TO_TIMESTAMP('2025-11-20 15:49:38.132000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584256
+;
+
+-- 2025-11-20T15:49:38.141Z
+UPDATE AD_Column SET ColumnName='Land' WHERE AD_Element_ID=584256
+;
+
+-- 2025-11-20T15:49:38.141Z
+UPDATE AD_Process_Para SET ColumnName='Land' WHERE AD_Element_ID=584256
+;
+
+-- 2025-11-20T15:49:38.142Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584256,'de_DE')
+;
+
+-- 2025-11-20T15:49:40.397Z
+UPDATE AD_Element SET EntityType='D',Updated=TO_TIMESTAMP('2025-11-20 15:49:40.397000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584256
+;
+
+-- 2025-11-20T15:49:40.398Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584256,'de_DE')
+;
+
+-- 2025-11-20T15:49:55.523Z
+UPDATE AD_Element SET EntityType='D',Updated=TO_TIMESTAMP('2025-11-20 15:49:55.523000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584257
+;
+
+-- 2025-11-20T15:49:55.524Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584257,'de_DE')
+;
+
+-- 2025-11-20T15:49:58.841Z
+UPDATE AD_Element SET ColumnName='Telefon',Updated=TO_TIMESTAMP('2025-11-20 15:49:58.841000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584257
+;
+
+-- 2025-11-20T15:49:58.841Z
+UPDATE AD_Column SET ColumnName='Telefon' WHERE AD_Element_ID=584257
+;
+
+-- 2025-11-20T15:49:58.841Z
+UPDATE AD_Process_Para SET ColumnName='Telefon' WHERE AD_Element_ID=584257
+;
+
+-- 2025-11-20T15:49:58.842Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584257,'de_DE')
+;
+
+-- 2025-11-20T15:51:16.805Z
+UPDATE AD_Element SET ColumnName='UstId',Updated=TO_TIMESTAMP('2025-11-20 15:51:16.804000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584259
+;
+
+-- 2025-11-20T15:51:16.805Z
+UPDATE AD_Column SET ColumnName='UstId' WHERE AD_Element_ID=584259
+;
+
+-- 2025-11-20T15:51:16.805Z
+UPDATE AD_Process_Para SET ColumnName='UstId' WHERE AD_Element_ID=584259
+;
+
+-- 2025-11-20T15:51:16.806Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584259,'de_DE')
+;
+
+-- 2025-11-20T15:51:20.523Z
+UPDATE AD_Element SET EntityType='D',Updated=TO_TIMESTAMP('2025-11-20 15:51:20.523000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584259
+;
+
+-- 2025-11-20T15:51:20.524Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584259,'de_DE')
+;
+
+-- 2025-11-20T15:51:38.244Z
+UPDATE AD_Element SET ColumnName='Zahlungsbed',Updated=TO_TIMESTAMP('2025-11-20 15:51:38.244000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584260
+;
+
+-- 2025-11-20T15:51:38.244Z
+UPDATE AD_Column SET ColumnName='Zahlungsbed' WHERE AD_Element_ID=584260
+;
+
+-- 2025-11-20T15:51:38.244Z
+UPDATE AD_Process_Para SET ColumnName='Zahlungsbed' WHERE AD_Element_ID=584260
+;
+
+-- 2025-11-20T15:51:38.245Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584260,'de_DE')
+;
+
+-- 2025-11-20T15:51:40.623Z
+UPDATE AD_Element SET EntityType='D',Updated=TO_TIMESTAMP('2025-11-20 15:51:40.623000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584260
+;
+
+-- 2025-11-20T15:51:40.623Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584260,'de_DE')
+;
