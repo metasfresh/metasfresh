@@ -82,7 +82,7 @@ public enum CamelServiceRouteIdWithRequestType
 	private final Class<?> requestType;
 
 	/**
-	 * If true, this endpoint's URI is loaded from a property file. If false, the URI qeuals to {@code direct:}{@link #getRouteId()}
+	 * If true, this endpoint's URI is loaded from a property file. If false, the URI is created as "{@code direct:}{@link #getRouteId()}"
 	 */
 	private final boolean isProperty;
 
