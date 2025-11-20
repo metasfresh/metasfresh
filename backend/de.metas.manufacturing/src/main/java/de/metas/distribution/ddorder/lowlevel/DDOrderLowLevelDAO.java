@@ -309,7 +309,8 @@ public class DDOrderLowLevelDAO
 					.subQuery(queryBL.createQueryBuilder(I_DD_OrderLine.class)
 							.addOnlyActiveRecordsFilter()
 							.addInArrayFilter(I_DD_OrderLine.COLUMNNAME_M_LocatorTo_ID, query.getLocatorToIds())
-							.create());
+							.create())
+					.end();
 		}
 
 		//
