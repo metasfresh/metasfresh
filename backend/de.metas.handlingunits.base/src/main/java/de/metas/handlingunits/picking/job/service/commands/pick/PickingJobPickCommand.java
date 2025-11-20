@@ -135,6 +135,7 @@ public class PickingJobPickCommand
 	private final boolean createInventoryForMissingQty;
 	private final boolean isCloseTarget;
 	@NonNull private final PickAttributes _manualPickAttributes;
+	private final boolean isCompleteJobAutomatically;
 
 	//
 	// State
@@ -272,6 +273,9 @@ public class PickingJobPickCommand
 				.build();
 
 		this.isCloseTarget = isCloseTarget;
+
+		final PickingJobOptions pickingJobOptions = configService.getPickingJobOptions(pickingJob.getCustomerId());
+		this.isCompleteJobAutomatically = pickingJobOptions.getCompleteJobAutomatically().isTrue();
 	}
 
 	private static Quantity computeQtyRejectedCUs(
@@ -346,6 +350,8 @@ public class PickingJobPickCommand
 		{
 			closeLUAndTUPickingTargets();
 		}
+
+		tryAutoComplete();
 
 		pickingJobRepository.save(_pickingJob);
 
@@ -1129,4 +1135,12 @@ public class PickingJobPickCommand
 	{
 		return getPickingJob().getPickingSlotIdEffective(getLineId());
 	}
+
+	private void tryAutoComplete()
+	{
+		if (!isCompleteJobAutomatically) {return;}
+		
+		// TODO IMPLEMENT
+	}
+
 }
