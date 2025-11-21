@@ -20,6 +20,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
       "vendor": false
     },
     "contacts": [ ],
+    "creditLimits": [ ],
     "locations": [
       {
         "active": true,
@@ -180,6 +181,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         "subjectMatterContact": false
       }
     ],
+    "creditLimits": [ ],
     "locations": [
       {
         "active": true,
@@ -420,6 +422,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
         "subjectMatterContact": false
       }
     ],
+    "creditLimits": [ ],
     "locations": [
       {
         "active": true,
@@ -458,14 +461,16 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
           "billToDefault": false,
           "shipTo": false,
           "shipToDefault": false,
-          "visitorsAddress": false
+          "visitorsAddress": false,
+          "visitorsAddressDefault": false
         },
         "poBox": "locationRecord.poBox",
         "postal": "locationRecord.postal",
         "region": "locationRecord.regionName",
         "remitTo": false,
         "replicationLookupDefault": false,
-        "visitorsAddress": false
+        "visitorsAddress": false,
+        "visitorsAddressDefault": false
       }
     ],
     "orgId": 10
@@ -609,6 +614,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "subjectMatterContact": false
       }
     ],
+    "creditLimits": [ ],
     "locations": [
       {
         "active": true,
@@ -765,6 +771,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "value": "contactRecord.value"
       }
     ],
+    "creditLimits": [ ],
     "locations": [
       {
         "active": true,
@@ -921,6 +928,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
         "value": "contactRecord.value"
       }
     ],
+    "creditLimits": [ ],
     "locations": [
       {
         "active": true,
@@ -1252,6 +1260,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_ext=[
         "subjectMatter": false
       }
     ],
+    "creditLimits": [ ],
     "locations": [
       {
         "active": true,
@@ -1353,6 +1362,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_gln=[
         "subjectMatter": false
       }
     ],
+    "creditLimits": [ ],
     "locations": [
       {
         "active": true,
@@ -1454,6 +1464,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_id=[
         "subjectMatter": false
       }
     ],
+    "creditLimits": [ ],
     "locations": [
       {
         "active": true,
@@ -1576,6 +1587,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
             "subjectMatter": false
           }
         ],
+        "creditLimits": [ ],
         "locations": [
           {
             "active": true,
@@ -1673,6 +1685,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
             "subjectMatter": false
           }
         ],
+        "creditLimits": [ ],
         "locations": [
           {
             "active": true,
@@ -1783,6 +1796,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
             "subjectMatter": false
           }
         ],
+        "creditLimits": [ ],
         "locations": [
           {
             "active": true,
@@ -1880,6 +1894,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
             "subjectMatter": false
           }
         ],
+        "creditLimits": [ ],
         "locations": [
           {
             "active": true,
@@ -1916,115 +1931,6 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
     ],
     "nextPage": "e57d6ba2-e91e-4557-8fc7-cb3c0acfe1f1_E",
     "pageSize": 2,
-    "resultTimestamp": 1561014385,
-    "totalSize": 5
-  }
-]
-
-
-de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[page3]=[
-  {
-    "errors": [ ],
-    "items": [
-      {
-        "bankAccounts": [
-          {
-            "active": true,
-            "changeInfo": {
-              "createdBy": 34,
-              "createdMillis": 1561133544,
-              "lastUpdatedBy": 34,
-              "lastUpdatedMillis": 1561133544,
-              "changeLogs": [ ]
-            },
-            "currencyId": 102,
-            "iban": "INITIAL-IBAN-1",
-            "metasfreshBPartnerId": 24,
-            "metasfreshId": 54
-          }
-        ],
-        "bpartner": {
-          "active": true,
-          "changeInfo": {
-            "createdBy": 34,
-            "createdMillis": 1561133544,
-            "lastUpdatedBy": 34,
-            "lastUpdatedMillis": 1561133544,
-            "changeLogs": [ ]
-          },
-          "code": "bpartnerRecord.value_4",
-          "company": false,
-          "customer": true,
-          "group": "bpGroupRecord.name",
-          "metasfreshId": 24,
-          "name": "bpartnerRecord.name_4",
-          "vatId": "VATaxID_4",
-          "vendor": true
-        },
-        "contacts": [
-          {
-            "active": true,
-            "billToDefault": false,
-            "changeInfo": {
-              "createdBy": 34,
-              "createdMillis": 1561133544,
-              "lastUpdatedBy": 34,
-              "lastUpdatedMillis": 1561133544,
-              "changeLogs": [ ]
-            },
-            "defaultContact": false,
-            "email": "contactRecord.email_4",
-            "firstName": "contactRecord.firstName_4",
-            "lastName": "contactRecord.lastName_4",
-            "metasfreshBPartnerId": 24,
-            "metasfreshId": 34,
-            "name": "contactRecord.name_4",
-            "newsletter": false,
-            "phone": "contactRecord.phone_4",
-            "purchase": false,
-            "purchaseDefault": false,
-            "roles": [ ],
-            "sales": false,
-            "salesDefault": false,
-            "shipToDefault": false,
-            "subjectMatter": false
-          }
-        ],
-        "locations": [
-          {
-            "active": true,
-            "address1": "locationRecord.address1_4",
-            "address2": "locationRecord.address2_4",
-            "billTo": false,
-            "billToDefault": false,
-            "changeInfo": {
-              "createdBy": 34,
-              "createdMillis": 1561133544,
-              "lastUpdatedBy": 34,
-              "lastUpdatedMillis": 1561133544,
-              "changeLogs": [ ]
-            },
-            "city": "locationRecord.city_4",
-            "countryCode": "countryRecord.countryCode",
-            "district": "postalRecord.district_4",
-            "ephemeral": false,
-            "gln": "bpartnerLocationRecord.gln_4",
-            "handoverLocation": false,
-            "metasfreshId": 44,
-            "poBox": "locationRecord.poBox_4",
-            "postal": "locationRecord.postal_4",
-            "region": "locationRecord.regionName_4",
-            "remitTo": false,
-            "replicationLookupDefault": false,
-            "shipTo": false,
-            "shipToDefault": false,
-            "visitorsAddress": false,
-            "visitorsAddressDefault": false
-          }
-        ]
-      }
-    ],
-    "pageSize": 1,
     "resultTimestamp": 1561014385,
     "totalSize": 5
   }
