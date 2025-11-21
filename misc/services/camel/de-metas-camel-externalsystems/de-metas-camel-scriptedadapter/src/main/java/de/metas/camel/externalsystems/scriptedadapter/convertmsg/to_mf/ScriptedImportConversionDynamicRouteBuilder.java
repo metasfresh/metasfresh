@@ -41,6 +41,7 @@ import org.apache.camel.LoggingLevel;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.http.base.HttpOperationFailedException;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -109,12 +110,24 @@ public class ScriptedImportConversionDynamicRouteBuilder extends RouteBuilder
 		catch (final Exception e)
 		{
 			logger.log(Level.WARNING, "Exception caught when handling request: " + request, e);
-			exchange.getMessage().setBody(EXCEPTION_PREFIX + Optional.ofNullable(e.getCause())
-					.map(Throwable::getMessage)
-					.orElse(e.getMessage()));
+			exchange.getMessage().setBody(getErrorMessage(e));
 		}
 	}
 
+	@NonNull
+	private String getErrorMessage(@NonNull final Exception e)
+	{
+		return Optional.ofNullable(e.getCause())
+				.map(root -> {
+					if (root instanceof HttpOperationFailedException httpOperationFailedException)
+					{
+						return httpOperationFailedException.getResponseBody();
+					}
+					return EXCEPTION_PREFIX + root.getMessage();
+				})
+				.orElse(EXCEPTION_PREFIX + e.getMessage());
+	}
+	
 	@NonNull
 	private String resolveCamelEndpointUri(@NonNull final CamelServiceRouteIdWithRequestType camelRouteIdWithRequestType)
 	{
@@ -173,12 +186,12 @@ public class ScriptedImportConversionDynamicRouteBuilder extends RouteBuilder
 			{
 				return Optional.empty();
 			}
-			
+
 			if (responseStr.startsWith(EXCEPTION_PREFIX))
 			{
 				return Optional.of(responseStr);
 			}
-			
+
 			try
 			{
 				return Optional.of(mapper.readValue(responseStr, Object.class));
