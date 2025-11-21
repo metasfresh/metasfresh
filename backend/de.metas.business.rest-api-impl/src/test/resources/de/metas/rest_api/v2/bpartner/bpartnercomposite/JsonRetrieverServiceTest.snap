@@ -99,6 +99,7 @@ de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
         "value": "contactRecord.value"
       }
     ],
+    "creditLimits": [ ],
     "locations": [
       {
         "active": true,
@@ -146,7 +147,7 @@ de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
         "remitTo": false,
         "replicationLookupDefault": false,
         "visitorsAddress": false,
-        "visitorsAddressDefault" false
+        "visitorsAddressDefault": false
       }
     ],
     "orgId": 10
