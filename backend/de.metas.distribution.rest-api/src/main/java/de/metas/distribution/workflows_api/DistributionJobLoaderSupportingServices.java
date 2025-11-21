@@ -20,9 +20,11 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
+import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -33,6 +35,7 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_PP_Order;
+import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.time.ZoneId;
@@ -43,40 +46,19 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Service
+@RequiredArgsConstructor
 public class DistributionJobLoaderSupportingServices
 {
-	private final MobileUIDistributionConfigRepository configRepository;
-	private final DDOrderService ddOrderService;
-	private final DDOrderMoveScheduleService ddOrderMoveScheduleService;
-	private final HUQRCodesService huQRCodeService;
-	private final IWarehouseBL warehouseBL;
-	private final IProductBL productBL;
-	private final IOrgDAO orgDAO;
-	private final IOrderBL orderBL;
-	private final IPPOrderBL ppOrderBL;
-
-	@Builder
-	private DistributionJobLoaderSupportingServices(
-			@NonNull final MobileUIDistributionConfigRepository configRepository,
-			@NonNull final DDOrderService ddOrderService,
-			@NonNull final DDOrderMoveScheduleService ddOrderMoveScheduleService,
-			@NonNull final HUQRCodesService huQRCodeService,
-			@NonNull final IWarehouseBL warehouseBL,
-			@NonNull final IProductBL productBL,
-			@NonNull final IOrgDAO orgDAO,
-			@NonNull final IOrderBL orderBL,
-			@NonNull final IPPOrderBL ppOrderBL)
-	{
-		this.configRepository = configRepository;
-		this.ddOrderService = ddOrderService;
-		this.ddOrderMoveScheduleService = ddOrderMoveScheduleService;
-		this.huQRCodeService = huQRCodeService;
-		this.warehouseBL = warehouseBL;
-		this.productBL = productBL;
-		this.orgDAO = orgDAO;
-		this.orderBL = orderBL;
-		this.ppOrderBL = ppOrderBL;
-	}
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+	@NonNull private final MobileUIDistributionConfigRepository configRepository;
+	@NonNull private final DDOrderService ddOrderService;
+	@NonNull private final DDOrderMoveScheduleService ddOrderMoveScheduleService;
+	@NonNull private final HUQRCodesService huQRCodeService;
 
 	public MobileUIDistributionConfig getConfig() {return configRepository.getConfig();}
 
