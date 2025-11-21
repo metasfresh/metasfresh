@@ -77,7 +77,7 @@ public class BPartner
 	public static final String INTERNAL_NAME = "internalName";
 	public static final String VAT_ID = "vatId";
 	public static final String EORI = "EORI";
-	public static final String E_INVOICE_BUYER_REFERENCE = "eInvoiceBuyerReference";
+	public static final String E_INVOICE_BUYER_REFERENCE = "einvoiceBuyerReference";
 	public static final String GREETING_ID = "greetingId";
 	public static final String CUSTOMER_PAYMENTTERM_ID = "customerPaymentTermId";
 	public static final String CUSTOMER_PRICING_SYSTEM_ID = "customerPricingSystemId";

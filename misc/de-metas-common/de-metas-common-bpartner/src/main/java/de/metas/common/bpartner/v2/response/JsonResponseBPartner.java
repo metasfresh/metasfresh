@@ -70,7 +70,7 @@ public class JsonResponseBPartner
 	public static final String CREDITOR_ID = "creditorId";
 	public static final String DEBTOR_ID = "debtorId";
 	public static final String EORI = "EORI";
-	public static final String E_INVOICE_BUYER_REFERENCE = "eInvoiceBuyerReference";
+	public static final String E_INVOICE_BUYER_REFERENCE = "einvoiceBuyerReference";
 	public static final String CUSTOMER_PAYMENTTERM = "customerPaymentTerm";
 	public static final String VENDOR_PAYMENTTERM = "vendorPaymentTerm";
 	public static final String CUSTOMER_INCOTERMS = "customerIncoterms";
