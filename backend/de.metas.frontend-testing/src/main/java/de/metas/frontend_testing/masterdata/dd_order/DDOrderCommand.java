@@ -127,10 +127,8 @@ public class DDOrderCommand
 	private void createLine(final JsonDDOrderRequest.Line line, final I_DD_Order ddOrder)
 	{
 		final ProductId productId = context.getId(line.getProduct(), ProductId.class);
-		final WarehouseId fromWarehouseId = context.getId(request.getWarehouseFrom(), WarehouseId.class);
-		final LocatorId fromLocatorId = warehouseBL.getOrCreateDefaultLocatorId(fromWarehouseId);
-		final WarehouseId toWarehouseId = context.getId(request.getWarehouseTo(), WarehouseId.class);
-		final LocatorId toLocatorId = warehouseBL.getOrCreateDefaultLocatorId(toWarehouseId);
+		final LocatorId fromLocatorId = getFromLocatorId(line);
+		final LocatorId toLocatorId = getToLocatorId(line);
 		final BigDecimal qtyEntered = line.getQtyEntered();
 
 		final I_DD_OrderLine ddOrderLine = newInstance(I_DD_OrderLine.class);
@@ -154,6 +152,32 @@ public class DDOrderCommand
 		huPackingAwareBL.setQtyCUFromQtyTU(packingAware, qtyPacks.toInt());
 
 		saveRecord(ddOrderLine);
+	}
+
+	private LocatorId getToLocatorId(final JsonDDOrderRequest.Line line)
+	{
+		if (line.getLocatorTo() != null)
+		{
+			return context.getId(line.getLocatorTo(), LocatorId.class);
+		}
+		else
+		{
+			final WarehouseId toWarehouseId = context.getId(request.getWarehouseTo(), WarehouseId.class);
+			return warehouseBL.getOrCreateDefaultLocatorId(toWarehouseId);
+		}
+	}
+
+	private LocatorId getFromLocatorId(final JsonDDOrderRequest.Line line)
+	{
+		if (line.getLocatorFrom() != null)
+		{
+			return context.getId(line.getLocatorFrom(), LocatorId.class);
+		}
+		else
+		{
+			final WarehouseId fromWarehouseId = context.getId(request.getWarehouseFrom(), WarehouseId.class);
+			return warehouseBL.getOrCreateDefaultLocatorId(fromWarehouseId);
+		}
 	}
 
 	private DocTypeId findDocTypeId()

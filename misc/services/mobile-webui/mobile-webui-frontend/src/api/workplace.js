@@ -41,18 +41,14 @@ export const useCurrentWorkplace = ({ applicationId }) => {
   const [workplace, setWorkplace] = useState(null);
 
   useEffect(() => {
-    if (requiresWorkplaceIfAvailable) {
-      setIsLoading(true);
-      getCurrentWorkplaceInfo()
-        .then(({ workplaceRequired, assignedWorkplace }) => {
-          setIsWorkplaceRequired(workplaceRequired);
-          setWorkplace(assignedWorkplace);
-        })
-        .catch((axiosError) => toastError({ axiosError }))
-        .finally(() => setIsLoading(false));
-    } else {
-      setIsLoading(false);
-    }
+    setIsLoading(true);
+    getCurrentWorkplaceInfo()
+      .then(({ workplaceRequired, assignedWorkplace }) => {
+        setIsWorkplaceRequired(workplaceRequired);
+        setWorkplace(assignedWorkplace);
+      })
+      .catch((axiosError) => toastError({ axiosError }))
+      .finally(() => setIsLoading(false));
   }, []);
 
   const setWorkplaceByQRCode = (qrCode) => {
@@ -64,7 +60,7 @@ export const useCurrentWorkplace = ({ applicationId }) => {
 
   return {
     isWorkplaceLoading: isLoading,
-    isWorkplaceRequired,
+    isWorkplaceRequired: requiresWorkplaceIfAvailable && isWorkplaceRequired,
     workplace,
     setWorkplaceByQRCode,
   };

@@ -224,9 +224,13 @@ public class DDOrderLowLevelDAO
 
 	public Stream<I_DD_Order> streamDDOrders(final DDOrderQuery query)
 	{
-		return toSqlQuery(query)
-				.create()
-				.iterateAndStream();
+		final IQueryBuilder<I_DD_Order> sqlQuery = toSqlQuery(query);
+		if (sqlQuery == null)
+		{
+			return Stream.empty();
+		}
+
+		return sqlQuery.iterateAndStream();
 	}
 
 	public void deleteOrders(@NonNull final DeleteOrdersQuery deleteOrdersQuery)
@@ -291,9 +295,22 @@ public class DDOrderLowLevelDAO
 
 		//
 		// Warehouse To
-		if (query.getWarehouseToIds() != null && !query.getWarehouseToIds().isEmpty())
+		if (query.getWarehouseToIds() != null)
 		{
 			queryBuilder.addInArrayFilter(I_DD_Order.COLUMNNAME_M_Warehouse_To_ID, query.getWarehouseToIds());
+		}
+
+		//
+		// Locator To
+		if (query.getLocatorToIds() != null)
+		{
+			queryBuilder.addInSubQueryFilter()
+					.matchingColumnNames(I_DD_Order.COLUMNNAME_DD_Order_ID, I_DD_Order.COLUMNNAME_DD_Order_ID)
+					.subQuery(queryBL.createQueryBuilder(I_DD_OrderLine.class)
+							.addOnlyActiveRecordsFilter()
+							.addInArrayFilter(I_DD_OrderLine.COLUMNNAME_M_LocatorTo_ID, query.getLocatorToIds())
+							.create())
+					.end();
 		}
 
 		//

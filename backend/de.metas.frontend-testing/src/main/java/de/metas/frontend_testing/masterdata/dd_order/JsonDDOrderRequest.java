@@ -33,6 +33,8 @@ public class JsonDDOrderRequest
 	@Jacksonized
 	public static class Line
 	{
+		@Nullable Identifier locatorFrom;
+		@Nullable Identifier locatorTo;
 		@NonNull Identifier product;
 		@NonNull BigDecimal qtyEntered;
 	}
