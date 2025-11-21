@@ -8,6 +8,8 @@
       "partnerIdentifier": "partnerIdentifier",
       "partnerValue": "000000001",
       "partnerName": "partnerName",
+      "dateRequired": "2026-01-15",
+      "dateOrdered": "2025-11-06",
       "dropShip": {
         "partnerID": "partnerID",
         "partnerValue": "",
