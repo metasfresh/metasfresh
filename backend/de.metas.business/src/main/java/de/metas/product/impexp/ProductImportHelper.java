@@ -116,9 +116,14 @@ import java.math.BigDecimal;
 			product.setSKU(from.getSKU());
 		}
 
-		// Set UOM, product category, and classification
+		// set product category is wanted
+		if (from.isUpdateProductCategory())
+		{
+			product.setM_Product_Category_ID(from.getM_Product_Category_ID());
+		}
+
+		// Set UOM and classification
 		product.setC_UOM_ID(from.getC_UOM_ID());
-		product.setM_Product_Category_ID(from.getM_Product_Category_ID());
 		product.setClassification(from.getClassification());
 
 		// Set product type
