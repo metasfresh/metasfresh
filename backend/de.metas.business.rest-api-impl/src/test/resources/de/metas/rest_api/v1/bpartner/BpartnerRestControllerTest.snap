@@ -181,6 +181,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         "subjectMatterContact": false
       }
     ],
+    "creditLimits": [ ],
     "locations": [
       {
         "active": true,
@@ -424,6 +425,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
         "subjectMatterContact": false
       }
     ],
+    "creditLimits": [ ],
     "locations": [
       {
         "active": true,
@@ -582,6 +584,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "value": "contactRecord.value"
       }
     ],
+    "creditLimits": [ ],
     "locations": [
       {
         "active": true,
@@ -740,6 +743,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "value": "contactRecord.value"
       }
     ],
+    "creditLimits": [ ],
     "locations": [
       {
         "active": true,
@@ -898,6 +902,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
         "value": "contactRecord.value"
       }
     ],
+    "creditLimits": [ ],
     "locations": [
       {
         "active": true,
@@ -1061,8 +1066,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.retrieveBPartnerLocatio
     "replicationLookupDefault": false,
     "shipTo": false,
     "shipToDefault": false,
-    "visitorsAddress": false,
-    "visitorsAddressDefault": false
+    "visitorsAddress": false
   }
 ]
 
@@ -1145,8 +1149,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.retrieveBPartner_ext=[
         "replicationLookupDefault": false,
         "shipTo": false,
         "shipToDefault": false,
-        "visitorsAddress": false,
-        "visitorsAddressDefault": false
+        "visitorsAddress": false
       }
     ],
     "orgCode": "orgRecord.value"
@@ -1232,8 +1235,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.retrieveBPartner_gln=[
         "replicationLookupDefault": false,
         "shipTo": false,
         "shipToDefault": false,
-        "visitorsAddress": false,
-        "visitorsAddressDefault": false
+        "visitorsAddress": false
       }
     ],
     "orgCode": "orgRecord.value"
@@ -1319,8 +1321,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.retrieveBPartner_id=[
         "replicationLookupDefault": false,
         "shipTo": false,
         "shipToDefault": false,
-        "visitorsAddress": false,
-        "visitorsAddressDefault": false
+        "visitorsAddress": false
       }
     ],
     "orgCode": "orgRecord.value"
@@ -1409,8 +1410,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
             "replicationLookupDefault": false,
             "shipTo": false,
             "shipToDefault": false,
-            "visitorsAddress": false,
-            "visitorsAddressDefault": false
+            "visitorsAddress": false
           }
         ],
         "orgCode": "orgRecord.value"
@@ -1492,8 +1492,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
             "replicationLookupDefault": false,
             "shipTo": false,
             "shipToDefault": false,
-            "visitorsAddress": false,
-            "visitorsAddressDefault": false
+            "visitorsAddress": false
           }
         ],
         "orgCode": "orgRecord.value"
@@ -1588,9 +1587,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
             "replicationLookupDefault": false,
             "shipTo": false,
             "shipToDefault": false,
-            "visitorsAddress": false,
-            "visitorsAddressDefault": false
-
+            "visitorsAddress": false
           }
         ],
         "orgCode": "orgRecord.value"
@@ -1672,8 +1669,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
             "replicationLookupDefault": false,
             "shipTo": false,
             "shipToDefault": false,
-            "visitorsAddress": false,
-            "visitorsAddressDefault": false
+            "visitorsAddress": false
           }
         ],
         "orgCode": "orgRecord.value"
@@ -1768,8 +1764,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
             "replicationLookupDefault": false,
             "shipTo": false,
             "shipToDefault": false,
-            "visitorsAddress": false,
-            "visitorsAddressDefault": false
+            "visitorsAddress": false
           }
         ],
         "orgCode": "orgRecord.value"
