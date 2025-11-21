@@ -982,6 +982,27 @@ public interface I_I_Product
 	String COLUMNNAME_IsUpdateName = "IsUpdateName";
 
 	/**
+	 * Set Produktkategorie aktualisieren.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsUpdateProductCategory (boolean IsUpdateProductCategory);
+
+	/**
+	 * Get Produktkategorie aktualisieren.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isUpdateProductCategory();
+
+	ModelColumn<I_I_Product, Object> COLUMN_IsUpdateProductCategory = new ModelColumn<>(I_I_Product.class, "IsUpdateProductCategory", null);
+	String COLUMNNAME_IsUpdateProductCategory = "IsUpdateProductCategory";
+
+	/**
 	 * Set Manufacturer.
 	 * Manufacturer of the Product
 	 *

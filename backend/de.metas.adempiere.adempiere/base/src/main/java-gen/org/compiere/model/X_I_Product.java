@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_I_Product extends org.compiere.model.PO implements I_I_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1314340582L;
+	private static final long serialVersionUID = 939458928L;
 
     /** Standard Constructor */
     public X_I_Product (final Properties ctx, final int I_Product_ID, @Nullable final String trxName)
@@ -584,6 +584,18 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	public boolean isUpdateName() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsUpdateName);
+	}
+
+	@Override
+	public void setIsUpdateProductCategory (final boolean IsUpdateProductCategory)
+	{
+		set_Value (COLUMNNAME_IsUpdateProductCategory, IsUpdateProductCategory);
+	}
+
+	@Override
+	public boolean isUpdateProductCategory() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsUpdateProductCategory);
 	}
 
 	@Override
