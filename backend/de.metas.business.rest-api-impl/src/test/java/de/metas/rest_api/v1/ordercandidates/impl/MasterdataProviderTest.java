@@ -25,6 +25,7 @@ package de.metas.rest_api.v1.ordercandidates.impl;
 import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.BPGroupService;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
@@ -112,7 +113,7 @@ public class MasterdataProviderTest
 		saveRecord(groupRecord);
 
 		// bpartnerRestController
-		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository());
+		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository(), new BPartnerCreditLimitRepository());
 		final CurrencyRepository currencyRepository = new CurrencyRepository();
 		final BPGroupRepository bpGroupRepository = new BPGroupRepository();
 		

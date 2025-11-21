@@ -29,6 +29,7 @@ import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.BPGroupService;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.common.rest_api.common.JsonExternalId;
@@ -78,7 +79,7 @@ class JsonRetrieverServiceTest
 		POJOLookupMap.setNextIdSupplier_PerTableSequence();
 
 		final BPartnerBL partnerBL = new BPartnerBL(new UserRepository());
-		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository());
+		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository(), new BPartnerCreditLimitRepository());
 		final BPGroupRepository bpGroupRepository = new BPGroupRepository();
 
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(

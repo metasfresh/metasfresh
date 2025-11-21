@@ -30,6 +30,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.common.bpartner.v2.request.JsonRequestContact;
@@ -128,7 +129,7 @@ class ContactRestControllerTest
 		final ExternalReferenceRestControllerService externalReferenceRestControllerService =
 				new ExternalReferenceRestControllerService(ExternalReferenceRepository.newInstanceForUnitTesting(new ExternalReferenceTypes()), ExternalSystemRepository.newInstanceForUnitTesting(), new ExternalReferenceTypes());
 
-		bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, recordChangeLogRepository, new UserRoleRepository());
+		bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, recordChangeLogRepository, new UserRoleRepository(), new BPartnerCreditLimitRepository());
 		final BPGroupRepository bpGroupRepository = new BPGroupRepository();
 		
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(

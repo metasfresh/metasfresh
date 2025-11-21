@@ -35,6 +35,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
@@ -248,7 +249,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		final JsonConverters jsonConverters = new JsonConverters(currencyService, docTypeService, ExternalSystemRepository.newInstanceForUnitTesting());
 
 		// bpartnerRestController
-		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(bpartnerBL, new MockLogEntriesRepository(), new UserRoleRepository());
+		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(bpartnerBL, new MockLogEntriesRepository(), new UserRoleRepository(), new BPartnerCreditLimitRepository());
 		final CurrencyRepository currencyRepository = new CurrencyRepository();
 		final BPGroupRepository bpGroupRepository = new BPGroupRepository();
 
