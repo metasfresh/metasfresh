@@ -11,15 +11,17 @@ function transform(messageToMetasfresh) {
         validateInput(salesOrders);
 
         const results = salesOrders
-            .filter(isValidSalesOrder)
             .flatMap(transformSalesOrder);
 
         return JSON.stringify(results);
 
     } catch (err) {
         return JSON.stringify({
-            error: "Invalid input",
-            details: err.message
+            errors: [{
+                message: err.message,
+                code: "TRANSFORMATION_ERROR",
+                type: err.name
+            }]
         });
     }
 }
@@ -55,16 +57,18 @@ function validateInput(salesOrders) {
     if (!Array.isArray(salesOrders)) {
         throw new Error("Input JSON must contain a 'd2m_so' array.");
     }
-}
 
-/**
- * Checks if a sales order has valid structure
- * @param {Object} salesOrder - Sales order to validate
- * @returns {boolean} True if sales order has valid lines
- */
-function isValidSalesOrder(salesOrder) {
-    const lines = salesOrder?.lines;
-    return Array.isArray(lines) && lines.length > 0;
+    salesOrders.forEach((so, index) => {
+        if (!so.orderNumber) {
+            throw new Error(`Sales order at index ${index} missing orderNumber`);
+        }
+        if (!Array.isArray(so.lines) || so.lines.length < 0) {
+            throw new Error(`Sales order at index ${index} missing lines array`);
+        }
+        if (so.lines.some(line => isNaN(line.price) || isNaN(line.qty))) {
+            throw new Error(`Sales order at index ${index} has invalid numeric values`);
+        }
+    });
 }
 
 // ============================================================================

@@ -11,15 +11,17 @@ function transform(messageToMetasfresh) {
         validateInput(purchaseOrders);
 
         const results = purchaseOrders
-            .filter(isValidPurchaseOrder)
             .flatMap(transformPurchaseOrder);
 
         return JSON.stringify(results);
 
     } catch (err) {
         return JSON.stringify({
-            error: "Invalid input",
-            details: err.message
+            errors: [{
+                message: err.message,
+                code: "TRANSFORMATION_ERROR",
+                type: err.name
+            }]
         });
     }
 }
@@ -55,16 +57,18 @@ function validateInput(purchaseOrders) {
     if (!Array.isArray(purchaseOrders)) {
         throw new Error("Input JSON must contain a 'd2m_po' array.");
     }
-}
 
-/**
- * Checks if a purchase order has valid structure
- * @param {Object} purchaseOrder - Purchase order to validate
- * @returns {boolean} True if purchase order has valid lines
- */
-function isValidPurchaseOrder(purchaseOrder) {
-    const lines = purchaseOrder.Lines;
-    return Array.isArray(lines) && lines.length > 0;
+    purchaseOrders.forEach((po, index) => {
+        if (!po.orderNumber) {
+            throw new Error(`Purchase order at index ${index} missing orderNumber`);
+        }
+        if (!Array.isArray(po.Lines) || po.Lines.length < 0) {
+            throw new Error(`Purchase order at index ${index} missing Lines array`);
+        }
+        if (po.Lines.some(line => isNaN(line.price) || isNaN(line.qty))) {
+            throw new Error(`Purchase order at index ${index} has invalid numeric values`);
+        }
+    });
 }
 
 // ============================================================================
@@ -106,7 +110,7 @@ function transformPurchaseOrder(po) {
  */
 function buildTransformContext(po) {
     const firstLine = po.Lines[0];
-    
+
     return {
         orgCode: po.orgCode ?? null,
         headerId: po.orderNumber ?? null,
