@@ -29,7 +29,7 @@ import java.util.Optional;
 
 class DistributionJobLoader
 {
-	private final DistributionJobLoaderSupportingServices loadingSupportServices;
+	@NonNull private final DistributionJobLoaderSupportingServices loadingSupportServices;
 
 	private final HashMap<DDOrderId, I_DD_Order> ddOrdersCache = new HashMap<>();
 	private final HashMap<DDOrderId, ImmutableList<I_DD_OrderLine>> ddOrderLinesCache = new HashMap<>();
