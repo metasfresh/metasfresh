@@ -11,7 +11,6 @@ import de.metas.distribution.ddorder.DDOrderQuery;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.distribution.rest_api.JsonDistributionEvent;
-import de.metas.distribution.workflows_api.DistributionEventProcessCommand.DistributionEventProcessCommandBuilder;
 import de.metas.distribution.workflows_api.facets.DistributionFacetIdsCollection;
 import de.metas.distribution.workflows_api.facets.DistributionFacetsCollection;
 import de.metas.distribution.workflows_api.facets.DistributionFacetsCollector;
@@ -26,6 +25,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.product.IProductBL;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.InSetPredicate;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -270,26 +270,51 @@ public class DistributionRestService
 
 	public DistributionJob processEvent(@NonNull final DistributionJob job, @NonNull final JsonDistributionEvent event)
 	{
-		return newProcessCommand()
-				.job(job)
-				.event(event)
-				.build()
-				.execute();
-	}
-
-	private DistributionEventProcessCommandBuilder newProcessCommand()
-	{
-		return DistributionEventProcessCommand.builder()
-				.trxManager(trxManager)
-				.huQRCodesService(huQRCodesService)
-				.handlingUnitsBL(handlingUnitsBL)
-				.ddOrderMoveScheduleService(ddOrderMoveScheduleService)
-				.loadingSupportServices(loadingSupportServices)
-				.hupiItemProductBL(hupiItemProductBL)
-				.inventoryService(inventoryService)
-				.uomConversionBL(uomConversionBL)
-				.huAccessService(huAccessService)
-				.locatorScannedCodeResolver(locatorScannedCodeResolver);
+		if (event.getPickFrom() != null)
+		{
+			return DistributionJobPickFromCommand.builder()
+					.trxManager(trxManager)
+					.huQRCodesService(huQRCodesService)
+					.handlingUnitsBL(handlingUnitsBL)
+					.ddOrderMoveScheduleService(ddOrderMoveScheduleService)
+					.loadingSupportServices(loadingSupportServices)
+					.hupiItemProductBL(hupiItemProductBL)
+					.inventoryService(inventoryService)
+					.uomConversionBL(uomConversionBL)
+					.huAccessService(huAccessService)
+					.job(job)
+					.lineId(event.getLineId())
+					.stepId(event.getDistributionStepId())
+					.pickFrom(event.getPickFrom())
+					.build().execute();
+		}
+		else if (event.getDropTo() != null)
+		{
+			return DistributionJobDropToCommand.builder()
+					.trxManager(trxManager)
+					.ddOrderMoveScheduleService(ddOrderMoveScheduleService)
+					.loadingSupportServices(loadingSupportServices)
+					.locatorScannedCodeResolver(locatorScannedCodeResolver)
+					.job(job)
+					.stepId(event.getDistributionStepId())
+					.dropToQRCode(event.getDropToNonNull().getQrCode())
+					.build().execute();
+		}
+		else if (event.getUnpick() != null)
+		{
+			return DistributionJobUnpickCommand.builder()
+					.trxManager(trxManager)
+					.handlingUnitsBL(handlingUnitsBL)
+					.ddOrderMoveScheduleService(ddOrderMoveScheduleService)
+					.job(job)
+					.stepId(Check.assumeNotNull(event.getDistributionStepId(), "stepId must be set when unpicking"))
+					.unpickToTargetQRCode(Check.assumeNotNull(event.getUnpick(), "unpick must be set").getUnpickToTargetQRCode())
+					.build().execute();
+		}
+		else
+		{
+			throw new AdempiereException("Unknown event type: " + event);
+		}
 	}
 
 	public DistributionJob complete(@NonNull final DistributionJob job)
