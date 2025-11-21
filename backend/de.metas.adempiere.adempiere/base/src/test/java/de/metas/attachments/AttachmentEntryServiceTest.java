@@ -41,6 +41,7 @@ import static org.assertj.core.api.Assertions.*;
 public class AttachmentEntryServiceTest
 {
 	private AttachmentEntryService attachmentEntryService;
+	private AttachmentReferenceRepository attachmentReferenceRepository;
 	private I_C_BPartner bpartnerRecord;
 	private I_M_Product productRecord;
 	private AttachmentEntry bpartnerAttachmentEntry1;
@@ -60,6 +61,8 @@ public class AttachmentEntryServiceTest
 
 		attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
 
+		attachmentReferenceRepository = new AttachmentReferenceRepository();
+		
 		bpartnerAttachmentEntry1 = attachmentEntryService.createNewAttachment(bpartnerRecord, "bPartnerAttachment1", "bPartnerAttachment1.data".getBytes());
 		bpartnerAttachmentEntry2 = attachmentEntryService.createNewAttachment(bpartnerRecord, "bPartnerAttachment2", "bPartnerAttachment2.data".getBytes());
 	}
@@ -74,19 +77,14 @@ public class AttachmentEntryServiceTest
 		final List<AttachmentEntry> bpartnerRecordEntries = attachmentEntryService.getByReferencedRecord(bpartnerRecord);
 		assertThat(bpartnerRecordEntries).hasSize(2);
 		
-		// we need to compare them without linked records because productRecordEntries.get(1) now also has the product; also note that the younger entry is first in the list
-		bpartnerRecordEntries.get(1).removeAllLinkedRecords();
-		bpartnerAttachmentEntry1.removeAllLinkedRecords();
-		assertThat(bpartnerRecordEntries.get(1).getLinkedRecords()).isEqualTo(bpartnerAttachmentEntry1.getLinkedRecords());
+		assertThat(bpartnerRecordEntries.get(1)).isEqualTo(bpartnerAttachmentEntry1);
 		assertThat(bpartnerRecordEntries.get(0)).isEqualTo(bpartnerAttachmentEntry2);
 
 		final List<AttachmentEntry> productRecordEntries = attachmentEntryService.getByReferencedRecord(productRecord);
 		assertThat(productRecordEntries).hasSize(1);
 		
 		// we need to compare them without linked records because productRecordEntries.get(0) has the product and bpartnerAttachmentEntry1 has the bpartner
-		productRecordEntries.get(0).removeAllLinkedRecords();
-		bpartnerAttachmentEntry1.removeAllLinkedRecords();
-		assertThat(productRecordEntries.get(0).getLinkedRecords()).isEqualTo(bpartnerAttachmentEntry1.getLinkedRecords());
+		assertThat(productRecordEntries.get(0)).isEqualTo(bpartnerAttachmentEntry1);
 	}
 
 	@Test
@@ -103,9 +101,7 @@ public class AttachmentEntryServiceTest
 		assertThat(productRecordEntries).hasSize(1);
 
 		// we need to compare them without linked records because productRecordEntries.get(0) has the product and bpartnerAttachmentEntry1 has the bpartner
-		productRecordEntries.get(0).removeAllLinkedRecords();
-		bpartnerAttachmentEntry1.removeAllLinkedRecords();
-		assertThat(productRecordEntries.get(0).getLinkedRecords()).isEqualTo(bpartnerAttachmentEntry1.getLinkedRecords());
+		assertThat(productRecordEntries.get(0)).isEqualTo(bpartnerAttachmentEntry1);
 	}
 
 	/**
@@ -118,9 +114,10 @@ public class AttachmentEntryServiceTest
 		saveRecord(productRecord2);
 
 		final AttachmentEntry entry = attachmentEntryService.createNewAttachment(productRecord2, "productRecord2", "productRecord2.data".getBytes());
-
+		assertThat(attachmentEntryService.getByReferencedRecord(productRecord2)).hasSize(1);
 		attachmentEntryService.createAttachmentLinks(ImmutableList.of(entry), TableRecordReference.ofCollection(ImmutableList.of(productRecord2)));
-
+		assertThat(attachmentEntryService.getByReferencedRecord(productRecord2)).hasSize(1);
+		
 		// invoke the method under test - shall not do anything??
 		final AttachmentEntry entryWithRemovedLink = attachmentEntryService.unattach(TableRecordReference.of(productRecord), entry);
 
@@ -146,7 +143,9 @@ public class AttachmentEntryServiceTest
 		final AttachmentEntry entryWithRemovedLink = attachmentEntryService.unattach(TableRecordReference.of(productRecord), entry);
 		
 		// then
-		assertThat(entryWithRemovedLink.getLinkedRecords()).containsExactly(TableRecordReference.of(productRecord2));
+		final ImmutableList<AttachmentReference> byEntryId = attachmentReferenceRepository.getByEntryId(entryWithRemovedLink.getIdNonNull());
+		assertThat(byEntryId).hasSize(1);
+		assertThat(byEntryId.get(0).getRecordRef()).isEqualTo(TableRecordReference.of(productRecord2));
 		
 		assertThat(attachmentEntryService.getByReferencedRecord(productRecord)).isEmpty();
 
@@ -187,6 +186,11 @@ public class AttachmentEntryServiceTest
 	{
 		final AttachmentEntry attachmentEntry = createNewAttachment_with_tags_performTest();
 
+		assertThat(attachmentEntry.getTags().getTagValueOrNull("tag1Name")).isEqualTo("tag1Value");
+		assertThat(attachmentEntry.getTags().getTagValueOrNull("tag2Name")).isEqualTo("tag2Value");
+		assertThat(attachmentEntry.getTags().getTagValueOrNull("tag3Name")).isEqualTo(null);
+
+
 		final AttachmentEntry attachmentEntryWithAdditionalTag = attachmentEntry.toBuilder()
 				.tags(AttachmentTags.builder()
 						.tag("tag3Name", "tag3Value")
@@ -197,13 +201,11 @@ public class AttachmentEntryServiceTest
 		// invoke the method under test
 		attachmentEntryService.save(attachmentEntryWithAdditionalTag);
 
-		final AttachmentEntry result = attachmentEntryService.getById(attachmentEntryWithAdditionalTag.getId());
+		final AttachmentEntry result = attachmentEntryService.getById(attachmentEntryWithAdditionalTag.getIdNonNull());
 
 		assertThat(result.getTags().getTagValueOrNull("tag1Name")).isEqualTo(null);
 		assertThat(result.getTags().getTagValueOrNull("tag2Name")).isEqualTo("tag2Value");
 		assertThat(result.getTags().getTagValueOrNull("tag3Name")).isEqualTo("tag3Value");
-
-		assertThat(attachmentEntryWithAdditionalTag.getLinkedRecords()).isEqualTo(attachmentEntry.getLinkedRecords());
 	}
 
 	@Test
@@ -225,7 +227,7 @@ public class AttachmentEntryServiceTest
 		final TableRecordReference tableRecordReferenceToAdd = TableRecordReference.of(productRecord);
 
 		final AttachmentLinksRequest attachmentLinksRequest = AttachmentLinksRequest.builder()
-				.attachmentEntryId(bPartnerLinkedAttachmentEntry.getId())
+				.attachmentEntryId(bPartnerLinkedAttachmentEntry.getIdNonNull())
 				.tagsToAdd(tagsToAdd)
 				.tagsToRemove(tagsToRemove)
 				.linksToAdd(ImmutableList.of(tableRecordReferenceToAdd))
@@ -238,9 +240,6 @@ public class AttachmentEntryServiceTest
 		assertThat(result.getTags().getTagValueOrNull("tag2Name")).isEqualTo(null);
 		assertThat(result.getTags().getTagValueOrNull("tag3Name")).isEqualTo("tag3Value");
 		assertThat(result.getTags().getTagValueOrNull("tag4Name")).isEqualTo("tag4Value");
-
-		assertThat(result.getLinkedRecords()).doesNotContain(tableRecordReferenceToRemove);
-		assertThat(result.getLinkedRecords()).contains(tableRecordReferenceToAdd);
 	}
 
 	@Test

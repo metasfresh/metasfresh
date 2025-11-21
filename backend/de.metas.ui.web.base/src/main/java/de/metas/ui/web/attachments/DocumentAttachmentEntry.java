@@ -3,6 +3,7 @@ package de.metas.ui.web.attachments;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.AttachmentEntryType;
+import de.metas.common.util.Check;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import lombok.NonNull;
 import lombok.ToString;
@@ -98,6 +99,7 @@ class DocumentAttachmentEntry implements IDocumentAttachmentEntry
 	@Override
 	public Instant getCreated()
 	{
-		return entry.getCreatedUpdatedInfo().getCreated().toInstant();
+		return Check.assumeNotNull(entry.getCreatedUpdatedInfo(), "entry.getCreatedUpdatedInfo() not null")
+				.getCreated().toInstant();
 	}
 }

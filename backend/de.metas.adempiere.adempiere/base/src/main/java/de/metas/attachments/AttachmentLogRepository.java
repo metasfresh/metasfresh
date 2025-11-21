@@ -19,12 +19,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -35,25 +35,30 @@ public class AttachmentLogRepository
 {
 	public AttachmentLog save(@NonNull final AttachmentLog attachmentLog)
 	{
-		final I_AD_Attachment_Log attachmentLogRecord;
-		attachmentLogRecord = newInstance(I_AD_Attachment_Log.class);
+		final I_AD_Attachment_Log attachmentLogRecord = newInstance(I_AD_Attachment_Log.class);
 		syncToRecord(attachmentLog, attachmentLogRecord);
 		saveRecord(attachmentLogRecord);
+
 		return attachmentLog;
 	}
-	
-	private void syncToRecord(AttachmentLog attachmentLog, I_AD_Attachment_Log attachmentLogRecord)
+
+	private void syncToRecord(
+			@NonNull final AttachmentLog attachmentLog,
+			@NonNull final I_AD_Attachment_Log attachmentLogRecord)
 	{
 		attachmentLogRecord.setContentType(attachmentLog.getContentType());
 		attachmentLogRecord.setDescription(attachmentLog.getDescription());
 		attachmentLogRecord.setFileName(attachmentLog.getFilename());
 		attachmentLogRecord.setType(attachmentLog.getType().name());
+
 		final String urlToBeSynced = attachmentLog.getUrl() != null ? attachmentLog.getUrl().toASCIIString() : null;
 		attachmentLogRecord.setURL(urlToBeSynced);
+
 		final ITableRecordReference recordRef = attachmentLog.getRecordRef();
 		attachmentLogRecord.setRecord_ID(recordRef.getRecord_ID());
 		attachmentLogRecord.setAD_Table_ID(recordRef.getAD_Table_ID());
-		AttachmentTags attachmentTags=attachmentLog.getAttachmentTags();
+
+		final AttachmentTags attachmentTags = attachmentLog.getAttachmentTags();
 		attachmentLogRecord.setTags(attachmentTags.getTagsAsString());
 	}
 }

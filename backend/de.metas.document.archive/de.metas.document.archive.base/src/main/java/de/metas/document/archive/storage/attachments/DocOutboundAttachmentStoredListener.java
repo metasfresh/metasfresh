@@ -2,6 +2,7 @@ package de.metas.document.archive.storage.attachments;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import de.metas.attachments.AttachmentReference;
 import de.metas.common.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -58,9 +59,11 @@ public class DocOutboundAttachmentStoredListener implements AttachmentStoredList
 			@NonNull final AttachmentEntry attachmentEntry,
 			@NonNull final URI storageIdentifier)
 	{
-		final ImmutableList<I_C_Doc_Outbound_Log> docOutboundLogRecords = attachmentEntry
-				.getLinkedRecords()
+		final ImmutableList<AttachmentReference> attachmentReferences = attachmentEntryService.retrieveAttachmentReferences(attachmentEntry);
+		
+		final ImmutableList<I_C_Doc_Outbound_Log> docOutboundLogRecords = attachmentReferences
 				.stream()
+				.map(AttachmentReference::getRecordRef)
 				.filter(this::isDocOutBoundLogReference)
 				.map(ref -> ref.getModel(I_C_Doc_Outbound_Log.class))
 				.collect(ImmutableList.toImmutableList());
@@ -84,7 +87,7 @@ public class DocOutboundAttachmentStoredListener implements AttachmentStoredList
 				createdLogLineRecords.build());
 	}
 
-	private boolean isDocOutBoundLogReference(ITableRecordReference ref)
+	private boolean isDocOutBoundLogReference(@NonNull final ITableRecordReference ref)
 	{
 		return I_C_Doc_Outbound_Log.Table_Name.equals(ref.getTableName());
 	}

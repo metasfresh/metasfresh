@@ -28,7 +28,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
-import de.metas.attachments.AttachmentEntryRepository;
+import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentEntryWithReferences;
 import de.metas.bpartner.BPartnerId;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
@@ -74,7 +75,7 @@ class OrderAttachmentRowsLoader
 	@NonNull
 	AlbertaPrescriptionRequestDAO albertaPrescriptionRequestDAO;
 	@NonNull
-	AttachmentEntryRepository attachmentEntryRepository;
+	AttachmentEntryService attachmentEntryService;
 	@NonNull
 	AlbertaPatientRepository albertaPatientRepository;
 	@NonNull
@@ -102,8 +103,8 @@ class OrderAttachmentRowsLoader
 
 	@Builder
 	private OrderAttachmentRowsLoader(
-			@NonNull final AttachmentEntryRepository attachmentEntryRepository,
 			@NonNull final AlbertaPrescriptionRequestDAO albertaPrescriptionRequestDAO,
+			@NonNull final AttachmentEntryService attachmentEntryService,
 			@NonNull final AlbertaPatientRepository albertaPatientRepository,
 			@NonNull final PurchaseCandidateRepository purchaseCandidateRepository,
 			@NonNull final LookupDataSource patientLookup,
@@ -111,7 +112,7 @@ class OrderAttachmentRowsLoader
 			@NonNull final LookupDataSource pharmacyLookup,
 			@NonNull final OrderId purchaseOrderId)
 	{
-		this.attachmentEntryRepository = attachmentEntryRepository;
+		this.attachmentEntryService = attachmentEntryService;
 		this.albertaPrescriptionRequestDAO = albertaPrescriptionRequestDAO;
 		this.albertaPatientRepository = albertaPatientRepository;
 		this.purchaseCandidateRepository = purchaseCandidateRepository;
@@ -127,15 +128,18 @@ class OrderAttachmentRowsLoader
 		init();
 
 		final Set<TableRecordReference> allTargetTableRecordRefs = Stream.of(ImmutableSet.of(getPurchaseOrderRecordRef()),
-																			 salesOrderRecordRefs.keySet(),
-																			 prescriptionRequestRecordRefs.keySet(),
-																			 bPartnerRecordRefs)
+						salesOrderRecordRefs.keySet(),
+						prescriptionRequestRecordRefs.keySet(),
+						bPartnerRecordRefs)
 				.flatMap(Set::stream)
 				.collect(ImmutableSet.toImmutableSet());
 
 		final Map<String, AttachmentRowBuilder.PriorityRowBuilder> tableName2PriorityRowBuilder = ImmutableMap.of(
+
 				I_C_BPartner.Table_Name, AttachmentRowBuilder.PriorityRowBuilder.of(AttachmentRowBuilder.Priority.of(0), this::buildRowFromCustomer),
+
 				I_C_Order.Table_Name, AttachmentRowBuilder.PriorityRowBuilder.of(AttachmentRowBuilder.Priority.of(1), this::buildRowFromSalesOrder),
+
 				I_Alberta_PrescriptionRequest.Table_Name, AttachmentRowBuilder.PriorityRowBuilder.of(AttachmentRowBuilder.Priority.of(2), this::buildRowFromPrescription));
 
 		final AttachmentRowBuilder attachmentRowBuilder = AttachmentRowBuilder.builder()
@@ -145,7 +149,7 @@ class OrderAttachmentRowsLoader
 				.targetRecordReferences(allTargetTableRecordRefs)
 				.build();
 
-		final ImmutableList<OrderAttachmentRow> rows = attachmentEntryRepository.getByReferencedRecords(allTargetTableRecordRefs)
+		final ImmutableList<OrderAttachmentRow> rows = attachmentEntryService.getEntriesAndReferencesFor(allTargetTableRecordRefs)
 				.stream()
 				.map(attachmentRowBuilder::buildRowsFor)
 				.flatMap(List::stream)
@@ -200,50 +204,53 @@ class OrderAttachmentRowsLoader
 	}
 
 	@NonNull
-	private OrderAttachmentRow buildRowFromPrescription(@NonNull final TableRecordReference recordReference, @NonNull final AttachmentEntry attachmentEntry)
+	private OrderAttachmentRow buildRowFromPrescription(@NonNull final TableRecordReference recordReference, @NonNull final AttachmentEntryWithReferences attachment)
 	{
 		final I_Alberta_PrescriptionRequest prescriptionRequest = Optional.ofNullable(prescriptionRequestRecordRefs.get(recordReference))
 				.orElseThrow(() -> new AdempiereException("No I_Alberta_PrescriptionRequest present for given record reference: " + recordReference));
 
-		final boolean isAttachToPurchaseOrder = attachmentEntry.hasLinkToRecord(getPurchaseOrderRecordRef())
-				|| salesOrderRecordRefs.keySet().stream().anyMatch(attachmentEntry::hasLinkToRecord);
+		final boolean isAttachToPurchaseOrder = attachment.hasTableReference(getPurchaseOrderRecordRef())
+				|| salesOrderRecordRefs.keySet().stream().anyMatch(attachment::hasTableReference);
 
+		final AttachmentEntry attachmentEntry = attachment.getEntry();
 		return OrderAttachmentRow.builder()
-				.rowId(buildRowId(attachmentEntry.getId(), recordReference))
+				.rowId(buildRowId(attachmentEntry.getIdNonNull(), recordReference))
 				.patient(extractPatientFromPrescriptionRequest(prescriptionRequest))
 				.payer(extractPayerFromPrescriptionRequest(prescriptionRequest))
 				.pharmacy(extractPharmacyFromPrescriptionRequest(prescriptionRequest))
-				.filename(attachmentEntry.getFilename(recordReference))
+				.filename(attachment.getFilename(recordReference))
 				.isAttachToPurchaseOrder(isAttachToPurchaseOrder)
 				.selectedPurchaseOrder(purchaseOrder)
-				.attachmentEntry(attachmentEntry)
+				.attachment(attachment)
 				.build();
 	}
 
 	@NonNull
-	private OrderAttachmentRow buildRowFromPurchaseOrder(@NonNull final AttachmentEntry attachmentEntry)
+	private OrderAttachmentRow buildRowFromPurchaseOrder(@NonNull final AttachmentEntryWithReferences attachment)
 	{
 		final TableRecordReference purchaseOrderRecordRef = getPurchaseOrderRecordRef();
 
-		if (!attachmentEntry.hasLinkToRecord(purchaseOrderRecordRef))
+		if (!attachment.hasTableReference(purchaseOrderRecordRef))
 		{
-			throw new AdempiereException("Given attachmentEntry is not linked to purchase order!")
+			throw new AdempiereException("Given attachment is not linked to purchase order!")
 					.appendParametersToMessage()
-					.setParameter("attachmentEntry", attachmentEntry)
+					.setParameter("attachment", attachment)
 					.setParameter("purchaseOrderRecordRef", purchaseOrderRecordRef);
 		}
 
 		return OrderAttachmentRow.builder()
-				.rowId(buildRowId(attachmentEntry.getId(), getPurchaseOrderRecordRef()))
-				.filename(attachmentEntry.getFilename(getPurchaseOrderRecordRef()))
+				.rowId(buildRowId(attachment.getEntry().getIdNonNull(), getPurchaseOrderRecordRef()))
+				.filename(attachment.getFilename(getPurchaseOrderRecordRef()))
 				.isAttachToPurchaseOrder(true)
 				.selectedPurchaseOrder(purchaseOrder)
-				.attachmentEntry(attachmentEntry)
+				.attachment(attachment)
 				.build();
 	}
 
 	@NonNull
-	private OrderAttachmentRow buildRowFromSalesOrder(@NonNull final TableRecordReference recordReference, @NonNull final AttachmentEntry attachmentEntry)
+	private OrderAttachmentRow buildRowFromSalesOrder(
+			@NonNull final TableRecordReference recordReference, 
+			@NonNull final AttachmentEntryWithReferences attachment)
 	{
 		final I_C_Order salesOrder;
 
@@ -255,19 +262,19 @@ class OrderAttachmentRowsLoader
 		final ZonedDateTime datePromised = TimeUtil.asZonedDateTime(salesOrder.getDatePromised(), timeZone);
 
 		return OrderAttachmentRow.builder()
-				.rowId(buildRowId(attachmentEntry.getId(), recordReference))
+				.rowId(buildRowId(attachment.getEntry().getIdNonNull(), recordReference))
 				.patient(extractPatientFromSalesOrder(salesOrder))
 				.payer(extractPayerFromSalesOrder(salesOrder))
 				.datePromised(datePromised)
-				.filename(attachmentEntry.getFilename(recordReference))
+				.filename(attachment.getFilename(recordReference))
 				.isAttachToPurchaseOrder(true)
 				.selectedPurchaseOrder(purchaseOrder)
-				.attachmentEntry(attachmentEntry)
+				.attachment(attachment)
 				.build();
 	}
 
 	@NonNull
-	private OrderAttachmentRow buildRowFromCustomer(@NonNull final TableRecordReference recordReference, @NonNull final AttachmentEntry attachmentEntry)
+	private OrderAttachmentRow buildRowFromCustomer(@NonNull final TableRecordReference recordReference, @NonNull final AttachmentEntryWithReferences attachment)
 	{
 		if (!bPartnerRecordRefs.contains(recordReference))
 		{
@@ -278,12 +285,12 @@ class OrderAttachmentRowsLoader
 		}
 
 		return OrderAttachmentRow.builder()
-				.rowId(buildRowId(attachmentEntry.getId(), recordReference))
+				.rowId(buildRowId(attachment.getEntry().getIdNonNull(), recordReference))
 				.patient(patientLookup.findById(recordReference.getRecord_ID()))
-				.filename(attachmentEntry.getFilename(recordReference))
-				.isAttachToPurchaseOrder(attachmentEntry.hasLinkToRecord(getPurchaseOrderRecordRef()))
+				.filename(attachment.getFilename(recordReference))
+				.isAttachToPurchaseOrder(attachment.hasTableReference(getPurchaseOrderRecordRef()))
 				.selectedPurchaseOrder(purchaseOrder)
-				.attachmentEntry(attachmentEntry)
+				.attachment(attachment)
 				.build();
 	}
 
@@ -346,7 +353,7 @@ class OrderAttachmentRowsLoader
 		return salesOrders
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(order -> TableRecordReference.of(I_C_Order.Table_Name, order.getC_Order_ID()),
-													 Function.identity()));
+						Function.identity()));
 	}
 
 	@NonNull
@@ -367,8 +374,8 @@ class OrderAttachmentRowsLoader
 		}
 
 		return Optional.of(albertaPrescriptionRequestDAO.getByOrderIds(salesOrderIds)
-								   .stream()
-								   .collect(ImmutableMap.toImmutableMap(prescription -> TableRecordReference.of(I_Alberta_PrescriptionRequest.Table_Name, prescription.getAlberta_PrescriptionRequest_ID()),
-																		Function.identity())));
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(prescription -> TableRecordReference.of(I_Alberta_PrescriptionRequest.Table_Name, prescription.getAlberta_PrescriptionRequest_ID()),
+						Function.identity())));
 	}
 }

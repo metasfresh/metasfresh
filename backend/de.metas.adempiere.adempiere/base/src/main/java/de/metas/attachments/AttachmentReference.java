@@ -1,14 +1,8 @@
-package de.metas.attachments.automaticlinksharing;
-
-import de.metas.attachments.AttachmentEntryWithReferences;
-import de.metas.attachments.automaticlinksharing.RecordToReferenceProviderService.ExpandResult;
-import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,11 +20,33 @@ import lombok.NonNull;
  * #L%
  */
 
-public interface ReferenceableRecordsProvider
+package de.metas.attachments;
+
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import lombok.With;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import javax.annotation.Nullable;
+
+/**
+ * Associates one attachment with one arbitrary {@link TableRecordReference}. 
+ */
+@Value
+@Builder
+public class AttachmentReference
 {
-	/**
-	 * For the given records that shall be linked to an attachment entry, retrieve additional records that shall <b>also</b> be linked.
-	 * Don't worry about the possibility that the records returned by this method might be already linked to begin with.
-	 */
-	ExpandResult expand(@NonNull final AttachmentEntryWithReferences entryWithRefs);
+	@With
+	@Nullable
+	AttachmentReferenceId id;
+	
+	@NonNull
+	AttachmentEntryId attachmentEntryId;
+	
+	@NonNull
+	TableRecordReference recordRef;
+
+	@Nullable
+	String attachmentNameOverride;
 }

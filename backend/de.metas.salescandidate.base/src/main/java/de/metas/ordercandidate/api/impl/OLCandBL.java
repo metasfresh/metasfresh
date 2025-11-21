@@ -447,13 +447,15 @@ public class OLCandBL implements IOLCandBL
 
 		final TableRecordReference firstOLCandRef = olCandRefs.get(0);
 		final AttachmentEntry attachmentEntry = attachmentEntryService.createNewAttachment(firstOLCandRef, attachmentEntryCreateRequest);
-
 		if (olCandRefs.size() == 1)
-		{
+		{ // not additional attachmentReferences needed
 			return attachmentEntry;
 		}
+		
 		final List<TableRecordReference> remainingOLCandRefs = olCandRefs.subList(1, olCandRefs.size());
-		return CollectionUtils.singleElement(attachmentEntryService.createAttachmentLinks(ImmutableList.of(attachmentEntry), remainingOLCandRefs));
+		attachmentEntryService.createAttachmentLinks(ImmutableList.of(attachmentEntry), remainingOLCandRefs);
+		
+		return attachmentEntry;
 	}
 
 	@Override

@@ -1,5 +1,6 @@
 package de.metas.document.archive.spi.impl;
 
+import de.metas.attachments.AttachmentEntryWithReferences;
 import org.springframework.stereotype.Component;
 
 import de.metas.attachments.AttachmentEntry;
@@ -31,7 +32,7 @@ import lombok.NonNull;
  */
 
 /**
- * This implementation's {@link #expand(java.util.Collection)} method returns invoice candidates referencing the records to expand on.
+ * This implementation's {@link #expand(AttachmentEntryWithReferences)}  method returns invoice candidates referencing the records to expand on.
  */
 @Component
 public class ReferenceableDocOutboundLogsProvider extends TableRecordRefProvider<I_C_Doc_Outbound_Log>
@@ -44,6 +45,8 @@ public class ReferenceableDocOutboundLogsProvider extends TableRecordRefProvider
 	@Override
 	protected boolean isExpandOnAttachmentEntry(@NonNull final AttachmentEntry attachmentEntry)
 	{
-		return attachmentEntry.getTags().hasTagSetToTrue(AttachmentTags.TAGNAME_IS_DOCUMENT);
+		return attachmentEntry
+				.getTags()
+				.hasTagSetToTrue(AttachmentTags.TAGNAME_IS_DOCUMENT);
 	}
 }

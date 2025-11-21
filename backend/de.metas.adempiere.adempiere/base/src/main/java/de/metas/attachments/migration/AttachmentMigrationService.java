@@ -71,7 +71,7 @@ public class AttachmentMigrationService
 		this.attachmentEntryFactory = attachmentEntryFactory;
 	}
 
-	public List<AttachmentEntry> migrateAndGetByReferencedRecord(@NonNull final Object referencedRecord)
+	public ImmutableList<AttachmentEntry> migrateAndGetByReferencedRecord(@NonNull final Object referencedRecord)
 	{
 		final TableRecordReference tableRecordReference = TableRecordReference.of(referencedRecord);
 

@@ -59,3 +59,6 @@ misc/services/camel/de-metas-camel-shipping/tmp/
 
 # this is ignored to prevent accidental git check-in of developer credentials
 **/mvn/local-settings.xml
+/.claude/**
+/.mcp.json
+**/CLAUDE.md

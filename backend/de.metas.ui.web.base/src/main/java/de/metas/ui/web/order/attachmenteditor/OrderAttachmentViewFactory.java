@@ -22,7 +22,6 @@
 
 package de.metas.ui.web.order.attachmenteditor;
 
-import de.metas.attachments.AttachmentEntryRepository;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.i18n.IMsgBL;
 import de.metas.order.OrderId;
@@ -58,14 +57,14 @@ public class OrderAttachmentViewFactory implements IViewFactory
 	public OrderAttachmentViewFactory(
 			@NonNull final AttachmentEntryService attachmentEntryService,
 			@NonNull final AlbertaPrescriptionRequestDAO albertaPrescriptionRequestDAO,
-			@NonNull final AttachmentEntryRepository attachmentEntryRepository,
 			@NonNull final AlbertaPatientRepository albertaPatientRepository,
 			@NonNull final PurchaseCandidateRepository purchaseCandidateRepository)
 	{
 		this.attachmentEntryService = attachmentEntryService;
+		
 		this.rowsRepo = OrderAttachmentRowsRepository.builder()
 				.albertaPrescriptionRequestDAO(albertaPrescriptionRequestDAO)
-				.attachmentEntryRepository(attachmentEntryRepository)
+				.attachmentEntryService(attachmentEntryService)
 				.albertaPatientRepository(albertaPatientRepository)
 				.purchaseCandidateRepository(purchaseCandidateRepository)
 				.build();

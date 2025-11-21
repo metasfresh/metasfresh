@@ -117,8 +117,8 @@ public class AttachmentEntryFactory
 				.url(extractUriOrNull(entryRecord))
 				.tags(AttachmentTags.ofString(entryRecord.getTags()))
 				.createdUpdatedInfo(CreatedUpdatedInfo.of(
-						TimeUtil.asZonedDateTime(entryRecord.getCreated(), timeZone), UserId.ofRepoId(entryRecord.getCreatedBy()),
-						TimeUtil.asZonedDateTime(entryRecord.getUpdated(), timeZone), UserId.ofRepoId(entryRecord.getUpdatedBy())))
+						TimeUtil.asZonedDateTime(entryRecord.getCreated(), timeZone), UserId.ofRepoIdOrSystem(entryRecord.getCreatedBy()),
+						TimeUtil.asZonedDateTime(entryRecord.getUpdated(), timeZone), UserId.ofRepoIdOrSystem(entryRecord.getUpdatedBy())))
 				.build();
 	}
 
@@ -126,7 +126,7 @@ public class AttachmentEntryFactory
 	private static URI extractUriOrNull(final I_AD_AttachmentEntry entryRecord)
 	{
 		final String url = entryRecord.getURL();
-		if (Check.isEmpty(url, true))
+		if (Check.isBlank(url))
 		{
 			return null;
 		}
@@ -159,6 +159,5 @@ public class AttachmentEntryFactory
 			attachmentEntryRecord.setURL(null);
 		}
 		attachmentEntryRecord.setTags(attachmentEntry.getTags().getTagsAsString());
-
 	}
 }

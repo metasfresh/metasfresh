@@ -23,16 +23,21 @@
 package de.metas.attachments.listener;
 
 import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentReference;
+import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import static de.metas.attachments.listener.AttachmentListenerConstants.ListenerWorkStatus.SUCCESS;
 
 /**
- *  Dumb attachment listener; created only for test purposes.
+ * Dumb attachment listener; created only for test purposes.
  */
 public class DumbAttachmentListener implements AttachmentListener
 {
-	@Override public AttachmentListenerConstants.ListenerWorkStatus afterRecordLinked(AttachmentEntry attachmentEntry, TableRecordReference tableRecordReference)
+	@Override
+	public AttachmentListenerConstants.ListenerWorkStatus afterRecordLinked(
+			@NonNull final AttachmentEntry attachmentEntry,
+			@NonNull final AttachmentReference attachmentReference)
 	{
 		return SUCCESS;
 	}

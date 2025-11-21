@@ -25,7 +25,9 @@ package de.metas.attachments.listener;
 import com.google.common.collect.ImmutableList;
 import de.metas.CreatedUpdatedInfo;
 import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryType;
+import de.metas.attachments.AttachmentReference;
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.javaclasses.model.I_AD_JavaClass_Type;
 import de.metas.user.UserId;
@@ -76,13 +78,18 @@ public class AttachmentListenerServiceTest
 		final TableRecordReference tableRecordReferenceMock = TableRecordReference.of(MOCK_AD_TABLE_ID, MOCK_RECORD_ID);
 		final AttachmentEntry attachmentEntryMock = AttachmentEntry.builder()
 				.type(AttachmentEntryType.Data)
-				.linkedRecord(tableRecordReferenceMock)
+				.id(AttachmentEntryId.ofRepoId(23))
 				.createdUpdatedInfo(CreatedUpdatedInfo.createNew(UserId.ofRepoId(10), ZonedDateTime.now()))
 				.build();
 
 		Mockito.doNothing().when(tableAttachmentListenerService).notifyUser(any(), any(), any());
 
-		final ImmutableList<AttachmentListenerActionResult> result = tableAttachmentListenerService.fireAfterRecordLinked(attachmentEntryMock, tableRecordReferenceMock);
+		final AttachmentReference attachmentReference = AttachmentReference.builder()
+				.attachmentEntryId(attachmentEntryMock.getIdNonNull())
+				.recordRef(tableRecordReferenceMock).build();
+		
+		final ImmutableList<AttachmentListenerActionResult> result = tableAttachmentListenerService.fireAfterRecordLinked(
+				attachmentEntryMock, attachmentReference);
 
 		assertEquals(result.size(), 1);
 		assertEquals(result.get(0).getStatus(), SUCCESS);

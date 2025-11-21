@@ -294,7 +294,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 				.referencedRecord(from)
 				.tagSetToTrue(AttachmentTags.TAGNAME_IS_DOCUMENT)
 				.build();
-		final List<AttachmentEntry> attachmentsToShare = attachmentEntryService.getByQuery(query);
+		final ImmutableList<AttachmentEntry> attachmentsToShare = attachmentEntryService.getByQuery(query);
 
 		attachmentEntryService.createAttachmentLinks(attachmentsToShare, ImmutableList.of(docOutboundLogRecord));
 	}

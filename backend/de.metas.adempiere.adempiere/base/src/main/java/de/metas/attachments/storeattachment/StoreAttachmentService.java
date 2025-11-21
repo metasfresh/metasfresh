@@ -65,9 +65,9 @@ public class StoreAttachmentService
 	}
 
 	/**
-	 * @return false if there is no StoreAttachmentService to take care of the given attachmentEntry.
+	 *
 	 */
-	public boolean storeAttachment(@NonNull final AttachmentEntry attachmentEntry)
+	public void storeAttachment(@NonNull final AttachmentEntry attachmentEntry)
 	{
 		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 
@@ -75,7 +75,7 @@ public class StoreAttachmentService
 		if (service == null)
 		{
 			loggable.addLog("StoreAttachmentService - no StoreAttachmentServiceImpl found for attachment={}", attachmentEntry);
-			return false;
+			return;
 		}
 
 		final URI storageIdentifier = service.storeAttachment(attachmentEntry);
@@ -85,7 +85,6 @@ public class StoreAttachmentService
 		{
 			attachmentStoredListener.attachmentWasStored(attachmentEntry, storageIdentifier);
 		}
-		return true;
 	}
 
 	private StoreAttachmentServiceImpl extractFor(@NonNull final AttachmentEntry attachmentEntry)

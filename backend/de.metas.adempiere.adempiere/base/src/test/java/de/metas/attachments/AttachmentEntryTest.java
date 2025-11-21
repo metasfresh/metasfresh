@@ -64,31 +64,5 @@ public class AttachmentEntryTest
 		createdUpdatedInfo = CreatedUpdatedInfo.builder().createdBy(UserId.METASFRESH).created(SystemTime.asZonedDateTime()).updatedBy(UserId.METASFRESH).updated(SystemTime.asZonedDateTime()).build();
 	}
 
-	@Test
-	public void handleAttachmentLinks()
-	{
-		// given
-		final TableRecordReference tableRecordReferenceToRemove = TableRecordReference.of(bpartnerRecord);
-		final TableRecordReference tableRecordReferenceToRemain = TableRecordReference.of(productRecord);
-		final TableRecordReference tableRecordReferenceToAdd = TableRecordReference.of(warehouseRecord);
 
-		final AttachmentEntry entry = AttachmentEntry.builder()
-				.type(AttachmentEntryType.Data)
-				.createdUpdatedInfo(createdUpdatedInfo)
-				.linkedRecords(ImmutableList.of(tableRecordReferenceToRemove, tableRecordReferenceToRemain))
-				.build();
-
-		assertThat(entry.getLinkedRecords()).contains(tableRecordReferenceToRemove);
-		assertThat(entry.getLinkedRecords()).contains(tableRecordReferenceToRemain);
-		assertThat(entry.getLinkedRecords()).doesNotContain(tableRecordReferenceToAdd);
-
-		// when
-		entry.removedLinkedRecord(tableRecordReferenceToRemove);
-		entry.addLinkedRecord(tableRecordReferenceToAdd);
-
-		// then
-		assertThat(entry.getLinkedRecords()).doesNotContain(tableRecordReferenceToRemove);
-		assertThat(entry.getLinkedRecords()).contains(tableRecordReferenceToRemain);
-		assertThat(entry.getLinkedRecords()).contains(tableRecordReferenceToAdd);
-	}
 }
