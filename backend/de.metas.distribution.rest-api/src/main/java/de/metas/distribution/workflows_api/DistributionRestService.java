@@ -1,6 +1,5 @@
 package de.metas.distribution.workflows_api;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.ad_reference.ADRefList;
 import de.metas.dao.ValueRestriction;
 import de.metas.distribution.config.DistributionJobSorting;
@@ -28,6 +27,7 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.InSetPredicate;
 import de.metas.util.Services;
+import de.metas.workflow.rest_api.model.WFProcessId;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -41,6 +41,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -134,16 +135,14 @@ public class DistributionRestService
 			@NonNull final DDOrderReferenceQuery query,
 			@NonNull final DistributionOrderCollector<T> collector)
 	{
-		final @NonNull UserId responsibleId = query.getResponsibleId();
-		final @NonNull QueryLimit suggestedLimit = query.getSuggestedLimit();
-
 		//
 		// Already started jobs
-		streamDDOrdersAssignedTo(responsibleId, query.getSorting())
+		ddOrderService.streamDDOrders(DistributionJobQueries.ddOrdersAssignedToUser(query))
 				.forEach(ddOrder -> collector.collect(ddOrder, true));
 
 		//
 		// New possible jobs
+		@NonNull final QueryLimit suggestedLimit = query.getSuggestedLimit();
 		if (suggestedLimit.isNoLimit() || !suggestedLimit.isLimitHitOrExceeded(collector.getCollectedItems()))
 		{
 			ddOrderService.streamDDOrders(toActiveNotAssignedDDOrderQuery(query))
@@ -201,15 +200,6 @@ public class DistributionRestService
 		}
 	}
 
-	private Stream<I_DD_Order> streamDDOrdersAssignedTo(@NonNull final UserId responsibleId, @NonNull DistributionJobSorting sorting)
-	{
-		return ddOrderService.streamDDOrders(DDOrderQuery.builder()
-				.docStatus(DocStatus.Completed)
-				.responsibleId(ValueRestriction.equalsTo(responsibleId))
-				.orderBys(sorting.toDDOrderQueryOrderBys())
-				.build());
-	}
-
 	public DistributionJob createJob(
 			final @NonNull DDOrderId ddOrderId,
 			final @NonNull UserId responsibleId)
@@ -249,17 +239,22 @@ public class DistributionRestService
 					.setParameter("newResponsibleId", newResponsibleId);
 		}
 
-		return loader.load(ddOrderRecord);
+		return loader.loadByRecord(ddOrderRecord);
 	}
 
 	public DistributionJob getJobById(final DistributionJobId jobId)
 	{
-		return newLoader().load(jobId);
+		return newLoader().loadByJobId(jobId);
 	}
 
 	public DistributionJob getJobById(final DDOrderId ddOrderId)
 	{
-		return newLoader().load(ddOrderId);
+		return newLoader().loadByDDOrderId(ddOrderId);
+	}
+
+	public List<DistributionJob> listJobs(final DDOrderQuery query)
+	{
+		return newLoader().loadByQuery(query);
 	}
 
 	@NonNull
@@ -268,8 +263,13 @@ public class DistributionRestService
 		return new DistributionJobLoader(loadingSupportServices);
 	}
 
-	public DistributionJob processEvent(@NonNull final DistributionJob job, @NonNull final JsonDistributionEvent event)
+	public DistributionJob processEvent(@NonNull final JsonDistributionEvent event, @NonNull final UserId callerId)
 	{
+		final WFProcessId wfProcessId = WFProcessId.ofString(event.getWfProcessId());
+		final DistributionJobId jobId = DistributionJobId.ofWFProcessId(wfProcessId);
+		final DistributionJob job = getJobById(jobId);
+		job.assertCanEdit(callerId);
+
 		if (event.getPickFrom() != null)
 		{
 			return DistributionJobPickFromCommand.builder()
@@ -343,10 +343,7 @@ public class DistributionRestService
 
 	public void abortAll(@NonNull final UserId responsibleId)
 	{
-		final DistributionJobLoader loader = newLoader();
-		final ImmutableList<DistributionJob> jobs = streamDDOrdersAssignedTo(responsibleId, DistributionJobSorting.DEFAULT)
-				.map(loader::load)
-				.collect(ImmutableList.toImmutableList());
+		final List<DistributionJob> jobs = newLoader().loadByQuery(DistributionJobQueries.ddOrdersAssignedToUser(responsibleId, DistributionJobSorting.DEFAULT));
 		if (jobs.isEmpty())
 		{
 			return;

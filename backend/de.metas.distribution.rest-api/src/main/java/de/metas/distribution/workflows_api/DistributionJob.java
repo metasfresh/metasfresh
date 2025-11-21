@@ -77,6 +77,14 @@ public class DistributionJob
 		this.status = WFActivityStatus.computeStatusFromLines(lines, DistributionJobLine::getStatus);
 	}
 
+	public void assertCanEdit(final UserId userId)
+	{
+		if (!UserId.equals(this.responsibleId, userId))
+		{
+			throw new AdempiereException("Cannot edit " + this + " because it is not assigned to " + userId);
+		}
+	}
+
 	@NonNull
 	public DDOrderId getDdOrderId() {return id.toDDOrderId();}
 

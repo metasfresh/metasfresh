@@ -1,8 +1,12 @@
 package de.metas.distribution.workflows_api;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.distribution.config.MobileUIDistributionConfig;
 import de.metas.distribution.config.MobileUIDistributionConfigRepository;
 import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.distribution.ddorder.DDOrderLineId;
+import de.metas.distribution.ddorder.DDOrderQuery;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedule;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
@@ -16,6 +20,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
+import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
@@ -32,7 +37,11 @@ import org.eevolution.model.I_PP_Order;
 import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class DistributionJobLoaderSupportingServices
 {
@@ -99,19 +108,30 @@ public class DistributionJobLoaderSupportingServices
 				.build();
 	}
 
+	public Stream<I_DD_Order> stream(@NonNull final DDOrderQuery query)
+	{
+		return ddOrderService.streamDDOrders(query);
+	}
+
 	public I_DD_Order getDDOrderById(final DDOrderId ddOrderId)
 	{
 		return ddOrderService.getById(ddOrderId);
 	}
 
-	public List<I_DD_OrderLine> getLines(final I_DD_Order ddOrder)
+	public Map<DDOrderId, List<I_DD_OrderLine>> getLinesByDDOrderIds(final Set<DDOrderId> ddOrderIds)
 	{
-		return ddOrderService.retrieveLines(ddOrder);
+		return ddOrderService.streamLinesByDDOrderIds(ddOrderIds)
+				.collect(Collectors.groupingBy(ddOrderLine -> DDOrderId.ofRepoId(ddOrderLine.getDD_Order_ID()), Collectors.toList()));
 	}
 
-	public List<DDOrderMoveSchedule> getSchedules(final DDOrderId ddOrderId)
+	public Map<DDOrderLineId, List<DDOrderMoveSchedule>> getSchedulesByDDOrderLineIds(final Set<DDOrderLineId> ddOrderLineIds)
 	{
-		return ddOrderMoveScheduleService.getSchedules(ddOrderId);
+		if (ddOrderLineIds.isEmpty()) {return ImmutableMap.of();}
+
+		final Map<DDOrderLineId, List<DDOrderMoveSchedule>> map = ddOrderMoveScheduleService.getByDDOrderLineIds(ddOrderLineIds)
+				.stream()
+				.collect(Collectors.groupingBy(DDOrderMoveSchedule::getDdOrderLineId, Collectors.toList()));
+		return CollectionUtils.fillMissingKeys(map, ddOrderLineIds, ImmutableList.of());
 	}
 
 	public ZoneId getTimeZone(final OrgId orgId)

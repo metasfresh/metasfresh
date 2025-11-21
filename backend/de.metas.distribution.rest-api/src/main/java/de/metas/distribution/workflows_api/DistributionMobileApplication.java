@@ -221,14 +221,8 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 
 	public WFProcess processEvent(final JsonDistributionEvent event, final UserId callerId)
 	{
-		final WFProcessId wfProcessId = WFProcessId.ofString(event.getWfProcessId());
-		return changeWFProcessById(
-				wfProcessId,
-				(wfProcess, job) -> {
-					wfProcess.assertHasAccess(callerId);
-					//assertPickingActivityType(jsonEvents, wfProcess);
-					return distributionRestService.processEvent(job, event);
-				});
+		DistributionJob job = distributionRestService.processEvent(event, callerId);
+		return toWFProcess(job);
 	}
 
 	@Override

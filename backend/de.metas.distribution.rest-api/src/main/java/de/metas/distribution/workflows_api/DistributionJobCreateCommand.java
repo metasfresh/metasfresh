@@ -66,7 +66,7 @@ public class DistributionJobCreateCommand
 		}
 
 		final DistributionJob job = new DistributionJobLoader(loadingSupportServices)
-				.load(ddOrder);
+				.loadByRecord(ddOrder);
 
 		distributionJobHUReservationService.reservePickFromHUs(job);
 
