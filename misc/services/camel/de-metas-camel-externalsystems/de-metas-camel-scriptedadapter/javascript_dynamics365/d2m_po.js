@@ -105,14 +105,16 @@ function transformPurchaseOrder(po) {
  * @returns {Object} Context object with common fields
  */
 function buildTransformContext(po) {
+    const firstLine = po.Lines[0];
+    
     return {
         orgCode: po.orgCode ?? null,
         headerId: po.orderNumber ?? null,
         partnerIdentifier: buildIdentifier(po.partnerIdentifier ?? ""),
         dropShipIdentifier: buildIdentifier(po.dropShip?.partnerID ?? ""),
         poReference: po.orderDocumentNo,
-        dateOrdered: po.dateOrdered,
-        dateRequired: po.dateRequired
+        dateOrdered: po.dateOrdered ?? firstLine.dateOrdered ?? null,
+        dateRequired: po.dateRequired ?? firstLine.dateRequired ?? null
     };
 }
 
