@@ -92,7 +92,7 @@ public class MaterialTrackingInvoiceCandService
 		final I_C_Invoice_Candidate existingICForMT = repo.getFirstForMaterialTrackingId(MaterialTrackingId.ofRepoId(materialTracking.getM_Material_Tracking_ID()))
 				.orElse(null);
 
-		if (existingICForMT == null || existingICForMT.getBill_BPartner_ID() != candidate.getBill_BPartner_ID())
+		if (existingICForMT != null && existingICForMT.getBill_BPartner_ID() != candidate.getBill_BPartner_ID())
 		{
 			//Not for the same BillBPartner as other ICs of the material tracking, can't add to group
 			return;
@@ -100,8 +100,11 @@ public class MaterialTrackingInvoiceCandService
 
 		candidate.setM_Material_Tracking_ID(materialTracking.getM_Material_Tracking_ID());
 
-		final InvoiceCandidateHeaderAggregationId effectiveHeaderAggregationKeyId = IAggregationBL.getEffectiveHeaderAggregationKeyId(existingICForMT);
-		candidate.setC_Invoice_Candidate_HeaderAggregation_Override_ID(InvoiceCandidateHeaderAggregationId.toRepoId(effectiveHeaderAggregationKeyId));
+		if (existingICForMT != null)
+		{
+			final InvoiceCandidateHeaderAggregationId effectiveHeaderAggregationKeyId = IAggregationBL.getEffectiveHeaderAggregationKeyId(existingICForMT);
+			candidate.setC_Invoice_Candidate_HeaderAggregation_Override_ID(InvoiceCandidateHeaderAggregationId.toRepoId(effectiveHeaderAggregationKeyId));
+		}
 
 		aggregationBL.getUpdateProcessor().process(candidate);
 
