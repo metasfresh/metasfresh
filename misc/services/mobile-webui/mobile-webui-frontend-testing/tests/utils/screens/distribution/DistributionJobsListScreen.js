@@ -57,6 +57,13 @@ export const DistributionJobsListScreen = {
         await expect(locateJobButtons()).toHaveCount(expectationsArray.length);
     }),
 
+    expectHeaderProperty: async ({ caption, value }) => await test.step(`${NAME} - Check header property '${caption}'='${value}'`, async () => {
+        const row = await page.locator(
+            `tr:has(th:has-text("${caption}")):has(td:has-text("${value}"))`
+        );
+        await expect(row).toHaveCount(1)
+    }),
+
     goBack: async () => await test.step(`${NAME} - Go back`, async () => {
         await page.locator(ID_BACK_BUTTON).tap();
         await ApplicationsListScreen.waitForScreen();
