@@ -145,6 +145,11 @@ public class PickingJobRestService
 	{
 		return pickingJobService.openLine(pickingJob, pickingLineId);
 	}
+	
+	public PickingJob complete(@NonNull final PickingJobId pickingJobId, @NonNull final UserId callerId)
+	{
+		return pickingJobService.complete(pickingJobId, callerId);
+	}
 
 	public void abort(@NonNull final PickingJob pickingJob)
 	{
