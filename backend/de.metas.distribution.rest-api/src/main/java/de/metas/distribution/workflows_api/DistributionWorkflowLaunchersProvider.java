@@ -33,7 +33,7 @@ public class DistributionWorkflowLaunchersProvider
 
 		final MobileUIDistributionConfig config = distributionRestService.getConfig();
 
-		final ImmutableList<WorkflowLauncher> launchers = distributionRestService.streamJobReferencesForUser(
+		final ImmutableList<WorkflowLauncher> launchers = distributionRestService.streamJobReferences(
 						newDDOrderReferenceQuery(query.getUserId())
 								.suggestedLimit(query.getLimit().orElse(config.getMaxLaunchers()))
 								.activeFacetIds(DistributionFacetIdsCollection.ofWorkflowLaunchersFacetIds(query.getFacetIds()))

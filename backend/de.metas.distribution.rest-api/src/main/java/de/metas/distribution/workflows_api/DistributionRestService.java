@@ -104,7 +104,7 @@ public class DistributionRestService
 		return ddOrderMoveScheduleService.getQtyRejectedReasons();
 	}
 
-	public Stream<DDOrderReference> streamJobReferencesForUser(@NonNull final DDOrderReferenceQuery query)
+	public Stream<DDOrderReference> streamJobReferences(@NonNull final DDOrderReferenceQuery query)
 	{
 		final DDOrderReferenceCollector collector = DDOrderReferenceCollector.builder()
 				.ddOrderService(ddOrderService)
