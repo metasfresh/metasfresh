@@ -22,11 +22,6 @@ package de.metas.invoicecandidate.api;
  * #L%
  */
 
-import java.util.List;
-
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_InOutLine;
-
 import de.metas.aggregation.api.AggregationKey;
 import de.metas.aggregation.api.IAggregationKeyBuilder;
 import de.metas.invoicecandidate.InvoiceCandidateHeaderAggregationId;
@@ -37,6 +32,11 @@ import de.metas.invoicecandidate.spi.IAggregator;
 import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
 import de.metas.util.IProcessor;
 import de.metas.util.ISingletonService;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_InOutLine;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
