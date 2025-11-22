@@ -22,13 +22,9 @@ package de.metas.invoicecandidate.api;
  * #L%
  */
 
-import java.util.List;
-
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_InOutLine;
-
 import de.metas.aggregation.api.AggregationKey;
 import de.metas.aggregation.api.IAggregationKeyBuilder;
+import de.metas.invoicecandidate.InvoiceCandidateHeaderAggregationId;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
@@ -36,6 +32,13 @@ import de.metas.invoicecandidate.spi.IAggregator;
 import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
 import de.metas.util.IProcessor;
 import de.metas.util.ISingletonService;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_InOutLine;
+
+import javax.annotation.Nullable;
+import java.util.List;
+
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 public interface IAggregationBL extends ISingletonService
 {
@@ -146,4 +149,10 @@ public interface IAggregationBL extends ISingletonService
 	 * @param ic
 	 */
 	void resetHeaderAggregationKey(I_C_Invoice_Candidate ic);
+
+	@Nullable
+	static InvoiceCandidateHeaderAggregationId getEffectiveHeaderAggregationKeyId(final I_C_Invoice_Candidate ic)
+	{
+		return InvoiceCandidateHeaderAggregationId.ofRepoIdOrNull(firstGreaterThanZero(ic.getC_Invoice_Candidate_HeaderAggregation_Override_ID(), ic.getC_Invoice_Candidate_HeaderAggregation_ID()));
+	}
 }
