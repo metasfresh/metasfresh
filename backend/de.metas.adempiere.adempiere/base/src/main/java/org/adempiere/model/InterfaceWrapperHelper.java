@@ -375,7 +375,7 @@ public class InterfaceWrapperHelper
 		return loadByIds(ids, modelClass, ITrx.TRXNAME_ThreadInherited);
 	}
 
-	public static <T> List<T> loadByRepoIdAwares(@NonNull final Set<? extends RepoIdAware> repoIdAwares, final Class<T> modelClass)
+	public static <T> ImmutableList<T> loadByRepoIdAwares(@NonNull final Set<? extends RepoIdAware> repoIdAwares, final Class<T> modelClass)
 	{
 		final ImmutableSet<Integer> ids = RepoIdAwares.asRepoIdsSet(repoIdAwares);
 		return loadByIds(ids, modelClass, ITrx.TRXNAME_ThreadInherited);
@@ -392,7 +392,7 @@ public class InterfaceWrapperHelper
 		return loadByIds(ids, modelClass, ITrx.TRXNAME_None);
 	}
 
-	private static <T> List<T> loadByIds(final Set<Integer> ids, final Class<T> modelClass, final String trxName)
+	private static <T> ImmutableList<T> loadByIds(final Set<Integer> ids, final Class<T> modelClass, final String trxName)
 	{
 		if (getInMemoryDatabaseForModel(modelClass) != null)
 		{

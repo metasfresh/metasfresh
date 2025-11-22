@@ -3,6 +3,7 @@ package de.metas.attachments;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import de.metas.attachments.automaticlinksharing.RecordToReferenceProviderService;
 import de.metas.attachments.automaticlinksharing.RecordToReferenceProviderService.ExpandResult;
@@ -132,7 +133,7 @@ public class AttachmentService
 	}
 
 	/**
-	 * @param referencedRecords may be a single model object, or a single {@link TableRecordReference} or a collection of both.
+	 * @param referencedRecords maybe a single model object, or a single {@link TableRecordReference} or a collection of both.
 	 */
 	@SuppressWarnings("unchecked")
 	public AttachmentEntry createNewAttachment(
@@ -151,9 +152,7 @@ public class AttachmentService
 		final TableRecordReference tableRecordReference = TableRecordReference.of(referencedRecords);
 
 		final ImmutableList<TableRecordReference> tableRecordReferenceAsList = ImmutableList.of(tableRecordReference);
-		final Collection<AttachmentReference> attachmentReferences = createAttachmentLinks(
-				ImmutableList.of(newEntry),
-				tableRecordReferenceAsList);
+		createAttachmentLinks(ImmutableList.of(newEntry), tableRecordReferenceAsList);
 
 		return newEntry;
 	}
@@ -179,7 +178,7 @@ public class AttachmentService
 	/**
 	 * Note: the given objects may be "record" models or {@link TableRecordReference}s.
 	 */
-	public Collection<AttachmentReference> createAttachmentLinks(
+	public void createAttachmentLinks(
 			@NonNull final ImmutableList<AttachmentEntry> entries,
 			@NonNull final Collection<?> referencedRecords)
 	{
@@ -187,14 +186,11 @@ public class AttachmentService
 				CollectionUtils.map(entries, AttachmentEntry::getId),
 				referencedRecords);
 
-		final ImmutableList.Builder<AttachmentReference> result = ImmutableList.builder();
-
 		final ImmutableMultimap<AttachmentEntry, AttachmentReference> multimap = getMultimap(unsavedAttachmentReferences);
 		for (final AttachmentEntry attachmentEntry : multimap.keySet())
 		{
-			result.addAll(expandAndSave(attachmentEntry, ImmutableList.copyOf(multimap.get(attachmentEntry))));
+			expandAndSave(attachmentEntry, ImmutableList.copyOf(multimap.get(attachmentEntry)));
 		}
-		return result.build();
 	}
 
 	/**
@@ -303,19 +299,15 @@ public class AttachmentService
 
 		if (!Check.isEmpty(attachmentLinksRequest.getLinksToRemove()))
 		{
+			AttachmentEntry lastUnattachResult;
 			for (final TableRecordReference linkToRemove : attachmentLinksRequest.getLinksToRemove())
 			{
-				final AttachmentReference attachmentReference = AttachmentReference.builder()
-						.attachmentEntryId(attachmentLinksRequest.getAttachmentEntryId())
-						.recordRef(linkToRemove)
-						.build();
-				attachmentReferenceRepository.delete(attachmentReference);
-			}
-
-			final AttachmentEntryId attachmentEntryId = deleteIfNoReferenceLeft(attachmentLinksRequest.getAttachmentEntryId());
-			if (attachmentEntryId == null)
-			{ // the attachment is deleted. no point processing the tag requests
-				return entry.withId(attachmentEntryId);
+				lastUnattachResult = unattach(linkToRemove, entry);
+				if (lastUnattachResult.getId() == null)
+				{
+					// the attachment is deleted. no point processing the tag requests
+					return lastUnattachResult;
+				}
 			}
 		}
 
@@ -344,7 +336,6 @@ public class AttachmentService
 		final ImmutableList<AttachmentReference> remainingReferences = attachmentReferenceRepository.getByEntryId(attachmentEntryId);
 		if (remainingReferences.isEmpty())
 		{
-			final AttachmentEntry deletedEntry = getById(attachmentEntryId);
 			attachmentEntryRepository.deleteById(attachmentEntryId);
 			return null;
 		}
@@ -355,18 +346,21 @@ public class AttachmentService
 			@NonNull final Object referencedRecord,
 			@NonNull final AttachmentEntry attachment)
 	{
-		final TableRecordReference tableRecordReference = TableRecordReference.of(referencedRecord);
-		attachmentReferenceRepository.deleteBy(attachment.getIdNonNull(), tableRecordReference);
+		synchronized (attachment.getIdNonNull().toString().intern())
+		{
+			final TableRecordReference tableRecordReference = TableRecordReference.of(referencedRecord);
+			attachmentReferenceRepository.deleteBy(attachment.getIdNonNull(), tableRecordReference);
 
-		final AttachmentEntryId attachmentEntryId = deleteIfNoReferenceLeft(attachment.getIdNonNull());
+			final AttachmentEntryId attachmentEntryId = deleteIfNoReferenceLeft(attachment.getIdNonNull());
 
-		final AttachmentLog attachmentLog = AttachmentLog.builder()
-				.attachmentEntry(attachment)
-				.recordRef(tableRecordReference)
-				.build();
-		attachmentLogRepository.save(attachmentLog);
+			final AttachmentLog attachmentLog = AttachmentLog.builder()
+					.attachmentEntry(attachment)
+					.recordRef(tableRecordReference)
+					.build();
+			attachmentLogRepository.save(attachmentLog);
 
-		return attachment.withId(attachmentEntryId);
+			return attachment.withId(attachmentEntryId);
+		}
 	}
 
 	public List<AttachmentEntry> getByReferencedRecord(@NonNull final Object referencedRecord)
@@ -381,7 +375,7 @@ public class AttachmentService
 			final ZonedDateTime created2 = e2.getCreatedUpdatedInfo() != null ? e2.getCreatedUpdatedInfo().getCreated() : ZonedDateTime.now();
 			return created2.compareTo(created1);
 		};
-		final Comparator<AttachmentEntry> biggestIdFirst = (e1, e2) -> Integer.compare(AttachmentEntryId.getRepoId(e2.getId()), AttachmentEntryId.getRepoId(e1.getId()));
+		final Comparator<AttachmentEntry> biggestIdFirst = (e1, e2) -> Integer.compare(AttachmentEntryId.toRepoId(e2.getId()), AttachmentEntryId.toRepoId(e1.getId()));
 		return getByReferencedRecordMigrateIfNeeded(query.getReferencedRecord())
 				.stream()
 				.filter(e -> e.getTags().hasAllTagsSetToTrue(query.getTagsSetToTrue()))
@@ -396,10 +390,14 @@ public class AttachmentService
 		final TableRecordReference recordReference = TableRecordReference.of(referencedRecord);
 		final ImmutableList.Builder<AttachmentEntry> result = ImmutableList.builder();
 
-		attachmentReferenceRepository.getByReferencedRecord(recordReference)
-				.stream()
-				.map(ref -> attachmentEntryRepository.getById(ref.getAttachmentEntryId()))
-				.forEach(result::add);
+		final ImmutableList<AttachmentReference> references = attachmentReferenceRepository.getByReferencedRecord(recordReference);
+
+		final ImmutableSet<AttachmentEntryId> entryIds = references.stream()
+				.map(AttachmentReference::getAttachmentEntryId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final ImmutableList<AttachmentEntry> entries = attachmentEntryRepository.getByIds(entryIds);
+		result.addAll(entries);
 
 		if (attachmentMigrationService.isExistRecordsToMigrate())
 		{

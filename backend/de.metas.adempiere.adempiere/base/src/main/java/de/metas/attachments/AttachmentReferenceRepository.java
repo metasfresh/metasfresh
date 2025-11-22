@@ -22,6 +22,8 @@
 package de.metas.attachments;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import de.metas.cache.CCache;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +44,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Repository
 class AttachmentReferenceRepository
 {
+	final CCache<TableRecordReference, ImmutableList<AttachmentReference>> cache = CCache.newLRUCache(I_AD_Attachment_MultiRef.Table_Name + "#by#ReferencedRecord", 1000, 60);
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public AttachmentReference getById(@NonNull final AttachmentReferenceId id)
@@ -57,7 +61,16 @@ class AttachmentReferenceRepository
 
 	public ImmutableList<AttachmentReference> getByReferencedRecords(@NonNull final Collection<TableRecordReference> referencedRecords)
 	{
+		final Collection<ImmutableList<AttachmentReference>> allOrLoad = cache.getAllOrLoad(referencedRecords, this::getByReferencedRecords0);
+		return allOrLoad
+				.stream()
+				.flatMap(ImmutableList::stream)
+				.collect(ImmutableList.toImmutableList());
 
+	}
+
+	private ImmutableMap<TableRecordReference, ImmutableList<AttachmentReference>> getByReferencedRecords0(@NonNull final Collection<TableRecordReference> referencedRecords)
+	{
 		final IQueryBuilder<I_AD_Attachment_MultiRef> queryBuilder = queryBL.createQueryBuilder(I_AD_Attachment_MultiRef.class)
 				.setJoinOr();
 		for (final TableRecordReference referencedRecord : referencedRecords)
@@ -74,7 +87,10 @@ class AttachmentReferenceRepository
 		return queryBuilder.create()
 				.stream()
 				.map(this::forRecord)
-				.collect(ImmutableList.toImmutableList());
+				.collect(ImmutableMap.toImmutableMap(
+						AttachmentReference::getRecordRef,
+						ImmutableList::of,
+						(list1, list2) -> ImmutableList.<AttachmentReference>builder().addAll(list1).addAll(list2).build()));
 	}
 
 	private AttachmentReference forRecord(@NonNull final I_AD_Attachment_MultiRef multiRefRecord)

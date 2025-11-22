@@ -228,7 +228,7 @@ public class SalesOrderRestController
 	{
 		return JsonSalesOrderAttachment.builder()
 				.salesOrderId(String.valueOf(salesOrderId))
-				.id(AttachmentEntryId.getRepoId(entry.getId()))
+				.id(AttachmentEntryId.toRepoId(entry.getId()))
 				.type(JsonConverters.toJsonAttachmentSourceType(entry.getType()))
 				.filename(entry.getFilename())
 				.mimeType(entry.getMimeType())

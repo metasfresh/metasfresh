@@ -1,13 +1,16 @@
 package de.metas.attachments;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.FileUtil;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_AttachmentEntry;
 import org.compiere.model.I_AD_Attachment_MultiRef;
 import org.compiere.model.X_AD_AttachmentEntry;
@@ -61,6 +64,12 @@ class AttachmentEntryRepository
 		return forRecord(attachmentEntryRecord);
 	}
 
+	public ImmutableList<AttachmentEntry> getByIds(@NonNull final ImmutableSet<AttachmentEntryId> entryIds)
+	{
+		final ImmutableList<I_AD_AttachmentEntry> iAdAttachmentEntryRecords = InterfaceWrapperHelper.loadByRepoIdAwares(entryIds, I_AD_AttachmentEntry.class);
+		return CollectionUtils.map(iAdAttachmentEntryRecords, this::forRecord);
+	}
+	
 	private I_AD_AttachmentEntry retrieveAttachmentEntryRecordInTrx(@NonNull final AttachmentEntryId attachmentEntryId)
 	{
 		return load(attachmentEntryId, I_AD_AttachmentEntry.class);
@@ -93,9 +102,10 @@ class AttachmentEntryRepository
 			final byte[] data)
 	{
 		final I_AD_AttachmentEntry entryRecord = retrieveAttachmentEntryRecordInTrx(attachmentEntryId);
-		if (!X_AD_AttachmentEntry.TYPE_Data.equals(entryRecord.getType()))
+		final boolean entryHasTypeData = X_AD_AttachmentEntry.TYPE_Data.equals(entryRecord.getType());
+		if (!entryHasTypeData)
 		{
-			throw new AdempiereException("Only entries of type Data support attaching data").setParameter("entryRecord", entryRecord);
+			throw new AdempiereException("Only entries of type Data support attaching binary data").setParameter("entryRecord", entryRecord);
 		}
 
 		entryRecord.setBinaryData(data);
@@ -133,21 +143,6 @@ class AttachmentEntryRepository
 		saveRecord(attachmentEntryRecord); // needed in case the record was new, because we need an ID for it
 
 		return forRecord(attachmentEntryRecord);
-	}
-
-	private ImmutableList<I_AD_Attachment_MultiRef> retrieveAttachmentMultiRefs(
-			@Nullable final AttachmentEntryId attachmentEntryId)
-	{
-		if (attachmentEntryId == null)
-		{
-			return ImmutableList.of();
-		}
-
-		return queryBL.createQueryBuilder(I_AD_Attachment_MultiRef.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_Attachment_MultiRef.COLUMN_AD_AttachmentEntry_ID, attachmentEntryId)
-				.create()
-				.listImmutable(I_AD_Attachment_MultiRef.class);
 	}
 
 	private void deleteAllAttachmentMultiRefs(@NonNull final AttachmentEntryId attachmententryId)
