@@ -1,20 +1,18 @@
 package de.metas.attachments.storeattachment;
 
-import java.net.URI;
-import java.util.List;
-import java.util.Optional;
-
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
-import com.google.common.collect.ImmutableList;
-
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.logging.LogManager;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import lombok.NonNull;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import java.net.URI;
+import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L

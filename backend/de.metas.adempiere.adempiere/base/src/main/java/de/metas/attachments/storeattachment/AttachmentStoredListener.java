@@ -1,8 +1,8 @@
 package de.metas.attachments.storeattachment;
 
-import java.net.URI;
-
 import de.metas.attachments.AttachmentEntry;
+
+import java.net.URI;
 
 /*
  * #%L

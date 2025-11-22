@@ -1,13 +1,12 @@
 package de.metas.attachments;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
+import lombok.NonNull;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_AD_Attachment_Log;
 import org.springframework.stereotype.Repository;
 
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L

@@ -1,16 +1,17 @@
 package de.metas.attachments.migration;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
+import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
+import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentEntryCreateRequest;
+import de.metas.attachments.AttachmentEntryFactory;
 import de.metas.common.util.time.SystemTime;
+import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -22,18 +23,15 @@ import org.compiere.model.I_AD_AttachmentEntry;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.ImmutableList;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
-import ch.qos.logback.classic.Level;
-import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.AttachmentEntryCreateRequest;
-import de.metas.attachments.AttachmentEntryFactory;
-import de.metas.logging.LogManager;
-import de.metas.organization.OrgId;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -102,10 +100,7 @@ public class AttachmentMigrationService
 	public List<AttachmentEntry> convertAttachmentLOBToEntries(@NonNull final I_AD_Attachment attachment)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		return trxManager.callInNewTrx(() -> {
-
-			return convertAttachmentLOBToEntries0(attachment);
-		});
+		return trxManager.callInNewTrx(() -> convertAttachmentLOBToEntries0(attachment));
 	}
 
 	private List<AttachmentEntry> convertAttachmentLOBToEntries0(@NonNull final I_AD_Attachment attachment)
@@ -155,7 +150,7 @@ public class AttachmentMigrationService
 
 				if (!attachment.isActive())
 				{
-					final I_AD_AttachmentEntry entryRecord = load(entry.getId(), I_AD_AttachmentEntry.class);
+					final I_AD_AttachmentEntry entryRecord = load(entry.getIdNonNull(), I_AD_AttachmentEntry.class);
 					entryRecord.setIsActive(false);
 					saveRecord(entryRecord);
 				}
@@ -165,13 +160,13 @@ public class AttachmentMigrationService
 
 			return result.build();
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			throw new AdempiereException("Failed convering legacy LOB attachments to entries", ex);
 		}
 	}
 
-	public boolean isExistRecordsToMigrateCheckDB()
+	public void isExistRecordsToMigrateCheckDB()
 	{
 		final boolean existRecordsToMigrate = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_Attachment.class)
@@ -183,7 +178,6 @@ public class AttachmentMigrationService
 		sysConfigBL.setValue(SYSCONFIG_EXIST_RECORDS_TO_MIGRATE, existRecordsToMigrate, ClientId.SYSTEM, OrgId.ANY);
 		Loggables.withLogger(logger, Level.DEBUG).addLog("Setting SysConfig {} to {}", SYSCONFIG_EXIST_RECORDS_TO_MIGRATE, StringUtils.ofBoolean(existRecordsToMigrate));
 
-		return existRecordsToMigrate;
 	}
 
 	public boolean isExistRecordsToMigrate()
