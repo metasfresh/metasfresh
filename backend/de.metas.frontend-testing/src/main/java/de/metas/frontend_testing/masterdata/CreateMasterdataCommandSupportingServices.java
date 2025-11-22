@@ -3,6 +3,7 @@ package de.metas.frontend_testing.masterdata;
 import de.metas.currency.CurrencyRepository;
 import de.metas.distribution.config.MobileUIDistributionConfigRepository;
 import de.metas.distribution.ddorder.DDOrderService;
+import de.metas.distribution.workflows_api.DistributionLauncherCaptionProvider;
 import de.metas.frontend_testing.expectations.AssertExpectationsCommandServices;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
@@ -33,6 +34,7 @@ public class CreateMasterdataCommandSupportingServices
 	@NonNull public final HUQRCodesService huQRCodesService;
 	@NonNull public final CurrencyRepository currencyRepository;
 	@NonNull public final DDOrderService ddOrderService;
+	@NonNull public final DistributionLauncherCaptionProvider distributionLauncherCaptionProvider;
 	@NonNull public final ScannableCodeFormatService scannableCodeFormatService;
 	@NonNull public final AssertExpectationsCommandServices assertExpectationsCommandServices;
 	@NonNull public final PickingJobScheduleService pickingJobScheduleService;

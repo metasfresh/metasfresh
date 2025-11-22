@@ -1,11 +1,11 @@
 package de.metas.bpartner;
 
 import de.metas.bpartner.service.IBPGroupDAO;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BP_Group;
 import org.springframework.stereotype.Repository;
 
@@ -59,10 +59,10 @@ public class BPGroupRepository
 		return ofRecord(groupRecord);
 	}
 
-	public Optional<BPGroup> getDefaultGroup()
+	public Optional<BPGroup> getDefaultGroup(@NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		final I_C_BP_Group groupRecord = Services.get(IBPGroupDAO.class)
-				.getDefaultByClientId(ClientId.METASFRESH);
+				.getDefaultByClientOrgId(clientAndOrgId);
 
 		return ofRecord(groupRecord);
 	}

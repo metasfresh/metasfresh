@@ -1,7 +1,7 @@
-import {test} from "../../../../playwright.config";
-import {page, SLOW_ACTION_TIMEOUT} from "../../common";
-import {DistributionJobsListScreen} from "./DistributionJobsListScreen";
-import {expect} from "@playwright/test";
+import { test } from "../../../../playwright.config";
+import { page, SLOW_ACTION_TIMEOUT } from "../../common";
+import { DistributionJobsListScreen } from "./DistributionJobsListScreen";
+import { expect } from "@playwright/test";
 
 export const DistributionJobsListFiltersScreen = {
     waitForScreen: async () => await test.step('Wait for distribution jobs list filters screen', async () => {
@@ -10,17 +10,20 @@ export const DistributionJobsListFiltersScreen = {
     }),
 
     waitLoadComplete: async () => await test.step('Wait for load complete', async () => {
-        await page.locator('.loading').waitFor({state: 'detached', timeout: SLOW_ACTION_TIMEOUT});
+        await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
     }),
 
-    filterByFacetId: async ({facetId, expectHitCount}) => await test.step(`Filter by facet ${facetId}`, async () => {
+    filterByFacetId: async ({ facetId, expectHitCount }) => await test.step(`Filter by facet ${facetId}`, async () => {
         const facetButton = page.locator(`[data-testid="${facetId}"]`);
-        if (expectHitCount != null) {
-            await expect(facetButton).toHaveAttribute("data-hitcount", String(expectHitCount));
-        }
         await facetButton.tap();
         await DistributionJobsListFiltersScreen.waitLoadComplete();
-        await page.locator('#showResults').tap();
+
+        const showResultsButton = page.locator('#showResults');
+        if (expectHitCount != null) {
+            await expect(showResultsButton).toHaveAttribute("data-hitcount", String(expectHitCount));
+        }
+
+        await showResultsButton.tap();
         await DistributionJobsListScreen.waitForScreen();
     }),
 

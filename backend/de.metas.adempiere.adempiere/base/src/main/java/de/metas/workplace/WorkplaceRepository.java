@@ -70,9 +70,16 @@ public class WorkplaceRepository
 
 	public Workplace create(@NonNull final WorkplaceCreateRequest request)
 	{
+		if (request.getPickFromLocatorId() != null && !WarehouseId.equals(request.getWarehouseId(), request.getPickFromLocatorId().getWarehouseId()))
+		{
+			throw new AdempiereException("PickFromLocatorId and WarehouseId must be from the same warehouse")
+					.setParameter("request", request);
+		}
+		
 		final I_C_Workplace record = InterfaceWrapperHelper.newInstance(I_C_Workplace.class);
 		record.setName(request.getName());
 		record.setM_Warehouse_ID(request.getWarehouseId().getRepoId());
+		record.setPickFrom_Locator_ID(LocatorId.toRepoId(request.getPickFromLocatorId()));
 		record.setM_PickingSlot_ID(PickingSlotId.toRepoId(request.getPickingSlotId()));
 		InterfaceWrapperHelper.save(record);
 		return fromRecord(record);

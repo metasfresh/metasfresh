@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implements I_MobileUI_UserProfile_Picking, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1489043387L;
+	private static final long serialVersionUID = -207925167L;
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_Picking (final Properties ctx, final int MobileUI_UserProfile_Picking_ID, @Nullable final String trxName)
@@ -80,6 +80,18 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	public boolean isAllowPickToStructure_TU() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_AllowPickToStructure_TU);
+	}
+
+	@Override
+	public void setBestBeforeDate (final boolean BestBeforeDate)
+	{
+		set_Value (COLUMNNAME_BestBeforeDate, BestBeforeDate);
+	}
+
+	@Override
+	public boolean isBestBeforeDate() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_BestBeforeDate);
 	}
 
 	/** 
@@ -297,6 +309,18 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	public boolean isShowLastPickedBestBeforeDateForLines() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsShowLastPickedBestBeforeDateForLines);
+	}
+
+	@Override
+	public void setLotNumber (final boolean LotNumber)
+	{
+		set_Value (COLUMNNAME_LotNumber, LotNumber);
+	}
+
+	@Override
+	public boolean isLotNumber() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_LotNumber);
 	}
 
 	@Override

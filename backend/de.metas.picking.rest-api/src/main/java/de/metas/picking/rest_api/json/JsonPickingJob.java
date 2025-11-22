@@ -25,6 +25,8 @@ package de.metas.picking.rest_api.json;
 import com.google.common.collect.ImmutableList;
 import de.metas.global_qrcodes.JsonDisplayableQRCode;
 import de.metas.handlingunits.picking.config.mobileui.AllowedPickToStructures;
+import de.metas.handlingunits.picking.config.mobileui.PickAttribute;
+import de.metas.handlingunits.picking.config.mobileui.PickAttributesConfig;
 import de.metas.handlingunits.picking.config.mobileui.PickToStructure;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.model.HUInfo;
@@ -56,6 +58,7 @@ public class JsonPickingJob
 
 	boolean allowSkippingRejectedReason;
 	@Builder.Default Set<PickToStructure> allowedPickToStructures = AllowedPickToStructures.DEFAULT.toAllowedSet();
+	@Builder.Default Set<PickAttribute> readAttributes = PickAttributesConfig.DEFAULT.getAttributesToReadSet();
 	boolean showPromptWhenOverPicking;
 	boolean anonymousPickHUsOnTheFly;
 

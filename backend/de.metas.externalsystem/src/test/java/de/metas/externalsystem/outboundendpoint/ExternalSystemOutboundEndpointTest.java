@@ -45,6 +45,7 @@ class ExternalSystemOutboundEndpointTest
 				.token("test-token")
 				.user("test@example.com")
 				.password("test-password")
+				.sasSignature("test-signature")
 				.build();
 
 		// when

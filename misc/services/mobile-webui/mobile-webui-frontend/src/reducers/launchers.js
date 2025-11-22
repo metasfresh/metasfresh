@@ -6,7 +6,15 @@ export const initialState = {};
 
 const EMPTY_ARRAY = [];
 
-export const getApplicationLaunchers = (state, applicationId) => state.launchers[applicationId] || {};
+export const useApplicationLaunchers = ({ applicationId }) => {
+  const {
+    list: launchers,
+    filterByQRCode,
+    requestTimestamp,
+  } = useSelector((state) => getApplicationLaunchers(state, applicationId));
+  return { launchers, filterByQRCode, requestTimestamp };
+};
+const getApplicationLaunchers = (state, applicationId) => state.launchers[applicationId] || {};
 
 export const useFacetIds = ({ applicationId }) => {
   return useSelector((state) => getApplicationLaunchersFacetIds(state, applicationId));

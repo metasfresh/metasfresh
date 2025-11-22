@@ -17,6 +17,7 @@ import de.metas.uom.UomId;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_DD_Order;
@@ -87,20 +88,27 @@ public class DDOrderReferenceCollector implements DistributionOrderCollector<DDO
 				.ppOrderId(PPOrderId.ofRepoIdOrNull(ddOrder.getForward_PP_Order_ID()))
 				.isJobStarted(isJobStarted)
 				.plantId(ResourceId.ofRepoIdOrNull(ddOrder.getPP_Plant_ID()))
+				.priority(ddOrder.getPriorityRule())
 				.build();
 	}
 
 	private static DDOrderReference updateDDOrderReference(final DDOrderReference reference, final List<I_DD_OrderLine> lines)
 	{
+		final HashSet<LocatorId> fromLocatorIds = new HashSet<>();
+		final HashSet<LocatorId> toLocatorIds = new HashSet<>();
 		final HashSet<ProductId> productIds = new HashSet<>();
 		final HashSet<Quantity> qtysEntered = new HashSet<>();
 		for (final I_DD_OrderLine line : lines)
 		{
+			fromLocatorIds.add(LocatorId.ofRepoId(line.getM_Warehouse_ID(), line.getM_Locator_ID()));
+			toLocatorIds.add(LocatorId.ofRepoId(line.getM_WarehouseTo_ID(), line.getM_LocatorTo_ID()));
 			productIds.add(ProductId.ofRepoId(line.getM_Product_ID()));
 			qtysEntered.add(extractQtyEntered(line));
 		}
 
 		return reference.toBuilder()
+				.fromLocatorId(CollectionUtils.singleElementOrNull(fromLocatorIds))
+				.toLocatorId(CollectionUtils.singleElementOrNull(toLocatorIds))
 				.productId(CollectionUtils.singleElementOrNull(productIds))
 				.qty(CollectionUtils.singleElementOrNull(qtysEntered))
 				.build();

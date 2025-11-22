@@ -1,5 +1,6 @@
 package org.adempiere.ad.dao;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -34,6 +35,7 @@ import java.util.Collection;
 @EqualsAndHashCode
 public final class QueryLimit
 {
+	@JsonCreator
 	public static QueryLimit ofInt(final int limit)
 	{
 		if (isNoLimit(limit))

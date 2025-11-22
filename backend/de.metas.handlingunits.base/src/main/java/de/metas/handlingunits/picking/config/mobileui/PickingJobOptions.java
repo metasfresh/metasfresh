@@ -20,6 +20,7 @@ public class PickingJobOptions
 	boolean isAlwaysSplitHUsEnabled;
 	boolean isShipOnCloseLU;
 	@NonNull AllowedPickToStructures allowedPickToStructures;
+	@NonNull PickAttributesConfig pickAttributes;
 	boolean isCatchWeightTUPickingEnabled;
 	boolean considerSalesOrderCapacity;
 	boolean isAllowSkippingRejectedReason;
@@ -38,7 +39,8 @@ public class PickingJobOptions
 			final boolean isAllowPickingAnyHU,
 			final boolean isAlwaysSplitHUsEnabled,
 			final boolean isShipOnCloseLU,
-			@NonNull AllowedPickToStructures allowedPickToStructures,
+			@NonNull final AllowedPickToStructures allowedPickToStructures,
+			@Nullable final PickAttributesConfig pickAttributes,
 			final boolean isCatchWeightTUPickingEnabled,
 			final boolean considerSalesOrderCapacity,
 			final boolean isAllowSkippingRejectedReason,
@@ -56,6 +58,7 @@ public class PickingJobOptions
 		this.isAlwaysSplitHUsEnabled = isAlwaysSplitHUsEnabled;
 		this.isShipOnCloseLU = isShipOnCloseLU;
 		this.allowedPickToStructures = allowedPickToStructures;
+		this.pickAttributes = pickAttributes != null ? pickAttributes : PickAttributesConfig.UNKNOWN;
 		this.isCatchWeightTUPickingEnabled = isCatchWeightTUPickingEnabled;
 		this.considerSalesOrderCapacity = considerSalesOrderCapacity;
 		this.isAllowSkippingRejectedReason = isAllowSkippingRejectedReason;
@@ -77,6 +80,7 @@ public class PickingJobOptions
 	{
 		final PickingJobOptions newValue = toBuilder()
 				.allowedPickToStructures(this.allowedPickToStructures.fallbackTo(fallback.allowedPickToStructures))
+				.pickAttributes(this.pickAttributes.fallbackTo(fallback.pickAttributes))
 				.displayPickingSlotSuggestions(this.displayPickingSlotSuggestions.ifUnknown(fallback.getDisplayPickingSlotSuggestions()))
 				.build();
 
