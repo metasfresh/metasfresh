@@ -144,7 +144,7 @@ public class AttachmentEntryRepositoryTest
 
 		//then
 		assertThat(attachmentEntryDataResource.getFilename()).isEqualTo(fileName);
-		assertThat(attachmentEntryDataResource.getDescription()).isNull();
+		assertThat(attachmentEntryDataResource.getDescription()).isEqualTo("");
 		assertThat(IOUtils.toByteArray(attachmentEntryDataResource.getInputStream())).isEqualTo(fileData.getBytes());
 	}
 

@@ -43,7 +43,7 @@ public final class AttachmentEntryDataResource extends AbstractResource
 	private AttachmentEntryDataResource(
 			@Nullable final byte[] source,
 			@NonNull final String filename,
-			@NonNull final String description)
+			@Nullable final String description)
 	{
 		this.source = source != null ? source : new byte[] {};
 		this.filename = filename;
