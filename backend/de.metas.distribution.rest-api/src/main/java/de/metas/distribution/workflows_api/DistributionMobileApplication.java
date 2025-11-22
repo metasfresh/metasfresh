@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.distribution.config.MobileUIDistributionConfig;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.rest_api.JsonDistributionEvent;
+import de.metas.distribution.rest_api.JsonDropAllRequest;
 import de.metas.distribution.workflows_api.activity_handlers.CompleteDistributionWFActivityHandler;
 import de.metas.distribution.workflows_api.activity_handlers.MoveWFActivityHandler;
 import de.metas.document.engine.IDocument;
@@ -30,7 +31,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
-import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
 
 @Component
@@ -143,14 +143,6 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 		return remappingFunction.apply(wfProcess);
 	}
 
-	private WFProcess changeWFProcessById(
-			@NonNull final WFProcessId wfProcessId,
-			@NonNull final BiFunction<WFProcess, DistributionJob, DistributionJob> remappingFunction)
-	{
-		final WFProcess wfProcess = getWFProcessById(wfProcessId);
-		return mapDocument(wfProcess, job -> remappingFunction.apply(wfProcess, job));
-	}
-
 	public static WFProcess mapDocument(@NonNull final WFProcess wfProcess, @NonNull final UnaryOperator<DistributionJob> mapper)
 	{
 		final DistributionJob job = getDistributionJob(wfProcess);
@@ -192,19 +184,21 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 						.value(job.getDropToWarehouse().getCaption())
 						.build());
 
-		if (Check.isNotBlank(job.getSalesOrderDocumentNo()))
+		final String salesOrderDocumentNo = job.getSalesOrderRef() != null ? job.getSalesOrderRef().getDocumentNo() : null;
+		if (Check.isNotBlank(salesOrderDocumentNo))
 		{
 			builder.entry(WFProcessHeaderProperty.builder()
 					.caption(TranslatableStrings.adElementOrMessage("C_Order_DocumentNo"))
-					.value(job.getSalesOrderDocumentNo())
+					.value(salesOrderDocumentNo)
 					.build());
 		}
 
-		if (Check.isNotBlank(job.getPpOrderDocumentNo()))
+		final String manufacturingOrderDocumentNo = job.getManufacturingOrderRef() != null ? job.getManufacturingOrderRef().getDocumentNo() : null;
+		if (Check.isNotBlank(manufacturingOrderDocumentNo))
 		{
 			builder.entry(WFProcessHeaderProperty.builder()
 					.caption(TranslatableStrings.adElementOrMessage("PP_Order_DocumentNo"))
-					.value(job.getPpOrderDocumentNo())
+					.value(manufacturingOrderDocumentNo)
 					.build());
 		}
 
@@ -223,6 +217,11 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 	{
 		DistributionJob job = distributionRestService.processEvent(event, callerId);
 		return toWFProcess(job);
+	}
+
+	public void dropAll(final JsonDropAllRequest request, final UserId callerId)
+	{
+		distributionRestService.dropAll(request, callerId);
 	}
 
 	@Override

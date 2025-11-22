@@ -19,6 +19,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
+
 @Service
 @RequiredArgsConstructor
 public class DistributionWorkflowLaunchersProvider
@@ -33,19 +35,13 @@ public class DistributionWorkflowLaunchersProvider
 
 		final MobileUIDistributionConfig config = distributionRestService.getConfig();
 
-		final ImmutableList<WorkflowLauncher> launchers = distributionRestService.streamJobReferences(
-						newDDOrderReferenceQuery(query.getUserId())
-								.suggestedLimit(query.getLimit().orElse(config.getMaxLaunchers()))
-								.activeFacetIds(DistributionFacetIdsCollection.ofWorkflowLaunchersFacetIds(query.getFacetIds()))
-								.build()
-				)
-				.map(this::toWorkflowLauncher)
-				.collect(ImmutableList.toImmutableList());
-
-		return WorkflowLaunchersList.builder()
-				.launchers(launchers)
-				.timestamp(SystemTime.asInstant())
-				.build();
+		final Collection<DDOrderReference> jobReferences = distributionRestService.getJobReferences(
+				newDDOrderReferenceQuery(query.getUserId())
+						.suggestedLimit(query.getLimit().orElse(config.getMaxLaunchers()))
+						.activeFacetIds(DistributionFacetIdsCollection.ofWorkflowLaunchersFacetIds(query.getFacetIds()))
+						.build()
+		);
+		return toWorkflowLaunchersList(jobReferences);
 	}
 
 	private DDOrderReferenceQueryBuilder newDDOrderReferenceQuery(@NonNull final UserId userId)
@@ -60,29 +56,29 @@ public class DistributionWorkflowLaunchersProvider
 				.locatorToId(workplace != null ? workplace.getPickFromLocatorId() : null);
 	}
 
+	private WorkflowLaunchersList toWorkflowLaunchersList(final Collection<DDOrderReference> jobReferences)
+	{
+		return WorkflowLaunchersList.builder()
+				.launchers(jobReferences.stream().map(this::toWorkflowLauncher).collect(ImmutableList.toImmutableList()))
+				.timestamp(SystemTime.asInstant())
+				.build();
+	}
+
 	private WorkflowLauncher toWorkflowLauncher(@NonNull final DDOrderReference ddOrderReference)
 	{
-		if (ddOrderReference.isJobStarted())
-		{
-			return WorkflowLauncher.builder()
-					.applicationId(DistributionMobileApplication.APPLICATION_ID)
-					.caption(computeCaption(ddOrderReference))
-					.startedWFProcessId(WFProcessId.ofIdPart(DistributionMobileApplication.APPLICATION_ID, ddOrderReference.getDdOrderId()))
-					.testId(ddOrderReference.getTestId())
-					.build();
-		}
-		else
-		{
-			return WorkflowLauncher.builder()
-					.applicationId(DistributionMobileApplication.APPLICATION_ID)
-					.caption(computeCaption(ddOrderReference))
-					.wfParameters(DistributionWFProcessStartParams.builder()
-							.ddOrderId(ddOrderReference.getDdOrderId())
-							.build()
-							.toParams())
-					.testId(ddOrderReference.getTestId())
-					.build();
-		}
+		return WorkflowLauncher.builder()
+				.applicationId(DistributionMobileApplication.APPLICATION_ID)
+				.caption(computeCaption(ddOrderReference))
+				.startedWFProcessId(ddOrderReference.isJobStarted()
+						? WFProcessId.ofIdPart(DistributionMobileApplication.APPLICATION_ID, ddOrderReference.getDdOrderId())
+						: null)
+				.wfParameters(DistributionWFProcessStartParams.builder()
+						.ddOrderId(ddOrderReference.getDdOrderId())
+						.isInTransit(ddOrderReference.isInTransit())
+						.build()
+						.toParams())
+				.testId(ddOrderReference.getTestId())
+				.build();
 	}
 
 	@NonNull

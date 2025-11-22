@@ -6,7 +6,7 @@ import java.util.Collection;
 
 public interface DistributionOrderCollector<T>
 {
-	void collect(I_DD_Order ddOrder, boolean isJobStarted);
+	void collect(I_DD_Order ddOrder);
 
 	Collection<T> getCollectedItems();
 }

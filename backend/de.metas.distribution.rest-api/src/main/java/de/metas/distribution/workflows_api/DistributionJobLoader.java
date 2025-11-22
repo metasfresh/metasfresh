@@ -59,6 +59,13 @@ class DistributionJobLoader
 	public List<DistributionJob> loadByQuery(@NonNull final DDOrderQuery query)
 	{
 		final ImmutableList<I_DD_Order> ddOrders = loadingSupportServices.stream(query).collect(ImmutableList.toImmutableList());
+		return loadByRecords(ddOrders);
+	}
+
+	public List<DistributionJob> loadByRecords(@NonNull final List<I_DD_Order> ddOrders)
+	{
+		if (ddOrders.isEmpty()) {return ImmutableList.of();}
+
 		addToCache(ddOrders);
 
 		return ddOrders.stream()
@@ -83,24 +90,30 @@ class DistributionJobLoader
 		return DistributionJob.builder()
 				.id(DistributionJobId.ofDDOrderId(ddOrderId))
 				.documentNo(ddOrder.getDocumentNo())
-				.salesOrderDocumentNo(loadingSupportServices.getSalesOderDocNo(ddOrder))
-				.ppOrderDocumentNo(loadingSupportServices.getPPOrderDocNo(ddOrder))
 				.customerId(BPartnerId.ofRepoId(ddOrder.getC_BPartner_ID()))
 				.dateRequired(dateRequired)
 				.pickDate(pickDate)
 				.pickFromWarehouse(loadingSupportServices.getWarehouseInfoByRepoId(ddOrder.getM_Warehouse_From_ID()))
 				.dropToWarehouse(loadingSupportServices.getWarehouseInfoByRepoId(ddOrder.getM_Warehouse_To_ID()))
-				.plantInfo(Optional.ofNullable(ResourceId.ofRepoIdOrNull(ddOrder.getPP_Plant_ID()))
-						.map(loadingSupportServices::getPlantInfo)
-						.orElse(null))
+				.plantInfo(extractPlantInfo(ddOrder))
+				.priority(ddOrder.getPriorityRule())
 				.responsibleId(extractResponsibleId(ddOrder))
 				.isClosed(!docStatus.isCompleted()) // NOTE: we consider closed (for us) anything which is not completed
+				.salesOrderRef(loadingSupportServices.getSalesOderRef(ddOrder))
+				.manufacturingOrderRef(loadingSupportServices.getManufacturingOrderRef(ddOrder))
 				.allowPickingAnyHU(config.isAllowPickingAnyHU())
 				.lines(getDDOrderLines(ddOrderId)
 						.stream()
 						.map(this::toDistributionJobLine)
 						.collect(ImmutableList.toImmutableList()))
 				.build();
+	}
+
+	private @org.jetbrains.annotations.Nullable ResourceInfo extractPlantInfo(final I_DD_Order ddOrder)
+	{
+		return Optional.ofNullable(ResourceId.ofRepoIdOrNull(ddOrder.getPP_Plant_ID()))
+				.map(loadingSupportServices::getPlantInfo)
+				.orElse(null);
 	}
 
 	@Nullable

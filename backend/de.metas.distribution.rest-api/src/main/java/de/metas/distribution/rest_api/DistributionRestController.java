@@ -40,4 +40,11 @@ public class DistributionRestController
 		final WFProcess wfProcess = distributionMobileApplication.processEvent(event, Env.getLoggedUserId());
 		return workflowRestController.toJson(wfProcess);
 	}
+
+	@PostMapping("/dropAll")
+	public void dropAllTo(@RequestBody @NonNull final JsonDropAllRequest request)
+	{
+		assertApplicationAccess();
+		distributionMobileApplication.dropAll(request, Env.getLoggedUserId());
+	}
 }

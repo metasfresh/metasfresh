@@ -42,7 +42,7 @@ public class DistributionLauncherCaptionProvider
 	public WorkflowLauncherCaption compute(@NonNull final DDOrderReference ddOrderReference)
 	{
 		final DistributionJobCaptionFormat format = configRepository.getConfig().getCaptionFormat();
-		
+
 		final TranslatableStringBuilder captionBuilder = TranslatableStrings.builder();
 
 		for (final DistributionJobCaptionFormatItem formatItem : format.getItems())
@@ -130,7 +130,7 @@ public class DistributionLauncherCaptionProvider
 
 	private ITranslatableString extractPickDate(final @NotNull DDOrderReference ddOrderReference)
 	{
-		return TranslatableStrings.dateAndTime(ddOrderReference.getDisplayDate().toZonedDateTime(orgDAO::getTimeZone));
+		return TranslatableStrings.dateAndTime(ddOrderReference.getDisplayDate());
 	}
 
 	private ITranslatableString extractPlant(final @NotNull DDOrderReference ddOrderReference)

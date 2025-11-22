@@ -22,7 +22,6 @@ import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
-import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.warehouse.LocatorId;
@@ -41,7 +40,6 @@ import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -124,20 +122,29 @@ public class DistributionJobLoaderSupportingServices
 	public HUQRCode getQRCodeByHuId(final HuId huId) {return huQRCodeService.getQRCodeByHuId(huId);}
 
 	@Nullable
-	public String getSalesOderDocNo(@NonNull final I_DD_Order ddOrder)
+	public SalesOrderRef getSalesOderRef(@NonNull final I_DD_Order ddOrder)
 	{
-		return Optional.ofNullable(OrderId.ofRepoIdOrNull(ddOrder.getC_Order_ID()))
-				.map(orderBL::getDocumentNoById)
-				.orElse(null);
+		final OrderId salesOrderId = OrderId.ofRepoIdOrNull(ddOrder.getC_Order_ID());
+		if (salesOrderId == null) {return null;}
+
+		return SalesOrderRef.builder()
+				.id(salesOrderId)
+				.documentNo(orderBL.getDocumentNoById(salesOrderId))
+				.build();
 	}
 
 	@Nullable
-	public String getPPOrderDocNo(@NonNull final I_DD_Order ddOrder)
+	public ManufacturingOrderRef getManufacturingOrderRef(@NonNull final I_DD_Order ddOrder)
 	{
-		return Optional.ofNullable(PPOrderId.ofRepoIdOrNull(ddOrder.getForward_PP_Order_ID()))
-				.map(ppOrderBL::getById)
-				.map(I_PP_Order::getDocumentNo)
-				.orElse(null);
+		final PPOrderId ppOrderId = PPOrderId.ofRepoIdOrNull(ddOrder.getForward_PP_Order_ID());
+		if (ppOrderId == null) {return null;}
+
+		final I_PP_Order ppOrder = ppOrderBL.getById(ppOrderId);
+
+		return ManufacturingOrderRef.builder()
+				.id(ppOrderId)
+				.documentNo(ppOrder.getDocumentNo())
+				.build();
 	}
 
 	@NonNull

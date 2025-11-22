@@ -15,6 +15,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 
 @Value
 @Builder(toBuilder = true)
@@ -22,8 +23,8 @@ public class DDOrderReference
 {
 	@NonNull DDOrderId ddOrderId;
 	@NonNull String documentNo;
-	@NonNull InstantAndOrgId datePromised;
-	@Nullable InstantAndOrgId pickDate;
+	@NonNull ZonedDateTime datePromised;
+	@Nullable ZonedDateTime pickDate;
 	@NonNull WarehouseId fromWarehouseId;
 	@Nullable LocatorId fromLocatorId;
 	@NonNull WarehouseId toWarehouseId;
@@ -34,13 +35,14 @@ public class DDOrderReference
 	@Nullable Quantity qty;
 	@Nullable ResourceId plantId;
 	@Nullable String priority;
+	boolean isInTransit;
 	boolean isJobStarted;
 
 	@NonNull
 	public JsonTestId getTestId() {return JsonTestId.ofRepoId(ddOrderId);}
 
 	@NonNull
-	public InstantAndOrgId getDisplayDate()
+	public ZonedDateTime getDisplayDate()
 	{
 		if (pickDate != null)
 		{
