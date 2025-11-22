@@ -11,11 +11,9 @@ import de.metas.gs1.GTIN;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.organization.IOrgDAO;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
-import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.workflow.rest_api.model.WorkflowLauncherCaption;
 import lombok.NonNull;
@@ -35,7 +33,6 @@ public class DistributionLauncherCaptionProvider
 	@NonNull private final DistributionWarehouseService warehouseService;
 	@NonNull private final DistributionProductService productService;
 	@NonNull private final DistributionSourceDocService sourceDocService;
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private static final String CAPTION_SEPARATOR = " | ";
 
