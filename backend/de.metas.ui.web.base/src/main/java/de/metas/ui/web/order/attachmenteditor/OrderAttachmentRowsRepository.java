@@ -22,7 +22,7 @@
 
 package de.metas.ui.web.order.attachmenteditor;
 
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.order.OrderId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
@@ -36,7 +36,7 @@ import org.compiere.model.I_C_BPartner;
 public class OrderAttachmentRowsRepository
 {
 	private final AlbertaPrescriptionRequestDAO albertaPrescriptionRequestDAO;
-	private final AttachmentEntryService attachmentEntryService;
+	private final AttachmentService attachmentService;
 	private final AlbertaPatientRepository albertaPatientRepository;
 	private final PurchaseCandidateRepository purchaseCandidateRepository;
 
@@ -47,12 +47,12 @@ public class OrderAttachmentRowsRepository
 	@Builder
 	public OrderAttachmentRowsRepository(
 			@NonNull final AlbertaPrescriptionRequestDAO albertaPrescriptionRequestDAO,
-			@NonNull final AttachmentEntryService attachmentEntryService,
+			@NonNull final AttachmentService attachmentService,
 			@NonNull final AlbertaPatientRepository albertaPatientRepository,
 			@NonNull final PurchaseCandidateRepository purchaseCandidateRepository)
 	{
 		this.albertaPrescriptionRequestDAO = albertaPrescriptionRequestDAO;
-		this.attachmentEntryService = attachmentEntryService;
+		this.attachmentService = attachmentService;
 		this.albertaPatientRepository = albertaPatientRepository;
 		this.purchaseCandidateRepository = purchaseCandidateRepository;
 		patientLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_BPartner.Table_Name);
@@ -64,7 +64,7 @@ public class OrderAttachmentRowsRepository
 	{
 		return OrderAttachmentRowsLoader.builder()
 				.albertaPrescriptionRequestDAO(albertaPrescriptionRequestDAO)
-				.attachmentEntryService(attachmentEntryService)
+				.attachmentService(attachmentService)
 				.albertaPatientRepository(albertaPatientRepository)
 				.purchaseCandidateRepository(purchaseCandidateRepository)
 				.patientLookup(patientLookup)

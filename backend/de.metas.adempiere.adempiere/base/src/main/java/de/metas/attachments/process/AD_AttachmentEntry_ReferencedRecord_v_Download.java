@@ -2,7 +2,7 @@ package de.metas.attachments.process;
 
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.process.JavaProcess;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_AttachmentEntry_ReferencedRecord_v;
@@ -32,7 +32,7 @@ import org.springframework.core.io.ByteArrayResource;
 
 public class AD_AttachmentEntry_ReferencedRecord_v_Download extends JavaProcess
 {
-	private final transient AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+	private final transient AttachmentService attachmentService = SpringContextHolder.instance.getBean(AttachmentService.class);
 
 	@Override
 	protected String doIt()
@@ -40,8 +40,8 @@ public class AD_AttachmentEntry_ReferencedRecord_v_Download extends JavaProcess
 		final I_AD_AttachmentEntry_ReferencedRecord_v record = getRecord(I_AD_AttachmentEntry_ReferencedRecord_v.class);
 		final AttachmentEntryId entryId = AttachmentEntryId.ofRepoId(record.getAD_AttachmentEntry_ID());
 
-		final AttachmentEntry entry = attachmentEntryService.getById(entryId);
-		final byte[] data = attachmentEntryService.retrieveData(entry.getId());
+		final AttachmentEntry entry = attachmentService.getById(entryId);
+		final byte[] data = attachmentService.retrieveData(entry.getId());
 
 		getResult().setReportData(new ByteArrayResource(data), entry.getFilename(), entry.getMimeType());
 

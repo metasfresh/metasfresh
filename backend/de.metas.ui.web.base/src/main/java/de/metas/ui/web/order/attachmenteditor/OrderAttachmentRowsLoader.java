@@ -28,7 +28,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.attachments.AttachmentEntryWithReferences;
 import de.metas.bpartner.BPartnerId;
 import de.metas.order.IOrderBL;
@@ -75,7 +75,7 @@ class OrderAttachmentRowsLoader
 	@NonNull
 	AlbertaPrescriptionRequestDAO albertaPrescriptionRequestDAO;
 	@NonNull
-	AttachmentEntryService attachmentEntryService;
+	AttachmentService attachmentService;
 	@NonNull
 	AlbertaPatientRepository albertaPatientRepository;
 	@NonNull
@@ -104,7 +104,7 @@ class OrderAttachmentRowsLoader
 	@Builder
 	private OrderAttachmentRowsLoader(
 			@NonNull final AlbertaPrescriptionRequestDAO albertaPrescriptionRequestDAO,
-			@NonNull final AttachmentEntryService attachmentEntryService,
+			@NonNull final AttachmentService attachmentService,
 			@NonNull final AlbertaPatientRepository albertaPatientRepository,
 			@NonNull final PurchaseCandidateRepository purchaseCandidateRepository,
 			@NonNull final LookupDataSource patientLookup,
@@ -112,7 +112,7 @@ class OrderAttachmentRowsLoader
 			@NonNull final LookupDataSource pharmacyLookup,
 			@NonNull final OrderId purchaseOrderId)
 	{
-		this.attachmentEntryService = attachmentEntryService;
+		this.attachmentService = attachmentService;
 		this.albertaPrescriptionRequestDAO = albertaPrescriptionRequestDAO;
 		this.albertaPatientRepository = albertaPatientRepository;
 		this.purchaseCandidateRepository = purchaseCandidateRepository;
@@ -149,7 +149,7 @@ class OrderAttachmentRowsLoader
 				.targetRecordReferences(allTargetTableRecordRefs)
 				.build();
 
-		final ImmutableList<OrderAttachmentRow> rows = attachmentEntryService.getEntriesAndReferencesFor(allTargetTableRecordRefs)
+		final ImmutableList<OrderAttachmentRow> rows = attachmentService.getEntriesAndReferencesFor(allTargetTableRecordRefs)
 				.stream()
 				.map(attachmentRowBuilder::buildRowsFor)
 				.flatMap(List::stream)

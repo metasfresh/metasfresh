@@ -2,6 +2,7 @@ package de.metas.invoice.process;
 
 import java.util.List;
 
+import de.metas.attachments.AttachmentService;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
@@ -16,8 +17,7 @@ import com.google.common.collect.ImmutableList;
 
 import ch.qos.logback.classic.Level;
 import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.AttachmentEntryService;
-import de.metas.attachments.AttachmentEntryService.AttachmentEntryQuery;
+import de.metas.attachments.AttachmentService.AttachmentEntryQuery;
 import de.metas.attachments.AttachmentTags;
 import de.metas.invoice.InvoiceId;
 import de.metas.logging.LogManager;
@@ -61,11 +61,11 @@ public class C_Invoice_SalesInvoiceJasperWithAttachedDocumentsStrategy implement
 
 	private static final String C_INVOICE_REPORT_AD_PROCESS_ID = "de.metas.invoice.C_Invoice.SalesInvoice.Report.AD_Process_ID";
 
-	private final AttachmentEntryService attachmentEntryService;
+	private final AttachmentService attachmentService;
 
-	public C_Invoice_SalesInvoiceJasperWithAttachedDocumentsStrategy(@NonNull final AttachmentEntryService attachmentEntryService)
+	public C_Invoice_SalesInvoiceJasperWithAttachedDocumentsStrategy(@NonNull final AttachmentService attachmentService)
 	{
-		this.attachmentEntryService = attachmentEntryService;
+		this.attachmentService = attachmentService;
 	}
 
 	@Override
@@ -97,10 +97,10 @@ public class C_Invoice_SalesInvoiceJasperWithAttachedDocumentsStrategy implement
 				.mimeType(MimeType.TYPE_PDF)
 				.build();
 
-		final List<AttachmentEntry> attachments = attachmentEntryService.getByQuery(attachmentQuery);
+		final List<AttachmentEntry> attachments = attachmentService.getByQuery(attachmentQuery);
 		final ImmutableList<PdfDataProvider> additionalPdfData = attachments.stream()
 				.map(AttachmentEntry::getId)
-				.map(attachmentEntryService::retrieveData)
+				.map(attachmentService::retrieveData)
 				.map(ByteArrayResource::new)
 				.map(PdfDataProvider::forData)
 				.collect(ImmutableList.toImmutableList());

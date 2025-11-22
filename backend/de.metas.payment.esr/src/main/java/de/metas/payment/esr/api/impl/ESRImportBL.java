@@ -9,7 +9,7 @@ import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementAndLineAndRefId;
@@ -45,7 +45,6 @@ import de.metas.payment.esr.dataimporter.ESRImportEnqueuer;
 import de.metas.payment.esr.dataimporter.ESRImportEnqueuerDataSource;
 import de.metas.payment.esr.dataimporter.ESRStatement;
 import de.metas.payment.esr.dataimporter.ESRTransaction;
-import de.metas.payment.esr.dataimporter.ESRType;
 import de.metas.payment.esr.dataimporter.IESRDataImporter;
 import de.metas.payment.esr.dataimporter.impl.v11.ESRTransactionLineMatcherUtil;
 import de.metas.payment.esr.exception.ESRImportLockedException;
@@ -138,11 +137,11 @@ public class ESRImportBL implements IESRImportBL
 	// 03928
 	private static final ArrayKey NO_INVOICE_KEY = Util.mkKey("NoInvoiceKey");
 
-	private final AttachmentEntryService attachmentEntryService;
+	private final AttachmentService attachmentService;
 
-	public ESRImportBL(@NonNull final AttachmentEntryService attachmentEntryService)
+	public ESRImportBL(@NonNull final AttachmentService attachmentService)
 	{
-		this.attachmentEntryService = attachmentEntryService;
+		this.attachmentService = attachmentService;
 	}
 
 	private void lockAndProcess(
@@ -188,7 +187,7 @@ public class ESRImportBL implements IESRImportBL
 			// Fetch data to be imported from attachment
 			final AttachmentEntryId attachmentEntryId = AttachmentEntryId.ofRepoIdOrNull(esrImportFile.getAD_AttachmentEntry_ID());
 
-			final byte[] data = attachmentEntryService.retrieveData(attachmentEntryId);
+			final byte[] data = attachmentService.retrieveData(attachmentEntryId);
 
 			// there is no actual data
 			if (data == null || data.length == 0)
@@ -1394,14 +1393,14 @@ public class ESRImportBL implements IESRImportBL
 	@Override
 	public void scheduleESRImportFor(final RunESRImportRequest runESRImportRequest)
 	{
-		final AttachmentEntry fromAttachmentEntry = attachmentEntryService.getById(runESRImportRequest.getAttachmentEntryId());
+		final AttachmentEntry fromAttachmentEntry = attachmentService.getById(runESRImportRequest.getAttachmentEntryId());
 
 		ESRImportEnqueuer.newInstance()
 				.esrImport(runESRImportRequest.getEsrImport())
 				.fromDataSource(
 						ESRImportEnqueuerDataSource.builder()
 								.filename(fromAttachmentEntry.getFilename())
-								.content(attachmentEntryService.retrieveData(fromAttachmentEntry.getId()))
+								.content(attachmentService.retrieveData(fromAttachmentEntry.getId()))
 								.attachmentEntryId(fromAttachmentEntry.getId())
 								.build())
 				.asyncBatchName(runESRImportRequest.getAsyncBatchName())

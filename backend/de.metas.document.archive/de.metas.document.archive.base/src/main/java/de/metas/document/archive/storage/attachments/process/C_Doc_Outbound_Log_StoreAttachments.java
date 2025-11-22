@@ -10,8 +10,8 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.SpringContextHolder;
 
 import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.AttachmentEntryService;
-import de.metas.attachments.AttachmentEntryService.AttachmentEntryQuery;
+import de.metas.attachments.AttachmentService;
+import de.metas.attachments.AttachmentService.AttachmentEntryQuery;
 import de.metas.attachments.storeattachment.StoreAttachmentService;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.i18n.AdMessageKey;
@@ -29,7 +29,7 @@ public class C_Doc_Outbound_Log_StoreAttachments
 {
 	private static final AdMessageKey MSG_EMPTY_SELECTION = AdMessageKey.of("C_Doc_Outbound_Log_StoreAttachments.No_DocOutboundLog_Selection");
 
-	private final transient AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+	private final transient AttachmentService attachmentService = SpringContextHolder.instance.getBean(AttachmentService.class);
 	private final transient StoreAttachmentService storeAttachmentService = SpringContextHolder.instance.getBean(StoreAttachmentService.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -105,7 +105,7 @@ public class C_Doc_Outbound_Log_StoreAttachments
 				.builder()
 				.referencedRecord(docoutBoundLogRecord)
 				.build();
-		return attachmentEntryService.getByQuery(query);
+		return attachmentService.getByQuery(query);
 	}
 
 	private boolean isStorable(@NonNull final AttachmentEntry attachmentEntry)

@@ -8,7 +8,7 @@ import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.aggregation.model.X_C_Aggregation;
 import de.metas.aggregation.model.X_C_AggregationItem;
 import de.metas.aggregation.model.X_C_Aggregation_Attribute;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.business.BusinessTestHelper;
@@ -271,9 +271,9 @@ public class AbstractICTestSupport extends AbstractTestSupport
 		// Services
 		invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
-		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
+		final AttachmentService attachmentService = AttachmentService.createInstanceForUnitTesting();
 
-		Services.registerService(INotificationRepository.class, new NotificationRepository(attachmentEntryService, NullCustomizedWindowInfoMapRepository.instance));
+		Services.registerService(INotificationRepository.class, new NotificationRepository(attachmentService, NullCustomizedWindowInfoMapRepository.instance));
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
 	}
@@ -702,13 +702,13 @@ public class AbstractICTestSupport extends AbstractTestSupport
 	{
 		if (invoiceCandidateValidator == null)
 		{
-			final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
+			final AttachmentService attachmentService = AttachmentService.createInstanceForUnitTesting();
 			final InvoiceCandidateGroupRepository groupsRepo = new InvoiceCandidateGroupRepository(new GroupCompensationLineCreateRequestFactory());
 
 			invoiceCandidateValidator = new C_Invoice_Candidate(
 					new InvoiceCandidateRecordService(),
 					groupsRepo,
-					attachmentEntryService,
+					attachmentService,
 					new DocumentLocationBL(new BPartnerBL(new UserRepository())));
 		}
 		return invoiceCandidateValidator;

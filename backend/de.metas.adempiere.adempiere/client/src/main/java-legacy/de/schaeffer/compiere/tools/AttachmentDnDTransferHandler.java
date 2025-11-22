@@ -33,6 +33,7 @@ import java.util.List;
 
 import javax.swing.TransferHandler;
 
+import de.metas.attachments.AttachmentService;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.apps.ADialog;
@@ -43,7 +44,6 @@ import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
 
 import de.metas.attachments.AttachmentEntryCreateRequest;
-import de.metas.attachments.AttachmentEntryService;
 import de.metas.logging.LogManager;
 
 public class AttachmentDnDTransferHandler extends TransferHandler
@@ -114,7 +114,7 @@ public class AttachmentDnDTransferHandler extends TransferHandler
 		DataFlavor[] flavors = t.getTransferDataFlavors();
 		final TableRecordReference tableRecordReference =TableRecordReference.of(getTableId(), getRecordId());
 
-		final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+		final AttachmentService attachmentService = Adempiere.getBean(AttachmentService.class);
 
 		for (int i = 0; i < flavors.length; i++)
 		{
@@ -126,7 +126,7 @@ public class AttachmentDnDTransferHandler extends TransferHandler
 					@SuppressWarnings("unchecked")
 					List<File> files = (List<File>)t.getTransferData(DataFlavor.javaFileListFlavor);
 
-					attachmentEntryService.createNewAttachments(tableRecordReference, AttachmentEntryCreateRequest.fromFiles(files));
+					attachmentService.createNewAttachments(tableRecordReference, AttachmentEntryCreateRequest.fromFiles(files));
 				}
 				else if (flavor.getMimeType().startsWith("text"))
 				{
@@ -137,7 +137,7 @@ public class AttachmentDnDTransferHandler extends TransferHandler
 					final DateFormat df = DisplayType.getDateFormat(DisplayType.DateTime);
 					final String name = "Text " + df.format(new Timestamp(System.currentTimeMillis()));
 
-					attachmentEntryService.createNewAttachment(tableRecordReference, name, text.getBytes(StandardCharsets.UTF_8));
+					attachmentService.createNewAttachment(tableRecordReference, name, text.getBytes(StandardCharsets.UTF_8));
 				}
 			}
 			catch (Exception ex)

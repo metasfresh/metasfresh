@@ -31,7 +31,7 @@ import lombok.NonNull;
  * #L%
  */
 @Repository
-public class AttachmentLogRepository
+class AttachmentLogRepository
 {
 	public AttachmentLog save(@NonNull final AttachmentLog attachmentLog)
 	{

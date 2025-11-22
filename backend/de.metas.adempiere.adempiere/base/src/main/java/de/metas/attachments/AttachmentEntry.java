@@ -16,9 +16,7 @@ import java.io.File;
 import java.net.URI;
 
 /**
- * Attachment entry
- *
- * @author metas-dev <dev@metasfresh.com>
+ * Represents an attachment. For the entity that links an attachment to the actual data records it is attache to, see {@link AttachmentReference}.
  */
 @Value
 @ToString
@@ -41,7 +39,7 @@ public class AttachmentEntry
 	AttachmentTags tags;
 
 	/**
-	 * Like the {@code id}, this is {@code null} if the attachment was not persisted yet.  
+	 * Like the {@code id}, this is {@code null} if the attachment was not persisted yet.
 	 */
 	CreatedUpdatedInfo createdUpdatedInfo;
 

@@ -3,6 +3,7 @@ package de.metas.payment.esr.api;
 import static de.metas.util.StringUtils.lpadZero;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import de.metas.attachments.AttachmentService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
@@ -14,7 +15,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.attachments.AttachmentEntryService;
 import de.metas.banking.Bank;
 import de.metas.banking.BankCreateRequest;
 import de.metas.banking.api.BankRepository;
@@ -61,8 +61,8 @@ public class InvoiceReferenceNosTest
 		final ESRBPBankAccountBL esrBankAccountBL = new ESRBPBankAccountBL(bankRepo);
 		SpringContextHolder.registerJUnitBean(IESRBPBankAccountBL.class, esrBankAccountBL);
 
-		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
-		esrImportBL = new ESRImportBL(attachmentEntryService);
+		final AttachmentService attachmentService = AttachmentService.createInstanceForUnitTesting();
+		esrImportBL = new ESRImportBL(attachmentService);
 		Services.registerService(IESRImportBL.class, esrImportBL);
 
 	}

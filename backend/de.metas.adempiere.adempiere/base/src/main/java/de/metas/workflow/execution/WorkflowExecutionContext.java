@@ -22,7 +22,7 @@
 
 package de.metas.workflow.execution;
 
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyConversionContext;
@@ -109,7 +109,7 @@ public final class WorkflowExecutionContext
 	private final WFProcessRepository wfProcessRepository = SpringContextHolder.instance.getBean(WFProcessRepository.class);
 	private final MailService mailService = SpringContextHolder.instance.getBean(MailService.class);
 	private final WFEventAuditRepository auditRepo = SpringContextHolder.instance.getBean(WFEventAuditRepository.class);
-	private final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+	private final AttachmentService attachmentService = SpringContextHolder.instance.getBean(AttachmentService.class);
 
 	private static final Topic USER_NOTIFICATIONS_TOPIC = Topic.remote("de.metas.document.UserNotifications");
 
@@ -381,6 +381,6 @@ public final class WorkflowExecutionContext
 			@NonNull final Object referencedRecord,
 			@NonNull final File file)
 	{
-		attachmentEntryService.createNewAttachment(referencedRecord, file);
+		attachmentService.createNewAttachment(referencedRecord, file);
 	}
 }

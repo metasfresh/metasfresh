@@ -55,7 +55,7 @@ import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 @Service
-public class AttachmentEntryService
+public class AttachmentService
 {
 	private final AttachmentEntryRepository attachmentEntryRepository;
 	private final AttachmentReferenceRepository attachmentReferenceRepository;
@@ -66,7 +66,7 @@ public class AttachmentEntryService
 	private final TableAttachmentListenerService tableAttachmentListenerService;
 
 	@VisibleForTesting
-	public static AttachmentEntryService createInstanceForUnitTesting()
+	public static AttachmentService createInstanceForUnitTesting()
 	{
 		final TableAttachmentListenerService tableAttachmentListenerService = new TableAttachmentListenerService(new TableAttachmentListenerRepository());
 		final AttachmentEntryFactory attachmentEntryFactory = new AttachmentEntryFactory();
@@ -76,7 +76,7 @@ public class AttachmentEntryService
 		final AttachmentMigrationService attachmentMigrationService = new AttachmentMigrationService(attachmentEntryFactory);
 		final RecordToReferenceProviderService attachmentHandlerRegistry = new RecordToReferenceProviderService(Optional.empty());
 
-		return new AttachmentEntryService(
+		return new AttachmentService(
 				attachmentEntryRepository,
 				attachmentReferenceRepository,
 				attachmentLogRepository,

@@ -1,7 +1,7 @@
 package de.metas.ui.web.attachments;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.attachments.AttachmentEntryType;
 import de.metas.attachments.listener.TableAttachmentListenerService;
 import de.metas.security.IUserRolePermissions;
@@ -68,20 +68,20 @@ public class DocumentAttachmentsRestController
 
 	private DocumentWebsocketPublisher websocketPublisher;
 
-	private AttachmentEntryService attachmentEntryService;
+	private AttachmentService attachmentService;
 
 	private TableAttachmentListenerService tableAttachmentListenerService;
 
 	public DocumentAttachmentsRestController(final UserSession userSession,
 			final DocumentDescriptorFactory documentDescriptorFactory,
 			final DocumentWebsocketPublisher websocketPublisher,
-			final AttachmentEntryService attachmentEntryService,
+			final AttachmentService attachmentService,
 			final TableAttachmentListenerService tableAttachmentListenerService)
 	{
 		this.userSession = userSession;
 		this.documentDescriptorFactory = documentDescriptorFactory;
 		this.websocketPublisher = websocketPublisher;
-		this.attachmentEntryService = attachmentEntryService;
+		this.attachmentService = attachmentService;
 		this.tableAttachmentListenerService = tableAttachmentListenerService;
 	}
 
@@ -107,7 +107,7 @@ public class DocumentAttachmentsRestController
 				.entityDescriptor(documentDescriptorFactory.getDocumentEntityDescriptor(documentPath))
 				.websocketPublisher(websocketPublisher)
 				.tableAttachmentListenerService(tableAttachmentListenerService)
-				.attachmentEntryService(attachmentEntryService)
+				.attachmentService(attachmentService)
 				.build();
 	}
 

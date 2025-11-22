@@ -1,7 +1,7 @@
 package de.metas.ui.web.attachments;
 
 import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.attachments.AttachmentEntryType;
 import de.metas.common.util.Check;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -80,8 +80,8 @@ class DocumentAttachmentEntry implements IDocumentAttachmentEntry
 	@Override
 	public byte[] getData()
 	{
-		final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
-		return attachmentEntryService.retrieveData(entry.getId());
+		final AttachmentService attachmentService = Adempiere.getBean(AttachmentService.class);
+		return attachmentService.retrieveData(entry.getId());
 	}
 
 	@Override

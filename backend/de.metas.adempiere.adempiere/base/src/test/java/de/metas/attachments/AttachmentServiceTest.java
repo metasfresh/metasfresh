@@ -38,9 +38,9 @@ import static org.assertj.core.api.Assertions.*;
  * #L%
  */
 
-public class AttachmentEntryServiceTest
+public class AttachmentServiceTest
 {
-	private AttachmentEntryService attachmentEntryService;
+	private AttachmentService attachmentService;
 	private AttachmentReferenceRepository attachmentReferenceRepository;
 	private I_C_BPartner bpartnerRecord;
 	private I_M_Product productRecord;
@@ -59,28 +59,28 @@ public class AttachmentEntryServiceTest
 		productRecord = newInstance(I_M_Product.class);
 		saveRecord(productRecord);
 
-		attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
+		attachmentService = AttachmentService.createInstanceForUnitTesting();
 
 		attachmentReferenceRepository = new AttachmentReferenceRepository();
 		
-		bpartnerAttachmentEntry1 = attachmentEntryService.createNewAttachment(bpartnerRecord, "bPartnerAttachment1", "bPartnerAttachment1.data".getBytes());
-		bpartnerAttachmentEntry2 = attachmentEntryService.createNewAttachment(bpartnerRecord, "bPartnerAttachment2", "bPartnerAttachment2.data".getBytes());
+		bpartnerAttachmentEntry1 = attachmentService.createNewAttachment(bpartnerRecord, "bPartnerAttachment1", "bPartnerAttachment1.data".getBytes());
+		bpartnerAttachmentEntry2 = attachmentService.createNewAttachment(bpartnerRecord, "bPartnerAttachment2", "bPartnerAttachment2.data".getBytes());
 	}
 
 	@Test
 	public void linkEntriesToModel()
 	{
 		// invoke the method under test
-		attachmentEntryService.createAttachmentLinks(ImmutableList.of(bpartnerAttachmentEntry1), TableRecordReference.ofCollection(ImmutableList.of(productRecord)));
+		attachmentService.createAttachmentLinks(ImmutableList.of(bpartnerAttachmentEntry1), TableRecordReference.ofCollection(ImmutableList.of(productRecord)));
 
 		// assert that bpartnerRecord's attachments are unchanged
-		final List<AttachmentEntry> bpartnerRecordEntries = attachmentEntryService.getByReferencedRecord(bpartnerRecord);
+		final List<AttachmentEntry> bpartnerRecordEntries = attachmentService.getByReferencedRecord(bpartnerRecord);
 		assertThat(bpartnerRecordEntries).hasSize(2);
 		
 		assertThat(bpartnerRecordEntries.get(1)).isEqualTo(bpartnerAttachmentEntry1);
 		assertThat(bpartnerRecordEntries.get(0)).isEqualTo(bpartnerAttachmentEntry2);
 
-		final List<AttachmentEntry> productRecordEntries = attachmentEntryService.getByReferencedRecord(productRecord);
+		final List<AttachmentEntry> productRecordEntries = attachmentService.getByReferencedRecord(productRecord);
 		assertThat(productRecordEntries).hasSize(1);
 		
 		// we need to compare them without linked records because productRecordEntries.get(0) has the product and bpartnerAttachmentEntry1 has the bpartner
@@ -90,12 +90,12 @@ public class AttachmentEntryServiceTest
 	@Test
 	public void getEntries()
 	{
-		attachmentEntryService.createAttachmentLinks(ImmutableList.of(bpartnerAttachmentEntry1), TableRecordReference.ofCollection(ImmutableList.of(productRecord)));
+		attachmentService.createAttachmentLinks(ImmutableList.of(bpartnerAttachmentEntry1), TableRecordReference.ofCollection(ImmutableList.of(productRecord)));
 
-		attachmentEntryService.createNewAttachment(bpartnerRecord, "bPartnerAttachment3", "bPartnerAttachment3.data".getBytes());
+		attachmentService.createNewAttachment(bpartnerRecord, "bPartnerAttachment3", "bPartnerAttachment3.data".getBytes());
 
 		// invoke the method under test
-		final List<AttachmentEntry> productRecordEntries = attachmentEntryService.getByReferencedRecord(productRecord);
+		final List<AttachmentEntry> productRecordEntries = attachmentService.getByReferencedRecord(productRecord);
 
 		// the entries to productRecord shall not be changed by the addition of an entry for bpartnerRecord
 		assertThat(productRecordEntries).hasSize(1);
@@ -113,17 +113,17 @@ public class AttachmentEntryServiceTest
 		final I_M_Product productRecord2 = newInstance(I_M_Product.class);
 		saveRecord(productRecord2);
 
-		final AttachmentEntry entry = attachmentEntryService.createNewAttachment(productRecord2, "productRecord2", "productRecord2.data".getBytes());
-		assertThat(attachmentEntryService.getByReferencedRecord(productRecord2)).hasSize(1);
-		attachmentEntryService.createAttachmentLinks(ImmutableList.of(entry), TableRecordReference.ofCollection(ImmutableList.of(productRecord2)));
-		assertThat(attachmentEntryService.getByReferencedRecord(productRecord2)).hasSize(1);
+		final AttachmentEntry entry = attachmentService.createNewAttachment(productRecord2, "productRecord2", "productRecord2.data".getBytes());
+		assertThat(attachmentService.getByReferencedRecord(productRecord2)).hasSize(1);
+		attachmentService.createAttachmentLinks(ImmutableList.of(entry), TableRecordReference.ofCollection(ImmutableList.of(productRecord2)));
+		assertThat(attachmentService.getByReferencedRecord(productRecord2)).hasSize(1);
 		
 		// invoke the method under test - shall not do anything??
-		final AttachmentEntry entryWithRemovedLink = attachmentEntryService.unattach(TableRecordReference.of(productRecord), entry);
+		final AttachmentEntry entryWithRemovedLink = attachmentService.unattach(TableRecordReference.of(productRecord), entry);
 
-		assertThat(attachmentEntryService.getByReferencedRecord(productRecord)).isEmpty();
+		assertThat(attachmentService.getByReferencedRecord(productRecord)).isEmpty();
 
-		final List<AttachmentEntry> entriesOfProductRecord2 = attachmentEntryService.getByReferencedRecord(productRecord2);
+		final List<AttachmentEntry> entriesOfProductRecord2 = attachmentService.getByReferencedRecord(productRecord2);
 		assertThat(entriesOfProductRecord2).hasSize(1);
 		assertThat(entriesOfProductRecord2.get(0)).isEqualTo(entryWithRemovedLink);
 	}
@@ -135,21 +135,21 @@ public class AttachmentEntryServiceTest
 		final I_M_Product productRecord2 = newInstance(I_M_Product.class);
 		saveRecord(productRecord2);
 
-		final AttachmentEntry entry = attachmentEntryService.createNewAttachment(productRecord, "product", "product.data".getBytes());
+		final AttachmentEntry entry = attachmentService.createNewAttachment(productRecord, "product", "product.data".getBytes());
 
-		attachmentEntryService.createAttachmentLinks(ImmutableList.of(entry), TableRecordReference.ofCollection(ImmutableList.of(productRecord2)));
+		attachmentService.createAttachmentLinks(ImmutableList.of(entry), TableRecordReference.ofCollection(ImmutableList.of(productRecord2)));
 
 		// when
-		final AttachmentEntry entryWithRemovedLink = attachmentEntryService.unattach(TableRecordReference.of(productRecord), entry);
+		final AttachmentEntry entryWithRemovedLink = attachmentService.unattach(TableRecordReference.of(productRecord), entry);
 		
 		// then
 		final ImmutableList<AttachmentReference> byEntryId = attachmentReferenceRepository.getByEntryId(entryWithRemovedLink.getIdNonNull());
 		assertThat(byEntryId).hasSize(1);
 		assertThat(byEntryId.get(0).getRecordRef()).isEqualTo(TableRecordReference.of(productRecord2));
 		
-		assertThat(attachmentEntryService.getByReferencedRecord(productRecord)).isEmpty();
+		assertThat(attachmentService.getByReferencedRecord(productRecord)).isEmpty();
 
-		final List<AttachmentEntry> entriesOfProductRecord2 = attachmentEntryService.getByReferencedRecord(productRecord2);
+		final List<AttachmentEntry> entriesOfProductRecord2 = attachmentService.getByReferencedRecord(productRecord2);
 		assertThat(entriesOfProductRecord2).hasSize(1);
 		assertThat(entriesOfProductRecord2.get(0)).isEqualTo(entryWithRemovedLink);
 	}
@@ -173,7 +173,7 @@ public class AttachmentEntryServiceTest
 				.build();
 
 		// invoke the method under test
-		final AttachmentEntry newEntry = attachmentEntryService.createNewAttachment(bpartnerRecord, requestWithTags);
+		final AttachmentEntry newEntry = attachmentService.createNewAttachment(bpartnerRecord, requestWithTags);
 
 		assertThat(newEntry.getTags().getTagValueOrNull("tag1Name")).isEqualTo("tag1Value");
 		assertThat(newEntry.getTags().getTagValueOrNull("tag2Name")).isEqualTo("tag2Value");
@@ -199,9 +199,9 @@ public class AttachmentEntryServiceTest
 				.build();
 
 		// invoke the method under test
-		attachmentEntryService.save(attachmentEntryWithAdditionalTag);
+		attachmentService.save(attachmentEntryWithAdditionalTag);
 
-		final AttachmentEntry result = attachmentEntryService.getById(attachmentEntryWithAdditionalTag.getIdNonNull());
+		final AttachmentEntry result = attachmentService.getById(attachmentEntryWithAdditionalTag.getIdNonNull());
 
 		assertThat(result.getTags().getTagValueOrNull("tag1Name")).isEqualTo(null);
 		assertThat(result.getTags().getTagValueOrNull("tag2Name")).isEqualTo("tag2Value");
@@ -234,7 +234,7 @@ public class AttachmentEntryServiceTest
 				.linksToRemove(ImmutableList.of(tableRecordReferenceToRemove))
 				.build();
 
-		final AttachmentEntry result = attachmentEntryService.handleAttachmentLinks(attachmentLinksRequest);
+		final AttachmentEntry result = attachmentService.handleAttachmentLinks(attachmentLinksRequest);
 
 		assertThat(result.getTags().getTagValueOrNull("tag1Name")).isEqualTo(null);
 		assertThat(result.getTags().getTagValueOrNull("tag2Name")).isEqualTo(null);
@@ -252,12 +252,12 @@ public class AttachmentEntryServiceTest
 							  .build())
 				.build();
 
-		attachmentEntryService.save(attachment);
-		final List<AttachmentEntry> attachmentsForRecordRef = attachmentEntryService.getByReferencedRecord(bpartnerRecord);
+		attachmentService.save(attachment);
+		final List<AttachmentEntry> attachmentsForRecordRef = attachmentService.getByReferencedRecord(bpartnerRecord);
 		assertThat(attachmentsForRecordRef.size()).isEqualTo(3);
 
 		// when
-		final List<EmailAttachment> filteredAttachments = attachmentEntryService.streamEmailAttachments(TableRecordReference.of(bpartnerRecord), TAGNAME_SEND_VIA_EMAIL)
+		final List<EmailAttachment> filteredAttachments = attachmentService.streamEmailAttachments(TableRecordReference.of(bpartnerRecord), TAGNAME_SEND_VIA_EMAIL)
 				.collect(ImmutableList.toImmutableList());
 
 		// then

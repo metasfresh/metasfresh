@@ -2,11 +2,11 @@ package de.metas.attachments.storeattachment;
 
 import java.net.URI;
 
+import de.metas.attachments.AttachmentService;
 import de.metas.common.util.time.SystemTime;
 import org.springframework.stereotype.Component;
 
 import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.AttachmentTags;
 import lombok.NonNull;
 
@@ -35,11 +35,11 @@ import lombok.NonNull;
 @Component
 public class DefaultAttachmentStoredListener implements AttachmentStoredListener
 {
-	private final AttachmentEntryService attachmentEntryService;
+	private final AttachmentService attachmentService;
 
-	public DefaultAttachmentStoredListener(@NonNull final AttachmentEntryService attachmentEntryService)
+	public DefaultAttachmentStoredListener(@NonNull final AttachmentService attachmentService)
 	{
-		this.attachmentEntryService = attachmentEntryService;
+		this.attachmentService = attachmentService;
 	}
 
 	@Override
@@ -52,7 +52,7 @@ public class DefaultAttachmentStoredListener implements AttachmentStoredListener
 				.tags(attachmentTags)
 				.build();
 
-		attachmentEntryService.save(attachmentEntryWithStoreInfo);
+		attachmentService.save(attachmentEntryWithStoreInfo);
 	}
 
 }

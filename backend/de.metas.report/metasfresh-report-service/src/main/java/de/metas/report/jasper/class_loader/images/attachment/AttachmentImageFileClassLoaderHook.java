@@ -26,7 +26,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.logging.LogManager;
 import de.metas.report.PrintFormatId;
 import de.metas.report.jasper.class_loader.JasperClassLoader;
@@ -55,7 +55,7 @@ public final class AttachmentImageFileClassLoaderHook
 {
 	// services
 	private static final transient Logger logger = LogManager.getLogger(AttachmentImageFileClassLoaderHook.class);
-	private final AttachmentEntryService attachmentEntryService;
+	private final AttachmentService attachmentService;
 
 	//
 	// Attachment image resource matchers
@@ -63,9 +63,9 @@ public final class AttachmentImageFileClassLoaderHook
 	private static final String DEFAULT_ResourceNameEndsWith = "de/metas/generics/watermark.png";
 	private final ImmutableSet<String> resourceNameEndsWithMatchers;
 
-	public AttachmentImageFileClassLoaderHook(@NonNull final AttachmentEntryService attachmentEntryService)
+	public AttachmentImageFileClassLoaderHook(@NonNull final AttachmentService attachmentService)
 	{
-		this.attachmentEntryService = attachmentEntryService;
+		this.attachmentService = attachmentService;
 
 		this.resourceNameEndsWithMatchers = buildResourceNameEndsWithMatchers();
 	}
@@ -130,7 +130,7 @@ public final class AttachmentImageFileClassLoaderHook
 		}
 		else
 		{
-			final byte[] data = attachmentEntryService.retrieveData(attachmentEntryId);
+			final byte[] data = attachmentService.retrieveData(attachmentEntryId);
 			return ImageUtils.createTempPNGFile("attachmentEntry", data);
 		}
 	}
@@ -141,7 +141,7 @@ public final class AttachmentImageFileClassLoaderHook
 	@Nullable
 	private AttachmentEntryId getFirstAttachmentEntryIdByPrintFormatId(@NonNull final PrintFormatId printFormatId)
 	{
-		final List<AttachmentEntry> entries = attachmentEntryService.getByReferencedRecord(TableRecordReference.of(I_AD_PrintFormat.Table_Name, printFormatId));
+		final List<AttachmentEntry> entries = attachmentService.getByReferencedRecord(TableRecordReference.of(I_AD_PrintFormat.Table_Name, printFormatId));
 
 		if (!entries.isEmpty())
 		{

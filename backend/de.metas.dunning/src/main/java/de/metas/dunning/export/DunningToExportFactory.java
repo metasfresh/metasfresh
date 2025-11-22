@@ -6,6 +6,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import java.math.BigDecimal;
 import java.util.List;
 
+import de.metas.attachments.AttachmentService;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_Invoice;
@@ -16,8 +17,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.AttachmentEntryService;
-import de.metas.attachments.AttachmentEntryService.AttachmentEntryQuery;
+import de.metas.attachments.AttachmentService.AttachmentEntryQuery;
 import de.metas.attachments.AttachmentTags;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
@@ -62,15 +62,15 @@ import lombok.NonNull;
 public class DunningToExportFactory
 {
 	private final DunningService dunningService;
-	private final AttachmentEntryService attachmentEntryService;
+	private final AttachmentService attachmentService;
 	private final CurrencyRepository currenciesRepo;
 
 	public DunningToExportFactory(
 			@NonNull final DunningService dunningService,
-			@NonNull final AttachmentEntryService attachmentEntryService,
+			@NonNull final AttachmentService attachmentService,
 			@NonNull final CurrencyRepository currenciesRepo)
 	{
-		this.attachmentEntryService = attachmentEntryService;
+		this.attachmentService = attachmentService;
 		this.dunningService = dunningService;
 		this.currenciesRepo = currenciesRepo;
 	}
@@ -130,10 +130,10 @@ public class DunningToExportFactory
 					.referencedRecord(TableRecordReference.of(dunnedInvoiceRecord))
 					.tagSetToTrue(AttachmentTags.TAGNAME_IS_DOCUMENT)
 					.build();
-			final List<AttachmentEntry> attachments = attachmentEntryService.getByQuery(query);
+			final List<AttachmentEntry> attachments = attachmentService.getByQuery(query);
 			for (final AttachmentEntry attachment : attachments)
 			{
-				final byte[] attachmentData = attachmentEntryService.retrieveData(attachment.getId());
+				final byte[] attachmentData = attachmentService.retrieveData(attachment.getId());
 
 				final DunningAttachment invoiceAttachment = DunningAttachment.builder()
 						.fileName(attachment.getFilename())

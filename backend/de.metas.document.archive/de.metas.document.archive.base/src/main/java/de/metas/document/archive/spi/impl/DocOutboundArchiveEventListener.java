@@ -4,8 +4,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.AttachmentEntryService;
-import de.metas.attachments.AttachmentEntryService.AttachmentEntryQuery;
+import de.metas.attachments.AttachmentService;
+import de.metas.attachments.AttachmentService.AttachmentEntryQuery;
 import de.metas.attachments.AttachmentTags;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
@@ -44,7 +44,6 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -54,15 +53,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 @Component
 public class DocOutboundArchiveEventListener implements IArchiveEventListener
 {
-	private final AttachmentEntryService attachmentEntryService;
+	private final AttachmentService attachmentService;
 	private final DocOutboundLogMailRecipientRegistry docOutboundLogMailRecipientRegistry;
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	public DocOutboundArchiveEventListener(
-			@NonNull final AttachmentEntryService attachmentEntryService,
+			@NonNull final AttachmentService attachmentService,
 			@NonNull final DocOutboundLogMailRecipientRegistry docOutboundLogMailRecipientRegistry)
 	{
-		this.attachmentEntryService = attachmentEntryService;
+		this.attachmentService = attachmentService;
 		this.docOutboundLogMailRecipientRegistry = docOutboundLogMailRecipientRegistry;
 	}
 
@@ -294,8 +293,8 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 				.referencedRecord(from)
 				.tagSetToTrue(AttachmentTags.TAGNAME_IS_DOCUMENT)
 				.build();
-		final ImmutableList<AttachmentEntry> attachmentsToShare = attachmentEntryService.getByQuery(query);
+		final ImmutableList<AttachmentEntry> attachmentsToShare = attachmentService.getByQuery(query);
 
-		attachmentEntryService.createAttachmentLinks(attachmentsToShare, ImmutableList.of(docOutboundLogRecord));
+		attachmentService.createAttachmentLinks(attachmentsToShare, ImmutableList.of(docOutboundLogRecord));
 	}
 }

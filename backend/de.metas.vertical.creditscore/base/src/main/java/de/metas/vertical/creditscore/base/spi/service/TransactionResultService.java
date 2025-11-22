@@ -23,7 +23,7 @@ package de.metas.vertical.creditscore.base.spi.service;
  */
 
 import de.metas.attachments.AttachmentEntryCreateRequest;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.order.OrderId;
 import de.metas.vertical.creditscore.base.model.I_CS_Transaction_Result;
@@ -46,13 +46,13 @@ public class TransactionResultService
 
 	private final TransactionResultRepository transactionResultsRepository;
 
-	private final AttachmentEntryService attachmentEntryService;
+	private final AttachmentService attachmentService;
 
 	public TransactionResultService(@NonNull final TransactionResultRepository transactionResultsRepository,
-			@NonNull final AttachmentEntryService attachmentEntryService)
+			@NonNull final AttachmentService attachmentService)
 	{
 		this.transactionResultsRepository = transactionResultsRepository;
-		this.attachmentEntryService = attachmentEntryService;
+		this.attachmentService = attachmentService;
 	}
 
 	public TransactionResult createAndSaveResult(@NonNull final CreditScore creditScore, @NonNull final BPartnerId bPartnerId
@@ -74,7 +74,7 @@ public class TransactionResultService
 					.fromByteArray(
 							MessageFormat.format("Request_{0}", requestLogData.getCustomerTransactionID()),
 							requestLogData.getRequestData().getBytes(StandardCharsets.UTF_8));
-			attachmentEntryService.createNewAttachment(
+			attachmentService.createNewAttachment(
 					TableRecordReference.of(I_CS_Transaction_Result.Table_Name, transactionResultId),
 					requestDataAttachment);
 		}
@@ -85,7 +85,7 @@ public class TransactionResultService
 					.fromByteArray(
 							MessageFormat.format("Response_{0}", requestLogData.getCustomerTransactionID()),
 							requestLogData.getResponseData().getBytes(StandardCharsets.UTF_8));
-			attachmentEntryService.createNewAttachment(
+			attachmentService.createNewAttachment(
 					TableRecordReference.of(I_CS_Transaction_Result.Table_Name, transactionResultId),
 					responseDataAttachment);
 		}

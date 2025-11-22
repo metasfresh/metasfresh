@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -84,14 +84,14 @@ public class SalesOrderRestController
 {
 	private static final Logger logger = LogManager.getLogger(SalesOrderRestController.class);
 	private final OrderService orderService;
-	private final AttachmentEntryService attachmentEntryService;
+	private final AttachmentService attachmentService;
 
 	public SalesOrderRestController(
 			final OrderService orderService,
-			final AttachmentEntryService attachmentEntryService)
+			final AttachmentService attachmentService)
 	{
 		this.orderService = orderService;
-		this.attachmentEntryService = attachmentEntryService;
+		this.attachmentService = attachmentService;
 	}
 
 	@ApiOperation("Create new order payment")
@@ -134,7 +134,7 @@ public class SalesOrderRestController
 		final int salesOrderId = Integer.parseInt(salesOrderIdStr);
 		final TableRecordReference salesOrderRef = TableRecordReference.of(I_C_Order.Table_Name, salesOrderId);
 
-		return attachmentEntryService.getByReferencedRecord(salesOrderRef)
+		return attachmentService.getByReferencedRecord(salesOrderRef)
 				.stream()
 				.map(entry -> toSalesOrderAttachment(salesOrderId, entry))
 				.collect(ImmutableList.toImmutableList());
@@ -152,7 +152,7 @@ public class SalesOrderRestController
 		final String name = file.getOriginalFilename();
 		final byte[] data = file.getBytes();
 
-		final AttachmentEntry entry = attachmentEntryService.createNewAttachment(salesOrderRef, name, data);
+		final AttachmentEntry entry = attachmentService.createNewAttachment(salesOrderRef, name, data);
 		return toSalesOrderAttachment(salesOrderId, entry);
 	}
 

@@ -24,7 +24,7 @@ package de.metas.report.jasper.class_loader;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -78,7 +78,7 @@ public final class JasperClassLoader extends ClassLoader
 
 	@Builder
 	private JasperClassLoader(
-			@NonNull final AttachmentEntryService attachmentEntryService,
+			@NonNull final AttachmentService attachmentService,
 			@NonNull final OrgId adOrgId,
 			@NonNull final ClassLoader parent,
 			@Nullable final PrintFormatId printFormatId)
@@ -88,7 +88,7 @@ public final class JasperClassLoader extends ClassLoader
 		this.adOrgId = adOrgId;
 		this.reportsPathPrefix = retrieveReportPrefix(adOrgId);
 		this.orgImages = OrgImageClassLoaderHook.newInstance();
-		this.attachmentImages = new AttachmentImageFileClassLoaderHook(attachmentEntryService);
+		this.attachmentImages = new AttachmentImageFileClassLoaderHook(attachmentService);
 		this.adImages = new AdImageClassLoaderHook();
 		this.printFormatId = printFormatId;
 	}

@@ -3,7 +3,7 @@ package de.metas.letters.model;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.attachments.AttachmentEntryCreateRequest;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CCache;
 import de.metas.email.EMail;
@@ -194,10 +194,10 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 				return;
 			}
 
-			final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+			final AttachmentService attachmentService = Adempiere.getBean(AttachmentService.class);
 			for (final AttachmentEntryCreateRequest attchmentRequest : attchmentRequests)
 			{
-				attachmentEntryService.createNewAttachment(requestRecord, attchmentRequest);
+				attachmentService.createNewAttachment(requestRecord, attchmentRequest);
 			}
 		}
 		catch (final Exception ex)
@@ -226,8 +226,8 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		// Attach printed letter
 		if (pdf != null)
 		{
-			final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
-			attachmentEntryService.createNewAttachment(requestRecord, pdf);
+			final AttachmentService attachmentService = Adempiere.getBean(AttachmentService.class);
+			attachmentService.createNewAttachment(requestRecord, pdf);
 		}
 	}
 

@@ -3,6 +3,7 @@ package de.metas.document.archive.storage.attachments;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import de.metas.attachments.AttachmentReference;
+import de.metas.attachments.AttachmentService;
 import de.metas.common.util.time.SystemTime;
 import lombok.NonNull;
 
@@ -15,12 +16,10 @@ import org.springframework.stereotype.Component;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.storeattachment.AttachmentStoredListener;
 import de.metas.document.archive.DocOutboundUtils;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
-import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
 
 /*
  * #%L
@@ -47,11 +46,11 @@ import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
 @Component
 public class DocOutboundAttachmentStoredListener implements AttachmentStoredListener
 {
-	private final AttachmentEntryService attachmentEntryService;
+	private final AttachmentService attachmentService;
 
-	public DocOutboundAttachmentStoredListener(@NonNull final AttachmentEntryService attachmentEntryService)
+	public DocOutboundAttachmentStoredListener(@NonNull final AttachmentService attachmentService)
 	{
-		this.attachmentEntryService = attachmentEntryService;
+		this.attachmentService = attachmentService;
 	}
 
 	@Override
@@ -59,7 +58,7 @@ public class DocOutboundAttachmentStoredListener implements AttachmentStoredList
 			@NonNull final AttachmentEntry attachmentEntry,
 			@NonNull final URI storageIdentifier)
 	{
-		final ImmutableList<AttachmentReference> attachmentReferences = attachmentEntryService.retrieveAttachmentReferences(attachmentEntry);
+		final ImmutableList<AttachmentReference> attachmentReferences = attachmentService.retrieveAttachmentReferences(attachmentEntry);
 		
 		final ImmutableList<I_C_Doc_Outbound_Log> docOutboundLogRecords = attachmentReferences
 				.stream()
@@ -82,7 +81,7 @@ public class DocOutboundAttachmentStoredListener implements AttachmentStoredList
 			saveRecord(docOutboundLogRecord);
 		}
 
-		attachmentEntryService.createAttachmentLinks(
+		attachmentService.createAttachmentLinks(
 				ImmutableList.of(attachmentEntry),
 				createdLogLineRecords.build());
 	}

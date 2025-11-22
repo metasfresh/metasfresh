@@ -97,14 +97,14 @@ public class AttachmentEntryFactory
 		{
 			attachmentEntryRecord.setTags(null);
 		}
-		// we need to save for type=Data in order not to loose the byte[] if any.
+		// we need to save for type=Data in order not to lose the byte[] if any.
 		// we also save for type==URL so be more "predictable"
 		saveRecord(attachmentEntryRecord);
 
 		return toAttachmentEntry(attachmentEntryRecord);
 	}
 
-	public AttachmentEntry toAttachmentEntry(@NonNull final I_AD_AttachmentEntry entryRecord)
+	AttachmentEntry toAttachmentEntry(@NonNull final I_AD_AttachmentEntry entryRecord)
 	{
 		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoIdOrAny(entryRecord.getAD_Org_ID()));
 

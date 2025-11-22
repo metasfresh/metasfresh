@@ -2,6 +2,7 @@ package de.metas.payment.esr.api.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import de.metas.attachments.AttachmentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -27,8 +28,6 @@ import org.junit.jupiter.api.Test;
  * #L%
  */
 
-import de.metas.attachments.AttachmentEntryService;
-
 public class ESRCheckDigitBuilderTest
 {
 
@@ -37,8 +36,8 @@ public class ESRCheckDigitBuilderTest
 	@BeforeEach
 	public void init()
 	{
-		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
-		esrImportBL = new ESRImportBL(attachmentEntryService);
+		final AttachmentService attachmentService = AttachmentService.createInstanceForUnitTesting();
+		esrImportBL = new ESRImportBL(attachmentService);
 	}
 
 	@Test

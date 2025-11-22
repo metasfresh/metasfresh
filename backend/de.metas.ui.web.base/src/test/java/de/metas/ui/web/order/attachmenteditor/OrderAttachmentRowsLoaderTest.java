@@ -27,7 +27,7 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryFactory;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.order.OrderAndLineId;
@@ -82,7 +82,7 @@ public class OrderAttachmentRowsLoaderTest
 	private PurchaseCandidateRepository purchaseCandidateRepository;
 
 	private I_C_BPartner bpartnerRecord;
-	private final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
+	private final AttachmentService attachmentService = AttachmentService.createInstanceForUnitTesting();
 
 	@Before
 	public void init()
@@ -105,7 +105,7 @@ public class OrderAttachmentRowsLoaderTest
 		salesOrder.setC_BPartner_ID(bpartnerRecord.getC_BPartner_ID());
 		save(salesOrder);
 
-		final AttachmentEntry bpartnerAttachmentEntry = attachmentEntryService.createNewAttachment(bpartnerRecord, "bPartnerAttachment", "bPartnerAttachment.data".getBytes());
+		final AttachmentEntry bpartnerAttachmentEntry = attachmentService.createNewAttachment(bpartnerRecord, "bPartnerAttachment", "bPartnerAttachment.data".getBytes());
 
 		//when
 		final OrderAttachmentRowsLoader loader = newOrderAttachmentRowsLoader(OrderId.ofRepoId(purchaseOrder.getC_Order_ID()));
@@ -136,7 +136,7 @@ public class OrderAttachmentRowsLoaderTest
 
 		final List<TableRecordReference> attachmentLinks = ImmutableList.of(TableRecordReference.of(bpartnerRecord), TableRecordReference.of(purchaseOrder));
 
-		final AttachmentEntry attachmentEntry = attachmentEntryService
+		final AttachmentEntry attachmentEntry = attachmentService
 				.createNewAttachment(attachmentLinks, AttachmentEntryCreateRequest.builderFromByteArray("2linksAttachment", "2linksAttachment.data".getBytes()).build());
 
 		//when
@@ -172,7 +172,7 @@ public class OrderAttachmentRowsLoaderTest
 
 		final List<TableRecordReference> attachmentLinks = ImmutableList.of(TableRecordReference.of(I_C_Order.Table_Name, salesOrder.getC_Order_ID()), prescriptionRef);
 
-		final AttachmentEntry attachmentEntry = attachmentEntryService
+		final AttachmentEntry attachmentEntry = attachmentService
 				.createNewAttachment(attachmentLinks, AttachmentEntryCreateRequest.builderFromByteArray("2linksAttachment", "2linksAttachment.data".getBytes()).build());
 
 		//when
@@ -210,7 +210,7 @@ public class OrderAttachmentRowsLoaderTest
 
 		final List<TableRecordReference> attachmentLinks = ImmutableList.of(TableRecordReference.of(salesOrder), prescriptionRef1, prescriptionRef2);
 
-		final AttachmentEntry attachmentEntry = attachmentEntryService
+		final AttachmentEntry attachmentEntry = attachmentService
 				.createNewAttachment(attachmentLinks, AttachmentEntryCreateRequest.builderFromByteArray("2linksAttachment", "2linksAttachment.data".getBytes()).build());
 
 		//when
@@ -259,7 +259,7 @@ public class OrderAttachmentRowsLoaderTest
 
 		final List<TableRecordReference> attachmentLinks = ImmutableList.of(salesOrderRef, TableRecordReference.of(purchaseOrder));
 
-		final AttachmentEntry attachmentEntry = attachmentEntryService
+		final AttachmentEntry attachmentEntry = attachmentService
 				.createNewAttachment(attachmentLinks, AttachmentEntryCreateRequest.builderFromByteArray("2linksAttachment", "2linksAttachment.data".getBytes()).build());
 
 		//when
@@ -296,7 +296,7 @@ public class OrderAttachmentRowsLoaderTest
 
 		final List<TableRecordReference> attachmentLinks = ImmutableList.of(purchaseOrderRef);
 
-		final AttachmentEntry attachmentEntry = attachmentEntryService
+		final AttachmentEntry attachmentEntry = attachmentService
 				.createNewAttachment(attachmentLinks, AttachmentEntryCreateRequest.builderFromByteArray("POLinkAttachment", "POLinkAttachment.data".getBytes()).build());
 
 		//when
@@ -332,7 +332,7 @@ public class OrderAttachmentRowsLoaderTest
 
 		final List<TableRecordReference> attachmentLinks = ImmutableList.of(prescriptionRecordRef);
 
-		final AttachmentEntry attachmentEntry = attachmentEntryService
+		final AttachmentEntry attachmentEntry = attachmentService
 				.createNewAttachment(attachmentLinks, AttachmentEntryCreateRequest.builderFromByteArray("PrescriptionAttachment", "PrescriptionAttachment.data".getBytes()).build());
 
 		//when
@@ -367,7 +367,7 @@ public class OrderAttachmentRowsLoaderTest
 
 		final List<TableRecordReference> attachmentLinks = ImmutableList.of(TableRecordReference.of(purchaseOrder), unrelatedSalesOrderRef);
 
-		final AttachmentEntry attachmentEntry = attachmentEntryService
+		final AttachmentEntry attachmentEntry = attachmentService
 				.createNewAttachment(attachmentLinks, AttachmentEntryCreateRequest.builderFromByteArray("2linksAttachment", "2linksAttachment.data".getBytes()).build());
 
 		//when
@@ -403,7 +403,7 @@ public class OrderAttachmentRowsLoaderTest
 
 		when(purchaseCandidateRepository.getAllByPurchaseOrderId(any(OrderId.class))).thenReturn(ImmutableList.of(purchaseCandidate));
 
-		final AttachmentEntry bpartnerAttachmentEntry = attachmentEntryService.createNewAttachment(bpartnerRecord, "bPartnerAttachment", "bPartnerAttachment.data".getBytes());
+		final AttachmentEntry bpartnerAttachmentEntry = attachmentService.createNewAttachment(bpartnerRecord, "bPartnerAttachment", "bPartnerAttachment.data".getBytes());
 
 		//when
 		final OrderAttachmentRowsLoader loader = newOrderAttachmentRowsLoader(OrderId.ofRepoId(purchaseOrder.getC_Order_ID()));
@@ -426,7 +426,7 @@ public class OrderAttachmentRowsLoaderTest
 	private OrderAttachmentRowsLoader newOrderAttachmentRowsLoader(final OrderId orderId)
 	{
 		return OrderAttachmentRowsLoader.builder()
-				.attachmentEntryService(attachmentEntryService)
+				.attachmentService(attachmentService)
 				.albertaPrescriptionRequestDAO(new AlbertaPrescriptionRequestDAO(new AlbertaPatientRepository()))
 				.albertaPatientRepository(new AlbertaPatientRepository())
 				.purchaseCandidateRepository(purchaseCandidateRepository)
