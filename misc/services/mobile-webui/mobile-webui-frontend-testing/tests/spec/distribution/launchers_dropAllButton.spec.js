@@ -13,7 +13,7 @@ const createMasterdata = async ({ qtyToMove }) => {
             login: { user: { language: "en_US", workplace: "workplace1" } },
             mobileConfig: {
                 distribution: {
-                    orderBys: 'SeqNo,Priority,DatePromised',
+                    orderBys: 'SeqNo',
                 }
             },
             resources: { "plantId": { type: "PT" } },
@@ -35,6 +35,7 @@ const createMasterdata = async ({ qtyToMove }) => {
             },
             distributionOrders: {
                 "DD1": {
+                    seqNo: 10,
                     warehouseFrom: "wh1",
                     warehouseTo: "wh2",
                     warehouseInTransit: "whInTransit",
@@ -42,6 +43,7 @@ const createMasterdata = async ({ qtyToMove }) => {
                     lines: [{ product: "P1", qtyEntered: qtyToMove }],
                 },
                 "DD2": {
+                    seqNo: 20,
                     warehouseFrom: "wh1",
                     warehouseTo: "wh2",
                     warehouseInTransit: "whInTransit",
@@ -49,11 +51,23 @@ const createMasterdata = async ({ qtyToMove }) => {
                     lines: [{ product: "P2", qtyEntered: qtyToMove }],
                 },
                 "DD3": {
+                    seqNo: 30,
                     warehouseFrom: "wh1",
                     warehouseTo: "wh2",
                     warehouseInTransit: "whInTransit",
                     plant: "plantId",
-                    lines: [{ product: "P3", qtyEntered: qtyToMove }],
+                    lines: [
+                        { product: "P1", qtyEntered: qtyToMove },
+                        { product: "P3", qtyEntered: qtyToMove },
+                    ],
+                },
+                "DD4": {
+                    seqNo: 40,
+                    warehouseFrom: "wh1",
+                    warehouseTo: "wh2",
+                    warehouseInTransit: "whInTransit",
+                    plant: "plantId",
+                    lines: [{ product: "P1", qtyEntered: qtyToMove }],
                 },
             },
         }
@@ -69,6 +83,16 @@ test('Pick multiple HUs (by HU code) and drop them all together in one step (usi
     await ApplicationsListScreen.startApplication('distribution');
     await DistributionJobsListScreen.waitForScreen();
 
+    await test.step("Before picking expectations", async () => {
+        await DistributionJobsListScreen.expectDropAllButton({ visible: false });
+        await DistributionJobsListScreen.expectJobButtons([
+            { testId: masterdata.distributionOrders.DD1.launcherTestId, alreadyStarted: false },
+            { testId: masterdata.distributionOrders.DD2.launcherTestId, alreadyStarted: false },
+            { testId: masterdata.distributionOrders.DD3.launcherTestId, alreadyStarted: false },
+            { testId: masterdata.distributionOrders.DD4.launcherTestId, alreadyStarted: false },
+        ]);
+    });
+
     await test.step("Pick job 1", async () => {
         await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
         await DistributionJobScreen.clickLineButton({ index: 1 });
@@ -78,6 +102,14 @@ test('Pick multiple HUs (by HU code) and drop them all together in one step (usi
         });
         await DistributionLineScreen.goBack();
         await DistributionJobScreen.goBack();
+
+        await DistributionJobsListScreen.expectDropAllButton({ enabled: true });
+        await DistributionJobsListScreen.expectJobButtons([
+            { testId: masterdata.distributionOrders.DD1.launcherTestId, alreadyStarted: true },
+            { testId: masterdata.distributionOrders.DD2.launcherTestId, alreadyStarted: false },
+            { testId: masterdata.distributionOrders.DD3.launcherTestId, alreadyStarted: false },
+            { testId: masterdata.distributionOrders.DD4.launcherTestId, alreadyStarted: false },
+        ]);
     });
     await test.step("Pick job 2", async () => {
         await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD2.launcherTestId });
@@ -88,5 +120,42 @@ test('Pick multiple HUs (by HU code) and drop them all together in one step (usi
         });
         await DistributionLineScreen.goBack();
         await DistributionJobScreen.goBack();
+
+        await DistributionJobsListScreen.expectDropAllButton({ enabled: true });
+        await DistributionJobsListScreen.expectJobButtons([
+            { testId: masterdata.distributionOrders.DD1.launcherTestId, alreadyStarted: true },
+            { testId: masterdata.distributionOrders.DD2.launcherTestId, alreadyStarted: true },
+            { testId: masterdata.distributionOrders.DD3.launcherTestId, alreadyStarted: false },
+            { testId: masterdata.distributionOrders.DD4.launcherTestId, alreadyStarted: false },
+        ]);
+    });
+    await test.step("Pick job 3 partial", async () => {
+        await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD3.launcherTestId });
+        await DistributionJobScreen.clickLineButton({ index: 2 });
+        await DistributionLineScreen.scanHUToMove({
+            huQRCode: masterdata.handlingUnits.HU3.huId,
+            expectedQtyToMove: '100',
+        });
+        await DistributionLineScreen.goBack();
+        await DistributionJobScreen.goBack();
+
+        await DistributionJobsListScreen.expectDropAllButton({ enabled: true });
+        await DistributionJobsListScreen.expectJobButtons([
+            { testId: masterdata.distributionOrders.DD1.launcherTestId, alreadyStarted: true },
+            { testId: masterdata.distributionOrders.DD2.launcherTestId, alreadyStarted: true },
+            { testId: masterdata.distributionOrders.DD3.launcherTestId, alreadyStarted: true },
+            { testId: masterdata.distributionOrders.DD4.launcherTestId, alreadyStarted: false },
+        ]);
+    });
+
+    await test.step("Drop everything that was picked to wh2_l1", async () => {
+        await DistributionJobsListScreen.waitForScreen();
+        await DistributionJobsListScreen.dropAll({ dropToQRCode: masterdata.warehouses.wh2.locators.wh2_l1.qrCode });
+
+        await DistributionJobsListScreen.expectDropAllButton({ visible: false });
+        await DistributionJobsListScreen.expectJobButtons([
+            { testId: masterdata.distributionOrders.DD3.launcherTestId, alreadyStarted: true },
+            { testId: masterdata.distributionOrders.DD4.launcherTestId, alreadyStarted: false },
+        ]);
     });
 });
