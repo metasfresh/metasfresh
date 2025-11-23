@@ -3,10 +3,15 @@ import PropTypes from 'prop-types';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
 import { distributionJobsDropAllScreen } from '../../../routes/distribution';
+import { trl } from '../../../utils/translations';
 
 const DistributionJobsListActions = ({ launchers, disabled }) => {
   const history = useMobileNavigation();
   const isSomeLaunchersInTransit = isInTransit({ launchers });
+
+  if (!isSomeLaunchersInTransit) {
+    return null;
+  }
 
   const onDropAll = () => {
     history.goTo(distributionJobsDropAllScreen());
@@ -14,14 +19,14 @@ const DistributionJobsListActions = ({ launchers, disabled }) => {
 
   return (
     <>
-      {isSomeLaunchersInTransit && (
-        <ButtonWithIndicator
-          caption={'DROP ALL' /* TODO TRL */}
-          onClick={onDropAll}
-          testId="dropAll-button"
-          disabled={disabled}
-        />
-      )}
+      <ButtonWithIndicator
+        additionalCssClass="action-button"
+        caption={trl('activities.distribution.scanDropToLocator')}
+        onClick={onDropAll}
+        testId="dropAll-button"
+        disabled={disabled}
+      />
+      <br />
     </>
   );
 };
