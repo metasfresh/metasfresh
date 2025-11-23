@@ -28,6 +28,7 @@ import de.metas.invoicecandidate.async.spi.impl.CreateMissingInvoiceCandidatesWo
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -99,12 +100,22 @@ public class ILHandlerModelInterceptor extends AbstractModelInterceptor
 	@Override
 	public void onModelChange(@NonNull final Object model, @NonNull final ModelChangeType changeType)
 	{
-		//
 		// Create missing invoice candidates for given pseudo-document
-		if (!isDocument && changeType.isNewOrChange() && changeType.isAfter())
+		final boolean normalRecordAfterNewOrChange = !isDocument && changeType.isNewOrChange() && changeType.isAfter();
+		if (!normalRecordAfterNewOrChange)
 		{
-			createMissingInvoiceCandidates(model);
+			return;
 		}
+		
+		if (invoiceCandBL.isCreateMissingProcessInProgress(model))
+		{
+			// we are here because the current model was updated **as part of** the creation of missing ICs. In that case, never enqueue a new WP
+			Loggables.get().addLog("{} - Not creating missing invoice candidates for {} because we are already creating them for this model", this, model);
+			return;
+		}
+
+		createMissingInvoiceCandidates(model);
+
 	}
 
 	/**
@@ -112,12 +123,6 @@ public class ILHandlerModelInterceptor extends AbstractModelInterceptor
 	 */
 	private void createMissingInvoiceCandidates(@NonNull final Object model)
 	{
-		// the current model might be updated **as part of** the creation of missing ICs. In that case, never enqueue a new WP
-		if(!invoiceCandBL.isCreateMissingProcessInProgress(model))
-		{
-			return;
-		}
-		
 		final CandidatesAutoCreateMode modeForCurrentModel = handler.getSpecificCandidatesAutoCreateMode(model);
 		switch (modeForCurrentModel)
 		{

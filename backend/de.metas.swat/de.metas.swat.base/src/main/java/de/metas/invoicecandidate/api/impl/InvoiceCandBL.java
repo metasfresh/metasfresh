@@ -1253,6 +1253,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	public IAutoCloseable setCreateMissingProcessInProgress(@NonNull final Object model)
 	{
 		InterfaceWrapperHelper.setDynAttribute(model, DYN_ATTR_CREATE_MISSING_PROCESS_IN_PROGRESS, true);
+		
 		return () -> InterfaceWrapperHelper.setDynAttribute(model, DYN_ATTR_CREATE_MISSING_PROCESS_IN_PROGRESS, false);
 	}
 
