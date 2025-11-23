@@ -22,14 +22,13 @@ package de.metas.attachments.migration;
  * #L%
  */
 
-import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Component;
-
 import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
 import lombok.NonNull;
+import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
 
 @Component
 public class AttachmentMigrationStartupTask implements IStartupHouseKeepingTask

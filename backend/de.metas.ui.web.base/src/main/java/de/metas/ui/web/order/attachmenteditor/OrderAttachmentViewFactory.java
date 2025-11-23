@@ -22,8 +22,7 @@
 
 package de.metas.ui.web.order.attachmenteditor;
 
-import de.metas.attachments.AttachmentEntryRepository;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.i18n.IMsgBL;
 import de.metas.order.OrderId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
@@ -52,20 +51,20 @@ public class OrderAttachmentViewFactory implements IViewFactory
 	public static final String OrderAttachmentView_String = "OrderAttachmentView";
 	public static final WindowId WINDOWID = WindowId.fromJson(OrderAttachmentView_String);
 
-	private final AttachmentEntryService attachmentEntryService;
+	private final AttachmentService attachmentService;
 	private final OrderAttachmentRowsRepository rowsRepo;
 
 	public OrderAttachmentViewFactory(
-			@NonNull final AttachmentEntryService attachmentEntryService,
+			@NonNull final AttachmentService attachmentService,
 			@NonNull final AlbertaPrescriptionRequestDAO albertaPrescriptionRequestDAO,
-			@NonNull final AttachmentEntryRepository attachmentEntryRepository,
 			@NonNull final AlbertaPatientRepository albertaPatientRepository,
 			@NonNull final PurchaseCandidateRepository purchaseCandidateRepository)
 	{
-		this.attachmentEntryService = attachmentEntryService;
+		this.attachmentService = attachmentService;
+		
 		this.rowsRepo = OrderAttachmentRowsRepository.builder()
 				.albertaPrescriptionRequestDAO(albertaPrescriptionRequestDAO)
-				.attachmentEntryRepository(attachmentEntryRepository)
+				.attachmentService(attachmentService)
 				.albertaPatientRepository(albertaPatientRepository)
 				.purchaseCandidateRepository(purchaseCandidateRepository)
 				.build();
@@ -84,7 +83,7 @@ public class OrderAttachmentViewFactory implements IViewFactory
 		final OrderAttachmentRows rows = rowsRepo.getByPurchaseOrderId(orderId);
 
 		return OrderAttachmentView.builder()
-				.attachmentEntryService(attachmentEntryService)
+				.attachmentService(attachmentService)
 				.viewId(viewId)
 				.rows(rows)
 				.build();

@@ -268,6 +268,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 	// task 08927
 	/* package */static final ModelDynAttributeAccessor<org.compiere.model.I_C_Invoice, Boolean> DYNATTR_INVOICING_FROM_INVOICE_CANDIDATES_IS_IN_PROGRESS = new ModelDynAttributeAccessor<>(Boolean.class);
+	public static final String DYN_ATTR_CREATE_MISSING_PROCESS_IN_PROGRESS = "createMissingProcessInProgress";
 
 	private final Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandBL.class);
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
@@ -1246,6 +1247,20 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	public IAutoCloseable setUpdateProcessInProgress()
 	{
 		return updateProcessInProgress.enable();
+	}
+
+	@Override
+	public IAutoCloseable setCreateMissingProcessInProgress(@NonNull final Object model)
+	{
+		InterfaceWrapperHelper.setDynAttribute(model, DYN_ATTR_CREATE_MISSING_PROCESS_IN_PROGRESS, true);
+		
+		return () -> InterfaceWrapperHelper.setDynAttribute(model, DYN_ATTR_CREATE_MISSING_PROCESS_IN_PROGRESS, false);
+	}
+
+	@Override
+	public boolean isCreateMissingProcessInProgress(@NonNull final Object model)
+	{
+		return Boolean.TRUE.equals(InterfaceWrapperHelper.getDynAttribute(model, DYN_ATTR_CREATE_MISSING_PROCESS_IN_PROGRESS));
 	}
 
 	@Override

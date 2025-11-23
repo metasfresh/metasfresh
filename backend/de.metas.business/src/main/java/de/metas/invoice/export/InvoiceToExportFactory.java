@@ -4,8 +4,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.AttachmentEntryService;
-import de.metas.attachments.AttachmentEntryService.AttachmentEntryQuery;
+import de.metas.attachments.AttachmentService;
+import de.metas.attachments.AttachmentService.AttachmentEntryQuery;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -86,16 +86,16 @@ public class InvoiceToExportFactory
 {
 	private static final Logger logger = LogManager.getLogger(InvoiceToExportFactory.class);
 
-	private final AttachmentEntryService attachmentEntryService;
+	private final AttachmentService attachmentService;
 	private final ESRPaymentInfoProvider esrPaymentInfoProvider;
 	private final CurrencyRepository currenciesRepo;
 
 	public InvoiceToExportFactory(
-			@NonNull final AttachmentEntryService attachmentEntryservice,
+			@NonNull final AttachmentService attachmentService,
 			@NonNull final Optional<ESRPaymentInfoProvider> esrPaymentInfoProvider,
 			@NonNull final CurrencyRepository currenciesRepo)
 	{
-		this.attachmentEntryService = attachmentEntryservice;
+		this.attachmentService = attachmentService;
 		this.esrPaymentInfoProvider = esrPaymentInfoProvider.orElse(null);
 		this.currenciesRepo = currenciesRepo;
 	}
@@ -224,12 +224,12 @@ public class InvoiceToExportFactory
 				.referencedRecord(invoiceRecord)
 				.tagSetToAnyValue(InvoiceExportClientFactory.ATTACHMENT_TAGNAME_EXPORT_PROVIDER)
 				.build();
-		final List<AttachmentEntry> attachments = attachmentEntryService.getByQuery(query);
+		final List<AttachmentEntry> attachments = attachmentService.getByQuery(query);
 
 		final ImmutableList.Builder<InvoiceAttachment> invoiceAttachments = ImmutableList.builder();
 		for (final AttachmentEntry attachment : attachments)
 		{
-			final byte[] attachmentData = attachmentEntryService.retrieveData(attachment.getId());
+			final byte[] attachmentData = attachmentService.retrieveData(attachment.getId());
 
 			final InvoiceAttachment invoiceAttachment = InvoiceAttachment.builder()
 					.fileName(attachment.getFilename())

@@ -2,6 +2,7 @@ package de.metas.shipper.gateway.derkurier.misc;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
+import de.metas.attachments.AttachmentService;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
@@ -9,7 +10,6 @@ import org.springframework.stereotype.Service;
 import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.AttachmentEntryService;
 import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
 import de.metas.email.MailService;
@@ -56,17 +56,17 @@ public class DerKurierDeliveryOrderEmailer
 	//
 	// Services
 	private final DerKurierShipperConfigRepository derKurierShipperConfigRepository;
-	private final AttachmentEntryService attachmentEntryService;
+	private final AttachmentService attachmentService;
 	private final MailService mailService;
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	public DerKurierDeliveryOrderEmailer(
 			@NonNull final DerKurierShipperConfigRepository derKurierShipperConfigRepository,
-			@NonNull final AttachmentEntryService attachmentEntryService,
+			@NonNull final AttachmentService attachmentService,
 			@NonNull final MailService mailService)
 	{
 		this.derKurierShipperConfigRepository = derKurierShipperConfigRepository;
-		this.attachmentEntryService = attachmentEntryService;
+		this.attachmentService = attachmentService;
 		this.mailService = mailService;
 	}
 
@@ -84,7 +84,7 @@ public class DerKurierDeliveryOrderEmailer
 			return;
 		}
 
-		final AttachmentEntry attachmentEntry = attachmentEntryService.getByFilenameOrNull(
+		final AttachmentEntry attachmentEntry = attachmentService.getByFilenameOrNull(
 				TableRecordReference.of(shipperTransportationRecord),
 				DerKurierDeliveryOrderService.SHIPPER_TRANSPORTATION_ATTACHMENT_FILENAME);
 
@@ -114,7 +114,7 @@ public class DerKurierDeliveryOrderEmailer
 			@NonNull final EMailAddress mailTo,
 			@NonNull final AttachmentEntry attachmentEntry)
 	{
-		final byte[] data = attachmentEntryService.retrieveData(attachmentEntry.getId());
+		final byte[] data = attachmentService.retrieveData(attachmentEntry.getId());
 		final String csvDataString = new String(data, DerKurierConstants.CSV_DATA_CHARSET);
 
 		final String subject = msgBL.getMsg(Env.getCtx(), SYSCONFIG_DerKurier_DeliveryOrder_EmailSubject);

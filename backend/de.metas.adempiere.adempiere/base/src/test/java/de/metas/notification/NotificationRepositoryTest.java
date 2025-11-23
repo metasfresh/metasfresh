@@ -1,7 +1,7 @@
 package de.metas.notification;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.document.references.zoom_into.CustomizedWindowInfo;
 import de.metas.document.references.zoom_into.CustomizedWindowInfoMap;
 import de.metas.document.references.zoom_into.NullCustomizedWindowInfoMapRepository;
@@ -63,7 +63,7 @@ public class NotificationRepositoryTest
 	public void simpleSaveAndLoadTest()
 	{
 		final NotificationRepository notificationRepo = new NotificationRepository(
-				AttachmentEntryService.createInstanceForUnitTesting(),
+				AttachmentService.createInstanceForUnitTesting(),
 				NullCustomizedWindowInfoMapRepository.instance);
 
 		createAD_Message("subjectADMessage");
@@ -120,7 +120,7 @@ public class NotificationRepositoryTest
 				)));
 
 		final NotificationRepository notificationRepo = new NotificationRepository(
-				AttachmentEntryService.createInstanceForUnitTesting(),
+				AttachmentService.createInstanceForUnitTesting(),
 				mockedCustomizedWindowInfoMapRepository);
 
 		notificationRepo.save(UserNotificationRequest.builder()

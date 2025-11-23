@@ -1,12 +1,12 @@
 package de.metas.impexp.process;
 
+import de.metas.attachments.AttachmentService;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_AttachmentEntry;
 
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryDataResource;
 import de.metas.attachments.AttachmentEntryId;
-import de.metas.attachments.AttachmentEntryService;
 import de.metas.impexp.DataImportRequest;
 import de.metas.impexp.DataImportResult;
 import de.metas.impexp.DataImportService;
@@ -43,7 +43,7 @@ import de.metas.process.RunOutOfTrx;
 
 public class C_DataImport_ImportAttachment extends JavaProcess implements IProcessPrecondition
 {
-	private final transient AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+	private final transient AttachmentService attachmentService = SpringContextHolder.instance.getBean(AttachmentService.class);
 	private final transient DataImportService dataImportService = SpringContextHolder.instance.getBean(DataImportService.class);
 
 	@Param(parameterName = I_AD_AttachmentEntry.COLUMNNAME_AD_AttachmentEntry_ID, mandatory = true)
@@ -68,7 +68,7 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 	@RunOutOfTrx // dataImportService comes with its own trx-management
 	protected String doIt()
 	{
-		final AttachmentEntryDataResource data = attachmentEntryService.retrieveDataResource(getAttachmentEntryId());
+		final AttachmentEntryDataResource data = attachmentService.retrieveDataResource(getAttachmentEntryId());
 
 		final DataImportResult result = dataImportService.importDataFromResource(DataImportRequest.builder()
 				.data(data)
@@ -112,8 +112,8 @@ public class C_DataImport_ImportAttachment extends JavaProcess implements IProce
 
 	private void deleteAttachmentEntry()
 	{
-		final AttachmentEntry attachmentEntry = attachmentEntryService.getById(getAttachmentEntryId());
-		attachmentEntryService.unattach(getDataImportConfigId().toRecordRef(), attachmentEntry);
+		final AttachmentEntry attachmentEntry = attachmentService.getById(getAttachmentEntryId());
+		attachmentService.unattach(getDataImportConfigId().toRecordRef(), attachmentEntry);
 	}
 
 }

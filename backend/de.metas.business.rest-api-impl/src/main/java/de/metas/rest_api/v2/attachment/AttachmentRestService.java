@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryCreateRequest;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.attachments.AttachmentEntryType;
 import de.metas.attachments.AttachmentTags;
 import de.metas.common.rest_api.v2.attachment.JsonAttachment;
@@ -65,16 +65,16 @@ import java.util.List;
 public class AttachmentRestService
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final AttachmentEntryService attachmentEntryService;
+	private final AttachmentService attachmentService;
 	private final ExternalReferenceRestControllerService externalReferenceService;
 	private final ExternalReferenceTypes externalReferenceTypes;
 
 	public AttachmentRestService(
-			@NonNull final AttachmentEntryService attachmentEntryService,
+			@NonNull final AttachmentService attachmentService,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceService,
 			@NonNull final ExternalReferenceTypes externalReferenceTypes)
 	{
-		this.attachmentEntryService = attachmentEntryService;
+		this.attachmentService = attachmentService;
 		this.externalReferenceService = externalReferenceService;
 		this.externalReferenceTypes = externalReferenceTypes;
 	}
@@ -133,7 +133,7 @@ public class AttachmentRestService
 				.map(target -> extractTableRecordReference(orgCode, target))
 				.collect(ImmutableList.toImmutableList());
 
-		final AttachmentEntry entry = attachmentEntryService.createNewAttachment(references, request);
+		final AttachmentEntry entry = attachmentService.createNewAttachment(references, request);
 
 		return JsonAttachmentResponse.builder()
 				.target(jsonAttachmentRequest.getTargets())

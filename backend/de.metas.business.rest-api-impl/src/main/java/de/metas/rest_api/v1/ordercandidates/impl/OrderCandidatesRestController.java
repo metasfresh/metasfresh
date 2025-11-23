@@ -17,6 +17,7 @@ import de.metas.common.ordercandidates.v1.response.JsonOLCandCreateBulkResponse;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.impex.InputDataSourceId;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
@@ -40,6 +41,7 @@ import de.metas.security.permissions2.PermissionServiceFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
+import de.metas.util.web.exception.InvalidEntityException;
 import de.metas.util.web.exception.MissingResourceException;
 import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
@@ -99,12 +101,12 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 @RestController
 @RequestMapping(value = {
 		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/sales/order/candidates",
-		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/sales/order/candidates"})
+		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/sales/order/candidates" })
 @Profile(Profiles.PROFILE_App)
 public class OrderCandidatesRestController implements OrderCandidatesRestEndpoint
 {
 	private final String PATH_BULK = "/bulk";
-	
+
 	public static final String DATA_SOURCE_INTERNAL_NAME = "SOURCE." + OrderCandidatesRestController.class.getName();
 
 	private static final Logger logger = LogManager.getLogger(OrderCandidatesRestController.class);
@@ -278,10 +280,10 @@ public class OrderCandidatesRestController implements OrderCandidatesRestEndpoin
 		final OrgId orgId = masterdataProvider.getCreateOrgIdInTrx(json.getOrg());
 		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 
-		final ZonedDateTime dateEffective = CoalesceUtil.coalesceSuppliers(
+		final ZonedDateTime dateEffective = CoalesceUtil.coalesceSuppliersNotNull(
 				() -> TimeUtil.asZonedDateTime(json.getDateRequired(), timeZone),
 				() -> TimeUtil.asZonedDateTime(json.getDateOrdered(), timeZone),
-				() -> SystemTime.asZonedDateTime());
+				SystemTime::asZonedDateTime);
 
 		final PricingSystemId pricingSystemId = masterdataProvider.getPricingSystemIdByValue(json.getPricingSystemCode());
 

@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -48,6 +48,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -73,6 +74,7 @@ import java.util.List;
  * @deprecated please consider migrating to version 2 of this API.
  */
 @Deprecated
+@RequiredArgsConstructor
 @RestController
 @RequestMapping(value = {
 		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/sales/order",
@@ -80,12 +82,7 @@ import java.util.List;
 @Profile(Profiles.PROFILE_App)
 public class SalesOrderRestController
 {
-	private final AttachmentEntryService attachmentEntryService;
-
-	public SalesOrderRestController(@NonNull final AttachmentEntryService attachmentEntryService)
-	{
-		this.attachmentEntryService = attachmentEntryService;
-	}
+	@NonNull private final AttachmentService attachmentService;
 
 	@PostMapping
 	public JsonSalesOrder createOrder(@RequestBody final JsonSalesOrderCreateRequest request)
@@ -167,7 +164,7 @@ public class SalesOrderRestController
 		final int salesOrderId = Integer.parseInt(salesOrderIdStr);
 		final TableRecordReference salesOrderRef = TableRecordReference.of(I_C_Order.Table_Name, salesOrderId);
 
-		return attachmentEntryService.getByReferencedRecord(salesOrderRef)
+		return attachmentService.getByReferencedRecord(salesOrderRef)
 				.stream()
 				.map(entry -> toSalesOrderAttachment(salesOrderId, entry))
 				.collect(ImmutableList.toImmutableList());
@@ -185,7 +182,7 @@ public class SalesOrderRestController
 		final String name = file.getOriginalFilename();
 		final byte[] data = file.getBytes();
 
-		final AttachmentEntry entry = attachmentEntryService.createNewAttachment(salesOrderRef, name, data);
+		final AttachmentEntry entry = attachmentService.createNewAttachment(salesOrderRef, name, data);
 		return toSalesOrderAttachment(salesOrderId, entry);
 	}
 
@@ -193,7 +190,7 @@ public class SalesOrderRestController
 	{
 		return JsonSalesOrderAttachment.builder()
 				.salesOrderId(String.valueOf(salesOrderId))
-				.id(AttachmentEntryId.getRepoId(entry.getId()))
+				.id(AttachmentEntryId.toRepoId(entry.getId()))
 				.type(JsonConverters.toJsonAttachmentType(entry.getType()))
 				.filename(entry.getFilename())
 				.mimeType(entry.getMimeType())

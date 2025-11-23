@@ -27,10 +27,7 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryFactory;
-import de.metas.attachments.AttachmentEntryRepository;
-import de.metas.attachments.AttachmentEntryService;
-import de.metas.attachments.listener.TableAttachmentListenerRepository;
-import de.metas.attachments.listener.TableAttachmentListenerService;
+import de.metas.attachments.AttachmentService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.order.OrderAndLineId;
@@ -76,7 +73,7 @@ import java.util.List;
 import static de.metas.ui.web.order.attachmenteditor.OrderAttachmentRowsLoader.buildRowId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -85,8 +82,7 @@ public class OrderAttachmentRowsLoaderTest
 	private PurchaseCandidateRepository purchaseCandidateRepository;
 
 	private I_C_BPartner bpartnerRecord;
-	private AttachmentEntryRepository attachmentEntryRepository;
-	private final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
+	private final AttachmentService attachmentService = AttachmentService.createInstanceForUnitTesting();
 
 	@Before
 	public void init()
@@ -97,8 +93,6 @@ public class OrderAttachmentRowsLoaderTest
 		bpartnerRecord = createPartner("bpartner");
 
 		final AttachmentEntryFactory attachmentEntryFactory = new AttachmentEntryFactory();
-		final TableAttachmentListenerService tableAttachmentListenerService = new TableAttachmentListenerService(new TableAttachmentListenerRepository());
-		attachmentEntryRepository = new AttachmentEntryRepository(attachmentEntryFactory, tableAttachmentListenerService);
 		purchaseCandidateRepository = Mockito.mock(PurchaseCandidateRepository.class);
 	}
 
@@ -111,7 +105,7 @@ public class OrderAttachmentRowsLoaderTest
 		salesOrder.setC_BPartner_ID(bpartnerRecord.getC_BPartner_ID());
 		save(salesOrder);
 
-		final AttachmentEntry bpartnerAttachmentEntry = attachmentEntryService.createNewAttachment(bpartnerRecord, "bPartnerAttachment", "bPartnerAttachment.data".getBytes());
+		final AttachmentEntry bpartnerAttachmentEntry = attachmentService.createNewAttachment(bpartnerRecord, "bPartnerAttachment", "bPartnerAttachment.data".getBytes());
 
 		//when
 		final OrderAttachmentRowsLoader loader = newOrderAttachmentRowsLoader(OrderId.ofRepoId(purchaseOrder.getC_Order_ID()));
@@ -142,7 +136,7 @@ public class OrderAttachmentRowsLoaderTest
 
 		final List<TableRecordReference> attachmentLinks = ImmutableList.of(TableRecordReference.of(bpartnerRecord), TableRecordReference.of(purchaseOrder));
 
-		final AttachmentEntry attachmentEntry = attachmentEntryService
+		final AttachmentEntry attachmentEntry = attachmentService
 				.createNewAttachment(attachmentLinks, AttachmentEntryCreateRequest.builderFromByteArray("2linksAttachment", "2linksAttachment.data".getBytes()).build());
 
 		//when
@@ -178,7 +172,7 @@ public class OrderAttachmentRowsLoaderTest
 
 		final List<TableRecordReference> attachmentLinks = ImmutableList.of(TableRecordReference.of(I_C_Order.Table_Name, salesOrder.getC_Order_ID()), prescriptionRef);
 
-		final AttachmentEntry attachmentEntry = attachmentEntryService
+		final AttachmentEntry attachmentEntry = attachmentService
 				.createNewAttachment(attachmentLinks, AttachmentEntryCreateRequest.builderFromByteArray("2linksAttachment", "2linksAttachment.data".getBytes()).build());
 
 		//when
@@ -216,7 +210,7 @@ public class OrderAttachmentRowsLoaderTest
 
 		final List<TableRecordReference> attachmentLinks = ImmutableList.of(TableRecordReference.of(salesOrder), prescriptionRef1, prescriptionRef2);
 
-		final AttachmentEntry attachmentEntry = attachmentEntryService
+		final AttachmentEntry attachmentEntry = attachmentService
 				.createNewAttachment(attachmentLinks, AttachmentEntryCreateRequest.builderFromByteArray("2linksAttachment", "2linksAttachment.data".getBytes()).build());
 
 		//when
@@ -265,7 +259,7 @@ public class OrderAttachmentRowsLoaderTest
 
 		final List<TableRecordReference> attachmentLinks = ImmutableList.of(salesOrderRef, TableRecordReference.of(purchaseOrder));
 
-		final AttachmentEntry attachmentEntry = attachmentEntryService
+		final AttachmentEntry attachmentEntry = attachmentService
 				.createNewAttachment(attachmentLinks, AttachmentEntryCreateRequest.builderFromByteArray("2linksAttachment", "2linksAttachment.data".getBytes()).build());
 
 		//when
@@ -302,7 +296,7 @@ public class OrderAttachmentRowsLoaderTest
 
 		final List<TableRecordReference> attachmentLinks = ImmutableList.of(purchaseOrderRef);
 
-		final AttachmentEntry attachmentEntry = attachmentEntryService
+		final AttachmentEntry attachmentEntry = attachmentService
 				.createNewAttachment(attachmentLinks, AttachmentEntryCreateRequest.builderFromByteArray("POLinkAttachment", "POLinkAttachment.data".getBytes()).build());
 
 		//when
@@ -338,7 +332,7 @@ public class OrderAttachmentRowsLoaderTest
 
 		final List<TableRecordReference> attachmentLinks = ImmutableList.of(prescriptionRecordRef);
 
-		final AttachmentEntry attachmentEntry = attachmentEntryService
+		final AttachmentEntry attachmentEntry = attachmentService
 				.createNewAttachment(attachmentLinks, AttachmentEntryCreateRequest.builderFromByteArray("PrescriptionAttachment", "PrescriptionAttachment.data".getBytes()).build());
 
 		//when
@@ -373,7 +367,7 @@ public class OrderAttachmentRowsLoaderTest
 
 		final List<TableRecordReference> attachmentLinks = ImmutableList.of(TableRecordReference.of(purchaseOrder), unrelatedSalesOrderRef);
 
-		final AttachmentEntry attachmentEntry = attachmentEntryService
+		final AttachmentEntry attachmentEntry = attachmentService
 				.createNewAttachment(attachmentLinks, AttachmentEntryCreateRequest.builderFromByteArray("2linksAttachment", "2linksAttachment.data".getBytes()).build());
 
 		//when
@@ -409,7 +403,7 @@ public class OrderAttachmentRowsLoaderTest
 
 		when(purchaseCandidateRepository.getAllByPurchaseOrderId(any(OrderId.class))).thenReturn(ImmutableList.of(purchaseCandidate));
 
-		final AttachmentEntry bpartnerAttachmentEntry = attachmentEntryService.createNewAttachment(bpartnerRecord, "bPartnerAttachment", "bPartnerAttachment.data".getBytes());
+		final AttachmentEntry bpartnerAttachmentEntry = attachmentService.createNewAttachment(bpartnerRecord, "bPartnerAttachment", "bPartnerAttachment.data".getBytes());
 
 		//when
 		final OrderAttachmentRowsLoader loader = newOrderAttachmentRowsLoader(OrderId.ofRepoId(purchaseOrder.getC_Order_ID()));
@@ -432,7 +426,7 @@ public class OrderAttachmentRowsLoaderTest
 	private OrderAttachmentRowsLoader newOrderAttachmentRowsLoader(final OrderId orderId)
 	{
 		return OrderAttachmentRowsLoader.builder()
-				.attachmentEntryRepository(attachmentEntryRepository)
+				.attachmentService(attachmentService)
 				.albertaPrescriptionRequestDAO(new AlbertaPrescriptionRequestDAO(new AlbertaPatientRepository()))
 				.albertaPatientRepository(new AlbertaPatientRepository())
 				.purchaseCandidateRepository(purchaseCandidateRepository)
@@ -500,7 +494,7 @@ public class OrderAttachmentRowsLoaderTest
 		save(salesOrderLine);
 
 		return OrderAndLineId.of(OrderId.ofRepoId(salesOrder.getC_Order_ID()),
-								 OrderLineId.ofRepoId(salesOrderLine.getC_OrderLine_ID()));
+				OrderLineId.ofRepoId(salesOrderLine.getC_OrderLine_ID()));
 	}
 
 	private I_C_BPartner createPartner(@NonNull final String name)
@@ -513,7 +507,7 @@ public class OrderAttachmentRowsLoaderTest
 		return partner;
 	}
 
-	private I_C_BPartner_AlbertaPatient createAlbertaPatient(@NonNull final BPartnerId bPartnerId, @Nullable final BPartnerId payerBPartnerId)
+	private void createAlbertaPatient(@NonNull final BPartnerId bPartnerId, @Nullable final BPartnerId payerBPartnerId)
 	{
 		final I_C_BPartner_AlbertaPatient albertaPatient = newInstance(I_C_BPartner_AlbertaPatient.class);
 		albertaPatient.setC_BPartner_ID(bPartnerId.getRepoId());
@@ -524,8 +518,6 @@ public class OrderAttachmentRowsLoaderTest
 		}
 
 		save(albertaPatient);
-
-		return albertaPatient;
 	}
 
 	private I_Alberta_PrescriptionRequest createPrescriptionRequest(final int prescriptionIndex, @NonNull final OrderId orderId, final boolean withPayer)

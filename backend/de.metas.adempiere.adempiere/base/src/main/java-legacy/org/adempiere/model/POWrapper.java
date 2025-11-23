@@ -41,7 +41,6 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -213,7 +212,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 		return create(po, cl);
 	}
 
-	public static <T> List<T> loadByIds(final Set<Integer> ids, final Class<T> modelClass, final String trxName)
+	public static <T> ImmutableList<T> loadByIds(final Set<Integer> ids, final Class<T> modelClass, final String trxName)
 	{
 		if (ids.isEmpty())
 		{

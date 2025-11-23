@@ -1,14 +1,8 @@
-package de.metas.attachments.storeattachment;
-
-import de.metas.attachments.AttachmentEntry;
-
-import java.net.URI;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,8 +20,28 @@ import java.net.URI;
  * #L%
  */
 
-/** Listener to be fired when an attachment was exported outside of metasfresh. */
-public interface AttachmentStoredListener
+package de.metas.attachments;
+
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import lombok.With;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import javax.annotation.Nullable;
+
+/**
+ * Associates one attachment with one arbitrary {@link TableRecordReference}.
+ */
+@Value
+@Builder
+public class AttachmentReference
 {
-	void attachmentWasStored(AttachmentEntry attachmentEntry, URI storageIdentifier);
+	@With @Nullable AttachmentReferenceId id;
+
+	@NonNull AttachmentEntryId attachmentEntryId;
+
+	@NonNull TableRecordReference recordRef;
+
+	@Nullable String attachmentNameOverride;
 }

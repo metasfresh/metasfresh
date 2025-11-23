@@ -23,7 +23,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.attachments.AttachmentEntryCreateRequest;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.request.RequestId;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
@@ -56,14 +56,14 @@ import lombok.NonNull;
 public class InboundEMailRepository
 {
 	private final ObjectMapper jsonObjectMapper;
-	private final AttachmentEntryService attachmentEntryService;
+	private final AttachmentService attachmentService;
 
 	public InboundEMailRepository(
 			@NonNull final ObjectMapper jsonObjectMapper,
-			@NonNull AttachmentEntryService attachmentEntryService)
+			@NonNull AttachmentService attachmentService)
 	{
 		this.jsonObjectMapper = jsonObjectMapper;
-		this.attachmentEntryService = attachmentEntryService;
+		this.attachmentService = attachmentService;
 	}
 
 	public void save(@NonNull final InboundEMail email)
@@ -83,7 +83,7 @@ public class InboundEMailRepository
 				.collect(ImmutableList.toImmutableList());
 		for (final AttachmentEntryCreateRequest request : requests)
 		{
-			attachmentEntryService.createNewAttachment(mailRecord, request);
+			attachmentService.createNewAttachment(mailRecord, request);
 		}
 	}
 

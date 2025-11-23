@@ -23,7 +23,7 @@
 package de.metas.ui.web.order.attachmenteditor;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentEntryWithReferences;
 import de.metas.attachments.AttachmentLinksRequest;
 import de.metas.attachments.AttachmentTags;
 import de.metas.ui.web.view.IViewRow;
@@ -130,7 +130,7 @@ public class OrderAttachmentRow implements IViewRow
 
 	private final I_C_Order selectedPurchaseOrder;
 
-	private final AttachmentEntry attachmentEntry;
+	private final AttachmentEntryWithReferences attachment;
 	private final DocumentId rowId;
 
 	private final ViewRowFieldNameAndJsonValuesHolder<OrderAttachmentRow> values;
@@ -140,23 +140,23 @@ public class OrderAttachmentRow implements IViewRow
 			@NonNull final Boolean isAttachToPurchaseOrder,
 			@Nullable final LookupValue patient,
 			@NonNull final I_C_Order selectedPurchaseOrder,
-			@NonNull final AttachmentEntry attachmentEntry,
+			@NonNull final AttachmentEntryWithReferences attachment,
 			@Nullable final LookupValue payer,
 			@Nullable final LookupValue pharmacy,
 			@Nullable final ZonedDateTime datePromised,
 			@Nullable final String filename,
 			@NonNull final DocumentId rowId)
 	{
-		this.attachmentEntryId = attachmentEntry.getId().getRepoId();
+		this.attachmentEntryId = attachment.getEntry().getIdNonNull().getRepoId();
 		this.isAttachToPurchaseOrder = isAttachToPurchaseOrder;
-		this.isDirectlyAttachToPurchaseOrder = attachmentEntry.hasLinkToRecord(TableRecordReference.of(selectedPurchaseOrder));
+		this.isDirectlyAttachToPurchaseOrder = attachment.hasTableReference(TableRecordReference.of(selectedPurchaseOrder));
 		this.patient = patient;
 		this.payer = payer;
 		this.pharmacy = pharmacy;
 		this.datePromised = datePromised;
 		this.filename = filename;
 		this.selectedPurchaseOrder = selectedPurchaseOrder;
-		this.attachmentEntry = attachmentEntry;
+		this.attachment = attachment;
 		this.rowId = rowId;
 
 		values = ViewRowFieldNameAndJsonValuesHolder.newInstance(OrderAttachmentRow.class);
@@ -214,7 +214,7 @@ public class OrderAttachmentRow implements IViewRow
 		if (isAttachToPurchaseOrder)
 		{
 			return Optional.of(AttachmentLinksRequest.builder()
-									   .attachmentEntryId(attachmentEntry.getId())
+									   .attachmentEntryId(attachment.getEntry().getIdNonNull())
 									   .linksToAdd(ImmutableList.of(purchaseOrderRecordRef))
 									   .tagsToAdd(emailAttachmentTag)
 									   .build());
@@ -223,12 +223,12 @@ public class OrderAttachmentRow implements IViewRow
 		{
 			return isAttachmentLinkedOnlyToPO()
 					? Optional.of(AttachmentLinksRequest.builder()
-										  .attachmentEntryId(attachmentEntry.getId())
+										  .attachmentEntryId(attachment.getEntry().getIdNonNull())
 										  .tagsToRemove(emailAttachmentTag)
 										  .build())
 
 					: Optional.of(AttachmentLinksRequest.builder()
-										  .attachmentEntryId(attachmentEntry.getId())
+										  .attachmentEntryId(attachment.getEntry().getIdNonNull())
 										  .linksToRemove(ImmutableList.of(purchaseOrderRecordRef))
 										  .tagsToRemove(emailAttachmentTag)
 										  .build());
@@ -239,8 +239,8 @@ public class OrderAttachmentRow implements IViewRow
 
 	private boolean isAttachmentLinkedOnlyToPO()
 	{
-		return attachmentEntry.getLinkedRecords().size() == 1
-				&& attachmentEntry.getLinkedRecords().contains(getPurchaseOrderRecordRef());
+		return attachment.getReferences().size() == 1
+				&& attachment.getTableReferences().contains(getPurchaseOrderRecordRef());
 	}
 
 	private TableRecordReference getPurchaseOrderRecordRef()

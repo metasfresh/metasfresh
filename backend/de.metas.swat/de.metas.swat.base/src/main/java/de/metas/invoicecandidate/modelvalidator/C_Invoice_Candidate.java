@@ -1,7 +1,7 @@
 package de.metas.invoicecandidate.modelvalidator;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
@@ -54,7 +54,7 @@ public class C_Invoice_Candidate
 	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
-	private final AttachmentEntryService attachmentEntryService;
+	private final AttachmentService attachmentService;
 	private final InvoiceCandidateGroupCompensationChangesHandler groupChangesHandler;
 	private final InvoiceCandidateRecordService invoiceCandidateRecordService;
 	private final IDocumentLocationBL documentLocationBL;
@@ -62,14 +62,14 @@ public class C_Invoice_Candidate
 	public C_Invoice_Candidate(
 			@NonNull final InvoiceCandidateRecordService invoiceCandidateRecordService,
 			@NonNull final InvoiceCandidateGroupRepository groupsRepo,
-			@NonNull final AttachmentEntryService attachmentEntryService,
+			@NonNull final AttachmentService attachmentService,
 			@NonNull final IDocumentLocationBL documentLocationBL)
 	{
 		this.invoiceCandidateRecordService = invoiceCandidateRecordService;
 		this.groupChangesHandler = InvoiceCandidateGroupCompensationChangesHandler.builder()
 				.groupsRepo(groupsRepo)
 				.build();
-		this.attachmentEntryService = attachmentEntryService;
+		this.attachmentService = attachmentService;
 		this.documentLocationBL = documentLocationBL;
 	}
 
@@ -483,7 +483,7 @@ public class C_Invoice_Candidate
 		Services.get(ITrxManager.class)
 				.getCurrentTrxListenerManagerOrAutoCommit()
 				.newEventListener(TrxEventTiming.AFTER_COMMIT)
-				.registerHandlingMethod(trx -> attachmentEntryService.shareAttachmentLinks(
+				.registerHandlingMethod(trx -> attachmentService.shareAttachmentLinks(
 						ImmutableList.of(referencedRecord),
 						ImmutableList.of(icRecord)));
 	}

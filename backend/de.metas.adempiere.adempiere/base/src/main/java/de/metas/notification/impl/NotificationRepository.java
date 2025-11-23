@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.attachments.AttachmentEntryCreateRequest;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.document.references.zoom_into.CustomizedWindowInfo;
 import de.metas.document.references.zoom_into.CustomizedWindowInfoMapRepository;
 import de.metas.i18n.AdMessageId;
@@ -74,15 +74,15 @@ public class NotificationRepository implements INotificationRepository
 
 	private final ObjectMapper jsonMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
-	private final AttachmentEntryService attachmentEntryService;
+	private final AttachmentService attachmentService;
 	private final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository;
 
 
 	public NotificationRepository(
-			@NonNull final AttachmentEntryService attachmentEntryService,
+			@NonNull final AttachmentService attachmentService,
 			@NonNull final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository)
 	{
-		this.attachmentEntryService = attachmentEntryService;
+		this.attachmentService = attachmentService;
 		this.customizedWindowInfoMapRepository = customizedWindowInfoMapRepository;
 	}
 
@@ -163,7 +163,7 @@ public class NotificationRepository implements INotificationRepository
 		final List<Resource> attachments = request.getAttachments();
 		if (!attachments.isEmpty())
 		{
-			attachmentEntryService.createNewAttachments(notificationPO, AttachmentEntryCreateRequest.fromResources(attachments));
+			attachmentService.createNewAttachments(notificationPO, AttachmentEntryCreateRequest.fromResources(attachments));
 		}
 
 		return toUserNotification(notificationPO);

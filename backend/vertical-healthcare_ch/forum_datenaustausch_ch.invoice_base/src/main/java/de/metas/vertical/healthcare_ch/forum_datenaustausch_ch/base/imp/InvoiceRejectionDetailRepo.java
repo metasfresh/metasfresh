@@ -30,7 +30,7 @@ import org.springframework.stereotype.Repository;
 import com.google.common.base.Joiner;
 
 import de.metas.attachments.AttachmentEntryCreateRequest;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.attachments.AttachmentTags;
 import de.metas.invoice_gateway.spi.model.imp.ImportedInvoiceResponse;
 import de.metas.invoice_gateway.spi.model.imp.ImportedInvoiceResponse.Status;
@@ -43,11 +43,11 @@ public class InvoiceRejectionDetailRepo
 {
 	private static final String REASON_SEPARATOR = "\n";
 
-	private final AttachmentEntryService attachmentEntryService;
+	private final AttachmentService attachmentService;
 
-	public InvoiceRejectionDetailRepo(@NonNull final AttachmentEntryService attachmentEntryService)
+	public InvoiceRejectionDetailRepo(@NonNull final AttachmentService attachmentService)
 	{
-		this.attachmentEntryService = attachmentEntryService;
+		this.attachmentService = attachmentService;
 	}
 
 	private I_C_Invoice_Rejection_Detail of(@NonNull final ImportedInvoiceResponse response)
@@ -101,7 +101,7 @@ public class InvoiceRejectionDetailRepo
 				.tags(AttachmentTags.ofMap(response.getAdditionalTags()))
 				.build();
 
-		attachmentEntryService.createNewAttachment(invoiceRejectionDetail, attachmentEntryCreateRequest);
+		attachmentService.createNewAttachment(invoiceRejectionDetail, attachmentEntryCreateRequest);
 	}
 
 }

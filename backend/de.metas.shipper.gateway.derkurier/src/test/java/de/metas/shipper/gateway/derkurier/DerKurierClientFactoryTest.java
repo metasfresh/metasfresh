@@ -8,12 +8,12 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 import java.time.LocalTime;
 import java.util.Optional;
 
+import de.metas.attachments.AttachmentService;
 import org.junit.Test;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
 
-import de.metas.attachments.AttachmentEntryService;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
 import de.metas.shipper.gateway.derkurier.misc.Converters;
@@ -59,14 +59,14 @@ public class DerKurierClientFactoryTest
 		final Converters converters = new Converters();
 		final DerKurierShipperConfigRepository derKurierShipperConfigRepository = new DerKurierShipperConfigRepository();
 
-		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
+		final AttachmentService attachmentService = AttachmentService.createInstanceForUnitTesting();
 
 		final IDocumentNoBuilderFactory documentNoBuilderFactory = new DocumentNoBuilderFactory(Optional.empty());
 		Services.registerService(IDocumentNoBuilderFactory.class, documentNoBuilderFactory);
 
 		final DerKurierClientFactory derKurierClientFactory = new DerKurierClientFactory(
 				derKurierShipperConfigRepository,
-				new DerKurierDeliveryOrderService(attachmentEntryService),
+				new DerKurierDeliveryOrderService(attachmentService),
 				new DerKurierDeliveryOrderRepository(converters),
 				converters);
 

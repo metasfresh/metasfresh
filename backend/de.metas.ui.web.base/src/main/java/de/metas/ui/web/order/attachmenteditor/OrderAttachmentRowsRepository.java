@@ -22,7 +22,7 @@
 
 package de.metas.ui.web.order.attachmenteditor;
 
-import de.metas.attachments.AttachmentEntryRepository;
+import de.metas.attachments.AttachmentService;
 import de.metas.order.OrderId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
@@ -36,23 +36,23 @@ import org.compiere.model.I_C_BPartner;
 public class OrderAttachmentRowsRepository
 {
 	private final AlbertaPrescriptionRequestDAO albertaPrescriptionRequestDAO;
-	private final AttachmentEntryRepository attachmentEntryRepository;
+	private final AttachmentService attachmentService;
 	private final AlbertaPatientRepository albertaPatientRepository;
 	private final PurchaseCandidateRepository purchaseCandidateRepository;
 
 	private final LookupDataSource patientLookup;
 	private final LookupDataSource payerLookup;
 	private final LookupDataSource pharmacyLookup;
-
+	
 	@Builder
 	public OrderAttachmentRowsRepository(
 			@NonNull final AlbertaPrescriptionRequestDAO albertaPrescriptionRequestDAO,
-			@NonNull final AttachmentEntryRepository attachmentEntryRepository,
+			@NonNull final AttachmentService attachmentService,
 			@NonNull final AlbertaPatientRepository albertaPatientRepository,
 			@NonNull final PurchaseCandidateRepository purchaseCandidateRepository)
 	{
 		this.albertaPrescriptionRequestDAO = albertaPrescriptionRequestDAO;
-		this.attachmentEntryRepository = attachmentEntryRepository;
+		this.attachmentService = attachmentService;
 		this.albertaPatientRepository = albertaPatientRepository;
 		this.purchaseCandidateRepository = purchaseCandidateRepository;
 		patientLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_BPartner.Table_Name);
@@ -64,7 +64,7 @@ public class OrderAttachmentRowsRepository
 	{
 		return OrderAttachmentRowsLoader.builder()
 				.albertaPrescriptionRequestDAO(albertaPrescriptionRequestDAO)
-				.attachmentEntryRepository(attachmentEntryRepository)
+				.attachmentService(attachmentService)
 				.albertaPatientRepository(albertaPatientRepository)
 				.purchaseCandidateRepository(purchaseCandidateRepository)
 				.patientLookup(patientLookup)

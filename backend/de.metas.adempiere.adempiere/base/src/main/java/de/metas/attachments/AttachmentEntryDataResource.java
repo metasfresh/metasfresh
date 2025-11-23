@@ -1,17 +1,15 @@
 package de.metas.attachments;
 
+import com.google.common.base.MoreObjects;
+import de.metas.common.util.CoalesceUtil;
+import lombok.Builder;
+import lombok.NonNull;
+import org.springframework.core.io.AbstractResource;
+
+import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Arrays;
-
-import javax.annotation.Nullable;
-
-import org.springframework.core.io.AbstractResource;
-
-import com.google.common.base.MoreObjects;
-
-import lombok.Builder;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -52,6 +50,7 @@ public final class AttachmentEntryDataResource extends AbstractResource
 		this.description = description;
 	}
 
+	@NonNull
 	@Override
 	public String toString()
 	{
@@ -82,16 +81,18 @@ public final class AttachmentEntryDataResource extends AbstractResource
 		}
 	}
 
+	@NonNull
 	@Override
 	public String getFilename()
 	{
 		return filename;
 	}
 
+	@NonNull
 	@Override
 	public String getDescription()
 	{
-		return description;
+		return CoalesceUtil.coalesceNotNull(description, "");
 	}
 
 	@Override
@@ -100,6 +101,7 @@ public final class AttachmentEntryDataResource extends AbstractResource
 		return source.length;
 	}
 
+	@NonNull
 	@Override
 	public InputStream getInputStream()
 	{

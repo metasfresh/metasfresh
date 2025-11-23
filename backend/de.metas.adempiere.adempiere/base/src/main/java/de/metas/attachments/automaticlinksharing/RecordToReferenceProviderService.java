@@ -1,21 +1,16 @@
 package de.metas.attachments.automaticlinksharing;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.attachments.AttachmentEntryWithReferences;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-
 import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.attachments.AttachmentEntry;
+import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -50,25 +45,16 @@ public class RecordToReferenceProviderService
 	}
 
 	/**
-	 * For the given attachments and linked records, find further records that shall <i>also</i> be linked to those attachments.
-	 *
-	 * @param newlyLinkedRecords may be a collection of model objects or {@link ITableRecordReference}s
+	 * For the given attachments and references, find further records that shall <i>also</i> be linked to those attachments.
 	 */
-	public ExpandResult expand(
-			@NonNull final ImmutableList<AttachmentEntry> attachmentEntries,
-			@NonNull final Collection<? extends Object> newlyLinkedRecords)
+	public ExpandResult expand(@NonNull final AttachmentEntryWithReferences entryWithRefs)
 	{
-		final List<TableRecordReference> tableRecordReferences = TableRecordReference.ofCollection(newlyLinkedRecords);
-
 		final ImmutableSet.Builder<ITableRecordReference> result = ImmutableSet.builder();
 
 		for (final ReferenceableRecordsProvider handler : handlers)
 		{
-			for (final AttachmentEntry attachmentEntry : attachmentEntries)
-			{
-				final ExpandResult singleHandlerResult = handler.expand(attachmentEntry, tableRecordReferences);
-				result.addAll(singleHandlerResult.getAdditionalReferences());
-			}
+			final ExpandResult singleHandlerResult = handler.expand(entryWithRefs);
+			result.addAll(singleHandlerResult.getAdditionalReferences());
 		}
 		return new ExpandResult(result.build());
 	}

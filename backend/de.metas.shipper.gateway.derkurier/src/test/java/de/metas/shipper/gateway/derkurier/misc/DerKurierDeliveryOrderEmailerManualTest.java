@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.fail;
 
 import java.io.UnsupportedEncodingException;
 
+import de.metas.attachments.AttachmentService;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_SysConfig;
 import org.junit.Before;
@@ -13,7 +14,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.AttachmentEntryService;
 import de.metas.email.EMailAddress;
 import de.metas.email.MailService;
 import de.metas.email.mailboxes.Mailbox;
@@ -49,7 +49,7 @@ import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrder;
 public class DerKurierDeliveryOrderEmailerManualTest
 {
 
-	private AttachmentEntryService attachmentEntryService;
+	private AttachmentService attachmentService;
 
 	@Before
 	public void init()
@@ -66,7 +66,7 @@ public class DerKurierDeliveryOrderEmailerManualTest
 		msgConfig.setValue("DerKurier_DeliveryOrder_EmailMessage");
 		save(msgConfig);
 
-		attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
+		attachmentService = AttachmentService.createInstanceForUnitTesting();
 	}
 
 	@Test
@@ -83,13 +83,13 @@ public class DerKurierDeliveryOrderEmailerManualTest
 		final I_DerKurier_DeliveryOrder deliveryOrder = newInstance(I_DerKurier_DeliveryOrder.class);
 		save(deliveryOrder);
 
-		final AttachmentEntry firstEntry = attachmentEntryService.createNewAttachment(deliveryOrder, "deliveryOrder.csv", generateBytes());
+		final AttachmentEntry firstEntry = attachmentService.createNewAttachment(deliveryOrder, "deliveryOrder.csv", generateBytes());
 
 		final DerKurierShipperConfigRepository derKurierShipperConfigRepository = new DerKurierShipperConfigRepository();
 		final MailService mailService = new MailService(new MailboxRepository(), new MailTemplateRepository());
 		final DerKurierDeliveryOrderEmailer derKurierDeliveryOrderEmailer = new DerKurierDeliveryOrderEmailer(
 				derKurierShipperConfigRepository,
-				attachmentEntryService,
+				attachmentService,
 				mailService);
 
 		derKurierDeliveryOrderEmailer.sendAttachmentAsEmail(

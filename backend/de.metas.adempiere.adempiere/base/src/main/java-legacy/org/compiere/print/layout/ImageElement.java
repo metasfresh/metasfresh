@@ -27,6 +27,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.attachments.AttachmentService;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_PrintFormatItem;
@@ -36,7 +37,6 @@ import org.compiere.print.PrintDataElement;
 import org.compiere.util.Env;
 
 import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.AttachmentEntryService;
 import de.metas.cache.CCache;
 
 /**
@@ -262,15 +262,15 @@ public class ImageElement extends PrintElement
 	 */
 	private void loadAttachment(final int AD_PrintFormatItem_ID)
 	{
-		final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
-		final List<AttachmentEntry> entries = attachmentEntryService.getByReferencedRecord(TableRecordReference.of(I_AD_PrintFormatItem.Table_Name, AD_PrintFormatItem_ID));
+		final AttachmentService attachmentService = Adempiere.getBean(AttachmentService.class);
+		final List<AttachmentEntry> entries = attachmentService.getByReferencedRecord(TableRecordReference.of(I_AD_PrintFormatItem.Table_Name, AD_PrintFormatItem_ID));
 		if(entries.isEmpty())
 		{
 			log.warn("No Attachment entry - AD_PrintFormatItem_ID={}", AD_PrintFormatItem_ID);
 			return;
 		}
 
-		final byte[] imageData = attachmentEntryService.retrieveData(entries.get(0).getId());
+		final byte[] imageData = attachmentService.retrieveData(entries.get(0).getId());
 		if (imageData != null)
 		{
 			m_image = Toolkit.getDefaultToolkit().createImage(imageData);

@@ -23,7 +23,7 @@
 package de.metas.ui.web.mail;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.attachments.EmailAttachment;
 import de.metas.report.DocumentReportFlavor;
 import de.metas.report.ReportResultData;
@@ -43,18 +43,18 @@ import java.util.stream.Stream;
 @Service
 public class MailRestService
 {
-	private final AttachmentEntryService attachmentEntryService;
+	private final AttachmentService attachmentService;
 	private final DocumentDescriptorFactory documentDescriptorFactory;
 	private final UserSession userSession;
 	private final WebuiDocumentPrintService documentPrintService;
 
 	public MailRestService(
-			@NonNull final AttachmentEntryService attachmentEntryService,
+			@NonNull final AttachmentService attachmentService,
 			@NonNull final DocumentDescriptorFactory documentDescriptorFactory,
 			@NonNull final UserSession userSession,
 			@NonNull final WebuiDocumentPrintService documentPrintService)
 	{
-		this.attachmentEntryService = attachmentEntryService;
+		this.attachmentService = attachmentService;
 		this.documentDescriptorFactory = documentDescriptorFactory;
 		this.userSession = userSession;
 		this.documentPrintService = documentPrintService;
@@ -81,7 +81,7 @@ public class MailRestService
 				.attachmentDataSupplier(contextDocumentPrint::getReportDataByteArray)
 				.build();
 
-		return Stream.concat(Stream.of(attachmentToPrint), attachmentEntryService.streamEmailAttachments(recordRef, tagName))
+		return Stream.concat(Stream.of(attachmentToPrint), attachmentService.streamEmailAttachments(recordRef, tagName))
 				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 	}

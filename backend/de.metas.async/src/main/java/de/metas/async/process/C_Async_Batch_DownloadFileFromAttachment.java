@@ -26,7 +26,7 @@ import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchDAO;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -42,7 +42,7 @@ import java.util.List;
 
 public class C_Async_Batch_DownloadFileFromAttachment extends JavaProcess implements IProcessPrecondition
 {
-	private final transient AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+	private final transient AttachmentService attachmentService = SpringContextHolder.instance.getBean(AttachmentService.class);
 	private final IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
 
 	@Override
@@ -77,7 +77,7 @@ public class C_Async_Batch_DownloadFileFromAttachment extends JavaProcess implem
 		if (!attachments.isEmpty())
 		{
 			final AttachmentEntry attachment = attachments.get(0); // take first one
-			final Resource data = attachmentEntryService.retrieveDataResource(attachment.getId());
+			final Resource data = attachmentService.retrieveDataResource(attachment.getId());
 
 			getResult().setReportData(data, attachment.getFilename(), attachment.getMimeType());
 		}
@@ -94,11 +94,11 @@ public class C_Async_Batch_DownloadFileFromAttachment extends JavaProcess implem
 
 	private List<AttachmentEntry> getAttachmentEntries(@NonNull final I_C_Async_Batch record)
 	{
-		final AttachmentEntryService.AttachmentEntryQuery attachmentQuery = AttachmentEntryService.AttachmentEntryQuery.builder()
+		final AttachmentService.AttachmentEntryQuery attachmentQuery = AttachmentService.AttachmentEntryQuery.builder()
 				.referencedRecord(TableRecordReference.of(record))
 				.mimeType(MimeType.TYPE_PDF)
 				.build();
 
-		return attachmentEntryService.getByQuery(attachmentQuery);
+		return attachmentService.getByQuery(attachmentQuery);
 	}
 }

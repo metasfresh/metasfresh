@@ -1,16 +1,16 @@
 package de.metas.attachments;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import de.metas.attachments.listener.TableAttachmentListenerService;
 import de.metas.common.util.FileUtil;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_AttachmentEntry;
 import org.compiere.model.I_AD_Attachment_MultiRef;
 import org.compiere.model.X_AD_AttachmentEntry;
@@ -23,13 +23,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
-import static org.adempiere.model.InterfaceWrapperHelper.deleteRecord;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -57,24 +51,26 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * #L%
  */
 
+@RequiredArgsConstructor
 @Repository
-public class AttachmentEntryRepository
+class AttachmentEntryRepository
 {
 	private final AttachmentEntryFactory attachmentEntryFactory;
-	private final TableAttachmentListenerService tableAttachmentListenerService;
-
-	public AttachmentEntryRepository(
-			@NonNull final AttachmentEntryFactory attachmentEntryFactory,
-			@NonNull final TableAttachmentListenerService tableAttachmentListenerService)
-	{
-		this.attachmentEntryFactory = attachmentEntryFactory;
-		this.tableAttachmentListenerService = tableAttachmentListenerService;
-	}
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public AttachmentEntry getById(@NonNull final AttachmentEntryId id)
 	{
 		final I_AD_AttachmentEntry attachmentEntryRecord = retrieveAttachmentEntryRecordOutOfTrx(id);
 		return forRecord(attachmentEntryRecord);
+	}
+
+	public ImmutableMap<AttachmentEntryId, AttachmentEntry> getByIds(@NonNull final ImmutableSet<AttachmentEntryId> entryIds)
+	{
+		return InterfaceWrapperHelper.loadByRepoIdAwares(entryIds, I_AD_AttachmentEntry.class)
+				.stream()
+				.map(this::forRecord)
+				.collect(ImmutableMap.toImmutableMap(AttachmentEntry::getId, entry -> entry));
+
 	}
 
 	private I_AD_AttachmentEntry retrieveAttachmentEntryRecordInTrx(@NonNull final AttachmentEntryId attachmentEntryId)
@@ -85,50 +81,6 @@ public class AttachmentEntryRepository
 	private I_AD_AttachmentEntry retrieveAttachmentEntryRecordOutOfTrx(@NonNull final AttachmentEntryId attachmentEntryId)
 	{
 		return loadOutOfTrx(attachmentEntryId, I_AD_AttachmentEntry.class);
-	}
-
-	public List<AttachmentEntry> getByReferencedRecord(@NonNull final TableRecordReference referencedRecord)
-	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-		final List<I_AD_Attachment_MultiRef> multiRefRecords = queryBL
-				.createQueryBuilder(I_AD_Attachment_MultiRef.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_Attachment_MultiRef.COLUMN_Record_ID, referencedRecord.getRecord_ID())
-				.addEqualsFilter(I_AD_Attachment_MultiRef.COLUMNNAME_AD_Table_ID, referencedRecord.getAD_Table_ID())
-				.create()
-				.list();
-
-		final List<Integer> attachmentEntryIds = CollectionUtils.extractDistinctElements(multiRefRecords, I_AD_Attachment_MultiRef::getAD_AttachmentEntry_ID);
-
-		final List<I_AD_AttachmentEntry> attachmentEntryRecords = queryBL
-				.createQueryBuilder(I_AD_AttachmentEntry.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_AD_AttachmentEntry.COLUMN_AD_AttachmentEntry_ID, attachmentEntryIds)
-				.create()
-				.list();
-
-		final ImmutableList.Builder<AttachmentEntry> result = ImmutableList.builder();
-		for (final I_AD_AttachmentEntry attachmentEntryRecord : attachmentEntryRecords)
-		{
-			final AttachmentEntry attachmentEntry = forRecord(attachmentEntryRecord);
-			result.add(attachmentEntry);
-		}
-
-		return result.build();
-	}
-
-	@NonNull
-	public Set<AttachmentEntry> getByReferencedRecords(@NonNull final Set<TableRecordReference> referencedRecords)
-	{
-		final ImmutableSet.Builder<AttachmentEntry> attachmentEntries = ImmutableSet.builder();
-
-		for (final TableRecordReference tableRecordReference : referencedRecords)
-		{
-			getByReferencedRecord(tableRecordReference)
-					.forEach(attachmentEntries::add);
-		}
-		return attachmentEntries.build();
 	}
 
 	public byte[] retrieveAttachmentEntryData(@NonNull final AttachmentEntryId attachmentEntryId)
@@ -150,12 +102,13 @@ public class AttachmentEntryRepository
 
 	public void updateAttachmentEntryData(
 			@NonNull final AttachmentEntryId attachmentEntryId,
-			@NonNull final byte[] data)
+			final byte[] data)
 	{
 		final I_AD_AttachmentEntry entryRecord = retrieveAttachmentEntryRecordInTrx(attachmentEntryId);
-		if (X_AD_AttachmentEntry.TYPE_Data.equals(entryRecord.getType()))
+		final boolean entryHasTypeData = X_AD_AttachmentEntry.TYPE_Data.equals(entryRecord.getType());
+		if (!entryHasTypeData)
 		{
-			throw new AdempiereException("Only entries of type Data support attaching data").setParameter("entryRecord", entryRecord);
+			throw new AdempiereException("Only entries of type Data support attaching binary data").setParameter("entryRecord", entryRecord);
 		}
 
 		entryRecord.setBinaryData(data);
@@ -164,35 +117,7 @@ public class AttachmentEntryRepository
 
 	private AttachmentEntry forRecord(@NonNull final I_AD_AttachmentEntry attachmentEntryRecord)
 	{
-		final AttachmentEntryId attachmentEntryId = AttachmentEntryId.ofRepoIdOrNull(attachmentEntryRecord.getAD_AttachmentEntry_ID());
-		final ImmutableList<I_AD_Attachment_MultiRef> attachmentMultiRefRecords = retrieveAttachmentMultiRefs(attachmentEntryId);
-
-		return forRecord(attachmentEntryRecord, attachmentMultiRefRecords);
-	}
-
-	private AttachmentEntry forRecord(
-			@NonNull final I_AD_AttachmentEntry attachmentEntryRecord,
-			@NonNull final ImmutableList<I_AD_Attachment_MultiRef> attachmentMultiRefRecords)
-	{
-		final AttachmentEntry attachmentEntry = attachmentEntryFactory.toAttachmentEntry(attachmentEntryRecord);
-
-		final AttachmentEntry.AttachmentEntryBuilder builder = attachmentEntry.toBuilder();
-
-		final Map<TableRecordReference, String> recordReference2AttachmentName = attachmentMultiRefRecords.stream()
-				.filter(multiRefRecord -> Check.isNotBlank(multiRefRecord.getFileName_Override()))
-				.collect(Collectors.toMap(multiRefRecord -> TableRecordReference.of(multiRefRecord.getAD_Table_ID(), multiRefRecord.getRecord_ID()),
-										  I_AD_Attachment_MultiRef::getFileName_Override));
-
-		builder.linkedRecord2AttachmentName(recordReference2AttachmentName);
-
-		for (final I_AD_Attachment_MultiRef attachmentMultiRefRecord : attachmentMultiRefRecords)
-		{
-			final TableRecordReference referencedRecord = TableRecordReference.of(
-					attachmentMultiRefRecord.getAD_Table_ID(),
-					attachmentMultiRefRecord.getRecord_ID());
-			builder.linkedRecord(referencedRecord);
-		}
-		return builder.build();
+		return attachmentEntryFactory.toAttachmentEntry(attachmentEntryRecord);
 	}
 
 	public ImmutableList<AttachmentEntry> saveAll(@NonNull final Collection<AttachmentEntry> attachmentEntries)
@@ -220,85 +145,39 @@ public class AttachmentEntryRepository
 		attachmentEntryFactory.syncToRecord(attachmentEntry, attachmentEntryRecord);
 		saveRecord(attachmentEntryRecord); // needed in case the record was new, because we need an ID for it
 
-		syncLinkedRecords(attachmentEntry, attachmentEntryRecord);
-
 		return forRecord(attachmentEntryRecord);
-	}
-
-	private void syncLinkedRecords(
-			@NonNull final AttachmentEntry attachmentEntry,
-			@NonNull final I_AD_AttachmentEntry attachmententryRecord)
-	{
-		final Set<TableRecordReference> attachmentReferences = new HashSet<>(attachmentEntry.getLinkedRecords());
-
-		// delete superflous
-		if (attachmentEntry.getId() != null)
-		{
-			final List<I_AD_Attachment_MultiRef> attachmentMultiRefRecords = retrieveAttachmentMultiRefs(attachmentEntry.getId());
-			for (final I_AD_Attachment_MultiRef attachmentMultiRefRecord : attachmentMultiRefRecords)
-			{
-				final TableRecordReference recordReference = TableRecordReference.of(
-						attachmentMultiRefRecord.getAD_Table_ID(),
-						attachmentMultiRefRecord.getRecord_ID());
-				final boolean recordReferenceWasIncluded = attachmentReferences.remove(recordReference);
-				if (!recordReferenceWasIncluded)
-				{
-					deleteRecord(attachmentMultiRefRecord);
-				}
-			}
-		}
-
-
-		// create missing
-		// i.e. iterate the references that did not yet have an I_AD_Attachment_MultiRef record
-		for (final TableRecordReference attachmentReference : attachmentReferences)
-		{
-			final I_AD_Attachment_MultiRef attachmentMultiRefRecord = newInstance(I_AD_Attachment_MultiRef.class);
-			attachmentMultiRefRecord.setAD_AttachmentEntry(attachmententryRecord);
-			attachmentMultiRefRecord.setAD_Table_ID(attachmentReference.getAD_Table_ID());
-			attachmentMultiRefRecord.setRecord_ID(attachmentReference.getRecord_ID());
-			saveRecord(attachmentMultiRefRecord);
-
-			tableAttachmentListenerService.fireAfterRecordLinked(attachmentEntry, attachmentReference);
-		}
-	}
-
-	private ImmutableList<I_AD_Attachment_MultiRef> retrieveAttachmentMultiRefs(
-			@Nullable final AttachmentEntryId attachmentEntryId)
-	{
-		if (attachmentEntryId == null)
-		{
-			return ImmutableList.of();
-		}
-
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Attachment_MultiRef.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_Attachment_MultiRef.COLUMN_AD_AttachmentEntry_ID, attachmentEntryId)
-				.create()
-				.listImmutable(I_AD_Attachment_MultiRef.class);
 	}
 
 	private void deleteAllAttachmentMultiRefs(@NonNull final AttachmentEntryId attachmententryId)
 	{
-		Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Attachment_MultiRef.class)
+		queryBL.createQueryBuilder(I_AD_Attachment_MultiRef.class)
 				.addEqualsFilter(I_AD_Attachment_MultiRef.COLUMN_AD_AttachmentEntry_ID, attachmententryId)
 				.create()
 				.delete();
 	}
 
-	public void delete(@NonNull final AttachmentEntry attachmentEntry)
+	public void deleteById(@NonNull final AttachmentEntry attachmentEntry)
 	{
-		deleteAllAttachmentMultiRefs(attachmentEntry.getId());
+		final AttachmentEntryId id = attachmentEntry.getId();
+		deleteById(id);
+	}
 
-		Services.get(IQueryBL.class).createQueryBuilder(I_AD_AttachmentEntry.class)
-				.addEqualsFilter(I_AD_AttachmentEntry.COLUMN_AD_AttachmentEntry_ID, attachmentEntry.getId())
+	public void deleteById(@Nullable final AttachmentEntryId id)
+	{
+		if (id == null)
+		{
+			return;
+		}
+		deleteAllAttachmentMultiRefs(id);
+
+		queryBL.createQueryBuilder(I_AD_AttachmentEntry.class)
+				.addEqualsFilter(I_AD_AttachmentEntry.COLUMN_AD_AttachmentEntry_ID, id)
 				.create()
 				.delete();
 	}
 
-	private static byte[] getBinaryDataFromLocalFileURL(@NonNull final URI uri){
+	private static byte[] getBinaryDataFromLocalFileURL(@NonNull final URI uri)
+	{
 		try
 		{
 			final URL url = uri.toURL();
@@ -320,7 +199,7 @@ public class AttachmentEntryRepository
 		if (AttachmentEntryType.LocalFileURL.equals(type))
 		{
 			Check.assumeNotNull(record.getURL(), "AD_AttachmentEntry.URL cannot be null for type = {}, AD_AttachmentEntry_ID = {}",
-								AttachmentEntryType.LocalFileURL.getCode(), record.getAD_AttachmentEntry_ID());
+					AttachmentEntryType.LocalFileURL.getCode(), record.getAD_AttachmentEntry_ID());
 
 			return getBinaryDataFromLocalFileURL(URI.create(record.getURL()));
 		}

@@ -14,7 +14,7 @@ import com.google.common.io.ByteStreams;
 
 import ch.qos.logback.classic.Level;
 import de.metas.attachments.AttachmentEntryCreateRequest;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.attachments.AttachmentTags;
 import de.metas.dunning.DunningDocId;
 import de.metas.dunning.model.I_C_DunningDoc;
@@ -58,15 +58,15 @@ public class DunningExportService
 	private static final Logger logger = LogManager.getLogger(DunningExportService.class);
 
 	private final DunningToExportFactory dunningToExportFactory;
-	private final AttachmentEntryService attachmentEntryService;
+	private final AttachmentService attachmentService;
 	private final DunningExportServiceRegistry dunningExportServiceRegistry;
 
 	private DunningExportService(
 			@NonNull final DunningToExportFactory dunningToExportFactory,
 			@NonNull final DunningExportServiceRegistry dunningExportServiceRegistry,
-			@NonNull final AttachmentEntryService attachmentEntryService)
+			@NonNull final AttachmentService attachmentService)
 	{
-		this.attachmentEntryService = attachmentEntryService;
+		this.attachmentService = attachmentService;
 		this.dunningToExportFactory = dunningToExportFactory;
 		this.dunningExportServiceRegistry = dunningExportServiceRegistry;
 	}
@@ -106,7 +106,7 @@ public class DunningExportService
 
 		for (final AttachmentEntryCreateRequest attachmentEntryCreateRequest : attachmentEntryCreateRequests)
 		{
-			attachmentEntryService.createNewAttachment(
+			attachmentService.createNewAttachment(
 					TableRecordReference.of(I_C_DunningDoc.Table_Name, dunningToExport.getId()),
 					attachmentEntryCreateRequest);
 			loggable.addLog("DunningExportService - Attached export data to dunningDocId={}; attachment={}", dunningToExport.getId(), attachmentEntryCreateRequest);
