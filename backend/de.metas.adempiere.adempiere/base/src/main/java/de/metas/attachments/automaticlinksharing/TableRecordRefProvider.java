@@ -1,11 +1,13 @@
 package de.metas.attachments.automaticlinksharing;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentEntryWithReferences;
+import de.metas.attachments.AttachmentReference;
+import de.metas.attachments.automaticlinksharing.RecordToReferenceProviderService.ExpandResult;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
-
-import java.util.Collection;
-import java.util.List;
-
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -15,11 +17,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.automaticlinksharing.RecordToReferenceProviderService.ExpandResult;
-import de.metas.util.Services;
+import java.util.List;
 
 /*
  * #%L
@@ -47,9 +45,8 @@ import de.metas.util.Services;
  * Generic base class to expand using {@code AD_Table_ID} and {@code Record_ID}; can be extended for specific tables.
  * It is assumed that those tables have these two columns.
  *
- * @author metas-dev <dev@metasfresh.com>
- *
  * @param <T>
+ * @author metas-dev <dev@metasfresh.com>
  */
 @ToString
 public abstract class TableRecordRefProvider<T> implements ReferenceableRecordsProvider
@@ -64,18 +61,16 @@ public abstract class TableRecordRefProvider<T> implements ReferenceableRecordsP
 	}
 
 	/**
-	 * For the given {@code recordRefs}, this method returns other records that refer to those given references via their own {@code AD_Table_ID} and {@code Record_ID}
+	 * For the given {@code entryWithRefs}, this method returns other records that refer to those given references via their own {@code AD_Table_ID} and {@code Record_ID}
 	 */
 	@Override
-	public final ExpandResult expand(
-			@NonNull final AttachmentEntry attachmentEntry,
-			@NonNull final Collection<? extends ITableRecordReference> recordRefs)
+	public final ExpandResult expand(@NonNull final AttachmentEntryWithReferences entryWithRefs)
 	{
-		if (recordRefs.isEmpty())
+		if (entryWithRefs.getReferences().isEmpty())
 		{
 			return ExpandResult.EMPTY;
 		}
-		if (!isExpandOnAttachmentEntry(attachmentEntry))
+		if (!isExpandOnAttachmentEntry(entryWithRefs.getEntry()))
 		{
 			return ExpandResult.EMPTY;
 		}
@@ -87,13 +82,13 @@ public abstract class TableRecordRefProvider<T> implements ReferenceableRecordsP
 				.setJoinOr()
 				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions, true);
 
-		for (final ITableRecordReference recordRef : recordRefs)
+		for (final AttachmentReference attachmentReference : entryWithRefs.getReferences())
 		{
 			final ICompositeQueryFilter<T> referencingIcFilter = queryBL
 					.createCompositeQueryFilter(modelClass)
 					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(TableRecordReference.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
-					.addEqualsFilter(TableRecordReference.COLUMNNAME_Record_ID, recordRef.getRecord_ID())
+					.addEqualsFilter(TableRecordReference.COLUMNNAME_AD_Table_ID, attachmentReference.getRecordRef().getAD_Table_ID())
+					.addEqualsFilter(TableRecordReference.COLUMNNAME_Record_ID, attachmentReference.getRecordRef().getRecord_ID())
 					.addFilter(getAdditionalFilter());
 
 			refereningIcFilters.filter(referencingIcFilter);

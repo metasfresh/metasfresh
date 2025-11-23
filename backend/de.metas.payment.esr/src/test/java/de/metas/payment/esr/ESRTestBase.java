@@ -2,7 +2,7 @@ package de.metas.payment.esr;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.allocation.api.C_AllocationHdr_ProcessInterceptor;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
@@ -98,8 +98,8 @@ public class ESRTestBase
 
 		dao = Services.get(IESRImportDAO.class);
 
-		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
-		esrImportBL = new ESRImportBL(attachmentEntryService);
+		final AttachmentService attachmentService = AttachmentService.createInstanceForUnitTesting();
+		esrImportBL = new ESRImportBL(attachmentService);
 
 		paymentDAO = Services.get(IPaymentDAO.class);
 

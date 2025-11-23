@@ -2,7 +2,7 @@ package de.metas.report.server;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.process.ProcessInfoParameter;
@@ -47,7 +47,7 @@ public abstract class AbstractReportEngine implements IReportEngine
 	private static final Logger logger = LogManager.getLogger(AbstractReportEngine.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
-	private final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+	private final AttachmentService attachmentService = SpringContextHolder.instance.getBean(AttachmentService.class);
 
 	private static final String SYSCONFIG_ReportsDirs = "reportsDirs";
 	private static final String PARAM_AD_PRINTFORMAT_ID = "AD_PrintFormat_ID";
@@ -73,7 +73,7 @@ public abstract class AbstractReportEngine implements IReportEngine
 
 		final OrgId adOrgId = reportContext.getOrgId();
 		final JasperClassLoader jasperLoader = JasperClassLoader.builder()
-				.attachmentEntryService(attachmentEntryService)
+				.attachmentService(attachmentService)
 				.parent(parentClassLoader)
 				.adOrgId(adOrgId)
 				.printFormatId(getPrintFormatIdOrNull(reportContext))

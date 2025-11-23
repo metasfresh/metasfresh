@@ -25,7 +25,7 @@ package org.eevolution.api.impl;
 import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
@@ -424,17 +424,17 @@ public class PPOrderBL implements IPPOrderBL
 			return;
 		}
 
-		final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+		final AttachmentService attachmentService = SpringContextHolder.instance.getBean(AttachmentService.class);
 
 		for (final PPOrderRoutingActivity activity : orderRouting.getActivities())
 		{
-			copyAttachmentsFromTemplate(activity, attachmentEntryService);
+			copyAttachmentsFromTemplate(activity, attachmentService);
 		}
 	}
 
 	private static void copyAttachmentsFromTemplate(
 			@NonNull final PPOrderRoutingActivity activity,
-			@NonNull final AttachmentEntryService attachmentEntryService)
+			@NonNull final AttachmentService attachmentService)
 	{
 		final PPRoutingActivityTemplateId activityTemplateId = activity.getActivityTemplateId();
 		if (activityTemplateId == null)
@@ -446,7 +446,7 @@ public class PPOrderBL implements IPPOrderBL
 		final TableRecordReference activityRef = TableRecordReference.of(I_PP_Order_Node.Table_Name, activity.getId());
 		final TableRecordReference orderRef = TableRecordReference.of(I_PP_Order.Table_Name, activity.getOrderId());
 
-		attachmentEntryService.shareAttachmentLinks(
+		attachmentService.shareAttachmentLinks(
 				ImmutableList.of(activityTemplateRef),
 				ImmutableList.of(orderRef, activityRef));
 	}

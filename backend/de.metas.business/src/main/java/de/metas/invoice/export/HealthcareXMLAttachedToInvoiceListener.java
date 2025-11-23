@@ -2,7 +2,8 @@ package de.metas.invoice.export;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentReference;
+import de.metas.attachments.AttachmentService;
 import de.metas.attachments.AttachmentTags;
 import de.metas.attachments.listener.AttachmentListener;
 import de.metas.attachments.listener.AttachmentListenerConstants.ListenerWorkStatus;
@@ -71,7 +72,7 @@ public class HealthcareXMLAttachedToInvoiceListener implements AttachmentListene
 
 	private final CrossVersionServiceRegistry crossVersionServiceRegistry = SpringContextHolder.instance.getBean(CrossVersionServiceRegistry.class);
 
-	private final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+	private final AttachmentService attachmentService = SpringContextHolder.instance.getBean(AttachmentService.class);
 
 	private final BPartnerCompositeRepository bpartnerCompositeRepository = SpringContextHolder.instance.getBean(BPartnerCompositeRepository.class);
 
@@ -82,8 +83,9 @@ public class HealthcareXMLAttachedToInvoiceListener implements AttachmentListene
 	@Override
 	public ListenerWorkStatus afterRecordLinked(
 			@NonNull final AttachmentEntry attachmentEntry,
-			@NonNull final TableRecordReference tableRecordReference)
+			@NonNull final AttachmentReference attachmentReference)
 	{
+		final TableRecordReference tableRecordReference = attachmentReference.getRecordRef();
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(tableRecordReference))
 		{
 			if (!I_C_Invoice.Table_Name.equals(tableRecordReference.getTableName()))
@@ -115,7 +117,7 @@ public class HealthcareXMLAttachedToInvoiceListener implements AttachmentListene
 
 			final I_C_Invoice invoiceRecord = tableRecordReference.getModel(I_C_Invoice.class);
 
-			final byte[] attachmentData = attachmentEntryService.retrieveData(attachmentEntry.getId());
+			final byte[] attachmentData = attachmentService.retrieveData(attachmentEntry.getIdNonNull());
 			final String xsdName = Check.assumeNotNull(
 					coalesceSuppliers(
 							() -> tags.getTagValueOrNull(ForumDatenaustauschChConstants.XSD_NAME),

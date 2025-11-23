@@ -16,12 +16,7 @@
  *****************************************************************************/
 package org.compiere.apps;
 
-import java.awt.BorderLayout;
-import java.awt.Image;
-import java.awt.event.WindowEvent;
-
-import javax.annotation.Nullable;
-
+import de.metas.logging.LogManager;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.images.Images;
 import org.adempiere.plaf.MetasfreshGlassPane;
@@ -31,8 +26,9 @@ import org.compiere.swing.CFrame;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
-import de.schaeffer.compiere.tools.AttachmentDnDTransferHandler;
+import javax.annotation.Nullable;
+import java.awt.*;
+import java.awt.event.WindowEvent;
 
 /**
  *  Main Application Window.
@@ -113,13 +109,11 @@ public class AWindow extends CFrame
 		this.setJMenuBar(m_APanel.getMenuBar());
 		this.setTitle(m_APanel.getTitle());
 		//
-		Image image = m_APanel.getImage();
+		final Image image = m_APanel.getImage();
 		if (image != null)
 		{
 			setIconImage(image);
 		}
-		
-		this.setTransferHandler(new AttachmentDnDTransferHandler(m_APanel)); // metas: drag&drop support for attachments
 	}   //  commonInit
 
 	

@@ -1,7 +1,7 @@
 package de.metas.notification;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.document.references.zoom_into.CustomizedWindowInfo;
 import de.metas.document.references.zoom_into.CustomizedWindowInfoMap;
 import de.metas.document.references.zoom_into.NullCustomizedWindowInfoMapRepository;
@@ -28,7 +28,7 @@ import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -64,7 +64,7 @@ public class NotificationRepositoryTest
 	public void simpleSaveAndLoadTest()
 	{
 		final NotificationRepository notificationRepo = new NotificationRepository(
-				AttachmentEntryService.createInstanceForUnitTesting(),
+				AttachmentService.createInstanceForUnitTesting(),
 				NullCustomizedWindowInfoMapRepository.instance);
 
 		createAD_Message("subjectADMessage");
@@ -122,7 +122,7 @@ public class NotificationRepositoryTest
 				)));
 
 		final NotificationRepository notificationRepo = new NotificationRepository(
-				AttachmentEntryService.createInstanceForUnitTesting(),
+				AttachmentService.createInstanceForUnitTesting(),
 				mockedCustomizedWindowInfoMapRepository);
 
 		notificationRepo.save(UserNotificationRequest.builder()

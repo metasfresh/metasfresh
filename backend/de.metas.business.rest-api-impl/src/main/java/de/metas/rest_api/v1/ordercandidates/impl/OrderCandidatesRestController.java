@@ -95,12 +95,12 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 @RestController
 @RequestMapping(value = {
 		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/sales/order/candidates",
-		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/sales/order/candidates"})
+		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/sales/order/candidates" })
 @Profile(Profiles.PROFILE_App)
 public class OrderCandidatesRestController implements OrderCandidatesRestEndpoint
 {
 	private final String PATH_BULK = "/bulk";
-	
+
 	public static final String DATA_SOURCE_INTERNAL_NAME = "SOURCE." + OrderCandidatesRestController.class.getName();
 
 	private static final Logger logger = LogManager.getLogger(OrderCandidatesRestController.class);
@@ -252,10 +252,10 @@ public class OrderCandidatesRestController implements OrderCandidatesRestEndpoin
 		final OrgId orgId = masterdataProvider.getCreateOrgIdInTrx(json.getOrg());
 		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 
-		final ZonedDateTime dateEffective = CoalesceUtil.coalesceSuppliers(
+		final ZonedDateTime dateEffective = CoalesceUtil.coalesceSuppliersNotNull(
 				() -> TimeUtil.asZonedDateTime(json.getDateRequired(), timeZone),
 				() -> TimeUtil.asZonedDateTime(json.getDateOrdered(), timeZone),
-				() -> SystemTime.asZonedDateTime());
+				SystemTime::asZonedDateTime);
 
 		final PricingSystemId pricingSystemId = masterdataProvider.getPricingSystemIdByValue(json.getPricingSystemCode());
 

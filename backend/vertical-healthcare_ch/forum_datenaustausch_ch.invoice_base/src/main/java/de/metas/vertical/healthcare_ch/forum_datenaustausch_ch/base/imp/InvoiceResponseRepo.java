@@ -1,7 +1,7 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp;
 
 import de.metas.attachments.AttachmentEntryCreateRequest;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.attachments.AttachmentTags;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
@@ -49,11 +49,11 @@ public class InvoiceResponseRepo
 	private static final AdMessageKey MSG_INVOICE_NOT_FOUND_2P = AdMessageKey.of("de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.InvoiceResponseRepo_Invoice_Not_Found");
 	private static final AdMessageKey MSG_INVOICE_NOT_FOUND_BY_ID_1P = AdMessageKey.of("de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.InvoiceResponseRepo_Invoice_Not_Found_By_Id");
 
-	private final AttachmentEntryService attachmentEntryService;
+	private final AttachmentService attachmentService;
 
-	public InvoiceResponseRepo(@NonNull final AttachmentEntryService attachmentEntryService)
+	public InvoiceResponseRepo(@NonNull final AttachmentService attachmentService)
 	{
-		this.attachmentEntryService = attachmentEntryService;
+		this.attachmentService = attachmentService;
 	}
 
 	/**
@@ -156,7 +156,7 @@ public class InvoiceResponseRepo
 				.tags(attachmentTags)
 				.build();
 
-		attachmentEntryService.createNewAttachment(invoiceRecord, attachmentEntryCreateRequest);
+		attachmentService.createNewAttachment(invoiceRecord, attachmentEntryCreateRequest);
 	}
 
 	@SuppressWarnings("WeakerAccess")

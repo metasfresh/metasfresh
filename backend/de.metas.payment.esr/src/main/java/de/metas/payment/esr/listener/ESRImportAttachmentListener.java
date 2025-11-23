@@ -24,6 +24,7 @@ package de.metas.payment.esr.listener;
 
 import ch.qos.logback.classic.Level;
 import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentReference;
 import de.metas.attachments.listener.AttachmentListener;
 import de.metas.attachments.listener.AttachmentListenerConstants;
 import de.metas.javaclasses.model.I_AD_JavaClass;
@@ -33,8 +34,8 @@ import de.metas.payment.esr.api.RunESRImportRequest;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
 
 import static de.metas.attachments.listener.AttachmentListenerConstants.ListenerWorkStatus.SUCCESS;
@@ -52,22 +53,22 @@ public class ESRImportAttachmentListener implements AttachmentListener
 
 	@Override
 	public AttachmentListenerConstants.ListenerWorkStatus afterRecordLinked(
-			final AttachmentEntry attachmentEntry,
-			final TableRecordReference tableRecordReference)
+			@NonNull final AttachmentEntry attachmentEntry,
+			@NonNull final AttachmentReference attachmentReference)
 	{
-		final I_ESR_Import esrImport = InterfaceWrapperHelper.load(tableRecordReference.getRecord_ID(), I_ESR_Import.class);
+		final I_ESR_Import esrImport = InterfaceWrapperHelper.load(attachmentReference.getRecordRef().getRecord_ID(), I_ESR_Import.class);
 
 		final boolean isZipAttachment = attachmentEntry.getFilename().endsWith(".zip");
 
 		esrImport.setIsArchiveFile(isZipAttachment);
 		final RunESRImportRequest runESRImportRequest = RunESRImportRequest.builder()
 				.esrImport(esrImport)
-				.attachmentEntryId(attachmentEntry.getId())
+				.attachmentEntryId(attachmentEntry.getIdNonNull())
 				.asyncBatchDescription(ESR_ASYNC_BATCH_DESC)
 				.asyncBatchName(ESR_ASYNC_BATCH_NAME)
 				.loggable(Loggables.withLogger(logger, Level.DEBUG))
 				.build();
-		
+
 		esrImportBL.scheduleESRImportFor(runESRImportRequest);
 
 		return SUCCESS;

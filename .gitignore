@@ -63,15 +63,11 @@ misc/services/camel/de-metas-camel-shipping/tmp/
 # this is ignored to prevent accidental git check-in of developer credentials
 **/mvn/local-settings.xml
 
-# this is ignored to prevent pusing debug snapshots
+# this is ignored to prevent pushing debug snapshots
  **/*.snap.debug
 
-# github related
-.github/merge_to_master
-.github/integrate
-
-# claude related
-.claude
+/.claude/**
+/.mcp.json
 **/CLAUDE.md
 .mcp.json
 

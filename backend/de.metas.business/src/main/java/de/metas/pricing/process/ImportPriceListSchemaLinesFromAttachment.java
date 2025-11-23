@@ -22,25 +22,12 @@
 
 package de.metas.pricing.process;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.exceptions.AdempiereException;
-import org.apache.commons.io.IOUtils;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_AttachmentEntry;
-import org.compiere.model.X_M_DiscountSchemaLine;
-
 import de.metas.attachments.AttachmentEntryDataResource;
 import de.metas.attachments.AttachmentEntryId;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.money.CurrencyConversionTypeId;
@@ -60,6 +47,17 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.apache.commons.io.IOUtils;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_AttachmentEntry;
+import org.compiere.model.X_M_DiscountSchemaLine;
+
+import javax.annotation.Nullable;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 /**
  * Import Price List Schema Lines from an attachment.
@@ -85,7 +83,7 @@ public class ImportPriceListSchemaLinesFromAttachment extends JavaProcess implem
 
 	private static final int EXPECTED_NUMBER_OF_COLUMNS = 11;
 
-	private final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+	private final AttachmentService attachmentService = SpringContextHolder.instance.getBean(AttachmentService.class);
 	private final PriceListSchemaRepository priceListSchemaRepository = SpringContextHolder.instance.getBean(PriceListSchemaRepository.class);
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
@@ -207,7 +205,7 @@ public class ImportPriceListSchemaLinesFromAttachment extends JavaProcess implem
 
 	private List<String> readAttachmentLines() throws IOException
 	{
-		final AttachmentEntryDataResource attachment = attachmentEntryService.retrieveDataResource(p_AD_AttachmentEntry_ID);
+		final AttachmentEntryDataResource attachment = attachmentService.retrieveDataResource(p_AD_AttachmentEntry_ID);
 		return IOUtils.readLines(attachment.getInputStream(), StandardCharsets.UTF_8);
 	}
 }

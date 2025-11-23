@@ -25,7 +25,7 @@ package de.metas.rest_api.v2.attachment;
 import au.com.origin.snapshots.Expect;
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.common.rest_api.v2.attachment.JsonAttachment;
 import de.metas.common.rest_api.v2.attachment.JsonAttachmentRequest;
 import de.metas.common.rest_api.v2.attachment.JsonAttachmentResponse;
@@ -63,13 +63,13 @@ public class AttachmentRestControllerTest
 
 		queryBL = Services.get(IQueryBL.class);
 
-		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
+		final AttachmentService attachmentService = AttachmentService.createInstanceForUnitTesting();
 
 		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
 
 		final ExternalReferenceRestControllerService externalReferenceRestControllerService = Mockito.mock(ExternalReferenceRestControllerService.class);
 
-		final AttachmentRestService attachmentRestService = new AttachmentRestService(attachmentEntryService, externalReferenceRestControllerService, externalReferenceTypes);
+		final AttachmentRestService attachmentRestService = new AttachmentRestService(attachmentService, externalReferenceRestControllerService, externalReferenceTypes);
 
 		attachmentRestController = new AttachmentRestController(attachmentRestService);
 	}

@@ -25,7 +25,7 @@ package de.metas.banking.process;
 import com.google.common.collect.ImmutableMap;
 import de.metas.attachments.AttachmentEntryDataResource;
 import de.metas.attachments.AttachmentEntryId;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.api.BankAccountService;
@@ -59,7 +59,7 @@ public class C_BankStatement_ImportAttachment extends JavaProcess implements IPr
 	private static final String BANK_STATEMENT_MUST_BE_IN_PROGRESS_MSG = "Bank Statement must be in progress.";
 
 	private final IMsgBL iMsgBL = Services.get(IMsgBL.class);
-	private final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+	private final AttachmentService attachmentService = SpringContextHolder.instance.getBean(AttachmentService.class);
 	private final transient DataImportService dataImportService = SpringContextHolder.instance.getBean(DataImportService.class);
 	private final BankAccountService bankAccountService = SpringContextHolder.instance.getBean(BankAccountService.class);
 
@@ -97,7 +97,7 @@ public class C_BankStatement_ImportAttachment extends JavaProcess implements IPr
 	@Override
 	protected String doIt() throws Exception
 	{
-		final AttachmentEntryDataResource data = attachmentEntryService.retrieveDataResource(getAttachmentEntryId());
+		final AttachmentEntryDataResource data = attachmentService.retrieveDataResource(getAttachmentEntryId());
 
 		dataImportService.importDataFromResource(DataImportRequest.builder()
 				.data(data)

@@ -2,7 +2,7 @@ package de.metas.attachments.process;
 
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.process.JavaProcess;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
@@ -37,7 +37,7 @@ import javax.annotation.Nullable;
 
 public class M_Product_AttachmentEntry_ReferencedRecord_v_Download extends JavaProcess
 {
-	private final transient AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+	private final transient AttachmentService attachmentService = SpringContextHolder.instance.getBean(AttachmentService.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
@@ -51,8 +51,8 @@ public class M_Product_AttachmentEntry_ReferencedRecord_v_Download extends JavaP
 		}
 		final AttachmentEntryId entryId = AttachmentEntryId.ofRepoId(record.getAD_AttachmentEntry_ID());
 
-		final AttachmentEntry entry = attachmentEntryService.getById(entryId);
-		final Resource data = new ByteArrayResource(attachmentEntryService.retrieveData(entry.getId()));
+		final AttachmentEntry entry = attachmentService.getById(entryId);
+		final Resource data = new ByteArrayResource(attachmentService.retrieveData(entry.getId()));
 
 		getResult().setReportData(data, entry.getFilename(), entry.getMimeType());
 

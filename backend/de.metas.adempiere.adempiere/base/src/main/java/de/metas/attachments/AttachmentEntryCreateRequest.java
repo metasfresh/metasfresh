@@ -47,21 +47,19 @@ public class AttachmentEntryCreateRequest
 			@NonNull final String fileName,
 			@NonNull final URI uri)
 	{
-		final AttachmentEntryCreateRequest request = AttachmentEntryCreateRequest.builder()
+		return AttachmentEntryCreateRequest.builder()
 				.type(AttachmentEntryType.URL)
 				.filename(fileName)
 				.contentType(MimeType.getMimeType(fileName))
 				.url(uri)
 				.build();
-		return request;
 	}
 
 	public static AttachmentEntryCreateRequest fromByteArray(
 			@NonNull final String fileName,
-			@NonNull final byte[] data)
+			final byte[] data)
 	{
-		final AttachmentEntryCreateRequest request = builderFromByteArray(fileName, data).build();
-		return request;
+		return builderFromByteArray(fileName, data).build();
 	}
 
 	public static AttachmentEntryCreateRequest.AttachmentEntryCreateRequestBuilder builderFromByteArray(

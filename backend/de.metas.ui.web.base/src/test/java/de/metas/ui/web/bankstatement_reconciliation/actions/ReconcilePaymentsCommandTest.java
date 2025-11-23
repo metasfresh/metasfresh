@@ -2,7 +2,6 @@ package de.metas.ui.web.bankstatement_reconciliation.actions;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.attachments.AttachmentEntryService;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
@@ -77,7 +76,8 @@ import java.time.LocalDate;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /*
  * #%L
@@ -130,7 +130,7 @@ public class ReconcilePaymentsCommandTest
 		SpringContextHolder.registerJUnitBean(moneyService);
 
 		final IBankStatementListenerService bankStatementListenerService = Services.get(IBankStatementListenerService.class);
-		final ESRImportBL esrImportBL = new ESRImportBL(AttachmentEntryService.createInstanceForUnitTesting());
+		final ESRImportBL esrImportBL = new ESRImportBL(AttachmentService.createInstanceForUnitTesting());
 		bankStatementListenerService.addListener(new ESRBankStatementListener(esrImportBL));
 
 		final IPaySelectionBL paySelectionBL = Services.get(IPaySelectionBL.class);

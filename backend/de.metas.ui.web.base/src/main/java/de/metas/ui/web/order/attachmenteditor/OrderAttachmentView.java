@@ -22,7 +22,7 @@
 
 package de.metas.ui.web.order.attachmenteditor;
 
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.view.IEditableView;
@@ -37,18 +37,18 @@ import javax.annotation.Nullable;
 
 public class OrderAttachmentView extends AbstractCustomView<OrderAttachmentRow> implements IEditableView
 {
-	private final AttachmentEntryService attachmentEntryService;
+	private final AttachmentService attachmentService;
 
 	@Builder
 	public OrderAttachmentView(
-			@NonNull final AttachmentEntryService attachmentEntryService,
+			@NonNull final AttachmentService attachmentService,
 			@NonNull final ViewId viewId,
 			@Nullable final ITranslatableString description,
 			@NonNull final OrderAttachmentRows rows)
 	{
 		super(viewId, description, rows, NullDocumentFilterDescriptorsProvider.instance);
 
-		this.attachmentEntryService = attachmentEntryService;
+		this.attachmentService = attachmentService;
 	}
 
 	@Nullable
@@ -76,6 +76,6 @@ public class OrderAttachmentView extends AbstractCustomView<OrderAttachmentRow> 
 	private void saveChanges()
 	{
 		getRowsData().createAttachmentLinksRequestList()
-				.ifPresent(userChanges -> userChanges.forEach(attachmentEntryService::handleAttachmentLinks));
+				.ifPresent(userChanges -> userChanges.forEach(attachmentService::handleAttachmentLinks));
 	}
 }

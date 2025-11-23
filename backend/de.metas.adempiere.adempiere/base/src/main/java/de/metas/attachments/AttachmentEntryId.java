@@ -45,7 +45,7 @@ public class AttachmentEntryId implements RepoIdAware
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
-	public static int getRepoId(final AttachmentEntryId attachmentEntryId)
+	public static int toRepoId(final AttachmentEntryId attachmentEntryId)
 	{
 		return attachmentEntryId != null ? attachmentEntryId.getRepoId() : -1;
 	}
@@ -54,7 +54,7 @@ public class AttachmentEntryId implements RepoIdAware
 
 	private AttachmentEntryId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "AD_AttachmentEntry");
 	}
 
 	@Override

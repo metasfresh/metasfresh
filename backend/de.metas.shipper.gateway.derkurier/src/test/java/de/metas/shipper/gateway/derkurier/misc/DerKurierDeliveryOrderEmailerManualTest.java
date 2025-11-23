@@ -1,7 +1,7 @@
 package de.metas.shipper.gateway.derkurier.misc;
 
 import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.email.EMailAddress;
 import de.metas.email.MailService;
 import de.metas.email.mailboxes.Mailbox;
@@ -47,7 +47,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 public class DerKurierDeliveryOrderEmailerManualTest
 {
 
-	private AttachmentEntryService attachmentEntryService;
+	private AttachmentService attachmentService;
 
 	@BeforeEach
 	public void init()
@@ -64,7 +64,7 @@ public class DerKurierDeliveryOrderEmailerManualTest
 		msgConfig.setValue("DerKurier_DeliveryOrder_EmailMessage");
 		save(msgConfig);
 
-		attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
+		attachmentService = AttachmentService.createInstanceForUnitTesting();
 	}
 
 	@Test
@@ -83,13 +83,13 @@ public class DerKurierDeliveryOrderEmailerManualTest
 		final I_DerKurier_DeliveryOrder deliveryOrder = newInstance(I_DerKurier_DeliveryOrder.class);
 		save(deliveryOrder);
 
-		final AttachmentEntry firstEntry = attachmentEntryService.createNewAttachment(deliveryOrder, "deliveryOrder.csv", generateBytes());
+		final AttachmentEntry firstEntry = attachmentService.createNewAttachment(deliveryOrder, "deliveryOrder.csv", generateBytes());
 
 		final DerKurierShipperConfigRepository derKurierShipperConfigRepository = new DerKurierShipperConfigRepository();
 		final MailService mailService = MailService.newInstanceForUnitTesting();
 		final DerKurierDeliveryOrderEmailer derKurierDeliveryOrderEmailer = new DerKurierDeliveryOrderEmailer(
 				derKurierShipperConfigRepository,
-				attachmentEntryService,
+				attachmentService,
 				mailService);
 
 		derKurierDeliveryOrderEmailer.sendAttachmentAsEmail(

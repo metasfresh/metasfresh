@@ -1,13 +1,12 @@
 package de.metas.attachments;
 
-import java.net.URI;
-
-import org.adempiere.util.lang.ITableRecordReference;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
+import org.adempiere.util.lang.ITableRecordReference;
+
+import java.net.URI;
 
 /*
  * #%L

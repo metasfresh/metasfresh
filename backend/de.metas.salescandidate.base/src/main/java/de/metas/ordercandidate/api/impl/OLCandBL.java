@@ -25,7 +25,7 @@ package de.metas.ordercandidate.api.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryCreateRequest;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -70,7 +70,6 @@ import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.Percent;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
@@ -476,7 +475,7 @@ public class OLCandBL implements IOLCandBL
 			@NonNull final AttachmentEntryCreateRequest attachmentEntryCreateRequest)
 	{
 		final OLCandRepository olCandRepo = SpringContextHolder.instance.getBean(OLCandRepository.class);
-		final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+		final AttachmentService attachmentService = SpringContextHolder.instance.getBean(AttachmentService.class);
 
 		final List<TableRecordReference> olCandRefs = olCandRepo
 				.getByQuery(olCandQuery)
@@ -490,14 +489,16 @@ public class OLCandBL implements IOLCandBL
 		}
 
 		final TableRecordReference firstOLCandRef = olCandRefs.get(0);
-		final AttachmentEntry attachmentEntry = attachmentEntryService.createNewAttachment(firstOLCandRef, attachmentEntryCreateRequest);
-
+		final AttachmentEntry attachmentEntry = attachmentService.createNewAttachment(firstOLCandRef, attachmentEntryCreateRequest);
 		if (olCandRefs.size() == 1)
-		{
+		{ // not additional attachmentReferences needed
 			return attachmentEntry;
 		}
+		
 		final List<TableRecordReference> remainingOLCandRefs = olCandRefs.subList(1, olCandRefs.size());
-		return CollectionUtils.singleElement(attachmentEntryService.createAttachmentLinks(ImmutableList.of(attachmentEntry), remainingOLCandRefs));
+		attachmentService.createAttachmentLinks(ImmutableList.of(attachmentEntry), remainingOLCandRefs);
+		
+		return attachmentEntry;
 	}
 
 	@Override

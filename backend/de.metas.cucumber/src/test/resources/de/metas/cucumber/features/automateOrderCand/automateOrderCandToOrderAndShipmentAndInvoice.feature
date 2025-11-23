@@ -9,6 +9,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    And set sys config boolean value false for sys config de.metas.payment.esr.Enabled
     And preexisting test data is put into tableData
       | C_BPartner_ID.Identifier | C_BPartner_ID | C_BPartner_Location_ID.Identifier | C_BPartner_Location_ID | M_Product_ID.Identifier | M_Product_ID |
       | bpartner_1               | 2156425       | bpartnerLocation_1                | 2205175                | product_1               | 2005577      |

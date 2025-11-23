@@ -21,7 +21,7 @@ import de.metas.adempiere.Constants;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
@@ -214,10 +214,10 @@ public final class Attachment extends CDialog implements ActionListener
 	 */
 	private void loadAttachments()
 	{
-		final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+		final AttachmentService attachmentService = SpringContextHolder.instance.getBean(AttachmentService.class);
 
 		// Set attachment entries combo
-		final List<AttachmentEntry> attachmentEntries = attachmentEntryService.getByReferencedRecord(getRecord());
+		final List<AttachmentEntry> attachmentEntries = attachmentService.getByReferencedRecord(getRecord());
 		for (AttachmentEntry entry : attachmentEntries)
 		{
 			cbAttachmentEntries.addItem(AttachmentEntryItem.of(entry));
@@ -247,12 +247,12 @@ public final class Attachment extends CDialog implements ActionListener
 		bOpen.setEnabled(false);
 		bSave.setEnabled(false);
 
-		final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+		final AttachmentService attachmentService = SpringContextHolder.instance.getBean(AttachmentService.class);
 
-		final AttachmentEntry entry = entryItem != null ? attachmentEntryService.getById(entryItem.getAttachmentEntryId()) : null;
+		final AttachmentEntry entry = entryItem != null ? attachmentService.getById(entryItem.getAttachmentEntryId()) : null;
 
 		// no attachment
-		final byte[] data = entry == null ? null : attachmentEntryService.retrieveData(entry.getId());
+		final byte[] data = entry == null ? null : attachmentService.retrieveData(entry.getId());
 		if (data == null || data.length == 0)
 		{
 			info.setText("-");
@@ -411,20 +411,20 @@ public final class Attachment extends CDialog implements ActionListener
 			return;
 		}
 
-		final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+		final AttachmentService attachmentService = SpringContextHolder.instance.getBean(AttachmentService.class);
 		//
 		final File[] files = chooser.getSelectedFiles();
 		for (final File file : files)
 		{
-			final AttachmentEntry existingEntry = attachmentEntryService.getByFilenameOrNull(getRecord(), file.getName());
+			final AttachmentEntry existingEntry = attachmentService.getByFilenameOrNull(getRecord(), file.getName());
 			if (existingEntry != null)
 			{
 				final byte[] data = Util.readBytes(file);
-				attachmentEntryService.updateData(existingEntry.getId(), data);
+				attachmentService.updateData(existingEntry.getId(), data);
 			}
 			else
 			{
-				final AttachmentEntry newEntry = attachmentEntryService.createNewAttachment(getRecord(), file);
+				final AttachmentEntry newEntry = attachmentService.createNewAttachment(getRecord(), file);
 				// m_change = true; // not needed because it's already saved
 
 				final AttachmentEntryItem newEntryItem = AttachmentEntryItem.of(newEntry);
@@ -444,11 +444,11 @@ public final class Attachment extends CDialog implements ActionListener
 	{
 		if (ADialog.ask(m_WindowNo, this, "AttachmentDelete?"))
 		{
-			final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
-			final List<AttachmentEntry> entries = attachmentEntryService.getByReferencedRecord(getRecord());
+			final AttachmentService attachmentService = SpringContextHolder.instance.getBean(AttachmentService.class);
+			final List<AttachmentEntry> entries = attachmentService.getByReferencedRecord(getRecord());
 			for (final AttachmentEntry entry : entries)
 			{
-				attachmentEntryService.unattach(getRecord(), entry);
+				attachmentService.unattach(getRecord(), entry);
 			}
 
 			return true;
@@ -469,9 +469,9 @@ public final class Attachment extends CDialog implements ActionListener
 		//
 		if (ADialog.ask(m_WindowNo, this, "AttachmentDeleteEntry?", entryItem.getDisplayName()))
 		{
-			final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
-			final AttachmentEntry entry = attachmentEntryService.getById(entryItem.getAttachmentEntryId());
-			attachmentEntryService.unattach(getRecord(), entry);
+			final AttachmentService attachmentService = SpringContextHolder.instance.getBean(AttachmentService.class);
+			final AttachmentEntry entry = attachmentService.getById(entryItem.getAttachmentEntryId());
+			attachmentService.unattach(getRecord(), entry);
 
 			cbAttachmentEntries.removeItem(entryItem);
 		}
@@ -505,8 +505,8 @@ public final class Attachment extends CDialog implements ActionListener
 			return;
 		}
 
-		final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
-		final byte[] data = attachmentEntryService.retrieveData(entryItem.getAttachmentEntryId());
+		final AttachmentService attachmentService = SpringContextHolder.instance.getBean(AttachmentService.class);
+		final byte[] data = attachmentService.retrieveData(entryItem.getAttachmentEntryId());
 		try
 		{
 			Files.write(data, saveFile);
@@ -524,10 +524,10 @@ public final class Attachment extends CDialog implements ActionListener
 	 */
 	private boolean openAttachment()
 	{
-		final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+		final AttachmentService attachmentService = SpringContextHolder.instance.getBean(AttachmentService.class);
 
 		final AttachmentEntryItem entryItem = cbAttachmentEntries.getSelectedItem();
-		final byte[] data = attachmentEntryService.retrieveData(entryItem.getAttachmentEntryId());
+		final byte[] data = attachmentService.retrieveData(entryItem.getAttachmentEntryId());
 		if (data == null)
 		{
 			return false;

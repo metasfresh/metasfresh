@@ -28,7 +28,7 @@ import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.organization.OrgId;
@@ -83,7 +83,7 @@ public class ESRImportEnqueuer
 	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final transient IESRImportBL esrImportBL = Services.get(IESRImportBL.class);
 	private final transient IESRImportDAO esrImportDAO = Services.get(IESRImportDAO.class);
-	private final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+	private final AttachmentService attachmentService = SpringContextHolder.instance.getBean(AttachmentService.class);
 	private final Properties ctx = Env.getCtx();
 	private I_ESR_Import esrImport;
 	private ESRImportEnqueuerDataSource fromDataSource;
@@ -122,8 +122,8 @@ public class ESRImportEnqueuer
 			final AttachmentEntryId fromAttachmentEntryId;
 			if (fromDataSource.getAttachmentEntryId() == null)
 			{
-				final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
-				final AttachmentEntry attachmentEntry = attachmentEntryService.createNewAttachment(
+				final AttachmentService attachmentService = SpringContextHolder.instance.getBean(AttachmentService.class);
+				final AttachmentEntry attachmentEntry = attachmentService.createNewAttachment(
 						esrImport,
 						fromDataSource.getFilename(),
 						fromDataSource.getContent());
@@ -142,7 +142,7 @@ public class ESRImportEnqueuer
 		// Fetch data to be imported from attachment
 		final AttachmentEntryId attachmentEntryId = fromDataSource.getAttachmentEntryId();
 
-		final byte[] data = attachmentEntryService.retrieveData(attachmentEntryId);
+		final byte[] data = attachmentService.retrieveData(attachmentEntryId);
 
 		// there is no actual data
 		if (data == null || data.length == 0)
@@ -152,7 +152,7 @@ public class ESRImportEnqueuer
 
 		final ByteArrayInputStream in = new ByteArrayInputStream(data);
 
-		final AttachmentEntry attachmentEntry = attachmentEntryService.getById(attachmentEntryId);
+		final AttachmentEntry attachmentEntry = attachmentService.getById(attachmentEntryId);
 
 		if (esrImport.isArchiveFile())
 		{
@@ -201,7 +201,7 @@ public class ESRImportEnqueuer
 		checkUpdateDataType(esrImportFile, filename);
 		esrImportFile.setHash(hash);
 
-		final AttachmentEntry attachmentEntry = attachmentEntryService.createNewAttachment(
+		final AttachmentEntry attachmentEntry = attachmentService.createNewAttachment(
 				esrImportFile,
 				filename,
 				data);

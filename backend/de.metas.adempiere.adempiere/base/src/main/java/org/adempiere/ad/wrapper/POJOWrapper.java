@@ -201,7 +201,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		return result;
 	}
 
-	public static <RT, MT> List<MT> loadByIds(@NonNull final Set<Integer> ids, @NonNull final Class<RT> modelClass, @Nullable final String trxName, @NonNull final Function<RT, MT> modelMapper)
+	public static <RT, MT> ImmutableList<MT> loadByIds(@NonNull final Set<Integer> ids, @NonNull final Class<RT> modelClass, @Nullable final String trxName, @NonNull final Function<RT, MT> modelMapper)
 	{
 		if (ids.isEmpty())
 		{

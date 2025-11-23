@@ -1,7 +1,7 @@
 package de.metas.report.jasper.class_loader;
 
 import com.google.common.io.BaseEncoding;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.image.AdImageId;
 import de.metas.organization.OrgId;
 import de.metas.organization.StoreCreditCardNumberMode;
@@ -85,7 +85,7 @@ public class JasperClassLoaderTests
 		{
 			final OrgId orgId = createOrg();
 			jasperClassLoader = JasperClassLoader.builder()
-					.attachmentEntryService(AttachmentEntryService.createInstanceForUnitTesting())
+					.attachmentService(AttachmentService.createInstanceForUnitTesting())
 					.parent(Thread.currentThread().getContextClassLoader())
 					.adOrgId(orgId)
 					.build();
