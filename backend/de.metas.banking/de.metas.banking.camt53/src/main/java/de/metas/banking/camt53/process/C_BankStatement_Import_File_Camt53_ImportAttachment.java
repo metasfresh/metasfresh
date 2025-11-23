@@ -25,7 +25,7 @@ package de.metas.banking.camt53.process;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryDataResource;
 import de.metas.attachments.AttachmentEntryId;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.camt53.BankStatementCamt53Service;
 import de.metas.banking.camt53.ImportBankStatementRequest;
@@ -58,7 +58,7 @@ public class C_BankStatement_Import_File_Camt53_ImportAttachment extends JavaPro
 	private static final AdMessageKey MSG_MULTIPLE_ATTACHMENTS = AdMessageKey.of("de.metas.banking.camt53.process.C_BankStatement_Camt53_ImportAttachment.MultipleAttachments");
 
 	private final BankStatementCamt53Service bankStatementCamt53Service = SpringContextHolder.instance.getBean(BankStatementCamt53Service.class);
-	private final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+	private final AttachmentService attachmentService = SpringContextHolder.instance.getBean(AttachmentService.class);
 	private final BankStatementImportFileService bankStatementImportFileService = SpringContextHolder.instance.getBean(BankStatementImportFileService.class);
 
 	@Override
@@ -156,7 +156,7 @@ public class C_BankStatement_Import_File_Camt53_ImportAttachment extends JavaPro
 	@NonNull
 	private Optional<AttachmentEntryId> getSingleAttachmentEntryId(@NonNull final BankStatementImportFileId bankStatementImportFileId)
 	{
-		final List<AttachmentEntry> attachments = attachmentEntryService
+		final List<AttachmentEntry> attachments = attachmentService
 				.getByReferencedRecord(TableRecordReference.of(I_C_BankStatement_Import_File.Table_Name, bankStatementImportFileId));
 
 		if (attachments.isEmpty())
@@ -180,6 +180,6 @@ public class C_BankStatement_Import_File_Camt53_ImportAttachment extends JavaPro
 				.orElseThrow(() -> new AdempiereException(MSG_NO_ATTACHMENT)
 						.markAsUserValidationError());
 
-		return attachmentEntryService.retrieveDataResource(attachmentEntryId);
+		return attachmentService.retrieveDataResource(attachmentEntryId);
 	}
 }

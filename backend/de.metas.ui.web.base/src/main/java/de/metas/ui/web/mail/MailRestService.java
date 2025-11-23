@@ -78,7 +78,7 @@ public class MailRestService
 				.map(MailRestService::toEmailAttachment)
 				.map(Stream::of).orElseGet(Stream::empty);
 
-		return Stream.concat(emailAttachments, attachmentEntryService.streamEmailAttachments(recordRef, tagName))
+		return Stream.concat(emailAttachments, attachmentService.streamEmailAttachments(recordRef, tagName))
 				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 	}

@@ -240,7 +240,7 @@ public class AttachmentEntryRepositoryTest
 				.data(initialData)
 				.build();
 		assertThat(attachmentEntryRepository.retrieveAttachmentEntryData(attachmentEntryId)).isEqualTo(initialData.getBytes()); // guard
-		
+
 		final byte[] newData = "new data".getBytes();
 
 		//when - should throw AdempiereException
@@ -248,7 +248,7 @@ public class AttachmentEntryRepositoryTest
 
 		final byte[] retrievedData = attachmentEntryRepository.retrieveAttachmentEntryData(attachmentEntryId);
 		assertThat(retrievedData).isEqualTo(newData);
-		
+
 	}
 
 	@Test
@@ -344,15 +344,9 @@ public class AttachmentEntryRepositoryTest
 		attachmentEntryRepository.deleteById(entry);
 
 		//then - attempting to retrieve should fail
-		try
-		{
-			attachmentEntryRepository.getById(attachmentEntryId);
-			org.junit.Assert.fail("Expected exception when retrieving deleted attachment");
-		}
-		catch (final Exception e)
-		{
-			// Expected - entry was deleted
-		}
+		assertThatThrownBy(() -> attachmentEntryRepository.getById(attachmentEntryId))
+				.isInstanceOf(RuntimeException.class)
+				.hasMessageContaining("No cached object found for clazz=interface org.compiere.model.I_AD_AttachmentEntry");
 	}
 
 	@Test
@@ -369,15 +363,9 @@ public class AttachmentEntryRepositoryTest
 		attachmentEntryRepository.deleteById(attachmentEntryId);
 
 		//then - attempting to retrieve should fail
-		try
-		{
-			attachmentEntryRepository.getById(attachmentEntryId);
-			org.junit.Assert.fail("Expected exception when retrieving deleted attachment");
-		}
-		catch (final Exception e)
-		{
-			// Expected - entry was deleted
-		}
+		assertThatThrownBy(() -> attachmentEntryRepository.getById(attachmentEntryId))
+				.isInstanceOf(RuntimeException.class)
+				.hasMessageContaining("No cached object found for clazz=interface org.compiere.model.I_AD_AttachmentEntry");
 	}
 
 	@Test

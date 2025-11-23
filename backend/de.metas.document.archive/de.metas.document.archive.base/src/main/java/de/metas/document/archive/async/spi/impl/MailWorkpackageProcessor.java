@@ -215,7 +215,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	private ArrayList<EMailAttachment> extractAttachments(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord, @NonNull final I_AD_Archive archive)
 	{
 		final TableRecordReference recordRef = TableRecordReference.ofReferenced(docOutboundLogRecord);
-		final ArrayList<EMailAttachment> result = attachmentEntryService.streamEmailAttachments(recordRef, TAGNAME_SEND_VIA_EMAIL)
+		final ArrayList<EMailAttachment> result = attachmentService.streamEmailAttachments(recordRef, TAGNAME_SEND_VIA_EMAIL)
 				.map(MailWorkpackageProcessor::toEmailAttachment)
 				.collect(Collectors.toCollection(ArrayList::new));
 

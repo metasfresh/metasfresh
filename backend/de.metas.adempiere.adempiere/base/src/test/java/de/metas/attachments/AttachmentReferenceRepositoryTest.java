@@ -30,8 +30,10 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Attachment_MultiRef;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import javax.annotation.Nullable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -39,7 +41,7 @@ public class AttachmentReferenceRepositoryTest
 {
 	private AttachmentReferenceRepository attachmentReferenceRepository;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -339,7 +341,7 @@ public class AttachmentReferenceRepositoryTest
 	private I_AD_Attachment_MultiRef createMultiRefRecord(
 			@NonNull final AttachmentEntryId attachmentEntryId,
 			@NonNull final TableRecordReference recordRef,
-			final String fileNameOverride)
+			@Nullable final String fileNameOverride)
 	{
 		final I_AD_Attachment_MultiRef multiRefRecord = InterfaceWrapperHelper.newInstance(I_AD_Attachment_MultiRef.class);
 		multiRefRecord.setAD_AttachmentEntry_ID(attachmentEntryId.getRepoId());

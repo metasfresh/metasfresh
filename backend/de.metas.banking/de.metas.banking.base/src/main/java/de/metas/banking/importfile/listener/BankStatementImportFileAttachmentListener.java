@@ -47,7 +47,7 @@ public class BankStatementImportFileAttachmentListener implements AttachmentList
 	private static final Logger logger = LogManager.getLogger(BankStatementImportFileAttachmentListener.class);
 
 	private final BankStatementImportFileService bankStatementImportFileService = SpringContextHolder.instance.getBean(BankStatementImportFileService.class);
-	private final AttachmentService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentService.class);
+	private final AttachmentService attachmentService = SpringContextHolder.instance.getBean(AttachmentService.class);
 
 	@Override
 	@NonNull
@@ -76,7 +76,7 @@ public class BankStatementImportFileAttachmentListener implements AttachmentList
 		final TableRecordReference tableRecordReference = attachmentReference.getRecordRef();
 		Check.assume(tableRecordReference.getTableName().equals(I_C_BankStatement_Import_File.Table_Name), "This is only about C_BankStatement_Import_File!");
 
-		final boolean attachmentEntryMatch = attachmentEntryService.getByReferencedRecord(tableRecordReference)
+		final boolean attachmentEntryMatch = attachmentService.getByReferencedRecord(tableRecordReference)
 				.stream()
 				.map(AttachmentEntry::getId)
 				.allMatch(attachmentEntryId -> AttachmentEntryId.equals(attachmentEntryId, attachmentEntry.getId()));
