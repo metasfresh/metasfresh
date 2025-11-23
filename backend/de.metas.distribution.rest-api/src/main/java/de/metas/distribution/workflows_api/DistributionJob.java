@@ -11,6 +11,7 @@ import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.SeqNo;
 import de.metas.workflow.rest_api.model.WFActivityStatus;
 import lombok.Builder;
 import lombok.Getter;
@@ -34,6 +35,7 @@ public class DistributionJob
 {
 	@NonNull private final DistributionJobId id;
 	@NonNull private final String documentNo;
+	@NonNull private final SeqNo seqNo;
 	@NonNull private final BPartnerId customerId;
 	@NonNull private final ZonedDateTime dateRequired;
 	@NonNull private final ZonedDateTime pickDate;
@@ -54,6 +56,7 @@ public class DistributionJob
 	private DistributionJob(
 			final @NonNull DistributionJobId id,
 			final @NonNull String documentNo,
+			final @NonNull SeqNo seqNo,
 			final @NonNull BPartnerId customerId,
 			final @NonNull ZonedDateTime dateRequired,
 			final @NonNull ZonedDateTime pickDate,
@@ -70,6 +73,7 @@ public class DistributionJob
 	{
 		this.id = id;
 		this.documentNo = documentNo;
+		this.seqNo = seqNo;
 		this.customerId = customerId;
 		this.dateRequired = dateRequired;
 		this.pickDate = pickDate;

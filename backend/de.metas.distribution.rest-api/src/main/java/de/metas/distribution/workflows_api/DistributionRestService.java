@@ -66,7 +66,7 @@ public class DistributionRestService
 		return ddOrderMoveScheduleService.getQtyRejectedReasons();
 	}
 
-	public Collection<DDOrderReference> getJobReferences(@NonNull final DDOrderReferenceQuery query)
+	public List<DDOrderReference> getJobReferences(@NonNull final DDOrderReferenceQuery query)
 	{
 		final DDOrderReferenceCollector collector = DDOrderReferenceCollector.builder()
 				.loadingSupportServices(loadingSupportServices)

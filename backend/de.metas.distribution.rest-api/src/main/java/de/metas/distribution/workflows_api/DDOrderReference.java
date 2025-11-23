@@ -6,6 +6,7 @@ import de.metas.order.OrderId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
+import de.metas.util.lang.SeqNo;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -22,6 +23,7 @@ public class DDOrderReference
 {
 	@NonNull DDOrderId ddOrderId;
 	@NonNull String documentNo;
+	@NonNull SeqNo seqNo;
 	@NonNull ZonedDateTime datePromised;
 	@Nullable ZonedDateTime pickDate;
 	@NonNull WarehouseId fromWarehouseId;

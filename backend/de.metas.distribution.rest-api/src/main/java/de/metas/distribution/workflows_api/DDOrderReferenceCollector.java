@@ -6,8 +6,8 @@ import lombok.NonNull;
 import org.eevolution.model.I_DD_Order;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 
 @Builder
 public class DDOrderReferenceCollector implements DistributionOrderCollector<DDOrderReference>
@@ -30,7 +30,7 @@ public class DDOrderReferenceCollector implements DistributionOrderCollector<DDO
 	}
 
 	@Override
-	public Collection<DDOrderReference> getCollectedItems()
+	public List<DDOrderReference> getCollectedItems()
 	{
 		processPendingRequests();
 		return _result;
@@ -61,6 +61,7 @@ public class DDOrderReferenceCollector implements DistributionOrderCollector<DDO
 		return DDOrderReference.builder()
 				.ddOrderId(job.getDdOrderId())
 				.documentNo(job.getDocumentNo())
+				.seqNo(job.getSeqNo())
 				.datePromised(job.getDateRequired())
 				.pickDate(job.getPickDate())
 				.fromWarehouseId(job.getPickFromWarehouse().getWarehouseId())

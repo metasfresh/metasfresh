@@ -1,7 +1,7 @@
 package de.metas.distribution.workflows_api.facets;
 
 import com.google.common.collect.HashMultiset;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.workflows_api.DistributionOrderCollector;
@@ -27,9 +27,9 @@ import org.eevolution.model.I_DD_OrderLine;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.function.UnaryOperator;
 
 @Builder
@@ -53,13 +53,14 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 	private final HashMap<ResourceId, ITranslatableString> resourceNames = new HashMap<>();
 
 	@Override
-	public Collection<DistributionFacet> getCollectedItems()
+	public List<DistributionFacet> getCollectedItems()
 	{
 		processPendingRequests();
 
 		return _result.stream()
 				.map(facet -> facet.withHitCount(counters.count(facet.getFacetId())))
-				.collect(ImmutableSet.toImmutableSet());
+				.distinct()
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public DistributionFacetsCollection toFacetsCollection() {return DistributionFacetsCollection.ofCollection(getCollectedItems());}

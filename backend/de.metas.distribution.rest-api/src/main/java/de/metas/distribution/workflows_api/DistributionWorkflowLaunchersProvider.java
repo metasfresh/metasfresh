@@ -2,6 +2,7 @@ package de.metas.distribution.workflows_api;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
+import de.metas.distribution.config.DistributionJobSorting;
 import de.metas.distribution.config.MobileUIDistributionConfig;
 import de.metas.distribution.service.external.DistributionWarehouseService;
 import de.metas.distribution.workflows_api.DDOrderReferenceQuery.DDOrderReferenceQueryBuilder;
@@ -19,7 +20,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +36,7 @@ public class DistributionWorkflowLaunchersProvider
 
 		final MobileUIDistributionConfig config = distributionRestService.getConfig();
 
-		final Collection<DDOrderReference> jobReferences = distributionRestService.getJobReferences(
+		final List<DDOrderReference> jobReferences = distributionRestService.getJobReferences(
 				newDDOrderReferenceQuery(query.getUserId())
 						.suggestedLimit(query.getLimit().orElse(config.getMaxLaunchers()))
 						.activeFacetIds(DistributionFacetIdsCollection.ofWorkflowLaunchersFacetIds(query.getFacetIds()))
@@ -56,10 +57,13 @@ public class DistributionWorkflowLaunchersProvider
 				.locatorToId(workplace != null ? workplace.getPickFromLocatorId() : null);
 	}
 
-	private WorkflowLaunchersList toWorkflowLaunchersList(final Collection<DDOrderReference> jobReferences)
+	private WorkflowLaunchersList toWorkflowLaunchersList(final List<DDOrderReference> jobReferences)
 	{
+		final DistributionJobSorting sorting = distributionRestService.getConfig().getSorting();
+		
 		return WorkflowLaunchersList.builder()
 				.launchers(jobReferences.stream().map(this::toWorkflowLauncher).collect(ImmutableList.toImmutableList()))
+				.orderByFields(sorting.toWorkflowLauncherCaptionOrderBys())
 				.timestamp(SystemTime.asInstant())
 				.build();
 	}

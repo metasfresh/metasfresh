@@ -18,6 +18,7 @@ import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.eevolution.model.I_DD_Order;
@@ -90,6 +91,7 @@ class DistributionJobLoader
 		return DistributionJob.builder()
 				.id(DistributionJobId.ofDDOrderId(ddOrderId))
 				.documentNo(ddOrder.getDocumentNo())
+				.seqNo(SeqNo.ofInt(ddOrder.getSeqNo()))
 				.customerId(BPartnerId.ofRepoId(ddOrder.getC_BPartner_ID()))
 				.dateRequired(dateRequired)
 				.pickDate(pickDate)
