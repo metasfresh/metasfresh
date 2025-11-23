@@ -62,9 +62,12 @@ public class DistributionLauncherCaptionProvider
 		for (DistributionJobSortingItem item : sorting.getItems())
 		{
 			final DistributionJobSortingField field = item.getField();
-			final ITranslatableString captionItem = computeItem(ddOrderReference, field);
-			fieldsInOrder.add(field.getCode());
-			fieldValues.put(field.getCode(), captionItem);
+			
+			if (!fieldValues.containsKey(field.getCode()))
+			{
+				final ITranslatableString captionItem = computeItem(ddOrderReference, field);
+				fieldValues.put(field.getCode(), captionItem);
+			}
 
 			final Comparable<?> comparableKey = computeComparableKey(ddOrderReference, field);
 			if (comparableKey != null)
