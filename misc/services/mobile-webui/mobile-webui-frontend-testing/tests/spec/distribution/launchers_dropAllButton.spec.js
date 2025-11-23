@@ -91,6 +91,14 @@ test('Pick multiple HUs (by HU code) and drop them all together in one step (usi
             { testId: masterdata.distributionOrders.DD3.launcherTestId, alreadyStarted: false },
             { testId: masterdata.distributionOrders.DD4.launcherTestId, alreadyStarted: false },
         ]);
+        await Backend.expect({
+            title: 'All HUs are in warehouse wh1',
+            hus: {
+                HU1: { huStatus: 'A', warehouse: 'wh1', storages: { P1: '100 PCE' } },
+                HU2: { huStatus: 'A', warehouse: 'wh1', storages: { P2: '100 PCE' } },
+                HU3: { huStatus: 'A', warehouse: 'wh1', storages: { P3: '100 PCE' } },
+            }
+        });
     });
 
     await test.step("Pick job 1", async () => {
@@ -148,6 +156,15 @@ test('Pick multiple HUs (by HU code) and drop them all together in one step (usi
         ]);
     });
 
+    await Backend.expect({
+        title: 'All HUs are in whInTransit',
+        hus: {
+            HU1: { huStatus: 'A', warehouse: 'whInTransit', storages: { P1: '100 PCE' } },
+            HU2: { huStatus: 'A', warehouse: 'whInTransit', storages: { P2: '100 PCE' } },
+            HU3: { huStatus: 'A', warehouse: 'whInTransit', storages: { P3: '100 PCE' } },
+        }
+    });
+
     await test.step("Drop everything that was picked to wh2_l1", async () => {
         await DistributionJobsListScreen.waitForScreen();
         await DistributionJobsListScreen.dropAll({ dropToQRCode: masterdata.warehouses.wh2.locators.wh2_l1.qrCode });
@@ -157,5 +174,13 @@ test('Pick multiple HUs (by HU code) and drop them all together in one step (usi
             { testId: masterdata.distributionOrders.DD3.launcherTestId, alreadyStarted: true },
             { testId: masterdata.distributionOrders.DD4.launcherTestId, alreadyStarted: false },
         ]);
+        await Backend.expect({
+            title: 'All HUs are in wh2',
+            hus: {
+                HU1: { huStatus: 'A', warehouse: 'wh2', storages: { P1: '100 PCE' } },
+                HU2: { huStatus: 'A', warehouse: 'wh2', storages: { P2: '100 PCE' } },
+                HU3: { huStatus: 'A', warehouse: 'wh2', storages: { P3: '100 PCE' } },
+            }
+        });
     });
 });
