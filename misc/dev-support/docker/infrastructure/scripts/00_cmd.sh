@@ -28,13 +28,31 @@ set -e
 SCRIPT_DIR=$(dirname "$0")
 . "${SCRIPT_DIR}/00_common.sh"
 
-# We assume that in the folder misc/dev-support/docker/infrastructure/env-files/ there exists an env file named ${BRANCH_NAME}.env
-BRANCH_NAME=$(resolve_branch_name "$1")
+# Check if first parameter is an existing env file name
+if [ ! -z "$1" ] && [ -f "../env-files/$1.env" ]; then
+    # First param is a branch name
+    BRANCH_NAME=$1
+    shift
+else
+    # Auto-detect branch name
+    echo "Auto-detecting branch from git..."
+    BRANCH_NAME=$(auto_detect_branch_name)
+    echo "Using env file: ${BRANCH_NAME}.env"
+fi
+
+if [ -z "$1" ]; then
+    echo "!! Command parameter is required !!"
+    echo "!! Usage: $0 [branch_name] <docker-compose-command> [args...] !!"
+    echo "!! Example: $0 logs -f db !!"
+    echo "!! Example: $0 release logs -f db !!"
+    exit 1
+fi
 
 set -u
 
 COMPOSE_FILE=../docker-compose.yml
 ENV_FILE=../env-files/${BRANCH_NAME}.env
 
-# reset the database
-docker-compose --file ${COMPOSE_FILE} --env-file ${ENV_FILE} --project-name ${BRANCH_NAME}_infrastructure down
+# Execute docker-compose command
+docker-compose --file ${COMPOSE_FILE} --env-file ${ENV_FILE} --project-name ${BRANCH_NAME}_infrastructure "$@"
+
