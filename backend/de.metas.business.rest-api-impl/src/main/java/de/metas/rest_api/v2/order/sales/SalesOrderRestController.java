@@ -54,6 +54,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -77,22 +78,15 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping(value = MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/orders/sales")
 @Profile(Profiles.PROFILE_App)
 public class SalesOrderRestController
 {
 	private static final Logger logger = LogManager.getLogger(SalesOrderRestController.class);
-	private final OrderService orderService;
-	private final AttachmentService attachmentService;
-
-	public SalesOrderRestController(
-			final OrderService orderService,
-			final AttachmentService attachmentService)
-	{
-		this.orderService = orderService;
-		this.attachmentService = attachmentService;
-	}
+	@NonNull private final OrderService orderService;
+	@NonNull private final AttachmentService attachmentService;
 
 	@ApiOperation("Create new order payment")
 	@ApiResponses(value = {

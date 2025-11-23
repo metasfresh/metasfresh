@@ -55,6 +55,7 @@ public class ILHandlerModelInterceptor extends AbstractModelInterceptor
 	CandidatesAutoCreateMode initialCandidatesAutoCreateMode;
 
 	CreateCandidatesOnCommitCollector collector = new CreateCandidatesOnCommitCollector();
+	IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 	public ILHandlerModelInterceptor(@NonNull final IInvoiceCandidateHandler handler)
 	{
@@ -112,7 +113,7 @@ public class ILHandlerModelInterceptor extends AbstractModelInterceptor
 	private void createMissingInvoiceCandidates(@NonNull final Object model)
 	{
 		// the current model might be updated **as part of** the creation of missing ICs. In that case, never enqueue a new WP
-		if(!Services.get(IInvoiceCandBL.class).isCreateMissingProcessInProgress(model))
+		if(!invoiceCandBL.isCreateMissingProcessInProgress(model))
 		{
 			return;
 		}

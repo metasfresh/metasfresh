@@ -48,6 +48,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -73,6 +74,7 @@ import java.util.List;
  * @deprecated please consider migrating to version 2 of this API.
  */
 @Deprecated
+@RequiredArgsConstructor
 @RestController
 @RequestMapping(value = {
 		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/sales/order",
@@ -80,12 +82,7 @@ import java.util.List;
 @Profile(Profiles.PROFILE_App)
 public class SalesOrderRestController
 {
-	private final AttachmentService attachmentService;
-
-	public SalesOrderRestController(@NonNull final AttachmentService attachmentService)
-	{
-		this.attachmentService = attachmentService;
-	}
+	@NonNull private final AttachmentService attachmentService;
 
 	@PostMapping
 	public JsonSalesOrder createOrder(@RequestBody final JsonSalesOrderCreateRequest request)

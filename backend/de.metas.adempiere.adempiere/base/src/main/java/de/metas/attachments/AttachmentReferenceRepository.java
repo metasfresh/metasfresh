@@ -71,7 +71,8 @@ class AttachmentReferenceRepository
 
 	private ImmutableMap<TableRecordReference, ImmutableList<AttachmentReference>> getByReferencedRecords0(@NonNull final Collection<TableRecordReference> referencedRecords)
 	{
-		final IQueryBuilder<I_AD_Attachment_MultiRef> queryBuilder = queryBL.createQueryBuilder(I_AD_Attachment_MultiRef.class)
+		final ICompositeQueryFilter<I_AD_Attachment_MultiRef> orFilterForTableRecordReferences = queryBL
+				.createCompositeQueryFilter(I_AD_Attachment_MultiRef.class)
 				.setJoinOr();
 		for (final TableRecordReference referencedRecord : referencedRecords)
 		{
@@ -81,19 +82,22 @@ class AttachmentReferenceRepository
 					.addEqualsFilter(I_AD_Attachment_MultiRef.COLUMN_Record_ID, referencedRecord.getRecord_ID())
 					.addEqualsFilter(I_AD_Attachment_MultiRef.COLUMNNAME_AD_Table_ID, referencedRecord.getAD_Table_ID());
 
-			queryBuilder.filter(filter);
+			orFilterForTableRecordReferences.addFilter(filter);
 		}
 
+		final IQueryBuilder<I_AD_Attachment_MultiRef> queryBuilder = queryBL.createQueryBuilder(I_AD_Attachment_MultiRef.class)
+				.filter(orFilterForTableRecordReferences);
+		
 		return queryBuilder.create()
 				.stream()
-				.map(this::forRecord)
+				.map(AttachmentReferenceRepository::forRecord)
 				.collect(ImmutableMap.toImmutableMap(
 						AttachmentReference::getRecordRef,
 						ImmutableList::of,
 						(list1, list2) -> ImmutableList.<AttachmentReference>builder().addAll(list1).addAll(list2).build()));
 	}
 
-	private AttachmentReference forRecord(@NonNull final I_AD_Attachment_MultiRef multiRefRecord)
+	private static AttachmentReference forRecord(@NonNull final I_AD_Attachment_MultiRef multiRefRecord)
 	{
 		final AttachmentEntryId attachmentEntryId = AttachmentEntryId.ofRepoId(multiRefRecord.getAD_AttachmentEntry_ID());
 		final AttachmentReferenceId id = AttachmentReferenceId.ofRepoIdOrNull(multiRefRecord.getAD_Attachment_MultiRef_ID());
@@ -171,7 +175,7 @@ class AttachmentReferenceRepository
 				.addEqualsFilter(I_AD_Attachment_MultiRef.COLUMN_AD_AttachmentEntry_ID, attachmentEntryId)
 				.create()
 				.stream()
-				.map(this::forRecord)
+				.map(AttachmentReferenceRepository::forRecord)
 				.collect(ImmutableList.toImmutableList());
 
 	}

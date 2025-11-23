@@ -31,22 +31,17 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import javax.annotation.Nullable;
 
 /**
- * Associates one attachment with one arbitrary {@link TableRecordReference}. 
+ * Associates one attachment with one arbitrary {@link TableRecordReference}.
  */
 @Value
 @Builder
 public class AttachmentReference
 {
-	@With
-	@Nullable
-	AttachmentReferenceId id;
-	
-	@NonNull
-	AttachmentEntryId attachmentEntryId;
-	
-	@NonNull
-	TableRecordReference recordRef;
+	@With @Nullable AttachmentReferenceId id;
 
-	@Nullable
-	String attachmentNameOverride;
+	@NonNull AttachmentEntryId attachmentEntryId;
+
+	@NonNull TableRecordReference recordRef;
+
+	@Nullable String attachmentNameOverride;
 }

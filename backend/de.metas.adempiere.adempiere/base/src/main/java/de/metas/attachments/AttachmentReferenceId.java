@@ -50,7 +50,7 @@ public class AttachmentReferenceId implements RepoIdAware
 
 	private AttachmentReferenceId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "AD_Attachment_MultiRef");
 	}
 
 	@Override

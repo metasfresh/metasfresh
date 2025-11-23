@@ -1,10 +1,12 @@
 package de.metas.attachments;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimaps;
 import de.metas.attachments.automaticlinksharing.RecordToReferenceProviderService;
 import de.metas.attachments.automaticlinksharing.RecordToReferenceProviderService.ExpandResult;
 import de.metas.attachments.listener.TableAttachmentListenerRepository;
@@ -223,21 +225,24 @@ public class AttachmentService
 		}
 	}
 
-	private ImmutableMultimap<AttachmentEntry, AttachmentReference> getMultimap(
+	private ImmutableListMultimap<AttachmentEntry, AttachmentReference> getMultimap(
 			@NonNull final ImmutableList<AttachmentReference> attachmentReferences)
 	{
-		return Multimaps.index(
-				attachmentReferences,
-				attachmentReference -> attachmentEntryRepository.getById(attachmentReference.getAttachmentEntryId()));
+		final ImmutableMap<AttachmentEntryId, AttachmentEntry> attachmentEntries = retrieveEntriesForReferences(attachmentReferences);
+
+		return attachmentReferences.stream()
+				.collect(ImmutableListMultimap.toImmutableListMultimap(
+						ref -> attachmentEntries.get(ref.getAttachmentEntryId()),
+						ref -> ref));
 	}
 
-	private Collection<AttachmentReference> expandAndSave(
+	private void expandAndSave(
 			@NonNull final AttachmentEntry newEntry,
 			@NonNull final ImmutableList<AttachmentReference> attachmentReferencesToSave)
 	{
 		if (attachmentReferencesToSave.isEmpty())
 		{
-			return ImmutableList.of(); // no need to fire up the handler(s)
+			return; // no need to fire up the handler(s)
 		}
 
 		final ArrayList<AttachmentReference> referencesToSave = new ArrayList<>(attachmentReferencesToSave);
@@ -256,7 +261,7 @@ public class AttachmentService
 
 		referencesToSave.addAll(additionalRefs);
 
-		return attachmentReferenceRepository.saveAll(referencesToSave);
+		attachmentReferenceRepository.saveAll(referencesToSave);
 	}
 
 	private ImmutableList<AttachmentReference> createAttachmentLinksDontSave(
@@ -392,11 +397,7 @@ public class AttachmentService
 
 		final ImmutableList<AttachmentReference> references = attachmentReferenceRepository.getByReferencedRecord(recordReference);
 
-		final ImmutableSet<AttachmentEntryId> entryIds = references.stream()
-				.map(AttachmentReference::getAttachmentEntryId)
-				.collect(ImmutableSet.toImmutableSet());
-
-		final ImmutableList<AttachmentEntry> entries = attachmentEntryRepository.getByIds(entryIds);
+		final ImmutableCollection<AttachmentEntry> entries = retrieveEntriesForReferences(references).values();
 		result.addAll(entries);
 
 		if (attachmentMigrationService.isExistRecordsToMigrate())
@@ -408,6 +409,15 @@ public class AttachmentService
 		}
 
 		return result.build();
+	}
+
+	private ImmutableMap<AttachmentEntryId, AttachmentEntry> retrieveEntriesForReferences(@NonNull final ImmutableList<AttachmentReference> references)
+	{
+		final ImmutableSet<AttachmentEntryId> entryIds = references.stream()
+				.map(AttachmentReference::getAttachmentEntryId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return attachmentEntryRepository.getByIds(entryIds);
 	}
 
 	public AttachmentEntry getById(@NonNull final AttachmentEntryId id)
@@ -456,7 +466,7 @@ public class AttachmentService
 				.filter(attachmentEntry -> Check.isBlank(tagName) || attachmentEntry.getTags().hasTag(tagName))
 				.map(attachmentEntry -> EmailAttachment.builder()
 						.filename(attachmentEntry.getFilename())
-						.attachmentDataSupplier(() -> retrieveData(attachmentEntry.getId()))
+						.attachmentDataSupplier(() -> retrieveData(attachmentEntry.getIdNonNull()))
 						.build());
 	}
 

@@ -1,11 +1,11 @@
 package de.metas.attachments;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.FileUtil;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
@@ -64,12 +64,15 @@ class AttachmentEntryRepository
 		return forRecord(attachmentEntryRecord);
 	}
 
-	public ImmutableList<AttachmentEntry> getByIds(@NonNull final ImmutableSet<AttachmentEntryId> entryIds)
+	public ImmutableMap<AttachmentEntryId, AttachmentEntry> getByIds(@NonNull final ImmutableSet<AttachmentEntryId> entryIds)
 	{
-		final ImmutableList<I_AD_AttachmentEntry> iAdAttachmentEntryRecords = InterfaceWrapperHelper.loadByRepoIdAwares(entryIds, I_AD_AttachmentEntry.class);
-		return CollectionUtils.map(iAdAttachmentEntryRecords, this::forRecord);
+		return InterfaceWrapperHelper.loadByRepoIdAwares(entryIds, I_AD_AttachmentEntry.class)
+				.stream()
+				.map(this::forRecord)
+				.collect(ImmutableMap.toImmutableMap(AttachmentEntry::getId, entry -> entry));
+
 	}
-	
+
 	private I_AD_AttachmentEntry retrieveAttachmentEntryRecordInTrx(@NonNull final AttachmentEntryId attachmentEntryId)
 	{
 		return load(attachmentEntryId, I_AD_AttachmentEntry.class);

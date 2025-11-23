@@ -51,7 +51,7 @@ public class AttachmentEntryId implements RepoIdAware
 
 	private AttachmentEntryId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "AD_AttachmentEntry");
 	}
 
 	@Override
