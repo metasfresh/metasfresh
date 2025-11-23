@@ -55,9 +55,9 @@ const runAndWatchForErrors = async (func) => {
     }
 }
 
-export const expectErrorToastIf = async (condition, title, func) => {
+export const expectErrorToastIf = async (condition, title, func, toastValidator) => {
     if (condition) {
-        return await expectErrorToast(title, func);
+        return await expectErrorToast(title, func, toastValidator);
     } else {
         return await func();
     }
