@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.distribution.ddorder.DDOrderQuery;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
+import de.metas.workflow.rest_api.model.WorkflowLauncherCaption;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -23,6 +24,7 @@ public class DistributionJobSorting
 
 	@NonNull @Getter private final ImmutableList<DistributionJobSortingItem> items;
 	@NonNull private final ImmutableList<DDOrderQuery.OrderBy> ddOrderQueryOrderBys;
+	@NonNull private final ImmutableList<WorkflowLauncherCaption.OrderBy> workflowLauncherCaptionOrderBys;
 
 	private DistributionJobSorting(@NonNull final List<DistributionJobSortingItem> items)
 	{
@@ -32,7 +34,9 @@ public class DistributionJobSorting
 		this.ddOrderQueryOrderBys = items.stream()
 				.map(DistributionJobSortingItem::toDDOrderQueryOrderBy)
 				.collect(ImmutableList.toImmutableList());
-
+		this.workflowLauncherCaptionOrderBys = items.stream()
+				.map(DistributionJobSortingItem::toWorkflowLauncherCaptionOrderBy)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public static Optional<DistributionJobSorting> ofList(final @NonNull List<DistributionJobSortingItem> list)
@@ -46,4 +50,6 @@ public class DistributionJobSorting
 	}
 
 	public ImmutableList<DDOrderQuery.OrderBy> toDDOrderQueryOrderBys() {return ddOrderQueryOrderBys;}
+
+	public ImmutableList<WorkflowLauncherCaption.OrderBy> toWorkflowLauncherCaptionOrderBys() {return workflowLauncherCaptionOrderBys;}
 }
