@@ -44,6 +44,7 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -65,13 +66,12 @@ public class M_DiscountSchemaBreak
 	private static final Logger logger = LogManager.getLogger(M_DiscountSchemaBreak.class);
 
 	private static final AdMessageKey MSG_UnderLimitPriceWithExplanation = AdMessageKey.of("UnderLimitPriceWithExplanation");
-	
+
 	private final IPricingConditionsService pricingConditionsService = Services.get(IPricingConditionsService.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
-	
-	
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeSave(final I_M_DiscountSchemaBreak schemaBreak)
 	{
@@ -123,8 +123,8 @@ public class M_DiscountSchemaBreak
 		}
 		else if (priceOverrideType == PriceSpecificationType.BASE_PRICING_SYSTEM)
 		{
+			Check.assumeNotNull(priceOverride.getBasePricingSystemId(), "BasePricingSystemId may not be null M_DiscountSchemaBreak_ID={} for priceOverrideType={}", schemaBreak.getM_DiscountSchemaBreak_ID(), priceOverrideType);
 			countryIds = priceListDAO.retrieveCountryIdsByPricingSystem(priceOverride.getBasePricingSystemId());
-
 		}
 		else if (priceOverrideType == PriceSpecificationType.FIXED_PRICE)
 		{
@@ -224,7 +224,7 @@ public class M_DiscountSchemaBreak
 		pricingCtx.setSOTrx(context.getSoTrx());
 		pricingCtx.setQty(qty);
 		pricingCtx.setPricingSystemId(pricingConditionsBreak.getPriceSpecification().getBasePricingSystemId());
-		
+
 		pricingCtx.setProperty(IPriceLimitRule.OPTION_SkipCheckingBPartnerEligible);
 		pricingCtx.setCountryId(context.getCountryId());
 
