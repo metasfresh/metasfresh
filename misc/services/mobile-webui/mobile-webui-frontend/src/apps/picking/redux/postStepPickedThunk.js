@@ -3,27 +3,28 @@ import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { getPickingJobCompleteStatus } from '../../../reducers/wfProcesses/picking/getPickingJobCompleteStatus';
 import { pickingJobsListLocation } from '../../../routes/picking';
 
-export const postStepPickedThunk = ({
-  history,
-  wfProcessId,
-  activityId,
-  lineId,
-  stepId,
-  huQRCode,
-  qtyPicked,
-  qtyRejected,
-  qtyRejectedReasonCode,
-  catchWeight,
-  pickWholeTU,
-  checkIfAlreadyPacked,
-  setBestBeforeDate,
-  bestBeforeDate,
-  productionDate,
-  setLotNo,
-  lotNo,
-  isCloseTarget = false,
-}) => {
-  return async (dispatch, getState) => {
+export const postStepPickedThunk =
+  ({
+    history,
+    wfProcessId,
+    activityId,
+    lineId,
+    stepId,
+    huQRCode,
+    qtyPicked,
+    qtyRejected,
+    qtyRejectedReasonCode,
+    catchWeight,
+    pickWholeTU,
+    checkIfAlreadyPacked,
+    setBestBeforeDate,
+    bestBeforeDate,
+    productionDate,
+    setLotNo,
+    lotNo,
+    isCloseTarget = false,
+  }) =>
+  async (dispatch, getState) => {
     const wfProcess = await postStepPicked({
       wfProcessId,
       activityId,
@@ -65,4 +66,3 @@ export const postStepPickedThunk = ({
 
     return { isPickingJobCompleted };
   };
-};
