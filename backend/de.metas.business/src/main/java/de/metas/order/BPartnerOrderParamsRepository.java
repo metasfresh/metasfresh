@@ -30,7 +30,6 @@ import de.metas.cache.CCache;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.lang.SOTrx;
 import de.metas.payment.PaymentRule;
-import de.metas.pricing.PricingSystemId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -102,6 +101,7 @@ public class BPartnerOrderParamsRepository
 			@NonNull final SOTrx soTrx)
 	{
 		final BPartnerEffective billBPartnerEffective = bPartnerEffectiveBL.getByRecord(billBPartnerRecord);
+		final BPartnerEffective shipBPartnerEffective = bPartnerEffectiveBL.getByRecord(shipBPartnerRecord);
 		return BPartnerOrderParams.builder()
 				.deliveryRule(getDeliveryRuleOrNull(shipBPartnerRecord, soTrx))
 				.deliveryViaRule(getDeliveryViaRuleOrNull(shipBPartnerRecord, soTrx))
@@ -112,6 +112,7 @@ public class BPartnerOrderParamsRepository
 				.pricingSystemId(billBPartnerEffective.getPricingSystemId(soTrx))
 				.shipperId(getShipperId(shipBPartnerRecord)) //FIXME doesn't consider possibility of overwrite in c_bp_location
 				.isAutoInvoice(billBPartnerEffective.isAutoInvoice(soTrx))
+				.incoterms(shipBPartnerEffective.getIncoterms(soTrx))
 				.build();
 	}
 
@@ -165,15 +166,5 @@ public class BPartnerOrderParamsRepository
 			return PaymentRule.OnCredit; // Payment Term
 		}
 		return paymentRule;
-	}
-
-	private Optional<PricingSystemId> getPricingSystemId(@NonNull final I_C_BPartner bpartnerRecord, @NonNull final SOTrx soTrx)
-	{
-		final IBPartnerDAO bpartnersDAO = Services.get(IBPartnerDAO.class);
-
-		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID());
-		final PricingSystemId pricingSysId = bpartnersDAO.retrievePricingSystemIdOrNull(bpartnerId, soTrx);
-
-		return Optional.ofNullable(pricingSysId);
 	}
 }

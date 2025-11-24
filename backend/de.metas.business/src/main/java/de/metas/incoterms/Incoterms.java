@@ -22,17 +22,21 @@
 
 package de.metas.incoterms;
 
-import de.metas.organization.OrgId;
-import de.metas.util.ISingletonService;
+import lombok.Builder;
 import lombok.NonNull;
-import org.compiere.model.I_C_Incoterms;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import lombok.Value;
+import lombok.With;
 
-public interface IIncotermsDAO extends ISingletonService
+import javax.annotation.Nullable;
+
+@Builder
+@Value
+public class Incoterms
 {
-	@Nullable
-	I_C_Incoterms getDefaultIncoterms(final @NotNull OrgId orgId);
-
-	void save(@NonNull I_C_Incoterms incoterms);
+	@NonNull IncotermsId id;
+	@NonNull String name;
+	@NonNull String value;
+	@Nullable String defaultLocation;
+	@Nullable @With String locationEffective;
+	boolean isDefault;
 }
