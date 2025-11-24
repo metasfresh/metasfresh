@@ -15,6 +15,7 @@ import de.metas.order.InvoiceRule;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.user.User;
 import de.metas.user.UserId;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
@@ -73,6 +74,7 @@ public class BPartner
 	public static final String COMPANY = "company";
 	public static final String SALES_PARTNER_CODE = "salesPartnerCode";
 	public static final String C_BPARTNER_SALES_REP_ID = "bPartnerSalesRepId";
+	public static final String SALESTREPID = "salesRepId";
 	public static final String PAYMENT_RULE = "paymentRule";
 	public static final String INTERNAL_NAME = "internalName";
 	public static final String VAT_ID = "vatId";
@@ -153,7 +155,7 @@ public class BPartner
 
 	private @Nullable String eInvoiceBuyerReference;
 
-	private @Nullable UserId salesRepId;
+	private @Nullable SalesRepContact salesRepContact;
 
 	private @Nullable OrgMappingId orgMappingId;
 
@@ -220,7 +222,7 @@ public class BPartner
 			@Nullable final String vatId,
 			@Nullable final String eori,
 			@Nullable final String eInvoiceBuyerReference,
-			@Nullable final UserId salesRepId,
+			@Nullable final SalesRepContact salesRepContact,
 			@Nullable final RecordChangeLog changeLog,
 			@Nullable final String shipmentAllocationBestBeforePolicy,
 			@Nullable final Boolean identifiedByExternalReference,
@@ -271,7 +273,7 @@ public class BPartner
 		this.vatId = vatId;
 		this.eori = eori;
 		this.eInvoiceBuyerReference = eInvoiceBuyerReference;
-		this.salesRepId = salesRepId;
+		this.salesRepContact = salesRepContact;
 		this.changeLog = changeLog;
 		this.shipmentAllocationBestBeforePolicy = shipmentAllocationBestBeforePolicy;
 		this.orgMappingId = orgMappingId;

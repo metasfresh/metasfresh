@@ -25,6 +25,7 @@ import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationAddressPart;
 import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.composite.SalesRep;
+import de.metas.bpartner.composite.SalesRepContact;
 import de.metas.bpartner.service.BPartnerCreditLimitId;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.CreditLimitType;
@@ -334,7 +335,7 @@ final class BPartnerCompositesLoader
 				.customer(bpartnerRecord.isCustomer())
 				.salesPartnerCode(trimBlankToNull(bpartnerRecord.getSalesPartnerCode()))
 				.salesRep(getSalesRep(bpartnerRecord))
-				.salesRepId(UserId.ofRegularUserRepoIdOrNull(bpartnerRecord.getSalesRep_ID()))
+				.salesRepContact(getSalesRepContact(bpartnerRecord))
 				.paymentRule(PaymentRule.ofNullableCode(bpartnerRecord.getPaymentRule()))
 				.internalName(trimBlankToNull(bpartnerRecord.getInternalName()))
 				.vatId(trimBlankToNull(bpartnerRecord.getVATaxID()))
@@ -565,6 +566,7 @@ final class BPartnerCompositesLoader
 		return BPartnerCreditLimit.builder()
 				.id(BPartnerCreditLimitId.ofRepoId(bpartnerId, creditLimitRecord.getC_BPartner_CreditLimit_ID()))
 				.dateFrom(TimeUtil.asLocalDate(creditLimitRecord.getDateFrom()))
+				.amount(creditLimitRecord.getAmount())
 				.creditLimitType(creditLimitType)
 				.build();
 	}
@@ -623,6 +625,28 @@ final class BPartnerCompositesLoader
 	}
 
 	@Nullable
+	private static SalesRepContact getSalesRepContact(@NonNull final I_C_BPartner bPartnerRecord)
+	{
+		final UserId salesRepId = UserId.ofRepoIdOrNull(bPartnerRecord.getSalesRep_ID());
+
+		if (salesRepId == null)
+		{
+			return null;
+		}
+
+		final I_AD_User salesRepContact = InterfaceWrapperHelper.load(salesRepId, I_AD_User.class);
+
+		return SalesRepContact.builder()
+				.id(salesRepId)
+				.value(salesRepContact.getValue())
+				.email(salesRepContact.getName())
+				.phone(salesRepContact.getPhone())
+				.firstName(salesRepContact.getFirstname())
+				.lastName(salesRepContact.getLastname())
+				.build();
+	}
+
+	@Nullable
 	private static SalesRep getSalesRep(@NonNull final I_C_BPartner bPartnerRecord)
 	{
 		final BPartnerId bPartnerSalesRepId = BPartnerId.ofRepoIdOrNull(bPartnerRecord.getC_BPartner_SalesRep_ID());
@@ -639,4 +663,6 @@ final class BPartnerCompositesLoader
 				.value(salesRep.getValue())
 				.build();
 	}
+
+
 }

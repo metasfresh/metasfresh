@@ -36,6 +36,7 @@ public class JsonResponsePaymentTerm
 {
 	public static final String METASFRESH_ID = "metasfreshId";
 	public static final String NAME = "name";
+	public static final String VALUE = "value";
 
 	@ApiModelProperty( //
 			required = true, //
@@ -49,14 +50,20 @@ public class JsonResponsePaymentTerm
 	@JsonProperty(NAME)
 	String name;
 
+	@ApiModelProperty( value = "This translates to `C_PaymentTerm.Value`.")
+	@JsonProperty(VALUE)
+	String value;
+
 
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private JsonResponsePaymentTerm(
 			@JsonProperty(METASFRESH_ID) @NonNull final JsonMetasfreshId metasfreshId,
-			@JsonProperty(NAME) @NonNull final String name)
+			@JsonProperty(NAME) @NonNull final String name,
+			@JsonProperty(VALUE) @NonNull final String value)
 	{
 		this.metasfreshId = metasfreshId;
 		this.name = name;
+		this.value = value;
 	}
 }

@@ -62,6 +62,7 @@ public class JsonResponseBPartner
 	public static final String CUSTOMER = "customer";
 	public static final String SALES_PARTNER_CODE = "salesPartnerCode";
 	public static final String SALES_PARTNER = "salesPartner";
+	public static final String SALESTREPID = "salesRepId";
 	public static final String PAYMENT_RULE = "paymentRule";
 	public static final String INTERNAL_NAME = "internalName";
 	public static final String COMPANY = "company";
@@ -181,6 +182,12 @@ public class JsonResponseBPartner
 	@JsonInclude(Include.NON_NULL)
 	JsonResponseSalesRep responseSalesRep;
 
+
+	@ApiModelProperty(value = "This translates to `C_BPartner.SalesRep_ID`")
+	@JsonProperty(SALESTREPID)
+	@JsonInclude(Include.NON_NULL)
+	JsonResponseSalesRepContact salesRepContact;
+
 	@JsonProperty(PAYMENT_RULE)
 	@JsonInclude(Include.NON_NULL)
 	JSONPaymentRule paymentRule;
@@ -271,6 +278,7 @@ public class JsonResponseBPartner
 			@JsonProperty(CUSTOMER) @NonNull final Boolean customer,
 			@JsonProperty(SALES_PARTNER_CODE) @Nullable final String salesPartnerCode,
 			@JsonProperty(SALES_PARTNER) @Nullable final JsonResponseSalesRep responseSalesRep,
+			@JsonProperty(SALESTREPID) @Nullable final JsonResponseSalesRepContact salesRepContact,
 			@JsonProperty(PAYMENT_RULE) @Nullable final JSONPaymentRule paymentRule,
 			@JsonProperty(INTERNAL_NAME) @Nullable final String internalName,
 			@JsonProperty(COMPANY) @NonNull final Boolean company,
@@ -314,6 +322,7 @@ public class JsonResponseBPartner
 		this.customer = customer;
 		this.salesPartnerCode = salesPartnerCode;
 		this.responseSalesRep = responseSalesRep;
+		this.salesRepContact = salesRepContact;
 		this.paymentRule = paymentRule;
 		this.internalName = internalName;
 		this.company = company;

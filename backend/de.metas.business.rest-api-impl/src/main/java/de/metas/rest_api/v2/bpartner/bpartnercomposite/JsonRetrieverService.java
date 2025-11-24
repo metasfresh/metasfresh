@@ -43,6 +43,7 @@ import de.metas.bpartner.composite.BPartnerCreditLimit;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.composite.SalesRep;
+import de.metas.bpartner.composite.SalesRepContact;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.composite.repository.NextPageQuery;
 import de.metas.bpartner.composite.repository.SinceQuery;
@@ -65,6 +66,7 @@ import de.metas.common.bpartner.v2.response.JsonResponseIncoterms;
 import de.metas.common.bpartner.v2.response.JsonResponseLocation;
 import de.metas.common.bpartner.v2.response.JsonResponsePaymentTerm;
 import de.metas.common.bpartner.v2.response.JsonResponseSalesRep;
+import de.metas.common.bpartner.v2.response.JsonResponseSalesRepContact;
 import de.metas.common.changelog.JsonChangeInfo;
 import de.metas.common.changelog.JsonChangeInfo.JsonChangeInfoBuilder;
 import de.metas.common.changelog.JsonChangeLogItem;
@@ -162,6 +164,7 @@ public class JsonRetrieverService
 			.put(BPartner.COMPANY, JsonResponseBPartner.COMPANY)
 			.put(BPartner.SALES_PARTNER_CODE, JsonResponseBPartner.SALES_PARTNER_CODE)
 			.put(BPartner.C_BPARTNER_SALES_REP_ID, JsonResponseSalesRep.SALES_REP_ID)
+			.put(BPartner.SALESTREPID, JsonResponseSalesRepContact.SALES_REP_ID)
 			.put(BPartner.INTERNAL_NAME, JsonResponseBPartner.INTERNAL_NAME)
 			.put(BPartner.PAYMENT_RULE, JsonResponseBPartner.PAYMENT_RULE)
 			.put(BPartner.VAT_ID, JsonResponseBPartner.VAT_ID)
@@ -429,6 +432,7 @@ public class JsonRetrieverService
 				.company(bpartner.isCompany())
 				.salesPartnerCode(bpartner.getSalesPartnerCode())
 				.responseSalesRep(getJsonResponseSalesRep(bpartner.getSalesRep()))
+				.salesRepContact(getJsonResponseSalesRepContact(bpartner.getSalesRepContact()))
 				.paymentRule(Optional.ofNullable(bpartner.getPaymentRule())
 						.map(PaymentRule::getCode)
 						.map(JSONPaymentRule::ofCode)
@@ -949,6 +953,26 @@ public class JsonRetrieverService
 	}
 
 	@Nullable
+	private JsonResponseSalesRepContact getJsonResponseSalesRepContact(@Nullable final SalesRepContact salesRepContact)
+	{
+		if (salesRepContact == null)
+		{
+			return null;
+		}
+
+		return JsonResponseSalesRepContact.builder()
+				.salesRepId(JsonMetasfreshId.of(salesRepContact.getId().getRepoId()))
+				.email(salesRepContact.getEmail())
+				.firstName(salesRepContact.getFirstName())
+				.lastName(salesRepContact.getLastName())
+				.salesRepValue(salesRepContact.getValue())
+				.phone(salesRepContact.getPhone())
+				.build();
+
+	}
+
+
+	@Nullable
 	private static JsonResponseContactPosition toJson(@Nullable final Job job)
 	{
 		if (job == null)
@@ -974,6 +998,7 @@ public class JsonRetrieverService
 		return JsonResponsePaymentTerm.builder()
 				.metasfreshId(JsonMetasfreshId.of(paymentTerm.getId().getRepoId()))
 				.name(paymentTerm.getName())
+				.value(paymentTerm.getValue())
 				.build();
 	}
 
@@ -999,9 +1024,11 @@ public class JsonRetrieverService
 		{
 			return null;
 		}
+		final JsonMetasfreshId metasfreshBPartnerId = JsonMetasfreshId.of(bpartnerCreditLimit.getId().getBpartnerId().getRepoId());
 
 		return JsonResponseBPartnerCreditLimit.builder()
 				.metasfreshId(JsonMetasfreshId.of(bpartnerCreditLimit.getId().getRepoId()))
+				.metasfreshBPartnerId(metasfreshBPartnerId)
 				.dateFrom(bpartnerCreditLimit.getDateFrom())
 				.amount(bpartnerCreditLimit.getAmount())
 				.creditLimitType(toJson(bpartnerCreditLimit.getCreditLimitType()))
@@ -1019,6 +1046,7 @@ public class JsonRetrieverService
 		return JsonResponseIncoterms.builder()
 				.metasfreshId(JsonMetasfreshId.of(incoterms.getId().getRepoId()))
 				.name(incoterms.getName())
+				.value(incoterms.getValue())
 				.build();
 	}
 
