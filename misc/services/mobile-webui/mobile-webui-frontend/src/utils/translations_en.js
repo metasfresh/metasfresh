@@ -132,7 +132,7 @@ const translations = {
       target: 'To Move',
       picked: 'Picked',
       scanHU: 'Scan pick from HU',
-      scanLocator: 'Scan drop to Locator',
+      scanDropToLocator: 'Scan drop to Locator',
       invalidLocatorQRCode: 'Invalid locator QR code',
       invalidQtyToMove: 'Invalid qty to move',
       qrcode: {

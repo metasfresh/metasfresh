@@ -135,7 +135,7 @@ const translations = {
       target: 'Soll',
       picked: 'Ist',
       scanHU: 'Scan HU',
-      scanLocator: 'Ziel-Lagerplatz scannen',
+      scanDropToLocator: 'Ziel-Lagerplatz scannen',
       invalidLocatorQRCode: 'Lagerplatz QR ungültig',
       invalidQtyToMove: 'Bewegungsmenge ungültig',
       qrcode: {

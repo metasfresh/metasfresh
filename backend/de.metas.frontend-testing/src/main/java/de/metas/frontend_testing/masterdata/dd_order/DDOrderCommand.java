@@ -11,6 +11,7 @@ import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.lowlevel.model.DDOrderLineHUPackingAware;
 import de.metas.distribution.workflows_api.DDOrderReference;
 import de.metas.distribution.workflows_api.DDOrderReferenceCollector;
+import de.metas.distribution.workflows_api.DistributionJobLoaderSupportingServices;
 import de.metas.distribution.workflows_api.DistributionLauncherCaptionProvider;
 import de.metas.distribution.workflows_api.facets.DistributionFacetId;
 import de.metas.document.DocBaseType;
@@ -58,6 +59,7 @@ public class DDOrderCommand
 	@NonNull private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	@NonNull private final DDOrderService ddOrderService;
+	@NonNull public final DistributionJobLoaderSupportingServices distributionJobLoaderSupportingServices;
 	@NonNull private final DistributionLauncherCaptionProvider captionProvider;
 
 	@NonNull private final MasterdataContext context;
@@ -191,9 +193,9 @@ public class DDOrderCommand
 	private DDOrderReference toDDOrderReference(final I_DD_Order ddOrder)
 	{
 		final DDOrderReferenceCollector collector = DDOrderReferenceCollector.builder()
-				.ddOrderService(ddOrderService)
+				.loadingSupportServices(distributionJobLoaderSupportingServices)
 				.build();
-		collector.collect(ddOrder, false);
+		collector.collect(ddOrder);
 		return CollectionUtils.singleElement(collector.getCollectedItems());
 	}
 

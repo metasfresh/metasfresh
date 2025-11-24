@@ -2,6 +2,7 @@ package de.metas.distribution.workflows_api;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
+import de.metas.distribution.config.DistributionJobSorting;
 import de.metas.distribution.config.MobileUIDistributionConfig;
 import de.metas.distribution.service.external.DistributionWarehouseService;
 import de.metas.distribution.workflows_api.DDOrderReferenceQuery.DDOrderReferenceQueryBuilder;
@@ -19,6 +20,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class DistributionWorkflowLaunchersProvider
@@ -33,19 +36,13 @@ public class DistributionWorkflowLaunchersProvider
 
 		final MobileUIDistributionConfig config = distributionRestService.getConfig();
 
-		final ImmutableList<WorkflowLauncher> launchers = distributionRestService.streamJobReferencesForUser(
-						newDDOrderReferenceQuery(query.getUserId())
-								.suggestedLimit(query.getLimit().orElse(config.getMaxLaunchers()))
-								.activeFacetIds(DistributionFacetIdsCollection.ofWorkflowLaunchersFacetIds(query.getFacetIds()))
-								.build()
-				)
-				.map(this::toWorkflowLauncher)
-				.collect(ImmutableList.toImmutableList());
-
-		return WorkflowLaunchersList.builder()
-				.launchers(launchers)
-				.timestamp(SystemTime.asInstant())
-				.build();
+		final List<DDOrderReference> jobReferences = distributionRestService.getJobReferences(
+				newDDOrderReferenceQuery(query.getUserId())
+						.suggestedLimit(query.getLimit().orElse(config.getMaxLaunchers()))
+						.activeFacetIds(DistributionFacetIdsCollection.ofWorkflowLaunchersFacetIds(query.getFacetIds()))
+						.build()
+		);
+		return toWorkflowLaunchersList(jobReferences);
 	}
 
 	private DDOrderReferenceQueryBuilder newDDOrderReferenceQuery(@NonNull final UserId userId)
@@ -60,29 +57,32 @@ public class DistributionWorkflowLaunchersProvider
 				.locatorToId(workplace != null ? workplace.getPickFromLocatorId() : null);
 	}
 
+	private WorkflowLaunchersList toWorkflowLaunchersList(final List<DDOrderReference> jobReferences)
+	{
+		final DistributionJobSorting sorting = distributionRestService.getConfig().getSorting();
+		
+		return WorkflowLaunchersList.builder()
+				.launchers(jobReferences.stream().map(this::toWorkflowLauncher).collect(ImmutableList.toImmutableList()))
+				.orderByFields(sorting.toWorkflowLauncherCaptionOrderBys())
+				.timestamp(SystemTime.asInstant())
+				.build();
+	}
+
 	private WorkflowLauncher toWorkflowLauncher(@NonNull final DDOrderReference ddOrderReference)
 	{
-		if (ddOrderReference.isJobStarted())
-		{
-			return WorkflowLauncher.builder()
-					.applicationId(DistributionMobileApplication.APPLICATION_ID)
-					.caption(computeCaption(ddOrderReference))
-					.startedWFProcessId(WFProcessId.ofIdPart(DistributionMobileApplication.APPLICATION_ID, ddOrderReference.getDdOrderId()))
-					.testId(ddOrderReference.getTestId())
-					.build();
-		}
-		else
-		{
-			return WorkflowLauncher.builder()
-					.applicationId(DistributionMobileApplication.APPLICATION_ID)
-					.caption(computeCaption(ddOrderReference))
-					.wfParameters(DistributionWFProcessStartParams.builder()
-							.ddOrderId(ddOrderReference.getDdOrderId())
-							.build()
-							.toParams())
-					.testId(ddOrderReference.getTestId())
-					.build();
-		}
+		return WorkflowLauncher.builder()
+				.applicationId(DistributionMobileApplication.APPLICATION_ID)
+				.caption(computeCaption(ddOrderReference))
+				.startedWFProcessId(ddOrderReference.isJobStarted()
+						? WFProcessId.ofIdPart(DistributionMobileApplication.APPLICATION_ID, ddOrderReference.getDdOrderId())
+						: null)
+				.wfParameters(DistributionWFProcessStartParams.builder()
+						.ddOrderId(ddOrderReference.getDdOrderId())
+						.isInTransit(ddOrderReference.isInTransit())
+						.build()
+						.toParams())
+				.testId(ddOrderReference.getTestId())
+				.build();
 	}
 
 	@NonNull
