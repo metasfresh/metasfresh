@@ -1,8 +1,12 @@
 package de.metas.distribution.workflows_api;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.distribution.config.MobileUIDistributionConfig;
 import de.metas.distribution.config.MobileUIDistributionConfigRepository;
 import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.distribution.ddorder.DDOrderLineId;
+import de.metas.distribution.ddorder.DDOrderQuery;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedule;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
@@ -16,8 +20,10 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
-import lombok.Builder;
+import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -28,46 +34,29 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_PP_Order;
+import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+@Service
+@RequiredArgsConstructor
 public class DistributionJobLoaderSupportingServices
 {
-	private final MobileUIDistributionConfigRepository configRepository;
-	private final DDOrderService ddOrderService;
-	private final DDOrderMoveScheduleService ddOrderMoveScheduleService;
-	private final HUQRCodesService huQRCodeService;
-	private final IWarehouseBL warehouseBL;
-	private final IProductBL productBL;
-	private final IOrgDAO orgDAO;
-	private final IOrderBL orderBL;
-	private final IPPOrderBL ppOrderBL;
-
-	@Builder
-	private DistributionJobLoaderSupportingServices(
-			@NonNull final MobileUIDistributionConfigRepository configRepository,
-			@NonNull final DDOrderService ddOrderService,
-			@NonNull final DDOrderMoveScheduleService ddOrderMoveScheduleService,
-			@NonNull final HUQRCodesService huQRCodeService,
-			@NonNull final IWarehouseBL warehouseBL,
-			@NonNull final IProductBL productBL,
-			@NonNull final IOrgDAO orgDAO,
-			@NonNull final IOrderBL orderBL,
-			@NonNull final IPPOrderBL ppOrderBL)
-	{
-		this.configRepository = configRepository;
-		this.ddOrderService = ddOrderService;
-		this.ddOrderMoveScheduleService = ddOrderMoveScheduleService;
-		this.huQRCodeService = huQRCodeService;
-		this.warehouseBL = warehouseBL;
-		this.productBL = productBL;
-		this.orgDAO = orgDAO;
-		this.orderBL = orderBL;
-		this.ppOrderBL = ppOrderBL;
-	}
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+	@NonNull private final MobileUIDistributionConfigRepository configRepository;
+	@NonNull private final DDOrderService ddOrderService;
+	@NonNull private final DDOrderMoveScheduleService ddOrderMoveScheduleService;
+	@NonNull private final HUQRCodesService huQRCodeService;
 
 	public MobileUIDistributionConfig getConfig() {return configRepository.getConfig();}
 
@@ -99,19 +88,30 @@ public class DistributionJobLoaderSupportingServices
 				.build();
 	}
 
+	public Stream<I_DD_Order> stream(@NonNull final DDOrderQuery query)
+	{
+		return ddOrderService.streamDDOrders(query);
+	}
+
 	public I_DD_Order getDDOrderById(final DDOrderId ddOrderId)
 	{
 		return ddOrderService.getById(ddOrderId);
 	}
 
-	public List<I_DD_OrderLine> getLines(final I_DD_Order ddOrder)
+	public Map<DDOrderId, List<I_DD_OrderLine>> getLinesByDDOrderIds(final Set<DDOrderId> ddOrderIds)
 	{
-		return ddOrderService.retrieveLines(ddOrder);
+		return ddOrderService.streamLinesByDDOrderIds(ddOrderIds)
+				.collect(Collectors.groupingBy(ddOrderLine -> DDOrderId.ofRepoId(ddOrderLine.getDD_Order_ID()), Collectors.toList()));
 	}
 
-	public List<DDOrderMoveSchedule> getSchedules(final DDOrderId ddOrderId)
+	public Map<DDOrderLineId, List<DDOrderMoveSchedule>> getSchedulesByDDOrderLineIds(final Set<DDOrderLineId> ddOrderLineIds)
 	{
-		return ddOrderMoveScheduleService.getSchedules(ddOrderId);
+		if (ddOrderLineIds.isEmpty()) {return ImmutableMap.of();}
+
+		final Map<DDOrderLineId, List<DDOrderMoveSchedule>> map = ddOrderMoveScheduleService.getByDDOrderLineIds(ddOrderLineIds)
+				.stream()
+				.collect(Collectors.groupingBy(DDOrderMoveSchedule::getDdOrderLineId, Collectors.toList()));
+		return CollectionUtils.fillMissingKeys(map, ddOrderLineIds, ImmutableList.of());
 	}
 
 	public ZoneId getTimeZone(final OrgId orgId)
@@ -122,20 +122,29 @@ public class DistributionJobLoaderSupportingServices
 	public HUQRCode getQRCodeByHuId(final HuId huId) {return huQRCodeService.getQRCodeByHuId(huId);}
 
 	@Nullable
-	public String getSalesOderDocNo(@NonNull final I_DD_Order ddOrder)
+	public SalesOrderRef getSalesOderRef(@NonNull final I_DD_Order ddOrder)
 	{
-		return Optional.ofNullable(OrderId.ofRepoIdOrNull(ddOrder.getC_Order_ID()))
-				.map(orderBL::getDocumentNoById)
-				.orElse(null);
+		final OrderId salesOrderId = OrderId.ofRepoIdOrNull(ddOrder.getC_Order_ID());
+		if (salesOrderId == null) {return null;}
+
+		return SalesOrderRef.builder()
+				.id(salesOrderId)
+				.documentNo(orderBL.getDocumentNoById(salesOrderId))
+				.build();
 	}
 
 	@Nullable
-	public String getPPOrderDocNo(@NonNull final I_DD_Order ddOrder)
+	public ManufacturingOrderRef getManufacturingOrderRef(@NonNull final I_DD_Order ddOrder)
 	{
-		return Optional.ofNullable(PPOrderId.ofRepoIdOrNull(ddOrder.getForward_PP_Order_ID()))
-				.map(ppOrderBL::getById)
-				.map(I_PP_Order::getDocumentNo)
-				.orElse(null);
+		final PPOrderId ppOrderId = PPOrderId.ofRepoIdOrNull(ddOrder.getForward_PP_Order_ID());
+		if (ppOrderId == null) {return null;}
+
+		final I_PP_Order ppOrder = ppOrderBL.getById(ppOrderId);
+
+		return ManufacturingOrderRef.builder()
+				.id(ppOrderId)
+				.documentNo(ppOrder.getDocumentNo())
+				.build();
 	}
 
 	@NonNull

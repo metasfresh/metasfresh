@@ -57,7 +57,9 @@ public class DDOrderMoveScheduleService
 		return ddOrderMoveScheduleRepository.createScheduleToMoveBulk(requests);
 	}
 
-	public ImmutableList<DDOrderMoveSchedule> getSchedules(@NonNull final DDOrderId ddOrderId) {return ddOrderMoveScheduleRepository.getSchedules(ddOrderId);}
+	public ImmutableList<DDOrderMoveSchedule> getByDDOrderId(@NonNull final DDOrderId ddOrderId) {return ddOrderMoveScheduleRepository.getByDDOrderId(ddOrderId);}
+
+	public ImmutableList<DDOrderMoveSchedule> getByDDOrderLineIds(final Set<DDOrderLineId> ddOrderLineIds) {return ddOrderMoveScheduleRepository.getByDDOrderLineIds(ddOrderLineIds);}
 
 	public void removeNotStarted(@NonNull final DDOrderId ddOrderId)
 	{

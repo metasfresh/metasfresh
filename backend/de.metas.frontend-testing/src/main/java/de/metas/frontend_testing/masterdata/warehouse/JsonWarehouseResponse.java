@@ -36,6 +36,7 @@ public class JsonWarehouseResponse
 	{
 		int id;
 		@NonNull String code;
+		@NonNull String qrCode;
 		@JsonProperty("isDefault") boolean isDefault;
 		@NonNull String x;
 		@NonNull String y;

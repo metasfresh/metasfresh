@@ -146,6 +146,7 @@ public class WarehouseCommand
 		return JsonWarehouseResponse.Locator.builder()
 				.id(locatorRecord.getM_Locator_ID())
 				.code(locatorRecord.getValue())
+				.qrCode(LocatorQRCode.ofLocator(locatorRecord).toGlobalQRCodeJsonString())
 				.isDefault(locatorRecord.isDefault())
 				.x(locatorRecord.getX())
 				.y(locatorRecord.getY())
