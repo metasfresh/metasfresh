@@ -2,6 +2,7 @@ package de.metas.ui.web.bankstatement_reconciliation.actions;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.attachments.AttachmentService;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
