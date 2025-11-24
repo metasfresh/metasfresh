@@ -107,9 +107,8 @@ public class IncotermsRepository
 		IncotermsMap(final List<Incoterms> list)
 		{
 			this.byId = Maps.uniqueIndex(list, Incoterms::getId);
-			this.defaultByOrgId = Maps.uniqueIndex(
-					list.stream().filter(Incoterms::isDefault).collect(ImmutableList.toImmutableList()),
-					Incoterms::getOrgId);
+			this.defaultByOrgId = list.stream().filter(Incoterms::isDefault)
+					.collect(ImmutableMap.toImmutableMap(Incoterms::getOrgId, incoterms->incoterms));
 		}
 
 		@NonNull

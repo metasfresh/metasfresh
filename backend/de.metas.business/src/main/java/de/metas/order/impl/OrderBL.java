@@ -167,6 +167,8 @@ public class OrderBL implements IOrderBL
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
+	private final SpringContextHolder.Lazy<BPartnerOrderParamsRepository> bpartnerOrderParamsRepository = SpringContextHolder.lazyBean(BPartnerOrderParamsRepository.class);
+
 	@Override
 	public I_C_Order getById(@NonNull final OrderId orderId)
 	{
@@ -534,18 +536,13 @@ public class OrderBL implements IOrderBL
 		}
 
 		final SOTrx soTrx = SOTrx.ofBoolean(orderRecord.isSOTrx());
-
-		// we can't have this as a field,
-		// because metasfresh might try to instantiate OrderBL before the spring context is ready
-		final BPartnerOrderParamsRepository bpartnerOrderParamsRepository = SpringContextHolder.instance.getBean(BPartnerOrderParamsRepository.class);
-
 		final BPartnerOrderParamsQuery query = BPartnerOrderParamsQuery.builder()
 				.shipBPartnerId(shipBPartnerId)
 				.billBPartnerId(billBPartnerId)
 				.soTrx(soTrx)
 				.build();
 
-		return Optional.of(bpartnerOrderParamsRepository.getBy(query));
+		return Optional.of(bpartnerOrderParamsRepository.get().getBy(query));
 	}
 
 	@Override
