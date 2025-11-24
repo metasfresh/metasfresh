@@ -27,6 +27,7 @@ import de.metas.incoterms.Incoterms;
 import de.metas.incoterms.IncotermsId;
 import de.metas.lang.SOTrx;
 import de.metas.order.InvoiceRule;
+import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
@@ -128,12 +129,14 @@ public class BPartnerEffectiveBLTest
 						.name("TestIncoterms")
 						.value("TestIncotermsValue")
 						.locationEffective("TestIncotermsLocation")
+						.orgId(OrgId.ANY)
 						.build())
 				.parentBPGroup_poIncoterms(Incoterms.builder()
 						.id(IncotermsId.ofRepoId(6))
 						.name("TestPoIncoterms")
 						.value("TestPoIncotermsValue")
 						.locationEffective("TestPoIncotermsLocation")
+						.orgId(OrgId.ANY)
 						.build())
 				.build();
 
@@ -181,12 +184,14 @@ public class BPartnerEffectiveBLTest
 						.name("TestIncoterms")
 						.value("TestIncotermsValue")
 						.locationEffective("TestIncotermsLocation")
+						.orgId(OrgId.ANY)
 						.build())
 				.parentBPGroup_poIncoterms(Incoterms.builder()
 						.id(IncotermsId.ofRepoId(10))
 						.name("TestPoIncoterms")
 						.value("TestPoIncotermsValue")
 						.locationEffective("TestPoIncotermsLocation")
+						.orgId(OrgId.ANY)
 						.build())
 				.bpGroup_PricingSystemId(PricingSystemId.ofRepoId(5))
 				.bpGroup_poPricingSystemId(PricingSystemId.ofRepoId(6))
@@ -201,12 +206,14 @@ public class BPartnerEffectiveBLTest
 						.name("TestIncoterms2")
 						.value("TestIncotermsValue2")
 						.locationEffective("TestIncotermsLocation2")
+						.orgId(OrgId.ANY)
 						.build())
 				.bpGroup_poIncoterms(Incoterms.builder()
 						.id(IncotermsId.ofRepoId(12))
 						.name("TestPoIncoterms2")
 						.value("TestPoIncotermsValue2")
 						.locationEffective("TestPoIncotermsLocation2")
+						.orgId(OrgId.ANY)
 						.build())
 				.build();
 
@@ -254,12 +261,14 @@ public class BPartnerEffectiveBLTest
 						.name("TestIncoterms")
 						.value("TestIncotermsValue")
 						.locationEffective("TestIncotermsLocation")
+						.orgId(OrgId.ANY)
 						.build())
 				.parentBPGroup_poIncoterms(Incoterms.builder()
 						.id(IncotermsId.ofRepoId(14))
 						.name("TestPoIncoterms")
 						.value("TestPoIncotermsValue")
 						.locationEffective("TestPoIncotermsLocation")
+						.orgId(OrgId.ANY)
 						.build())
 				.bpGroup_PricingSystemId(PricingSystemId.ofRepoId(5))
 				.bpGroup_poPricingSystemId(PricingSystemId.ofRepoId(6))
@@ -274,12 +283,14 @@ public class BPartnerEffectiveBLTest
 						.name("TestIncoterms2")
 						.value("TestIncotermsValue2")
 						.locationEffective("TestIncotermsLocation2")
+						.orgId(OrgId.ANY)
 						.build())
 				.bpGroup_poIncoterms(Incoterms.builder()
 						.id(IncotermsId.ofRepoId(16))
 						.name("TestPoIncoterms2")
 						.value("TestPoIncotermsValue2")
 						.locationEffective("TestPoIncotermsLocation2")
+						.orgId(OrgId.ANY)
 						.build())
 				.bpartner_PricingSystemId(PricingSystemId.ofRepoId(9))
 				.bpartner_poPricingSystemId(PricingSystemId.ofRepoId(10))
@@ -295,12 +306,14 @@ public class BPartnerEffectiveBLTest
 						.name("TestIncoterms3")
 						.value("TestIncotermsValue3")
 						.locationEffective("TestIncotermsLocation3")
+						.orgId(OrgId.ANY)
 						.build())
 				.bpartner_poIncoterms(Incoterms.builder()
 						.id(IncotermsId.ofRepoId(18))
 						.name("TestPoIncoterms3")
 						.value("TestPoIncotermsValue3")
 						.locationEffective("TestPoIncotermsLocation3")
+						.orgId(OrgId.ANY)
 						.build())
 				.build();
 

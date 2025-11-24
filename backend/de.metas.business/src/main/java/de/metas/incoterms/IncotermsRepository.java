@@ -22,24 +22,30 @@
 
 package de.metas.incoterms;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_Incoterms;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Repository;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
+import java.util.List;
 
 @Repository
 public class IncotermsRepository
 {
-	private final CCache<IncotermsId, Incoterms> cache = CCache.<IncotermsId, Incoterms>builder()
+	private final CCache<Integer, IncotermsMap> cache = CCache.<Integer, IncotermsMap>builder()
 			.tableName(I_C_Incoterms.Table_Name)
-			.maximumSize(50)
+			.maximumSize(1)
 			.build();
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -53,30 +59,35 @@ public class IncotermsRepository
 	@Nullable
 	public Incoterms getDefaultIncoterms(final @NotNull OrgId orgId)
 	{
-		return queryBL.createQueryBuilder(I_C_Incoterms.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Incoterms.COLUMNNAME_IsDefault, true)
-				.addInArrayFilter(I_C_Incoterms.COLUMNNAME_AD_Org_ID, orgId.getRepoId(), OrgId.ANY)
-				.orderByDescending(I_C_Incoterms.COLUMNNAME_AD_Org_ID)
-				.create()
-				.firstOnlyOptional(I_C_Incoterms.class)
-				.map(this::ofRecord)
-				.orElse(null);
+		return getIncotermsMap().getDefaultByOrgId(orgId);
 	}
 
 	@NotNull
 	public Incoterms getById(@NotNull final IncotermsId id)
 	{
-		return cache.getOrLoadNonNull(id, this::retrieveById);
+		return getIncotermsMap().getById(id);
+	}
+
+	@NonNull
+	private IncotermsMap getIncotermsMap()
+	{
+		return cache.getOrLoadNonNull(0, this::retrieveIncotermsMap);
 	}
 
 	@NotNull
-	private Incoterms retrieveById(@NotNull final IncotermsId id)
+	private IncotermsMap retrieveIncotermsMap()
 	{
-		return ofRecord(load(id, I_C_Incoterms.class));
+		final ImmutableList<Incoterms> incoterms = queryBL.createQueryBuilder(I_C_Incoterms.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(IncotermsRepository::ofRecord)
+				.collect(ImmutableList.toImmutableList());
+
+		return new IncotermsRepository.IncotermsMap(incoterms);
 	}
 
-	private Incoterms ofRecord(@NotNull final I_C_Incoterms record)
+	private static Incoterms ofRecord(@NotNull final I_C_Incoterms record)
 	{
 		return Incoterms.builder()
 				.id(IncotermsId.ofRepoId(record.getC_Incoterms_ID()))
@@ -84,6 +95,38 @@ public class IncotermsRepository
 				.value(record.getValue())
 				.isDefault(record.isDefault())
 				.defaultLocation(record.getDefaultLocation())
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.build();
+	}
+
+	private static final class IncotermsMap
+	{
+		private final ImmutableMap<IncotermsId, Incoterms> byId;
+		private final ImmutableMap<OrgId, Incoterms> defaultByOrgId;
+
+		IncotermsMap(final List<Incoterms> list)
+		{
+			this.byId = Maps.uniqueIndex(list, Incoterms::getId);
+			this.defaultByOrgId = Maps.uniqueIndex(
+					list.stream().filter(Incoterms::isDefault).collect(ImmutableList.toImmutableList()),
+					Incoterms::getOrgId);
+		}
+
+		@NonNull
+		public Incoterms getById(@NonNull final IncotermsId id)
+		{
+			final Incoterms incoterms = byId.get(id);
+			if (incoterms == null)
+			{
+				throw new AdempiereException("Incoterms not found by ID: " + id);
+			}
+			return incoterms;
+		}
+
+		@Nullable
+		public Incoterms getDefaultByOrgId(@NonNull final OrgId orgId)
+		{
+			return CoalesceUtil.coalesce(defaultByOrgId.get(orgId), defaultByOrgId.get(OrgId.ANY));
+		}
 	}
 }

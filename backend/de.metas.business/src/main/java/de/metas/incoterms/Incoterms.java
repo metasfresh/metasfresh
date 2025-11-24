@@ -22,6 +22,7 @@
 
 package de.metas.incoterms;
 
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -38,5 +39,6 @@ public class Incoterms
 	@NonNull String value;
 	@Nullable String defaultLocation;
 	@Nullable @With String locationEffective;
+	@NonNull OrgId orgId;
 	boolean isDefault;
 }
