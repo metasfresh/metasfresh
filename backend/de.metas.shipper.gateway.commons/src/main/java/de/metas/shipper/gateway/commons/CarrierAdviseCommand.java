@@ -47,6 +47,9 @@ import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
+import de.metas.product.PackageDimensions;
+import de.metas.product.Product;
+import de.metas.product.ProductRepository;
 import de.metas.quantity.Quantity;
 import de.metas.shipper.gateway.commons.converters.v1.JsonShipperConverter;
 import de.metas.shipper.gateway.commons.model.CarrierGoodsTypeRepository;
@@ -87,9 +90,10 @@ public class CarrierAdviseCommand
 	// Services
 	private final ShipperGatewayServicesRegistry shipperRegistry = SpringContextHolder.instance.getBean(ShipperGatewayServicesRegistry.class);
 	private final ShipmentScheduleService shipmentScheduleService = SpringContextHolder.instance.getBean(ShipmentScheduleService.class);
-	private final CarrierProductRepository productRepository = SpringContextHolder.instance.getBean(CarrierProductRepository.class);
+	private final CarrierProductRepository carrierProductRepository = SpringContextHolder.instance.getBean(CarrierProductRepository.class);
 	private final CarrierGoodsTypeRepository goodsTypeRepository = SpringContextHolder.instance.getBean(CarrierGoodsTypeRepository.class);
 	private final CarrierShipmentOrderServiceRepository carrierServiceRepository = SpringContextHolder.instance.getBean(CarrierShipmentOrderServiceRepository.class);
+	private final ProductRepository productRepository = SpringContextHolder.instance.getBean(ProductRepository.class);
 	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 	private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
@@ -169,14 +173,15 @@ public class CarrierAdviseCommand
 
 	private @NonNull JsonDeliveryAdvisorRequestItem getJsonDeliveryAdvisorRequestItem(final @NonNull ShipmentSchedule shipmentSchedule)
 	{
+		final Product product = productRepository.getById(shipmentSchedule.getProductId());
+		final PackageDimensions dimensions = PackageDimensions.ofProductDimensionsAndQty(product.getPackageDimensions(), shipmentSchedule.getQuantityToDeliver());
 		return JsonDeliveryAdvisorRequestItem.builder()
 				.numberOfItems(shipmentSchedule.getQuantityToDeliver().toBigDecimal().intValue())
 				.grossWeightKg(computeProductGrossWeight(shipmentSchedule))
 				.packageDimensions(JsonPackageDimensions.builder()
-						//TODO Adrian figure out from where we should retrieve this info (We know now why isn't it set?)
-						.heightInCM(30)
-						.widthInCM(40)
-						.lengthInCM(50)
+						.heightInCM(dimensions.getHeightInCM())
+						.widthInCM(dimensions.getWidthInCM())
+						.lengthInCM(dimensions.getLengthInCM())
 						.build())
 				.build();
 	}
@@ -221,8 +226,10 @@ public class CarrierAdviseCommand
 			{
 				shipmentSchedule.setCarrierProductId(extractCarrierProductId(Objects.requireNonNull(shipmentSchedule.getShipperId()), shipperProduct));
 			}
-			shipmentSchedule.setCarrierGoodsTypeId(extractCarrierGoodsTypeId(Objects.requireNonNull(shipmentSchedule.getShipperId()), response.getGoodsType()));
-			shipmentSchedule.setCarrierServices(extractCarrierServiceIds(Objects.requireNonNull(shipmentSchedule.getShipperId()), response.getShipperProductServices()));
+			final ShipperId shipperId = Check.assumeNotNull(shipmentSchedule.getShipperId(), "Shipment Schedule ShipperId should be set at this point");
+			final JsonGoodsType goodsType = Check.assumeNotNull(response.getGoodsType(), "response goods type should be set at not error case");
+			shipmentSchedule.setCarrierGoodsTypeId(extractCarrierGoodsTypeId(shipperId, goodsType));
+			shipmentSchedule.setCarrierServices(extractCarrierServiceIds(shipmentSchedule.getShipperId(), response.getShipperProductServices()));
 			updateAdviseStatusAndSave(shipmentSchedule, CarrierAdviseStatus.Completed);
 		}
 	}
@@ -235,18 +242,19 @@ public class CarrierAdviseCommand
 				.collect(Collectors.toSet());
 	}
 
-	@Nullable
-	private CarrierGoodsTypeId extractCarrierGoodsTypeId(@NonNull final ShipperId shipperId, final @NonNull JsonGoodsType goodsType)
+	@NonNull
+	private CarrierGoodsTypeId extractCarrierGoodsTypeId(@NonNull final ShipperId shipperId, final @NonNull JsonGoodsType jsonGoodsType)
 	{
-		final CarrierGoodsType orCreateGoodsType = goodsTypeRepository.getOrCreateGoodsType(shipperId, goodsType.getId(), goodsType.getName());
-		return orCreateGoodsType == null ? null : orCreateGoodsType.getId();
+		final CarrierGoodsType goodsType = goodsTypeRepository.getOrCreateGoodsType(shipperId, jsonGoodsType.getId(), jsonGoodsType.getName());
+		return goodsType.getId();
 	}
 
-	@Nullable
+	@NonNull
 	private CarrierProductId extractCarrierProductId(@NonNull final ShipperId shipperId, @NonNull final JsonShipperProduct shipperProduct)
 	{
-		final CarrierProduct carrierProduct = productRepository.getOrCreateCarrierProduct(shipperId, shipperProduct.getCode(), shipperProduct.getName());
-		return carrierProduct == null ? null : carrierProduct.getId();
+		final String name = shipperProduct.getName() != null ? shipperProduct.getName() : shipperProduct.getCode();
+		final CarrierProduct carrierProduct = carrierProductRepository.getOrCreateCarrierProduct(shipperId, shipperProduct.getCode(), name);
+		return carrierProduct.getId();
 	}
 
 	private void updateAdviseStatusAndSave(@NonNull final ShipmentSchedule shipmentSchedule, @NonNull final CarrierAdviseStatus status)

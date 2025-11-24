@@ -22,6 +22,7 @@
 
 package de.metas.shipper.client.nshift;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.delivery.v1.json.request.JsonCarrierService;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
@@ -67,7 +68,7 @@ public class NShiftShipAdvisorService
 			final JsonShipAdvisorResponse response = restClient.post(SHIP_ADVISES_ENDPOINT, requestBody, deliveryAdvisorRequest.getShipperConfig(), JsonShipAdvisorResponse.class);
 
 			logger.debug("Successfully received nShift response: {}", response);
-			return buildJsonDeliveryResponse(response, deliveryAdvisorRequest.getId());
+			return buildJsonDeliveryAdvisorResponse(response, deliveryAdvisorRequest.getId());
 		}
 		catch (final Throwable throwable)
 		{
@@ -79,14 +80,15 @@ public class NShiftShipAdvisorService
 		}
 	}
 
-	private static JsonShipAdvisorRequest buildRequest(@NonNull final JsonDeliveryAdvisorRequest deliveryAdvisorRequest)
+	@VisibleForTesting
+	public static JsonShipAdvisorRequest buildRequest(@NonNull final JsonDeliveryAdvisorRequest deliveryAdvisorRequest)
 	{
 		final JsonShipmentOptions options = JsonShipmentOptions.builder()
 				.serviceLevel(deliveryAdvisorRequest.getShipperConfig().getAdditionalPropertyNotNull(NShiftConstants.SERVICE_LEVEL))
 				.build();
 
 		final JsonShipmentData.JsonShipmentDataBuilder dataBuilder = JsonShipmentData.builder()
-				.orderNo("1"); //TODO figure out what would make sense here (Mandatory for gls germany already on advise). We currently use carrier_shipment_order_id on ship later
+				.orderNo(deliveryAdvisorRequest.getId()); //TODO figure out what would make sense here (Mandatory for gls germany already on advise, question is why it's mandatory here). We currently use carrier_shipment_order_id on ship later
 
 		// Add Addresses
 		dataBuilder.address(NShiftUtil.buildNShiftAddressBuilder(deliveryAdvisorRequest.getPickupAddress(), JsonAddressKind.SENDER)
@@ -132,7 +134,7 @@ public class NShiftShipAdvisorService
 			final int lengthMM = item.getPackageDimensions().getLengthInCM() * 10;
 			final int widthMM = item.getPackageDimensions().getWidthInCM() * 10;
 			final int heightMM = item.getPackageDimensions().getHeightInCM() * 10;
-			lineBuilder.number(item.getNumberOfItems()); //TODO number of packages, figure out what to set here instead of qtyToDeliver (Deutsche Post - DHL Paket allows max 1)
+			lineBuilder.number(1); // on advice, it's always 1, as we combine the dimensions via @link de.metas.product.PackageDimensions.ofProductDimensionsAndQty()
 			lineBuilder.length(lengthMM);
 			lineBuilder.width(widthMM);
 			lineBuilder.height(heightMM);
@@ -141,7 +143,7 @@ public class NShiftShipAdvisorService
 		return lineBuilder.build();
 	}
 
-	private static JsonDeliveryAdvisorResponse buildJsonDeliveryResponse(@NonNull final JsonShipAdvisorResponse response, @NonNull final String requestId)
+	private static JsonDeliveryAdvisorResponse buildJsonDeliveryAdvisorResponse(@NonNull final JsonShipAdvisorResponse response, @NonNull final String requestId)
 	{
 		Check.assumeEquals(response.getProducts().size(), 1, "response should only contain 1 shipperProduct, pls check defined shipment rules");
 		final JsonShipAdvisorResponseProduct product = response.getProducts().get(0);
