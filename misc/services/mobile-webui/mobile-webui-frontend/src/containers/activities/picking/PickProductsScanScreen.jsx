@@ -64,7 +64,6 @@ export const usePickProductsScan = ({ applicationId, wfProcessId, activityId }) 
     };
 
     const qtyToPickRemaining = getQtyToPickRemainingForLine({ line });
-    console.log('usePickProductsScan', { lineId, line, qrCode, qtyToPickRemaining, activity });
     if (qtyToPickRemaining === 1 && !isCatchWeight({ line }) && isNoReadAttributes({ activity })) {
       return postStepPicked({
         wfProcessId,
