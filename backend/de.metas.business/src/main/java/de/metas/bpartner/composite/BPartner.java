@@ -69,6 +69,7 @@ public class BPartner
 	public static final String URL_2 = "url2";
 	public static final String URL_3 = "url3";
 	public static final String GROUP_ID = "groupId";
+	public static final String BPGROUPID = "bpGroupId";
 	public static final String VENDOR = "vendor";
 	public static final String CUSTOMER = "customer";
 	public static final String COMPANY = "company";

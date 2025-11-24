@@ -54,6 +54,7 @@ import de.metas.bpartner.service.CreditLimitType;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.common.bpartner.v2.response.JsonResponseBPBankAccount;
+import de.metas.common.bpartner.v2.response.JsonResponseBPGroup;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartner;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCreditLimit;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;
@@ -148,6 +149,7 @@ public class JsonRetrieverService
 			.put(BPartner.EXTERNAL_ID, JsonResponseBPartner.EXTERNAL_ID)
 			.put(BPartner.ACTIVE, JsonResponseBPartner.ACTIVE)
 			.put(BPartner.GROUP_ID, JsonResponseBPartner.GROUP_NAME)
+			.put(BPartner.BPGROUPID, JsonResponseBPartner.BPGROUP)
 			.put(BPartner.LANGUAGE, JsonResponseBPartner.LANGUAGE)
 			.put(BPartner.ID, JsonResponseBPartner.METASFRESH_ID)
 			.put(BPartner.NAME, JsonResponseBPartner.NAME)
@@ -417,6 +419,7 @@ public class JsonRetrieverService
 				.globalId(bpartner.getGlobalId())
 				.companyName(bpartner.getCompanyName())
 				.group(convertIdToGroupName(bpartner.getGroupId()))
+				.bpGroup(toJson(bpartner.getGroupId()))
 				.language(Language.asLanguageStringOrNull(bpartner.getLanguage()))
 				.metasfreshId(JsonMetasfreshId.ofOrNull(BPartnerId.toRepoId(bpartner.getId())))
 				.name(bpartner.getName())
@@ -495,6 +498,21 @@ public class JsonRetrieverService
 		}
 		final BPGroup bpGroup = bpGroupRepository.getbyId(bpGroupId);
 		return bpGroup.getName();
+	}
+
+	@Nullable
+	private JsonResponseBPGroup toJson(@Nullable final BPGroupId bpGroupId)
+	{
+		if (bpGroupId == null)
+		{
+			return null;
+		}
+		final BPGroup bpGroup = bpGroupRepository.getbyId(bpGroupId);
+		return JsonResponseBPGroup.builder()
+				.metasfreshId(JsonMetasfreshId.of(bpGroupId.getRepoId()))
+				.value(bpGroup.getValue())
+				.name(bpGroup.getName())
+				.build();
 	}
 
 	private JsonResponseContact toJson(
@@ -970,7 +988,6 @@ public class JsonRetrieverService
 				.build();
 
 	}
-
 
 	@Nullable
 	private static JsonResponseContactPosition toJson(@Nullable final Job job)

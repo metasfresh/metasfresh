@@ -42,6 +42,7 @@ import javax.annotation.Nullable;
 public class JsonResponseBPartner
 {
 	public static final String GROUP_NAME = "group";
+	public static final String BPGROUP = "bpGroup";
 	public static final String URL = "url";
 	public static final String URL_2 = "url2";
 	public static final String URL_3 = "url3";
@@ -164,6 +165,12 @@ public class JsonResponseBPartner
 	@JsonInclude(Include.NON_NULL)
 	String group;
 
+	@ApiModelProperty(value = "Business partner's group")
+	@JsonProperty(BPGROUP)
+	@JsonInclude(Include.NON_NULL)
+	JsonResponseBPGroup bpGroup;
+
+
 	@ApiModelProperty(value = "This translates to `C_BPartner.IsVendor`.")
 	@JsonProperty(VENDOR)
 	boolean vendor;
@@ -274,6 +281,7 @@ public class JsonResponseBPartner
 			@JsonProperty(URL_2) @Nullable final String url2,
 			@JsonProperty(URL_3) @Nullable final String url3,
 			@JsonProperty(GROUP_NAME) @Nullable final String group,
+			@JsonProperty(BPGROUP) @Nullable final JsonResponseBPGroup bpGroup,
 			@JsonProperty(VENDOR) @NonNull final Boolean vendor,
 			@JsonProperty(CUSTOMER) @NonNull final Boolean customer,
 			@JsonProperty(SALES_PARTNER_CODE) @Nullable final String salesPartnerCode,
@@ -317,6 +325,7 @@ public class JsonResponseBPartner
 		this.url3 = url3;
 
 		this.group = group;
+		this.bpGroup = bpGroup;
 
 		this.vendor = vendor;
 		this.customer = customer;
