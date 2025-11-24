@@ -79,12 +79,12 @@ Reports are stored dynamically based on the feature file name to prevent results
 
 ### Critical Note on State Management
 
-Since the application context is **never shut down** between test runs, developers must ensure their feature files and step definitions adhere strictly to transactional integrity:
+Since the application context is **never shut down** between test runs, developers must ensure their tests are completely isolated.
 
-1.  **Test Data Cleanup (`@After`):** Every scenario **MUST** clean up its own database changes (e.g., delete created documents, rollback transactions) within the Cucumber `@After` hook.
+1.  **Test Data Strategy:** Developers shall ensure test scenarios are isolated by **using unique master data** for every run (e.g., appending a timestamp or UUID to names for new business partners, documents, or users). This prevents one test's output from interfering with the next.
 2.  **Singleton/Static Cache Reset:** If your application uses static caches (e.g., for configuration), you may need to explicitly reset them in a core Step Definition or Hook to prevent the second test from using stale data from the first run.
 
-If subsequent test runs fail unexpectedly or use data from a previous run, the likely cause is **incomplete state cleanup**.
+If subsequent test runs fail unexpectedly or use data from a previous run, the likely cause is **incomplete state isolation**.
 
 ### Shutting Down
 
