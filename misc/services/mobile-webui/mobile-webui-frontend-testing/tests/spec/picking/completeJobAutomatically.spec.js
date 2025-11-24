@@ -91,13 +91,14 @@ test('Happy case', async ({ page }) => {
     await test.step("Pick line 3 => expect job to be completed automatically", async () => {
         await PickingJobScreen.pickHU({
             isScanDirectly: true,
+            expectNextScreen: 'PickingJobsListScreen',
             qrCode: masterdata.products.P3.gtin,
             expectQtyEntered: 13
         });
         // await PickingJobScreen.expectLineButton({ index: 3, qtyToPick: '13 Stk', qtyPicked: '13 Stk', qtyPickedCatchWeight: '' });
         await PickingJobsListScreen.waitForScreen();
     });
-    
+
     await Backend.expect({
         pickings: {
             [pickingJobId]: {

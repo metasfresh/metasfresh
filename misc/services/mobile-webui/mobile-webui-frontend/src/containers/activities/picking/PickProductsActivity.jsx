@@ -34,7 +34,6 @@ import { trl } from '../../../utils/translations';
 import { useApplicationInfoParameters } from '../../../reducers/applications';
 import { usePickingJobQtyAvailable } from './usePickingJobQtyAvailable';
 import { QtyAvailableStatus } from '../../../constants/QtyAvailableStatus';
-import { useAutoCompletePickingJob } from './useAutoCompletePickingJob';
 
 export const COMPONENTTYPE_PickProducts = 'picking/pickProducts';
 
@@ -65,8 +64,6 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
     if (!isUserEditable) return false;
     return groupedLines.some((lines) => lines.some((line) => isLineReadOnly({ activity, line })));
   };
-
-  useAutoCompletePickingJob({ wfProcessId });
 
   return (
     <div className="mt-5">
