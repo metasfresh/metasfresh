@@ -22,7 +22,6 @@
 
 package de.metas.picking.rest_api.json;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import de.metas.global_qrcodes.JsonDisplayableQRCode;
 import de.metas.handlingunits.picking.config.mobileui.AllowedPickToStructures;
@@ -62,7 +61,7 @@ public class JsonPickingJob
 	@Builder.Default Set<PickAttribute> readAttributes = PickAttributesConfig.DEFAULT.getAttributesToReadSet();
 	boolean showPromptWhenOverPicking;
 	boolean anonymousPickHUsOnTheFly;
-	@JsonProperty("isCompleteJobAutomatically") boolean isCompleteJobAutomatically;
+	boolean completeJobAutomatically;
 
 	public static JsonPickingJobBuilder builderFrom(@NonNull final PickingJob pickingJob)
 	{
