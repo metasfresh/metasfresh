@@ -100,8 +100,8 @@ Feature: Export Shipments in specific format via postgREST
       | s_s_2                            | P            | true                | false       |
 
     And after not more than 30s, M_InOut is found:
-      | M_ShipmentSchedule_ID | M_InOut_ID | REST.Context.DocumentNo |
-      | s_s_2                 | shipment   | documentNo              |
+      | M_ShipmentSchedule_ID | M_InOut_ID | REST.Context.DocumentNo | REST.Context |
+      | s_s_2                 | shipment   | documentNo              | inOutId      |
 
 
     And the following API_Audit_Config records are created:
@@ -213,8 +213,8 @@ Feature: Export Shipments in specific format via postgREST
       | s_s_2                            | P            | true                | false       |
 
     And after not more than 30s, M_InOut is found:
-      | M_ShipmentSchedule_ID | M_InOut_ID | REST.Context.DocumentNo |
-      | s_s_2                 | shipment   | documentNo              |
+      | M_ShipmentSchedule_ID | M_InOut_ID | REST.Context.DocumentNo | REST.Context |
+      | s_s_2                 | shipment   | documentNo              | inOutId      |
 
 
     And the following API_Audit_Config records are created:
