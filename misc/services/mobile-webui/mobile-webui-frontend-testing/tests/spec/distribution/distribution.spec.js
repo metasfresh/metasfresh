@@ -12,6 +12,7 @@ const createMasterdata = async ({ HU1_warehouse = 'wh1', qtyToMove }) => {
         language: "en_US",
         request: {
             login: { user: { language: "en_US" } },
+            mobileConfig: { distribution: {} },
             resources: { "plantId": { type: "PT" } },
             products: { "P1": {} },
             warehouses: {
@@ -76,7 +77,6 @@ test('Try picking an HU from a different locator than pick from locator', async 
         expectedError: `The HU's locator does not match the order's locator.`
     });
 });
-
 
 // noinspection JSUnusedLocalSymbols
 test('Distribution using 2 steps to pick the needed qty.', async ({ page }) => {
