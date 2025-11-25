@@ -3,6 +3,11 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
     "bankAccounts": [ ],
     "bpartner": {
       "active": true,
+      "bpGroup": {
+        "metasfreshId": 15,
+        "name": "bpGroupRecord.name",
+        "value": "bpGroupRecord.name"
+      },
       "changeInfo": {
         "createdBy": 30,
         "createdMillis": 1563553074,
@@ -17,6 +22,9 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
       "group": "bpGroupRecord.name",
       "metasfreshId": 12345,
       "name": "bpartnerRecord.name_updated",
+      "salesRepId": {
+        "salesRepId": 0
+      },
       "vendor": false
     },
     "contacts": [ ],
@@ -99,6 +107,9 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
       "name": "bPartner.name",
       "parentId": 1,
       "phone": "bPartner.phone",
+      "salesRepContact": {
+        "id": 0
+      },
       "url": "bPartner.url",
       "vatId": "bPartner.vatId",
       "vendor": false
@@ -337,6 +348,9 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
       "id": 20,
       "identifiedByExternalReference": false,
       "name": "bpartnerRecord.name",
+      "salesRepContact": {
+        "id": 0
+      },
       "value": "bpartnerRecord.value",
       "vatId": "VATaxID",
       "vendor": true
@@ -532,6 +546,9 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
       "id": 20,
       "identifiedByExternalReference": false,
       "name": "bpartnerRecord.name",
+      "salesRepContact": {
+        "id": 0
+      },
       "value": "bpartnerRecord.value",
       "vatId": "VATaxID",
       "vendor": true
@@ -724,6 +741,9 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
       "id": 20,
       "identifiedByExternalReference": false,
       "name": "bpartnerRecord.name",
+      "salesRepContact": {
+        "id": 0
+      },
       "value": "bpartnerRecord.value",
       "vatId": "VATaxID",
       "vendor": true
@@ -881,6 +901,9 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
       "id": 20,
       "identifiedByExternalReference": false,
       "name": "bpartnerRecord.name",
+      "salesRepContact": {
+        "id": 0
+      },
       "value": "bpartnerRecord.value",
       "vatId": "VATaxID",
       "vendor": true
@@ -1215,6 +1238,11 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_ext=[
     ],
     "bpartner": {
       "active": true,
+      "bpGroup": {
+        "metasfreshId": 15,
+        "name": "bpGroupRecord.name",
+        "value": "bpGroupRecord.name"
+      },
       "changeInfo": {
         "createdBy": 30,
         "createdMillis": 1561133544,
@@ -1228,6 +1256,9 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_ext=[
       "group": "bpGroupRecord.name",
       "metasfreshId": 20,
       "name": "bpartnerRecord.name",
+      "salesRepId": {
+        "salesRepId": 0
+      },
       "vatId": "VATaxID",
       "vendor": true
     },
@@ -1317,6 +1348,11 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_gln=[
     ],
     "bpartner": {
       "active": true,
+      "bpGroup": {
+        "metasfreshId": 15,
+        "name": "bpGroupRecord.name",
+        "value": "bpGroupRecord.name"
+      },
       "changeInfo": {
         "createdBy": 30,
         "createdMillis": 1561133544,
@@ -1330,6 +1366,9 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_gln=[
       "group": "bpGroupRecord.name",
       "metasfreshId": 20,
       "name": "bpartnerRecord.name",
+      "salesRepId": {
+        "salesRepId": 0
+      },
       "vatId": "VATaxID",
       "vendor": true
     },
@@ -1419,6 +1458,11 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_id=[
     ],
     "bpartner": {
       "active": true,
+      "bpGroup": {
+        "metasfreshId": 15,
+        "name": "bpGroupRecord.name",
+        "value": "bpGroupRecord.name"
+      },
       "changeInfo": {
         "createdBy": 30,
         "createdMillis": 1561133544,
@@ -1432,6 +1476,9 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_id=[
       "group": "bpGroupRecord.name",
       "metasfreshId": 20,
       "name": "bpartnerRecord.name",
+      "salesRepId": {
+        "salesRepId": 0
+      },
       "vatId": "VATaxID",
       "vendor": true
     },
@@ -1542,6 +1589,11 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
         ],
         "bpartner": {
           "active": true,
+          "bpGroup": {
+            "metasfreshId": 15,
+            "name": "bpGroupRecord.name",
+            "value": "bpGroupRecord.name"
+          },
           "changeInfo": {
             "createdBy": 30,
             "createdMillis": 1561133544,
@@ -1555,6 +1607,9 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
           "group": "bpGroupRecord.name",
           "metasfreshId": 20,
           "name": "bpartnerRecord.name",
+          "salesRepId": {
+            "salesRepId": 0
+          },
           "vatId": "VATaxID",
           "vendor": true
         },
@@ -1640,6 +1695,11 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
         ],
         "bpartner": {
           "active": true,
+          "bpGroup": {
+            "metasfreshId": 15,
+            "name": "bpGroupRecord.name",
+            "value": "bpGroupRecord.name"
+          },
           "changeInfo": {
             "createdBy": 31,
             "createdMillis": 1561133544,
@@ -1653,6 +1713,9 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
           "group": "bpGroupRecord.name",
           "metasfreshId": 21,
           "name": "bpartnerRecord.name_1",
+          "salesRepId": {
+            "salesRepId": 0
+          },
           "vatId": "VATaxID_1",
           "vendor": true
         },
@@ -1751,6 +1814,11 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
         ],
         "bpartner": {
           "active": true,
+          "bpGroup": {
+            "metasfreshId": 15,
+            "name": "bpGroupRecord.name",
+            "value": "bpGroupRecord.name"
+          },
           "changeInfo": {
             "createdBy": 32,
             "createdMillis": 1561133544,
@@ -1764,6 +1832,9 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
           "group": "bpGroupRecord.name",
           "metasfreshId": 22,
           "name": "bpartnerRecord.name_2",
+          "salesRepId": {
+            "salesRepId": 0
+          },
           "vatId": "VATaxID_2",
           "vendor": true
         },
@@ -1849,6 +1920,11 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
         ],
         "bpartner": {
           "active": true,
+          "bpGroup": {
+            "metasfreshId": 15,
+            "name": "bpGroupRecord.name",
+            "value": "bpGroupRecord.name"
+          },
           "changeInfo": {
             "createdBy": 33,
             "createdMillis": 1561133544,
@@ -1862,6 +1938,9 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
           "group": "bpGroupRecord.name",
           "metasfreshId": 23,
           "name": "bpartnerRecord.name_3",
+          "salesRepId": {
+            "salesRepId": 0
+          },
           "vatId": "VATaxID_3",
           "vendor": true
         },
@@ -1960,6 +2039,11 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
         ],
         "bpartner": {
           "active": true,
+          "bpGroup": {
+            "metasfreshId": 15,
+            "name": "bpGroupRecord.name",
+            "value": "bpGroupRecord.name"
+          },
           "changeInfo": {
             "createdBy": 34,
             "createdMillis": 1561133544,
@@ -1973,6 +2057,9 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince[
           "group": "bpGroupRecord.name",
           "metasfreshId": 24,
           "name": "bpartnerRecord.name_4",
+          "salesRepId": {
+            "salesRepId": 0
+          },
           "vatId": "VATaxID_4",
           "vendor": true
         },
