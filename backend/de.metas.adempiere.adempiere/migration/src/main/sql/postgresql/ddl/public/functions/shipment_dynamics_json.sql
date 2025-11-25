@@ -44,7 +44,7 @@ WITH dynamics_system AS (SELECT externalsystem_id
                                COALESCE(
                                        JSONB_AGG(
                                                JSONB_BUILD_OBJECT(
-                                                       'poLineId', line.m_inoutline_id,
+                                                       'poLineId', COALESCE(line.c_orderline_id, line.m_inoutline_id),
                                                        'productIdentifier', product.value,
                                                        'uom', ouom.x12de355,
                                                        'qty', line.qtyentered,
