@@ -223,6 +223,7 @@ public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 	{
 		final I_C_BP_Group group = newInstance(I_C_BP_Group.class);
 		group.setName("Group");
+		group.setName("GroupValue");
 		group.setBPNameAndGreetingStrategy(strategyId != null ? strategyId.getAsString() : null);
 
 		save(group);

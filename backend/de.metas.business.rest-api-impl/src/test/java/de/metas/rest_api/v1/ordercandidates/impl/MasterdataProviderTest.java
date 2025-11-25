@@ -109,6 +109,7 @@ public class MasterdataProviderTest
 		final I_C_BP_Group groupRecord = newInstance(I_C_BP_Group.class);
 		groupRecord.setIsDefault(true);
 		groupRecord.setName("DefaultGroup");
+		groupRecord.setValue("DefaultGroupValue");
 		InterfaceWrapperHelper.setValue(groupRecord, I_C_BP_Group.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId());
 		saveRecord(groupRecord);
 
@@ -196,6 +197,7 @@ public class MasterdataProviderTest
 
 		final I_C_BP_Group bpGroupRecord = newInstance(I_C_BP_Group.class);
 		bpGroupRecord.setName("bpGroup");
+		bpGroupRecord.setValue("bpGroupValue");
 		saveRecord(bpGroupRecord);
 
 		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);

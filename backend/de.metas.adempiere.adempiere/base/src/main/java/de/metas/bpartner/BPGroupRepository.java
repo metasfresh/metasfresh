@@ -89,6 +89,7 @@ public class BPGroupRepository
 
 		groupRecord.setAD_Org_ID(bpGroup.getOrgId().getRepoId());
 		groupRecord.setName(bpGroup.getName());
+		groupRecord.setValue(bpGroup.getValue());
 
 		saveRecord(groupRecord);
 		return BPGroupId.ofRepoId(groupRecord.getC_BP_Group_ID());
