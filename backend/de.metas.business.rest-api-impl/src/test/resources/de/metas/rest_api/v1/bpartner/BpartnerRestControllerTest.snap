@@ -98,9 +98,6 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
       "name": "bPartner.name",
       "parentId": 1,
       "phone": "bPartner.phone",
-      "salesRepContact": {
-        "id": 0
-      },
       "url": "bPartner.url",
       "value": "code",
       "vatId": "bPartner.vatId",
@@ -343,9 +340,6 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
       "id": 20,
       "identifiedByExternalReference": false,
       "name": "bpartnerRecord.name",
-      "salesRepContact": {
-        "id": 0
-      },
       "value": "bpartnerRecord.value",
       "vatId": "VATaxID",
       "vendor": true
@@ -543,9 +537,6 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
       "id": 20,
       "identifiedByExternalReference": false,
       "name": "bpartnerRecord.name",
-      "salesRepContact": {
-        "id": 0
-      },
       "value": "bpartnerRecord.value",
       "vatId": "VATaxID",
       "vendor": true
@@ -705,9 +696,6 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
       "id": 20,
       "identifiedByExternalReference": false,
       "name": "bpartnerRecord.name",
-      "salesRepContact": {
-        "id": 0
-      },
       "value": "bpartnerRecord.value",
       "vatId": "VATaxID",
       "vendor": true
@@ -867,9 +855,6 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
       "id": 20,
       "identifiedByExternalReference": false,
       "name": "bpartnerRecord.name",
-      "salesRepContact": {
-        "id": 0
-      },
       "value": "bpartnerRecord.value",
       "vatId": "VATaxID",
       "vendor": true
