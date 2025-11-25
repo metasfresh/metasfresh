@@ -12,11 +12,13 @@ import org.adempiere.util.api.Params;
 public class DistributionWFProcessStartParams
 {
 	@NonNull DDOrderId ddOrderId;
+	boolean isInTransit;
 
 	public Params toParams()
 	{
 		return Params.builder()
 				.value("ddOrderId", ddOrderId.getRepoId())
+				.value("isInTransit", isInTransit)
 				.build();
 	}
 

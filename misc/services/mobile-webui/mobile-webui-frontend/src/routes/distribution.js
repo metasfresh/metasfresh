@@ -5,6 +5,13 @@ import DistributionStepDropToScreen from '../containers/activities/distribution/
 import { getWFProcessScreenLocation } from './workflow_locations';
 import DistributionLinePickFromScreen from '../containers/activities/distribution/DistributionLinePickFromScreen';
 import DistributionDropAllToScreen from '../containers/activities/distribution/DistributionDropAllToScreen';
+import { APPLICATION_ID_Distribution } from '../apps/distribution/constants';
+import DistributionJobsDropAllScreen from '../apps/distribution/containers/DistributionJobsDropAllScreen';
+
+export const distributionJobsListScreenLocation = () => `/${APPLICATION_ID_Distribution}/launchers`;
+// appLaunchersLocation({ applicationId: APPLICATION_ID_Distribution });
+
+export const distributionJobsDropAllScreen = () => distributionJobsListScreenLocation() + '/dropAll';
 
 export const distributionJobScreenLocation = ({ applicationId, wfProcessId }) =>
   getWFProcessScreenLocation({ applicationId, wfProcessId });
@@ -28,6 +35,10 @@ export const distributionStepDropToScreenLocation = ({ applicationId, wfProcessI
   distributionStepScreenLocation({ applicationId, wfProcessId, activityId, lineId, stepId }) + '/dropTo';
 
 export const distributionRoutes = [
+  {
+    path: distributionJobsDropAllScreen(),
+    Component: DistributionJobsDropAllScreen,
+  },
   {
     path: distributionDropAllToScreenLocation({
       applicationId: ':applicationId',

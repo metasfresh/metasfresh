@@ -38,3 +38,11 @@ export function postDistributionUnpickEvent({ wfProcessId, activityId, lineId, s
     })
     .then((response) => unboxAxiosResponse(response));
 }
+
+export function postDropAll({ dropToQRCode }) {
+  return axios
+    .post(`${apiBasePath}/distribution/dropAll`, {
+      dropToQRCode,
+    })
+    .then((response) => unboxAxiosResponse(response));
+}

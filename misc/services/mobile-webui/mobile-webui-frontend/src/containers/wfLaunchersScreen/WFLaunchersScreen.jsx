@@ -16,6 +16,8 @@ import { useCurrentWorkstation } from '../../api/workstation';
 import { useScreenDefinition } from '../../hooks/useScreenDefinition';
 import { useMobileLocation } from '../../hooks/useMobileLocation';
 import { useLaunchers } from './useLaunchers';
+import { APPLICATION_ID_Distribution } from '../../apps/distribution/constants';
+import DistributionJobsListActions from '../../apps/distribution/containers/DistributionJobsListActions';
 
 const WFLaunchersScreen = () => {
   const { history } = useScreenDefinition({ screenId: 'WFLaunchersScreen', back: '/' });
@@ -123,6 +125,9 @@ const WFLaunchersScreen = () => {
         />
       )}
       <br />
+      {applicationId === APPLICATION_ID_Distribution && (
+        <DistributionJobsListActions launchers={launchers} disabled={isLaunchersLoading} />
+      )}
       {launchers &&
         launchers.map((launcher, index) => {
           const id = `launcher-${index}-button`;

@@ -1,10 +1,11 @@
 import { test } from "../../../../playwright.config";
-import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT } from "../../common";
+import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, VERY_FAST_ACTION_TIMEOUT } from "../../common";
 import { DistributionJobScreen } from "./DistributionJobScreen";
 import { DistributionJobsListFiltersScreen } from "./DistributionJobsListFiltersScreen";
 import { ApplicationsListScreen } from '../ApplicationsListScreen';
 import { expect } from '@playwright/test';
 import { expectClasses } from '../../expectations';
+import { DistributionJobsDropAllScreen } from './DistributionJobsDropAllScreen';
 
 const NAME = 'DistributionJobsListScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -46,7 +47,7 @@ export const DistributionJobsListScreen = {
             const expectation = expectationsArray[i];
             await expectJobButton({
                 name: `${i + 1}/${expectationsArray.length}`,
-                button: locateJobButtons(expectation),
+                button: locateJobButtons({ index: i + 1 }),
                 expectation
             });
         }
@@ -68,7 +69,39 @@ export const DistributionJobsListScreen = {
         await page.locator(ID_BACK_BUTTON).tap();
         await ApplicationsListScreen.waitForScreen();
     }),
+
+    expectDropAllButton: async ({ enabled, visible }) => await test.step(`${NAME} - Expect Drop All button`, async () => {
+        const dropAllButton = dropAllButtonLocator();
+
+        if (visible != null) {
+            if (visible) {
+                await dropAllButton.waitFor({ state: 'attached', timeout: VERY_FAST_ACTION_TIMEOUT });
+            } else {
+                await dropAllButton.waitFor({ state: 'detached', timeout: VERY_FAST_ACTION_TIMEOUT });
+            }
+        }
+
+        if (enabled != null) {
+            if (enabled) {
+                await expect(dropAllButton).toBeEnabled({ timeout: VERY_FAST_ACTION_TIMEOUT });
+            } else {
+                await expect(dropAllButton).toBeDisabled({ timeout: VERY_FAST_ACTION_TIMEOUT });
+            }
+        }
+    }),
+
+    dropAll: async ({ dropToQRCode }) => await test.step(`${NAME} - Drop all jobs`, async () => {
+        await dropAllButtonLocator().tap();
+        await DistributionJobsDropAllScreen.waitForScreen();
+        await DistributionJobsDropAllScreen.dropAll({ dropToQRCode })
+    }),
 };
+
+//
+//
+//--------------------------------------------------------------------------
+//
+//
 
 const locateJobButtons = ({ index, testId } = {}) => {
     let selector = '.wflauncher-button';
@@ -86,8 +119,12 @@ const locateJobButtons = ({ index, testId } = {}) => {
 };
 
 const expectJobButton = async ({ name, button, expectation }) => await test.step(`Expect job button ${name}`, async () => {
-    await button.waitFor({ state: 'attached' });
+    await button.waitFor({ state: 'attached', timeout: VERY_FAST_ACTION_TIMEOUT });
     await expect(button).toHaveCount(1);
+
+    if (expectation.testId != null) {
+        await expect(button).toHaveAttribute('data-testid', expectation.testId);
+    }
 
     if (expectation.caption != null) {
         await expect(button).toHaveText(expectation.caption);
@@ -110,3 +147,13 @@ const expectJobButton = async ({ name, button, expectation }) => await test.step
         }
     }
 });
+
+//
+//
+//--------------------------------------------------------------------------
+//
+//
+
+const dropAllButtonLocator = () => {
+    return page.getByTestId('dropAll-button');
+};

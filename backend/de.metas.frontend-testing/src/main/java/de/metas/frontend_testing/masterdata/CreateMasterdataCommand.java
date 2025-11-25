@@ -330,6 +330,7 @@ public class CreateMasterdataCommand
 	{
 		return DDOrderCommand.builder()
 				.ddOrderService(services.ddOrderService)
+				.distributionJobLoaderSupportingServices(services.distributionJobLoaderSupportingServices)
 				.captionProvider(services.distributionLauncherCaptionProvider)
 				.context(context)
 				.request(request)
