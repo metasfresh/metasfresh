@@ -50,6 +50,7 @@ import de.metas.quantity.Quantity;
 import de.metas.rest_api.utils.JsonErrors;
 import de.metas.rest_api.v2.bpartner.BpartnerRestController;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
+import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.order.JsonSalesOrder;
 import de.metas.rest_api.v2.order.JsonSalesOrderAttachment;
 import de.metas.rest_api.v2.order.JsonSalesOrderCreateRequest;
@@ -66,7 +67,6 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -92,13 +92,13 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
-@RequiredArgsConstructor
 @RestController
 @RequestMapping(value = MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/orders/sales")
 @Profile(Profiles.PROFILE_App)
 public class SalesOrderRestController
 {
 	@NonNull private static final Logger logger = LogManager.getLogger(SalesOrderRestController.class);
+
 	@NonNull private final OrderService orderService;
 	@NonNull private final AttachmentService attachmentService;
 	@NonNull private final BpartnerRestController bpartnerRestController;
@@ -107,6 +107,24 @@ public class SalesOrderRestController
 	@NonNull private final ExternalSystemRepository externalSystemRepository;
 	@NonNull private final PermissionServiceFactory permissionServiceFactory = PermissionServiceFactories.currentContext();
 	@NonNull private final BPartnerEffectiveBL bPartnerEffectiveBL;
+
+	public SalesOrderRestController(
+			@NonNull final OrderService orderService,
+			@NonNull final AttachmentService attachmentService,
+			@NonNull final JsonServiceFactory jsonServiceFactory,
+			@NonNull final BpartnerRestController bpartnerRestController,
+			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
+			@NonNull final ExternalSystemRepository externalSystemRepository,
+			@NonNull final BPartnerEffectiveBL bPartnerEffectiveBL)
+	{
+		this.orderService = orderService;
+		this.attachmentService = attachmentService;
+		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
+		this.bpartnerRestController = bpartnerRestController;
+		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
+		this.externalSystemRepository = externalSystemRepository;
+		this.bPartnerEffectiveBL = bPartnerEffectiveBL;
+	}
 
 	@ApiOperation("Create new order payment")
 	@ApiResponses(value = {
