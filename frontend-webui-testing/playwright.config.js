@@ -33,6 +33,7 @@ export default defineConfig({
             '--disable-web-security',
             '--ignore-certificate-errors',
             '--allow-insecure-localhost',
+            '--unsafely-treat-insecure-origin-as-secure=http://webapi-test:8080',
           ],
         },
       },
