@@ -140,6 +140,29 @@ public interface I_MobileUI_UserProfile_DD
 	String COLUMNNAME_IsAllowStartNextJobOnly = "IsAllowStartNextJobOnly";
 
 	/**
+	 * Set Complete job automatically.
+	 * Automatically completes the job when all lines are fulfilled.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsCompleteJobAutomatically (boolean IsCompleteJobAutomatically);
+
+	/**
+	 * Get Complete job automatically.
+	 * Automatically completes the job when all lines are fulfilled.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isCompleteJobAutomatically();
+
+	ModelColumn<I_MobileUI_UserProfile_DD, Object> COLUMN_IsCompleteJobAutomatically = new ModelColumn<>(I_MobileUI_UserProfile_DD.class, "IsCompleteJobAutomatically", null);
+	String COLUMNNAME_IsCompleteJobAutomatically = "IsCompleteJobAutomatically";
+
+	/**
 	 * Set Maximum Launchers Count.
 	 *
 	 * <br>Type: Integer

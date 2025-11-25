@@ -13,6 +13,7 @@ public class MobileUIDistributionConfig
 	boolean allowPickingAnyHU;
 	@NonNull DistributionJobCaptionFormat captionFormat;
 	@NonNull DistributionJobSorting sorting;
+	boolean isCompleteJobAutomatically;
 
 	@NonNull @Default QueryLimit maxLaunchers = QueryLimit.NO_LIMIT;
 	@NonNull @Default QueryLimit maxStartedLaunchers = QueryLimit.NO_LIMIT;
