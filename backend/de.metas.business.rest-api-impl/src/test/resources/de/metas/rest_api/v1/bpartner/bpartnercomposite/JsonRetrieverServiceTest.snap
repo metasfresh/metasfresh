@@ -53,6 +53,9 @@ de.metas.rest_api.v1.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
       "id": 20,
       "identifiedByExternalReference": false,
       "name": "bpartnerRecord.name",
+      "salesRepContact": {
+        "id": 0
+      },
       "value": "bpartnerRecord.value",
       "vatId": "VATaxID",
       "vendor": true
