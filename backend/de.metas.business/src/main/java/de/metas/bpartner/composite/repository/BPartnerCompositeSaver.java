@@ -196,6 +196,11 @@ final class BPartnerCompositeSaver
 
 		bpartnerRecord.setC_Greeting_ID(GreetingId.toRepoId(bpartner.getGreetingId()));
 
+		if (bpartner.getSalesRepContact()!=null)
+		{
+			bpartnerRecord.setSalesRep_ID(bpartner.getSalesRepContact().getId().getRepoId());
+		}
+
 		bpartnerRecord.setBPartner_Parent_ID(BPartnerId.toRepoId(bpartner.getParentId()));
 		bpartnerRecord.setPhone2(bpartner.getPhone());
 		bpartnerRecord.setURL(bpartner.getUrl());

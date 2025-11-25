@@ -629,7 +629,7 @@ final class BPartnerCompositesLoader
 	{
 		final UserId salesRepId = UserId.ofRepoIdOrNull(bPartnerRecord.getSalesRep_ID());
 
-		if (salesRepId == null || !salesRepId.isRegularUser())
+		if (salesRepId == null || !salesRepId.isRegularUser() )
 		{
 			return null;
 		}
