@@ -69,7 +69,7 @@ SELECT org.value,
        COALESCE(ext_ref.externalreference, partner.c_bpartner_id::text),
        partner.value,
        partner.name,
-       c.iso_code,
+       c.iso_code::text,
        COALESCE(lines.json_data, '[]'::jsonb),
        COALESCE(charges.json_data, '[]'::jsonb)
 FROM c_order sorder
