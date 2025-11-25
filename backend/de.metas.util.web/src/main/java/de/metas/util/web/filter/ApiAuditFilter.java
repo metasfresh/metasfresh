@@ -71,7 +71,7 @@ public class ApiAuditFilter implements Filter
 
 		try
 		{
-			if (isBypassAll() || apiAuditService.bypassFilter(httpServletRequest))
+			if (isBypassAll())
 			{
 				chain.doFilter(request, response);
 				return;

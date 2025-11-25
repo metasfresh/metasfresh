@@ -172,11 +172,6 @@ public class ApiAuditService
 		this.objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 	}
 
-	public boolean wasAlreadyFiltered(@NonNull final HttpServletRequest httpServletRequest)
-	{
-		return httpServletRequest.getHeader(API_REQUEST_HEADER_EXISTING_AUDIT_ID) != null;
-	}
-
 	@NonNull
 	public Optional<ApiRequestAuditId> extractApiRequestAuditId(@NonNull final HttpServletRequest httpServletRequest)
 	{
@@ -362,7 +357,7 @@ public class ApiAuditService
 				.forEach(notificationBL::send);
 	}
 
-	public boolean bypassFilter(@NonNull final HttpServletRequest request)
+	public boolean isJsonContent(@NonNull final HttpServletRequest request)
 	{
 		final String contentType = request.getContentType();
 
@@ -376,6 +371,10 @@ public class ApiAuditService
 
 	private boolean shouldProcessRequestAsync(@NonNull final HttpServletRequest request, @NonNull final ApiAuditConfig apiAuditConfig)
 	{
+		if(!isJsonContent(request))
+		{
+			return false; // right now, we can only process such requests async that have a JSON request body.
+		}
 		final Optional<Boolean> callerWantsToBeProcessedAsync = Optional.ofNullable(request.getHeader(API_ASYNC_HEADER))
 				.map(Boolean::parseBoolean);
 

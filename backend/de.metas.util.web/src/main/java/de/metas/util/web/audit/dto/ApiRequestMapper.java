@@ -36,6 +36,8 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Enumeration;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
 @UtilityClass
 public class ApiRequestMapper
 {
@@ -85,6 +87,11 @@ public class ApiRequestMapper
 	@Nullable
 	private String getRequestBody(@NonNull final CachedBodyHttpServletRequest requestWrapper)
 	{
+		final String contentType = requestWrapper.getContentType();
+		if (!contentType.contains(APPLICATION_JSON_VALUE))
+		{
+			return "<NO JSON Content - can't record request-body>";
+		}
 		try
 		{
 			final ObjectMapper objectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
