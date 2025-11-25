@@ -29,11 +29,14 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
         launchOptions: {
           args: [
-            '--no-sandbox',
-            '--disable-web-security',
-            '--ignore-certificate-errors',
-            '--allow-insecure-localhost',
-            '--unsafely-treat-insecure-origin-as-secure=http://webapi-test:8080',
+            '--no-sandbox', // Avoids sandboxing issues inside Docker
+            '--unsafely-treat-insecure-origin-as-secure=http://webapi-test:8080', // Treats it as a secure origin
+            '--disable-features=StrictOriginPolicy,HttpsOnlyMode,BlockInsecurePrivateNetworkRequests', // Disables HSTS enforcement
+            '--disable-site-isolation-trials', // Helps disable security sandboxing
+            '--disable-web-security', // Disables web security (CORS, mixed content, etc.)
+            '--ignore-certificate-errors', // Ignores SSL certificate errors
+            '--allow-insecure-localhost', // Allows HTTP on local addresses
+            '--allow-running-insecure-content', // Allows mixed content (HTTP on HTTPS)
           ],
         },
       },
