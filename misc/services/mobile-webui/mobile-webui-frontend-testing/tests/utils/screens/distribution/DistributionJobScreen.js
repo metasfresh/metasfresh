@@ -6,7 +6,6 @@ import { DistributionJobsListScreen } from './DistributionJobsListScreen';
 import { DistributionDropAllToScreen } from './DistributionDropAllToScreen';
 import { expect } from '@playwright/test';
 import { expectClasses } from '../../expectations';
-import { PickingJobsListScreen } from '../picking/PickingJobsListScreen';
 
 const NAME = 'DistributionJobScreen';
 /** @returns {import('@playwright/test').Locator} */
