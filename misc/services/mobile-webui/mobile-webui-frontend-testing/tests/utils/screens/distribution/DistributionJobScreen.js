@@ -6,6 +6,7 @@ import { DistributionJobsListScreen } from './DistributionJobsListScreen';
 import { DistributionDropAllToScreen } from './DistributionDropAllToScreen';
 import { expect } from '@playwright/test';
 import { expectClasses } from '../../expectations';
+import { PickingJobsListScreen } from '../picking/PickingJobsListScreen';
 
 const NAME = 'DistributionJobScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -57,13 +58,20 @@ export const DistributionJobScreen = {
         }
     }),
 
-    dropAllTo: async ({ dropToLocatorQRCode }) => await test.step(`${NAME} - Drop All To ${dropToLocatorQRCode}`, async () => {
+    dropAllTo: async ({ dropToLocatorQRCode, expectNextScreen }) => await test.step(`${NAME} - Drop All To ${dropToLocatorQRCode}`, async () => {
         const dropAllButton = dropAllButtonLocator();
         await expect(dropAllButton).toBeEnabled({ timeout: VERY_FAST_ACTION_TIMEOUT });
         await dropAllButton.tap();
         await DistributionDropAllToScreen.waitForScreen();
         await DistributionDropAllToScreen.typeQRCode(dropToLocatorQRCode);
-        await DistributionJobScreen.waitForScreen();
+
+        if (!expectNextScreen || expectNextScreen === 'DistributionJobScreen') {
+            await DistributionJobScreen.waitForScreen();
+        } else if (expectNextScreen === 'DistributionJobsListScreen') {
+            await DistributionJobsListScreen.waitForScreen();
+        } else {
+            throw new Error(`Invalid expectNextScreen: ${expectNextScreen}`);
+        }
     }),
 
     abort: async () => await step(`${NAME} - Abort`, async () => {

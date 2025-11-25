@@ -70,8 +70,8 @@ test('Try picking an HU from a different locator than pick from locator', async 
     await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId, expectHitCount: 1 });
     await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
     await DistributionJobScreen.clickLineButton({ index: 1 });
-    await DistributionLineScreen.scanHUToMove({ 
-        huQRCode: masterdata.handlingUnits.HU1.qrCode, 
+    await DistributionLineScreen.scanHUToMove({
+        huQRCode: masterdata.handlingUnits.HU1.qrCode,
         expectedQtyToMove: '100',
         expectedError: `The HU's locator does not match the order's locator.`
     });
@@ -88,7 +88,7 @@ test('Distribution using 2 steps to pick the needed qty.', async ({ page }) => {
     await DistributionJobsListScreen.waitForScreen();
     await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId, expectHitCount: 1 });
     await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
-    
+
     await DistributionJobScreen.clickLineButton({ index: 1 });
     await DistributionLineScreen.scanHUToMove({ huQRCode: masterdata.handlingUnits.HU1.qrCode, qtyToMove: '40', expectedQtyToMove: '80' });
     await DistributionLineScreen.clickStepButton({ index: 1 });
@@ -114,7 +114,7 @@ test('Pick & Unpick in distribution step screen', async ({ page }) => {
     await DistributionJobsListScreen.waitForScreen();
     await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId, expectHitCount: 1 });
     await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
-    
+
     await DistributionJobScreen.clickLineButton({ index: 1 });
     await DistributionLineScreen.scanHUToMove({ huQRCode: masterdata.handlingUnits.HU1.qrCode, qtyToMove: '100', expectedQtyToMove: '100' });
     await DistributionLineScreen.clickStepButton({ index: 1 });

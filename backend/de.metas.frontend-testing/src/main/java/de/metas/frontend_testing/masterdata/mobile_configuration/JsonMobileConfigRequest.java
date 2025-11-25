@@ -82,6 +82,8 @@ public class JsonMobileConfigRequest
 		@Nullable String captionFormat;
 		@Nullable String orderBys;
 
+		@Nullable Boolean completeJobAutomatically;
+
 		@Nullable QueryLimit maxLaunchers;
 		@Nullable QueryLimit maxStartedLaunchers;
 		@Nullable Boolean allowStartNextJobOnly;

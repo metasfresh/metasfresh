@@ -59,6 +59,7 @@ public class JsonMobileConfigResponse
 	public static class Distribution
 	{
 		@Nullable Boolean allowPickingAnyHU;
+		@Nullable Boolean completeJobAutomatically;
 	}
 
 	//

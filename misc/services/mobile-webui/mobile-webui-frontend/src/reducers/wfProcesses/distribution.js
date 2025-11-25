@@ -118,9 +118,10 @@ const normalizeLine = (line) => {
 const mergeActivityDataStored = ({ draftActivityDataStored, fromActivity }) => {
   draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? false;
 
-  //
-  // Copy lines
-  draftActivityDataStored.lines = normalizeLinesArray(fromActivity.componentProps.lines);
+  const job = fromActivity.componentProps.job;
+  draftActivityDataStored.lines = normalizeLinesArray(job.lines);
+  draftActivityDataStored.isCompleteJobAutomatically = job.completeJobAutomatically;
+  draftActivityDataStored.qtyRejectedReasons = job.qtyRejectedReasons;
 
   //
   // Update all statuses
@@ -143,12 +144,6 @@ const mergeActivityDataStored = ({ draftActivityDataStored, fromActivity }) => {
 
 registerHandler({
   componentType: COMPONENT_TYPE,
-  normalizeComponentProps: ({ componentProps }) => {
-    return {
-      ...componentProps,
-      lines: normalizeLinesArray(componentProps.lines),
-    };
-  },
-
-  mergeActivityDataStored: mergeActivityDataStored,
+  normalizeComponentProps: () => {}, // don't add componentProps to state
+  mergeActivityDataStored,
 });

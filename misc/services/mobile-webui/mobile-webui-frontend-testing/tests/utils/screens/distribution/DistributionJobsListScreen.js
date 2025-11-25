@@ -91,7 +91,9 @@ export const DistributionJobsListScreen = {
     }),
 
     dropAll: async ({ dropToQRCode }) => await test.step(`${NAME} - Drop all jobs`, async () => {
-        await dropAllButtonLocator().tap();
+        const dropAllButton = dropAllButtonLocator();
+        await expect(dropAllButton).toBeEnabled({ timeout: VERY_FAST_ACTION_TIMEOUT });
+        await dropAllButton.tap();
         await DistributionJobsDropAllScreen.waitForScreen();
         await DistributionJobsDropAllScreen.dropAll({ dropToQRCode })
     }),

@@ -48,12 +48,13 @@ export const postStepPickedThunk =
     // NOTE: because running in thunk, this will happen synchronously
     dispatch(updateWFProcess({ wfProcess }));
 
+    //
+    // Automatically complete the job if required
+    let isPickingJobCompleted = false;
     const { isCompleteJobAutomatically, isFullyPicked } = getPickingJobCompleteStatus({
       state: getState(),
       wfProcessId,
     });
-
-    let isPickingJobCompleted = false;
     if (isCompleteJobAutomatically && isFullyPicked) {
       try {
         await completePickingJob({ wfProcessId });

@@ -36,6 +36,7 @@ public class DistributionJobDropToCommand
 	@Nullable final DistributionJobId onlyJobId;
 	@Nullable private final DistributionJobStepId onlyStepId;
 	@Nullable private final ScannedCode dropToQRCode;
+	private final boolean completeJobsIfFullyMoved;
 
 	// State
 	private LocatorId _dropToLocatorId;
@@ -51,7 +52,8 @@ public class DistributionJobDropToCommand
 			@NonNull final UserId userId,
 			@Nullable final DistributionJobId onlyJobId,
 			@Nullable final DistributionJobStepId onlyStepId,
-			@Nullable final ScannedCode dropToQRCode)
+			@Nullable final ScannedCode dropToQRCode,
+			final boolean completeJobsIfFullyMoved)
 	{
 		if (onlyStepId != null && onlyJobId == null)
 		{
@@ -68,6 +70,7 @@ public class DistributionJobDropToCommand
 		this.onlyJobId = onlyJobId;
 		this.onlyStepId = onlyStepId;
 		this.dropToQRCode = dropToQRCode;
+		this.completeJobsIfFullyMoved = completeJobsIfFullyMoved;
 	}
 
 	public DistributionJobDropToResponse execute()
@@ -83,7 +86,12 @@ public class DistributionJobDropToCommand
 		final List<DDOrderMoveSchedule> schedules = dropToLocator(scheduleIds);
 
 		jobs = updateJobsFromSchedules(jobs, schedules);
-		jobs = completeJobsIfFullyMoved(jobs);
+
+		if (completeJobsIfFullyMoved)
+		{
+			jobs = tryCompleteJobsIfFullyMoved(jobs);
+		}
+
 		return DistributionJobDropToResponse.ofList(jobs);
 	}
 
@@ -202,7 +210,7 @@ public class DistributionJobDropToCommand
 		});
 	}
 
-	private List<DistributionJob> completeJobsIfFullyMoved(@NonNull final List<DistributionJob> jobs)
+	private List<DistributionJob> tryCompleteJobsIfFullyMoved(@NonNull final List<DistributionJob> jobs)
 	{
 		return jobs.stream()
 				.map(this::completeJobIfFullyMoved)
