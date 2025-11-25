@@ -155,6 +155,7 @@ services:
       - "FRONTEND_BASE_URL=http://webui:80"
       - "TESTING_API_BASE_URL=http://app-test:8282/api/v2"
       - "CI=true"
+      - "CHROMIUM_FLAGS=--unsafely-treat-insecure-origin-as-secure=http://webapi-test:8080 --disable-web-security --ignore-certificate-errors"
     depends_on:
       webui:
         condition: service_healthy
