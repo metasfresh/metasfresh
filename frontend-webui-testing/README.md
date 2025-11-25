@@ -105,7 +105,8 @@ npm test
 tests/
 ├── spec/                          # Test specifications
 │   ├── login.spec.js              # Login/authentication tests
-│   └── business-partner.spec.js   # Business Partner window tests
+│   ├── business-partner.spec.js   # Business Partner window tests
+│   └── product.spec.js            # Product window tests
 └── utils/                         # Test utilities
     ├── common.js                  # Shared constants and helpers
     ├── Backend.js                 # Backend API client
