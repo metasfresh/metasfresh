@@ -33,6 +33,9 @@ import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestItem;
 import de.metas.common.delivery.v1.json.request.JsonGoodsType;
 import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
+import de.metas.incoterms.Incoterms;
+import de.metas.incoterms.IncotermsId;
+import de.metas.incoterms.IncotermsRepository;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.CarrierAdviseStatus;
 import de.metas.inoutcandidate.CarrierGoodsType;
@@ -45,6 +48,8 @@ import de.metas.inoutcandidate.ShipmentScheduleService;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.PackageDimensions;
@@ -72,11 +77,11 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Objects;
@@ -86,22 +91,24 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CarrierAdviseCommand
 {
-	private final static Logger logger = LogManager.getLogger(CarrierAdviseCommand.class);
+	@NonNull private final static Logger logger = LogManager.getLogger(CarrierAdviseCommand.class);
 	// Services
-	private final ShipperGatewayServicesRegistry shipperRegistry = SpringContextHolder.instance.getBean(ShipperGatewayServicesRegistry.class);
-	private final ShipmentScheduleService shipmentScheduleService = SpringContextHolder.instance.getBean(ShipmentScheduleService.class);
-	private final CarrierProductRepository carrierProductRepository = SpringContextHolder.instance.getBean(CarrierProductRepository.class);
-	private final CarrierGoodsTypeRepository goodsTypeRepository = SpringContextHolder.instance.getBean(CarrierGoodsTypeRepository.class);
-	private final CarrierShipmentOrderServiceRepository carrierServiceRepository = SpringContextHolder.instance.getBean(CarrierShipmentOrderServiceRepository.class);
-	private final ProductRepository productRepository = SpringContextHolder.instance.getBean(ProductRepository.class);
-	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
-	private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
-	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
-	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final ShipperGatewayServicesRegistry shipperRegistry = SpringContextHolder.instance.getBean(ShipperGatewayServicesRegistry.class);
+	@NonNull private final ShipmentScheduleService shipmentScheduleService = SpringContextHolder.instance.getBean(ShipmentScheduleService.class);
+	@NonNull private final CarrierProductRepository carrierProductRepository = SpringContextHolder.instance.getBean(CarrierProductRepository.class);
+	@NonNull private final CarrierGoodsTypeRepository goodsTypeRepository = SpringContextHolder.instance.getBean(CarrierGoodsTypeRepository.class);
+	@NonNull private final CarrierShipmentOrderServiceRepository carrierServiceRepository = SpringContextHolder.instance.getBean(CarrierShipmentOrderServiceRepository.class);
+	@NonNull private final ProductRepository productRepository = SpringContextHolder.instance.getBean(ProductRepository.class);
+	@NonNull private final IncotermsRepository incotermsRepository = SpringContextHolder.instance.getBean(IncotermsRepository.class);
+	@NonNull private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
+	@NonNull private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
+	@NonNull private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	@NonNull private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	private final ShipmentScheduleId shipmentScheduleId;
 
@@ -160,15 +167,32 @@ public class CarrierAdviseCommand
 		}
 		final I_M_Shipper shipper = shipperDAO.getById(shipperId);
 
-		return JsonDeliveryAdvisorRequest.builder()
+		final JsonDeliveryAdvisorRequest.JsonDeliveryAdvisorRequestBuilder requestBuilder = JsonDeliveryAdvisorRequest.builder()
 				.pickupDate(shipmentSchedule.getDateOrdered().toLocalDate().toString())
 				.pickupTimeFrom(TimeUtil.asLocalTime(shipper.getPickupTimeFrom()).toString())
 				.pickupTimeTo(TimeUtil.asLocalTime(shipper.getPickupTimeTo()).toString())
 				.pickupAddress(getJsonPickupAddress(shipmentSchedule))
 				.deliveryAddress(getJsonDeliveryAddress(shipmentSchedule))
 				.shipperConfig(Objects.requireNonNull(client.getJsonShipperConfig()))
-				.item(getJsonDeliveryAdvisorRequestItem(shipmentSchedule))
-				.build();
+				.item(getJsonDeliveryAdvisorRequestItem(shipmentSchedule));
+
+		final OrderAndLineId orderAndLineId = shipmentSchedule.getOrderAndLineId();
+		if (orderAndLineId != null)
+		{
+			final I_C_Order order = orderDAO.getById(orderAndLineId.getOrderId());
+			requestBuilder.customerReference(order.getPOReference());
+
+			final IncotermsId incotermsId = IncotermsId.ofRepoIdOrNull(order.getC_Incoterms_ID());
+			if (incotermsId != null)
+			{
+				final Incoterms incoterms = incotermsRepository.getById(incotermsId);
+				requestBuilder.incotermsValue(incoterms.getValue());
+			}
+
+		}
+
+
+		return requestBuilder.build();
 	}
 
 	private @NonNull JsonDeliveryAdvisorRequestItem getJsonDeliveryAdvisorRequestItem(final @NonNull ShipmentSchedule shipmentSchedule)

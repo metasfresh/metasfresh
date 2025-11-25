@@ -42,7 +42,12 @@ de.metas.shipper.client.nshift.NShiftShipAdvisorServiceTest.build_request_test=[
       ],
       "OrderNo": "randomUUID",
       "ProdConceptID": 0,
-      "References": [ ],
+      "References": [
+        {
+          "Kind": 63,
+          "Value": "incoterms"
+        }
+      ],
       "Services": [ ]
     },
     "options": {

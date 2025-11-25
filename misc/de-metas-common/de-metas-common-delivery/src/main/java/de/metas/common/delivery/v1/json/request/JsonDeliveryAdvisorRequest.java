@@ -51,6 +51,7 @@ public class JsonDeliveryAdvisorRequest
 	@Nullable String deliveryDate;
 	@Nullable String deliveryNote;
 	@Nullable String customerReference;
+	@Nullable String incotermsValue;
 	@NonNull JsonDeliveryAdvisorRequestItem item;
 	@NonNull JsonShipperConfig shipperConfig;
 }

@@ -74,6 +74,7 @@ public class WebConfig implements WebMvcConfigurer
 	@Override
 	public void extendMessageConverters(final List<HttpMessageConverter<?>> converters)
 	{
+		// prevent errors on serializing de.metas.ui.web.config.WebuiExceptionHandler#getErrorAttributes
 		final MediaType javascriptMediaType = MediaType.valueOf("application/javascript");
 		for (final HttpMessageConverter<?> converter : converters)
 		{

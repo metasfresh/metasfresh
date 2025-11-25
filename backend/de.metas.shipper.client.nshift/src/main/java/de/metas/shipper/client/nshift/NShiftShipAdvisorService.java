@@ -35,6 +35,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.shipper.client.nshift.json.JsonAddress;
 import de.metas.shipper.client.nshift.json.JsonAddressKind;
 import de.metas.shipper.client.nshift.json.JsonLine;
+import de.metas.shipper.client.nshift.json.JsonReference;
 import de.metas.shipper.client.nshift.json.JsonShipmentData;
 import de.metas.shipper.client.nshift.json.JsonShipmentOptions;
 import de.metas.shipper.client.nshift.json.request.JsonShipAdvisorRequest;
@@ -116,6 +117,16 @@ public class NShiftShipAdvisorService
 		dataBuilder.address(receiverAddressBuilder.build());
 
 		dataBuilder.line(buildNShiftLine(deliveryAdvisorRequest.getItem()));
+
+		//Add incoterms, if exists so carrier services can be provided via shipment rules based on it
+		if (deliveryAdvisorRequest.getIncotermsValue() != null)
+		{
+			dataBuilder.reference(JsonReference.builder()
+					.kind(63) // eSrkCustomField1 https://helpcenter.nshift.com/hc/en-us/articles/360003165473-Objects-and-Fields#ReferenceKind
+					.value(deliveryAdvisorRequest.getIncotermsValue())
+					.build()
+			);
+		}
 
 		return JsonShipAdvisorRequest.builder()
 				.options(options)
