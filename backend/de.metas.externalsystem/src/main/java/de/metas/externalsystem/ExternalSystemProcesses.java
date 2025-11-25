@@ -27,12 +27,12 @@ import de.metas.externalsystem.process.InvokeAlbertaAction;
 import de.metas.externalsystem.process.InvokeGRSSignumAction;
 import de.metas.externalsystem.process.InvokeOtherAction;
 import de.metas.externalsystem.process.InvokePCMAction;
+import de.metas.externalsystem.process.InvokeScriptedImportConversionAction;
 import de.metas.externalsystem.process.InvokeWooCommerceAction;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
 
-import javax.annotation.Nullable;
 import java.util.Optional;
 
 @UtilityClass
@@ -45,6 +45,7 @@ public class ExternalSystemProcesses
 			.put(ExternalSystemType.WOO, InvokeWooCommerceAction.class.getName())
 			.put(ExternalSystemType.GRSSignum, InvokeGRSSignumAction.class.getName())
 			.put(ExternalSystemType.ProCareManagement, InvokePCMAction.class.getName())
+			.put(ExternalSystemType.ScriptedImportConversion, InvokeScriptedImportConversionAction.class.getName())
 			.build();
 
 	@NonNull

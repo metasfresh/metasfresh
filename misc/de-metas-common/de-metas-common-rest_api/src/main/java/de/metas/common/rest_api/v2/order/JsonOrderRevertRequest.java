@@ -42,6 +42,8 @@ public class JsonOrderRevertRequest
 	String externalId;
 
 	@NonNull
-	@ApiModelProperty(position = 30, required = true, value = "This translates to 'AD_InputDataSource.internalName' of the data source the order in question was added with.")
-	String dataSource;
+	@ApiModelProperty(position = 30, required = true, //
+			value = "Identifier of the `ExternalSystem` record that tells where this Order came from.\n"
+					+ "This translates to 'ExternalSystem.value.'")
+	String externalSystemCode;
 }

@@ -23,6 +23,7 @@ import { appLaunchersLocation } from '../../routes/launchers';
 import { useMobileLocation } from '../../hooks/useMobileLocation';
 import { COMPONENT_TYPE_huConsolidation_consolidate } from '../../apps/huConsolidation';
 import HUConsolidationActivity from '../../apps/huConsolidation/activities/HUConsolidationActivity';
+import { getUIComponentFactory } from '../../reducers/wfProcesses/activityStateHandlers';
 
 const WFProcessScreen = () => {
   const { wfProcessId } = useMobileLocation();
@@ -70,7 +71,20 @@ const WFProcessScreen = () => {
 };
 
 const renderActivityComponent = ({ applicationId, wfProcessId, activityItem, isLastActivity }) => {
-  switch (activityItem.componentType) {
+  const componentType = activityItem.componentType;
+
+  const uiComponentFactory = getUIComponentFactory({ componentType });
+  if (uiComponentFactory != null) {
+    return uiComponentFactory({
+      applicationId,
+      wfProcessId,
+      activityId: activityItem.activityId,
+      activityState: activityItem,
+      isLastActivity,
+    });
+  }
+
+  switch (componentType) {
     case COMPONENTTYPE_ScanBarcode:
       return (
         <ScanActivity

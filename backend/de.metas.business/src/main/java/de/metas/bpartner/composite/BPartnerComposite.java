@@ -8,6 +8,8 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
+import de.metas.bpartner.GlnWithLabel;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.organization.OrgId;
@@ -28,7 +30,9 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
+import static de.metas.common.util.CoalesceUtil.coalesceSuppliersNotNull;
 import static de.metas.util.Check.assume;
 
 /*
@@ -82,13 +86,13 @@ public final class BPartnerComposite
 	{
 		this.orgId = orgId;
 
-		this.bpartner = coalesceSuppliers(
+		this.bpartner = coalesceSuppliersNotNull(
 				() -> bpartner,
 				() -> BPartner.builder().build());
 
-		this.locations = new ArrayList<>(coalesce(locations, ImmutableList.of()));
-		this.contacts = new ArrayList<>(coalesce(contacts, ImmutableList.of()));
-		this.bankAccounts = new ArrayList<>(coalesce(bankAccounts, ImmutableList.of()));
+		this.locations = new ArrayList<>(coalesceNotNull(locations, ImmutableList.of()));
+		this.contacts = new ArrayList<>(coalesceNotNull(contacts, ImmutableList.of()));
+		this.bankAccounts = new ArrayList<>(coalesceNotNull(bankAccounts, ImmutableList.of()));
 	}
 
 	public ImmutableSet<GLN> extractLocationGlns()
@@ -100,6 +104,16 @@ public final class BPartnerComposite
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	public ImmutableSet<GlnWithLabel> extractLocationGlnsWithLabel()
+	{
+		return this.locations
+				.stream()
+				.map(BPartnerLocation::getGln)
+				.filter(Objects::nonNull)
+				.map(gln -> GlnWithLabel.ofGLN(gln, bpartner.getGlnLookupLabel()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+	
 	public BPartnerComposite deepCopy()
 	{
 		final BPartnerCompositeBuilder result = this

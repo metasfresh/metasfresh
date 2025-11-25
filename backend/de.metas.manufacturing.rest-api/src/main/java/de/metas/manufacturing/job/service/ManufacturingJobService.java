@@ -57,7 +57,7 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.util.TimeUtil;
@@ -126,7 +126,7 @@ public class ManufacturingJobService
 				.orgDAO(Services.get(IOrgDAO.class))
 				.warehouseBL(Services.get(IWarehouseBL.class))
 				.productBL(Services.get(IProductBL.class))
-				.attributeDAO(Services.get(IAttributeDAO.class))
+				.asiBL(Services.get(IAttributeSetInstanceBL.class))
 				.ppOrderBL(ppOrderBL = Services.get(IHUPPOrderBL.class))
 				.ppOrderBOMBL(ppOrderBOMBL = Services.get(IPPOrderBOMBL.class))
 				.ppOrderRoutingRepository(Services.get(IPPOrderRoutingRepository.class))

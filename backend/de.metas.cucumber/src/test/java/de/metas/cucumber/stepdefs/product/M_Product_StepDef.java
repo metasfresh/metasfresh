@@ -55,15 +55,16 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_UOM_Conversion;
-import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.DB;
@@ -83,36 +84,21 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_M_Product_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_Category_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_Value;
 
+@RequiredArgsConstructor
 public class M_Product_StepDef
 {
-	private final M_Product_StepDefData productTable;
-	private final M_AttributeSet_StepDefData attributeSetTable;
-	private final C_BPartner_StepDefData bpartnerTable;
-	private final M_Product_Category_StepDefData productCategoryTable;
-	private final AD_Org_StepDefData orgTable;
-	private final TestContext restTestContext;
+	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final M_AttributeSet_StepDefData attributeSetTable;
+	@NonNull private final C_BPartner_StepDefData bpartnerTable;
+	@NonNull private final M_Product_Category_StepDefData productCategoryTable;
+	@NonNull private final AD_Org_StepDefData orgTable;
+	@NonNull private final TestContext restTestContext;
 
-	private final IProductDAO productDAO = Services.get(IProductDAO.class);
-	private final ITaxBL taxBL = Services.get(ITaxBL.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private final ExternalIdentifierProductLookupService productLookupService = SpringContextHolder.instance.getBean(ExternalIdentifierProductLookupService.class);
-
-	public M_Product_StepDef(
-			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final M_AttributeSet_StepDefData attributeSetTable,
-			@NonNull final C_BPartner_StepDefData bpartnerTable,
-			@NonNull final M_Product_Category_StepDefData productCategoryTable,
-			@NonNull final AD_Org_StepDefData orgTable,
-			@NonNull final TestContext restTestContext)
-	{
-		this.productTable = productTable;
-		this.attributeSetTable = attributeSetTable;
-		this.bpartnerTable = bpartnerTable;
-		this.productCategoryTable = productCategoryTable;
-		this.orgTable = orgTable;
-		this.restTestContext = restTestContext;
-	}
+	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	@NonNull private final ITaxBL taxBL = Services.get(ITaxBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final ExternalIdentifierProductLookupService productLookupService = SpringContextHolder.instance.getBean(ExternalIdentifierProductLookupService.class);
 
 	@Given("metasfresh contains M_Products:")
 	public void metasfresh_contains_m_product(@NonNull final io.cucumber.datatable.DataTable dataTable)
@@ -329,8 +315,8 @@ public class M_Product_StepDef
 		final String asIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_Product.COLUMNNAME_M_AttributeSet_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(asIdentifier))
 		{
-			final I_M_AttributeSet asRecord = attributeSetTable.get(asIdentifier);
-			productRecord.setM_AttributeSet_ID(asRecord.getM_AttributeSet_ID());
+			final AttributeSetId attributeSetId = attributeSetTable.getId(asIdentifier);
+			productRecord.setM_AttributeSet_ID(attributeSetId.getRepoId());
 		}
 
 		InterfaceWrapperHelper.saveRecord(productRecord);

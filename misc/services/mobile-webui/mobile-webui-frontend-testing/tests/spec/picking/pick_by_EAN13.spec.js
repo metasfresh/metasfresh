@@ -76,18 +76,21 @@ test('LU/CU -> top level TU', async ({ page }) => {
     await test.step("Pick all 3 lines", async () => {
         await PickingJobScreen.pickHU({
             qrCode: masterdata.products.P1.gtin,
+            isScanDirectly: true,
             expectQtyEntered: 11
         });
         await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '11 Stk', qtyPicked: '11 Stk', qtyPickedCatchWeight: '' });
 
         await PickingJobScreen.pickHU({
             qrCode: masterdata.products.P2.gtin,
+            isScanDirectly: true,
             expectQtyEntered: 12
         });
         await PickingJobScreen.expectLineButton({ index: 2, qtyToPick: '12 Stk', qtyPicked: '12 Stk', qtyPickedCatchWeight: '' });
 
         await PickingJobScreen.pickHU({
             qrCode: masterdata.products.P3.gtin,
+            isScanDirectly: true,
             expectQtyEntered: 13
         });
         await PickingJobScreen.expectLineButton({ index: 3, qtyToPick: '13 Stk', qtyPicked: '13 Stk', qtyPickedCatchWeight: '' });
@@ -163,12 +166,14 @@ test('LU/CU -> LU/TU1, LU/TU2', async ({ page }) => {
 
         await PickingJobScreen.pickHU({
             qrCode: masterdata.products.P1.gtin,
+            isScanDirectly: true,
             expectQtyEntered: 11
         });
         await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '11 Stk', qtyPicked: '11 Stk', qtyPickedCatchWeight: '' });
 
         await PickingJobScreen.pickHU({
             qrCode: masterdata.products.P2.gtin,
+            isScanDirectly: true,
             expectQtyEntered: 12
         });
         await PickingJobScreen.expectLineButton({ index: 2, qtyToPick: '12 Stk', qtyPicked: '12 Stk', qtyPickedCatchWeight: '' });
@@ -181,6 +186,7 @@ test('LU/CU -> LU/TU1, LU/TU2', async ({ page }) => {
 
         await PickingJobScreen.pickHU({
             qrCode: masterdata.products.P3.gtin,
+            isScanDirectly: true,
             expectQtyEntered: 13
         });
         await PickingJobScreen.expectLineButton({ index: 3, qtyToPick: '13 Stk', qtyPicked: '13 Stk', qtyPickedCatchWeight: '' });
@@ -257,18 +263,21 @@ test('LU/CU -> LU/CU', async ({ page }) => {
     await test.step("Pick all 3 lines", async () => {
         await PickingJobScreen.pickHU({
             qrCode: masterdata.products.P1.gtin,
+            isScanDirectly: true,
             expectQtyEntered: 11
         });
         await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '11 Stk', qtyPicked: '11 Stk', qtyPickedCatchWeight: '' });
 
         await PickingJobScreen.pickHU({
             qrCode: masterdata.products.P2.gtin,
+            isScanDirectly: true,
             expectQtyEntered: 12
         });
         await PickingJobScreen.expectLineButton({ index: 2, qtyToPick: '12 Stk', qtyPicked: '12 Stk', qtyPickedCatchWeight: '' });
 
         await PickingJobScreen.pickHU({
             qrCode: masterdata.products.P3.gtin,
+            isScanDirectly: true,
             expectQtyEntered: 13
         });
         await PickingJobScreen.expectLineButton({ index: 3, qtyToPick: '13 Stk', qtyPicked: '13 Stk', qtyPickedCatchWeight: '' });

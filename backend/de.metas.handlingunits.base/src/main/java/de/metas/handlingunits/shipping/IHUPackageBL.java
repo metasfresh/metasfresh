@@ -5,10 +5,13 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Package_HU;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.mpackage.Package;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
+import java.util.List;
+import java.util.Set;
 
 public interface IHUPackageBL extends ISingletonService
 {
@@ -16,6 +19,10 @@ public interface IHUPackageBL extends ISingletonService
 	 * Unassign all HUs from given package
 	 */
 	void destroyHUPackage(I_M_Package mpackage);
+
+	void destroyHUPackages(Set<HuId> huId);
+
+	List<PackageId> retrievePackageIds(HuId huId);
 
 	/**
 	 * Creates M_Package and an {@link I_M_Package_HU}

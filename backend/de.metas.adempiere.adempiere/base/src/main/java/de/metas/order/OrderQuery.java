@@ -23,6 +23,7 @@
 package de.metas.order;
 
 import de.metas.document.DocBaseAndSubType;
+import de.metas.externalsystem.ExternalSystemId;
 import de.metas.impexp.InputDataSourceId;
 import de.metas.organization.OrgId;
 import de.metas.util.lang.ExternalId;
@@ -46,6 +47,7 @@ public class OrderQuery
 	String documentNo;
 	@Nullable
 	DocBaseAndSubType docType;
+	@Nullable ExternalSystemId externalSystemId;
 	@Nullable
 	InputDataSourceId inputDataSourceId;
 }

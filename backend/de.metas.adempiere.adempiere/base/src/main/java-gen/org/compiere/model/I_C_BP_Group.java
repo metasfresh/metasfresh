@@ -872,4 +872,98 @@ public interface I_C_BP_Group
 
 	ModelColumn<I_C_BP_Group, Object> COLUMN_Value = new ModelColumn<>(I_C_BP_Group.class, "Value", null);
 	String COLUMNNAME_Value = "Value";
+
+	/**
+	 * Set Incoterms.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Incoterms_ID (int C_Incoterms_ID);
+
+	/**
+	 * Get Incoterms.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Incoterms_ID();
+
+	@Nullable org.compiere.model.I_C_Incoterms getC_Incoterms();
+
+	void setC_Incoterms(@Nullable org.compiere.model.I_C_Incoterms C_Incoterms);
+
+	ModelColumn<I_C_BP_Group, org.compiere.model.I_C_Incoterms> COLUMN_C_Incoterms_ID = new ModelColumn<>(I_C_BP_Group.class, "C_Incoterms_ID", org.compiere.model.I_C_Incoterms.class);
+	String COLUMNNAME_C_Incoterms_ID = "C_Incoterms_ID";
+
+	/**
+	 * Set Incoterm Location.
+	 * Anzugebender Ort für Handelsklausel
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIncotermLocation (@Nullable java.lang.String IncotermLocation);
+
+	/**
+	 * Get Incoterm Location.
+	 * Anzugebender Ort für Handelsklausel
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIncotermLocation();
+
+	ModelColumn<I_C_BP_Group, Object> COLUMN_IncotermLocation = new ModelColumn<>(I_C_BP_Group.class, "IncotermLocation", null);
+	String COLUMNNAME_IncotermLocation = "IncotermLocation";
+
+	/**
+	 * Set PO Incoterms.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPO_Incoterms_ID (int PO_Incoterms_ID);
+
+	/**
+	 * Get PO Incoterms.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPO_Incoterms_ID();
+
+	@Nullable org.compiere.model.I_C_Incoterms getPO_Incoterms();
+
+	void setPO_Incoterms(@Nullable org.compiere.model.I_C_Incoterms PO_Incoterms);
+
+	ModelColumn<I_C_BP_Group, org.compiere.model.I_C_Incoterms> COLUMN_PO_Incoterms_ID = new ModelColumn<>(I_C_BP_Group.class, "PO_Incoterms_ID", org.compiere.model.I_C_Incoterms.class);
+	String COLUMNNAME_PO_Incoterms_ID = "PO_Incoterms_ID";
+
+	/**
+	 * Set PO Incoterm Location.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPO_IncotermLocation (@Nullable java.lang.String PO_IncotermLocation);
+
+	/**
+	 * Get PO Incoterm Location.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPO_IncotermLocation();
+
+	ModelColumn<I_C_BP_Group, Object> COLUMN_PO_IncotermLocation = new ModelColumn<>(I_C_BP_Group.class, "PO_IncotermLocation", null);
+	String COLUMNNAME_PO_IncotermLocation = "PO_IncotermLocation";
 }

@@ -24,6 +24,7 @@ package de.metas.util.collections;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Maps;
 import de.metas.util.ImmutableMapEntry;
@@ -33,7 +34,8 @@ import org.junit.jupiter.api.Test;
 import java.util.Arrays;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class CollectionUtilsTest
 {
@@ -308,6 +310,25 @@ class CollectionUtilsTest
 			assertThat(CollectionUtils.mapKeys(multimap, k -> k == 1 ? k * 10 : k))
 					.isEqualTo(ImmutableSetMultimap.of(10, "one", 2, "two"));
 		}
+	}
 
+	@Nested
+	class fillMissingKeys
+	{
+		@Test
+		void standardTest()
+		{
+			final ImmutableMap<Integer, String> map = ImmutableMap.of(1, "one", 2, "two");
+			assertThat(CollectionUtils.fillMissingKeys(map, ImmutableSet.of(1, 3, 4), "new"))
+					.isEqualTo(ImmutableMap.of(1, "one", 2, "two", 3, "new", 4, "new"));
+		}
+
+		@Test
+		void noMissingKeys()
+		{
+			final ImmutableMap<Integer, String> map = ImmutableMap.of(1, "one", 2, "two");
+			assertThat(CollectionUtils.fillMissingKeys(map, ImmutableSet.of(1, 2), "new"))
+					.isSameAs(map);
+		}
 	}
 }

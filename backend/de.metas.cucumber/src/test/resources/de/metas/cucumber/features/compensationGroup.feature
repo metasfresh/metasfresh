@@ -30,7 +30,7 @@ Feature: Compensation Group
     # create bpartner with invoice-rule "immediate", because we need just an invoice without a shipment
     And metasfresh contains C_BPartners:
       | Identifier        | Name              | M_PricingSystem_ID.Identifier | OPT.IsCustomer | OPT.CompanyName       | OPT.InvoiceRule | C_PaymentTerm_ID.Value |
-      | customer_bp_30_02 | customer_bp_30_02 | ps_1                          | Y              | customer_bp_30_02_cmp | I               | 1000002                    |
+      | customer_bp_30_02 | customer_bp_30_02 | ps_1                          | Y              | customer_bp_30_02_cmp | I               | 1000002                |
 
     And metasfresh contains C_Location:
       | C_Location_ID.Identifier | CountryCode | OPT.Address1 | OPT.Postal | OPT.City       |
@@ -48,6 +48,7 @@ Feature: Compensation Group
       "orgCode": "001",
       "externalHeaderId": 12301,
       "externalLineId": 123011,
+      "externalSystemCode": "Shopware6",
       "dataSource": "int-Shopware",
       "bpartner": {
           "bpartnerIdentifier": "gln-1234567890123",
@@ -73,6 +74,7 @@ Feature: Compensation Group
       "orgCode": "001",
       "externalHeaderId": 12301,
       "externalLineId": 123012,
+      "externalSystemCode": "Shopware6",
       "dataSource": "int-Shopware",
       "bpartner": {
           "bpartnerIdentifier": "gln-1234567890123",
@@ -104,7 +106,7 @@ Feature: Compensation Group
 """
 {
     "externalHeaderId": "12301",
-    "inputDataSourceName": "int-Shopware",
+    "externalSystemCode": "Shopware6",
     "ship": true,
     "invoice": true,
     "closeOrder": false
@@ -152,6 +154,7 @@ Feature: Compensation Group
       "orgCode": "001",
       "externalHeaderId": 12302,
       "externalLineId": 123021,
+      "externalSystemCode": "Shopware6",
       "dataSource": "int-Shopware",
       "bpartner": {
           "bpartnerIdentifier": "gln-1234567890123",
@@ -179,6 +182,7 @@ Feature: Compensation Group
       "orgCode": "001",
       "externalHeaderId": 12302,
       "externalLineId": 123022,
+      "externalSystemCode": "Shopware6",
       "dataSource": "int-Shopware",
       "bpartner": {
           "bpartnerIdentifier": "gln-1234567890123",
@@ -208,7 +212,7 @@ Feature: Compensation Group
 """
 {
     "externalHeaderId": "12302",
-    "inputDataSourceName": "int-Shopware",
+    "externalSystemCode": "Shopware6",
     "ship": true,
     "invoice": true,
     "closeOrder": false

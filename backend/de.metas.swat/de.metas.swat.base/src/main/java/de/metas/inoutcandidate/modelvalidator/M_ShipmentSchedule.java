@@ -280,7 +280,7 @@ public class M_ShipmentSchedule
 
 		if (qtyDelivered.compareTo(qtyOrdered) > 0)
 		{
-			throw new AdempiereException(MSG_DECREASE_QTY_ORDERED_BELOW_QTY_ALREADY_DELIVERED_IS_NOT_ALLOWED, qtyDelivered);
+			throw new AdempiereException(MSG_DECREASE_QTY_ORDERED_BELOW_QTY_ALREADY_DELIVERED_IS_NOT_ALLOWED, qtyDelivered).setParameter("M_ShipmentSchedule_ID", shipmentSchedule.getM_ShipmentSchedule_ID());
 		}
 
 		updateQtyOrderedOfOrderLineAndReserveStock(shipmentSchedule);

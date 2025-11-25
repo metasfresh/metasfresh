@@ -329,6 +329,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	Optional<HuId> getHUIdByValueOrExternalBarcode(@NonNull ScannedCode scannedCode);
 
+	List<I_M_HU> retrieveIncludedHUs(I_M_HU huId);
+
 	@Builder
 	@Value
 	class TopLevelHusQuery

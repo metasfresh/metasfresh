@@ -4,7 +4,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.allocation.transfer.HUTransformServiceTests;
 import de.metas.handlingunits.allocation.transfer.HUTransformTestsBase;
 import de.metas.handlingunits.allocation.transfer.HUTransformTestsBase.TestHUs;
-import de.metas.handlingunits.inventory.InventoryRepository;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
@@ -16,6 +16,7 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_SysConfig;
@@ -72,13 +73,17 @@ public class HUTransformTracingTests
 	@BeforeEach
 	public void init()
 	{
+		AdempiereTestHelper.get().init();
+		
 		SpringContextHolder.registerJUnitBean(HUQRCodesService.newInstanceForUnitTesting());
 
 		testsBase = new HUTransformTestsBase();
 
 		// with this, we can avoid having to start the spring context
-		huTraceRepository = new HUTraceRepository();
-		final HUTraceEventsService huTraceEventsService = new HUTraceEventsService(huTraceRepository, new HUAccessService(), new InventoryRepository());
+		final HUTraceEventsService huTraceEventsService = new HUTraceEventsService(
+				huTraceRepository = new HUTraceRepository(),
+				new HUAccessService(),
+				InventoryService.newInstanceForUnitTesting());
 		HUTraceModuleInterceptor.INSTANCE.setHUTraceEventsService(huTraceEventsService);
 
 		final IModelInterceptorRegistry modelInterceptorRegistry = Services.get(IModelInterceptorRegistry.class);

@@ -46,6 +46,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Attribute;
@@ -74,7 +75,7 @@ public class HUPIAttributeBuilder
 	public static HUPIAttributeBuilder newInstance(@NonNull final AttributeCode attributeCode)
 	{
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-		final I_M_Attribute attribute = attributeDAO.getAttributeByCode(attributeCode);
+		final Attribute attribute = attributeDAO.getAttributeByCode(attributeCode);
 		return new HUPIAttributeBuilder(attribute);
 	}
 
@@ -95,6 +96,13 @@ public class HUPIAttributeBuilder
 	private HUPIAttributeBuilder(final I_M_Attribute attribute)
 	{
 		this(AttributeId.ofRepoId(attribute.getM_Attribute_ID()));
+		setInstanceAttribute(attribute.isInstanceAttribute());
+		setMandatory(attribute.isMandatory());
+	}
+
+	private HUPIAttributeBuilder(@NonNull final Attribute attribute)
+	{
+		this(attribute.getAttributeId());
 		setInstanceAttribute(attribute.isInstanceAttribute());
 		setMandatory(attribute.isMandatory());
 	}

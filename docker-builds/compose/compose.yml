@@ -201,6 +201,7 @@ services:
     environment:
       JAVA_MAX_HEAP: "210M"
       JAVA_DISABLE_JAR_CHECKING: "true"
+      JAVA_JVM_PARAMS: "-XX:-UseContainerSupport"
       RABBITMQ_HOST: "rabbitmq"
       RABBITMQ_PORT: "5672"
       RABBITMQ_USER: "metasfresh"

@@ -50,6 +50,7 @@ public class GLN
 		return new GLN(code);
 	}
 
+	@Nullable
 	@JsonCreator
 	public static GLN ofNullableString(@Nullable final String code)
 	{
@@ -93,6 +94,7 @@ public class GLN
 		return glns.stream().map(GLN::getCode).collect(ImmutableSet.toImmutableSet());
 	}
 
+	@Nullable
 	public static String toCode(@Nullable final GLN gln)
 	{
 		return gln != null ? gln.getCode() : null;

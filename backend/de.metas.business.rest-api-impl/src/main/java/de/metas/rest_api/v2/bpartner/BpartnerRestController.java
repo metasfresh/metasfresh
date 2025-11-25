@@ -114,7 +114,6 @@ public class BpartnerRestController
 	{
 		return retrieveBPartner(null, bpartnerIdentifierStr);
 	}
-
 	@GetMapping("{orgCode}/{bpartnerIdentifier}")
 	public ResponseEntity<JsonResponseComposite> retrieveBPartner(
 

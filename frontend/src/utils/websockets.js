@@ -22,9 +22,17 @@ export function connectWS(topic, onMessageCallback) {
   const subscribe = ({ tries = 3 } = {}) => {
     if (this.sockClient.connected || tries <= 0) {
       this.sockSubscription = this.sockClient.subscribe(topic, (msg) => {
-        // console.log("WS: Got event on %s: %s", topic, msg.body);
+        //console.log('WS: Got event on %s: %s', topic, msg.body);
         if (topic === this.sockTopic) {
-          onMessageCallback(JSON.parse(msg.body));
+          try {
+            onMessageCallback(JSON.parse(msg.body));
+          } catch (error) {
+            console.log('Failed forwarding websocket message', {
+              msg,
+              onMessageCallback,
+              error,
+            });
+          }
         } else {
           // console.warn(
           //   "Discard event because the WS topic changed. Current WS topic is %s",

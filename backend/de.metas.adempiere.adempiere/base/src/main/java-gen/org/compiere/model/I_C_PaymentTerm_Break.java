@@ -1,7 +1,5 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_PaymentTerm_Break
@@ -123,7 +121,7 @@ public interface I_C_PaymentTerm_Break
 	 * Set Description.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setDescription (java.lang.String Description);
@@ -132,7 +130,7 @@ public interface I_C_PaymentTerm_Break
 	 * Get Description.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	java.lang.String getDescription();
@@ -164,45 +162,45 @@ public interface I_C_PaymentTerm_Break
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set SeqNo..
+	 * Set Offset days.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setLine (int Line);
+	void setOffsetDays (int OffsetDays);
 
 	/**
-	 * Get SeqNo..
+	 * Get Offset days.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getLine();
+	int getOffsetDays();
 
-	ModelColumn<I_C_PaymentTerm_Break, Object> COLUMN_Line = new ModelColumn<>(I_C_PaymentTerm_Break.class, "Line", null);
-	String COLUMNNAME_Line = "Line";
+	ModelColumn<I_C_PaymentTerm_Break, Object> COLUMN_OffsetDays = new ModelColumn<>(I_C_PaymentTerm_Break.class, "OffsetDays", null);
+	String COLUMNNAME_OffsetDays = "OffsetDays";
 
 	/**
 	 * Set Percent.
 	 * Percentage
 	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setPercent (@Nullable BigDecimal Percent);
+	void setPercent (int Percent);
 
 	/**
 	 * Get Percent.
 	 * Percentage
 	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getPercent();
+	int getPercent();
 
 	ModelColumn<I_C_PaymentTerm_Break, Object> COLUMN_Percent = new ModelColumn<>(I_C_PaymentTerm_Break.class, "Percent", null);
 	String COLUMNNAME_Percent = "Percent";
@@ -229,6 +227,27 @@ public interface I_C_PaymentTerm_Break
 
 	ModelColumn<I_C_PaymentTerm_Break, Object> COLUMN_ReferenceDateType = new ModelColumn<>(I_C_PaymentTerm_Break.class, "ReferenceDateType", null);
 	String COLUMNNAME_ReferenceDateType = "ReferenceDateType";
+
+	/**
+	 * Set SeqNo..
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSeqNo (int SeqNo);
+
+	/**
+	 * Get SeqNo..
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getSeqNo();
+
+	ModelColumn<I_C_PaymentTerm_Break, Object> COLUMN_SeqNo = new ModelColumn<>(I_C_PaymentTerm_Break.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
 	 * Get Updated.

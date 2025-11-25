@@ -52,25 +52,46 @@ public interface I_Carrier_ShipmentOrder
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Produkt.
+	 * Set Carrier Material Assignment.
 	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setCarrier_Product (java.lang.String Carrier_Product);
+	void setCarrier_Goods_Type_ID (int Carrier_Goods_Type_ID);
 
 	/**
-	 * Get Produkt.
+	 * Get Carrier Material Assignment.
 	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getCarrier_Product();
+	int getCarrier_Goods_Type_ID();
 
-	ModelColumn<I_Carrier_ShipmentOrder, Object> COLUMN_Carrier_Product = new ModelColumn<>(I_Carrier_ShipmentOrder.class, "Carrier_Product", null);
-	String COLUMNNAME_Carrier_Product = "Carrier_Product";
+	ModelColumn<I_Carrier_ShipmentOrder, org.compiere.model.I_Carrier_Goods_Type> COLUMN_Carrier_Goods_Type_ID = new ModelColumn<>(I_Carrier_ShipmentOrder.class, "Carrier_Goods_Type_ID", org.compiere.model.I_Carrier_Goods_Type.class);
+	String COLUMNNAME_Carrier_Goods_Type_ID = "Carrier_Goods_Type_ID";
+
+	/**
+	 * Set Carrier Product.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCarrier_Product_ID (int Carrier_Product_ID);
+
+	/**
+	 * Get Carrier Product.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCarrier_Product_ID();
+
+	ModelColumn<I_Carrier_ShipmentOrder, org.compiere.model.I_Carrier_Product> COLUMN_Carrier_Product_ID = new ModelColumn<>(I_Carrier_ShipmentOrder.class, "Carrier_Product_ID", org.compiere.model.I_Carrier_Product.class);
+	String COLUMNNAME_Carrier_Product_ID = "Carrier_Product_ID";
 
 	/**
 	 * Set Shipment Order.
@@ -246,6 +267,48 @@ public interface I_Carrier_ShipmentOrder
 
 	ModelColumn<I_Carrier_ShipmentOrder, Object> COLUMN_M_ShipperTransportation_ID = new ModelColumn<>(I_Carrier_ShipmentOrder.class, "M_ShipperTransportation_ID", null);
 	String COLUMNNAME_M_ShipperTransportation_ID = "M_ShipperTransportation_ID";
+
+	/**
+	 * Set Pickup Time From.
+	 *
+	 * <br>Type: Time
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPickupTimeFrom (java.sql.Timestamp PickupTimeFrom);
+
+	/**
+	 * Get Pickup Time From.
+	 *
+	 * <br>Type: Time
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getPickupTimeFrom();
+
+	ModelColumn<I_Carrier_ShipmentOrder, Object> COLUMN_PickupTimeFrom = new ModelColumn<>(I_Carrier_ShipmentOrder.class, "PickupTimeFrom", null);
+	String COLUMNNAME_PickupTimeFrom = "PickupTimeFrom";
+
+	/**
+	 * Set Abholung Uhrzeit bis.
+	 *
+	 * <br>Type: Time
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPickupTimeTo (java.sql.Timestamp PickupTimeTo);
+
+	/**
+	 * Get Abholung Uhrzeit bis.
+	 *
+	 * <br>Type: Time
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getPickupTimeTo();
+
+	ModelColumn<I_Carrier_ShipmentOrder, Object> COLUMN_PickupTimeTo = new ModelColumn<>(I_Carrier_ShipmentOrder.class, "PickupTimeTo", null);
+	String COLUMNNAME_PickupTimeTo = "PickupTimeTo";
 
 	/**
 	 * Set Empfängerort.

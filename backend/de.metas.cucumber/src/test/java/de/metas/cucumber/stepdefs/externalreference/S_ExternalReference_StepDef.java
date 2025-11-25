@@ -34,6 +34,8 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.AD_User_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
@@ -263,11 +265,7 @@ public class S_ExternalReference_StepDef
 	@And("remove external reference if exists:")
 	public void remove_external_reference_if_exists(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			removeExternalReferenceIfExists(tableRow);
-		}
+		DataTableRows.of(dataTable).forEach(this::removeExternalReferenceIfExists);
 	}
 
 	@Given("metasfresh contains S_ExternalReferences")
@@ -377,13 +375,17 @@ public class S_ExternalReference_StepDef
 		externalReferenceRepository.save(externalReference);
 	}
 
-	private void removeExternalReferenceIfExists(@NonNull final Map<String, String> tableRow)
+	private void removeExternalReferenceIfExists(@NonNull DataTableRow row)
 	{
-		final String externalReference = DataTableUtil.extractStringForColumnName(tableRow, I_S_ExternalReference.COLUMNNAME_ExternalReference);
-		final ExternalSystemType externalSystemType = ExternalSystemType.ofValue(DataTableUtil.extractStringForColumnName(tableRow, "ExternalSystem"));
-		final ExternalSystem externalSystem = externalSystemRepository.getByType(externalSystemType);
-		final IExternalReferenceType referenceType = externalReferenceTypes.ofCodeNotNull(DataTableUtil.extractStringForColumnName(tableRow, I_S_ExternalReference.COLUMNNAME_Type));
+		final String externalReference = row.getAsString(I_S_ExternalReference.COLUMNNAME_ExternalReference);
+		final ExternalSystemType externalSystemType = ExternalSystemType.ofValue(row.getAsString("ExternalSystem"));
+		final ExternalSystem externalSystem = externalSystemRepository.getOptionalByType(externalSystemType).orElse(null);
+		if (externalSystem == null)
+		{
+			return;
+		}
 
+		final IExternalReferenceType referenceType = externalReferenceTypes.ofCodeNotNull(row.getAsString(I_S_ExternalReference.COLUMNNAME_Type));
 		externalReferenceRepository.deleteByReference(externalReference, externalSystem.getId(), referenceType);
 	}
 

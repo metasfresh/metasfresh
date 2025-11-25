@@ -1,10 +1,11 @@
 package de.metas.shipper.gateway.nshift;
 
 import de.metas.shipper.gateway.commons.converters.v1.JsonShipperConverter;
+import de.metas.shipper.gateway.commons.mapping.ShipperMappingConfigRepository;
 import de.metas.shipper.gateway.commons.model.ShipmentOrderLogRepository;
-import de.metas.shipper.gateway.commons.model.ShipperConfig;
 import de.metas.shipper.gateway.commons.model.ShipperConfigRepository;
-import de.metas.shipper.gateway.nshift.client.NShiftShipmentService;
+import de.metas.shipper.gateway.nshift.client.ShipAdvisorService;
+import de.metas.shipper.client.nshift.NShiftShipmentService;
 import de.metas.shipper.gateway.nshift.client.NShiftShipperGatewayClient;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.ShipperGatewayClientFactory;
@@ -22,6 +23,8 @@ public class NShiftShipperGatewayClientFactory implements ShipperGatewayClientFa
 	@NonNull private final JsonShipperConverter jsonConverter;
 	@NonNull private final ShipmentOrderLogRepository shipmentOrderLogRepository;
 	@NonNull private final NShiftShipmentService shipmentService;
+	@NonNull private final ShipAdvisorService shipAdvisorService;
+	@NonNull private final ShipperMappingConfigRepository shipperMappingConfigRepository;
 
 
 	@Override
@@ -30,13 +33,13 @@ public class NShiftShipperGatewayClientFactory implements ShipperGatewayClientFa
 	@Override
 	public ShipperGatewayClient newClientForShipperId(@NonNull final ShipperId shipperId)
 	{
-		final ShipperConfig config = configRepository.getByShipperId(shipperId);
-
 		return NShiftShipperGatewayClient.builder()
-				.shipperConfig(config)
+				.shipperConfig(configRepository.getByShipperId(shipperId))
+				.mappingConfigs(shipperMappingConfigRepository.getByShipperId(shipperId))
 				.jsonConverter(jsonConverter)
 				.shipmentOrderLogRepository(shipmentOrderLogRepository)
 				.shipmentService(shipmentService)
+				.shipAdvisorService(shipAdvisorService)
 				.build();
 	}
 }

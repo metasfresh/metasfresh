@@ -447,4 +447,19 @@ public class C_OrderLine
 			orderLineBL.updateLineNetAmtFromQtyEntered(orderLine);
 		}
 	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_IsWithoutCharge})
+	public void updatePriceToStd(final I_C_OrderLine orderLine)
+	{
+		if (!orderLine.isWithoutCharge())
+		{
+			orderLine.setPriceActual(orderLine.getPriceStd());
+			orderLine.setPriceEntered(orderLine.getPriceStd());
+			orderLine.setIsManualPrice(false);
+
+			final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+			orderLineBL.updateLineNetAmtFromQtyEntered(orderLine);
+		}
+	}
 }

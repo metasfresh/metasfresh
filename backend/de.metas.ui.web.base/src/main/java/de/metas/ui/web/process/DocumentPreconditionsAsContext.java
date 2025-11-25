@@ -137,4 +137,10 @@ public final class DocumentPreconditionsAsContext implements WebuiPreconditionsC
 	{
 		return OptionalBoolean.ofBoolean(!document.isNew());
 	}
+
+	@Override
+	public OptionalBoolean isProcessedDocument()
+	{
+		return OptionalBoolean.ofBoolean(document.isProcessed());
+	}
 }

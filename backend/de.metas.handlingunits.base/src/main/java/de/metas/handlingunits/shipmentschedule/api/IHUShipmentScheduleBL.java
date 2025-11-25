@@ -11,6 +11,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOut;
+import de.metas.inoutcandidate.api.ShipmentScheduleLoadingCache;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
@@ -135,5 +136,9 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 
 	Quantity getQtyScheduledForPicking(@NonNull I_M_ShipmentSchedule shipmentScheduleRecord);
 
+	Quantity getQtyRemainingToScheduleForPicking(@NonNull I_M_ShipmentSchedule shipmentScheduleRecord);
+
 	void flagForRecompute(@NonNull Set<ShipmentScheduleId> shipmentScheduleIds);
+
+	ShipmentScheduleLoadingCache<de.metas.handlingunits.model.I_M_ShipmentSchedule> newLoadingCache();
 }

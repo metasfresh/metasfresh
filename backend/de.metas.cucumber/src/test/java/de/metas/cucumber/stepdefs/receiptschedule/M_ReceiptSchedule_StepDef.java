@@ -24,8 +24,8 @@ package de.metas.cucumber.stepdefs.receiptschedule;
 
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
-import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
-import de.metas.cucumber.stepdefs.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -48,6 +48,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.Mutable;
@@ -262,11 +263,16 @@ public class M_ReceiptSchedule_StepDef
 		final StepDefDataIdentifier orderLineIdentifier = row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID);
 		final OrderLineId purchaseOrderLineId = orderLineTable.getId(orderLineIdentifier);
 
-		final I_M_ReceiptSchedule receiptSchedule = queryBL.createQueryBuilder(I_M_ReceiptSchedule.class)
-				.addEqualsFilter(I_M_ReceiptSchedule.COLUMN_C_OrderLine_ID, purchaseOrderLineId)
-				.create()
-				.firstOnly(I_M_ReceiptSchedule.class);
 
+
+		 final IQueryBuilder<I_M_ReceiptSchedule> queryBuilder = queryBL.createQueryBuilder(I_M_ReceiptSchedule.class)
+				.addEqualsFilter(I_M_ReceiptSchedule.COLUMN_C_OrderLine_ID, purchaseOrderLineId);
+
+		// to prevent that we continue before updates are finished
+		// on order complete (also after reactivating), we update async, but without any invalidation we could check like on shipment schedules
+		row.getAsOptionalBigDecimal(COLUMNNAME_QtyOrdered).ifPresent(qtyOrdered -> queryBuilder.addEqualsFilter(I_M_ReceiptSchedule.COLUMN_QtyOrdered, qtyOrdered));
+
+		final I_M_ReceiptSchedule receiptSchedule = queryBuilder.create().firstOnly(I_M_ReceiptSchedule.class);
 		if (receiptSchedule == null)
 		{
 			return false;

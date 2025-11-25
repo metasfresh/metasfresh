@@ -23,7 +23,6 @@
 package de.metas.postgrest.process.json;
 
 import de.metas.postgrest.process.PostgRESTProcessExecutor;
-import de.metas.process.ProcessCalledFrom;
 
 public class Invoice_RKSV_JSON extends PostgRESTProcessExecutor
 {

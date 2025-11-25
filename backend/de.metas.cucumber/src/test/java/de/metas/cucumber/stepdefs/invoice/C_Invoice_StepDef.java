@@ -31,8 +31,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.cucumber.stepdefs.AD_User_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
-import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
-import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -47,6 +45,8 @@ import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.datasource.AD_InputDataSource_StepDefData;
 import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_StepDef;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
@@ -59,6 +59,10 @@ import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.externalsystem.ExternalSystemId;
+import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.model.I_ExternalSystem;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.inout.model.I_M_InOutLine;
@@ -76,9 +80,9 @@ import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
-import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.payment.paymentterm.impl.PaymentTermQuery;
+import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
+import de.metas.payment.paymentterm.repository.PaymentTermQuery;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -164,6 +168,7 @@ public class C_Invoice_StepDef
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final CurrencyRepository currencyRepository = SpringContextHolder.instance.getBean(CurrencyRepository.class);
 	private final PaymentAllocationRepository paymentAllocationRepository = SpringContextHolder.instance.getBean(PaymentAllocationRepository.class);
+	private final ExternalSystemRepository externalSystemRepository = SpringContextHolder.instance.getBean(ExternalSystemRepository.class);
 
 	private final C_Invoice_StepDefData invoiceTable;
 	private final C_InvoiceLine_StepDefData invoiceLineTable;
@@ -508,6 +513,12 @@ public class C_Invoice_StepDef
 				.map(warehouseTable::getId)
 				.ifPresent(warehouseId -> softly.assertThat(invoice.getM_Warehouse_ID()).as("M_Warehouse_ID").isEqualTo(warehouseId.getRepoId()));
 
+		row.getAsOptionalString(I_ExternalSystem.Table_Name + "." + I_ExternalSystem.COLUMNNAME_Value)
+				.ifPresent(externalSystemValue -> {
+					final ExternalSystemId externalSystemId = externalSystemRepository.getIdByType(ExternalSystemType.ofValue(externalSystemValue));
+					softly.assertThat(invoice.getExternalSystem_ID()).as("ExternalSystem_ID for value=%s", externalSystemValue).isEqualTo(externalSystemId.getRepoId());
+				});
+		
 		softly.assertAll();
 	}
 
@@ -794,6 +805,12 @@ public class C_Invoice_StepDef
 
 		paymentTermStepDef.extractPaymentTermId(row).ifPresent(paymentTermId -> invoice.setC_PaymentTerm_ID(paymentTermId.getRepoId()));
 
+		row.getAsOptionalString(I_ExternalSystem.Table_Name + "." + I_ExternalSystem.COLUMNNAME_Value)
+				.ifPresent(externalSystemValue -> {
+					final ExternalSystemId externalSystemId = externalSystemRepository.getIdByType(ExternalSystemType.ofValue(externalSystemValue));
+					invoice.setExternalSystem_ID(externalSystemId.getRepoId());
+				});
+
 		invoiceDAO.save(invoice);
 
 		row.getAsIdentifier().putOrReplace(invoiceTable, invoice);
@@ -829,7 +846,7 @@ public class C_Invoice_StepDef
 					.value(paymentTerm)
 					.build();
 
-			final PaymentTermId paymentTermId = paymentTermRepo.retrievePaymentTermId(query)
+			final PaymentTermId paymentTermId = paymentTermRepo.firstIdOnly(query)
 					.orElse(null);
 
 			assertThat(paymentTermId).isNotNull();

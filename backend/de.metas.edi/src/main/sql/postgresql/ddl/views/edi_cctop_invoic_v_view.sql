@@ -41,6 +41,7 @@ SELECT i.C_Invoice_ID                                                           
      , i.TotalLines
      , i.DocStatus
      , i.ExternalId
+     , esystem.value                                                                                        AS ExternalSystemCode
      , (CASE
             WHEN dsource.internalname IS NOT NULL
                 THEN 'int-' || dsource.internalname
@@ -114,6 +115,7 @@ FROM C_Invoice i
          LEFT JOIN C_Country cc ON cc.C_Country_ID = l.C_Country_ID
          LEFT JOIN C_BPartner sp ON sp.AD_OrgBP_ID = i.AD_Org_ID
          LEFT JOIN AD_InputDataSource dsource ON dsource.AD_InputDataSource_ID = i.AD_InputDataSource_ID
+         LEFT JOIN ExternalSystem esystem ON esystem.externalsystem_id = i.externalsystem_id
          LEFT JOIN LATERAL ( SELECT i.c_invoice_id, MIN(o.dateordered) AS dateordered --only add values if there is only one unique value
                              FROM c_invoice i
                                       INNER JOIN c_invoiceline il ON i.c_invoice_id = il.c_invoice_id

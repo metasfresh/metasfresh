@@ -668,4 +668,82 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	{
 		return get_ValueAsString(COLUMNNAME_Value);
 	}
+
+	@Override
+	public org.compiere.model.I_C_Incoterms getC_Incoterms()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Incoterms_ID, org.compiere.model.I_C_Incoterms.class);
+	}
+
+	@Override
+	public void setC_Incoterms(final org.compiere.model.I_C_Incoterms C_Incoterms)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Incoterms_ID, org.compiere.model.I_C_Incoterms.class, C_Incoterms);
+	}
+
+	@Override
+	public void setC_Incoterms_ID (final int C_Incoterms_ID)
+	{
+		if (C_Incoterms_ID < 1)
+			set_Value (COLUMNNAME_C_Incoterms_ID, null);
+		else
+			set_Value (COLUMNNAME_C_Incoterms_ID, C_Incoterms_ID);
+	}
+
+	@Override
+	public int getC_Incoterms_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Incoterms_ID);
+	}
+
+	@Override
+	public void setIncotermLocation (final @Nullable java.lang.String IncotermLocation)
+	{
+		set_Value (COLUMNNAME_IncotermLocation, IncotermLocation);
+	}
+
+	@Override
+	public java.lang.String getIncotermLocation()
+	{
+		return get_ValueAsString(COLUMNNAME_IncotermLocation);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Incoterms getPO_Incoterms()
+	{
+		return get_ValueAsPO(COLUMNNAME_PO_Incoterms_ID, org.compiere.model.I_C_Incoterms.class);
+	}
+
+	@Override
+	public void setPO_Incoterms(final org.compiere.model.I_C_Incoterms PO_Incoterms)
+	{
+		set_ValueFromPO(COLUMNNAME_PO_Incoterms_ID, org.compiere.model.I_C_Incoterms.class, PO_Incoterms);
+	}
+
+	@Override
+	public void setPO_Incoterms_ID (final int PO_Incoterms_ID)
+	{
+		if (PO_Incoterms_ID < 1)
+			set_Value (COLUMNNAME_PO_Incoterms_ID, null);
+		else
+			set_Value (COLUMNNAME_PO_Incoterms_ID, PO_Incoterms_ID);
+	}
+
+	@Override
+	public int getPO_Incoterms_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_PO_Incoterms_ID);
+	}
+
+	@Override
+	public void setPO_IncotermLocation (final @Nullable java.lang.String PO_IncotermLocation)
+	{
+		set_Value (COLUMNNAME_PO_IncotermLocation, PO_IncotermLocation);
+	}
+
+	@Override
+	public java.lang.String getPO_IncotermLocation()
+	{
+		return get_ValueAsString(COLUMNNAME_PO_IncotermLocation);
+	}
 }

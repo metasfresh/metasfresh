@@ -18,7 +18,6 @@ import org.adempiere.warehouse.LocatorId;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collector;
 
 @EqualsAndHashCode
@@ -64,11 +63,11 @@ public class DDOrderMoveSchedulePickedHUs
 		return byActualHUIdPicked.values().stream().allMatch(DDOrderMoveSchedulePickedHU::isDroppedTo);
 	}
 
-	public void setDropToMovementId(@NonNull final MovementId dropToMovementId)
+	public void setDroppedTo(@NonNull LocatorId dropToLocatorId, @NonNull final MovementId dropToMovementId)
 	{
 		for (final DDOrderMoveSchedulePickedHU pickedHU : byActualHUIdPicked.values())
 		{
-			pickedHU.setDropToMovementId(dropToMovementId);
+			pickedHU.setDroppedTo(dropToLocatorId, dropToMovementId);
 		}
 	}
 

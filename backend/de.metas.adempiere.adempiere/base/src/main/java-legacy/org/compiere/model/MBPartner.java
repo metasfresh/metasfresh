@@ -586,6 +586,16 @@ public class MBPartner extends X_C_BPartner
 		{
 			setPO_PaymentTerm_ID(m_group.getPO_PaymentTerm_ID());
 		}
+		if (m_group.getC_Incoterms_ID() > 0)
+		{
+			setC_Incoterms_Customer_ID(m_group.getC_Incoterms_ID());
+			setIncotermLocation(m_group.getIncotermLocation());
+		}
+		if (m_group.getPO_Incoterms_ID() > 0)
+		{
+			setC_Incoterms_Vendor_ID(m_group.getPO_Incoterms_ID());
+			setPO_IncotermLocation(m_group.getPO_IncotermLocation());
+		}
 	} // setBPGroup
 
 	/**

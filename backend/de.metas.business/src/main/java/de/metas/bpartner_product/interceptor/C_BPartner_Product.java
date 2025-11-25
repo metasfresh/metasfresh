@@ -16,7 +16,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner_Product;
@@ -97,7 +97,7 @@ public class C_BPartner_Product
 
 	private boolean isASIValid(final I_C_BPartner_Product bpProduct, final AttributeSetInstanceId attributeSetInstanceId)
 	{
-		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+		final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 
 		if (bpProduct.getM_AttributeSetInstance_ID() <= 0)
 		{
@@ -106,8 +106,8 @@ public class C_BPartner_Product
 
 		final AttributeSetInstanceId bpProductASIId = AttributeSetInstanceId.ofRepoId(bpProduct.getM_AttributeSetInstance_ID());
 
-		final ImmutableAttributeSet bpAttributeSet = attributeDAO.getImmutableAttributeSetById(bpProductASIId);
-		final ImmutableAttributeSet attributeSet = attributeDAO.getImmutableAttributeSetById(attributeSetInstanceId);
+		final ImmutableAttributeSet bpAttributeSet = asiBL.getImmutableAttributeSetById(bpProductASIId);
+		final ImmutableAttributeSet attributeSet = asiBL.getImmutableAttributeSetById(attributeSetInstanceId);
 
 		return !attributeSet.equals(bpAttributeSet);
 	}

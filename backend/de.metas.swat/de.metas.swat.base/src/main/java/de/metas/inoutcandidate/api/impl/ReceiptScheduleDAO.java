@@ -7,6 +7,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
+import de.metas.inoutcandidate.api.ReceiptScheduleQuery;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
@@ -20,6 +21,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy;
+import org.adempiere.ad.dao.impl.ASIQueryFilterModifier;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -349,4 +351,24 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 				.create()
 				.listIds(ReceiptScheduleId::ofRepoId);
 	}
+
+	@Override
+	public List<ReceiptScheduleId> listIdsByQuery(@NonNull final ReceiptScheduleQuery query)
+	{
+		final IQueryBuilder<I_M_ReceiptSchedule> builder = queryBL.createQueryBuilder(I_M_ReceiptSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_M_Product_ID, query.getProductId())
+				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_M_Warehouse_ID, query.getWarehouseId())
+				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_AD_Org_ID, query.getOrgId())
+				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_M_AttributeSetInstance_ID, query.getAttributesKey().getAsString(), ASIQueryFilterModifier.instance);
+		if (query.isOnlyNonZeroQty())
+		{
+			builder.addNotEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_QtyToMove, 0);
+		}
+		return builder
+				.addNotEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_QtyToMove, 0)
+				.create()
+				.listIds(ReceiptScheduleId::ofRepoId);
+	}
+
 }

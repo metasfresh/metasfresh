@@ -61,7 +61,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -114,8 +114,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	/**
-	 *
-	 *
 	 * @see C_Order_Handler#expandRequest(InvoiceCandidateGenerateRequest)
 	 */
 	@Override
@@ -213,7 +211,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		}
 
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(orderLine.getM_AttributeSetInstance_ID());
-		final ImmutableAttributeSet attributes = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asiId);
+		final ImmutableAttributeSet attributes = Services.get(IAttributeSetInstanceBL.class).getImmutableAttributeSetById(asiId);
 
 		invoiceCandBL.setQualityDiscountPercent_Override(icRecord, attributes);
 
@@ -228,6 +226,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		icRecord.setAD_InputDataSource_ID(orderModel.getAD_InputDataSource_ID());
 
 		// external identifiers
+		icRecord.setExternalSystem_ID(order.getExternalSystem_ID());
 		icRecord.setExternalLineId(orderLine.getExternalId());
 		icRecord.setExternalHeaderId(order.getExternalId());
 

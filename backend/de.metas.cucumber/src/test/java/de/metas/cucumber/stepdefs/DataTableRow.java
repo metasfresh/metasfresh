@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.location.CountryCode;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.quantity.Quantity;
@@ -540,6 +541,15 @@ public class DataTableRow
 				.map(CurrencyCode::ofThreeLetterCode);
 	}
 
+	public Optional<CountryCode> getAsOptionalCountryCode(@NonNull final String columnName)
+	{
+		return Optionals.firstPresentOfSuppliers(
+						() -> getAsOptionalString(columnName),
+						() -> getAsOptionalString(columnName + ".CountryCode")
+				)
+				.map(CountryCode::ofAlpha2);
+	}
+
 	public Money getAsMoney(
 			@NonNull final String valueColumnName,
 			@NonNull final Function<CurrencyCode, CurrencyId> currencyCodeMapper)
@@ -649,6 +659,11 @@ public class DataTableRow
 		return getAsOptionalLocalDate(columnName).map(DataTableRow::toTimestamp);
 	}
 
+	public Optional<Instant> getAsOptionalLocalDateInstant(@NonNull final String columnName)
+	{
+		return getAsOptionalLocalDate(columnName).map(DataTableRow::toInstant);
+	}
+
 	@SuppressWarnings("unused")
 	public Timestamp getAsInstantTimestamp(@NonNull final String columnName)
 	{
@@ -729,6 +744,11 @@ public class DataTableRow
 		{
 			throw new AdempiereException("Column `" + columnInfo + "` has invalid Duration `" + valueStr + "`");
 		}
+	}
+
+	private static Instant toInstant(@NonNull final LocalDate ld)
+	{
+		return toInstant(ld.atStartOfDay());
 	}
 
 	private static Instant toInstant(@NonNull final LocalDateTime ldt)

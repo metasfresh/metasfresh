@@ -22,7 +22,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
@@ -52,7 +51,7 @@ public class PickingJobRepository
 
 	public PickingJobStepId newPickingJobStepId()
 	{
-		final int repoId = DB.getNextID(ClientId.METASFRESH.getRepoId(), I_M_Picking_Job_Step.Table_Name, ITrx.TRXNAME_None);
+		final int repoId = DB.getNextID(ClientId.METASFRESH.getRepoId(), I_M_Picking_Job_Step.Table_Name);
 		return PickingJobStepId.ofRepoId(repoId);
 	}
 

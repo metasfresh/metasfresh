@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.bpartner.service;
 
 import de.metas.bpartner.BPartnerId;
@@ -30,30 +52,10 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.function.Predicate;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 public interface IBPartnerBL extends ISingletonService
 {
+	String SYS_CONFIG_IgnorePartnerVATID = "de.metas.tax.api.impl.TaxDAO.IgnorePartnerVATID";
+	
 	I_C_BPartner getById(BPartnerId bpartnerId);
 
 	<T extends I_C_BPartner> T getById(@NonNull BPartnerId bpartnerId, @NonNull Class<T> type);
@@ -262,14 +264,15 @@ public interface IBPartnerBL extends ISingletonService
 
 	/**
 	 * extracted logic from legacy code
-	 * @param bp
-	 * @return
 	 */
 	I_C_BPartner_Location extractShipToLocation(@NonNull I_C_BPartner bp);
 
 	@NonNull
 	Optional<UserId> getDefaultDunningContact(@NonNull final BPartnerId bPartnerId);
 
+	/**
+	 * Gets the partner's VAT-ID either from the C_BPArtner or from its C_BPArtner_Location, depending on AD_SysConfig {@value #SYS_CONFIG_IgnorePartnerVATID}.
+	 */
 	@NonNull
 	Optional<VATIdentifier> getVATTaxId(@NonNull BPartnerLocationId bpartnerLocationId);
 }

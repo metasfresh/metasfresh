@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
+import de.metas.externalsystem.ExternalSystemId;
 import de.metas.impexp.InputDataSourceId;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
@@ -47,6 +48,11 @@ import java.util.Optional;
 	@Getter
 	@Setter
 	private InputDataSourceId inputDataSourceId;
+
+	@Getter
+	@Setter
+	@Nullable
+	private ExternalSystemId externalSystemId;
 
 	private LocalDate dateInvoiced;
 

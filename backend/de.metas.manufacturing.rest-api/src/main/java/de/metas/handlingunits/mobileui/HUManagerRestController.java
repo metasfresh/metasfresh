@@ -183,7 +183,7 @@ public class HUManagerRestController
 		return handlingUnitsService.getByIdSupplier(
 				() -> GetByIdRequest.builder()
 						.huId(huId)
-						.expectedQRCode(HUQRCode.fromGlobalQRCodeJsonString(request.getHuQRCode()))
+						.expectedQRCode(HUQRCode.fromNullable(request.getHuQRCode()))
 						.build()
 		);
 	}
@@ -195,9 +195,9 @@ public class HUManagerRestController
 
 		handlingUnitsService.move(MoveHURequest.builder()
 				.huId(request.getHuId())
-				.huQRCode(HUQRCode.fromGlobalQRCodeJsonString(request.getHuQRCode()))
+				.huQRCode(HUQRCode.fromNullable(request.getHuQRCode()))
 				.numberOfTUs(request.getNumberOfTUs())
-				.targetQRCode(ScannedCode.ofString(request.getTargetQRCode()))
+				.targetQRCode(request.getTargetQRCode())
 				.build());
 	}
 

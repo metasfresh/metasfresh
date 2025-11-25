@@ -69,10 +69,10 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.ExternalBusinessKey;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
-import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.greeting.GreetingRepository;
 import de.metas.job.JobRepository;
 import de.metas.rest_api.utils.BPartnerQueryService;
@@ -135,7 +135,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@ExtendWith({AdempiereTestWatcher.class, SnapshotExtension.class})
+@ExtendWith({ AdempiereTestWatcher.class, SnapshotExtension.class })
 class BpartnerRestControllerTest
 {
 	private BpartnerRestController bpartnerRestController;
@@ -163,7 +163,7 @@ class BpartnerRestControllerTest
 		bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository());
 		currencyRepository = new CurrencyRepository();
 		final BPGroupRepository bpGroupRepository = new BPGroupRepository();
-		
+
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
 				new JsonRequestConsolidateService(),
 				new BPartnerQueryService(),
@@ -194,7 +194,6 @@ class BpartnerRestControllerTest
 
 	@Test
 	void retrieveBPartner_ext()
-
 	{
 		final String bPartnerExternalIdentifier = String.join("-", "ext", EXTERNAL_SYSTEM_NAME, C_BPARTNER_EXTERNAL_ID);
 
@@ -349,7 +348,7 @@ class BpartnerRestControllerTest
 				.requestItem(requestItem)
 				.build();
 
-		SystemTime.setTimeSource( new TimeSource()
+		SystemTime.setTimeSource(new TimeSource()
 		{
 			@Override
 			public long millis()
@@ -387,21 +386,21 @@ class BpartnerRestControllerTest
 	@Test
 	void createOrUpdateBPartner_update_builder()
 	{
-		JsonRequestBPartner partner = new JsonRequestBPartner();
+		final JsonRequestBPartner partner = new JsonRequestBPartner();
 		partner.setCompanyName("otherCompanyName");
 
 		partner.setCode("other12345");
 		final JsonRequestBPartnerUpsert bpartnerUpsertRequest = JsonRequestBPartnerUpsert.builder()
 				.syncAdvise(SyncAdvise.builder()
-									.ifExists(SyncAdvise.IfExists.UPDATE_MERGE)
-									.ifNotExists(SyncAdvise.IfNotExists.CREATE)
-									.build())
+						.ifExists(SyncAdvise.IfExists.UPDATE_MERGE)
+						.ifNotExists(SyncAdvise.IfNotExists.CREATE)
+						.build())
 				.requestItem(JsonRequestBPartnerUpsertItem.builder()
-									 .bpartnerIdentifier("ext-ALBERTA-1234567")
-									 .bpartnerComposite(JsonRequestComposite.builder()
-																.bpartner(partner)
-																.build())
-									 .build())
+						.bpartnerIdentifier("ext-ALBERTA-1234567")
+						.bpartnerComposite(JsonRequestComposite.builder()
+								.bpartner(partner)
+								.build())
+						.build())
 				.build();
 
 		createOrUpdateBPartner_update_performTest(bpartnerUpsertRequest);
@@ -413,21 +412,21 @@ class BpartnerRestControllerTest
 	@Test
 	void createOrUpdateBPartner_update_withExternalBusinessKey()
 	{
-		JsonRequestBPartner partner = new JsonRequestBPartner();
+		final JsonRequestBPartner partner = new JsonRequestBPartner();
 		partner.setCompanyName("otherCompanyName");
 
 		partner.setCode("ext-ALBERTA-esb");
 		final JsonRequestBPartnerUpsert bpartnerUpsertRequest = JsonRequestBPartnerUpsert.builder()
 				.syncAdvise(SyncAdvise.builder()
-									.ifExists(SyncAdvise.IfExists.UPDATE_MERGE)
-									.ifNotExists(SyncAdvise.IfNotExists.CREATE)
-									.build())
+						.ifExists(SyncAdvise.IfExists.UPDATE_MERGE)
+						.ifNotExists(SyncAdvise.IfNotExists.CREATE)
+						.build())
 				.requestItem(JsonRequestBPartnerUpsertItem.builder()
-									 .bpartnerIdentifier("ext-ALBERTA-1234567")
-									 .bpartnerComposite(JsonRequestComposite.builder()
-																.bpartner(partner)
-																.build())
-									 .build())
+						.bpartnerIdentifier("ext-ALBERTA-1234567")
+						.bpartnerComposite(JsonRequestComposite.builder()
+								.bpartner(partner)
+								.build())
+						.build())
 				.build();
 
 		createOrUpdateBPartner_update_performTest(bpartnerUpsertRequest);
@@ -536,8 +535,7 @@ class BpartnerRestControllerTest
 	{
 		final InputStream stream = getClass().getClassLoader().getResourceAsStream("de/metas/rest_api/bpartner/impl/v2/" + jsonFileName);
 		assertThat(stream).isNotNull();
-		final JsonRequestBPartnerUpsert bpartnerUpsertRequest = JSONObjectMapper.forClass(JsonRequestBPartnerUpsert.class).readValue(stream);
-		return bpartnerUpsertRequest;
+		return JSONObjectMapper.forClass(JsonRequestBPartnerUpsert.class).readValue(stream);
 	}
 
 	private JsonMetasfreshId assertUpsertResultOK(
@@ -598,7 +596,7 @@ class BpartnerRestControllerTest
 			assertThat(bpartnerRecord.getValue()).isEqualTo(initialValue);
 			initialCounts.assertExternalReferencesCountChangedBy(1);
 			final I_S_ExternalReference externalReference = getExternalReference(externalBusinessKey.asExternalValueAndSystem().getValue(),
-																				 BPartnerExternalReferenceType.BPARTNER_VALUE.getCode());
+					BPartnerExternalReferenceType.BPARTNER_VALUE.getCode());
 
 			assertThat(externalReference.getRecord_ID()).isEqualTo(bpartnerRecord.getC_BPartner_ID());
 		}
@@ -720,10 +718,10 @@ class BpartnerRestControllerTest
 		final ResponseEntity<JsonResponseUpsert> result = bpartnerRestController.createOrUpdateContact(
 				"ext-" + EXTERNAL_SYSTEM_NAME + "-" + C_BPARTNER_EXTERNAL_ID,
 				JsonRequestContactUpsert.builder().requestItem(JsonRequestContactUpsertItem
-																	   .builder()
-																	   .contactIdentifier(contactIdentifier)
-																	   .contact(jsonContact)
-																	   .build()).build());
+						.builder()
+						.contactIdentifier(contactIdentifier)
+						.contact(jsonContact)
+						.build()).build());
 
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.CREATED);
 
@@ -790,9 +788,9 @@ class BpartnerRestControllerTest
 				String.valueOf(C_BPARTNER_ID),
 				JsonRequestBankAccountsUpsert.builder()
 						.requestItem(JsonRequestBankAccountUpsertItem.builder()
-											 .iban("iban-1")
-											 .currencyCode("EUR")
-											 .build())
+								.iban("iban-1")
+								.currencyCode("EUR")
+								.build())
 						.build());
 
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.CREATED);

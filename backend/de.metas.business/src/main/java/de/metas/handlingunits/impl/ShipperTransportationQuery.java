@@ -23,20 +23,37 @@
 package de.metas.handlingunits.impl;
 
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.model.ShipperTransportationId;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.util.Collection;
 
 @Value
 @Builder
 public class ShipperTransportationQuery
 {
-	@NonNull OrgId orgId;
-	@NonNull ShipperId shipperId;
-	@NonNull BPartnerLocationId shipperBPartnerAndLocationId;
-	@NonNull LocalDate shipDate;
+	private static final ShipperTransportationQuery ANY = builder().build();
+
+	@Nullable OrgId orgId;
+	@Nullable ShipperId shipperId;
+	@Nullable BPartnerLocationId shipperBPartnerAndLocationId;
+	@Nullable LocalDate shipDate;
+	@Nullable ShipperTransportationId shipperTransportationToExclude;
+	@NonNull @Singular Collection<OrderId> orderIds;
+	@NonNull @Singular Collection<OrderLineId> orderLineIds;
+	@Nullable Boolean processed;
+
+	public boolean isAny()
+	{
+		return this.equals(ANY);
+	}
 }

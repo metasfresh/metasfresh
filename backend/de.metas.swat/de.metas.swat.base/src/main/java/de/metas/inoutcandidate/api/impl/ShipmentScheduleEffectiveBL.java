@@ -40,13 +40,14 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	@Override
 	public BPartnerId getBPartnerId(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		if (sched.getC_BPartner_Override_ID() <= 0)
+		final BPartnerId bpartnerOverrideId = BPartnerId.ofRepoIdOrNull(sched.getC_BPartner_Override_ID());
+		if (bpartnerOverrideId != null)
 		{
-			return BPartnerId.ofRepoId(sched.getC_BPartner_ID());
+			return bpartnerOverrideId;
 		}
 		else
 		{
-			return BPartnerId.ofRepoId(sched.getC_BPartner_Override_ID());
+			return BPartnerId.ofRepoId(sched.getC_BPartner_ID());
 		}
 	}
 

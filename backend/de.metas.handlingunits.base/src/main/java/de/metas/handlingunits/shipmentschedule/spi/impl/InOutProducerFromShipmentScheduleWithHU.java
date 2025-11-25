@@ -385,6 +385,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 				}
 
 				shipment.setAD_InputDataSource_ID(order.getAD_InputDataSource_ID());
+				shipment.setExternalSystem_ID(order.getExternalSystem_ID());
 
 				shipment.setSalesRep_ID(order.getSalesRep_ID());
 			}

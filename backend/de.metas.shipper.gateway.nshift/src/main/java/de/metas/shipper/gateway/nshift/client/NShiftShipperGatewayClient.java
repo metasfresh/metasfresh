@@ -1,13 +1,40 @@
+/*
+ * #%L
+ * de.metas.shipper.gateway.nshift
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.shipper.gateway.nshift.client;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
+import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
+import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponse;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponseItem;
 import de.metas.logging.LogManager;
+import de.metas.shipper.client.nshift.NShiftShipmentService;
 import de.metas.shipper.gateway.commons.converters.v1.JsonShipperConverter;
+import de.metas.shipper.gateway.commons.mapping.ShipperMappingConfigList;
 import de.metas.shipper.gateway.commons.model.ShipmentOrderLogCreateRequest;
 import de.metas.shipper.gateway.commons.model.ShipmentOrderLogRepository;
 import de.metas.shipper.gateway.commons.model.ShipperConfig;
@@ -21,12 +48,11 @@ import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabelType;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.shipping.ShipperGatewayId;
-import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
 import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -40,12 +66,14 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	private static final Logger logger = LogManager.getLogger(NShiftShipperGatewayClient.class);
 
 	@NonNull private final NShiftShipmentService shipmentService;
+	@NonNull private final ShipAdvisorService shipAdvisorService;
 	//TODO Adrian to be removed in next iteration(s), once the API changes so that we pass a JsonDeliveryRequest and we get a JsonDeliveryResponse
 	@NonNull private final JsonShipperConverter jsonConverter;
 	@NonNull private final ShipmentOrderLogRepository shipmentOrderLogRepository;
 	//TODO implement as provided by carrier
 	private final static PackageLabelType DEFAULT_LABEL_TYPE = new PackageLabelType() {};
 	@NonNull private final ShipperConfig shipperConfig;
+	@NonNull private final ShipperMappingConfigList mappingConfigs;
 
 	@Override
 	@NonNull
@@ -58,10 +86,22 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	@NonNull
 	public DeliveryOrder completeDeliveryOrder(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
-		final JsonDeliveryRequest deliveryRequestJson = jsonConverter.toJson(shipperConfig, deliveryOrder);
+		final JsonDeliveryRequest deliveryRequestJson = jsonConverter.toJson(shipperConfig, deliveryOrder, mappingConfigs
+		);
 		final Stopwatch stopwatch = Stopwatch.createStarted();
-		final JsonDeliveryResponse response = shipmentService.createShipment(deliveryRequestJson);
-		logger.debug("Received nShift response: {}", response);
+		JsonDeliveryResponse response;
+		try
+		{
+			response = shipmentService.createShipment(deliveryRequestJson);
+			logger.debug("Received nShift response: {}", response);
+		}
+		catch (final AdempiereException ex)
+		{
+			response = JsonDeliveryResponse.builder()
+					.requestId(deliveryRequestJson.getId())
+					.errorMessage(ex.getLocalizedMessage())
+					.build();
+		}
 
 		shipmentOrderLogRepository.save(ShipmentOrderLogCreateRequest.builder()
 				.request(deliveryRequestJson)
@@ -69,6 +109,10 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 				.durationMillis(stopwatch.elapsed(TimeUnit.MILLISECONDS))
 				.build());
 
+		if (response.isError())
+		{
+			throw new ShipperGatewayException("nShift request failed pls check ShipmentOrderLog");
+		}
 		return updateDeliveryOrder(deliveryOrder, response);
 	}
 
@@ -81,37 +125,26 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	 */
 	private DeliveryOrder updateDeliveryOrder(final @NonNull DeliveryOrder deliveryOrder, @NonNull final JsonDeliveryResponse response)
 	{
-		final String language = deliveryOrder.getDeliveryContact().getLanguageCode();
-
 		final ImmutableMap<String, JsonDeliveryResponseItem> lineIdToResponseMap = response.getItems().stream()
 				.collect(ImmutableMap.toImmutableMap(JsonDeliveryResponseItem::getLineId, Function.identity()));
 		final ImmutableList<DeliveryOrderParcel> updatedDeliveryOrderParcels = deliveryOrder.getDeliveryOrderParcels()
 				.stream()
-				.map(line -> updateDeliveryOrderLine(line, lineIdToResponseMap.get(String.valueOf(line.getId().getRepoId())), language))
+				.map(line -> updateDeliveryOrderLine(line, lineIdToResponseMap.get(String.valueOf(line.getId().getRepoId()))))
 				.collect(ImmutableList.toImmutableList());
 		return deliveryOrder.withDeliveryOrderParcels(updatedDeliveryOrderParcels);
 	}
 
-	private DeliveryOrderParcel updateDeliveryOrderLine(@NonNull final DeliveryOrderParcel line, @NonNull final JsonDeliveryResponseItem jsonDeliveryResponseItem, @NonNull final String language)
+	private DeliveryOrderParcel updateDeliveryOrderLine(@NonNull final DeliveryOrderParcel line, @NonNull final JsonDeliveryResponseItem jsonDeliveryResponseItem)
 	{
 		final String awb = jsonDeliveryResponseItem.getAwb();
 		final byte[] labelData = Base64.getDecoder().decode(jsonDeliveryResponseItem.getLabelPdfBase64());
-		final String trackingUrl = getTrackingUrlOrNull(shipperConfig.getTrackingUrlTemplate(), awb, language);
+		final String trackingUrl = jsonDeliveryResponseItem.getTrackingUrl();
 
 		return line.toBuilder()
 				.awb(awb)
 				.trackingUrl(trackingUrl)
 				.labelPdfBase64(labelData)
 				.build();
-	}
-
-	@Nullable
-	private static String getTrackingUrlOrNull(@Nullable final String url, @NonNull final String shipmentId, @NonNull final String language)
-	{
-
-		return Check.isBlank(url) ? null : url
-				.replace("{lang}", language)
-				.replace("{shipmentNo}", shipmentId);
 	}
 
 	@NonNull
@@ -123,6 +156,12 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 				.stream()
 				.map(line -> createPackageLabel(line.getLabelPdfBase64(), line.getAwb(), orderIdAsString))
 				.collect(Collectors.toList());
+	}
+
+	@Override
+	public @NonNull JsonDeliveryAdvisorResponse adviseShipment(final @NonNull JsonDeliveryAdvisorRequest request)
+	{
+		return shipAdvisorService.advise(request);
 	}
 
 	@NonNull
@@ -138,6 +177,11 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 						.fileName(awb)
 						.build())
 				.build();
+	}
+
+	public JsonShipperConfig getJsonShipperConfig()
+	{
+		return jsonConverter.toJsonShipperConfig(shipperConfig);
 	}
 
 }

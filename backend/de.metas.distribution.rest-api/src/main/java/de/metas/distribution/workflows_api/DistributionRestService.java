@@ -30,6 +30,7 @@ import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolverService;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.model.I_DD_Order;
 import org.springframework.stereotype.Service;
@@ -54,6 +55,7 @@ public class DistributionRestService
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IHUPIItemProductBL hupiItemProductBL = Services.get(IHUPIItemProductBL.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final LocatorScannedCodeResolverService locatorScannedCodeResolver;
 
 	public DistributionRestService(
 			final @NonNull MobileUIDistributionConfigRepository configRepository,
@@ -62,7 +64,8 @@ public class DistributionRestService
 			final @NonNull DistributionJobHUReservationService distributionJobHUReservationService,
 			final @NonNull HUQRCodesService huQRCodesService,
 			final @NonNull InventoryService inventoryService,
-			final @NonNull HUAccessService huAccessService)
+			final @NonNull HUAccessService huAccessService, 
+			final @NonNull LocatorScannedCodeResolverService locatorScannedCodeResolver)
 	{
 		this.ddOrderService = ddOrderService;
 		this.ddOrderMoveScheduleService = ddOrderMoveScheduleService;
@@ -70,6 +73,7 @@ public class DistributionRestService
 		this.inventoryService = inventoryService;
 		this.huQRCodesService = huQRCodesService;
 		this.huAccessService = huAccessService;
+		this.locatorScannedCodeResolver = locatorScannedCodeResolver;
 
 		this.loadingSupportServices = DistributionJobLoaderSupportingServices.builder()
 				.configRepository(configRepository)
@@ -244,7 +248,8 @@ public class DistributionRestService
 				.hupiItemProductBL(hupiItemProductBL)
 				.inventoryService(inventoryService)
 				.uomConversionBL(uomConversionBL)
-				.huAccessService(huAccessService);
+				.huAccessService(huAccessService)
+				.locatorScannedCodeResolver(locatorScannedCodeResolver);
 	}
 
 	public DistributionJob complete(@NonNull final DistributionJob job)

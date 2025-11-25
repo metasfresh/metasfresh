@@ -1,5 +1,3 @@
-import { trl } from '../translations';
-
 export const ATTR_barcodeType = 'barcodeType';
 export const ATTR_isUnique = 'isUnique';
 export const ATTR_productId = 'productId';
@@ -23,11 +21,15 @@ export const BARCODE_TYPE_CUSTOM = 'CUSTOM';
 export const QRCODE_SEPARATOR = '#';
 
 export const parseQRCodeType = (qrCodeString) => {
+  if (!qrCodeString) {
+    return null;
+  }
+
   const idx = qrCodeString.indexOf(QRCODE_SEPARATOR);
   if (idx <= 0) {
-    console.log('onResolvedResult: Cannot extract type from QRCode', { qrCodeString });
-    throw trl('error.qrCode.invalid');
+    return null;
   }
+
   return qrCodeString.substring(0, idx);
 };
 
@@ -35,6 +37,12 @@ export const toLocalDateString = ({ year, month, day }) => {
   const yearInt = Number(year);
   const monthInt = Number(month);
   const dayInt = Number(day);
+
+  // Validate:
+  if (dayInt < 1 || dayInt > 31) throw `Invalid day: ${dayInt}`;
+  if (monthInt < 1 || monthInt > 12) throw `Invalid month: ${monthInt}`;
+  if (yearInt < 2000 || yearInt > 2500) throw `Invalid year: ${yearInt}`;
+
   return `${yearInt}-${monthInt < 10 ? '0' + monthInt : monthInt}-${dayInt < 10 ? '0' + dayInt : dayInt}`;
 };
 

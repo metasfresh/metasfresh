@@ -252,7 +252,9 @@ public class OLCandsProcessorExecutor
 				|| !Objects.equals(previousCandidate.getPricingSystemId(), candidate.getPricingSystemId())
 				|| !Objects.equals(previousCandidate.getShipperId(), candidate.getShipperId())
 				|| !Objects.equals(previousCandidate.getSalesRepId(), candidate.getSalesRepId())
-				|| !Objects.equals(previousCandidate.getOrderDocTypeId(), candidate.getOrderDocTypeId()))
+				|| !Objects.equals(previousCandidate.getOrderDocTypeId(), candidate.getOrderDocTypeId())
+				|| !Objects.equals(previousCandidate.getExternalSystemId(), candidate.getExternalSystemId())
+				|| !Objects.equals(previousCandidate.getExternalHeaderId(), candidate.getExternalHeaderId()))
 
 		{
 			return true;

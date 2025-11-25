@@ -1549,6 +1549,27 @@ public interface I_AD_User
 	String COLUMNNAME_Password = "Password";
 
 	/**
+	 * Set Password Change Date.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPasswordChangeDate (@Nullable java.sql.Timestamp PasswordChangeDate);
+
+	/**
+	 * Get Password Change Date.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getPasswordChangeDate();
+
+	ModelColumn<I_AD_User, Object> COLUMN_PasswordChangeDate = new ModelColumn<>(I_AD_User.class, "PasswordChangeDate", null);
+	String COLUMNNAME_PasswordChangeDate = "PasswordChangeDate";
+
+	/**
 	 * Set Portalpasswort.
 	 *
 	 * <br>Type: String

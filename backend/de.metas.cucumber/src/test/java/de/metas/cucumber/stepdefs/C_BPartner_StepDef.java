@@ -35,6 +35,7 @@ import de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg;
 import de.metas.cucumber.stepdefs.aggregation.C_Aggregation_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.discountschema.M_DiscountSchema_StepDefData;
+import de.metas.cucumber.stepdefs.dunning.C_Dunning_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.externalreference.ExternalIdentifier;
@@ -43,8 +44,8 @@ import de.metas.externalreference.rest.v1.ExternalReferenceRestControllerService
 import de.metas.order.DeliveryRule;
 import de.metas.order.InvoiceRule;
 import de.metas.payment.PaymentRule;
-import de.metas.payment.paymentterm.IPaymentTermRepository;
-import de.metas.payment.paymentterm.impl.PaymentTermQuery;
+import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
+import de.metas.payment.paymentterm.repository.PaymentTermQuery;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessInfo;
@@ -63,6 +64,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Dunning;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_PricingSystem;
@@ -94,6 +96,7 @@ import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsCustomer;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsEdiDesadvRecipient;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsSalesRep;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsVendor;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_Lookup_Label;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_M_PricingSystem_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_DiscountSchema_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_InvoiceRule;
@@ -109,14 +112,15 @@ public class C_BPartner_StepDef
 {
 	public static final int BP_GROUP_ID = BPGroupId.ofRepoId(1000000).getRepoId();
 
-	private final C_BPartner_StepDefData bPartnerTable;
-	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
-	private final M_PricingSystem_StepDefData pricingSystemTable;
-	private final M_Product_StepDefData productTable;
-	private final M_DiscountSchema_StepDefData discountSchemaTable;
-	private final AD_Org_StepDefData orgTable;
-	private final C_Aggregation_StepDefData aggregationTable;
-	private final @NonNull TestContext restTestContext;
+	@NonNull private final C_BPartner_StepDefData bPartnerTable;
+	@NonNull private final C_BPartner_Location_StepDefData bPartnerLocationTable;
+	@NonNull private final M_PricingSystem_StepDefData pricingSystemTable;
+	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final M_DiscountSchema_StepDefData discountSchemaTable;
+	@NonNull private final C_Dunning_StepDefData dunningTable;
+	@NonNull private final AD_Org_StepDefData orgTable;
+	@NonNull private final C_Aggregation_StepDefData aggregationTable;
+	@NonNull private final TestContext restTestContext;
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -225,6 +229,8 @@ public class C_BPartner_StepDef
 
 		bPartnerRecord.setName(valueAndName.getName());
 		bPartnerRecord.setValue(valueAndName.getValue());
+		row.getAsOptionalString(COLUMNNAME_Lookup_Label).ifPresent(bPartnerRecord::setLookup_Label);
+		
 		bPartnerRecord.setC_BP_Group_ID(bpGroupId);
 		bPartnerRecord.setIsVendor(row.getAsOptionalBoolean(COLUMNNAME_IsVendor).orElseFalse());
 		bPartnerRecord.setIsCustomer(row.getAsOptionalBoolean(COLUMNNAME_IsCustomer).orElseFalse());
@@ -454,6 +460,13 @@ public class C_BPartner_StepDef
 		{
 			final I_C_Aggregation aggregationRecord = aggregationTable.get(soInvoiceAggregationIdentifier);
 			bPartner.setSO_Invoice_Aggregation_ID(aggregationRecord.getC_Aggregation_ID());
+		}
+
+		final String dunningIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, I_C_BPartner.COLUMNNAME_C_Dunning_ID);
+		if (EmptyUtil.isNotBlank(dunningIdentifier))
+		{
+			final I_C_Dunning dunning = dunningTable.get(dunningIdentifier);
+			bPartner.setC_Dunning_ID(dunning.getC_Dunning_ID());
 		}
 
 		InterfaceWrapperHelper.save(bPartner);

@@ -64,9 +64,16 @@ public class ExternalSystemRepository
 				.collect(ExternalSystemMap.collect());
 	}
 
+	@NonNull
 	public ExternalSystem getByType(@NonNull final ExternalSystemType type)
 	{
 		return getMap().getByType(type);
+	}
+
+	@NonNull
+	public ExternalSystemId getIdByType(@NonNull final ExternalSystemType type)
+	{
+		return getMap().getByType(type).getId();
 	}
 
 	public Optional<ExternalSystem> getOptionalByType(@NonNull final ExternalSystemType type)

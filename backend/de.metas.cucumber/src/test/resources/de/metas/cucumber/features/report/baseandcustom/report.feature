@@ -44,9 +44,9 @@ Feature: Jasper Report Tests
       | vendorLocation   | vendor        | CH           | Y               | Y               |
       | customerLocation | customer      | CH           | Y               | Y               |
     And metasfresh contains C_Tax
-      | Identifier        | C_TaxCategory_ID.InternalName | Name      | ValidFrom  | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
-      | de_ch_tax         | Normal                        | de_ch_tax | 2021-04-02 | 2.5  | DE                       | CH                        |
-      | ch_ch_tax         | Normal                        | ch_ch_tax | 2021-04-02 | 2.5  | CH                       | CH                        |
+      | Identifier | C_TaxCategory_ID.InternalName | Name      | ValidFrom  | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
+      | de_ch_tax  | Normal                        | de_ch_tax | 2021-04-02 | 2.5  | DE                       | CH                        |
+      | ch_ch_tax  | Normal                        | ch_ch_tax | 2021-04-02 | 2.5  | CH                       | CH                        |
 
   @S0471_100
   @from:cucumber
@@ -62,8 +62,8 @@ Feature: Jasper Report Tests
       | M_ReceiptSchedule_ID | C_Order_ID | C_OrderLine_ID | C_BPartner_ID | C_BPartner_Location_ID | M_Product_ID | QtyOrdered | M_Warehouse_ID |
       | rs1                  | po1        | po1_l1         | vendor        | vendorLocation         | product      | 10         | wh             |
     And The jasper process is run
-      | Value               | Record_ID  |
-      | Bestellung (Jasper) | po1        |
+      | Value               | Record_ID |
+      | Bestellung (Jasper) | po1       |
     And metasfresh contains M_HU_PI:
       | M_HU_PI_ID |
       | LU         |
@@ -91,8 +91,8 @@ Feature: Jasper Report Tests
       | M_InOutLine_ID | M_InOut_ID | M_Product_ID | C_OrderLine_ID |
       | receipt1_l1    | receipt1   | product      | po1_l1         |
     And The jasper process is run
-      | Value                 | Record_ID  |
-      | Wareneingang (Jasper) | receipt1   |
+      | Value                 | Record_ID |
+      | Wareneingang (Jasper) | receipt1  |
     And after not more than 60s locate up2date invoice candidates by order line:
       | C_Invoice_Candidate_ID | C_OrderLine_ID |
       | po_ic_1                | po1_l1         |
@@ -110,10 +110,18 @@ Feature: Jasper Report Tests
       | Eingangsrechnung (Jasper) | purchaseInvoice_1 |
 
 
-
   @S0471_200
   @from:cucumber
-  Scenario: Sales Report Test
+  Scenario: Sales Report and Dunning Report Test
+    And metasfresh contains C_Dunning:
+      | Identifier        |
+      | dunning_S0471_200 |
+    And metasfresh contains C_DunningLevel:
+      | Identifier             | C_Dunning_ID      | DaysAfterDue |
+      | dunningLevel_S0471_200 | dunning_S0471_200 | 0            |
+    And update C_BPartner:
+      | Identifier | C_Dunning_ID      |
+      | customer   | dunning_S0471_200 |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
       | so1        | true    | customer      | 2025-04-01  | wh             |
@@ -125,8 +133,8 @@ Feature: Jasper Report Tests
       | Identifier | C_OrderLine_ID | IsToRecompute | M_Warehouse_ID |
       | ss1        | so1_l1         | N             | wh             |
     And The jasper process is run
-      | Value            | Record_ID  |
-      | Auftrag (Jasper) | so1        |
+      | Value            | Record_ID |
+      | Auftrag (Jasper) | so1       |
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
       | ss1                   | D            | true                | false       |
@@ -134,8 +142,8 @@ Feature: Jasper Report Tests
       | M_ShipmentSchedule_ID | M_InOut_ID |
       | ss1                   | shipment1  |
     And The jasper process is run
-      | Value                 | Record_ID  |
-      | Lieferschein (Jasper) | shipment1  |
+      | Value                 | Record_ID |
+      | Lieferschein (Jasper) | shipment1 |
     And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | so_ic1                            | so1_l1                    | 10           |
@@ -145,15 +153,26 @@ Feature: Jasper Report Tests
     Then after not more than 60s, C_Invoice are found:
       | C_Invoice_Candidate_ID | C_Invoice_ID  |
       | so_ic1                 | salesInvoice1 |
-    And validate created invoices
-      | C_Invoice_ID  | C_BPartner_ID | C_BPartner_Location_ID | processed | DocStatus |
-      | salesInvoice1 | customer      | customerLocation       | true      | CO        |
     And The jasper process is run
       | Value             | Record_ID     |
       | Rechnung (Jasper) | salesInvoice1 |
+    # dev-note: update dateInvoiced to be set in the past in order to generate dunning
+    And update C_Invoice:
+      | Identifier    | OPT.DateInvoiced |
+      | salesInvoice1 | 2021-04-08       |
 
-
-
+    And invoke "C_Dunning_Candidate_Create" process:
+      | C_DunningLevel_ID      | DunningDate |
+      | dunningLevel_S0471_200 | 2022-09-29  |
+    And after not more than 60s, locate C_Dunning_Candidate:
+      | Identifier           | TableName | Record_ID     |
+      | dunningCandInvoice_1 | C_Invoice | salesInvoice1 |
+    And invoke "C_Dunning_Candidate_Process" process:
+      | Identifier   | C_Dunning_Candidate_ID | AutoProcess |
+      | dunningDoc_1 | dunningCandInvoice_1   | false       |
+    And The jasper process is run
+      | Value        | Record_ID    |
+      | C_DunningDoc | dunningDoc_1 |
 
   @from:cucumber
   Scenario: Deactivate StoreArchiveOnFileSystem

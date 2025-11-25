@@ -199,7 +199,7 @@ public class PostDocumentNow_ManualTest
 				new InvoiceAcctRepository(),
 				matchInvoiceService,
 				orderCostService,
-				new FAOpenItemsService(Optional.empty()),
+				new FAOpenItemsService(elementValueService, Optional.empty()),
 				costingService,
 				new DimensionService(ImmutableList.of()),
 				new SalesRegionService(new SalesRegionRepository()),

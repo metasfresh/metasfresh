@@ -38,9 +38,12 @@ Feature: Invoice export via postgREST
     And metasfresh contains AD_InputDataSource:
       | Identifier           | InternalName   |
       | dataSource_S0474_010 | test_S0474_010 |
+    When metasfresh contains External System
+      | Name                 | Value          |
+      | TestSystem_S0474_010 | test_S0474_010 |
     And metasfresh contains C_Invoice:
-      | Identifier            | REST.Context             | AD_InputDataSource_ID | C_BPartner_ID | C_DocTypeTarget_ID.Name | DocumentNo | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
-      | salesInvoiceS0474_010 | salesInvoiceS0474_010_ID | dataSource_S0474_010  | customer1     | Ausgangsrechnung        | S0474_010  | 2025-05-01   | Spot                     | true    | EUR                 |
+      | Identifier            | REST.Context             | AD_InputDataSource_ID | ExternalSystem.Value | C_BPartner_ID | C_DocTypeTarget_ID.Name | DocumentNo | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | salesInvoiceS0474_010 | salesInvoiceS0474_010_ID | dataSource_S0474_010  | test_S0474_010       | customer1     | Ausgangsrechnung        | S0474_010  | 2025-05-01   | Spot                     | true    | EUR                 |
     And metasfresh contains C_InvoiceLines
       | C_Invoice_ID          | M_Product_ID      | QtyInvoiced |
       | salesInvoiceS0474_010 | product_S0474_010 | 1 PCE       |
@@ -70,8 +73,8 @@ Feature: Invoice export via postgREST
       "value": "2025-01-01 00:00:00"
     },
     {
-      "name": "DataSource",
-      "value": "int-test_S0474_010"
+      "name": "ExternalSystemCode",
+      "value": "test_S0474_010"
     }
   ]
 }
@@ -108,6 +111,7 @@ Feature: Invoice export via postgREST
     "Invoice_TotalVATWithSurchargeAmt": 0.95,
     "Invoice_GrandTotalWithSurchargeAmt": 5.95,
     "ExternalId": null,
+    "ExternalSystemCode": "test_S0474_010",
     "DataSource": "int-test_S0474_010",
     "DocStatus": "CO",
     "Partners": [
@@ -202,8 +206,8 @@ Feature: Invoice export via postgREST
       | M_PriceList_Version_ID | M_Product_ID      | PriceStd | C_UOM_ID |
       | salesPLV               | product_S0474_020 | 5.00     | PCE      |
     And metasfresh contains C_Invoice:
-      | Identifier            | REST.Context             | ExternalId           | C_BPartner_ID | C_DocTypeTarget_ID.Name | DocumentNo | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
-      | salesInvoiceS0474_020 | salesInvoiceS0474_020_ID | externalId_S0474_020 | customer1     | Ausgangsrechnung        | S0474_020  | 2025-05-01   | Spot                     | true    | EUR                 |
+      | Identifier            | REST.Context             | ExternalId           | ExternalSystem.Value | C_BPartner_ID | C_DocTypeTarget_ID.Name | DocumentNo | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | salesInvoiceS0474_020 | salesInvoiceS0474_020_ID | externalId_S0474_020 | Shopware6            | customer1     | Ausgangsrechnung        | S0474_020  | 2025-05-01   | Spot                     | true    | EUR                 |
     And metasfresh contains C_InvoiceLines
       | C_Invoice_ID          | M_Product_ID      | QtyInvoiced |
       | salesInvoiceS0474_020 | product_S0474_020 | 1 PCE       |
@@ -267,6 +271,7 @@ Feature: Invoice export via postgREST
     "Invoice_TotalVATWithSurchargeAmt": 0.95,
     "Invoice_GrandTotalWithSurchargeAmt": 5.95,
     "ExternalId": "externalId_S0474_020",
+    "ExternalSystemCode": "Shopware6",
     "DataSource": "",
     "DocStatus": "CO",
     "Partners": [

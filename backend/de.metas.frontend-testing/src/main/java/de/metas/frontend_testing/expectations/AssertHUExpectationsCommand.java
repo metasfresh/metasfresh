@@ -7,6 +7,7 @@ import de.metas.frontend_testing.expectations.request.QtyAndUOMString;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.generichumodel.HUType;
 import de.metas.handlingunits.model.I_M_HU;
@@ -20,6 +21,8 @@ import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -72,6 +75,14 @@ class AssertHUExpectationsCommand
 
 	private void assertHU(@NonNull final HuId huId, final @NotNull JsonHUExpectation expectation)
 	{
+		if (expectation.getWarehouse() != null)
+		{
+			final I_M_HU hu = getHUById(huId);
+			final LocatorId actualLocatorId = IHandlingUnitsBL.extractLocatorId(hu);
+			final WarehouseId expectedWarehouseId = context.getId(expectation.getWarehouse(), WarehouseId.class);
+			assertThat(actualLocatorId.getWarehouseId()).as("Warehouse").isEqualTo(expectedWarehouseId);
+		}
+
 		if (expectation.getHuStatus() != null)
 		{
 			final I_M_HU hu = getHUById(huId);

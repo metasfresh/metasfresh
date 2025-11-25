@@ -2,6 +2,7 @@ package de.metas.ad_reference;
 
 import de.metas.adempiere.service.impl.TooltipType;
 import de.metas.cache.CCache;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -9,6 +10,7 @@ import de.metas.util.Check;
 import de.metas.util.ColorId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.service.impl.LookupException;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -154,7 +156,7 @@ public class ADReferenceService
 		{
 			// NOTE: don't use logger.error because that call ErrorManager which will call POInfo which called this method.
 			System.err.println("Cannot retrieve tableRefInfo for " + referenceId + " because " + tableRefInfo.getExplanation().getDefaultValue()
-									   + ". Returning null.");
+					+ ". Returning null.");
 			// logger.error("Cannot retrieve tableRefInfo for {}. Returning null.", referenceId);
 			return null;
 		}
@@ -191,14 +193,20 @@ public class ADReferenceService
 		}
 
 		final boolean autoComplete;
+		final AdWindowId soWindowId;
+		final AdWindowId poWindowId;
 		final I_AD_Table table = adTableDAO.retrieveTableOrNull(tableName);
 		if (table == null)
 		{
 			autoComplete = false;
+			soWindowId = null;
+			poWindowId = null;
 		}
 		else
 		{
 			autoComplete = table.isAutocomplete();
+			soWindowId = AdWindowId.ofRepoIdOrNull(table.getAD_Window_ID());
+			poWindowId = AdWindowId.ofRepoIdOrNull(table.getPO_Window_ID());
 		}
 
 		final TooltipType tooltipType = adTableDAO.getTooltipTypeByTableName(tableName);
@@ -209,6 +217,10 @@ public class ADReferenceService
 				.keyColumn(keyColumn)
 				.autoComplete(autoComplete)
 				.tooltipType(tooltipType)
+				// dev-note: custom windows are handled directly in WindowRestController
+				.zoomSO_Window_ID(soWindowId)
+				.zoomPO_Window_ID(poWindowId)
+				.zoomAD_Window_ID_Override(CoalesceUtil.coalesce(soWindowId, poWindowId))
 				.build();
 	}
 

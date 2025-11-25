@@ -12,6 +12,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Location;
 
 import java.util.Collection;
@@ -67,6 +68,14 @@ public final class DeliveryOrderUtil
 				.zipCode(location.getPostal())
 				.city(location.getCity())
 				.country(createShipperCountryCode(CountryId.ofRepoId(location.getC_Country_ID())));
+	}
+
+	public Address.AddressBuilder prepareAddressFromLocationBP(@NonNull final I_C_Location location, @NonNull final I_C_BPartner bpartner)
+	{
+		return prepareAddressFromLocation(location)
+				.companyName1(bpartner.getValue())
+				.companyName2(bpartner.getName2())
+				.bpartnerId(bpartner.getC_BPartner_ID());
 	}
 
 	public CountryCode createShipperCountryCode(final CountryId countryId)

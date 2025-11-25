@@ -2353,4 +2353,28 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	{
 		return get_ValueAsString(COLUMNNAME_VendorCategory);
 	}
+
+	@Override
+	public void setIncotermLocation (final @Nullable java.lang.String IncotermLocation)
+	{
+		set_Value (COLUMNNAME_IncotermLocation, IncotermLocation);
+	}
+
+	@Override
+	public java.lang.String getIncotermLocation()
+	{
+		return get_ValueAsString(COLUMNNAME_IncotermLocation);
+	}
+
+	@Override
+	public void setPO_IncotermLocation (final @Nullable java.lang.String PO_IncotermLocation)
+	{
+		set_Value (COLUMNNAME_PO_IncotermLocation, PO_IncotermLocation);
+	}
+
+	@Override
+	public java.lang.String getPO_IncotermLocation()
+	{
+		return get_ValueAsString(COLUMNNAME_PO_IncotermLocation);
+	}
 }

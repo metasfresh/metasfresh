@@ -63,6 +63,8 @@ import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocBaseType;
 import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.externalreference.rest.v1.ExternalReferenceRestControllerService;
+import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.greeting.GreetingRepository;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
@@ -151,7 +153,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_ExternalId;
 
-@ExtendWith({SnapshotExtension.class, AdempiereTestWatcher.class})
+@ExtendWith({ SnapshotExtension.class, AdempiereTestWatcher.class })
 public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 {
 	private static final ZonedDateTime FIXED_TIME = LocalDate.parse("2020-03-16")
@@ -223,6 +225,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 			BusinessTestHelper.createProduct("ProductCode", uomId);
 
 			testMasterdata.createDocType(DOCTYPE_SALES_INVOICE);
+			testMasterdata.createExternalSystem("Shopware", ExternalSystemType.ofValue("Shopware6"));
 
 			testMasterdata.createDataSource(DATA_SOURCE_INTERNALNAME);
 			testMasterdata.createDataSource(DATA_DEST_INVOICECANDIDATE);
@@ -242,13 +245,13 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 		final CurrencyService currencyService = new CurrencyService();
 		final DocTypeService docTypeService = new DocTypeService();
-		final JsonConverters jsonConverters = new JsonConverters(currencyService, docTypeService);
+		final JsonConverters jsonConverters = new JsonConverters(currencyService, docTypeService, ExternalSystemRepository.newInstanceForUnitTesting());
 
 		// bpartnerRestController
 		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(bpartnerBL, new MockLogEntriesRepository(), new UserRoleRepository());
 		final CurrencyRepository currencyRepository = new CurrencyRepository();
 		final BPGroupRepository bpGroupRepository = new BPGroupRepository();
-		
+
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
 				new JsonRequestConsolidateService(),
 				new BPartnerQueryService(),
@@ -265,7 +268,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 		orderCandidatesRestControllerImpl = new OrderCandidatesRestController(
 				jsonConverters,
-				new OLCandRepository(),
+				new OLCandRepository(ExternalSystemRepository.newInstanceForUnitTesting()),
 				bpartnerRestController,
 				NoopPerformanceMonitoringService.INSTANCE);
 
@@ -384,6 +387,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		bpartner.setCode("bpCode");
 
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
+				.externalSystemCode("Shopware6")
 				.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
 				.dataDest("int-" + DATA_DEST_INVOICECANDIDATE)
 				.dateOrdered(dateOrdered)
@@ -471,6 +475,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 			}
 
 			final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
+					.externalSystemCode("Shopware6")
 					.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
 					.dataDest("int-" + DATA_DEST_INVOICECANDIDATE)
 					.dateOrdered(LocalDate.of(2019, Month.SEPTEMBER, 1))
@@ -516,6 +521,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		bpartner.setCode("bpCode");
 
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
+				.externalSystemCode("Shopware6")
 				.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
 				.dataDest("int-" + DATA_DEST_INVOICECANDIDATE)
 				.dateRequired(LocalDate.of(2019, Month.SEPTEMBER, 5))
@@ -579,6 +585,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		bpartner.setCode("bpCode");
 
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
+				.externalSystemCode("Shopware6")
 				.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
 				.dataDest("int-" + DATA_DEST_INVOICECANDIDATE)
 				.dateOrdered(LocalDate.of(2019, Month.SEPTEMBER, 10))
@@ -665,6 +672,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		bpartner.setCode("bpCode");
 
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
+				.externalSystemCode("Shopware6")
 				.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
 				.dataDest("int-" + DATA_DEST_INVOICECANDIDATE)
 				.dateOrdered(LocalDate.of(2019, Month.SEPTEMBER, 10))
@@ -751,6 +759,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		handOverBPartner.setCode("bpCode");
 
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
+				.externalSystemCode("Shopware6")
 				.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
 				.dataDest("int-" + DATA_DEST_INVOICECANDIDATE)
 				.dateOrdered(LocalDate.of(2019, Month.SEPTEMBER, 10))
@@ -869,6 +878,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		dropShipPartner.setCode("dropShipPartner");
 
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
+				.externalSystemCode("Shopware6")
 				.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
 				.dataDest("int-" + DATA_DEST_INVOICECANDIDATE)
 				.dateOrdered(LocalDate.of(2019, Month.SEPTEMBER, 10))
@@ -987,6 +997,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		dropShipPartner.setCode("dropShipPartner");
 
 		final JsonOLCandCreateBulkRequest request = JsonOLCandCreateBulkRequest.of(JsonOLCandCreateRequest.builder()
+				.externalSystemCode("Shopware6")
 				.dataSource("int-" + DATA_SOURCE_INTERNALNAME)
 				.dataDest("int-" + DATA_DEST_INVOICECANDIDATE)
 				.dateOrdered(LocalDate.of(2019, Month.SEPTEMBER, 10))

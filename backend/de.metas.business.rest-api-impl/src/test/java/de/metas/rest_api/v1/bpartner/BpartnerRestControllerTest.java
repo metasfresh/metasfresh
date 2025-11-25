@@ -136,6 +136,7 @@ class BpartnerRestControllerTest
 	void init()
 	{
 		AdempiereTestHelper.get().init();
+		POJOLookupMap.setNextIdSupplier_PerTableSequence();
 
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 

@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
+import de.metas.externalsystem.ExternalSystemId;
 import de.metas.impexp.InputDataSourceId;
 import de.metas.money.CurrencyId;
 import de.metas.order.InvoiceRule;
@@ -57,7 +58,13 @@ public class OLCandCreateRequest
 	String externalHeaderId;
 
 	/**
-	 * Mandatory; an Identifier of an existing AD_InputDataSource record.
+	 * Mandatory; an Identifier of an existing ExternalSystem record.
+	 */
+	@NonNull
+	ExternalSystemId externalSystemId;
+
+	/**
+	 * Optional; an Identifier of an existing AD_InputDataSource record.
 	 */
 	InputDataSourceId dataSourceId;
 
@@ -145,7 +152,8 @@ public class OLCandCreateRequest
 			@Nullable final String externalLineId,
 			@Nullable final String externalHeaderId,
 			final OrgId orgId,
-			@NonNull final InputDataSourceId dataSourceId,
+			@NonNull final ExternalSystemId externalSystemId,
+			@Nullable final InputDataSourceId dataSourceId,
 			@NonNull final InputDataSourceId dataDestId,
 			@NonNull final BPartnerInfo bpartner,
 			final BPartnerInfo billBPartner,
@@ -201,6 +209,7 @@ public class OLCandCreateRequest
 
 		this.orgId = orgId;
 
+		this.externalSystemId = externalSystemId;
 		this.dataSourceId = dataSourceId;
 		this.dataDestId = dataDestId;
 

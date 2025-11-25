@@ -75,6 +75,7 @@ Feature: desadv and invoic
       "orgCode": "001",
       "externalLineId": "externalLineId_29042022_1",
       "externalHeaderId": "externalHeaderId_29042022_1",
+      "externalSystemCode": "Shopware6",
       "dataSource": "int-Shopware",
       "bpartner": {
         "bpartnerIdentifier": "gln-1111111111111",
@@ -103,7 +104,7 @@ Feature: desadv and invoic
         """
 {
   "externalHeaderId": "externalHeaderId_29042022_1",
-  "inputDataSourceName": "int-Shopware",
+  "externalSystemCode": "Shopware6",
   "ship": false,
   "invoice": false,
   "closeOrder": false
@@ -244,6 +245,7 @@ Feature: desadv and invoic
       "orgCode": "001",
       "externalLineId": "externalLineId02052022_2",
       "externalHeaderId": "externalHeaderId02052022_2",
+      "externalSystemCode": "Shopware6",
       "dataSource": "int-Shopware",
       "dataDest": null,
       "bpartner": {
@@ -273,7 +275,7 @@ Feature: desadv and invoic
         """
 {
   "externalHeaderId": "externalHeaderId02052022_2",
-  "inputDataSourceName": "int-Shopware",
+  "externalSystemCode": "Shopware6",
   "ship": false,
   "invoice": false
 }
@@ -404,6 +406,7 @@ Feature: desadv and invoic
 {      "orgCode": "001",
       "externalLineId": "externalLineId03052022_3",
       "externalHeaderId": "externalHeaderId03052022_3",
+      "externalSystemCode": "Shopware6",
       "dataSource": "int-Shopware",
       "dataDest": null,
       "bpartner": {
@@ -436,7 +439,7 @@ Feature: desadv and invoic
         """
 {
   "externalHeaderId": "externalHeaderId03052022_3",
-  "inputDataSourceName": "int-Shopware",
+  "externalSystemCode": "Shopware6",
   "ship": false,
   "invoice": false
 }
@@ -573,6 +576,7 @@ Feature: desadv and invoic
       "orgCode": "001",
       "externalLineId": "externalLineId03052022_4",
       "externalHeaderId": "externalHeaderId03052022_4",
+      "externalSystemCode": "Shopware6",
       "dataSource": "int-Shopware",
       "dataDest": null,
       "bpartner": {
@@ -601,7 +605,7 @@ Feature: desadv and invoic
         """
 {
   "externalHeaderId": "externalHeaderId03052022_4",
-  "inputDataSourceName": "int-Shopware",
+  "externalSystemCode": "Shopware6",
   "ship": false,
   "invoice": false
 }
@@ -741,6 +745,7 @@ Feature: desadv and invoic
       "orgCode": "001",
       "externalLineId": "externalLineId03052022_5",
       "externalHeaderId": "externalHeaderId03052022_5",
+      "externalSystemCode": "Shopware6",
       "dataSource": "int-Shopware",
       "bpartner": {
         "bpartnerIdentifier": "gln-5555555555555",
@@ -772,7 +777,7 @@ Feature: desadv and invoic
         """
 {
   "externalHeaderId": "externalHeaderId03052022_5",
-  "inputDataSourceName": "int-Shopware",
+  "externalSystemCode": "Shopware6",
   "ship": false,
   "invoice": false
 }
@@ -911,6 +916,7 @@ Feature: desadv and invoic
       "orgCode": "001",
       "externalLineId": "externalLineId04052022_6",
       "externalHeaderId": "externalHeaderId04052022_6",
+      "externalSystemCode": "Shopware6",
       "dataSource": "int-Shopware",
       "bpartner": {
         "bpartnerIdentifier": "gln-6666666666666",
@@ -942,7 +948,7 @@ Feature: desadv and invoic
         """
 {
   "externalHeaderId": "externalHeaderId04052022_6",
-  "inputDataSourceName": "int-Shopware",
+  "externalSystemCode": "Shopware6",
   "ship": false,
   "invoice": false
 }

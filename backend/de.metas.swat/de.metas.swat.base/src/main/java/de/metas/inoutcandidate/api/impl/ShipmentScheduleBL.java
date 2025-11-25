@@ -23,6 +23,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.api.ShipmentScheduleAllowConsolidatePredicateComposite;
+import de.metas.inoutcandidate.api.ShipmentScheduleLoadingCache;
 import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequest;
 import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequestsList;
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
@@ -61,9 +62,9 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.CreateAttributeInstanceReq;
 import org.adempiere.mm.attributes.api.IAttributeSet;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.impl.AddAttributesRequest;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ClientId;
@@ -994,5 +995,28 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final BigDecimal qtyScheduledForPicking = shipmentScheduleRecord.getQtyScheduledForPicking();
 		final I_C_UOM uom = getUomOfProduct(shipmentScheduleRecord);
 		return Quantity.of(qtyScheduledForPicking, uom);
+	}
+
+	@Override
+	public Quantity getQtyRemainingToScheduleForPicking(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
+	{
+		final Quantity qtyToDeliver = getQtyToDeliver(shipmentScheduleRecord);
+		final Quantity qtyScheduledForPicking = getQtyScheduledForPicking(shipmentScheduleRecord);
+		return qtyToDeliver.subtract(qtyScheduledForPicking).toZeroIfNegative();
+	}
+
+	@Override
+	public ShipmentScheduleLoadingCache<I_M_ShipmentSchedule> newLoadingCache()
+	{
+		return newLoadingCache(I_M_ShipmentSchedule.class);
+	}
+
+	@Override
+	public <T extends I_M_ShipmentSchedule> ShipmentScheduleLoadingCache<T> newLoadingCache(@NonNull Class<T> modelClass)
+	{
+		return ShipmentScheduleLoadingCache.<T>builder()
+				.shipmentSchedulePA(shipmentSchedulePA)
+				.modelClass(modelClass)
+				.build();
 	}
 }

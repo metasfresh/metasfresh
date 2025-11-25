@@ -649,8 +649,9 @@
     </xsd:complexType>
     <xsd:complexType name="EDI_Imp_C_OLCandType">
         <xsd:sequence>
+            <xsd:element name="ExternalSystem_ID" type="xsd:integer"/>
             <xsd:element minOccurs="0" name="AD_DataDestination_ID" type="EDI_Imp_AD_InputDataSource_Lookup_INType"/>
-            <xsd:element name="AD_InputDataSource_ID" type="xsd:integer"/>
+            <xsd:element minOccurs="0" name="AD_InputDataSource_ID" type="xsd:integer"/>
             <xsd:element minOccurs="0" name="AD_Org_ID" type="EDI_AD_Org_Lookup_BPL_GLN_vType"/>
             <xsd:element name="AD_User_EnteredBy_ID" type="xsd:integer"/>
             <xsd:element minOccurs="0" name="Bill_BPartner_ID" type="EDI_C_BPartner_Lookup_BPL_GLN_vType"/>
@@ -972,8 +973,9 @@
     </xsd:complexType>
     <xsd:complexType name="XLS_Imp_C_OLCandType">
         <xsd:sequence>
+            <xsd:element name="ExternalSystem_ID" type="xsd:integer"/>
             <xsd:element minOccurs="0" name="AD_DataDestination_ID" type="EDI_Imp_AD_InputDataSource_Lookup_INType"/>
-            <xsd:element name="AD_InputDataSource_ID" type="xsd:integer"/>
+            <xsd:element minOccurs="0" name="AD_InputDataSource_ID" type="xsd:integer"/>
             <xsd:element name="AD_Org_ID" type="xsd:integer"/>
             <xsd:element name="AD_User_EnteredBy_ID" type="xsd:integer"/>
             <xsd:element minOccurs="0" name="Bill_BPartner_ID" type="xsd:integer"/>

@@ -62,6 +62,7 @@ Feature: Trade margin commission contract
     "orgCode": "001",
     "externalHeaderId": "2522",
     "externalLineId": "111",
+    "externalSystemCode": "Shopware6",
     "dataSource": "int-Shopware",
     "bpartner": {
         "bpartnerIdentifier": "gln-1234567891237",
@@ -84,7 +85,7 @@ Feature: Trade margin commission contract
 """
 {
     "externalHeaderId": "2522",
-    "inputDataSourceName": "int-Shopware",
+    "externalSystemCode": "Shopware6",
     "ship": true,
     "invoice": true,
     "closeOrder": false
@@ -100,8 +101,8 @@ Feature: Trade margin commission contract
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtInvoiced |
       | so_invoice_candidate              | margin_customer             | transaction_product     | 20                 |
     And validate invoice candidate
-      | C_Invoice_Candidate_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.NetAmtToInvoice | OPT.IsSOTrx | OPT.NetAmtInvoiced | OPT.AD_InputDataSource_ID.InternalName |
-      | so_invoice_candidate              | margin_customer                 | transaction_product         | 0                   | true        | 20                 | Shopware                               |
+      | C_Invoice_Candidate_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.NetAmtToInvoice | OPT.IsSOTrx | OPT.NetAmtInvoiced | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value |
+      | so_invoice_candidate              | margin_customer                 | transaction_product         | 0                   | true        | 20                 | Shopware                               | Shopware6            |
 
     And validate created commission instance
       | C_Commission_Instance_ID.Identifier | C_Order_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_Order_ID.Identifier | PointsBase_Forecasted | PointsBase_Invoiceable | PointsBase_Invoiced |

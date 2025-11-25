@@ -21,8 +21,9 @@ import de.metas.handlingunits.allocation.transfer.LUTUResult.LU;
 import de.metas.handlingunits.allocation.transfer.LUTUResult.TU;
 import de.metas.handlingunits.allocation.transfer.LUTUResult.TUPart;
 import de.metas.handlingunits.allocation.transfer.LUTUResult.TUsList;
-import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.inventory.CreateVirtualInventoryWithQtyReq;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
@@ -1034,7 +1035,6 @@ public class PickingJobPickCommand
 					.setParameter("PickingGroupLocators", pickFromLocatorIds)
 					.markAsUserValidationError();
 		}
-
 		final BPartnerId customerId = shipmentScheduleInfo.getBpartnerId();
 		final PickFromHUsGetRequest request = PickFromHUsGetRequest.builder()
 				.pickFromLocatorIds(pickFromLocatorIds)

@@ -1,6 +1,7 @@
 package org.adempiere.mm.attributes.spi;
 
-import org.compiere.model.I_M_Attribute;
+import lombok.NonNull;
+import org.adempiere.mm.attributes.api.Attribute;
 
 /*
  * #%L
@@ -28,14 +29,11 @@ import org.compiere.model.I_M_Attribute;
  * {@link IAttributeValuesProvider} factory.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public interface IAttributeValuesProviderFactory extends IAttributeValueHandler
 {
 	/**
 	 * This method is called by the framework.
-	 *
-	 * @param attributeRecord never {@code null}.
 	 */
-	IAttributeValuesProvider createAttributeValuesProvider(I_M_Attribute attributeRecord);
+	IAttributeValuesProvider createAttributeValuesProvider(@NonNull Attribute attribute);
 }

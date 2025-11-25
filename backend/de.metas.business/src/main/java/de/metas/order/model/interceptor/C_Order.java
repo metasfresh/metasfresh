@@ -46,6 +46,7 @@ import de.metas.order.IOrderLinePricingConditions;
 import de.metas.order.OrderId;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.order.location.OrderLocationsUpdater;
+import de.metas.order.paymentschedule.service.OrderPayScheduleService;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
@@ -108,23 +109,27 @@ public class C_Order
 	private final BPartnerSupplierApprovalService partnerSupplierApprovalService;
 	private final IDocumentLocationBL documentLocationBL;
 	private final PurchaseOrderToShipperTransportationService purchaseOrderToShipperTransportationService;
+	private final OrderPayScheduleService orderPayScheduleService;
 
 	@VisibleForTesting
 	public static final String AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG = "de.metas.payment.autoAssignToSalesOrderByExternalOrderId.enabled";
 	private static final AdMessageKey MSG_SELECT_CONTACT_WITH_VALID_EMAIL = AdMessageKey.of("de.metas.order.model.interceptor.C_Order.PleaseSelectAContactWithValidEmailAddress");
+	private static final AdMessageKey MSG_ORDER_ASSIGNED_TO_PROCESSED_TRANSPORTATION_ORDER = AdMessageKey.of("OrderAssignedToProcessedTransportationOrder");
 
 	public C_Order(
 			@NonNull final IBPartnerBL bpartnerBL,
 			@NonNull final OrderLineDetailRepository orderLineDetailRepository,
 			@NonNull final IDocumentLocationBL documentLocationBL,
 			@NonNull final BPartnerSupplierApprovalService partnerSupplierApprovalService,
-			@NonNull final PurchaseOrderToShipperTransportationService purchaseOrderToShipperTransportationService)
+			@NonNull final PurchaseOrderToShipperTransportationService purchaseOrderToShipperTransportationService,
+			@NonNull final OrderPayScheduleService orderPayScheduleService)
 	{
 		this.bpartnerBL = bpartnerBL;
 		this.orderLineDetailRepository = orderLineDetailRepository;
 		this.partnerSupplierApprovalService = partnerSupplierApprovalService;
 		this.documentLocationBL = documentLocationBL;
 		this.purchaseOrderToShipperTransportationService = purchaseOrderToShipperTransportationService;
+		this.orderPayScheduleService = orderPayScheduleService;
 
 		final IProgramaticCalloutProvider programmaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
 		programmaticCalloutProvider.registerAnnotatedCallout(this);
@@ -233,18 +238,7 @@ public class C_Order
 			return; // nothing to do yet
 		}
 
-		final int c_Incoterms;
-
-		if (order.isSOTrx())
-		{
-			c_Incoterms = bpartner.getC_Incoterms_Customer_ID();
-		}
-		else
-		{
-			c_Incoterms = bpartner.getC_Incoterms_Vendor_ID();
-		}
-
-		order.setC_Incoterms_ID(c_Incoterms);
+		orderBL.setIncoterms(order);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })
@@ -361,12 +355,12 @@ public class C_Order
 		orderLinePricingConditions.failForMissingPricingConditions(order);
 	}
 
-	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
-	public void createMPackages(final I_C_Order order)
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)
+	public void deleteShippingPackageIfPossible(final I_C_Order order)
 	{
-		if (!order.isSOTrx())
+		if (!purchaseOrderToShipperTransportationService.deleteShippingPackagesForOrderIfPossible(OrderId.ofRepoId(order.getC_Order_ID())))
 		{
-			purchaseOrderToShipperTransportationService.addPurchaseOrderToCurrentShipperTransportation(order);
+			throw new AdempiereException(MSG_ORDER_ASSIGNED_TO_PROCESSED_TRANSPORTATION_ORDER);
 		}
 	}
 
@@ -620,4 +614,23 @@ public class C_Order
 			}
 		}
 	}
+
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
+	public void createOrderPaySchedules(final I_C_Order order)
+	{
+		orderPayScheduleService.createOrderPaySchedules(order);
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_REACTIVATE)
+	public void deleteOrderPaySchedules(final I_C_Order order)
+	{
+		orderPayScheduleService.deleteByOrderId(OrderId.ofRepoId(order.getC_Order_ID()));
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_LC_Date, I_C_Order.COLUMNNAME_ETA, I_C_Order.COLUMNNAME_BLDate, I_C_Order.COLUMNNAME_InvoiceDate })
+	public void updateOrderPaySchedules(final I_C_Order order)
+	{
+		orderPayScheduleService.updatePayScheduleStatus(order);
+	}
+
 }

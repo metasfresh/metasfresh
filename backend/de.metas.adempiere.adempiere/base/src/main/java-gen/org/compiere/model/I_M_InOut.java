@@ -1844,4 +1844,25 @@ public interface I_M_InOut
 
 	ModelColumn<I_M_InOut, Object> COLUMN_Weight = new ModelColumn<>(I_M_InOut.class, "Weight", null);
 	String COLUMNNAME_Weight = "Weight";
+
+	/**
+	 * Set External System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystem_ID (int ExternalSystem_ID);
+
+	/**
+	 * Get External System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getExternalSystem_ID();
+
+	ModelColumn<I_M_InOut, Object> COLUMN_ExternalSystem_ID = new ModelColumn<>(I_M_InOut.class, "ExternalSystem_ID", null);
+	String COLUMNNAME_ExternalSystem_ID = "ExternalSystem_ID";
 }

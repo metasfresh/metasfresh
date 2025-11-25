@@ -1,6 +1,7 @@
 package de.metas.shipper.gateway.nshift;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -21,7 +22,10 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
-import de.metas.shipper.gateway.nshift.client.NShiftShipperProduct;
+import de.metas.shipper.gateway.commons.model.CarrierGoodsTypeRepository;
+import de.metas.shipper.gateway.commons.model.CarrierProductRepository;
+import de.metas.shipper.gateway.commons.model.CarrierShipmentOrderServiceRepository;
+import de.metas.shipper.gateway.commons.model.ShipmentOrderRepository;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
@@ -60,6 +64,10 @@ import static de.metas.shipper.gateway.commons.DeliveryOrderUtil.getPOReferences
 @RequiredArgsConstructor
 public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 {
+	private final @NonNull ShipmentOrderRepository shipmentOrderRepository;
+	private final @NonNull CarrierProductRepository carrierProductRepository;
+	private final @NonNull CarrierGoodsTypeRepository carrierGoodsTypeRepository;
+	private final @NonNull CarrierShipmentOrderServiceRepository carrierServiceRepository;
 	// @NonNull private final ExternalSystemMessageSender externalSystemMessageSender;
 	private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
@@ -95,14 +103,11 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 
 		final ShipperId shipperId = deliveryOrderKey.getShipperId();
 
-		final boolean isInternationalShipment = pickupFromLocation.getC_Country_ID() != deliverToLocation.getC_Country_ID();
-
 		return DeliveryOrder.builder()
 				.shipperId(shipperId)
 				.shipperTransportationId(deliveryOrderKey.getShipperTransportationId())
 				//
 
-				.shipperProduct(isInternationalShipment ? NShiftShipperProduct.DHL_INTERNATIONAL : NShiftShipperProduct.DHL_NATIONAL) // TODO this should be made user-selectable. Ref: https://github.com/metasfresh/me03/issues/3128
 				.customerReference(getPOReferences(request.getPackageInfos()))
 				.shipperEORI(pickupFromBPartner.getEORI())
 				.receiverEORI(deliverToBPartner.getEORI())
@@ -111,6 +116,8 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 				.pickupAddress(toPickFromAddress(pickupFromBPartner, pickupFromLocation))
 				.pickupDate(PickupDate.builder()
 						.date(pickupDate)
+						.timeFrom(deliveryOrderKey.getTimeFrom())
+						.timeTo(deliveryOrderKey.getTimeTo())
 						.build())
 				//
 				// Delivery aka Receiver
@@ -119,6 +126,9 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 				//
 				// Delivery content
 				.deliveryOrderParcels(toDeliveryOrderLines(request.getPackageInfos()))
+				.goodsType(carrierGoodsTypeRepository.getCachedGoodsTypeById(deliveryOrderKey.getCarrierGoodsTypeId()))
+				.shipperProduct(carrierProductRepository.getCachedShipperProductById(deliveryOrderKey.getCarrierProductId()))
+				.services(deliveryOrderKey.getCarrierServices() != null ? deliveryOrderKey.getCarrierServices().stream().map(carrierServiceRepository::getCachedCarrierServiceById).collect(ImmutableSet.toImmutableSet()) : ImmutableSet.of())
 				//
 				.build();
 
@@ -126,17 +136,13 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 
 	private static Address toPickFromAddress(final I_C_BPartner pickupFromBPartner, final I_C_Location pickupFromLocation)
 	{
-		return DeliveryOrderUtil.prepareAddressFromLocation(pickupFromLocation)
-				.companyName1(pickupFromBPartner.getName())
-				.companyName2(pickupFromBPartner.getName2())
+		return DeliveryOrderUtil.prepareAddressFromLocationBP(pickupFromLocation , pickupFromBPartner)
 				.build();
 	}
 
 	private static Address toDeliverToAddress(final I_C_BPartner deliverToBPartner, final I_C_Location deliverToLocation)
 	{
-		return DeliveryOrderUtil.prepareAddressFromLocation(deliverToLocation)
-				.companyName1(deliverToBPartner.getName())
-				.companyName2(deliverToBPartner.getName2())
+		return DeliveryOrderUtil.prepareAddressFromLocationBP(deliverToLocation , deliverToBPartner)
 				.bpartnerId(deliverToBPartner.getC_BPartner_ID()) // afaics used only for logging
 				.build();
 	}
