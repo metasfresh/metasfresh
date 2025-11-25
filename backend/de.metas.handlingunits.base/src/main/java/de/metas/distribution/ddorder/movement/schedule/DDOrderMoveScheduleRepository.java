@@ -172,9 +172,14 @@ public class DDOrderMoveScheduleRepository
 				.anyMatch();
 	}
 
-	public ImmutableList<DDOrderMoveSchedule> getSchedules(final DDOrderId ddOrderId)
+	public ImmutableList<DDOrderMoveSchedule> getByDDOrderId(final DDOrderId ddOrderId)
 	{
 		return newLoaderAndSaver().loadByDDOrderId(ddOrderId);
+	}
+
+	public ImmutableList<DDOrderMoveSchedule> getByDDOrderLineIds(final Set<DDOrderLineId> ddOrderLineIds)
+	{
+		return newLoaderAndSaver().loadByDDOrderLineIds(ddOrderLineIds);
 	}
 
 	public boolean hasInProgressSchedules(@NonNull final DDOrderLineId ddOrderLineId)

@@ -1,5 +1,5 @@
 import { test } from "../../../../playwright.config";
-import { page, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
+import { expectErrorToastIf, page, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
 import { expect } from "@playwright/test";
 
 const NAME = 'GetQuantityDialog';
@@ -63,10 +63,19 @@ export const GetQuantityDialog = {
         await expect(radioButton).toBeChecked();
     }),
 
-    clickDone: async () => await test.step(`${NAME} - Press OK`, async () => {
-        await page.getByTestId('done-button').tap();
-        await GetQuantityDialog.expectComponentsDisabled();
-        await GetQuantityDialog.waitToClose();
+    clickDone: async ({ expectedError } = {}) => await test.step(`${NAME} - Press OK`, async () => {
+        let doneButton = page.getByTestId('done-button');
+
+        await expectErrorToastIf(
+            !!expectedError,
+            `${expectedError}`,
+            async () => {
+                await doneButton.tap();
+                await GetQuantityDialog.expectComponentsDisabled();
+                await GetQuantityDialog.waitToClose();
+            },
+            ({ textContent }) => expect(textContent).toContain(expectedError)
+        );
     }),
 
     clickCancel: async () => await test.step(`${NAME} - Press Cancel`, async () => {
@@ -89,7 +98,7 @@ export const GetQuantityDialog = {
         await expectMissingOrDisabled(page.getByTestId('confirmDoneAndCloseTarget-button'));
     }),
 
-    fillAndPressDone: async ({ switchToManualInput, expectQtyEntered, qtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason }) => await test.step(`${NAME} - Fill dialog`, async () => {
+    fillAndPressDone: async ({ switchToManualInput, expectQtyEntered, qtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason, expectedError }) => await test.step(`${NAME} - Fill dialog`, async () => {
         await GetQuantityDialog.waitForDialog();
 
         // run this first!
@@ -121,7 +130,7 @@ export const GetQuantityDialog = {
             await GetQuantityDialog.clickQtyNotFoundReason({ reason: qtyNotFoundReason });
         }
 
-        await GetQuantityDialog.clickDone();
+        await GetQuantityDialog.clickDone({ expectedError });
     }),
 };
 

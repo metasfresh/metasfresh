@@ -1,12 +1,7 @@
 package de.metas.distribution.workflows_api;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
-import de.metas.distribution.ddorder.movement.schedule.DDOrderDropToRequest;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedule;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleCreateRequest;
-import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleId;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderPickFromRequest;
 import de.metas.distribution.rest_api.JsonDistributionEvent;
@@ -26,7 +21,6 @@ import de.metas.handlingunits.trace.HUAccessService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.scannable_code.ScannedCode;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -34,12 +28,10 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolverService;
 
-import java.util.List;
+import javax.annotation.Nullable;
 
-class DistributionEventProcessCommand
+public class DistributionJobPickFromCommand
 {
 	private static final AdMessageKey NOT_ENOUGH_QTY = AdMessageKey.of("de.metas.distribution.workflows_api.NotEnoughQty");
 	private static final AdMessageKey PRODUCT_DOES_NOT_MATCH = AdMessageKey.of("de.metas.distribution.workflows_api.ProductDoesNotMatch");
@@ -52,18 +44,19 @@ class DistributionEventProcessCommand
 	@NonNull private final DistributionJobLoaderSupportingServices loadingSupportServices;
 	@NonNull private final PackToHUsProducer packToHUsProducer;
 	@NonNull private final HUAccessService huAccessService;
-	@NonNull private final LocatorScannedCodeResolverService locatorScannedCodeResolver;
 
 	// Params
 	@NonNull private final DistributionJob job;
-	@NonNull private final JsonDistributionEvent event;
+	@Nullable private final DistributionJobLineId lineId;
+	@Nullable private final DistributionJobStepId stepId;
+	@Nullable private final JsonDistributionEvent.PickFrom pickFrom;
 
 	// State
 	private DistributionJob changedJob;
 	private HuId _huIdToPick; // lazy
 
 	@Builder
-	public DistributionEventProcessCommand(
+	public DistributionJobPickFromCommand(
 			@NonNull final ITrxManager trxManager,
 			@NonNull final HUQRCodesService huQRCodesService,
 			@NonNull final IHandlingUnitsBL handlingUnitsBL,
@@ -73,10 +66,11 @@ class DistributionEventProcessCommand
 			@NonNull final IUOMConversionBL uomConversionBL,
 			@NonNull final IHUPIItemProductBL hupiItemProductBL,
 			@NonNull final HUAccessService huAccessService,
-			@NonNull final LocatorScannedCodeResolverService locatorScannedCodeResolver,
 			//
 			@NonNull final DistributionJob job,
-			@NonNull final JsonDistributionEvent event)
+			@Nullable final DistributionJobLineId lineId,
+			@Nullable final DistributionJobStepId stepId,
+			@Nullable final JsonDistributionEvent.PickFrom pickFrom)
 	{
 		this.trxManager = trxManager;
 		this.huQRCodesService = huQRCodesService;
@@ -84,7 +78,6 @@ class DistributionEventProcessCommand
 		this.ddOrderMoveScheduleService = ddOrderMoveScheduleService;
 		this.loadingSupportServices = loadingSupportServices;
 		this.huAccessService = huAccessService;
-		this.locatorScannedCodeResolver = locatorScannedCodeResolver;
 		this.packToHUsProducer = PackToHUsProducer.builder()
 				.handlingUnitsBL(handlingUnitsBL)
 				.huPIItemProductBL(hupiItemProductBL)
@@ -92,7 +85,9 @@ class DistributionEventProcessCommand
 				.inventoryService(inventoryService)
 				.build();
 		this.job = job;
-		this.event = event;
+		this.lineId = lineId;
+		this.stepId = stepId;
+		this.pickFrom = pickFrom;
 
 		//state
 		this.changedJob = null;
@@ -104,25 +99,12 @@ class DistributionEventProcessCommand
 		changedJob = job;
 
 		return trxManager.callInThreadInheritedTrx(() -> {
-
-			if (event.getPickFrom() != null)
-			{
-				changedJob = processEvent_PickFrom();
-			}
-			else if (event.getDropTo() != null)
-			{
-				changedJob = processEvent_DropTo();
-			}
-			else if (event.getUnpick() != null)
-			{
-				changedJob = processEvent_Unpick();
-			}
-
+			changedJob = executeInTrx();
 			return changedJob;
 		});
 	}
 
-	private DistributionJob processEvent_PickFrom()
+	private DistributionJob executeInTrx()
 	{
 		try (final IAutoCloseable ignored = HUContextHolder.temporarySet(handlingUnitsBL.createMutableHUContextForProcessing()))
 		{
@@ -138,67 +120,14 @@ class DistributionEventProcessCommand
 		}
 	}
 
-	private DistributionJob processEvent_Unpick()
-	{
-		try (final IAutoCloseable ignored = HUContextHolder.temporarySet(handlingUnitsBL.createMutableHUContextForProcessing()))
-		{
-			final DistributionJobStepId stepId = event.getDistributionStepId();
-			Check.assumeNotNull(stepId, "stepId must be set when unpicking");
-			Check.assumeNotNull(event.getUnpick(), "Unpick must be set when unpicking");
-
-			ddOrderMoveScheduleService.unpick(stepId.toScheduleId(),
-					HUQRCode.fromNullableGlobalQRCodeJsonString(event.getUnpick().getUnpickToTargetQRCode()));
-
-			return changedJob.removeStep(stepId);
-		}
-	}
-
-	private DistributionJob processEvent_DropTo()
-	{
-		final DistributionJobStepId stepId = event.getDistributionStepId();
-
-		final ImmutableSet<DDOrderMoveScheduleId> scheduleIds = stepId != null
-				? ImmutableSet.of(job.getStepById(stepId).getScheduleId())
-				: job.getInTransitScheduleIds();
-		if (scheduleIds.isEmpty())
-		{
-			throw new AdempiereException("Nothing to move");
-		}
-
-		final JsonDistributionEvent.DropTo dropTo = event.getDropToNonNull();
-		final LocatorId dropToLocatorId = dropTo.getQrCode() != null ? resolveLocatorId(dropTo.getQrCode()) : null;
-
-		final List<DDOrderMoveSchedule> schedules = ddOrderMoveScheduleService.dropTo(
-				DDOrderDropToRequest.builder()
-						.scheduleIds(scheduleIds)
-						.dropToLocatorId(dropToLocatorId)
-						.build()
-		);
-
-		final ImmutableMap<DistributionJobStepId, DDOrderMoveSchedule> schedulesByStepId = Maps.uniqueIndex(schedules, schedule -> DistributionJobStepId.ofScheduleId(schedule.getId()));
-
-		return job.withChangedSteps(step -> {
-			final DDOrderMoveSchedule schedule = schedulesByStepId.get(step.getId());
-			return schedule != null
-					? DistributionJobLoader.toDistributionJobStep(schedule, loadingSupportServices)
-					: step;
-		});
-	}
-
-	private LocatorId resolveLocatorId(@NonNull final ScannedCode scannedCode)
-	{
-		return locatorScannedCodeResolver.resolve(scannedCode).getLocatorId();
-	}
-
 	private DistributionJobStepId getOrCreateStep()
 	{
-		final DistributionJobStepId stepId = event.getDistributionStepId();
 		if (stepId != null)
 		{
 			return stepId;
 		}
 
-		final DistributionJobLineId lineId = Check.assumeNotNull(event.getLineId(), "lineId must be set");
+		final DistributionJobLineId lineId = Check.assumeNotNull(this.lineId, "lineId must be set");
 		final HuId huId = getHuIdToPick(job.getLineById(lineId));
 		final DistributionJobStep step = addNewStep(lineId, huId);
 		return step.getId();
@@ -252,7 +181,7 @@ class DistributionEventProcessCommand
 	@NonNull
 	private HuId resolveHuIdToPick(@NonNull final DistributionJobLine line)
 	{
-		final JsonDistributionEvent.PickFrom pickFrom = Check.assumeNotNull(event.getPickFrom(), "pickFrom must be set");
+		final JsonDistributionEvent.PickFrom pickFrom = Check.assumeNotNull(this.pickFrom, "pickFrom must be set");
 		final IHUQRCode huQRCode = huQRCodesService.parse(Check.assumeNotNull(pickFrom.getQrCode(), "pickFrom.qrCode must be set"));
 		final HuId sourceHuId;
 		if (huQRCode instanceof HUQRCode)

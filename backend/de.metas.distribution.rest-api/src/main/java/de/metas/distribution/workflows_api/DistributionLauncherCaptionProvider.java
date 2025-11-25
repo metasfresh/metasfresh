@@ -1,21 +1,23 @@
 package de.metas.distribution.workflows_api;
 
 import de.metas.common.util.pair.ImmutablePair;
+import de.metas.distribution.config.DistributionJobCaptionField;
 import de.metas.distribution.config.DistributionJobCaptionFormat;
 import de.metas.distribution.config.DistributionJobCaptionFormatItem;
+import de.metas.distribution.config.DistributionJobSorting;
+import de.metas.distribution.config.DistributionJobSortingField;
+import de.metas.distribution.config.DistributionJobSortingItem;
+import de.metas.distribution.config.MobileUIDistributionConfig;
 import de.metas.distribution.config.MobileUIDistributionConfigRepository;
 import de.metas.distribution.service.external.DistributionProductService;
 import de.metas.distribution.service.external.DistributionSourceDocService;
 import de.metas.distribution.service.external.DistributionWarehouseService;
 import de.metas.gs1.GTIN;
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.organization.IOrgDAO;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
-import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.workflow.rest_api.model.WorkflowLauncherCaption;
 import lombok.NonNull;
@@ -25,6 +27,9 @@ import org.eevolution.model.X_DD_Order;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -35,37 +40,53 @@ public class DistributionLauncherCaptionProvider
 	@NonNull private final DistributionWarehouseService warehouseService;
 	@NonNull private final DistributionProductService productService;
 	@NonNull private final DistributionSourceDocService sourceDocService;
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-
-	private static final String CAPTION_SEPARATOR = " | ";
 
 	public WorkflowLauncherCaption compute(@NonNull final DDOrderReference ddOrderReference)
 	{
-		final DistributionJobCaptionFormat format = configRepository.getConfig().getCaptionFormat();
-		
-		final TranslatableStringBuilder captionBuilder = TranslatableStrings.builder();
+		final MobileUIDistributionConfig config = configRepository.getConfig();
+		final DistributionJobCaptionFormat format = config.getCaptionFormat();
+
+		@NonNull final ArrayList<String> fieldsInOrder = new ArrayList<>();
+		@NonNull final HashMap<String, ITranslatableString> fieldValues = new HashMap<>();
+		@NonNull final HashMap<String, Comparable<?>> comparingKeys = new HashMap<>();
 
 		for (final DistributionJobCaptionFormatItem formatItem : format.getItems())
 		{
-			final ITranslatableString captionItem = computeItem(ddOrderReference, formatItem);
-			if (TranslatableStrings.isBlank(captionItem))
-			{
-				continue;
-			}
-
-			if (!captionBuilder.isEmpty())
-			{
-				captionBuilder.append(CAPTION_SEPARATOR);
-			}
-			captionBuilder.append(captionItem);
+			final DistributionJobCaptionField field = formatItem.getField();
+			final ITranslatableString captionItem = computeItem(ddOrderReference, field);
+			fieldsInOrder.add(field.getCode());
+			fieldValues.put(field.getCode(), captionItem);
 		}
 
-		return WorkflowLauncherCaption.of(captionBuilder.build());
+		final DistributionJobSorting sorting = config.getSorting();
+		for (DistributionJobSortingItem item : sorting.getItems())
+		{
+			final DistributionJobSortingField field = item.getField();
+			
+			if (!fieldValues.containsKey(field.getCode()))
+			{
+				final ITranslatableString captionItem = computeItem(ddOrderReference, field);
+				fieldValues.put(field.getCode(), captionItem);
+			}
+
+			final Comparable<?> comparableKey = computeComparableKey(ddOrderReference, field);
+			if (comparableKey != null)
+			{
+				comparingKeys.put(field.getCode(), comparableKey);
+			}
+
+		}
+
+		return WorkflowLauncherCaption.builder()
+				.fieldsInOrder(fieldsInOrder)
+				.fieldValues(fieldValues)
+				.comparingKeys(comparingKeys)
+				.build();
 	}
 
-	private ITranslatableString computeItem(@NonNull final DDOrderReference ddOrderReference, @NonNull final DistributionJobCaptionFormatItem formatItem)
+	private ITranslatableString computeItem(@NonNull final DDOrderReference ddOrderReference, @NonNull final DistributionJobCaptionField field)
 	{
-		switch (formatItem.getField())
+		switch (field)
 		{
 			case LocatorFrom:
 				return extractLocatorFrom(ddOrderReference);
@@ -91,6 +112,33 @@ public class DistributionLauncherCaptionProvider
 				return extractPriority(ddOrderReference);
 			default:
 				return TranslatableStrings.empty();
+		}
+	}
+
+	private ITranslatableString computeItem(final @NonNull DDOrderReference ddOrderReference, final DistributionJobSortingField field)
+	{
+		switch (field)
+		{
+			case Priority:
+				return extractPriority(ddOrderReference);
+			case DatePromised:
+				return extractPickDate(ddOrderReference);
+			case SeqNo:
+				return TranslatableStrings.number(ddOrderReference.getSeqNo().toInt());
+			default:
+				return TranslatableStrings.empty();
+		}
+	}
+
+	private Comparable<?> computeComparableKey(final @NonNull DDOrderReference ddOrderReference, final DistributionJobSortingField field)
+	{
+		if (Objects.requireNonNull(field) == DistributionJobSortingField.SeqNo)
+		{
+			return ddOrderReference.getSeqNo();
+		}
+		else
+		{
+			return null;
 		}
 	}
 
@@ -130,7 +178,7 @@ public class DistributionLauncherCaptionProvider
 
 	private ITranslatableString extractPickDate(final @NotNull DDOrderReference ddOrderReference)
 	{
-		return TranslatableStrings.dateAndTime(ddOrderReference.getDisplayDate().toZonedDateTime(orgDAO::getTimeZone));
+		return TranslatableStrings.dateAndTime(ddOrderReference.getDisplayDate());
 	}
 
 	private ITranslatableString extractPlant(final @NotNull DDOrderReference ddOrderReference)

@@ -62,6 +62,16 @@ public class DistributionJobLine
 
 	public I_C_UOM getUOM() {return qtyToMove.getUOM();}
 
+	public boolean isInTransit()
+	{
+		return !steps.isEmpty() && steps.stream().anyMatch(DistributionJobStep::isInTransit);
+	}
+
+	public boolean isFullyMoved()
+	{
+		return !steps.isEmpty() && steps.stream().allMatch(DistributionJobStep::isDroppedToLocator);
+	}
+
 	private static WFActivityStatus computeStatusFromSteps(final @NonNull List<DistributionJobStep> steps)
 	{
 		return steps.isEmpty()
@@ -117,7 +127,7 @@ public class DistributionJobLine
 	public DistributionJobLine removeStep(@NonNull final DistributionJobStepId stepId)
 	{
 		final ImmutableList<DistributionJobStep> updatedStepCollection = steps.stream()
-				.filter(step ->  !step.getId().equals(stepId))
+				.filter(step -> !step.getId().equals(stepId))
 				.collect(ImmutableList.toImmutableList());
 
 		return updatedStepCollection.equals(steps)
