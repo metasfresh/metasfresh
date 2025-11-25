@@ -6,15 +6,17 @@ import { DistributionJobsListScreen } from "../../utils/screens/distribution/Dis
 import { DistributionJobScreen } from '../../utils/screens/distribution/DistributionJobScreen';
 import { DistributionLineScreen } from '../../utils/screens/distribution/DistributionLineScreen';
 import { DistributionStepScreen } from '../../utils/screens/distribution/DistributionStepScreen';
+import { expectErrorToast } from '../../utils/common';
+import { expect } from '@playwright/test';
 
-const createMasterdata = async ({ HU1_warehouse = 'wh1', qtyToMove }) => {
+const createMasterdata = async ({ HU1_warehouse = 'wh1', HU1_product = 'P1', qtyToMove }) => {
     return await Backend.createMasterdata({
         language: "en_US",
         request: {
             login: { user: { language: "en_US" } },
             mobileConfig: { distribution: {} },
             resources: { "plantId": { type: "PT" } },
-            products: { "P1": {} },
+            products: { "P1": {}, "P2": {} },
             warehouses: {
                 "wh1": {},
                 "wh2": {},
@@ -25,7 +27,7 @@ const createMasterdata = async ({ HU1_warehouse = 'wh1', qtyToMove }) => {
                 "PI": { lu: "LU", qtyTUsPerLU: 20, tu: "TU", product: "P1", qtyCUsPerTU: 4 },
             },
             handlingUnits: {
-                "HU1": { product: 'P1', warehouse: HU1_warehouse, qty: qtyToMove }
+                "HU1": { product: HU1_product, warehouse: HU1_warehouse, qty: qtyToMove }
             },
             distributionOrders: {
                 "DD1": {
@@ -76,6 +78,32 @@ test('Try picking an HU from a different locator than pick from locator', async 
         expectedQtyToMove: '100',
         expectedError: `The HU's locator does not match the order's locator.`
     });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Try picking an HU containing a different product than expected', async ({ page }) => {
+    const masterdata = await createMasterdata({ HU1_product: 'P2', qtyToMove: 100 });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('distribution');
+    await DistributionJobsListScreen.waitForScreen();
+    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId, expectHitCount: 1 });
+    await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
+    await DistributionJobScreen.clickLineButton({ index: 1 });
+    await expectErrorToast(
+        'Expect product not matching error',
+        async () => {
+            await DistributionLineScreen.scanHUToMove({
+                huQRCode: masterdata.handlingUnits.HU1.qrCode,
+                expectedQtyToMove: '100',
+                expectedError: `The HU's locator does not match the order's locator.`
+            });
+        },
+        ({ textContent }) => {
+            expect(textContent).toContain('The scanned QR Product does not match');
+        }
+    )
 });
 
 // noinspection JSUnusedLocalSymbols
