@@ -28,6 +28,7 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.OrderId;
+import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -95,4 +96,6 @@ public interface IReceiptScheduleDAO extends ISingletonService
 	List<ReceiptScheduleId> retainLUQtySchedules(List<ReceiptScheduleId> receiptSchedules);
 
 	List<ReceiptScheduleId> listIdsByQuery(@NonNull ReceiptScheduleQuery query);
+
+	IQueryBuilder<I_M_ReceiptSchedule> createQueryForShipperTransportation(@NonNull ShipperTransportationId shipperTransportationId);
 }

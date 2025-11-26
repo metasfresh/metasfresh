@@ -50,7 +50,6 @@ import de.metas.order.OrderId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
-import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -73,10 +72,8 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
@@ -575,18 +572,18 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 				.create()
 				.iterateAndStream()
 				.forEach(record ->
-						 {
-							 allCounter.incrementAndGet();
-							 if (Objects.equals(record.getExportStatus(), newExportStatus.getCode()))
-							 {
-								 return;
-							 }
-							 record.setExportStatus(newExportStatus.getCode());
-							 updateCanBeExportedFrom(record);
-							 InterfaceWrapperHelper.saveRecord(record);
+				{
+					allCounter.incrementAndGet();
+					if (Objects.equals(record.getExportStatus(), newExportStatus.getCode()))
+					{
+						return;
+					}
+					record.setExportStatus(newExportStatus.getCode());
+					updateCanBeExportedFrom(record);
+					InterfaceWrapperHelper.saveRecord(record);
 
-							 updatedCounter.incrementAndGet();
-						 });
+					updatedCounter.incrementAndGet();
+				});
 
 		Loggables.withLogger(logger, Level.INFO).addLog("Updated {} out of {} M_ReceiptSchedules", updatedCounter.get(), allCounter.get());
 	}
@@ -765,22 +762,10 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 		final ICompositeQueryUpdater<I_M_ReceiptSchedule> updater = queryBL.createCompositeQueryUpdater(I_M_ReceiptSchedule.class)
 				.addSetColumnValue(I_M_ReceiptSchedule.COLUMNNAME_MovementDate, datePromised);
 
-		final IQuery<I_C_OrderLine> ordersQuery = queryBL
-				.createQueryBuilder(I_M_ShippingPackage.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID, shipperTransportationId)
-				.andCollectChildren(I_M_ShippingPackage.COLUMNNAME_C_OrderLine_ID, I_C_OrderLine.class)
-				.addOnlyActiveRecordsFilter()
-				.create();
-
-		final int updateCount = queryBL
-				.createQueryBuilder(I_M_ReceiptSchedule.class)
-				.addOnlyActiveRecordsFilter()
-				.addInSubQueryFilter(
-						I_M_ReceiptSchedule.COLUMNNAME_C_OrderLine_ID,
-						I_C_OrderLine.COLUMNNAME_C_OrderLine_ID,
-						ordersQuery)
-				.create().update(updater);
+		final int updateCount = receiptScheduleDAO
+				.createQueryForShipperTransportation(shipperTransportationId)
+				.create()
+				.update(updater);
 
 		Loggables.withLogger(logger, Level.INFO).addLog("Updated {} M_ReceiptSchedules", updateCount);
 	}

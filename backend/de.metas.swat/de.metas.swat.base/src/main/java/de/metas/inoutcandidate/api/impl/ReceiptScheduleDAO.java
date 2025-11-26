@@ -14,6 +14,8 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.OrderId;
+import de.metas.shipping.model.I_M_ShippingPackage;
+import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -298,14 +300,13 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 	@Override
 	public IQueryBuilder<I_M_ReceiptSchedule> createQueryForReceiptScheduleSelection(final Properties ctx, final IQueryFilter<I_M_ReceiptSchedule> userSelectionFilter)
 	{
-		final IQueryBuilder<I_M_ReceiptSchedule> queryBuilder = queryBL
+		return queryBL
 				.createQueryBuilder(I_M_ReceiptSchedule.class, ctx, ITrx.TRXNAME_None)
 				.filter(userSelectionFilter)
 				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_Processed, false)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient();
 
-		return queryBuilder;
 	}
 
 	@Override
@@ -369,6 +370,36 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 				.addNotEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_QtyToMove, 0)
 				.create()
 				.listIds(ReceiptScheduleId::ofRepoId);
+	}
+
+	@Override
+	public IQueryBuilder<I_M_ReceiptSchedule> createQueryForShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId)
+	{
+
+		final IQuery<I_M_ShippingPackage> shippingPackageQuery = queryBL
+				.createQueryBuilder(I_M_ShippingPackage.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_M_ShipperTransportation_ID,	shipperTransportationId)
+				.create();
+
+		final IQuery<org.compiere.model.I_C_OrderLine> orderLinesQuery = queryBL
+				.createQueryBuilder(org.compiere.model.I_C_OrderLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(
+						org.compiere.model.I_C_OrderLine.COLUMNNAME_C_OrderLine_ID,
+						I_M_ShippingPackage.COLUMNNAME_C_OrderLine_ID,
+						shippingPackageQuery)
+				.create();
+
+
+		return queryBL
+				.createQueryBuilder(I_M_ReceiptSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(
+						I_M_ReceiptSchedule.COLUMNNAME_C_OrderLine_ID,
+						org.compiere.model.I_C_OrderLine.COLUMNNAME_C_OrderLine_ID,
+						orderLinesQuery);
+
 	}
 
 }
