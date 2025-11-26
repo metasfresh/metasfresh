@@ -41,6 +41,7 @@ public class JsonResponseSalesRepContact
 	public static final String SALES_REP_EMAIL = "salesRepEmail";
 	public static final String SALES_REP_LASTNAME = "salesRepLastName";
 	public static final String SALES_REP_FIRSTNAME = "salesRepFirstName";
+	public static final String SALES_REP_NAME = "salesRepName";
 
 	@ApiModelProperty(required = true, value = "This translates to `AD_User.AD_User_ID`.")
 	@JsonProperty(SALES_REP_ID)
@@ -66,6 +67,10 @@ public class JsonResponseSalesRepContact
 	@JsonProperty(SALES_REP_FIRSTNAME)
 	String firstName;
 
+	@ApiModelProperty(required = true, value = "This translates to `AD_User.Name`.")
+	@JsonProperty(SALES_REP_NAME)
+	String name;
+
 	@JsonCreator
 	@Builder
 	private JsonResponseSalesRepContact(
@@ -73,6 +78,7 @@ public class JsonResponseSalesRepContact
 			@JsonProperty(SALES_REP_VALUE) @Nullable final String salesRepValue,
 			@JsonProperty(SALES_REP_LASTNAME) @Nullable final String lastName,
 			@JsonProperty(SALES_REP_FIRSTNAME) @Nullable final String firstName,
+			@JsonProperty(SALES_REP_NAME) @Nullable final String name,
 			@JsonProperty(SALES_REP_EMAIL) @Nullable final String email,
 			@JsonProperty(SALES_REP_PHONE) @Nullable final String phone)
 	{
@@ -80,6 +86,7 @@ public class JsonResponseSalesRepContact
 		this.salesRepValue = salesRepValue;
 		this.lastName = lastName;
 		this.firstName = firstName;
+		this.name = name;
 		this.email = email;
 		this.phone = phone;
 	}

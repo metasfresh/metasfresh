@@ -973,6 +973,7 @@ public class JsonRetrieverService
 		return JsonResponseSalesRepContact.builder()
 				.salesRepId(JsonMetasfreshId.of(salesRepContact.getId().getRepoId()))
 				.email(salesRepContact.getEmail())
+				.name(salesRepContact.getName())
 				.firstName(salesRepContact.getFirstName())
 				.lastName(salesRepContact.getLastName())
 				.salesRepValue(salesRepContact.getValue())
