@@ -34,6 +34,7 @@ import de.metas.inoutcandidate.spi.IReceiptScheduleListener;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.process.PInstanceId;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -46,6 +47,7 @@ import org.compiere.model.I_M_Warehouse;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -231,4 +233,6 @@ public interface IReceiptScheduleBL extends ISingletonService
 	void updateCanBeExportedFrom(@NonNull I_M_ReceiptSchedule receiptSchedule);
 
 	List<ReceiptScheduleId> retainLUQtySchedules(List<ReceiptScheduleId> receiptSchedules);
+
+	void updateMovementDateForForShipperTransportation(@NonNull ShipperTransportationId shipperTransportationId, @NonNull LocalDate datePromised);
 }

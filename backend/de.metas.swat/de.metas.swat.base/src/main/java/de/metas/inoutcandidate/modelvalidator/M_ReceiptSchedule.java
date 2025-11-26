@@ -175,4 +175,15 @@ public class M_ReceiptSchedule
 	{
 		receiptScheduleBL.updateCanBeExportedFrom(sched);
 	}
+
+
+	@ModelChange(timings = {ModelValidator.TYPE_BEFORE_CHANGE}, ifColumnsChanged = {I_M_ReceiptSchedule.COLUMNNAME_MovementDate	})
+	public void resetDatePromised_Override(final I_M_ReceiptSchedule sched)
+	{
+		//reset DatePromised_Override if MovementDate was set
+		if (sched.getMovementDate() != null)
+		{
+			sched.setDatePromised_Override(null);
+		}
+	}
 }

@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.shipping.model.ShipperTransportationId;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
@@ -41,10 +42,14 @@ import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.util.Services;
+import org.compiere.util.TimeUtil;
 
 @Validator(I_M_ShipperTransportation.class)
 public class M_ShipperTransportation
 {
+
+	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
+
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void removeHUsFromPickingSlot(final I_M_ShipperTransportation shipperTransportation)
 	{
@@ -68,6 +73,15 @@ public class M_ShipperTransportation
 		for (final I_M_HU hu : husToRemove)
 		{
 			huPickingSlotBL.removeFromPickingSlotQueueRecursivelly(hu);
+		}
+	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
+	public void syncETAWithReceiptSchedMovementDate(final I_M_ShipperTransportation transportOrder)
+	{
+		if (transportOrder.getETA() != null)
+		{
+			receiptScheduleBL.updateMovementDateForForShipperTransportation(ShipperTransportationId.ofRepoId(transportOrder.getM_ShipperTransportation_ID()), TimeUtil.asLocalDate(transportOrder.getETA()));
 		}
 	}
 
