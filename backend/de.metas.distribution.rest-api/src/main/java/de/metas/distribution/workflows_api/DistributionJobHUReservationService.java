@@ -1,19 +1,17 @@
 package de.metas.distribution.workflows_api;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.distribution.service.external.hu.DistributionHUService;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
-import de.metas.handlingunits.reservation.HUReservationService;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class DistributionJobHUReservationService
 {
-	private final HUReservationService huReservationService;
-
-	public DistributionJobHUReservationService(final HUReservationService huReservationService)
-	{
-		this.huReservationService = huReservationService;
-	}
+	@NonNull private final DistributionHUService huService;
 
 	public void reservePickFromHUs(final DistributionJob job)
 	{
@@ -43,6 +41,6 @@ public class DistributionJobHUReservationService
 				.map(HUReservationDocRef::ofDDOrderLineId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		huReservationService.deleteReservationsByDocumentRefs(huReservationDocRefs);
+		huService.deleteReservationsByDocumentRefs(huReservationDocRefs);
 	}
 }

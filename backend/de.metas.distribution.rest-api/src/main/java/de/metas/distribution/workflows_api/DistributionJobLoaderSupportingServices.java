@@ -22,7 +22,6 @@ import de.metas.distribution.service.external.warehouse.DistributionWarehouseSer
 import de.metas.distribution.service.external.warehouse.LocatorInfo;
 import de.metas.distribution.service.external.warehouse.WarehouseInfo;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -107,8 +106,6 @@ public class DistributionJobLoaderSupportingServices
 	}
 
 	public HUInfo getHUInfo(final HuId huId) {return huService.getHUInfoById(huId);}
-
-	public HUQRCode getQRCodeByHuId(final HuId huId) {return huService.getQRCodeByHuId(huId);}
 
 	@Nullable
 	public SalesOrderRef getSalesOderRef(@NonNull final I_DD_Order ddOrder)

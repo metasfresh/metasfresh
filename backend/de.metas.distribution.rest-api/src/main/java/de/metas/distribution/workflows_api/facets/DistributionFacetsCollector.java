@@ -4,12 +4,13 @@ import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderService;
+import de.metas.distribution.service.external.product.DistributionProductService;
+import de.metas.distribution.service.external.sourcedoc.DistributionSourceDocService;
+import de.metas.distribution.service.external.warehouse.DistributionWarehouseService;
 import de.metas.distribution.workflows_api.DistributionOrderCollector;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
@@ -18,9 +19,7 @@ import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.util.TimeUtil;
-import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
@@ -35,11 +34,10 @@ import java.util.function.UnaryOperator;
 @Builder
 public class DistributionFacetsCollector implements DistributionOrderCollector<DistributionFacet>
 {
-	@NonNull private final IWarehouseBL warehouseBL;
-	@NonNull private final IOrderBL orderBL;
-	@NonNull private final IPPOrderBL ppOrderBL;
 	@NonNull private final DDOrderService ddOrderService;
-	@NonNull private final IProductBL productBL;
+	@NonNull private final DistributionProductService productService;
+	@NonNull private final DistributionWarehouseService warehouseService;
+	@NonNull private final DistributionSourceDocService sourceDocService;
 
 	private final HashSet<DistributionFacet> _result = new HashSet<>();
 	private final HashSet<DDOrderId> pendingCollectProductsFromDDOrderIds = new HashSet<>();
@@ -144,7 +142,7 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 
 		collect(
 				DistributionFacetId.ofPlantId(plantId),
-				builder -> builder.caption(getResourceName(plantId))
+				builder -> builder.caption(getPlantName(plantId))
 		);
 	}
 
@@ -214,7 +212,7 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 
 	private ITranslatableString retrieveWarehouseName(WarehouseId warehouseId)
 	{
-		return TranslatableStrings.anyLanguage(warehouseBL.getWarehouseName(warehouseId));
+		return TranslatableStrings.anyLanguage(warehouseService.getWarehouseName(warehouseId));
 	}
 
 	private ITranslatableString getSalesOrderDocumentNo(final OrderId orderId)
@@ -224,7 +222,7 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 
 	private ITranslatableString retrieveOrderDocumentNo(final OrderId orderId)
 	{
-		return TranslatableStrings.anyLanguage(orderBL.getDocumentNoById(orderId));
+		return TranslatableStrings.anyLanguage(sourceDocService.getDocumentNoById(orderId));
 	}
 
 	private ITranslatableString getManufacturingOrderDocumentNo(final PPOrderId manufacturingOrderId)
@@ -234,7 +232,7 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 
 	private ITranslatableString retrieveManufacturingOrderDocumentNo(final PPOrderId manufacturingOrderId)
 	{
-		return TranslatableStrings.anyLanguage(ppOrderBL.getDocumentNoById(manufacturingOrderId));
+		return TranslatableStrings.anyLanguage(sourceDocService.getDocumentNoById(manufacturingOrderId));
 	}
 
 	private ITranslatableString getProductName(final ProductId productId)
@@ -244,7 +242,7 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 
 	private ITranslatableString retrieveProductName(final ProductId productId)
 	{
-		return TranslatableStrings.anyLanguage(productBL.getProductValueAndName(productId));
+		return TranslatableStrings.anyLanguage(productService.getProductValueAndName(productId));
 	}
 
 	@NonNull
@@ -270,8 +268,8 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 		}
 	}
 
-	private ITranslatableString getResourceName(final ResourceId resourceId)
+	private ITranslatableString getPlantName(final ResourceId resourceId)
 	{
-		return resourceNames.computeIfAbsent(resourceId, id -> TranslatableStrings.constant(ppOrderBL.getResourceName(id)));
+		return resourceNames.computeIfAbsent(resourceId, id -> TranslatableStrings.constant(sourceDocService.getPlantName(id)));
 	}
 }

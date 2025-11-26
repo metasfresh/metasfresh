@@ -46,12 +46,24 @@ public class DistributionSourceDocService
 		return ImmutablePair.of(docTypeName, documentNo);
 	}
 
+	public String getDocumentNoById(@NonNull OrderId salesOrderId)
+	{
+		final I_C_Order order = orderBL.getById(salesOrderId);
+		return order.getDocumentNo();
+	}
+
 	public ImmutablePair<ITranslatableString, String> getDocumentTypeAndName(@NonNull PPOrderId ppOrderId)
 	{
 		final I_PP_Order ppOrder = ppOrderBL.getById(ppOrderId);
 		final ITranslatableString docTypeName = docTypeBL.getNameById(DocTypeId.ofRepoId(ppOrder.getC_DocType_ID()));
 		final String documentNo = ppOrder.getDocumentNo();
 		return ImmutablePair.of(docTypeName, documentNo);
+	}
+
+	public String getDocumentNoById(@NonNull PPOrderId ppOrderId)
+	{
+		final I_PP_Order ppOrder = ppOrderBL.getById(ppOrderId);
+		return ppOrder.getDocumentNo();
 	}
 
 	@Nullable

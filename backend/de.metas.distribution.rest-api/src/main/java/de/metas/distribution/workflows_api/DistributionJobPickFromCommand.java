@@ -5,23 +5,17 @@ import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleCreate
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderPickFromRequest;
 import de.metas.distribution.rest_api.JsonDistributionEvent;
+import de.metas.distribution.service.external.hu.DistributionHUService;
 import de.metas.handlingunits.HUContextHolder;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHUPIItemProductBL;
-import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.candidate.commands.PackToHUsProducer;
-import de.metas.handlingunits.qrcodes.model.HUQRCode;
-import de.metas.handlingunits.qrcodes.model.IHUQRCode;
-import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.storage.IHUProductStorage;
-import de.metas.handlingunits.trace.HUAccessService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMConversionBL;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -38,12 +32,10 @@ public class DistributionJobPickFromCommand
 
 	// Services
 	@NonNull private final ITrxManager trxManager;
-	@NonNull private final HUQRCodesService huQRCodesService;
-	@NonNull private final IHandlingUnitsBL handlingUnitsBL;
+	@NonNull private final DistributionHUService huService;
 	@NonNull private final DDOrderMoveScheduleService ddOrderMoveScheduleService;
 	@NonNull private final DistributionJobLoaderSupportingServices loadingSupportServices;
 	@NonNull private final PackToHUsProducer packToHUsProducer;
-	@NonNull private final HUAccessService huAccessService;
 
 	// Params
 	@NonNull private final DistributionJob job;
@@ -58,14 +50,9 @@ public class DistributionJobPickFromCommand
 	@Builder
 	public DistributionJobPickFromCommand(
 			@NonNull final ITrxManager trxManager,
-			@NonNull final HUQRCodesService huQRCodesService,
-			@NonNull final IHandlingUnitsBL handlingUnitsBL,
+			@NonNull final DistributionHUService huService,
 			@NonNull final DDOrderMoveScheduleService ddOrderMoveScheduleService,
 			@NonNull final DistributionJobLoaderSupportingServices loadingSupportServices,
-			@NonNull final InventoryService inventoryService,
-			@NonNull final IUOMConversionBL uomConversionBL,
-			@NonNull final IHUPIItemProductBL hupiItemProductBL,
-			@NonNull final HUAccessService huAccessService,
 			//
 			@NonNull final DistributionJob job,
 			@Nullable final DistributionJobLineId lineId,
@@ -73,17 +60,10 @@ public class DistributionJobPickFromCommand
 			@Nullable final JsonDistributionEvent.PickFrom pickFrom)
 	{
 		this.trxManager = trxManager;
-		this.huQRCodesService = huQRCodesService;
-		this.handlingUnitsBL = handlingUnitsBL;
+		this.huService = huService;
 		this.ddOrderMoveScheduleService = ddOrderMoveScheduleService;
 		this.loadingSupportServices = loadingSupportServices;
-		this.huAccessService = huAccessService;
-		this.packToHUsProducer = PackToHUsProducer.builder()
-				.handlingUnitsBL(handlingUnitsBL)
-				.huPIItemProductBL(hupiItemProductBL)
-				.uomConversionBL(uomConversionBL)
-				.inventoryService(inventoryService)
-				.build();
+		this.packToHUsProducer = huService.newPackToHUsProducer();
 		this.job = job;
 		this.lineId = lineId;
 		this.stepId = stepId;
@@ -106,7 +86,7 @@ public class DistributionJobPickFromCommand
 
 	private DistributionJob executeInTrx()
 	{
-		try (final IAutoCloseable ignored = HUContextHolder.temporarySet(handlingUnitsBL.createMutableHUContextForProcessing()))
+		try (final IAutoCloseable ignored = huService.newContext())
 		{
 			final DistributionJobStepId stepId = getOrCreateStep();
 
@@ -145,7 +125,7 @@ public class DistributionJobPickFromCommand
 
 	private DDOrderMoveSchedule createNewSchedule(final DistributionJobLine line, final HuId huId)
 	{
-		final IHUProductStorage huStorage = handlingUnitsBL.getSingleHUProductStorage(huId);
+		final IHUProductStorage huStorage = huService.getSingleHUProductStorage(huId);
 
 		if (!ProductId.equals(huStorage.getProductId(), line.getProductId()))
 		{
@@ -182,18 +162,10 @@ public class DistributionJobPickFromCommand
 	private HuId resolveHuIdToPick(@NonNull final DistributionJobLine line)
 	{
 		final JsonDistributionEvent.PickFrom pickFrom = Check.assumeNotNull(this.pickFrom, "pickFrom must be set");
-		final IHUQRCode huQRCode = huQRCodesService.parse(Check.assumeNotNull(pickFrom.getQrCode(), "pickFrom.qrCode must be set"));
-		final HuId sourceHuId;
-		if (huQRCode instanceof HUQRCode)
-		{
-			sourceHuId = huQRCodesService.getHuIdByQRCode((HUQRCode)huQRCode);
-		}
-		else
-		{
-			throw new AdempiereException("Invalid QRCode: " + huQRCode);
-		}
+		final ScannedCode pickFromScannedCode = ScannedCode.ofString(Check.assumeNotNull(pickFrom.getQrCode(), "pickFrom.qrCode must be set"));
+		final HuId sourceHuId = huService.resolveHUId(pickFromScannedCode);
 
-		final Quantity sourceHUQty = huAccessService.retrieveProductQty(sourceHuId, line.getProductId())
+		final Quantity sourceHUQty = huService.getProductQuantity(sourceHuId, line.getProductId())
 				.orElseThrow(() -> new AdempiereException(PRODUCT_DOES_NOT_MATCH));
 
 		final Quantity qtyToPick = pickFrom.getQtyPicked(line.getUOM()).orElse(null);

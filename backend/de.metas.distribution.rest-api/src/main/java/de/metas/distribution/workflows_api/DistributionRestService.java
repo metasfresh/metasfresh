@@ -9,16 +9,12 @@ import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.distribution.rest_api.JsonDistributionEvent;
 import de.metas.distribution.rest_api.JsonDropAllRequest;
+import de.metas.distribution.service.external.hu.DistributionHUService;
+import de.metas.distribution.service.external.product.DistributionProductService;
+import de.metas.distribution.service.external.sourcedoc.DistributionSourceDocService;
+import de.metas.distribution.service.external.warehouse.DistributionWarehouseService;
 import de.metas.distribution.workflows_api.facets.DistributionFacetsCollection;
 import de.metas.distribution.workflows_api.facets.DistributionFacetsCollector;
-import de.metas.handlingunits.IHUPIItemProductBL;
-import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.inventory.InventoryService;
-import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.handlingunits.trace.HUAccessService;
-import de.metas.order.IOrderBL;
-import de.metas.product.IProductBL;
-import de.metas.uom.IUOMConversionBL;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -28,9 +24,7 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolverService;
-import org.eevolution.api.IPPOrderBL;
 import org.eevolution.model.I_DD_Order;
 import org.springframework.stereotype.Service;
 
@@ -41,21 +35,15 @@ import java.util.List;
 public class DistributionRestService
 {
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	@NonNull private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
-	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
-	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	@NonNull private final IHUPIItemProductBL hupiItemProductBL = Services.get(IHUPIItemProductBL.class);
-	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final MobileUIDistributionConfigRepository configRepository;
 	@NonNull private final DDOrderService ddOrderService;
 	@NonNull private final DDOrderMoveScheduleService ddOrderMoveScheduleService;
 	@NonNull private final DistributionJobHUReservationService distributionJobHUReservationService;
 	@NonNull private final DistributionJobLoaderSupportingServices loadingSupportServices;
-	@NonNull private final HUQRCodesService huQRCodesService;
-	@NonNull private final InventoryService inventoryService;
-	@NonNull private final HUAccessService huAccessService;
+	@NonNull private final DistributionHUService huService;
+	@NonNull private final DistributionWarehouseService warehouseService;
+	@NonNull private final DistributionProductService productService;
+	@NonNull private final DistributionSourceDocService sourceDocService;
 	@NonNull private final LocatorScannedCodeResolverService locatorScannedCodeResolver;
 
 	public MobileUIDistributionConfig getConfig() {return configRepository.getConfig();}
@@ -79,11 +67,10 @@ public class DistributionRestService
 	public DistributionFacetsCollection getFacets(@NonNull final DDOrderReferenceQuery query)
 	{
 		final DistributionFacetsCollector collector = DistributionFacetsCollector.builder()
-				.warehouseBL(warehouseBL)
-				.orderBL(orderBL)
-				.ppOrderBL(ppOrderBL)
 				.ddOrderService(ddOrderService)
-				.productBL(productBL)
+				.productService(productService)
+				.warehouseService(warehouseService)
+				.sourceDocService(sourceDocService)
 				.build();
 
 		collect(query, collector);
@@ -184,14 +171,9 @@ public class DistributionRestService
 		{
 			return DistributionJobPickFromCommand.builder()
 					.trxManager(trxManager)
-					.huQRCodesService(huQRCodesService)
-					.handlingUnitsBL(handlingUnitsBL)
+					.huService(huService)
 					.ddOrderMoveScheduleService(ddOrderMoveScheduleService)
 					.loadingSupportServices(loadingSupportServices)
-					.hupiItemProductBL(hupiItemProductBL)
-					.inventoryService(inventoryService)
-					.uomConversionBL(uomConversionBL)
-					.huAccessService(huAccessService)
 					.job(job)
 					.lineId(event.getLineId())
 					.stepId(event.getDistributionStepId())
@@ -214,8 +196,8 @@ public class DistributionRestService
 		{
 			return DistributionJobUnpickCommand.builder()
 					.trxManager(trxManager)
-					.handlingUnitsBL(handlingUnitsBL)
 					.ddOrderMoveScheduleService(ddOrderMoveScheduleService)
+					.huService(huService)
 					.job(job)
 					.stepId(Check.assumeNotNull(event.getDistributionStepId(), "stepId must be set when unpicking"))
 					.unpickToTargetQRCode(Check.assumeNotNull(event.getUnpick(), "unpick must be set").getUnpickToTargetQRCode())

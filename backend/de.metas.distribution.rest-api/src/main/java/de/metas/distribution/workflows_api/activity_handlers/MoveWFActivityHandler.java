@@ -14,22 +14,18 @@ import de.metas.workflow.rest_api.model.WFActivityType;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.service.WFActivityHandler;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.util.api.Params;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class MoveWFActivityHandler implements WFActivityHandler
 {
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("distribution.move");
 	public static final UIComponentType COMPONENT_TYPE = UIComponentType.ofString("distribution/move");
 
-	private final DistributionRestService distributionRestService;
-
-	public MoveWFActivityHandler(
-			@NonNull final DistributionRestService distributionRestService)
-	{
-		this.distributionRestService = distributionRestService;
-	}
+	@NonNull private final DistributionRestService distributionRestService;
 
 	@Override
 	public WFActivityType getHandledActivityType() {return HANDLED_ACTIVITY_TYPE;}
