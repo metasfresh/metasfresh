@@ -10,7 +10,7 @@ import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.lowlevel.model.DDOrderLineHUPackingAware;
 import de.metas.distribution.mobileui.job.model.DDOrderReference;
-import de.metas.distribution.mobileui.job.service.DDOrderReferenceCollector;
+import de.metas.distribution.mobileui.launchers.DDOrderReferenceCollector;
 import de.metas.distribution.mobileui.job.service.DistributionJobLoaderSupportingServices;
 import de.metas.distribution.mobileui.launchers.DistributionLauncherCaptionProvider;
 import de.metas.distribution.mobileui.launchers.facets.DistributionFacetId;

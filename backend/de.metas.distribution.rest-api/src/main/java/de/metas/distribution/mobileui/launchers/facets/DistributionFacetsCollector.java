@@ -7,7 +7,7 @@ import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.mobileui.external_services.product.DistributionProductService;
 import de.metas.distribution.mobileui.external_services.sourcedoc.DistributionSourceDocService;
 import de.metas.distribution.mobileui.external_services.warehouse.DistributionWarehouseService;
-import de.metas.distribution.mobileui.job.service.DistributionOrderCollector;
+import de.metas.distribution.mobileui.launchers.DistributionOrderCollector;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.order.OrderId;

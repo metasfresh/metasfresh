@@ -1,4 +1,4 @@
-package de.metas.distribution.mobileui.job.service;
+package de.metas.distribution.mobileui.launchers;
 
 import org.eevolution.model.I_DD_Order;
 

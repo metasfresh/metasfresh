@@ -11,12 +11,10 @@ import de.metas.distribution.mobileui.external_services.product.DistributionProd
 import de.metas.distribution.mobileui.external_services.sourcedoc.DistributionSourceDocService;
 import de.metas.distribution.mobileui.external_services.warehouse.DistributionWarehouseService;
 import de.metas.distribution.mobileui.job.model.DDOrderReference;
-import de.metas.distribution.mobileui.job.service.DDOrderReferenceCollector;
 import de.metas.distribution.mobileui.job.service.DDOrderReferenceQuery;
 import de.metas.distribution.mobileui.job.service.DDOrderReferenceQuery.DDOrderReferenceQueryBuilder;
 import de.metas.distribution.mobileui.job.service.DistributionJobLoaderSupportingServices;
 import de.metas.distribution.mobileui.job.service.DistributionJobQueries;
-import de.metas.distribution.mobileui.job.service.DistributionOrderCollector;
 import de.metas.distribution.mobileui.launchers.facets.DistributionFacetIdsCollection;
 import de.metas.distribution.mobileui.launchers.facets.DistributionFacetsCollection;
 import de.metas.distribution.mobileui.launchers.facets.DistributionFacetsCollector;
