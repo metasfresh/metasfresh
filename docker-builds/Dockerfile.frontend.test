@@ -9,8 +9,8 @@ WORKDIR /app
 #
 # Install required packages
 # NOTE: copy the bare minimum config files at this point to favor caching
-COPY frontend-webui-testing/package.json* .
-COPY frontend-webui-testing/package-lock.json* .
+COPY e2e/frontend-webui/package.json* .
+COPY e2e/frontend-webui/package-lock.json* .
 RUN npm ci
 
 # Install Playwright browsers with dependencies
@@ -18,7 +18,7 @@ RUN npx playwright install --with-deps chromium
 
 #
 # Copy the rest of our source files (i.e. the tests)
-COPY frontend-webui-testing/ .
+COPY e2e/frontend-webui/ .
 
 #
 # Start command
