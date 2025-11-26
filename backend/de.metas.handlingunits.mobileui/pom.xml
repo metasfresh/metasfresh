@@ -9,15 +9,22 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <version>10.0.0</version> <!-- needed by versions:set during the jenkins build -->
-    <groupId>de.metas.picking</groupId>
-    <artifactId>de.metas.picking.rest-api</artifactId>
+    <groupId>de.metas.handlingunits</groupId>
+    <artifactId>de.metas.handlingunits.mobileui</artifactId>
 
     <properties>
         <metasfresh.version>10.0.0</metasfresh.version>
+        <migration-sql-basedir>70-de.metas.handlingunits</migration-sql-basedir>
+        <metasfresh-common.version>10.0.0</metasfresh-common.version>
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>de.metas.common.manufacturing</groupId>
+            <artifactId>de-metas-common-manufacturing</artifactId>
+            <version>${metasfresh-common.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>de.metas.workflow</groupId>
             <artifactId>de.metas.workflow.rest-api</artifactId>
@@ -27,11 +34,6 @@
         <dependency>
             <groupId>de.metas.handlingunits</groupId>
             <artifactId>de.metas.handlingunits.base</artifactId>
-            <version>${metasfresh.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>de.metas.handlingunits</groupId>
-            <artifactId>de.metas.handlingunits.mobileui</artifactId>
             <version>${metasfresh.version}</version>
         </dependency>
         <dependency>
@@ -66,24 +68,6 @@
             <artifactId>de.metas.business</artifactId>
             <version>${metasfresh.version}</version>
             <classifier>tests</classifier>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>de.metas.manufacturing</groupId>
-            <artifactId>de.metas.manufacturing</artifactId>
-            <version>${metasfresh.version}</version>
-            <classifier>tests</classifier>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>de.metas.manufacturing</groupId>
-            <artifactId>de.metas.manufacturing.rest-api</artifactId>
-            <version>10.0.0</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
