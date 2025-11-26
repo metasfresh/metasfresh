@@ -1,4 +1,4 @@
 const config = {
-    API_URL: 'http://webapi-test:8080/rest/api',
-    WS_URL: 'http://webapi-test:8080/stomp'
+    API_URL: '/rest/api',
+    WS_URL: '/stomp'
 }
