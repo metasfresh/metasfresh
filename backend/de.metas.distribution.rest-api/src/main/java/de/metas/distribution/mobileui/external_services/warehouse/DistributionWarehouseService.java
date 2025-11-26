@@ -1,5 +1,6 @@
 package de.metas.distribution.mobileui.external_services.warehouse;
 
+import de.metas.scannable_code.ScannedCode;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.workplace.Workplace;
@@ -10,6 +11,8 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.qrcode.LocatorQRCode;
+import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolverResult;
+import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolverService;
 import org.compiere.model.I_M_Locator;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +24,7 @@ public class DistributionWarehouseService
 {
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	@NonNull private final WorkplaceService workplaceService;
+	@NonNull private final LocatorScannedCodeResolverService locatorScannedCodeResolver;
 
 	public String getWarehouseName(@NonNull final WarehouseId warehouseId)
 	{
@@ -58,4 +62,8 @@ public class DistributionWarehouseService
 				.build();
 	}
 
+	public LocatorScannedCodeResolverResult resolveLocator(@NonNull final ScannedCode scannedCode)
+	{
+		return locatorScannedCodeResolver.resolve(scannedCode);
+	}
 }

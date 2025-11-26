@@ -8,6 +8,7 @@ import de.metas.distribution.ddorder.movement.schedule.DDOrderDropToRequest;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedule;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleId;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
+import de.metas.distribution.mobileui.external_services.warehouse.DistributionWarehouseService;
 import de.metas.distribution.mobileui.job.model.DistributionJob;
 import de.metas.distribution.mobileui.job.model.DistributionJobId;
 import de.metas.distribution.mobileui.job.model.DistributionJobStep;
@@ -24,7 +25,6 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolverService;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -37,7 +37,7 @@ public class DistributionJobDropToCommand
 	@NonNull private final DistributionRestService distributionJobService;
 	@NonNull private final DDOrderMoveScheduleService ddOrderMoveScheduleService;
 	@NonNull private final DistributionJobLoaderSupportingServices loadingSupportServices;
-	@NonNull private final LocatorScannedCodeResolverService locatorScannedCodeResolver;
+	@NonNull private final DistributionWarehouseService warehouseService;
 
 	// Params
 	@NonNull private final UserId userId;
@@ -55,7 +55,7 @@ public class DistributionJobDropToCommand
 			@NonNull final DistributionRestService distributionJobService,
 			@NonNull final DDOrderMoveScheduleService ddOrderMoveScheduleService,
 			@NonNull final DistributionJobLoaderSupportingServices loadingSupportServices,
-			@NonNull final LocatorScannedCodeResolverService locatorScannedCodeResolver,
+			@NonNull final DistributionWarehouseService warehouseService,
 			//
 			@NonNull final UserId userId,
 			@Nullable final DistributionJobId onlyJobId,
@@ -72,7 +72,7 @@ public class DistributionJobDropToCommand
 		this.distributionJobService = distributionJobService;
 		this.ddOrderMoveScheduleService = ddOrderMoveScheduleService;
 		this.loadingSupportServices = loadingSupportServices;
-		this.locatorScannedCodeResolver = locatorScannedCodeResolver;
+		this.warehouseService = warehouseService;
 
 		this.userId = userId;
 		this.onlyJobId = onlyJobId;
@@ -194,7 +194,7 @@ public class DistributionJobDropToCommand
 		LocatorId dropToLocatorId = this._dropToLocatorId;
 		if (dropToLocatorId == null)
 		{
-			dropToLocatorId = this._dropToLocatorId = locatorScannedCodeResolver.resolve(dropToQRCode).getLocatorId();
+			dropToLocatorId = this._dropToLocatorId = warehouseService.resolveLocator(dropToQRCode).getLocatorId();
 		}
 		return dropToLocatorId;
 	}

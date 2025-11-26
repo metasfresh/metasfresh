@@ -7,22 +7,22 @@ import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.distribution.mobileui.config.MobileUIDistributionConfig;
 import de.metas.distribution.mobileui.config.MobileUIDistributionConfigRepository;
+import de.metas.distribution.mobileui.external_services.hu.DistributionHUService;
+import de.metas.distribution.mobileui.external_services.product.DistributionProductService;
+import de.metas.distribution.mobileui.external_services.sourcedoc.DistributionSourceDocService;
+import de.metas.distribution.mobileui.external_services.warehouse.DistributionWarehouseService;
 import de.metas.distribution.mobileui.job.model.DDOrderReference;
 import de.metas.distribution.mobileui.job.model.DistributionJob;
 import de.metas.distribution.mobileui.job.model.DistributionJobId;
 import de.metas.distribution.mobileui.job.service.commands.abort_job.DistributionJobAbortCommand;
 import de.metas.distribution.mobileui.job.service.commands.create_job.DistributionJobCreateCommand;
 import de.metas.distribution.mobileui.job.service.commands.drop_to.DistributionJobDropToCommand;
-import de.metas.distribution.mobileui.rest_api.json.JsonDistributionEvent;
-import de.metas.distribution.mobileui.rest_api.json.JsonDropAllRequest;
-import de.metas.distribution.mobileui.external_services.hu.DistributionHUService;
-import de.metas.distribution.mobileui.external_services.product.DistributionProductService;
-import de.metas.distribution.mobileui.external_services.sourcedoc.DistributionSourceDocService;
-import de.metas.distribution.mobileui.external_services.warehouse.DistributionWarehouseService;
 import de.metas.distribution.mobileui.job.service.commands.pick_from.DistributionJobPickFromCommand;
 import de.metas.distribution.mobileui.job.service.commands.unpick.DistributionJobUnpickCommand;
 import de.metas.distribution.mobileui.launchers.facets.DistributionFacetsCollection;
 import de.metas.distribution.mobileui.launchers.facets.DistributionFacetsCollector;
+import de.metas.distribution.mobileui.rest_api.json.JsonDistributionEvent;
+import de.metas.distribution.mobileui.rest_api.json.JsonDropAllRequest;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -32,7 +32,6 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolverService;
 import org.eevolution.model.I_DD_Order;
 import org.springframework.stereotype.Service;
 
@@ -52,7 +51,6 @@ public class DistributionRestService
 	@NonNull private final DistributionWarehouseService warehouseService;
 	@NonNull private final DistributionProductService productService;
 	@NonNull private final DistributionSourceDocService sourceDocService;
-	@NonNull private final LocatorScannedCodeResolverService locatorScannedCodeResolver;
 
 	public MobileUIDistributionConfig getConfig() {return configRepository.getConfig();}
 
@@ -233,7 +231,7 @@ public class DistributionRestService
 				.distributionJobService(this)
 				.ddOrderMoveScheduleService(ddOrderMoveScheduleService)
 				.loadingSupportServices(loadingSupportServices)
-				.locatorScannedCodeResolver(locatorScannedCodeResolver);
+				.warehouseService(warehouseService);
 	}
 
 	public DistributionJob complete(@NonNull final DistributionJobId jobId, @NonNull final UserId callerId)
