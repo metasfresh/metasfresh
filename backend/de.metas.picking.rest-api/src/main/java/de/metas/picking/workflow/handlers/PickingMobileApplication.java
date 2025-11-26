@@ -230,6 +230,12 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 		return toWFProcess(pickingJob);
 	}
 
+	public WFProcess complete(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
+	{
+		final PickingJob pickingJob = pickingJobRestService.complete(toPickingJobId(wfProcessId), callerId);
+		return toWFProcess(pickingJob);
+	}
+
 	@Override
 	public void abort(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
 	{

@@ -139,6 +139,13 @@ public class PickingJobService implements PickingSlotListener
 				.build().execute();
 	}
 
+	public PickingJob complete(@NonNull final PickingJobId pickingJobId, @NonNull final UserId callerId)
+	{
+		final PickingJob pickingJob = getById(pickingJobId);
+		pickingJob.assertCanBeEditedBy(callerId);
+		return complete(pickingJob);
+	}
+
 	public PickingJob complete(@NonNull final PickingJob pickingJob)
 	{
 		return PickingJobCompleteCommand.builder()
