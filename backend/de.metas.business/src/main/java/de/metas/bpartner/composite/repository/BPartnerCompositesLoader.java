@@ -643,6 +643,7 @@ final class BPartnerCompositesLoader
 				.phone(salesRepContact.getPhone())
 				.firstName(salesRepContact.getFirstname())
 				.lastName(salesRepContact.getLastname())
+				.name(salesRepContact.getName())
 				.build();
 	}
 

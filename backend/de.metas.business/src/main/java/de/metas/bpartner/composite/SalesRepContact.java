@@ -34,6 +34,7 @@ import javax.annotation.Nullable;
 public class SalesRepContact
 {
 	@NonNull UserId id;
+	@NonNull String name;
 	@Nullable String value;
 	@Nullable String phone;
 	@Nullable String email;
