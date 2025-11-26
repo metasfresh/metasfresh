@@ -70,7 +70,7 @@ public class DistributionHUService
 	public HuId resolveHUId(@NonNull final ScannedCode scannedCode)
 	{
 		final HUQRCode huQRCode = resolveHUQRCode(scannedCode);
-		return huQRCodesService.getHuIdByQRCode((HUQRCode)huQRCode);
+		return huQRCodesService.getHuIdByQRCode(huQRCode);
 	}
 
 	public PackToHUsProducer newPackToHUsProducer()
