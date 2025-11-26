@@ -67,6 +67,12 @@ public class PickingJobCompleteCommand
 
 	public PickingJob execute()
 	{
+		// do nothing if already completed 
+		if (initialPickingJob0.getDocStatus().isCompleted())
+		{
+			return initialPickingJob0;
+		}
+
 		validateJob();
 		return trxManager.callInThreadInheritedTrx(this::executeInTrx);
 	}

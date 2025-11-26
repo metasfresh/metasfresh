@@ -16,8 +16,10 @@ import java.util.List;
 public class JsonDistributionJob
 {
 	@NonNull List<JsonDistributionJobLine> lines;
+	boolean completeJobAutomatically;
+	@NonNull JsonRejectReasonsList qtyRejectedReasons;
 
-	public static JsonDistributionJob of(
+	public static JsonDistributionJob.JsonDistributionJobBuilder builderFrom(
 			@NonNull final DistributionJob job,
 			@NonNull final JsonOpts jsonOpts)
 	{
@@ -25,7 +27,6 @@ public class JsonDistributionJob
 				.lines(job.getLines()
 						.stream()
 						.map(line -> JsonDistributionJobLine.of(line, job, jsonOpts))
-						.collect(ImmutableList.toImmutableList()))
-				.build();
+						.collect(ImmutableList.toImmutableList()));
 	}
 }

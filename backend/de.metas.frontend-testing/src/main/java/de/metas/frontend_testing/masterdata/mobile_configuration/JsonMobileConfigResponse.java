@@ -36,6 +36,7 @@ public class JsonMobileConfigResponse
 		@Nullable Boolean allowPickingAnyCustomer;
 		@Nullable Boolean allowPickingAnyHU;
 		@Nullable CreateShipmentPolicy createShipmentPolicy;
+		@Nullable Boolean completeJobAutomatically;
 		@Nullable Boolean alwaysSplitHUsEnabled;
 		@Nullable Boolean shipOnCloseLU;
 		@Nullable Set<PickToStructure> pickTo;
@@ -58,6 +59,7 @@ public class JsonMobileConfigResponse
 	public static class Distribution
 	{
 		@Nullable Boolean allowPickingAnyHU;
+		@Nullable Boolean completeJobAutomatically;
 	}
 
 	//

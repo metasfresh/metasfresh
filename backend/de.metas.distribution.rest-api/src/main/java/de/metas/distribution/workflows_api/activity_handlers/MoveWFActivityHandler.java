@@ -4,7 +4,6 @@ import de.metas.distribution.workflows_api.DistributionJob;
 import de.metas.distribution.workflows_api.DistributionMobileApplication;
 import de.metas.distribution.workflows_api.DistributionRestService;
 import de.metas.distribution.workflows_api.json.JsonDistributionJob;
-import de.metas.distribution.workflows_api.json.JsonDistributionJobLine;
 import de.metas.distribution.workflows_api.json.JsonRejectReasonsList;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.model.UIComponent;
@@ -17,8 +16,6 @@ import de.metas.workflow.rest_api.service.WFActivityHandler;
 import lombok.NonNull;
 import org.adempiere.util.api.Params;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 public class MoveWFActivityHandler implements WFActivityHandler
@@ -42,14 +39,14 @@ public class MoveWFActivityHandler implements WFActivityHandler
 	{
 		final DistributionJob job = DistributionMobileApplication.getDistributionJob(wfProcess);
 
-		final JsonRejectReasonsList qtyRejectedReasons = JsonRejectReasonsList.of(distributionRestService.getQtyRejectedReasons(), jsonOpts);
-
-		final List<JsonDistributionJobLine> lines = JsonDistributionJob.of(job, jsonOpts).getLines();
+		final JsonDistributionJob json = JsonDistributionJob.builderFrom(job, jsonOpts)
+				.qtyRejectedReasons(JsonRejectReasonsList.of(distributionRestService.getQtyRejectedReasons(), jsonOpts))
+				.completeJobAutomatically(distributionRestService.getConfig().isCompleteJobAutomatically())
+				.build();
 
 		return UIComponent.builderFrom(COMPONENT_TYPE, wfActivity)
 				.properties(Params.builder()
-						.valueObj("lines", lines)
-						.valueObj("qtyRejectedReasons", qtyRejectedReasons)
+						.valueObj("job", json)
 						.build())
 				.build();
 	}

@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_UserProfile_DD extends org.compiere.model.PO implements I_MobileUI_UserProfile_DD, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 637196661L;
+	private static final long serialVersionUID = -1997261981L;
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_DD (final Properties ctx, final int MobileUI_UserProfile_DD_ID, @Nullable final String trxName)
@@ -56,6 +56,18 @@ public class X_MobileUI_UserProfile_DD extends org.compiere.model.PO implements 
 	public boolean isAllowStartNextJobOnly() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAllowStartNextJobOnly);
+	}
+
+	@Override
+	public void setIsCompleteJobAutomatically (final boolean IsCompleteJobAutomatically)
+	{
+		set_Value (COLUMNNAME_IsCompleteJobAutomatically, IsCompleteJobAutomatically);
+	}
+
+	@Override
+	public boolean isCompleteJobAutomatically() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCompleteJobAutomatically);
 	}
 
 	@Override
