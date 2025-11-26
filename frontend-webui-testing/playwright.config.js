@@ -20,6 +20,8 @@ export default defineConfig({
     video: 'on',
     screenshot: 'only-on-failure',
     viewport: { width: 1920, height: 1080 },
+    // Record all network traffic to HAR files
+    recordHar: { path: 'playwright-report/network/', mode: 'minimal' },
   },
 
   projects: [
