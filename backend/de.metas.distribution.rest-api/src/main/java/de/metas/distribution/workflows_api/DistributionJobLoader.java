@@ -8,8 +8,8 @@ import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.DDOrderQuery;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedule;
+import de.metas.distribution.service.external.sourcedoc.PlantInfo;
 import de.metas.document.engine.DocStatus;
-import de.metas.handlingunits.HuId;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
@@ -111,7 +111,7 @@ class DistributionJobLoader
 				.build();
 	}
 
-	private @org.jetbrains.annotations.Nullable ResourceInfo extractPlantInfo(final I_DD_Order ddOrder)
+	private @org.jetbrains.annotations.Nullable PlantInfo extractPlantInfo(final I_DD_Order ddOrder)
 	{
 		return Optional.ofNullable(ResourceId.ofRepoIdOrNull(ddOrder.getPP_Plant_ID()))
 				.map(loadingSupportServices::getPlantInfo)
@@ -155,7 +155,7 @@ class DistributionJobLoader
 				.qtyToMoveTarget(schedule.getQtyToPick())
 				//
 				// Pick From
-				.pickFromHU(toHUInfo(schedule.getPickFromHUId(), loadingSupportServices))
+				.pickFromHU(loadingSupportServices.getHUInfo(schedule.getPickFromHUId()))
 				.qtyPicked(schedule.getQtyPicked())
 				.qtyNotPickedReasonCode(schedule.getQtyNotPickedReason())
 				.isPickedFromLocator(schedule.isPickedFrom())
@@ -165,16 +165,6 @@ class DistributionJobLoader
 				//
 				.build();
 
-	}
-
-	private static HUInfo toHUInfo(
-			@NonNull HuId huId,
-			@NonNull final DistributionJobLoaderSupportingServices loadingSupportServices)
-	{
-		return HUInfo.builder()
-				.id(huId)
-				.qrCode(loadingSupportServices.getQRCodeByHuId(huId))
-				.build();
 	}
 
 	private void warmUpById(final DDOrderId ddOrderId)

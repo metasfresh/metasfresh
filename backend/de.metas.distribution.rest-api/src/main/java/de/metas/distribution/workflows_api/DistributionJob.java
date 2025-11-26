@@ -5,6 +5,10 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleId;
+import de.metas.distribution.service.external.sourcedoc.ManufacturingOrderRef;
+import de.metas.distribution.service.external.sourcedoc.PlantInfo;
+import de.metas.distribution.service.external.sourcedoc.SalesOrderRef;
+import de.metas.distribution.service.external.warehouse.WarehouseInfo;
 import de.metas.product.ProductId;
 import de.metas.quantity.MixedQuantity;
 import de.metas.quantity.Quantity;
@@ -41,7 +45,7 @@ public class DistributionJob
 	@NonNull private final ZonedDateTime pickDate;
 	@NonNull private final WarehouseInfo pickFromWarehouse;
 	@NonNull private final WarehouseInfo dropToWarehouse;
-	@Nullable private final ResourceInfo plantInfo;
+	@Nullable private final PlantInfo plantInfo;
 	@NonNull private final String priority;
 	@Nullable private final UserId responsibleId;
 	private final boolean isClosed;
@@ -62,7 +66,7 @@ public class DistributionJob
 			final @NonNull ZonedDateTime pickDate,
 			final @NonNull WarehouseInfo pickFromWarehouse,
 			final @NonNull WarehouseInfo dropToWarehouse,
-			final @Nullable ResourceInfo plantInfo,
+			final @Nullable PlantInfo plantInfo,
 			final @NonNull String priority,
 			final @Nullable UserId responsibleId,
 			final boolean isClosed,

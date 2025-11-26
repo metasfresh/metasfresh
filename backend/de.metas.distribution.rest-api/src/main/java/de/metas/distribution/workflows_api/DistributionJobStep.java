@@ -1,6 +1,7 @@
 package de.metas.distribution.workflows_api;
 
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleId;
+import de.metas.distribution.service.external.hu.HUInfo;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.quantity.Quantity;
 import de.metas.workflow.rest_api.model.WFActivityStatus;

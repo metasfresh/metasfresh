@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
 import de.metas.distribution.config.DistributionJobSorting;
 import de.metas.distribution.config.MobileUIDistributionConfig;
-import de.metas.distribution.service.external.DistributionWarehouseService;
+import de.metas.distribution.service.external.warehouse.DistributionWarehouseService;
 import de.metas.distribution.workflows_api.DDOrderReferenceQuery.DDOrderReferenceQueryBuilder;
 import de.metas.distribution.workflows_api.facets.DistributionFacetIdsCollection;
 import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupList;

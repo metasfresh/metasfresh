@@ -1,4 +1,4 @@
-package de.metas.distribution.workflows_api;
+package de.metas.distribution.service.external.product;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.product.ProductId;

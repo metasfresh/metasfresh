@@ -1,4 +1,4 @@
-package de.metas.distribution.workflows_api;
+package de.metas.distribution.service.external.warehouse;
 
 import lombok.Builder;
 import lombok.NonNull;

@@ -1,4 +1,4 @@
-package de.metas.distribution.service.external;
+package de.metas.distribution.service.external.product;
 
 import de.metas.gs1.GTIN;
 import de.metas.product.IProductBL;
@@ -14,6 +14,14 @@ public class DistributionProductService
 {
 	private final IProductBL productBL = Services.get(IProductBL.class);
 
+	public ProductInfo getProductInfo(@NonNull final ProductId productId)
+	{
+		return ProductInfo.builder()
+				.productId(productId)
+				.caption(productBL.getProductNameTrl(productId))
+				.build();
+	}
+
 	public String getProductValueAndName(@NonNull ProductId productId)
 	{
 		return productBL.getProductValueAndName(productId);
@@ -23,5 +31,4 @@ public class DistributionProductService
 	{
 		return productBL.getGTIN(productId);
 	}
-
 }

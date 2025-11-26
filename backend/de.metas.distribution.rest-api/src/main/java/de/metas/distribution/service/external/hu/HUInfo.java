@@ -1,4 +1,4 @@
-package de.metas.distribution.workflows_api;
+package de.metas.distribution.service.external.hu;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;

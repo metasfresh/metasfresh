@@ -1,4 +1,4 @@
-package de.metas.distribution.workflows_api;
+package de.metas.distribution.service.external.sourcedoc;
 
 import de.metas.order.OrderId;
 import lombok.Builder;

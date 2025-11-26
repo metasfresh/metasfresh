@@ -1,9 +1,10 @@
 package de.metas.distribution.rest_api;
 
 import de.metas.Profiles;
-import de.metas.distribution.service.external.DistributionHUService;
+import de.metas.distribution.service.external.hu.DistributionHUService;
 import de.metas.distribution.workflows_api.DistributionMobileApplication;
 import de.metas.distribution.workflows_api.json.JsonHUInfo;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.mobile.application.service.MobileApplicationService;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.security.mobile_application.MobileApplicationPermissions;
@@ -47,7 +48,8 @@ public class DistributionRestController
 	public @NonNull JsonHUInfo getHUInfoByQRCode(@RequestParam("scannedCode") @NonNull final String scannedCodeStr)
 	{
 		assertApplicationAccess();
-		return huService.getHUInfoByQRCode(ScannedCode.ofString(scannedCodeStr));
+		final HUQRCode huQRCode = huService.resolveHUQRCode(ScannedCode.ofString(scannedCodeStr));
+		return JsonHUInfo.of(huQRCode.toRenderedJson());
 	}
 
 	@PostMapping("/event")

@@ -1,6 +1,6 @@
-package de.metas.distribution.service.external;
+package de.metas.distribution.service.external.hu;
 
-import de.metas.distribution.workflows_api.json.JsonHUInfo;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
@@ -8,7 +8,6 @@ import de.metas.scannable_code.ScannedCode;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,13 +16,20 @@ public class DistributionHUService
 {
 	@NonNull private final HUQRCodesService huQRCodesService;
 
-	public @NonNull JsonHUInfo getHUInfoByQRCode(@NonNull final ScannedCode scannedCode)
+	@NonNull
+	public HUInfo getHUInfoById(@NonNull HuId huId)
 	{
-		final HUQRCode qrCode = toHUQRCode(scannedCode);
-		return JsonHUInfo.of(qrCode.toRenderedJson());
+		return HUInfo.builder()
+				.id(huId)
+				.qrCode(getQRCodeByHuId(huId))
+				.build();
 	}
 
-	private HUQRCode toHUQRCode(final @NotNull ScannedCode scannedCode)
+	@NonNull
+	public HUQRCode getQRCodeByHuId(@NonNull final HuId huId) {return huQRCodesService.getQRCodeByHuId(huId);}
+
+	@NonNull
+	public HUQRCode resolveHUQRCode(final @NonNull ScannedCode scannedCode)
 	{
 		final IHUQRCode parsedHUQRCode = huQRCodesService.parse(scannedCode);
 		if (parsedHUQRCode instanceof HUQRCode)

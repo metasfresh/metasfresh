@@ -1,6 +1,6 @@
 package de.metas.distribution.workflows_api.json;
 
-import de.metas.distribution.workflows_api.LocatorInfo;
+import de.metas.distribution.service.external.warehouse.LocatorInfo;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

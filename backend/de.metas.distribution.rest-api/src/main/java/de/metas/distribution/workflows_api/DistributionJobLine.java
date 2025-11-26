@@ -2,6 +2,8 @@ package de.metas.distribution.workflows_api;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.distribution.ddorder.DDOrderLineId;
+import de.metas.distribution.service.external.product.ProductInfo;
+import de.metas.distribution.service.external.warehouse.LocatorInfo;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.collections.CollectionUtils;

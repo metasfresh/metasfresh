@@ -1,4 +1,4 @@
-package de.metas.distribution.service.external;
+package de.metas.distribution.service.external.sourcedoc;
 
 import de.metas.common.util.pair.ImmutablePair;
 import de.metas.document.DocTypeId;
@@ -15,12 +15,23 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
+
 @Service
 public class DistributionSourceDocService
 {
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+
+	@NonNull
+	public PlantInfo getPlantInfo(@NonNull final ResourceId plantId)
+	{
+		return PlantInfo.builder()
+				.resourceId(plantId)
+				.caption(getPlantName(plantId))
+				.build();
+	}
 
 	public String getPlantName(@NonNull final ResourceId plantId)
 	{
@@ -41,5 +52,25 @@ public class DistributionSourceDocService
 		final ITranslatableString docTypeName = docTypeBL.getNameById(DocTypeId.ofRepoId(ppOrder.getC_DocType_ID()));
 		final String documentNo = ppOrder.getDocumentNo();
 		return ImmutablePair.of(docTypeName, documentNo);
+	}
+
+	@Nullable
+	public SalesOrderRef getSalesOderRef(@NonNull final OrderId salesOrderId)
+	{
+		return SalesOrderRef.builder()
+				.id(salesOrderId)
+				.documentNo(orderBL.getDocumentNoById(salesOrderId))
+				.build();
+	}
+
+	@Nullable
+	public ManufacturingOrderRef getManufacturingOrderRef(@NonNull final PPOrderId ppOrderId)
+	{
+		final I_PP_Order ppOrder = ppOrderBL.getById(ppOrderId);
+
+		return ManufacturingOrderRef.builder()
+				.id(ppOrderId)
+				.documentNo(ppOrder.getDocumentNo())
+				.build();
 	}
 }

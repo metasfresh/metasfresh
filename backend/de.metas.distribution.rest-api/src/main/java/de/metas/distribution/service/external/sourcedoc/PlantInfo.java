@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.distribution.workflows_api;
+package de.metas.distribution.service.external.sourcedoc;
 
 import de.metas.product.ResourceId;
 import lombok.Builder;
@@ -29,7 +29,7 @@ import lombok.Value;
 
 @Value
 @Builder
-public class ResourceInfo
+public class PlantInfo
 {
 	@NonNull ResourceId resourceId;
 	@NonNull String caption;
