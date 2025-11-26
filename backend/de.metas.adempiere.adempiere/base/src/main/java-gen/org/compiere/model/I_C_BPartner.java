@@ -1,8 +1,31 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_BPartner
  *  @author metasfresh (generated) 
@@ -967,6 +990,50 @@ public interface I_C_BPartner
 	String COLUMNNAME_DUNS = "DUNS";
 
 	/**
+	 * Set Buyer Reference.
+	 * Addressing number in the context of electronic invoicing
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setEInvoice_BuyerReference (@Nullable java.lang.String EInvoice_BuyerReference);
+
+	/**
+	 * Get Buyer Reference.
+	 * Addressing number in the context of electronic invoicing
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getEInvoice_BuyerReference();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_EInvoice_BuyerReference = new ModelColumn<>(I_C_BPartner.class, "EInvoice_BuyerReference", null);
+	String COLUMNNAME_EInvoice_BuyerReference = "EInvoice_BuyerReference";
+
+	/**
+	 * Set Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setEInvoiceType (@Nullable java.lang.String EInvoiceType);
+
+	/**
+	 * Get Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getEInvoiceType();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_EInvoiceType = new ModelColumn<>(I_C_BPartner.class, "EInvoiceType", null);
+	String COLUMNNAME_EInvoiceType = "EInvoiceType";
+
+	/**
 	 * Set eMail.
 	 *
 	 * <br>Type: String
@@ -1229,6 +1296,29 @@ public interface I_C_BPartner
 	String COLUMNNAME_HaddexControlNr = "HaddexControlNr";
 
 	/**
+	 * Set Incoterm Location.
+	 * Anzugebender Ort für Handelsklausel
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIncotermLocation (@Nullable java.lang.String IncotermLocation);
+
+	/**
+	 * Get Incoterm Location.
+	 * Anzugebender Ort für Handelsklausel
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIncotermLocation();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_IncotermLocation = new ModelColumn<>(I_C_BPartner.class, "IncotermLocation", null);
+	String COLUMNNAME_IncotermLocation = "IncotermLocation";
+
+	/**
 	 * Set Internal Name.
 	 * Generally used to give records a name that can be safely referenced from code.
 	 *
@@ -1438,6 +1528,27 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsArchived = "IsArchived";
 
 	/**
+	 * Set Auto Invoice.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsAutoInvoice (@Nullable java.lang.String IsAutoInvoice);
+
+	/**
+	 * Get Auto Invoice.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsAutoInvoice();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_IsAutoInvoice = new ModelColumn<>(I_C_BPartner.class, "IsAutoInvoice", null);
+	String COLUMNNAME_IsAutoInvoice = "IsAutoInvoice";
+
+	/**
 	 * Set Company.
 	 *
 	 * <br>Type: YesNo
@@ -1547,6 +1658,27 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsEdiDesadvRecipient = "IsEdiDesadvRecipient";
 
 	/**
+	 * Set e-invoice Receipient.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsEInvoiceRecipeint (boolean IsEInvoiceRecipeint);
+
+	/**
+	 * Get e-invoice Receipient.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isEInvoiceRecipeint();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_IsEInvoiceRecipeint = new ModelColumn<>(I_C_BPartner.class, "IsEInvoiceRecipeint", null);
+	String COLUMNNAME_IsEInvoiceRecipeint = "IsEInvoiceRecipeint";
+
+	/**
 	 * Set Employee.
 	 * Indicates if  this Business Partner is an employee
 	 *
@@ -1612,6 +1744,29 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_IsHaddexCheck = new ModelColumn<>(I_C_BPartner.class, "IsHaddexCheck", null);
 	String COLUMNNAME_IsHaddexCheck = "IsHaddexCheck";
+
+	/**
+	 * Set Invoice Email CC to Member.
+	 * If active, invoice emails are also sent as CC to the member.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsInvoiceEmailCcToMember (boolean IsInvoiceEmailCcToMember);
+
+	/**
+	 * Get Invoice Email CC to Member.
+	 * If active, invoice emails are also sent as CC to the member.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isInvoiceEmailCcToMember();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_IsInvoiceEmailCcToMember = new ModelColumn<>(I_C_BPartner.class, "IsInvoiceEmailCcToMember", null);
+	String COLUMNNAME_IsInvoiceEmailCcToMember = "IsInvoiceEmailCcToMember";
 
 	/**
 	 * Set Manufacturer.
@@ -2637,6 +2792,27 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_PO_Incoterm = new ModelColumn<>(I_C_BPartner.class, "PO_Incoterm", null);
 	String COLUMNNAME_PO_Incoterm = "PO_Incoterm";
+
+	/**
+	 * Set PO Incoterm Location.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPO_IncotermLocation (@Nullable java.lang.String PO_IncotermLocation);
+
+	/**
+	 * Get PO Incoterm Location.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPO_IncotermLocation();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_PO_IncotermLocation = new ModelColumn<>(I_C_BPartner.class, "PO_IncotermLocation", null);
+	String COLUMNNAME_PO_IncotermLocation = "PO_IncotermLocation";
 
 	/**
 	 * Set Rechnungsstellung (Kreditoren).

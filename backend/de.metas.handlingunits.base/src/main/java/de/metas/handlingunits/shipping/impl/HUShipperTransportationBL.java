@@ -8,9 +8,9 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.IHULockBL;
 import de.metas.handlingunits.IHUPackageDAO;
 import de.metas.handlingunits.IHUQueryBuilder;
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.impl.CreatePackagesRequest;
 import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
+import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU;
@@ -22,10 +22,13 @@ import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
 import de.metas.handlingunits.shipping.InOutPackageRepository;
 import de.metas.handlingunits.shipping.weighting.ShippingWeightCalculator;
 import de.metas.handlingunits.shipping.weighting.ShippingWeightSourceTypes;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inout.IInOutDAO;
 import de.metas.lang.SOTrx;
 import de.metas.lock.api.LockOwner;
 import de.metas.organization.OrgId;
+import de.metas.product.PackageDimensions;
+import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.shipping.api.IShipperTransportationDAO;
@@ -44,6 +47,7 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
+import org.compiere.model.I_M_Shipper;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
@@ -52,6 +56,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
@@ -79,11 +84,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 public class HUShipperTransportationBL implements IHUShipperTransportationBL
 {
+	private final static AdMessageKey MSG_CANNOT_DETERMINE_HU_PACKAGE_DIMENSIONS = AdMessageKey.of("CannotDetermineHUPackageDimensions");
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
 	private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
+	private final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
+	private final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
+	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 
 	@VisibleForTesting
 	public static final String SYSCONFIG_WeightSourceTypes = "de.metas.shipping.WeightSourceTypes";
@@ -130,7 +139,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 			//
 			// Skip HUs which are not eligible for adding to shipper transportation
 			// (i.e. it's not top level LU)
-			if (!isEligibleForAddingToShipperTransportation(hu))
+			if (!huPackageBL.isEligibleForAddingToShipperTransportation(hu))
 			{
 				continue;
 			}
@@ -235,25 +244,6 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 		}
 
 		return result.build();
-	}
-
-	@Override
-	public boolean isEligibleForAddingToShipperTransportation(@Nullable final I_M_HU hu)
-	{
-		// guard against null
-		if (hu == null)
-		{
-			return false;
-		}
-
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
-		//
-		// Only Top Level HUs can be added to shipper transportation
-		//
-		// NOTE: the method which is retrieving the HUs to generate shipment from them is getting only the LUs:
-		// de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU.retrieveCandidates(I_C_Queue_WorkPackage, String)
-		return handlingUnitsBL.isTopLevel(hu);
 	}
 
 	@Override
@@ -377,6 +367,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 		final I_M_InOut shipment = inOutDAO.getById(req.getInOutId());
 
 		final BPartnerLocationAndCaptureId shipFromBPLocation = getShipFromBPartnerAndLocation(shipment);
+		final I_M_Shipper shipper = shipperDAO.getById(req.getShipperId());
 
 		final CreateShipperTransportationRequest createShipperTransportationRequest = CreateShipperTransportationRequest
 				.builder()
@@ -384,6 +375,8 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 				.shipperBPartnerAndLocationId(shipFromBPLocation.getBpartnerLocationId())
 				.orgId(OrgId.ofRepoId(shipment.getAD_Org_ID()))
 				.shipDate(TimeUtil.asLocalDate(shipment.getMovementDate()))
+				.pickupTimeFrom(TimeUtil.asLocalTime(shipper.getPickupTimeFrom()))
+				.pickupTimeTo(TimeUtil.asLocalTime(shipper.getPickupTimeTo()))
 				.isSOTrx(SOTrx.SALES)
 				.build();
 
@@ -421,16 +414,18 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 	{
 		if (Check.isEmpty(request.getPackageInfos()))
 		{
-			final CreatePackagesRequest createPackagesRequest = CreatePackagesRequest.builder()
-					.inOutId(request.getShipmentId())
-					.shipperId(shipperId)
-					.processed(request.isProcessed())
-					.weightInKg(weightCalculator.calculateWeightInKilograms(request.getShipment())
-							.map(weight -> weight.toBigDecimal())
-							.orElse(null))
-					.build();
-
-			return ImmutableList.of(createPackagesRequest);
+			return huInOutDAO.retrieveShippedHandlingUnits(request.getShipment())
+					.stream()
+					.map(hu -> CreatePackagesRequest.builder()
+							.inOutId(request.getShipmentId())
+							.shipperId(shipperId)
+							.processed(request.isProcessed())
+							.weightInKg(weightCalculator.calculateWeightInKg(hu)
+									.map(weight -> weight.toBigDecimal())
+									.orElse(null))
+							.packageDimensions(extractPackageDimensions(hu))
+							.build())
+					.collect(Collectors.toList());
 		}
 		else
 		{
@@ -444,10 +439,21 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 							.trackingCode(packageInfo.getTrackingNumber())
 							.trackingURL(packageInfo.getTrackingUrl())
 							.weightInKg(packageInfo.getWeight())
+							.packageDimensions(packageInfo.getPackageDimensions())
 							.build()
 					)
 					.collect(ImmutableList.toImmutableList());
 		}
+	}
+
+	private PackageDimensions extractPackageDimensions(final I_M_HU hu)
+	{
+		final PackageDimensions packageDimensions = huPackageBL.getPackageDimensions(hu);
+		if (packageDimensions.isUnspecified())
+		{
+			throw new AdempiereException(MSG_CANNOT_DETERMINE_HU_PACKAGE_DIMENSIONS, hu.getM_HU_ID());
+		}
+		return packageDimensions;
 	}
 
 	private void linkTransportationToShipment(@NonNull final I_M_InOut shipment, @NonNull final ShipperTransportationId shipperTransportationId)
@@ -468,4 +474,5 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 	{
 		return ShippingWeightSourceTypes.ofCommaSeparatedString(sysConfigBL.getValue(SYSCONFIG_WeightSourceTypes)).orElse(ShippingWeightSourceTypes.DEFAULT);
 	}
+
 }

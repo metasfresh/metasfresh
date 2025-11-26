@@ -67,6 +67,7 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -89,6 +90,8 @@ import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.api.PPOrderRoutingActivityStatus;
 import org.eevolution.api.PPOrderScheduleChangeRequest;
+import org.eevolution.api.ProductBOMId;
+import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.api.QtyCalculationsBOM;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -125,6 +128,7 @@ public class PPOrderBL implements IPPOrderBL
 	private final IPPCostCollectorBL costCollectorsService = Services.get(IPPCostCollectorBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IResourceDAO resourceDAO = Services.get(IResourceDAO.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@VisibleForTesting
 	static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.manufacturing.PP_Order.canBeExportedAfterSeconds";
@@ -335,11 +339,11 @@ public class PPOrderBL implements IPPOrderBL
 			@NonNull final DocSubType docSubType)
 	{
 		final DocTypeId docTypeId = docTypesRepo.getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(docBaseType.toDocBaseType())
-				.docSubType(docSubType)
-				.adClientId(ppOrder.getAD_Client_ID())
-				.adOrgId(ppOrder.getAD_Org_ID())
-				.build());
+																	  .docBaseType(docBaseType.toDocBaseType())
+																	  .docSubType(docSubType)
+																	  .adClientId(ppOrder.getAD_Client_ID())
+																	  .adOrgId(ppOrder.getAD_Org_ID())
+																	  .build());
 
 		ppOrder.setC_DocTypeTarget_ID(docTypeId.getRepoId());
 		ppOrder.setC_DocType_ID(docTypeId.getRepoId());
@@ -500,13 +504,13 @@ public class PPOrderBL implements IPPOrderBL
 						.build();
 
 				costCollectorsService.createActivityControl(ActivityControlCreateRequest.builder()
-						.order(orderRecord)
-						.orderActivity(activity)
-						.movementDate(reportDate)
-						.qtyMoved(qtyToProcess)
-						.durationSetup(setupTimeRemaining)
-						.duration(durationRemaining.getDuration())
-						.build());
+																	.order(orderRecord)
+																	.orderActivity(activity)
+																	.movementDate(reportDate)
+																	.qtyMoved(qtyToProcess)
+																	.durationSetup(setupTimeRemaining)
+																	.duration(durationRemaining.getDuration())
+																	.build());
 			}
 		}
 	}
@@ -677,5 +681,25 @@ public class PPOrderBL implements IPPOrderBL
 	public String getResourceName(@NonNull final ResourceId resourceId)
 	{
 		return resourceDAO.getById(resourceId).getName();
+	}
+
+	@Override
+	public void updateDraftedOrdersMatchingBOM(@NonNull final ProductBOMVersionsId bomVersionsId, @NonNull final ProductBOMId newVersionId)
+	{
+		ppOrdersRepo.streamDraftedPPOrdersFor(bomVersionsId)
+				.filter(draftedOrder -> !isSomethingProcessed(draftedOrder))
+				.forEach(draftedOrder -> {
+					draftedOrder.setPP_Product_BOM_ID(newVersionId.getRepoId());
+					try
+					{
+						trxManager.runInNewTrx(() -> ppOrdersRepo.save(draftedOrder));
+					}
+					catch (final Exception e)
+					{
+						Loggables.withLogger(logger, Level.ERROR)
+								.addLog("Failed updating PP_Order (PP_Order_ID = {}) with the latest PP_Product_BOM version (PP_Product_BOM = {})",
+										draftedOrder.getPP_Order_ID(), newVersionId, e);
+					}
+				});
 	}
 }

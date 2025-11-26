@@ -12,6 +12,7 @@ import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.util.Services;
 import org.adempiere.service.ISysConfigDAO;
@@ -42,7 +43,8 @@ class ManufacturingJobServiceTest
 				new PPOrderSourceHUService(new PPOrderSourceHURepository(), ppOrderIssueScheduleService),
 				new DeviceAccessorsHubFactory(new DeviceConfigPoolFactory()),
 				new DeviceWebsocketNamingStrategy("/test/"),
-				HUQRCodesService.newInstanceForUnitTesting()
+				HUQRCodesService.newInstanceForUnitTesting(),
+				new MobileUIManufacturingConfigRepository()
 		);
 
 		this.sysConfigDAO = Services.get(ISysConfigDAO.class);

@@ -26,9 +26,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IAttributeValue;
-import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.config.mobileui.PickingLineGroupBy;
@@ -36,9 +34,10 @@ import de.metas.handlingunits.picking.config.mobileui.PickingLineSortBy;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingJobProgress;
+import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
+import de.metas.handlingunits.picking.job.service.external.product.PickingJobProductService;
 import de.metas.handlingunits.rest_api.JsonHUAttributeConverters;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.picking.rest_api.json.JsonPickingJob;
@@ -47,9 +46,7 @@ import de.metas.picking.rest_api.json.JsonRejectReasonsList;
 import de.metas.picking.workflow.PickingJobRestService;
 import de.metas.scannable_code.format.json.JsonScannableCodeFormat;
 import de.metas.scannable_code.format.service.ScannableCodeFormatService;
-import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
-import de.metas.util.Services;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcessHeaderProperties;
 import de.metas.workflow.rest_api.model.UIComponent;
@@ -89,16 +86,13 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("picking.actualPicking");
 	public static final UIComponentType COMPONENTTYPE_PICK_PRODUCTS = UIComponentType.ofString("picking/pickProducts");
 
-	private static final AdMessageKey LAST_PICKED_HU_BEST_BEFORE_DATE = AdMessageKey
-			.of("de.metas.picking.workflow.handlers.activity_handlers.LAST_PICKED_HU_BEST_BEFORE_DATE");
+	private static final AdMessageKey LAST_PICKED_HU_BEST_BEFORE_DATE = AdMessageKey.of("de.metas.picking.workflow.handlers.activity_handlers.LAST_PICKED_HU_BEST_BEFORE_DATE");
 
 	@VisibleForTesting
 	public static final String PROP_pickingJob = "pickingJob";
 
-	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	@NonNull private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
-	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final PickingJobProductService productService;
+	@NonNull private final PickingJobHUService huService;
 	@NonNull private final PickingJobRestService pickingJobRestService;
 	@NonNull private final ScannableCodeFormatService scannableCodeFormatService;
 
@@ -131,7 +125,7 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 		{
 			return TranslatableStrings.empty();
 		}
-		return uomDAO.getUOMSymbolById(uomId);
+		return productService.getUOMSymbolById(uomId);
 	}
 
 	@Override
@@ -164,10 +158,11 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 				.lines(toJsonPickingJobLines(pickingJob, pickingJobOptions, jsonOpts))
 				.qtyRejectedReasons(JsonRejectReasonsList.of(pickingJobRestService.getQtyRejectedReasons(), jsonOpts))
 				.allowSkippingRejectedReason(pickingJobOptions.isAllowSkippingRejectedReason())
-				.pickWithNewLU(pickingJobOptions.isPickWithNewLU())
-				.allowNewTU(pickingJobOptions.isAllowNewTU())
+				.allowedPickToStructures(pickingJobOptions.getAllowedPickToStructures().toAllowedSet())
+				.readAttributes(pickingJobOptions.getPickAttributes().getAttributesToReadSet())
 				.showPromptWhenOverPicking(pickingJobOptions.isShowConfirmationPromptWhenOverPick())
 				.anonymousPickHUsOnTheFly(pickingJob.isAnonymousPickHUsOnTheFly())
+				.completeJobAutomatically(pickingJobOptions.getCompleteJobAutomatically().isTrue())
 				.build();
 	}
 
@@ -180,7 +175,7 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 		final PickingLineGroupBy groupBy = pickingJobOptions.getPickingLineGroupBy().orElse(PickingLineGroupBy.NONE);
 		final PickingLineSortBy sortBy = pickingJobOptions.getPickingLineSortBy().orElse(PickingLineSortBy.ORDER_LINE_SEQ_NO);
 		final Map<String, List<PickingJobLine>> sortedGroupedLines = groupBy.groupLines(pickingJob.getLines(), sortBy);
-		final HUCache huCache = HUCache.init(handlingUnitsBL::getById);
+		final HUCache huCache = HUCache.init(huService::getById);
 		cacheLastPickedHUsForEachLineIfNeeded(huCache, pickingJobOptions, pickingJob);
 
 		final ArrayList<JsonPickingJobLine> result = new ArrayList<>();
@@ -223,14 +218,14 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 		}
 
 		final String lastPickedHUBestBeforeDate = line.getLastPickedHUId()
-				.map(huId -> huAttributesBL.getAttributeValue(huCache.getOrLoad(huId), ATTR_BestBeforeDate))
+				.map(huId -> huService.getAttributeValue(huCache.getOrLoad(huId), ATTR_BestBeforeDate))
 				.map(IAttributeValue::getValueAsDate)
 				.map(date -> JsonHUAttributeConverters.toDisplayValue(date, opts.getAdLanguage()))
 				.map(String::valueOf)
 				.orElse("");
 
 		return Optional.of(WFProcessHeaderProperty.builder()
-				.caption(msgBL.getTranslatableMsgText(LAST_PICKED_HU_BEST_BEFORE_DATE))
+				.caption(TranslatableStrings.adMessage(LAST_PICKED_HU_BEST_BEFORE_DATE))
 				.value(lastPickedHUBestBeforeDate)
 				.build());
 	}
@@ -251,7 +246,7 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 				.map(Optional::get)
 				.collect(ImmutableSet.toImmutableSet());
 
-		cache.cacheHUs(handlingUnitsBL.getByIds(huIds));
+		cache.cacheHUs(huService.getByIds(huIds));
 	}
 
 	@Value

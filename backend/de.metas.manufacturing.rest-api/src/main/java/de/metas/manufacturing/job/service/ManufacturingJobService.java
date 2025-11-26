@@ -22,6 +22,7 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
+import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivity;
 import de.metas.manufacturing.job.model.ManufacturingJobActivityId;
@@ -51,12 +52,13 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.InSetPredicate;
 import de.metas.util.Services;
+import de.metas.workflow.rest_api.service.Constants;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.util.TimeUtil;
@@ -83,22 +85,23 @@ import java.util.stream.Stream;
 @Service
 public class ManufacturingJobService
 {
-	private static final Logger logger = LogManager.getLogger(ManufacturingJobService.class);
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final IResourceDAO resourceDAO = Services.get(IResourceDAO.class);
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final IHUPPOrderQtyBL huPPOrderQtyBL = Services.get(IHUPPOrderQtyBL.class);
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private final IHUPPOrderBL ppOrderBL;
-	private final IPPOrderBOMBL ppOrderBOMBL;
-	private final PPOrderIssueScheduleService ppOrderIssueScheduleService;
-	private final HUReservationService huReservationService;
-	private final PPOrderSourceHUService ppOrderSourceHUService;
-	private final DeviceAccessorsHubFactory deviceAccessorsHubFactory;
-	private final DeviceWebsocketNamingStrategy deviceWebsocketNamingStrategy;
-	private final ManufacturingJobLoaderAndSaverSupportingServices loadingAndSavingSupportServices;
+	@NonNull private static final Logger logger = LogManager.getLogger(ManufacturingJobService.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IResourceDAO resourceDAO = Services.get(IResourceDAO.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final IHUPPOrderQtyBL huPPOrderQtyBL = Services.get(IHUPPOrderQtyBL.class);
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IHUPPOrderBL ppOrderBL;
+	@NonNull private final IPPOrderBOMBL ppOrderBOMBL;
+	@NonNull private final PPOrderIssueScheduleService ppOrderIssueScheduleService;
+	@NonNull private final HUReservationService huReservationService;
+	@NonNull private final PPOrderSourceHUService ppOrderSourceHUService;
+	@NonNull private final DeviceAccessorsHubFactory deviceAccessorsHubFactory;
+	@NonNull private final DeviceWebsocketNamingStrategy deviceWebsocketNamingStrategy;
+	@NonNull private final ManufacturingJobLoaderAndSaverSupportingServices loadingAndSavingSupportServices;
+	@NonNull private final MobileUIManufacturingConfigRepository mobileUIManufacturingConfigRepository;
 
 	@VisibleForTesting
 	static final String SYSCONFIG_defaultFilters = "mobileui.manufacturing.defaultFilters";
@@ -110,19 +113,21 @@ public class ManufacturingJobService
 			final @NonNull PPOrderSourceHUService ppOrderSourceHUService,
 			final @NonNull DeviceAccessorsHubFactory deviceAccessorsHubFactory,
 			final @NonNull DeviceWebsocketNamingStrategy deviceWebsocketNamingStrategy,
-			final @NonNull HUQRCodesService huQRCodeService)
+			final @NonNull HUQRCodesService huQRCodeService,
+			final @NonNull MobileUIManufacturingConfigRepository mobileUIManufacturingConfigRepository)
 	{
 		this.ppOrderIssueScheduleService = ppOrderIssueScheduleService;
 		this.huReservationService = huReservationService;
 		this.ppOrderSourceHUService = ppOrderSourceHUService;
 		this.deviceAccessorsHubFactory = deviceAccessorsHubFactory;
 		this.deviceWebsocketNamingStrategy = deviceWebsocketNamingStrategy;
+		this.mobileUIManufacturingConfigRepository = mobileUIManufacturingConfigRepository;
 
 		this.loadingAndSavingSupportServices = ManufacturingJobLoaderAndSaverSupportingServices.builder()
 				.orgDAO(Services.get(IOrgDAO.class))
 				.warehouseBL(Services.get(IWarehouseBL.class))
 				.productBL(Services.get(IProductBL.class))
-				.attributeDAO(Services.get(IAttributeDAO.class))
+				.asiBL(Services.get(IAttributeSetInstanceBL.class))
 				.ppOrderBL(ppOrderBL = Services.get(IHUPPOrderBL.class))
 				.ppOrderBOMBL(ppOrderBOMBL = Services.get(IPPOrderBOMBL.class))
 				.ppOrderRoutingRepository(Services.get(IPPOrderRoutingRepository.class))
@@ -382,6 +387,7 @@ public class ManufacturingJobService
 				.ppOrderIssueScheduleService(ppOrderIssueScheduleService)
 				.ppOrderSourceHUService(ppOrderSourceHUService)
 				.loadingSupportServices(loadingAndSavingSupportServices)
+				.mobileUIManufacturingConfigRepository(mobileUIManufacturingConfigRepository)
 				//
 				.ppOrderId(ppOrderId)
 				.responsibleId(responsibleId)
@@ -692,4 +698,13 @@ public class ManufacturingJobService
 		return uomDAO.getBySymbol(receiveFrom.getCatchWeightUomSymbol())
 				.map(uom -> Quantity.of(receiveFrom.getCatchWeight(), uom));
 	}
+
+	public QueryLimit getLaunchersLimit()
+	{
+		final int limitInt = sysConfigBL.getIntValue(Constants.SYSCONFIG_LaunchersLimit, -100);
+		return limitInt == -100
+				? Constants.DEFAULT_LaunchersLimit
+				: QueryLimit.ofInt(limitInt);
+	}
+
 }

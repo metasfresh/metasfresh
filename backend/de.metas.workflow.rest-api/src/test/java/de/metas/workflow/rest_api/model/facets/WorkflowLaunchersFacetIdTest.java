@@ -26,6 +26,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.bpartner.BPartnerId;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupId;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetId;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;

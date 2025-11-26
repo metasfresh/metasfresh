@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.location.CountryCode;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.quantity.Quantity;
@@ -58,13 +59,13 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -90,27 +91,27 @@ public class DataTableRow
 	@SuppressWarnings("unused")
 	public static class DataTableRowBuilder
 	{
-		public DataTableRowBuilder value(final String name, String value)
+		public DataTableRowBuilder value(final String name, final String value)
 		{
 			return _value(name, value);
 		}
 
-		public DataTableRowBuilder value(final String name, int value)
+		public DataTableRowBuilder value(final String name, final int value)
 		{
 			return value(name, Integer.toString(value));
 		}
 
-		public DataTableRowBuilder value(final String name, BigDecimal value)
+		public DataTableRowBuilder value(final String name, final BigDecimal value)
 		{
 			return value(name, value != null ? value.toPlainString() : null);
 		}
 
-		public DataTableRowBuilder value(final String name, RepoIdAware value)
+		public DataTableRowBuilder value(final String name, final RepoIdAware value)
 		{
 			return value(name, value != null ? Integer.toString(value.getRepoId()) : null);
 		}
 
-		public DataTableRowBuilder value(final String name, boolean value)
+		public DataTableRowBuilder value(final String name, final boolean value)
 		{
 			return value(name, StringUtils.ofBoolean(value));
 		}
@@ -376,23 +377,22 @@ public class DataTableRow
 	}
 
 	@NonNull
-	public OptionalInt getAsOptionalInt(@NonNull final String columnName)
+	public Optional<Integer> getAsOptionalInt(@NonNull final String columnName)
 	{
 		return getAsOptionalString(columnName)
-				.map(valueStr -> parseOptionalInt(valueStr, columnName))
-				.orElseGet(OptionalInt::empty);
+				.flatMap(valueStr -> parseOptionalInt(valueStr, columnName));
 	}
 
-	private static OptionalInt parseOptionalInt(@Nullable final String valueStr, final String columnInfo)
+	private static Optional<Integer> parseOptionalInt(@Nullable final String valueStr, final String columnInfo)
 	{
 		final String valueStrNorm = StringUtils.trimBlankToNull(valueStr);
 		if (valueStrNorm == null)
 		{
-			return OptionalInt.empty();
+			return Optional.empty();
 		}
 
 		final int valueInt = parseInt(valueStrNorm, columnInfo);
-		return OptionalInt.of(valueInt);
+		return Optional.of(valueInt);
 	}
 
 	private static int parseInt(@Nullable final String valueStr, final String columnInfo)
@@ -437,6 +437,16 @@ public class DataTableRow
 				.orElseThrow(() -> new AdempiereException("No value found for " + valueColumnName));
 	}
 
+	public Quantity getAsQuantity(
+			@NonNull final String valueColumnName,
+			@Nullable final String uomColumnName,
+			@Nullable final X12DE355 uomDefaultCode,
+			@NonNull final Function<X12DE355, I_C_UOM> uomMapper)
+	{
+		return getAsOptionalQuantity(valueColumnName, uomColumnName, uomDefaultCode, uomMapper)
+				.orElseThrow(() -> new AdempiereException("No value found for " + valueColumnName));
+	}
+
 	public Optional<Quantity> getAsOptionalQuantity(
 			@NonNull final String valueColumnName,
 			@NonNull final Function<X12DE355, I_C_UOM> uomMapper)
@@ -447,6 +457,15 @@ public class DataTableRow
 	public Optional<Quantity> getAsOptionalQuantity(
 			@NonNull final String valueColumnName,
 			@Nullable final String uomColumnName,
+			@NonNull final Function<X12DE355, I_C_UOM> uomMapper)
+	{
+		return getAsOptionalQuantity(valueColumnName, uomColumnName, null, uomMapper);
+	}
+
+	public Optional<Quantity> getAsOptionalQuantity(
+			@NonNull final String valueColumnName,
+			@Nullable final String uomColumnName,
+			@Nullable final X12DE355 uomDefaultCode,
 			@NonNull final Function<X12DE355, I_C_UOM> uomMapper)
 	{
 		final String valueStr = getAsOptionalString(valueColumnName).map(StringUtils::trimBlankToNull).orElse(null);
@@ -469,14 +488,19 @@ public class DataTableRow
 			uomCode = X12DE355.ofNullableCode(valueStr.substring(spaceIdx).trim());
 		}
 
+		if (uomCode == null && uomColumnName != null)
+		{
+			uomCode = getAsOptionalUOMCode(uomColumnName).orElse(null);
+		}
+
+		if (uomCode == null && uomDefaultCode != null)
+		{
+			uomCode = uomDefaultCode;
+		}
+
 		if (uomCode == null)
 		{
-			if (uomColumnName == null)
-			{
-				throw new AdempiereException("When UOM is not incorporated in `" + valueColumnName + "` then an UOM column name shall be provided");
-			}
-
-			uomCode = getAsUOMCode(uomColumnName);
+			throw new AdempiereException("When UOM is not incorporated in `" + valueColumnName + "` then an UOM column name shall be provided or a default assumed");
 		}
 
 		final I_C_UOM uom = uomMapper.apply(uomCode);
@@ -486,16 +510,19 @@ public class DataTableRow
 	@NonNull
 	public X12DE355 getAsUOMCode(@NonNull final String columnName)
 	{
+		return getAsOptionalUOMCode(columnName)
+				.orElseThrow(() -> new AdempiereException("No value found in column " + columnName));
+	}
+
+	@NonNull
+	public Optional<X12DE355> getAsOptionalUOMCode(@NonNull final String columnName)
+	{
 		String valueStr = getAsOptionalString(columnName).orElse(null);
 		if (valueStr == null && !columnName.endsWith("X12DE355"))
 		{
 			valueStr = getAsOptionalString(columnName + ".X12DE355").orElse(null);
 		}
-		if (valueStr == null)
-		{
-			throw new AdempiereException("No value found for " + columnName);
-		}
-		return X12DE355.ofCode(valueStr);
+		return valueStr != null ? Optional.of(X12DE355.ofCode(valueStr)) : Optional.empty();
 	}
 
 	public CurrencyCode getAsCurrencyCode()
@@ -509,9 +536,19 @@ public class DataTableRow
 		return Optionals.firstPresentOfSuppliers(
 						() -> getAsOptionalString("C_Currency.ISO_Code"),
 						() -> getAsOptionalString("C_Currency." + StepDefDataIdentifier.SUFFIX),
-						() -> getAsOptionalString("C_Currency_ID")
+						() -> getAsOptionalString("C_Currency_ID"),
+						() -> getAsOptionalString("currencyCode")
 				)
 				.map(CurrencyCode::ofThreeLetterCode);
+	}
+
+	public Optional<CountryCode> getAsOptionalCountryCode(@NonNull final String columnName)
+	{
+		return Optionals.firstPresentOfSuppliers(
+						() -> getAsOptionalString(columnName),
+						() -> getAsOptionalString(columnName + ".CountryCode")
+				)
+				.map(CountryCode::ofAlpha2);
 	}
 
 	public Money getAsMoney(
@@ -623,6 +660,11 @@ public class DataTableRow
 		return getAsOptionalLocalDate(columnName).map(DataTableRow::toTimestamp);
 	}
 
+	public Optional<Instant> getAsOptionalLocalDateInstant(@NonNull final String columnName)
+	{
+		return getAsOptionalLocalDate(columnName).map(DataTableRow::toInstant);
+	}
+
 	@SuppressWarnings("unused")
 	public Timestamp getAsInstantTimestamp(@NonNull final String columnName)
 	{
@@ -705,6 +747,11 @@ public class DataTableRow
 		}
 	}
 
+	private static Instant toInstant(@NonNull final LocalDate ld)
+	{
+		return toInstant(ld.atStartOfDay());
+	}
+
 	private static Instant toInstant(@NonNull final LocalDateTime ldt)
 	{
 		// IMPORTANT: we use JVM timezone instead of SystemTime.zoneId()
@@ -717,6 +764,23 @@ public class DataTableRow
 	public Optional<LocalDateTime> getAsOptionalLocalDateTime(@NonNull final String columnName)
 	{
 		return getAsOptionalString(columnName).map(valueStr -> parseLocalDateTime(valueStr, columnName));
+	}
+
+	public Optional<LocalTime> getAsOptionalLocalTime(@NonNull final String columnName)
+	{
+		return getAsOptionalString(columnName).map(valueStr -> parseLocalTime(valueStr, columnName));
+	}
+
+	private LocalTime parseLocalTime(@NonNull final String valueStr, final @NonNull String columnName)
+	{
+		try
+		{
+			return LocalTime.parse(valueStr);
+		}
+		catch (final Exception ex)
+		{
+			throw new AdempiereException("Column `" + columnName + "` has invalid LocalTime `" + valueStr + "`");
+		}
 	}
 
 	@NonNull
@@ -782,7 +846,7 @@ public class DataTableRow
 		return ImmutableList.copyOf(map.keySet());
 	}
 
-	public void setValueIfMissing(@NonNull String columnName, @NonNull Supplier<String> valueSupplier)
+	public void setValueIfMissing(@NonNull final String columnName, @NonNull final Supplier<String> valueSupplier)
 	{
 		final String existingValue = map.get(columnName);
 		if (existingValue != null)

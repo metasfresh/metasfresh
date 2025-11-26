@@ -1,52 +1,46 @@
 package de.metas.distribution.workflows_api;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.ad_reference.ADRefList;
-import de.metas.dao.ValueRestriction;
+import de.metas.distribution.config.MobileUIDistributionConfig;
 import de.metas.distribution.config.MobileUIDistributionConfigRepository;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderQuery;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.distribution.rest_api.JsonDistributionEvent;
-import de.metas.distribution.workflows_api.DistributionEventProcessCommand.DistributionEventProcessCommandBuilder;
-import de.metas.distribution.workflows_api.facets.DistributionFacetIdsCollection;
+import de.metas.distribution.rest_api.JsonDropAllRequest;
 import de.metas.distribution.workflows_api.facets.DistributionFacetsCollection;
 import de.metas.distribution.workflows_api.facets.DistributionFacetsCollector;
-import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.trace.HUAccessService;
 import de.metas.order.IOrderBL;
-import de.metas.organization.IOrgDAO;
 import de.metas.product.IProductBL;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.workflow.rest_api.model.WFProcessId;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.qrcode.resolver.LocatorScannedCodeResolverService;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.model.I_DD_Order;
 import org.springframework.stereotype.Service;
 
-import java.util.stream.Stream;
+import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class DistributionRestService
 {
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	@NonNull private final DDOrderService ddOrderService;
-	@NonNull private final DDOrderMoveScheduleService ddOrderMoveScheduleService;
-	@NonNull private final DistributionJobHUReservationService distributionJobHUReservationService;
-	@NonNull private final DistributionJobLoaderSupportingServices loadingSupportServices;
-	@NonNull private final HUQRCodesService huQRCodesService;
-	@NonNull private final InventoryService inventoryService;
-	@NonNull private final HUAccessService huAccessService;
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	@NonNull private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
@@ -54,50 +48,32 @@ public class DistributionRestService
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IHUPIItemProductBL hupiItemProductBL = Services.get(IHUPIItemProductBL.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final MobileUIDistributionConfigRepository configRepository;
+	@NonNull private final DDOrderService ddOrderService;
+	@NonNull private final DDOrderMoveScheduleService ddOrderMoveScheduleService;
+	@NonNull private final DistributionJobHUReservationService distributionJobHUReservationService;
+	@NonNull private final DistributionJobLoaderSupportingServices loadingSupportServices;
+	@NonNull private final HUQRCodesService huQRCodesService;
+	@NonNull private final InventoryService inventoryService;
+	@NonNull private final HUAccessService huAccessService;
+	@NonNull private final LocatorScannedCodeResolverService locatorScannedCodeResolver;
 
-	public DistributionRestService(
-			final @NonNull MobileUIDistributionConfigRepository configRepository,
-			final @NonNull DDOrderService ddOrderService,
-			final @NonNull DDOrderMoveScheduleService ddOrderMoveScheduleService,
-			final @NonNull DistributionJobHUReservationService distributionJobHUReservationService,
-			final @NonNull HUQRCodesService huQRCodesService,
-			final @NonNull InventoryService inventoryService,
-			final @NonNull HUAccessService huAccessService)
-	{
-		this.ddOrderService = ddOrderService;
-		this.ddOrderMoveScheduleService = ddOrderMoveScheduleService;
-		this.distributionJobHUReservationService = distributionJobHUReservationService;
-		this.inventoryService = inventoryService;
-		this.huQRCodesService = huQRCodesService;
-		this.huAccessService = huAccessService;
-
-		this.loadingSupportServices = DistributionJobLoaderSupportingServices.builder()
-				.configRepository(configRepository)
-				.ddOrderService(ddOrderService)
-				.ddOrderMoveScheduleService(ddOrderMoveScheduleService)
-				.huQRCodeService(huQRCodesService)
-				.warehouseBL(warehouseBL)
-				.productBL(productBL)
-				.orgDAO(Services.get(IOrgDAO.class))
-				.orderBL(orderBL)
-				.ppOrderBL(ppOrderBL)
-				.build();
-	}
+	public MobileUIDistributionConfig getConfig() {return configRepository.getConfig();}
 
 	public ADRefList getQtyRejectedReasons()
 	{
 		return ddOrderMoveScheduleService.getQtyRejectedReasons();
 	}
 
-	public Stream<DDOrderReference> streamJobReferencesForUser(@NonNull final DDOrderReferenceQuery query)
+	public List<DDOrderReference> getJobReferences(@NonNull final DDOrderReferenceQuery query)
 	{
 		final DDOrderReferenceCollector collector = DDOrderReferenceCollector.builder()
-				.ddOrderService(ddOrderService)
+				.loadingSupportServices(loadingSupportServices)
 				.build();
 
 		collect(query, collector);
 
-		return collector.streamCollectedItems();
+		return collector.getCollectedItems();
 	}
 
 	public DistributionFacetsCollection getFacets(@NonNull final DDOrderReferenceQuery query)
@@ -119,51 +95,20 @@ public class DistributionRestService
 			@NonNull final DDOrderReferenceQuery query,
 			@NonNull final DistributionOrderCollector<T> collector)
 	{
-		final @NonNull UserId responsibleId = query.getResponsibleId();
-		final @NonNull QueryLimit suggestedLimit = query.getSuggestedLimit();
-
 		//
 		// Already started jobs
-		streamDDOrdersAssignedTo(responsibleId)
-				.forEach(ddOrder -> collector.collect(ddOrder, true));
+		ddOrderService.streamDDOrders(DistributionJobQueries.ddOrdersAssignedToUser(query))
+				.forEach(collector::collect);
 
 		//
 		// New possible jobs
+		@NonNull final QueryLimit suggestedLimit = query.getSuggestedLimit();
 		if (suggestedLimit.isNoLimit() || !suggestedLimit.isLimitHitOrExceeded(collector.getCollectedItems()))
 		{
-			ddOrderService.streamDDOrders(toActiveNotAssignedDDOrderQuery(query))
+			ddOrderService.streamDDOrders(DistributionJobQueries.toActiveNotAssignedDDOrderQuery(query))
 					.limit(suggestedLimit.minusSizeOf(collector.getCollectedItems()).toIntOr(Integer.MAX_VALUE))
-					.forEach(ddOrder -> collector.collect(ddOrder, false));
+					.forEach(collector::collect);
 		}
-	}
-
-	private static DDOrderQuery toActiveNotAssignedDDOrderQuery(final @NonNull DDOrderReferenceQuery query)
-	{
-		final DistributionFacetIdsCollection activeFacetIds = query.getActiveFacetIds();
-		return DDOrderQuery.builder()
-				.orderBy(DDOrderQuery.OrderBy.PriorityRule)
-				.orderBy(DDOrderQuery.OrderBy.DatePromised)
-				.docStatus(DocStatus.Completed)
-				.responsibleId(ValueRestriction.isNull())
-				.warehouseFromIds(activeFacetIds.getWarehouseFromIds())
-				.warehouseToIds(activeFacetIds.getWarehouseToIds())
-				.salesOrderIds(activeFacetIds.getSalesOrderIds())
-				.manufacturingOrderIds(activeFacetIds.getManufacturingOrderIds())
-				.datesPromised(activeFacetIds.getDatesPromised())
-				.productIds(activeFacetIds.getProductIds())
-				.qtysEntered(activeFacetIds.getQuantities())
-				.plantIds(activeFacetIds.getPlantIds())
-				.build();
-	}
-
-	private Stream<I_DD_Order> streamDDOrdersAssignedTo(final @NonNull UserId responsibleId)
-	{
-		return ddOrderService.streamDDOrders(DDOrderQuery.builder()
-				.docStatus(DocStatus.Completed)
-				.responsibleId(ValueRestriction.equalsTo(responsibleId))
-				.orderBy(DDOrderQuery.OrderBy.PriorityRule)
-				.orderBy(DDOrderQuery.OrderBy.DatePromised)
-				.build());
 	}
 
 	public DistributionJob createJob(
@@ -205,17 +150,22 @@ public class DistributionRestService
 					.setParameter("newResponsibleId", newResponsibleId);
 		}
 
-		return loader.load(ddOrderRecord);
+		return loader.loadByRecord(ddOrderRecord);
 	}
 
 	public DistributionJob getJobById(final DistributionJobId jobId)
 	{
-		return newLoader().load(jobId);
+		return newLoader().loadByJobId(jobId);
 	}
 
 	public DistributionJob getJobById(final DDOrderId ddOrderId)
 	{
-		return newLoader().load(ddOrderId);
+		return newLoader().loadByDDOrderId(ddOrderId);
+	}
+
+	public List<DistributionJob> listJobs(final DDOrderQuery query)
+	{
+		return newLoader().loadByQuery(query);
 	}
 
 	@NonNull
@@ -224,27 +174,83 @@ public class DistributionRestService
 		return new DistributionJobLoader(loadingSupportServices);
 	}
 
-	public DistributionJob processEvent(@NonNull final DistributionJob job, @NonNull final JsonDistributionEvent event)
+	public DistributionJob processEvent(@NonNull final JsonDistributionEvent event, @NonNull final UserId callerId)
 	{
-		return newProcessCommand()
-				.job(job)
-				.event(event)
-				.build()
-				.execute();
+		final DistributionJobId jobId = DistributionJobId.ofWFProcessId(WFProcessId.ofString(event.getWfProcessId()));
+		final DistributionJob job = getJobById(jobId);
+		job.assertCanEdit(callerId);
+
+		if (event.getPickFrom() != null)
+		{
+			return DistributionJobPickFromCommand.builder()
+					.trxManager(trxManager)
+					.huQRCodesService(huQRCodesService)
+					.handlingUnitsBL(handlingUnitsBL)
+					.ddOrderMoveScheduleService(ddOrderMoveScheduleService)
+					.loadingSupportServices(loadingSupportServices)
+					.hupiItemProductBL(hupiItemProductBL)
+					.inventoryService(inventoryService)
+					.uomConversionBL(uomConversionBL)
+					.huAccessService(huAccessService)
+					.job(job)
+					.lineId(event.getLineId())
+					.stepId(event.getDistributionStepId())
+					.pickFrom(event.getPickFrom())
+					.build().execute();
+		}
+		else if (event.getDropTo() != null)
+		{
+			return newDropToCommand()
+					.userId(callerId)
+					.onlyJobId(jobId)
+					.onlyJobId(jobId)
+					.onlyStepId(event.getDistributionStepId())
+					.dropToQRCode(event.getDropToNonNull().getQrCode())
+					.completeJobsIfFullyMoved(false)
+					.build().execute()
+					.getJobById(jobId);
+		}
+		else if (event.getUnpick() != null)
+		{
+			return DistributionJobUnpickCommand.builder()
+					.trxManager(trxManager)
+					.handlingUnitsBL(handlingUnitsBL)
+					.ddOrderMoveScheduleService(ddOrderMoveScheduleService)
+					.job(job)
+					.stepId(Check.assumeNotNull(event.getDistributionStepId(), "stepId must be set when unpicking"))
+					.unpickToTargetQRCode(Check.assumeNotNull(event.getUnpick(), "unpick must be set").getUnpickToTargetQRCode())
+					.build().execute();
+		}
+		else
+		{
+			throw new AdempiereException("Unknown event type: " + event);
+		}
 	}
 
-	private DistributionEventProcessCommandBuilder newProcessCommand()
+	public void dropAll(final JsonDropAllRequest request, final UserId callerId)
 	{
-		return DistributionEventProcessCommand.builder()
+		newDropToCommand()
+				.userId(callerId)
+				.dropToQRCode(request.getDropToQRCode())
+				.completeJobsIfFullyMoved(true)
+				.build().execute();
+	}
+
+	private DistributionJobDropToCommand.DistributionJobDropToCommandBuilder newDropToCommand()
+	{
+		return DistributionJobDropToCommand.builder()
 				.trxManager(trxManager)
-				.huQRCodesService(huQRCodesService)
-				.handlingUnitsBL(handlingUnitsBL)
+				.distributionJobService(this)
 				.ddOrderMoveScheduleService(ddOrderMoveScheduleService)
 				.loadingSupportServices(loadingSupportServices)
-				.hupiItemProductBL(hupiItemProductBL)
-				.inventoryService(inventoryService)
-				.uomConversionBL(uomConversionBL)
-				.huAccessService(huAccessService);
+				.locatorScannedCodeResolver(locatorScannedCodeResolver);
+	}
+
+	public DistributionJob complete(@NonNull final DistributionJobId jobId, @NonNull final UserId callerId)
+	{
+		final DistributionJob job = getJobById(jobId);
+		job.assertCanEdit(callerId);
+		return complete(job);
 	}
 
 	public DistributionJob complete(@NonNull final DistributionJob job)
@@ -273,10 +279,7 @@ public class DistributionRestService
 
 	public void abortAll(@NonNull final UserId responsibleId)
 	{
-		final DistributionJobLoader loader = newLoader();
-		final ImmutableList<DistributionJob> jobs = streamDDOrdersAssignedTo(responsibleId)
-				.map(loader::load)
-				.collect(ImmutableList.toImmutableList());
+		final List<DistributionJob> jobs = newLoader().loadByQuery(DistributionJobQueries.ddOrdersAssignedToUser(responsibleId));
 		if (jobs.isEmpty())
 		{
 			return;

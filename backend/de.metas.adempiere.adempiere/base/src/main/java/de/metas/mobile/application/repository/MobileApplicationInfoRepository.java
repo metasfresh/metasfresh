@@ -7,6 +7,8 @@ import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.mobile.application.MobileApplicationAction;
+import de.metas.mobile.application.MobileApplicationActionId;
 import de.metas.mobile.application.MobileApplicationId;
 import de.metas.mobile.application.MobileApplicationInfo;
 import de.metas.mobile.application.MobileApplicationRepoId;
@@ -19,6 +21,7 @@ import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_Mobile_Application;
+import org.compiere.model.I_Mobile_Application_Action;
 import org.compiere.model.I_Mobile_Application_Trl;
 import org.compiere.util.DB;
 import org.jetbrains.annotations.NotNull;
@@ -68,19 +71,40 @@ public class MobileApplicationInfoRepository
 						recordTrl -> recordTrl
 				));
 
+		final ImmutableListMultimap<MobileApplicationRepoId, MobileApplicationAction> actions = queryBL.createQueryBuilder(I_Mobile_Application_Action.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.collect(ImmutableListMultimap.toImmutableListMultimap(
+						MobileApplicationInfoRepository::extractId,
+						MobileApplicationInfoRepository::fromRecord
+				));
+
 		return records.stream()
-				.map(record -> fromRecord(record, recordTrls.get(extractId(record))))
+				.map(record -> fromRecord(record, recordTrls, actions))
 				.collect(GuavaCollectors.collectUsingListAccumulator(MobileApplicationInfoMap::new));
+	}
+
+	private static MobileApplicationAction fromRecord(@NonNull final I_Mobile_Application_Action record)
+	{
+		return MobileApplicationAction.builder()
+				.id(MobileApplicationActionId.ofRepoId(record.getMobile_Application_Action_ID()))
+				.internalName(StringUtils.trimBlankToOptional(record.getInternalName()).orElseThrow(() -> new AdempiereException("No internal name: " + record)))
+				.build();
 	}
 
 	private static MobileApplicationInfo fromRecord(
 			@NonNull final I_Mobile_Application record,
-			@NonNull final ImmutableList<I_Mobile_Application_Trl> recordTrls)
+			@NonNull final ImmutableListMultimap<MobileApplicationRepoId, I_Mobile_Application_Trl> recordTrls,
+			final ImmutableListMultimap<MobileApplicationRepoId, MobileApplicationAction> actions)
 	{
+		final MobileApplicationRepoId repoId = extractId(record);
+
 		return MobileApplicationInfo.builder()
-				.repoId(extractId(record))
+				.repoId(repoId)
 				.id(MobileApplicationId.ofString(record.getValue()))
-				.caption(extractNameTrl(record, recordTrls))
+				.caption(extractNameTrl(record, recordTrls.get(repoId)))
+				.actions(actions.get(repoId))
 				.showInMainMenu(record.isShowInMainMenu())
 				.build();
 	}
@@ -104,6 +128,8 @@ public class MobileApplicationInfoRepository
 	private static @NotNull MobileApplicationRepoId extractId(final I_Mobile_Application record) {return MobileApplicationRepoId.ofRepoId(record.getMobile_Application_ID());}
 
 	private static @NotNull MobileApplicationRepoId extractId(final I_Mobile_Application_Trl recordTrl) {return MobileApplicationRepoId.ofRepoId(recordTrl.getMobile_Application_ID());}
+
+	private static MobileApplicationRepoId extractId(final I_Mobile_Application_Action record) {return MobileApplicationRepoId.ofRepoId(record.getMobile_Application_ID());}
 
 	public void updateMobileApplicationTrl(final MobileApplicationRepoId mobileApplicationRepoId, @NonNull final String adLanguage)
 	{

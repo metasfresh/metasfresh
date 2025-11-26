@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implements I_MobileUI_UserProfile_Picking, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 238880263L;
+	private static final long serialVersionUID = 884988273L;
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_Picking (final Properties ctx, final int MobileUI_UserProfile_Picking_ID, @Nullable final String trxName)
@@ -32,6 +32,66 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setAllowPickToStructure_CU (final boolean AllowPickToStructure_CU)
+	{
+		set_Value (COLUMNNAME_AllowPickToStructure_CU, AllowPickToStructure_CU);
+	}
+
+	@Override
+	public boolean isAllowPickToStructure_CU() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_AllowPickToStructure_CU);
+	}
+
+	@Override
+	public void setAllowPickToStructure_LU_CU (final boolean AllowPickToStructure_LU_CU)
+	{
+		set_Value (COLUMNNAME_AllowPickToStructure_LU_CU, AllowPickToStructure_LU_CU);
+	}
+
+	@Override
+	public boolean isAllowPickToStructure_LU_CU() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_AllowPickToStructure_LU_CU);
+	}
+
+	@Override
+	public void setAllowPickToStructure_LU_TU (final boolean AllowPickToStructure_LU_TU)
+	{
+		set_Value (COLUMNNAME_AllowPickToStructure_LU_TU, AllowPickToStructure_LU_TU);
+	}
+
+	@Override
+	public boolean isAllowPickToStructure_LU_TU() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_AllowPickToStructure_LU_TU);
+	}
+
+	@Override
+	public void setAllowPickToStructure_TU (final boolean AllowPickToStructure_TU)
+	{
+		set_Value (COLUMNNAME_AllowPickToStructure_TU, AllowPickToStructure_TU);
+	}
+
+	@Override
+	public boolean isAllowPickToStructure_TU() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_AllowPickToStructure_TU);
+	}
+
+	@Override
+	public void setBestBeforeDate (final boolean BestBeforeDate)
+	{
+		set_Value (COLUMNNAME_BestBeforeDate, BestBeforeDate);
+	}
+
+	@Override
+	public boolean isBestBeforeDate() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_BestBeforeDate);
 	}
 
 	/** 
@@ -60,6 +120,18 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	}
 
 	@Override
+	public void setIsActiveWorkplaceRequired (final boolean IsActiveWorkplaceRequired)
+	{
+		set_Value (COLUMNNAME_IsActiveWorkplaceRequired, IsActiveWorkplaceRequired);
+	}
+
+	@Override
+	public boolean isActiveWorkplaceRequired() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsActiveWorkplaceRequired);
+	}
+
+	@Override
 	public void setIsAllowAnyCustomer (final boolean IsAllowAnyCustomer)
 	{
 		set_Value (COLUMNNAME_IsAllowAnyCustomer, IsAllowAnyCustomer);
@@ -84,18 +156,6 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	}
 
 	@Override
-	public void setIsAllowNewTU (final boolean IsAllowNewTU)
-	{
-		set_Value (COLUMNNAME_IsAllowNewTU, IsAllowNewTU);
-	}
-
-	@Override
-	public boolean isAllowNewTU() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsAllowNewTU);
-	}
-
-	@Override
 	public void setIsAllowPickingAnyHU (final boolean IsAllowPickingAnyHU)
 	{
 		set_Value (COLUMNNAME_IsAllowPickingAnyHU, IsAllowPickingAnyHU);
@@ -105,6 +165,18 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	public boolean isAllowPickingAnyHU() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAllowPickingAnyHU);
+	}
+
+	@Override
+	public void setIsAllowQuickPackAll (final boolean IsAllowQuickPackAll)
+	{
+		set_Value (COLUMNNAME_IsAllowQuickPackAll, IsAllowQuickPackAll);
+	}
+
+	@Override
+	public boolean isAllowQuickPackAll() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowQuickPackAll);
 	}
 
 	@Override
@@ -156,6 +228,30 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	}
 
 	@Override
+	public void setIsCompleteJobAutomatically (final boolean IsCompleteJobAutomatically)
+	{
+		set_Value (COLUMNNAME_IsCompleteJobAutomatically, IsCompleteJobAutomatically);
+	}
+
+	@Override
+	public boolean isCompleteJobAutomatically() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCompleteJobAutomatically);
+	}
+
+	@Override
+	public void setIsConsideredOnlyScheduledJobs (final boolean IsConsideredOnlyScheduledJobs)
+	{
+		set_Value (COLUMNNAME_IsConsideredOnlyScheduledJobs, IsConsideredOnlyScheduledJobs);
+	}
+
+	@Override
+	public boolean isConsideredOnlyScheduledJobs() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsConsideredOnlyScheduledJobs);
+	}
+
+	@Override
 	public void setIsConsiderSalesOrderCapacity (final boolean IsConsiderSalesOrderCapacity)
 	{
 		set_Value (COLUMNNAME_IsConsiderSalesOrderCapacity, IsConsiderSalesOrderCapacity);
@@ -192,18 +288,6 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	}
 
 	@Override
-	public void setIsPickingWithNewLU (final boolean IsPickingWithNewLU)
-	{
-		set_Value (COLUMNNAME_IsPickingWithNewLU, IsPickingWithNewLU);
-	}
-
-	@Override
-	public boolean isPickingWithNewLU() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsPickingWithNewLU);
-	}
-
-	@Override
 	public void setIsShipOnCloseLU (final boolean IsShipOnCloseLU)
 	{
 		set_Value (COLUMNNAME_IsShipOnCloseLU, IsShipOnCloseLU);
@@ -237,6 +321,18 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	public boolean isShowLastPickedBestBeforeDateForLines() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsShowLastPickedBestBeforeDateForLines);
+	}
+
+	@Override
+	public void setLotNumber (final boolean LotNumber)
+	{
+		set_Value (COLUMNNAME_LotNumber, LotNumber);
+	}
+
+	@Override
+	public boolean isLotNumber() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_LotNumber);
 	}
 
 	@Override

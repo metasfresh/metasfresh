@@ -188,7 +188,7 @@ public class OrderLineBuilder
 		return this;
 	}
 
-	public OrderLineBuilder piItemProductId(final HUPIItemProductId piItemProductId)
+	public OrderLineBuilder piItemProductId(@Nullable final HUPIItemProductId piItemProductId)
 	{
 		assertNotBuilt();
 		this.piItemProductId = piItemProductId;

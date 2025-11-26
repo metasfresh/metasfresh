@@ -44,6 +44,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.CreateOrUpdateLocatorRequest;
 import org.adempiere.warehouse.api.CreateWarehouseRequest;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -54,6 +55,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import java.util.Collection;
@@ -146,6 +148,12 @@ public class WarehouseBL implements IWarehouseBL
 		// No Locator was found: no default one and non which is active
 		// => Create a new Locator and return it
 		return warehouseDAO.createDefaultLocator(warehouseId);
+	}
+
+	@Override
+	public LocatorId createOrUpdateLocator(@NonNull final CreateOrUpdateLocatorRequest request)
+	{
+		return warehouseDAO.createOrUpdateLocator(request);
 	}
 
 	private I_C_Location getC_Location(@NonNull final WarehouseId warehouseId)
@@ -256,6 +264,12 @@ public class WarehouseBL implements IWarehouseBL
 	}
 
 	@Override
+	public ImmutableSet<LocatorId> getLocatorIdsByWarehouseId(@NonNull final WarehouseId warehouseId)
+	{
+		return warehouseDAO.getLocatorIdsByWarehouseIds(ImmutableSet.of(warehouseId));
+	}
+
+	@Override
 	public I_M_Locator getLocatorByRepoId(final int locatorRepoId)
 	{
 		return warehouseDAO.getLocatorByRepoId(locatorRepoId);
@@ -363,7 +377,7 @@ public class WarehouseBL implements IWarehouseBL
 	@NonNull
 	public ExplainedOptional<LocatorQRCode> getLocatorQRCodeByValue(@NonNull String locatorValue)
 	{
-		final List<I_M_Locator> locators = warehouseDAO.retrieveActiveLocatorsByValue(locatorValue);
+		final List<I_M_Locator> locators = getActiveLocatorsByValue(locatorValue);
 		if (locators.isEmpty())
 		{
 			return ExplainedOptional.emptyBecause(AdempiereException.MSG_NotFound);
@@ -378,4 +392,11 @@ public class WarehouseBL implements IWarehouseBL
 			return ExplainedOptional.of(LocatorQRCode.ofLocator(locator));
 		}
 	}
+
+	@Override
+	public List<I_M_Locator> getActiveLocatorsByValue(final @NotNull String locatorValue)
+	{
+		return warehouseDAO.retrieveActiveLocatorsByValue(locatorValue);
+	}
+
 }

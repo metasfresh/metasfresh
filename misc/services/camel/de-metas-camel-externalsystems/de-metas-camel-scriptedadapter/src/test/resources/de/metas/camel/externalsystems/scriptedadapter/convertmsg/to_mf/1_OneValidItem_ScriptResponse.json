@@ -1,0 +1,6 @@
+[
+  {
+    "camelServiceRouteID": "To-MF_PushOLCandidates-Route",
+    "requestBody": "{\"requests\": [{\"orgCode\": \"001\", \"externalHeaderId\": \"dhl_44\", \"externalLineId\": \"dhl_44\", \"externalSystemCode\": \"Other\", \"dataSource\": \"int-Shopware\", \"bpartner\": {\"bpartnerIdentifier\": \"2156425\", \"bpartnerLocationIdentifier\": \"2205175\"}, \"dateRequired\": \"2022-12-12\", \"dateOrdered\": \"2022-12-12\", \"orderDocType\": \"SalesOrder\", \"paymentTerm\": \"val-1000002\", \"productIdentifier\": \"2005577\", \"qty\": 1, \"currencyCode\": \"EUR\", \"discount\": 0, \"poReference\": \"ref_12301\", \"deliveryViaRule\": \"S\", \"deliveryRule\": \"F\", \"bpartnerName\": \"testName\"}]}"
+  }
+]

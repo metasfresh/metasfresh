@@ -16,10 +16,10 @@ import de.metas.common.ordercandidates.v1.request.JsonOrganization;
 import de.metas.common.ordercandidates.v1.request.JsonProductInfo;
 import de.metas.common.ordercandidates.v1.request.JsonRequestBPartnerLocationAndContact;
 import de.metas.common.rest_api.v1.SyncAdvise;
-import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.api.impl.InputDataSourceQuery;
 import de.metas.impex.api.impl.InputDataSourceQuery.InputDataSourceQueryBuilder;
+import de.metas.impexp.InputDataSourceId;
 import de.metas.logging.LogManager;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.organization.IOrgDAO;
@@ -27,10 +27,10 @@ import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfoUpdateRequest;
 import de.metas.organization.OrgQuery;
 import de.metas.payment.PaymentRule;
-import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.payment.paymentterm.impl.PaymentTermQuery;
-import de.metas.payment.paymentterm.impl.PaymentTermQuery.PaymentTermQueryBuilder;
+import de.metas.payment.paymentterm.repository.PaymentTermQuery;
+import de.metas.payment.paymentterm.repository.PaymentTermQuery.PaymentTermQueryBuilder;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.rest_api.utils.IdentifierString;
@@ -443,7 +443,7 @@ final class MasterdataProvider
 				throw new InvalidIdentifierException(paymentTerm);
 		}
 
-		final Optional<PaymentTermId> paymentTermId = paymentTermRepo.retrievePaymentTermId(queryBuilder.build());
+		final Optional<PaymentTermId> paymentTermId = paymentTermRepo.firstIdOnly(queryBuilder.build());
 
 		return paymentTermId.orElseThrow(() -> MissingResourceException.builder()
 				.resourceName("PaymentTerm")

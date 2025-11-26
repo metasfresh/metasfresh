@@ -80,4 +80,6 @@ public class AttributeConstants
 	public static final AttributeCode ProductionDate = AttributeCode.ofString("ProductionDate");
 
 	public static final AttributeCode ATTR_SSCC18_Value = AttributeCode.ofString("SSCC18");
+
+	public static final AttributeCode ATTR_ExternalBarcode = AttributeCode.ofString("ExternalBarcode");
 }

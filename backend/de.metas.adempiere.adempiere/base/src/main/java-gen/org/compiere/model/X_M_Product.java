@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for M_Product
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Product extends org.compiere.model.PO implements I_M_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -905679530L;
+	private static final long serialVersionUID = -369998932L;
 
     /** Standard Constructor */
     public X_M_Product (final Properties ctx, final int M_Product_ID, @Nullable final String trxName)
@@ -56,6 +56,18 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public java.lang.String getAlternativeProducts() 
 	{
 		return get_ValueAsString(COLUMNNAME_AlternativeProducts);
+	}
+
+	@Override
+	public void setavv_no (final @Nullable java.lang.String avv_no)
+	{
+		set_Value (COLUMNNAME_avv_no, avv_no);
+	}
+
+	@Override
+	public java.lang.String getavv_no() 
+	{
+		return get_ValueAsString(COLUMNNAME_avv_no);
 	}
 
 	/** 
@@ -141,6 +153,18 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public java.lang.String getClassification() 
 	{
 		return get_ValueAsString(COLUMNNAME_Classification);
+	}
+
+	@Override
+	public void setCommentary (final @Nullable java.lang.String Commentary)
+	{
+		set_Value (COLUMNNAME_Commentary, Commentary);
+	}
+
+	@Override
+	public java.lang.String getCommentary() 
+	{
+		return get_ValueAsString(COLUMNNAME_Commentary);
 	}
 
 	@Override
@@ -577,6 +601,18 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
+	public void setHeightInCm (final int HeightInCm)
+	{
+		set_Value (COLUMNNAME_HeightInCm, HeightInCm);
+	}
+
+	@Override
+	public int getHeightInCm() 
+	{
+		return get_ValueAsInt(COLUMNNAME_HeightInCm);
+	}
+
+	@Override
 	public void setHelp (final @Nullable java.lang.String Help)
 	{
 		set_Value (COLUMNNAME_Help, Help);
@@ -769,6 +805,18 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
+	public void setIsSelfPacked (final boolean IsSelfPacked)
+	{
+		set_Value (COLUMNNAME_IsSelfPacked, IsSelfPacked);
+	}
+
+	@Override
+	public boolean isSelfPacked() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSelfPacked);
+	}
+
+	@Override
 	public void setIsSelfService (final boolean IsSelfService)
 	{
 		set_Value (COLUMNNAME_IsSelfService, IsSelfService);
@@ -915,6 +963,18 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
+	public void setLengthInCm (final int LengthInCm)
+	{
+		set_Value (COLUMNNAME_LengthInCm, LengthInCm);
+	}
+
+	@Override
+	public int getLengthInCm() 
+	{
+		return get_ValueAsInt(COLUMNNAME_LengthInCm);
+	}
+
+	@Override
 	public void setLongTextDescription (final @Nullable java.lang.String LongTextDescription)
 	{
 		set_Value (COLUMNNAME_LongTextDescription, LongTextDescription);
@@ -924,18 +984,6 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public java.lang.String getLongTextDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_LongTextDescription);
-	}
-
-	@Override
-	public void setLowLevel (final int LowLevel)
-	{
-		set_Value (COLUMNNAME_LowLevel, LowLevel);
-	}
-
-	@Override
-	public int getLowLevel() 
-	{
-		return get_ValueAsInt(COLUMNNAME_LowLevel);
 	}
 
 	@Override
@@ -1216,6 +1264,19 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public java.lang.String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
+	}
+
+	@Override
+	public void setOuterPackagingWeight (final @Nullable BigDecimal OuterPackagingWeight)
+	{
+		set_Value (COLUMNNAME_OuterPackagingWeight, OuterPackagingWeight);
+	}
+
+	@Override
+	public BigDecimal getOuterPackagingWeight() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_OuterPackagingWeight);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -1622,6 +1683,19 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
+	public void setSmallPackagingWeight (final @Nullable BigDecimal SmallPackagingWeight)
+	{
+		set_Value (COLUMNNAME_SmallPackagingWeight, SmallPackagingWeight);
+	}
+
+	@Override
+	public BigDecimal getSmallPackagingWeight() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_SmallPackagingWeight);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public org.compiere.model.I_S_Resource getS_Resource()
 	{
 		return get_ValueAsPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class);
@@ -1781,5 +1855,32 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Weight);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setWeight_UOM_ID (final int Weight_UOM_ID)
+	{
+		if (Weight_UOM_ID < 1) 
+			set_Value (COLUMNNAME_Weight_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_Weight_UOM_ID, Weight_UOM_ID);
+	}
+
+	@Override
+	public int getWeight_UOM_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Weight_UOM_ID);
+	}
+
+	@Override
+	public void setWidthInCm (final int WidthInCm)
+	{
+		set_Value (COLUMNNAME_WidthInCm, WidthInCm);
+	}
+
+	@Override
+	public int getWidthInCm() 
+	{
+		return get_ValueAsInt(COLUMNNAME_WidthInCm);
 	}
 }

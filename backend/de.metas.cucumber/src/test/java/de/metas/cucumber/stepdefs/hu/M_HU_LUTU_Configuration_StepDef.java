@@ -293,16 +293,16 @@ public class M_HU_LUTU_Configuration_StepDef
 				.orElseGet(piProductItemIdentifier::getAsInt);
 		assertThat(huPiItemProductId).isNotNull();
 
-		final boolean isInfiniteQtyCU = row.getAsBoolean(I_M_HU_LUTU_Configuration.COLUMNNAME_IsInfiniteQtyCU);
-		final BigDecimal qtyCUsPerTU = row.getAsBigDecimal(I_M_HU_LUTU_Configuration.COLUMNNAME_QtyCUsPerTU);
+		final boolean isInfiniteQtyCU = row.getAsOptionalBoolean(I_M_HU_LUTU_Configuration.COLUMNNAME_IsInfiniteQtyCU).orElseFalse();
+		final BigDecimal qtyCUsPerTU = row.getAsOptionalBigDecimal(I_M_HU_LUTU_Configuration.COLUMNNAME_QtyCUsPerTU).orElse(BigDecimal.ONE);
 
 		// CU
 		lutuConfig.setQtyCUsPerTU(qtyCUsPerTU);
 		lutuConfig.setIsInfiniteQtyCU(isInfiniteQtyCU);
 
 		// TU
-		final boolean isInfiniteQtyTU = row.getAsBoolean(I_M_HU_LUTU_Configuration.COLUMNNAME_IsInfiniteQtyTU);
-		final BigDecimal qtyTU = row.getAsBigDecimal(I_M_HU_LUTU_Configuration.COLUMNNAME_QtyTU);
+		final boolean isInfiniteQtyTU = row.getAsOptionalBoolean(I_M_HU_LUTU_Configuration.COLUMNNAME_IsInfiniteQtyTU).orElseFalse();
+		final BigDecimal qtyTU = row.getAsOptionalBigDecimal(I_M_HU_LUTU_Configuration.COLUMNNAME_QtyTU).orElse(BigDecimal.ONE);
 
 		final I_M_HU_PI_Item_Product tuPIItemProduct = InterfaceWrapperHelper.create(Env.getCtx(), huPiItemProductId, I_M_HU_PI_Item_Product.class, ITrx.TRXNAME_None);
 		final I_M_HU_PI tuPI = tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PI();
@@ -312,8 +312,8 @@ public class M_HU_LUTU_Configuration_StepDef
 		lutuConfig.setIsInfiniteQtyTU(isInfiniteQtyTU);
 
 		// LU
-		final boolean isInfiniteQtyLU = row.getAsBoolean(I_M_HU_LUTU_Configuration.COLUMNNAME_IsInfiniteQtyLU);
-		final BigDecimal qtyLU = row.getAsBigDecimal(I_M_HU_LUTU_Configuration.COLUMNNAME_QtyLU);
+		final boolean isInfiniteQtyLU = row.getAsOptionalBoolean(I_M_HU_LUTU_Configuration.COLUMNNAME_IsInfiniteQtyLU).orElseFalse();
+		final BigDecimal qtyLU = row.getAsOptionalBigDecimal(I_M_HU_LUTU_Configuration.COLUMNNAME_QtyLU).orElse(BigDecimal.ONE);
 
 		if (qtyLU.signum() > 0)
 		{

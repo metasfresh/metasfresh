@@ -61,6 +61,7 @@ import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.PurchaseOrderToShipperTransportationRepository;
+import de.metas.shipping.ShippingPackageQuery;
 import de.metas.shipping.mpackage.Package;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Check;
@@ -516,7 +517,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 				.map(I_M_ReceiptSchedule::getC_OrderLine_ID)
 				.map(OrderLineId::ofRepoIdOrNull)
 				.collect(Collectors.toSet());
-		return purchaseOrderToShipperTransportationRepository.getPackagesByOrderLineIds(orderLines);
+		return purchaseOrderToShipperTransportationRepository.getPackagesBy(ShippingPackageQuery.builder().orderLineIds(orderLines).build());
 	}
 
 	private void validateHuIds(@NonNull final Set<HuId> huIds, final ImmutableMap<HuId, I_M_HU> husByIdMap)
@@ -696,7 +697,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 			huContext.setProperty(HUAttributeConstants.CTXATTR_DefaultAttributesValue, initialAttributeValueDefaults);
 		}
 		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
-		final AttributeId attrId_CostPrice = attributesRepo.retrieveAttributeIdByValueOrNull(HUAttributeConstants.ATTR_CostPrice);
+		final AttributeId attrId_CostPrice = attributesRepo.retrieveActiveAttributeIdByValueOrNull(HUAttributeConstants.ATTR_CostPrice);
 		initialAttributeValueDefaults.put(attrId_CostPrice, priceActual);
 
 		//

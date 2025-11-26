@@ -96,7 +96,7 @@ Feature: credit limit
       | M_InOut_ID.Identifier | M_ShipmentSchedule_ID.Identifier |
       | s_1                   | s_s_1                            |
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus |
       | s_1                   | endcustomer_1            | l_1                               | 2021-04-17  | null        | true      | CO        |
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |

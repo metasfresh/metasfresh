@@ -1,0 +1,150 @@
+import { test } from "../../../playwright.config";
+import { Backend } from '../../utils/screens/Backend';
+import { LoginScreen } from '../../utils/screens/LoginScreen';
+import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScreen';
+import { PickingJobsListScreen } from '../../utils/screens/picking/PickingJobsListScreen';
+import { PickingJobScreen } from '../../utils/screens/picking/PickingJobScreen';
+
+const createMasterdata = async () => {
+    return await Backend.createMasterdata({
+        language: "en_US",
+        request: {
+            login: {
+                user: { language: "en_US" },
+            },
+            mobileConfig: {
+                picking: {
+                    aggregationType: "sales_order",
+                    allowPickingAnyCustomer: true,
+                    createShipmentPolicy: 'CL',
+                    allowPickingAnyHU: true,
+                    pickTo: ['LU_TU', 'TU', 'LU_CU', 'CU'],
+                    shipOnCloseLU: false,
+                    allowCompletingPartialPickingJob: true,
+                }
+            },
+            bpartners: { "BP1": {} },
+            warehouses: { "wh": {} },
+            pickingSlots: { slot1: {} },
+            products: {
+                "P1": { price: 1 },
+                "P2": { price: 1 },
+                "P3": { price: 1 },
+            },
+            packingInstructions: {
+                "PI1": { tu: "TU", product: "P1", qtyCUsPerTU: 100, lu: "LU", qtyTUsPerLU: 20 },
+                "PI2": { tu: "TU", product: "P2", qtyCUsPerTU: 100 },
+                "PI3": { tu: "TU", product: "P3", qtyCUsPerTU: 100 },
+                "LU_CU": { cu: true, lu: "LU", qtyTUsPerLU: 1 },
+            },
+            handlingUnits: {
+                "HU1": { product: 'P1', warehouse: 'wh', qty: 1000, packingInstructions: 'LU_CU' },
+                "HU2": { product: 'P2', warehouse: 'wh', qty: 1000, packingInstructions: 'LU_CU' },
+                "HU3": { product: 'P3', warehouse: 'wh', qty: 1000, packingInstructions: 'LU_CU' },
+            },
+            salesOrders: {
+                "SO1": {
+                    bpartner: 'BP1',
+                    warehouse: 'wh',
+                    datePromised: '2025-03-01T00:00:00.000+02:00',
+                    lines: [
+                        { product: 'P1', qty: 11 },
+                        { product: 'P2', qty: 12 },
+                        { product: 'P3', qty: 13 },
+                    ]
+                }
+            },
+        }
+    })
+}
+
+// noinspection JSUnusedLocalSymbols
+test('LU/CU -> LU/CU', async ({ page }) => {
+    const masterdata = await createMasterdata();
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode, expectNextScreen: 'PickLineScanScreen', gotoPickingJobScreen: true });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI1.luName });
+
+    await test.step("Pick all 3 lines", async () => {
+        await PickingJobScreen.pickHU({
+            qrCode: masterdata.handlingUnits.HU1.huId,
+            expectQtyEntered: 11
+        });
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '11 Stk', qtyPicked: '11 Stk', qtyPickedCatchWeight: '' });
+
+        await PickingJobScreen.pickHU({
+            qrCode: masterdata.handlingUnits.HU2.huId,
+            expectQtyEntered: 12
+        });
+        await PickingJobScreen.expectLineButton({ index: 2, qtyToPick: '12 Stk', qtyPicked: '12 Stk', qtyPickedCatchWeight: '' });
+
+        await PickingJobScreen.pickHU({
+            qrCode: masterdata.handlingUnits.HU3.huId,
+            expectQtyEntered: 13
+        });
+        await PickingJobScreen.expectLineButton({ index: 3, qtyToPick: '13 Stk', qtyPicked: '13 Stk', qtyPickedCatchWeight: '' });
+
+        await Backend.expect({
+            pickings: {
+                [pickingJobId]: {
+                    shipmentSchedules: {
+                        P1: {
+                            qtyPicked: [{ qtyPicked: "11 PCE", qtyTUs: 1, qtyLUs: 1, vhu: 'vhu1', tu: 'vhu1', lu: 'lu1', processed: false, shipmentLineId: '-' }]
+                        },
+                        P2: {
+                            qtyPicked: [{ qtyPicked: "12 PCE", qtyTUs: 1, qtyLUs: 1, vhu: 'vhu2', tu: 'vhu2', lu: 'lu1', processed: false, shipmentLineId: '-' }]
+                        },
+                        P3: {
+                            qtyPicked: [{ qtyPicked: "13 PCE", qtyTUs: 1, qtyLUs: 1, vhu: 'vhu3', tu: 'vhu3', lu: 'lu1', processed: false, shipmentLineId: '-' }]
+                        },
+                    }
+                }
+            },
+            hus: {
+                [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '989 PCE' } },
+                [masterdata.handlingUnits.HU2.qrCode]: { huStatus: 'A', storages: { P2: '988 PCE' } },
+                [masterdata.handlingUnits.HU3.qrCode]: { huStatus: 'A', storages: { P3: '987 PCE' } },
+                lu1: { huStatus: 'S', storages: { P1: '11 PCE', P2: '12 PCE', P3: '13 PCE', } },
+                vhu1: { huStatus: 'S', storages: { P1: '11 PCE' } },
+                vhu2: { huStatus: 'S', storages: { P2: '12 PCE' } },
+                vhu3: { huStatus: 'S', storages: { P3: '13 PCE' } },
+            }
+        });
+    });
+
+    await PickingJobScreen.complete();
+    await Backend.expect({
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: [{ qtyPicked: "11 PCE", qtyTUs: 1, qtyLUs: 1, vhu: 'vhu1', tu: 'vhu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLine1' }]
+                    },
+                    P2: {
+                        qtyPicked: [{ qtyPicked: "12 PCE", qtyTUs: 1, qtyLUs: 1, vhu: 'vhu2', tu: 'vhu2', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLine2' }]
+                    },
+                    P3: {
+                        qtyPicked: [{ qtyPicked: "13 PCE", qtyTUs: 1, qtyLUs: 1, vhu: 'vhu3', tu: 'vhu3', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLine3' }]
+                    },
+                }
+            }
+        },
+        hus: {
+            [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '989 PCE' } },
+            [masterdata.handlingUnits.HU2.qrCode]: { huStatus: 'A', storages: { P2: '988 PCE' } },
+            [masterdata.handlingUnits.HU3.qrCode]: { huStatus: 'A', storages: { P3: '987 PCE' } },
+            lu1: { huStatus: 'E', storages: { P1: '11 PCE', P2: '12 PCE', P3: '13 PCE', } },
+            vhu1: { huStatus: 'E', storages: { P1: '11 PCE' } },
+            vhu2: { huStatus: 'E', storages: { P2: '12 PCE' } },
+            vhu3: { huStatus: 'E', storages: { P3: '13 PCE' } },
+        }
+    });
+});
+

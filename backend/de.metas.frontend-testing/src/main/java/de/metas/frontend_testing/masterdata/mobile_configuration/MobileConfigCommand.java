@@ -1,34 +1,22 @@
 package de.metas.frontend_testing.masterdata.mobile_configuration;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.BPartnerId;
-import de.metas.distribution.config.MobileUIDistributionConfig;
-import de.metas.distribution.config.MobileUIDistributionConfig.MobileUIDistributionConfigBuilder;
 import de.metas.distribution.config.MobileUIDistributionConfigRepository;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
-import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
-import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
-import de.metas.handlingunits.picking.config.mobileui.PickingCustomerConfig;
-import de.metas.handlingunits.picking.config.mobileui.PickingCustomerConfigsCollection;
-import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
-import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions.PickingJobOptionsBuilder;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
+import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
 import de.metas.mobile.MobileConfig;
 import de.metas.mobile.MobileConfig.MobileConfigBuilder;
 import de.metas.mobile.MobileConfigService;
-import de.metas.util.OptionalBoolean;
-import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 @Builder
 public class MobileConfigCommand
 {
 	@NonNull private final MobileConfigService mobileConfigService;
-	@NonNull private final MobileUIPickingUserProfileRepository mobilePickingConfigRepository;
+	@NonNull private final MobileUIPickingUserProfileService mobilePickingConfigService;
 	@NonNull private final MobileUIDistributionConfigRepository mobileDistributionConfigRepository;
+	@NonNull private final MobileUIManufacturingConfigRepository mobileManufacturingConfigRepository;
 
 	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonMobileConfigRequest request;
@@ -38,11 +26,13 @@ public class MobileConfigCommand
 		final MobileConfig config = updateMobileConfig();
 		final JsonMobileConfigResponse.Picking picking = updatePickingConfig();
 		final JsonMobileConfigResponse.Distribution distribution = updateDistributionConfig();
+		final JsonMobileConfigResponse.Manufacturing manufacturing = updateManufacturingConfig();
 
 		return JsonMobileConfigResponse.builder()
 				.defaultAuthMethod(config.getDefaultAuthMethod())
 				.picking(picking)
 				.distribution(distribution)
+				.manufacturing(manufacturing)
 				.build();
 	}
 
@@ -65,151 +55,42 @@ public class MobileConfigCommand
 
 	private JsonMobileConfigResponse.Picking updatePickingConfig()
 	{
-		final JsonMobileConfigRequest.Picking picking = request.getPicking();
-		if (picking == null)
+		if (request.getPicking() == null)
 		{
 			return null;
 		}
 
-		final MobileUIPickingUserProfile profile = mobilePickingConfigRepository.getProfile();
-		final MobileUIPickingUserProfile.MobileUIPickingUserProfileBuilder newProfileBuilder = profile.toBuilder()
-				.defaultPickingJobOptions(updatePickingJobOptions(profile.getDefaultPickingJobOptions(), picking))
-				.customerConfigs(updatePickingCustomers(profile.getCustomerConfigs(), picking.getCustomers()))
-				.isFilterByBarcode(picking.getFilterByQRCode() != null && picking.getFilterByQRCode());
-
-		if (picking.getAllowPickingAnyCustomer() != null)
-		{
-			newProfileBuilder.isAllowPickingAnyCustomer(picking.getAllowPickingAnyCustomer());
-		}
-
-		MobileUIPickingUserProfile newProfile = newProfileBuilder.build();
-		mobilePickingConfigRepository.save(newProfile);
-
-		newProfile = mobilePickingConfigRepository.getProfile(); // reload to make sure we are returning exactly what's in DB
-		return toJson(newProfile);
-	}
-
-	private static JsonMobileConfigResponse.Picking toJson(final MobileUIPickingUserProfile profile)
-	{
-		return JsonMobileConfigResponse.Picking.builder()
-				.aggregationType(profile.getDefaultPickingJobOptions().getAggregationType())
-				.allowPickingAnyCustomer(profile.isAllowPickingAnyCustomer())
-				.allowPickingAnyHU(profile.getDefaultPickingJobOptions().isAllowPickingAnyHU())
-				.createShipmentPolicy(profile.getDefaultPickingJobOptions().getCreateShipmentPolicy())
-				.alwaysSplitHUsEnabled(profile.getDefaultPickingJobOptions().isAlwaysSplitHUsEnabled())
-				.pickWithNewLU(profile.getDefaultPickingJobOptions().isPickWithNewLU())
-				.shipOnCloseLU(profile.getDefaultPickingJobOptions().isShipOnCloseLU())
-				.allowNewTU(profile.getDefaultPickingJobOptions().isAllowNewTU())
-				.filterByQRCode(profile.isFilterByBarcode())
-				.allowCompletingPartialPickingJob(profile.getDefaultPickingJobOptions().isAllowCompletingPartialPickingJob())
-				.isAnonymousPickHUsOnTheFly(profile.getDefaultPickingJobOptions().isAnonymousPickHUsOnTheFly())
-				.displayPickingSlotSuggestions(profile.getDefaultPickingJobOptions().getDisplayPickingSlotSuggestions().toBooleanOrNull())
-				.build();
-	}
-
-	private static PickingJobOptions updatePickingJobOptions(final PickingJobOptions pickingJobOptions, final JsonMobileConfigRequest.Picking from)
-	{
-		final PickingJobOptionsBuilder builder = pickingJobOptions.toBuilder();
-		if (from.getAggregationType() != null)
-		{
-			builder.aggregationType(from.getAggregationType());
-		}
-		if (from.getAllowPickingAnyHU() != null)
-		{
-			builder.isAllowPickingAnyHU(from.getAllowPickingAnyHU());
-		}
-		if (from.getCreateShipmentPolicy() != null)
-		{
-			builder.createShipmentPolicy(from.getCreateShipmentPolicy());
-		}
-		if (from.getAlwaysSplitHUsEnabled() != null)
-		{
-			builder.isAlwaysSplitHUsEnabled(from.getAlwaysSplitHUsEnabled());
-		}
-		if (from.getPickWithNewLU() != null)
-		{
-			builder.isPickWithNewLU(from.getPickWithNewLU());
-		}
-		builder.isShipOnCloseLU(from.getShipOnCloseLU() != null ? from.getShipOnCloseLU() : false);
-		if (from.getAllowNewTU() != null)
-		{
-			builder.isAllowNewTU(from.getAllowNewTU());
-		}
-		if (from.getAllowCompletingPartialPickingJob() != null)
-		{
-			builder.isAllowCompletingPartialPickingJob(from.getAllowCompletingPartialPickingJob());
-		}
-		if (from.getAllowSkippingRejectedReason() != null)
-		{
-			builder.isAllowSkippingRejectedReason(from.getAllowSkippingRejectedReason());
-		}
-		if (from.getShowLastPickedBestBeforeDateForLines() != null)
-		{
-			builder.isShowLastPickedBestBeforeDateForLines(from.getShowLastPickedBestBeforeDateForLines());
-		}
-		if (from.getAnonymousPickHUsOnTheFly() != null)
-		{
-			builder.isAnonymousPickHUsOnTheFly(from.getAnonymousPickHUsOnTheFly());
-		}
-
-		builder.displayPickingSlotSuggestions(OptionalBoolean.ofNullableBoolean(from.getDisplayPickingSlotSuggestions()));
-
-		return builder.build();
-	}
-
-	private PickingCustomerConfigsCollection updatePickingCustomers(
-			@NonNull final PickingCustomerConfigsCollection customers,
-			@Nullable final List<JsonMobileConfigRequest.Picking.Customer> fromCustomersList)
-	{
-		if (fromCustomersList == null)
-		{
-			return customers;
-		}
-		else if (fromCustomersList.isEmpty())
-		{
-			return PickingCustomerConfigsCollection.EMPTY;
-		}
-
-		final ImmutableList<PickingCustomerConfig> result = CollectionUtils.<PickingCustomerConfig, JsonMobileConfigRequest.Picking.Customer, BPartnerId>syncLists()
-				.target(customers)
-				.targetKeyExtractor(PickingCustomerConfig::getCustomerId)
-				.source(fromCustomersList)
-				.sourceKeyExtractor(fromCustomer -> context.getId(fromCustomer.getCustomer(), BPartnerId.class))
-				.mergeFunction((target, from) -> {
-					if (target == null)
-					{
-						final BPartnerId customerId = context.getId(from.getCustomer(), BPartnerId.class);
-						return PickingCustomerConfig.builder().customerId(customerId).build();
-					}
-					else
-					{
-						return target;
-					}
-				})
-				.execute();
-
-		return PickingCustomerConfigsCollection.ofCollection(result);
+		return MobileConfigPickingCommand.builder()
+				.mobilePickingConfigService(mobilePickingConfigService)
+				.context(context)
+				.request(request.getPicking())
+				.build().execute();
 	}
 
 	private JsonMobileConfigResponse.Distribution updateDistributionConfig()
 	{
-		final JsonMobileConfigRequest.Distribution distribution = request.getDistribution();
-		if (distribution == null)
+		if (request.getDistribution() == null)
 		{
 			return null;
 		}
 
-		final MobileUIDistributionConfigBuilder newConfigBuilder = mobileDistributionConfigRepository.getConfig().toBuilder();
-		if (distribution.getAllowPickingAnyHU() != null)
+		return MobileConfigDistributionCommand.builder()
+				.mobileDistributionConfigRepository(mobileDistributionConfigRepository)
+				.request(request.getDistribution())
+				.build().execute();
+	}
+
+	private JsonMobileConfigResponse.Manufacturing updateManufacturingConfig()
+	{
+		if (request.getManufacturing() == null)
 		{
-			newConfigBuilder.allowPickingAnyHU(distribution.getAllowPickingAnyHU());
+			return null;
 		}
 
-		final MobileUIDistributionConfig newConfig = newConfigBuilder.build();
-		mobileDistributionConfigRepository.save(newConfig);
-
-		return JsonMobileConfigResponse.Distribution.builder()
-				.allowPickingAnyHU(newConfig.isAllowPickingAnyHU())
-				.build();
+		return MobileConfigManufacturingCommand.builder()
+				.mobileManufacturingConfigRepository(mobileManufacturingConfigRepository)
+				.context(context)
+				.request(request.getManufacturing())
+				.build().execute();
 	}
 }

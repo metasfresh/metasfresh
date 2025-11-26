@@ -124,6 +124,7 @@ import java.util.stream.Stream;
 
 import static de.metas.util.Check.assumeNotNull;
 import static de.metas.util.Check.isEmpty;
+import static de.metas.util.Check.isNotBlank;
 import static org.adempiere.model.InterfaceWrapperHelper.copy;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
@@ -573,6 +574,27 @@ public class BPartnerDAO implements IBPartnerDAO
 		return retrieveBPartnerLocations(bpartnerId, false);
 	}
 
+	@Cached(cacheName = I_C_Location.Table_Name + "#by#" + I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID)
+	public ImmutableList<I_C_Location> retrieveLocations(@NonNull final BPartnerLocationId bpartnerLocationId, final boolean includeInactive)
+	{
+		final IQueryBuilder<I_C_BPartner_Location> queryBuilder = queryBL
+				.createQueryBuilder(I_C_BPartner_Location.class)
+				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID, bpartnerLocationId);
+
+		if (!includeInactive)
+		{
+			queryBuilder.addOnlyActiveRecordsFilter();
+		}
+
+		queryBuilder.orderBy()
+				.addColumn(I_C_BPartner_Location.COLUMNNAME_IsActive);
+
+		return queryBuilder
+				.andCollect(I_C_BPartner_Location.COLUMNNAME_C_Location_ID, I_C_Location.class)
+				.create()
+				.listImmutable(I_C_Location.class);
+	}
+
 	@Override
 	@Cached(cacheName = I_C_BPartner_Location.Table_Name + "#by#" + I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID)
 	public ImmutableList<I_C_BPartner_Location> retrieveBPartnerLocations(@NonNull final BPartnerId bpartnerId, final boolean includeInactive)
@@ -833,43 +855,34 @@ public class BPartnerDAO implements IBPartnerDAO
 			throw new AdempiereException("No BPartner found for " + bpartnerId);
 		}
 
-		final Integer bpPricingSysId;
-		if (soTrx.isSales())
-		{
-			bpPricingSysId = bPartner.getM_PricingSystem_ID();
-		}
-		else
-		{
-			bpPricingSysId = bPartner.getPO_PricingSystem_ID();
-		}
-
-		if (bpPricingSysId > 0)
+		final PricingSystemId bpPricingSysId = soTrx.isSales() ? PricingSystemId.ofRepoIdOrNull(bPartner.getM_PricingSystem_ID()) : PricingSystemId.ofRepoIdOrNull(bPartner.getPO_PricingSystem_ID());
+		if (bpPricingSysId != null)
 		{
 			logger.debug("Got M_PricingSystem_ID={} from bPartner={}", bpPricingSysId, bPartner);
-			return PricingSystemId.ofRepoId(bpPricingSysId);
+			return bpPricingSysId;
 		}
 
-		final int bpGroupId = bPartner.getC_BP_Group_ID();
-		if (bpGroupId > 0)
-		{
-			final I_C_BP_Group bpGroup = InterfaceWrapperHelper.create(ctx, bpGroupId, I_C_BP_Group.class, trxName);
-			final Integer bpGroupPricingSysId;
+		final BPGroupId bpGroupId = BPGroupId.ofRepoId(bPartner.getC_BP_Group_ID());
+		final I_C_BP_Group bpGroup = InterfaceWrapperHelper.create(ctx, BPGroupId.toRepoId(bpGroupId), I_C_BP_Group.class, trxName);
+		final PricingSystemId bpGroupPricingSysId = soTrx.isSales() ? PricingSystemId.ofRepoIdOrNull(bpGroup.getM_PricingSystem_ID()) : PricingSystemId.ofRepoIdOrNull(bpGroup.getPO_PricingSystem_ID());
 
-			// metas: Same problem as above: The method always retrieved SO-PricingSys. This caused errors in
-			// PO-Documents.
-			if (soTrx.isSales())
-			{
-				bpGroupPricingSysId = bpGroup.getM_PricingSystem_ID();
-			}
-			else
-			{
-				bpGroupPricingSysId = bpGroup.getPO_PricingSystem_ID();
-			}
+		// metas: end
+		if (bpGroupPricingSysId != null)
+		{
+			logger.debug("Got M_PricingSystem_ID={} from bpGroup={}", bpGroupPricingSysId, bpGroup);
+			return bpGroupPricingSysId;
+		}
+		final BPGroupId parentBPGroupId = BPGroupId.ofRepoIdOrNull(bpGroup.getParent_BP_Group_ID());
+		if (parentBPGroupId != null)
+		{
+			final I_C_BP_Group parentBpGroup = InterfaceWrapperHelper.create(ctx, BPGroupId.toRepoId(parentBPGroupId), I_C_BP_Group.class, trxName);
+			final PricingSystemId parentBpGroupPricingSystemId = soTrx.isSales() ? PricingSystemId.ofRepoIdOrNull(parentBpGroup.getM_PricingSystem_ID()) : PricingSystemId.ofRepoIdOrNull(parentBpGroup.getPO_PricingSystem_ID());
+
 			// metas: end
-			if (bpGroupPricingSysId > 0)
+			if (parentBpGroupPricingSystemId != null)
 			{
-				logger.debug("Got M_PricingSystem_ID={} from bpGroup={}", bpGroupPricingSysId, bpGroup);
-				return PricingSystemId.ofRepoId(bpGroupPricingSysId);
+				logger.debug("Got M_PricingSystem_ID={} from bpGroup={}", parentBpGroupPricingSystemId, parentBpGroup);
+				return parentBpGroupPricingSystemId;
 			}
 		}
 
@@ -1499,13 +1512,13 @@ public class BPartnerDAO implements IBPartnerDAO
 		}
 
 		// ..BPartner code (aka value)
-		if (!isEmpty(query.getBpartnerValue(), true))
+		if (isNotBlank(query.getBpartnerValue()))
 		{
 			queryBuilder.addEqualsFilter(I_C_BPartner.COLUMNNAME_Value, query.getBpartnerValue());
 		}
 
 		// ..BPartner Name
-		if (!isEmpty(query.getBpartnerName(), true))
+		if (isNotBlank(query.getBpartnerName()))
 		{
 			queryBuilder.addEqualsFilter(I_C_BPartner.COLUMNNAME_Name, query.getBpartnerName());
 		}
@@ -1543,7 +1556,6 @@ public class BPartnerDAO implements IBPartnerDAO
 			throw new AdempiereException("@NotFound@ @C_BPartner_ID@")
 					.setParameter("query", query);
 		}
-
 		return bpartnerIds;
 	}
 
@@ -1557,6 +1569,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	{
 		return GLNQuery.builder()
 				.glns(query.getGlns())
+				.glnLookupLabel(query.getGlnLookupLabel())
 				.onlyOrgIds(query.getOnlyOrgIds())
 				.build();
 	}

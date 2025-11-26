@@ -160,7 +160,7 @@ Feature: Picking workflow - validate picked HU
     And validate M_ShipmentSchedule_QtyPicked:
       | M_ShipmentSchedule_ID.Identifier | OPT.VHU_ID.Identifier  | IsAnonymousHuPickedOnTheFly |
       | pickingShipmentSchedule          | pickingProductHU_17663 | N                           |
-    And store workflow endpointPath api/v2/userWorkflows/wfProcess/:wf1/:CompletePickingActivity/userConfirmation in context
+    And store workflow endpointPath api/v2/userWorkflows/wfProcess/@wf1@/@CompletePickingActivity@/userConfirmation in context
     And a 'POST' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |

@@ -485,11 +485,6 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 		}
 	}
 
-	/**
-	 * If Negative amount is above positive amount, then NetAmtToInvoice is adjusted but Qty shall be ONE.
-	 *
-	 * @task http://dewiki908/mediawiki/index.php/03908_Gutschriften_Verrechnung_%282013021410000034%29
-	 */
 	@Test
 	public void test_regularLines_with_PartialCreditMemo_QtyNotOne()
 	{
@@ -503,11 +498,10 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 		InterfaceWrapperHelper.save(ic2);
 		assertThat(ic2.isError()).as("IC2- IsError").isFalse();
 
-		// shall throw exception
-		// but because the exception is catched, the IC's IsError shall be set to true
+		// should not throw exception because invoice candidates with negative amount are valid and lead to the creation of credit memos.
 		updateInvalidCandidates();
 
 		InterfaceWrapperHelper.refresh(ic2);
-		assertThat(ic2.isError()).as("IC2- IsError").isTrue();
+		assertThat(ic2.isError()).as("IC2- IsError").isFalse();
 	}
 }

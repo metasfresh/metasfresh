@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Picking_Job_Step extends org.compiere.model.PO implements I_M_Picking_Job_Step, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1243400153L;
+	private static final long serialVersionUID = -1573680053L;
 
     /** Standard Constructor */
     public X_M_Picking_Job_Step (final Properties ctx, final int M_Picking_Job_Step_ID, @Nullable final String trxName)
@@ -36,18 +36,6 @@ public class X_M_Picking_Job_Step extends org.compiere.model.PO implements I_M_P
 	}
 
 	@Override
-	public org.compiere.model.I_C_Order getC_Order()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class);
-	}
-
-	@Override
-	public void setC_Order(final org.compiere.model.I_C_Order C_Order)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class, C_Order);
-	}
-
-	@Override
 	public void setC_Order_ID (final int C_Order_ID)
 	{
 		if (C_Order_ID < 1) 
@@ -60,18 +48,6 @@ public class X_M_Picking_Job_Step extends org.compiere.model.PO implements I_M_P
 	public int getC_Order_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Order_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_C_OrderLine getC_OrderLine()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_OrderLine_ID, org.compiere.model.I_C_OrderLine.class);
-	}
-
-	@Override
-	public void setC_OrderLine(final org.compiere.model.I_C_OrderLine C_OrderLine)
-	{
-		set_ValueFromPO(COLUMNNAME_C_OrderLine_ID, org.compiere.model.I_C_OrderLine.class, C_OrderLine);
 	}
 
 	@Override
@@ -105,6 +81,45 @@ public class X_M_Picking_Job_Step extends org.compiere.model.PO implements I_M_P
 	}
 
 	@Override
+	public void setC_Workplace_ID (final int C_Workplace_ID)
+	{
+		if (C_Workplace_ID < 1) 
+			set_Value (COLUMNNAME_C_Workplace_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Workplace_ID, C_Workplace_ID);
+	}
+
+	@Override
+	public int getC_Workplace_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Workplace_ID);
+	}
+
+	@Override
+	public void setDateReady (final @Nullable java.sql.Timestamp DateReady)
+	{
+		set_Value (COLUMNNAME_DateReady, DateReady);
+	}
+
+	@Override
+	public java.sql.Timestamp getDateReady() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_DateReady);
+	}
+
+	@Override
+	public void setIsApproved (final boolean IsApproved)
+	{
+		set_Value (COLUMNNAME_IsApproved, IsApproved);
+	}
+
+	@Override
+	public boolean isApproved() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsApproved);
+	}
+
+	@Override
 	public void setIsDynamic (final boolean IsDynamic)
 	{
 		set_Value (COLUMNNAME_IsDynamic, IsDynamic);
@@ -116,16 +131,29 @@ public class X_M_Picking_Job_Step extends org.compiere.model.PO implements I_M_P
 		return get_ValueAsBoolean(COLUMNNAME_IsDynamic);
 	}
 
+	/** 
+	 * marketplace AD_Reference_ID=541512
+	 * Reference name: merketplace_list_reference
+	 */
+	public static final int MARKETPLACE_AD_Reference_ID=541512;
+	/** Shop = SH */
+	public static final String MARKETPLACE_Shop = "SH";
+	/** Amazon = AM */
+	public static final String MARKETPLACE_Amazon = "AM";
+	/** Douglas = DO */
+	public static final String MARKETPLACE_Douglas = "DO";
+	/** Ebay = EB */
+	public static final String MARKETPLACE_Ebay = "EB";
 	@Override
-	public de.metas.handlingunits.model.I_M_Picking_Job getM_Picking_Job()
+	public void setmarketplace (final @Nullable java.lang.String marketplace)
 	{
-		return get_ValueAsPO(COLUMNNAME_M_Picking_Job_ID, de.metas.handlingunits.model.I_M_Picking_Job.class);
+		set_Value (COLUMNNAME_marketplace, marketplace);
 	}
 
 	@Override
-	public void setM_Picking_Job(final de.metas.handlingunits.model.I_M_Picking_Job M_Picking_Job)
+	public java.lang.String getmarketplace() 
 	{
-		set_ValueFromPO(COLUMNNAME_M_Picking_Job_ID, de.metas.handlingunits.model.I_M_Picking_Job.class, M_Picking_Job);
+		return get_ValueAsString(COLUMNNAME_marketplace);
 	}
 
 	@Override
@@ -144,18 +172,6 @@ public class X_M_Picking_Job_Step extends org.compiere.model.PO implements I_M_P
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_Picking_Job_Line getM_Picking_Job_Line()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Picking_Job_Line_ID, de.metas.handlingunits.model.I_M_Picking_Job_Line.class);
-	}
-
-	@Override
-	public void setM_Picking_Job_Line(final de.metas.handlingunits.model.I_M_Picking_Job_Line M_Picking_Job_Line)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Picking_Job_Line_ID, de.metas.handlingunits.model.I_M_Picking_Job_Line.class, M_Picking_Job_Line);
-	}
-
-	@Override
 	public void setM_Picking_Job_Line_ID (final int M_Picking_Job_Line_ID)
 	{
 		if (M_Picking_Job_Line_ID < 1) 
@@ -168,6 +184,21 @@ public class X_M_Picking_Job_Step extends org.compiere.model.PO implements I_M_P
 	public int getM_Picking_Job_Line_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Picking_Job_Line_ID);
+	}
+
+	@Override
+	public void setM_Picking_Job_Schedule_ID (final int M_Picking_Job_Schedule_ID)
+	{
+		if (M_Picking_Job_Schedule_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_Picking_Job_Schedule_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_Picking_Job_Schedule_ID, M_Picking_Job_Schedule_ID);
+	}
+
+	@Override
+	public int getM_Picking_Job_Schedule_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Picking_Job_Schedule_ID);
 	}
 
 	@Override
@@ -201,6 +232,17 @@ public class X_M_Picking_Job_Step extends org.compiere.model.PO implements I_M_P
 	}
 
 	@Override
+	public void setM_Product_Category_ID (final int M_Product_Category_ID)
+	{
+		throw new IllegalArgumentException ("M_Product_Category_ID is virtual column");	}
+
+	@Override
+	public int getM_Product_Category_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Product_Category_ID);
+	}
+
+	@Override
 	public void setM_Product_ID (final int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
@@ -231,6 +273,21 @@ public class X_M_Picking_Job_Step extends org.compiere.model.PO implements I_M_P
 	}
 
 	@Override
+	public void setM_Shipper_ID (final int M_Shipper_ID)
+	{
+		if (M_Shipper_ID < 1) 
+			set_Value (COLUMNNAME_M_Shipper_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Shipper_ID, M_Shipper_ID);
+	}
+
+	@Override
+	public int getM_Shipper_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Shipper_ID);
+	}
+
+	@Override
 	public void setPackTo_HU_PI_Item_Product_ID (final int PackTo_HU_PI_Item_Product_ID)
 	{
 		if (PackTo_HU_PI_Item_Product_ID < 1) 
@@ -246,18 +303,6 @@ public class X_M_Picking_Job_Step extends org.compiere.model.PO implements I_M_P
 	}
 
 	@Override
-	public de.metas.handlingunits.model.I_M_HU getPicked_HU()
-	{
-		return get_ValueAsPO(COLUMNNAME_Picked_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
-	}
-
-	@Override
-	public void setPicked_HU(final de.metas.handlingunits.model.I_M_HU Picked_HU)
-	{
-		set_ValueFromPO(COLUMNNAME_Picked_HU_ID, de.metas.handlingunits.model.I_M_HU.class, Picked_HU);
-	}
-
-	@Override
 	public void setPicked_HU_ID (final int Picked_HU_ID)
 	{
 		if (Picked_HU_ID < 1) 
@@ -270,18 +315,6 @@ public class X_M_Picking_Job_Step extends org.compiere.model.PO implements I_M_P
 	public int getPicked_HU_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Picked_HU_ID);
-	}
-
-	@Override
-	public de.metas.handlingunits.model.I_M_HU getPickFrom_HU()
-	{
-		return get_ValueAsPO(COLUMNNAME_PickFrom_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
-	}
-
-	@Override
-	public void setPickFrom_HU(final de.metas.handlingunits.model.I_M_HU PickFrom_HU)
-	{
-		set_ValueFromPO(COLUMNNAME_PickFrom_HU_ID, de.metas.handlingunits.model.I_M_HU.class, PickFrom_HU);
 	}
 
 	@Override
@@ -327,6 +360,17 @@ public class X_M_Picking_Job_Step extends org.compiere.model.PO implements I_M_P
 	public int getPickFrom_Warehouse_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_PickFrom_Warehouse_ID);
+	}
+
+	@Override
+	public void setPriorityRule (final @Nullable java.lang.String PriorityRule)
+	{
+		throw new IllegalArgumentException ("PriorityRule is virtual column");	}
+
+	@Override
+	public java.lang.String getPriorityRule() 
+	{
+		return get_ValueAsString(COLUMNNAME_PriorityRule);
 	}
 
 	@Override
@@ -386,5 +430,28 @@ public class X_M_Picking_Job_Step extends org.compiere.model.PO implements I_M_P
 	public java.lang.String getRejectReason() 
 	{
 		return get_ValueAsString(COLUMNNAME_RejectReason);
+	}
+
+	@Override
+	public void setSinglePackage (final boolean SinglePackage)
+	{
+		set_Value (COLUMNNAME_SinglePackage, SinglePackage);
+	}
+
+	@Override
+	public boolean isSinglePackage() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_SinglePackage);
+	}
+
+	@Override
+	public void setWorkplaceIndicator_ID (final int WorkplaceIndicator_ID)
+	{
+		throw new IllegalArgumentException ("WorkplaceIndicator_ID is virtual column");	}
+
+	@Override
+	public int getWorkplaceIndicator_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_WorkplaceIndicator_ID);
 	}
 }

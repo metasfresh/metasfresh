@@ -208,4 +208,48 @@ public interface I_C_Incoterms
 
 	ModelColumn<I_C_Incoterms, Object> COLUMN_Value = new ModelColumn<>(I_C_Incoterms.class, "Value", null);
 	String COLUMNNAME_Value = "Value";
+
+	/**
+	 * Set Default.
+	 * Default value
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDefault (boolean IsDefault);
+
+	/**
+	 * Get Default.
+	 * Default value
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDefault();
+
+	ModelColumn<I_C_Incoterms, Object> COLUMN_IsDefault = new ModelColumn<>(I_C_Incoterms.class, "IsDefault", null);
+	String COLUMNNAME_IsDefault = "IsDefault";
+
+	/**
+	 * Set Default Location.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDefaultLocation (@Nullable java.lang.String DefaultLocation);
+
+	/**
+	 * Get Default Location.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDefaultLocation();
+
+	ModelColumn<I_C_Incoterms, Object> COLUMN_DefaultLocation = new ModelColumn<>(I_C_Incoterms.class, "DefaultLocation", null);
+	String COLUMNNAME_DefaultLocation = "DefaultLocation";
 }

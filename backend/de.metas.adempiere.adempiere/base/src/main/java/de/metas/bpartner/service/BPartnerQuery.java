@@ -3,6 +3,7 @@ package de.metas.bpartner.service;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.GLN;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.lang.ExternalId;
@@ -16,6 +17,7 @@ import javax.annotation.Nullable;
 import java.util.Set;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 
 /*
  * #%L
@@ -50,6 +52,7 @@ public class BPartnerQuery
 	ExternalId externalId;
 	String bpartnerValue;
 	String bpartnerName;
+	String glnLookupLabel;
 	ImmutableSet<GLN> glns;
 
 	/**
@@ -70,6 +73,7 @@ public class BPartnerQuery
 			@Nullable final ExternalId externalId,
 			@Nullable final String bpartnerValue,
 			@Nullable final String bpartnerName,
+			@Nullable final String glnLookupLabel,
 			@NonNull @Singular final Set<GLN> glns,
 			//
 			@NonNull @Singular final Set<OrgId> onlyOrgIds,
@@ -81,12 +85,13 @@ public class BPartnerQuery
 		this.bPartnerId = bPartnerId;
 		this.bpartnerValue = bpartnerValue;
 		this.bpartnerName = bpartnerName;
+		this.glnLookupLabel = glnLookupLabel;
 		this.glns = ImmutableSet.copyOf(glns);
 		this.externalId = externalId;
 
 		this.onlyOrgIds = ImmutableSet.copyOf(onlyOrgIds);
 
-		this.failIfNotExists = coalesce(failIfNotExists, false);
+		this.failIfNotExists = coalesceNotNull(failIfNotExists, false);
 
 		this.userSalesRepSet = userSalesRepSet;
 
@@ -109,17 +114,5 @@ public class BPartnerQuery
 				&& externalId == null
 				&& Check.isEmpty(glns)
 				&& userSalesRepSet == null;
-	}
-
-	public BPartnerQuery withNoGLNs()
-	{
-		if (glns.isEmpty())
-		{
-			return this;
-		}
-		else
-		{
-			return toBuilder().clearGlns().build();
-		}
 	}
 }

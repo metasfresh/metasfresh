@@ -59,9 +59,9 @@ public class ExternalSystem_Config_GRSSignum
 		final String parentType =
 				externalSystemConfigRepo.getParentTypeById(ExternalSystemParentConfigId.ofRepoId(grsConfig.getExternalSystem_Config_ID()));
 
-		if (!ExternalSystemType.GRSSignum.getCode().equals(parentType))
+		if (!ExternalSystemType.GRSSignum.getValue().equals(parentType))
 		{
-			throw new AdempiereException("Invalid external system type!");
+			throw new AdempiereException("Invalid external system type: " + parentType);
 		}
 	}
 

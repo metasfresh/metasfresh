@@ -29,6 +29,8 @@ import de.metas.common.util.EmptyUtil;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternalInfo;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentSchedule;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -40,7 +42,7 @@ import java.util.Map.Entry;
 @Builder
 public class GenerateShipmentsRequest
 {
-	@NonNull ImmutableSet<ShipmentScheduleId> scheduleIds;
+	@NonNull ShipmentScheduleAndJobScheduleIdSet scheduleIds;
 	@Nullable ImmutableSet<HuId> onlyLUIds;
 
 	@NonNull ImmutableMap<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleToExternalInfo;

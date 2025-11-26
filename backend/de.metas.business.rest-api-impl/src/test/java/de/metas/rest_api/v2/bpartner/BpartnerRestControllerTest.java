@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,6 +26,7 @@ import au.com.origin.snapshots.Expect;
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPGroupRepository;
+import de.metas.bpartner.BPGroupService;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
@@ -68,10 +69,10 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.ExternalBusinessKey;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
-import de.metas.externalreference.ExternalSystems;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.greeting.GreetingRepository;
 import de.metas.job.JobRepository;
 import de.metas.rest_api.utils.BPartnerQueryService;
@@ -80,13 +81,11 @@ import de.metas.title.TitleRepository;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
 import de.metas.util.JSONObjectMapper;
-import de.metas.util.Services;
 import de.metas.util.lang.UIDStringUtil;
 import de.metas.util.web.exception.MissingResourceException;
 import de.metas.vertical.healthcare.alberta.bpartner.AlbertaBPartnerCompositeService;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
@@ -136,14 +135,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@ExtendWith({AdempiereTestWatcher.class, SnapshotExtension.class})
+@ExtendWith({ AdempiereTestWatcher.class, SnapshotExtension.class })
 class BpartnerRestControllerTest
 {
 	private BpartnerRestController bpartnerRestController;
 
 	private BPartnerCompositeRepository bpartnerCompositeRepository;
 	private CurrencyRepository currencyRepository;
-	private ExternalReferenceRestControllerService externalReferenceRestControllerService;
 
 	private Expect expect;
 
@@ -151,29 +149,27 @@ class BpartnerRestControllerTest
 	void init()
 	{
 		AdempiereTestHelper.get().init();
+		POJOLookupMap.setNextIdSupplier_PerTableSequence();
 
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
-		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
+		final ExternalReferenceRepository externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting(new ExternalReferenceTypes());
 
-		final ExternalSystems externalSystems = new ExternalSystems();
-
-		final ExternalReferenceRepository externalReferenceRepository =
-				new ExternalReferenceRepository(Services.get(IQueryBL.class), externalSystems, externalReferenceTypes);
-
-		externalReferenceRestControllerService = new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystems(), new ExternalReferenceTypes());
+		final ExternalReferenceRestControllerService externalReferenceRestControllerService = new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystemRepository(), new ExternalReferenceTypes());
 
 		final BPartnerBL partnerBL = new BPartnerBL(new UserRepository());
 		//Services.registerService(IBPartnerBL.class, partnerBL);
 
 		bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository());
 		currencyRepository = new CurrencyRepository();
+		final BPGroupRepository bpGroupRepository = new BPGroupRepository();
 
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
 				new JsonRequestConsolidateService(),
 				new BPartnerQueryService(),
 				bpartnerCompositeRepository,
-				new BPGroupRepository(),
+				bpGroupRepository,
+				new BPGroupService(bpGroupRepository),
 				new GreetingRepository(),
 				new TitleRepository(),
 				currencyRepository,
@@ -198,7 +194,6 @@ class BpartnerRestControllerTest
 
 	@Test
 	void retrieveBPartner_ext()
-
 	{
 		final String bPartnerExternalIdentifier = String.join("-", "ext", EXTERNAL_SYSTEM_NAME, C_BPARTNER_EXTERNAL_ID);
 
@@ -353,7 +348,7 @@ class BpartnerRestControllerTest
 				.requestItem(requestItem)
 				.build();
 
-		SystemTime.setTimeSource( new TimeSource()
+		SystemTime.setTimeSource(new TimeSource()
 		{
 			@Override
 			public long millis()
@@ -391,21 +386,21 @@ class BpartnerRestControllerTest
 	@Test
 	void createOrUpdateBPartner_update_builder()
 	{
-		JsonRequestBPartner partner = new JsonRequestBPartner();
+		final JsonRequestBPartner partner = new JsonRequestBPartner();
 		partner.setCompanyName("otherCompanyName");
 
 		partner.setCode("other12345");
 		final JsonRequestBPartnerUpsert bpartnerUpsertRequest = JsonRequestBPartnerUpsert.builder()
 				.syncAdvise(SyncAdvise.builder()
-									.ifExists(SyncAdvise.IfExists.UPDATE_MERGE)
-									.ifNotExists(SyncAdvise.IfNotExists.CREATE)
-									.build())
+						.ifExists(SyncAdvise.IfExists.UPDATE_MERGE)
+						.ifNotExists(SyncAdvise.IfNotExists.CREATE)
+						.build())
 				.requestItem(JsonRequestBPartnerUpsertItem.builder()
-									 .bpartnerIdentifier("ext-ALBERTA-1234567")
-									 .bpartnerComposite(JsonRequestComposite.builder()
-																.bpartner(partner)
-																.build())
-									 .build())
+						.bpartnerIdentifier("ext-ALBERTA-1234567")
+						.bpartnerComposite(JsonRequestComposite.builder()
+								.bpartner(partner)
+								.build())
+						.build())
 				.build();
 
 		createOrUpdateBPartner_update_performTest(bpartnerUpsertRequest);
@@ -417,21 +412,21 @@ class BpartnerRestControllerTest
 	@Test
 	void createOrUpdateBPartner_update_withExternalBusinessKey()
 	{
-		JsonRequestBPartner partner = new JsonRequestBPartner();
+		final JsonRequestBPartner partner = new JsonRequestBPartner();
 		partner.setCompanyName("otherCompanyName");
 
 		partner.setCode("ext-ALBERTA-esb");
 		final JsonRequestBPartnerUpsert bpartnerUpsertRequest = JsonRequestBPartnerUpsert.builder()
 				.syncAdvise(SyncAdvise.builder()
-									.ifExists(SyncAdvise.IfExists.UPDATE_MERGE)
-									.ifNotExists(SyncAdvise.IfNotExists.CREATE)
-									.build())
+						.ifExists(SyncAdvise.IfExists.UPDATE_MERGE)
+						.ifNotExists(SyncAdvise.IfNotExists.CREATE)
+						.build())
 				.requestItem(JsonRequestBPartnerUpsertItem.builder()
-									 .bpartnerIdentifier("ext-ALBERTA-1234567")
-									 .bpartnerComposite(JsonRequestComposite.builder()
-																.bpartner(partner)
-																.build())
-									 .build())
+						.bpartnerIdentifier("ext-ALBERTA-1234567")
+						.bpartnerComposite(JsonRequestComposite.builder()
+								.bpartner(partner)
+								.build())
+						.build())
 				.build();
 
 		createOrUpdateBPartner_update_performTest(bpartnerUpsertRequest);
@@ -540,8 +535,7 @@ class BpartnerRestControllerTest
 	{
 		final InputStream stream = getClass().getClassLoader().getResourceAsStream("de/metas/rest_api/bpartner/impl/v2/" + jsonFileName);
 		assertThat(stream).isNotNull();
-		final JsonRequestBPartnerUpsert bpartnerUpsertRequest = JSONObjectMapper.forClass(JsonRequestBPartnerUpsert.class).readValue(stream);
-		return bpartnerUpsertRequest;
+		return JSONObjectMapper.forClass(JsonRequestBPartnerUpsert.class).readValue(stream);
 	}
 
 	private JsonMetasfreshId assertUpsertResultOK(
@@ -602,7 +596,7 @@ class BpartnerRestControllerTest
 			assertThat(bpartnerRecord.getValue()).isEqualTo(initialValue);
 			initialCounts.assertExternalReferencesCountChangedBy(1);
 			final I_S_ExternalReference externalReference = getExternalReference(externalBusinessKey.asExternalValueAndSystem().getValue(),
-																				 BPartnerExternalReferenceType.BPARTNER_VALUE.getCode());
+					BPartnerExternalReferenceType.BPARTNER_VALUE.getCode());
 
 			assertThat(externalReference.getRecord_ID()).isEqualTo(bpartnerRecord.getC_BPartner_ID());
 		}
@@ -724,10 +718,10 @@ class BpartnerRestControllerTest
 		final ResponseEntity<JsonResponseUpsert> result = bpartnerRestController.createOrUpdateContact(
 				"ext-" + EXTERNAL_SYSTEM_NAME + "-" + C_BPARTNER_EXTERNAL_ID,
 				JsonRequestContactUpsert.builder().requestItem(JsonRequestContactUpsertItem
-																	   .builder()
-																	   .contactIdentifier(contactIdentifier)
-																	   .contact(jsonContact)
-																	   .build()).build());
+						.builder()
+						.contactIdentifier(contactIdentifier)
+						.contact(jsonContact)
+						.build()).build());
 
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.CREATED);
 
@@ -794,9 +788,9 @@ class BpartnerRestControllerTest
 				String.valueOf(C_BPARTNER_ID),
 				JsonRequestBankAccountsUpsert.builder()
 						.requestItem(JsonRequestBankAccountUpsertItem.builder()
-											 .iban("iban-1")
-											 .currencyCode("EUR")
-											 .build())
+								.iban("iban-1")
+								.currencyCode("EUR")
+								.build())
 						.build());
 
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.CREATED);

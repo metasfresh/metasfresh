@@ -31,9 +31,6 @@ import Indicator from './Indicator';
 import OverlayField from './OverlayField';
 import CommentsPanel from '../comments/CommentsPanel';
 import PrintingOptions from './PrintingOptions';
-
-import SockJs from 'sockjs-client';
-import Stomp from 'stompjs/lib/stomp.min.js';
 import {
   createProcess,
   handleProcessResponse,
@@ -42,6 +39,7 @@ import ChangeCurrentWorkplace from './ChangeCurrentWorkplace';
 import { computeSaveStatusFlags } from '../../reducers/windowHandler';
 import * as IndicatorState from '../../constants/IndicatorState';
 import * as StaticModalType from '../../constants/StaticModalType';
+import { useWebsocket } from '../../hooks/useWebsocket';
 
 /**
  * @file Modal is an overlay view that can be opened over the main view.
@@ -65,12 +63,6 @@ class Modal extends Component {
       waitingFetch: false,
       isTooltipShow: false,
     };
-
-    // we do not use global WS connector as we don't want to mess with the logic around it and have undesired side effects
-    // WS connectivity for `Modal` has to reside in this class as it is easier to reason about and follow
-    // note that we do not initialize here the connection as the websocket is not present in the props now
-    // example side effect that was fixed with a hotfix: https://github.com/metasfresh/metasfresh/commit/f680d4c7ee28e924d98bf8581081e426836c33ce
-    this.modalWsClient = null;
   }
 
   componentDidMount() {
@@ -96,39 +88,10 @@ class Modal extends Component {
     this.mounted = false;
 
     this.removeEventListeners();
-
-    // disconnect when the component is unmounted
-    this.modalWsClient &&
-      this.modalWsClient.connected &&
-      this.modalWsClient.disconnect();
   }
 
-  /**
-   * @method initModalWsConnection
-   * @summary - connect and subscribes to the subscription `websocket` topic (websocket endpoint)
-   * @param {string} websocket - subscription topic
-   */
-  initModalWsConnection = (websocket) => {
-    if (this.modalWsClient === null && websocket) {
-      this.modalWsClient = Stomp.Stomp.over(new SockJs(config.WS_URL));
-      this.modalWsClient.debug = null;
-      this.modalWsClient.connect({}, () => {
-        this.modalWsClient.connected &&
-          this.modalWsClient.subscribe(websocket, (msgFromWs) => {
-            this.onWebsocketMessage(msgFromWs);
-          });
-      });
-    }
-  };
-
-  /**
-   * @method onWebsocketMessage
-   * @summary - logic executed when a messages is received via WS for the modal subscription
-   * @param {string} websocketMsg
-   */
-  onWebsocketMessage = (websocketMsg) => {
-    const msgBody = JSON.parse(websocketMsg.body);
-    const { stale } = msgBody;
+  onWebsocketEvent = ({ event }) => {
+    const { stale } = event;
     if (stale) {
       const { dispatch, windowId, docId, tabId, rowId, isAdvanced } =
         this.props;
@@ -147,10 +110,7 @@ class Modal extends Component {
   };
 
   componentDidUpdate(prevProps) {
-    const { windowId, viewId, indicator, websocket } = this.props;
-
-    // initializes the WS connection for the modal if there isn't already an existing one
-    websocket && this.initModalWsConnection(websocket);
+    const { windowId, viewId, indicator } = this.props;
 
     const { waitingFetch } = this.state;
 
@@ -357,7 +317,13 @@ class Modal extends Component {
     const { isNew, isNewDoc } = this.state;
 
     if (isNewDoc) {
-      processNewRecord('window', windowId, dataId).then((response) => {
+      processNewRecord({
+        windowId: windowId,
+        documentId: dataId,
+        triggeringWindowId: documentType,
+        triggeringDocumentId: parentDataId,
+        triggeringField: triggerField,
+      }).then((response) => {
         dispatch(
           patch(
             'window',
@@ -816,7 +782,7 @@ class Modal extends Component {
   };
 
   render() {
-    const { layout, modalType } = this.props;
+    const { layout, modalType, websocket } = this.props;
     let renderedContent = null;
 
     if (layout && Object.keys(layout) && Object.keys(layout).length) {
@@ -837,6 +803,10 @@ class Modal extends Component {
           light: layout.layoutType === 'singleOverlayField',
         })}
       >
+        <ModalWebsocketConnector
+          topic={websocket}
+          onMessage={({ event }) => this.onWebsocketEvent({ event })}
+        />
         {renderedContent}
       </div>
     );
@@ -920,3 +890,18 @@ const mapStateToProps = (state, props) => {
 export { Modal as DisconnectedModal };
 
 export default connect(mapStateToProps)(Modal);
+
+//
+//
+//
+//
+//
+
+const ModalWebsocketConnector = ({ topic, onMessage }) => {
+  useWebsocket({
+    topic,
+    traceName: 'Modal',
+    onMessage: ({ event }) => onMessage({ topic, event }),
+  });
+  return null;
+};

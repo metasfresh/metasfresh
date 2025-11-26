@@ -4,9 +4,23 @@ import DistributionStepPickFromScreen from '../containers/activities/distributio
 import DistributionStepDropToScreen from '../containers/activities/distribution/DistributionStepDropToScreen';
 import { getWFProcessScreenLocation } from './workflow_locations';
 import DistributionLinePickFromScreen from '../containers/activities/distribution/DistributionLinePickFromScreen';
+import DistributionDropAllToScreen from '../containers/activities/distribution/DistributionDropAllToScreen';
+import { APPLICATION_ID_Distribution } from '../apps/distribution/constants';
+import DistributionJobsDropAllScreen from '../apps/distribution/containers/DistributionJobsDropAllScreen';
+
+export const distributionJobsListScreenLocation = () => `/${APPLICATION_ID_Distribution}/launchers`;
+// appLaunchersLocation({ applicationId: APPLICATION_ID_Distribution });
+
+export const distributionJobsDropAllScreen = () => distributionJobsListScreenLocation() + '/dropAll';
+
+export const distributionJobScreenLocation = ({ applicationId, wfProcessId }) =>
+  getWFProcessScreenLocation({ applicationId, wfProcessId });
 
 export const distributionLineScreenLocation = ({ applicationId, wfProcessId, activityId, lineId }) =>
-  getWFProcessScreenLocation({ applicationId, wfProcessId }) + `/dd/A/${activityId}/L/${lineId}`;
+  distributionJobScreenLocation({ applicationId, wfProcessId }) + `/dd/A/${activityId}/L/${lineId}`;
+
+export const distributionDropAllToScreenLocation = ({ applicationId, wfProcessId, activityId }) =>
+  distributionJobScreenLocation({ applicationId, wfProcessId }) + `/dd/A/${activityId}/dropTo`;
 
 export const distributionLinePickFromScreenLocation = ({ applicationId, wfProcessId, activityId, lineId }) =>
   distributionLineScreenLocation({ applicationId, wfProcessId, activityId, lineId }) + `/scan`;
@@ -21,6 +35,18 @@ export const distributionStepDropToScreenLocation = ({ applicationId, wfProcessI
   distributionStepScreenLocation({ applicationId, wfProcessId, activityId, lineId, stepId }) + '/dropTo';
 
 export const distributionRoutes = [
+  {
+    path: distributionJobsDropAllScreen(),
+    Component: DistributionJobsDropAllScreen,
+  },
+  {
+    path: distributionDropAllToScreenLocation({
+      applicationId: ':applicationId',
+      wfProcessId: ':workflowId',
+      activityId: ':activityId',
+    }),
+    Component: DistributionDropAllToScreen,
+  },
   {
     path: distributionLineScreenLocation({
       applicationId: ':applicationId',

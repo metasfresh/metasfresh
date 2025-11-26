@@ -26,6 +26,7 @@ import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.order.invoicecandidate.C_OrderLine_Handler;
 import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
@@ -33,6 +34,7 @@ import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
@@ -46,7 +48,6 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.AdditionalMatchers;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
@@ -167,6 +168,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 			order1.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
 			order1.setC_Currency_ID(10);
 			order1.setM_PricingSystem_ID(20);
+			order1.setC_PaymentTerm_ID(30);
 			save(order1);
 
 			orderLine1 = orderLine("1");
@@ -189,6 +191,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 			order2.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
 			order2.setC_Currency_ID(10);
 			order2.setM_PricingSystem_ID(20);
+			order2.setC_PaymentTerm_ID(30);
 			save(order2);
 
 			orderLine2 = orderLine("2");
@@ -224,18 +227,17 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 
 	private void setUpActivityAndTaxRetrieval(final I_C_Order order1, final I_C_OrderLine oL1)
 	{
-		IProductAcctDAO productAcctDAO = Mockito.mock(IProductAcctDAO.class);
-		ITaxBL taxBL = Mockito.mock(ITaxBL.class);
+		final IProductAcctDAO productAcctDAO = Mockito.mock(IProductAcctDAO.class);
+		final ITaxBL taxBL = Mockito.mock(ITaxBL.class);
 
 		Services.registerService(IProductAcctDAO.class, productAcctDAO);
 		Services.registerService(ITaxBL.class, taxBL);
 
 		Mockito.doReturn(null).when(productAcctDAO).retrieveActivityForAcct(
-				AdditionalMatchers.not(ArgumentMatchers.eq(clientId)),
-				AdditionalMatchers.not(ArgumentMatchers.eq(orgId)),
-				AdditionalMatchers.not(ArgumentMatchers.eq(productId)));
+				ArgumentMatchers.any(ClientId.class),
+				ArgumentMatchers.any(OrgId.class),
+				ArgumentMatchers.any(ProductId.class));
 
-		final Properties ctx = Env.getCtx();
 		Mockito
 				.when(taxBL.getTaxNotNull(
 						order1,
@@ -276,6 +278,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		order1.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
 		order1.setC_Currency_ID(10);
 		order1.setM_PricingSystem_ID(20);
+		order1.setC_PaymentTerm_ID(30);
 		save(order1);
 
 		final I_C_OrderLine oL1 = orderLine("1");
@@ -302,6 +305,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		order2.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
 		order2.setC_Currency_ID(10);
 		order2.setM_PricingSystem_ID(20);
+		order2.setC_PaymentTerm_ID(30);
 		save(order2);
 
 		final I_C_OrderLine oL2 = orderLine("2");
@@ -328,6 +332,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		order3.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
 		order3.setC_Currency_ID(10);
 		order3.setM_PricingSystem_ID(20);
+		order3.setC_PaymentTerm_ID(30);
 		save(order3);
 
 		final I_C_OrderLine oL3 = orderLine("3");
@@ -354,6 +359,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		order4.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
 		order4.setC_Currency_ID(10);
 		order4.setM_PricingSystem_ID(20);
+		order4.setC_PaymentTerm_ID(30);
 		save(order4);
 
 		final I_C_OrderLine oL4 = orderLine("4");
@@ -404,6 +410,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 			order1.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
 			order1.setC_Currency_ID(10);
 			order1.setM_PricingSystem_ID(20);
+			order1.setC_PaymentTerm_ID(30);
 			save(order1);
 
 			orderLine1 = orderLine("1");
@@ -442,6 +449,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 			order1.setDatePromised(Timestamp.valueOf("2021-11-30 00:00:00"));
 			order1.setC_Currency_ID(10);
 			order1.setM_PricingSystem_ID(20);
+			order1.setC_PaymentTerm_ID(30);
 			save(order1);
 
 			orderLine1 = orderLine("1");

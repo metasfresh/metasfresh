@@ -51,8 +51,8 @@ public class Product
 	@NonNull @Builder.Default ITranslatableString description = TranslatableStrings.empty();
 	@NonNull @Builder.Default ITranslatableString documentNote = TranslatableStrings.empty();
 	@NonNull String productType;
-	@Nullable String ean;
 	@Nullable String gtin;
+	@Nullable String ean;
 	@Nullable Boolean discontinued;
 	@Nullable LocalDate discontinuedFrom;
 	@Nullable Boolean active;
@@ -62,4 +62,7 @@ public class Product
 	boolean stocked;
 	@Nullable CommodityNumberId commodityNumberId;
 	@Nullable String procurementStatus;
+	boolean selfPacked;
+	@NonNull PackageDimensions packageDimensions;
+
 }

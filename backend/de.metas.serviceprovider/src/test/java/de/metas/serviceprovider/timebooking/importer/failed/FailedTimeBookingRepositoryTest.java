@@ -23,10 +23,10 @@
 package de.metas.serviceprovider.timebooking.importer.failed;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.serviceprovider.external.ExternalSystem;
+import de.metas.externalsystem.ExternalSystem;
+import de.metas.externalsystem.ExternalSystemTestHelper;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.serviceprovider.model.I_S_FailedTimeBooking;
-import de.metas.util.Services;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,8 +34,6 @@ import org.junit.jupiter.api.Test;
 
 import static de.metas.serviceprovider.TestConstants.MOCK_ERROR_MESSAGE;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_ID;
-import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_SYSTEM;
-import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_SYSTEM_1;
 import static de.metas.serviceprovider.TestConstants.MOCK_JSON_VALUE;
 import static de.metas.serviceprovider.TestConstants.MOCK_ORG_ID;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -43,20 +41,25 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class FailedTimeBookingRepositoryTest
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final FailedTimeBookingRepository failedTimeBookingRepository = new FailedTimeBookingRepository(queryBL);
+	private final FailedTimeBookingRepository failedTimeBookingRepository = FailedTimeBookingRepository.newInstanceForUnitTesting();
+
+	private ExternalSystem MOCK_EXTERNAL_SYSTEM_EVERHOUR = null;
+	private ExternalSystem MOCK_EXTERNAL_SYSTEM_GITHUB = null;
 
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		MOCK_EXTERNAL_SYSTEM_EVERHOUR = ExternalSystemTestHelper.createExternalSystemIfNotExists(ExternalSystemType.Everhour);
+		MOCK_EXTERNAL_SYSTEM_GITHUB = ExternalSystemTestHelper.createExternalSystemIfNotExists(ExternalSystemType.Github);
 	}
 
 	@Test
 	public void save()
 	{
 		//given
-		final FailedTimeBooking mockFailedTimeBooking = getMockFailedTimeBooking(MOCK_EXTERNAL_SYSTEM);
+		final FailedTimeBooking mockFailedTimeBooking = getMockFailedTimeBooking(MOCK_EXTERNAL_SYSTEM_GITHUB);
 
 		//when
 		final FailedTimeBookingId failedTimeBookingId = failedTimeBookingRepository.save(mockFailedTimeBooking);
@@ -74,7 +77,7 @@ public class FailedTimeBookingRepositoryTest
 	public void delete()
 	{
 		//given
-		final FailedTimeBooking mockFailedTimeBooking = getMockFailedTimeBooking(MOCK_EXTERNAL_SYSTEM);
+		final FailedTimeBooking mockFailedTimeBooking = getMockFailedTimeBooking(MOCK_EXTERNAL_SYSTEM_GITHUB);
 
 		final FailedTimeBookingId failedTimeBookingId = failedTimeBookingRepository.save(mockFailedTimeBooking);
 
@@ -91,8 +94,8 @@ public class FailedTimeBookingRepositoryTest
 	public void listBySystem()
 	{
 		//given
-		final FailedTimeBooking failedTimeBookingSys = getMockFailedTimeBooking(MOCK_EXTERNAL_SYSTEM);
-		final FailedTimeBooking failedTimeBookingSys1 = getMockFailedTimeBooking(MOCK_EXTERNAL_SYSTEM_1);
+		final FailedTimeBooking failedTimeBookingSys = getMockFailedTimeBooking(MOCK_EXTERNAL_SYSTEM_GITHUB);
+		final FailedTimeBooking failedTimeBookingSys1 = getMockFailedTimeBooking(MOCK_EXTERNAL_SYSTEM_EVERHOUR);
 
 		final FailedTimeBookingId failedTimeBookingIdSys = failedTimeBookingRepository.save(failedTimeBookingSys);
 
@@ -100,11 +103,10 @@ public class FailedTimeBookingRepositoryTest
 		final FailedTimeBooking failedTimeBookingSysWithId = failedTimeBookingSys.toBuilder().failedTimeBookingId(failedTimeBookingIdSys).build();
 
 		//when
-		final ImmutableList<FailedTimeBooking> failedTimeBookings = failedTimeBookingRepository.listBySystem(MOCK_EXTERNAL_SYSTEM);
+		final ImmutableList<FailedTimeBooking> failedTimeBookings = failedTimeBookingRepository.listBySystem(MOCK_EXTERNAL_SYSTEM_GITHUB);
 
 		//then
 		assertThat(failedTimeBookings)
-				.isNotNull()
 				.hasSize(1)
 				.containsExactly(failedTimeBookingSysWithId);
 	}

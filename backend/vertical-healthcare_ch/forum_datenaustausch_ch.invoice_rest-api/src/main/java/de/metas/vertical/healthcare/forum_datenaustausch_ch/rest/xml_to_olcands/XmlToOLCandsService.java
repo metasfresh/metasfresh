@@ -282,6 +282,7 @@ public class XmlToOLCandsService
 	{
 		final JsonOLCandCreateRequestBuilder requestBuilder = JsonOLCandCreateRequest
 				.builder()
+				.externalSystemCode("Other")
 				.dataSource("int-" + RestApiConstants.INPUT_SOURCE_INTERAL_NAME)
 				.dataDest("int-" + InvoiceCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME);
 

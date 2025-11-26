@@ -52,6 +52,7 @@ public class JsonResponseBPartner
 	public static final String NAME = "name";
 	public static final String NAME_2 = "name2";
 	public static final String NAME_3 = "name3";
+	public static final String GLN_LOOKUP_LABEL = "glnLookupLabel";
 	public static final String EXTERNAL_ID = "externalId";
 	public static final String METASFRESH_ID = "metasfreshId";
 	public static final String CODE = "code";
@@ -79,34 +80,39 @@ public class JsonResponseBPartner
 	@JsonInclude(Include.NON_NULL)
 	JsonMetasfreshId metasfreshId;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.Value`.")
+	@ApiModelProperty(value = "This translates to `C_BPartner.Value`.")
 	@JsonProperty(CODE)
 	String code;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.GlobalId`.")
+	@ApiModelProperty(value = "This translates to `C_BPartner.GlobalId`.")
 	@JsonProperty(GLOBAL_ID)
 	String globalId;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.IsActive`.")
+	@ApiModelProperty(value = "This translates to `C_BPartner.IsActive`.")
 	@JsonProperty(ACTIVE)
 	boolean active;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.Name`.")
+	@ApiModelProperty(value = "This translates to `C_BPartner.Name`.")
 	@JsonProperty(NAME)
 	String name;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.Name2`.")
+	@ApiModelProperty(value = "This translates to `C_BPartner.Name2`.")
 	@JsonProperty(NAME_2)
 	@JsonInclude(Include.NON_NULL)
 	String name2;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.Name3`.")
+	@ApiModelProperty(value = "This translates to `C_BPartner.Name3`.")
 	@JsonProperty(NAME_3)
 	@JsonInclude(Include.NON_NULL)
 	String name3;
 
+	@ApiModelProperty(value = "This translates to `C_BPartner.Lookup_Label`.")
+	@JsonProperty(GLN_LOOKUP_LABEL)
+	@JsonInclude(Include.NON_NULL)
+	String glnLookupLabel;
+
 	@ApiModelProperty( //
-			required = false, //
+			//
 			value = "This translates to `C_BPartner.CompanyName`.\n"
 					+ "If set, the the respective `C_BPartner` record will also have `IsCompany='Y'`")
 	@JsonProperty(COMPANY_NAME)
@@ -114,7 +120,7 @@ public class JsonResponseBPartner
 	String companyName;
 
 	@ApiModelProperty( //
-			required = false, //
+			//
 			value = "This translates to `C_BPartner.BPartner_Parent_ID`. It's a this bpartner's central/parent company",//
 			dataType = "java.lang.Integer")
 	@JsonProperty(PARENT_ID)
@@ -122,7 +128,7 @@ public class JsonResponseBPartner
 	JsonMetasfreshId parentId;
 
 	@ApiModelProperty( //
-			required = false, //
+			//
 			value = "This translates to `C_BPartner.Phone2`. It's this bpartner's central phone number")
 	@JsonProperty(PHONE)
 	@JsonInclude(Include.NON_NULL)
@@ -132,33 +138,31 @@ public class JsonResponseBPartner
 	@JsonProperty(LANGUAGE)
 	String language;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.URL`.")
+	@ApiModelProperty(value = "This translates to `C_BPartner.URL`.")
 	@JsonProperty(URL)
 	@JsonInclude(Include.NON_NULL)
 	String url;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.URL2`.")
+	@ApiModelProperty(value = "This translates to `C_BPartner.URL2`.")
 	@JsonProperty(URL_2)
 	@JsonInclude(Include.NON_NULL)
-	private String url2;
+	String url2;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.URL3`.")
+	@ApiModelProperty(value = "This translates to `C_BPartner.URL3`.")
 	@JsonProperty(URL_3)
 	@JsonInclude(Include.NON_NULL)
-	private String url3;
+	String url3;
 
-	@ApiModelProperty( //
-			required = false, //
-			value = "Name of the business partner's group")
+	@ApiModelProperty(value = "Name of the business partner's group")
 	@JsonProperty(GROUP_NAME)
 	@JsonInclude(Include.NON_NULL)
 	String group;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.IsVendor`.")
+	@ApiModelProperty(value = "This translates to `C_BPartner.IsVendor`.")
 	@JsonProperty(VENDOR)
 	boolean vendor;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.IsCustomer`.")
+	@ApiModelProperty(value = "This translates to `C_BPartner.IsCustomer`.")
 	@JsonProperty(CUSTOMER)
 	boolean customer;
 
@@ -180,25 +184,25 @@ public class JsonResponseBPartner
 	@JsonInclude(Include.NON_NULL)
 	String internalName;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.IsCompany`.")
+	@ApiModelProperty(value = "This translates to `C_BPartner.IsCompany`.")
 	@JsonProperty(COMPANY)
 	boolean company;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.VATaxID`.")
+	@ApiModelProperty(value = "This translates to `C_BPartner.VATaxID`.")
 	@JsonProperty(VAT_ID)
 	String vatId;
 
-	@ApiModelProperty(required = false, value = "This translates to `baseUrl/window/{specificBPartnerWindowId}/{C_BPartner_ID}`")
+	@ApiModelProperty(value = "This translates to `baseUrl/window/{specificBPartnerWindowId}/{C_BPartner_ID}`")
 	@JsonProperty(METASFRESH_URL)
 	@JsonInclude(Include.NON_NULL)
 	String metasfreshUrl;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.CreditorId` ")
+	@ApiModelProperty(value = "This translates to `C_BPartner.CreditorId` ")
 	@JsonProperty(CREDITOR_ID)
 	@JsonInclude(Include.NON_NULL)
 	Integer creditorId;
 
-	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.DebtorId` ")
+	@ApiModelProperty(value = "This translates to `C_BPartner.DebtorId` ")
 	@JsonProperty(DEBTOR_ID)
 	@JsonInclude(Include.NON_NULL)
 	Integer debtorId;
@@ -218,6 +222,7 @@ public class JsonResponseBPartner
 			@JsonProperty(NAME) @NonNull final String name,
 			@JsonProperty(NAME_2) @Nullable final String name2,
 			@JsonProperty(NAME_3) @Nullable final String name3,
+			@JsonProperty(GLN_LOOKUP_LABEL) @Nullable final String glnLookupLabel,
 			@JsonProperty(COMPANY_NAME) @Nullable final String companyName,
 			@JsonProperty(PARENT_ID) @Nullable final JsonMetasfreshId parentId,
 			@JsonProperty(PHONE) @Nullable final String phone,
@@ -239,7 +244,7 @@ public class JsonResponseBPartner
 			@JsonProperty(DEBTOR_ID) @Nullable final Integer debtorId,
 
 			//
-			@JsonProperty(CHANGE_INFO) @Nullable JsonChangeInfo changeInfo)
+			@JsonProperty(CHANGE_INFO) @Nullable final JsonChangeInfo changeInfo)
 	{
 		this.metasfreshId = metasfreshId;
 		this.code = code;
@@ -249,6 +254,7 @@ public class JsonResponseBPartner
 		this.name = name;
 		this.name2 = name2;
 		this.name3 = name3;
+		this.glnLookupLabel = glnLookupLabel;
 
 		this.companyName = companyName;
 

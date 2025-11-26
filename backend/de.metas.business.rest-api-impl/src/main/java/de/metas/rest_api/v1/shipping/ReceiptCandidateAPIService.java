@@ -83,7 +83,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.Env;
@@ -115,7 +115,7 @@ class ReceiptCandidateAPIService
 	private final ProductRepository productRepository;
 	private final ReceiptCandidateExportSequenceNumberProvider exportSequenceNumberProvider;
 
-	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ICommodityNumberDAO commodityNumberDAO = Services.get(ICommodityNumberDAO.class);
@@ -179,7 +179,7 @@ class ReceiptCandidateAPIService
 			}
 			else
 			{
-				attributesForASIs = attributeDAO.getAttributesForASIs(idsRegistry.getAsiIds());
+				attributesForASIs = asiBL.getAttributesForASIs(idsRegistry.getAsiIds());
 			}
 
 			final JsonResponseReceiptCandidatesBuilder result = JsonResponseReceiptCandidates.builder()

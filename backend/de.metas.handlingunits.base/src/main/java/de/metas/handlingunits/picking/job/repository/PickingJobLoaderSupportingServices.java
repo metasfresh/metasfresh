@@ -1,21 +1,20 @@
 package de.metas.handlingunits.picking.job.repository;
 
-import com.google.common.collect.SetMultimap;
 import de.metas.bpartner.BPartnerId;
-import de.metas.ean13.EAN13ProductCode;
+import de.metas.gs1.GS1ProductCodes;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
+import de.metas.handlingunits.picking.job.model.ScheduledPackageableList;
+import de.metas.handlingunits.picking.job.model.ScheduledPackageableLocks;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.i18n.ITranslatableString;
-import de.metas.inout.ShipmentScheduleId;
-import de.metas.lock.spi.ExistingLockInfo;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
-import de.metas.picking.api.PackageableList;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.product.ProductCategoryId;
@@ -36,7 +35,7 @@ public interface PickingJobLoaderSupportingServices
 {
 	PickingJobOptions getPickingJobOptions(@Nullable final BPartnerId customerId);
 
-	void warmUpCachesFrom(@NonNull PackageableList items);
+	void warmUpCachesFrom(@NonNull ScheduledPackageableList items);
 
 	void warmUpSalesOrderDocumentNosCache(@NonNull Collection<OrderId> orderIds);
 
@@ -52,7 +51,7 @@ public interface PickingJobLoaderSupportingServices
 
 	String getProductNo(@NonNull ProductId productId);
 
-	Optional<EAN13ProductCode> getEAN13ProductCode(@NonNull ProductId productId, @Nullable BPartnerId customerId);
+	Optional<GS1ProductCodes> getGS1ProductCodes(@NonNull ProductId productId, @Nullable BPartnerId customerId);
 
 	ProductCategoryId getProductCategoryId(@NonNull ProductId productId);
 
@@ -68,5 +67,5 @@ public interface PickingJobLoaderSupportingServices
 
 	HUQRCode getQRCodeByHUId(HuId huId);
 
-	SetMultimap<ShipmentScheduleId, ExistingLockInfo> getLocks(Collection<ShipmentScheduleId> shipmentScheduleIds);
+	ScheduledPackageableLocks getLocks(ShipmentScheduleAndJobScheduleIdSet scheduleIds);
 }

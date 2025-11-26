@@ -26,12 +26,9 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
-import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
-import de.metas.shipping.mpackage.PackageId;
 import de.metas.organization.OrgId;
+import de.metas.product.PackageDimensions;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
-import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfigRepository;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
@@ -40,31 +37,28 @@ import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
-import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
-import de.metas.shipper.gateway.spi.model.PackageDimensions;
+import de.metas.shipper.gateway.spi.model.DeliveryOrderParcel;
 import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
-import de.metas.uom.UomId;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
+
+import static de.metas.shipper.gateway.commons.DeliveryOrderUtil.getPOReferences;
 
 @Service
 @RequiredArgsConstructor
@@ -75,7 +69,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 	@NonNull private final DhlClientConfigRepository clientConfigRepository;
 
 	@Override
-	public String getShipperGatewayId()
+	public ShipperGatewayId getShipperGatewayId()
 	{
 		return DhlConstants.SHIPPER_GATEWAY_ID;
 	}
@@ -89,7 +83,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 	@SuppressWarnings("JavadocReference")
 	@NonNull
 	@Override
-	public DeliveryOrder createDraftDeliveryOrder(@NonNull final CreateDraftDeliveryOrderRequest request)
+	public @NotNull DeliveryOrder createDraftDeliveryOrder(@NonNull final CreateDraftDeliveryOrderRequest request)
 	{
 		final DeliveryOrderKey deliveryOrderKey = request.getDeliveryOrderKey();
 
@@ -176,7 +170,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				shipperId,
 				customerReference,
 				shipperTransportationId,
-				getPackageDimensions(request.getPackageInfos(), shipperId),
+				getPackageDimensions(request.getPackageInfos()),
 				dataBuilder.build());
 
 	}
@@ -197,8 +191,8 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 			@NonNull final PackageDimensions packageDimensions,
 			final CustomDeliveryData customDeliveryData)
 	{
-		final List<DeliveryOrderLine> deliveryOrderLines = packageInfos.stream()
-				.map(packageInfo -> DeliveryOrderLine.builder()
+		final List<DeliveryOrderParcel> deliveryOrderParcels = packageInfos.stream()
+				.map(packageInfo -> DeliveryOrderParcel.builder()
 						.packageDimensions(packageDimensions)
 						.packageId(packageInfo.getPackageId())
 						.grossWeightKg(packageInfo.getWeightInKgOr(DEFAULT_PackageWeightInKg))
@@ -215,27 +209,24 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				.customDeliveryData(customDeliveryData)
 				//
 				// Pickup aka Shipper
-				.pickupAddress(DeliveryOrderUtil.prepareAddressFromLocation(pickupFromLocation)
-						.companyName1(pickupFromBPartner.getName())
-						.companyName2(pickupFromBPartner.getName2())
+				.pickupAddress(DeliveryOrderUtil.prepareAddressFromLocationBP(pickupFromLocation,pickupFromBPartner)
 						.build())
 				.pickupDate(PickupDate.builder()
 						.date(pickupDate)
 						.build())
 				//
 				// Delivery aka Receiver
-				.deliveryAddress(DeliveryOrderUtil.prepareAddressFromLocation(deliverToLocation)
-						.companyName1(deliverToBPartner.getName())
-						.companyName2(deliverToBPartner.getName2())
+				.deliveryAddress(DeliveryOrderUtil.prepareAddressFromLocationBP(deliverToLocation, deliverToBPartner)
 						.bpartnerId(deliverToBPartner.getC_BPartner_ID()) // afaics used only for logging
 						.build())
 				.deliveryContact(ContactPerson.builder()
+						.name(deliverToBPartner.getName())
 						.emailAddress(deliverToBPartner.getEMail())
 						.simplePhoneNumber(deliverToPhoneNumber)
 						.build())
 				//
 				// Delivery content
-				.deliveryOrderLines(deliveryOrderLines)
+				.deliveryOrderParcels(deliveryOrderParcels)
 				//
 				.build();
 	}
@@ -244,35 +235,8 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 	 * Assume that all the packages inside a delivery position are of the same type and therefore have the same size.
 	 */
 	@NonNull
-	private PackageDimensions getPackageDimensions(@NonNull final Set<CreateDraftDeliveryOrderRequest.PackageInfo> packageInfos, final ShipperId shipperId)
+	private PackageDimensions getPackageDimensions(@NonNull final Set<CreateDraftDeliveryOrderRequest.PackageInfo> packageInfos)
 	{
-		final PackageId firstPackageId = packageInfos.iterator().next().getPackageId();
-		final DhlClientConfig clientConfig = clientConfigRepository.getByShipperId(shipperId);
-		return getPackageDimensions(firstPackageId, clientConfig.getLengthUomId());
+		return packageInfos.iterator().next().getPackageDimension();
 	}
-
-	@NonNull
-	private PackageDimensions getPackageDimensions(@NonNull final PackageId packageId, @NonNull final UomId toUomId)
-	{
-		final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
-		final I_M_HU_PackingMaterial packingMaterial = packingMaterialDAO.retrievePackingMaterialOrNull(packageId);
-
-		if (packingMaterial == null)
-		{
-			throw new AdempiereException("There is no packing material for M_Package_HU_ID=" + packageId.getRepoId() + ". Please create a packing material and set its correct dimensions.");
-		}
-
-		return packingMaterialDAO.retrievePackageDimensions(packingMaterial, toUomId);
-	}
-
-	private static String getPOReferences(@NonNull final Collection<CreateDraftDeliveryOrderRequest.PackageInfo> packageInfos)
-	{
-		return packageInfos.stream()
-				.map(CreateDraftDeliveryOrderRequest.PackageInfo::getPoReference)
-				.map(StringUtils::trimBlankToNull)
-				.filter(Objects::nonNull)
-				.distinct()
-				.collect(Collectors.joining(", "));
-	}
-
 }

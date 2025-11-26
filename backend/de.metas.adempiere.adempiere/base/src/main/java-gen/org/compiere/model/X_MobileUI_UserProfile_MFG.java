@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_UserProfile_MFG extends org.compiere.model.PO implements I_MobileUI_UserProfile_MFG, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -942272180L;
+	private static final long serialVersionUID = -734644038L;
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_MFG (final Properties ctx, final int MobileUI_UserProfile_MFG_ID, @Nullable final String trxName)
@@ -47,6 +47,27 @@ public class X_MobileUI_UserProfile_MFG extends org.compiere.model.PO implements
 	public int getAD_User_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_User_ID);
+	}
+
+	/** 
+	 * IsAllowIssuingAnyHU AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISALLOWISSUINGANYHU_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISALLOWISSUINGANYHU_Yes = "Y";
+	/** No = N */
+	public static final String ISALLOWISSUINGANYHU_No = "N";
+	@Override
+	public void setIsAllowIssuingAnyHU (final @Nullable java.lang.String IsAllowIssuingAnyHU)
+	{
+		set_Value (COLUMNNAME_IsAllowIssuingAnyHU, IsAllowIssuingAnyHU);
+	}
+
+	@Override
+	public java.lang.String getIsAllowIssuingAnyHU() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsAllowIssuingAnyHU);
 	}
 
 	/** 

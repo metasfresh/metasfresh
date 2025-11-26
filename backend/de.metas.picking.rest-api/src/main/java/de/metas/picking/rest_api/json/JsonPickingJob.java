@@ -24,6 +24,10 @@ package de.metas.picking.rest_api.json;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.global_qrcodes.JsonDisplayableQRCode;
+import de.metas.handlingunits.picking.config.mobileui.AllowedPickToStructures;
+import de.metas.handlingunits.picking.config.mobileui.PickAttribute;
+import de.metas.handlingunits.picking.config.mobileui.PickAttributesConfig;
+import de.metas.handlingunits.picking.config.mobileui.PickToStructure;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -34,6 +38,7 @@ import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Set;
 
 @Value
 @Builder
@@ -52,10 +57,11 @@ public class JsonPickingJob
 	@NonNull JsonRejectReasonsList qtyRejectedReasons;
 
 	boolean allowSkippingRejectedReason;
-	boolean pickWithNewLU;
-	boolean allowNewTU;
+	@Builder.Default Set<PickToStructure> allowedPickToStructures = AllowedPickToStructures.DEFAULT.toAllowedSet();
+	@Builder.Default Set<PickAttribute> readAttributes = PickAttributesConfig.DEFAULT.getAttributesToReadSet();
 	boolean showPromptWhenOverPicking;
 	boolean anonymousPickHUsOnTheFly;
+	boolean completeJobAutomatically;
 
 	public static JsonPickingJobBuilder builderFrom(@NonNull final PickingJob pickingJob)
 	{

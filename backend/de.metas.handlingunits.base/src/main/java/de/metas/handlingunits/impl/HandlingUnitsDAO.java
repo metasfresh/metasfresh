@@ -63,6 +63,7 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.reservation.HUReservationRepository;
+import de.metas.i18n.AdMessageKey;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
@@ -113,6 +114,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class HandlingUnitsDAO implements IHandlingUnitsDAO
 {
+	private static final AdMessageKey ERR_NoCurrentVersionFound = AdMessageKey.of("de.metas.handlingunits.HUPI.NoCurrentVersionFound");
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final IHUAndItemsDAO defaultHUAndItemsDAO;
@@ -137,6 +140,16 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	public I_M_HU getById(@NonNull final HuId huId)
 	{
 		return load(huId, I_M_HU.class);
+	}
+
+	@Override
+	public boolean existsById(@NonNull final HuId huId)
+	{
+		return queryBL.createQueryBuilder(I_M_HU.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_HU.COLUMNNAME_M_HU_ID, huId)
+				.create()
+				.anyMatch();
 	}
 
 	@Override
@@ -221,6 +234,12 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	public I_M_HU_PI_Item getPackingInstructionItemById(@NonNull final HuPackingInstructionsItemId piItemId)
 	{
 		return loadOutOfTrx(piItemId, I_M_HU_PI_Item.class);
+	}
+
+	@Override
+	public List<I_M_HU_PI_Item> getPackingInstructionItemsByIds(@NonNull final Set<HuPackingInstructionsItemId> piItemIds)
+	{
+		return loadByRepoIdAwaresOutOfTrx(piItemIds, I_M_HU_PI_Item.class);
 	}
 
 	@Override
@@ -724,7 +743,8 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		final I_M_HU_PI_Version piVersion = retrievePICurrentVersionOrNull(pi);
 		if (piVersion == null)
 		{
-			throw new HUException("No current version found for " + pi);
+			throw new HUException(ERR_NoCurrentVersionFound, pi)
+					.markAsUserValidationError();
 		}
 		return piVersion;
 	}
@@ -736,7 +756,8 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		final I_M_HU_PI_Version piVersion = retrievePICurrentVersionOrNull(Env.getCtx(), piId, ITrx.TRXNAME_None);
 		if (piVersion == null)
 		{
-			throw new HUException("No current version found for " + piId);
+			throw new HUException(ERR_NoCurrentVersionFound, piId)
+					.markAsUserValidationError();
 		}
 		return piVersion;
 	}
@@ -1232,6 +1253,18 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.stream()
 				.filter(warehouse -> !huWarehouseIds.contains(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID())))
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+	public Set<LocatorId> getLocatorIds(final List<I_M_HU> hus)
+	{
+		final Set<Integer> locatorRepoIds = hus.stream()
+				.map(I_M_HU::getM_Locator_ID)
+				.filter(locatorRepoId -> locatorRepoId > 0)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+		return warehouseDAO.getLocatorIdsByRepoIds(locatorRepoIds);
 	}
 
 	@Override

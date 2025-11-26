@@ -11,8 +11,10 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.greeting.GreetingRepository;
+import de.metas.money.CurrencyId;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.order.model.interceptor.C_Order;
+import de.metas.order.paymentschedule.service.OrderPayScheduleService;
 import de.metas.shipping.PurchaseOrderToShipperTransportationService;
 import de.metas.user.UserGroupRepository;
 import de.metas.user.UserRepository;
@@ -21,9 +23,12 @@ import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Incoterms;
+import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_M_Shipper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,9 +61,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class OrderTest
 {
-
 	public static final String PARTNER_NAME_1 = "PartnerName1";
 	public static final String ENGLISH = "en_US";
+	private static final int TEST_ORG_ID = 0;
+	private I_C_Incoterms defaultIncoterm;
 
 	@BeforeEach
 	public void init()
@@ -72,13 +78,20 @@ public class OrderTest
 		final OrderLineDetailRepository orderLineDetailRepository = new OrderLineDetailRepository();
 		final BPartnerSupplierApprovalService partnerSupplierApprovalService = new BPartnerSupplierApprovalService(new BPartnerSupplierApprovalRepository(), new UserGroupRepository());
 		final PurchaseOrderToShipperTransportationService purchaseOrderToShipperTransportationService = PurchaseOrderToShipperTransportationService.newInstanceForUnitTesting();
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Order(bpartnerBL, orderLineDetailRepository, documentLocationBL, partnerSupplierApprovalService, purchaseOrderToShipperTransportationService));
+		final OrderPayScheduleService orderPayScheduleService = OrderPayScheduleService.newInstanceForUnitTesting();
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Order(bpartnerBL, orderLineDetailRepository, documentLocationBL, partnerSupplierApprovalService, purchaseOrderToShipperTransportationService, orderPayScheduleService));
+
+		defaultIncoterm = newInstance(I_C_Incoterms.class);
+		defaultIncoterm.setName("System Default Incoterm");
+		defaultIncoterm.setIsDefault(true);
+		defaultIncoterm.setAD_Org_ID(TEST_ORG_ID);
+		defaultIncoterm.setDefaultLocation("Default City");
+		save(defaultIncoterm);
 	}
 
 	@Test
 	public void updateDescriptionFromDocType()
 	{
-
 		final String docTypeName1 = "DocType1";
 		final String descriptionDocType1 = "Description DocType1";
 		final String documentNoteDocType1 = "Document Note DocType1";
@@ -90,6 +103,9 @@ public class OrderTest
 		final I_M_Shipper shipper1 = createShipper();
 
 		final I_C_Order order = createOrder(partner1, shipper1);
+
+		final I_C_PaymentTerm paymentTerm = createPaymentTerm();
+		order.setC_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
 
 		order.setC_DocTypeTarget_ID(docType1.getC_DocType_ID());
 		save(order);
@@ -123,12 +139,26 @@ public class OrderTest
 		return shipper;
 	}
 
+	private I_C_PaymentTerm createPaymentTerm()
+	{
+		final I_C_PaymentTerm paymentTerm = newInstance(I_C_PaymentTerm.class);
+		paymentTerm.setName("Paymentterm1");
+		paymentTerm.setValue("PaymenttermValue1");
+		save(paymentTerm);
+		return paymentTerm;
+	}
+
 	@SuppressWarnings("SameParameterValue")
 	private BPartnerLocationId createPartnerAndLocation(final String name, final String language)
 	{
+		final I_C_BP_Group group = newInstance(I_C_BP_Group.class);
+		group.setName("BPGroup");
+		save(group);
+
 		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
 		partner.setName(name);
 		partner.setAD_Language(language);
+		partner.setC_BP_Group(group);
 
 		save(partner);
 
@@ -161,6 +191,7 @@ public class OrderTest
 		order.setC_BPartner_Location_ID(bPartnerLocationId.getRepoId());
 		order.setM_Shipper_ID(shipper1.getM_Shipper_ID());
 		order.setDatePromised(SystemTime.asTimestamp());
+		order.setC_Currency_ID(CurrencyId.EUR.getRepoId());
 
 		save(order);
 
@@ -177,4 +208,101 @@ public class OrderTest
 
 		Assertions.assertThrows(AdempiereException.class, () -> save(order));
 	}
+
+	@Test
+	public void testSetIncoterms_fromBPartner()
+	{
+		final I_C_BP_Group group = newInstance(I_C_BP_Group.class);
+		group.setName("BPGroup");
+		save(group);
+
+		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
+		bpartner.setName("PartnerWithIncoterms");
+		bpartner.setC_Incoterms_Customer_ID(100);
+		bpartner.setIncotermLocation("City");
+		bpartner.setC_BP_Group(group);
+		save(bpartner);
+
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		order.setIsSOTrx(true);
+
+		save(order);
+
+		Assertions.assertEquals(100, order.getC_Incoterms_ID());
+		Assertions.assertEquals("City", order.getIncotermLocation());
+	}
+
+	@Test
+	public void testSetPOIncoterms_fromBPartner()
+	{
+		final I_C_BP_Group group = newInstance(I_C_BP_Group.class);
+		group.setName("BPGroup");
+		save(group);
+
+		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
+		bpartner.setName("PartnerWithIncoterms");
+		bpartner.setC_Incoterms_Vendor_ID(100);
+		bpartner.setPO_IncotermLocation("City");
+		bpartner.setC_BP_Group(group);
+		save(bpartner);
+
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		order.setIsSOTrx(false);
+
+		save(order);
+
+		Assertions.assertEquals(100, order.getC_Incoterms_ID());
+		Assertions.assertEquals("City", order.getIncotermLocation());
+	}
+
+	@Test
+	public void testSetIncoterms_fallbackToDefault()
+	{
+		final I_C_BP_Group group = newInstance(I_C_BP_Group.class);
+		group.setName("BPGroup");
+		save(group);
+
+		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
+		bpartner.setName("PartnerNoIncoterms");
+		bpartner.setC_Incoterms_Customer_ID(0);
+		bpartner.setC_BP_Group(group);
+		save(bpartner);
+
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		order.setAD_Org_ID(TEST_ORG_ID);
+		order.setIsSOTrx(true);
+
+		save(order);
+
+		Assertions.assertEquals(defaultIncoterm.getC_Incoterms_ID(), order.getC_Incoterms_ID());
+		Assertions.assertEquals("Default City", order.getIncotermLocation());
+	}
+
+	@Test
+	public void testSetPOIncoterms_fallbackToDefault()
+	{
+		final I_C_BP_Group group = newInstance(I_C_BP_Group.class);
+		group.setName("BPGroup");
+		save(group);
+
+		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
+		bpartner.setName("PartnerNoIncoterms");
+		bpartner.setC_Incoterms_Vendor_ID(0);
+		bpartner.setC_BP_Group(group);
+		save(bpartner);
+
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		order.setAD_Org_ID(TEST_ORG_ID);
+		order.setIsSOTrx(false);
+
+		save(order);
+
+		Assertions.assertEquals(defaultIncoterm.getC_Incoterms_ID(), order.getC_Incoterms_ID());
+		Assertions.assertEquals("Default City", order.getIncotermLocation());
+	}
+
 }

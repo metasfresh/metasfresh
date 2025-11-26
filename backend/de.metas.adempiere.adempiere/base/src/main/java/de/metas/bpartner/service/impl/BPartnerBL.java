@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.bpartner.service.impl;
 
 import com.google.common.collect.ImmutableList;
@@ -71,7 +93,6 @@ public class BPartnerBL implements IBPartnerBL
 	/* package */static final String SYSCONFIG_C_BPartner_SOTrx_AllowConsolidateInOut_Override = "C_BPartner.SOTrx_AllowConsolidateInOut_Override";
 	private static final AdMessageKey MSG_SALES_REP_EQUALS_BPARTNER = AdMessageKey.of("SALES_REP_EQUALS_BPARTNER");
 	private static final Logger logger = LogManager.getLogger(IBPartnerBL.class);
-	private final static String SYS_CONFIG_IgnorePartnerVATID = "de.metas.tax.api.impl.TaxDAO.IgnorePartnerVATID";
 
 	private final ILocationDAO locationDAO;
 	private final IBPartnerDAO bpartnersRepo;
@@ -99,6 +120,12 @@ public class BPartnerBL implements IBPartnerBL
 	public I_C_BPartner getById(@NonNull final BPartnerId bpartnerId)
 	{
 		return bpartnersRepo.getById(bpartnerId);
+	}
+
+	@Override
+	public <T extends I_C_BPartner> T getById(@NonNull final BPartnerId bpartnerId, @NonNull Class<T> type)
+	{
+		return bpartnersRepo.getById(bpartnerId, type);
 	}
 
 	@Override
@@ -155,7 +182,7 @@ public class BPartnerBL implements IBPartnerBL
 		for (final BPartnerId bpartnerId : bpartnerIds)
 		{
 			final I_C_BPartner bpartner = bpartners.get(bpartnerId);
-			String name = bpartner != null ? bpartner.getName() : unknownBPName(bpartnerId);
+			final String name = bpartner != null ? bpartner.getName() : unknownBPName(bpartnerId);
 			result.put(bpartnerId, name);
 		}
 
@@ -174,6 +201,12 @@ public class BPartnerBL implements IBPartnerBL
 				.adLanguage(bpartner.getAD_Language())
 				.build();
 		return addressBuilder.buildBPartnerFullAddressString(bpartner, bpLocation, locationId, bpContact);
+	}
+
+	@Override
+	public User getContactById(final UserId userId)
+	{
+		return userRepository.getByIdInTrx(userId);
 	}
 
 	@Override
@@ -463,6 +496,11 @@ public class BPartnerBL implements IBPartnerBL
 	@Override
 	public Optional<BPartnerId> getBPartnerIdForModel(@Nullable final Object model)
 	{
+		if (model instanceof User)
+		{
+			return Optional.ofNullable(((User)model).getBpartnerId());
+		}
+
 		final IBPartnerAware bpartnerAware = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(model, IBPartnerAware.class);
 		return bpartnerAware != null
 				? BPartnerId.optionalOfRepoId(bpartnerAware.getC_BPartner_ID())
@@ -530,6 +568,26 @@ public class BPartnerBL implements IBPartnerBL
 			if (groupDiscountSchemaId > 0)
 			{
 				return groupDiscountSchemaId; // we are done
+			}
+
+			// didn't get the schema yet; now we try to get the discount schema from the parent C_BP_Group
+			final BPGroupId parentBpGroupId = BPGroupId.ofRepoIdOrNull(bpGroup.getParent_BP_Group_ID());
+			if (parentBpGroupId != null)
+			{
+				final I_C_BP_Group parentBpGroup = bpGroupDAO.getById(parentBpGroupId);
+				final int parentGroupDiscountSchemaId;
+				if (soTrx.isSales())
+				{
+					parentGroupDiscountSchemaId = parentBpGroup.getM_DiscountSchema_ID();
+				}
+				else
+				{
+					parentGroupDiscountSchemaId = parentBpGroup.getPO_DiscountSchema_ID();
+				}
+				if (parentGroupDiscountSchemaId > 0)
+				{
+					return parentGroupDiscountSchemaId; // we are done
+				}
 			}
 		}
 
@@ -670,10 +728,13 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public Optional<PaymentRule> getPaymentRuleForBPartner(@NonNull final BPartnerId bpartnerId)
+	public Optional<PaymentRule> getPaymentRuleForBPartner(@NonNull final BPartnerId bpartnerId, @NonNull final SOTrx soTrx)
 	{
 		final I_C_BPartner bpartner = bpartnersRepo.getById(bpartnerId);
-		final Optional<PaymentRule> bpartnerPaymentRule = PaymentRule.optionalOfCode(bpartner.getPaymentRule());
+
+		final Optional<PaymentRule> bpartnerPaymentRule = PaymentRule.optionalOfCode( soTrx.isSales()
+				? bpartner.getPaymentRule()
+				: bpartner.getPaymentRulePO());
 		if (bpartnerPaymentRule.isPresent())
 		{
 			return bpartnerPaymentRule;
@@ -681,9 +742,10 @@ public class BPartnerBL implements IBPartnerBL
 		//
 		// No payment rule in BP. Fallback to group.
 		final BPGroupId bpGroupId = BPGroupId.ofRepoId(bpartner.getC_BP_Group_ID());
-		final IBPGroupDAO bpGroupDAO = Services.get(IBPGroupDAO.class);
 		final I_C_BP_Group bpGroup = bpGroupDAO.getById(bpGroupId);
-		return PaymentRule.optionalOfCode(bpGroup.getPaymentRule());
+		return PaymentRule.optionalOfCode( soTrx.isSales()
+				? bpGroup.getPaymentRule()
+				: bpGroup.getPaymentRulePO());
 	}
 
 	@Override
@@ -885,5 +947,24 @@ public class BPartnerBL implements IBPartnerBL
 
 		}
 		return Optional.empty();
+	}
+
+	@Override
+	public boolean isInvoiceEmailCcToMember(@NonNull final BPartnerId bpartnerId)
+	{
+		final I_C_BPartner bpartner = getById(bpartnerId);
+		return bpartner.isInvoiceEmailCcToMember();
+	}
+	
+	@Override
+	public I_C_BPartner_Location getBPartnerLocationByIdEvenInactive(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		return bpartnersRepo.getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
+	}
+
+	@Override
+	public List<I_C_BPartner_Location> getBPartnerLocationsByIds(final Set<BPartnerLocationId> bpartnerLocationIds)
+	{
+		return bpartnersRepo.retrieveBPartnerLocationsByIds(bpartnerLocationIds);
 	}
 }

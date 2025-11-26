@@ -12,11 +12,15 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mmovement.MovementId;
+import org.adempiere.warehouse.LocatorId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_DD_Order;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 class DDOrderDropToCommand
 {
@@ -27,7 +31,8 @@ class DDOrderDropToCommand
 
 	// Params
 	@NonNull private final Instant movementDate = SystemTime.asInstant();
-	@NonNull private final DDOrderMoveScheduleId scheduleId;
+	@NonNull private final Set<DDOrderMoveScheduleId> scheduleIds;
+	@Nullable private final LocatorId dropToLocatorId;
 
 	@Builder
 	private DDOrderDropToCommand(
@@ -41,35 +46,35 @@ class DDOrderDropToCommand
 		this.ddOrderMoveScheduleRepository = ddOrderMoveScheduleRepository;
 		this.ppOrderSourceHUService = ppOrderSourceHUService;
 
-		this.scheduleId = request.getScheduleId();
+		this.scheduleIds = request.getScheduleIds();
+		this.dropToLocatorId = request.getDropToLocatorId();
 	}
 
-	public DDOrderMoveSchedule execute()
+	public List<DDOrderMoveSchedule> execute()
 	{
 		return trxManager.callInThreadInheritedTrx(this::executeInTrx);
 	}
 
-	private DDOrderMoveSchedule executeInTrx()
+	private List<DDOrderMoveSchedule> executeInTrx()
 	{
-		trxManager.assertThreadInheritedTrxExists();
+		return ddOrderMoveScheduleRepository.updateByIds(scheduleIds, this::processSchedule);
+	}
 
-		final DDOrderMoveSchedule schedule = ddOrderMoveScheduleRepository.getById(scheduleId);
-		schedule.assertNotDroppedTo();
-		schedule.assertPickedFrom();
+	private void processSchedule(final DDOrderMoveSchedule schedule)
+	{
+		schedule.assertInTransit();
 
 		//
 		// generate movement InTransit -> DropTo Locator
-		final MovementId dropToMovementId = createDropToMovement(schedule);
+		final LocatorId dropToLocatorId = this.dropToLocatorId != null ? this.dropToLocatorId : schedule.getDropToLocatorId();
+		final MovementId dropToMovementId = createDropToMovement(schedule, dropToLocatorId);
 
 		//
 		// update the schedule
-		schedule.markAsDroppedTo(dropToMovementId);
-		ddOrderMoveScheduleRepository.save(schedule);
-
-		return schedule;
+		schedule.markAsDroppedTo(dropToLocatorId, dropToMovementId);
 	}
 
-	private MovementId createDropToMovement(@NonNull final DDOrderMoveSchedule schedule)
+	private MovementId createDropToMovement(@NonNull final DDOrderMoveSchedule schedule, @NonNull final LocatorId dropToLocatorId)
 	{
 		final DDOrderMoveSchedulePickedHUs pickedHUs = Objects.requireNonNull(schedule.getPickedHUs());
 
@@ -78,7 +83,7 @@ class DDOrderDropToCommand
 		final HUMovementGenerateRequest request = DDOrderMovementHelper.prepareMovementGenerateRequest(ddOrder, schedule.getDdOrderLineId())
 				.movementDate(movementDate)
 				.fromLocatorId(pickedHUs.getInTransitLocatorId())
-				.toLocatorId(schedule.getDropToLocatorId())
+				.toLocatorId(dropToLocatorId)
 				.huIdsToMove(pickedHUs.getActualHUIdsPicked())
 				.build();
 

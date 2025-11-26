@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -51,12 +51,15 @@ import de.metas.document.location.DocumentLocation;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
+import de.metas.incoterms.IIncotermsDAO;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.order.BPartnerOrderParams;
 import de.metas.order.BPartnerOrderParamsRepository;
 import de.metas.order.BPartnerOrderParamsRepository.BPartnerOrderParamsQuery;
@@ -72,6 +75,7 @@ import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
@@ -83,6 +87,7 @@ import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.request.RequestTypeId;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.tax.api.Tax;
 import de.metas.user.User;
 import de.metas.user.UserId;
@@ -95,6 +100,7 @@ import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryAggregateBuilder;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -106,6 +112,8 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Incoterms;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
@@ -159,6 +167,7 @@ public class OrderBL implements IOrderBL
 	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	private final IIncotermsDAO incotermsDAO = Services.get(IIncotermsDAO.class);
 
 	@Override
 	public I_C_Order getById(@NonNull final OrderId orderId)
@@ -322,7 +331,7 @@ public class OrderBL implements IOrderBL
 		final CountryId countryId = partnerBL.getCountryId(shipToBPLocationId);
 
 		final IPriceListDAO priceListDAO = this.priceListDAO;
-		return priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, countryId, soTrx);
+		return priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, countryId, soTrx, null);
 	}
 
 	@Override
@@ -479,7 +488,6 @@ public class OrderBL implements IOrderBL
 
 		final I_C_DocType docType = docTypeBL.getById(docTypeId);
 
-
 		@Nullable
 		final CopyDescriptionAndDocumentNote copyDescriptionAndDocumentNote = CopyDescriptionAndDocumentNote.ofNullableCode(docType.getCopyDescriptionAndDocumentNote());
 
@@ -517,12 +525,11 @@ public class OrderBL implements IOrderBL
 		return params.flatMap(BPartnerOrderParams::getDeliveryViaRule);
 	}
 
-	private Optional<BPartnerOrderParams> retrieveBPartnerParams(@NonNull final I_C_Order orderRecord)
+	@Override
+	public Optional<BPartnerOrderParams> retrieveBPartnerParams(@NonNull final I_C_Order orderRecord)
 	{
 		final BPartnerId shipBPartnerId = BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_ID());
-		final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(coalesce(
-				orderRecord.getBill_BPartner_ID(),
-				orderRecord.getC_BPartner_ID()));
+		final BPartnerId billBPartnerId = coalesce(BPartnerId.ofRepoIdOrNull(orderRecord.getBill_BPartner_ID()), shipBPartnerId);
 		if (shipBPartnerId == null || billBPartnerId == null)
 		{
 			return Optional.empty(); // orderRecord is not yet ready
@@ -698,9 +705,9 @@ public class OrderBL implements IOrderBL
 	{
 		// TODO figure out what partnerBL.extractShipToLocation(bp); does
 		final I_C_BPartner_Location shipToLocationId = bpartnerDAO.retrieveBPartnerLocation(BPartnerLocationQuery.builder()
-				.bpartnerId(BPartnerId.ofRepoId(bp.getC_BPartner_ID()))
-				.type(Type.SHIP_TO)
-				.build());
+																									.bpartnerId(BPartnerId.ofRepoId(bp.getC_BPartner_ID()))
+																									.type(Type.SHIP_TO)
+																									.build());
 		if (shipToLocationId == null)
 		{
 			logger.error("MOrder.setBPartner - Has no Ship To Address: {}", bp);
@@ -747,11 +754,11 @@ public class OrderBL implements IOrderBL
 		OrderDocumentLocationAdapterFactory
 				.billLocationAdapter(order)
 				.setFrom(DocumentLocation.builder()
-						.bpartnerId(newBPartnerLocationId.getBpartnerId())
-						.bpartnerLocationId(newBPartnerLocationId.getBpartnerLocationId())
-						.locationId(newBPartnerLocationId.getLocationCaptureId())
-						.contactId(newContactId)
-						.build());
+								 .bpartnerId(newBPartnerLocationId.getBpartnerId())
+								 .bpartnerLocationId(newBPartnerLocationId.getBpartnerLocationId())
+								 .locationId(newBPartnerLocationId.getLocationCaptureId())
+								 .contactId(newContactId)
+								 .build());
 
 		return true; // found it
 	}
@@ -907,6 +914,17 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+	@Nullable
+	public BPartnerId getEffectiveDropshipPartnerId(@NonNull final I_C_Order orderRecord)
+	{
+		if (orderRecord.isDropShip() && orderRecord.getDropShip_BPartner_ID() > 0)
+		{
+			return BPartnerId.ofRepoId(orderRecord.getDropShip_BPartner_ID());
+		}
+		return BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_ID());
+	}
+
+	@Override
 	@NonNull
 	public BPartnerContactId getBillToContactId(@NonNull final I_C_Order order)
 	{
@@ -1007,6 +1025,13 @@ public class OrderBL implements IOrderBL
 
 		final DocTypeId docTypeId = getDocTypeIdEffectiveOrNull(order);
 		return docTypeId != null && docTypeBL.isSalesProposalOrQuotation(docTypeId);
+	}
+
+	@Override
+	public boolean isSalesOrder(@NonNull final I_C_Order order)
+	{
+		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
+		return soTrx.isSales();
 	}
 
 	@Override
@@ -1200,6 +1225,13 @@ public class OrderBL implements IOrderBL
 	public String getLocationEmail(@NonNull final OrderId orderId)
 	{
 		final I_C_Order order = orderDAO.getById(orderId);
+		return getLocationEmail(order);
+	}
+
+	@Nullable
+	@Override
+	public String getLocationEmail(@NonNull final I_C_Order order)
+	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
 
 		//
@@ -1232,10 +1264,7 @@ public class OrderBL implements IOrderBL
 		{
 			final I_C_BPartner_Location billLocationRecord = bpartnerDAO.getBPartnerLocationById(billBPLocationId);
 			final String billLocationEmail = billLocationRecord != null ? StringUtils.trimBlankToNull(billLocationRecord.getEMail()) : null;
-			if (billLocationEmail != null)
-			{
-				return billLocationEmail;
-			}
+			return billLocationEmail;
 		}
 
 		//
@@ -1266,6 +1295,46 @@ public class OrderBL implements IOrderBL
 	public Optional<PPCostCollectorId> getPPCostCollectorId(@NonNull final OrderLineId orderLineId)
 	{
 		return orderDAO.getPPCostCollectorId(orderLineId);
+	}
+
+	@Override
+	public void setIncoterms(@NonNull final I_C_Order order)
+	{
+		final org.compiere.model.I_C_BPartner bpartner = getBPartner(order);
+		if (bpartner == null)
+		{
+			return;
+		}
+
+		int incotermsRecordId;
+		String incotermLocation;
+
+		if (order.isSOTrx())
+		{
+			incotermsRecordId = bpartner.getC_Incoterms_Customer_ID();
+			incotermLocation = bpartner.getIncotermLocation();
+		}
+		else
+		{
+			incotermsRecordId = bpartner.getC_Incoterms_Vendor_ID();
+			incotermLocation = bpartner.getPO_IncotermLocation();
+		}
+
+		if (incotermsRecordId <= 0)
+		{
+			final I_C_Incoterms defaultIncoterms = incotermsDAO.getDefaultIncoterms(OrgId.ofRepoId(order.getAD_Org_ID()));
+			if (defaultIncoterms != null)
+			{
+				incotermsRecordId = defaultIncoterms.getC_Incoterms_ID();
+				incotermLocation = defaultIncoterms.getDefaultLocation();
+			}
+		}
+
+		if (incotermsRecordId > 0)
+		{
+			order.setC_Incoterms_ID(incotermsRecordId);
+			order.setIncotermLocation(incotermLocation);
+		}
 	}
 
 	@Override
@@ -1401,5 +1470,46 @@ public class OrderBL implements IOrderBL
 	private ShipperId getPartnerShipperId(@NonNull final BPartnerId partnerId)
 	{
 		return partnerDAO.getShipperId(partnerId);
+	}
+
+	@Override
+	public PaymentTermId getPaymentTermId(@NonNull final I_C_Order orderRecord)
+	{
+		return PaymentTermId.ofRepoId(orderRecord.getC_PaymentTerm_ID());
+	}
+
+	@Override
+	public Money getGrandTotal(@NonNull final I_C_Order order)
+	{
+		final BigDecimal grandTotal = order.getGrandTotal();
+		return Money.of(grandTotal, CurrencyId.ofRepoId(order.getC_Currency_ID()));
+	}
+
+	@Override
+	public void save(final I_C_Order order)
+	{
+		orderDAO.save(order);
+	}
+
+	@Override
+	public void syncDatesFromTransportOrder(@NonNull final OrderId orderId, @NonNull final I_M_ShipperTransportation transportOrder)
+	{
+		final I_C_Order order = getById(orderId);
+		order.setBLDate(transportOrder.getBLDate());
+		order.setETA(transportOrder.getETA());
+		save(order);
+	}
+
+	@Override
+	public void syncDateInvoicedFromInvoice(@NonNull final OrderId orderId, @NonNull final I_C_Invoice invoice)
+	{
+		final I_C_Order order = getById(orderId);
+		order.setInvoiceDate(invoice.getDateInvoiced());
+		save(order);
+	}
+
+	public List<I_C_Order> getByQueryFilter(final IQueryFilter<I_C_Order> queryFilter)
+	{
+		return orderDAO.getByQueryFilter(queryFilter);
 	}
 }

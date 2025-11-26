@@ -384,6 +384,33 @@ public interface I_M_Picking_Job
 	String COLUMNNAME_M_PickingSlot_ID = "M_PickingSlot_ID";
 
 	/**
+	 * Set TU.
+	 * Trading Unit
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_TU_HU_ID (int M_TU_HU_ID);
+
+	/**
+	 * Get TU.
+	 * Trading Unit
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_TU_HU_ID();
+
+	@Nullable de.metas.handlingunits.model.I_M_HU getM_TU_HU();
+
+	void setM_TU_HU(@Nullable de.metas.handlingunits.model.I_M_HU M_TU_HU);
+
+	ModelColumn<I_M_Picking_Job, de.metas.handlingunits.model.I_M_HU> COLUMN_M_TU_HU_ID = new ModelColumn<>(I_M_Picking_Job.class, "M_TU_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
+	String COLUMNNAME_M_TU_HU_ID = "M_TU_HU_ID";
+
+	/**
 	 * Set Packing Instruction (TU).
 	 *
 	 * <br>Type: Table

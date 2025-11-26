@@ -118,6 +118,7 @@ services:
     image: $mfregistry/metas-mobile-test:$mfversion
     volumes:
       - ./playwright-report:/app/playwright-report
+      - ./test-results:/app/test-results
     environment:
       - "FRONTEND_BASE_URL=http://mobile:80/mobile"
       - "CHROMIUM_FLAGS=--unsafely-treat-insecure-origin-as-secure=http://app-test:8282 --disable-web-security --ignore-certificate-errors"
