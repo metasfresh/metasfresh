@@ -152,6 +152,7 @@ services:
     image: $mfregistry/metas-frontend-test:$mfversion
     volumes:
       - ./playwright-report:/app/playwright-report
+      - ./test-results:/app/test-results
     environment:
       - "FRONTEND_BASE_URL=http://webui:80"
       - "TESTING_API_BASE_URL=http://app-test:8282/api/v2"
