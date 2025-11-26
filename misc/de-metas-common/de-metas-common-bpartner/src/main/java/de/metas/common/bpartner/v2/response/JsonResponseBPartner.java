@@ -160,7 +160,9 @@ public class JsonResponseBPartner
 	@JsonInclude(Include.NON_NULL)
 	String url3;
 
-	@ApiModelProperty(value = "Name of the business partner's group")
+	@Deprecated
+	@ApiModelProperty(value = "Name of the business partner's group",
+			notes = "DEPRECATED: This field is deprecated. Please use 'bpGroup' instead.")
 	@JsonProperty(GROUP_NAME)
 	@JsonInclude(Include.NON_NULL)
 	String group;
