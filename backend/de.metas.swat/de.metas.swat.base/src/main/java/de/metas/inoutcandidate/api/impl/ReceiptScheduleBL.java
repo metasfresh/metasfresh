@@ -572,18 +572,18 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 				.create()
 				.iterateAndStream()
 				.forEach(record ->
-				{
-					allCounter.incrementAndGet();
-					if (Objects.equals(record.getExportStatus(), newExportStatus.getCode()))
-					{
-						return;
-					}
-					record.setExportStatus(newExportStatus.getCode());
-					updateCanBeExportedFrom(record);
-					InterfaceWrapperHelper.saveRecord(record);
+						 {
+							 allCounter.incrementAndGet();
+							 if (Objects.equals(record.getExportStatus(), newExportStatus.getCode()))
+							 {
+								 return;
+							 }
+							 record.setExportStatus(newExportStatus.getCode());
+							 updateCanBeExportedFrom(record);
+							 InterfaceWrapperHelper.saveRecord(record);
 
-					updatedCounter.incrementAndGet();
-				});
+							 updatedCounter.incrementAndGet();
+						 });
 
 		Loggables.withLogger(logger, Level.INFO).addLog("Updated {} out of {} M_ReceiptSchedules", updatedCounter.get(), allCounter.get());
 	}
@@ -757,13 +757,14 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	}
 
 	@Override
-	public void updateMovementDateForForShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId, @NonNull final LocalDate datePromised)
+	public void updateMovementDateForShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId, @NonNull final LocalDate movementDate)
 	{
 		final ICompositeQueryUpdater<I_M_ReceiptSchedule> updater = queryBL.createCompositeQueryUpdater(I_M_ReceiptSchedule.class)
-				.addSetColumnValue(I_M_ReceiptSchedule.COLUMNNAME_MovementDate, datePromised);
+				.addSetColumnValue(I_M_ReceiptSchedule.COLUMNNAME_MovementDate, movementDate);
 
 		final int updateCount = receiptScheduleDAO
 				.createQueryForShipperTransportation(shipperTransportationId)
+				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_Processed, false)
 				.create()
 				.update(updater);
 

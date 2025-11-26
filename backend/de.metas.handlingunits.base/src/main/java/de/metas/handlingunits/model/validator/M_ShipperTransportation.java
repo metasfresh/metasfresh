@@ -47,7 +47,6 @@ import org.compiere.util.TimeUtil;
 @Validator(I_M_ShipperTransportation.class)
 public class M_ShipperTransportation
 {
-
 	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
@@ -81,7 +80,7 @@ public class M_ShipperTransportation
 	{
 		if (transportOrder.getETA() != null)
 		{
-			receiptScheduleBL.updateMovementDateForForShipperTransportation(ShipperTransportationId.ofRepoId(transportOrder.getM_ShipperTransportation_ID()), TimeUtil.asLocalDate(transportOrder.getETA()));
+			receiptScheduleBL.updateMovementDateForShipperTransportation(ShipperTransportationId.ofRepoId(transportOrder.getM_ShipperTransportation_ID()), TimeUtil.asLocalDate(transportOrder.getETA()));
 		}
 	}
 

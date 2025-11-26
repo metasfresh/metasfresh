@@ -234,5 +234,5 @@ public interface IReceiptScheduleBL extends ISingletonService
 
 	List<ReceiptScheduleId> retainLUQtySchedules(List<ReceiptScheduleId> receiptSchedules);
 
-	void updateMovementDateForForShipperTransportation(@NonNull ShipperTransportationId shipperTransportationId, @NonNull LocalDate datePromised);
+	void updateMovementDateForShipperTransportation(@NonNull ShipperTransportationId shipperTransportationId, @NonNull LocalDate movementDate);
 }
