@@ -1,0 +1,21 @@
+{
+  "name": "@metasfresh/e2e-frontend-webui",
+  "version": "1.0.0",
+  "description": "Playwright E2E tests for metasfresh frontend web UI",
+  "main": "index.js",
+  "license": "GPL-2.0",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:report": "playwright show-report playwright-report/html"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.50.1",
+    "@types/node": "^22.13.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
