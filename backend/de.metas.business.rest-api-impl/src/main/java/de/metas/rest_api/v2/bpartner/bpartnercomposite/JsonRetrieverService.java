@@ -413,13 +413,15 @@ public class JsonRetrieverService
 			customerIncoterms = incotermsDAO.getById(bpartner.getCustomerIncotermsId());
 		}
 
+		final JsonResponseBPGroup jsonBPGroup = toJson(bpartner.getGroupId());
+
 		return JsonResponseBPartner.builder()
 				.active(bpartner.isActive())
 				.code(bpartner.getValue())
 				.globalId(bpartner.getGlobalId())
 				.companyName(bpartner.getCompanyName())
-				.group(convertIdToGroupName(bpartner.getGroupId()))
-				.bpGroup(toJson(bpartner.getGroupId()))
+				.group(jsonBPGroup != null ? jsonBPGroup.getName() : null)
+				.bpGroup(jsonBPGroup)
 				.language(Language.asLanguageStringOrNull(bpartner.getLanguage()))
 				.metasfreshId(JsonMetasfreshId.ofOrNull(BPartnerId.toRepoId(bpartner.getId())))
 				.name(bpartner.getName())
@@ -435,7 +437,7 @@ public class JsonRetrieverService
 				.company(bpartner.isCompany())
 				.salesPartnerCode(bpartner.getSalesPartnerCode())
 				.responseSalesRep(getJsonResponseSalesRep(bpartner.getSalesRep()))
-				.salesRepContact(getJsonResponseSalesRepContact(bpartner.getSalesRepContact()))
+				.salesRepContact(toJson(bpartner.getSalesRepContact()))
 				.paymentRule(Optional.ofNullable(bpartner.getPaymentRule())
 						.map(PaymentRule::getCode)
 						.map(JSONPaymentRule::ofCode)
@@ -489,16 +491,6 @@ public class JsonRetrieverService
 		return jsonChangeInfo.build();
 	}
 
-	@Nullable
-	private String convertIdToGroupName(@Nullable final BPGroupId bpGroupId)
-	{
-		if (bpGroupId == null)
-		{
-			return null;
-		}
-		final BPGroup bpGroup = bpGroupRepository.getbyId(bpGroupId);
-		return bpGroup.getName();
-	}
 
 	@Nullable
 	private JsonResponseBPGroup toJson(@Nullable final BPGroupId bpGroupId)
@@ -971,7 +963,7 @@ public class JsonRetrieverService
 	}
 
 	@Nullable
-	private JsonResponseSalesRepContact getJsonResponseSalesRepContact(@Nullable final SalesRepContact salesRepContact)
+	private JsonResponseSalesRepContact toJson(@Nullable final SalesRepContact salesRepContact)
 	{
 		if (salesRepContact == null)
 		{
