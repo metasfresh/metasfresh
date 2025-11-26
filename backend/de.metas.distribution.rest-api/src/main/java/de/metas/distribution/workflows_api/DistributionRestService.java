@@ -206,6 +206,7 @@ public class DistributionRestService
 					.onlyJobId(jobId)
 					.onlyStepId(event.getDistributionStepId())
 					.dropToQRCode(event.getDropToNonNull().getQrCode())
+					.completeJobsIfFullyMoved(false)
 					.build().execute()
 					.getJobById(jobId);
 		}
@@ -231,6 +232,7 @@ public class DistributionRestService
 		newDropToCommand()
 				.userId(callerId)
 				.dropToQRCode(request.getDropToQRCode())
+				.completeJobsIfFullyMoved(true)
 				.build().execute();
 	}
 
@@ -242,6 +244,13 @@ public class DistributionRestService
 				.ddOrderMoveScheduleService(ddOrderMoveScheduleService)
 				.loadingSupportServices(loadingSupportServices)
 				.locatorScannedCodeResolver(locatorScannedCodeResolver);
+	}
+
+	public DistributionJob complete(@NonNull final DistributionJobId jobId, @NonNull final UserId callerId)
+	{
+		final DistributionJob job = getJobById(jobId);
+		job.assertCanEdit(callerId);
+		return complete(job);
 	}
 
 	public DistributionJob complete(@NonNull final DistributionJob job)

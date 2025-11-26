@@ -29,6 +29,7 @@ class MobileConfigDistributionCommand
 	public JsonMobileConfigResponse.Distribution execute()
 	{
 		final MobileUIDistributionConfig.MobileUIDistributionConfigBuilder newConfigBuilder = mobileDistributionConfigRepository.getConfig().toBuilder();
+		newConfigBuilder.isCompleteJobAutomatically(request.getCompleteJobAutomatically() != null && request.getCompleteJobAutomatically());
 		if (request.getAllowPickingAnyHU() != null)
 		{
 			newConfigBuilder.allowPickingAnyHU(request.getAllowPickingAnyHU());
@@ -51,6 +52,7 @@ class MobileConfigDistributionCommand
 
 		return JsonMobileConfigResponse.Distribution.builder()
 				.allowPickingAnyHU(newConfig.isAllowPickingAnyHU())
+				.completeJobAutomatically(newConfig.isCompleteJobAutomatically())
 				.build();
 	}
 

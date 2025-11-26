@@ -162,6 +162,7 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 				.readAttributes(pickingJobOptions.getPickAttributes().getAttributesToReadSet())
 				.showPromptWhenOverPicking(pickingJobOptions.isShowConfirmationPromptWhenOverPick())
 				.anonymousPickHUsOnTheFly(pickingJob.isAnonymousPickHUsOnTheFly())
+				.completeJobAutomatically(pickingJobOptions.getCompleteJobAutomatically().isTrue())
 				.build();
 	}
 

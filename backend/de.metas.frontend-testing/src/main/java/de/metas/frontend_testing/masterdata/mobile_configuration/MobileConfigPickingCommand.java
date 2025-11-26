@@ -69,6 +69,7 @@ class MobileConfigPickingCommand
 				.allowPickingAnyCustomer(profile.isAllowPickingAnyCustomer())
 				.allowPickingAnyHU(profile.getDefaultPickingJobOptions().isAllowPickingAnyHU())
 				.createShipmentPolicy(profile.getDefaultPickingJobOptions().getCreateShipmentPolicy())
+				.completeJobAutomatically(profile.getDefaultPickingJobOptions().getCompleteJobAutomatically().toBooleanOrNull())
 				.alwaysSplitHUsEnabled(profile.getDefaultPickingJobOptions().isAlwaysSplitHUsEnabled())
 				.shipOnCloseLU(profile.getDefaultPickingJobOptions().isShipOnCloseLU())
 				.pickTo(profile.getDefaultPickingJobOptions().getAllowedPickToStructures().toAllowedSet())
@@ -93,10 +94,13 @@ class MobileConfigPickingCommand
 		{
 			builder.isAllowPickingAnyHU(from.getAllowPickingAnyHU());
 		}
+
 		if (from.getCreateShipmentPolicy() != null)
 		{
 			builder.createShipmentPolicy(from.getCreateShipmentPolicy());
 		}
+		builder.completeJobAutomatically(OptionalBoolean.ofBoolean(from.getCompleteJobAutomatically() != null && from.getCompleteJobAutomatically()));
+
 		if (from.getAlwaysSplitHUsEnabled() != null)
 		{
 			builder.isAlwaysSplitHUsEnabled(from.getAlwaysSplitHUsEnabled());

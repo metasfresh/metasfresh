@@ -289,4 +289,11 @@ public class PickingRestController
 		final PickingJobQtyAvailable qtyAvailable = pickingMobileApplication.getQtyAvailable(wfProcessId, getLoggedUserId());
 		return JsonPickingJobQtyAvailable.of(qtyAvailable);
 	}
+
+	@PostMapping("/job/{wfProcessId}/complete")
+	public WFProcess complete(@PathVariable("wfProcessId") final String wfProcessIdStr)
+	{
+		assertApplicationAccess();
+		return pickingMobileApplication.complete(WFProcessId.ofString(wfProcessIdStr), getLoggedUserId());
+	}
 }

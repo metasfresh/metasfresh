@@ -37,8 +37,11 @@ import java.util.function.UnaryOperator;
 @RequiredArgsConstructor
 public class DistributionMobileApplication implements WorkflowBasedMobileApplication
 {
+	// NOTE to dev: keep in sync with misc/services/mobile-webui/mobile-webui-frontend/src/apps/distribution/constants.js  
 	@VisibleForTesting
 	public static final MobileApplicationId APPLICATION_ID = MobileApplicationId.ofString("distribution");
+	private static final WFActivityId ACTIVITY_ID_MoveLines = WFActivityId.ofString("MoveLines");
+	private static final WFActivityId ACTIVITY_ID_Complete = WFActivityId.ofString("Complete");
 
 	@NonNull private final DistributionRestService distributionRestService;
 	@NonNull private final DistributionWorkflowLaunchersProvider wfLaunchersProvider;
@@ -98,13 +101,13 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 				.document(job)
 				.activities(ImmutableList.of(
 						WFActivity.builder()
-								.id(WFActivityId.ofString("A1"))
+								.id(ACTIVITY_ID_MoveLines)
 								.caption(TranslatableStrings.anyLanguage("Move"))
 								.wfActivityType(MoveWFActivityHandler.HANDLED_ACTIVITY_TYPE)
 								.status(job.getStatus())
 								.build(),
 						WFActivity.builder()
-								.id(WFActivityId.ofString("A2"))
+								.id(ACTIVITY_ID_Complete)
 								.caption(TranslatableStrings.adRefList(IDocument.ACTION_AD_Reference_ID, IDocument.ACTION_Complete))
 								.wfActivityType(CompleteDistributionWFActivityHandler.HANDLED_ACTIVITY_TYPE)
 								.status(CompleteDistributionWFActivityHandler.computeActivityState(job))
@@ -228,5 +231,11 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 	public void logout(final @NonNull UserId userId)
 	{
 		abortAll(userId);
+	}
+
+	public WFProcess complete(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
+	{
+		final DistributionJob job = distributionRestService.complete(DistributionJobId.ofWFProcessId(wfProcessId), callerId);
+		return toWFProcess(job);
 	}
 }
