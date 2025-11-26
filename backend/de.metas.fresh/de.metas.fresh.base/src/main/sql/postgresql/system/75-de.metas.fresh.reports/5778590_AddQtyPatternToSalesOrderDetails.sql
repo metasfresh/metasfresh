@@ -93,7 +93,7 @@ SELECT ol.line,
        p.weight,
        report.getPricePatternForJasper(o.m_pricelist_id)      AS PricePattern,
        report.getAmountPatternForJasper(c.c_currency_id)      AS AmountPattern,
-       report.getPricePatternForJasper(c.c_currency_id)       AS QtyPattern,
+       report.getQtyPattern(uom.StdPrecision)                  AS QtyPattern,
        ol.iswithoutcharge,
        ol.reason
 FROM C_OrderLine ol
