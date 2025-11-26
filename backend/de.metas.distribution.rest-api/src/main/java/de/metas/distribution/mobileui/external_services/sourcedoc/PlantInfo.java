@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.cucumber
+ * de.metas.distribution.rest-api
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,15 +20,17 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.workflow;
+package de.metas.distribution.mobileui.external_services.sourcedoc;
 
-import de.metas.cucumber.stepdefs.StepDefData;
-import de.metas.distribution.mobileui.rest_api.json.JsonDistributionJobStep;
+import de.metas.product.ResourceId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
-public class JsonWFDistributionStep_StepDefData extends StepDefData<JsonDistributionJobStep>
+@Value
+@Builder
+public class PlantInfo
 {
-	public JsonWFDistributionStep_StepDefData()
-	{
-		super(JsonDistributionJobStep.class);
-	}
+	@NonNull ResourceId resourceId;
+	@NonNull String caption;
 }
