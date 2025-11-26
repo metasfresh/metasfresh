@@ -2,15 +2,24 @@ package de.metas.distribution.mobileui.launchers;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
+import de.metas.distribution.ddorder.DDOrderService;
+import de.metas.distribution.mobileui.DistributionMobileApplication;
 import de.metas.distribution.mobileui.config.DistributionJobSorting;
 import de.metas.distribution.mobileui.config.MobileUIDistributionConfig;
+import de.metas.distribution.mobileui.config.MobileUIDistributionConfigRepository;
+import de.metas.distribution.mobileui.external_services.product.DistributionProductService;
+import de.metas.distribution.mobileui.external_services.sourcedoc.DistributionSourceDocService;
+import de.metas.distribution.mobileui.external_services.warehouse.DistributionWarehouseService;
 import de.metas.distribution.mobileui.job.model.DDOrderReference;
+import de.metas.distribution.mobileui.job.service.DDOrderReferenceCollector;
 import de.metas.distribution.mobileui.job.service.DDOrderReferenceQuery;
 import de.metas.distribution.mobileui.job.service.DDOrderReferenceQuery.DDOrderReferenceQueryBuilder;
-import de.metas.distribution.mobileui.job.service.DistributionRestService;
-import de.metas.distribution.mobileui.external_services.warehouse.DistributionWarehouseService;
-import de.metas.distribution.mobileui.DistributionMobileApplication;
+import de.metas.distribution.mobileui.job.service.DistributionJobLoaderSupportingServices;
+import de.metas.distribution.mobileui.job.service.DistributionJobQueries;
+import de.metas.distribution.mobileui.job.service.DistributionOrderCollector;
 import de.metas.distribution.mobileui.launchers.facets.DistributionFacetIdsCollection;
+import de.metas.distribution.mobileui.launchers.facets.DistributionFacetsCollection;
+import de.metas.distribution.mobileui.launchers.facets.DistributionFacetsCollector;
 import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupList;
 import de.metas.rest_workflows.facets.WorkflowLaunchersFacetQuery;
 import de.metas.user.UserId;
@@ -22,6 +31,7 @@ import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
 import de.metas.workplace.Workplace;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.QueryLimit;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,17 +40,21 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DistributionWorkflowLaunchersProvider
 {
-	@NonNull private final DistributionRestService distributionRestService;
+	@NonNull private final MobileUIDistributionConfigRepository configRepository;
+	@NonNull private final DistributionJobLoaderSupportingServices loadingSupportServices;
 	@NonNull private final DistributionLauncherCaptionProvider captionProvider;
 	@NonNull private final DistributionWarehouseService warehouseService;
+	@NonNull private final DDOrderService ddOrderService;
+	@NonNull private final DistributionProductService productService;
+	@NonNull private final DistributionSourceDocService sourceDocService;
 
 	public WorkflowLaunchersList provideLaunchers(@NonNull WorkflowLaunchersQuery query)
 	{
 		query.assertNoFilterByQRCode();
 
-		final MobileUIDistributionConfig config = distributionRestService.getConfig();
+		final MobileUIDistributionConfig config = getConfig();
 
-		final List<DDOrderReference> jobReferences = distributionRestService.getJobReferences(
+		final List<DDOrderReference> jobReferences = getJobReferences(
 				newDDOrderReferenceQuery(query.getUserId())
 						.suggestedLimit(query.getLimit().orElse(config.getMaxLaunchers()))
 						.activeFacetIds(DistributionFacetIdsCollection.ofWorkflowLaunchersFacetIds(query.getFacetIds()))
@@ -49,9 +63,25 @@ public class DistributionWorkflowLaunchersProvider
 		return toWorkflowLaunchersList(jobReferences);
 	}
 
+	private MobileUIDistributionConfig getConfig()
+	{
+		return configRepository.getConfig();
+	}
+
+	private List<DDOrderReference> getJobReferences(@NonNull final DDOrderReferenceQuery query)
+	{
+		final DDOrderReferenceCollector collector = DDOrderReferenceCollector.builder()
+				.loadingSupportServices(loadingSupportServices)
+				.build();
+
+		collect(query, collector);
+
+		return collector.getCollectedItems();
+	}
+
 	private DDOrderReferenceQueryBuilder newDDOrderReferenceQuery(@NonNull final UserId userId)
 	{
-		final MobileUIDistributionConfig config = distributionRestService.getConfig();
+		final MobileUIDistributionConfig config = getConfig();
 		final Workplace workplace = warehouseService.getWorkplaceByUserId(userId).orElse(null);
 
 		return DDOrderReferenceQuery.builder()
@@ -63,7 +93,7 @@ public class DistributionWorkflowLaunchersProvider
 
 	private WorkflowLaunchersList toWorkflowLaunchersList(final List<DDOrderReference> jobReferences)
 	{
-		final DistributionJobSorting sorting = distributionRestService.getConfig().getSorting();
+		final DistributionJobSorting sorting = getConfig().getSorting();
 
 		return WorkflowLaunchersList.builder()
 				.launchers(jobReferences.stream().map(this::toWorkflowLauncher).collect(ImmutableList.toImmutableList()))
@@ -97,12 +127,46 @@ public class DistributionWorkflowLaunchersProvider
 
 	public WorkflowLaunchersFacetGroupList getFacets(@NonNull final WorkflowLaunchersFacetQuery query)
 	{
-		return distributionRestService.getFacets(
-						newDDOrderReferenceQuery(query.getUserId())
-								.activeFacetIds(DistributionFacetIdsCollection.ofWorkflowLaunchersFacetIds(query.getActiveFacetIds()))
-								.build()
-				)
+		return getFacets(
+				newDDOrderReferenceQuery(query.getUserId())
+						.activeFacetIds(DistributionFacetIdsCollection.ofWorkflowLaunchersFacetIds(query.getActiveFacetIds()))
+						.build()
+		)
 				.toWorkflowLaunchersFacetGroupList(query.getActiveFacetIds());
+	}
+
+	private DistributionFacetsCollection getFacets(@NonNull final DDOrderReferenceQuery query)
+	{
+		final DistributionFacetsCollector collector = DistributionFacetsCollector.builder()
+				.ddOrderService(ddOrderService)
+				.productService(productService)
+				.warehouseService(warehouseService)
+				.sourceDocService(sourceDocService)
+				.build();
+
+		collect(query, collector);
+
+		return collector.toFacetsCollection();
+	}
+
+	private <T> void collect(
+			@NonNull final DDOrderReferenceQuery query,
+			@NonNull final DistributionOrderCollector<T> collector)
+	{
+		//
+		// Already started jobs
+		ddOrderService.streamDDOrders(DistributionJobQueries.ddOrdersAssignedToUser(query))
+				.forEach(collector::collect);
+
+		//
+		// New possible jobs
+		@NonNull final QueryLimit suggestedLimit = query.getSuggestedLimit();
+		if (suggestedLimit.isNoLimit() || !suggestedLimit.isLimitHitOrExceeded(collector.getCollectedItems()))
+		{
+			ddOrderService.streamDDOrders(DistributionJobQueries.toActiveNotAssignedDDOrderQuery(query))
+					.limit(suggestedLimit.minusSizeOf(collector.getCollectedItems()).toIntOr(Integer.MAX_VALUE))
+					.forEach(collector::collect);
+		}
 	}
 
 }

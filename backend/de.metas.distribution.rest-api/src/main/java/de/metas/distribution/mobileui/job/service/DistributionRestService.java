@@ -8,10 +8,7 @@ import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleServic
 import de.metas.distribution.mobileui.config.MobileUIDistributionConfig;
 import de.metas.distribution.mobileui.config.MobileUIDistributionConfigRepository;
 import de.metas.distribution.mobileui.external_services.hu.DistributionHUService;
-import de.metas.distribution.mobileui.external_services.product.DistributionProductService;
-import de.metas.distribution.mobileui.external_services.sourcedoc.DistributionSourceDocService;
 import de.metas.distribution.mobileui.external_services.warehouse.DistributionWarehouseService;
-import de.metas.distribution.mobileui.job.model.DDOrderReference;
 import de.metas.distribution.mobileui.job.model.DistributionJob;
 import de.metas.distribution.mobileui.job.model.DistributionJobId;
 import de.metas.distribution.mobileui.job.service.commands.abort_job.DistributionJobAbortCommand;
@@ -19,8 +16,6 @@ import de.metas.distribution.mobileui.job.service.commands.create_job.Distributi
 import de.metas.distribution.mobileui.job.service.commands.drop_to.DistributionJobDropToCommand;
 import de.metas.distribution.mobileui.job.service.commands.pick_from.DistributionJobPickFromCommand;
 import de.metas.distribution.mobileui.job.service.commands.unpick.DistributionJobUnpickCommand;
-import de.metas.distribution.mobileui.launchers.facets.DistributionFacetsCollection;
-import de.metas.distribution.mobileui.launchers.facets.DistributionFacetsCollector;
 import de.metas.distribution.mobileui.rest_api.json.JsonDistributionEvent;
 import de.metas.distribution.mobileui.rest_api.json.JsonDropAllRequest;
 import de.metas.user.UserId;
@@ -29,7 +24,6 @@ import de.metas.util.Services;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.model.I_DD_Order;
@@ -49,8 +43,6 @@ public class DistributionRestService
 	@NonNull private final DistributionJobLoaderSupportingServices loadingSupportServices;
 	@NonNull private final DistributionHUService huService;
 	@NonNull private final DistributionWarehouseService warehouseService;
-	@NonNull private final DistributionProductService productService;
-	@NonNull private final DistributionSourceDocService sourceDocService;
 
 	public MobileUIDistributionConfig getConfig() {return configRepository.getConfig();}
 
@@ -59,50 +51,7 @@ public class DistributionRestService
 		return ddOrderMoveScheduleService.getQtyRejectedReasons();
 	}
 
-	public List<DDOrderReference> getJobReferences(@NonNull final DDOrderReferenceQuery query)
-	{
-		final DDOrderReferenceCollector collector = DDOrderReferenceCollector.builder()
-				.loadingSupportServices(loadingSupportServices)
-				.build();
 
-		collect(query, collector);
-
-		return collector.getCollectedItems();
-	}
-
-	public DistributionFacetsCollection getFacets(@NonNull final DDOrderReferenceQuery query)
-	{
-		final DistributionFacetsCollector collector = DistributionFacetsCollector.builder()
-				.ddOrderService(ddOrderService)
-				.productService(productService)
-				.warehouseService(warehouseService)
-				.sourceDocService(sourceDocService)
-				.build();
-
-		collect(query, collector);
-
-		return collector.toFacetsCollection();
-	}
-
-	private <T> void collect(
-			@NonNull final DDOrderReferenceQuery query,
-			@NonNull final DistributionOrderCollector<T> collector)
-	{
-		//
-		// Already started jobs
-		ddOrderService.streamDDOrders(DistributionJobQueries.ddOrdersAssignedToUser(query))
-				.forEach(collector::collect);
-
-		//
-		// New possible jobs
-		@NonNull final QueryLimit suggestedLimit = query.getSuggestedLimit();
-		if (suggestedLimit.isNoLimit() || !suggestedLimit.isLimitHitOrExceeded(collector.getCollectedItems()))
-		{
-			ddOrderService.streamDDOrders(DistributionJobQueries.toActiveNotAssignedDDOrderQuery(query))
-					.limit(suggestedLimit.minusSizeOf(collector.getCollectedItems()).toIntOr(Integer.MAX_VALUE))
-					.forEach(collector::collect);
-		}
-	}
 
 	public DistributionJob createJob(
 			final @NonNull DDOrderId ddOrderId,
