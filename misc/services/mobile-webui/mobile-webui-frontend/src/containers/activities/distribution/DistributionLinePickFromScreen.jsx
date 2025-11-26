@@ -1,13 +1,12 @@
 import React from 'react';
 import { useDispatch } from 'react-redux';
-import { postDistributionPickFrom } from '../../../api/distribution';
+import { getDistributionScannedHUQRCodeInfo, postDistributionPickFrom } from '../../../api/distribution';
 import { parseQRCodeString, toQRCodeString } from '../../../utils/qrCode/hu';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { useDistributionLineProps, useDistributionScreenDefinition } from './DistributionLineScreen';
 import { trl } from '../../../utils/translations';
 import { distributionLineScreenLocation } from '../../../routes/distribution';
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
-import { getScannedHUQRCodeInfo } from '../../../api/picking';
 
 const DistributionLinePickFromScreen = () => {
   const { applicationId, history, wfProcessId, activityId, lineId } = useDistributionScreenDefinition({
@@ -28,9 +27,9 @@ const DistributionLinePickFromScreen = () => {
     });
 
     if (!parsedQRCode) {
-      const huInfoFromBackend = await getScannedHUQRCodeInfo({ qrCode: scannedBarcode });
+      const huInfoFromBackend = await getDistributionScannedHUQRCodeInfo({ qrCode: scannedBarcode });
       parsedQRCode = parseQRCodeString({
-        string: huInfoFromBackend?.huQRCode?.code,
+        string: huInfoFromBackend?.qrCode?.code,
         returnFalseOnError: false, // fail
         checkOnlyPreciseFormats: false, // after we have checked the backend, it's fine to try matching everything
       });
