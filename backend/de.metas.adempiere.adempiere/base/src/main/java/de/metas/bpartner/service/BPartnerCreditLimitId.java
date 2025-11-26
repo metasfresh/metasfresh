@@ -83,7 +83,7 @@ public class BPartnerCreditLimitId implements RepoIdAware
 	private BPartnerCreditLimitId(@NonNull final BPartnerId bpartnerId, final int bPartnerCreditLimitId)
 	{
 		this.bpartnerId = bpartnerId;
-		this.repoId = Check.assumeGreaterThanZero(bPartnerCreditLimitId, "C_PaymentTerm_Break_ID");
+		this.repoId = Check.assumeGreaterThanZero(bPartnerCreditLimitId, "C_BPartner_CreditLimit_ID");
 	}
 
 	public static int toRepoId(@Nullable final BPartnerCreditLimitId bPartnerCreditLimitId)

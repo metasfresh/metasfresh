@@ -415,7 +415,7 @@ final class BPartnerCompositesLoader
 				.shipTo(bpartnerLocationRecord.isShipTo())
 				.shipToDefault(bpartnerLocationRecord.isShipToDefault())
 				.visitorsAddress(bpartnerLocationRecord.isVisitorsAddress())
-				.visitorsAddressDefault(bpartnerLocationRecord.isDefaultVisitorAdress())
+				.visitorsAddressDefault(bpartnerLocationRecord.isDefaultVisitorAddress())
 				.build();
 	}
 

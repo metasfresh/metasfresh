@@ -488,7 +488,7 @@ public interface I_C_BPartner_Location
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsDefaultVisitorAdress (boolean IsDefaultVisitorAdress);
+	void setIsDefaultVisitorAddress(boolean IsDefaultVisitorAddress);
 
 	/**
 	 * Get Default Visitor Address.
@@ -498,10 +498,10 @@ public interface I_C_BPartner_Location
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isDefaultVisitorAdress();
+	boolean isDefaultVisitorAddress();
 
-	ModelColumn<I_C_BPartner_Location, Object> COLUMN_IsDefaultVisitorAdress = new ModelColumn<>(I_C_BPartner_Location.class, "IsDefaultVisitorAdress", null);
-	String COLUMNNAME_IsDefaultVisitorAdress = "IsDefaultVisitorAdress";
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_IsDefaultVisitorAddress = new ModelColumn<>(I_C_BPartner_Location.class, "IsDefaultVisitorAddress", null);
+	String COLUMNNAME_IsDefaultVisitorAddress = "IsDefaultVisitorAddress";
 
 	/**
 	 * Set ISDN.

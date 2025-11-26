@@ -290,15 +290,15 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setIsDefaultVisitorAdress (final boolean IsDefaultVisitorAdress)
+	public void setIsDefaultVisitorAddress(final boolean IsDefaultVisitorAddress)
 	{
-		set_Value (COLUMNNAME_IsDefaultVisitorAdress, IsDefaultVisitorAdress);
+		set_Value (COLUMNNAME_IsDefaultVisitorAddress, IsDefaultVisitorAddress);
 	}
 
 	@Override
-	public boolean isDefaultVisitorAdress() 
+	public boolean isDefaultVisitorAddress()
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsDefaultVisitorAdress);
+		return get_ValueAsBoolean(COLUMNNAME_IsDefaultVisitorAddress);
 	}
 
 	@Override
