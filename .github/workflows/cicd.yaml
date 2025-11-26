@@ -1309,7 +1309,11 @@ jobs:
       - name: push-results
         working-directory: docker-builds/mobiletest/
         run: |
+          # Move test-results temporarily to avoid Testspace uploading large attachment files
+          mv test-results test-results-temp || true
           testspace "[mobile/playwright]playwright-report/junit/results.xml"
+          # Move back for artifact upload
+          mv test-results-temp test-results || true
       - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest
         uses: nick-fields/retry@v3
         with:
@@ -1362,7 +1366,11 @@ jobs:
       - name: push-results
         working-directory: docker-builds/frontendtest/
         run: |
+          # Move test-results temporarily to avoid Testspace uploading large attachment files
+          mv test-results test-results-temp || true
           testspace "[frontend/playwright]playwright-report/junit/results.xml"
+          # Move back for artifact upload
+          mv test-results-temp test-results || true
       - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest
         uses: nick-fields/retry@v3
         with:
