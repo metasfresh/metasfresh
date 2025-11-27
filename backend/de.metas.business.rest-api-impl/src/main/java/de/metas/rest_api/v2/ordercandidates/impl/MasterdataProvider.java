@@ -452,7 +452,7 @@ public final class MasterdataProvider
 
 	public boolean isAutoInvoice(@NonNull final JsonOLCandCreateRequest request, @NonNull final BPartnerId bpartnerId)
 	{
-		if(request.getIsAutoInvoice() != null)
+		if (request.getIsAutoInvoice() != null)
 		{
 			return request.getIsAutoInvoice();
 		}
@@ -525,7 +525,7 @@ public final class MasterdataProvider
 		final I_C_BPartner bPartner = bPartnerDAO.getById(bPartnerId);
 		return BPartnerId.ofRepoIdOrNull(bPartner.getC_BPartner_SalesRep_ID());
 	}
-	
+
 	@NonNull
 	public ExternalSystemId getExternalSystemId(@NonNull final ExternalSystemType type)
 	{

@@ -44,7 +44,6 @@ public class RequestTypeDAO implements IRequestTypeDAO
 
 	static final String InternalName_C_BPartner_CreatedFromAnotherOrg = "C_BPartner_CreatedFromAnotherOrg";
 
-
 	final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
@@ -93,9 +92,19 @@ public class RequestTypeDAO implements IRequestTypeDAO
 	public RequestTypeId retrieveDefaultRequestTypeIdOrFirstActive()
 	{
 		return Optionals.firstPresentOfSuppliers(
-				this::retrieveDefaultRequestTypeId,
-				this::retrieveFirstActiveRequestTypeId)
+						this::retrieveDefaultRequestTypeId,
+						this::retrieveFirstActiveRequestTypeId)
 				.orElseThrow(() -> new AdempiereException("@NotFound@ @R_RequestType_ID@").markAsUserValidationError());
+	}
+
+	@Override
+	public RequestTypeId retrieveByInternalName(final String internalName)
+	{
+		return queryBL.createQueryBuilderOutOfTrx(I_R_RequestType.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_R_RequestType.COLUMNNAME_InternalName, internalName)
+				.create()
+				.firstId(RequestTypeId::ofRepoIdOrNull);
 	}
 
 	private Optional<RequestTypeId> retrieveDefaultRequestTypeId()

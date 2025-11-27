@@ -3,6 +3,8 @@ package de.metas.request.api;
 import de.metas.request.RequestTypeId;
 import de.metas.util.ISingletonService;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -36,4 +38,7 @@ public interface IRequestTypeDAO extends ISingletonService
 	RequestTypeId retrieveBPartnerCreatedFromAnotherOrgRequestTypeId();
 
 	RequestTypeId retrieveDefaultRequestTypeIdOrFirstActive();
+
+	@Nullable
+	RequestTypeId retrieveByInternalName(String internalName);
 }

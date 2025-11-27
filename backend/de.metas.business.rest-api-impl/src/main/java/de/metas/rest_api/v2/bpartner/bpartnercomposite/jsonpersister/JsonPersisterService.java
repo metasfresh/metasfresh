@@ -303,9 +303,7 @@ public class JsonPersisterService
 			@NonNull final JsonRequestContact jsonContact,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
-		final Optional<BPartnerContactQuery> contactQuery = createContactQuery(contactIdentifier);
-		final Optional<BPartnerCompositeAndContactId> optionalContactIdAndBPartner = contactQuery
-				.flatMap(bpartnerCompositeRepository::getByContact);
+		final Optional<BPartnerCompositeAndContactId> optionalContactIdAndBPartner = getBPartnerCompositeByContactIdentifier(contactIdentifier);
 
 		final BPartnerContact contact;
 		final BPartnerComposite bpartnerComposite;
@@ -365,6 +363,14 @@ public class JsonPersisterService
 		}
 
 		return responseUpsertItem;
+	}
+
+	public @NonNull Optional<BPartnerCompositeAndContactId> getBPartnerCompositeByContactIdentifier(final @NonNull ExternalIdentifier contactIdentifier)
+	{
+		final Optional<BPartnerContactQuery> contactQuery = createContactQuery(contactIdentifier);
+		final Optional<BPartnerCompositeAndContactId> optionalContactIdAndBPartner = contactQuery
+				.flatMap(bpartnerCompositeRepository::getByContact);
+		return optionalContactIdAndBPartner;
 	}
 
 	private void handleExternalReference(
