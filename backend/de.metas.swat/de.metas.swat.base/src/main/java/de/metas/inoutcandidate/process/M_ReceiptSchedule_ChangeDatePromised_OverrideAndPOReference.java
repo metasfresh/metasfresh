@@ -88,7 +88,9 @@ public class M_ReceiptSchedule_ChangeDatePromised_OverrideAndPOReference extends
 	@Override
 	protected String doIt()
 	{
-		receiptScheduleBL.updateDatePromisedOverrideAndPOReference(getPinstanceId(), datePromisedOverride, poReference);
+		final int updatedCnt = receiptScheduleBL.updateDatePromisedOverrideAndPOReference(getPinstanceId(), datePromisedOverride, poReference);
+		addLog("Updated {} M_ReceiptSchedules", updatedCnt);
+
 		return MSG_OK;
 	}
 }

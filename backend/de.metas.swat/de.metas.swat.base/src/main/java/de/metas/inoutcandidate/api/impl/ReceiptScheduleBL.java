@@ -758,7 +758,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	}
 
 	@Override
-	public void updateDatePromisedOverrideAndPOReference(@NonNull final PInstanceId pinstanceId, @Nullable final LocalDate datePromisedOverride, @Nullable final String poReference)
+	public int updateDatePromisedOverrideAndPOReference(@NonNull final PInstanceId pinstanceId, @Nullable final LocalDate datePromisedOverride, @Nullable final String poReference)
 	{
 		if (datePromisedOverride == null && Check.isEmpty(poReference, true))
 		{
@@ -774,16 +774,14 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 			updater.addSetColumnValue(I_M_ReceiptSchedule.COLUMNNAME_DatePromised_Override, datePromisedOverride);
 		}
 
-		if (!Check.isEmpty(poReference, true))
+		if (Check.isBlank(poReference))
 		{
 			updater.addSetColumnValue(I_M_ReceiptSchedule.COLUMNNAME_POReference, poReference);
 		}
 
-		final int updatedCnt = queryBL.createQueryBuilder(I_M_ReceiptSchedule.class)
+		return queryBL.createQueryBuilder(I_M_ReceiptSchedule.class)
 				.setOnlySelection(pinstanceId)
 				.create()
 				.update(updater);
-
-		Loggables.withLogger(logger, Level.INFO).addLog("Updated {} M_ReceiptSchedules", updatedCnt);
 	}
 }
