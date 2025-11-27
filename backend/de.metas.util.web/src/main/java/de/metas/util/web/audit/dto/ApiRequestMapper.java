@@ -41,6 +41,12 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @UtilityClass
 public class ApiRequestMapper
 {
+
+	/**
+	 * We can't process the process asynchronously, but we can still audit it and all the log-messages.
+	 */
+	public static final String UNRECORDABLE_REQUEST_BODY = "<NO JSON Content - can't record request-body>";
+
 	@NonNull
 	public ApiRequest map(@NonNull final CachedBodyHttpServletRequest cachedBodyHttpServletRequest)
 	{
@@ -90,7 +96,7 @@ public class ApiRequestMapper
 		final String contentType = requestWrapper.getContentType();
 		if (!contentType.contains(APPLICATION_JSON_VALUE))
 		{
-			return "<NO JSON Content - can't record request-body>";
+			return UNRECORDABLE_REQUEST_BODY;
 		}
 		try
 		{

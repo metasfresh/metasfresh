@@ -357,7 +357,7 @@ public class ApiAuditService
 				.forEach(notificationBL::send);
 	}
 
-	public boolean isJsonContent(@NonNull final HttpServletRequest request)
+	public boolean canProcesAsync(@NonNull final HttpServletRequest request)
 	{
 		final String contentType = request.getContentType();
 
@@ -365,15 +365,14 @@ public class ApiAuditService
 		{
 			return false;
 		}
-
 		return !contentType.contains(APPLICATION_JSON_VALUE);
 	}
 
 	private boolean shouldProcessRequestAsync(@NonNull final HttpServletRequest request, @NonNull final ApiAuditConfig apiAuditConfig)
 	{
-		if(!isJsonContent(request))
+		if(!canProcesAsync(request))
 		{
-			return false; // right now, we can only process such requests async that have a JSON request body.
+			return false; // right now, we can only process such requests asynchronously that have a JSON request body.
 		}
 		final Optional<Boolean> callerWantsToBeProcessedAsync = Optional.ofNullable(request.getHeader(API_ASYNC_HEADER))
 				.map(Boolean::parseBoolean);
@@ -601,7 +600,8 @@ public class ApiAuditService
 	private String computeInternalHostName(@NonNull final ApiRequestAudit apiRequestAudit)
 	{
 		final String hostName;
-		if (apiRequestAudit.getPath().startsWith("http://localhost"))
+		final String path = apiRequestAudit.getPath();
+		if (Check.isNotBlank(path) && path.startsWith("http://localhost"))
 		{
 			hostName = "localhost";
 		}
