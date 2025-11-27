@@ -28,6 +28,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.location.adapter.IDocumentLocationAdapter;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.ReceiptScheduleId;
@@ -55,6 +56,7 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.ad.trx.processor.api.LoggableTrxItemExceptionHandler;
@@ -94,6 +96,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ReceiptScheduleBL implements IReceiptScheduleBL
 {
 	public static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.inoutcandidate.M_ReceiptSchedule.canBeExportedAfterSeconds";
+	private static final AdMessageKey MSG_DATEPROMISEDOVERRIDE_POREFERENCE_VALIDATION_ERROR = AdMessageKey.of("receiptschedule.ChangeDatePromised_OverrideAndPOReference.paramsValidationError");
 
 	private final static Logger logger = LogManager.getLogger(M_ReceiptSchedule.class);
 
@@ -757,29 +760,30 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	@Override
 	public void updateDatePromisedOverrideAndPOReference(@NonNull final PInstanceId pinstanceId, @Nullable final LocalDate datePromisedOverride, @Nullable final String poReference)
 	{
-		final AtomicInteger updatedCnt = new AtomicInteger(0);
+		if (datePromisedOverride == null && Check.isEmpty(poReference, true))
+		{
+			throw new AdempiereException(MSG_DATEPROMISEDOVERRIDE_POREFERENCE_VALIDATION_ERROR)
+					.markAsUserValidationError();
+		}
 
-		queryBL.createQueryBuilder(I_M_ReceiptSchedule.class)
+		final ICompositeQueryUpdater<I_M_ReceiptSchedule> updater = queryBL
+				.createCompositeQueryUpdater(I_M_ReceiptSchedule.class);
+
+		if (datePromisedOverride != null)
+		{
+			updater.addSetColumnValue(I_M_ReceiptSchedule.COLUMNNAME_DatePromised_Override, datePromisedOverride);
+		}
+
+		if (!Check.isEmpty(poReference, true))
+		{
+			updater.addSetColumnValue(I_M_ReceiptSchedule.COLUMNNAME_POReference, poReference);
+		}
+
+		final int updatedCnt = queryBL.createQueryBuilder(I_M_ReceiptSchedule.class)
 				.setOnlySelection(pinstanceId)
 				.create()
-				.iterateAndStream()
-				.forEach(record ->
-				{
-					if (datePromisedOverride != null)
-					{
-						record.setDatePromised_Override(TimeUtil.asTimestamp(datePromisedOverride));
-					}
+				.update(updater);
 
-					if (!Check.isEmpty(poReference, true))
-					{
-						record.setPOReference(poReference);
-					}
-
-					InterfaceWrapperHelper.saveRecord(record);
-
-					updatedCnt.incrementAndGet();
-				});
-
-		Loggables.withLogger(logger, Level.INFO).addLog("Updated {} M_ReceiptSchedules", updatedCnt.get());
+		Loggables.withLogger(logger, Level.INFO).addLog("Updated {} M_ReceiptSchedules", updatedCnt);
 	}
 }

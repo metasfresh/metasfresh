@@ -31,7 +31,6 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -44,7 +43,6 @@ public class M_ReceiptSchedule_ChangeDatePromised_OverrideAndPOReference extends
 	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 
 	private static final AdMessageKey MSG_NO_UNPROCESSED_LINES = AdMessageKey.of("receiptschedule.noUnprocessedLines");
-	private static final AdMessageKey MSG_PARAMS_VALIDATION_ERROR = AdMessageKey.of("receiptschedule.ChangeDatePromised_OverrideAndPOReference.paramsValidationError");
 
 	@Param(parameterName = I_M_ReceiptSchedule.COLUMNNAME_DatePromised_Override)
 	private LocalDate datePromisedOverride;
@@ -82,12 +80,6 @@ public class M_ReceiptSchedule_ChangeDatePromised_OverrideAndPOReference extends
 		if (selectionCount <= 0)
 		{
 			throw new AdempiereException(MSG_NO_UNPROCESSED_LINES)
-					.markAsUserValidationError();
-		}
-
-		if (datePromisedOverride == null && Check.isEmpty(poReference, true))
-		{
-			throw new AdempiereException(MSG_PARAMS_VALIDATION_ERROR)
 					.markAsUserValidationError();
 		}
 
