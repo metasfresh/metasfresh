@@ -65,16 +65,13 @@ import java.util.Set;
  */
 /* package */ final class PurchaseOrderFromItemFactory
 {
-	@VisibleForTesting
-	final static AdMessageKey MSG_Different_DatePromised = //
+	@VisibleForTesting final static AdMessageKey MSG_Different_DatePromised = //
 			AdMessageKey.of("de.metas.purchasecandidate.Event_PurchaseOrderCreated_Different_DatePromised");
 
-	@VisibleForTesting
-	final static AdMessageKey MSG_Different_Quantity = //
+	@VisibleForTesting final static AdMessageKey MSG_Different_Quantity = //
 			AdMessageKey.of("de.metas.purchasecandidate.Event_PurchaseOrderCreated_Different_Quantity");
 
-	@VisibleForTesting
-	final static AdMessageKey MSG_Different_Quantity_AND_DatePromised = //
+	@VisibleForTesting final static AdMessageKey MSG_Different_Quantity_AND_DatePromised = //
 			AdMessageKey.of("de.metas.purchasecandidate.Event_PurchaseOrderCreated_Different_Quantity_And_DatePromised");
 
 	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
@@ -106,7 +103,6 @@ import java.util.Set;
 				.externalPurchaseOrderUrl(orderAggregationKey.getExternalPurchaseOrderUrl())
 				.externalHeaderId(orderAggregationKey.getExternalId());
 
-
 		if (docType != null)
 		{
 			orderFactory.docType(docType);
@@ -133,6 +129,7 @@ import java.util.Set;
 		}
 		orderLineBuilder.manualPrice(purchaseOrderItem.getPrice());
 		orderLineBuilder.priceUomId(purchaseOrderItem.getPriceUomId());
+		orderLineBuilder.externalId(purchaseOrderItem.getExternalLineId());
 
 		purchaseItem2OrderLine.put(purchaseOrderItem, orderLineBuilder);
 	}
