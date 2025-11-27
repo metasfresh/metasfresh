@@ -6,6 +6,8 @@ import { DistributionJobsListScreen } from './DistributionJobsListScreen';
 import { DistributionDropAllToScreen } from './DistributionDropAllToScreen';
 import { expect } from '@playwright/test';
 import { expectClasses } from '../../expectations';
+import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
+import { DistributionLinePickFromScreen } from './DistributionLinePickFromScreen';
 
 const NAME = 'DistributionJobScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -14,6 +16,16 @@ const containerElement = () => page.locator('#WFProcessScreen');
 export const DistributionJobScreen = {
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
         await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    scanHUToMove: async ({ huQRCode, productScannedCode, expectedQtyToMove }) => await test.step(`${NAME} - Scan HU to move`, async () => {
+        await BarcodeScannerComponent.type({ scannedCode: huQRCode });
+        await DistributionLinePickFromScreen.waitForScreen();
+        await DistributionLinePickFromScreen.typeProductCode(productScannedCode);
+        await DistributionLinePickFromScreen.fillQuantityDialog({
+            expectedQtyToMove,
+        });
+        await DistributionJobScreen.waitForScreen();
     }),
 
     clickLineButton: async ({ index }) => await test.step(`${NAME} - Click line ${index}`, async () => {
