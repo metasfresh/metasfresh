@@ -33,6 +33,8 @@ import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestItem;
 import de.metas.common.delivery.v1.json.request.JsonGoodsType;
 import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
+import de.metas.externalsystem.ExternalSystemId;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.incoterms.Incoterms;
 import de.metas.incoterms.IncotermsId;
 import de.metas.incoterms.IncotermsRepository;
@@ -100,6 +102,7 @@ public class CarrierAdviseCommand
 	@NonNull private final CarrierShipmentOrderServiceRepository carrierServiceRepository = SpringContextHolder.instance.getBean(CarrierShipmentOrderServiceRepository.class);
 	@NonNull private final ProductRepository productRepository = SpringContextHolder.instance.getBean(ProductRepository.class);
 	@NonNull private final IncotermsRepository incotermsRepository = SpringContextHolder.instance.getBean(IncotermsRepository.class);
+	@NonNull private final ExternalSystemRepository externalSystemRepository = SpringContextHolder.instance.getBean(ExternalSystemRepository.class);
 	@NonNull private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 	@NonNull private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	@NonNull private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
@@ -187,6 +190,12 @@ public class CarrierAdviseCommand
 			{
 				final Incoterms incoterms = incotermsRepository.getById(incotermsId);
 				requestBuilder.incotermsValue(incoterms.getValue());
+			}
+
+			final ExternalSystemId externalSystemId = ExternalSystemId.ofRepoIdOrNull(order.getExternalSystem_ID());
+			if(externalSystemId != null)
+			{
+				requestBuilder.externalSystemValue(externalSystemRepository.getById(externalSystemId).getType().getValue());
 			}
 
 		}

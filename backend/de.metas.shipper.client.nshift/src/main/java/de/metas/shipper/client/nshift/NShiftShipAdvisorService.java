@@ -127,6 +127,14 @@ public class NShiftShipAdvisorService
 					.build()
 			);
 		}
+		if (deliveryAdvisorRequest.getExternalSystemValue() != null)
+		{
+			dataBuilder.reference(JsonReference.builder()
+					.kind(64) // eSrkCustomField2 https://helpcenter.nshift.com/hc/en-us/articles/360003165473-Objects-and-Fields#ReferenceKind
+					.value(deliveryAdvisorRequest.getExternalSystemValue())
+					.build()
+			);
+		}
 
 		return JsonShipAdvisorRequest.builder()
 				.options(options)
