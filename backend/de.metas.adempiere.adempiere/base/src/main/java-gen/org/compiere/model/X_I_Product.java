@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
@@ -13,7 +35,7 @@ import javax.annotation.Nullable;
 public class X_I_Product extends org.compiere.model.PO implements I_I_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 939458928L;
+	private static final long serialVersionUID = -323807653L;
 
     /** Standard Constructor */
     public X_I_Product (final Properties ctx, final int I_Product_ID, @Nullable final String trxName)
@@ -383,6 +405,18 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	}
 
 	@Override
+	public void setHeightInCm (final int HeightInCm)
+	{
+		set_Value (COLUMNNAME_HeightInCm, HeightInCm);
+	}
+
+	@Override
+	public int getHeightInCm() 
+	{
+		return get_ValueAsInt(COLUMNNAME_HeightInCm);
+	}
+
+	@Override
 	public void setHelp (final @Nullable java.lang.String Help)
 	{
 		set_Value (COLUMNNAME_Help, Help);
@@ -551,6 +585,18 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	}
 
 	@Override
+	public void setIsSelfPacked (final boolean IsSelfPacked)
+	{
+		set_Value (COLUMNNAME_IsSelfPacked, IsSelfPacked);
+	}
+
+	@Override
+	public boolean isSelfPacked() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSelfPacked);
+	}
+
+	@Override
 	public void setIsSold (final boolean IsSold)
 	{
 		set_Value (COLUMNNAME_IsSold, IsSold);
@@ -596,6 +642,18 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	public boolean isUpdateProductCategory() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsUpdateProductCategory);
+	}
+
+	@Override
+	public void setLengthInCm (final int LengthInCm)
+	{
+		set_Value (COLUMNNAME_LengthInCm, LengthInCm);
+	}
+
+	@Override
+	public int getLengthInCm() 
+	{
+		return get_ValueAsInt(COLUMNNAME_LengthInCm);
 	}
 
 	@Override
@@ -1299,6 +1357,18 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	public int getWeight_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Weight_UOM_ID);
+	}
+
+	@Override
+	public void setWidthInCm (final int WidthInCm)
+	{
+		set_Value (COLUMNNAME_WidthInCm, WidthInCm);
+	}
+
+	@Override
+	public int getWidthInCm() 
+	{
+		return get_ValueAsInt(COLUMNNAME_WidthInCm);
 	}
 
 	@Override
