@@ -1,5 +1,5 @@
 import { test } from "../../../../playwright.config";
-import { FAST_ACTION_TIMEOUT, page, SLOW_ACTION_TIMEOUT, step, VERY_FAST_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
+import { FAST_ACTION_TIMEOUT, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, step, VERY_FAST_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
 import { DistributionLineScreen } from './DistributionLineScreen';
 import { YesNoDialog } from '../../dialogs/YesNoDialog';
 import { DistributionJobsListScreen } from './DistributionJobsListScreen';
@@ -32,7 +32,7 @@ export const DistributionJobScreen = {
         }
         if (color !== undefined) {
             await expectClasses({
-                locator: lineButton.locator(`[data-testid="line-${index}-button-Indicator"]`),
+                locator: lineButton.locator(`[data-testid="indicator"]`),
                 expectedClasses: `indicator-color-${color}`
             });
         }
@@ -57,14 +57,34 @@ export const DistributionJobScreen = {
         }
     }),
 
-    dropAllTo: async ({ dropToLocatorQRCode }) => await test.step(`${NAME} - Drop All To ${dropToLocatorQRCode}`, async () => {
+    dropAllTo: async ({ dropToLocatorQRCode, expectNextScreen }) => await test.step(`${NAME} - Drop All To ${dropToLocatorQRCode}`, async () => {
         const dropAllButton = dropAllButtonLocator();
         await expect(dropAllButton).toBeEnabled({ timeout: VERY_FAST_ACTION_TIMEOUT });
         await dropAllButton.tap();
         await DistributionDropAllToScreen.waitForScreen();
         await DistributionDropAllToScreen.typeQRCode(dropToLocatorQRCode);
-        await DistributionJobScreen.waitForScreen();
+
+        if (!expectNextScreen || expectNextScreen === 'DistributionJobScreen') {
+            await DistributionJobScreen.waitForScreen();
+        } else if (expectNextScreen === 'DistributionJobsListScreen') {
+            await DistributionJobsListScreen.waitForScreen();
+        } else {
+            throw new Error(`Invalid expectNextScreen: ${expectNextScreen}`);
+        }
     }),
+
+    abort: async () => await step(`${NAME} - Abort`, async () => {
+        await page.locator('#abort-button').tap();
+        await YesNoDialog.waitForDialog();
+        await YesNoDialog.clickYesButton();
+        await DistributionJobsListScreen.waitForScreen();
+    }),
+
+    goBack: async () => await test.step(`${NAME} - Go back`, async () => {
+        await page.locator(ID_BACK_BUTTON).tap();
+        await DistributionJobsListScreen.waitForScreen();
+    }),
+
 };
 
 const lineButtonLocator = ({ index }) => {

@@ -27,13 +27,13 @@ import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.logging.LogManager;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -536,8 +536,8 @@ public class MBPartner extends X_C_BPartner
 		final BPGroupId bpGroupId = BPGroupId.ofRepoIdOrNull(getC_BP_Group_ID());
 		if (bpGroupId == null)
 		{
-			final ClientId clientId = ClientId.ofRepoId(getAD_Client_ID());
-			m_group = bpGroupsRepo.getDefaultByClientId(clientId);
+			final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(getAD_Client_ID(), getAD_Org_ID());
+			m_group = bpGroupsRepo.getDefaultByClientOrgId(clientAndOrgId);
 		}
 		else
 		{

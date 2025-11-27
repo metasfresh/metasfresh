@@ -14,6 +14,7 @@ import de.metas.workplace.WorkplaceService;
 import de.metas.workplace.qrcode.WorkplaceQRCode;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
@@ -49,6 +50,9 @@ public class CreateWorkplaceCommand
 						.warehouseId(request.getWarehouse() != null
 								? context.getId(request.getWarehouse(), WarehouseId.class)
 								: context.getIdOfType(WarehouseId.class))
+						.pickFromLocatorId(request.getPickFromLocator() != null
+								? context.getId(request.getPickFromLocator(), LocatorId.class)
+								: null)
 						.pickingSlotId(request.getPickingSlot() != null
 								? context.getId(request.getPickingSlot(), PickingSlotId.class)
 								: null)

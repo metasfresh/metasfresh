@@ -88,6 +88,7 @@ import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
@@ -108,6 +109,7 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.slf4j.Logger;
 import org.springframework.util.CollectionUtils;
 
@@ -823,12 +825,12 @@ public class JsonPersisterService
 		{
 			bpartner.setName3(StringUtils.trim(jsonBPartner.getName3()));
 		}
-		
+
 		if (jsonBPartner.isLookupLabelSet())
 		{
 			bpartner.setGlnLookupLabel(StringUtils.trim(jsonBPartner.getLookupLabel()));
 		}
-		
+
 		if (jsonBPartner.isCustomerSet())
 		{
 			if (jsonBPartner.getCustomer() == null)
@@ -872,7 +874,9 @@ public class JsonPersisterService
 
 		if (bpartner.getGroupId() == null)
 		{
-			final Optional<BPGroup> optionalBPGroup = bpGroupRepository.getDefaultGroup();
+			final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, Check.assumeNotNull(bpartnerComposite.getOrgId(),
+					"orgId was meanwhile set to bpartnerComposite={}", bpartnerComposite));
+			final Optional<BPGroup> optionalBPGroup = bpGroupRepository.getDefaultGroup(clientAndOrgId);
 			if (!optionalBPGroup.isPresent())
 			{
 				throw MissingResourceException.builder()

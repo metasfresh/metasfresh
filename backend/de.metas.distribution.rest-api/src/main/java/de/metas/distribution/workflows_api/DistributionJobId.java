@@ -8,6 +8,8 @@ import de.metas.workflow.rest_api.model.WFProcessId;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
+import java.util.Objects;
+
 @EqualsAndHashCode
 public class DistributionJobId
 {
@@ -51,4 +53,6 @@ public class DistributionJobId
 	public DDOrderId toDDOrderId() {return ddOrderId;}
 
 	public WFProcessId toWFProcessId() {return WFProcessId.ofIdPart(DistributionMobileApplication.APPLICATION_ID, ddOrderId);}
+
+	public static boolean equals(DistributionJobId id1, DistributionJobId id2) {return Objects.equals(id1, id2);}
 }

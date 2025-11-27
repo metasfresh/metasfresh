@@ -31,6 +31,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.ILUQtyProvider;
 import de.metas.handlingunits.impl.ShipperTransportationQuery;
+import de.metas.i18n.AdMessageKey;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
@@ -53,6 +54,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
@@ -68,6 +70,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PurchaseOrderToShipperTransportationService
 {
+	private static final AdMessageKey MSG_RECEIPT_SCHEDULE_ASSIGNED_TO_PROCESSED_TRANSPORTATION_ORDER = AdMessageKey.of("ReceiptScheduleAssignedToProcessedTransportationOrder");
 	@NonNull private final PurchaseOrderToShipperTransportationRepository repo;
 
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
@@ -280,7 +283,7 @@ public class PurchaseOrderToShipperTransportationService
 		return isDeletePossible;
 	}
 
-	public boolean deleteShippingPackagesForOrderLinesIfPossible(@NonNull final Collection<OrderLineId> orderLineIds)
+	public void deleteShippingPackagesForOrderLines(@NonNull final Collection<OrderLineId> orderLineIds)
 	{
 		final boolean isDeletePossible = !shipperTransportationDAO.anyMatch(ShipperTransportationQuery.builder()
 				.orderLineIds(orderLineIds)
@@ -290,6 +293,9 @@ public class PurchaseOrderToShipperTransportationService
 		{
 			repo.deleteBy(ShippingPackageQuery.builder().orderLineIds(orderLineIds).build());
 		}
-		return isDeletePossible;
+		else
+		{
+			throw new AdempiereException(MSG_RECEIPT_SCHEDULE_ASSIGNED_TO_PROCESSED_TRANSPORTATION_ORDER);
+		}
 	}
 }

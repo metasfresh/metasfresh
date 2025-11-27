@@ -32,6 +32,7 @@ import de.metas.product.ScannedProductCodeResolver;
 import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupList;
 import de.metas.rest_workflows.facets.WorkflowLaunchersFacetQuery;
 import de.metas.user.UserId;
+import de.metas.util.Services;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLauncher;
 import de.metas.workflow.rest_api.model.WorkflowLauncherCaption;
@@ -39,12 +40,14 @@ import de.metas.workflow.rest_api.model.WorkflowLauncherCaption.OrderBy;
 import de.metas.workflow.rest_api.model.WorkflowLauncherIndicator;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
+import de.metas.workflow.rest_api.service.Constants;
 import de.metas.workplace.Workplace;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.SynchronizedMutable;
 import org.adempiere.warehouse.WarehouseId;
 import org.jetbrains.annotations.NotNull;
@@ -63,6 +66,7 @@ public class PickingWorkflowLaunchersProvider
 {
 	private static final AdMessageKey INVALID_QR_CODE_ERROR_MSG = AdMessageKey.of("mobileui.picking.INVALID_QR_CODE_ERROR_MSG");
 
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull private final MobileUIPickingUserProfileService configService;
 	@NonNull private final PickingJobBPartnerService bpartnerService;
 	@NonNull private final PickingJobRestService pickingJobRestService;
@@ -159,7 +163,7 @@ public class PickingWorkflowLaunchersProvider
 
 		//
 		// New launchers
-		final QueryLimit limit = query.getLimit().orElse(QueryLimit.NO_LIMIT);
+		final QueryLimit limit = query.getLimit().orElseGet(this::getLaunchersLimit);
 		if (!returnNoResult)
 		{
 			PickingJobCandidateList newPickingJobCandidates = pickingJobRestService.streamPickingJobCandidates(
@@ -298,6 +302,17 @@ public class PickingWorkflowLaunchersProvider
 		}
 	}
 
+	public QueryLimit getLaunchersLimit()
+	{
+		final int limitInt = sysConfigBL.getIntValue(Constants.SYSCONFIG_LaunchersLimit, -100);
+		return limitInt == -100
+				? Constants.DEFAULT_LaunchersLimit
+				: QueryLimit.ofInt(limitInt);
+	}
+
+	//
+	//
+	//
 	//
 	//
 	//

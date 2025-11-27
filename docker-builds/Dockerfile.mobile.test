@@ -9,14 +9,14 @@ WORKDIR /app
 #
 # Install required packages
 # NOTE: copy the bare minimum config files at this point to favor caching
-COPY misc/services/mobile-webui/mobile-webui-frontend-testing/package.json* .
-COPY misc/services/mobile-webui/mobile-webui-frontend-testing/yarn.lock* .
+COPY e2e/mobile-webui/package.json* .
+COPY e2e/mobile-webui/yarn.lock* .
 RUN yarn install
 RUN yarn playwright install --with-deps
 
 #
 # Copy the rest of our source files (i.e. the tests)
-COPY misc/services/mobile-webui/mobile-webui-frontend-testing/ .
+COPY e2e/mobile-webui/ .
 
 #
 # Start command

@@ -159,8 +159,10 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 				.qtyRejectedReasons(JsonRejectReasonsList.of(pickingJobRestService.getQtyRejectedReasons(), jsonOpts))
 				.allowSkippingRejectedReason(pickingJobOptions.isAllowSkippingRejectedReason())
 				.allowedPickToStructures(pickingJobOptions.getAllowedPickToStructures().toAllowedSet())
+				.readAttributes(pickingJobOptions.getPickAttributes().getAttributesToReadSet())
 				.showPromptWhenOverPicking(pickingJobOptions.isShowConfirmationPromptWhenOverPick())
 				.anonymousPickHUsOnTheFly(pickingJob.isAnonymousPickHUsOnTheFly())
+				.completeJobAutomatically(pickingJobOptions.getCompleteJobAutomatically().isTrue())
 				.build();
 	}
 

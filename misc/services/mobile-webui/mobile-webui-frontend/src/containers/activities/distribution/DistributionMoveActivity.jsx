@@ -50,7 +50,7 @@ const DistributionMoveActivity = ({ applicationId, wfProcessId, activityId, acti
       })}
       <ButtonWithIndicator
         testId="scanDropToLocator-button"
-        caption={trl('activities.distribution.scanLocator')}
+        caption={trl('activities.distribution.scanDropToLocator')}
         disabled={!isUserEditable || !hasLinesInTransit}
         onClick={onDropAllToLocator}
       />

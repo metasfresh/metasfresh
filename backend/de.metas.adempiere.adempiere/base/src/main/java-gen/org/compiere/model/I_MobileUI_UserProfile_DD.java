@@ -119,6 +119,92 @@ public interface I_MobileUI_UserProfile_DD
 	String COLUMNNAME_IsAllowPickingAnyHU = "IsAllowPickingAnyHU";
 
 	/**
+	 * Set Restrict start to next job only.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowStartNextJobOnly (boolean IsAllowStartNextJobOnly);
+
+	/**
+	 * Get Restrict start to next job only.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowStartNextJobOnly();
+
+	ModelColumn<I_MobileUI_UserProfile_DD, Object> COLUMN_IsAllowStartNextJobOnly = new ModelColumn<>(I_MobileUI_UserProfile_DD.class, "IsAllowStartNextJobOnly", null);
+	String COLUMNNAME_IsAllowStartNextJobOnly = "IsAllowStartNextJobOnly";
+
+	/**
+	 * Set Complete job automatically.
+	 * Automatically completes the job when all lines are fulfilled.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsCompleteJobAutomatically (boolean IsCompleteJobAutomatically);
+
+	/**
+	 * Get Complete job automatically.
+	 * Automatically completes the job when all lines are fulfilled.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isCompleteJobAutomatically();
+
+	ModelColumn<I_MobileUI_UserProfile_DD, Object> COLUMN_IsCompleteJobAutomatically = new ModelColumn<>(I_MobileUI_UserProfile_DD.class, "IsCompleteJobAutomatically", null);
+	String COLUMNNAME_IsCompleteJobAutomatically = "IsCompleteJobAutomatically";
+
+	/**
+	 * Set Maximum Launchers Count.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setMaxLaunchers (int MaxLaunchers);
+
+	/**
+	 * Get Maximum Launchers Count.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getMaxLaunchers();
+
+	ModelColumn<I_MobileUI_UserProfile_DD, Object> COLUMN_MaxLaunchers = new ModelColumn<>(I_MobileUI_UserProfile_DD.class, "MaxLaunchers", null);
+	String COLUMNNAME_MaxLaunchers = "MaxLaunchers";
+
+	/**
+	 * Set Maximum Started Launchers Count.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMaxStartedLaunchers (int MaxStartedLaunchers);
+
+	/**
+	 * Get Maximum Started Launchers Count.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getMaxStartedLaunchers();
+
+	ModelColumn<I_MobileUI_UserProfile_DD, Object> COLUMN_MaxStartedLaunchers = new ModelColumn<>(I_MobileUI_UserProfile_DD.class, "MaxStartedLaunchers", null);
+	String COLUMNNAME_MaxStartedLaunchers = "MaxStartedLaunchers";
+
+	/**
 	 * Set Mobile Distribution Profile.
 	 *
 	 * <br>Type: ID
