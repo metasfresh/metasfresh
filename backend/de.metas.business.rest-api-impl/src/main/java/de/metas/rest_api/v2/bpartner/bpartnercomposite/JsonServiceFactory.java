@@ -28,6 +28,7 @@ import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
+import de.metas.incoterms.IncotermsRepository;
 import de.metas.job.JobRepository;
 import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.rest_api.utils.BPartnerQueryService;
@@ -54,6 +55,7 @@ public class JsonServiceFactory
 	private final @NonNull CurrencyRepository currencyRepository;
 	private final @NonNull JobRepository jobRepository;
 	private final @NonNull PaymentTermService paymentTermService;
+	private final @NonNull IncotermsRepository incotermsRepository;
 	private final @NonNull ExternalReferenceRestControllerService externalReferenceService;
 	private final @NonNull AlbertaBPartnerCompositeService albertaBPartnerCompositeService;
 
@@ -70,7 +72,8 @@ public class JsonServiceFactory
 				bpGroupService,
 				currencyRepository,
 				externalReferenceService,
-				albertaBPartnerCompositeService, identifier);
+				albertaBPartnerCompositeService,
+				identifier);
 	}
 
 	public JsonRetrieverService createRetriever()
@@ -89,6 +92,7 @@ public class JsonServiceFactory
 				titleRepository,
 				jobRepository,
 				paymentTermService,
+				incotermsRepository,
 				externalReferenceService,
 				identifier);
 	}

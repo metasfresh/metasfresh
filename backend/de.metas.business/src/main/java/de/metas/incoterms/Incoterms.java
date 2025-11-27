@@ -34,7 +34,6 @@ import javax.annotation.Nullable;
 @Builder
 public class Incoterms
 {
-
 	@NonNull IncotermsId id;
 	@NonNull String name;
 	@NonNull String value;
@@ -42,13 +41,4 @@ public class Incoterms
 	@Nullable @With String locationEffective;
 	@NonNull OrgId orgId;
 	boolean isDefault;
-
-	@Nullable
-	I_C_Incoterms getDefaultIncoterms(final @NotNull OrgId orgId);
-
-	void save(@NonNull I_C_Incoterms incoterms);
-
-	@NonNull
-	Incoterms getById(@NonNull IncotermsId incotermsId);
-
 }
