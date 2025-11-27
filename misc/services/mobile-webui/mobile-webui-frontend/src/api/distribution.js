@@ -58,3 +58,14 @@ export const completeDistributionJob = ({ wfProcessId }) => {
     .post(`${apiBasePath}/distribution/job/${wfProcessId}/complete`)
     .then((response) => unboxAxiosResponse(response));
 };
+
+export const getNextEligiblePickFromLine = ({ wfProcessId, lineId, huQRCode, productScannedCode }) => {
+  return axios
+    .post(`${apiBasePath}/distribution/nextEligiblePickFromLine`, {
+      wfProcessId,
+      lineId,
+      huQRCode,
+      productScannedCode,
+    })
+    .then((response) => unboxAxiosResponse(response));
+};
