@@ -33,21 +33,23 @@ import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.request.RequestStatusId;
 import de.metas.request.RequestTypeId;
 import de.metas.request.api.IRequestBL;
-import de.metas.request.api.IRequestTypeDAO;
 import de.metas.request.api.RequestCandidate;
+import de.metas.request.api.impl.RequestService;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.v2.order.sales.OrderService;
 import de.metas.rest_api.v2.ordercandidates.impl.MasterdataProvider;
 import de.metas.rest_api.v2.ordercandidates.impl.ProductMasterDataProvider;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
@@ -62,13 +64,14 @@ import java.time.ZonedDateTime;
 import static de.metas.RestUtils.retrieveOrgIdOrDefault;
 
 @Service
-public class RequestService
+@RequiredArgsConstructor
+public class RequestRestService
 {
 	private final IRequestBL requestBL = Services.get(IRequestBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
 	private final IQualityNoteDAO qualityNoteDAO = Services.get(IQualityNoteDAO.class);
-	private final OrderService orderService = SpringContextHolder.instance.getBean(OrderService.class);
+	@NonNull private final OrderService orderService;
+	@NonNull private final RequestService requestService;
 
 	public JsonRRequest upsert(@NonNull final JsonRRequest request, final MasterdataProvider masterdataProvider)
 	{
@@ -81,7 +84,7 @@ public class RequestService
 		final I_AD_Org org = orgDAO.getById(retrieveOrgIdOrDefault(request.getOrgCode()));
 		final OrgId orgId = OrgId.ofRepoId(org.getAD_Org_ID());
 
-		final RequestTypeId requestTypeId = requestTypeDAO.retrieveByInternalName(request.getRequestType());
+		final RequestTypeId requestTypeId = requestService.retrieveByInternalName(request.getRequestType());
 		if (requestTypeId == null)
 		{
 			throw new AdempiereException("@Invalid@ @R_RequestType_ID@");
@@ -122,6 +125,11 @@ public class RequestService
 			performanceType = poQualityNote.getPerformanceType();
 		}
 
+		RequestStatusId statusId = null;
+		if (Check.isNotBlank(request.getStatus()))
+		{
+			statusId = requestService.getStatusIdByRequestTypeIdAndName(requestTypeId, request.getStatus());
+		}
 		return RequestCandidate.builder()
 				.orgId(orgId)
 				.requestTypeId(requestTypeId)
@@ -134,6 +142,10 @@ public class RequestService
 				.recordRef(recordRef)
 				.performanceType(performanceType)
 				.qualityNoteId(qualityNoteId)
+				.isEscalated(request.getIsEscalated())
+				.isSelfService(request.getIsSelfService())
+				.result(request.getStatus())
+				.statusId(statusId)
 				.build();
 	}
 

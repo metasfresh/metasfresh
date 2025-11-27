@@ -6,6 +6,7 @@ import de.metas.inout.QualityNoteId;
 import de.metas.order.model.I_C_Order;
 import de.metas.product.ProductId;
 import de.metas.request.RequestId;
+import de.metas.request.RequestStatusId;
 import de.metas.request.api.IRequestDAO;
 import de.metas.request.api.RequestCandidate;
 import de.metas.user.UserId;
@@ -82,6 +83,16 @@ public class RequestDAO implements IRequestDAO
 		request.setM_QualityNote_ID(QualityNoteId.toRepoId(candidate.getQualityNoteId()));
 		request.setPerformanceType(candidate.getPerformanceType());
 		request.setDateDelivered(TimeUtil.asTimestamp(candidate.getDateDelivered()));
+		request.setResult(candidate.getResult());
+		request.setR_Status_ID(RequestStatusId.toRepoId(candidate.getStatusId()));
+		if (candidate.getIsEscalated() != null)
+		{
+			request.setIsEscalated(candidate.getIsEscalated());
+		}
+		if (candidate.getIsSelfService() != null)
+		{
+			request.setIsSelfService(candidate.getIsSelfService());
+		}
 
 		save(request);
 

@@ -5,6 +5,7 @@ import de.metas.request.RequestTypeId;
 import de.metas.request.api.IRequestTypeDAO;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_R_RequestType;
@@ -62,7 +63,6 @@ public class RequestTypeDAO implements IRequestTypeDAO
 	public RequestTypeId retrieveOrgChangeRequestTypeId()
 	{
 		return retrieveRequestTypeIdByInternalName(InternalName_OrgSwitch);
-
 	}
 
 	@Override
@@ -127,5 +127,14 @@ public class RequestTypeDAO implements IRequestTypeDAO
 				.firstId(RequestTypeId::ofRepoIdOrNull);
 
 		return Optional.ofNullable(requestTypeId);
+	}
+
+	@Override
+	public I_R_RequestType getById(@NonNull final RequestTypeId requestTypeId)
+	{
+		return queryBL.createQueryBuilderOutOfTrx(I_R_RequestType.class)
+				.addEqualsFilter(I_R_RequestType.COLUMNNAME_R_RequestType_ID, requestTypeId)
+				.create()
+				.firstOnlyNotNull();
 	}
 }

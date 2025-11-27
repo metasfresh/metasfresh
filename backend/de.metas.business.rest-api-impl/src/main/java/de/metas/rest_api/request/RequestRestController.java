@@ -58,7 +58,7 @@ public class RequestRestController
 {
 	private static final Logger logger = LogManager.getLogger(RequestRestController.class);
 
-	@NonNull private final RequestService requestService;
+	@NonNull private final RequestRestService requestRestService;
 	@NonNull private final BpartnerRestController bpartnerRestController;
 	@NonNull private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
 	@NonNull private final JsonRetrieverService jsonRetrieverService;
@@ -77,17 +77,8 @@ public class RequestRestController
 	{
 		try
 		{
-			final MasterdataProvider masterdataProvider = MasterdataProvider.builder()
-					.permissionService(permissionServiceFactory.createPermissionService())
-					.bpartnerRestController(bpartnerRestController)
-					.externalReferenceRestControllerService(externalReferenceRestControllerService)
-					.jsonRetrieverService(jsonRetrieverService)
-					.externalSystemRepository(externalSystemRepository)
-					.bPartnerEffectiveBL(bPartnerEffectiveBL)
-					.build();
-
 			return ResponseEntity.status(HttpStatus.CREATED)
-					.body(requestService.upsert(request, masterdataProvider));
+					.body(requestRestService.upsert(request, getMasterdataProvider()));
 		}
 		catch (final Exception ex)
 		{
@@ -96,5 +87,17 @@ public class RequestRestController
 			return ResponseEntity.unprocessableEntity()
 					.body(JsonErrors.ofThrowable(ex, adLanguage));
 		}
+	}
+
+	private MasterdataProvider getMasterdataProvider()
+	{
+		return MasterdataProvider.builder()
+				.permissionService(permissionServiceFactory.createPermissionService())
+				.bpartnerRestController(bpartnerRestController)
+				.externalReferenceRestControllerService(externalReferenceRestControllerService)
+				.jsonRetrieverService(jsonRetrieverService)
+				.externalSystemRepository(externalSystemRepository)
+				.bPartnerEffectiveBL(bPartnerEffectiveBL)
+				.build();
 	}
 }
