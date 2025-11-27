@@ -1,18 +1,8 @@
-package de.metas.bpartner;
-
-import de.metas.organization.OrgId;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NonNull;
-import lombok.Setter;
-
-import javax.annotation.Nullable;
-
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.business
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -30,12 +20,24 @@ import javax.annotation.Nullable;
  * #L%
  */
 
-@Data
+package de.metas.bpartner.composite;
+
+import de.metas.user.UserId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+
+@Value
 @Builder
-public class BPGroup
+public class SalesRepContact
 {
-	private final @NonNull OrgId orgId;
-	private final @Nullable BPGroupId id;
-	private @Setter @NonNull String name;
-	private final @NonNull String value;
+	@NonNull UserId id;
+	@NonNull String name;
+	@Nullable String value;
+	@Nullable String phone;
+	@Nullable String email;
+	@Nullable String lastName;
+	@Nullable String firstName;
 }

@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2025 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,22 +20,27 @@
  * #L%
  */
 
-package de.metas.incoterms;
+package de.metas.bpartner.composite.repository;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.composite.BPartnerCreditLimit;
 import de.metas.organization.OrgId;
-import de.metas.util.ISingletonService;
+import lombok.Builder;
 import lombok.NonNull;
-import org.compiere.model.I_C_Incoterms;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import lombok.Value;
 
-public interface IIncotermsDAO extends ISingletonService
+import javax.annotation.Nullable;
+
+@Builder
+@Value
+public class BPartnerCreditLimitsSaveRequest
 {
-	@Nullable
-	I_C_Incoterms getDefaultIncoterms(final @NotNull OrgId orgId);
+	@NonNull BPartnerId bpartnerId;
+	@NonNull BPartnerCreditLimit creditLimit;
+	@Nullable OrgId orgId;
 
-	void save(@NonNull I_C_Incoterms incoterms);
-
-	@NonNull
-	Incoterms getById(@NonNull IncotermsId incotermsId);
+	/**
+	 * Use-Case for {@code false}: when transferring a customer to another org, the user who does the transfer might not have access to the target-org. Still we need to be able to create the credit limit in that target-org.
+	 */
+	boolean validatePermissions;
 }

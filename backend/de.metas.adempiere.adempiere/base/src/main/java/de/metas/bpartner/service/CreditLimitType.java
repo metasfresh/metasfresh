@@ -1,18 +1,8 @@
-package de.metas.bpartner;
-
-import de.metas.organization.OrgId;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NonNull;
-import lombok.Setter;
-
-import javax.annotation.Nullable;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -30,12 +20,19 @@ import javax.annotation.Nullable;
  * #L%
  */
 
-@Data
+package de.metas.bpartner.service;
+
+import de.metas.util.lang.SeqNo;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
 @Builder
-public class BPGroup
+@Value
+public class CreditLimitType
 {
-	private final @NonNull OrgId orgId;
-	private final @Nullable BPGroupId id;
-	private @Setter @NonNull String name;
-	private final @NonNull String value;
+	@NonNull SeqNo seqNo;
+	@NonNull String name;
+	@NonNull CreditLimitTypeId creditLimitTypeId;
+	boolean autoApproval;
 }

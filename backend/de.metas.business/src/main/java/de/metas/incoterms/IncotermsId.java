@@ -22,20 +22,39 @@
 
 package de.metas.incoterms;
 
-import de.metas.organization.OrgId;
-import de.metas.util.ISingletonService;
-import lombok.NonNull;
-import org.compiere.model.I_C_Incoterms;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+import lombok.Value;
 
-public interface IIncotermsDAO extends ISingletonService
+import javax.annotation.Nullable;
+
+@Value
+public class IncotermsId implements RepoIdAware
 {
+	int repoId;
+
+	@JsonCreator
+	public static IncotermsId ofRepoId(final int repoId)
+	{
+		return new IncotermsId(repoId);
+	}
+
 	@Nullable
-	I_C_Incoterms getDefaultIncoterms(final @NotNull OrgId orgId);
+	public static IncotermsId ofRepoIdOrNull(@Nullable final Integer repoId)
+	{
+		return repoId != null && repoId > 0 ? new IncotermsId(repoId) : null;
+	}
 
-	void save(@NonNull I_C_Incoterms incoterms);
+	@JsonValue
+	public int toJson()
+	{
+		return getRepoId();
+	}
 
-	@NonNull
-	Incoterms getById(@NonNull IncotermsId incotermsId);
+	private IncotermsId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_Incoterms_ID");
+	}
 }
