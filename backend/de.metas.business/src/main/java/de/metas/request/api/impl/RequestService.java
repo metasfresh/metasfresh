@@ -53,6 +53,6 @@ public class RequestService
 	@Nullable
 	public RequestTypeId retrieveByInternalName(final @NonNull String requestType)
 	{
-		return requestTypeDAO.retrieveByInternalName(requestType);
+		return requestTypeDAO.retrieveRequestTypeIdByInternalName(requestType);
 	}
 }
