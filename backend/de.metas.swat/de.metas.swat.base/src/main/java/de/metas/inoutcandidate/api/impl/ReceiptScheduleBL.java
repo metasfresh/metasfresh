@@ -81,6 +81,7 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -751,5 +752,34 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 		{
 			delegate.setBPartnerAddress_Override(address);
 		}
+	}
+
+	@Override
+	public void updateDatePromisedOverrideAndPOReference(@NonNull final PInstanceId pinstanceId, @Nullable final LocalDate datePromisedOverride, @Nullable final String poReference)
+	{
+		final AtomicInteger updatedCnt = new AtomicInteger(0);
+
+		queryBL.createQueryBuilder(I_M_ReceiptSchedule.class)
+				.setOnlySelection(pinstanceId)
+				.create()
+				.iterateAndStream()
+				.forEach(record ->
+				{
+					if (datePromisedOverride != null)
+					{
+						record.setDatePromised_Override(TimeUtil.asTimestamp(datePromisedOverride));
+					}
+
+					if (!Check.isEmpty(poReference, true))
+					{
+						record.setPOReference(poReference);
+					}
+
+					InterfaceWrapperHelper.saveRecord(record);
+
+					updatedCnt.incrementAndGet();
+				});
+
+		Loggables.withLogger(logger, Level.INFO).addLog("Updated {} M_ReceiptSchedules", updatedCnt.get());
 	}
 }

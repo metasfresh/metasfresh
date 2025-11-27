@@ -46,6 +46,7 @@ import org.compiere.model.I_M_Warehouse;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -231,4 +232,6 @@ public interface IReceiptScheduleBL extends ISingletonService
 	void updateCanBeExportedFrom(@NonNull I_M_ReceiptSchedule receiptSchedule);
 
 	List<ReceiptScheduleId> retainLUQtySchedules(List<ReceiptScheduleId> receiptSchedules);
+
+	void updateDatePromisedOverrideAndPOReference(@NonNull PInstanceId pinstanceId, @Nullable LocalDate datePromisedOverride, @Nullable String poReference);
 }
