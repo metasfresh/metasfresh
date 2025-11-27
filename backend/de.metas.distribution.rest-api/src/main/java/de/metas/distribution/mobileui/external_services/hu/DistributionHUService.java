@@ -16,6 +16,7 @@ import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.i18n.AdMessageKey;
+import de.metas.handlingunits.trace.HUAccessService;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.scannable_code.ScannedCode;
@@ -41,6 +42,7 @@ public class DistributionHUService
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final InventoryService inventoryService;
+	@NonNull private final HUAccessService huAccessService;
 	@NonNull private final HUReservationService huReservationService;
 
 	@NonNull
