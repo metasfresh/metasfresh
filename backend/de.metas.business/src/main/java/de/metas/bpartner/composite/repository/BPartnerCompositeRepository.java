@@ -8,6 +8,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerCompositeAndContactId;
 import de.metas.bpartner.service.BPartnerContactQuery;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -63,16 +64,19 @@ public class BPartnerCompositeRepository
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final LogEntriesRepository recordChangeLogRepository;
 	private final UserRoleRepository userRoleRepository;
+	private final BPartnerCreditLimitRepository bPartnerCreditLimitRepository;
 	private final BPartnerCompositeCacheById bpartnerCompositeCache = new BPartnerCompositeCacheById(Services.get(IUserDAO.class));
 
 	public BPartnerCompositeRepository(
 			@NonNull final IBPartnerBL bpartnerBL,
 			@NonNull final LogEntriesRepository recordChangeLogRepository,
-			@NonNull final UserRoleRepository userRoleRepository)
+			@NonNull final UserRoleRepository userRoleRepository,
+			@NonNull final BPartnerCreditLimitRepository bPartnerCreditLimitRepository)
 	{
 		this.bpartnerBL = bpartnerBL;
 		this.recordChangeLogRepository = recordChangeLogRepository;
 		this.userRoleRepository = userRoleRepository;
+		this.bPartnerCreditLimitRepository = bPartnerCreditLimitRepository;
 	}
 
 	public BPartnerComposite getById(@NonNull final BPartnerId bpartnerId)
@@ -281,6 +285,7 @@ public class BPartnerCompositeRepository
 		final BPartnerCompositesLoader loader = BPartnerCompositesLoader.builder()
 				.recordChangeLogRepository(recordChangeLogRepository)
 				.userRoleRepository(userRoleRepository)
+				.bPartnerCreditLimitRepository(bPartnerCreditLimitRepository)
 				.build();
 
 		return loader.retrieveByIds(bpartnerIds);

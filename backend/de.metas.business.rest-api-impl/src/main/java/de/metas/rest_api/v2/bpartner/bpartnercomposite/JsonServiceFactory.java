@@ -29,6 +29,7 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
 import de.metas.job.JobRepository;
+import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.jsonpersister.JsonPersisterService;
@@ -52,6 +53,7 @@ public class JsonServiceFactory
 	private final @NonNull TitleRepository titleRepository;
 	private final @NonNull CurrencyRepository currencyRepository;
 	private final @NonNull JobRepository jobRepository;
+	private final @NonNull PaymentTermService paymentTermService;
 	private final @NonNull ExternalReferenceRestControllerService externalReferenceService;
 	private final @NonNull AlbertaBPartnerCompositeService albertaBPartnerCompositeService;
 
@@ -86,6 +88,7 @@ public class JsonServiceFactory
 				greetingRepository,
 				titleRepository,
 				jobRepository,
+				paymentTermService,
 				externalReferenceService,
 				identifier);
 	}

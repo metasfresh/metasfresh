@@ -30,6 +30,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.common.bpartner.v1.request.JsonRequestContact;
@@ -115,7 +116,7 @@ class ContactRestControllerTest
 
 		recordChangeLogRepository = new MockLogEntriesRepository();
 
-		bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, recordChangeLogRepository, new UserRoleRepository());
+		bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, recordChangeLogRepository, new UserRoleRepository(), new BPartnerCreditLimitRepository());
 		final BPGroupRepository bpGroupRepository = new BPGroupRepository();
 
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
@@ -136,6 +137,7 @@ class ContactRestControllerTest
 		final I_C_BP_Group bpGroupRecord = newInstance(I_C_BP_Group.class);
 		bpGroupRecord.setC_BP_Group_ID(C_BP_GROUP_ID);
 		bpGroupRecord.setName(BP_GROUP_RECORD_NAME);
+		bpGroupRecord.setValue(BP_GROUP_RECORD_NAME);
 		saveRecord(bpGroupRecord);
 
 		createBPartnerData(0);

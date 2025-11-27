@@ -37,6 +37,7 @@ import de.metas.bpartner.composite.BPartnerCompositeAndContactId;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.BPartnerContactQuery;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
@@ -143,7 +144,7 @@ class BpartnerRestControllerTest
 		final BPartnerBL partnerBL = new BPartnerBL(new UserRepository());
 		//Services.registerService(IBPartnerBL.class, partnerBL);
 
-		bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository());
+		bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository(), new BPartnerCreditLimitRepository());
 		currencyRepository = new CurrencyRepository();
 
 		final BPGroupRepository bpGroupRepository = new BPGroupRepository();
@@ -166,6 +167,7 @@ class BpartnerRestControllerTest
 		final I_C_BP_Group bpGroupRecord = newInstance(I_C_BP_Group.class);
 		bpGroupRecord.setC_BP_Group_ID(C_BP_GROUP_ID);
 		bpGroupRecord.setName(BP_GROUP_RECORD_NAME);
+		bpGroupRecord.setValue(BP_GROUP_RECORD_NAME);
 		saveRecord(bpGroupRecord);
 
 		createBPartnerData(0);

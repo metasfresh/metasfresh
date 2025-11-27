@@ -156,6 +156,7 @@ public class OrderTest
 	{
 		final I_C_BP_Group group = newInstance(I_C_BP_Group.class);
 		group.setName("BPGroup");
+		group.setValue("BPGroupValue");
 		save(group);
 
 		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
@@ -217,6 +218,7 @@ public class OrderTest
 	{
 		final I_C_BP_Group group = newInstance(I_C_BP_Group.class);
 		group.setName("BPGroup");
+		group.setValue("BPGroupValue");
 		save(group);
 
 		final I_C_Incoterms incoterms = newInstance(I_C_Incoterms.class);
@@ -248,6 +250,7 @@ public class OrderTest
 	{
 		final I_C_BP_Group group = newInstance(I_C_BP_Group.class);
 		group.setName("BPGroup");
+		group.setValue("BPGroupValue");
 		save(group);
 
 		final I_C_Incoterms incoterms = newInstance(I_C_Incoterms.class);
@@ -279,6 +282,7 @@ public class OrderTest
 	{
 		final I_C_BP_Group group = newInstance(I_C_BP_Group.class);
 		group.setName("BPGroup");
+		group.setValue("BPGroupValue");
 		save(group);
 
 		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
@@ -303,6 +307,7 @@ public class OrderTest
 	{
 		final I_C_BP_Group group = newInstance(I_C_BP_Group.class);
 		group.setName("BPGroup");
+		group.setValue("BPGroupValue");
 		save(group);
 
 		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
