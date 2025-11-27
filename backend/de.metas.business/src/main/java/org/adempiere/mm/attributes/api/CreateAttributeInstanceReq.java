@@ -27,13 +27,12 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.mm.attributes.AttributeCode;
 
+import javax.annotation.Nullable;
+
 @Value
 @Builder
 public class CreateAttributeInstanceReq
 {
-	@NonNull
-	AttributeCode attributeCode;
-
-	@NonNull
-	Object value;
+	@NonNull AttributeCode attributeCode;
+	@Nullable Object value;
 }

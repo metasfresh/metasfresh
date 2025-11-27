@@ -17,11 +17,13 @@ import java.math.BigDecimal;
 
 public class PickingJobScheduleView_Schedule extends PickingJobScheduleViewBasedProcess implements IProcessDefaultParametersProvider
 {
+	private static final String PARAM_IsSingleRowSelected = "IsSingleRowSelected";
+	
 	@Param(parameterName = I_M_Picking_Job_Schedule.COLUMNNAME_C_Workplace_ID, mandatory = true)
 	private WorkplaceId workplaceId;
 
 	public static final String PARAM_QtyToPick = I_M_Picking_Job_Schedule.COLUMNNAME_QtyToPick;
-	@Param(parameterName = PARAM_QtyToPick, mandatory = true)
+	@Param(parameterName = PARAM_QtyToPick)
 	private BigDecimal qtyToPickBD;
 
 	@Override
@@ -46,6 +48,10 @@ public class PickingJobScheduleView_Schedule extends PickingJobScheduleViewBased
 				final Quantity qtyRemainingToScheduleForPicking = pickingJobScheduleService.getQtyRemainingToScheduleForPicking(shipmentScheduleAndJobScheduleId.getShipmentScheduleId());
 				return qtyRemainingToScheduleForPicking.toBigDecimal();
 			}
+		}
+		else if (parameter.getColumnName().equals(PARAM_IsSingleRowSelected))
+		{
+			return getSelectedRowIds().isSingleDocumentId();
 		}
 
 		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;

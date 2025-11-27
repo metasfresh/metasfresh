@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_Carrier_ShipmentOrder extends org.compiere.model.PO implements I_Carrier_ShipmentOrder, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -324853335L;
+	private static final long serialVersionUID = -1202822504L;
 
     /** Standard Constructor */
     public X_Carrier_ShipmentOrder (final Properties ctx, final int Carrier_ShipmentOrder_ID, @Nullable final String trxName)
@@ -35,15 +35,33 @@ public class X_Carrier_ShipmentOrder extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public void setCarrier_Product (final java.lang.String Carrier_Product)
+	public void setCarrier_Goods_Type_ID (final int Carrier_Goods_Type_ID)
 	{
-		set_Value (COLUMNNAME_Carrier_Product, Carrier_Product);
+		if (Carrier_Goods_Type_ID < 1) 
+			set_Value (COLUMNNAME_Carrier_Goods_Type_ID, null);
+		else 
+			set_Value (COLUMNNAME_Carrier_Goods_Type_ID, Carrier_Goods_Type_ID);
 	}
 
 	@Override
-	public java.lang.String getCarrier_Product() 
+	public int getCarrier_Goods_Type_ID() 
 	{
-		return get_ValueAsString(COLUMNNAME_Carrier_Product);
+		return get_ValueAsInt(COLUMNNAME_Carrier_Goods_Type_ID);
+	}
+
+	@Override
+	public void setCarrier_Product_ID (final int Carrier_Product_ID)
+	{
+		if (Carrier_Product_ID < 1) 
+			set_Value (COLUMNNAME_Carrier_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_Carrier_Product_ID, Carrier_Product_ID);
+	}
+
+	@Override
+	public int getCarrier_Product_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Carrier_Product_ID);
 	}
 
 	@Override
@@ -128,6 +146,30 @@ public class X_Carrier_ShipmentOrder extends org.compiere.model.PO implements I_
 	public int getM_ShipperTransportation_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_ShipperTransportation_ID);
+	}
+
+	@Override
+	public void setPickupTimeFrom (final java.sql.Timestamp PickupTimeFrom)
+	{
+		set_Value (COLUMNNAME_PickupTimeFrom, PickupTimeFrom);
+	}
+
+	@Override
+	public java.sql.Timestamp getPickupTimeFrom() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_PickupTimeFrom);
+	}
+
+	@Override
+	public void setPickupTimeTo (final java.sql.Timestamp PickupTimeTo)
+	{
+		set_Value (COLUMNNAME_PickupTimeTo, PickupTimeTo);
+	}
+
+	@Override
+	public java.sql.Timestamp getPickupTimeTo() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_PickupTimeTo);
 	}
 
 	@Override

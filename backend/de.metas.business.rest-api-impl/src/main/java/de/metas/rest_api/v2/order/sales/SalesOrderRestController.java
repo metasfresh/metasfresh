@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,6 +28,7 @@ import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.effective.BPartnerEffectiveBL;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.rest_api.v1.JsonError;
@@ -37,6 +38,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderFactory;
 import de.metas.order.OrderId;
@@ -95,26 +97,32 @@ import java.util.Optional;
 @Profile(Profiles.PROFILE_App)
 public class SalesOrderRestController
 {
-	private static final Logger logger = LogManager.getLogger(SalesOrderRestController.class);
-	private final OrderService orderService;
-	private final AttachmentEntryService attachmentEntryService;
-	private final BpartnerRestController bpartnerRestController;
-	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
-	private final JsonRetrieverService jsonRetrieverService;
-	private final PermissionServiceFactory permissionServiceFactory = PermissionServiceFactories.currentContext();
+	@NonNull private static final Logger logger = LogManager.getLogger(SalesOrderRestController.class);
+	@NonNull private final OrderService orderService;
+	@NonNull private final AttachmentEntryService attachmentEntryService;
+	@NonNull private final BpartnerRestController bpartnerRestController;
+	@NonNull private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
+	@NonNull private final JsonRetrieverService jsonRetrieverService;
+	@NonNull private final ExternalSystemRepository externalSystemRepository;
+	@NonNull private final PermissionServiceFactory permissionServiceFactory = PermissionServiceFactories.currentContext();
+	@NonNull private final BPartnerEffectiveBL bPartnerEffectiveBL;
 
 	public SalesOrderRestController(
 			@NonNull final OrderService orderService,
 			@NonNull final AttachmentEntryService attachmentEntryService,
 			@NonNull final JsonServiceFactory jsonServiceFactory,
 			@NonNull final BpartnerRestController bpartnerRestController,
-			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService)
+			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
+			@NonNull final ExternalSystemRepository externalSystemRepository,
+			@NonNull final BPartnerEffectiveBL bPartnerEffectiveBL)
 	{
 		this.orderService = orderService;
 		this.attachmentEntryService = attachmentEntryService;
 		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
 		this.bpartnerRestController = bpartnerRestController;
 		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
+		this.externalSystemRepository = externalSystemRepository;
+		this.bPartnerEffectiveBL = bPartnerEffectiveBL;
 	}
 
 	@ApiOperation("Create new order payment")
@@ -225,6 +233,8 @@ public class SalesOrderRestController
 					.bpartnerRestController(bpartnerRestController)
 					.externalReferenceRestControllerService(externalReferenceRestControllerService)
 					.jsonRetrieverService(jsonRetrieverService)
+					.externalSystemRepository(externalSystemRepository)
+					.bPartnerEffectiveBL(bPartnerEffectiveBL)
 					.build();
 
 			return orderService.getOrderId(request, masterdataProvider)

@@ -35,10 +35,20 @@ const updateLineFromSteps = ({ draftLine }) => {
   draftLine.completeStatus = computeLineStatusFromSteps({ draftLine });
 
   let qtyPicked = 0;
+  let hasLinesInTransit = false;
   for (const step of getStepsArrayFromLine(draftLine)) {
     qtyPicked += step.qtyPicked;
+
+    if (isInTransit({ step })) {
+      hasLinesInTransit = true;
+    }
   }
   draftLine.qtyPicked = qtyPicked;
+  draftLine.hasLinesInTransit = hasLinesInTransit;
+};
+
+const isInTransit = ({ step }) => {
+  return step.isPickedFrom && !step.droppedToLocator;
 };
 
 const computeLineStatusFromSteps = ({ draftLine }) => {
@@ -60,15 +70,7 @@ const computeLineStatusFromSteps = ({ draftLine }) => {
   return CompleteStatus.reduceFromCompleteStatuesUniqueArray(stepsStatuses);
 };
 
-const updateActivityStatusFromLines = ({ draftActivityDataStored }) => {
-  draftActivityDataStored.completeStatus = computeActivityStatusFromLines({ draftActivityDataStored });
-};
-
-const extractDraftMapKeys = (draftMap) => {
-  return isDraft(draftMap) ? Object.keys(current(draftMap)) : Object.keys(draftMap);
-};
-
-const computeActivityStatusFromLines = ({ draftActivityDataStored }) => {
+const updateActivityFromLines = ({ draftActivityDataStored }) => {
   const lineIds = extractDraftMapKeys(draftActivityDataStored.lines);
 
   const linesStatuses = lineIds.reduce((accum, lineId) => {
@@ -80,7 +82,20 @@ const computeActivityStatusFromLines = ({ draftActivityDataStored }) => {
     return accum;
   }, []);
 
-  return CompleteStatus.reduceFromCompleteStatuesUniqueArray(linesStatuses);
+  let hasLinesInTransit = false;
+  lineIds.forEach((lineId) => {
+    const draftLine = draftActivityDataStored.lines[lineId];
+    if (draftLine.hasLinesInTransit) {
+      hasLinesInTransit = true;
+    }
+  });
+
+  draftActivityDataStored.completeStatus = CompleteStatus.reduceFromCompleteStatuesUniqueArray(linesStatuses);
+  draftActivityDataStored.hasLinesInTransit = hasLinesInTransit;
+};
+
+const extractDraftMapKeys = (draftMap) => {
+  return isDraft(draftMap) ? Object.keys(current(draftMap)) : Object.keys(draftMap);
 };
 
 const normalizeLinesArray = (lines) => {
@@ -103,14 +118,14 @@ const normalizeLine = (line) => {
 const mergeActivityDataStored = ({ draftActivityDataStored, fromActivity }) => {
   draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? false;
 
-  //
-  // Copy lines
-  draftActivityDataStored.lines = normalizeLinesArray(fromActivity.componentProps.lines);
+  const job = fromActivity.componentProps.job;
+  draftActivityDataStored.lines = normalizeLinesArray(job.lines);
+  draftActivityDataStored.isCompleteJobAutomatically = job.completeJobAutomatically;
+  draftActivityDataStored.qtyRejectedReasons = job.qtyRejectedReasons;
 
   //
   // Update all statuses
   const draftLines = draftActivityDataStored.lines;
-  console.log('mergeActivityDataStored', { draftLines, fromActivity });
   for (let lineId of Object.keys(draftLines)) {
     const draftLine = draftLines[lineId];
 
@@ -121,19 +136,14 @@ const mergeActivityDataStored = ({ draftActivityDataStored, fromActivity }) => {
 
     updateLineFromSteps({ draftLine });
   }
-  updateActivityStatusFromLines({ draftActivityDataStored });
+
+  updateActivityFromLines({ draftActivityDataStored });
 
   return draftActivityDataStored;
 };
 
 registerHandler({
   componentType: COMPONENT_TYPE,
-  normalizeComponentProps: ({ componentProps }) => {
-    return {
-      ...componentProps,
-      lines: normalizeLinesArray(componentProps.lines),
-    };
-  },
-
-  mergeActivityDataStored: mergeActivityDataStored,
+  normalizeComponentProps: () => {}, // don't add componentProps to state
+  mergeActivityDataStored,
 });

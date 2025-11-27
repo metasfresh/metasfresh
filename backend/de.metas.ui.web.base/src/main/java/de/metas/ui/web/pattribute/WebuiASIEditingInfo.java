@@ -1,15 +1,7 @@
 package de.metas.ui.web.pattribute;
 
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.AttributeSetId;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.util.ASIEditingInfo;
-import org.adempiere.mm.attributes.util.ASIEditingInfo.WindowType;
-import org.compiere.model.I_M_Attribute;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.lang.SOTrx;
 import de.metas.product.ProductId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -17,6 +9,12 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.Attribute;
+import org.adempiere.mm.attributes.util.ASIEditingInfo;
+import org.adempiere.mm.attributes.util.ASIEditingInfo.WindowType;
 
 /*
  * #%L
@@ -42,7 +40,7 @@ import lombok.Value;
 
 @Value
 @Builder
-public final class WebuiASIEditingInfo
+public class WebuiASIEditingInfo
 {
 	public static WebuiASIEditingInfoBuilder builder(@NonNull ASIEditingInfo info)
 	{
@@ -109,12 +107,12 @@ public final class WebuiASIEditingInfo
 
 	@NonNull
 	@Singular
-	ImmutableList<I_M_Attribute> attributes;
+	ImmutableList<Attribute> attributes;
 
 	public ImmutableSet<AttributeId> getAttributeIds()
 	{
 		return attributes.stream()
-				.map(a -> AttributeId.ofRepoId(a.getM_Attribute_ID()))
+				.map(Attribute::getAttributeId)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 }

@@ -32,11 +32,11 @@ import de.metas.gs1.GS1ProductCodes;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.QtyTU;
-import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.order.OrderAndLineId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -301,4 +301,6 @@ public class PickingJobLine implements PickingJobHeaderOrLine
 	{
 		return withCurrentPickingTarget(currentPickingTarget.withPickingSlot(pickingSlot));
 	}
+
+	public boolean isFullyPicked() {return qtyRemainingToPick.signum() <= 0;}
 }

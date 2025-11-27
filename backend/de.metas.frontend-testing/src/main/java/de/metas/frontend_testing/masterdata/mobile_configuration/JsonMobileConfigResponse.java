@@ -1,6 +1,7 @@
 package de.metas.frontend_testing.masterdata.mobile_configuration;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import de.metas.handlingunits.picking.config.mobileui.PickAttribute;
 import de.metas.handlingunits.picking.config.mobileui.PickToStructure;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
@@ -35,9 +36,11 @@ public class JsonMobileConfigResponse
 		@Nullable Boolean allowPickingAnyCustomer;
 		@Nullable Boolean allowPickingAnyHU;
 		@Nullable CreateShipmentPolicy createShipmentPolicy;
+		@Nullable Boolean completeJobAutomatically;
 		@Nullable Boolean alwaysSplitHUsEnabled;
 		@Nullable Boolean shipOnCloseLU;
 		@Nullable Set<PickToStructure> pickTo;
+		@Nullable Set<PickAttribute> readAttributes;
 		@Nullable Boolean filterByQRCode;
 		@Nullable Boolean allowCompletingPartialPickingJob;
 		@Nullable Boolean isAnonymousPickHUsOnTheFly;
@@ -56,6 +59,7 @@ public class JsonMobileConfigResponse
 	public static class Distribution
 	{
 		@Nullable Boolean allowPickingAnyHU;
+		@Nullable Boolean completeJobAutomatically;
 	}
 
 	//

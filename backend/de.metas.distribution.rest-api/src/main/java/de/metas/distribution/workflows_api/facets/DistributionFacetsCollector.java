@@ -1,7 +1,7 @@
 package de.metas.distribution.workflows_api.facets;
 
 import com.google.common.collect.HashMultiset;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.workflows_api.DistributionOrderCollector;
@@ -13,6 +13,8 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.warehouse.WarehouseId;
@@ -25,12 +27,10 @@ import org.eevolution.model.I_DD_OrderLine;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.function.UnaryOperator;
-
-import static de.metas.distribution.workflows_api.DDOrderReferenceCollector.extractQtyEntered;
 
 @Builder
 public class DistributionFacetsCollector implements DistributionOrderCollector<DistributionFacet>
@@ -53,19 +53,20 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 	private final HashMap<ResourceId, ITranslatableString> resourceNames = new HashMap<>();
 
 	@Override
-	public Collection<DistributionFacet> getCollectedItems()
+	public List<DistributionFacet> getCollectedItems()
 	{
 		processPendingRequests();
 
 		return _result.stream()
 				.map(facet -> facet.withHitCount(counters.count(facet.getFacetId())))
-				.collect(ImmutableSet.toImmutableSet());
+				.distinct()
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public DistributionFacetsCollection toFacetsCollection() {return DistributionFacetsCollection.ofCollection(getCollectedItems());}
 
 	@Override
-	public void collect(final I_DD_Order ddOrder, final boolean isJobStarted_NOTUSED)
+	public void collect(final I_DD_Order ddOrder)
 	{
 		collectWarehouseFrom(ddOrder);
 		collectWarehouseTo(ddOrder);
@@ -246,6 +247,12 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 		return TranslatableStrings.anyLanguage(productBL.getProductValueAndName(productId));
 	}
 
+	@NonNull
+	public static Quantity extractQtyEntered(final I_DD_OrderLine ddOrderLine)
+	{
+		return Quantitys.of(ddOrderLine.getQtyEntered(), UomId.ofRepoId(ddOrderLine.getC_UOM_ID()));
+	}
+
 	private void processPendingRequests()
 	{
 		if (!pendingCollectProductsFromDDOrderIds.isEmpty())
@@ -267,5 +274,4 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 	{
 		return resourceNames.computeIfAbsent(resourceId, id -> TranslatableStrings.constant(ppOrderBL.getResourceName(id)));
 	}
-
 }

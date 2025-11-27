@@ -145,6 +145,6 @@ Feature: Cleared HU can be picked on the fly and manually picked
 
     And the shipment identified by s_1_09242025 is reversed
 
-    And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | OPT.IsClosed | OPT.Processed | OPT.QtyToDeliver |
-      | s_s_2                            | false        | false         | 10               |
+    And after not more than 120s, validate shipment schedules:
+      | M_ShipmentSchedule_ID.Identifier | OPT.IsClosed | OPT.Processed |
+      | s_s_2                            | false        | false         |

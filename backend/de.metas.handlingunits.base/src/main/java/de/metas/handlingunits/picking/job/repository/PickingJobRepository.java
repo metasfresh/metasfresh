@@ -22,7 +22,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
@@ -35,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -52,13 +52,22 @@ public class PickingJobRepository
 
 	public PickingJobStepId newPickingJobStepId()
 	{
-		final int repoId = DB.getNextID(ClientId.METASFRESH.getRepoId(), I_M_Picking_Job_Step.Table_Name, ITrx.TRXNAME_None);
+		final int repoId = DB.getNextID(ClientId.METASFRESH.getRepoId(), I_M_Picking_Job_Step.Table_Name);
 		return PickingJobStepId.ofRepoId(repoId);
 	}
 
 	public void save(@NonNull final PickingJob pickingJob)
 	{
 		PickingJobLoaderAndSaver.forSaving().save(pickingJob);
+	}
+
+	public PickingJob updateById(
+			@NonNull PickingJobId pickingJobId,
+			@NonNull final PickingJobLoaderSupportingServices loadingSupportServices,
+			@NonNull UnaryOperator<PickingJob> updater)
+	{
+		return PickingJobLoaderAndSaver.forLoading(loadingSupportServices)
+				.updateById(pickingJobId, updater);
 	}
 
 	public List<PickingJob> getDraftJobsByPickerId(@NonNull final ValueRestriction<UserId> pickerId, @NonNull final PickingJobLoaderSupportingServices loadingSupportServices)

@@ -31,9 +31,9 @@ Feature: Flatfee contract with Flatfee-Type "Reported-Qty"
       | M_AttributeSet_ID.Identifier | Name                         | MandatoryType |
       | attributeSet_S0433_1         | flatfee_attributeSet_S0433_1 | N             |
     And add M_AttributeUse:
-      | M_AttributeUse_ID.Identifier | M_AttributeSet_ID.Identifier | M_Attribute_ID.Identifier | SeqNo |
-      | attributeUse_mealType        | attributeSet_S0433_1         | mealType_S0433_1          | 10    |
-      | attributeUse_serviceType     | attributeSet_S0433_1         | serviceType_S0433_1       | 20    |
+      | M_AttributeSet_ID    | M_Attribute_ID      | SeqNo |
+      | attributeSet_S0433_1 | mealType_S0433_1    | 10    |
+      | attributeSet_S0433_1 | serviceType_S0433_1 | 20    |
     And metasfresh contains M_AttributeSetInstance with identifier "ASI_Standard_S0433_1":
   """
   {

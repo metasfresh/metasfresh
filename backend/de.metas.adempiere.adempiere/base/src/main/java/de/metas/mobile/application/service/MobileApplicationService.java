@@ -54,16 +54,16 @@ public class MobileApplicationService
 		}
 	}
 
-	public Stream<MobileApplicationInfo> streamMobileApplicationInfos(final IUserRolePermissions permissions)
+	public Stream<MobileApplicationInfo> streamMobileApplicationInfos(@NonNull UserId userId, @NonNull final MobileApplicationPermissions permissions)
 	{
 		return applicationInfoRepository.getAllActive()
 				.stream()
-				.filter(applicationInfo -> permissions.getMobileApplicationPermissions().isAllowAccess(applicationInfo.getRepoId()))
+				.filter(applicationInfo -> permissions.isAllowAccess(applicationInfo.getRepoId()))
 				.map(applicationInfo -> {
 					try
 					{
 						final MobileApplication application = applications.getById(applicationInfo.getId());
-						return application.customizeApplicationInfo(applicationInfo, permissions.getUserId());
+						return application.customizeApplicationInfo(applicationInfo, userId);
 					}
 					catch (Exception ex)
 					{
@@ -74,9 +74,12 @@ public class MobileApplicationService
 				.filter(Objects::nonNull);
 	}
 
-	public <T extends MobileApplication> Stream<T> streamMobileApplicationsOfType(final Class<T> type, final IUserRolePermissions permissions)
+	public <T extends MobileApplication> Stream<T> streamMobileApplicationsOfType(
+			@NonNull final Class<T> type,
+			@NonNull final UserId userId,
+			@NonNull final MobileApplicationPermissions permissions)
 	{
-		return streamMobileApplicationInfos(permissions)
+		return streamMobileApplicationInfos(userId, permissions)
 				.map(applicationInfo -> {
 					final MobileApplication application = applications.getById(applicationInfo.getId());
 					return type.isInstance(application) ? type.cast(application) : null;

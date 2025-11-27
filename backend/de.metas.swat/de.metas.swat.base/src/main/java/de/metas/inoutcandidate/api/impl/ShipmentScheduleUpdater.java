@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.inoutcandidate.api.impl;
 
 import ch.qos.logback.classic.Level;
@@ -89,28 +111,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 @Service
 @RequiredArgsConstructor
@@ -278,6 +278,9 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 				updateShipmentConstraints(sched);
 
+				final BigDecimal qtyDelivered = shipmentScheduleAllocDAO.retrieveQtyDelivered(sched);
+				sched.setQtyDelivered(qtyDelivered);
+				
 				//
 				// QtyPickList (i.e. qtyUnconfirmedShipments) is the sum of
 				// * MovementQtys from all draft shipment lines which are pointing to shipment schedule's order line
@@ -336,10 +339,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			// TODO: invert dependency add make this pluggable from de.metas.tourplanning module
 			shipmentScheduleDeliveryDayBL.updateDeliveryDayInfo(schedRecord);
 
-			// task 09358: ol.qtyReserved should be as correct as QtyOrdered and QtyDelivered, but in some cases isn't. this here is a workaround to the problem
-			// task 09869: don't rely on ol anyways
-			final BigDecimal qtyDelivered = shipmentScheduleAllocDAO.retrieveQtyDelivered(schedRecord);
-			schedRecord.setQtyDelivered(qtyDelivered);
 			// takes into consideration isClosed flag 
 			schedRecord.setQtyReserved(BigDecimal.ZERO.max(shipmentScheduleEffectiveBL.computeQtyOrdered(olAndSched.getSched()).subtract(schedRecord.getQtyDelivered())));
 
@@ -431,7 +430,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		}
 	}
 
-	private void updateFromPickingJobSchedules(final List<OlAndSched> olsAndScheds)
+	private void updateFromPickingJobSchedules(@NonNull final List<OlAndSched> olsAndScheds)
 	{
 		final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = olsAndScheds.stream()
 				.map(OlAndSched::getShipmentScheduleId)
@@ -460,7 +459,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 		shipmentSchedule.setIsScheduledForPicking(qtyScheduledToPick != null && qtyScheduledToPick.signum() > 0);
 		shipmentSchedule.setQtyScheduledForPicking(qtyScheduledToPick != null ? qtyScheduledToPick.toBigDecimal() : null);
-		shipmentSchedulePA.save(shipmentSchedule);
+		shipmentSchedulePA.save(shipmentSchedule); // TODO 2025-11-13-metas-ts: remove this save and see if things stil work 
 	}
 
 	ShipmentSchedulesDuringUpdate generate_FirstRun(@NonNull final List<OlAndSched> lines)
@@ -826,7 +825,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		sched.setDeliveryDate(TimeUtil.asTimestamp(shipmentScheduleOrderDoc.getDeliveryDate()));
 	}
 
-	private void updateShipmentConstraints(final I_M_ShipmentSchedule sched)
+	private void updateShipmentConstraints(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		final int billBPartnerId = sched.getBill_BPartner_ID();
 		final int deliveryStopShipmentConstraintId = shipmentConstraintsBL.getDeliveryStopShipmentConstraintId(billBPartnerId);

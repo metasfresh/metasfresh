@@ -11,6 +11,7 @@ import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.lowlevel.model.DDOrderLineHUPackingAware;
 import de.metas.distribution.workflows_api.DDOrderReference;
 import de.metas.distribution.workflows_api.DDOrderReferenceCollector;
+import de.metas.distribution.workflows_api.DistributionJobLoaderSupportingServices;
 import de.metas.distribution.workflows_api.DistributionLauncherCaptionProvider;
 import de.metas.distribution.workflows_api.facets.DistributionFacetId;
 import de.metas.document.DocBaseType;
@@ -28,8 +29,8 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
-import de.metas.workflow.rest_api.model.WorkflowLauncherCaption;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -58,6 +59,8 @@ public class DDOrderCommand
 	@NonNull private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	@NonNull private final DDOrderService ddOrderService;
+	@NonNull public final DistributionJobLoaderSupportingServices distributionJobLoaderSupportingServices;
+	@NonNull private final DistributionLauncherCaptionProvider captionProvider;
 
 	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonDDOrderRequest request;
@@ -96,9 +99,14 @@ public class DDOrderCommand
 		ddOrder.setIsSOTrx(false);
 		ddOrder.setIsInTransit(false);
 		ddOrder.setDeliveryRule(X_DD_Order.DELIVERYRULE_Availability);
+		ddOrder.setC_DocType_ID(findDocTypeId().getRepoId());
+		ddOrder.setPriorityRule(StringUtils.trimBlankToNull(request.getPriority()));
 
-		final DocTypeId docTypeId = findDocTypeId();
-		ddOrder.setC_DocType_ID(docTypeId.getRepoId());
+		if (request.getSeqNo() != null)
+		{
+			ddOrder.setSeqNo(request.getSeqNo().toInt());
+		}
+
 		ddOrderService.save(ddOrder);
 
 		request.getLines().forEach(line -> createLine(line, ddOrder));
@@ -110,7 +118,7 @@ public class DDOrderCommand
 		final DDOrderReference ddOrderReference = toDDOrderReference(ddOrder);
 		return JsonDDOrderResponse.builder()
 				.documentNo(ddOrder.getDocumentNo())
-				.launcherCaption(computeLauncherCaption(ddOrderReference).translate(context.getAdLanguage()))
+				.launcherCaption(computeLauncherCaption(ddOrderReference))
 				.launcherTestId(ddOrderReference.getTestId())
 				.warehouseFromFacetId(DistributionFacetId.ofWarehouseFromId(fromWarehouseId).toWorkflowLaunchersFacetId().toJsonString())
 				.warehouseToFacetId(DistributionFacetId.ofWarehouseFromId(toWarehouseId).toWorkflowLaunchersFacetId().toJsonString())
@@ -121,10 +129,8 @@ public class DDOrderCommand
 	private void createLine(final JsonDDOrderRequest.Line line, final I_DD_Order ddOrder)
 	{
 		final ProductId productId = context.getId(line.getProduct(), ProductId.class);
-		final WarehouseId fromWarehouseId = context.getId(request.getWarehouseFrom(), WarehouseId.class);
-		final LocatorId fromLocatorId = warehouseBL.getOrCreateDefaultLocatorId(fromWarehouseId);
-		final WarehouseId toWarehouseId = context.getId(request.getWarehouseTo(), WarehouseId.class);
-		final LocatorId toLocatorId = warehouseBL.getOrCreateDefaultLocatorId(toWarehouseId);
+		final LocatorId fromLocatorId = getFromLocatorId(line);
+		final LocatorId toLocatorId = getToLocatorId(line);
 		final BigDecimal qtyEntered = line.getQtyEntered();
 
 		final I_DD_OrderLine ddOrderLine = newInstance(I_DD_OrderLine.class);
@@ -150,6 +156,32 @@ public class DDOrderCommand
 		saveRecord(ddOrderLine);
 	}
 
+	private LocatorId getToLocatorId(final JsonDDOrderRequest.Line line)
+	{
+		if (line.getLocatorTo() != null)
+		{
+			return context.getId(line.getLocatorTo(), LocatorId.class);
+		}
+		else
+		{
+			final WarehouseId toWarehouseId = context.getId(request.getWarehouseTo(), WarehouseId.class);
+			return warehouseBL.getOrCreateDefaultLocatorId(toWarehouseId);
+		}
+	}
+
+	private LocatorId getFromLocatorId(final JsonDDOrderRequest.Line line)
+	{
+		if (line.getLocatorFrom() != null)
+		{
+			return context.getId(line.getLocatorFrom(), LocatorId.class);
+		}
+		else
+		{
+			final WarehouseId fromWarehouseId = context.getId(request.getWarehouseFrom(), WarehouseId.class);
+			return warehouseBL.getOrCreateDefaultLocatorId(fromWarehouseId);
+		}
+	}
+
 	private DocTypeId findDocTypeId()
 	{
 		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
@@ -161,16 +193,15 @@ public class DDOrderCommand
 	private DDOrderReference toDDOrderReference(final I_DD_Order ddOrder)
 	{
 		final DDOrderReferenceCollector collector = DDOrderReferenceCollector.builder()
-				.ddOrderService(ddOrderService)
+				.loadingSupportServices(distributionJobLoaderSupportingServices)
 				.build();
-		collector.collect(ddOrder, false);
+		collector.collect(ddOrder);
 		return CollectionUtils.singleElement(collector.getCollectedItems());
 	}
 
-	private static WorkflowLauncherCaption computeLauncherCaption(final DDOrderReference ddOrderReference)
+	private String computeLauncherCaption(final DDOrderReference ddOrderReference)
 	{
-		final DistributionLauncherCaptionProvider captionProvider = new DistributionLauncherCaptionProvider();
-		return captionProvider.compute(ddOrderReference);
+		return captionProvider.compute(ddOrderReference).translate(context.getAdLanguage());
 	}
 
 }

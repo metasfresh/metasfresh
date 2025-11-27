@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -31,6 +31,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
@@ -39,13 +40,16 @@ import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.request.RequestTypeId;
+import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.tax.api.Tax;
 import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_PriceList_Version;
@@ -79,6 +83,8 @@ public interface IOrderBL extends ISingletonService
 	 */
 	void setPriceList(I_C_Order order);
 
+	Optional<BPartnerOrderParams> retrieveBPartnerParams(@NonNull I_C_Order orderRecord);
+
 	/**
 	 * Gets the corresponding priceListVersion for the given <code>order</code>, using
 	 * <ul>
@@ -107,7 +113,7 @@ public interface IOrderBL extends ISingletonService
 
 	@Nullable
 	BPartnerId getEffectiveDropshipPartnerId(@NonNull I_C_Order orderRecord);
-	
+
 	/**
 	 * @return the order's bill contact <b>but</b> falls back to the "general" contact ({@code C_Order.AD_User_ID}) if possible.
 	 * Be sure to first check with {@link #hasBillToContactId(I_C_Order)}.
@@ -255,6 +261,8 @@ public interface IOrderBL extends ISingletonService
 	 */
 	boolean isSalesProposalOrQuotation(I_C_Order order);
 
+	boolean isSalesOrder(@NonNull I_C_Order order);
+
 	boolean isRequisition(@NonNull I_C_Order order);
 
 	boolean isMediated(@NonNull I_C_Order order);
@@ -307,6 +315,8 @@ public interface IOrderBL extends ISingletonService
 
 	Map<OrderId, String> getDocumentNosByIds(@NonNull Collection<OrderId> orderIds);
 
+	void setIncoterms(@NonNull I_C_Order order);
+
 	void setWeightFromLines(@NonNull I_C_Order order);
 
 	@NonNull
@@ -321,6 +331,11 @@ public interface IOrderBL extends ISingletonService
 	{
 		final UomId uomId = UomId.ofRepoId(orderLine.getC_UOM_ID());
 		return Quantitys.of(orderLine.getQtyEntered(), uomId);
+	}
+
+	default boolean isCompleted(@NonNull final I_C_Order order)
+	{
+		return DocStatus.ofCode(order.getDocStatus()).isCompleted();
 	}
 
 	DocStatus getDocStatus(OrderId orderId);
@@ -349,4 +364,16 @@ public interface IOrderBL extends ISingletonService
 		final BigDecimal luQty = orderLine.getQtyLU();
 		return luQty != null && luQty.signum() > 0;
 	}
+
+	PaymentTermId getPaymentTermId(@NonNull I_C_Order orderRecord);
+
+	Money getGrandTotal(@NonNull I_C_Order order);
+
+	void save(I_C_Order order);
+
+	void syncDatesFromTransportOrder(@NonNull OrderId orderId, @NonNull I_M_ShipperTransportation transportOrder);
+
+	void syncDateInvoicedFromInvoice(@NonNull OrderId orderId, @NonNull I_C_Invoice invoice);
+
+	List<I_C_Order> getByQueryFilter(final IQueryFilter<I_C_Order> queryFilter);
 }

@@ -7,6 +7,7 @@ import { isCurrentTargetEligibleForActivityAndLine } from '../../reducers/wfProc
 
 export const APPLICATION_ID_Picking = 'picking';
 const ACTIVITY_ID_ScanPickingSlot = 'scanPickingSlot'; // keep in sync with PickingMobileApplication.ACTIVITY_ID_ScanPickingSlot
+export const ACTIVITY_ID_PickLines = 'pickLines'; // keep in sync with PickingMobileApplication.ACTIVITY_ID_...
 
 export const applicationDescriptor = {
   applicationId: APPLICATION_ID_Picking,

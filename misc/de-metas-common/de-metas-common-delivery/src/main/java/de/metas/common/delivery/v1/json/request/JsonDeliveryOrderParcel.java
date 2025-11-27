@@ -22,6 +22,8 @@
 
 package de.metas.common.delivery.v1.json.request;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import de.metas.common.delivery.v1.json.DeliveryMappingConstants;
 import de.metas.common.delivery.v1.json.JsonPackageDimensions;
 import lombok.Builder;
 import lombok.NonNull;
@@ -31,6 +33,7 @@ import lombok.extern.jackson.Jacksonized;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @Value
 @Builder(toBuilder = true)
@@ -47,4 +50,13 @@ public class JsonDeliveryOrderParcel
 	@Nullable byte[] labelPdfBase64;
 	@NonNull List<JsonDeliveryOrderLineContents> contents;
 
+	@JsonIgnore
+	public Optional<String> getValue(@NonNull final String attributeValue)
+	{
+		if (DeliveryMappingConstants.ATTRIBUTE_VALUE_PARCEL_ID.equals(attributeValue))
+		{
+			return Optional.of(getId());
+		}
+		return Optional.empty();
+	}
 }

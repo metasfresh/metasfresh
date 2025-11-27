@@ -17,6 +17,9 @@ import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsResponse;
 import de.metas.frontend_testing.masterdata.huQRCodes.GenerateHUQRCodeCommand;
 import de.metas.frontend_testing.masterdata.huQRCodes.JsonGenerateHUQRCodeRequest;
 import de.metas.frontend_testing.masterdata.huQRCodes.JsonGenerateHUQRCodeResponse;
+import de.metas.frontend_testing.masterdata.inventory.InventoryCreateCommand;
+import de.metas.frontend_testing.masterdata.inventory.JsonInventoryRequest;
+import de.metas.frontend_testing.masterdata.inventory.JsonInventoryResponse;
 import de.metas.frontend_testing.masterdata.mobile_configuration.JsonMobileConfigResponse;
 import de.metas.frontend_testing.masterdata.mobile_configuration.MobileConfigCommand;
 import de.metas.frontend_testing.masterdata.picking_slot.JsonPickingSlotCreateRequest;
@@ -72,16 +75,17 @@ public class CreateMasterdataCommand
 		final ImmutableMap<String, JsonCreateProductResponse> products = createProducts();
 		final ImmutableMap<String, JsonCreateResourceResponse> resources = createResources();
 		final ImmutableMap<String, JsonWarehouseResponse> warehouses = createWarehouses();
+		final ImmutableMap<String, JsonPickingSlotCreateResponse> pickingSlots = createPickingSlots();
 		final ImmutableMap<String, JsonWorkplaceResponse> workplaces = createWorkplaces();
 		final ImmutableMap<String, JsonCreateProductPlanningResponse> productPlannings = createProductPlannings();
 		final Map<String, JsonPackingInstructionsResponse> packingInstructions = createPackingInstructions();
-		final ImmutableMap<String, JsonPickingSlotCreateResponse> pickingSlots = createPickingSlots();
 		final JsonMobileConfigResponse mobileConfig = createMobileConfiguration();
 		final ImmutableMap<String, JsonCreateHUResponse> hus = createHUs();
 		final ImmutableMap<String, JsonGenerateHUQRCodeResponse> generatedHUQRCodes = generateHUQRCodes();
 		final ImmutableMap<String, JsonSalesOrderCreateResponse> salesOrders = createSalesOrders();
 		final ImmutableMap<String, JsonDDOrderResponse> distributionOrders = createDistributionOrders();
 		final ImmutableMap<String, JsonPPOrderResponse> manufacturingOrders = createManufacturingOrders();
+		final ImmutableMap<String, JsonInventoryResponse> inventories = createInventories();
 		createCustomQRCodeFormats();
 
 		return JsonCreateMasterdataResponse.builder()
@@ -100,7 +104,7 @@ public class CreateMasterdataCommand
 				.salesOrders(salesOrders)
 				.distributionOrders(distributionOrders)
 				.manufacturingOrders(manufacturingOrders)
-				.resources(resources)
+				.inventories(inventories)
 				.build();
 	}
 
@@ -137,7 +141,7 @@ public class CreateMasterdataCommand
 		return process(request.getBpartners(), this::createBPartner);
 	}
 
-	private JsonCreateBPartnerResponse createBPartner(String identifier, JsonCreateBPartnerRequest request)
+	private JsonCreateBPartnerResponse createBPartner(final String identifier, final JsonCreateBPartnerRequest request)
 	{
 		return CreateBPartnerCommand.builder()
 				.currencyRepository(services.currencyRepository)
@@ -153,7 +157,7 @@ public class CreateMasterdataCommand
 		return process(request.getProducts(), this::createProduct);
 	}
 
-	private JsonCreateProductResponse createProduct(String identifier, JsonCreateProductRequest request)
+	private JsonCreateProductResponse createProduct(final String identifier, final JsonCreateProductRequest request)
 	{
 		return CreateProductCommand.builder()
 				.productRepository(services.productRepository)
@@ -169,7 +173,7 @@ public class CreateMasterdataCommand
 		return process(request.getResources(), this::createResource);
 	}
 
-	private JsonCreateResourceResponse createResource(String identifier, JsonCreateResourceRequest request)
+	private JsonCreateResourceResponse createResource(final String identifier, final JsonCreateResourceRequest request)
 	{
 		return CreateResourceCommand.builder()
 				.context(context)
@@ -184,7 +188,7 @@ public class CreateMasterdataCommand
 		return process(request.getProductPlannings(), this::createProductPlanning);
 	}
 
-	private JsonCreateProductPlanningResponse createProductPlanning(String identifier, JsonCreateProductPlanningRequest request)
+	private JsonCreateProductPlanningResponse createProductPlanning(final String identifier, final JsonCreateProductPlanningRequest request)
 	{
 		return CreateProductPlanningCommand.builder()
 				.context(context)
@@ -199,7 +203,7 @@ public class CreateMasterdataCommand
 		return process(request.getPickingSlots(), this::createPickingSlot);
 	}
 
-	private JsonPickingSlotCreateResponse createPickingSlot(String identifier, JsonPickingSlotCreateRequest request)
+	private JsonPickingSlotCreateResponse createPickingSlot(final String identifier, final JsonPickingSlotCreateRequest request)
 	{
 		return PickingSlotCreateCommand.builder()
 				.context(context)
@@ -213,7 +217,7 @@ public class CreateMasterdataCommand
 		return process(request.getWarehouses(), this::createWarehouse);
 	}
 
-	private JsonWarehouseResponse createWarehouse(String identifier, JsonWarehouseRequest request)
+	private JsonWarehouseResponse createWarehouse(final String identifier, final JsonWarehouseRequest request)
 	{
 		return WarehouseCommand.builder()
 				.context(context)
@@ -240,7 +244,7 @@ public class CreateMasterdataCommand
 		return process(request.getPackingInstructions(), this::createPackingInstruction);
 	}
 
-	private JsonPackingInstructionsResponse createPackingInstruction(String identifier, JsonPackingInstructionsRequest request)
+	private JsonPackingInstructionsResponse createPackingInstruction(final String identifier, final JsonPackingInstructionsRequest request)
 	{
 		return CreatePackingInstructionsCommand.builder()
 				.context(context)
@@ -249,6 +253,7 @@ public class CreateMasterdataCommand
 				.build().execute();
 	}
 
+	@Nullable
 	private JsonMobileConfigResponse createMobileConfiguration()
 	{
 		if (request.getMobileConfig() == null)
@@ -258,7 +263,7 @@ public class CreateMasterdataCommand
 
 		return MobileConfigCommand.builder()
 				.mobileConfigService(services.mobileConfigService)
-				.mobilePickingConfigRepository(services.mobilePickingConfigRepository)
+				.mobilePickingConfigService(services.mobilePickingConfigService)
 				.mobileDistributionConfigRepository(services.mobileDistributionConfigRepository)
 				.mobileManufacturingConfigRepository(services.mobileManufacturingConfigRepository)
 				//
@@ -306,7 +311,7 @@ public class CreateMasterdataCommand
 		return process(request.getSalesOrders(), this::createSalesOrder);
 	}
 
-	private JsonSalesOrderCreateResponse createSalesOrder(String identifier, JsonSalesOrderCreateRequest request)
+	private JsonSalesOrderCreateResponse createSalesOrder(final String identifier, final JsonSalesOrderCreateRequest request)
 	{
 		return SalesOrderCreateCommand.builder()
 				.pickingJobScheduleService(services.pickingJobScheduleService)
@@ -321,10 +326,12 @@ public class CreateMasterdataCommand
 		return process(request.getDistributionOrders(), this::createDistributionOrder);
 	}
 
-	private JsonDDOrderResponse createDistributionOrder(String identifier, JsonDDOrderRequest request)
+	private JsonDDOrderResponse createDistributionOrder(final String identifier, final JsonDDOrderRequest request)
 	{
 		return DDOrderCommand.builder()
 				.ddOrderService(services.ddOrderService)
+				.distributionJobLoaderSupportingServices(services.distributionJobLoaderSupportingServices)
+				.captionProvider(services.distributionLauncherCaptionProvider)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString(identifier))
@@ -337,9 +344,25 @@ public class CreateMasterdataCommand
 		return process(request.getManufacturingOrders(), this::createManufacturingOrder);
 	}
 
-	private JsonPPOrderResponse createManufacturingOrder(String identifier, JsonPPOrderRequest request)
+	private JsonPPOrderResponse createManufacturingOrder(final String identifier, final JsonPPOrderRequest request)
 	{
 		return PPOrderCommand.builder()
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
+				.build()
+				.execute();
+	}
+
+	private ImmutableMap<String, JsonInventoryResponse> createInventories()
+	{
+		return process(request.getInventories(), this::createInventory);
+	}
+
+	private JsonInventoryResponse createInventory(final String identifier, final JsonInventoryRequest request)
+	{
+		return InventoryCreateCommand.builder()
+				.inventoryService(services.inventoryService)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString(identifier))

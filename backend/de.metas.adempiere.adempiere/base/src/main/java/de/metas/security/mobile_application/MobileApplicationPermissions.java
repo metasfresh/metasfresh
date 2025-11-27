@@ -10,6 +10,7 @@ import de.metas.security.permissions.PermissionsBuilder;
 import de.metas.util.GuavaCollectors;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.ToString;
 import org.apache.commons.collections4.map.HashedMap;
 import org.compiere.util.Env;
 
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.stream.Collector;
 
 @EqualsAndHashCode
+@ToString
 public class MobileApplicationPermissions
 {
 	private static final MobileApplicationPermissions EMPTY = new MobileApplicationPermissions(ImmutableList.of());

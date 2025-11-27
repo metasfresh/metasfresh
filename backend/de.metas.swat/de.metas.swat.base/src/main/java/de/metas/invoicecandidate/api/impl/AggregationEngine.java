@@ -26,6 +26,7 @@ import de.metas.document.IDocTypeBL;
 import de.metas.document.invoicingpool.DocTypeInvoicingPool;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolService;
+import de.metas.externalsystem.ExternalSystemId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.impexp.InputDataSourceId;
 import de.metas.inout.InOutId;
@@ -416,6 +417,7 @@ public final class AggregationEngine
 			}
 
 			invoiceHeader.setAD_InputDataSource_ID(InputDataSourceId.ofRepoIdOrNull(icRecord.getAD_InputDataSource_ID()));
+			invoiceHeader.setExternalSystemId(ExternalSystemId.ofRepoIdOrNull(icRecord.getExternalSystem_ID()));
 			final OrderId orderId = OrderId.ofRepoIdOrNull(icRecord.getC_Order_ID());
 			if (orderId != null)
 			{

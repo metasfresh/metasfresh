@@ -33,6 +33,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Workplace;
 import org.springframework.stereotype.Repository;
@@ -69,9 +70,16 @@ public class WorkplaceRepository
 
 	public Workplace create(@NonNull final WorkplaceCreateRequest request)
 	{
+		if (request.getPickFromLocatorId() != null && !WarehouseId.equals(request.getWarehouseId(), request.getPickFromLocatorId().getWarehouseId()))
+		{
+			throw new AdempiereException("PickFromLocatorId and WarehouseId must be from the same warehouse")
+					.setParameter("request", request);
+		}
+		
 		final I_C_Workplace record = InterfaceWrapperHelper.newInstance(I_C_Workplace.class);
 		record.setName(request.getName());
 		record.setM_Warehouse_ID(request.getWarehouseId().getRepoId());
+		record.setPickFrom_Locator_ID(LocatorId.toRepoId(request.getPickFromLocatorId()));
 		record.setM_PickingSlot_ID(PickingSlotId.toRepoId(request.getPickingSlotId()));
 		InterfaceWrapperHelper.save(record);
 		return fromRecord(record);
@@ -100,10 +108,13 @@ public class WorkplaceRepository
 	@NonNull
 	private static Workplace fromRecord(@NonNull final I_C_Workplace record)
 	{
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(record.getM_Warehouse_ID());
+
 		return Workplace.builder()
 				.id(WorkplaceId.ofRepoId(record.getC_Workplace_ID()))
 				.name(record.getName())
-				.warehouseId(WarehouseId.ofRepoId(record.getM_Warehouse_ID()))
+				.warehouseId(warehouseId)
+				.pickFromLocatorId(LocatorId.ofRepoIdOrNull(warehouseId, record.getPickFrom_Locator_ID()))
 				.pickingSlotId(PickingSlotId.ofRepoIdOrNull(record.getM_PickingSlot_ID()))
 				.build();
 	}

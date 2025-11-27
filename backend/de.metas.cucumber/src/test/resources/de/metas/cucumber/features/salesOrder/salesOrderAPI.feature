@@ -61,8 +61,8 @@ Feature: Sales order API
       | Identifier              | InternalName      |
       | dataSource_09182025_010 | test_09182025_010 |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | REST.Context | REST.Context.DocumentNo | AD_InputDataSource_ID   | ExternalId              | C_BPartner_ID | DateOrdered |
-      | so         | true    | orderId      | orderDocumentNo         | dataSource_09182025_010 | externalId_09182025_010 | customer      | 2025-04-01  |
+      | Identifier | IsSOTrx | REST.Context | REST.Context.DocumentNo | AD_InputDataSource_ID   | ExternalId              | C_BPartner_ID | DateOrdered | ExternalSystem.Value |
+      | so         | true    | orderId      | orderDocumentNo         | dataSource_09182025_010 | externalId_09182025_010 | customer      | 2025-04-01  | Shopware6            |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | so_l1      | so         | product      | 10         |
@@ -76,7 +76,7 @@ Feature: Sales order API
 {
   "orgCode": "001",
   "externalId": "externalId_09182025_010",
-  "dataSource": "int-test_09182025_010"
+  "externalSystemCode": "Shopware6"
 }
 """
     Then the metasfresh REST-API responds with
@@ -94,8 +94,8 @@ Feature: Sales order API
       | Identifier              | InternalName      |
       | dataSource_09182025_020 | test_09182025_020 |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | REST.Context | REST.Context.DocumentNo | AD_InputDataSource_ID   | ExternalId              | C_BPartner_ID | DateOrdered |
-      | so         | true    | orderId      | orderDocumentNo         | dataSource_09182025_020 | externalId_09182025_020 | customer      | 2025-04-01  |
+      | Identifier | IsSOTrx | REST.Context | REST.Context.DocumentNo | AD_InputDataSource_ID   | ExternalId              | C_BPartner_ID | DateOrdered | ExternalSystem.Value |
+      | so         | true    | orderId      | orderDocumentNo         | dataSource_09182025_020 | externalId_09182025_020 | customer      | 2025-04-01  | Shopware6            |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | so_l1      | so         | product      | 10         |
@@ -115,7 +115,7 @@ Feature: Sales order API
 {
   "orgCode": "001",
   "externalId": "externalId_09182025_020",
-  "dataSource": "int-test_09182025_020"
+  "externalSystemCode": "Shopware6"
 }
 """
     Then the metasfresh REST-API responds with
@@ -126,7 +126,7 @@ Feature: Sales order API
       "message": "Die Bestellung OrderId(repoId=@orderId@) enthält bereits gelieferte Artikel.",
       "errorCode": "MSG_ERR_ORDER_HAS_DELIVERED_ITEMS",
       "userFriendlyError": true,
-      "stackTrace": "OrderService.reverseOrder:177 <~~~ SalesOrderRestController.revertOrder:231 <~~~ ApiAuditService.processRequestSync:500 <- ApiAuditService.processRequest:245 <- ApiAuditFilter.doFilter:115 <~~~ UserAuthTokenFilter.lambda$doFilter$1:66 <- UserAuthTokenService.lambda$asCallable$0:96 <- UserAuthTokenService.call:117 <- UserAuthTokenService.run:89 <- UserAuthTokenFilter.doFilter:61",
+      "stackTrace": "OrderService.reverseOrder:178 <~~~ SalesOrderRestController.revertOrder:241 <~~~ ApiAuditService.processRequestSync:500 <- ApiAuditService.processRequest:245 <- ApiAuditFilter.doFilter:115 <~~~ UserAuthTokenFilter.lambda$doFilter$1:66 <- UserAuthTokenService.lambda$asCallable$0:96 <- UserAuthTokenService.call:117 <- UserAuthTokenService.run:89 <- UserAuthTokenFilter.doFilter:61",
       "parameters": {
         "AD_Language": "<null>",
         "AD_Message": "MSG_ERR_ORDER_HAS_DELIVERED_ITEMS"

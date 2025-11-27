@@ -27,8 +27,12 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
+import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
+import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
+import de.metas.product.PackageDimensions;
 import de.metas.shipper.gateway.dhl.json.JSONDhlCreateOrderRequest;
 import de.metas.shipper.gateway.dhl.json.JSONDhlCreateOrderResponse;
 import de.metas.shipper.gateway.dhl.json.JsonDHLItem;
@@ -47,6 +51,7 @@ import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
 import de.metas.shipper.gateway.dhl.model.DhlCustomsDocument;
 import de.metas.shipper.gateway.dhl.model.DhlCustomsItem;
 import de.metas.shipper.gateway.dhl.model.DhlPackageLabelType;
+import de.metas.shipper.gateway.dhl.model.DhlShipperProduct;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
@@ -55,7 +60,6 @@ import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderParcel;
 import de.metas.shipper.gateway.spi.model.OrderId;
-import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.shipping.ShipperGatewayId;
@@ -404,5 +408,19 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 
 		return deliveryOrder.withCustomDeliveryData(initialCustomDeliveryData
 				.withDhlCustomDeliveryDataDetails(updatedCustomDeliveryData.build()));
+	}
+
+	@Override
+	public @NonNull JsonDeliveryAdvisorResponse adviseShipment(final @NonNull JsonDeliveryAdvisorRequest request)
+	{
+		final boolean isDomesticShipping = request.getPickupAddress().getCountry().equals(request.getDeliveryAddress().getCountry());
+		final DhlShipperProduct codeToUse = isDomesticShipping ? DhlShipperProduct.Dhl_Paket : DhlShipperProduct.Dhl_PaketInternational;
+
+		return JsonDeliveryAdvisorResponse.builder()
+				.requestId(request.getId())
+				.shipperProduct(JsonShipperProduct.builder()
+						.code(codeToUse.getCode())
+						.build())
+				.build();
 	}
 }

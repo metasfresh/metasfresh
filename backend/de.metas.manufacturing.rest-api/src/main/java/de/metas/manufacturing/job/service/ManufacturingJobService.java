@@ -52,12 +52,13 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.InSetPredicate;
 import de.metas.util.Services;
+import de.metas.workflow.rest_api.service.Constants;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.util.TimeUtil;
@@ -126,7 +127,7 @@ public class ManufacturingJobService
 				.orgDAO(Services.get(IOrgDAO.class))
 				.warehouseBL(Services.get(IWarehouseBL.class))
 				.productBL(Services.get(IProductBL.class))
-				.attributeDAO(Services.get(IAttributeDAO.class))
+				.asiBL(Services.get(IAttributeSetInstanceBL.class))
 				.ppOrderBL(ppOrderBL = Services.get(IHUPPOrderBL.class))
 				.ppOrderBOMBL(ppOrderBOMBL = Services.get(IPPOrderBOMBL.class))
 				.ppOrderRoutingRepository(Services.get(IPPOrderRoutingRepository.class))
@@ -697,4 +698,13 @@ public class ManufacturingJobService
 		return uomDAO.getBySymbol(receiveFrom.getCatchWeightUomSymbol())
 				.map(uom -> Quantity.of(receiveFrom.getCatchWeight(), uom));
 	}
+
+	public QueryLimit getLaunchersLimit()
+	{
+		final int limitInt = sysConfigBL.getIntValue(Constants.SYSCONFIG_LaunchersLimit, -100);
+		return limitInt == -100
+				? Constants.DEFAULT_LaunchersLimit
+				: QueryLimit.ofInt(limitInt);
+	}
+
 }

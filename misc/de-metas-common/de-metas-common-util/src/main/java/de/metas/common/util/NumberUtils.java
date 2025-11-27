@@ -95,7 +95,8 @@ public class NumberUtils
 		}
 	}
 
-	public static BigDecimal roundToBigDecimal(@NonNull final BigDecimal argToRound, @NonNull final BigDecimal roundingArg) {
+	public static BigDecimal roundToBigDecimal(@NonNull final BigDecimal argToRound, @NonNull final BigDecimal roundingArg)
+	{
 		BigDecimal actualRoundingArg = roundingArg;
 		BigDecimal actualArgToRound = argToRound;
 		BigDecimal decimalAdjustments = BigDecimal.ONE;
@@ -185,6 +186,11 @@ public class NumberUtils
 		{
 			return ag1.add(ag2);
 		}
+	}
+
+	public static boolean isInteger(@NonNull final BigDecimal bd)
+	{
+		return bd.stripTrailingZeros().scale() <= 0;
 	}
 
 }

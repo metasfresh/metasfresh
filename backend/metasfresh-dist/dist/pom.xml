@@ -105,6 +105,13 @@
             <classifier>migration-postgres-sql</classifier>
             <type>zip</type>
         </dependency>
+        <dependency>
+            <groupId>de.metas.acct</groupId>
+            <artifactId>de.metas.acct.webui</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
 
         <dependency>
             <groupId>de.metas.adempiere.adempiere</groupId>
@@ -506,6 +513,13 @@
 
         <dependency>
             <groupId>de.metas.shipper.gateway</groupId>
+            <artifactId>de.metas.shipper.gateway.commons</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.shipper.gateway</groupId>
             <artifactId>de.metas.shipper.gateway.derkurier</artifactId>
             <version>${metasfresh.version}</version>
             <classifier>migration-postgres-sql</classifier>
@@ -559,6 +573,14 @@
         <dependency>
             <groupId>de.metas.hu_consolidation</groupId>
             <artifactId>de.metas.hu_consolidation.mobile</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
+
+        <dependency>
+            <groupId>de.metas.inventory</groupId>
+            <artifactId>de.metas.inventory.mobileui</artifactId>
             <version>${metasfresh.version}</version>
             <classifier>migration-postgres-sql</classifier>
             <type>zip</type>

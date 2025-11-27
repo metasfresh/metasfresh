@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for M_Product
  *  @author metasfresh (generated) 
@@ -98,6 +99,29 @@ public interface I_M_Product
 	String COLUMNNAME_AlternativeProducts = "AlternativeProducts";
 
 	/**
+	 * Set AVV.
+	 * Waste code number - serves to uniquely identify waste types according to the Waste Catalogue Ordinance (AVV)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setavv_no (@Nullable java.lang.String avv_no);
+
+	/**
+	 * Get AVV.
+	 * Waste code number - serves to uniquely identify waste types according to the Waste Catalogue Ordinance (AVV)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getavv_no();
+
+	ModelColumn<I_M_Product, Object> COLUMN_avv_no = new ModelColumn<>(I_M_Product.class, "avv_no", null);
+	String COLUMNNAME_avv_no = "avv_no";
+
+	/**
 	 * Set BioControlNumber.
 	 *
 	 * <br>Type: List
@@ -190,6 +214,27 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, Object> COLUMN_Classification = new ModelColumn<>(I_M_Product.class, "Classification", null);
 	String COLUMNNAME_Classification = "Classification";
+
+	/**
+	 * Set Commentary.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCommentary (@Nullable java.lang.String Commentary);
+
+	/**
+	 * Get Commentary.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCommentary();
+
+	ModelColumn<I_M_Product, Object> COLUMN_Commentary = new ModelColumn<>(I_M_Product.class, "Commentary", null);
+	String COLUMNNAME_Commentary = "Commentary";
 
 	/**
 	 * Set Consumption Recommentation.
@@ -634,7 +679,7 @@ public interface I_M_Product
 	String COLUMNNAME_GrossWeight = "GrossWeight";
 
 	/**
-	 * Set Brutto-Verkaufsmengeneinheit .
+	 * Set Gross Weight UOM.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -643,7 +688,7 @@ public interface I_M_Product
 	void setGrossWeight_UOM_ID (int GrossWeight_UOM_ID);
 
 	/**
-	 * Get Brutto-Verkaufsmengeneinheit .
+	 * Get Gross Weight UOM.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -845,6 +890,27 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, Object> COLUMN_HaddexCheck = new ModelColumn<>(I_M_Product.class, "HaddexCheck", null);
 	String COLUMNNAME_HaddexCheck = "HaddexCheck";
+
+	/**
+	 * Set Height In Cm.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setHeightInCm (int HeightInCm);
+
+	/**
+	 * Get Height In Cm.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getHeightInCm();
+
+	ModelColumn<I_M_Product, Object> COLUMN_HeightInCm = new ModelColumn<>(I_M_Product.class, "HeightInCm", null);
+	String COLUMNNAME_HeightInCm = "HeightInCm";
 
 	/**
 	 * Set Help.
@@ -1207,6 +1273,27 @@ public interface I_M_Product
 	String COLUMNNAME_IsQuotationGroupping = "IsQuotationGroupping";
 
 	/**
+	 * Set Self Packed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSelfPacked (boolean IsSelfPacked);
+
+	/**
+	 * Get Self Packed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSelfPacked();
+
+	ModelColumn<I_M_Product, Object> COLUMN_IsSelfPacked = new ModelColumn<>(I_M_Product.class, "IsSelfPacked", null);
+	String COLUMNNAME_IsSelfPacked = "IsSelfPacked";
+
+	/**
 	 * Set Self-Service.
 	 * This is a Self-Service entry or this entry can be changed via Self-Service
 	 *
@@ -1447,6 +1534,27 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, Object> COLUMN_LegalName = new ModelColumn<>(I_M_Product.class, "LegalName", null);
 	String COLUMNNAME_LegalName = "LegalName";
+
+	/**
+	 * Set Length In Cm.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setLengthInCm (int LengthInCm);
+
+	/**
+	 * Get Length In Cm.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getLengthInCm();
+
+	ModelColumn<I_M_Product, Object> COLUMN_LengthInCm = new ModelColumn<>(I_M_Product.class, "LengthInCm", null);
+	String COLUMNNAME_LengthInCm = "LengthInCm";
 
 	/**
 	 * Set Long text description.
@@ -1771,7 +1879,6 @@ public interface I_M_Product
 
 	/**
 	 * Set Exclude from MRP.
-	 * Exclude from MRP calculation
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1781,7 +1888,6 @@ public interface I_M_Product
 
 	/**
 	 * Get Exclude from MRP.
-	 * Exclude from MRP calculation
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1812,6 +1918,27 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, Object> COLUMN_Name = new ModelColumn<>(I_M_Product.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set Outer packaging weight (kg).
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOuterPackagingWeight (@Nullable BigDecimal OuterPackagingWeight);
+
+	/**
+	 * Get Outer packaging weight (kg).
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getOuterPackagingWeight();
+
+	ModelColumn<I_M_Product, Object> COLUMN_OuterPackagingWeight = new ModelColumn<>(I_M_Product.class, "OuterPackagingWeight", null);
+	String COLUMNNAME_OuterPackagingWeight = "OuterPackagingWeight";
 
 	/**
 	 * Set Package Size.
@@ -2375,6 +2502,27 @@ public interface I_M_Product
 	String COLUMNNAME_SKU = "SKU";
 
 	/**
+	 * Set Small packaging weight (kg).
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSmallPackagingWeight (@Nullable BigDecimal SmallPackagingWeight);
+
+	/**
+	 * Get Small packaging weight (kg).
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getSmallPackagingWeight();
+
+	ModelColumn<I_M_Product, Object> COLUMN_SmallPackagingWeight = new ModelColumn<>(I_M_Product.class, "SmallPackagingWeight", null);
+	String COLUMNNAME_SmallPackagingWeight = "SmallPackagingWeight";
+
+	/**
 	 * Set Resource.
 	 * Resource
 	 *
@@ -2672,4 +2820,45 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, Object> COLUMN_Weight = new ModelColumn<>(I_M_Product.class, "Weight", null);
 	String COLUMNNAME_Weight = "Weight";
+
+	/**
+	 * Set Darreichungsform-Einheit .
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setWeight_UOM_ID (int Weight_UOM_ID);
+
+	/**
+	 * Get Darreichungsform-Einheit .
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getWeight_UOM_ID();
+
+	String COLUMNNAME_Weight_UOM_ID = "Weight_UOM_ID";
+
+	/**
+	 * Set Width In Cm.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setWidthInCm (int WidthInCm);
+
+	/**
+	 * Get Width In Cm.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getWidthInCm();
+
+	ModelColumn<I_M_Product, Object> COLUMN_WidthInCm = new ModelColumn<>(I_M_Product.class, "WidthInCm", null);
+	String COLUMNNAME_WidthInCm = "WidthInCm";
 }

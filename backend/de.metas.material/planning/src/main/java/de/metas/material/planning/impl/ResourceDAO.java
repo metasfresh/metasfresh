@@ -18,6 +18,7 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
+ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_M_Product;
@@ -133,7 +134,12 @@ public class ResourceDAO implements IResourceDAO
 	@Override
 	public I_S_Resource getById(@NonNull final ResourceId resourceId)
 	{
-		return loadOutOfTrx(resourceId, I_S_Resource.class);
+		final I_S_Resource record = loadOutOfTrx(resourceId, I_S_Resource.class);
+		if(record == null)
+		{
+			throw AdempiereException.notFound().setParameter("resourceId", resourceId);
+		}
+		return record;
 	}
 
 	@Override

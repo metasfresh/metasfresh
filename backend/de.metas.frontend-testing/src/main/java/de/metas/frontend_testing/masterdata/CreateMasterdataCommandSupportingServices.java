@@ -3,9 +3,11 @@ package de.metas.frontend_testing.masterdata;
 import de.metas.currency.CurrencyRepository;
 import de.metas.distribution.config.MobileUIDistributionConfigRepository;
 import de.metas.distribution.ddorder.DDOrderService;
+import de.metas.distribution.workflows_api.DistributionJobLoaderSupportingServices;
+import de.metas.distribution.workflows_api.DistributionLauncherCaptionProvider;
 import de.metas.frontend_testing.expectations.AssertExpectationsCommandServices;
 import de.metas.handlingunits.inventory.InventoryService;
-import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
@@ -26,13 +28,17 @@ public class CreateMasterdataCommandSupportingServices
 	@NonNull public final ProductRepository productRepository;
 	@NonNull public final WorkplaceService workplaceService;
 	@NonNull public final MobileConfigService mobileConfigService;
-	@NonNull public final MobileUIPickingUserProfileRepository mobilePickingConfigRepository;
+	@NonNull public final MobileUIPickingUserProfileService mobilePickingConfigService;
 	@NonNull public final MobileUIDistributionConfigRepository mobileDistributionConfigRepository;
 	@NonNull public final MobileUIManufacturingConfigRepository mobileManufacturingConfigRepository;
 	@NonNull public final InventoryService inventoryService;
 	@NonNull public final HUQRCodesService huQRCodesService;
 	@NonNull public final CurrencyRepository currencyRepository;
+
 	@NonNull public final DDOrderService ddOrderService;
+	@NonNull public final DistributionLauncherCaptionProvider distributionLauncherCaptionProvider;
+	@NonNull public final DistributionJobLoaderSupportingServices distributionJobLoaderSupportingServices;
+
 	@NonNull public final ScannableCodeFormatService scannableCodeFormatService;
 	@NonNull public final AssertExpectationsCommandServices assertExpectationsCommandServices;
 	@NonNull public final PickingJobScheduleService pickingJobScheduleService;

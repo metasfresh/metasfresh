@@ -2424,4 +2424,10 @@ public class TimeUtil
 	{
 		return getDaysBetween360(asZonedDateTime(from), asZonedDateTime(to));
 	}
+
+	public static Instant addDays(@NonNull final Instant baseInstant, final long daysToAdd)
+	{
+		return baseInstant.plus(daysToAdd, ChronoUnit.DAYS);
+	}
+
 }    // TimeUtil

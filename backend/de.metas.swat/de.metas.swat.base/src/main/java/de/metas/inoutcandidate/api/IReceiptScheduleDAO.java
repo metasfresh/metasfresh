@@ -93,4 +93,6 @@ public interface IReceiptScheduleDAO extends ISingletonService
 	I_M_ReceiptSchedule getById(ReceiptScheduleId receiptScheduleId);
 
 	List<ReceiptScheduleId> retainLUQtySchedules(List<ReceiptScheduleId> receiptSchedules);
+
+	List<ReceiptScheduleId> listIdsByQuery(@NonNull ReceiptScheduleQuery query);
 }

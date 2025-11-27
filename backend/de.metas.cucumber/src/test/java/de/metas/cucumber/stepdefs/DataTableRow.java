@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.location.CountryCode;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.quantity.Quantity;
@@ -58,6 +59,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -540,6 +542,15 @@ public class DataTableRow
 				.map(CurrencyCode::ofThreeLetterCode);
 	}
 
+	public Optional<CountryCode> getAsOptionalCountryCode(@NonNull final String columnName)
+	{
+		return Optionals.firstPresentOfSuppliers(
+						() -> getAsOptionalString(columnName),
+						() -> getAsOptionalString(columnName + ".CountryCode")
+				)
+				.map(CountryCode::ofAlpha2);
+	}
+
 	public Money getAsMoney(
 			@NonNull final String valueColumnName,
 			@NonNull final Function<CurrencyCode, CurrencyId> currencyCodeMapper)
@@ -649,6 +660,11 @@ public class DataTableRow
 		return getAsOptionalLocalDate(columnName).map(DataTableRow::toTimestamp);
 	}
 
+	public Optional<Instant> getAsOptionalLocalDateInstant(@NonNull final String columnName)
+	{
+		return getAsOptionalLocalDate(columnName).map(DataTableRow::toInstant);
+	}
+
 	@SuppressWarnings("unused")
 	public Timestamp getAsInstantTimestamp(@NonNull final String columnName)
 	{
@@ -731,6 +747,11 @@ public class DataTableRow
 		}
 	}
 
+	private static Instant toInstant(@NonNull final LocalDate ld)
+	{
+		return toInstant(ld.atStartOfDay());
+	}
+
 	private static Instant toInstant(@NonNull final LocalDateTime ldt)
 	{
 		// IMPORTANT: we use JVM timezone instead of SystemTime.zoneId()
@@ -743,6 +764,23 @@ public class DataTableRow
 	public Optional<LocalDateTime> getAsOptionalLocalDateTime(@NonNull final String columnName)
 	{
 		return getAsOptionalString(columnName).map(valueStr -> parseLocalDateTime(valueStr, columnName));
+	}
+
+	public Optional<LocalTime> getAsOptionalLocalTime(@NonNull final String columnName)
+	{
+		return getAsOptionalString(columnName).map(valueStr -> parseLocalTime(valueStr, columnName));
+	}
+
+	private LocalTime parseLocalTime(@NonNull final String valueStr, final @NonNull String columnName)
+	{
+		try
+		{
+			return LocalTime.parse(valueStr);
+		}
+		catch (final Exception ex)
+		{
+			throw new AdempiereException("Column `" + columnName + "` has invalid LocalTime `" + valueStr + "`");
+		}
 	}
 
 	@NonNull

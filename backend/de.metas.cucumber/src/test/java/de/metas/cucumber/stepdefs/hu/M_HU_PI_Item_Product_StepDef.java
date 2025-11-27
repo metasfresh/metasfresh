@@ -29,6 +29,7 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.handlingunits.HUPIItemProductId;
@@ -56,6 +57,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.DEFAULT_ValidFrom;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_GTIN;
 import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_GTIN_LU_PackingMaterial_Fallback;
@@ -76,8 +78,6 @@ public class M_HU_PI_Item_Product_StepDef
 	@NonNull private final M_HU_PackagingCode_StepDefData huPackagingCodeTable;
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
 	@NonNull private final TestContext restTestContext;
-
-	private static final LocalDate DEFAULT_ValidFrom = LocalDate.parse("2000-01-01");
 
 	@Given("metasfresh contains M_HU_PI_Item_Product:")
 	public void metasfresh_contains_m_hu_pi_item_product(@NonNull final DataTable dataTable)

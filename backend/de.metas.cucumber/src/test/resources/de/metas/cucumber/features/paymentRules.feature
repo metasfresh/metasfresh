@@ -308,6 +308,7 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
     "orgCode": "001",
     "externalLineId": "555555",
     "externalHeaderId": "1188",
+    "externalSystemCode": "Shopware6",
     "dataSource": "int-Shopware",
     "bpartner": {
         "bpartnerIdentifier": "gln-0199722596654",
@@ -333,7 +334,7 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
 """
 {
     "externalHeaderId": "1188",
-    "inputDataSourceName": "int-Shopware",
+    "externalSystemCode": "Shopware6",
     "ship": false,
     "invoice": false,
     "closeOrder": false
@@ -364,6 +365,7 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
     "orgCode": "001",
     "externalLineId": "222",
     "externalHeaderId": "9208",
+    "externalSystemCode": "Shopware6",
     "dataSource": "int-Shopware",
     "bpartner": {
         "bpartnerIdentifier": "gln-0893711184488",
@@ -389,7 +391,7 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
 """
 {
     "externalHeaderId": "9208",
-    "inputDataSourceName": "int-Shopware",
+    "externalSystemCode": "Shopware6",
     "ship": false,
     "invoice": false,
     "closeOrder": false

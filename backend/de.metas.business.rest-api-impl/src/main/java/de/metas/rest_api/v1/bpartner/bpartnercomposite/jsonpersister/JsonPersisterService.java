@@ -77,6 +77,7 @@ import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.IdentifierString.Type;
@@ -97,6 +98,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -732,7 +734,7 @@ public class JsonPersisterService
 						Check.assumeNotNull(bpartnerComposite.getOrgId(),
 								"orgId was meanwhile set to bpartnerComposite={}", bpartnerComposite),
 						jsonBPartner.getGroup().trim());
-				
+
 				bpartner.setGroupId(bpGroupId);
 			}
 		}
@@ -743,7 +745,9 @@ public class JsonPersisterService
 		}
 		if (bpartner.getGroupId() == null)
 		{
-			final Optional<BPGroup> optionalBPGroup = bpGroupRepository.getDefaultGroup();
+			final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, Check.assumeNotNull(bpartnerComposite.getOrgId(),
+					"orgId was meanwhile set to bpartnerComposite={}", bpartnerComposite));
+			final Optional<BPGroup> optionalBPGroup = bpGroupRepository.getDefaultGroup(clientAndOrgId);
 			if (!optionalBPGroup.isPresent())
 			{
 				throw MissingResourceException.builder()

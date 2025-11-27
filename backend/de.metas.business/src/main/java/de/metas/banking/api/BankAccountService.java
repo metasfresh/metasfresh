@@ -123,4 +123,13 @@ public class BankAccountService
 	{
 		return bankAccountDAO.getBankAccountIdByIBAN(iban);
 	}
+
+	@NonNull
+	public Optional<String> getBankName(@NonNull final BankAccountId bankAccountId)
+	{
+		return Optional.of(bankAccountDAO.getById(bankAccountId))
+				.map(BankAccount::getBankId)
+				.map(bankRepo::getById)
+				.map(Bank::getBankName);
+	}
 }

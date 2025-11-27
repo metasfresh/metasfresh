@@ -22,11 +22,10 @@ package de.metas.handlingunits.exceptions;
  * #L%
  */
 
-import org.adempiere.exceptions.AdempiereException;
-
 import de.metas.i18n.AdMessageKey;
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 
@@ -68,6 +67,11 @@ public class HUException extends AdempiereException
 	public HUException(@NonNull final AdMessageKey message)
 	{
 		super(message);
+	}
+
+	public HUException(final AdMessageKey adMessage, final Object... params)
+	{
+		super(adMessage, params);
 	}
 
 	@Override

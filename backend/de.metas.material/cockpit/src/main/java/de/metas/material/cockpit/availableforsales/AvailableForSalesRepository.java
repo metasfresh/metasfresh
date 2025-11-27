@@ -112,7 +112,6 @@ public class AvailableForSalesRepository
 		if (retrieveAvailableForSalesQuery.getOrgId() != null)
 		{
 			queryBuilder.addEqualsFilter(I_MD_Available_For_Sales.COLUMNNAME_AD_Org_ID, retrieveAvailableForSalesQuery.getOrgId());
-
 		}
 
 		if (retrieveAvailableForSalesQuery.getStorageAttributesKeyPattern() != null)

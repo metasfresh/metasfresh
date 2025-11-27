@@ -1,9 +1,8 @@
-package de.metas.util;
 /*
  * #%L
  * de.metas.util
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,6 +19,8 @@ package de.metas.util;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.util;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.collect.ImmutableList;
@@ -42,7 +43,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -52,6 +52,7 @@ public final class StringUtils
 	{
 	}
 
+	@Contract("null -> null")
 	@Nullable
 	public static String trim(@Nullable final String untrimmedStringOrNull)
 	{
@@ -62,6 +63,7 @@ public final class StringUtils
 		return untrimmedStringOrNull.trim();
 	}
 
+	@Contract("null -> null")
 	@Nullable
 	public static String trimBlankToNull(@Nullable final String str)
 	{
@@ -79,6 +81,7 @@ public final class StringUtils
 		return strTrim;
 	}
 
+	@Contract("null -> null")
 	@Nullable
 	public static String trimSpacesToNull(@Nullable final String str)
 	{
@@ -109,7 +112,6 @@ public final class StringUtils
 
 		return str.substring(start, end);
 	}
-
 
 	@NonNull
 	public static Optional<String> trimBlankToOptional(@Nullable final String str)
@@ -222,7 +224,7 @@ public final class StringUtils
 				Check.errorIf(true, "Unexpected parameter TruncateAt={}; lenght={}; string={}", side, maxLength, string);
 				result = ""; // won't be reached;
 		}
-		
+
 		if (onTrunc != null && !Objects.equals(string, result))
 		{
 			onTrunc.accept(string, result);
@@ -1134,6 +1136,29 @@ public final class StringUtils
 		}
 
 		return params;
+	}
 
+	public static String ucFirst(@Nullable final String str)
+	{
+		if (str == null || str.isEmpty())
+		{
+			return str;
+		}
+
+		char first = str.charAt(0);
+		if (!Character.isLetter(first))
+		{
+			return str;
+		}
+
+		final char capital = Character.toUpperCase(first);
+		if(first == capital)
+		{
+			return str;
+		}
+
+		final StringBuilder sb = new StringBuilder(str);
+		sb.setCharAt(0, capital);
+		return sb.toString();
 	}
 }

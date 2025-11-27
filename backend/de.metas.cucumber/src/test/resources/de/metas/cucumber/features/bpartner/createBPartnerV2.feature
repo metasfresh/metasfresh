@@ -21,6 +21,7 @@ Feature: create or update BPartner v2
             "bpartner":{
                "code":"test_code1",
                "name":"test_name",
+               "glnLookupLabel":"DIVISION_A",
                "companyName":"test_company",
                "parentId":null,
                "phone":null,
@@ -41,7 +42,6 @@ Feature: create or update BPartner v2
                         "region":null,
                         "city":null,
                         "countryCode":"DE",
-                        "gln":null,
                         "postal":null,
                         "vatId": null
                      }
@@ -56,7 +56,6 @@ Feature: create or update BPartner v2
                         "region":"test_region",
                         "city":"test_city",
                         "countryCode":"DE",
-                        "gln":null,
                         "postal":null,
                         "vatId": "vatId_Location_l22"
                      }
@@ -97,8 +96,8 @@ Feature: create or update BPartner v2
 }
 """
     Then verify that bPartner was created for externalIdentifier
-      | C_BPartner_ID.Identifier | externalIdentifier | OPT.Code   | Name      | OPT.CompanyName | OPT.ParentId | OPT.Phone | OPT.Language | OPT.Url | OPT.Group  | OPT.VatId |
-      | created_bpartner         | ext-ALBERTA-001    | test_code1 | test_name | test_company    | null         | null      | de           | null    | test-group | null      |
+      | C_BPartner_ID.Identifier | externalIdentifier | OPT.Code   | Name      | OPT.CompanyName | OPT.ParentId | OPT.Phone | OPT.Language | OPT.Url | OPT.Group  | OPT.VatId         | Lookup_label |
+      | created_bpartner         | ext-ALBERTA-001    | test_code1 | test_name | test_company    | null         | null      | de           | null    | test-group | vatId_BPartner001 | DIVISION_A   |
     And verify that location was created for bpartner
       | bpartnerIdentifier | locationIdentifier | OPT.Address1  | OPT.Address2  | OPT.PoBox  | OPT.District | OPT.Region  | OPT.City  | CountryCode | OPT.Gln | OPT.Postal | OPT.VATaxId        |
       | ext-ALBERTA-001    | gln-l11            | test_address1 | test_address2 | null       | null         | null        | null      | DE          | l11     | null       | null               |
@@ -210,9 +209,9 @@ Feature: create or update BPartner v2
                   }
                ],
                "syncAdvise":{
-      "ifNotExists":"CREATE",
-      "ifExists":"DONT_UPDATE"
-   }
+                  "ifNotExists":"CREATE",
+                  "ifExists":"DONT_UPDATE"
+               }
             }
          }
       }

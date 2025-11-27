@@ -26,9 +26,14 @@ import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
+import de.metas.inoutcandidate.CarrierGoodsType;
+import de.metas.inoutcandidate.CarrierGoodsTypeId;
+import de.metas.inoutcandidate.CarrierProductId;
+import de.metas.inoutcandidate.CarrierService;
 import de.metas.location.CountryCode;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.product.PackageDimensions;
 import de.metas.quantity.Quantitys;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.model.Address;
@@ -38,8 +43,8 @@ import de.metas.shipper.gateway.spi.model.DeliveryOrderItem;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderItemId;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderParcel;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderParcelId;
-import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
+import de.metas.shipper.gateway.spi.model.ShipperProduct;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.mpackage.PackageId;
@@ -47,6 +52,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_Carrier_ShipmentOrder;
@@ -57,15 +63,21 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveAll;
 
 @Repository
+@RequiredArgsConstructor
 public class ShipmentOrderRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	//TODO Adrian move relevant logic to a service so that repos don't depend on other repos
+	@NonNull private final CarrierProductRepository productRepository;
+	@NonNull private final CarrierGoodsTypeRepository goodsTypeRepository;
+	@NonNull private final CarrierShipmentOrderServiceRepository carrierServiceRepository;
 
 	public DeliveryOrder getById(@NonNull final DeliveryOrderId deliveryOrderId)
 	{
@@ -119,16 +131,19 @@ public class ShipmentOrderRepository
 				.build();
 	}
 
-	private static DeliveryOrder fromRecord(@NonNull final I_Carrier_ShipmentOrder po, @NonNull final ImmutableList<DeliveryOrderParcel> parcels)
+	private DeliveryOrder fromRecord(@NonNull final I_Carrier_ShipmentOrder po, @NonNull final ImmutableList<DeliveryOrderParcel> parcels)
 	{
+		final ShipperId shipperId = ShipperId.ofRepoId(po.getM_Shipper_ID());
+		final DeliveryOrderId id = DeliveryOrderId.ofRepoId(po.getCarrier_ShipmentOrder_ID());
 		return DeliveryOrder.builder()
-				.id(DeliveryOrderId.ofRepoId(po.getCarrier_ShipmentOrder_ID()))
-				.shipperProduct(CarrierShipperProduct.ofCode(po.getCarrier_Product()))
+				.id(id)
 				.customerReference(po.getCustomerReference())
-				.shipperId(ShipperId.ofRepoId(po.getM_Shipper_ID()))
+				.shipperId(shipperId)
 				.shipperTransportationId(ShipperTransportationId.ofRepoIdOrNull(po.getM_ShipperTransportation_ID()))
 				.pickupDate(PickupDate.builder()
 						.date(TimeUtil.asLocalDate(po.getShipmentDate()))
+						.timeFrom(TimeUtil.asLocalTime(po.getPickupTimeFrom()))
+						.timeTo(TimeUtil.asLocalTime(po.getPickupTimeTo()))
 						.build())
 				.deliveryContact(ContactPerson.builder()
 						.name(po.getReceiver_Name1())
@@ -158,6 +173,9 @@ public class ShipmentOrderRepository
 						.build())
 				.shipperEORI(po.getShipper_EORI())
 				.receiverEORI(po.getReceiver_EORI())
+				.shipperProduct(productRepository.getCachedShipperProductById(CarrierProductId.ofRepoIdOrNull(po.getCarrier_Product_ID())))
+				.goodsType(goodsTypeRepository.getCachedGoodsTypeById(CarrierGoodsTypeId.ofRepoIdOrNull(po.getCarrier_Goods_Type_ID())))
+				.services(carrierServiceRepository.getAssignedServicesByDeliveryOrderId(id))
 				.deliveryOrderParcels(parcels)
 				.build();
 	}
@@ -190,11 +208,7 @@ public class ShipmentOrderRepository
 		}
 		else
 		{
-			final DeliveryOrderId orderId = createShipmentOrder(order);
-			return order
-					.toBuilder()
-					.id(orderId)
-					.build();
+			return order.withId(createShipmentOrder(order));
 		}
 	}
 
@@ -244,16 +258,17 @@ public class ShipmentOrderRepository
 	{
 		final I_Carrier_ShipmentOrder po = InterfaceWrapperHelper.newInstance(I_Carrier_ShipmentOrder.class);
 		final ContactPerson deliveryContact = request.getDeliveryContact();
-		po.setCarrier_Product(request.getShipperProduct().getCode());
 		po.setC_BPartner_ID(request.getDeliveryAddress().getBpartnerId());
 		po.setCustomerReference(request.getCustomerReference());
 		po.setInternationalDelivery(!Objects.equals(request.getDeliveryAddress().getCountry(), request.getPickupAddress().getCountry()));
-		po.setM_Shipper_ID(ShipperId.toRepoId(request.getShipperId()));
+		final ShipperId shipperId = request.getShipperId();
+		po.setM_Shipper_ID(ShipperId.toRepoId(shipperId));
 		po.setM_ShipperTransportation_ID(ShipperTransportationId.toRepoId(request.getShipperTransportationId()));
 		po.setShipmentDate(TimeUtil.asTimestamp(request.getPickupDate().getDate()));
+		po.setPickupTimeFrom(TimeUtil.asTimestamp(request.getPickupDate().getTimeFrom()));
+		po.setPickupTimeTo(TimeUtil.asTimestamp(request.getPickupDate().getTimeTo()));
 		po.setShipper_EORI(request.getShipperEORI());
 		po.setReceiver_EORI(request.getReceiverEORI());
-		// FIXME what about pickup time from/to
 
 		if (deliveryContact != null)
 		{
@@ -282,20 +297,46 @@ public class ShipmentOrderRepository
 		final CountryCode receiverCountry = receiverAddress.getCountry();
 		po.setReceiver_CountryISO2Code(receiverCountry.getAlpha2());
 
+		final CarrierGoodsType goodsType = request.getGoodsType();
+		if (goodsType != null)
+		{
+			final CarrierGoodsType actualGoodsType = goodsTypeRepository.getOrCreateGoodsType(shipperId, goodsType.getExternalId(), goodsType.getName());
+			if (actualGoodsType != null)
+			{
+				po.setCarrier_Goods_Type_ID(CarrierGoodsTypeId.toRepoId(actualGoodsType.getId()));
+			}
+		}
+
+		final ShipperProduct shipperProduct = request.getShipperProduct();
+		if (shipperProduct != null)
+		{
+			final CarrierProduct carrierProduct = productRepository.getOrCreateCarrierProduct(request.getShipperId(), shipperProduct.getCode(), shipperProduct.getName());
+			if (carrierProduct != null)
+			{
+				po.setCarrier_Product_ID(CarrierProductId.toRepoId(carrierProduct.getId()));
+			}
+		}
+
 		InterfaceWrapperHelper.saveRecord(po);
 
 		final DeliveryOrderId deliveryOrderId = DeliveryOrderId.ofRepoId(po.getCarrier_ShipmentOrder_ID());
 
-		final ImmutableMap<DeliveryOrderParcel, I_Carrier_ShipmentOrder_Parcel> orderLineToParcel = request.getDeliveryOrderParcels()
+		final ImmutableMap<DeliveryOrderParcel, I_Carrier_ShipmentOrder_Parcel> parcelToDBParcel = request.getDeliveryOrderParcels()
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(Functions.identity(), item -> createParcel(item, deliveryOrderId)));
 
-		saveAll(orderLineToParcel.values());
+		saveAll(parcelToDBParcel.values());
 
-		saveAll(orderLineToParcel.keySet()
+		saveAll(parcelToDBParcel.keySet()
 				.stream()
-				.flatMap(orderLine -> createItems(orderLine, DeliveryOrderParcelId.ofRepoId(orderLineToParcel.get(orderLine).getCarrier_ShipmentOrder_Parcel_ID())))
+				.flatMap(parcel -> createItems(parcel, DeliveryOrderParcelId.ofRepoId(parcelToDBParcel.get(parcel).getCarrier_ShipmentOrder_Parcel_ID())))
 				.collect(ImmutableList.toImmutableList()));
+
+		final Set<CarrierService> services = request.getServices();
+		if (!services.isEmpty())
+		{
+			services.forEach(service -> carrierServiceRepository.assignServiceToDeliveryOrder(deliveryOrderId, shipperId, service));
+		}
 
 		return deliveryOrderId;
 	}

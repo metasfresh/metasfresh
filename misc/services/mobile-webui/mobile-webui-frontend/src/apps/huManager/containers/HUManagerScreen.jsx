@@ -101,6 +101,8 @@ const HUManagerScreen = () => {
     isSingleStorage && //
     (isExistingHU || !!currentLocatorQRCode?.locatorId); // either we have an huId or we scanned the locator where the new HU will be created
 
+  const isAllowBulkActions = actions.includes('bulkActions') && !!handlingUnitInfo?.qrCode?.code;
+
   if (handlingUnitInfo) {
     return (
       <>
@@ -135,13 +137,6 @@ const HUManagerScreen = () => {
         )}
         <HUInfoComponent handlingUnitInfo={handlingUnitInfo} currentLocatorQRCode={currentLocatorQRCode} />
         <div className="pt-3 section">
-          {actions.includes('dispose') && isExistingHU && (
-            <ButtonWithIndicator
-              captionKey="huManager.action.dispose.buttonCaption"
-              onClick={onDisposeClick}
-              testId="dispose-button"
-            />
-          )}
           {actions.includes('move') && (
             <ButtonWithIndicator
               captionKey="huManager.action.move.buttonCaption"
@@ -163,7 +158,7 @@ const HUManagerScreen = () => {
               testId="set-current-locator-button"
             />
           )}
-          {actions.includes('bulkActions') && (
+          {isAllowBulkActions && (
             <ButtonWithIndicator
               caption={trl('huManager.action.bulkActions.buttonCaption')}
               onClick={onBulkActionsClick}
@@ -182,6 +177,13 @@ const HUManagerScreen = () => {
               captionKey="huManager.action.printLabels.buttonCaption"
               onClick={onPrintLabelsClicked}
               testId="print-labels-button"
+            />
+          )}
+          {actions.includes('dispose') && isExistingHU && (
+            <ButtonWithIndicator
+              captionKey="huManager.action.dispose.buttonCaption"
+              onClick={onDisposeClick}
+              testId="dispose-button"
             />
           )}
           <ButtonWithIndicator

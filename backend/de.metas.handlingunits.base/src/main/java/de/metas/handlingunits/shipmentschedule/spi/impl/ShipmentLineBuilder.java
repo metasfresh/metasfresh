@@ -54,7 +54,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet.Builder;
@@ -418,10 +417,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		// Product & ASI (retrieved from Shipment Schedule)
 		shipmentLine.setM_Product_ID(productId.getRepoId());
 
-		final I_M_AttributeSetInstance newASI;
+		final AttributeSetInstanceId newAsiId;
 		if (attributeValues.isEmpty())
 		{
-			newASI = Services.get(IAttributeDAO.class).retrieveNoAttributeSetInstance();
+			newAsiId = AttributeSetInstanceId.NONE;
 		}
 		else
 		{
@@ -432,9 +431,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 						attributeValue.getM_Attribute(),
 						attributeValue.getValue());
 			}
-			newASI = attributeSetInstanceBL.createASIFromAttributeSet(attributeSetBuilder.build());
+			final I_M_AttributeSetInstance newASI = attributeSetInstanceBL.createASIFromAttributeSet(attributeSetBuilder.build());
+			newAsiId = AttributeSetInstanceId.ofRepoId(newASI.getM_AttributeSetInstance_ID());
 		}
-		shipmentLine.setM_AttributeSetInstance(newASI);
+		shipmentLine.setM_AttributeSetInstance_ID(newAsiId.getRepoId());
 
 		//
 		// Order Line Link (retrieved from current Shipment)

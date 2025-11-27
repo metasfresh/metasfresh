@@ -4,10 +4,15 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
+import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
+import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
+import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
+import de.metas.product.PackageDimensions;
 import de.metas.shipper.gateway.go.GOClientLogEvent.GOClientLogEventBuilder;
 import de.metas.shipper.gateway.go.schema.Fehlerbehandlung;
 import de.metas.shipper.gateway.go.schema.GOOrderStatus;
 import de.metas.shipper.gateway.go.schema.GOPackageLabelType;
+import de.metas.shipper.gateway.go.schema.GOShipperProduct;
 import de.metas.shipper.gateway.go.schema.Label;
 import de.metas.shipper.gateway.go.schema.ObjectFactory;
 import de.metas.shipper.gateway.go.schema.Sendung;
@@ -23,7 +28,6 @@ import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.HWBNumber;
 import de.metas.shipper.gateway.spi.model.OrderId;
-import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.shipper.gateway.spi.model.PhoneNumber;
@@ -112,7 +116,7 @@ public class GOClient implements ShipperGatewayClient
 		{
 			messageSender.afterPropertiesSet(); // to make sure credentials are set to HttpClient
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			throw AdempiereException.wrapIfNeeded(ex);
 		}
@@ -538,6 +542,17 @@ public class GOClient implements ShipperGatewayClient
 						.fileName(GOPackageLabelType.DIN_A6_ROUTER_LABEL_ZEBRA.toString())
 						.contentType(PackageLabel.CONTENTTYPE_PDF)
 						.labelData(pdfs.getRouterlabelZebra())
+						.build())
+				.build();
+	}
+
+	@Override
+	public @NonNull JsonDeliveryAdvisorResponse adviseShipment(final @NonNull JsonDeliveryAdvisorRequest request)
+	{
+		return JsonDeliveryAdvisorResponse.builder()
+				.requestId(request.getId())
+				.shipperProduct(JsonShipperProduct.builder()
+						.code(GOShipperProduct.Overnight.getCode())
 						.build())
 				.build();
 	}

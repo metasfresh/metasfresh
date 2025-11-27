@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_InventoryLine_HU extends org.compiere.model.PO implements I_M_InventoryLine_HU, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 459794261L;
+	private static final long serialVersionUID = 1733397462L;
 
     /** Standard Constructor */
     public X_M_InventoryLine_HU (final Properties ctx, final int M_InventoryLine_HU_ID, @Nullable final String trxName)
@@ -48,6 +48,45 @@ public class X_M_InventoryLine_HU extends org.compiere.model.PO implements I_M_I
 	public int getC_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
+	}
+
+	@Override
+	public void setIsCounted (final boolean IsCounted)
+	{
+		set_Value (COLUMNNAME_IsCounted, IsCounted);
+	}
+
+	@Override
+	public boolean isCounted() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCounted);
+	}
+
+	@Override
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
+	}
+
+	@Override
+	public void setM_AttributeSetInstance(final org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
+	{
+		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
+	}
+
+	@Override
+	public void setM_AttributeSetInstance_ID (final int M_AttributeSetInstance_ID)
+	{
+		if (M_AttributeSetInstance_ID < 0) 
+			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, M_AttributeSetInstance_ID);
+	}
+
+	@Override
+	public int getM_AttributeSetInstance_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_AttributeSetInstance_ID);
 	}
 
 	@Override

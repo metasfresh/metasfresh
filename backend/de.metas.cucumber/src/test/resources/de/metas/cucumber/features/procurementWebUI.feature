@@ -5,6 +5,7 @@ Feature: metasfresh communicates with the procurement-WebUI via RabbitMQ
   @from:cucumber
   Scenario: metasfresh provides bpartner data to the procurement-WebUI
     Given infrastructure and metasfresh are running
+    And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And metasfresh has date and time 2020-02-28T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_Products:
       | Identifier | Name             |

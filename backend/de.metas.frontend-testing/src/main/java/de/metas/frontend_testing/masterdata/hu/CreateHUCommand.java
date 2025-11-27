@@ -22,7 +22,6 @@ import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
-import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.product.IProductBL;
@@ -83,16 +82,26 @@ public class CreateHUCommand
 
 		final HuId cuId = createCU();
 		final HuId huId = transformCU(cuId);
-		updateAttributes(huId);
+		final IAttributeStorage huAttributes = updateAttributes(huId);
 
 		context.putIdentifier(identifier, huId);
-		final HUQRCode huQRCode = huQRCodesService.getQRCodeByHuId(huId);
+
+		final String huQRCodeStr;
+		if (request.isGenerateHUQRCode())
+		{
+			huQRCodeStr = huQRCodesService.getQRCodeByHuId(huId).toGlobalQRCodeString();
+		}
+		else
+		{
+			huQRCodeStr = null;
+		}
 
 		return JsonCreateHUResponse.builder()
 				.huId(String.valueOf(huId.getRepoId()))
-				.qrCode(huQRCode.toGlobalQRCodeString())
+				.qrCode(huQRCodeStr)
 				.productId(getProductId())
 				.warehouseId(getWarehouseId())
+				.externalBarcode(huAttributes != null && huAttributes.hasAttribute(AttributeConstants.ATTR_ExternalBarcode) ? huAttributes.getValueAsString(AttributeConstants.ATTR_ExternalBarcode) : null)
 				.build();
 	}
 
@@ -248,7 +257,7 @@ public class CreateHUCommand
 		return HuId.ofRepoId(newLU.getM_HU_ID());
 	}
 
-	private void updateAttributes(final HuId huId)
+	private IAttributeStorage updateAttributes(final HuId huId)
 	{
 		final BigDecimal weightNet = request.getWeightNet();
 		final String lotNo = request.getLotNo();
@@ -259,7 +268,7 @@ public class CreateHUCommand
 
 		if (CoalesceUtil.countNotNulls(weightNet, lotNo, bestBeforeDate, externalBarcode) <= 0)
 		{
-			return;
+			return null;
 		}
 
 		final IAttributeStorage huAttributes = handlingUnitsBL.getAttributeStorage(huId);
@@ -285,6 +294,8 @@ public class CreateHUCommand
 		{
 			huAttributes.setValue(AttributeConstants.ATTR_ExternalBarcode, externalBarcode);
 		}
+
+		return huAttributes;
 	}
 
 }

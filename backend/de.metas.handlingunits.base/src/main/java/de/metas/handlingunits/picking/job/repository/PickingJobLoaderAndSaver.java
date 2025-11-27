@@ -27,6 +27,8 @@ import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.LocatorInfo;
 import de.metas.handlingunits.picking.job.model.PickingJob;
+import de.metas.handlingunits.picking.job.model.PickingJobCandidateProducts;
+import de.metas.handlingunits.picking.job.model.PickingJobCandidateProductsCollector;
 import de.metas.handlingunits.picking.job.model.PickingJobDocStatus;
 import de.metas.handlingunits.picking.job.model.PickingJobHeader;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
@@ -45,8 +47,6 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
 import de.metas.handlingunits.picking.job.model.PickingUnit;
 import de.metas.handlingunits.picking.job.model.ScheduledPackageableLocks;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
-import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
-import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -55,6 +55,8 @@ import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -80,6 +82,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 class PickingJobLoaderAndSaver extends PickingJobSaver
@@ -132,6 +135,21 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				.map(pickingJobs::get)
 				.map(this::loadJob)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	public PickingJob updateById(@NonNull PickingJobId pickingJobId, @NonNull UnaryOperator<PickingJob> updater)
+	{
+		final PickingJob pickingJob = loadById(pickingJobId);
+		final PickingJob pickingJobChanged = updater.apply(pickingJob);
+		if (!Objects.equals(pickingJob, pickingJobChanged))
+		{
+			save(pickingJobChanged);
+			return pickingJobChanged;
+		}
+		else
+		{
+			return pickingJob;
+		}
 	}
 
 	public void addAlreadyLoadedFromDB(final I_M_Picking_Job record)
@@ -778,49 +796,24 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				.scheduleIds(getScheduleIds(pickingJobId))
 				.isShipmentSchedulesLocked(getShipmentSchedulesIsLocked(pickingJobId).isTrue())
 				.handoverLocationId(header.getHandoverLocationId())
-				.productId(extractSingleProductIdOrNull(pickingJobId))
-				.productName(extractSingleProductNameOrNull(pickingJobId))
-				.qtyToDeliver(extractQtyToPickOrNull(pickingJobId))
+				.products(extractProducts(pickingJobId))
 				.build();
 	}
 
-	@Nullable
-	private ITranslatableString extractSingleProductNameOrNull(final PickingJobId pickingJobId)
+	private PickingJobCandidateProducts extractProducts(final PickingJobId pickingJobId)
 	{
-		final ProductId productId = extractSingleProductIdOrNull(pickingJobId);
-		return productId != null ? loadingSupportingServices.getProductName(productId) : null;
-	}
-
-	@Nullable
-	private ProductId extractSingleProductIdOrNull(final PickingJobId pickingJobId)
-	{
-		ProductId productId = null;
-
+		final PickingJobCandidateProductsCollector collector = new PickingJobCandidateProductsCollector();
 		for (final I_M_Picking_Job_Line line : this.pickingJobLines.get(pickingJobId))
 		{
-			final ProductId lineProductId = extractProductId(line);
-			if (productId == null)
-			{
-				productId = lineProductId;
-			}
-			else if (!ProductId.equals(productId, lineProductId))
-			{
-				// different products found
-				return null;
-			}
+			final ProductId productId = extractProductId(line);
+			collector.collect(
+					productId,
+					() -> loadingSupportingServices.getProductName(productId),
+					extractQtyToPick(line)
+			);
 		}
 
-		return productId;
-	}
-
-	@Nullable
-	private Quantity extractQtyToPickOrNull(final PickingJobId pickingJobId)
-	{
-		return PickingJob.extractQtyToPickOrNull(
-				this.pickingJobLines.get(pickingJobId),
-				PickingJobLoaderAndSaver::extractProductId,
-				PickingJobLoaderAndSaver::extractQtyToPick
-		);
+		return collector.toProducts();
 	}
 
 	private ShipmentScheduleAndJobScheduleIdSet getScheduleIds(final PickingJobId pickingJobId)

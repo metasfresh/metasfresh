@@ -3,24 +3,21 @@ import { act } from 'react-dom/test-utils';
 import { mount } from 'enzyme';
 import nock from 'nock';
 import { Provider } from 'react-redux';
-import { applyMiddleware, createStore, combineReducers } from 'redux';
+import { applyMiddleware, combineReducers, createStore } from 'redux';
 import { Router } from 'react-router-dom';
 import { createMemoryHistory } from 'history';
 import { merge } from 'merge-anything';
 import thunk from 'redux-thunk';
 import promiseMiddleware from 'redux-promise';
-import waitForExpect from 'wait-for-expect';
 import { waitFor } from '@testing-library/dom';
-import { createWaitForElement } from 'enzyme-wait';
 import http from 'http';
 import StompServer from 'stomp-broker-js';
 
-import hotkeys from '../../../test_setup/fixtures/hotkeys.json';
-import keymap from '../../../test_setup/fixtures/keymap.json';
 import { serverTestPort } from '../../../test_setup/jestSetup';
-import { wrapInRouter } from '../../../test_setup/helpers';
 
-import { ShortcutProvider } from '../../components/keyshortcuts/ShortcutProvider';
+import {
+  ShortcutProvider
+} from '../../components/keyshortcuts/ShortcutProvider';
 import { ProvideAuth } from '../../hooks/useAuth';
 import { Routes } from '../../routes';
 
@@ -48,10 +45,14 @@ import tables, {
 
 import fixtures from '../../../test_setup/fixtures/master_window.json';
 import dataFixtures from '../../../test_setup/fixtures/master_window/data.json';
-import layoutFixtures from '../../../test_setup/fixtures/master_window/layout.json';
-import rowFixtures from '../../../test_setup/fixtures/master_window/row_data.json';
-import docActionFixtures from '../../../test_setup/fixtures/master_window/doc_action.json';
-import topActionsFixtures from '../../../test_setup/fixtures/master_window/top_actions.json';
+import layoutFixtures
+  from '../../../test_setup/fixtures/master_window/layout.json';
+import rowFixtures
+  from '../../../test_setup/fixtures/master_window/row_data.json';
+import docActionFixtures
+  from '../../../test_setup/fixtures/master_window/doc_action.json';
+import topActionsFixtures
+  from '../../../test_setup/fixtures/master_window/top_actions.json';
 import menuFixtures from '../../../test_setup/fixtures/master_window/menu.json';
 import userSessionData from '../../../test_setup/fixtures/user_session.json';
 import notificationsData from '../../../test_setup/fixtures/notifications.json';
@@ -73,7 +74,7 @@ const rootReducer = combineReducers({
 });
 
 const createInitialState = function(state = {}) {
-  const res = merge(
+  return merge(
     {
       appHandler: { ...appHandlerState },
       windowHandler: { ...windowHandlerState },
@@ -85,8 +86,6 @@ const createInitialState = function(state = {}) {
     },
     state
   );
-
-  return res;
 };
 
 describe.skip('MasterWindowContainer', () => {
@@ -193,7 +192,7 @@ describe.skip('MasterWindowContainer', () => {
       wrapper = await mount(
         <Provider store={store}>
           <ProvideAuth>
-            <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+            <ShortcutProvider>
               <Router history={history}>
                 <Routes />
               </Router>
@@ -303,7 +302,7 @@ describe.skip('MasterWindowContainer', () => {
       wrapper = await mount(
         <Provider store={store}>
           <ProvideAuth>
-            <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+            <ShortcutProvider>
               <Router history={history}>
                 <Routes />
               </Router>
@@ -425,7 +424,7 @@ describe.skip('MasterWindowContainer', () => {
       wrapper = await mount(
         <Provider store={store}>
           <ProvideAuth>
-            <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+            <ShortcutProvider>
               <Router history={localHistory}>
                 <Routes />
               </Router>

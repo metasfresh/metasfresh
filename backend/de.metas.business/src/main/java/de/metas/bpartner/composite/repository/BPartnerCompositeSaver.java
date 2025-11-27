@@ -52,7 +52,6 @@ import org.compiere.Adempiere;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BP_Group;
-import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
@@ -187,6 +186,8 @@ final class BPartnerCompositeSaver
 		bpartnerRecord.setName(bpartner.getName());
 		bpartnerRecord.setName2(bpartner.getName2());
 		bpartnerRecord.setName3(bpartner.getName3());
+		bpartnerRecord.setLookup_Label(bpartner.getGlnLookupLabel());
+		
 		bpartnerRecord.setC_Greeting_ID(GreetingId.toRepoId(bpartner.getGreetingId()));
 
 		bpartnerRecord.setBPartner_Parent_ID(BPartnerId.toRepoId(bpartner.getParentId()));

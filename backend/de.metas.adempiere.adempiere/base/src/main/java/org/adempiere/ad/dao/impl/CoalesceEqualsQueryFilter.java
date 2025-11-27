@@ -22,30 +22,38 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
+import de.metas.common.util.pair.ImmutablePair;
+import de.metas.util.Check;
+import lombok.Getter;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.IQueryFilterModifier;
+import org.adempiere.ad.dao.ISqlQueryFilter;
+import org.adempiere.model.InterfaceWrapperHelper;
 
-import java.util.Arrays;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.ISqlQueryFilter;
-import org.adempiere.model.InterfaceWrapperHelper;
-
-import de.metas.util.Check;
-
 public class CoalesceEqualsQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 {
-	private final List<String> columnNames;
-	private final Object value;
+	@NonNull private final ImmutableList<String> columnNames;
+	@Getter @Nullable private final Object value;
+	@NonNull private final IQueryFilterModifier modifier;
 
-	public CoalesceEqualsQueryFilter(final Object value, final String... columnNames)
+	public CoalesceEqualsQueryFilter(
+			@Nullable final Object value,
+			@NonNull final ImmutableList<String> columnNames,
+			@Nullable IQueryFilterModifier modifier)
 	{
-		Check.assumeNotNull(columnNames, "columnNames not null");
-		Check.assumeNotNull(columnNames.length > 1, "columnNames.length > 1");
-		this.columnNames = Arrays.asList(columnNames);
+		Check.assume(columnNames.size() > 1, "more than one column is expected but we got {}", columnNames);
+		this.columnNames = ImmutableList.copyOf(columnNames);
 		this.value = value;
+		this.modifier = modifier != null ? modifier : NullQueryFilterModifier.instance;
 	}
 
 	@Override
@@ -70,10 +78,23 @@ public class CoalesceEqualsQueryFilter<T> implements IQueryFilter<T>, ISqlQueryF
 	@Override
 	public boolean accept(final T model)
 	{
-		Object modelValue = null;
+		final ImmutablePair<String, Object> modelColumnAndValue = getFirstNonNullModelValue(model);
+		if (modelColumnAndValue == null)
+		{
+			return value == null;
+		}
 
-		//
-		// Get first not null value
+		final String columnName = modelColumnAndValue.getLeft();
+		final Object modelValue = modelColumnAndValue.getRight();
+		final Object modelValueModified = modifier.convertValue(columnName, modelValue, model);
+		final Object expectedValueModified = modifier.convertValue(columnName, this.value, model);
+
+		return Objects.equals(modelValueModified, expectedValueModified);
+	}
+
+	@Nullable
+	private ImmutablePair<String, Object> getFirstNonNullModelValue(final T model)
+	{
 		for (final String columnName : columnNames)
 		{
 			if (InterfaceWrapperHelper.isNull(model, columnName))
@@ -81,10 +102,14 @@ public class CoalesceEqualsQueryFilter<T> implements IQueryFilter<T>, ISqlQueryF
 				continue;
 			}
 
-			modelValue = InterfaceWrapperHelper.getValue(model, columnName).orElse(null);
+			final Object modelValue = InterfaceWrapperHelper.getValue(model, columnName).orElse(null);
+			if (modelValue != null)
+			{
+				return ImmutablePair.of(columnName, modelValue);
+			}
 		}
 
-		return Objects.equals(modelValue, value);
+		return null;
 	}
 
 	@Override
@@ -94,18 +119,13 @@ public class CoalesceEqualsQueryFilter<T> implements IQueryFilter<T>, ISqlQueryF
 		return sqlWhereClause;
 	}
 
-	public List<String> getColumnNames()
-	{
-		return columnNames;
-	}
-
-	public Object getValue()
-	{
-		return value;
-	}
-
 	@Override
 	public List<Object> getSqlParams(final Properties ctx)
+	{
+		return getSqlParams();
+	}
+
+	public List<Object> getSqlParams()
 	{
 		buildSql();
 		return sqlParams;
@@ -125,29 +145,22 @@ public class CoalesceEqualsQueryFilter<T> implements IQueryFilter<T>, ISqlQueryF
 		final StringBuilder sqlWhereClause = new StringBuilder();
 		final List<Object> sqlParams;
 
-		for (final String columnName : columnNames)
-		{
-			if (sqlWhereClause.length() > 0)
-			{
-				sqlWhereClause.append(",");
-			}
-			sqlWhereClause.append(columnName);
-		}
-		sqlWhereClause.insert(0, "COALESCE(").append(")");
+		final String sqlColumnNames = modifier.getColumnSql("COALESCE(" + String.join(",", columnNames) + ")");
+		sqlWhereClause.append(sqlColumnNames);
 
 		if (value == null)
 		{
 			sqlWhereClause.append(" IS NULL");
-			sqlParams = Collections.emptyList();
+			sqlParams = null;
 		}
 		else
 		{
-			sqlWhereClause.append("=?");
-			sqlParams = Collections.singletonList(value);
+			sqlParams = new ArrayList<>();
+			sqlWhereClause.append("=").append(modifier.getValueSql(value, sqlParams));
 		}
 
 		this.sqlWhereClause = sqlWhereClause.toString();
-		this.sqlParams = sqlParams;
+		this.sqlParams = sqlParams != null && !sqlParams.isEmpty() ? Collections.unmodifiableList(sqlParams) : ImmutableList.of();
 		this.sqlBuilt = true;
 	}
 }

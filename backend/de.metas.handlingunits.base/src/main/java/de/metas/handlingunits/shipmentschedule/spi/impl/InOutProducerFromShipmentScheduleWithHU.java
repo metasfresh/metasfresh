@@ -1,10 +1,8 @@
-package de.metas.handlingunits.shipmentschedule.spi.impl;
-
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package de.metas.handlingunits.shipmentschedule.spi.impl;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.handlingunits.shipmentschedule.spi.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -365,8 +365,9 @@ public class InOutProducerFromShipmentScheduleWithHU
 
 		//
 		// C_Order reference
+		if(shipmentSchedule.getC_Order_ID() > 0)
 		{
-			final de.metas.order.model.I_C_Order order = orderDAO.getById(OrderId.ofRepoIdOrNull(shipmentSchedule.getC_Order_ID()), de.metas.order.model.I_C_Order.class);
+			final de.metas.order.model.I_C_Order order = orderDAO.getById(OrderId.ofRepoId(shipmentSchedule.getC_Order_ID()), de.metas.order.model.I_C_Order.class);
 			if (order != null && order.getC_Order_ID() > 0)
 			{
 				shipment.setDateOrdered(order.getDateOrdered());
@@ -385,6 +386,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 				}
 
 				shipment.setAD_InputDataSource_ID(order.getAD_InputDataSource_ID());
+				shipment.setExternalSystem_ID(order.getExternalSystem_ID());
 
 				shipment.setSalesRep_ID(order.getSalesRep_ID());
 			}

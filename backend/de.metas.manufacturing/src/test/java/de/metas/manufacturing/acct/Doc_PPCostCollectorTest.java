@@ -169,7 +169,7 @@ class Post_CostCollectors_Now_ManualTest
 				new InvoiceAcctRepository(),
 				matchInvoiceService,
 				orderCostService,
-				new FAOpenItemsService(Optional.empty()),
+				new FAOpenItemsService(elementValueService, Optional.empty()),
 				costingService,
 				new DimensionService(ImmutableList.of()),
 				new SalesRegionService(new SalesRegionRepository()),
@@ -200,7 +200,7 @@ class Post_CostCollectors_Now_ManualTest
 		for (final int id : ids)
 		{
 			final I_PP_Cost_Collector documentModel = recordsById.get(id);
-			
+
 			final Doc_PPCostCollector doc = new Doc_PPCostCollector(contextTemplate.documentModel(toAcctDocModel(documentModel)).build());
 			doc.post(true, true);
 			System.out.println("Posted: " + documentModel);

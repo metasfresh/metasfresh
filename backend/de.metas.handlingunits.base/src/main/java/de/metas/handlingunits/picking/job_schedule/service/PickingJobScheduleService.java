@@ -75,7 +75,7 @@ public class PickingJobScheduleService
 				.values()
 				.stream()
 				.map(shipmentSchedule -> {
-					ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
+					final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
 					final ImmutableList<PickingJobSchedule> jobSchedules = jobSchedulesByShipmentScheduleId.get(shipmentScheduleId);
 					return ShipmentScheduleAndJobSchedules.of(shipmentSchedule, jobSchedules);
 				})
@@ -100,12 +100,12 @@ public class PickingJobScheduleService
 		shipmentScheduleBL.flagForRecompute(deletedSchedules.getShipmentScheduleIds());
 	}
 
-	public List<PickingJobSchedule> list(@NonNull PickingJobScheduleQuery query)
+	public List<PickingJobSchedule> list(@NonNull final PickingJobScheduleQuery query)
 	{
 		return pickingJobScheduleRepository.list(query);
 	}
 
-	public Stream<PickingJobSchedule> stream(@NonNull PickingJobScheduleQuery query)
+	public Stream<PickingJobSchedule> stream(@NonNull final PickingJobScheduleQuery query)
 	{
 		return pickingJobScheduleRepository.stream(query);
 	}

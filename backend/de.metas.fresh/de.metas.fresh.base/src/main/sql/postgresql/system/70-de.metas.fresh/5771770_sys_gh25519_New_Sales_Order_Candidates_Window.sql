@@ -1,3 +1,26 @@
+
+/*
+ * #%L
+ * de.metas.fresh.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 -- Run mode: SWING_CLIENT
 
 -- 2025-09-30T14:52:54.581Z
@@ -51,6 +74,48 @@ DELETE FROM AD_Element_Link WHERE AD_Window_ID=540095
 /* DDL */ select AD_Element_Link_Create_Missing_Window(540095)
 ;
 
+------------------------------------------------------------
+
+------------------------------
+-- Update custom windows that might exist in the respective DB
+-- Note that Overrides_Window_ID is not reliable because custom C_OLCand windows might be older than that column.
+-- Also note that i'm calling those existing custom windows "Auftragsdisposition (EDI-Import)" without the "legacy" to avoid naming collisions. 
+------------------------------
+create table fix.c_olcand_window_update_name as
+select ad_window_id, ad_element_id, name, overrides_window_id, replace(name, 'Auftragsdisposition', 'Auftragsdisposition (EDI-Import)') as new_name 
+from ad_window
+where ad_window_id in (select ad_window_id from ad_tab where ad_table_id = get_table_id('c_olcand'))
+and name ilike '%Auftragsdisposition%';
+
+UPDATE AD_Element e set Name=d.new_name, Updated=TO_TIMESTAMP('2025-10-06 14:53:20.701000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100
+from fix.c_olcand_window_update_name d where d.ad_element_id=e.ad_element_id;
+
+UPDATE AD_Element_Trl e set Name=d.new_name, Updated=TO_TIMESTAMP('2025-10-06 14:53:20.701000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100
+from fix.c_olcand_window_update_name d where d.ad_element_id=e.ad_element_id;
+
+UPDATE AD_Window w set Name=d.new_name, Updated=TO_TIMESTAMP('2025-10-06 14:53:20.701000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100
+from fix.c_olcand_window_update_name d where d.ad_window_id=w.ad_window_id;
+
+UPDATE AD_Window_Trl w set Name=d.new_name, Updated=TO_TIMESTAMP('2025-10-06 14:53:20.701000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100
+from fix.c_olcand_window_update_name d where d.ad_window_id=w.ad_window_id;
+
+UPDATE AD_Menu m set Name=d.new_name, Updated=TO_TIMESTAMP('2025-10-06 14:53:20.701000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100
+from fix.c_olcand_window_update_name d where d.ad_window_id=m.ad_window_id;
+
+UPDATE AD_Menu_Trl mt set Name=d.new_name, Updated=TO_TIMESTAMP('2025-10-06 14:53:20.701000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100
+FROM fix.c_olcand_window_update_name d
+WHERE mt.ad_menu_id IN (SELECT ad_menu_id FROM ad_menu m WHERE m.ad_window_id = d.ad_window_id)
+;
+
+DELETE FROM AD_Element_Link WHERE AD_Window_ID IN (SELECT ad_window_id FROM fix.c_olcand_window_update_name)
+;
+
+select AD_Element_Link_Create_Missing_Window(ad_window_id) from fix.c_olcand_window_update_name;
+---------------------------------------------
+
+
+    
+
 -- Window: Auftragsdisposition, InternalName=null
 -- 2025-09-30T14:54:22.652Z
 INSERT INTO AD_Window (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,EntityType,IsActive,IsBetaFunctionality,IsDefault,IsEnableRemoteCacheInvalidation,IsExcludeFromZoomTargets,IsOneInstanceOnly,IsOverrideInMenu,IsSOTrx,Name,Processing,Updated,UpdatedBy,WindowType,WinHeight,WinWidth,ZoomIntoPriority) VALUES (0,574745,0,541952,TO_TIMESTAMP('2025-09-30 14:54:21.758000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','N','N','N','N','N','N','Y','Auftragsdisposition','N',TO_TIMESTAMP('2025-09-30 14:54:21.758000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'M',0,0,100)
@@ -72,18 +137,22 @@ DELETE FROM AD_Element_Link WHERE AD_Window_ID=541952
 /* DDL */ select AD_Element_Link_Create_Missing_Window(541952)
 ;
 
+---
+-- We can't override a window, because it might be already overridden in many users' custom instances!
+-- The "INSERT INTO AD_Window_Trl" will this way cause duplicated AD_Window_Trl.Names
+---
 -- Window: Auftragsdisposition, InternalName=null
 -- 2025-09-30T14:54:49.517Z
-UPDATE AD_Window SET AD_Client_ID=0, AD_Color_ID=NULL, AD_Image_ID=NULL, AD_Org_ID=0, EntityType='de.metas.ordercandidate', IsActive='Y', IsBetaFunctionality='N', IsDefault='N', IsEnableRemoteCacheInvalidation='Y', IsExcludeFromZoomTargets='N', IsOneInstanceOnly='N', IsOverrideInMenu='N', IsSOTrx='Y', Overrides_Window_ID=540095, WindowType='T', WinHeight=0, WinWidth=0, ZoomIntoPriority=100,Updated=TO_TIMESTAMP('2025-09-30 14:54:49.517000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Window_ID=541952
-;
-
--- 2025-09-30T14:54:49.748Z
-DELETE FROM AD_Window_Trl WHERE AD_Window_ID = 541952
-;
-
--- 2025-09-30T14:54:49.806Z
-INSERT INTO AD_Window_Trl (AD_Window_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 541952, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Window_Trl WHERE AD_Window_ID = 540095
-;
+-- UPDATE AD_Window SET AD_Client_ID=0, AD_Color_ID=NULL, AD_Image_ID=NULL, AD_Org_ID=0, EntityType='de.metas.ordercandidate', IsActive='Y', IsBetaFunctionality='N', IsDefault='N', IsEnableRemoteCacheInvalidation='Y', IsExcludeFromZoomTargets='N', IsOneInstanceOnly='N', IsOverrideInMenu='N', IsSOTrx='Y', Overrides_Window_ID=540095, WindowType='T', WinHeight=0, WinWidth=0, ZoomIntoPriority=100,Updated=TO_TIMESTAMP('2025-09-30 14:54:49.517000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Window_ID=541952
+-- ;
+-- 
+-- -- 2025-09-30T14:54:49.748Z
+-- DELETE FROM AD_Window_Trl WHERE AD_Window_ID = 541952
+-- ;
+-- 
+-- -- 2025-09-30T14:54:49.806Z
+-- INSERT INTO AD_Window_Trl (AD_Window_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 541952, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Window_Trl WHERE AD_Window_ID = 540095
+-- ;
 
 -- Tab: Auftragsdisposition(541952,de.metas.ordercandidate) -> Kandidat
 -- Table: C_OLCand
@@ -5084,7 +5153,7 @@ UPDATE AD_Menu_Trl trl SET Name='Auftragsdisposition' WHERE AD_Menu_ID=1000097 A
 -- Action Type: W
 -- Window: Auftragsdisposition (Legacy-EDI-Import)(540095,de.metas.ordercandidate)
 -- 2025-09-30T15:03:09.213Z
-INSERT INTO AD_Menu (Action,AD_Client_ID,AD_Element_ID,AD_Menu_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,EntityType,InternalName,IsActive,IsCreateNew,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy) VALUES ('W',0,584049,542255,0,540095,TO_TIMESTAMP('2025-09-30 15:03:08.337000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.ordercandidate','C_OLCand','Y','N','N','N','N','Auftragsdisposition (Legacy-EDI-Import)',TO_TIMESTAMP('2025-09-30 15:03:08.337000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Menu (Action,AD_Client_ID,AD_Element_ID,AD_Menu_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,EntityType,InternalName,IsActive,IsCreateNew,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy) VALUES ('W',0,584049,542255,0,540095,TO_TIMESTAMP('2025-09-30 15:03:08.337000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.ordercandidate','C_OLCand_Legacy-EDI-Import','Y','N','N','N','N','Auftragsdisposition (Legacy-EDI-Import)',TO_TIMESTAMP('2025-09-30 15:03:08.337000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-09-30T15:03:09.272Z

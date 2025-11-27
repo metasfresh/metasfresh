@@ -363,7 +363,7 @@ public class SaveDecoupledHUAttributesDAO implements IHUAttributesDAO
 
 		final I_M_HU_Attribute modelOld = InterfaceWrapperHelper.createOld(huAttribute, I_M_HU_Attribute.class);
 		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
-		final I_M_Attribute attribute = attributesRepo.getAttributeById(huAttribute.getM_Attribute_ID());
+		final I_M_Attribute attribute = attributesRepo.getAttributeRecordById(huAttribute.getM_Attribute_ID());
 		final String modelChangeInfo = ""
 				+ Services.get(IHandlingUnitsBL.class).getDisplayName(huAttribute.getM_HU())
 				+ " - "

@@ -41,9 +41,13 @@ Feature: Shipments export via postgREST
       | Identifier           | InternalName   |
       | dataSource_S0475_010 | test_S0475_010 |
 
+    When metasfresh contains External System
+      | Name                 | Value          |
+      | TestSystem_S0475_010 | test_S0475_010 |
+
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised | AD_InputDataSource_ID | ExternalId           |
-      | o_1        | true    | customer1     | 2025-04-17  | 2025-04-18Z  | dataSource_S0475_010  | externalId_S0475_010 |
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised | AD_InputDataSource_ID | ExternalId           | ExternalSystem.Value |
+      | o_1        | true    | customer1     | 2025-04-17  | 2025-04-18Z  | dataSource_S0475_010  | externalId_S0475_010 | test_S0475_010       |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID      | QtyEntered | ExternalId               |
       | ol_1       | o_1                   | product_S0475_010 | 100        | externalLineId_S0475_010 |
@@ -79,8 +83,8 @@ Feature: Shipments export via postgREST
       "value": "2025-01-01 00:00:00"
     },
     {
-      "name": "DataSource",
-      "value": "int-test_S0475_010"
+      "name": "ExternalSystemCode",
+      "value": "test_S0475_010"
     }
   ]
 }
@@ -94,6 +98,7 @@ Feature: Shipments export via postgREST
     "Shipment_Date": "2025-05-15T00:00:00",
     "DocStatus": "CO",
     "ExternalId": "externalId_S0475_010",
+    "ExternalSystemCode": "test_S0475_010",
     "DataSource": "int-test_S0475_010",
     "Order_Date": "2025-04-17T00:00:00",
     "Order_POReference": null,
@@ -175,9 +180,13 @@ Feature: Shipments export via postgREST
       | Identifier           | InternalName   |
       | dataSource_S0475_020 | test_S0475_020 |
 
+    When metasfresh contains External System
+      | Name                 | Value          |
+      | TestSystem_S0475_020 | test_S0475_020 |
+
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised | AD_InputDataSource_ID | ExternalId           |
-      | o_1        | true    | customer1     | 2025-04-17  | 2025-04-18Z  | dataSource_S0475_020  | externalId_S0475_020 |
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised | AD_InputDataSource_ID | ExternalId           | ExternalSystem.Value |
+      | o_1        | true    | customer1     | 2025-04-17  | 2025-04-18Z  | dataSource_S0475_020  | externalId_S0475_020 | test_S0475_020       |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID      | QtyEntered | ExternalId               |
       | ol_1       | o_1                   | product_S0475_020 | 100        | externalLineId_S0475_020 |
@@ -224,6 +233,7 @@ Feature: Shipments export via postgREST
     "Shipment_Date": "2025-05-15T00:00:00",
     "DocStatus": "CO",
     "ExternalId": "externalId_S0475_020",
+    "ExternalSystemCode": "test_S0475_020",
     "DataSource": "int-test_S0475_020",
     "Order_Date": "2025-04-17T00:00:00",
     "Order_POReference": null,

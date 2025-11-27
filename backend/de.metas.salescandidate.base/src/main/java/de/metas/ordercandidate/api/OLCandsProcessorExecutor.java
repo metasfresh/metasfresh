@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.salescandidate.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ordercandidate.api;
 
 import ch.qos.logback.classic.Level;
@@ -37,28 +59,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 /**
  * Processes sales order candidates and produces sales orders
  */
@@ -76,7 +76,12 @@ public class OLCandsProcessorExecutor
 	private final OLCandAggregation aggregationInfo;
 	private final OLCandOrderDefaults orderDefaults;
 	private final PInstanceId selectionId;
+	
+	/** If provided, then only OLCands with this async batch ID are processed */
 	private final AsyncBatchId asyncBatchId;
+	
+	/** If true, then the async batch ID of the processed OLCands will be propagated to {@code C_Order.C_Async_Batch_ID} */
+	private final boolean propagateAsyncBatchIdToOrderRecord;
 	private final LocalDate defaultDateOrdered = SystemTime.asLocalDate();
 
 	@Builder
@@ -86,7 +91,8 @@ public class OLCandsProcessorExecutor
 			@NonNull final IOLCandGroupingProvider groupingValuesProviders,
 			@NonNull final OLCandProcessingHelper olCandProcessingHelper,
 			@NonNull final PInstanceId selectionId,
-			@Nullable final AsyncBatchId asyncBatchId)
+			@Nullable final AsyncBatchId asyncBatchId, 
+			final boolean propagateAsyncBatchIdToOrderRecord)
 	{
 		this.orderDefaults = processorDescriptor.getDefaults();
 		this.olCandListeners = olCandListeners;
@@ -96,6 +102,7 @@ public class OLCandsProcessorExecutor
 
 		this.selectionId = selectionId;
 		this.asyncBatchId = asyncBatchId;
+		this.propagateAsyncBatchIdToOrderRecord = propagateAsyncBatchIdToOrderRecord;
 		this.loggable = Loggables.withLogger(logger, Level.DEBUG);
 
 		this.olCandProcessorId = processorDescriptor.getId();
@@ -220,6 +227,7 @@ public class OLCandsProcessorExecutor
 				.loggable(loggable)
 				.olCandProcessorId(olCandProcessorId)
 				.olCandListeners(olCandListeners)
+				.propagateAsyncBatchIdToOrderRecord(propagateAsyncBatchIdToOrderRecord)
 				.build();
 	}
 
@@ -252,7 +260,9 @@ public class OLCandsProcessorExecutor
 				|| !Objects.equals(previousCandidate.getPricingSystemId(), candidate.getPricingSystemId())
 				|| !Objects.equals(previousCandidate.getShipperId(), candidate.getShipperId())
 				|| !Objects.equals(previousCandidate.getSalesRepId(), candidate.getSalesRepId())
-				|| !Objects.equals(previousCandidate.getOrderDocTypeId(), candidate.getOrderDocTypeId()))
+				|| !Objects.equals(previousCandidate.getOrderDocTypeId(), candidate.getOrderDocTypeId())
+				|| !Objects.equals(previousCandidate.getExternalSystemId(), candidate.getExternalSystemId())
+				|| !Objects.equals(previousCandidate.getExternalHeaderId(), candidate.getExternalHeaderId()))
 
 		{
 			return true;

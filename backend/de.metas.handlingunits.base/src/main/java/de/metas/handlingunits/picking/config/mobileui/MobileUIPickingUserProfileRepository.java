@@ -25,7 +25,7 @@ package de.metas.handlingunits.picking.config.mobileui;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
-import de.metas.handlingunits.picking.job.model.PickingJobFacetGroup;
+import de.metas.handlingunits.picking.job.model.facets.PickingJobFacetGroup;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.picking.model.I_PickingProfile_Filter;
 import de.metas.picking.model.I_PickingProfile_PickingJobConfig;
@@ -46,6 +46,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 @Repository
@@ -102,6 +103,7 @@ public class MobileUIPickingUserProfileRepository
 				.isFilterByBarcode(profileRecord.isFilterByBarcode())
 				.isActiveWorkplaceRequired(profileRecord.isActiveWorkplaceRequired())
 				.isConsiderOnlyJobScheduledToWorkplace(profileRecord.isConsideredOnlyScheduledJobs())
+				.isAllowQuickPackAll(profileRecord.isAllowQuickPackAll())
 				.customerConfigs(retrievePickingCustomerConfigsCollection(profileId))
 				.defaultPickingJobOptions(extractPickingJobOptions(profileRecord))
 				.filters(retrieveFilters(profileId))
@@ -116,6 +118,7 @@ public class MobileUIPickingUserProfileRepository
 				.isAlwaysSplitHUsEnabled(profileRecord.isAlwaysSplitHUsEnabled())
 				.isAllowPickingAnyHU(profileRecord.isAllowPickingAnyHU())
 				.allowedPickToStructures(extractAllowedPickToStructures(profileRecord))
+				.pickAttributes(extractPickAttributes(profileRecord))
 				.isShipOnCloseLU(profileRecord.isShipOnCloseLU())
 				.considerSalesOrderCapacity(profileRecord.isConsiderSalesOrderCapacity())
 				.isCatchWeightTUPickingEnabled(profileRecord.isCatchWeightTUPickingEnabled())
@@ -126,8 +129,17 @@ public class MobileUIPickingUserProfileRepository
 				.isAnonymousPickHUsOnTheFly(profileRecord.isAnonymousHuPickedOnTheFly())
 				.displayPickingSlotSuggestions(OptionalBoolean.ofBoolean(profileRecord.isDisplayPickingSlotSuggestions()))
 				.createShipmentPolicy(CreateShipmentPolicy.ofCode(profileRecord.getCreateShipmentPolicy()))
+				.completeJobAutomatically(OptionalBoolean.ofBoolean(profileRecord.isCompleteJobAutomatically()))
 				.pickingLineGroupBy(PickingLineGroupBy.ofNullableCode(profileRecord.getPickingLineGroupBy()))
 				.pickingLineSortBy(PickingLineSortBy.ofNullableCode(profileRecord.getPickingLineSortBy()))
+				.build();
+	}
+
+	private static PickAttributesConfig extractPickAttributes(final I_MobileUI_UserProfile_Picking profileRecord)
+	{
+		return PickAttributesConfig.builder()
+				.attributeToRead(PickAttribute.BestBeforeDate, profileRecord.isBestBeforeDate())
+				.attributeToRead(PickAttribute.LotNo, profileRecord.isLotNumber())
 				.build();
 	}
 
@@ -191,7 +203,14 @@ public class MobileUIPickingUserProfileRepository
 		return BPartnerId.ofRepoId(record.getC_BPartner_ID());
 	}
 
-	public void save(@NonNull final MobileUIPickingUserProfile profile)
+	public void update(@NonNull UnaryOperator<MobileUIPickingUserProfile> updater)
+	{
+		final MobileUIPickingUserProfile profile = getProfile();
+		final MobileUIPickingUserProfile profileChanged = updater.apply(profile);
+		save(profileChanged);
+	}
+
+	private void save(@NonNull final MobileUIPickingUserProfile profile)
 	{
 		//
 		// Header record
@@ -208,6 +227,7 @@ public class MobileUIPickingUserProfileRepository
 			profileRecord.setIsFilterByBarcode(profile.isFilterByBarcode());
 			profileRecord.setIsActiveWorkplaceRequired(profile.isActiveWorkplaceRequired());
 			profileRecord.setIsConsideredOnlyScheduledJobs(profile.isConsiderOnlyJobScheduledToWorkplace());
+			profileRecord.setIsAllowQuickPackAll(profile.isAllowQuickPackAll());
 			updateRecord(profileRecord, profile.getDefaultPickingJobOptions());
 			InterfaceWrapperHelper.saveRecord(profileRecord);
 			profileId = MobileUIPickingUserProfileId.ofRepoId(profileRecord.getMobileUI_UserProfile_Picking_ID());
@@ -251,6 +271,7 @@ public class MobileUIPickingUserProfileRepository
 		record.setIsAlwaysSplitHUsEnabled(from.isAlwaysSplitHUsEnabled());
 		record.setIsShipOnCloseLU(from.isShipOnCloseLU());
 		updateRecord(record, from.getAllowedPickToStructures());
+		updateRecord(record, from.getPickAttributes());
 		record.setIsAllowCompletingPartialPickingJob(from.isAllowCompletingPartialPickingJob());
 		record.setIsCatchWeightTUPickingEnabled(from.isCatchWeightTUPickingEnabled());
 		record.setIsConsiderSalesOrderCapacity(from.isConsiderSalesOrderCapacity());
@@ -260,6 +281,7 @@ public class MobileUIPickingUserProfileRepository
 		record.setIsAnonymousHuPickedOnTheFly(from.isAnonymousPickHUsOnTheFly());
 		record.setIsDisplayPickingSlotSuggestions(from.getDisplayPickingSlotSuggestions().orElse(false));
 		record.setCreateShipmentPolicy(from.getCreateShipmentPolicy().getCode());
+		record.setIsCompleteJobAutomatically(from.getCompleteJobAutomatically().orElse(false));
 		record.setPickingLineGroupBy(from.getPickingLineGroupBy().map(PickingLineGroupBy::getCode).orElse(null));
 		record.setPickingLineSortBy(from.getPickingLineSortBy().map(PickingLineSortBy::getCode).orElse(null));
 	}
@@ -270,6 +292,12 @@ public class MobileUIPickingUserProfileRepository
 		record.setAllowPickToStructure_TU(from.isStrictlyAllowed(PickToStructure.TU));
 		record.setAllowPickToStructure_LU_CU(from.isStrictlyAllowed(PickToStructure.LU_CU));
 		record.setAllowPickToStructure_CU(from.isStrictlyAllowed(PickToStructure.CU));
+	}
+
+	private static void updateRecord(final @NotNull I_MobileUI_UserProfile_Picking record, final PickAttributesConfig from)
+	{
+		record.setBestBeforeDate(from.isReadAttribute(PickAttribute.BestBeforeDate));
+		record.setLotNumber(from.isReadAttribute(PickAttribute.LotNo));
 	}
 
 	@NonNull
@@ -328,6 +356,7 @@ public class MobileUIPickingUserProfileRepository
 				.isAlwaysSplitHUsEnabled(record.isAlwaysSplitHUsEnabled())
 				.isAllowPickingAnyHU(record.isAllowPickingAnyHU())
 				.allowedPickToStructures(extractAllowedPickToStructures(record))
+				.pickAttributes(PickAttributesConfig.UNKNOWN)
 				.isShipOnCloseLU(record.isShipOnCloseLU())
 				.considerSalesOrderCapacity(record.isConsiderSalesOrderCapacity())
 				.isCatchWeightTUPickingEnabled(record.isCatchWeightTUPickingEnabled())

@@ -121,6 +121,12 @@ const postEvent = (event) => {
   return axios.post(`${apiBasePath}/picking/event`, event).then((response) => unboxAxiosResponse(response));
 };
 
+export const postPickAll = ({ wfProcessId }) => {
+  return axios
+    .post(`${apiBasePath}/picking/job/${wfProcessId}/pickAll`)
+    .then((response) => unboxAxiosResponse(response));
+};
+
 export const closePickingJobLine = ({ wfProcessId, lineId }) => {
   return axios
     .post(`${apiBasePath}/picking/closeLine`, { wfProcessId, pickingLineId: lineId })
@@ -148,5 +154,17 @@ export const getClosedLUs = ({ wfProcessId, lineId }) => {
 export const getScannedHUQRCodeInfo = ({ qrCode }) => {
   return axios
     .get(toUrl(`${apiBasePath}/picking/hu/byScannedCode`, { scannedCode: qrCode }))
+    .then((response) => unboxAxiosResponse(response));
+};
+
+export const getQtyAvailable = ({ wfProcessId }) => {
+  return axios
+    .get(`${apiBasePath}/picking/job/${wfProcessId}/qtyAvailable`)
+    .then((response) => unboxAxiosResponse(response));
+};
+
+export const completePickingJob = ({ wfProcessId }) => {
+  return axios
+    .post(`${apiBasePath}/picking/job/${wfProcessId}/complete`)
     .then((response) => unboxAxiosResponse(response));
 };

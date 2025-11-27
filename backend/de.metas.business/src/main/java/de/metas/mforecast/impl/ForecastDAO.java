@@ -29,6 +29,7 @@ import de.metas.mforecast.ForecastRequest;
 import de.metas.mforecast.ForecastRequest.ForecastLineRequest;
 import de.metas.mforecast.IForecastDAO;
 import de.metas.pricing.PriceListId;
+import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
@@ -36,6 +37,8 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.ASIQueryFilterModifier;
 import org.adempiere.ad.dao.impl.ActiveRecordQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -66,6 +69,24 @@ public class ForecastDAO implements IForecastDAO
 				.addInArrayFilter(I_M_ForecastLine.COLUMNNAME_M_Forecast_ID, ids)
 				.create()
 				.stream(I_M_Forecast.class);
+	}
+
+	public List<ForecastId> listIdsByQuery(@NonNull final ForecastQuery forecastQuery)
+	{
+		final IQueryBuilder<I_M_ForecastLine> builder = queryBL.createQueryBuilder(I_M_ForecastLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ForecastLine.COLUMNNAME_M_Product_ID, ProductId.toRepoId(forecastQuery.getProductId()))
+				.addEqualsFilter(I_M_ForecastLine.COLUMNNAME_M_AttributeSetInstance_ID, forecastQuery.getAttributesKey().getAsString(), ASIQueryFilterModifier.instance)
+				.addEqualsFilter(I_M_ForecastLine.COLUMNNAME_M_Warehouse_ID, forecastQuery.getWarehouseId())
+				.addEqualsFilter(I_M_ForecastLine.COLUMNNAME_AD_Org_ID, forecastQuery.getOrgId());
+		if (forecastQuery.isOnlyNonZeroQty())
+		{
+			builder.addNotEqualsFilter(I_M_ForecastLine.COLUMNNAME_Qty, 0);
+		}
+		return builder
+				.andCollect(I_M_ForecastLine.COLUMN_M_Forecast_ID)
+				.create()
+				.listIds(ForecastId::ofRepoId);
 	}
 
 	@Override

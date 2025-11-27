@@ -133,6 +133,8 @@ public interface IWarehouseDAO extends ISingletonService
 
 	Optional<WarehouseId> getInTransitWarehouseIdIfExists(OrgId adOrgId);
 
+	Set<WarehouseId> getWarehouseIdsByOrgId(@NonNull OrgId orgId);
+
 	List<I_M_Warehouse> getAllWarehouses();
 
 	Set<WarehouseId> getAllWarehouseIds();

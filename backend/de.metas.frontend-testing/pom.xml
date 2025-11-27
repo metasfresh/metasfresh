@@ -32,7 +32,12 @@
 			<artifactId>de.metas.hu_consolidation.mobile</artifactId>
 			<version>10.0.0</version>
 		</dependency>
-		
+		<dependency>
+			<groupId>de.metas.inventory</groupId>
+			<artifactId>de.metas.inventory.mobileui</artifactId>
+			<version>10.0.0</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>

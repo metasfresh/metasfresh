@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.salescandidate.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ordercandidate.api;
 
 import de.metas.async.AsyncBatchId;
@@ -5,6 +27,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
+import de.metas.externalsystem.ExternalSystemId;
 import de.metas.impexp.InputDataSourceId;
 import de.metas.money.CurrencyId;
 import de.metas.order.InvoiceRule;
@@ -27,28 +50,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2018 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 @Value
 public class OLCandCreateRequest
 {
@@ -57,7 +58,13 @@ public class OLCandCreateRequest
 	String externalHeaderId;
 
 	/**
-	 * Mandatory; an Identifier of an existing AD_InputDataSource record.
+	 * Mandatory; an Identifier of an existing ExternalSystem record.
+	 */
+	@NonNull
+	ExternalSystemId externalSystemId;
+
+	/**
+	 * Optional; an Identifier of an existing AD_InputDataSource record.
 	 */
 	InputDataSourceId dataSourceId;
 
@@ -110,6 +117,7 @@ public class OLCandCreateRequest
 	BPartnerId salesRepId;
 
 	@Nullable InvoiceRule invoiceRule;
+	boolean isAutoInvoice;
 	@Nullable PaymentRule paymentRule;
 
 	PaymentTermId paymentTermId;
@@ -145,7 +153,8 @@ public class OLCandCreateRequest
 			@Nullable final String externalLineId,
 			@Nullable final String externalHeaderId,
 			final OrgId orgId,
-			@NonNull final InputDataSourceId dataSourceId,
+			@NonNull final ExternalSystemId externalSystemId,
+			@Nullable final InputDataSourceId dataSourceId,
 			@NonNull final InputDataSourceId dataDestId,
 			@NonNull final BPartnerInfo bpartner,
 			final BPartnerInfo billBPartner,
@@ -174,6 +183,7 @@ public class OLCandCreateRequest
 			@Nullable final ShipperId shipperId,
 			@Nullable final BPartnerId salesRepId,
 			@Nullable final InvoiceRule invoiceRule,
+			final boolean isAutoInvoice,
 			@Nullable final PaymentRule paymentRule,
 			@Nullable final PaymentTermId paymentTermId,
 			@Nullable final OrderLineGroup orderLineGroup,
@@ -201,6 +211,7 @@ public class OLCandCreateRequest
 
 		this.orgId = orgId;
 
+		this.externalSystemId = externalSystemId;
 		this.dataSourceId = dataSourceId;
 		this.dataDestId = dataDestId;
 
@@ -239,6 +250,7 @@ public class OLCandCreateRequest
 		this.warehouseDestId = warehouseDestId;
 
 		this.invoiceRule = invoiceRule;
+		this.isAutoInvoice = isAutoInvoice;
 		this.paymentRule = paymentRule;
 
 		this.paymentTermId = paymentTermId;

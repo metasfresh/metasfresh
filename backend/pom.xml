@@ -181,12 +181,14 @@
         <module>de.metas.serviceprovider</module>
 
         <module>de.metas.shipper.gateway.commons</module>
+        <module>de.metas.shipper.gateway.commons.webui</module>
         <module>de.metas.shipper.gateway.spi</module>
         <module>de.metas.shipper.gateway.go</module>
         <module>de.metas.shipper.gateway.derkurier</module>
         <module>de.metas.shipper.gateway.dhl</module>
         <module>de.metas.shipper.gateway.dpd</module>
         <module>de.metas.shipper.gateway.nshift</module>
+        <module>de.metas.shipper.client.nshift</module>
 
         <module>de.metas.util</module>
         <module>de.metas.util.web</module>
@@ -222,6 +224,7 @@
         <module>de.metas.picking.rest-api</module>
         <module>de.metas.hu_consolidation.mobile</module>
         <module>de.metas.distribution.rest-api</module>
+        <module>de.metas.inventory.mobileui</module>
 
         <module>de.metas.pos.base</module>
         <module>de.metas.pos.rest-api</module>

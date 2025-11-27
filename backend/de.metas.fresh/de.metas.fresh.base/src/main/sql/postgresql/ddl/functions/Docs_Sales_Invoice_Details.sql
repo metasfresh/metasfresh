@@ -77,7 +77,11 @@ SELECT io.DocType || ': ' || io.DocNo                         AS InOuts,
        )                                                      AS Attributes,
        il.QtyenteredTU                                        AS HUQty,
        piip.name                                              AS HUName,
-       il.QtyInvoicedInPriceUOM,
+
+       CASE
+         WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'QtyInvoicedInPriceUOM') = 'N' THEN
+               il.QtyInvoicedInPriceUOM
+       END as QtyInvoicedInPriceUOM,
        CASE
            WHEN il.QtyEntered > 0
                THEN il.QtyEntered
@@ -92,7 +96,11 @@ SELECT io.DocType || ': ' || io.DocNo                         AS InOuts,
        il.PriceEntered,
        il.Discount,
        COALESCE(uomt.UOMSymbol, uom.UOMSymbol)                AS UOM,
-       COALESCE(puomt.UOMSymbol, puom.UOMSymbol)              AS PriceUOM,
+       CASE
+           WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'UOMSymbol') = 'N' THEN
+               COALESCE(puomt.UOMSymbol, puom.UOMSymbol)
+       END AS PriceUOM,
+
        puom.StdPrecision,
        report.getQtyPattern(puom.StdPrecision)                AS QtyPattern,
        il.linenetamt,
