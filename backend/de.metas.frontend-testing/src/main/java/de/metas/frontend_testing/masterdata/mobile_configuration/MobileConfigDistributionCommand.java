@@ -53,6 +53,7 @@ class MobileConfigDistributionCommand
 
 		return JsonMobileConfigResponse.Distribution.builder()
 				.allowPickingAnyHU(newConfig.isAllowPickingAnyHU())
+				.requireScanningProductCode(newConfig.isRequireScanningProductCode())
 				.completeJobAutomatically(newConfig.isCompleteJobAutomatically())
 				.build();
 	}
