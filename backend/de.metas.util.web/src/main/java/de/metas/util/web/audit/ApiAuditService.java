@@ -365,7 +365,7 @@ public class ApiAuditService
 		{
 			return false;
 		}
-		return !contentType.contains(APPLICATION_JSON_VALUE);
+		return contentType.contains(APPLICATION_JSON_VALUE);
 	}
 
 	private boolean shouldProcessRequestAsync(@NonNull final HttpServletRequest request, @NonNull final ApiAuditConfig apiAuditConfig)
