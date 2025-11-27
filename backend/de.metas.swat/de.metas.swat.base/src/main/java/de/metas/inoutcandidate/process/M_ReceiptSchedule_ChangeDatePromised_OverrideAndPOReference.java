@@ -2,7 +2,7 @@
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -47,7 +47,7 @@ public class M_ReceiptSchedule_ChangeDatePromised_OverrideAndPOReference extends
 	private static final AdMessageKey MSG_PARAMS_VALIDATION_ERROR = AdMessageKey.of("receiptschedule.ChangeDatePromised_OverrideAndPOReference.paramsValidationError");
 
 	@Param(parameterName = I_M_ReceiptSchedule.COLUMNNAME_DatePromised_Override)
-	private LocalDate datePromised_Override;
+	private LocalDate datePromisedOverride;
 
 	@Param(parameterName = I_M_ReceiptSchedule.COLUMNNAME_POReference)
 	private String poReference;
@@ -85,7 +85,7 @@ public class M_ReceiptSchedule_ChangeDatePromised_OverrideAndPOReference extends
 					.markAsUserValidationError();
 		}
 
-		if (datePromised_Override == null && Check.isEmpty(poReference, true))
+		if (datePromisedOverride == null && Check.isEmpty(poReference, true))
 		{
 			throw new AdempiereException(MSG_PARAMS_VALIDATION_ERROR)
 					.markAsUserValidationError();
@@ -94,9 +94,9 @@ public class M_ReceiptSchedule_ChangeDatePromised_OverrideAndPOReference extends
 	}
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
-		receiptScheduleBL.updateDatePromisedOverrideAndPOReference(getPinstanceId(), datePromised_Override, poReference);
+		receiptScheduleBL.updateDatePromisedOverrideAndPOReference(getPinstanceId(), datePromisedOverride, poReference);
 		return MSG_OK;
 	}
 }
