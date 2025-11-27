@@ -23,8 +23,11 @@
 package de.metas.incoterms.impl;
 
 import de.metas.incoterms.IIncotermsDAO;
+import de.metas.incoterms.Incoterms;
+import de.metas.incoterms.IncotermsId;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_Incoterms;
 import org.jetbrains.annotations.NotNull;
@@ -51,5 +54,27 @@ public class IncotermsDAO implements IIncotermsDAO
 	public void save(final @NotNull I_C_Incoterms incoterms)
 	{
 		saveRecord(incoterms);
+	}
+
+	@Override
+	public @NonNull Incoterms getById(@NonNull final IncotermsId incotermsId)
+	{
+		final I_C_Incoterms record = queryBL
+				.createQueryBuilder(I_C_Incoterms.class)
+				.addEqualsFilter(I_C_Incoterms.COLUMNNAME_C_Incoterms_ID, incotermsId)
+				.create()
+				.firstOnlyNotNull(I_C_Incoterms.class);
+
+		return ofRecord(record);
+	}
+
+	@NonNull
+	private static Incoterms ofRecord(@NonNull final I_C_Incoterms record)
+	{
+		return Incoterms.builder()
+				.id(IncotermsId.ofRepoId(record.getC_Incoterms_ID()))
+				.name(record.getName())
+				.value(record.getValue())
+				.build();
 	}
 }

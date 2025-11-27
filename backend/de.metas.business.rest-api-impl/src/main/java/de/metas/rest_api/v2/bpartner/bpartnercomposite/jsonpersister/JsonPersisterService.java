@@ -1822,6 +1822,18 @@ public class JsonPersisterService
 			}
 		}
 
+		if (jsonBPartnerLocation.isVisitorsAddressDefaultSet())
+		{
+			if (jsonBPartnerLocation.getVisitorsAddressDefault() == null)
+			{
+				logger.debug("Ignoring boolean property \"visitorsAddressDefault\" : null ");
+			}
+			else
+			{
+				locationType.visitorsAddressDefault(jsonBPartnerLocation.getVisitorsAddressDefault());
+			}
+		}
+
 		return locationType.build();
 	}
 

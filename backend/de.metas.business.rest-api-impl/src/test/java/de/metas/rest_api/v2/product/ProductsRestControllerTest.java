@@ -29,6 +29,7 @@ import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.BPGroupService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.common.product.v2.response.JsonGetProductsResponse;
@@ -48,6 +49,7 @@ import de.metas.externalsystem.process.runtimeparameters.RuntimeParametersReposi
 import de.metas.greeting.GreetingRepository;
 import de.metas.job.JobRepository;
 import de.metas.logging.LogManager;
+import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.pricing.pricelist.PriceListVersionRepository;
 import de.metas.pricing.productprice.ProductPriceRepository;
 import de.metas.pricing.tax.ProductTaxCategoryRepository;
@@ -134,7 +136,7 @@ public class ProductsRestControllerTest
 
 
 		final BPartnerBL partnerBL = new BPartnerBL(new UserRepository());
-		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository());
+		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository(), new BPartnerCreditLimitRepository());
 		final CurrencyRepository currencyRepository = new CurrencyRepository();
 		final BPGroupRepository bpGroupRepository = new BPGroupRepository();
 		
@@ -148,6 +150,7 @@ public class ProductsRestControllerTest
 				new TitleRepository(),
 				currencyRepository,
 				new JobRepository(),
+				new PaymentTermService(),
 				Mockito.mock(ExternalReferenceRestControllerService.class),
 				Mockito.mock(AlbertaBPartnerCompositeService.class));
 

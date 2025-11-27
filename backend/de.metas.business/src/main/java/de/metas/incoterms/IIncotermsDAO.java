@@ -35,4 +35,7 @@ public interface IIncotermsDAO extends ISingletonService
 	I_C_Incoterms getDefaultIncoterms(final @NotNull OrgId orgId);
 
 	void save(@NonNull I_C_Incoterms incoterms);
+
+	@NonNull
+	Incoterms getById(@NonNull IncotermsId incotermsId);
 }
