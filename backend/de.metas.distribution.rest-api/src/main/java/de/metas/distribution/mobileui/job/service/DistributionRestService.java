@@ -8,9 +8,12 @@ import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleServic
 import de.metas.distribution.mobileui.config.MobileUIDistributionConfig;
 import de.metas.distribution.mobileui.config.MobileUIDistributionConfigRepository;
 import de.metas.distribution.mobileui.external_services.hu.DistributionHUService;
+import de.metas.distribution.mobileui.external_services.product.DistributionProductService;
 import de.metas.distribution.mobileui.external_services.warehouse.DistributionWarehouseService;
 import de.metas.distribution.mobileui.job.model.DistributionJob;
 import de.metas.distribution.mobileui.job.model.DistributionJobId;
+import de.metas.distribution.mobileui.job.model.DistributionJobLine;
+import de.metas.distribution.mobileui.job.model.DistributionJobLineId;
 import de.metas.distribution.mobileui.job.service.commands.abort_job.DistributionJobAbortCommand;
 import de.metas.distribution.mobileui.job.service.commands.create_job.DistributionJobCreateCommand;
 import de.metas.distribution.mobileui.job.service.commands.drop_to.DistributionJobDropToCommand;
@@ -18,6 +21,10 @@ import de.metas.distribution.mobileui.job.service.commands.pick_from.Distributio
 import de.metas.distribution.mobileui.job.service.commands.unpick.DistributionJobUnpickCommand;
 import de.metas.distribution.mobileui.rest_api.json.JsonDistributionEvent;
 import de.metas.distribution.mobileui.rest_api.json.JsonDropAllRequest;
+import de.metas.distribution.mobileui.rest_api.json.JsonGetNextEligiblePickFromLineRequest;
+import de.metas.distribution.mobileui.rest_api.json.JsonGetNextEligiblePickFromLineResponse;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.product.ProductId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -43,6 +50,7 @@ public class DistributionRestService
 	@NonNull private final DistributionJobLoaderSupportingServices loadingSupportServices;
 	@NonNull private final DistributionHUService huService;
 	@NonNull private final DistributionWarehouseService warehouseService;
+	@NonNull private final DistributionProductService productService;
 
 	public MobileUIDistributionConfig getConfig() {return configRepository.getConfig();}
 
@@ -50,8 +58,6 @@ public class DistributionRestService
 	{
 		return ddOrderMoveScheduleService.getQtyRejectedReasons();
 	}
-
-
 
 	public DistributionJob createJob(
 			final @NonNull DDOrderId ddOrderId,
@@ -224,4 +230,40 @@ public class DistributionRestService
 
 		abort().jobs(jobs).execute();
 	}
+
+	public JsonGetNextEligiblePickFromLineResponse getNextEligiblePickFromLine(@NonNull final JsonGetNextEligiblePickFromLineRequest request, @NonNull final UserId callerId)
+	{
+		final DistributionJobId jobId = DistributionJobId.ofWFProcessId(request.getWfProcessId());
+		final DistributionJob job = getJobById(jobId);
+		job.assertCanEdit(callerId);
+
+		final HUQRCode huQRCode = HUQRCode.fromScannedCode(request.getHuQRCode()); // expect already valid HUQRCode
+
+		final ProductId productId;
+		if (request.getProductScannedCode() != null)
+		{
+			productId = productService.getProductIdByScannedProductCode(request.getProductScannedCode());
+			huService.assetHUContainsProduct(huQRCode, productId);
+		}
+		else
+		{
+			productId = huService.getSingleProductId(huQRCode);
+		}
+
+		final DistributionJobLineId nextEligiblePickFromLineId;
+		if (request.getLineId() != null)
+		{
+			final DistributionJobLine line = job.getLineById(request.getLineId());
+			nextEligiblePickFromLineId = line.isEligibleForPicking() ? line.getId() : null;
+		}
+		else
+		{
+			nextEligiblePickFromLineId = job.getNextEligiblePickFromLineId(productId).orElse(null);
+		}
+
+		return JsonGetNextEligiblePickFromLineResponse.builder()
+				.lineId(nextEligiblePickFromLineId)
+				.build();
+	}
+
 }

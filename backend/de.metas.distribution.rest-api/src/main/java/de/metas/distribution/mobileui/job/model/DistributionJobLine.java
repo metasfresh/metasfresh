@@ -69,6 +69,16 @@ public class DistributionJobLine
 		return !steps.isEmpty() && steps.stream().anyMatch(DistributionJobStep::isInTransit);
 	}
 
+	public boolean isEligibleForPicking() {return getQtyInTransit().isLessThan(qtyToMove);}
+
+	private Quantity getQtyInTransit()
+	{
+		return steps.stream()
+				.map(DistributionJobStep::getQtyInTransit)
+				.reduce(Quantity::add)
+				.orElseGet(qtyToMove::toZero);
+	}
+
 	public boolean isFullyMoved()
 	{
 		return !steps.isEmpty() && steps.stream().allMatch(DistributionJobStep::isDroppedToLocator);

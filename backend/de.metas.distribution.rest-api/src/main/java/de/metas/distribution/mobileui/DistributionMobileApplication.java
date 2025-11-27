@@ -2,8 +2,8 @@ package de.metas.distribution.mobileui;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import de.metas.distribution.mobileui.config.MobileUIDistributionConfig;
 import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.distribution.mobileui.config.MobileUIDistributionConfig;
 import de.metas.distribution.mobileui.job.model.DistributionJob;
 import de.metas.distribution.mobileui.job.model.DistributionJobId;
 import de.metas.distribution.mobileui.job.service.DistributionRestService;
@@ -11,6 +11,8 @@ import de.metas.distribution.mobileui.launchers.DistributionWFProcessStartParams
 import de.metas.distribution.mobileui.launchers.DistributionWorkflowLaunchersProvider;
 import de.metas.distribution.mobileui.rest_api.json.JsonDistributionEvent;
 import de.metas.distribution.mobileui.rest_api.json.JsonDropAllRequest;
+import de.metas.distribution.mobileui.rest_api.json.JsonGetNextEligiblePickFromLineRequest;
+import de.metas.distribution.mobileui.rest_api.json.JsonGetNextEligiblePickFromLineResponse;
 import de.metas.distribution.mobileui.workflows_api.activity_handlers.CompleteDistributionWFActivityHandler;
 import de.metas.distribution.mobileui.workflows_api.activity_handlers.MoveWFActivityHandler;
 import de.metas.document.engine.IDocument;
@@ -219,6 +221,11 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 		}
 
 		return builder.build();
+	}
+
+	public JsonGetNextEligiblePickFromLineResponse getNextEligiblePickFromLine(@NonNull final JsonGetNextEligiblePickFromLineRequest request, @NonNull final UserId callerId)
+	{
+		return distributionRestService.getNextEligiblePickFromLine(request, callerId);
 	}
 
 	public WFProcess processEvent(final JsonDistributionEvent event, final UserId callerId)

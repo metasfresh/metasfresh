@@ -1,10 +1,12 @@
 package de.metas.distribution.mobileui.rest_api;
 
 import de.metas.Profiles;
+import de.metas.distribution.mobileui.DistributionMobileApplication;
+import de.metas.distribution.mobileui.external_services.hu.DistributionHUService;
 import de.metas.distribution.mobileui.rest_api.json.JsonDistributionEvent;
 import de.metas.distribution.mobileui.rest_api.json.JsonDropAllRequest;
-import de.metas.distribution.mobileui.external_services.hu.DistributionHUService;
-import de.metas.distribution.mobileui.DistributionMobileApplication;
+import de.metas.distribution.mobileui.rest_api.json.JsonGetNextEligiblePickFromLineRequest;
+import de.metas.distribution.mobileui.rest_api.json.JsonGetNextEligiblePickFromLineResponse;
 import de.metas.distribution.mobileui.rest_api.json.JsonHUInfo;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.mobile.application.service.MobileApplicationService;
@@ -52,6 +54,13 @@ public class DistributionRestController
 		assertApplicationAccess();
 		final HUQRCode huQRCode = huService.resolveHUQRCode(ScannedCode.ofString(scannedCodeStr));
 		return JsonHUInfo.of(huQRCode.toRenderedJson());
+	}
+
+	@PostMapping("/nextEligiblePickFromLine")
+	public JsonGetNextEligiblePickFromLineResponse getNextEligiblePickFromLine(@RequestBody @NonNull final JsonGetNextEligiblePickFromLineRequest request)
+	{
+		assertApplicationAccess();
+		return distributionMobileApplication.getNextEligiblePickFromLine(request, getLoggedUserId());
 	}
 
 	@PostMapping("/event")

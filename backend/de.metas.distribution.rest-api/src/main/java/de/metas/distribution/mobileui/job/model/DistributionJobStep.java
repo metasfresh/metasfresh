@@ -70,4 +70,11 @@ public class DistributionJobStep
 	public DDOrderMoveScheduleId getScheduleId() {return getId().toScheduleId();}
 
 	public boolean isInTransit() {return isPickedFromLocator && !isDroppedToLocator;}
+
+	public Quantity getQtyInTransit()
+	{
+		return isInTransit()
+				? qtyPicked
+				: qtyPicked.toZero();
+	}
 }
