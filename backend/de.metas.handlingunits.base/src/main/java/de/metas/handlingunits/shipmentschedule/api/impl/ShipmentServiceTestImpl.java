@@ -23,8 +23,8 @@
 package de.metas.handlingunits.shipmentschedule.api.impl;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
 import de.metas.handlingunits.shipmentschedule.api.GenerateShipmentsForSchedulesRequest;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.IInOutProducerFromShipmentScheduleWithHU;
@@ -35,10 +35,14 @@ import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PrepareForShipmentSchedulesRequest;
 import de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule;
 import de.metas.inout.InOutId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.util.Services;
+import lombok.AccessLevel;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOut;
 
 import java.util.List;
@@ -51,13 +55,23 @@ import static de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromShi
  * <p>
  * The purpose is to bypass the workpackage processing and directly call  {@link IInOutProducerFromShipmentScheduleWithHU#createShipments(java.util.List)}
  */
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class ShipmentServiceTestImpl implements IShipmentService
 {
-	private final ShipmentScheduleWithHUService shipmentScheduleWithHUService;
+	@NonNull private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
+	@NonNull private final ShipmentScheduleWithHUService shipmentScheduleWithHUService;
+	@NonNull private final PickingJobScheduleService pickingJobScheduleService;
 
-	public ShipmentServiceTestImpl(final ShipmentScheduleWithHUService shipmentScheduleWithHUService)
+	public static ShipmentServiceTestImpl newInstanceForUnitTesting()
 	{
-		this.shipmentScheduleWithHUService = shipmentScheduleWithHUService;
+		Adempiere.enableUnitTestMode();
+		return SpringContextHolder.getBeanOrSupply(
+				ShipmentServiceTestImpl.class,
+				() -> new ShipmentServiceTestImpl(
+						ShipmentScheduleWithHUService.newInstanceForUnitTesting(),
+						PickingJobScheduleService.newInstanceForUnitTesting()
+				)
+		);
 	}
 
 	/**
@@ -68,11 +82,15 @@ public class ShipmentServiceTestImpl implements IShipmentService
 	@VisibleForTesting
 	public Set<InOutId> generateShipmentsForScheduleIds(@NonNull final GenerateShipmentsForSchedulesRequest request)
 	{
-		final List<de.metas.inoutcandidate.model.I_M_ShipmentSchedule> shipmentSchedules = InterfaceWrapperHelper.loadByRepoIdAwares(request.getScheduleIds(), de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class);
+		final ShipmentScheduleAndJobScheduleIdSet scheduleIds = request.getScheduleIds();
+		if (scheduleIds == null || scheduleIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
 
 		final List<ShipmentScheduleWithHU> shipmentScheduleWithHUS = shipmentScheduleWithHUService.prepareShipmentSchedulesWithHU(
 				PrepareForShipmentSchedulesRequest.builder()
-						.shipmentSchedules(ImmutableList.copyOf(shipmentSchedules))
+						.schedules(pickingJobScheduleService.getShipmentScheduleAndJobSchedulesCollection(scheduleIds))
 						.quantityTypeToUse(request.getQuantityTypeToUse())
 						.onTheFlyPickToPackingInstructions(request.isOnTheFlyPickToPackingInstructions())
 						.qtyToDeliverOverrides(QtyToDeliverMap.EMPTY)
@@ -82,7 +100,7 @@ public class ShipmentServiceTestImpl implements IShipmentService
 
 		final CalculateShippingDateRule calculateShippingDateRule = computeShippingDateRule(request.getIsShipDateToday());
 
-		return Services.get(IHUShipmentScheduleBL.class)
+		return huShipmentScheduleBL
 				.createInOutProducerFromShipmentSchedule()
 				.setProcessShipments(request.getIsCompleteShipment())
 				.computeShipmentDate(calculateShippingDateRule)

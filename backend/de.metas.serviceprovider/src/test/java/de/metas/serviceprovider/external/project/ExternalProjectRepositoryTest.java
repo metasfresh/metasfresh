@@ -23,9 +23,10 @@
 package de.metas.serviceprovider.external.project;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.externalsystem.ExternalSystem;
+import de.metas.externalsystem.ExternalSystemTestHelper;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.serviceprovider.model.I_S_ExternalProjectReference;
-import de.metas.util.Services;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,20 +37,24 @@ import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_PROJECT_REFER
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_PROJECT_REFERENCE_ID_INACTIVE;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_PROJECT_TYPE;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_REFERENCE;
-import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_SYSTEM;
 import static de.metas.serviceprovider.TestConstants.MOCK_ORG_ID;
 import static de.metas.serviceprovider.TestConstants.MOCK_PROJECT_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ExternalProjectRepositoryTest
 {
-	private final IQueryBL queryBL =  Services.get(IQueryBL.class);
-	private final ExternalProjectRepository externalProjectRepository = new ExternalProjectRepository(queryBL);
+	private ExternalProjectRepository externalProjectRepository;
+
+	private ExternalSystem MOCK_EXTERNAL_SYSTEM_GITHUB = null;
 
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		externalProjectRepository = ExternalProjectRepository.newInstanceForUnitTesting();
+
+		MOCK_EXTERNAL_SYSTEM_GITHUB = ExternalSystemTestHelper.createExternalSystemIfNotExists(ExternalSystemType.Github);
 
 		prepareMockExternalProjectRecord(MOCK_EXTERNAL_PROJECT_REFERENCE_ID_ACTIVE, true);
 		prepareMockExternalProjectRecord(MOCK_EXTERNAL_PROJECT_REFERENCE_ID_INACTIVE, false);
@@ -63,7 +68,7 @@ public class ExternalProjectRepositoryTest
 		record.setC_Project_ID(MOCK_PROJECT_ID.getRepoId());
 		record.setExternalProjectOwner(MOCK_EXTERNAL_PROJECT_OWNER);
 		record.setExternalReference(MOCK_EXTERNAL_REFERENCE);
-		record.setExternalSystem(MOCK_EXTERNAL_SYSTEM.getCode());
+		record.setExternalSystem_ID(MOCK_EXTERNAL_SYSTEM_GITHUB.getId().getRepoId());
 		record.setIsActive(isActive);
 		record.setProjectType(MOCK_EXTERNAL_PROJECT_TYPE.getValue());
 		record.setS_ExternalProjectReference_ID(id.getRepoId());
@@ -87,7 +92,7 @@ public class ExternalProjectRepositoryTest
 	@Test
 	public void getByExternalSystem()
 	{
-		final ImmutableList<ExternalProjectReference> records = externalProjectRepository.getByExternalSystem(MOCK_EXTERNAL_SYSTEM);
+		final ImmutableList<ExternalProjectReference> records = externalProjectRepository.getByExternalSystemType(ExternalSystemType.Github);
 
 		assertEquals(records.size(), 1);
 		assertEquals(records.get(0).getOrgId(), MOCK_ORG_ID);

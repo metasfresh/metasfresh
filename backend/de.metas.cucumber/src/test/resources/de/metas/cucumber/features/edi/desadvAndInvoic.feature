@@ -75,6 +75,7 @@ Feature: desadv and invoic
       "orgCode": "001",
       "externalLineId": "externalLineId_29042022_1",
       "externalHeaderId": "externalHeaderId_29042022_1",
+      "externalSystemCode": "Shopware6",
       "dataSource": "int-Shopware",
       "bpartner": {
         "bpartnerIdentifier": "gln-1111111111111",
@@ -103,7 +104,7 @@ Feature: desadv and invoic
         """
 {
   "externalHeaderId": "externalHeaderId_29042022_1",
-  "inputDataSourceName": "int-Shopware",
+  "externalSystemCode": "Shopware6",
   "ship": false,
   "invoice": false,
   "closeOrder": false
@@ -115,7 +116,7 @@ Feature: desadv and invoic
       | o_1                   |
 
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId              | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference            | processed | docStatus |
+      | C_Order_ID.Identifier | OPT.ExternalId              | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference            | processed | DocStatus |
       | o_1                   | externalHeaderId_29042022_1 | endcustomer_1            | l_1                               | 2021-04-15  | SOO         | EUR          | F            | S               | poReference_29042022_1 | true      | CO        |
 
     And validate the created order lines
@@ -155,7 +156,7 @@ Feature: desadv and invoic
       | null                  | shipment_1            | invoice_1               |
 
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | OPT.POReference        | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | OPT.POReference        | processed | DocStatus |
       | shipment_1            | endcustomer_1            | l_1                               | 2021-04-15  | poReference_29042022_1 | true      | CO        |
 
     And validate the created shipment lines
@@ -163,7 +164,7 @@ Feature: desadv and invoic
       | shipmentLine_1            | shipment_1            | p_1                     | 50          | true      | PCE                   |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference        | paymentTerm   | processed | docStatus |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference        | paymentTerm   | processed | DocStatus |
       | invoice_1               | endcustomer_1            | l_1                               | poReference_29042022_1 | 30 Tage netto | true      | CO        |
 
     And validate created invoice lines
@@ -244,6 +245,7 @@ Feature: desadv and invoic
       "orgCode": "001",
       "externalLineId": "externalLineId02052022_2",
       "externalHeaderId": "externalHeaderId02052022_2",
+      "externalSystemCode": "Shopware6",
       "dataSource": "int-Shopware",
       "dataDest": null,
       "bpartner": {
@@ -273,7 +275,7 @@ Feature: desadv and invoic
         """
 {
   "externalHeaderId": "externalHeaderId02052022_2",
-  "inputDataSourceName": "int-Shopware",
+  "externalSystemCode": "Shopware6",
   "ship": false,
   "invoice": false
 }
@@ -283,7 +285,7 @@ Feature: desadv and invoic
       | o_1                   |
 
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId             | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference            | processed | docStatus |
+      | C_Order_ID.Identifier | OPT.ExternalId             | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference            | processed | DocStatus |
       | o_1                   | externalHeaderId02052022_2 | endcustomer_1            | l_1                               | 2021-04-15  | SOO         | EUR          | F            | S               | poReference_02052022_2 | true      | CO        |
 
     And validate the created order lines
@@ -321,7 +323,7 @@ Feature: desadv and invoic
       | null                  | shipment_1            | invoice_1               |
 
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | OPT.POReference        | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | OPT.POReference        | processed | DocStatus |
       | shipment_1            | endcustomer_1            | l_1                               | 2021-04-15  | poReference_02052022_2 | true      | CO        |
 
     And validate the created shipment lines
@@ -329,7 +331,7 @@ Feature: desadv and invoic
       | shipmentLine_1            | shipment_1            | p_1                     | 50          | true      | PCE                   |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference        | paymentTerm   | processed | docStatus |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference        | paymentTerm   | processed | DocStatus |
       | invoice_1               | endcustomer_1            | l_1                               | poReference_02052022_2 | 30 Tage netto | true      | CO        |
 
     And validate created invoice lines
@@ -404,6 +406,7 @@ Feature: desadv and invoic
 {      "orgCode": "001",
       "externalLineId": "externalLineId03052022_3",
       "externalHeaderId": "externalHeaderId03052022_3",
+      "externalSystemCode": "Shopware6",
       "dataSource": "int-Shopware",
       "dataDest": null,
       "bpartner": {
@@ -436,7 +439,7 @@ Feature: desadv and invoic
         """
 {
   "externalHeaderId": "externalHeaderId03052022_3",
-  "inputDataSourceName": "int-Shopware",
+  "externalSystemCode": "Shopware6",
   "ship": false,
   "invoice": false
 }
@@ -446,7 +449,7 @@ Feature: desadv and invoic
       | o_1                   |
 
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId             | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference            | processed | docStatus |
+      | C_Order_ID.Identifier | OPT.ExternalId             | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference            | processed | DocStatus |
       | o_1                   | externalHeaderId03052022_3 | endcustomer_1            | l_1                               | 2021-04-15  | SOO         | EUR          | F            | S               | poReference_03052022_3 | true      | CO        |
 
     And validate the created order lines
@@ -484,7 +487,7 @@ Feature: desadv and invoic
       | null                  | shipment_1            | invoice_1               |
 
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | OPT.POReference        | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | OPT.POReference        | processed | DocStatus |
       | shipment_1            | endcustomer_1            | l_1                               | 2021-04-15  | poReference_03052022_3 | true      | CO        |
 
     And validate the created shipment lines
@@ -492,7 +495,7 @@ Feature: desadv and invoic
       | shipmentLine_1            | shipment_1            | p_1                     | 5           | true      | PCE                   |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference        | paymentTerm   | processed | docStatus |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference        | paymentTerm   | processed | DocStatus |
       | invoice_1               | endcustomer_1            | l_1                               | poReference_03052022_3 | 30 Tage netto | true      | CO        |
 
     And validate created invoice lines
@@ -573,6 +576,7 @@ Feature: desadv and invoic
       "orgCode": "001",
       "externalLineId": "externalLineId03052022_4",
       "externalHeaderId": "externalHeaderId03052022_4",
+      "externalSystemCode": "Shopware6",
       "dataSource": "int-Shopware",
       "dataDest": null,
       "bpartner": {
@@ -601,7 +605,7 @@ Feature: desadv and invoic
         """
 {
   "externalHeaderId": "externalHeaderId03052022_4",
-  "inputDataSourceName": "int-Shopware",
+  "externalSystemCode": "Shopware6",
   "ship": false,
   "invoice": false
 }
@@ -611,7 +615,7 @@ Feature: desadv and invoic
       | o_1                   |
 
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId             | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference            | processed | docStatus |
+      | C_Order_ID.Identifier | OPT.ExternalId             | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference            | processed | DocStatus |
       | o_1                   | externalHeaderId03052022_4 | endcustomer_1            | l_1                               | 2021-04-15  | SOO         | EUR          | F            | S               | poReference_03052022_4 | true      | CO        |
 
     And validate the created order lines
@@ -649,7 +653,7 @@ Feature: desadv and invoic
       | null                  | shipment_1            | invoice_1               |
 
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | OPT.POReference        | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | OPT.POReference        | processed | DocStatus |
       | shipment_1            | endcustomer_1            | l_1                               | 2021-04-15  | poReference_03052022_4 | true      | CO        |
 
     And validate the created shipment lines
@@ -657,7 +661,7 @@ Feature: desadv and invoic
       | shipmentLine_1            | shipment_1            | p_1                     | 5           | true      | PCE                   |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference        | paymentTerm   | processed | docStatus |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference        | paymentTerm   | processed | DocStatus |
       | invoice_1               | endcustomer_1            | l_1                               | poReference_03052022_4 | 30 Tage netto | true      | CO        |
 
     And validate created invoice lines
@@ -741,6 +745,7 @@ Feature: desadv and invoic
       "orgCode": "001",
       "externalLineId": "externalLineId03052022_5",
       "externalHeaderId": "externalHeaderId03052022_5",
+      "externalSystemCode": "Shopware6",
       "dataSource": "int-Shopware",
       "bpartner": {
         "bpartnerIdentifier": "gln-5555555555555",
@@ -772,7 +777,7 @@ Feature: desadv and invoic
         """
 {
   "externalHeaderId": "externalHeaderId03052022_5",
-  "inputDataSourceName": "int-Shopware",
+  "externalSystemCode": "Shopware6",
   "ship": false,
   "invoice": false
 }
@@ -782,7 +787,7 @@ Feature: desadv and invoic
       | o_1                   |
 
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId             | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference            | processed | docStatus |
+      | C_Order_ID.Identifier | OPT.ExternalId             | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference            | processed | DocStatus |
       | o_1                   | externalHeaderId03052022_5 | endcustomer_1            | l_1                               | 2021-04-15  | SOO         | EUR          | F            | S               | poReference_03052022_5 | true      | CO        |
 
     And validate the created order lines
@@ -820,7 +825,7 @@ Feature: desadv and invoic
       | null                  | shipment_1            | invoice_1               |
 
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | OPT.POReference        | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | OPT.POReference        | processed | DocStatus |
       | shipment_1            | endcustomer_1            | l_1                               | 2021-04-15  | poReference_03052022_5 | true      | CO        |
 
     And validate the created shipment lines
@@ -828,7 +833,7 @@ Feature: desadv and invoic
       | shipmentLine_1            | shipment_1            | p_1                     | 20          | true      | PCE                   |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference        | paymentTerm   | processed | docStatus |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference        | paymentTerm   | processed | DocStatus |
       | invoice_1               | endcustomer_1            | l_1                               | poReference_03052022_5 | 30 Tage netto | true      | CO        |
 
     And validate created invoice lines
@@ -911,6 +916,7 @@ Feature: desadv and invoic
       "orgCode": "001",
       "externalLineId": "externalLineId04052022_6",
       "externalHeaderId": "externalHeaderId04052022_6",
+      "externalSystemCode": "Shopware6",
       "dataSource": "int-Shopware",
       "bpartner": {
         "bpartnerIdentifier": "gln-6666666666666",
@@ -942,7 +948,7 @@ Feature: desadv and invoic
         """
 {
   "externalHeaderId": "externalHeaderId04052022_6",
-  "inputDataSourceName": "int-Shopware",
+  "externalSystemCode": "Shopware6",
   "ship": false,
   "invoice": false
 }
@@ -952,7 +958,7 @@ Feature: desadv and invoic
       | o_1                   |
 
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId             | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference            | processed | docStatus |
+      | C_Order_ID.Identifier | OPT.ExternalId             | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference            | processed | DocStatus |
       | o_1                   | externalHeaderId04052022_6 | endcustomer_1            | l_1                               | 2021-04-15  | SOO         | EUR          | F            | S               | poReference_04052022_6 | true      | CO        |
 
     And validate the created order lines
@@ -990,7 +996,7 @@ Feature: desadv and invoic
       | null                  | shipment_1            | invoice_1               |
 
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | OPT.POReference        | processed | docStatus |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | OPT.POReference        | processed | DocStatus |
       | shipment_1            | endcustomer_1            | l_1                               | 2021-04-15  | poReference_04052022_6 | true      | CO        |
 
     And validate the created shipment lines
@@ -998,7 +1004,7 @@ Feature: desadv and invoic
       | shipmentLine_1            | shipment_1            | p_1                     | 25          | true      | PCE                   |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference        | paymentTerm   | processed | docStatus |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference        | paymentTerm   | processed | DocStatus |
       | invoice_1               | endcustomer_1            | l_1                               | poReference_04052022_6 | 30 Tage netto | true      | CO        |
 
     And validate created invoice lines

@@ -1,11 +1,16 @@
 package de.metas.shipper.gateway.spi;
 
-import java.util.List;
-
+import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
+import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
+import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
 import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
+import de.metas.shipping.ShipperGatewayId;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 /*
  * #%L
@@ -32,15 +37,7 @@ import lombok.NonNull;
 public interface ShipperGatewayClient
 {
 	@NonNull
-	String getShipperGatewayId();
-
-	/**
-	 * Create a delivery order on the remote endpoint. The remote order is drafted and can still be changed.
-	 *
-	 * @deprecated we don't need this.
-	 */
-	@Deprecated
-	DeliveryOrder createDeliveryOrder(DeliveryOrder draftDeliveryOrder) throws ShipperGatewayException;
+	ShipperGatewayId getShipperGatewayId();
 
 	/**
 	 * Effectively place the given order on the remote endpoint.
@@ -50,4 +47,12 @@ public interface ShipperGatewayClient
 
 	@NonNull
 	List<PackageLabels> getPackageLabelsList(@NonNull DeliveryOrder deliveryOrder) throws ShipperGatewayException;
+
+	@NonNull JsonDeliveryAdvisorResponse adviseShipment(@NonNull final JsonDeliveryAdvisorRequest request);
+
+	@Nullable
+	default JsonShipperConfig getJsonShipperConfig()
+	{
+		return null;
+	}
 }

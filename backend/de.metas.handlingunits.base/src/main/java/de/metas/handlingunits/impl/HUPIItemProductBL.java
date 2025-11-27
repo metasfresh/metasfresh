@@ -30,20 +30,30 @@ import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUPIItemProductDisplayNameBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
+import de.metas.handlingunits.model.I_C_OrderLine;
+import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
+import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.i18n.ITranslatableString;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,6 +63,8 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 {
 	@NonNull private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 
 	@Override
 	public HUPIItemProduct getById(@NonNull final HUPIItemProductId id) {return huPIItemProductDAO.getById(id);}
@@ -122,11 +134,7 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 	public boolean isCompatibleProduct(final I_M_HU_PI_Version version, final I_M_Product product)
 	{
 		final List<I_M_HU_PI_Item_Product> compatiblePIDefProducts = getCompatibleItemDefProducts(version, product);
-		if (compatiblePIDefProducts == null || compatiblePIDefProducts.isEmpty())
-		{
-			return false;
-		}
-		return true;
+		return compatiblePIDefProducts != null && !compatiblePIDefProducts.isEmpty();
 	}
 
 	@Override
@@ -189,10 +197,49 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 		return huPIItemProductDAO.getById(piItemProductId).getName();
 	}
 
-
 	@Nullable
 	public I_M_HU_PI_Item_Product getDefaultForProduct(@NonNull final ProductId productId, @NonNull final ZonedDateTime dateTime)
 	{
 		return huPIItemProductDAO.retrieveDefaultForProduct(productId, dateTime);
 	}
+
+	@NonNull
+	public I_M_HU_PI_Item_Product extractHUPIItemProduct(final I_C_Order order, final I_C_OrderLine orderLine)
+	{
+		final HUPIItemProductId hupiItemProductId = HUPIItemProductId.ofRepoIdOrNull(orderLine.getM_HU_PI_Item_Product_ID());
+		if (hupiItemProductId != null)
+		{
+			return huPIItemProductDAO.getRecordById(hupiItemProductId);
+		}
+		else
+		{
+			final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+			final BPartnerId buyerBPartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
+			final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
+
+			return huPIItemProductDAO.retrieveMaterialItemProduct(
+					productId,
+					buyerBPartnerId,
+					TimeUtil.asZonedDateTime(order.getDateOrdered(), timeZone),
+					X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit, true/* allowInfiniteCapacity */);
+		}
+	}
+
+	@Override
+	public int getRequiredLUCount(final @NonNull Quantity qty, final I_M_HU_LUTU_Configuration lutuConfigurationInStockUOM)
+	{
+		if (lutuConfigurationInStockUOM.isInfiniteQtyTU() || lutuConfigurationInStockUOM.isInfiniteQtyCU())
+		{
+			return 1;
+		}
+		else
+		{
+			// Note need to use the StockQty because lutuConfigurationInStockUOM is also in stock-UOM.
+			// And in the case of catchweight, it's very important to *not* make metasfresh convert quantites using the UOM-conversion
+			return lutuConfigurationFactory.calculateQtyLUForTotalQtyCUs(
+					lutuConfigurationInStockUOM,
+					qty);
+		}
+	}
+
 }

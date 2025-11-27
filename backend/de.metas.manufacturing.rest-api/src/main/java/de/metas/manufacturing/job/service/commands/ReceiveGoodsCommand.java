@@ -8,11 +8,9 @@ import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
-import de.metas.handlingunits.allocation.transfer.LUTUResult;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.picking.candidate.commands.PackedHUWeightNetUpdater;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
@@ -51,7 +49,6 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 public class ReceiveGoodsCommand
@@ -200,14 +197,27 @@ public class ReceiveGoodsCommand
 
 	private ReceivingTarget receiveToNewLU(@NonNull final JsonNewLUTarget newLUTarget)
 	{
-		final I_M_HU_PI_Item newLUPIItem = handlingUnitsBL.getPackingInstructionItemById(newLUTarget.getLuPIItemId());
+		final Quantity qtyToReceive = getQtyToReceive();
+		final List<I_M_HU> lus = createHUProducer().receiveLUs(qtyToReceive, newLUTarget.getTuPIItemProductId(), newLUTarget.getLuPIItemId());
+		collectReceivedHUs(lus);
+		if (lus.size() == 1)
+		{
+			setQRCodeAttribute(lus.get(0));
+		}
 
-		final HUPIItemProductId tuPIItemProductId = newLUTarget.getTuPIItemProductId();
-		final List<I_M_HU> tusOrVhus = receiveTUs(tuPIItemProductId);
-		final I_M_HU lu = addTUsToLU(tusOrVhus, null, newLUPIItem);
-		setQRCodeAttribute(lu);
-
-		return ReceivingTarget.ofExistingLU(lu, tuPIItemProductId);
+		//
+		// Case: we received 1 item, usually that's receiving by scanning a QR code
+		// => keep the same LU
+		if (lus.size() == 1 && qtyToReceive.isOne())
+		{
+			return ReceivingTarget.ofExistingLU(lus.get(0), newLUTarget.getTuPIItemProductId());
+		}
+		//
+		// Else, because we are also respecting the qty TUs per LU, it's better to clean up the target after receiving
+		else
+		{
+			return null;
+		}
 	}
 
 	private ReceivingTarget receiveToExistingLU(
@@ -228,8 +238,12 @@ public class ReceiveGoodsCommand
 		}
 
 		final List<I_M_HU> tusOrVhus = receiveTUs(tuPIItemProductId);
-		final I_M_HU lu = addTUsToLU(tusOrVhus, existingLU, null);
-		return ReceivingTarget.ofExistingLU(lu, tuPIItemProductId);
+		for (final I_M_HU tu : tusOrVhus)
+		{
+			HUTransformService.newInstance().tuToExistingLU(tu, QtyTU.ONE, existingLU);
+		}
+
+		return ReceivingTarget.ofExistingLU(existingLU, tuPIItemProductId);
 	}
 
 	private ReceivingTarget receiveToExistingTU(@NonNull final I_M_HU existingTU)
@@ -362,40 +376,6 @@ public class ReceiveGoodsCommand
 			ManufacturingJobLoaderAndSaver.updateRecordFromReceivingTarget(ppOrder, receivingTarget);
 			ppOrderBL.save(ppOrder);
 		}
-	}
-
-	private I_M_HU addTUsToLU(
-			@NonNull final List<I_M_HU> tusOrVhus,
-			@Nullable final I_M_HU existingLU,
-			@Nullable final I_M_HU_PI_Item newLUPIItem)
-	{
-		I_M_HU lu = existingLU;
-
-		for (final I_M_HU tu : tusOrVhus)
-		{
-			if (lu == null)
-			{
-				final LUTUResult createdLUs = HUTransformService.newInstance()
-						.tuToNewLUs(
-								tu,
-								QtyTU.ONE,
-								Objects.requireNonNull(newLUPIItem),
-								false);
-				lu = createdLUs.getSingleLURecord();
-			}
-			else
-			{
-				HUTransformService.newInstance().tuToExistingLU(tu, QtyTU.ONE, lu);
-			}
-		}
-
-		if (lu == null)
-		{
-			// shall not happen
-			throw new AdempiereException("No LU was created");
-		}
-
-		return lu;
 	}
 
 	private ReceivingTarget receiveToNewTU(@NonNull final JsonNewTUTarget newTUTarget)

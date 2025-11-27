@@ -1,10 +1,8 @@
-package de.metas.handlingunits.shipmentschedule.spi.impl;
-
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,10 +20,13 @@ package de.metas.handlingunits.shipmentschedule.spi.impl;
  * #L%
  */
 
+package de.metas.handlingunits.shipmentschedule.spi.impl;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
@@ -72,6 +73,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
 import org.compiere.util.Env;
@@ -181,7 +183,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 		try
 		{
 			final InOutGenerateResult result = trxItemProcessorExecutorService
-					.<ShipmentScheduleWithHU, InOutGenerateResult>createExecutor()
+					.<ShipmentScheduleWithHU, InOutGenerateResult> createExecutor()
 					.setContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 					.setProcessor(this)
 					.setExceptionHandler(trxItemExceptionHandler)
@@ -328,13 +330,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 		//
 		// Document Type
 		{
-			final DocTypeQuery query = DocTypeQuery.builder()
-					.docBaseType(X_C_DocType.DOCBASETYPE_MaterialDelivery)
-					.adClientId(shipmentSchedule.getAD_Client_ID())
-					.adOrgId(shipmentSchedule.getAD_Org_ID())
-					.build();
-			final int docTypeId = docTypeDAO.getDocTypeId(query).getRepoId();
-			shipment.setC_DocType_ID(docTypeId);
+			shipment.setC_DocType_ID(getInoutDoctypeID(shipmentSchedule));
 			shipment.setMovementType(X_M_InOut.MOVEMENTTYPE_CustomerShipment);
 			shipment.setIsSOTrx(true);
 
@@ -369,8 +365,9 @@ public class InOutProducerFromShipmentScheduleWithHU
 
 		//
 		// C_Order reference
+		if(shipmentSchedule.getC_Order_ID() > 0)
 		{
-			final de.metas.order.model.I_C_Order order = orderDAO.getById(OrderId.ofRepoIdOrNull(shipmentSchedule.getC_Order_ID()), de.metas.order.model.I_C_Order.class);
+			final de.metas.order.model.I_C_Order order = orderDAO.getById(OrderId.ofRepoId(shipmentSchedule.getC_Order_ID()), de.metas.order.model.I_C_Order.class);
 			if (order != null && order.getC_Order_ID() > 0)
 			{
 				shipment.setDateOrdered(order.getDateOrdered());
@@ -383,13 +380,13 @@ public class InOutProducerFromShipmentScheduleWithHU
 				shipment.setM_Shipper_ID((order.getM_Shipper_ID()));
 				shipment.setM_Tour_ID(shipmentSchedule.getM_Tour_ID());
 
-
 				if (orderEmailPropagationSysConfigRepo.isPropagateToMInOut(ClientAndOrgId.ofClientAndOrg(shipmentSchedule.getAD_Client_ID(), shipmentSchedule.getAD_Org_ID())))
 				{
 					shipment.setEMail(order.getEMail());
 				}
 
 				shipment.setAD_InputDataSource_ID(order.getAD_InputDataSource_ID());
+				shipment.setExternalSystem_ID(order.getExternalSystem_ID());
 
 				shipment.setSalesRep_ID(order.getSalesRep_ID());
 			}
@@ -419,6 +416,29 @@ public class InOutProducerFromShipmentScheduleWithHU
 		InterfaceWrapperHelper.save(shipment);
 
 		return shipment;
+	}
+
+	private int getInoutDoctypeID(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+
+		final DocTypeId shipmentScheduleDocTypeId = DocTypeId.ofRepoIdOrNull(shipmentSchedule.getC_DocType_ID());
+		if (shipmentScheduleDocTypeId != null)
+		{
+			final I_C_DocType shipmentScheduleDocType = docTypeDAO.getById(shipmentScheduleDocTypeId);
+
+			if (shipmentScheduleDocType.getC_DocTypeShipment_ID() > 0)
+			{
+				return shipmentScheduleDocType.getC_DocTypeShipment_ID();
+			}
+		}
+
+		final DocTypeQuery query = DocTypeQuery.builder()
+				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialDelivery)
+				.adClientId(shipmentSchedule.getAD_Client_ID())
+				.adOrgId(shipmentSchedule.getAD_Org_ID())
+				.build();
+
+		return docTypeDAO.getDocTypeId(query).getRepoId();
 	}
 
 	/**

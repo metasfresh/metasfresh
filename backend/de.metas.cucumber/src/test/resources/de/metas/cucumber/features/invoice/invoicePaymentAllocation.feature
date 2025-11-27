@@ -80,7 +80,7 @@ Feature: invoice payment allocation
       | inv_100      | payment_100  |
 
     Then validate created invoices
-      | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | docStatus | IsPaid | IsPartiallyPaid |
+      | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | DocStatus | IsPaid | IsPartiallyPaid |
       | inv_100      | customer1     | bpartner_location_1    | 30 Tage netto | true      | CO        | true   | false           |
     And validate payments
       | C_Payment_ID | IsAllocated |
@@ -227,7 +227,7 @@ Feature: invoice payment allocation
       | inv_110_2    |              |
 
     Then validate created invoices
-      | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | docStatus | IsPaid | IsPartiallyPaid |
+      | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | DocStatus | IsPaid | IsPartiallyPaid |
       | inv_110_1    | customer1     | bpartner_location_1    | 30 Tage netto | true      | CO        | true   | false           |
       | inv_110_2    | customer1     | bpartner_location_1    | 30 Tage netto | true      | CO        | true   | false           |
     And validate payments
@@ -314,7 +314,7 @@ Feature: invoice payment allocation
       | inv_120_2    |              |
 
     Then validate created invoices
-      | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | docStatus | IsPaid | OpenAmt | IsPartiallyPaid |
+      | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | DocStatus | IsPaid | OpenAmt | IsPartiallyPaid |
       | inv_120_1    | customer1     | bpartner_location_1    | 30 Tage netto | true      | CO        | true   |         | false           |
       | inv_120_2    | customer1     | bpartner_location_1    | 30 Tage netto | true      | CO        | false  | 2.9     | true            |
     And validate C_AllocationLines
@@ -339,7 +339,7 @@ Feature: invoice payment allocation
       | inv_120_2    | 2.9    |
 
     Then validate created invoices
-      | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | docStatus | IsPaid | IsPartiallyPaid |
+      | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | DocStatus | IsPaid | IsPartiallyPaid |
       | inv_120_2    | customer1     | bpartner_location_1    | 30 Tage netto | true      | CO        | true   | false           |
     And validate payments
       | C_Payment_ID | IsAllocated |
@@ -415,7 +415,7 @@ Feature: invoice payment allocation
       | inv_130_2    |              |
 
     Then validate created invoices
-      | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | docStatus | IsPaid | OpenAmt | IsPartiallyPaid |
+      | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | DocStatus | IsPaid | OpenAmt | IsPartiallyPaid |
       | inv_130_1    | customer1     | bpartner_location_1    | 30 Tage netto | true      | CO        | true   |         | false           |
       | inv_130_2    | customer1     | bpartner_location_1    | 30 Tage netto | true      | CO        | false  | 2.9     | true            |
     And validate C_AllocationLines
@@ -436,7 +436,7 @@ Feature: invoice payment allocation
       | inv_130_2    | 2.9    |
 
     Then validate created invoices
-      | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | docStatus | IsPaid | IsPartiallyPaid |
+      | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | DocStatus | IsPaid | IsPartiallyPaid |
       | inv_130_2    | customer1     | bpartner_location_1    | 30 Tage netto | true      | CO        | true   | false           |
     And validate payments
       | C_Payment_ID | C_Payment_ID.IsAllocated |
@@ -511,7 +511,7 @@ Feature: invoice payment allocation
       | inv_140_2    |              |
 
     Then validate created invoices
-      | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | docStatus | IsPaid | IsPartiallyPaid |
+      | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | DocStatus | IsPaid | IsPartiallyPaid |
       | inv_140_1    | customer1     | bpartner_location_1    | 30 Tage netto | true      | CO        | true   | false           |
       | inv_140_2    | customer1     | bpartner_location_1    | 30 Tage netto | true      | CO        | true   | false           |
     And validate payments
@@ -588,7 +588,7 @@ Feature: invoice payment allocation
       | purchaseInvoice |
 
     Then validate created invoices
-      | C_Invoice_ID    | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | docStatus | IsPaid | OpenAmt | IsPartiallyPaid |
+      | C_Invoice_ID    | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | DocStatus | IsPaid | OpenAmt | IsPartiallyPaid |
       | salesInvoice    | customer1     | bpartner_location_1    | 30 Tage netto | true      | CO        | true   |         | false           |
       | purchaseInvoice | customer1     | bpartner_location_1    | 30 Tage netto | true      | CO        | false  | 5.95    | true            |
     And validate C_AllocationLines
@@ -1056,7 +1056,7 @@ Feature: invoice payment allocation
       | inv_200_2    |              |
 
     Then validate created invoices
-      | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | docStatus | IsPaid | OpenAmt | IsPartiallyPaid |
+      | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | DocStatus | IsPaid | OpenAmt | IsPartiallyPaid |
       | inv_200_1    | customer1     | bpartner_location_1    | 30 Tage netto | true      | CO        | true   |         | false           |
       | inv_200_2    | customer1     | bpartner_location_1    | 30 Tage netto | true      | CO        | false  | 2.9     | true            |
     And validate C_AllocationLines
@@ -1069,7 +1069,7 @@ Feature: invoice payment allocation
       | inv_200_2    | 2.9    |
 
     Then validate created invoices
-      | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | docStatus | IsPaid | IsPartiallyPaid |
+      | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | DocStatus | IsPaid | IsPartiallyPaid |
       | inv_200_2    | customer1     | bpartner_location_1    | 30 Tage netto | true      | CO        | true   | false           |
     And validate payments
       | C_Payment_ID | IsAllocated |
@@ -1152,7 +1152,7 @@ Feature: invoice payment allocation
       | inv_210_2    |              |
 
     Then validate created invoices
-      | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | docStatus | IsPaid | OpenAmt | IsPartiallyPaid |
+      | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | DocStatus | IsPaid | OpenAmt | IsPartiallyPaid |
       | inv_210_1    | customer1     | bpartner_location_1    | 30 Tage netto | true      | CO        | true   |         | false           |
       | inv_210_2    | customer1     | bpartner_location_1    | 30 Tage netto | true      | CO        | false  | 2.9     | true            |
     And validate C_AllocationLines
@@ -1165,7 +1165,7 @@ Feature: invoice payment allocation
       | inv_210_2    | 2.9    |
 
     Then validate created invoices
-      | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | docStatus | IsPaid | IsPartiallyPaid |
+      | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | DocStatus | IsPaid | IsPartiallyPaid |
       | inv_210_2    | customer1     | bpartner_location_1    | 30 Tage netto | true      | CO        | true   | false           |
     And validate payments
       | C_Payment_ID | IsAllocated |
@@ -1255,7 +1255,7 @@ Feature: invoice payment allocation
       | inv_220      | payment_220  |
 
     Then validate created invoices
-      | C_Invoice_ID    | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | docStatus | OpenAmt | IsPaid | IsPartiallyPaid |
+      | C_Invoice_ID    | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | DocStatus | OpenAmt | IsPaid | IsPartiallyPaid |
       | credit_memo_220 | customer1     | bpartner_location_1    | 30 Tage netto | true      | CO        | 0       | true   | false           |
       | inv_220         | customer1     | bpartner_location_1    | 30 Tage netto | true      | CO        | 0       | true   | false           |
     And validate payments
@@ -1414,6 +1414,99 @@ Feature: invoice payment allocation
       | B_PaymentSelect_Acct   | 9 EUR       |             | outboundPayment |
       | B_InTransit_Acct       |             | 9 EUR       | outboundPayment |
 
+    And ---------------------------------------------------------------------------------------------------------------
+    And -- Reverse the inboundPayment
+    And ---------------------------------------------------------------------------------------------------------------
+    And the payment identified by inboundPayment is reversed with a reversal identified by inboundPaymentReversal
+    Then validate payments
+      | C_Payment_ID           | IsAllocated | PayAmt | OpenAmt | DocStatus | IsReceipt |
+      | outboundPayment        | false       | 9.00   | 9.00    | CO        | N         |
+      | inboundPayment         | true        | 5.00   | 0.00    | RE        | Y         |
+      | inboundPaymentReversal | true        | -5.00  | 0.00    | RE        | Y         |
+    And validate C_AllocationLines
+      | C_Payment_ID           | Amount | OverUnderAmt | C_AllocationHdr_ID |
+      | outboundPayment        | -5     | -4           | alloc1             |
+      | inboundPayment         | 5      | 0            | alloc1             |
+      # ---------------------------------------------------------------------
+      | outboundPayment        | 5      | 4            | alloc2             |
+      | inboundPayment         | -5     | 0            | alloc2             |
+      # ---------------------------------------------------------------------
+      | inboundPayment         | 5      | 0            | alloc3             |
+      | inboundPaymentReversal | -5     | 0            | alloc3             |
+    And no Fact_Acct records are found for documents alloc3
+    And Fact_Acct records are matching
+      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | Record_ID              |
+      | B_InTransit_Acct       | 5 EUR       |             | inboundPayment         |
+      | B_UnallocatedCash_Acct |             | 5 EUR       | inboundPayment         |
+      # ----------------------------------------------------------------
+      | B_InTransit_Acct       | -5 EUR      |             | inboundPaymentReversal |
+      | B_UnallocatedCash_Acct |             | -5 EUR      | inboundPaymentReversal |
+      # ----------------------------------------------------------------
+      | B_UnallocatedCash_Acct | 5 EUR       |             | alloc1                 |
+      | B_PaymentSelect_Acct   |             | 5 EUR       | alloc1                 |
+      # ----------------------------------------------------------------
+      | B_PaymentSelect_Acct   | 9 EUR       |             | outboundPayment        |
+      | B_InTransit_Acct       |             | 9 EUR       | outboundPayment        |
+      # ----------------------------------------------------------------
+      | B_UnallocatedCash_Acct | -5 EUR      |             | alloc2                 |
+      | B_PaymentSelect_Acct   |             | -5 EUR      | alloc2                 |
+      # ----------------------------------------------------------------
+    And Fact_Acct records balances for documents inboundPayment,inboundPaymentReversal,outboundPayment,alloc1,alloc2,alloc3 are matching
+      | AccountConceptualName  | SourceBalance |
+      | B_UnallocatedCash_Acct | 0 EUR         |
+      | B_PaymentSelect_Acct   | 9 EUR         |
+      | B_InTransit_Acct       | -9 EUR        |
+
+    And ---------------------------------------------------------------------------------------------------------------
+    And -- Reverse the outboundPayment
+    And ---------------------------------------------------------------------------------------------------------------
+    And the payment identified by outboundPayment is reversed with a reversal identified by outboundPaymentReversal
+    Then validate payments
+      | C_Payment_ID            | IsAllocated | PayAmt | OpenAmt | DocStatus | IsReceipt |
+      | outboundPayment         | true        | 9.00   | 0.00    | RE        | N         |
+      | outboundPaymentReversal | true        | -9.00  | 0.00    | RE        | N         |
+      | inboundPayment          | true        | 5.00   | 0.00    | RE        | Y         |
+      | inboundPaymentReversal  | true        | -5.00  | 0.00    | RE        | Y         |
+    And validate C_AllocationLines
+      | C_Payment_ID            | Amount | OverUnderAmt | C_AllocationHdr_ID |
+      | outboundPayment         | -5     | -4           | alloc1             |
+      | inboundPayment          | 5      | 0            | alloc1             |
+      # ---------------------------------------------------------------------
+      | outboundPayment         | 5      | 4            | alloc2             |
+      | inboundPayment          | -5     | 0            | alloc2             |
+      # ---------------------------------------------------------------------
+      | inboundPayment          | 5      | 0            | alloc3             |
+      | inboundPaymentReversal  | -5     | 0            | alloc3             |
+      # ---------------------------------------------------------------------
+      | outboundPayment         | -9     | 0            | alloc4             |
+      | outboundPaymentReversal | 9      | 0            | alloc4             |
+    And no Fact_Acct records are found for documents alloc3,alloc4
+    And Fact_Acct records are matching
+      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | Record_ID               |
+      | B_InTransit_Acct       | 5 EUR       |             | inboundPayment          |
+      | B_UnallocatedCash_Acct |             | 5 EUR       | inboundPayment          |
+      # ----------------------------------------------------------------
+      | B_InTransit_Acct       | -5 EUR      |             | inboundPaymentReversal  |
+      | B_UnallocatedCash_Acct |             | -5 EUR      | inboundPaymentReversal  |
+      # ----------------------------------------------------------------
+      | B_UnallocatedCash_Acct | 5 EUR       |             | alloc1                  |
+      | B_PaymentSelect_Acct   |             | 5 EUR       | alloc1                  |
+      # ----------------------------------------------------------------
+      | B_PaymentSelect_Acct   | 9 EUR       |             | outboundPayment         |
+      | B_InTransit_Acct       |             | 9 EUR       | outboundPayment         |
+      # ----------------------------------------------------------------
+      | B_PaymentSelect_Acct   | -9 EUR      |             | outboundPaymentReversal |
+      | B_InTransit_Acct       |             | -9 EUR      | outboundPaymentReversal |
+      # ----------------------------------------------------------------
+      | B_UnallocatedCash_Acct | -5 EUR      |             | alloc2                  |
+      | B_PaymentSelect_Acct   |             | -5 EUR      | alloc2                  |
+      # ----------------------------------------------------------------
+    And Fact_Acct records balances for documents inboundPayment,inboundPaymentReversal,outboundPayment,outboundPaymentReversal,alloc1,alloc2,alloc3,alloc4 are matching
+      | AccountConceptualName  | SourceBalance |
+      | B_UnallocatedCash_Acct | 0 EUR         |
+      | B_PaymentSelect_Acct   | 0 EUR         |
+      | B_InTransit_Acct       | 0 EUR         |
+    
 
 
 
@@ -1856,8 +1949,8 @@ Feature: invoice payment allocation
       | paymentAllocPLV_27102022_1 | paymentAllocPriceList_27102022_1 | 2022-05-01 |
 
     And metasfresh contains C_BPartners without locations:
-      | Identifier          | Name                    | OPT.IsCustomer | M_PricingSystem_ID.Identifier        | OPT.C_PaymentTerm_ID |
-      | bpartner_27102022_1 | BPartnerTest_27102022_1 | Y              | paymentAllocPricingSystem_27102022_1 | 1000009              |
+      | Identifier          | Name                    | OPT.IsCustomer | M_PricingSystem_ID.Identifier        | C_PaymentTerm_ID.Value |
+      | bpartner_27102022_1 | BPartnerTest_27102022_1 | Y              | paymentAllocPricingSystem_27102022_1 | 10 Tage 1 %            |
 
     And metasfresh contains C_BPartner_Locations:
       | Identifier                   | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
@@ -1893,7 +1986,7 @@ Feature: invoice payment allocation
       | inv_27102022_1              | payment_27102022_1          |
 
     Then validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | DocStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
       | inv_27102022_1          | bpartner_27102022_1      | bpartner_location_27102022_1      | 10 Tage 1 % | true      | CO        | false      | true                |
     And validate payments
       | C_Payment_ID.Identifier | C_Payment_ID.IsAllocated |
@@ -1911,7 +2004,7 @@ Feature: invoice payment allocation
       | OPT.C_Invoice_ID.Identifier | OPT.C_Payment_ID.Identifier |
       | inv_27102022_1              | payment_27102022_2          |
     Then validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | DocStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
       | inv_27102022_1          | bpartner_27102022_1      | bpartner_location_27102022_1      | 10 Tage 1 % | true      | CO        | true       | false               |
     And validate payments
       | C_Payment_ID.Identifier | C_Payment_ID.IsAllocated |
@@ -1970,8 +2063,8 @@ Feature: invoice payment allocation
       | paymentAllocPLV_27102022_2 | paymentAllocPriceList_27102022_2 | 2022-05-01 |
 
     And metasfresh contains C_BPartners without locations:
-      | Identifier          | Name                    | OPT.IsVendor | M_PricingSystem_ID.Identifier        | OPT.C_PaymentTerm_ID |
-      | bpartner_27102022_2 | BPartnerTest_27102022_2 | Y            | paymentAllocPricingSystem_27102022_2 | 1000009              |
+      | Identifier          | Name                    | OPT.IsVendor | M_PricingSystem_ID.Identifier        | PO_PaymentTerm_ID.Value |
+      | bpartner_27102022_2 | BPartnerTest_27102022_2 | Y            | paymentAllocPricingSystem_27102022_2 | 10 Tage 1 %             |
 
     And metasfresh contains C_BPartner_Locations:
       | Identifier                   | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
@@ -2007,7 +2100,7 @@ Feature: invoice payment allocation
       | inv_27102022_2              | payment_27102022_3          |
 
     Then validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | DocStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
       | inv_27102022_2          | bpartner_27102022_2      | bpartner_location_27102022_2      | 10 Tage 1 % | true      | CO        | false      | true                |
     And validate payments
       | C_Payment_ID.Identifier | C_Payment_ID.IsAllocated |
@@ -2025,7 +2118,7 @@ Feature: invoice payment allocation
       | OPT.C_Invoice_ID.Identifier | OPT.C_Payment_ID.Identifier |
       | inv_27102022_2              | payment_27102022_4          |
     Then validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | DocStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
       | inv_27102022_2          | bpartner_27102022_2      | bpartner_location_27102022_2      | 10 Tage 1 % | true      | CO        | true       | false               |
     And validate payments
       | C_Payment_ID.Identifier | C_Payment_ID.IsAllocated |
@@ -2084,8 +2177,8 @@ Feature: invoice payment allocation
       | paymentAllocPLV_28102022_1 | paymentAllocPriceList_28102022_1 | 2022-05-01 |
 
     And metasfresh contains C_BPartners without locations:
-      | Identifier          | Name                    | OPT.IsCustomer | M_PricingSystem_ID.Identifier        | OPT.C_PaymentTerm_ID |
-      | bpartner_28102022_1 | BPartnerTest_28102022_1 | Y              | paymentAllocPricingSystem_28102022_1 | 1000009              |
+      | Identifier          | Name                    | OPT.IsCustomer | M_PricingSystem_ID.Identifier        | C_PaymentTerm_ID.Value |
+      | bpartner_28102022_1 | BPartnerTest_28102022_1 | Y              | paymentAllocPricingSystem_28102022_1 | 10 Tage 1 %            |
 
     And metasfresh contains C_BPartner_Locations:
       | Identifier                   | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
@@ -2127,7 +2220,7 @@ Feature: invoice payment allocation
       |                             | payment_28102022_2          |
 
     Then validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | DocStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
       | inv_28102022_1          | bpartner_28102022_1      | bpartner_location_28102022_1      | 10 Tage 1 % | true      | CO        | true       | false               |
     And validate payments
       | C_Payment_ID.Identifier | C_Payment_ID.IsAllocated |
@@ -2188,8 +2281,8 @@ Feature: invoice payment allocation
       | paymentAllocPLV_31102022_1 | paymentAllocPriceList_31102022_1 | 2022-05-01 |
 
     And metasfresh contains C_BPartners without locations:
-      | Identifier          | Name                    | OPT.IsCustomer | M_PricingSystem_ID.Identifier        | OPT.C_PaymentTerm_ID |
-      | bpartner_31102022_1 | BPartnerTest_31102022_1 | Y              | paymentAllocPricingSystem_31102022_1 | 1000009              |
+      | Identifier          | Name                    | OPT.IsCustomer | M_PricingSystem_ID.Identifier        | C_PaymentTerm_ID.Value |
+      | bpartner_31102022_1 | BPartnerTest_31102022_1 | Y              | paymentAllocPricingSystem_31102022_1 | 10 Tage 1 %            |
 
     And metasfresh contains C_BPartner_Locations:
       | Identifier                   | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
@@ -2224,10 +2317,10 @@ Feature: invoice payment allocation
       | inv_31102022_1          | credit_memo_31102022_1                 |
 
     Then validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | DocStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
       | inv_31102022_1          | bpartner_31102022_1      | bpartner_location_31102022_1      | 10 Tage 1 % | true      | CO        | false      | true                |
     Then validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | DocStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
       | credit_memo_31102022_1  | bpartner_31102022_1      | bpartner_location_31102022_1      | 10 Tage 1 % | true      | CO        | true       | false               |
     And validate C_AllocationLines
       | OPT.C_Invoice_ID.Identifier | OPT.Amount | OPT.OverUnderAmt | OPT.WriteOffAmt | OPT.DiscountAmt |
@@ -2247,10 +2340,10 @@ Feature: invoice payment allocation
       | inv_31102022_1          | credit_memo_31102022_2                 |
 
     Then validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | DocStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
       | inv_31102022_1          | bpartner_31102022_1      | bpartner_location_31102022_1      | 10 Tage 1 % | true      | CO        | true       | false               |
     Then validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | DocStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
       | credit_memo_31102022_2  | bpartner_31102022_1      | bpartner_location_31102022_1      | 10 Tage 1 % | true      | CO        | false      | true                |
     And validate C_AllocationLines
       | OPT.C_Invoice_ID.Identifier | OPT.Amount | OPT.OverUnderAmt | OPT.WriteOffAmt | OPT.DiscountAmt |
@@ -2310,8 +2403,8 @@ Feature: invoice payment allocation
       | paymentAllocPLV_31102022_10 | paymentAllocPriceList_31102022_10 | 2022-05-01 |
 
     And metasfresh contains C_BPartners without locations:
-      | Identifier           | Name                     | OPT.IsVendor | M_PricingSystem_ID.Identifier         | OPT.C_PaymentTerm_ID |
-      | bpartner_31102022_10 | BPartnerTest_31102022_10 | Y            | paymentAllocPricingSystem_31102022_10 | 1000009              |
+      | Identifier           | Name                     | OPT.IsVendor | M_PricingSystem_ID.Identifier         | PO_PaymentTerm_ID.Value |
+      | bpartner_31102022_10 | BPartnerTest_31102022_10 | Y            | paymentAllocPricingSystem_31102022_10 | 10 Tage 1 %             |
 
     And metasfresh contains C_BPartner_Locations:
       | Identifier                    | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
@@ -2346,10 +2439,10 @@ Feature: invoice payment allocation
       | inv_31102022_10         | credit_memo_31102022_10                |
 
     Then validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | DocStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
       | inv_31102022_10         | bpartner_31102022_10     | bpartner_location_31102022_10     | 10 Tage 1 % | true      | CO        | false      | true                |
     Then validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | DocStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
       | credit_memo_31102022_10 | bpartner_31102022_10     | bpartner_location_31102022_10     | 10 Tage 1 % | true      | CO        | true       | false               |
     And validate C_AllocationLines
       | OPT.C_Invoice_ID.Identifier | OPT.Amount | OPT.OverUnderAmt | OPT.WriteOffAmt | OPT.DiscountAmt |
@@ -2369,10 +2462,10 @@ Feature: invoice payment allocation
       | inv_31102022_10         | credit_memo_31102022_11                |
 
     Then validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | DocStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
       | inv_31102022_10         | bpartner_31102022_10     | bpartner_location_31102022_10     | 10 Tage 1 % | true      | CO        | true       | false               |
     Then validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | DocStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
       | credit_memo_31102022_11 | bpartner_31102022_10     | bpartner_location_31102022_10     | 10 Tage 1 % | true      | CO        | false      | true                |
     And validate C_AllocationLines
       | OPT.C_Invoice_ID.Identifier | OPT.Amount | OPT.OverUnderAmt | OPT.WriteOffAmt | OPT.DiscountAmt |
@@ -2434,8 +2527,8 @@ Feature: invoice payment allocation
       | paymentAllocPLV_01112022_2 | paymentAllocPriceList_01112022_2 | 2022-05-01 |
 
     And metasfresh contains C_BPartners without locations:
-      | Identifier          | Name                    | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier        | OPT.C_PaymentTerm_ID |
-      | bpartner_01112022_1 | BPartnerTest_01112022_1 | Y            | Y              | paymentAllocPricingSystem_01112022_1 | 1000009              |
+      | Identifier          | Name                    | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier        | PO_PaymentTerm_ID.Value | C_PaymentTerm_ID.Value |
+      | bpartner_01112022_1 | BPartnerTest_01112022_1 | Y            | Y              | paymentAllocPricingSystem_01112022_1 | 10 Tage 1 %             | 10 Tage 1 %            |
 
     And metasfresh contains C_BPartner_Locations:
       | Identifier                   | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
@@ -2472,10 +2565,10 @@ Feature: invoice payment allocation
       | inv_01112022_1          | purchase_invoice_01112022_1          |
 
     Then validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | DocStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
       | inv_01112022_1          | bpartner_01112022_1      | bpartner_location_01112022_1      | 10 Tage 1 % | true      | CO        | false      | true                |
     Then validate created invoices
-      | C_Invoice_ID.Identifier     | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | C_Invoice_ID.Identifier     | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | DocStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
       | purchase_invoice_01112022_1 | bpartner_01112022_1      | bpartner_location_01112022_1      | 10 Tage 1 % | true      | CO        | true       | false               |
     And validate C_AllocationLines
       | OPT.C_Invoice_ID.Identifier | OPT.Amount | OPT.OverUnderAmt | OPT.WriteOffAmt | OPT.DiscountAmt |
@@ -2496,10 +2589,10 @@ Feature: invoice payment allocation
       | inv_01112022_1          | purchase_invoice_01112022_2          |
 
     Then validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | DocStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
       | inv_01112022_1          | bpartner_01112022_1      | bpartner_location_01112022_1      | 10 Tage 1 % | true      | CO        | true       | false               |
     Then validate created invoices
-      | C_Invoice_ID.Identifier     | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | C_Invoice_ID.Identifier     | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | DocStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
       | purchase_invoice_01112022_2 | bpartner_01112022_1      | bpartner_location_01112022_1      | 10 Tage 1 % | true      | CO        | false      | true                |
     And validate C_AllocationLines
       | OPT.C_Invoice_ID.Identifier | OPT.Amount | OPT.OverUnderAmt | OPT.WriteOffAmt | OPT.DiscountAmt |
@@ -2546,7 +2639,7 @@ Feature: invoice payment allocation
   Scenario: allocate payment to purchase invoice with overpayment and negative discount
 
     Given metasfresh contains M_Products:
-      | Identifier  | Name        |
+      | Identifier         | Name               |
       | product_10012025_1 | product_10012025_1 |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
@@ -2563,11 +2656,11 @@ Feature: invoice payment allocation
 
     And metasfresh contains C_Payment
       | Identifier         | C_BPartner_ID.Identifier | PayAmt    | OPT.DiscountAmt | C_DocType_ID.Name | IsReceipt | C_BP_BankAccount.Identifier | OPT.C_Invoice_ID.Identifier |
-      | payment_10012025_1 | vendor1               | 20.25 EUR | -0.02 EUR       | Zahlungsausgang   | false     | bp_bank_account1            | inv_10012025_1              |
+      | payment_10012025_1 | vendor1                  | 20.25 EUR | -0.02 EUR       | Zahlungsausgang   | false     | bp_bank_account1            | inv_10012025_1              |
     And the payment identified by payment_10012025_1 is completed
 
     Then validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | docStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
+      | C_Invoice_ID.Identifier | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | DocStatus | OPT.IsPaid | OPT.IsPartiallyPaid |
       | inv_10012025_1          | vendor1       | bpartner_location_2    | 30 Tage netto | true      | CO        | true       | false               |
     And validate payments
       | C_Payment_ID.Identifier | C_Payment_ID.IsAllocated |

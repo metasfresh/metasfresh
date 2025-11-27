@@ -95,6 +95,7 @@ class DDOrderPickFromCommand
 						.qtyPicked(getStorageQty(actualPickedHU))
 						.pickFromMovementId(pickFromMovementId)
 						.inTransitLocatorId(inTransitLocatorId)
+						.dropToLocatorId(schedule.getDropToLocatorId())
 						.build())
 				.collect(DDOrderMoveSchedulePickedHUs.collect());
 

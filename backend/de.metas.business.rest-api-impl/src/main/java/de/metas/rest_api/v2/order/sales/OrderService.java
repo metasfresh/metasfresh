@@ -27,11 +27,14 @@ import de.metas.RestUtils;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.rest_api.v2.order.JsonOrderPaymentCreateRequest;
+import de.metas.common.rest_api.v2.order.JsonOrderRevertRequest;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.externalreference.ExternalIdentifier;
+import de.metas.externalsystem.ExternalSystemId;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
@@ -46,6 +49,7 @@ import de.metas.rest_api.utils.CurrencyService;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
+import de.metas.rest_api.v2.ordercandidates.impl.MasterdataProvider;
 import de.metas.rest_api.v2.payment.PaymentService;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -179,6 +183,23 @@ public class OrderService
 		documentBL.processEx(documentRecord, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 
 		return documentRecord;
+	}
+
+	@NonNull
+	public Optional<OrderId> getOrderId(@NonNull final JsonOrderRevertRequest request, @NonNull final MasterdataProvider masterdataProvider)
+	{
+		final OrgId orgId = masterdataProvider.getOrgId(request.getOrgCode());
+		final ExternalSystemId externalSystemId = masterdataProvider.getExternalSystemId(ExternalSystemType.ofValue(request.getExternalSystemCode()));
+
+		final OrderQuery orderQuery = OrderQuery.builder()
+				.orgId(orgId)
+				.externalId(ExternalId.of(request.getExternalId()))
+				.externalSystemId(externalSystemId)
+				.build();
+
+		return orderDAO.retrieveByOrderCriteria(orderQuery)
+				.map(I_C_Order::getC_Order_ID)
+				.map(OrderId::ofRepoId);
 	}
 
 	private Optional<OrderId> resolveOrderId(@NonNull final IdentifierString orderIdentifier, @NonNull final OrgId orgId)

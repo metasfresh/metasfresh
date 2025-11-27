@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package org.compiere.model;
 
 import org.adempiere.model.ModelColumn;
@@ -213,6 +235,31 @@ public interface I_C_BP_Group
 	String COLUMNNAME_C_Dunning_ID = "C_Dunning_ID";
 
 	/**
+	 * Set Incoterms.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Incoterms_ID (int C_Incoterms_ID);
+
+	/**
+	 * Get Incoterms.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Incoterms_ID();
+
+	@Nullable org.compiere.model.I_C_Incoterms getC_Incoterms();
+
+	void setC_Incoterms(@Nullable org.compiere.model.I_C_Incoterms C_Incoterms);
+
+	ModelColumn<I_C_BP_Group, org.compiere.model.I_C_Incoterms> COLUMN_C_Incoterms_ID = new ModelColumn<>(I_C_BP_Group.class, "C_Incoterms_ID", org.compiere.model.I_C_Incoterms.class);
+	String COLUMNNAME_C_Incoterms_ID = "C_Incoterms_ID";
+
+	/**
 	 * Set Payment Term.
 	 * The terms of Payment (timing, discount)
 	 *
@@ -327,6 +374,52 @@ public interface I_C_BP_Group
 	String COLUMNNAME_FreightCostRule = "FreightCostRule";
 
 	/**
+	 * Set Incoterm Location.
+	 * Anzugebender Ort für Handelsklausel
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIncotermLocation (@Nullable java.lang.String IncotermLocation);
+
+	/**
+	 * Get Incoterm Location.
+	 * Anzugebender Ort für Handelsklausel
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIncotermLocation();
+
+	ModelColumn<I_C_BP_Group, Object> COLUMN_IncotermLocation = new ModelColumn<>(I_C_BP_Group.class, "IncotermLocation", null);
+	String COLUMNNAME_IncotermLocation = "IncotermLocation";
+
+	/**
+	 * Set Invoice Rule.
+	 * Frequency and method of invoicing
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInvoiceRule (@Nullable java.lang.String InvoiceRule);
+
+	/**
+	 * Get Invoice Rule.
+	 * Frequency and method of invoicing
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getInvoiceRule();
+
+	ModelColumn<I_C_BP_Group, Object> COLUMN_InvoiceRule = new ModelColumn<>(I_C_BP_Group.class, "InvoiceRule", null);
+	String COLUMNNAME_InvoiceRule = "InvoiceRule";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -369,6 +462,27 @@ public interface I_C_BP_Group
 
 	ModelColumn<I_C_BP_Group, Object> COLUMN_IsAssociation = new ModelColumn<>(I_C_BP_Group.class, "IsAssociation", null);
 	String COLUMNNAME_IsAssociation = "IsAssociation";
+
+	/**
+	 * Set Auto Invoice.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsAutoInvoice (@Nullable java.lang.String IsAutoInvoice);
+
+	/**
+	 * Get Auto Invoice.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsAutoInvoice();
+
+	ModelColumn<I_C_BP_Group, Object> COLUMN_IsAutoInvoice = new ModelColumn<>(I_C_BP_Group.class, "IsAutoInvoice", null);
+	String COLUMNNAME_IsAutoInvoice = "IsAutoInvoice";
 
 	/**
 	 * Set Confidential Info.
@@ -670,6 +784,52 @@ public interface I_C_BP_Group
 	String COLUMNNAME_PO_DiscountSchema_ID = "PO_DiscountSchema_ID";
 
 	/**
+	 * Set PO Incoterm Location.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPO_IncotermLocation (@Nullable java.lang.String PO_IncotermLocation);
+
+	/**
+	 * Get PO Incoterm Location.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPO_IncotermLocation();
+
+	ModelColumn<I_C_BP_Group, Object> COLUMN_PO_IncotermLocation = new ModelColumn<>(I_C_BP_Group.class, "PO_IncotermLocation", null);
+	String COLUMNNAME_PO_IncotermLocation = "PO_IncotermLocation";
+
+	/**
+	 * Set PO Incoterms.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPO_Incoterms_ID (int PO_Incoterms_ID);
+
+	/**
+	 * Get PO Incoterms.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPO_Incoterms_ID();
+
+	@Nullable org.compiere.model.I_C_Incoterms getPO_Incoterms();
+
+	void setPO_Incoterms(@Nullable org.compiere.model.I_C_Incoterms PO_Incoterms);
+
+	ModelColumn<I_C_BP_Group, org.compiere.model.I_C_Incoterms> COLUMN_PO_Incoterms_ID = new ModelColumn<>(I_C_BP_Group.class, "PO_Incoterms_ID", org.compiere.model.I_C_Incoterms.class);
+	String COLUMNNAME_PO_Incoterms_ID = "PO_Incoterms_ID";
+
+	/**
 	 * Set PO Payment Term.
 	 * Payment rules for a purchase order
 	 *
@@ -778,6 +938,28 @@ public interface I_C_BP_Group
 
 	ModelColumn<I_C_BP_Group, Object> COLUMN_PriorityBase = new ModelColumn<>(I_C_BP_Group.class, "PriorityBase", null);
 	String COLUMNNAME_PriorityBase = "PriorityBase";
+
+	/**
+	 * Set Purchaser.
+	 * Purchasing Responsible
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPurchaser_User_ID (int Purchaser_User_ID);
+
+	/**
+	 * Get Purchaser.
+	 * Purchasing Responsible
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPurchaser_User_ID();
+
+	String COLUMNNAME_Purchaser_User_ID = "Purchaser_User_ID";
 
 	/**
 	 * Set Credit Status.

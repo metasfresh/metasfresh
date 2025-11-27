@@ -24,10 +24,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_AD_OrgChange_History;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_InOut;
@@ -127,7 +125,7 @@ public class RequestBL implements IRequestBL
 	private I_M_QualityNote getQualityNoteOrNull(@NonNull final I_M_InOutLine line)
 	{
 		final IQualityNoteDAO qualityNoteDAO = Services.get(IQualityNoteDAO.class);
-		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+		final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 
 		final AttributeId qualityNoteAttributeId = qualityNoteDAO.getQualityNoteAttributeId();
 		if (qualityNoteAttributeId == null)
@@ -137,7 +135,7 @@ public class RequestBL implements IRequestBL
 		}
 
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(line.getM_AttributeSetInstance_ID());
-		final I_M_AttributeInstance qualityNoteAI = attributeDAO.retrieveAttributeInstance(asiId, qualityNoteAttributeId);
+		final I_M_AttributeInstance qualityNoteAI = asiBL.getAttributeInstance(asiId, qualityNoteAttributeId);
 		if (qualityNoteAI == null)
 		{
 			// nothing to do. The Quality Note is not in the attribute instance

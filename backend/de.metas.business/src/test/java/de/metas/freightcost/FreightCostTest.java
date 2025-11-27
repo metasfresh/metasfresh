@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.freightcost;
 
 import de.metas.bpartner.service.IBPartnerBL;
@@ -60,28 +82,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-/*
- * #%L
- * de.metas.business
- * %%
- * Copyright (C) 2019 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 public class FreightCostTest
 {
 	private static final BigDecimal ZERO = BigDecimal.ZERO;
@@ -106,7 +106,7 @@ public class FreightCostTest
 
 		final FreightCostRepository freightCostRepo = new FreightCostRepository();
 		final FreightCostService freightCostService = new FreightCostService(freightCostRepo);
-		orderFreightCostsService = new OrderFreightCostsService(freightCostService, new BPartnerOrderParamsRepository());
+		orderFreightCostsService = new OrderFreightCostsService(freightCostService, BPartnerOrderParamsRepository.newInstanceForUnitTesting());
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
@@ -606,6 +606,7 @@ public class FreightCostTest
 		final I_C_BPartner partner1 = createPartner("Partner1", bpGroup.getC_BP_Group_ID());
 		partner1.setM_Shipper_ID(shipper1.getM_Shipper_ID());
 		partner1.setPaymentRule(PaymentRule.OnCredit.getCode());
+		partner1.setPaymentRulePO(PaymentRule.OnCredit.getCode());
 		save(partner1);
 
 		final CurrencyId currency1 = createCurrency(CurrencyCode.EUR);
@@ -903,6 +904,7 @@ public class FreightCostTest
 		partner.setName(partnerName);
 		partner.setC_BP_Group_ID(bpGroupId);
 		partner.setPaymentRule(PaymentRule.OnCredit.getCode());
+		partner.setPaymentRulePO(PaymentRule.OnCredit.getCode());
 
 		save(partner);
 

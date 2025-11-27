@@ -8,6 +8,7 @@ import { SORT_TAB } from '../constants/ActionTypes';
 import { doesSelectionExist } from '../utils/documentListHelper';
 import { NUMERIC_FIELD_TYPES } from '../constants/Constants';
 import { shallowEqual, useSelector } from 'react-redux';
+import { DocumentAction } from '../constants/DocumentAction';
 
 export const initialTableState = {
   windowId: null,
@@ -155,6 +156,21 @@ const compareValues = ({ value1, value2, ascending }) => {
     //if(value1 > value2)
     return ascending ? +1 : -1;
   }
+};
+
+export const getMasterViewStandardActions = ({ state, windowId, viewId }) => {
+  if (!windowId || !viewId) {
+    return [];
+  }
+
+  const table = getTable(state, getTableId({ windowId, viewId }));
+
+  const viewStandardActions = [];
+  if (table.allowNew ?? true) {
+    viewStandardActions.push(DocumentAction.NEW_DOCUMENT);
+  }
+
+  return viewStandardActions;
 };
 
 //

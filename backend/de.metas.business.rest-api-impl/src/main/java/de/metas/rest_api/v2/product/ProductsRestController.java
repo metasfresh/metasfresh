@@ -98,9 +98,7 @@ public class ProductsRestController
 
 		try
 		{
-			final ExternalSystemType externalSystemType = externalSystemConfigType != null
-					? ExternalSystemType.ofCodeOrNameOrNull(externalSystemConfigType)
-					: null;
+			final ExternalSystemType externalSystemType = externalSystemService.getExternalSystemTypeByCodeOrNameOrNull(externalSystemConfigType);
 
 			final JsonGetProductsResponse response = GetProductsCommand.builder()
 					.servicesFacade(productsServicesFacade)

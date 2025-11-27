@@ -197,8 +197,16 @@ public class ExternalSystemConstants
 
 	public static final String PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT = "messageFromMetasfresh";
 	public static final String PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER = "scriptIdentifier";
+	public static final String PARAM_SCRIPTEDADAPTER_OUTBOUND_ENDPOINT_PARAMETERS = "outboundEndpointData";
 	public static final String PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_EP = "outboundHttpEP";
 	public static final String PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_TOKEN = "outboundHttpToken";
 	public static final String PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_METHOD = "outboundHttpMethod";
+	public static final String PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_TABLE_NAME = "outboundRecordTableName";
+	public static final String PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_ID = "outboundRecordId";
+	public static final String COMMAND_CONVERT_MESSAGE_FROM_METASFRESH = "ConvertMsgFromMF";
+
+	public static final String PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME = "endpointName";
+	public static final String PARAM_SCRIPTEDADAPTER_TO_MF_SCRIPT_IDENTIFIER = "scriptIdentifier";
+	public static final String PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN = "token";
 }
 

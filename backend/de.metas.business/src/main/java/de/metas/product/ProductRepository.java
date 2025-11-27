@@ -8,7 +8,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.BPartnerProduct;
 import de.metas.bpartner_product.BPartnerProductQuery;
 import de.metas.bpartner_product.CreateBPartnerProductRequest;
-import de.metas.ean13.EAN13;
+import de.metas.gs1.GTIN;
+import de.metas.gs1.ean13.EAN13;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -30,6 +31,7 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -289,9 +291,9 @@ public class ProductRepository
 				.seqNo(record.getSeqNo())
 				.productNo(record.getProductNo())
 				.description(record.getDescription())
-				.cuEAN(record.getEAN_CU())
+				.gtin(GTIN.ofNullableString(record.getGTIN()))
+				.cuEAN(EAN13.ofNullableString(record.getEAN_CU()))
 				.customerLabelName(record.getCustomerLabelName())
-				.gtin(record.getGTIN())
 				.ingredients(record.getIngredients())
 				.currentVendor(record.isCurrentVendor())
 				.isExcludedFromSales(record.isExcludedFromSale())
@@ -311,6 +313,29 @@ public class ProductRepository
 				.addEqualsFilter(I_M_Product.COLUMNNAME_M_Product_ID, id)
 				.create()
 				.firstOnlyNotNull(I_M_Product.class);
+	}
+
+	@NonNull
+	public Iterator<Product> getProductsByQuery(@NonNull final ProductQuery productQuery)
+	{
+		final IQueryBuilder<I_M_Product> queryBuilder = queryBL.createQueryBuilder(I_M_Product.class)
+				.addOnlyActiveRecordsFilter();
+
+		if (productQuery.getIsSold() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Product.COLUMNNAME_IsSold, productQuery.getIsSold());
+		}
+
+		if (productQuery.getIsStocked() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Product.COLUMNNAME_IsStocked, productQuery.getIsStocked());
+		}
+
+		return queryBuilder
+				.create()
+				.iterateAndStream()
+				.map(this::ofProductRecord)
+				.iterator();
 	}
 
 	@NonNull
@@ -357,6 +382,18 @@ public class ProductRepository
 				.ean(productRecord.getUPC())
 				.orgId(OrgId.ofRepoId(productRecord.getAD_Org_ID()))
 				.procurementStatus(productRecord.getProcurementStatus())
+				.selfPacked(productRecord.isSelfPacked())
+				.packageDimensions(extractProductDimensions(productRecord))
+				.build();
+	}
+
+	@NonNull
+	private static PackageDimensions extractProductDimensions(final @NonNull I_M_Product productRecord)
+	{
+		return PackageDimensions.builder()
+				.lengthInCM(productRecord.getLengthInCm())
+				.widthInCM(productRecord.getWidthInCm())
+				.heightInCM(productRecord.getHeightInCm())
 				.build();
 	}
 
@@ -419,9 +456,9 @@ public class ProductRepository
 		record.setSeqNo(from.getSeqNo() != null ? from.getSeqNo() : record.getSeqNo());
 		record.setProductNo(from.getProductNo());
 		record.setDescription(from.getDescription());
-		record.setEAN_CU(from.getCuEAN());
+		record.setEAN_CU(from.getCuEAN() != null ? from.getCuEAN().getAsString() : null);
 		record.setCustomerLabelName(from.getCustomerLabelName());
-		record.setGTIN(from.getGtin());
+		record.setGTIN(from.getGtin() != null ? from.getGtin().getAsString() : null);
 		record.setIngredients(from.getIngredients());
 		record.setIsCurrentVendor(from.getCurrentVendor() != null ? from.getCurrentVendor() : record.isCurrentVendor());
 		record.setIsExcludedFromSale(from.getIsExcludedFromSales() != null ? from.getIsExcludedFromSales() : record.isExcludedFromSale());

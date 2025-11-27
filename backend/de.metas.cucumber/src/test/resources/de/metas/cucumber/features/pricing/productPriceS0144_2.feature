@@ -21,9 +21,9 @@ Feature: Product price validation (S0144_2)
       | M_AttributeSet_ID.Identifier | Name                  | MandatoryType |
       | attributeSet_03062022        | attributeSet_03062022 | N             |
     And add M_AttributeUse:
-      | M_AttributeUse_ID.Identifier | M_AttributeSet_ID.Identifier | M_Attribute_ID.Identifier | SeqNo |
-      | attributeUse_age             | attributeSet_03062022        | attr_age                  | 10    |
-      | attributeUse_Label           | attributeSet_03062022        | attr_Label                | 20    |
+      | M_AttributeSet_ID     | M_Attribute_ID | SeqNo |
+      | attributeSet_03062022 | attr_age       | 10    |
+      | attributeSet_03062022 | attr_Label     | 20    |
 
     And metasfresh contains M_PricingSystems
       | Identifier  | Name        | Value       |
@@ -175,6 +175,7 @@ Feature: Product price validation (S0144_2)
     "orgCode": "001",
     "externalLineId": "sdwewwe",
     "externalHeaderId": "89676577",
+    "externalSystemCode": "Shopware6",
     "dataSource": "int-Shopware",
     "bpartner": {
         "bpartnerIdentifier": "gln-03062660333443",
@@ -198,7 +199,7 @@ Feature: Product price validation (S0144_2)
 """
 {
     "externalHeaderId": "89676577",
-    "inputDataSourceName": "int-Shopware",
+    "externalSystemCode": "Shopware6",
     "ship": false,
     "invoice": false,
     "closeOrder": false
@@ -209,8 +210,8 @@ Feature: Product price validation (S0144_2)
       | C_Order_ID.Identifier |
       | order_S0144.2_120     |
     And validate the created orders
-      | C_Order_ID.Identifier | externalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference    | processed | docStatus | OPT.AD_InputDataSource_ID.InternalName |
-      | order_S0144.2_120     | 89676577   | bpartner_03062022        | bpLocation_03062022               | 2022-06-05  | SOO         | EUR          | F            | S               | po_S0144.2_120 | true      | CO        | Shopware                               |
+      | C_Order_ID.Identifier | externalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference    | processed | DocStatus | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value |
+      | order_S0144.2_120     | 89676577   | bpartner_03062022        | bpLocation_03062022               | 2022-06-05  | SOO         | EUR          | F            | S               | po_S0144.2_120 | true      | CO        | Shopware                               | Shopware6            |
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.M_AttributeSetInstance_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier |
       | ol_SO144.2_120            | order_S0144.2_120     | product_S0144.2_120     | 0            | 10         | 0           | 120   | 0        | EUR          | true      | ppASI_S0144.2_120                        | huProductTU                            |

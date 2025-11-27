@@ -2,7 +2,7 @@ package de.metas.inoutcandidate.api;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
-import de.metas.inout.ShipmentScheduleId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -14,23 +14,23 @@ import java.util.Set;
 @Value
 public class ShipmentScheduleAllocQuery
 {
-	@Nullable ImmutableSet<ShipmentScheduleId> shipmentScheduleIds;
-	boolean alreadyShipped;
+	@Nullable ShipmentScheduleAndJobScheduleIdSet scheduleIds;
+	@Nullable Boolean alreadyShipped;
 	@Nullable ImmutableSet<HuId> onlyLUIds;
 
 	@Builder
 	private ShipmentScheduleAllocQuery(
-			@Nullable final Set<ShipmentScheduleId> shipmentScheduleIds,
+			@Nullable final ShipmentScheduleAndJobScheduleIdSet scheduleIds,
 			@NonNull final Boolean alreadyShipped,
 			@Nullable final Set<HuId> onlyLUIds)
 	{
-		if ((shipmentScheduleIds == null || shipmentScheduleIds.isEmpty())
+		if ((scheduleIds == null || scheduleIds.isEmpty())
 				&& (onlyLUIds == null || onlyLUIds.isEmpty()))
 		{
-			throw new AdempiereException("One of shipmentScheduleIds or onlyLUIds must be specified");
+			throw new AdempiereException("One of scheduleIds or onlyLUIds must be specified");
 		}
 
-		this.shipmentScheduleIds = shipmentScheduleIds != null ? ImmutableSet.copyOf(shipmentScheduleIds) : null;
+		this.scheduleIds = scheduleIds;
 		this.alreadyShipped = alreadyShipped;
 		this.onlyLUIds = onlyLUIds != null ? ImmutableSet.copyOf(onlyLUIds) : null;
 	}

@@ -5,7 +5,7 @@ import de.metas.order.OrderId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetId;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetId;
 import lombok.NonNull;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.PPOrderId;

@@ -2,6 +2,7 @@ import { test } from "../../../../playwright.config";
 import { page } from "../../common";
 import { expect } from '@playwright/test';
 import { cssEscape } from '../../css';
+import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
 
 const NAME = 'PickingSlotScanScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -13,11 +14,11 @@ export const PickingSlotScanScreen = {
     }),
 
     waitForInputFieldToGetEmpty: async () => await test.step(`${NAME} - Wait for input field to get empty`, async () => {
-        await expect(page.locator('#input-text')).toHaveValue('');
+        await BarcodeScannerComponent.waitForInputFieldToGetEmpty();
     }),
 
     typeQRCode: async (qrCode) => await test.step(`${NAME} - Type QR Code`, async () => {
-        await page.type('#input-text', qrCode);
+        await BarcodeScannerComponent.type(qrCode);
     }),
 
     expectPickingSlotButtons: async (expectationsArray) => await test.step(`${NAME} - Expect ${expectationsArray.length} Picking Slot buttons`, async () => {

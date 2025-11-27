@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,13 +28,17 @@ import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.effective.BPartnerEffectiveBL;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.rest_api.v1.JsonError;
 import de.metas.common.rest_api.v2.order.JsonOrderPaymentCreateRequest;
+import de.metas.common.rest_api.v2.order.JsonOrderRevertRequest;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderFactory;
 import de.metas.order.OrderId;
@@ -44,11 +48,17 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.rest_api.utils.JsonErrors;
+import de.metas.rest_api.v2.bpartner.BpartnerRestController;
+import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
+import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.order.JsonSalesOrder;
 import de.metas.rest_api.v2.order.JsonSalesOrderAttachment;
 import de.metas.rest_api.v2.order.JsonSalesOrderCreateRequest;
 import de.metas.rest_api.v2.order.JsonSalesOrderLine;
+import de.metas.rest_api.v2.ordercandidates.impl.MasterdataProvider;
 import de.metas.rest_api.v2.util.JsonConverters;
+import de.metas.security.permissions2.PermissionServiceFactories;
+import de.metas.security.permissions2.PermissionServiceFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
@@ -87,16 +97,32 @@ import java.util.Optional;
 @Profile(Profiles.PROFILE_App)
 public class SalesOrderRestController
 {
-	private static final Logger logger = LogManager.getLogger(SalesOrderRestController.class);
-	private final OrderService orderService;
-	private final AttachmentEntryService attachmentEntryService;
+	@NonNull private static final Logger logger = LogManager.getLogger(SalesOrderRestController.class);
+	@NonNull private final OrderService orderService;
+	@NonNull private final AttachmentEntryService attachmentEntryService;
+	@NonNull private final BpartnerRestController bpartnerRestController;
+	@NonNull private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
+	@NonNull private final JsonRetrieverService jsonRetrieverService;
+	@NonNull private final ExternalSystemRepository externalSystemRepository;
+	@NonNull private final PermissionServiceFactory permissionServiceFactory = PermissionServiceFactories.currentContext();
+	@NonNull private final BPartnerEffectiveBL bPartnerEffectiveBL;
 
 	public SalesOrderRestController(
-			final OrderService orderService,
-			final AttachmentEntryService attachmentEntryService)
+			@NonNull final OrderService orderService,
+			@NonNull final AttachmentEntryService attachmentEntryService,
+			@NonNull final JsonServiceFactory jsonServiceFactory,
+			@NonNull final BpartnerRestController bpartnerRestController,
+			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
+			@NonNull final ExternalSystemRepository externalSystemRepository,
+			@NonNull final BPartnerEffectiveBL bPartnerEffectiveBL)
 	{
 		this.orderService = orderService;
 		this.attachmentEntryService = attachmentEntryService;
+		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
+		this.bpartnerRestController = bpartnerRestController;
+		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
+		this.externalSystemRepository = externalSystemRepository;
+		this.bPartnerEffectiveBL = bPartnerEffectiveBL;
 	}
 
 	@ApiOperation("Create new order payment")
@@ -184,6 +210,34 @@ public class SalesOrderRestController
 		try
 		{
 			return Optional.ofNullable(OrderId.ofRepoIdOrNull(orderRecordId))
+					.map(orderService::reverseOrder)
+					.map(SalesOrderRestController::toSalesOrder)
+					.map(ResponseEntity::ok)
+					.orElseGet(() -> ResponseEntity.notFound().build());
+		}
+		catch (final Exception ex)
+		{
+			final JsonError error = JsonError.ofSingleItem(JsonErrors.ofThrowable(ex, Env.getADLanguageOrBaseLanguage()));
+
+			return ResponseEntity.unprocessableEntity().body(error);
+		}
+	}
+
+	@PutMapping(path = "/revert")
+	public ResponseEntity<?> revertOrder(@NonNull @RequestBody final JsonOrderRevertRequest request)
+	{
+		try
+		{
+			final MasterdataProvider masterdataProvider = MasterdataProvider.builder()
+					.permissionService(permissionServiceFactory.createPermissionService())
+					.bpartnerRestController(bpartnerRestController)
+					.externalReferenceRestControllerService(externalReferenceRestControllerService)
+					.jsonRetrieverService(jsonRetrieverService)
+					.externalSystemRepository(externalSystemRepository)
+					.bPartnerEffectiveBL(bPartnerEffectiveBL)
+					.build();
+
+			return orderService.getOrderId(request, masterdataProvider)
 					.map(orderService::reverseOrder)
 					.map(SalesOrderRestController::toSalesOrder)
 					.map(ResponseEntity::ok)

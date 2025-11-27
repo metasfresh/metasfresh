@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -40,8 +40,6 @@ import de.metas.common.shipping.v2.shipmentcandidate.JsonResponseShipmentCandida
 import de.metas.cucumber.stepdefs.AD_User_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
-import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
-import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -52,7 +50,12 @@ import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
+import de.metas.cucumber.stepdefs.shipper.Carrier_Goods_Type_StepDefData;
+import de.metas.cucumber.stepdefs.shipper.Carrier_Product_StepDefData;
+import de.metas.cucumber.stepdefs.shipper.Carrier_Service_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.handlingunits.shipmentschedule.api.GenerateShipmentsForSchedulesRequest;
@@ -74,6 +77,8 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.rest_api.v2.attributes.JsonAttributeService;
+import de.metas.shipper.gateway.commons.process.CarrierAdviseProcessService;
+import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -111,7 +116,6 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -136,27 +140,31 @@ public class M_ShipmentSchedule_StepDef
 	private static final String SHIP_BPARTNER = "shipBPartner";
 	private static final String BILL_BPARTNER = "billBPartner";
 
-	private final JsonAttributeService jsonAttributeService = SpringContextHolder.instance.getBean(JsonAttributeService.class);
-	private final ShipmentService shipmentService = SpringContextHolder.instance.getBean(ShipmentService.class);
-	private final IShipmentScheduleInvalidateRepository shipmentScheduleInvalidateRepository = Services.get(IShipmentScheduleInvalidateRepository.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IShipmentScheduleHandlerBL shipmentScheduleHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
-	private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL = Services.get(IShipmentScheduleInvalidateBL.class);
-	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
-	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	@NonNull private final JsonAttributeService jsonAttributeService = SpringContextHolder.instance.getBean(JsonAttributeService.class);
+	@NonNull private final ShipmentService shipmentService = SpringContextHolder.instance.getBean(ShipmentService.class);
+	@NonNull private final IShipmentScheduleInvalidateRepository shipmentScheduleInvalidateRepository = Services.get(IShipmentScheduleInvalidateRepository.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IShipmentScheduleHandlerBL shipmentScheduleHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
+	@NonNull private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL = Services.get(IShipmentScheduleInvalidateBL.class);
+	@NonNull private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
+	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	@NonNull private final CarrierAdviseProcessService carrierAdviseProcessService = SpringContextHolder.instance.getBean(CarrierAdviseProcessService.class);
 
-	private final AD_User_StepDefData userTable;
-	private final C_BPartner_StepDefData bpartnerTable;
-	private final C_BPartner_Location_StepDefData bpartnerLocationTable;
-	private final C_Order_StepDefData orderTable;
-	private final C_OrderLine_StepDefData orderLineTable;
-	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
-	private final M_Shipper_StepDefData shipperTable;
-	private final M_Product_StepDefData productTable;
-	private final M_ShipmentSchedule_ExportAudit_StepDefData shipmentScheduleExportAuditTable;
-	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
-	private final M_InOut_StepDefData shipmentTable;
-	private final M_Warehouse_StepDefData warehouseTable;
+	@NonNull private final AD_User_StepDefData userTable;
+	@NonNull private final C_BPartner_StepDefData bpartnerTable;
+	@NonNull private final C_BPartner_Location_StepDefData bpartnerLocationTable;
+	@NonNull private final C_Order_StepDefData orderTable;
+	@NonNull private final C_OrderLine_StepDefData orderLineTable;
+	@NonNull private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
+	@NonNull private final M_Shipper_StepDefData shipperTable;
+	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final M_ShipmentSchedule_ExportAudit_StepDefData shipmentScheduleExportAuditTable;
+	@NonNull private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
+	@NonNull private final M_InOut_StepDefData shipmentTable;
+	@NonNull private final M_Warehouse_StepDefData warehouseTable;
+	@NonNull private final Carrier_Product_StepDefData carrierProductTable;
+	@NonNull private final Carrier_Goods_Type_StepDefData carrierGoodsTypeTable;
+	@NonNull private final Carrier_Service_StepDefData carrierServiceTable;
 
 	private final TestContext testContext;
 
@@ -246,8 +254,15 @@ public class M_ShipmentSchedule_StepDef
 		waitUntilValid(timeoutSec, shipmentScheduleIds);
 	}
 
-	public void waitUntilValid(final int timeoutSec, final Collection<ShipmentScheduleId> shipmentScheduleIds) throws InterruptedException
+	private void waitUntilValid(final int timeoutSec, final ShipmentScheduleId shipmentScheduleId) throws InterruptedException
 	{
+		waitUntilValid(timeoutSec, ImmutableSet.of(shipmentScheduleId));
+	}
+
+	private void waitUntilValid(final int timeoutSec, final Collection<ShipmentScheduleId> shipmentScheduleIds) throws InterruptedException
+	{
+		if (shipmentScheduleIds.isEmpty()) {return;}
+
 		final Supplier<Boolean> noRecords = () -> queryBL.createQueryBuilder(I_M_ShipmentSchedule_Recompute.class)
 				.addInArrayFilter(I_M_ShipmentSchedule_Recompute.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleIds)
 				.create()
@@ -256,7 +271,7 @@ public class M_ShipmentSchedule_StepDef
 		StepDefUtil.tryAndWait(timeoutSec, 500, noRecords);
 
 		assertThat(noRecords.get())
-				.as("There are still records in M_ShipmentSchedules_Recompute after %s second timeout", timeoutSec)
+				.as("There are still records in M_ShipmentSchedules_Recompute after %s second timeout -- " + shipmentScheduleIds, timeoutSec)
 				.isTrue();
 	}
 
@@ -281,21 +296,17 @@ public class M_ShipmentSchedule_StepDef
 	@And("update shipment schedules")
 	public void update_shipment_schedule(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			alterShipmentSchedule(tableRow);
-		}
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID)
+				.forEach(this::alterShipmentSchedule);
 	}
 
 	@And("^after not more than (.*)s, validate shipment schedules:$")
-	public void validate_shipment_schedule(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	public void validateShipmentSchedules(final int timeoutSec, @NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			validateShipmentSchedule(timeoutSec, tableRow);
-		}
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID)
+				.forEach(row -> validateShipmentSchedule(timeoutSec, row));
 	}
 
 	@And("recompute shipment schedules")
@@ -312,18 +323,13 @@ public class M_ShipmentSchedule_StepDef
 	}
 
 	@And("^after not more than (.*)s, shipment schedule is recomputed$")
-	public void wait_for_recompute_to_finish(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	public void wait_for_recompute_to_finish(final int timeoutSec, @NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> row : tableRows)
-		{
-			final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			final I_M_ShipmentSchedule shipmentScheduleRecord = shipmentScheduleTable.get(shipmentScheduleIdentifier);
-
-			final Supplier<Boolean> shipmentScheduleWasRecomputed = () -> !shipmentScheduleInvalidateRepository.isFlaggedForRecompute(ShipmentScheduleId.ofRepoId(shipmentScheduleRecord.getM_ShipmentSchedule_ID()));
-
-			StepDefUtil.tryAndWait(timeoutSec, 500, shipmentScheduleWasRecomputed);
-		}
+		DataTableRows.of(dataTable)
+				.forEach(row -> {
+					final ShipmentScheduleId shipmentScheduleId = row.getAsIdentifier(COLUMNNAME_M_ShipmentSchedule_ID).lookupNotNullIdIn(shipmentScheduleTable);
+					waitUntilValid(timeoutSec, shipmentScheduleId);
+				});
 	}
 
 	@And("validate JsonResponseShipmentCandidates.JsonCustomer")
@@ -520,7 +526,7 @@ public class M_ShipmentSchedule_StepDef
 		return queries.build();
 	}
 
-	private ShipmentScheduleQuery createShipmentScheduleQuery(final DataTableRow row)
+	private ShipmentScheduleQuery createShipmentScheduleQuery(@NonNull final DataTableRow row)
 	{
 		final IQueryBuilder<I_M_ShipmentSchedule> queryBuilder = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class);
 
@@ -535,6 +541,15 @@ public class M_ShipmentSchedule_StepDef
 				});
 		row.getAsOptionalBigDecimal(COLUMNNAME_QtyToDeliver)
 				.ifPresent(qtyToDeliver -> queryBuilder.addEqualsFilter(COLUMNNAME_QtyToDeliver, qtyToDeliver));
+
+		row.getAsOptionalIdentifier(I_M_ShipmentSchedule.COLUMNNAME_Carrier_Product_ID)
+				.ifPresent(identifier ->
+						queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Carrier_Product_ID, identifier.lookupIdIn(carrierProductTable))
+				);
+		row.getAsOptionalIdentifier(I_M_ShipmentSchedule.COLUMNNAME_Carrier_Goods_Type_ID)
+				.ifPresent(identifier ->
+						queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Carrier_Goods_Type_ID, identifier.lookupIdIn(carrierGoodsTypeTable))
+				);
 
 		final IQuery<I_M_ShipmentSchedule> query = queryBuilder.create();
 
@@ -570,7 +585,7 @@ public class M_ShipmentSchedule_StepDef
 
 		final Set<InOutId> inOutIds = shipmentService.generateShipmentsForScheduleIds(
 				GenerateShipmentsForSchedulesRequest.builder()
-						.scheduleIds(ImmutableSet.of(shipmentScheduleId))
+						.shipmentScheduleIds(ImmutableSet.of(shipmentScheduleId))
 						.quantityTypeToUse(qtyTypeToUse)
 						.isCompleteShipment(isCompleteShipment)
 						.build()
@@ -592,35 +607,20 @@ public class M_ShipmentSchedule_StepDef
 		}
 	}
 
-	private void alterShipmentSchedule(@NonNull final Map<String, String> tableRow)
+	private void alterShipmentSchedule(@NonNull final DataTableRow tableRow)
 	{
-		final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final I_M_ShipmentSchedule shipmentScheduleRecord = shipmentScheduleTable.get(shipmentScheduleIdentifier);
+		final I_M_ShipmentSchedule shipmentScheduleRecord = shipmentScheduleTable.get(tableRow.getAsIdentifier());
 
-		final BigDecimal qtyToDeliverOverride = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override);
-
-		if (qtyToDeliverOverride != null)
-		{
-			shipmentScheduleRecord.setQtyToDeliver_Override(qtyToDeliverOverride);
-		}
-
-		final BigDecimal qtyToDeliverCatchOverride = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliverCatch_Override);
-
-		if (qtyToDeliverCatchOverride != null)
-		{
-			shipmentScheduleRecord.setQtyToDeliverCatch_Override(qtyToDeliverCatchOverride);
-		}
-
-		final Timestamp preparationDateOverride = DataTableUtil.extractDateTimestampForColumnNameOrNull(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_PreparationDate_Override);
-		if (preparationDateOverride != null)
-		{
-			shipmentScheduleRecord.setPreparationDate_Override(preparationDateOverride);
-		}
+		tableRow.getAsOptionalBigDecimal(I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override).ifPresent(shipmentScheduleRecord::setQtyToDeliver_Override);
+		tableRow.getAsOptionalBigDecimal(I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliverCatch_Override).ifPresent(shipmentScheduleRecord::setQtyToDeliverCatch_Override);
+		tableRow.getAsOptionalInstantTimestamp(I_M_ShipmentSchedule.COLUMNNAME_PreparationDate_Override).ifPresent(shipmentScheduleRecord::setPreparationDate_Override);
+		tableRow.getAsOptionalIdentifier(I_M_ShipmentSchedule.COLUMNNAME_M_Shipper_ID)
+				.ifPresent(identifier -> shipmentScheduleRecord.setM_Shipper_ID(ShipperId.toRepoId(identifier.lookupIdIn(shipperTable))));
 
 		saveRecord(shipmentScheduleRecord);
 	}
 
-	private void validateShipmentSchedule(final int timeoutSec, @NonNull final Map<String, String> tableRow) throws InterruptedException
+	private void validateShipmentSchedule(final int timeoutSec, @NonNull final DataTableRow tableRow) throws InterruptedException
 	{
 		final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered);
 		final BigDecimal qtyReserved = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyReserved);
@@ -632,14 +632,17 @@ public class M_ShipmentSchedule_StepDef
 		final Boolean isProcessed = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_Processed, null);
 		final Boolean isClosed = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_IsClosed, null);
 
-		final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ".Identifier");
-		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
+		final StepDefDataIdentifier shipmentScheduleIdentifier = tableRow.getAsIdentifier(COLUMNNAME_M_ShipmentSchedule_ID);
+		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleIdentifier.lookupNotNullIn(shipmentScheduleTable);
+		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
+
+		waitUntilValid(timeoutSec, shipmentScheduleId);
 
 		final Supplier<Boolean> isShipmentScheduleFound = () -> {
 			final IQueryBuilder<I_M_ShipmentSchedule> queryBuilder = queryBL
 					.createQueryBuilder(I_M_ShipmentSchedule.class)
 					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID());
+					.addEqualsFilter(COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId);
 			if (qtyToDeliver != null)
 			{
 				queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver, qtyToDeliver);
@@ -823,6 +826,11 @@ public class M_ShipmentSchedule_StepDef
 		{
 			softly.assertThat(shipmentSchedule.getExternalLineId()).as("ExternalLineId for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(externalLineId);
 		}
+
+		tableRow.getAsOptionalBoolean(I_M_ShipmentSchedule.COLUMNNAME_IsScheduledForPicking)
+				.ifPresent(expected -> softly.assertThat(shipmentSchedule.isScheduledForPicking()).as("IsScheduledForPicking").isEqualTo(expected));
+		tableRow.getAsOptionalBigDecimal(I_M_ShipmentSchedule.COLUMNNAME_QtyScheduledForPicking)
+				.ifPresent(expected -> softly.assertThat(shipmentSchedule.getQtyScheduledForPicking()).as("QtyScheduledForPicking").isEqualTo(expected));
 
 		softly.assertAll();
 	}

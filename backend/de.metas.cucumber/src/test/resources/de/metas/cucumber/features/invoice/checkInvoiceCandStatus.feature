@@ -16,6 +16,7 @@ Feature: check invoice candidates status
     "orgCode": "001",
     "externalLineId": "ExtLine_1",
     "externalHeaderId": "ExtHeader_1",
+    "externalSystemCode": "Shopware6",
     "dataSource": "int-Shopware",
     "bpartner": {
         "bpartnerIdentifier": "2156425",
@@ -42,7 +43,7 @@ Feature: check invoice candidates status
    """
 {
     "externalHeaderId": "ExtHeader_1",
-    "inputDataSourceName": "int-Shopware",
+    "externalSystemCode": "Shopware6",
     "ship": true,
     "invoice": true,
     "closeOrder": true
@@ -92,7 +93,7 @@ Feature: check invoice candidates status
       | ExternalHeaderId | ExternalLineId | QtyEntered | QtyToInvoice | QtyInvoiced | Processed |
       | ExtHeader_1      | ExtLine_1      | 5          | 0            | 5           | true      |
 
-  @flaky
+  #@flaky 2025-11-13-metas-ts: I believe I unflakied it
   @from:cucumber
   Scenario: Generate invoice candidate from order and validate that checking the invoice candidate status works via order document number
     And metasfresh contains M_Products:

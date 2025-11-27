@@ -202,7 +202,7 @@ Feature: import bank statement in camt53 import format
       | C_Payment_ID.Identifier | C_Payment_ID.IsAllocated | OPT.OpenAmt | OPT.PayAmt | OPT.C_Invoice_ID.Identifier | OPT.DateTrx | OPT.C_BPartner_ID.Identifier | OPT.C_BP_BankAccount_ID.Identifier |
       | p_1                     | true                     | 0.00        | 119        | inv_1                       | 2022-05-10  | bpartner_1                   | bpb_1_S0203                        |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus | OPT.IsPaid |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | DocStatus | OPT.IsPaid |
       | inv_1                   | bpartner_1               | l_1                               | 30 Tage netto | true      | CO        | true       |
     And set sys config boolean value false for sys config de.metas.payment.esr.Enabled
 
@@ -383,7 +383,7 @@ Feature: import bank statement in camt53 import format
       | C_Payment_ID.Identifier | C_Payment_ID.IsAllocated | OPT.OpenAmt | OPT.PayAmt | OPT.C_Invoice_ID.Identifier | OPT.DateTrx | OPT.C_BPartner_ID.Identifier | OPT.C_BP_BankAccount_ID.Identifier |
       | p_S0203_1               | true                     | 0.00        | 119        | inv_S0203_1                 | 2022-05-10  | bpartner_1                   | bpb_1_S0203                        |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus | OPT.IsPaid |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | DocStatus | OPT.IsPaid |
       | inv_S0203_1             | bpartner_1               | l_1                               | 30 Tage netto | true      | CO        | true       |
     And set sys config boolean value false for sys config de.metas.payment.esr.Enabled
 
@@ -684,7 +684,7 @@ Feature: import bank statement in camt53 import format
       | p_S0203_3               | true                     | 0.00        | 119        | inv_S0203_3                 | 2022-05-10  | bpartner_1                   | bpb_1_S0203                        |
       | p_S0203_4               | true                     | 0.00        | 119        | inv_S0203_4                 | 2022-05-10  | bpartner_1                   | bpb_1_S0203                        |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus | OPT.IsPaid |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | DocStatus | OPT.IsPaid |
       | inv_S0203_3             | bpartner_1               | l_1                               | 30 Tage netto | true      | CO        | true       |
       | inv_S0203_4             | bpartner_1               | l_1                               | 30 Tage netto | true      | CO        | true       |
     And set sys config boolean value false for sys config de.metas.payment.esr.Enabled

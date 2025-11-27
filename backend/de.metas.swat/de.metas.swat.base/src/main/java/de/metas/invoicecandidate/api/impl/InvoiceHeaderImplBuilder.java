@@ -6,7 +6,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
-import de.metas.impex.InputDataSourceId;
+import de.metas.externalsystem.ExternalSystemId;
+import de.metas.impexp.InputDataSourceId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -14,8 +15,8 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
-import lombok.Getter;
 import de.metas.util.lang.ExternalId;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
@@ -61,6 +62,11 @@ public class InvoiceHeaderImplBuilder
 
 	@Nullable
 	private InputDataSourceId inputDataSourceId;
+
+	@Nullable
+	@Getter
+	@Setter
+	private ExternalSystemId externalSystemId;
 
 	private boolean inputDataSourceIdset;
 
@@ -150,6 +156,7 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setPaymentRule(getPaymentRule());
 
 		invoiceHeader.setAD_InputDataSource_ID(getAD_InputDataSource_ID());
+		invoiceHeader.setExternalSystemId(getExternalSystemId());
 
 		//incoterms
 		invoiceHeader.setC_Incoterms_ID(getC_Incoterms_ID());

@@ -1,0 +1,48 @@
+POST {{baseURL}}/api/v2/orders/sales/candidates/bulk
+Authorization: {{authToken}}
+Content-Type: application/json;charset=UTF-8
+accept: application/json;charset=UTF-8
+
+{
+  "requests": [
+    {
+      "orgCode": "001",
+      "externalLineId": "19",
+      "externalHeaderId": "19",
+      "dataSource": "int-DEST.de.metas.ordercandidate",
+      "bpartner": {
+        "bpartnerIdentifier": "2156425",
+        "bpartnerLocationIdentifier": "2205175"
+      },
+      "dateRequired": "2021-08-20",
+      "dateOrdered": "2021-07-20",
+      "orderDocType": "SalesOrder",
+      "productIdentifier": "2005577",
+      "pricingSystemCode": "1000007",
+      "qty": 10,
+      "price": 5,
+      "currencyCode": "EUR",
+      "discount": 0,
+      "poReference": "po_ref_mock"
+    },
+    {
+      "orgCode": "001",
+      "externalLineId": "20",
+      "externalHeaderId": "20",
+      "dataSource": "int-DEST.de.metas.ordercandidate",
+      "bpartner": {
+        "bpartnerIdentifier": "2156425",
+        "bpartnerLocationIdentifier": "2205175"
+      },
+      "dateRequired": "2021-08-20",
+      "dateOrdered": "2021-07-20",
+      "orderDocType": "SalesOrder",
+      "productIdentifier": "2005577",
+      "qty": 10,
+      "price": 5,
+      "currencyCode": "EUR",
+      "discount": 0,
+      "poReference": "po_ref_mock"
+    }
+  ]
+}

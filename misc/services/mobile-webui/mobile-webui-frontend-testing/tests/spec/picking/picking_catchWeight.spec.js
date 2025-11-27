@@ -7,11 +7,14 @@ import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { expectErrorToast } from '../../utils/common';
 import { PickingJobLineScreen } from '../../utils/screens/picking/PickingJobLineScreen';
 import { QTY_NOT_FOUND_REASON_NOT_FOUND } from '../../utils/screens/picking/GetQuantityDialog';
+import { expect } from '@playwright/test';
 
 const createMasterdata = async ({
                                     showLastPickedBestBeforeDateForLines,
                                     productValuePrefix,
                                     productRandomValue,
+                                    gtin,
+                                    ean13ProductCode,
                                     customQRCodeFormats = []
                                 } = {}) => {
     return await Backend.createMasterdata({
@@ -26,8 +29,7 @@ const createMasterdata = async ({
                     allowPickingAnyCustomer: true,
                     createShipmentPolicy: 'CL',
                     allowPickingAnyHU: true,
-                    pickWithNewLU: true,
-                    allowNewTU: true,
+                    pickTo: ['LU_TU'],
                     allowCompletingPartialPickingJob: true,
                     showLastPickedBestBeforeDateForLines: showLastPickedBestBeforeDateForLines ?? false,
                 }
@@ -43,8 +45,8 @@ const createMasterdata = async ({
                 "P1": {
                     valuePrefix: productValuePrefix,
                     randomValue: productRandomValue,
-                    gtin: '97311876341811',
-                    ean13ProductCode: '4888',
+                    gtin,
+                    ean13ProductCode,
                     uom: 'PCE',
                     uomConversions: [{ from: 'PCE', to: 'KGM', multiplyRate: 0.10, isCatchUOMForProduct: true }],
                     prices: [{ price: 5, uom: 'KGM', invoicableQtyBasedOn: 'CatchWeight' }]
@@ -92,6 +94,23 @@ test('Manual', async ({ page }) => {
         qtyNotFoundReason: QTY_NOT_FOUND_REASON_NOT_FOUND,
     });
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '7 Stk', qtyPickedCatchWeight: '789 g' });
+    await Backend.expect({
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: [
+                            { qtyPicked: "7 PCE", catchWeight: "0.789 KGM", qtyTUs: 1, qtyLUs: 1, vhu: '-', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' },
+                        ]
+                    }
+                }
+            }
+        },
+        hus: {
+            [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '93  PCE' }, attributes: { 'WeightNet': '9.211', 'Lot-Nummer': 'lot1', 'HU_BestBeforeDate': '2031-11-23' } },
+            lu1: { huStatus: 'S', storages: { P1: '7 PCE' }, attributes: { 'WeightNet': '0.789', 'Lot-Nummer': 'lot1', 'HU_BestBeforeDate': '2031-11-23' } },
+        }
+    });
 
     await PickingJobScreen.complete();
     await Backend.expect({
@@ -100,7 +119,7 @@ test('Manual', async ({ page }) => {
                 shipmentSchedules: {
                     P1: {
                         qtyPicked: [
-                            { qtyPicked: "7 PCE", catchWeight: "0.789 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
+                            { qtyPicked: "7 PCE", catchWeight: "0.789 KGM", qtyTUs: 1, qtyLUs: 1, vhu: '-', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
                         ]
                     }
                 }
@@ -145,11 +164,11 @@ test('Leich+Mehl', async ({ page }) => {
                 shipmentSchedules: {
                     P1: {
                         qtyPicked: [
-                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' },
-                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu2', lu: 'lu1', processed: false, shipmentLineId: '-' },
-                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu3', lu: 'lu1', processed: false, shipmentLineId: '-' },
-                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu4', lu: 'lu1', processed: false, shipmentLineId: '-' },
-                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu5', lu: 'lu1', processed: false, shipmentLineId: '-' },
+                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhu: '-', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' },
+                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhu: 'cu2', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' },
+                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhu: 'cu3', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' },
+                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhu: 'cu4', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' },
+                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhu: 'cu5', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' },
                         ]
                     }
                 }
@@ -158,11 +177,11 @@ test('Leich+Mehl', async ({ page }) => {
         hus: {
             [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '95  PCE' }, attributes: { 'WeightNet': '9.495', 'Lot-Nummer': 'lot1', 'HU_BestBeforeDate': '2031-11-23' } },
             lu1: { huStatus: 'S', storages: { P1: '5 PCE' }, attributes: { 'WeightNet': '0.505', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
-            tu1: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
-            tu2: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
-            tu3: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
-            tu4: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
-            tu5: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
+            tu1: { huStatus: 'S', storages: { P1: '5 PCE' }, attributes: { 'WeightNet': '0.505', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
+            cu2: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
+            cu3: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
+            cu4: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
+            cu5: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
         }
     });
 
@@ -173,11 +192,11 @@ test('Leich+Mehl', async ({ page }) => {
                 shipmentSchedules: {
                     P1: {
                         qtyPicked: [
-                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
-                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu2', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
-                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu3', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
-                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu4', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
-                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu5', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
+                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhu: '-', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
+                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhu: 'cu2', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
+                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhu: 'cu3', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
+                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhu: 'cu4', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
+                            { qtyPicked: "1 PCE", catchWeight: "0.101 KGM", qtyTUs: 1, qtyLUs: 1, vhu: 'cu5', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
                         ]
                     }
                 }
@@ -186,18 +205,49 @@ test('Leich+Mehl', async ({ page }) => {
         hus: {
             [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '95  PCE' }, attributes: { 'WeightNet': '9.495', 'Lot-Nummer': 'lot1', 'HU_BestBeforeDate': '2031-11-23' } },
             lu1: { huStatus: 'E', storages: { P1: '5 PCE' }, attributes: { 'WeightNet': '0.505', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
-            tu1: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
-            tu2: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
-            tu3: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
-            tu4: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
-            tu5: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
+            tu1: { huStatus: 'E', storages: { P1: '5 PCE' }, attributes: { 'WeightNet': '0.505', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
+            cu2: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
+            cu3: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
+            cu4: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
+            cu5: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
         }
     });
 });
 
 // noinspection JSUnusedLocalSymbols
-test('GS1', async ({ page }) => {
+test('Leich+Mehl - invalid code', async ({ page }) => {
     const masterdata = await createMasterdata();
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+    await PickingJobScreen.setTargetTU({ tu: masterdata.packingInstructions.PI.tuName });
+
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '0 Stk', qtyPickedCatchWeight: '0 kg' });
+    await expectErrorToast(
+        'Expect invalid QR code',
+        async () => {
+            await PickingJobScreen.pickHU({
+                qrCode: masterdata.handlingUnits.HU1.qrCode,
+                catchWeightQRCode: [
+                    'LMQ#1#0.101#00.00.000#500',
+                ],
+            });
+        },
+        ({ textContent }) => {
+            expect(textContent).toContain('Invalid QR Code');
+        }
+    );
+});
+
+// noinspection JSUnusedLocalSymbols
+test('GS1', async ({ page }) => {
+    const masterdata = await createMasterdata({ gtin: '97311876341811' });
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
@@ -225,7 +275,7 @@ test('GS1', async ({ page }) => {
                 shipmentSchedules: {
                     P1: {
                         qtyPicked: [
-                            { qtyPicked: "1 PCE", catchWeight: "7.520 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
+                            { qtyPicked: "1 PCE", catchWeight: "7.520 KGM", qtyTUs: 1, qtyLUs: 1, vhu: '-', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
                         ]
                     }
                 }
@@ -268,7 +318,7 @@ test('EAN13 with prefix 28', async ({ page }) => {
                 shipmentSchedules: {
                     P1: {
                         qtyPicked: [
-                            { qtyPicked: "1 PCE", catchWeight: "0.261 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
+                            { qtyPicked: "1 PCE", catchWeight: "0.261 KGM", qtyTUs: 1, qtyLUs: 1, vhu: '-', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
                         ]
                     }
                 }
@@ -307,7 +357,7 @@ test('EAN13 with prefix 28 and not matching product', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('EAN13 with prefix 29', async ({ page }) => {
-    const masterdata = await createMasterdata();
+    const masterdata = await createMasterdata({ ean13ProductCode: '4888' });
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
@@ -335,7 +385,7 @@ test('EAN13 with prefix 29', async ({ page }) => {
                 shipmentSchedules: {
                     P1: {
                         qtyPicked: [
-                            { qtyPicked: "1 PCE", catchWeight: "0.574 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
+                            { qtyPicked: "1 PCE", catchWeight: "0.574 KGM", qtyTUs: 1, qtyLUs: 1, vhu: '-', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
                         ]
                     }
                 }
@@ -419,7 +469,7 @@ test('Custom QR code format', async ({ page }) => {
                 shipmentSchedules: {
                     P1: {
                         qtyPicked: [
-                            { qtyPicked: "1 PCE", catchWeight: "9.999 KGM", qtyTUs: 1, qtyLUs: 1, vhuId: '-', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
+                            { qtyPicked: "1 PCE", catchWeight: "9.999 KGM", qtyTUs: 1, qtyLUs: 1, vhu: '-', tu: 'tu1', lu: 'lu1', processed: true, shipmentLineId: 'shipmentLineId1' },
                         ]
                     }
                 }

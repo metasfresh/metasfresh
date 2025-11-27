@@ -25,9 +25,10 @@ package de.metas.product;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerId;
-import de.metas.ean13.EAN13;
-import de.metas.ean13.EAN13ProductCodes;
+import de.metas.gs1.GS1ProductCodesCollection;
 import de.metas.gs1.GTIN;
+import de.metas.gs1.ean13.EAN13;
+import de.metas.gs1.ean13.EAN13ProductCode;
 import de.metas.i18n.ITranslatableString;
 import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
@@ -36,10 +37,10 @@ import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.mm.attributes.AttributeSetDescriptor;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 
@@ -96,6 +97,8 @@ public interface IProductBL extends ISingletonService
 	 */
 	AttributeSetId getAttributeSetId(I_M_Product product);
 
+	AttributeSetDescriptor getAttributeSet(@NonNull ProductId productId);
+
 	/**
 	 * If the product has an Attribute Set take it from there; If not, take it from the product category of the product
 	 *
@@ -111,7 +114,8 @@ public interface IProductBL extends ISingletonService
 	/**
 	 * @return product/product category's attribute set or null
 	 */
-	I_M_AttributeSet getAttributeSetOrNull(ProductId productId);
+	@Nullable
+	AttributeSetDescriptor getAttributeSetOrNull(ProductId productId);
 
 	I_M_AttributeSetInstance getCreateASI(Properties ctx, int M_AttributeSetInstance_ID, int M_Product_ID);
 
@@ -183,13 +187,6 @@ public interface IProductBL extends ISingletonService
 
 	boolean isASIMandatory(ProductId productId, boolean isSOTrx);
 
-	/**
-	 * Has the Product Instance Attribute
-	 *
-	 * @return true if instance attributes
-	 */
-	boolean isInstanceAttribute(ProductId productId);
-
 	boolean isProductInCategory(ProductId productId, ProductCategoryId expectedProductCategoryId);
 
 	String getProductValueAndName(@Nullable ProductId productId);
@@ -202,9 +199,14 @@ public interface IProductBL extends ISingletonService
 
 	String getProductValue(ProductId productId);
 
-	EAN13ProductCodes getEAN13ProductCodes(@NonNull ProductId productId);
+	GS1ProductCodesCollection getGS1ProductCodesCollection(@NonNull ProductId productId);
 
-	EAN13ProductCodes getEAN13ProductCodes(@NonNull I_M_Product product);
+	GS1ProductCodesCollection getGS1ProductCodesCollection(@NonNull I_M_Product product);
+
+	/**
+	 * @return GTIN/EAN13
+	 */
+	Optional<GTIN> getGTIN(@NonNull ProductId productId);
 
 	ImmutableMap<ProductId, String> getProductValues(Set<ProductId> productIds);
 
@@ -224,7 +226,7 @@ public interface IProductBL extends ISingletonService
 	/**
 	 * @return {@code M_Product.M_AttributeSet_ID}
 	 */
-	I_M_AttributeSet getProductMasterDataSchemaOrNull(ProductId productId);
+	AttributeSetDescriptor getProductMasterDataSchemaOrNull(ProductId productId);
 
 	/**
 	 * @return {@code M_Product.M_AttributeSet_ID}
@@ -243,15 +245,19 @@ public interface IProductBL extends ISingletonService
 
 	Optional<ProductId> getProductIdByBarcode(@NonNull String barcode, @NonNull ClientId clientId);
 
-	Optional<ProductId> getProductIdByGTIN(@NonNull GTIN gtin, @NonNull ClientId clientId);
+	Optional<ProductId> getProductIdByGTIN(@NonNull GTIN gtin);
 
-	ProductId getProductIdByGTINNotNull(@NonNull GTIN gtin, @NonNull ClientId clientId);
+	Optional<ProductId> getProductIdByGTIN(@NonNull GTIN gtin, @Nullable BPartnerId bpartnerId, @NonNull ClientId clientId);
 
-	Optional<ProductId> getProductIdByValueStartsWith(@NonNull String valuePrefix, @NonNull ClientId clientId);
+	Optional<ProductId> getProductIdByGTINStrictly(@NonNull GTIN gtin, @NonNull ClientId clientId);
+
+	ProductId getProductIdByGTINStrictlyNotNull(@NonNull GTIN gtin, @NonNull ClientId clientId);
 
 	Optional<ProductId> getProductIdByEAN13(@NonNull EAN13 ean13);
 
 	Optional<ProductId> getProductIdByEAN13(@NonNull EAN13 ean13, @Nullable BPartnerId bpartnerId, @NonNull ClientId clientId);
+
+	boolean isValidEAN13Product(@NonNull EAN13 ean13, @NonNull ProductId expectedProductId);
 
 	boolean isValidEAN13Product(@NonNull EAN13 ean13, @NonNull ProductId expectedProductId, @Nullable BPartnerId bpartnerId);
 
@@ -264,4 +270,8 @@ public interface IProductBL extends ISingletonService
 	List<I_M_Product> getByIds(@NonNull Set<ProductId> productIds);
 
 	boolean isExistingValue(@NonNull String value, @NonNull ClientId clientId);
+
+	void setProductCodeFieldsFromGTIN(@NonNull I_M_Product record, @Nullable GTIN gtin);
+
+	void setProductCodeFieldsFromEAN13ProductCode(@NonNull I_M_Product record, @Nullable EAN13ProductCode ean13ProductCode);
 }

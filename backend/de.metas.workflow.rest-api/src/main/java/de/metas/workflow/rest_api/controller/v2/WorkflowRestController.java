@@ -31,7 +31,10 @@ import de.metas.document.DocumentNoFilter;
 import de.metas.error.IErrorManager;
 import de.metas.error.InsertRemoteIssueRequest;
 import de.metas.mobile.application.MobileApplicationId;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupList;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetQuery;
 import de.metas.scannable_code.ScannedCode;
+import de.metas.security.mobile_application.MobileApplicationPermissions;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -54,8 +57,6 @@ import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
-import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetQuery;
 import de.metas.workflow.rest_api.service.WorkflowRestAPIService;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.NonNull;
@@ -94,7 +95,8 @@ public class WorkflowRestController
 
 	private void assertAccess(final MobileApplicationId applicationId)
 	{
-		workflowRestAPIService.assertAccess(applicationId, Env.getUserRolePermissions());
+		final MobileApplicationPermissions permissions = Env.getUserRolePermissions().getMobileApplicationPermissions();
+		workflowRestAPIService.assertAccess(applicationId, permissions);
 	}
 
 	private JsonOpts newJsonOpts()
@@ -114,10 +116,13 @@ public class WorkflowRestController
 	public JsonMobileApplicationsList getMobileApplications()
 	{
 		final JsonOpts jsonOpts = newJsonOpts();
+		final UserId loggedUserId = Env.getLoggedUserId();
+		final MobileApplicationPermissions permissions = Env.getUserRolePermissions().getMobileApplicationPermissions();
+
 		return JsonMobileApplicationsList.builder()
 				.applications(
-						workflowRestAPIService.streamMobileApplicationInfos(Env.getUserRolePermissions())
-								.map(applicationInfo -> JsonMobileApplication.of(applicationInfo, jsonOpts))
+						workflowRestAPIService.streamMobileApplicationInfos(loggedUserId, permissions)
+								.map(applicationInfo -> JsonMobileApplication.of(applicationInfo, jsonOpts, permissions))
 								.sorted(Comparator.comparing(JsonMobileApplication::getSortNo).thenComparing(JsonMobileApplication::getCaption))
 								.collect(ImmutableList.toImmutableList()))
 				.build();
@@ -155,6 +160,7 @@ public class WorkflowRestController
 				.userId(Env.getLoggedUserId())
 				.filterByQRCode(query.getFilterByQRCode())
 				.filterByDocumentNo(DocumentNoFilter.ofNullableString(query.getFilterByDocumentNo()))
+				.filterByQtyAvailableAtPickFromLocator(query.isFilterByQtyAvailableAtPickFromLocator())
 				.facetIds(CollectionUtils.toImmutableSetOrNullIfEmpty(query.getFacetIds()))
 				.limit(query.isCountOnly() ? QueryLimit.NO_LIMIT : null)
 				.build();
@@ -170,6 +176,7 @@ public class WorkflowRestController
 						.applicationId(query.getApplicationId())
 						.userId(Env.getLoggedUserId())
 						.filterByDocumentNo(DocumentNoFilter.ofNullableString(query.getFilterByDocumentNo()))
+						.filterByQtyAvailableAtPickFromLocator(query.isFilterByQtyAvailableAtPickFromLocator())
 						.activeFacetIds(CollectionUtils.toImmutableSetOrEmpty(query.getActiveFacetIds()))
 						.build()
 		);
@@ -234,7 +241,10 @@ public class WorkflowRestController
 	@PostMapping("/wfProcess/abortAll")
 	public void abortAll()
 	{
-		workflowRestAPIService.abortAllWFProcesses(Env.getUserRolePermissions());
+		workflowRestAPIService.abortAllWFProcesses(
+				Env.getLoggedUserId(),
+				Env.getUserRolePermissions().getMobileApplicationPermissions()
+		);
 	}
 
 	public JsonWFProcess toJson(final WFProcess wfProcess)

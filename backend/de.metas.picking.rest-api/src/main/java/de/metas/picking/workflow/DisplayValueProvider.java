@@ -27,15 +27,16 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.location.RenderedAddressProvider;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobField;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobFieldType;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
+import de.metas.handlingunits.picking.job.model.PickingJobCandidateList;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceList;
-import de.metas.document.location.RenderedAddressProvider;
+import de.metas.handlingunits.picking.job.service.external.bpartner.PickingJobBPartnerService;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.location.AddressDisplaySequence;
@@ -58,8 +59,8 @@ import java.util.Optional;
 
 public class DisplayValueProvider
 {
-	@NonNull private final IBPartnerDAO partnerDAO;
 	@NonNull private final IOrgDAO orgDAO;
+	@NonNull private final PickingJobBPartnerService bpartnerService;
 	@NonNull private final RenderedAddressProvider renderedAddressProvider;
 
 	@NonNull private final MobileUIPickingUserProfile profile;
@@ -68,15 +69,14 @@ public class DisplayValueProvider
 
 	@Builder
 	private DisplayValueProvider(
-			@NonNull final IBPartnerDAO partnerDAO,
 			@NonNull final IOrgDAO orgDAO,
-			@NonNull final RenderedAddressProvider renderedAddressProvider,
+			@NonNull final PickingJobBPartnerService bpartnerService,
 			//
 			@NonNull final MobileUIPickingUserProfile profile)
 	{
-		this.partnerDAO = partnerDAO;
 		this.orgDAO = orgDAO;
-		this.renderedAddressProvider = renderedAddressProvider;
+		this.bpartnerService = bpartnerService;
+		this.renderedAddressProvider = bpartnerService.newRenderedAddressProvider();
 		this.profile = profile;
 	}
 
@@ -91,7 +91,7 @@ public class DisplayValueProvider
 		cacheWarmUpForContexts(contexts);
 	}
 
-	public void cacheWarmUpForPickingJobCandidates(final ImmutableList<PickingJobCandidate> pickingJobCandidates)
+	public void cacheWarmUpForPickingJobCandidates(final PickingJobCandidateList pickingJobCandidates)
 	{
 		if (pickingJobCandidates.isEmpty())
 		{
@@ -120,7 +120,7 @@ public class DisplayValueProvider
 		final ImmutableSet<BPartnerLocationId> deliveryLocationIds = extractDeliveryLocationIds(contexts);
 
 		final ImmutableMap<BPartnerLocationId, I_C_BPartner_Location> locationsById = Maps.uniqueIndex(
-				partnerDAO.retrieveBPartnerLocationsByIds(deliveryLocationIds),
+				bpartnerService.getBPartnerLocationsByIds(deliveryLocationIds),
 				location -> BPartnerLocationId.ofRepoId(location.getC_BPartner_ID(), location.getC_BPartner_Location_ID())
 		);
 
@@ -130,12 +130,6 @@ public class DisplayValueProvider
 	private static ImmutableSet<BPartnerLocationId> extractDeliveryLocationIds(final @NonNull ImmutableList<Context> contexts)
 	{
 		return contexts.stream().map(Context::getDeliveryLocationId).filter(Objects::nonNull).collect(ImmutableSet.toImmutableSet());
-	}
-
-	@NonNull
-	public WorkflowLauncherCaption computeLauncherCaption(@NonNull final PickingJob pickingJob)
-	{
-		return computeLauncherCaption(toContext(pickingJob));
 	}
 
 	@NonNull
@@ -322,7 +316,7 @@ public class DisplayValueProvider
 
 	private Optional<String> retrieveRuestplatz(final BPartnerLocationId deliveryLocationId)
 	{
-		return extractRuestplatz(partnerDAO.getBPartnerLocationByIdEvenInactive(deliveryLocationId));
+		return extractRuestplatz(bpartnerService.getBPartnerLocationByIdEvenInactive(deliveryLocationId));
 	}
 
 	private static Optional<String> extractRuestplatz(@Nullable final I_C_BPartner_Location location)

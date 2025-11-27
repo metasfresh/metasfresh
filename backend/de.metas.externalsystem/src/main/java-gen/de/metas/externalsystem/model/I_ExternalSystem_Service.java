@@ -1,8 +1,7 @@
 package de.metas.externalsystem.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for ExternalSystem_Service
  *  @author metasfresh (generated) 
@@ -83,7 +82,7 @@ public interface I_ExternalSystem_Service
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescription (@Nullable String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
 	 * Get Description.
@@ -92,7 +91,7 @@ public interface I_ExternalSystem_Service
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getDescription();
+	@Nullable java.lang.String getDescription();
 
 	ModelColumn<I_ExternalSystem_Service, Object> COLUMN_Description = new ModelColumn<>(I_ExternalSystem_Service.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
@@ -104,7 +103,7 @@ public interface I_ExternalSystem_Service
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDisableCommand (@Nullable String DisableCommand);
+	void setDisableCommand (@Nullable java.lang.String DisableCommand);
 
 	/**
 	 * Get Disable command.
@@ -113,7 +112,7 @@ public interface I_ExternalSystem_Service
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getDisableCommand();
+	@Nullable java.lang.String getDisableCommand();
 
 	ModelColumn<I_ExternalSystem_Service, Object> COLUMN_DisableCommand = new ModelColumn<>(I_ExternalSystem_Service.class, "DisableCommand", null);
 	String COLUMNNAME_DisableCommand = "DisableCommand";
@@ -125,7 +124,7 @@ public interface I_ExternalSystem_Service
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setEnableCommand (@Nullable String EnableCommand);
+	void setEnableCommand (@Nullable java.lang.String EnableCommand);
 
 	/**
 	 * Get Enable command.
@@ -134,10 +133,35 @@ public interface I_ExternalSystem_Service
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getEnableCommand();
+	@Nullable java.lang.String getEnableCommand();
 
 	ModelColumn<I_ExternalSystem_Service, Object> COLUMN_EnableCommand = new ModelColumn<>(I_ExternalSystem_Service.class, "EnableCommand", null);
 	String COLUMNNAME_EnableCommand = "EnableCommand";
+
+	/**
+	 * Set External System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystem_ID (int ExternalSystem_ID);
+
+	/**
+	 * Get External System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getExternalSystem_ID();
+
+	de.metas.externalsystem.model.I_ExternalSystem getExternalSystem();
+
+	void setExternalSystem(de.metas.externalsystem.model.I_ExternalSystem ExternalSystem);
+
+	ModelColumn<I_ExternalSystem_Service, de.metas.externalsystem.model.I_ExternalSystem> COLUMN_ExternalSystem_ID = new ModelColumn<>(I_ExternalSystem_Service.class, "ExternalSystem_ID", de.metas.externalsystem.model.I_ExternalSystem.class);
+	String COLUMNNAME_ExternalSystem_ID = "ExternalSystem_ID";
 
 	/**
 	 * Set ExternalSystem_Service.
@@ -190,7 +214,7 @@ public interface I_ExternalSystem_Service
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setName (String Name);
+	void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
@@ -199,33 +223,10 @@ public interface I_ExternalSystem_Service
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getName();
+	java.lang.String getName();
 
 	ModelColumn<I_ExternalSystem_Service, Object> COLUMN_Name = new ModelColumn<>(I_ExternalSystem_Service.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
-
-	/**
-	 * Set Type.
-	 * Type of Validation (SQL, Java Script, Java Language)
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setType (String Type);
-
-	/**
-	 * Get Type.
-	 * Type of Validation (SQL, Java Script, Java Language)
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	String getType();
-
-	ModelColumn<I_ExternalSystem_Service, Object> COLUMN_Type = new ModelColumn<>(I_ExternalSystem_Service.class, "Type", null);
-	String COLUMNNAME_Type = "Type";
 
 	/**
 	 * Get Updated.
@@ -260,7 +261,7 @@ public interface I_ExternalSystem_Service
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setValue (String Value);
+	void setValue (java.lang.String Value);
 
 	/**
 	 * Get Search Key.
@@ -270,7 +271,7 @@ public interface I_ExternalSystem_Service
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getValue();
+	java.lang.String getValue();
 
 	ModelColumn<I_ExternalSystem_Service, Object> COLUMN_Value = new ModelColumn<>(I_ExternalSystem_Service.class, "Value", null);
 	String COLUMNNAME_Value = "Value";

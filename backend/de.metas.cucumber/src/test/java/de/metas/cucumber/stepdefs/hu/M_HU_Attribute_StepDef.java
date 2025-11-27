@@ -43,10 +43,12 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeValueType;
+import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.Assertions;
@@ -62,26 +64,19 @@ import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_M_Attribute.COLUMNNAME_AttributeValueType;
 
+@RequiredArgsConstructor
 public class M_HU_Attribute_StepDef
 {
-	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
-	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-	private final IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
-	private final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
-
-	private final M_HU_StepDefData huTable;
-	private final M_Attribute_StepDefData attributeTable;
-
-	public M_HU_Attribute_StepDef(@NonNull final M_HU_StepDefData huTable, @NonNull final M_Attribute_StepDefData attributeTable)
-	{
-		this.huTable = huTable;
-		this.attributeTable = attributeTable;
-	}
+	@NonNull private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
+	@NonNull private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	@NonNull private final IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
+	@NonNull private final M_HU_StepDefData huTable;
+	@NonNull private final M_Attribute_StepDefData attributeTable;
 
 	@And("M_HU_Attribute is changed")
 	public void m_hu_attribute_is_changed(@NonNull final DataTable dataTable)
@@ -108,11 +103,11 @@ public class M_HU_Attribute_StepDef
 			final I_M_HU hu = huTable.get(huIdentifier);
 
 			final String attributeIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU_Attribute.COLUMNNAME_M_Attribute_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			final I_M_Attribute attribute = attributeTable.get(attributeIdentifier);
+			final Attribute attribute = attributeTable.get(attributeIdentifier);
 
 			final BigDecimal valueNumber = DataTableUtil.extractBigDecimalForColumnName(row, "OPT." + I_M_HU_Attribute.COLUMNNAME_ValueNumber);
 
-			huAttributesBL.updateHUAttributeRecursive(HuId.ofRepoId(hu.getM_HU_ID()), AttributeCode.ofString(attribute.getValue()), valueNumber, null);
+			huAttributesBL.updateHUAttributeRecursive(HuId.ofRepoId(hu.getM_HU_ID()), attribute.getAttributeCode(), valueNumber, null);
 		}
 	}
 

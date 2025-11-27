@@ -10,6 +10,7 @@ import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.PPOrderId;
 
@@ -24,12 +25,15 @@ public class DDOrderReference
 	@NonNull InstantAndOrgId datePromised;
 	@Nullable InstantAndOrgId pickDate;
 	@NonNull WarehouseId fromWarehouseId;
+	@Nullable LocatorId fromLocatorId;
 	@NonNull WarehouseId toWarehouseId;
+	@Nullable LocatorId toLocatorId;
 	@Nullable PPOrderId ppOrderId;
 	@Nullable OrderId salesOrderId;
 	@Nullable ProductId productId;
 	@Nullable Quantity qty;
 	@Nullable ResourceId plantId;
+	@Nullable String priority;
 	boolean isJobStarted;
 
 	@NonNull

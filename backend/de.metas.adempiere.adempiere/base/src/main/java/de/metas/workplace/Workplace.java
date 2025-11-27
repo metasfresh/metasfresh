@@ -26,16 +26,37 @@ import de.metas.picking.api.PickingSlotId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
 
 @Value
-@Builder
 public class Workplace
 {
 	@NonNull WorkplaceId id;
 	@NonNull String name;
 	@NonNull WarehouseId warehouseId;
+	@Nullable LocatorId pickFromLocatorId;
 	@Nullable PickingSlotId pickingSlotId;
+
+	@Builder
+	private Workplace(
+			@NonNull final WorkplaceId id,
+			@NonNull final String name,
+			@NonNull final WarehouseId warehouseId,
+			@Nullable final LocatorId pickFromLocatorId,
+			@Nullable final PickingSlotId pickingSlotId)
+	{
+		if (pickFromLocatorId != null)
+		{
+			pickFromLocatorId.assetWarehouseId(warehouseId);
+		}
+
+		this.id = id;
+		this.name = name;
+		this.warehouseId = warehouseId;
+		this.pickFromLocatorId = pickFromLocatorId;
+		this.pickingSlotId = pickingSlotId;
+	}
 }

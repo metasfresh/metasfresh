@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { apiBasePath } from '../constants';
 import { unboxAxiosResponse } from '../utils';
+import { toQRCodeString } from '../utils/qrCode/hu';
 
 export function postDistributionPickFrom({ wfProcessId, activityId, lineId, stepId, pickFrom }) {
   return axios
@@ -14,14 +15,14 @@ export function postDistributionPickFrom({ wfProcessId, activityId, lineId, step
     .then((response) => unboxAxiosResponse(response));
 }
 
-export function postDistributionDropTo({ wfProcessId, activityId, lineId, stepId }) {
+export function postDistributionDropTo({ wfProcessId, activityId, lineId, stepId, dropToLocatorQRCode }) {
   return axios
     .post(`${apiBasePath}/distribution/event`, {
       wfProcessId,
       wfActivityId: activityId,
       lineId,
       distributionStepId: stepId,
-      dropTo: {},
+      dropTo: { qrCode: dropToLocatorQRCode ? toQRCodeString(dropToLocatorQRCode) : null },
     })
     .then((response) => unboxAxiosResponse(response));
 }

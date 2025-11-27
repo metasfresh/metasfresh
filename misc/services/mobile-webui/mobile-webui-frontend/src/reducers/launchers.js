@@ -1,29 +1,60 @@
 import * as types from '../constants/LaunchersActionTypes';
 import { toQRCodeObject } from '../utils/qrCode/hu';
+import { useSelector } from 'react-redux';
 
 export const initialState = {};
 
-const NO_ACTIVE_FACETS = [];
+const EMPTY_ARRAY = [];
 
-export const getApplicationLaunchers = (state, applicationId) => state.launchers[applicationId] || {};
+export const useApplicationLaunchers = ({ applicationId }) => {
+  const {
+    list: launchers,
+    filterByQRCode,
+    requestTimestamp,
+  } = useSelector((state) => getApplicationLaunchers(state, applicationId));
+  return { launchers, filterByQRCode, requestTimestamp };
+};
+const getApplicationLaunchers = (state, applicationId) => state.launchers[applicationId] || {};
 
-const getApplicationLaunchersFacets = (state, applicationId) =>
-  getApplicationLaunchers(state, applicationId).activeFacets ?? NO_ACTIVE_FACETS;
+export const useFacetIds = ({ applicationId }) => {
+  return useSelector((state) => getApplicationLaunchersFacetIds(state, applicationId));
+};
 
-export const getApplicationLaunchersFacetIds = (state, applicationId) =>
-  getApplicationLaunchersFacets(state, applicationId).map((facet) => facet.facetId);
+export const useFacets = ({ applicationId }) => {
+  return useSelector((state) => getApplicationLaunchersFacets(state, applicationId));
+};
 
-export const getApplicationLaunchersFilters = (state, applicationId) => {
+const getApplicationLaunchersFacetIds = (state, applicationId) => {
+  const facets = getApplicationLaunchersFacets(state, applicationId);
+  return facets?.length > 0 ? extractFacetIdsFromFacetsArray(facets) : EMPTY_ARRAY;
+};
+
+const getApplicationLaunchersFacets = (state, applicationId) => {
+  let activeFacets = getApplicationLaunchers(state, applicationId).activeFacets;
+  return activeFacets?.length > 0 ? activeFacets : EMPTY_ARRAY;
+};
+
+export const useFilters = ({ applicationId }) => {
+  return useSelector((state) => getApplicationLaunchersFilters(state, applicationId));
+};
+
+const getApplicationLaunchersFilters = (state, applicationId) => {
   const launchers = getApplicationLaunchers(state, applicationId);
   return {
     filterByDocumentNo: launchers.filterByDocumentNo,
-    facets: launchers.activeFacets ?? NO_ACTIVE_FACETS,
+    filterByQtyAvailableAtPickFromLocator: launchers.filterByQtyAvailableAtPickFromLocator ?? false,
   };
 };
 
-export const getApplicationLaunchersFilterByDocumentNo = (state, applicationId) => {
-  return getApplicationLaunchers(state, applicationId).filterByDocumentNo;
+const extractFacetIdsFromFacetsArray = (facets) => {
+  return facets?.map((facet) => facet.facetId) ?? [];
 };
+
+//
+//
+//
+//
+//
 
 export default function launchers(state = initialState, action) {
   const { payload } = action;
@@ -54,10 +85,19 @@ export default function launchers(state = initialState, action) {
       });
     }
     case types.SET_ACTIVE_FILTERS: {
-      const { applicationId, facets, filterByDocumentNo } = payload;
+      const { applicationId, facets, filters } = payload;
       return copyAndMergeToState(state, applicationId, {
-        filterByDocumentNo,
+        filterByDocumentNo: filters?.filterByDocumentNo,
+        filterByQtyAvailableAtPickFromLocator: filters?.filterByQtyAvailableAtPickFromLocator,
         activeFacets: facets,
+      });
+    }
+    case types.CLEAR_ACTIVE_FILTERS: {
+      const { applicationId } = payload;
+      return copyAndMergeToState(state, applicationId, {
+        filterByDocumentNo: null,
+        filterByQtyAvailableAtPickFromLocator: false,
+        activeFacets: [],
       });
     }
     default: {

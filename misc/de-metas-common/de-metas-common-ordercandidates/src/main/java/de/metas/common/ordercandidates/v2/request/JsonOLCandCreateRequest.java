@@ -2,7 +2,7 @@
  * #%L
  * de-metas-common-ordercandidates
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -68,13 +68,14 @@ public class JsonOLCandCreateRequest
 					+ " 'externalHeaderId'  and 'dataSource' together denote the unique group of olCands that were added in one bulk.")
 	String externalHeaderId;
 
-	@ApiModelProperty(position = 40, required = true, //
+	@ApiModelProperty(position = 35, required = true, //
+			value = "Identifier of the `ExternalSystem` record that tells where this OLCand came from.\n"
+					+ "This translates to 'ExternalSystem.value.'")
+	String externalSystemCode;
+
+	@ApiModelProperty(position = 40, //
 			value = "Identifier of the `AD_InputDataSource` record that tells where this OLCand came from.\n" + SwaggerDocConstants.DATASOURCE_IDENTIFIER_DOC)
 	String dataSource;
-
-	@ApiModelProperty(position = 50, required = true, //
-			value = "Identifier of the `AD_InputDataSource` record that tells what shall be happen with this OLCand.\n" + SwaggerDocConstants.DATASOURCE_IDENTIFIER_DOC)
-	String dataDest;
 
 	@ApiModelProperty(position = 60, //
 			value = " This translates to `C_OLCand.C_BPartner_ID`, `C_OLCand.C_BPartner_Location_ID` and `C_OLCand.AD_User_ID`.\n"
@@ -252,7 +253,7 @@ public class JsonOLCandCreateRequest
 	@JsonInclude(Include.NON_NULL)
 	String deliveryViaRule;
 
-	@ApiModelProperty(position = 390, value = "Translates to C_OLCand.DeliveryViaRule")
+	@ApiModelProperty(position = 390, value = "Translates to C_OLCand.DeliveryRule")
 	@JsonInclude(Include.NON_NULL)
 	String deliveryRule;
 
@@ -293,14 +294,23 @@ public class JsonOLCandCreateRequest
 	@JsonInclude(Include.NON_NULL)
 	JsonAlbertaOrderInfo albertaOrderInfo;
 
+	@ApiModelProperty(position = 480)
+	@JsonInclude(Include.NON_NULL)
+	Boolean isAutoInvoice;
+
+	@ApiModelProperty(position = 480)
+	@JsonInclude(Include.NON_NULL)
+	String invoiceRule;
+
+
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private JsonOLCandCreateRequest(
 			@JsonProperty("orgCode") final String orgCode,
 			@JsonProperty("externalLineId") final String externalLineId,
 			@JsonProperty("externalHeaderId") final String externalHeaderId,
-			@JsonProperty("dataSource") final @NonNull String dataSource,
-			@JsonProperty("dataDest") final @Nullable String dataDest,
+			@JsonProperty("externalSystemCode") @NonNull final String externalSystemCode,
+			@JsonProperty("dataSource") final @Nullable String dataSource,
 			@JsonProperty("bpartner") final JsonRequestBPartnerLocationAndContact bpartner,
 			@JsonProperty("billBPartner") final JsonRequestBPartnerLocationAndContact billBPartner,
 			@JsonProperty("dropShipBPartner") final JsonRequestBPartnerLocationAndContact dropShipBPartner,
@@ -342,13 +352,15 @@ public class JsonOLCandCreateRequest
 			@JsonProperty("applySalesRepFrom") final @Nullable JsonApplySalesRepFrom applySalesRepFrom,
 			@JsonProperty("bpartnerName") final @Nullable String bpartnerName,
 			@JsonProperty("email") final @Nullable String email,
-			@JsonProperty("phone") final @Nullable String phone)
+			@JsonProperty("phone") final @Nullable String phone,
+			@JsonProperty("isAutoInvoice") final @Nullable Boolean isAutoInvoice,
+			@JsonProperty("invoiceRule") final @Nullable String invoiceRule)
 	{
 		this.orgCode = orgCode;
 		this.externalLineId = externalLineId;
 		this.externalHeaderId = externalHeaderId;
+		this.externalSystemCode = externalSystemCode;
 		this.dataSource = dataSource;
-		this.dataDest = dataDest;
 		this.bpartner = bpartner;
 		this.billBPartner = billBPartner;
 		this.dropShipBPartner = dropShipBPartner;
@@ -393,6 +405,8 @@ public class JsonOLCandCreateRequest
 		this.qtyShipped = qtyShipped;
 		this.qtyItemCapacity = qtyItemCapacity;
 		this.applySalesRepFrom = CoalesceUtil.coalesceNotNull(applySalesRepFrom, JsonApplySalesRepFrom.CandidateFirst);
+		this.isAutoInvoice = isAutoInvoice;
+		this.invoiceRule = invoiceRule;
 	}
 
 	/**

@@ -1,8 +1,7 @@
 package de.metas.shipper.gateway.go;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.location.ICountryCodeFactory;
-import de.metas.shipping.mpackage.PackageId;
+import de.metas.location.CountryCode;
 import de.metas.shipper.gateway.go.schema.GOPaidMode;
 import de.metas.shipper.gateway.go.schema.GOSelfDelivery;
 import de.metas.shipper.gateway.go.schema.GOSelfPickup;
@@ -13,7 +12,7 @@ import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.shipper.gateway.spi.model.PickupDate;
-import de.metas.util.Services;
+import de.metas.shipping.mpackage.PackageId;
 import org.junit.jupiter.api.Disabled;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -65,8 +64,6 @@ public class Application
 	{
 		System.out.println("Using: " + goClient);
 
-		final ICountryCodeFactory countryCodeFactory = Services.get(ICountryCodeFactory.class);
-
 		final DeliveryOrder deliveryOrderCreateRequest = DeliveryOrder.builder()
 				.pickupAddress(Address.builder()
 						.companyName1("from company")
@@ -74,7 +71,7 @@ public class Application
 						.houseNo("1")
 						.zipCode("12345")
 						.city("Bonn")
-						.country(countryCodeFactory.getCountryCodeByAlpha2("DE"))
+						.country(CountryCode.ofAlpha2("DE"))
 						.build())
 				.pickupDate(PickupDate.builder()
 						.date(LocalDate.of(2018, Month.JANUARY, 8))
@@ -86,7 +83,7 @@ public class Application
 						.houseNo("1")
 						.zipCode("54321")
 						.city("Koln")
-						.country(countryCodeFactory.getCountryCodeByAlpha2("DE"))
+						.country(CountryCode.DE)
 						.build())
 				.deliveryPosition(DeliveryPosition.builder()
 						.numberOfPackages(5)

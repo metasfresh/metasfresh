@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPGroup;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPGroupRepository;
+import de.metas.bpartner.BPGroupService;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
@@ -87,6 +88,7 @@ import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
@@ -107,6 +109,7 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.slf4j.Logger;
 import org.springframework.util.CollectionUtils;
 
@@ -138,6 +141,7 @@ public class JsonPersisterService
 	private final transient ExternalReferenceRestControllerService externalReferenceRestControllerService;
 	private final transient BPartnerCompositeRepository bpartnerCompositeRepository;
 	private final transient BPGroupRepository bpGroupRepository;
+	private final transient BPGroupService bpGroupService;
 	private final transient CurrencyRepository currencyRepository;
 	private final transient AlbertaBPartnerCompositeService albertaBPartnerCompositeService;
 
@@ -152,6 +156,7 @@ public class JsonPersisterService
 			@NonNull final JsonRequestConsolidateService jsonRequestConsolidateService,
 			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
 			@NonNull final BPGroupRepository bpGroupRepository,
+			@NonNull final BPGroupService bpGroupService,
 			@NonNull final CurrencyRepository currencyRepository,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
 			@NonNull final AlbertaBPartnerCompositeService albertaBPartnerCompositeService,
@@ -162,6 +167,7 @@ public class JsonPersisterService
 		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
 		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
 		this.bpGroupRepository = bpGroupRepository;
+		this.bpGroupService = bpGroupService;
 		this.currencyRepository = currencyRepository;
 		this.albertaBPartnerCompositeService = albertaBPartnerCompositeService;
 
@@ -820,6 +826,11 @@ public class JsonPersisterService
 			bpartner.setName3(StringUtils.trim(jsonBPartner.getName3()));
 		}
 
+		if (jsonBPartner.isLookupLabelSet())
+		{
+			bpartner.setGlnLookupLabel(StringUtils.trim(jsonBPartner.getLookupLabel()));
+		}
+
 		if (jsonBPartner.isCustomerSet())
 		{
 			if (jsonBPartner.getCustomer() == null)
@@ -846,35 +857,26 @@ public class JsonPersisterService
 		// group - attempt to fall back to default group
 		if (jsonBPartner.isGroupSet())
 		{
-			if (jsonBPartner.getGroup() == null)
+			if (Check.isBlank(jsonBPartner.getGroup()))
 			{
 				logger.debug("Setting \"groupId\" to null; -> will attempt to insert default groupId");
 				bpartner.setGroupId(null);
 			}
 			else
 			{
-				final Optional<BPGroup> optionalBPGroup = bpGroupRepository
-						.getByNameAndOrgId(jsonBPartner.getGroup(), bpartnerComposite.getOrgId());
-
-				final BPGroup bpGroup;
-				if (optionalBPGroup.isPresent())
-				{
-					bpGroup = optionalBPGroup.get();
-					bpGroup.setName(jsonBPartner.getGroup().trim());
-				}
-				else
-				{
-					bpGroup = BPGroup.of(bpartnerComposite.getOrgId(), null, jsonBPartner.getGroup().trim());
-				}
-
-				final BPGroupId bpGroupId = bpGroupRepository.save(bpGroup);
-				bpartner.setGroupId(bpGroupId);
+				final BPGroupId groupId = bpGroupService.getOrCreateBPGroup(
+						Check.assumeNotNull(bpartnerComposite.getOrgId(),
+								"orgId was meanwhile set to bpartnerComposite={}", bpartnerComposite),
+						jsonBPartner.getGroup().trim());
+				bpartner.setGroupId(groupId);
 			}
 		}
 
 		if (bpartner.getGroupId() == null)
 		{
-			final Optional<BPGroup> optionalBPGroup = bpGroupRepository.getDefaultGroup();
+			final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, Check.assumeNotNull(bpartnerComposite.getOrgId(),
+					"orgId was meanwhile set to bpartnerComposite={}", bpartnerComposite));
+			final Optional<BPGroup> optionalBPGroup = bpGroupRepository.getDefaultGroup(clientAndOrgId);
 			if (!optionalBPGroup.isPresent())
 			{
 				throw MissingResourceException.builder()
@@ -1222,7 +1224,6 @@ public class JsonPersisterService
 				contact.setSubjectMatterContact(jsonBPartnerContact.getSubjectMatter());
 			}
 		}
-
 
 		if (jsonBPartnerContact.isBirthdaySet())
 		{
@@ -1873,9 +1874,9 @@ public class JsonPersisterService
 		final JsonResponseUpsertItem bPartnerResult = result.getResponseBPartnerItem();
 		final Optional<JsonRequestExternalReferenceUpsert> upsertExternalRefRequest =
 				mapToJsonRequestExternalReferenceUpsert(bPartnerResult,
-														BPartnerExternalReferenceType.BPARTNER,
-														requestItem.getExternalVersion(),
-														requestItem.getExternalReferenceUrl());
+						BPartnerExternalReferenceType.BPARTNER,
+						requestItem.getExternalVersion(),
+						requestItem.getExternalReferenceUrl());
 
 		upsertExternalRefRequest.ifPresent(externalReferenceCreateReqs::add);
 
@@ -1883,7 +1884,7 @@ public class JsonPersisterService
 		if (!CollectionUtils.isEmpty(bPartnerLocationsResult))
 		{
 
-			final Map<String,String> bpartnerLocationIdentifier2externalVersion = requestItem
+			final Map<String, String> bpartnerLocationIdentifier2externalVersion = requestItem
 					.getBpartnerComposite()
 					.getLocationsNotNull()
 					.getRequestItems()
@@ -1892,28 +1893,28 @@ public class JsonPersisterService
 					.collect(Collectors.toMap(JsonRequestLocationUpsertItem::getLocationIdentifier, JsonRequestLocationUpsertItem::getExternalVersion));
 
 			externalReferenceCreateReqs.addAll(bPartnerLocationsResult
-													   .stream()
-													   .map(bPartnerLocation -> mapToJsonRequestExternalReferenceUpsert(bPartnerLocation,
-																														BPLocationExternalReferenceType.BPARTNER_LOCATION,
-																														bpartnerLocationIdentifier2externalVersion.get(bPartnerLocation.getIdentifier()),
-																														null))
-													   .filter(Optional::isPresent)
-													   .map(Optional::get)
-													   .collect(Collectors.toSet()));
+					.stream()
+					.map(bPartnerLocation -> mapToJsonRequestExternalReferenceUpsert(bPartnerLocation,
+							BPLocationExternalReferenceType.BPARTNER_LOCATION,
+							bpartnerLocationIdentifier2externalVersion.get(bPartnerLocation.getIdentifier()),
+							null))
+					.filter(Optional::isPresent)
+					.map(Optional::get)
+					.collect(Collectors.toSet()));
 		}
 
 		final List<JsonResponseUpsertItem> bPartnerContactItems = result.getResponseContactItems();
 		if (!CollectionUtils.isEmpty(bPartnerContactItems))
 		{
 			externalReferenceCreateReqs.addAll(bPartnerContactItems
-													   .stream()
-													   .map(bPartnerContact -> mapToJsonRequestExternalReferenceUpsert(bPartnerContact,
-																													   ExternalUserReferenceType.USER_ID,
-																													   null,
-																													   null))
-													   .filter(Optional::isPresent)
-													   .map(Optional::get)
-													   .collect(Collectors.toSet()));
+					.stream()
+					.map(bPartnerContact -> mapToJsonRequestExternalReferenceUpsert(bPartnerContact,
+							ExternalUserReferenceType.USER_ID,
+							null,
+							null))
+					.filter(Optional::isPresent)
+					.map(Optional::get)
+					.collect(Collectors.toSet()));
 		}
 
 		for (final JsonRequestExternalReferenceUpsert request : externalReferenceCreateReqs)
@@ -1941,11 +1942,11 @@ public class JsonPersisterService
 		if (!requestBPartnerComposite.getContactsNotNull().getRequestItems().isEmpty()
 				&& !Check.isEmpty(result.getResponseContactItems()))
 		{
-			final Map<String,JsonMetasfreshId> contactIdentifierToMetasfreshId = result.getResponseContactItems()
+			final Map<String, JsonMetasfreshId> contactIdentifierToMetasfreshId = result.getResponseContactItems()
 					.stream()
 					.collect(ImmutableMap.toImmutableMap(JsonResponseUpsertItem::getIdentifier, JsonResponseUpsertItem::getMetasfreshId));
 
-			final SyncAdvise effectiveSyncAdvise =  CoalesceUtil.coalesceNotNull(requestBPartnerComposite.getContactsNotNull().getSyncAdvise(), syncAdvise);
+			final SyncAdvise effectiveSyncAdvise = CoalesceUtil.coalesceNotNull(requestBPartnerComposite.getContactsNotNull().getSyncAdvise(), syncAdvise);
 
 			requestItem.getBpartnerComposite().getContactsNotNull().getRequestItems()
 					.stream()
@@ -1963,8 +1964,8 @@ public class JsonPersisterService
 						}
 
 						albertaBPartnerCompositeService.upsertAlbertaContact(UserId.ofRepoId(contactMetasfreshId.getValue()),
-																			 contactRequestItem.getJsonAlbertaContact(),
-																			 effectiveSyncAdvise);
+								contactRequestItem.getJsonAlbertaContact(),
+								effectiveSyncAdvise);
 					});
 		}
 	}

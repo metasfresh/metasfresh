@@ -38,7 +38,7 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
 import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.warehouse.LocatorId;
@@ -143,9 +143,9 @@ public class InOutProducer implements IInOutProducer
 	 *                         else if {@code ReceiptMovementDateRule#ORDER_DATE_PROMISED} then the date will be the DatePromised value of the receipt schedule's C_Order.
 	 */
 	protected InOutProducer(@NonNull final InOutGenerateResult result,
-			final boolean complete,
-			@NonNull final ReceiptMovementDateRule movementDateRule,
-			@Nullable final Map<ReceiptScheduleId, ReceiptScheduleExternalInfo> externalInfoByReceiptScheduleId)
+							final boolean complete,
+							@NonNull final ReceiptMovementDateRule movementDateRule,
+							@Nullable final Map<ReceiptScheduleId, ReceiptScheduleExternalInfo> externalInfoByReceiptScheduleId)
 	{
 		this.result = result;
 		this.complete = complete;
@@ -467,10 +467,10 @@ public class InOutProducer implements IInOutProducer
 			InOutDocumentLocationAdapterFactory
 					.locationAdapter(receiptHeader)
 					.setFrom(DocumentLocation.builder()
-									 .bpartnerId(BPartnerId.ofRepoId(bpartnerId))
-									 .bpartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, bpartnerLocationId))
-									 .contactId(bpartnerContactId)
-									 .build());
+							.bpartnerId(BPartnerId.ofRepoId(bpartnerId))
+							.bpartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, bpartnerLocationId))
+							.contactId(bpartnerContactId)
+							.build());
 		}
 
 		//
@@ -479,7 +479,7 @@ public class InOutProducer implements IInOutProducer
 			receiptHeader.setDateOrdered(rs.getDateOrdered());
 
 			final Timestamp movementDate = getMovementDate(rs, ctx);
-			final Timestamp dateAcct = getDateAcct(rs,ctx);
+			final Timestamp dateAcct = getDateAcct(rs, ctx);
 
 			receiptHeader.setDateReceived(getExternalReceivedDate(rs));
 			receiptHeader.setMovementDate(movementDate);
@@ -503,15 +503,16 @@ public class InOutProducer implements IInOutProducer
 		//
 		// DropShip informations (08402)
 		final I_C_Order order = rs.getC_Order();
-		if(order!=null)
+		if (order != null)
 		{
 			final boolean propagateToMInOut = orderEmailPropagationSysConfigRepository.isPropagateToMInOut(ClientAndOrgId.ofClientAndOrg(receiptHeader.getAD_Client_ID(), receiptHeader.getAD_Org_ID()));
-			if(order!=null && propagateToMInOut)
+			if (order != null && propagateToMInOut)
 			{
 				receiptHeader.setEMail(order.getEMail());
 			}
 
 			receiptHeader.setAD_InputDataSource_ID(order.getAD_InputDataSource_ID());
+			receiptHeader.setExternalSystem_ID(order.getExternalSystem_ID());
 		}
 		if (order != null && order.isDropShip())
 		{
@@ -569,7 +570,7 @@ public class InOutProducer implements IInOutProducer
 		else
 		{
 			// Do a deep copy of receipt schedule's ASI to prevent changing back to (receipt schedule, order line) in case receipt line's ASI is changed (07317)
-			final I_M_AttributeSetInstance asi = Services.get(IAttributeDAO.class).copy(rsASI);
+			final I_M_AttributeSetInstance asi = Services.get(IAttributeSetInstanceBL.class).copy(rsASI);
 			line.setM_AttributeSetInstance_ID(asi.getM_AttributeSetInstance_ID());
 		}
 
@@ -728,7 +729,7 @@ public class InOutProducer implements IInOutProducer
 		});
 	}
 
-	private Timestamp getDateAcct (@NonNull final I_M_ReceiptSchedule receiptSchedule, @NonNull final Properties context)
+	private Timestamp getDateAcct(@NonNull final I_M_ReceiptSchedule receiptSchedule, @NonNull final Properties context)
 	{
 		return movementDateRule.map(new ReceiptMovementDateRule.CaseMapper<Timestamp>()
 		{

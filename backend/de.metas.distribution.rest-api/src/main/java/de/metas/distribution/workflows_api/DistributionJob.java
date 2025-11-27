@@ -1,8 +1,10 @@
 package de.metas.distribution.workflows_api;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleId;
 import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.workflow.rest_api.model.WFActivityStatus;
@@ -15,7 +17,9 @@ import org.adempiere.exceptions.AdempiereException;
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 
 @ToString
 @Getter
@@ -131,9 +135,32 @@ public class DistributionJob
 				.orElseThrow(() -> new AdempiereException("No line found for " + stepId));
 	}
 
+	@NonNull
+	public DistributionJobStep getStepById(@NonNull final DistributionJobStepId stepId)
+	{
+		return lines.stream()
+				.map(line -> line.getStepById(stepId).orElse(null))
+				.filter(Objects::nonNull)
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No step found for " + stepId));
+	}
+
 	@Nullable
 	public String getPlantName()
 	{
 		return plantInfo != null ? plantInfo.getCaption() : null;
+	}
+
+	public Stream<DistributionJobStep> streamSteps()
+	{
+		return lines.stream().flatMap(line -> line.getSteps().stream());
+	}
+
+	public ImmutableSet<DDOrderMoveScheduleId> getInTransitScheduleIds()
+	{
+		return streamSteps()
+				.filter(DistributionJobStep::isInTransit)
+				.map(DistributionJobStep::getScheduleId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }

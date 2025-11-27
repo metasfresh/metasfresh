@@ -2,6 +2,8 @@ package de.metas.frontend_testing.expectations;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.generichumodel.HUType;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
@@ -42,6 +44,7 @@ public class AssertExpectationsCommandServices
 	@NonNull private final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
 	@NonNull private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 	@NonNull public final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final HUQRCodesService huQRCodeService;
@@ -57,9 +60,9 @@ public class AssertExpectationsCommandServices
 		return shipmentScheduleBL.getByIds(shipmentScheduleIds).values();
 	}
 
-	public List<I_M_ShipmentSchedule_QtyPicked> getShipmentScheduleQtyPickedRecords(final I_M_ShipmentSchedule shipmentSchedule)
+	public List<I_M_ShipmentSchedule_QtyPicked> getShipmentScheduleQtyPickedRecords(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
 	{
-		return shipmentScheduleAllocDAO.retrieveAllQtyPickedRecords(shipmentSchedule, I_M_ShipmentSchedule_QtyPicked.class);
+		return shipmentScheduleAllocDAO.retrieveAllQtyPickedRecords(shipmentScheduleIds, I_M_ShipmentSchedule_QtyPicked.class);
 	}
 
 	public StockQtyAndUOMQty extractQtyPicked(@NonNull final I_M_ShipmentSchedule_QtyPicked alloc, @NonNull final ProductId productId)
@@ -75,6 +78,11 @@ public class AssertExpectationsCommandServices
 	public HuId getHuIdByQRCode(@NonNull final HUQRCode qrCode)
 	{
 		return huQRCodeService.getHuIdByQRCode(qrCode);
+	}
+
+	public HUType getHUUnitType(@NonNull I_M_HU hu)
+	{
+		return handlingUnitsBL.getHUUnitType(hu);
 	}
 
 	public IHUStorage getHUStorage(@NonNull final HuId huId)
@@ -100,6 +108,11 @@ public class AssertExpectationsCommandServices
 	public List<I_PP_Order_Qty> getPPOrderQtyForFinishedGoodsReceive(@NonNull final PPOrderId ppOrderId)
 	{
 		return huPPOrderQtyDAO.retrieveOrderQtyForFinishedGoodsReceive(ppOrderId);
+	}
+
+	public List<I_M_HU> getIncludedHUs(@NonNull final HuId huId)
+	{
+		return handlingUnitsDAO.retrieveIncludedHUs(huId);
 	}
 
 	public List<I_M_HU> getCUs(final HuId huId) {return handlingUnitsBL.getVHUs(huId);}

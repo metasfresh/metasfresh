@@ -39,7 +39,7 @@ de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommand_UsingCUs_
             "orderId": 300,
             "orderLineId": 301
           },
-          "shipmentScheduleId": 2
+          "scheduleId": "2"
         },
         "type": "PICK_FROM_HU"
       },
@@ -69,7 +69,7 @@ de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommand_UsingCUs_
             "orderId": 300,
             "orderLineId": 301
           },
-          "shipmentScheduleId": 2
+          "scheduleId": "2"
         },
         "type": "PICK_FROM_HU"
       },
@@ -99,7 +99,7 @@ de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommand_UsingCUs_
             "orderId": 300,
             "orderLineId": 301
           },
-          "shipmentScheduleId": 2
+          "scheduleId": "2"
         },
         "type": "PICK_FROM_HU"
       },
@@ -123,7 +123,7 @@ de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommand_UsingCUs_
             "orderId": 300,
             "orderLineId": 301
           },
-          "shipmentScheduleId": 2
+          "scheduleId": "2"
         },
         "type": "PICK_FROM_HU"
       }

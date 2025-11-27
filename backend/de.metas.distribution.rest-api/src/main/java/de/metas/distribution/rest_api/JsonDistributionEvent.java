@@ -5,6 +5,8 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.distribution.workflows_api.DistributionJobLineId;
 import de.metas.distribution.workflows_api.DistributionJobStepId;
 import de.metas.quantity.Quantity;
+import de.metas.scannable_code.ScannedCode;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -58,7 +60,10 @@ public class JsonDistributionEvent
 	@Value
 	@Builder
 	@Jacksonized
-	public static class DropTo {}
+	public static class DropTo
+	{
+		@Nullable ScannedCode qrCode;
+	}
 
 	@Nullable DropTo dropTo;
 
@@ -78,10 +83,6 @@ public class JsonDistributionEvent
 		{
 			throw new AdempiereException("One and only one action like pickFrom, dropTo etc shall be specified in an event.");
 		}
-		if (lineId == null && distributionStepId == null)
-		{
-			throw new AdempiereException("At least lineId or distributionStepId must pe set");
-		}
 
 		this.wfProcessId = wfProcessId;
 		this.wfActivityId = wfActivityId;
@@ -91,5 +92,12 @@ public class JsonDistributionEvent
 		this.pickFrom = pickFrom;
 		this.dropTo = dropTo;
 		this.unpick = unpick;
+	}
+
+	@NonNull
+	@JsonIgnore
+	public DropTo getDropToNonNull()
+	{
+		return Check.assumeNotNull(dropTo, "dropTo shall not be null: {}", this);
 	}
 }

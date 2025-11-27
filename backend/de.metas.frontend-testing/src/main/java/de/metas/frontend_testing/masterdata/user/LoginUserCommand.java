@@ -13,6 +13,7 @@ import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Services;
 import de.metas.util.web.security.UserAuthTokenService;
+import de.metas.workplace.WorkplaceService;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -25,6 +26,7 @@ public class LoginUserCommand
 	@NonNull private final IUserBL userBL = Services.get(IUserBL.class);
 	@NonNull private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
 	@NonNull private final UserAuthTokenService userAuthTokenService;
+	@NonNull private final WorkplaceService workplaceService;
 
 	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonLoginUserRequest request;

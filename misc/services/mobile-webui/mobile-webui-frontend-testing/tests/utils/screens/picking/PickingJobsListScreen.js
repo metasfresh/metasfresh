@@ -5,6 +5,7 @@ import { PickingJobsListFiltersScreen } from "./PickingJobsListFiltersScreen";
 import { PickingJobsListScanScreen } from './PickingJobsListScanScreen';
 import { expect } from '@playwright/test';
 import { ApplicationsListScreen } from '../ApplicationsListScreen';
+import { expectClasses } from '../../expectations';
 
 const NAME = 'PickingJobsListScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -20,9 +21,12 @@ export const PickingJobsListScreen = {
         await expect(containerElement()).toBeVisible();
     }),
 
-    filterByDocumentNo: async (documentNo) => await test.step(`${NAME} - Filter by documentNo ${documentNo}`, async () => {
+    clickFilterButton: async () => await test.step(`${NAME} - Click filter button`, async () => {
         await page.locator('#filter-button').tap();
         await PickingJobsListFiltersScreen.waitForScreen();
+    }),
+    filterByDocumentNo: async (documentNo) => await test.step(`${NAME} - Filter by documentNo ${documentNo}`, async () => {
+        await PickingJobsListScreen.clickFilterButton();
         await PickingJobsListFiltersScreen.filterByDocumentNo(documentNo);
         await PickingJobsListScreen.waitForScreen();
     }),
@@ -67,17 +71,21 @@ export const PickingJobsListScreen = {
     },
 
     expectJobButtons: async (expectationsArray) => await test.step(`${NAME} - Expect ${expectationsArray.length} job buttons`, async () => {
-        //
-        // First, wait until all expected buttons are attached 
-        for (const expectation of expectationsArray) {
-            await locateJobButtons(expectation).waitFor({ state: 'attached' });
-        }
+        await test.step(`Wait for all expected buttons to be attached`, async () => {
+            for (const expectation of expectationsArray) {
+                await locateJobButtons(expectation).waitFor({ state: 'attached' });
+            }
+        });
 
         //
-        // Check it again to make sure all expected buttons are still there and there is one of each 
-        for (const expectation of expectationsArray) {
-            await locateJobButtons(expectation).waitFor({ state: 'attached' });
-            await expect(locateJobButtons(expectation)).toHaveCount(1);
+        // Check it again to make sure all expected buttons are still there and there is one of each
+        for (let i = 0; i < expectationsArray.length; i++) {
+            const expectation = expectationsArray[i];
+            await expectJobButton({
+                name: `${i + 1}/${expectationsArray.length}`,
+                button: locateJobButtons(expectation),
+                expectation
+            });
         }
 
         //
@@ -94,8 +102,11 @@ export const PickingJobsListScreen = {
 
 };
 
-const locateJobButtons = ({ documentNo, index, qtyToDeliver, productId, customerLocationId } = {}) => {
+const locateJobButtons = ({ documentNo, index, salesOrderId, qtyToDeliver, productId, customerLocationId } = {}) => {
     let selector = '.wflauncher-button';
+    if (salesOrderId != null) {
+        selector += `[data-salesorderid="${salesOrderId}"]`;
+    }
     if (qtyToDeliver != null) {
         selector += `[data-qtytodeliver="${qtyToDeliver}"]`;
     }
@@ -118,3 +129,25 @@ const locateJobButtons = ({ documentNo, index, qtyToDeliver, productId, customer
 
     return locator;
 };
+
+const expectJobButton = async ({ name, button, expectation }) => await test.step(`Expect job button ${name}`, async () => {
+    await button.waitFor({ state: 'attached' });
+    await expect(button).toHaveCount(1);
+
+    if (expectation.indicator != null) {
+        await expectClasses({
+            locator: button.locator(`[data-testid="indicator"]`),
+            expectedClasses: expectation.indicator
+        });
+    }
+
+    if (expectation.alreadyStarted != null) {
+        const indicatorLocator = button.locator(`[data-testid="indicator2"]`);
+        if (expectation.alreadyStarted) {
+            await expectClasses({ locator: indicatorLocator, expectedClasses: 'fa-lock indicator-box' });
+        } else {
+            await expect(indicatorLocator).toHaveCount(0);
+        }
+    }
+});
+

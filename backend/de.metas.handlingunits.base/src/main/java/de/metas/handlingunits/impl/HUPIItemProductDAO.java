@@ -47,6 +47,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -109,7 +110,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 				.description(StringUtils.trimBlankToNull(record.getDescription()))
 				.piItemId(HuPackingInstructionsItemId.ofRepoId(record.getM_HU_PI_Item_ID()))
 				.productId(record.isAllowAnyProduct() ? null : ProductId.ofRepoId(record.getM_Product_ID()))
-				.qtyCUsPerTU(record.isInfiniteCapacity() ? null : Quantitys.of(record.getQty(), UomId.ofRepoId(record.getC_UOM_ID())))
+				.qtyCUsPerTU(record.isInfiniteCapacity() ? null : Quantitys.of(NumberUtils.stripTrailingDecimalZeros(record.getQty()), UomId.ofRepoId(record.getC_UOM_ID())))
 				.isOrderInTuUomWhenMatched(record.isOrderInTuUomWhenMatched())
 				.build();
 	}

@@ -365,21 +365,6 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{uomsymbol}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.##%" isBlankWhenNull="true">
-				<reportElement key="textField-33" mode="Transparent" x="470" y="0" width="30" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="a57bd7c8-7227-419d-a2f1-a52da97caa2d">
-					<printWhenExpression><![CDATA[new Boolean($F{isdiscountprinted}.equals("Y"))]]></printWhenExpression>
-				</reportElement>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="9"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{discount}]]></textFieldExpression>
-			</textField>
 			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true">
 				<reportElement key="textField-24" mode="Transparent" x="239" y="0" width="30" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="40211564-37ea-4dfc-a138-94c9ba86a538">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -493,6 +478,32 @@
 					<font fontName="Arial" size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bp_product_no}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="492" y="0" width="8" height="12" uuid="955acd20-efae-4bbf-a3aa-a20896866c9e">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<printWhenExpression><![CDATA[new Boolean($F{discount} != null && $F{isdiscountprinted}.equals("Y"))]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+				</textElement>
+				<text><![CDATA[%]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
+				<reportElement key="textField-33" mode="Transparent" x="470" y="0" width="22" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="63581f7a-4cfd-45b3-aeef-5f9c57914e07">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<printWhenExpression><![CDATA[new Boolean($F{isdiscountprinted}.equals("Y"))]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{discount}]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="12">

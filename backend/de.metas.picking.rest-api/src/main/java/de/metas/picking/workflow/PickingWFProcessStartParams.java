@@ -22,19 +22,17 @@
 
 package de.metas.picking.workflow;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
-import de.metas.util.lang.RepoIdAwares;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -55,7 +53,8 @@ public class PickingWFProcessStartParams
 	@Nullable WarehouseTypeId warehouseTypeId;
 	@Nullable ProductId productId;
 	@Nullable Quantity qtyToDeliver;
-	@Nullable ImmutableSet<ShipmentScheduleId> shipmentScheduleIds;
+	@Nullable Quantity qtyAvailableToPick;
+	@Nullable ShipmentScheduleAndJobScheduleIdSet scheduleIds;
 
 	public static PickingWFProcessStartParams of(@NonNull final PickingJobCandidate candidate)
 	{
@@ -66,7 +65,8 @@ public class PickingWFProcessStartParams
 				.warehouseTypeId(candidate.getWarehouseTypeId())
 				.productId(candidate.getProductId())
 				.qtyToDeliver(candidate.getQtyToDeliver())
-				.shipmentScheduleIds(candidate.getShipmentScheduleIds())
+				.qtyAvailableToPick(candidate.getQtyAvailableToPick())
+				.scheduleIds(candidate.getScheduleIds())
 				.build();
 	}
 
@@ -79,10 +79,10 @@ public class PickingWFProcessStartParams
 				//.warehouseTypeId(candidate.getWarehouseTypeId()) // N/A
 				.productId(candidate.getProductId())
 				.qtyToDeliver(candidate.getQtyToDeliver())
-				.shipmentScheduleIds(candidate.getShipmentScheduleIds())
+				.qtyAvailableToPick(candidate.getQtyAvailableToPick())
+				.scheduleIds(candidate.getScheduleIds())
 				.build();
 	}
-
 
 	/**
 	 * @implNote keep in sync with {@link #ofParams(Params)}
@@ -99,8 +99,9 @@ public class PickingWFProcessStartParams
 				.value("warehouseTypeId", warehouseTypeId != null ? warehouseTypeId.getRepoId() : null)
 				.value("productId", productId != null ? productId.getRepoId() : null)
 				.value("qtyToDeliver", qtyToDeliver != null ? qtyToDeliver.toBigDecimal() : null)
+				.value("qtyAvailableToPick", qtyAvailableToPick != null ? qtyAvailableToPick.toBigDecimal() : null)
 				.value("uomId", qtyToDeliver != null ? qtyToDeliver.getUomId().getRepoId() : null)
-				.value("shipmentScheduleIds", shipmentScheduleIds != null ? RepoIdAwares.toCommaSeparatedString(shipmentScheduleIds) : null)
+				.value("scheduleIds", scheduleIds != null ? scheduleIds.toJsonString() : null)
 				.build();
 	}
 
@@ -111,7 +112,7 @@ public class PickingWFProcessStartParams
 	{
 		try
 		{
-			final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = RepoIdAwares.ofCommaSeparatedSet(params.getParameterAsString("shipmentScheduleIds"), ShipmentScheduleId.class);
+			final ShipmentScheduleAndJobScheduleIdSet scheduleIds = ShipmentScheduleAndJobScheduleIdSet.ofNullableJsonString(params.getParameterAsString("scheduleIds"));
 
 			//noinspection ConstantConditions
 			return builder()
@@ -124,7 +125,8 @@ public class PickingWFProcessStartParams
 					.warehouseTypeId(params.getParameterAsId("warehouseTypeId", WarehouseTypeId.class))
 					.productId(params.getParameterAsId("productId", ProductId.class))
 					.qtyToDeliver(extractQtyToDeliver(params))
-					.shipmentScheduleIds(shipmentScheduleIds != null && !shipmentScheduleIds.isEmpty() ? shipmentScheduleIds : null)
+					.qtyAvailableToPick(extractQtyAvailableToPick(params))
+					.scheduleIds(scheduleIds != null && !scheduleIds.isEmpty() ? scheduleIds : null)
 					.build();
 		}
 		catch (Exception ex)
@@ -149,6 +151,24 @@ public class PickingWFProcessStartParams
 		}
 
 		return Quantitys.of(qtyToDeliverBD, uomId);
+	}
+
+	@Nullable
+	private static Quantity extractQtyAvailableToPick(@NonNull final Params params)
+	{
+		final BigDecimal qtyAvailableToPickBD = params.getParameterAsBigDecimal("qtyAvailableToPick");
+		if (qtyAvailableToPickBD == null)
+		{
+			return null;
+		}
+
+		final UomId uomId = params.getParameterAsId("uomId", UomId.class);
+		if (uomId == null)
+		{
+			return null;
+		}
+
+		return Quantitys.of(qtyAvailableToPickBD, uomId);
 	}
 
 	@Nullable

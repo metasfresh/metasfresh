@@ -16,7 +16,11 @@ import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
+import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.LUTUResult;
+import de.metas.handlingunits.allocation.transfer.LUTUResult.LU;
+import de.metas.handlingunits.allocation.transfer.LUTUResult.TU;
+import de.metas.handlingunits.allocation.transfer.ReservedHUsPolicy;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.inventory.CreateVirtualInventoryWithQtyReq;
 import de.metas.handlingunits.inventory.InventoryService;
@@ -199,6 +203,39 @@ public class PackToHUsProducer
 			return LUTUResult.ofSingleTopLevelTU(pickFromHU);
 		}
 		//
+		// Case: We are loading an existing TU by splitting out CUs from source HU
+		else if (packToInfo.getTu().isExistingTU())
+		{
+			final I_M_HU tuRecord = handlingUnitsBL.getById(packToInfo.getTu().getTuIdNotNull());
+			final HUTransformService huTransformService = HUTransformService.newInstance(huContext);
+			final I_M_HU cuRecord = huTransformService.huToNewSingleCU(HUTransformService.HUsToNewCUsRequest.builder()
+					.sourceHUs(pickFromHUs.toHUsList())
+					.productId(productId)
+					.qtyCU(qtyPicked)
+					.reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
+					.build());
+			huTransformService.addCUsToTU(ImmutableList.of(cuRecord), tuRecord);
+
+			weightUpdater.updatePickFromHUs(pickFromHUs.toHUsList());
+			weightUpdater.updatePackToHU(cuRecord);
+
+			final I_M_HU luRecord = handlingUnitsBL.getLoadingUnitHU(tuRecord);
+			if (luRecord == null)
+			{
+				return LUTUResult.ofSingleTopLevelTU(tuRecord);
+			}
+			else if(handlingUnitsBL.isAggregateHU(tuRecord))
+			{
+				throw new AdempiereException("Loading to an aggregated TU is not supported because we won't be able to set the Weight and attributes afterwards");
+			}
+			else
+			{
+				final TU tu = TU.ofSingleTU(tuRecord, cuRecord);
+				final LU lu = LU.of(luRecord, tu).markedAsPreExistingLU();
+				return LUTUResult.ofLU(lu);
+			}
+		}
+		//
 		// Case: We have to split out and pack our HU
 		else
 		{
@@ -228,14 +265,27 @@ public class PackToHUsProducer
 			}
 			else if (packToDestination instanceof HUListAllocationSourceDestination)
 			{
-				result = LUTUResult.ofSingleTopLevelTU(((HUListAllocationSourceDestination)packToDestination).getSingleSourceHU());
+				final I_M_HU tuRecord = ((HUListAllocationSourceDestination)packToDestination).getSingleSourceHU();
+				final I_M_HU luRecord = handlingUnitsBL.getLoadingUnitHU(tuRecord);
+				if (luRecord == null)
+				{
+					result = LUTUResult.ofSingleTopLevelTU(tuRecord);
+				}
+				else
+				{
+					final TU tu = handlingUnitsBL.isAggregateHU(tuRecord)
+							? TU.ofAggregatedTU(tuRecord, handlingUnitsBL.getTUsCount(tuRecord))
+							: TU.ofSingleTU(tuRecord);
+					final LU lu = LU.of(luRecord, tu).markedAsPreExistingLU();
+					result = LUTUResult.ofLU(lu);
+				}
 			}
 			else
 			{
 				throw new AdempiereException("Unknown destination type: " + packToDestination);
 			}
 
-			weightUpdater.updatePackToHUs(result.getAllTURecords());
+			weightUpdater.updatePackToHUs(result);
 			return result;
 		}
 	}

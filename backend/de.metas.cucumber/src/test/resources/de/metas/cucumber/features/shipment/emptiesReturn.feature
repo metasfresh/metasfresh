@@ -4,6 +4,7 @@ Feature: Empties returns
 
   Background:
     Given infrastructure and metasfresh are running
+    And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-08-11T13:30:13+01:00[Europe/Berlin]
 
@@ -83,7 +84,7 @@ Feature: Empties returns
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Warehouse_ID.Identifier |
       | inOut                 | bpartner                 | location                          | warehouseStd              |
     Then validate the created shipments
-      | M_InOut_ID | C_BPartner_ID | C_BPartner_Location_ID | dateordered | poreference | processed | docStatus | C_DocType.DocBaseType | C_DocType.Name |
+      | M_InOut_ID | C_BPartner_ID | C_BPartner_Location_ID | DateOrdered | poreference | processed | DocStatus | C_DocType.DocBaseType | C_DocType.Name |
       | inOut      | bpartner      | location               | 2022-08-11  | po_ref_mock | false     | DR        | MMS                   | Leergutausgabe |
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
@@ -111,7 +112,7 @@ Feature: Empties returns
       | C_Invoice_Candidate_ID | C_Invoice_ID     |
       | invoiceCand_1          | vendorCreditMemo |
     And validate created invoices
-      | C_Invoice_ID     | C_BPartner_ID | C_BPartner_Location_ID | processed | docStatus | DocBaseType |
+      | C_Invoice_ID     | C_BPartner_ID | C_BPartner_Location_ID | processed | DocStatus | DocBaseType |
       | vendorCreditMemo | bpartner      | location               | true      | CO        | APC         |
     And validate created invoice lines
       | C_InvoiceLine_ID     | C_Invoice_ID     | M_Product_ID | QtyInvoiced | Processed | PriceEntered | PriceActual | LineNetAmt | QtyMatched |
@@ -161,7 +162,7 @@ Feature: Empties returns
       | inOut                 | bpartner                 | location                          | warehouseStd              |
 
     Then validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
       | inOut                 | bpartner                 | location                          | 2022-08-11  | po_ref_mock | false     | DR        | MMS                       | Leergutausgabe     |
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
@@ -200,7 +201,7 @@ Feature: Empties returns
       | inOut                 | bpartner                 | location                          | warehouseStd              |
 
     Then validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
       | inOut                 | bpartner                 | location                          | 2022-08-11  | po_ref_mock | false     | DR        | MMS                       | Leergutausgabe     |
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
@@ -251,7 +252,7 @@ Feature: Empties returns
       | inOut                 | bpartner                 | location                          | warehouseStd              |
 
     Then validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
       | inOut                 | bpartner                 | location                          | 2022-08-11  | po_ref_mock | false     | DR        | MMS                       | Leergutausgabe     |
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
@@ -304,7 +305,7 @@ Feature: Empties returns
       | inOut                 | bpartner                 | location                          | warehouseStd              |
 
     Then validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
       | inOut                 | bpartner                 | location                          | 2022-08-11  | po_ref_mock | false     | DR        | MMS                       | Leergutausgabe     |
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
@@ -371,7 +372,7 @@ Feature: Empties returns
       | inOut                 | bpartner                 | location                          | warehouseStd              |
 
     Then validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
       | inOut                 | bpartner                 | location                          | 2022-08-11  | po_ref_mock | false     | DR        | MMS                       | Leergutausgabe     |
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
@@ -440,7 +441,7 @@ Feature: Empties returns
       | inOut                 | bpartner                 | location                          | warehouseStd              |
 
     Then validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
       | inOut                 | bpartner                 | location                          | 2022-08-11  | po_ref_mock | false     | DR        | MMS                       | Leergutausgabe     |
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
@@ -507,7 +508,7 @@ Feature: Empties returns
       | inOut                 | bpartner                 | location                          | warehouseStd              |
 
     Then validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
       | inOut                 | bpartner                 | location                          | 2022-08-11  | po_ref_mock | false     | DR        | MMS                       | Leergutausgabe     |
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
@@ -573,7 +574,7 @@ Feature: Empties returns
       | inOut                 | bpartner                 | location                          | warehouseStd              |
 
     Then validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
       | inOut                 | bpartner                 | location                          | 2022-08-11  | po_ref_mock | false     | DR        | MMS                       | Leergutausgabe     |
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
@@ -642,7 +643,7 @@ Feature: Empties returns
       | inOut                 | bpartner                 | location                          | warehouseStd              |
 
     Then validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
       | inOut                 | bpartner                 | location                          | 2022-08-11  | po_ref_mock | false     | DR        | MMS                       | Leergutausgabe     |
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
@@ -708,7 +709,7 @@ Feature: Empties returns
       | inOut                 | bpartner                 | location                          | warehouseStd              |
 
     Then validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
       | inOut                 | bpartner                 | location                          | 2022-08-11  | po_ref_mock | false     | DR        | MMS                       | Leergutausgabe     |
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
@@ -759,7 +760,7 @@ Feature: Empties returns
       | inOut                 | bpartner                 | location                          | warehouseStd              |
 
     Then validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
       | inOut                 | bpartner                 | location                          | 2022-08-11  | po_ref_mock | false     | DR        | MMS                       | Leergutausgabe     |
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
@@ -810,7 +811,7 @@ Feature: Empties returns
       | inOut                 | bpartner                 | location                          | warehouseStd              |
 
     Then validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
       | inOut                 | bpartner                 | location                          | 2022-08-11  | po_ref_mock | false     | DR        | MMS                       | Leergutausgabe     |
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
@@ -861,7 +862,7 @@ Feature: Empties returns
       | inOut                 | bpartner                 | location                          | warehouseStd              |
 
     Then validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
       | inOut                 | bpartner                 | location                          | 2022-08-11  | po_ref_mock | false     | DR        | MMS                       | Leergutausgabe     |
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
@@ -914,7 +915,7 @@ Feature: Empties returns
       | inOut                 | bpartner                 | location                          | warehouseStd              |
 
     Then validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
       | inOut                 | bpartner                 | location                          | 2022-08-11  | po_ref_mock | false     | DR        | MMS                       | Leergutausgabe     |
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine
@@ -979,7 +980,7 @@ Feature: Empties returns
       | inOut                 | bpartner                 | location                          | warehouseStd              |
 
     Then validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference | processed | DocStatus | OPT.C_DocType.DocBaseType | OPT.C_DocType.Name |
       | inOut                 | bpartner                 | location                          | 2022-08-11  | po_ref_mock | false     | DR        | MMS                       | Leergutausgabe     |
     And validate no M_InOutLine found for M_InOut identified by inOut
     And metasfresh contains M_InOutLine

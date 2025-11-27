@@ -52,6 +52,8 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedTo;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
+import de.metas.picking.api.PickingJobScheduleId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.organization.OrgId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.uom.UomId;
@@ -194,7 +196,7 @@ public class PickingJobSaver
 				stepRecord.setM_Picking_Job_Line_ID(pickingJobLineId.getRepoId());
 				stepRecord.setIsDynamic(step.isGeneratedOnFly());
 				stepRecord.setAD_Org_ID(orgId.getRepoId());
-				stepRecord.setM_ShipmentSchedule_ID(step.getShipmentScheduleId().getRepoId());
+				updateRecord(stepRecord, step.getScheduleId());
 				stepRecord.setC_Order_ID(step.getSalesOrderAndLineId().getOrderRepoId());
 				stepRecord.setC_OrderLine_ID(step.getSalesOrderAndLineId().getOrderLineRepoId());
 
@@ -218,6 +220,12 @@ public class PickingJobSaver
 		}
 
 		deleteStepsCascade(existingRecords.values());
+	}
+
+	static void updateRecord(@NonNull final I_M_Picking_Job_Step record, @NonNull final ShipmentScheduleAndJobScheduleId from)
+	{
+		record.setM_ShipmentSchedule_ID(from.getShipmentScheduleId().getRepoId());
+		record.setM_Picking_Job_Schedule_ID(PickingJobScheduleId.toRepoId(from.getJobScheduleId()));
 	}
 
 	private void deleteStepsCascade(final Collection<I_M_Picking_Job_Step> steps)

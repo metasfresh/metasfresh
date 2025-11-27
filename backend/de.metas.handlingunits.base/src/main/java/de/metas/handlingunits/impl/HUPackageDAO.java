@@ -22,6 +22,7 @@ package de.metas.handlingunits.impl;
  * #L%
  */
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUPackageDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
@@ -29,6 +30,7 @@ import de.metas.handlingunits.model.I_M_Package_HU;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
@@ -40,6 +42,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 public class HUPackageDAO implements IHUPackageDAO
 {
@@ -55,6 +58,31 @@ public class HUPackageDAO implements IHUPackageDAO
 				.create()
 				.list(I_M_Package_HU.class);
 	}
+
+	@Override
+	public List<I_M_Package_HU> retrievePackageHUs(@NonNull final Set<HuId> huIds)
+	{
+		return queryBL
+				.createQueryBuilder(I_M_Package_HU.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_Package_HU.COLUMNNAME_M_HU_ID, huIds)
+				.create()
+				.list(I_M_Package_HU.class);
+	}
+
+	@Override
+	public List<PackageId> retrievePackageIds(@NonNull final HuId huId)
+	{
+		return queryBL
+				.createQueryBuilder(I_M_Package_HU.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_Package_HU.COLUMNNAME_M_HU_ID, huId)
+				.andCollect(I_M_Package_HU.COLUMNNAME_M_Package_ID, I_M_Package.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.listIds(PackageId::ofRepoId);
+	}
+
 
 	@Override
 	public List<I_M_HU> retrieveHUs(final org.compiere.model.I_M_Package mpackage)

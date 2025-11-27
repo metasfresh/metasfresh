@@ -106,7 +106,7 @@ public interface I_MD_AvailableForSales_Config
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescription (@Nullable java.lang.String Description);
+	void setDescription (@Nullable String Description);
 
 	/**
 	 * Get Description.
@@ -115,7 +115,7 @@ public interface I_MD_AvailableForSales_Config
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDescription();
+	@Nullable String getDescription();
 
 	ModelColumn<I_MD_AvailableForSales_Config, Object> COLUMN_Description = new ModelColumn<>(I_MD_AvailableForSales_Config.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
@@ -211,6 +211,27 @@ public interface I_MD_AvailableForSales_Config
 
 	ModelColumn<I_MD_AvailableForSales_Config, Object> COLUMN_IsFeatureActivated = new ModelColumn<>(I_MD_AvailableForSales_Config.class, "IsFeatureActivated", null);
 	String COLUMNNAME_IsFeatureActivated = "IsFeatureActivated";
+
+	/**
+	 * Set Quantity per warehouse.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsQtyPerWarehouse (boolean IsQtyPerWarehouse);
+
+	/**
+	 * Get Quantity per warehouse.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isQtyPerWarehouse();
+
+	ModelColumn<I_MD_AvailableForSales_Config, Object> COLUMN_IsQtyPerWarehouse = new ModelColumn<>(I_MD_AvailableForSales_Config.class, "IsQtyPerWarehouse", null);
+	String COLUMNNAME_IsQtyPerWarehouse = "IsQtyPerWarehouse";
 
 	/**
 	 * Set MD_AvailableForSales_Config.

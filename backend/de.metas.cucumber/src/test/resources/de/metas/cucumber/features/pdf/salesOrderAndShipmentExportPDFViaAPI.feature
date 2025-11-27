@@ -56,7 +56,7 @@ Feature: PDF Export Tests via API
     And The jasper process is run
       | Value            | Record_ID |
       | Auftrag (Jasper) | so        |
-    When store sales order PDF endpointPath /api/v2/orders/sales/:so/pdf in context
+    When store sales order PDF endpointPath /api/v2/orders/sales/@so@/pdf in context
 
     And add HTTP headers
       | Key          | Value                    |
@@ -75,7 +75,7 @@ Feature: PDF Export Tests via API
       | Value                 | Record_ID |
       | Lieferschein (Jasper) | shipment  |
 
-    And store shipment PDF endpointPath /api/v2/shipments/:shipment/pdf in context
+    And store shipment PDF endpointPath /api/v2/shipments/@shipment@/pdf in context
 
     And add HTTP headers
       | Key          | Value                    |

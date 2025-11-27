@@ -29,7 +29,7 @@ export const Backend = {
         return responseBody;
     }),
 
-    expect: async (expectations) => await test.step(`Backend: expect`, async () => {
+    expect: async (expectations) => await test.step(`Backend: expect ${expectations?.title ?? ''}`, async () => {
         const backendBaseUrl = await getBackendBaseUrl();
         const response = await page.request.post(`${backendBaseUrl}/frontendTesting/expect`, {
             data: {

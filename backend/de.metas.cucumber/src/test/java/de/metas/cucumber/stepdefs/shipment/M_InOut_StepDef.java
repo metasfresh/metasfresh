@@ -29,8 +29,8 @@ import de.metas.common.util.EmptyUtil;
 import de.metas.common.util.StringUtils;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
-import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
-import de.metas.cucumber.stepdefs.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -49,13 +49,19 @@ import de.metas.document.DocBaseType;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.externalsystem.ExternalSystemId;
+import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.model.I_ExternalSystem;
 import de.metas.handlingunits.inout.IHUInOutBL;
-import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.QtyToDeliverMap;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWorkPackageParameters;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
+import de.metas.i18n.Language;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.inout.IInOutDAO;
@@ -64,6 +70,7 @@ import de.metas.inout.InOutLineId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.logging.LogManager;
 import de.metas.process.IADPInstanceDAO;
@@ -84,6 +91,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.assertj.core.api.SoftAssertions;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Message;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -99,6 +107,7 @@ import org.slf4j.Logger;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -138,6 +147,8 @@ public class M_InOut_StepDef
 
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+	private final ShipmentService shipmentService = SpringContextHolder.instance.getBean(ShipmentService.class);
+	private final ExternalSystemRepository externalSystemRepository = SpringContextHolder.instance.getBean(ExternalSystemRepository.class);
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADPInstanceDAO pinstanceDAO = Services.get(IADPInstanceDAO.class);
@@ -158,10 +169,10 @@ public class M_InOut_StepDef
 		final SoftAssertions softly = new SoftAssertions();
 
 		final StepDefDataIdentifier identifier = row.getAsIdentifier("M_InOut_ID");
-		final LocalDate dateOrdered = row.getAsLocalDate("dateordered");
+		final LocalDate dateOrdered = row.getAsLocalDate(I_M_InOut.COLUMNNAME_DateOrdered);
 		final String poReference = row.getAsOptionalString(I_M_InOut.COLUMNNAME_POReference).orElse(null);
 		final boolean processed = row.getAsBoolean("processed");
-		final String docStatus = row.getAsString("docStatus");
+		final String docStatus = row.getAsString(I_M_InOut.COLUMNNAME_DocStatus);
 
 		final @NonNull StepDefDataIdentifier bpartnerIdentifier = row.getAsIdentifier(I_C_BPartner.COLUMNNAME_C_BPartner_ID);
 		final int expectedBPartnerId = bpartnerTable.getOptional(bpartnerIdentifier)
@@ -194,6 +205,12 @@ public class M_InOut_StepDef
 			softly.assertThat(inout.getAD_InputDataSource_ID()).isEqualTo(dataSource.getAD_InputDataSource_ID());
 		}
 
+		row.getAsOptionalString(I_ExternalSystem.Table_Name + "." + I_ExternalSystem.COLUMNNAME_Value)
+				.ifPresent(externalSystemValue -> {
+					final ExternalSystemId externalSystemId = externalSystemRepository.getIdByType(ExternalSystemType.ofValue(externalSystemValue));
+					softly.assertThat(inout.getExternalSystem_ID()).as("ExternalSystem_ID for value=%s", externalSystemValue).isEqualTo(externalSystemId.getRepoId());
+				});
+
 		row.getAsOptionalEnum(I_C_DocType.Table_Name + "." + COLUMNNAME_DocBaseType, DocBaseType.class)
 				.ifPresent(docBaseType -> {
 					final String docTypeName = row.getAsString(I_C_DocType.Table_Name + "." + COLUMNNAME_Name);
@@ -218,11 +235,38 @@ public class M_InOut_StepDef
 	{
 		DataTableRows.of(table).forEach(tableRow ->
 				{
-					final String quantityType = DataTableUtil.extractStringForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_QuantityType);
-					final boolean isCompleteShipments = DataTableUtil.extractBooleanForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments);
-					final boolean isShipToday = DataTableUtil.extractBooleanForColumnName(tableRow, ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday);
+					final String quantityType = DataTableUtil.extractStringForColumnName(tableRow, ShipmentScheduleWorkPackageParameters.PARAM_QuantityType);
+					final boolean isCompleteShipments = DataTableUtil.extractBooleanForColumnName(tableRow, ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments);
+					final boolean isShipToday = DataTableUtil.extractBooleanForColumnName(tableRow, ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday);
 
-					invokeGenerateShipmentsProcess0(quantityType, isCompleteShipments, isShipToday, DataTableRows.ofRows(ImmutableList.of(tableRow)));
+					invokeGenerateShipmentsProcess0(quantityType, isCompleteShipments, isShipToday, DataTableRows.of(tableRow));
+				}
+		);
+	}
+
+	@And("'generate shipments' process is invoked individually for each M_ShipmentSchedule and expects error message")
+	public void invokeGenerateShipmentsProcessIndividuallyAndAssertErrorMessage(@NonNull final DataTable table)
+	{
+		DataTableRows.of(table).forEach(tableRow ->
+				{
+					final String quantityType = DataTableUtil.extractStringForColumnName(tableRow, ShipmentScheduleWorkPackageParameters.PARAM_QuantityType);
+					final boolean isCompleteShipments = DataTableUtil.extractBooleanForColumnName(tableRow, ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments);
+					final boolean isShipToday = DataTableUtil.extractBooleanForColumnName(tableRow, ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday);
+
+					final String errorMessage = DataTableUtil.extractStringForColumnName(tableRow, "AD_Message.Value");
+
+					try
+					{
+						invokeGenerateShipmentsProcess0(quantityType, isCompleteShipments, isShipToday, DataTableRows.ofRows(ImmutableList.of(tableRow)));
+
+						assertThat(errorMessage).as("An error message should had been thrown!").isNull();
+					}
+					catch (final Exception e)
+					{
+						final AdMessageKey expectedErrorMessage = AdMessageKey.of("de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.NoValidRecords");
+						StepDefUtil.validateErrorMessage(e, msgBL.getTranslatableMsgText(expectedErrorMessage).translate(Optional.ofNullable(Env.getAD_Language())
+								.orElse(Language.getBaseAD_Language())));
+					}
 				}
 		);
 	}
@@ -244,7 +288,7 @@ public class M_InOut_StepDef
 			@NonNull final DataTableRows dataTable)
 	{
 		final ImmutableMap.Builder<ShipmentScheduleId, StockQtyAndUOMQty> qtysToDeliverOverride = ImmutableMap.builder();
-		final ImmutableList.Builder<ShipmentScheduleId> schedIdsToEnqueue = ImmutableList.builder();
+		final ArrayList<ShipmentScheduleId> schedIdsToEnqueue = new ArrayList<>();
 		dataTable.forEach(tableRow ->
 				{
 					final StepDefDataIdentifier shipmentScheduleIdentifier = tableRow.getAsIdentifier(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID);
@@ -252,7 +296,7 @@ public class M_InOut_StepDef
 					final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
 					schedIdsToEnqueue.add(shipmentScheduleId);
 
-					tableRow.getAsOptionalBigDecimal(ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_QtyToDeliver_Override)
+					tableRow.getAsOptionalBigDecimal(ShipmentScheduleWorkPackageParameters.PARAM_QtyToDeliver_Override)
 							.ifPresent(qtyToDeliverOverride ->
 							{
 								final ProductId productId = ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
@@ -263,18 +307,18 @@ public class M_InOut_StepDef
 
 		final IQueryFilter<de.metas.handlingunits.model.I_M_ShipmentSchedule> queryFilter = queryBL.createCompositeQueryFilter(de.metas.handlingunits.model.I_M_ShipmentSchedule.class)
 				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, schedIdsToEnqueue.build());
+				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, schedIdsToEnqueue);
 
-		final ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.ShipmentScheduleWorkPackageParametersBuilder workPackageParametersBuilder = ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.builder()
+		final ShipmentScheduleWorkPackageParameters.ShipmentScheduleWorkPackageParametersBuilder workPackageParametersBuilder = ShipmentScheduleWorkPackageParameters.builder()
 				.adPInstanceId(pinstanceDAO.createSelectionId())
-				.queryFilters(queryFilter)
+				// NOTE: keep in sync with de.metas.handlingunits.shipmentschedule.process.M_ShipmentSchedule_EnqueueSelection.createShipmentSchedulesQueryFilters
+				.queryFilters(shipmentService.createShipmentScheduleEnqueuerQueryFilters(queryFilter, Env.getZonedDateTime().toInstant()))
 				.qtysToDeliverOverride(QtyToDeliverMap.ofMap(qtysToDeliverOverride.build()))
 				.quantityType(M_ShipmentSchedule_QuantityTypeToUse.ofCode(quantityType))
 				.completeShipments(StringUtils.toBoolean(isCompleteShipments))
 				.isShipmentDateToday(StringUtils.toBoolean(isShipToday));
 
-		final ShipmentScheduleEnqueuer.Result result = new ShipmentScheduleEnqueuer()
-				.setContext(Env.getCtx(), Trx.TRXNAME_None)
+		final ShipmentScheduleEnqueuer.Result result = ShipmentScheduleEnqueuer.newInstance()
 				.createWorkpackages(workPackageParametersBuilder.build());
 
 		assertThat(result.getEnqueuedPackagesCount()).isGreaterThanOrEqualTo(1);
@@ -807,15 +851,15 @@ public class M_InOut_StepDef
 	@And("^store shipment PDF endpointPath (.*) in context$")
 	public void store_shipment_endpointPath_in_context(@NonNull String endpointPath)
 	{
-		final String regex = ".*(:[a-zA-Z]+)/?.*";
+		final String regex = "@[a-zA-Z\\d_-]+@";
 
 		final Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
 		final Matcher matcher = pattern.matcher(endpointPath);
 
 		while (matcher.find())
 		{
-			final String shipmentIdentifierGroup = matcher.group(1);
-			final String shipmentIdentifier = shipmentIdentifierGroup.replace(":", "");
+			final String shipmentIdentifierGroup = matcher.group();
+			final String shipmentIdentifier = shipmentIdentifierGroup.replace("@", "");
 
 			final I_M_InOut shipment = inoutTable.get(shipmentIdentifier);
 			assertThat(shipment).isNotNull();

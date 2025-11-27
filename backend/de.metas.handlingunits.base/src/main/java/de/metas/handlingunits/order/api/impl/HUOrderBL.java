@@ -475,7 +475,7 @@ public class HUOrderBL implements IHUOrderBL
 		final IHUDocumentHandlerFactory huDocumentHandlerFactory = Services.get(IHUDocumentHandlerFactory.class);
 		final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 
-		if (forecast.getC_BPartner() == null || forecast.getDatePromised() == null)
+		if (forecast.getC_BPartner_ID() <= 0 || forecast.getDatePromised() == null)
 		{
 			return;
 		}

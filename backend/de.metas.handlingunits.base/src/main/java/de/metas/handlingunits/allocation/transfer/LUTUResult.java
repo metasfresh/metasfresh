@@ -11,12 +11,16 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.collections.CollectionUtils;
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
+import lombok.ToString;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -86,6 +90,17 @@ public class LUTUResult
 
 	public I_M_HU getSingleTopLevelTURecord() {return getSingleTopLevelTU().toHU();}
 
+	public boolean isSingleFullTU()
+	{
+		if (!getQtyTUs().isOne())
+		{
+			return false;
+		}
+
+		final TU tu = getSingleTU();
+		return tu.isFullTU();
+	}
+
 	public TU getSingleTU()
 	{
 		return streamAllTUs().collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("Expected only one TU: " + this)));
@@ -124,7 +139,7 @@ public class LUTUResult
 		return streamAllLUAndTURecords().collect(ImmutableList.toImmutableList());
 	}
 
-	public Stream<I_M_HU> streamAllLUAndTURecords()
+	private Stream<I_M_HU> streamAllLUAndTURecords()
 	{
 		return Stream.concat(
 				lus.stream().flatMap(LU::streamAllLUAndTURecords),
@@ -156,6 +171,80 @@ public class LUTUResult
 		}
 	}
 
+	public void forEachAffectedHU(@NonNull final LUTUCUConsumer consumer)
+	{
+		lus.forEach(lu -> lu.forEachAffectedHU(consumer));
+		topLevelTUs.forEachAffectedHU(null, consumer);
+	}
+
+	public List<I_M_HU> getAllTUOrCURecords()
+	{
+		final ArrayList<I_M_HU> result = new ArrayList<>();
+		forEachAffectedHU((lu, tu, cu) -> {
+			if (cu == null)
+			{
+				result.add(tu.toHU());
+			}
+			else
+			{
+				result.add(cu.toHU());
+			}
+		});
+		return result;
+	}
+
+	//
+	//
+	// ----------------------------------------------------------------------------------
+	//
+	//
+
+	@FunctionalInterface
+	public interface LUTUCUConsumer
+	{
+		void accept(@Nullable final LU lu, @NonNull final TU tu, @Nullable final TUPart cu);
+	}
+
+	//
+	//
+	// ----------------------------------------------------------------------------------
+	//
+	//
+
+	/**
+	 * An VHU that is part of the TU
+	 */
+	@Value
+	public static class TUPart
+	{
+		@NonNull @Getter(AccessLevel.NONE) I_M_HU vhu;
+
+		private TUPart(@NonNull final I_M_HU vhu)
+		{
+			this.vhu = vhu;
+		}
+
+		public static TUPart ofVHU(final I_M_HU vhu)
+		{
+			return new TUPart(vhu);
+		}
+
+		@NonNull
+		public static ImmutableList<TUPart> ofVHUs(final I_M_HU... vhus)
+		{
+			if (vhus == null || vhus.length == 0)
+			{
+				return ImmutableList.of();
+			}
+
+			return Stream.of(vhus).map(TUPart::ofVHU).collect(ImmutableList.toImmutableList());
+		}
+
+		public HuId getId() {return HuId.ofRepoId(vhu.getM_HU_ID());}
+
+		public I_M_HU toHU() {return vhu;}
+	}
+
 	//
 	//
 	// ----------------------------------------------------------------------------------
@@ -166,6 +255,8 @@ public class LUTUResult
 	 * TU or VHU
 	 */
 	@Value
+	@EqualsAndHashCode(doNotUseGetters = true)
+	@ToString(doNotUseGetters = true)
 	@Builder
 	public static class TU
 	{
@@ -173,23 +264,40 @@ public class LUTUResult
 		boolean isAggregate;
 		@NonNull QtyTU qtyTU;
 
-		private TU(@NonNull final I_M_HU hu, final boolean isAggregate, @NonNull final QtyTU qtyTU)
+		@NonNull @Getter(AccessLevel.NONE) ImmutableList<TUPart> cus;
+
+		private TU(
+				@NonNull final I_M_HU hu,
+				final boolean isAggregate,
+				@Nullable final QtyTU qtyTU,
+				@Nullable List<TUPart> cus)
 		{
+			this.hu = hu;
+			this.isAggregate = isAggregate;
 			if (isAggregate)
 			{
-				Check.assume(qtyTU.isPositive(), "QtyTU shall be positive for aggregated TUs, but it was {}", qtyTU);
+				Check.assume(qtyTU != null && qtyTU.isPositive(), "QtyTU shall be positive for aggregated TUs, but it was {}", qtyTU);
+				Check.assume(cus == null || cus.isEmpty(), "No CUs shall be provided for aggregated TUs");
+
+				this.qtyTU = qtyTU;
+				this.cus = ImmutableList.of();
 			}
 			else
 			{
-				Check.assume(qtyTU.isOne(), "QtyTU shall be one for non aggregated TU, but it was {}", qtyTU);
+				Check.assume(qtyTU == null || qtyTU.isOne(), "QtyTU shall be not set or it shall be ONE for non aggregated TU, but it was {}", qtyTU);
+				this.qtyTU = QtyTU.ONE;
+				this.cus = cus != null && !cus.isEmpty() ? ImmutableList.copyOf(cus) : ImmutableList.of();
 			}
-
-			this.hu = hu;
-			this.isAggregate = isAggregate;
-			this.qtyTU = qtyTU;
 		}
 
-		public static TU ofSingleTU(@NonNull final I_M_HU hu) {return builder().hu(hu).isAggregate(false).qtyTU(QtyTU.ONE).build();}
+		public static TU ofSingleTU(@NonNull final I_M_HU hu, final I_M_HU... cus)
+		{
+			return builder().hu(hu)
+					.isAggregate(false)
+					.qtyTU(QtyTU.ONE)
+					.cus(TUPart.ofVHUs(cus))
+					.build();
+		}
 
 		public static TU ofAggregatedTU(@NonNull final I_M_HU hu, @NonNull final QtyTU qtyTU) {return builder().hu(hu).isAggregate(true).qtyTU(qtyTU).build();}
 
@@ -222,6 +330,32 @@ public class LUTUResult
 		}
 
 		public boolean containsAnyOfHUIds(final Collection<HuId> huIds) {return huIds.contains(getId());}
+
+		public boolean isFullTU() {return cus.isEmpty();}
+
+		public ImmutableList<TUPart> getCUsNotEmpty()
+		{
+			if (cus.isEmpty())
+			{
+				throw new AdempiereException("Expected a partial TU: " + this);
+			}
+			return cus;
+		}
+
+		public void forEachAffectedHU(@Nullable final LU lu, final @NonNull LUTUCUConsumer consumer)
+		{
+			if (isFullTU())
+			{
+				consumer.accept(lu, this, null);
+			}
+			else
+			{
+				for (final TUPart cu : getCUsNotEmpty())
+				{
+					consumer.accept(lu, this, cu);
+				}
+			}
+		}
 	}
 
 	//
@@ -315,6 +449,10 @@ public class LUTUResult
 			return list.stream().anyMatch(tu -> tu.containsAnyOfHUIds(huIds));
 		}
 
+		public void forEachAffectedHU(@Nullable final LU lu, final @NonNull LUTUCUConsumer consumer)
+		{
+			list.forEach(tu -> tu.forEachAffectedHU(lu, consumer));
+		}
 	}
 
 	//
@@ -404,6 +542,11 @@ public class LUTUResult
 
 			return huIds.contains(getId()) // LU matches
 					|| tus.containsAnyOfHUIds(huIds); // any of the TU matches
+		}
+
+		public void forEachAffectedHU(@NonNull final LUTUCUConsumer consumer)
+		{
+			tus.forEachAffectedHU(this, consumer);
 		}
 	}
 }

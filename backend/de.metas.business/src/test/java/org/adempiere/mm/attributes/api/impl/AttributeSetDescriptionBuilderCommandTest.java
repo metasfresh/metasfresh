@@ -112,7 +112,7 @@ public class AttributeSetDescriptionBuilderCommandTest
 					.attributeValueType(X_M_Attribute.ATTRIBUTEVALUETYPE_Number)
 					.uomId(uomId)
 					.build();
-			I_M_Attribute attribute = Services.get(IAttributeDAO.class).getAttributeById(attributeId);
+			I_M_Attribute attribute = Services.get(IAttributeDAO.class).getAttributeRecordById(attributeId);
 
 			final IAttributesBL attributesBL = Services.get(IAttributesBL.class);
 			assertThat(attributesBL.getNumberDisplayType(attribute))

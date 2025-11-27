@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
@@ -13,7 +35,7 @@ import java.util.Properties;
 public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 225459265L;
+	private static final long serialVersionUID = 1353171231L;
 
     /** Standard Constructor */
     public X_C_BP_Group (final Properties ctx, final int C_BP_Group_ID, @Nullable final String trxName)
@@ -173,6 +195,33 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	}
 
 	@Override
+	public org.compiere.model.I_C_Incoterms getC_Incoterms()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Incoterms_ID, org.compiere.model.I_C_Incoterms.class);
+	}
+
+	@Override
+	public void setC_Incoterms(final org.compiere.model.I_C_Incoterms C_Incoterms)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Incoterms_ID, org.compiere.model.I_C_Incoterms.class, C_Incoterms);
+	}
+
+	@Override
+	public void setC_Incoterms_ID (final int C_Incoterms_ID)
+	{
+		if (C_Incoterms_ID < 1) 
+			set_Value (COLUMNNAME_C_Incoterms_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Incoterms_ID, C_Incoterms_ID);
+	}
+
+	@Override
+	public int getC_Incoterms_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Incoterms_ID);
+	}
+
+	@Override
 	public void setC_PaymentTerm_ID (final int C_PaymentTerm_ID)
 	{
 		if (C_PaymentTerm_ID < 1) 
@@ -240,6 +289,47 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	}
 
 	@Override
+	public void setIncotermLocation (final @Nullable java.lang.String IncotermLocation)
+	{
+		set_Value (COLUMNNAME_IncotermLocation, IncotermLocation);
+	}
+
+	@Override
+	public java.lang.String getIncotermLocation() 
+	{
+		return get_ValueAsString(COLUMNNAME_IncotermLocation);
+	}
+
+	/** 
+	 * InvoiceRule AD_Reference_ID=150
+	 * Reference name: C_Order InvoiceRule
+	 */
+	public static final int INVOICERULE_AD_Reference_ID=150;
+	/** AfterOrderDelivered = O */
+	public static final String INVOICERULE_AfterOrderDelivered = "O";
+	/** AfterDelivery = D */
+	public static final String INVOICERULE_AfterDelivery = "D";
+	/** CustomerScheduleAfterDelivery = S */
+	public static final String INVOICERULE_CustomerScheduleAfterDelivery = "S";
+	/** Immediate = I */
+	public static final String INVOICERULE_Immediate = "I";
+	/** OrderCompletelyDelivered = C */
+	public static final String INVOICERULE_OrderCompletelyDelivered = "C";
+	/** After Pick = P */
+	public static final String INVOICERULE_AfterPick = "P";
+	@Override
+	public void setInvoiceRule (final @Nullable java.lang.String InvoiceRule)
+	{
+		set_Value (COLUMNNAME_InvoiceRule, InvoiceRule);
+	}
+
+	@Override
+	public java.lang.String getInvoiceRule() 
+	{
+		return get_ValueAsString(COLUMNNAME_InvoiceRule);
+	}
+
+	@Override
 	public void setIsAssociation (final boolean IsAssociation)
 	{
 		set_Value (COLUMNNAME_IsAssociation, IsAssociation);
@@ -249,6 +339,27 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	public boolean isAssociation() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAssociation);
+	}
+
+	/** 
+	 * IsAutoInvoice AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISAUTOINVOICE_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISAUTOINVOICE_Yes = "Y";
+	/** No = N */
+	public static final String ISAUTOINVOICE_No = "N";
+	@Override
+	public void setIsAutoInvoice (final @Nullable java.lang.String IsAutoInvoice)
+	{
+		set_Value (COLUMNNAME_IsAutoInvoice, IsAutoInvoice);
+	}
+
+	@Override
+	public java.lang.String getIsAutoInvoice() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsAutoInvoice);
 	}
 
 	@Override
@@ -446,10 +557,10 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	public static final String PAYMENTRULE_KreditkarteExtern = "U";
 	/** Sofortüberweisung = R */
 	public static final String PAYMENTRULE_Sofortueberweisung = "R";
-	/** Rückerstattung = E */
-	public static final String PAYMENTRULE_Rueckerstattung = "E";
-	/** Verrechnung = F */
-	public static final String PAYMENTRULE_Verrechnung = "F";
+	/** Reimbursement = E */
+	public static final String PAYMENTRULE_Reimbursement = "E";
+	/** Settlement = F */
+	public static final String PAYMENTRULE_Settlement = "F";
 	@Override
 	public void setPaymentRule (final @Nullable java.lang.String PaymentRule)
 	{
@@ -489,10 +600,10 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	public static final String PAYMENTRULEPO_KreditkarteExtern = "U";
 	/** Sofortüberweisung = R */
 	public static final String PAYMENTRULEPO_Sofortueberweisung = "R";
-	/** Rückerstattung = E */
-	public static final String PAYMENTRULEPO_Rueckerstattung = "E";
-	/** Verrechnung = F */
-	public static final String PAYMENTRULEPO_Verrechnung = "F";
+	/** Reimbursement = E */
+	public static final String PAYMENTRULEPO_Reimbursement = "E";
+	/** Settlement = F */
+	public static final String PAYMENTRULEPO_Settlement = "F";
 	@Override
 	public void setPaymentRulePO (final @Nullable java.lang.String PaymentRulePO)
 	{
@@ -530,6 +641,45 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	public int getPO_DiscountSchema_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_PO_DiscountSchema_ID);
+	}
+
+	@Override
+	public void setPO_IncotermLocation (final @Nullable java.lang.String PO_IncotermLocation)
+	{
+		set_Value (COLUMNNAME_PO_IncotermLocation, PO_IncotermLocation);
+	}
+
+	@Override
+	public java.lang.String getPO_IncotermLocation() 
+	{
+		return get_ValueAsString(COLUMNNAME_PO_IncotermLocation);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Incoterms getPO_Incoterms()
+	{
+		return get_ValueAsPO(COLUMNNAME_PO_Incoterms_ID, org.compiere.model.I_C_Incoterms.class);
+	}
+
+	@Override
+	public void setPO_Incoterms(final org.compiere.model.I_C_Incoterms PO_Incoterms)
+	{
+		set_ValueFromPO(COLUMNNAME_PO_Incoterms_ID, org.compiere.model.I_C_Incoterms.class, PO_Incoterms);
+	}
+
+	@Override
+	public void setPO_Incoterms_ID (final int PO_Incoterms_ID)
+	{
+		if (PO_Incoterms_ID < 1) 
+			set_Value (COLUMNNAME_PO_Incoterms_ID, null);
+		else 
+			set_Value (COLUMNNAME_PO_Incoterms_ID, PO_Incoterms_ID);
+	}
+
+	@Override
+	public int getPO_Incoterms_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_PO_Incoterms_ID);
 	}
 
 	@Override
@@ -611,6 +761,21 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	public java.lang.String getPriorityBase() 
 	{
 		return get_ValueAsString(COLUMNNAME_PriorityBase);
+	}
+
+	@Override
+	public void setPurchaser_User_ID (final int Purchaser_User_ID)
+	{
+		if (Purchaser_User_ID < 1) 
+			set_Value (COLUMNNAME_Purchaser_User_ID, null);
+		else 
+			set_Value (COLUMNNAME_Purchaser_User_ID, Purchaser_User_ID);
+	}
+
+	@Override
+	public int getPurchaser_User_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Purchaser_User_ID);
 	}
 
 	/** 

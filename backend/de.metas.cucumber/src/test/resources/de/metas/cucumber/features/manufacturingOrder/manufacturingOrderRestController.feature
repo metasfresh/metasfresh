@@ -29,7 +29,7 @@ Feature: Manufacturing order rest controller
       | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument |
       | ppOrder                | MOP         | finishedGood            | 10         | testResource             | 2022-05-09T23:59:00.00Z | 2022-05-09T23:59:00.00Z | 2022-05-09T23:59:00.00Z | Y                |
 
-    When store PP_Order endpointPath /api/v2/manufacturing/orders/:ppOrder in context
+    When store PP_Order endpointPath /api/v2/manufacturing/orders/@ppOrder@ in context
 
     And a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 

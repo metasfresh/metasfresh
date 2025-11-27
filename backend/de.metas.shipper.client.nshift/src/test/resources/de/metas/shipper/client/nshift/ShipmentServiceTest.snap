@@ -1,0 +1,197 @@
+de.metas.shipper.client.nshift.ShipmentServiceTest.build_request_test=[
+  {
+    "data": {
+      "ActorCSID": 123,
+      "Addresses": [
+        {
+          "Attention": "metas GmbH senderDepartmentName senderCompanyName2",
+          "City": "Bonn",
+          "CountryCode": "DE",
+          "Kind": 2,
+          "Name1": "metas GmbH",
+          "Name2": "senderCompanyName2",
+          "PostCode": "53179",
+          "Street1": "Am Noßbacher Weg 2",
+          "Street2": ""
+        },
+        {
+          "Attention": "metas.ro SRL receiverDepartmentName Test Contact Name",
+          "City": "Timisoara",
+          "CountryCode": "RO",
+          "Email": "noreply@metasfresh.com",
+          "Kind": 1,
+          "Name1": "metas.ro SRL",
+          "Name2": "receiverCompanyName2",
+          "Phone": "12341234",
+          "PostCode": "300078",
+          "Street1": "Alecsandri 3",
+          "Street2": ""
+        }
+      ],
+      "DangerousGoods": [ ],
+      "DetailGroups": [
+        {
+          "GroupID": "2",
+          "Rows": [
+            {
+              "Details": [
+                {
+                  "KindID": 182,
+                  "Value": "Shipper EORI RO"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "GroupID": "1",
+          "Rows": [
+            {
+              "Details": [
+                {
+                  "KindID": 17,
+                  "Value": "EUR"
+                },
+                {
+                  "KindID": 1,
+                  "Value": "1"
+                },
+                {
+                  "KindID": 2,
+                  "Value": "10"
+                },
+                {
+                  "KindID": 4,
+                  "Value": "DE RO"
+                },
+                {
+                  "KindID": 5,
+                  "Value": "10"
+                },
+                {
+                  "KindID": 7,
+                  "Value": "Test Product"
+                },
+                {
+                  "KindID": 8,
+                  "Value": "PCE"
+                },
+                {
+                  "KindID": 10,
+                  "Value": "10"
+                }
+              ],
+              "LineNo": 1
+            }
+          ]
+        },
+        {
+          "GroupID": "1",
+          "Rows": [
+            {
+              "Details": [
+                {
+                  "KindID": 17,
+                  "Value": "EUR"
+                },
+                {
+                  "KindID": 1,
+                  "Value": "2"
+                },
+                {
+                  "KindID": 2,
+                  "Value": "10"
+                },
+                {
+                  "KindID": 4,
+                  "Value": "DE RO"
+                },
+                {
+                  "KindID": 5,
+                  "Value": "10"
+                },
+                {
+                  "KindID": 7,
+                  "Value": "Test Product 2"
+                },
+                {
+                  "KindID": 8,
+                  "Value": "PCE"
+                },
+                {
+                  "KindID": 10,
+                  "Value": "10"
+                }
+              ],
+              "LineNo": 2
+            }
+          ]
+        }
+      ],
+      "Lines": [
+        {
+          "GoodsType": 5,
+          "GoodsTypeName": "Packet",
+          "Height": 150,
+          "Length": 1000,
+          "LineWeight": 10000,
+          "Number": 1,
+          "PkgWeight": 10000,
+          "Pkgs": [ ],
+          "References": [
+            {
+              "Kind": 129,
+              "Value": "1 RO"
+            }
+          ],
+          "Width": 200
+        },
+        {
+          "GoodsType": 5,
+          "GoodsTypeName": "Packet",
+          "Height": 150,
+          "Length": 1000,
+          "LineWeight": 10000,
+          "Number": 1,
+          "PkgWeight": 10000,
+          "Pkgs": [ ],
+          "References": [
+            {
+              "Kind": 129,
+              "Value": "2 RO"
+            }
+          ],
+          "Width": 200
+        }
+      ],
+      "OrderNo": "1",
+      "PickupDt": "2025-10-02",
+      "ProdConceptID": 2758,
+      "References": [
+        {
+          "Kind": 108,
+          "Value": "2025-10-02T10:00:00"
+        },
+        {
+          "Kind": 109,
+          "Value": "2025-10-02T13:00:00"
+        },
+        {
+          "Kind": 9,
+          "Value": "2025-10-02"
+        },
+        {
+          "Kind": 7,
+          "Value": "Customer reference"
+        }
+      ],
+      "Services": [
+        337011
+      ]
+    },
+    "options": {
+      "Labels": "PDF",
+      "ValidatePostCode": 1
+    }
+  }
+]
