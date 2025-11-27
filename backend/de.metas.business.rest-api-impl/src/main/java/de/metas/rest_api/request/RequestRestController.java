@@ -82,7 +82,7 @@ public class RequestRestController
 		}
 		catch (final Exception ex)
 		{
-			logger.error(ex.getMessage(), ex);
+			logger.error("Create request failed for {}", request, ex);
 			final String adLanguage = Env.getADLanguageOrBaseLanguage();
 			return ResponseEntity.unprocessableEntity()
 					.body(JsonErrors.ofThrowable(ex, adLanguage));

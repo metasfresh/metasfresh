@@ -69,10 +69,10 @@ public class RequestTypeDAO implements IRequestTypeDAO
 	public RequestTypeId retrieveBPartnerCreatedFromAnotherOrgRequestTypeId()
 	{
 		return retrieveRequestTypeIdByInternalName(InternalName_C_BPartner_CreatedFromAnotherOrg);
-
 	}
 
-	private RequestTypeId retrieveRequestTypeIdByInternalName(final String internalName)
+	@Override
+	public RequestTypeId retrieveRequestTypeIdByInternalName(final String internalName)
 	{
 		final RequestTypeId requestTypeId = queryBL.createQueryBuilderOutOfTrx(I_R_RequestType.class)
 				.addOnlyActiveRecordsFilter()
@@ -95,16 +95,6 @@ public class RequestTypeDAO implements IRequestTypeDAO
 						this::retrieveDefaultRequestTypeId,
 						this::retrieveFirstActiveRequestTypeId)
 				.orElseThrow(() -> new AdempiereException("@NotFound@ @R_RequestType_ID@").markAsUserValidationError());
-	}
-
-	@Override
-	public RequestTypeId retrieveByInternalName(final String internalName)
-	{
-		return queryBL.createQueryBuilderOutOfTrx(I_R_RequestType.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_R_RequestType.COLUMNNAME_InternalName, internalName)
-				.create()
-				.firstId(RequestTypeId::ofRepoIdOrNull);
 	}
 
 	private Optional<RequestTypeId> retrieveDefaultRequestTypeId()

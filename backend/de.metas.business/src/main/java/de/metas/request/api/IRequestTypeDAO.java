@@ -5,8 +5,6 @@ import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.compiere.model.I_R_RequestType;
 
-import javax.annotation.Nullable;
-
 /*
  * #%L
  * de.metas.swat.base
@@ -39,10 +37,9 @@ public interface IRequestTypeDAO extends ISingletonService
 
 	RequestTypeId retrieveBPartnerCreatedFromAnotherOrgRequestTypeId();
 
-	RequestTypeId retrieveDefaultRequestTypeIdOrFirstActive();
+	RequestTypeId retrieveRequestTypeIdByInternalName(String internalName);
 
-	@Nullable
-	RequestTypeId retrieveByInternalName(String internalName);
+	RequestTypeId retrieveDefaultRequestTypeIdOrFirstActive();
 
 	I_R_RequestType getById(@NonNull RequestTypeId requestTypeId);
 }
