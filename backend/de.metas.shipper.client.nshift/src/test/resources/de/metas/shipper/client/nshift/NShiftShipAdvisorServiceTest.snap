@@ -46,6 +46,10 @@ de.metas.shipper.client.nshift.NShiftShipAdvisorServiceTest.build_request_test=[
         {
           "Kind": 63,
           "Value": "incoterms"
+        },
+        {
+          "Kind": 64,
+          "Value": "Other"
         }
       ],
       "Services": [ ]

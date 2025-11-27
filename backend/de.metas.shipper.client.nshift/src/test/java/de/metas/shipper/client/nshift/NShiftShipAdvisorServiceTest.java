@@ -97,6 +97,7 @@ public class NShiftShipAdvisorServiceTest
 			.deliveryNote("Delivery note")
 			.customerReference("Customer reference")
 			.incotermsValue("incoterms")
+			.externalSystemValue("Other")
 			.item(JsonDeliveryAdvisorRequestItem.builder()
 					.numberOfItems(1)
 					.grossWeightKg(BigDecimal.TEN)
