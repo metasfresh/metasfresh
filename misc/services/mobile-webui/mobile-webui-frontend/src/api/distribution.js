@@ -1,7 +1,13 @@
 import axios from 'axios';
 import { apiBasePath } from '../constants';
-import { unboxAxiosResponse } from '../utils';
+import { toUrl, unboxAxiosResponse } from '../utils';
 import { toQRCodeString } from '../utils/qrCode/hu';
+
+export const getDistributionScannedHUQRCodeInfo = ({ qrCode }) => {
+  return axios
+    .get(toUrl(`${apiBasePath}/distribution/hu/byScannedCode`, { scannedCode: qrCode }))
+    .then((response) => unboxAxiosResponse(response));
+};
 
 export const postDistributionPickFrom = ({ wfProcessId, activityId, lineId, stepId, pickFrom }) => {
   return axios
