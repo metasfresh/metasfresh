@@ -31,7 +31,7 @@ BEGIN
     WHERE TRUE
       AND asd.AD_Client_ID = 1000000
       AND (p_M_Warehouse_ID IS NULL OR w.M_Warehouse_ID = p_M_Warehouse_ID)
-      AND NOT EXISTS(SELECT 1 FROM M_Warehouse_Acct e WHERE e.C_AcctSchema_ID = asd.C_AcctSchema_ID AND e.M_Warehouse_ID = w.M_Warehouse_ID AND (e.AD_Org_ID = w.AD_Org_ID OR e.ad_org_id = 0));
+      AND NOT EXISTS(SELECT 1 FROM M_Warehouse_Acct e WHERE e.C_AcctSchema_ID = asd.C_AcctSchema_ID AND e.M_Warehouse_ID = w.M_Warehouse_ID );
     --
     GET DIAGNOSTICS v_count = ROW_COUNT;
     RAISE NOTICE 'Created % M_Warehouse_Acct records', v_count;
