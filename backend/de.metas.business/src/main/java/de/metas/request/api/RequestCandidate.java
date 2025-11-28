@@ -4,6 +4,9 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.inout.QualityNoteId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.request.RequestConfidentialType;
+import de.metas.request.RequestPriority;
+import de.metas.request.RequestStatusId;
 import de.metas.request.RequestTypeId;
 import de.metas.user.UserId;
 import lombok.Builder;
@@ -40,26 +43,20 @@ import java.time.ZonedDateTime;
 @Builder
 public class RequestCandidate
 {
-	@NonNull
-	RequestTypeId requestTypeId;
-
-	@NonNull
-	OrgId orgId;
-	ProductId productId;
-	BPartnerId partnerId;
-	UserId userId;
-
-	TableRecordReference recordRef;
-
-	@NonNull
-	ZonedDateTime dateDelivered;
-	@NonNull
-	String confidentialType;
-	@NonNull
-	String summary;
-
-	@Nullable
-	QualityNoteId qualityNoteId;
-	@Nullable
-	String performanceType;
+	@NonNull RequestTypeId requestTypeId;
+	@NonNull OrgId orgId;
+	@Nullable ProductId productId;
+	@Nullable BPartnerId partnerId;
+	@Nullable UserId userId;
+	@Nullable TableRecordReference recordRef;
+	@NonNull ZonedDateTime dateDelivered;
+	@NonNull RequestConfidentialType confidentialType;
+	@NonNull String summary;
+	@Nullable QualityNoteId qualityNoteId;
+	@Nullable String performanceType;
+	@Nullable Boolean isEscalated;
+	@Nullable Boolean isSelfService;
+	@Nullable String result;
+	@Nullable RequestStatusId statusId;
+	@Nullable RequestPriority priority;
 }
