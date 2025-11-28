@@ -9,3 +9,5 @@ export const getDistributionJobCompleteStatus = ({ state, wfProcessId }) => {
     isFullyMoved: activity.dataStored.completeStatus === COMPLETED,
   };
 };
+
+export const isRequireScanningProductCode = ({ activity }) => !!activity.dataStored.requireScanningProductCode;

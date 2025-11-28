@@ -56,6 +56,7 @@ public class MobileUIDistributionConfigRepository
 				.allowPickingAnyHU(record.isAllowPickingAnyHU())
 				.captionFormat(retrieveCaptionFormat(record.getMobileUI_UserProfile_DD_ID()).orElse(DEFAULT_CONFIG.getCaptionFormat()))
 				.sorting(retrieveSorting(record.getMobileUI_UserProfile_DD_ID()).orElse(DEFAULT_CONFIG.getSorting()))
+				.isRequireScanningProductCode(record.isRequireScanningProductCode())
 				.isCompleteJobAutomatically(record.isCompleteJobAutomatically())
 				.maxLaunchers(QueryLimit.ofInt(record.getMaxLaunchers()))
 				.maxStartedLaunchers(QueryLimit.ofInt(record.getMaxStartedLaunchers()))
@@ -209,8 +210,9 @@ public class MobileUIDistributionConfigRepository
 	{
 		record.setIsActive(true);
 		record.setIsAllowPickingAnyHU(from.isAllowPickingAnyHU());
+		record.setIsRequireScanningProductCode(from.isRequireScanningProductCode());
 		record.setIsCompleteJobAutomatically(from.isCompleteJobAutomatically());
-		
+
 		record.setMaxLaunchers(from.getMaxLaunchers().toIntOrZero());
 		record.setMaxStartedLaunchers(from.getMaxStartedLaunchers().toIntOrZero());
 		record.setIsAllowStartNextJobOnly(from.isAllowStartNextJobOnly());

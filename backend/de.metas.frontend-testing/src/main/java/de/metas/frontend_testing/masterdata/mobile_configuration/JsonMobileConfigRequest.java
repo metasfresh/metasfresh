@@ -82,6 +82,7 @@ public class JsonMobileConfigRequest
 		@Nullable String captionFormat;
 		@Nullable String orderBys;
 
+		@Nullable Boolean requireScanningProductCode;
 		@Nullable Boolean completeJobAutomatically;
 
 		@Nullable QueryLimit maxLaunchers;

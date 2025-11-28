@@ -8,6 +8,7 @@ test.describe('Login/Logout', () => {
     // noinspection JSUnusedLocalSymbols
     ['en_US', 'de_DE'].forEach(language => {
         AVAILABLE_AUTH_METHODS.forEach(authMethod => {
+            // noinspection JSUnusedLocalSymbols
             test(`By user/pass, using ${language} language, ${authMethod} as default auth method`, async ({ page }) => {
                 const response = await Backend.createMasterdata({
                     request: {

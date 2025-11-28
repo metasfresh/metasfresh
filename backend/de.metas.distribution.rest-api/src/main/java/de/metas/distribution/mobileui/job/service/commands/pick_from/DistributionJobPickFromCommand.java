@@ -35,7 +35,6 @@ import javax.annotation.Nullable;
 public class DistributionJobPickFromCommand
 {
 	private static final AdMessageKey NOT_ENOUGH_QTY = AdMessageKey.of("de.metas.distribution.workflows_api.NotEnoughQty");
-	private static final AdMessageKey PRODUCT_DOES_NOT_MATCH = AdMessageKey.of("de.metas.distribution.workflows_api.ProductDoesNotMatch");
 
 	// Services
 	@NonNull private final ITrxManager trxManager;
@@ -172,8 +171,7 @@ public class DistributionJobPickFromCommand
 		final ScannedCode pickFromScannedCode = ScannedCode.ofString(Check.assumeNotNull(pickFrom.getQrCode(), "pickFrom.qrCode must be set"));
 		final HuId sourceHuId = huService.resolveHUId(pickFromScannedCode);
 
-		final Quantity sourceHUQty = huService.getProductQuantity(sourceHuId, line.getProductId())
-				.orElseThrow(() -> new AdempiereException(PRODUCT_DOES_NOT_MATCH));
+		final Quantity sourceHUQty = huService.getProductQuantity(sourceHuId, line.getProductId());
 
 		final Quantity qtyToPick = pickFrom.getQtyPicked(line.getUOM()).orElse(null);
 		if (qtyToPick == null)

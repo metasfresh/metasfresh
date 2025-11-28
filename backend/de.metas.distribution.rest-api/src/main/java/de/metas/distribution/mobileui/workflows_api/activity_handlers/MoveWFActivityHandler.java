@@ -1,7 +1,8 @@
 package de.metas.distribution.mobileui.workflows_api.activity_handlers;
 
-import de.metas.distribution.mobileui.job.model.DistributionJob;
 import de.metas.distribution.mobileui.DistributionMobileApplication;
+import de.metas.distribution.mobileui.config.MobileUIDistributionConfig;
+import de.metas.distribution.mobileui.job.model.DistributionJob;
 import de.metas.distribution.mobileui.job.service.DistributionRestService;
 import de.metas.distribution.mobileui.rest_api.json.JsonDistributionJob;
 import de.metas.distribution.mobileui.rest_api.json.JsonRejectReasonsList;
@@ -33,11 +34,13 @@ public class MoveWFActivityHandler implements WFActivityHandler
 	@Override
 	public UIComponent getUIComponent(final @NonNull WFProcess wfProcess, final @NonNull WFActivity wfActivity, final @NonNull JsonOpts jsonOpts)
 	{
+		final MobileUIDistributionConfig config = distributionRestService.getConfig();
 		final DistributionJob job = DistributionMobileApplication.getDistributionJob(wfProcess);
 
 		final JsonDistributionJob json = JsonDistributionJob.builderFrom(job, jsonOpts)
 				.qtyRejectedReasons(JsonRejectReasonsList.of(distributionRestService.getQtyRejectedReasons(), jsonOpts))
-				.completeJobAutomatically(distributionRestService.getConfig().isCompleteJobAutomatically())
+				.requireScanningProductCode(config.isRequireScanningProductCode())
+				.completeJobAutomatically(config.isCompleteJobAutomatically())
 				.build();
 
 		return UIComponent.builderFrom(COMPONENT_TYPE, wfActivity)

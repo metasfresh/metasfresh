@@ -244,4 +244,14 @@ public class DistributionJob
 
 		return qty.toNoneOrSingleValue().orElse(null);
 	}
+
+	public Optional<DistributionJobLineId> getNextEligiblePickFromLineId(@NonNull final ProductId productId)
+	{
+		return lines.stream()
+				.filter(line -> ProductId.equals(line.getProductId(), productId))
+				.filter(DistributionJobLine::isEligibleForPicking)
+				.map(DistributionJobLine::getId)
+				.findFirst();
+
+	}
 }

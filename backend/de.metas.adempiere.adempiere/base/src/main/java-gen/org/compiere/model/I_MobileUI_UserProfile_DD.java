@@ -163,6 +163,29 @@ public interface I_MobileUI_UserProfile_DD
 	String COLUMNNAME_IsCompleteJobAutomatically = "IsCompleteJobAutomatically";
 
 	/**
+	 * Set Is Require Product Code Scan.
+	 * If enabled, the user must scan the Product Code (e.g., GTIN/EAN) after scanning the Handling Unit (HU) QR Code during mobile picking.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsRequireScanningProductCode (boolean IsRequireScanningProductCode);
+
+	/**
+	 * Get Is Require Product Code Scan.
+	 * If enabled, the user must scan the Product Code (e.g., GTIN/EAN) after scanning the Handling Unit (HU) QR Code during mobile picking.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isRequireScanningProductCode();
+
+	ModelColumn<I_MobileUI_UserProfile_DD, Object> COLUMN_IsRequireScanningProductCode = new ModelColumn<>(I_MobileUI_UserProfile_DD.class, "IsRequireScanningProductCode", null);
+	String COLUMNNAME_IsRequireScanningProductCode = "IsRequireScanningProductCode";
+
+	/**
 	 * Set Maximum Launchers Count.
 	 *
 	 * <br>Type: Integer
