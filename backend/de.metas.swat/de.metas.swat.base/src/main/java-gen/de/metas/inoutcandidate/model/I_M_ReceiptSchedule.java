@@ -549,6 +549,27 @@ public interface I_M_ReceiptSchedule
 	String COLUMNNAME_DateOrdered = "DateOrdered";
 
 	/**
+	 * Set Date Promised override.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDatePromised_Override (@Nullable java.sql.Timestamp DatePromised_Override);
+
+	/**
+	 * Get Date Promised override.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getDatePromised_Override();
+
+	ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_DatePromised_Override = new ModelColumn<>(I_M_ReceiptSchedule.class, "DatePromised_Override", null);
+	String COLUMNNAME_DatePromised_Override = "DatePromised_Override";
+
+	/**
 	 * Set Lieferart.
 	 * Definiert die zeitliche Steuerung von Lieferungen
 	 *

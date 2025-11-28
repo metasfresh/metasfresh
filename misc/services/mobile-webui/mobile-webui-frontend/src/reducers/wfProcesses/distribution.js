@@ -120,6 +120,7 @@ const mergeActivityDataStored = ({ draftActivityDataStored, fromActivity }) => {
 
   const job = fromActivity.componentProps.job;
   draftActivityDataStored.lines = normalizeLinesArray(job.lines);
+  draftActivityDataStored.requireScanningProductCode = job.requireScanningProductCode;
   draftActivityDataStored.isCompleteJobAutomatically = job.completeJobAutomatically;
   draftActivityDataStored.qtyRejectedReasons = job.qtyRejectedReasons;
 

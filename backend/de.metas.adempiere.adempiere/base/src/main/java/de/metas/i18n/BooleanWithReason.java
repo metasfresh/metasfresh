@@ -8,6 +8,7 @@ import lombok.experimental.FieldDefaults;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /*
@@ -152,6 +153,14 @@ public final class BooleanWithReason
 		return isFalse()
 				? this
 				: Check.assumeNotNull(otherSupplier.get(), "otherSupplier shall not return null");
+	}
+
+	public void ifTrue(@NonNull final Consumer<String> consumer)
+	{
+		if (isTrue())
+		{
+			consumer.accept(getReasonAsString());
+		}
 	}
 
 }

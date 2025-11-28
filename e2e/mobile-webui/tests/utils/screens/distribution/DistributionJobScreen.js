@@ -6,6 +6,8 @@ import { DistributionJobsListScreen } from './DistributionJobsListScreen';
 import { DistributionDropAllToScreen } from './DistributionDropAllToScreen';
 import { expect } from '@playwright/test';
 import { expectClasses } from '../../expectations';
+import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
+import { DistributionLinePickFromScreen } from './DistributionLinePickFromScreen';
 
 const NAME = 'DistributionJobScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -14,6 +16,20 @@ const containerElement = () => page.locator('#WFProcessScreen');
 export const DistributionJobScreen = {
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
         await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    scanHUToMove: async ({ huQRCode, productScannedCode, expectQuantityDialog = true, expectedQtyToMove }) => await test.step(`${NAME} - Scan HU to move`, async () => {
+        await BarcodeScannerComponent.type({ scannedCode: huQRCode });
+        await DistributionLinePickFromScreen.waitForScreen();
+        await DistributionLinePickFromScreen.typeProductCode(productScannedCode);
+        
+        if(expectQuantityDialog) {
+            await DistributionLinePickFromScreen.fillQuantityDialog({
+                expectedQtyToMove,
+            });
+        }
+        
+        await DistributionJobScreen.waitForScreen();
     }),
 
     clickLineButton: async ({ index }) => await test.step(`${NAME} - Click line ${index}`, async () => {
@@ -57,13 +73,20 @@ export const DistributionJobScreen = {
         }
     }),
 
-    dropAllTo: async ({ dropToLocatorQRCode }) => await test.step(`${NAME} - Drop All To ${dropToLocatorQRCode}`, async () => {
+    dropAllTo: async ({ dropToLocatorQRCode, expectNextScreen }) => await test.step(`${NAME} - Drop All To ${dropToLocatorQRCode}`, async () => {
         const dropAllButton = dropAllButtonLocator();
         await expect(dropAllButton).toBeEnabled({ timeout: VERY_FAST_ACTION_TIMEOUT });
         await dropAllButton.tap();
         await DistributionDropAllToScreen.waitForScreen();
         await DistributionDropAllToScreen.typeQRCode(dropToLocatorQRCode);
-        await DistributionJobScreen.waitForScreen();
+
+        if (!expectNextScreen || expectNextScreen === 'DistributionJobScreen') {
+            await DistributionJobScreen.waitForScreen();
+        } else if (expectNextScreen === 'DistributionJobsListScreen') {
+            await DistributionJobsListScreen.waitForScreen();
+        } else {
+            throw new Error(`Invalid expectNextScreen: ${expectNextScreen}`);
+        }
     }),
 
     abort: async () => await step(`${NAME} - Abort`, async () => {

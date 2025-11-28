@@ -154,6 +154,7 @@
 
         <module>de.metas.handlingunits.base</module>
         <module>de.metas.handlingunits.webui</module>
+        <module>de.metas.handlingunits.mobileui</module>
 
         <module>de.metas.payment.esr</module>
         <module>de.metas.payment.sepa</module>

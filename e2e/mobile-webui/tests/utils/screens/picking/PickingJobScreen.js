@@ -120,7 +120,13 @@ export const PickingJobScreen = {
         await PickingJobScreen.waitForScreen();
     }),
 
-    pickHU: async ({ qrCode, isScanDirectly, expectedPickDirectly, switchToManualInput, qtyEntered, expectQtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason }) => await step(`${NAME} - Scan HU and Pick`, async () => {
+    pickHU: async ({
+                       qrCode,
+                       isScanDirectly,
+                       expectedPickDirectly,
+                       expectNextScreen,
+                       switchToManualInput, qtyEntered, expectQtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason
+                   }) => await step(`${NAME} - Scan HU and Pick`, async () => {
         if (isScanDirectly) {
             await BarcodeScannerComponent.type(qrCode);
         } else {
@@ -129,11 +135,16 @@ export const PickingJobScreen = {
             await PickingJobScanHUScreen.typeQRCode(qrCode);
         }
 
-        if (expectedPickDirectly) {
-            await PickingJobScreen.waitForScreen();
-        } else {
+        if (!expectedPickDirectly) {
             await GetQuantityDialog.fillAndPressDone({ switchToManualInput, expectQtyEntered, qtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason });
+        }
+
+        if (!expectNextScreen || expectNextScreen === 'PickingJobScreen') {
             await PickingJobScreen.waitForScreen();
+        } else if (expectNextScreen === 'PickingJobsListScreen') {
+            await PickingJobsListScreen.waitForScreen();
+        } else {
+            throw new Error(`Invalid expectNextScreen: ${expectNextScreen}`);
         }
     }),
 
