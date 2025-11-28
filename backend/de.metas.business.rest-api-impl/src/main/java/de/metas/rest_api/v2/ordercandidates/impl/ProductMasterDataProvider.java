@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import lombok.With;
 import org.compiere.model.I_M_Product;
+import org.springframework.stereotype.Service;
 
 /*
  * #%L
@@ -40,6 +41,7 @@ import org.compiere.model.I_M_Product;
  * #L%
  */
 
+@Service
 @RequiredArgsConstructor
 public final class ProductMasterDataProvider
 {

@@ -20,37 +20,37 @@
  * #L%
  */
 
-package de.metas.common.rest_api.v1;
+package de.metas.common.rest_api.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 /**
- * JSON type for R_Request.ConfidentialType values.
+ * JSON type for R_Request.Priority values (AD_Reference _PriorityRule).
  *
  * Behavior:
  * - Deserialization: accepts a human-readable name as used in the generated constants of X_R_Request
- *   (i.e., the part after the {@code CONFIDENTIALTYPE_} prefix: {@code PublicInformation}, {@code PartnerConfidential},
- *   {@code Internal}, {@code PrivateInformation}); it also accepts the raw AD reference code values (A/C/I/P).
- * - Serialization: outputs the AD reference code value (A/C/I/P).
+ *   (i.e., the part after the {@code PRIORITY_} prefix: {@code Urgent}, {@code High}, {@code Medium}, {@code Low}, {@code Minor});
+ *   it also accepts the raw AD reference code values ("1","3","5","7","9").
+ * - Serialization: outputs the AD reference code value ("1","3","5","7","9").
  */
-public enum JsonConfidentialType
+@Getter
+@RequiredArgsConstructor
+public enum JsonRequestPriority
 {
-    // Keep codes in sync with org.compiere.model.X_R_Request#CONFIDENTIALTYPE_*
-    PublicInformation("A"),
-    PartnerConfidential("C"),
-    Internal("I"),
-    PrivateInformation("P");
+    // Keep codes in sync with org.compiere.model.X_R_Request#PRIORITY_*
+    Urgent("1"),
+    High("3"),
+    Medium("5"),
+    Low("7"),
+    Minor("9");
 
     private final String code;
 
-    JsonConfidentialType(final String code)
-    {
-        this.code = code;
-    }
-
     /**
-     * Returns the AD reference code (A/C/I/P) when serializing to JSON.
+     * Returns the AD reference code ("1","3","5","7","9") when serializing to JSON.
      */
     @JsonValue
     public String toJson()
@@ -58,16 +58,11 @@ public enum JsonConfidentialType
         return code;
     }
 
-    public String getCode()
-    {
-        return code;
-    }
-
     /**
-     * Accepts either the human-readable constant name (e.g. "PublicInformation") or the code (e.g. "A").
+     * Accepts either the human-readable constant name (e.g. "High") or the code (e.g. "3").
      */
     @JsonCreator
-    public static JsonConfidentialType fromJson(final String value)
+    public static JsonRequestPriority fromJson(final String value)
     {
         if (value == null)
         {
@@ -75,7 +70,7 @@ public enum JsonConfidentialType
         }
 
         // Try by code first
-        for (final JsonConfidentialType t : values())
+        for (final JsonRequestPriority t : values())
         {
             if (t.code.equalsIgnoreCase(value))
             {
@@ -84,7 +79,7 @@ public enum JsonConfidentialType
         }
 
         // Then by enum name (human-readable constant without the generated prefix)
-        for (final JsonConfidentialType t : values())
+        for (final JsonRequestPriority t : values())
         {
             if (t.name().equalsIgnoreCase(value))
             {
@@ -92,6 +87,6 @@ public enum JsonConfidentialType
             }
         }
 
-        throw new IllegalArgumentException("Unknown ConfidentialType: " + value);
+        throw new IllegalArgumentException("Unknown Request Priority: " + value);
     }
 }

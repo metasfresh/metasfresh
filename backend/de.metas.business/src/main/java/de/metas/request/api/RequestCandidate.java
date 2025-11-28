@@ -4,6 +4,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.inout.QualityNoteId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.request.RequestConfidentialType;
+import de.metas.request.RequestPriority;
 import de.metas.request.RequestStatusId;
 import de.metas.request.RequestTypeId;
 import de.metas.user.UserId;
@@ -48,7 +50,7 @@ public class RequestCandidate
 	@Nullable UserId userId;
 	@Nullable TableRecordReference recordRef;
 	@NonNull ZonedDateTime dateDelivered;
-	@NonNull String confidentialType;
+	@NonNull RequestConfidentialType confidentialType;
 	@NonNull String summary;
 	@Nullable QualityNoteId qualityNoteId;
 	@Nullable String performanceType;
@@ -56,4 +58,5 @@ public class RequestCandidate
 	@Nullable Boolean isSelfService;
 	@Nullable String result;
 	@Nullable RequestStatusId statusId;
+	@Nullable RequestPriority priority;
 }

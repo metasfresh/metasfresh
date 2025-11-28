@@ -23,16 +23,8 @@
 package de.metas.rest_api.request;
 
 import de.metas.Profiles;
-import de.metas.bpartner.effective.BPartnerEffectiveBL;
-import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
-import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.logging.LogManager;
 import de.metas.rest_api.utils.JsonErrors;
-import de.metas.rest_api.v2.bpartner.BpartnerRestController;
-import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
-import de.metas.rest_api.v2.ordercandidates.impl.MasterdataProvider;
-import de.metas.security.permissions2.PermissionServiceFactories;
-import de.metas.security.permissions2.PermissionServiceFactory;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
@@ -59,12 +51,6 @@ public class RequestRestController
 	private static final Logger logger = LogManager.getLogger(RequestRestController.class);
 
 	@NonNull private final RequestRestService requestRestService;
-	@NonNull private final BpartnerRestController bpartnerRestController;
-	@NonNull private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
-	@NonNull private final JsonRetrieverService jsonRetrieverService;
-	@NonNull private final ExternalSystemRepository externalSystemRepository;
-	@NonNull private final PermissionServiceFactory permissionServiceFactory = PermissionServiceFactories.currentContext();
-	@NonNull private final BPartnerEffectiveBL bPartnerEffectiveBL;
 
 	@ApiResponses(value = {
 			@ApiResponse(code = 201, message = "Successfully created or updated request"),
@@ -78,7 +64,7 @@ public class RequestRestController
 		try
 		{
 			return ResponseEntity.status(HttpStatus.CREATED)
-					.body(requestRestService.upsert(request, getMasterdataProvider()));
+					.body(requestRestService.upsert(request));
 		}
 		catch (final Exception ex)
 		{
@@ -87,17 +73,5 @@ public class RequestRestController
 			return ResponseEntity.unprocessableEntity()
 					.body(JsonErrors.ofThrowable(ex, adLanguage));
 		}
-	}
-
-	private MasterdataProvider getMasterdataProvider()
-	{
-		return MasterdataProvider.builder()
-				.permissionService(permissionServiceFactory.createPermissionService())
-				.bpartnerRestController(bpartnerRestController)
-				.externalReferenceRestControllerService(externalReferenceRestControllerService)
-				.jsonRetrieverService(jsonRetrieverService)
-				.externalSystemRepository(externalSystemRepository)
-				.bPartnerEffectiveBL(bPartnerEffectiveBL)
-				.build();
 	}
 }

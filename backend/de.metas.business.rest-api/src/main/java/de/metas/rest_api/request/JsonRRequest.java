@@ -24,7 +24,8 @@ package de.metas.rest_api.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.common.rest_api.v1.JsonConfidentialType;
+import de.metas.common.rest_api.request.JsonConfidentialType;
+import de.metas.common.rest_api.request.JsonRequestPriority;
 import de.metas.common.rest_api.v2.SwaggerDocConstants;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -57,7 +58,7 @@ public class JsonRRequest
 	@ApiModelProperty(value = SwaggerDocConstants.CONTACT_IDENTIFIER_DOC)
 	@Nullable String userIdentifier;
 
-	@Nullable Integer priority;
+	@Nullable JsonRequestPriority priority;
 	@Nullable String dueType;
 	@NonNull String summary;
 	@Nullable JsonConfidentialType confidentialityLevel;
@@ -70,7 +71,7 @@ public class JsonRRequest
 	@Nullable String vendorIdentifier;
 
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-	@Nullable LocalDate dateDelivered;
+	@NonNull LocalDate dateDelivered;
 
 	@ApiModelProperty(value = SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC)
 	@Nullable String productIdentifier;

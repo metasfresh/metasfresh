@@ -367,10 +367,8 @@ public class JsonPersisterService
 
 	public @NonNull Optional<BPartnerCompositeAndContactId> getBPartnerCompositeByContactIdentifier(final @NonNull ExternalIdentifier contactIdentifier)
 	{
-		final Optional<BPartnerContactQuery> contactQuery = createContactQuery(contactIdentifier);
-		final Optional<BPartnerCompositeAndContactId> optionalContactIdAndBPartner = contactQuery
+		return createContactQuery(contactIdentifier)
 				.flatMap(bpartnerCompositeRepository::getByContact);
-		return optionalContactIdAndBPartner;
 	}
 
 	private void handleExternalReference(

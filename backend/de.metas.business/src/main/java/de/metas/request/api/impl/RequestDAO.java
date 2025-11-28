@@ -6,6 +6,7 @@ import de.metas.inout.QualityNoteId;
 import de.metas.order.model.I_C_Order;
 import de.metas.product.ProductId;
 import de.metas.request.RequestId;
+import de.metas.request.RequestPriority;
 import de.metas.request.RequestStatusId;
 import de.metas.request.api.IRequestDAO;
 import de.metas.request.api.RequestCandidate;
@@ -64,7 +65,7 @@ public class RequestDAO implements IRequestDAO
 		final I_R_Request request = newInstance(I_R_Request.class);
 
 		request.setSummary(candidate.getSummary());
-		request.setConfidentialType(candidate.getConfidentialType());
+		request.setConfidentialType(candidate.getConfidentialType().getCode());
 		request.setAD_Org_ID(candidate.getOrgId().getRepoId());
 		request.setM_Product_ID(ProductId.toRepoId(candidate.getProductId()));
 		request.setAD_Table_ID(candidate.getRecordRef() != null ? candidate.getRecordRef().getAD_Table_ID() : -1);
@@ -85,6 +86,7 @@ public class RequestDAO implements IRequestDAO
 		request.setDateDelivered(TimeUtil.asTimestamp(candidate.getDateDelivered()));
 		request.setResult(candidate.getResult());
 		request.setR_Status_ID(RequestStatusId.toRepoId(candidate.getStatusId()));
+		request.setPriority(RequestPriority.toValue(candidate.getPriority()));
 		if (candidate.getIsEscalated() != null)
 		{
 			request.setIsEscalated(candidate.getIsEscalated());

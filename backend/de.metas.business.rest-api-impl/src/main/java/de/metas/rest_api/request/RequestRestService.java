@@ -33,14 +33,16 @@ import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.request.RequestConfidentialType;
+import de.metas.request.RequestPriority;
 import de.metas.request.RequestStatusId;
 import de.metas.request.RequestTypeId;
 import de.metas.request.api.IRequestBL;
 import de.metas.request.api.RequestCandidate;
 import de.metas.request.api.impl.RequestService;
 import de.metas.rest_api.utils.IdentifierString;
+import de.metas.rest_api.v2.bpartner.BPartnerMasterdataProvider;
 import de.metas.rest_api.v2.order.sales.OrderService;
-import de.metas.rest_api.v2.ordercandidates.impl.MasterdataProvider;
 import de.metas.rest_api.v2.ordercandidates.impl.ProductMasterDataProvider;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -54,7 +56,7 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_R_Request;
-import org.compiere.model.X_R_Request;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -72,17 +74,20 @@ public class RequestRestService
 	private final IQualityNoteDAO qualityNoteDAO = Services.get(IQualityNoteDAO.class);
 	@NonNull private final OrderService orderService;
 	@NonNull private final RequestService requestService;
+	@NonNull private final BPartnerMasterdataProvider bPartnerMasterdataProvider;
+	@NonNull private final ProductMasterDataProvider productMasterDataProvider;
 
-	public JsonRRequest upsert(@NonNull final JsonRRequest request, final MasterdataProvider masterdataProvider)
+	public JsonRRequest upsert(@NonNull final JsonRRequest request)
 	{
-		final I_R_Request persistedRequest = requestBL.createRequest(createRequestCandidate(request, masterdataProvider));
+		final I_R_Request persistedRequest = requestBL.createRequest(createRequestCandidate(request));
 		return request.withRequestId(JsonMetasfreshId.of(persistedRequest.getR_Request_ID()));
 	}
 
-	private RequestCandidate createRequestCandidate(final @NonNull JsonRRequest request, final MasterdataProvider masterdataProvider)
+	private RequestCandidate createRequestCandidate(final @NonNull JsonRRequest request)
 	{
 		final I_AD_Org org = orgDAO.getById(retrieveOrgIdOrDefault(request.getOrgCode()));
 		final OrgId orgId = OrgId.ofRepoId(org.getAD_Org_ID());
+		final ZoneId orgZoneId = orgDAO.getTimeZone(orgId);
 
 		final RequestTypeId requestTypeId = requestService.retrieveByInternalName(request.getRequestType());
 		if (requestTypeId == null)
@@ -90,17 +95,15 @@ public class RequestRestService
 			throw new AdempiereException("@Invalid@ @R_RequestType_ID@");
 		}
 
-		final String confidentialType = request.getConfidentialityLevel() != null
-				? request.getConfidentialityLevel().getCode()
-				: X_R_Request.CONFIDENTIALTYPE_Internal;
+		final RequestConfidentialType confidentialType = request.getConfidentialityLevel() != null
+				? RequestConfidentialType.ofCode(request.getConfidentialityLevel().getCode())
+				: RequestConfidentialType.PartnerConfidential;
 
-		final ZonedDateTime dateDelivered = request.getDateDelivered() != null
-				? request.getDateDelivered().atStartOfDay(ZoneId.systemDefault())
-				: ZonedDateTime.now();
+		final ZonedDateTime dateDelivered = TimeUtil.asZonedDateTime(request.getDateDelivered(), orgZoneId);
 
-		final UserId userId = resolveUserIdOrNull(ExternalIdentifier.ofOrNull(request.getUserIdentifier()), masterdataProvider, orgId);
-		final ProductId productId = resolveProductIdOrNull(ExternalIdentifier.ofOrNull(request.getProductIdentifier()), masterdataProvider, orgId);
-		final BPartnerId bPartnerId = resolveBPartnerIdOrNull(ExternalIdentifier.ofOrNull(request.getBpartnerIdentifier()), masterdataProvider, orgId);
+		final UserId userId = resolveUserIdOrNull(ExternalIdentifier.ofOrNull(request.getUserIdentifier()), orgId);
+		final ProductId productId = resolveProductIdOrNull(ExternalIdentifier.ofOrNull(request.getProductIdentifier()), orgId);
+		final BPartnerId bPartnerId = resolveBPartnerIdOrNull(ExternalIdentifier.ofOrNull(request.getBpartnerIdentifier()), orgId);
 
 		final OrderId orderId = resolveOrderId(IdentifierString.ofOrNull(request.getOrderIdentifier()), orgId);
 		TableRecordReference recordRef = null;
@@ -130,6 +133,12 @@ public class RequestRestService
 		{
 			statusId = requestService.getStatusIdByRequestTypeIdAndName(requestTypeId, request.getStatus());
 		}
+
+		RequestPriority priority = null;
+		if (request.getPriority() != null)
+		{
+			priority = RequestPriority.ofCode(request.getPriority().getCode());
+		}
 		return RequestCandidate.builder()
 				.orgId(orgId)
 				.requestTypeId(requestTypeId)
@@ -146,17 +155,18 @@ public class RequestRestService
 				.isSelfService(request.getIsSelfService())
 				.result(request.getStatus())
 				.statusId(statusId)
+				.priority(priority)
 				.build();
 	}
 
 	@Nullable
-	private static ProductId resolveProductIdOrNull(final @Nullable ExternalIdentifier productIdentifier, @NonNull final MasterdataProvider masterdataProvider, @NonNull final OrgId orgId)
+	private ProductId resolveProductIdOrNull(final @Nullable ExternalIdentifier productIdentifier, @NonNull final OrgId orgId)
 	{
 		if (productIdentifier == null)
 		{
 			return null;
 		}
-		final ProductMasterDataProvider.ProductInfo productInfo = masterdataProvider.getProductInfo(productIdentifier, orgId);
+		final ProductMasterDataProvider.ProductInfo productInfo = productMasterDataProvider.getProductInfo(productIdentifier, orgId);
 		if (productInfo == null)
 		{
 			throw new AdempiereException("@NotFound@ @M_Product_ID@");
@@ -165,24 +175,24 @@ public class RequestRestService
 	}
 
 	@Nullable
-	private static UserId resolveUserIdOrNull(final @Nullable ExternalIdentifier userIdentifier, @NonNull final MasterdataProvider masterdataProvider, @NonNull final OrgId orgId)
+	private UserId resolveUserIdOrNull(final @Nullable ExternalIdentifier userIdentifier, @NonNull final OrgId orgId)
 	{
 		if (userIdentifier == null)
 		{
 			return null;
 		}
-		return masterdataProvider.resolveUserExternalIdentifier(orgId, userIdentifier)
+		return bPartnerMasterdataProvider.resolveUserExternalIdentifier(orgId, userIdentifier)
 				.orElseThrow(() -> new AdempiereException("@NotFound@ @AD_User_ID@"));
 	}
 
 	@Nullable
-	private static BPartnerId resolveBPartnerIdOrNull(final @Nullable ExternalIdentifier bpartnerIdentifier, @NonNull final MasterdataProvider masterdataProvider, @NonNull final OrgId orgId)
+	private BPartnerId resolveBPartnerIdOrNull(final @Nullable ExternalIdentifier bpartnerIdentifier, @NonNull final OrgId orgId)
 	{
 		if (bpartnerIdentifier == null)
 		{
 			return null;
 		}
-		return masterdataProvider.resolveBPartnerExternalIdentifier(orgId, bpartnerIdentifier)
+		return bPartnerMasterdataProvider.resolveBPartnerExternalIdentifier(orgId, bpartnerIdentifier)
 				.orElseThrow(() -> new AdempiereException("@NotFound@ @C_BPartner_ID@"));
 	}
 
