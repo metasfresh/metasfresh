@@ -75,7 +75,7 @@ public class R_Request_StepDef
 				.addEqualsFilter(I_R_Request.COLUMNNAME_DateDelivered, dateDelivered)
 				.addEqualsFilter(I_R_Request.COLUMNNAME_Priority, priority)
 				.addEqualsFilter(I_R_Request.COLUMNNAME_ConfidentialType, confidentialType)
-				.addCompareFilter(I_R_Request.COLUMN_Created, CompareQueryFilter.Operator.GREATER_OR_EQUAL, SystemTime.asTimestamp())
+				.addCompareFilter(I_R_Request.COLUMN_Created, CompareQueryFilter.Operator.EQUAL, SystemTime.asTimestamp())
 				.create();
 		final List<I_R_Request> requests = requestQuery.list();
 
