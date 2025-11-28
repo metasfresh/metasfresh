@@ -357,6 +357,9 @@ public class ApiAuditService
 				.forEach(notificationBL::send);
 	}
 
+	/**
+	 * Right now, we can only process such requests asynchronously that have a JSON request body. If not, the method will return {@code false}. 
+	 */
 	public boolean canProcesAsync(@NonNull final HttpServletRequest request)
 	{
 		final String contentType = request.getContentType();
@@ -372,7 +375,7 @@ public class ApiAuditService
 	{
 		if(!canProcesAsync(request))
 		{
-			return false; // right now, we can only process such requests asynchronously that have a JSON request body.
+			return false;
 		}
 		final Optional<Boolean> callerWantsToBeProcessedAsync = Optional.ofNullable(request.getHeader(API_ASYNC_HEADER))
 				.map(Boolean::parseBoolean);
