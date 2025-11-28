@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.business
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,9 +22,13 @@
 
 package de.metas.incoterms;
 
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.With;
+
+import javax.annotation.Nullable;
 
 @Value
 @Builder
@@ -33,4 +37,8 @@ public class Incoterms
 	@NonNull IncotermsId id;
 	@NonNull String name;
 	@NonNull String value;
+	@Nullable String defaultLocation;
+	@Nullable @With String locationEffective;
+	@NonNull OrgId orgId;
+	boolean isDefault;
 }

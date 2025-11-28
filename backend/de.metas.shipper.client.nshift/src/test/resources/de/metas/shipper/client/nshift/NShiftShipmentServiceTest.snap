@@ -1,4 +1,4 @@
-de.metas.shipper.client.nshift.ShipmentServiceTest.build_request_test=[
+de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
   {
     "data": {
       "ActorCSID": 123,

@@ -88,8 +88,8 @@ import de.metas.greeting.Greeting;
 import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.incoterms.IIncotermsDAO;
 import de.metas.incoterms.Incoterms;
+import de.metas.incoterms.IncotermsRepository;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.job.Job;
 import de.metas.job.JobRepository;
@@ -274,7 +274,6 @@ public class JsonRetrieverService
 
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
-	private final IIncotermsDAO incotermsDAO = Services.get(IIncotermsDAO.class);
 
 	private final transient BPartnerQueryService bPartnerQueryService;
 	private final transient BPartnerCompositeRepository bpartnerCompositeRepository;
@@ -285,6 +284,7 @@ public class JsonRetrieverService
 	private final transient TitleRepository titleRepository;
 	private final ExternalReferenceRestControllerService externalReferenceService;
 	private final PaymentTermService paymentTermService;
+	private final IncotermsRepository incotermsRepository;
 
 	private final transient BPartnerCompositeCacheByLookupKey cache;
 
@@ -299,7 +299,8 @@ public class JsonRetrieverService
 			@NonNull final TitleRepository titleRepository,
 			@NonNull final JobRepository jobRepository,
 			@NonNull final PaymentTermService paymentTermService,
-			final ExternalReferenceRestControllerService externalReferenceService,
+			@NonNull final IncotermsRepository incotermsRepository,
+			@NonNull final ExternalReferenceRestControllerService externalReferenceService,
 			@NonNull final String identifier)
 	{
 		this.bPartnerQueryService = bPartnerQueryService;
@@ -309,6 +310,7 @@ public class JsonRetrieverService
 		this.titleRepository = titleRepository;
 		this.jobRepository = jobRepository;
 		this.paymentTermService = paymentTermService;
+		this.incotermsRepository = incotermsRepository;
 		this.externalReferenceService = externalReferenceService;
 		this.identifier = identifier;
 
@@ -410,7 +412,7 @@ public class JsonRetrieverService
 		Incoterms customerIncoterms = null;
 		if (bpartner.getCustomerIncotermsId() != null)
 		{
-			customerIncoterms = incotermsDAO.getById(bpartner.getCustomerIncotermsId());
+			customerIncoterms = incotermsRepository.getById(bpartner.getCustomerIncotermsId());
 		}
 
 		final JsonResponseBPGroup jsonBPGroup = toJson(bpartner.getGroupId());

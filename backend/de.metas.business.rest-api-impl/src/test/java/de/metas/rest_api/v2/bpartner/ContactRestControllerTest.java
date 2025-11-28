@@ -24,8 +24,6 @@ package de.metas.rest_api.v2.bpartner;
 
 import au.com.origin.snapshots.Expect;
 import au.com.origin.snapshots.junit5.SnapshotExtension;
-import de.metas.bpartner.BPGroupRepository;
-import de.metas.bpartner.BPGroupService;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
@@ -44,20 +42,11 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.rest_api.v2.SyncAdvise.IfExists;
 import de.metas.common.util.time.SystemTime;
-import de.metas.currency.CurrencyRepository;
-import de.metas.externalreference.ExternalReferenceRepository;
-import de.metas.externalreference.ExternalReferenceTypes;
-import de.metas.externalsystem.ExternalSystemRepository;
-import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.externalsystem.ExternalSystemTestHelper;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.job.JobRepository;
-import de.metas.payment.paymentterm.PaymentTermService;
-import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
-import de.metas.title.TitleRepository;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
 import de.metas.util.lang.UIDStringUtil;
@@ -126,25 +115,12 @@ class ContactRestControllerTest
 
 		ExternalSystemTestHelper.createExternalSystemIfNotExists(ExternalSystemType.Other);
 
-		final ExternalReferenceRestControllerService externalReferenceRestControllerService =
-				new ExternalReferenceRestControllerService(ExternalReferenceRepository.newInstanceForUnitTesting(new ExternalReferenceTypes()), ExternalSystemRepository.newInstanceForUnitTesting(), new ExternalReferenceTypes());
-
 		bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, recordChangeLogRepository, new UserRoleRepository(), new BPartnerCreditLimitRepository());
-		final BPGroupRepository bpGroupRepository = new BPGroupRepository();
 		
-		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
-				new JsonRequestConsolidateService(),
-				new BPartnerQueryService(),
-				bpartnerCompositeRepository,
-				bpGroupRepository,
-				new BPGroupService(bpGroupRepository),
-				new GreetingRepository(),
-				new TitleRepository(),
-				new CurrencyRepository(),
-				new JobRepository(),
-				new PaymentTermService(),
-				externalReferenceRestControllerService,
-				Mockito.mock(AlbertaBPartnerCompositeService.class));
+		final JsonServiceFactory jsonServiceFactory = JsonServiceFactory.newInstanceForJUnitTesting(
+				recordChangeLogRepository,
+				Mockito.mock(AlbertaBPartnerCompositeService.class)
+		);
 
 		contactRestController = new ContactRestController(
 				new BPartnerEndpointService(jsonServiceFactory),

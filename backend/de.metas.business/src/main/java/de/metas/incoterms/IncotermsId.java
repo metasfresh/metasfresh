@@ -22,20 +22,26 @@
 
 package de.metas.incoterms;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
+import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
+import java.util.Optional;
 
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 public class IncotermsId implements RepoIdAware
 {
 	int repoId;
 
-	@JsonCreator
 	public static IncotermsId ofRepoId(final int repoId)
 	{
 		return new IncotermsId(repoId);
@@ -47,14 +53,46 @@ public class IncotermsId implements RepoIdAware
 		return repoId != null && repoId > 0 ? new IncotermsId(repoId) : null;
 	}
 
+	@Nullable
+	public static IncotermsId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? new IncotermsId(repoId) : null;
+	}
+
+	public static Optional<IncotermsId> optionalOfRepoId(final int repoId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
+	}
+
+	@JsonCreator
+	public static IncotermsId ofObject(@NonNull final Object object)
+	{
+		return RepoIdAwares.ofObject(object, IncotermsId.class, IncotermsId::ofRepoId);
+	}
+
+	public static int toRepoId(@Nullable final IncotermsId incotermsId)
+	{
+		return toRepoIdOr(incotermsId, -1);
+	}
+
+	public static int toRepoIdOr(@Nullable final IncotermsId incotermsId, final int defaultValue)
+	{
+		return incotermsId != null ? incotermsId.getRepoId() : defaultValue;
+	}
+
+	private IncotermsId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_Incoterms_ID");
+	}
+
 	@JsonValue
 	public int toJson()
 	{
 		return getRepoId();
 	}
 
-	private IncotermsId(final int repoId)
+	public static boolean equals(@Nullable final IncotermsId o1, @Nullable final IncotermsId o2)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "C_Incoterms_ID");
+		return Objects.equals(o1, o2);
 	}
 }

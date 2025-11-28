@@ -59,9 +59,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 		"logging.level.de.metas.shipper.client.nshift.NShiftShipmentService=TRACE",
 		"logging.level.de.metas.shipper.client.nshift.NShiftRestClient=TRACE"
 })
-
 @ExtendWith(SnapshotExtension.class)
-public class ShipmentServiceTest
+public class NShiftShipmentServiceTest
 {
 	private Expect expect;
 
