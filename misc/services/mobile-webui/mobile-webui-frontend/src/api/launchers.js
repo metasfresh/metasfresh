@@ -124,5 +124,5 @@ export const useLaunchersWebsocket = ({
         console.debug('WS disconnected', { applicationId, filterByQRCode, filters });
       }
     };
-  }, [enabled, userToken, applicationId, filterByQRCodeString, filters, facetIds]);
+  }, [enabled, userToken, applicationId, filterByQRCodeString, JSON.stringify(filters), facetIds]);
 };
