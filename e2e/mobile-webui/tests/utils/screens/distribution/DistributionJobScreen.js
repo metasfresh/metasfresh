@@ -18,13 +18,17 @@ export const DistributionJobScreen = {
         await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
-    scanHUToMove: async ({ huQRCode, productScannedCode, expectedQtyToMove }) => await test.step(`${NAME} - Scan HU to move`, async () => {
+    scanHUToMove: async ({ huQRCode, productScannedCode, expectQuantityDialog = true, expectedQtyToMove }) => await test.step(`${NAME} - Scan HU to move`, async () => {
         await BarcodeScannerComponent.type({ scannedCode: huQRCode });
         await DistributionLinePickFromScreen.waitForScreen();
         await DistributionLinePickFromScreen.typeProductCode(productScannedCode);
-        await DistributionLinePickFromScreen.fillQuantityDialog({
-            expectedQtyToMove,
-        });
+        
+        if(expectQuantityDialog) {
+            await DistributionLinePickFromScreen.fillQuantityDialog({
+                expectedQtyToMove,
+            });
+        }
+        
         await DistributionJobScreen.waitForScreen();
     }),
 

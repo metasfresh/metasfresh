@@ -58,17 +58,23 @@ const DistributionPickFromScreen = () => {
     setLineId(lineId);
 
     const { qtyToPickRemaining, uom } = getLineInfo({ activity, lineId });
+
+    if (qtyToPickRemaining === 1) {
+      await onResult({ qty: 1, scannedBarcode: huScannedCode, lineId });
+      return {};
+    }
+
     return {
       qtyTarget: qtyToPickRemaining,
       uom,
     };
   };
 
-  const onResult = ({ qty, scannedBarcode: huScannedCode }) => {
+  const onResult = ({ qty, scannedBarcode: huScannedCode, lineId: lineIdParam }) => {
     return postDistributionPickFrom({
       wfProcessId,
       activityId,
-      lineId,
+      lineId: lineIdParam ? lineIdParam : lineId,
       pickFrom: {
         qrCode: toQRCodeString(huScannedCode),
         qtyPicked: qty,

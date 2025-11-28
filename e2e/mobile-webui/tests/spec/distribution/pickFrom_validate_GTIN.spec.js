@@ -61,3 +61,21 @@ test('Scan directly in job screen, expect scanning the product code too', async 
     });
     await DistributionJobScreen.expectLineButton({ index: 1, qtyToPick: '100 Stk', qtyPicked: '100 Stk', color: 'yellow' });
 });
+
+test('Do not ask for picked qty when it is one', async ({ page }) => {
+    const masterdata = await createMasterdata({ qtyToMove: 1 });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('distribution');
+    await DistributionJobsListScreen.waitForScreen();
+    await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
+
+    await DistributionJobScreen.expectLineButton({ index: 1, qtyToPick: '1 Stk', qtyPicked: '0 Stk', color: 'red' });
+    await DistributionJobScreen.scanHUToMove({
+        huQRCode: masterdata.handlingUnits.HU1.qrCode,
+        productScannedCode: masterdata.products.P1.gtin,
+        expectQuantityDialog: false,
+    });
+    await DistributionJobScreen.expectLineButton({ index: 1, qtyToPick: '1 Stk', qtyPicked: '1 Stk', color: 'yellow' });
+});
