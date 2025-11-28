@@ -183,11 +183,6 @@ public class ApiAuditService
 		this.objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 	}
 
-	public boolean wasAlreadyFiltered(@NonNull final HttpServletRequest httpServletRequest)
-	{
-		return httpServletRequest.getHeader(API_REQUEST_HEADER_EXISTING_AUDIT_ID) != null;
-	}
-
 	@NonNull
 	public Optional<ApiRequestAuditId> extractApiRequestAuditId(@NonNull final HttpServletRequest httpServletRequest)
 	{
@@ -375,7 +370,10 @@ public class ApiAuditService
 				.forEach(notificationBL::send);
 	}
 
-	public boolean bypassFilter(@NonNull final HttpServletRequest request)
+	/**
+	 * Right now, we can only process such requests asynchronously that have a JSON request body. If not, the method will return {@code false}. 
+	 */
+	public boolean canProcesAsync(@NonNull final HttpServletRequest request)
 	{
 		final String contentType = request.getContentType();
 
@@ -383,8 +381,7 @@ public class ApiAuditService
 		{
 			return false;
 		}
-
-		return !contentType.contains(APPLICATION_JSON_VALUE);
+		return contentType.contains(APPLICATION_JSON_VALUE);
 	}
 
 	@NonNull
@@ -395,6 +392,10 @@ public class ApiAuditService
 
 	private boolean shouldProcessRequestAsync(@NonNull final HttpServletRequest request, @NonNull final ApiAuditConfig apiAuditConfig)
 	{
+		if(!canProcesAsync(request))
+		{
+			return false;
+		}
 		final Optional<Boolean> callerWantsToBeProcessedAsync = Optional.ofNullable(request.getHeader(API_ASYNC_HEADER))
 				.map(Boolean::parseBoolean);
 
@@ -660,7 +661,8 @@ public class ApiAuditService
 	private String computeInternalHostName(@NonNull final ApiRequestAudit apiRequestAudit)
 	{
 		final String hostName;
-		if (apiRequestAudit.getPath().startsWith("http://localhost"))
+		final String path = apiRequestAudit.getPath();
+		if (Check.isNotBlank(path) && path.startsWith("http://localhost"))
 		{
 			hostName = "localhost";
 		}
