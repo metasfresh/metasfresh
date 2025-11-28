@@ -99,7 +99,7 @@ public class RequestRestService
 				? RequestConfidentialType.ofCode(request.getConfidentialityLevel().getCode())
 				: RequestConfidentialType.PartnerConfidential;
 
-		final ZonedDateTime dateDelivered = TimeUtil.asZonedDateTime(request.getDateDelivered());
+		final ZonedDateTime dateDelivered = TimeUtil.asZonedDateTime(request.getDateDelivered(), orgZoneId);
 
 		final UserId userId = resolveUserIdOrNull(ExternalIdentifier.ofOrNull(request.getUserIdentifier()), orgId);
 		final ProductId productId = resolveProductIdOrNull(ExternalIdentifier.ofOrNull(request.getProductIdentifier()), orgId);
