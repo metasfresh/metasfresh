@@ -162,3 +162,9 @@ export const getQtyAvailable = ({ wfProcessId }) => {
     .get(`${apiBasePath}/picking/job/${wfProcessId}/qtyAvailable`)
     .then((response) => unboxAxiosResponse(response));
 };
+
+export const completePickingJob = ({ wfProcessId }) => {
+  return axios
+    .post(`${apiBasePath}/picking/job/${wfProcessId}/complete`)
+    .then((response) => unboxAxiosResponse(response));
+};

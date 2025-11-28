@@ -29,6 +29,7 @@ import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.BPGroupService;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.currency.CurrencyRepository;
@@ -36,6 +37,7 @@ import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService
 import de.metas.greeting.GreetingRepository;
 import de.metas.job.JobRepository;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.MetasfreshId;
@@ -82,7 +84,7 @@ class JsonRetrieverServiceTest
 		POJOLookupMap.setNextIdSupplier_PerTableSequence();
 
 		final BPartnerBL partnerBL = new BPartnerBL(new UserRepository());
-		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository());
+		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository(), new BPartnerCreditLimitRepository());
 		final BPGroupRepository bpGroupRepository = new BPGroupRepository();
 		
 		final de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
@@ -95,6 +97,7 @@ class JsonRetrieverServiceTest
 				new TitleRepository(),
 				new CurrencyRepository(),
 				new JobRepository(),
+				new PaymentTermService(),
 				Mockito.mock(ExternalReferenceRestControllerService.class),
 				Mockito.mock(AlbertaBPartnerCompositeService.class));
 
@@ -103,6 +106,7 @@ class JsonRetrieverServiceTest
 		final I_C_BP_Group bpGroupRecord = newInstance(I_C_BP_Group.class);
 		bpGroupRecord.setC_BP_Group_ID(C_BP_GROUP_ID);
 		bpGroupRecord.setName(BP_GROUP_RECORD_NAME);
+		bpGroupRecord.setValue(BP_GROUP_RECORD_NAME);
 		saveRecord(bpGroupRecord);
 
 		createBPartnerData(0);

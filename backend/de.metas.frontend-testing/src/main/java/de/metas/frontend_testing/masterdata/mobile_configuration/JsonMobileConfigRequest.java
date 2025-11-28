@@ -39,6 +39,7 @@ public class JsonMobileConfigRequest
 		@Nullable Boolean allowPickingAnyCustomer;
 		@Nullable Boolean allowPickingAnyHU;
 		@Nullable CreateShipmentPolicy createShipmentPolicy;
+		@Nullable Boolean completeJobAutomatically;
 		@Nullable Boolean alwaysSplitHUsEnabled;
 		@Nullable Boolean allowCompletingPartialPickingJob;
 		@Nullable Boolean shipOnCloseLU;
@@ -80,6 +81,9 @@ public class JsonMobileConfigRequest
 		@Nullable Boolean allowPickingAnyHU;
 		@Nullable String captionFormat;
 		@Nullable String orderBys;
+
+		@Nullable Boolean requireScanningProductCode;
+		@Nullable Boolean completeJobAutomatically;
 
 		@Nullable QueryLimit maxLaunchers;
 		@Nullable QueryLimit maxStartedLaunchers;

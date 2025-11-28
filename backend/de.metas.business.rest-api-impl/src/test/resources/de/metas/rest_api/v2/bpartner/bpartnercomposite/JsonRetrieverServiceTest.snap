@@ -99,6 +99,7 @@ de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
         "value": "contactRecord.value"
       }
     ],
+    "creditLimits": [ ],
     "locations": [
       {
         "active": true,
@@ -137,14 +138,16 @@ de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
           "billToDefault": false,
           "shipTo": false,
           "shipToDefault": false,
-          "visitorsAddress": false
+          "visitorsAddress": false,
+          "visitorsAddressDefault": false
         },
         "poBox": "locationRecord.poBox",
         "postal": "locationRecord.postal",
         "region": "locationRecord.regionName",
         "remitTo": false,
         "replicationLookupDefault": false,
-        "visitorsAddress": false
+        "visitorsAddress": false,
+        "visitorsAddressDefault": false
       }
     ],
     "orgId": 10

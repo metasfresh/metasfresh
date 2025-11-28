@@ -64,6 +64,7 @@ const useConfigParams = ({ isShowInputTextParam, isShowVideoParam, continuousRun
 };
 
 const BarcodeScannerComponent = ({
+  testId,
   isShowInputText: isShowInputTextParam,
   isShowVideo: isShowVideoParam,
   resolveScannedBarcode,
@@ -179,7 +180,7 @@ const BarcodeScannerComponent = ({
       } else {
         resolvedResult = { scannedBarcode, error: null };
       }
-      console.log('Got resolvedResult', resolvedResult);
+      console.debug('Got resolvedResult', resolvedResult);
 
       if (resolvedResult.error) {
         toastError({ plainMessage: resolvedResult.error });
@@ -275,7 +276,7 @@ const BarcodeScannerComponent = ({
           onBlur={handleInputTextBlur}
           onChange={handleInputTextChangedDebounced}
           onKeyUp={handleInputTextKeyPress}
-          data-testid="qrCode-input"
+          data-testid={testId ?? 'qrCode-input'}
         />
       )}
     </div>
@@ -283,6 +284,7 @@ const BarcodeScannerComponent = ({
 };
 
 BarcodeScannerComponent.propTypes = {
+  testId: PropTypes.string,
   isShowInputText: PropTypes.bool,
   isShowVideo: PropTypes.bool,
   resolveScannedBarcode: PropTypes.func,
