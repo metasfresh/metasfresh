@@ -60,6 +60,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -114,11 +115,6 @@ public class PurchaseOrderToShipperTransportationService
 			Loggables.addLog("Adding purchase order with ID: {} to shipper transportation with ID: {}", purchaseOrderId, shipperTransportationId);
 			addPurchaseOrderToShipperTransportation(purchaseOrderId, shipperTransportationId);
 		}
-	}
-
-	private boolean isOrderNotOnShipperTransportation(@NonNull final OrderId orderId)
-	{
-		return !repo.anyMatch(ShippingPackageQuery.builder().orderId(orderId).build());
 	}
 
 	public void addOrderLinesToShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId, @NonNull final Collection<OrderAndLineId> orderAndLineIds)
@@ -201,8 +197,10 @@ public class PurchaseOrderToShipperTransportationService
 
 		final Collection<OrderAndLineId> assignedOrderAndLineIds = repo.getBy(ShippingPackageQuery.builder().orderLineIds(orderLineIds).build())
 				.stream()
-				.map(sp -> OrderAndLineId.ofRepoIds(sp.getC_Order_ID(), sp.getC_OrderLine_ID()))
+				.map(sp -> OrderAndLineId.ofRepoIdsOrNull(sp.getC_Order_ID(), sp.getC_OrderLine_ID()))
+				.filter(Objects::nonNull)
 				.collect(Collectors.toSet());
+		
 		return orderAndLineIdToPoMap.keySet()
 				.stream()
 				.filter(olId -> !assignedOrderAndLineIds.contains(olId))
