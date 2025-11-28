@@ -58,6 +58,7 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.ad.trx.processor.api.LoggableTrxItemExceptionHandler;
 import org.adempiere.exceptions.AdempiereException;
@@ -530,6 +531,16 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 		return receiptSchedule.isProcessed();
 	}
 
+	@Override
+	public boolean hasUnProcessedRecords(@NonNull final IQueryFilter<I_M_ReceiptSchedule> receiptScheduleQueryFilter)
+	{
+		return queryBL.createQueryBuilder(I_M_ReceiptSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.filter(receiptScheduleQueryFilter)
+				.create()
+				.anyMatch();
+	}
+
 	public void applyReceiptScheduleChanges(@NonNull final ApplyReceiptScheduleChangesRequest applyReceiptScheduleChangesRequest)
 	{
 		final I_M_ReceiptSchedule receiptSchedule = receiptScheduleDAO.getById(applyReceiptScheduleChangesRequest.getReceiptScheduleId());
@@ -760,7 +771,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	@Override
 	public int updateDatePromisedOverrideAndPOReference(@NonNull final PInstanceId pinstanceId, @Nullable final LocalDate datePromisedOverride, @Nullable final String poReference)
 	{
-		if (datePromisedOverride == null && Check.isEmpty(poReference, true))
+		if (datePromisedOverride == null && Check.isBlank(poReference))
 		{
 			throw new AdempiereException(MSG_DATEPROMISEDOVERRIDE_POREFERENCE_VALIDATION_ERROR)
 					.markAsUserValidationError();
@@ -774,7 +785,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 			updater.addSetColumnValue(I_M_ReceiptSchedule.COLUMNNAME_DatePromised_Override, datePromisedOverride);
 		}
 
-		if (Check.isBlank(poReference))
+		if (!Check.isBlank(poReference))
 		{
 			updater.addSetColumnValue(I_M_ReceiptSchedule.COLUMNNAME_POReference, poReference);
 		}

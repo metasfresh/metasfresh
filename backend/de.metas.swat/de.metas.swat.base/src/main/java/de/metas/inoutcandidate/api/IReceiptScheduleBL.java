@@ -36,6 +36,7 @@ import de.metas.process.PInstanceId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.warehouse.LocatorId;
@@ -224,6 +225,8 @@ public interface IReceiptScheduleBL extends ISingletonService
 	 * @return true if receipt schedule is closed
 	 */
 	boolean isClosed(I_M_ReceiptSchedule receiptSchedule);
+
+	boolean hasUnProcessedRecords(@NonNull IQueryFilter<I_M_ReceiptSchedule> receiptScheduleQueryFilter);
 
 	void applyReceiptScheduleChanges(ApplyReceiptScheduleChangesRequest applyReceiptScheduleChangesRequest);
 

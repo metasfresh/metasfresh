@@ -58,8 +58,7 @@ public class M_ReceiptSchedule_ChangeDatePromised_OverrideAndPOReference extends
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		final boolean someSchedsAreStillNotProcessed = context.streamSelectedModels(I_M_ReceiptSchedule.class)
-				.anyMatch(receiptSchedule -> !receiptScheduleBL.isClosed(receiptSchedule));
+		final boolean someSchedsAreStillNotProcessed = receiptScheduleBL.hasUnProcessedRecords(context.getQueryFilter(I_M_ReceiptSchedule.class));
 
 		if (!someSchedsAreStillNotProcessed)
 		{
@@ -70,7 +69,7 @@ public class M_ReceiptSchedule_ChangeDatePromised_OverrideAndPOReference extends
 	}
 
 	@Override
-	protected void prepare()
+	protected String doIt()
 	{
 		final int selectionCount = receiptScheduleDAO
 				.createQueryForReceiptScheduleSelection(getCtx(), getProcessInfo().getQueryFilterOrElseFalse())
@@ -82,12 +81,6 @@ public class M_ReceiptSchedule_ChangeDatePromised_OverrideAndPOReference extends
 			throw new AdempiereException(MSG_NO_UNPROCESSED_LINES)
 					.markAsUserValidationError();
 		}
-
-	}
-
-	@Override
-	protected String doIt()
-	{
 		final int updatedCnt = receiptScheduleBL.updateDatePromisedOverrideAndPOReference(getPinstanceId(), datePromisedOverride, poReference);
 		addLog("Updated {} M_ReceiptSchedules", updatedCnt);
 
