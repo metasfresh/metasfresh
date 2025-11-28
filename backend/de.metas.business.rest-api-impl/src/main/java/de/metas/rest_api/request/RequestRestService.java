@@ -89,17 +89,17 @@ public class RequestRestService
 		final OrgId orgId = OrgId.ofRepoId(org.getAD_Org_ID());
 		final ZoneId orgZoneId = orgDAO.getTimeZone(orgId);
 
-		final RequestTypeId requestTypeId = requestService.retrieveByInternalName(request.getRequestType());
+		RequestTypeId requestTypeId = requestService.retrieveByInternalName(request.getRequestType());
 		if (requestTypeId == null)
 		{
-			throw new AdempiereException("@Invalid@ @R_RequestType_ID@");
+			requestTypeId = requestService.retrieveCustomerRequestTypeId();
 		}
 
 		final RequestConfidentialType confidentialType = request.getConfidentialityLevel() != null
 				? RequestConfidentialType.ofCode(request.getConfidentialityLevel().getCode())
 				: RequestConfidentialType.PartnerConfidential;
 
-		final ZonedDateTime dateDelivered = TimeUtil.asZonedDateTime(request.getDateDelivered(), orgZoneId);
+		final ZonedDateTime dateDelivered = TimeUtil.asZonedDateTime(request.getDateDelivered());
 
 		final UserId userId = resolveUserIdOrNull(ExternalIdentifier.ofOrNull(request.getUserIdentifier()), orgId);
 		final ProductId productId = resolveProductIdOrNull(ExternalIdentifier.ofOrNull(request.getProductIdentifier()), orgId);

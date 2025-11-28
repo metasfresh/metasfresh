@@ -55,4 +55,9 @@ public class RequestService
 	{
 		return requestTypeDAO.retrieveRequestTypeIdByInternalName(requestType);
 	}
+
+	public RequestTypeId retrieveCustomerRequestTypeId()
+	{
+		return requestTypeDAO.retrieveCustomerRequestTypeId();
+	}
 }

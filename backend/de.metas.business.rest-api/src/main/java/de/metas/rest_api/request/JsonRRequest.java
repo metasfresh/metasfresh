@@ -40,9 +40,9 @@ import java.time.LocalDate;
 /**
  * A json object that maps to/from a R_Request record.
  */
-@Value
 @Builder(toBuilder = true)
 @Jacksonized
+@Value
 public class JsonRRequest
 {
 	@Nullable @With JsonMetasfreshId requestId;

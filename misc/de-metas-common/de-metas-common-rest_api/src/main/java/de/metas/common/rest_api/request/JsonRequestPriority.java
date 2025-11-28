@@ -27,6 +27,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import javax.annotation.Nullable;
+
 /**
  * JSON type for R_Request.Priority values (AD_Reference _PriorityRule).
  *
@@ -62,6 +64,7 @@ public enum JsonRequestPriority
      * Accepts either the human-readable constant name (e.g. "High") or the code (e.g. "3").
      */
     @JsonCreator
+	@Nullable
     public static JsonRequestPriority fromJson(final String value)
     {
         if (value == null)
