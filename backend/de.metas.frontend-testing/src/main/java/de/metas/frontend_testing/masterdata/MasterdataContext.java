@@ -239,6 +239,11 @@ public class MasterdataContext
 		{
 			return ((LocatorId)id).toJson();
 		}
+		else if (id instanceof BPartnerLocationId)
+		{
+			final BPartnerLocationId bpLocationId = (BPartnerLocationId)id;
+			return bpLocationId.getBpartnerId().getRepoId() + "_" + bpLocationId.getRepoId();
+		}
 		else
 		{
 			return id.getRepoId();
@@ -252,15 +257,27 @@ public class MasterdataContext
 		{
 			throw new AdempiereException("Empty identifier not allowed: " + type);
 		}
-		else if (type.isAssignableFrom(LocatorId.class))
-		{
-			return LocatorId.fromJson(json.toString());
-		}
-		else
-		{
-			return RepoIdAwares.ofObject(json, type);
-		}
 
+		try
+		{
+			if (type.isAssignableFrom(LocatorId.class))
+			{
+				return LocatorId.fromJson(json.toString());
+			}
+			else if (type.isAssignableFrom(BPartnerLocationId.class))
+			{
+				final String[] parts = json.toString().split("_");
+				return BPartnerLocationId.ofRepoId(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]));
+			}
+			else
+			{
+				return RepoIdAwares.ofObject(json, type);
+			}
+		}
+		catch (Exception ex)
+		{
+			throw new AdempiereException("Failed converting `" + json + "` to " + type);
+		}
 	}
 
 	public <T extends RepoIdAware> String describeId(@Nullable final T id)
