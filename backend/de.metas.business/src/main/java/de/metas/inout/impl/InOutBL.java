@@ -376,13 +376,9 @@ public class InOutBL implements IInOutBL
 
 		Check.assume(recordId != recordReversalId, "record id({}) and reversal record id({}) shall not be the same", recordId, recordReversalId);
 
-		// this document was created before the linked reversal
-		// so this is the orginal document and the other one is the actual reversal
+		// if this document was created before the linked reversal this is the original document and the other one is the actual reversal
+		// otherwise we have: inOutId > reversalInOutId So our document is the actual reversal and the linked reversal is the original document
 		return recordId >= recordReversalId;
-
-		// At this point we have: inOutId > reversalInOutId
-		// So our document is the actual reversal
-		// and the linked reversal is the original document
 	}
 
 	@Override
@@ -709,8 +705,7 @@ public class InOutBL implements IInOutBL
 			return;
 		}
 
-		@Nullable
-		final CopyDescriptionAndDocumentNote copyDescriptionAndDocumentNote = CopyDescriptionAndDocumentNote.ofNullableCode(docType.getCopyDescriptionAndDocumentNote());
+		@Nullable final CopyDescriptionAndDocumentNote copyDescriptionAndDocumentNote = CopyDescriptionAndDocumentNote.ofNullableCode(docType.getCopyDescriptionAndDocumentNote());
 
 		if (copyDescriptionAndDocumentNote == null)
 		{
@@ -802,7 +797,6 @@ public class InOutBL implements IInOutBL
 		return inOutDAO.retrieveByQuery(query).collect(ImmutableSet.toImmutableSet());
 	}
 
-
 	@Override
 	public void setShipperId(@NonNull final I_M_InOut inout)
 	{
@@ -820,7 +814,6 @@ public class InOutBL implements IInOutBL
 				return deliveryAddressShipperId.get(); // we are done
 			}
 		}
-
 
 		return bpartnerDAO.getShipperId(CoalesceUtil.coalesceSuppliersNotNull(
 				() -> BPartnerId.ofRepoIdOrNull(inout.getDropShip_BPartner_ID()),

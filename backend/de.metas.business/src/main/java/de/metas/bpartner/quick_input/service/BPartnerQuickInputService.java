@@ -391,7 +391,7 @@ public class BPartnerQuickInputService
 	{
 		final RequestCandidate requestCandidate = RequestCandidate.builder()
 				.summary(summary)
-				.confidentialType(RequestConfidentialType.Internal)
+				.confidentialType(RequestConfidentialType.PartnerConfidential)
 				.orgId(partnerOrgId)
 				.recordRef(TableRecordReference.of(I_C_BPartner.Table_Name, bPartnerId))
 				.requestTypeId(requestTypeId)
