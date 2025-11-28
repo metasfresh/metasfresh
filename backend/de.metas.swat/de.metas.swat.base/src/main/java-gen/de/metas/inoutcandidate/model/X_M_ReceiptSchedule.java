@@ -386,6 +386,18 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 		return get_ValueAsTimestamp(COLUMNNAME_DateOrdered);
 	}
 
+	@Override
+	public void setDatePromised_Override (final @Nullable java.sql.Timestamp DatePromised_Override)
+	{
+		set_Value (COLUMNNAME_DatePromised_Override, DatePromised_Override);
+	}
+
+	@Override
+	public java.sql.Timestamp getDatePromised_Override()
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_DatePromised_Override);
+	}
+
 	/** 
 	 * DeliveryRule AD_Reference_ID=151
 	 * Reference name: C_Order DeliveryRule
