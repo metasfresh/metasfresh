@@ -11,7 +11,7 @@ const createMasterdata = async ({ salesOrders }) => {
         .forEach(key => salesOrdersEffective[key] = {
             bpartner: salesOrders[key].bpartner,
             warehouse: 'wh',
-            datePromised: '2025-03-01T00:00:00.000+02:00',
+            datePromised: '2025-03-01T05:00:00.000+02:00',
             lines: [{
                 product: 'P1',
                 qty: 10,
