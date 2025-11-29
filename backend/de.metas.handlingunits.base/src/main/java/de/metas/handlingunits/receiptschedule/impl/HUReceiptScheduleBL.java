@@ -415,6 +415,9 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		return result;
 	}
 
+	/**
+	 * Supports the case that there are no packages, because no shipper-transportation was created for the purchase-order.
+	 */
 	private void matchHUsToPackages(@NonNull final Set<HuId> selectedHuIds, @NonNull final ImmutableMap<HuId, I_M_HU> husByIdMap, final List<I_M_ReceiptSchedule> receiptSchedules)
 	{
 		final List<I_M_ReceiptSchedule> luQtySchedules = retainLUQtySchedules(receiptSchedules);
@@ -429,10 +432,6 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 
 		final Map<String, Package> mutableSSCCToPackageMap = new HashMap<>(packages.stream()
 				.collect(ImmutableMap.toImmutableMap(Package::getSscc, Function.identity())));
-		if (selectedLUQtyHUs.size() > packages.size())
-		{
-			throw new AdempiereException(MSG_PackageNumberNotMatching);
-		}
 
 		final Map<HuId, String> huIdToSscc18Map = selectedLUQtyHUs.stream()
 				.collect(HashMap::new,
@@ -446,35 +445,41 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 						HashMap::putAll);
 
 		final Set<HuId> seenHUIds = new HashSet<>();
-		huIdToSscc18Map.keySet()
-				.stream()
-				.filter(huId -> huIdToSscc18Map.get(huId) != null)
-				.forEach(huId -> {
-					final String sscc = huIdToSscc18Map.get(huId);
-					final Package packageBySSCC = mutableSSCCToPackageMap.remove(sscc);
-					if (packageBySSCC != null)
-					{
-						seenHUIds.add(huId);
-						//huId matches packageBySSCC
-						huPackageBL.assignPackageToHuId(packageBySSCC, huId);
-					}
-					else
-					{
-						throw new AdempiereException("No package found for SSCC: " + sscc + " set on HU: " + huId);
-					}
-				});
+		for (final HuId huId : huIdToSscc18Map.keySet())
+		{
+			if (huIdToSscc18Map.get(huId) == null) {continue;}
+
+			final String sscc = huIdToSscc18Map.get(huId);
+			final Package packageBySSCC = mutableSSCCToPackageMap.remove(sscc);
+			if (packageBySSCC != null)
+			{
+				seenHUIds.add(huId);
+				//huId matches packageBySSCC
+				huPackageBL.assignPackageToHuId(packageBySSCC, huId);
+			}
+			else
+			{
+				throw new AdempiereException("No package found for SSCC: " + sscc + " set on HU: " + huId);
+			}
+		}
 
 		//copy SSCC from first matching Package
-		selectedLUQtyHUs.stream()
-				.filter(huId -> !seenHUIds.contains(huId))
-				.forEach(huId ->
-						{
-							final String sscc = mutableSSCCToPackageMap.keySet().stream().findFirst().orElseThrow(() -> new AdempiereException("No available package left to copy SSCC from for HUId:" + huId));
-							huAttributesBL.updateHUAttribute(huId, AttributeConstants.ATTR_SSCC18_Value, sscc);
-							huPackageBL.assignPackageToHuId(mutableSSCCToPackageMap.remove(sscc), huId);
-							seenHUIds.add(huId);
-						}
-				);
+		for (final HuId huId : selectedLUQtyHUs)
+		{
+			if (seenHUIds.contains(huId)) {continue;}
+
+			final String sscc = mutableSSCCToPackageMap.keySet().stream().findFirst().orElse(null);
+			if (sscc != null)
+			{
+				huAttributesBL.updateHUAttribute(huId, AttributeConstants.ATTR_SSCC18_Value, sscc);
+				huPackageBL.assignPackageToHuId(mutableSSCCToPackageMap.remove(sscc), huId);
+			}
+			else
+			{
+				Loggables.addLog("No available M_Package left to copy SSCC from for HUId:" + huId);
+			}
+			seenHUIds.add(huId);
+		}
 	}
 
 	private @NonNull List<HuId> retainLUQtyHUIds(final @NonNull Set<HuId> selectedHuIds, final List<I_M_ReceiptSchedule> luQtySchedules)
