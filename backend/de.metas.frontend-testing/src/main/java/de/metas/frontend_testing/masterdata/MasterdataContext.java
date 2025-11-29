@@ -12,11 +12,14 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ResourceId;
 import de.metas.resource.ResourceTypeId;
+import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.jetbrains.annotations.NotNull;
@@ -207,7 +210,7 @@ public class MasterdataContext
 	{
 		final HashMap<String, Object> result = new HashMap<>();
 
-		identifiers.forEach((typeAndIdentifier, id) -> result.put(typeAndIdentifier.toJsonString(), id.getRepoId()));
+		identifiers.forEach((typeAndIdentifier, id) -> result.put(typeAndIdentifier.toJsonString(), convertIdToJson(id)));
 
 		return result;
 	}
@@ -221,9 +224,60 @@ public class MasterdataContext
 
 		json.forEach((key, value) -> {
 			final TypeAndIdentifier typeAndIdentifier = TypeAndIdentifier.ofJsonString(key);
-			final RepoIdAware id = RepoIdAwares.ofObject(value, typeAndIdentifier.getType());
+			final RepoIdAware id = convertJsonToId(value, typeAndIdentifier.getType());
 			putIdentifier(typeAndIdentifier.getIdentifier(), id);
 		});
+	}
+
+	private static Object convertIdToJson(@Nullable RepoIdAware id)
+	{
+		if (id == null)
+		{
+			return null;
+		}
+		else if (id instanceof LocatorId)
+		{
+			return ((LocatorId)id).toJson();
+		}
+		else if (id instanceof BPartnerLocationId)
+		{
+			final BPartnerLocationId bpLocationId = (BPartnerLocationId)id;
+			return bpLocationId.getBpartnerId().getRepoId() + "_" + bpLocationId.getRepoId();
+		}
+		else
+		{
+			return id.getRepoId();
+		}
+	}
+
+	@NonNull
+	private static RepoIdAware convertJsonToId(@Nullable Object json, @NonNull final Class<? extends RepoIdAware> type)
+	{
+		if (Check.isEmpty(json))
+		{
+			throw new AdempiereException("Empty identifier not allowed: " + type);
+		}
+
+		try
+		{
+			if (type.isAssignableFrom(LocatorId.class))
+			{
+				return LocatorId.fromJson(json.toString());
+			}
+			else if (type.isAssignableFrom(BPartnerLocationId.class))
+			{
+				final String[] parts = json.toString().split("_");
+				return BPartnerLocationId.ofRepoId(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]));
+			}
+			else
+			{
+				return RepoIdAwares.ofObject(json, type);
+			}
+		}
+		catch (Exception ex)
+		{
+			throw new AdempiereException("Failed converting `" + json + "` to " + type);
+		}
 	}
 
 	public <T extends RepoIdAware> String describeId(@Nullable final T id)

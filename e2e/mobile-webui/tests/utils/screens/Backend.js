@@ -15,7 +15,10 @@ export const Backend = {
 
         const backendBaseUrl = await getBackendBaseUrl();
         const response = await page.request.post(`${backendBaseUrl}/frontendTesting`, {
-            data: request,
+            data: {
+                ...request,
+                context: testContext.lastContext
+            },
             headers
         });
 
@@ -25,6 +28,7 @@ export const Backend = {
         console.log(`Created master data (${language}):\n` + JSON.stringify(responseBody, null, 2));
 
         testContext.lastMasterdata = responseBody;
+        testContext.lastContext = responseBody.context;
 
         return responseBody;
     }),
@@ -35,7 +39,7 @@ export const Backend = {
             data: {
                 ...expectations,
                 masterdata: testContext.lastMasterdata,
-                context: testContext.lastExpectContext,
+                context: testContext.lastContext,
             },
             headers: {
                 'Content-Type': 'application/json',
@@ -44,7 +48,7 @@ export const Backend = {
 
         const responseBody = await response.json();
         if (responseBody?.context != null) {
-            testContext.lastExpectContext = responseBody.context;
+            testContext.lastContext = responseBody.context;
         }
 
         assertNoErrors({ responseBody });
