@@ -84,11 +84,21 @@ public class CreateBPartnerCommand
 		bpartner.setIsCompany(true);
 		bpartner.setCompanyName(bpValue);
 		bpartner.setC_BP_Group_ID(bpGroupId.getRepoId());
-		bpartner.setIsVendor(false);
-		bpartner.setIsCustomer(true);
+		bpartner.setIsVendor(request.isVendor());
+		bpartner.setIsCustomer(request.isCustomer());
 		bpartner.setAD_Org_ID(orgId.getRepoId());
 		bpartner.setDeliveryRule(DeliveryRule.FORCE.getCode());
-		bpartner.setM_PricingSystem_ID(PricingSystemId.toRepoId(pricingSystemId));
+
+		// Set pricing system based on vendor/customer flags
+		if (request.isCustomer())
+		{
+			bpartner.setM_PricingSystem_ID(PricingSystemId.toRepoId(pricingSystemId)); // Sales pricing system
+		}
+		if (request.isVendor())
+		{
+			bpartner.setPO_PricingSystem_ID(PricingSystemId.toRepoId(pricingSystemId)); // Purchase pricing system
+		}
+
 		InterfaceWrapperHelper.saveRecord(bpartner);
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
 		context.putIdentifier(bpIdentifier, bpartnerId);
@@ -148,9 +158,9 @@ public class CreateBPartnerCommand
 	}
 
 	private I_C_BPartner_Location createBPLocation(
-			@NonNull JsonCreateBPartnerRequest.Location request,
+			@NonNull final JsonCreateBPartnerRequest.Location request,
 			@NonNull final BPartnerId bpartnerId,
-			boolean isDefault)
+			final boolean isDefault)
 	{
 		final LocationId locationId = createLocation();
 
@@ -168,7 +178,7 @@ public class CreateBPartnerCommand
 		return bPartnerLocationRecord;
 	}
 
-	private GLN toGLN(final String glnStr)
+	private GLN toGLN(@Nullable final String glnStr)
 	{
 		final String glnStrNorm = StringUtils.trimBlankToNull(glnStr);
 		if (glnStrNorm == null)
@@ -224,7 +234,7 @@ public class CreateBPartnerCommand
 		priceList.setIsTaxIncluded(false);
 		priceList.setPricePrecision(2);
 		priceList.setIsActive(true);
-		priceList.setIsSOPriceList(true);
+		priceList.setIsSOPriceList(request.isSoPriceList());
 		priceList.setC_Country_ID(countryId.getRepoId());
 		InterfaceWrapperHelper.saveRecord(priceList);
 
