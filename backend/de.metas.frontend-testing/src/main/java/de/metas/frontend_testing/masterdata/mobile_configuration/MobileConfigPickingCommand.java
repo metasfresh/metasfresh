@@ -11,9 +11,13 @@ import de.metas.handlingunits.picking.config.mobileui.PickAttributesConfig;
 import de.metas.handlingunits.picking.config.mobileui.PickToStructure;
 import de.metas.handlingunits.picking.config.mobileui.PickingCustomerConfig;
 import de.metas.handlingunits.picking.config.mobileui.PickingCustomerConfigsCollection;
+import de.metas.handlingunits.picking.config.mobileui.PickingFilter;
+import de.metas.handlingunits.picking.config.mobileui.PickingFiltersList;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
+import de.metas.handlingunits.picking.job.model.facets.PickingJobFacetGroup;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.SeqNoProvider;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -38,6 +42,7 @@ class MobileConfigPickingCommand
 			final MobileUIPickingUserProfile.MobileUIPickingUserProfileBuilder newProfileBuilder = profile.toBuilder()
 					.defaultPickingJobOptions(updatePickingJobOptions(profile.getDefaultPickingJobOptions(), request))
 					.customerConfigs(updatePickingCustomers(profile.getCustomerConfigs(), request.getCustomers()))
+					.filters(toPickingFiltersList(request.getFilters()))
 					.isFilterByBarcode(request.getFilterByQRCode() != null && request.getFilterByQRCode())
 					.isActiveWorkplaceRequired(request.getActiveWorkplaceRequired() != null ? request.getActiveWorkplaceRequired() : false)
 					.isConsiderOnlyJobScheduledToWorkplace(request.getConsiderOnlyJobScheduledToWorkplace() != null ? request.getConsiderOnlyJobScheduledToWorkplace() : false)
@@ -80,6 +85,7 @@ class MobileConfigPickingCommand
 				.displayPickingSlotSuggestions(profile.getDefaultPickingJobOptions().getDisplayPickingSlotSuggestions().toBooleanOrNull())
 				.activeWorkplaceRequired(profile.isActiveWorkplaceRequired())
 				.considerOnlyJobScheduledToWorkplace(profile.isConsiderOnlyJobScheduledToWorkplace())
+				.filters(profile.getFilterGroupsInOrder())
 				.build();
 	}
 
@@ -203,5 +209,24 @@ class MobileConfigPickingCommand
 				.execute();
 
 		return PickingCustomerConfigsCollection.ofCollection(result);
+	}
+
+	private PickingFiltersList toPickingFiltersList(@Nullable final List<PickingJobFacetGroup> filters)
+	{
+		if (filters == null)
+		{
+			return PickingFiltersList.DEFAULT;
+		}
+		else if (filters.isEmpty())
+		{
+			return PickingFiltersList.EMPTY;
+		}
+		else
+		{
+			final SeqNoProvider seqNoProvider = SeqNoProvider.ofInt(10);
+			return filters.stream()
+					.map(filter -> PickingFilter.of(filter, seqNoProvider.getAndIncrement().toInt()))
+					.collect(PickingFiltersList.collect());
+		}
 	}
 }
