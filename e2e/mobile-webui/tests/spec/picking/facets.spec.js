@@ -83,40 +83,31 @@ test('Check facets when only scheduled for workplace is enabled', async ({ page 
     await PickingJobsListScreen.clickFilterButton();
 
     await test.step('Check initial facets', async () => {
-        await PickingJobsListFiltersScreen.expectFacets({
-            groupId: 'Customer',
-            facets: [
-                { facetId: 'Customer_' + masterdata.bpartners.customer1.id, isChecked: false },
-                { facetId: 'Customer_' + masterdata.bpartners.customer3.id, isChecked: false },
-            ]
-        })
+        await PickingJobsListFiltersScreen.expectFacets([
+            { facetId: 'Customer_' + masterdata.bpartners.customer1.id, isChecked: false },
+            { facetId: 'Customer_' + masterdata.bpartners.customer3.id, isChecked: false },
+        ]);
         await PickingJobsListFiltersScreen.expectShowResults({ hitCount: 2 });
     });
 
     await test.step('Tick first customer facet', async () => {
         await PickingJobsListFiltersScreen.clickFacet({ facetId: 'Customer_' + masterdata.bpartners.customer1.id });
-        await PickingJobsListFiltersScreen.expectFacets({
-            groupId: 'Customer',
-            facets: [
-                { facetId: 'Customer_' + masterdata.bpartners.customer1.id, isChecked: true },
-                { facetId: 'Customer_' + masterdata.bpartners.customer3.id, isChecked: false },
-            ]
-        })
+        await PickingJobsListFiltersScreen.expectFacets([
+            { facetId: 'Customer_' + masterdata.bpartners.customer1.id, isChecked: true },
+            { facetId: 'Customer_' + masterdata.bpartners.customer3.id, isChecked: false },
+            { facetId: 'DeliveryDate_2025-03-01', isChecked: false },
+        ]);
         await PickingJobsListFiltersScreen.expectShowResults({ hitCount: 1 });
     });
 
     await test.step('Untick first customer facet', async () => {
         await PickingJobsListFiltersScreen.clickFacet({ facetId: 'Customer_' + masterdata.bpartners.customer1.id });
-        await PickingJobsListFiltersScreen.expectFacets({
-            groupId: 'Customer',
-            facets: [
-                { facetId: 'Customer_' + masterdata.bpartners.customer1.id, isChecked: false },
-                { facetId: 'Customer_' + masterdata.bpartners.customer3.id, isChecked: false },
-            ]
-        })
+        await PickingJobsListFiltersScreen.expectFacets([
+            { facetId: 'Customer_' + masterdata.bpartners.customer1.id, isChecked: false },
+            { facetId: 'Customer_' + masterdata.bpartners.customer3.id, isChecked: false },
+        ]);
         await PickingJobsListFiltersScreen.expectShowResults({ hitCount: 2 });
     });
-
 
     await test.step('Go back and logout', async () => {
         await PickingJobsListFiltersScreen.goBack();

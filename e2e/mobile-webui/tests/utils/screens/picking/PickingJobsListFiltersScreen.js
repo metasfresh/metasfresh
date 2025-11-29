@@ -28,29 +28,20 @@ export const PickingJobsListFiltersScreen = {
         await page.locator('#filterByQtyAvailableAtPickFromLocator-button').tap();
     }),
 
-    expectFacets: async ({ groupId, facets }) => await test.step(`${NAME} - Expect group ${groupId} to have ${facets.length} facets`, async () => {
+    expectFacets: async (expectationsArray) => await test.step(`${NAME} - Expect to have ${expectationsArray.length} facets`, async () => {
         await PickingJobsListFiltersScreen.waitLoadingDone();
 
-        const groupElement = page.locator(`[data-testid="${groupId}"]`);
-        await expect(groupElement).toBeVisible();
+        const buttons = page.locator('.group').locator('button');
+        await expect(buttons).toHaveCount(expectationsArray.length);
 
-        const buttons = groupElement.locator('button');
-        await expect(buttons).toHaveCount(facets.length);
+        for (let i = 0; i < expectationsArray.length; i++) {
+            let expectation = expectationsArray[i];
 
-        for (let i = 0; i < facets.length; i++) {
-            const facet = facets[i];
-            const facetButton = groupElement.locator(`button[data-testid="${facet.facetId}"]`);
-            await expect(facetButton).toBeVisible();
-
-            if (facet?.isChecked != null) {
-                const checkIcon = facetButton.locator('.fa-check');
-                if (facet.isChecked) {
-                    await expect(checkIcon).toHaveCount(1);
-                    await expect(checkIcon).toBeVisible();
-                } else {
-                    await expect(checkIcon).toHaveCount(0);
-                }
-            }
+            await expectFacet({
+                name: `${i + 1}/${expectationsArray.length} - ${expectation.facetId}`,
+                button: buttons.nth(i),
+                expectation
+            });
         }
     }),
 
@@ -67,9 +58,8 @@ export const PickingJobsListFiltersScreen = {
 
     expectShowResults: async ({ hitCount }) => await test.step(`${NAME} - Expect show results`, async () => {
         await PickingJobsListFiltersScreen.waitLoadingDone();
-        
-        if(hitCount != null)
-        {
+
+        if (hitCount != null) {
             await expect(page.locator('#showResults')).toHaveAttribute('data-hitcount', String(hitCount));
         }
     }),
@@ -81,3 +71,27 @@ export const PickingJobsListFiltersScreen = {
     }),
 
 };
+
+//
+//
+//
+//
+//
+
+const expectFacet = async ({ name, button, expectation }) => await test.step(`Expect facet button ${name}`, async () => {
+    await expect(button).toBeVisible();
+
+    if (expectation.facetId != null) {
+        await expect(button).toHaveAttribute('data-testid', expectation.facetId);
+    }
+
+    if (expectation.isChecked != null) {
+        const checkIcon = button.locator('.fa-check');
+        if (expectation.isChecked) {
+            await expect(checkIcon).toHaveCount(1);
+            await expect(checkIcon).toBeVisible();
+        } else {
+            await expect(checkIcon).toHaveCount(0);
+        }
+    }
+});
