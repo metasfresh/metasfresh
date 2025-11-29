@@ -267,6 +267,7 @@ public class PickingWorkflowLaunchersProvider
 	public WorkflowLaunchersFacetGroupList getFacets(@NonNull final WorkflowLaunchersFacetQuery query)
 	{
 		final UserId userId = query.getUserId();
+		final Workplace workplace = warehouseService.getWorkplaceByUserId(userId).orElse(null);
 		final PickingJobQuery.Facets activeFacets = PickingJobFacetHandlers.toPickingJobFacetsQuery(query.getActiveFacetIds());
 
 		final MobileUIPickingUserProfile profile = configService.getProfile();
@@ -279,10 +280,12 @@ public class PickingWorkflowLaunchersProvider
 		final PickingJobFacets pickingFacets = pickingJobRestService.getFacets(
 				PickingJobQuery.builder()
 						.userId(userId)
-						.onlyCustomerIds(profile.getPickOnlyCustomerIds())
-						.warehouseId(warehouseService.getWarehouseIdByUserId(userId).orElse(null))
-						.salesOrderDocumentNo(query.getFilterByDocumentNo())
+						//.excludeScheduleIds()
 						//.facets(activeFacets) // IMPORTANT: don't filter by active facets because we want to collect all facets, not only the active ones
+						.onlyCustomerIds(profile.getPickOnlyCustomerIds())
+						.scheduledForWorkplaceId(profile.isConsiderOnlyJobScheduledToWorkplace() && workplace != null ? workplace.getId() : null)
+						.warehouseId(workplace != null ? workplace.getWarehouseId() : null)
+						.salesOrderDocumentNo(query.getFilterByDocumentNo())
 						.build(),
 				CollectingParameters.builder()
 						.addressProvider(bpartnerService.newRenderedAddressProvider())
