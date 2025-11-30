@@ -132,22 +132,29 @@ export class MaterialReceiptPage {
     return await test.step(`MaterialReceiptPage - Create from purchase order: ${orderDocumentNo}`, async () => {
       const page = getPage();
 
-      // Look for "Create From" button (gear/actions menu or direct button)
-      // Try multiple possible selectors
-      const createFromButton = page.locator(
-        'button:has-text("Create From"), .btn:has-text("Create From"), [title*="Create From"]'
-      ).first();
+      // Language-independent: Click "Create From" action button using data-testid
+      // ActionButton.js has data-testid="action-{internalName}"
+      // Note: Exact action name may vary - common values: CreateFrom, M_InOut_CreateFrom
+      const createFromButton = page.getByTestId('action-CreateFrom').or(
+        page.getByTestId('action-M_InOut_CreateFrom')
+      );
 
       await createFromButton.click();
 
-      // Wait for "Create From" dialog/modal to appear
-      await page.waitForTimeout(1000);
+      // Wait for "Create From" modal to appear (two-step waiting pattern)
+      // Step 1: Wait for modal container
+      await page.locator('.modal-content, .modal').waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
 
-      // Look for the document type selector or direct order search
-      // The modal typically has a filter/search for the source document
-      const orderSearchInput = page.locator(
-        'input[placeholder*="Document"], input[placeholder*="Order"], .modal input[type="text"]'
-      ).first();
+      // Step 2: Wait for search input field
+      // Language-independent: Use structural selector (modal + input type)
+      const orderSearchInput = page.locator('.modal input[type="text"]').first();
+      await orderSearchInput.waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
 
       await orderSearchInput.fill(orderDocumentNo);
       await page.waitForTimeout(500);
@@ -155,8 +162,16 @@ export class MaterialReceiptPage {
       // Select the order from the list
       await page.locator('.table tbody tr, .input-dropdown-list-option').first().click();
 
-      // Confirm the selection (typically an "OK" or "Select" button)
-      await page.locator('button:has-text("OK"), button:has-text("Select"), .btn-primary').click();
+      // Language-independent: Confirm selection using data-testid or structural selector
+      // ModalButton.js has data-testid="modal-{buttonName}"
+      // Fallback to primary button in modal footer
+      const confirmButton = page.getByTestId('modal-ok').or(
+        page.getByTestId('modal-select')
+      ).or(
+        page.locator('.modal-footer .btn-primary')
+      );
+
+      await confirmButton.click();
 
       // Wait for the lines to be created
       await page.waitForTimeout(2000);
@@ -171,11 +186,14 @@ export class MaterialReceiptPage {
     return await test.step('MaterialReceiptPage - Receive all quantities', async () => {
       const page = getPage();
 
-      // Look for a "Receive All" or similar action button
-      // This might be in the gear menu or as a direct button
-      const receiveButton = page.locator(
-        'button:has-text("Receive"), .btn:has-text("Receive"), button:has-text("Receive All")'
-      ).first();
+      // Language-independent: Look for "Receive All" action button using data-testid
+      // ActionButton.js has data-testid="action-{internalName}"
+      // Common action names: Receive, ReceiveAll, M_InOut_ReceiveAll
+      const receiveButton = page.getByTestId('action-Receive').or(
+        page.getByTestId('action-ReceiveAll')
+      ).or(
+        page.getByTestId('action-M_InOut_ReceiveAll')
+      );
 
       // Check if button exists, if not, skip this step
       const buttonExists = await receiveButton.count() > 0;
@@ -198,10 +216,10 @@ export class MaterialReceiptPage {
     return await test.step('MaterialReceiptPage - Go to Receipt Line tab', async () => {
       const page = getPage();
 
-      // Click on "Material Receipt Line" or "Receipt Line" tab
-      await page.locator(
-        'role=tab[name*="Receipt Line"], role=tab[name*="Material Receipt Line"]'
-      ).click();
+      // Language-independent: Use tab data-testid from Tabs.js
+      // Tabs.js has data-testid="tab-AD_Tab-{tabId}"
+      // Material Receipt Line tab is AD_Tab-297
+      await page.getByTestId('tab-AD_Tab-297').click();
 
       // Wait for tab content to load
       await page.waitForTimeout(800);
@@ -223,16 +241,17 @@ export class MaterialReceiptPage {
     return await test.step('MaterialReceiptPage - Complete receipt', async () => {
       const page = getPage();
 
-      // Click the document action button
-      await page.locator('.btn-meta-primary, button.btn-meta-primary').click();
+      // Language-independent: Click the document action button using data-testid
+      // ActionButton.js has data-testid="status-button"
+      await page.getByTestId('status-button').click();
 
       // Wait for the action dropdown to appear
       await page.waitForTimeout(500);
 
-      // Click "Complete" action
-      await page.locator(
-        'text=Complete, .input-dropdown-list-option:has-text("Complete")'
-      ).click();
+      // Language-independent: Click "Complete" action using data-testid
+      // ActionButton.js has data-testid="status-{statusKey}"
+      // "CO" is the document status code for "Complete"
+      await page.getByTestId('status-CO').click();
 
       // Wait for the completion process
       await page.waitForTimeout(3000);
@@ -287,7 +306,8 @@ export class MaterialReceiptPage {
     return await test.step('MaterialReceiptPage - Get document number', async () => {
       const page = getPage();
 
-      const documentNoInput = page.locator('input[name="DocumentNo"], input[name="Document No"]');
+      // Language-independent selector: use form-field class with database column name
+      const documentNoInput = page.locator('.form-field-DocumentNo input, .form-field-DocumentNo .form-control');
 
       const docNo = await documentNoInput.inputValue();
 
