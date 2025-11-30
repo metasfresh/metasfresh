@@ -138,7 +138,8 @@ export class PurchaseOrderPage {
       await page.waitForTimeout(300);
 
       // Click the option by text - finds element containing the partner name
-      await page.getByText(partnerName).first().click();
+      // Use more specific selector to ensure we're clicking dropdown option
+      await page.locator('.input-dropdown-list-option').getByText(partnerName).first().click();
 
       // Wait for the selection to be processed
       await page.waitForTimeout(500);
@@ -179,7 +180,8 @@ export class PurchaseOrderPage {
       const page = getPage();
 
       // Check if batch entry button is already visible (meaning we're on the right tab or it's accessible)
-      const batchEntryButton = page.getByRole('button', { name: /Batch entry.*Alt\+Q/i });
+      // Language-independent: Use data-testid
+      const batchEntryButton = page.getByTestId('batch-entry-toggle');
       const isVisible = await batchEntryButton.isVisible().catch(() => false);
 
       if (isVisible) {
@@ -188,7 +190,8 @@ export class PurchaseOrderPage {
       }
 
       // Click on "PO Line" tab
-      await page.getByRole('tab', { name: /PO Line|Order Line/i }).click();
+      // Language-independent: Use existing ID or data-testid
+      await page.locator('#tab_POLine, [data-testid="tab-po-line"]').click();
 
       // Wait for tab content to load
       await page.waitForTimeout(800);
@@ -207,13 +210,24 @@ export class PurchaseOrderPage {
       const page = getPage();
 
       // Click the batch entry button
-      await page.getByRole('button', { name: /Batch entry/i }).click();
+      // Language-independent: Use data-testid
+      await page.getByTestId('batch-entry-toggle').click();
 
-      // Wait for batch entry form to appear
-      await page.waitForTimeout(500);
+      // Wait for batch entry form container to appear
+      // The form has class 'quick-input-container' from TableQuickInput.js
+      await page.locator('.quick-input-container').waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
 
-      // Fill product using language-independent selector
+      // Wait for the product input field to be visible and ready
       const productInput = page.locator('#lookup_M_Product_ID input.input-field');
+      await productInput.waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+
+      // Click to focus the product input field
       await productInput.click();
       await page.waitForTimeout(300);
 
@@ -237,7 +251,8 @@ export class PurchaseOrderPage {
       await page.waitForTimeout(300);
 
       // Click the option by text - finds element containing the product name
-      await page.getByText(product).first().click();
+      // Use more specific selector to ensure we're clicking dropdown option
+      await page.locator('.input-dropdown-list-option').getByText(product).first().click();
 
       // Wait for product to be selected
       await page.waitForTimeout(500);
@@ -252,7 +267,8 @@ export class PurchaseOrderPage {
       await page.waitForTimeout(500);
 
       // Close the batch entry modal
-      const closeButton = page.getByRole('button', { name: /Close batch entry/i });
+      // Language-independent: Use data-testid from TableFilter.js
+      const closeButton = page.getByTestId('batch-entry-toggle');
       await closeButton.click();
 
       // Wait for the modal to close
@@ -270,13 +286,15 @@ export class PurchaseOrderPage {
 
       // Click the document status button (e.g., "Drafted") in the upper right header
       // This opens the document action dropdown with options like Complete, Close, Void, etc.
-      await page.getByText('Drafted').click();
+      // Language-independent: Use data-testid
+      await page.getByTestId('status-button').click();
 
       // Wait for the action dropdown to appear
       await page.waitForTimeout(500);
 
       // Click "Complete" action in the dropdown
-      await page.getByText('Complete').first().click();
+      // Language-independent: Use data-testid (CO = Complete document action key)
+      await page.getByTestId('status-CO').click();
 
       // Wait for the completion process (can take a few seconds)
       await page.waitForTimeout(3000);

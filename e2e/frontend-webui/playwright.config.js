@@ -6,7 +6,7 @@ export default defineConfig({
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  timeout: 120000, // 2 minutes per test
+  timeout: 60000, // 1 minute per test (reduced for faster validation)
 
   reporter: [
     ['list'],
