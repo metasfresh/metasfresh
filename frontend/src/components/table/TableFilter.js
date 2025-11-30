@@ -1,18 +1,18 @@
-import counterpart from 'counterpart';
-import PropTypes from 'prop-types';
-import React, { useCallback, useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import counterpart from "counterpart";
+import PropTypes from "prop-types";
+import React, { useCallback, useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
-import keymap from '../../shortcuts/keymap';
-import { TableFilterContextShortcuts } from '../keyshortcuts';
-import { openModal } from '../../actions/WindowActions';
-import { deleteTopActions, fetchTopActions } from '../../actions/Actions';
-import { addNotification } from '../../actions/AppActions';
+import keymap from "../../shortcuts/keymap";
+import { TableFilterContextShortcuts } from "../keyshortcuts";
+import { openModal } from "../../actions/WindowActions";
+import { deleteTopActions, fetchTopActions } from "../../actions/Actions";
+import { addNotification } from "../../actions/AppActions";
 
-import Tooltips from '../tooltips/Tooltips';
-import TableQuickInput from './TableQuickInput';
-import { useSelectedRowIds } from '../../reducers/tables';
-import { useTopActions } from '../../reducers/windowHandler';
+import Tooltips from "../tooltips/Tooltips";
+import TableQuickInput from "./TableQuickInput";
+import { useSelectedRowIds } from "../../reducers/tables";
+import { useTopActions } from "../../reducers/windowHandler";
 
 /**
  * Component displayed above included tab header and contains buttons like 'Add new', 'Batch entry', top actions etc.
@@ -172,6 +172,7 @@ const TableFilter = ({
               onMouseLeave={hideTooltip}
               tabIndex={tabIndex}
               disabled={pending}
+              data-testid="batch-entry-toggle"
             >
               {isBatchEntryActive
                 ? quickInputSupport.closeButtonCaption

@@ -1,13 +1,13 @@
-import PropTypes from 'prop-types';
-import React, { PureComponent } from 'react';
-import { connect } from 'react-redux';
-import { get } from 'lodash';
-import classnames from 'classnames';
+import PropTypes from "prop-types";
+import React, { PureComponent } from "react";
+import { connect } from "react-redux";
+import { get } from "lodash";
+import classnames from "classnames";
 
-import { dropdownRequest } from '../../actions/GenericActions';
+import { dropdownRequest } from "../../actions/GenericActions";
 
-import DocumentStatusContextShortcuts from '../keyshortcuts/DocumentStatusContextShortcuts';
-import Prompt from '../../components/app/Prompt';
+import DocumentStatusContextShortcuts from "../keyshortcuts/DocumentStatusContextShortcuts";
+import Prompt from "../../components/app/Prompt";
 
 /**
  * @file Document Status/Action Button (Complete, Reverse)
@@ -216,6 +216,7 @@ class ActionButton extends PureComponent {
           }
           title={item.description ? item.description : null}
           onClick={() => this.handleChangeStatus(item)}
+          data-testid={`status-${item.key}`}
         >
           {item.caption}
         </li>
@@ -332,6 +333,7 @@ class ActionButton extends PureComponent {
         ref={this.setRef}
         onBlur={this.handleDropdownBlur}
         onFocus={this.handleDropdownFocus}
+        data-testid="status-button"
       >
         {showPrompt && (
           <Prompt

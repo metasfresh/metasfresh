@@ -1,5 +1,5 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React from "react";
+import PropTypes from "prop-types";
 
 const ModalButton = ({
   name,
@@ -20,6 +20,9 @@ const ModalButton = ({
       onMouseEnter={() => onShowTooltip && onShowTooltip(name)}
       onMouseLeave={() => onHideTooltip && onHideTooltip(name)}
       disabled={disabled}
+      data-testid={
+        name ? `modal-${name.toLowerCase().replace(/\s+/g, "-")}` : undefined
+      }
     >
       {children}
     </button>
