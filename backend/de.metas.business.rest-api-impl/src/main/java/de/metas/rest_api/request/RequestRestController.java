@@ -60,7 +60,7 @@ public class RequestRestController
 			@ApiResponse(code = 422, message = "The request entity could not be processed")
 	})
 	@PostMapping
-	public ResponseEntity createRequest(@RequestBody @NonNull final JsonRRequest request)
+	public ResponseEntity<JsonRRequestUpsertResponse> createRequest(@RequestBody @NonNull final JsonRRequestUpsertRequest request)
 	{
 		try
 		{
@@ -72,7 +72,9 @@ public class RequestRestController
 			logger.error("Create request failed for {}", request, ex);
 			final String adLanguage = Env.getADLanguageOrBaseLanguage();
 			return ResponseEntity.unprocessableEntity()
-					.body(JsonErrors.ofThrowable(ex, adLanguage));
+					.body(JsonRRequestUpsertResponse.builder()
+							.error(JsonErrors.ofThrowable(ex, adLanguage))
+							.build());
 		}
 	}
 }

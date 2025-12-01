@@ -23,6 +23,7 @@
 package de.metas.rest_api.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.request.JsonConfidentialType;
 import de.metas.common.rest_api.request.JsonRequestPriority;
@@ -43,7 +44,8 @@ import java.time.LocalDate;
 @Builder(toBuilder = true)
 @Jacksonized
 @Value
-public class JsonRRequest
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class JsonRRequestUpsertRequest
 {
 	@Nullable @With JsonMetasfreshId requestId;
 
@@ -59,7 +61,6 @@ public class JsonRRequest
 	@Nullable String userIdentifier;
 
 	@Nullable JsonRequestPriority priority;
-	@Nullable String dueType;
 	@NonNull String summary;
 	@Nullable JsonConfidentialType confidentialityLevel;
 	@Nullable Boolean isEscalated;
@@ -79,7 +80,6 @@ public class JsonRRequest
 	@Nullable JsonMetasfreshId inOutId;
 
 	@Nullable String qualityNote;
-	@Nullable String nextAction;
 
 	@ApiModelProperty(value = SwaggerDocConstants.CONTACT_IDENTIFIER_DOC)
 	@Nullable String salesRepIdentifier;

@@ -39,7 +39,7 @@ import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-class JsonRRequestTest
+class JsonRRequestUpsertRequestTest
 {
     private ObjectMapper objectMapper;
 
@@ -56,35 +56,32 @@ class JsonRRequestTest
     @Test
     void deserialization_then_serialization_yields_same_string() throws IOException
     {
-        // Build a JSON string with ALL fields in the same order as in JsonRRequest,
+        // Build a JSON string with ALL fields in the same order as in JsonRRequestUpsertRequest,
         // using codes for enums and explicit nulls for nullable fields to ensure exact string match.
         final String inputJson = "{" +
-                "\"requestId\":null," +
                 "\"orgCode\":\"Org-A\"," +
                 "\"requestType\":\"Support\"," +
-                "\"bpartnerIdentifier\":null," +
-                "\"userIdentifier\":null," +
+                "\"bpartnerIdentifier\":\"ext-Other-123\"," +
+                "\"userIdentifier\":\"ext-Other-1234\"," +
                 // enums as AD codes
                 "\"priority\":\"3\"," +
-                "\"dueType\":null," +
                 "\"summary\":\"Help needed\"," +
                 "\"confidentialityLevel\":\"I\"," +
-                "\"isEscalated\":null," +
-                "\"isSelfService\":null," +
-                "\"orderIdentifier\":null," +
-                "\"vendorIdentifier\":null," +
+                "\"isEscalated\":true," +
+                "\"isSelfService\":false," +
+                "\"orderIdentifier\":\"doc-12345\"," +
+                "\"vendorIdentifier\":\"ext-Other-123456\"," +
                 // date format yyyy-MM-dd
                 "\"dateDelivered\":\"2025-11-28\"," +
-                "\"productIdentifier\":null," +
-                "\"inOutId\":null," +
-                "\"qualityNote\":null," +
-                "\"nextAction\":null," +
-                "\"salesRepIdentifier\":null," +
-                "\"result\":null," +
-                "\"status\":null" +
+                "\"productIdentifier\":\"ext-Other-1234567\"," +
+                "\"inOutId\":123456," +
+                "\"qualityNote\":\"NoQualityProblem\"," +
+                "\"salesRepIdentifier\":\"ext-Other-12345678\"," +
+                "\"result\":\"No solution yet\"," +
+                "\"status\":\"MyStatus\"" +
                 "}";
 
-        final JsonRRequest parsed = objectMapper.readValue(inputJson, JsonRRequest.class);
+        final JsonRRequestUpsertRequest parsed = objectMapper.readValue(inputJson, JsonRRequestUpsertRequest.class);
 
         final String serialized = objectMapper.writeValueAsString(parsed);
 
@@ -94,13 +91,12 @@ class JsonRRequestTest
     @Test
     void roundtrip_serialization_deserialization_yields_equal_object() throws IOException
     {
-        final JsonRRequest original = JsonRRequest.builder()
+        final JsonRRequestUpsertRequest original = JsonRRequestUpsertRequest.builder()
                 .orgCode("MyOrg")
                 .requestType("Incident")
                 .bpartnerIdentifier("111111")
                 .userIdentifier("222222")
                 .priority(JsonRequestPriority.Urgent)
-                .dueType("D")
                 .summary("Machine down in line 3")
                 .confidentialityLevel(JsonConfidentialType.PartnerConfidential)
                 .isEscalated(true)
@@ -110,7 +106,6 @@ class JsonRRequestTest
                 .dateDelivered(LocalDate.of(2025, 11, 27))
                 .productIdentifier("P-100")
                 .qualityNote("Please prioritize")
-                .nextAction("Dispatch technician")
                 .salesRepIdentifier("SR-5")
                 .result("Replaced faulty sensor")
                 .status("Closed")
@@ -118,7 +113,7 @@ class JsonRRequestTest
 
         final String json = objectMapper.writeValueAsString(original);
 
-        final JsonRRequest parsed = objectMapper.readValue(json, JsonRRequest.class);
+        final JsonRRequestUpsertRequest parsed = objectMapper.readValue(json, JsonRRequestUpsertRequest.class);
 
         assertEquals(original, parsed);
     }
@@ -126,7 +121,7 @@ class JsonRRequestTest
     @Test
     void serialization_outputsCodesAndDatePattern() throws JsonProcessingException
     {
-        final JsonRRequest request = JsonRRequest.builder()
+        final JsonRRequestUpsertRequest request = JsonRRequestUpsertRequest.builder()
                 .orgCode("org-1")
                 .requestType("Support")
                 .summary("Test summary")
@@ -164,7 +159,7 @@ class JsonRRequestTest
                 "\"confidentialityLevel\":\"PrivateInformation\"" +
                 "}";
 
-        final JsonRRequest request = objectMapper.readValue(json, JsonRRequest.class);
+        final JsonRRequestUpsertRequest request = objectMapper.readValue(json, JsonRRequestUpsertRequest.class);
 
         assertEquals("org-2", request.getOrgCode());
         assertEquals("Support", request.getRequestType());
@@ -191,7 +186,7 @@ class JsonRRequestTest
                 "\"confidentialityLevel\":\"C\"" +
                 "}";
 
-        final JsonRRequest request = objectMapper.readValue(json, JsonRRequest.class);
+        final JsonRRequestUpsertRequest request = objectMapper.readValue(json, JsonRRequestUpsertRequest.class);
 
         assertEquals("org-3", request.getOrgCode());
         assertEquals("Incident", request.getRequestType());

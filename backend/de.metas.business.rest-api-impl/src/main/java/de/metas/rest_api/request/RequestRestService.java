@@ -77,13 +77,15 @@ public class RequestRestService
 	@NonNull private final BPartnerMasterdataProvider bPartnerMasterdataProvider;
 	@NonNull private final ProductMasterDataProvider productMasterDataProvider;
 
-	public JsonRRequest upsert(@NonNull final JsonRRequest request)
+	public JsonRRequestUpsertResponse upsert(@NonNull final JsonRRequestUpsertRequest request)
 	{
 		final I_R_Request persistedRequest = requestBL.createRequest(createRequestCandidate(request));
-		return request.withRequestId(JsonMetasfreshId.of(persistedRequest.getR_Request_ID()));
+		return JsonRRequestUpsertResponse.builder()
+				.requestId(JsonMetasfreshId.of(persistedRequest.getR_Request_ID()))
+				.build();
 	}
 
-	private RequestCandidate createRequestCandidate(final @NonNull JsonRRequest request)
+	private RequestCandidate createRequestCandidate(final @NonNull JsonRRequestUpsertRequest request)
 	{
 		final I_AD_Org org = orgDAO.getById(retrieveOrgIdOrDefault(request.getOrgCode()));
 		final OrgId orgId = OrgId.ofRepoId(org.getAD_Org_ID());
