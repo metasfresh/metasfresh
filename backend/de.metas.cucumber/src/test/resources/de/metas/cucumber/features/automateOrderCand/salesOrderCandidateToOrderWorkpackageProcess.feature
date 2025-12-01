@@ -70,7 +70,7 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
             "poReference": "14042022",
             "deliveryViaRule": "S",
             "incotermsValue": "TB09",
-            "incotermsLocation: "incotermLocation"
+            "incotermsLocation": "incotermLocation"
         },
         {
             "orgCode": "001",
@@ -93,7 +93,7 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
             "poReference": "14042022",
             "deliveryViaRule": "S",
             "incotermsValue": "TB09",
-            "incotermsLocation: "incotermLocation"
+            "incotermsLocation": "incotermLocation"
         },
         {
             "orgCode": "001",
