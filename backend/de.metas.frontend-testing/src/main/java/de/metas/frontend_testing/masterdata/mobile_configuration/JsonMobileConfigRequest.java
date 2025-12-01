@@ -4,6 +4,7 @@ import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.handlingunits.picking.config.mobileui.PickAttribute;
 import de.metas.handlingunits.picking.config.mobileui.PickToStructure;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
+import de.metas.handlingunits.picking.job.model.facets.PickingJobFacetGroup;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.mobile.MobileAuthMethod;
 import lombok.Builder;
@@ -59,6 +60,8 @@ public class JsonMobileConfigRequest
 		@Nullable Boolean allowQuickPackAll;
 
 		@Nullable List<Customer> customers;
+		
+		@Nullable List<PickingJobFacetGroup> filters;
 
 		@Value
 		@Builder

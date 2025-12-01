@@ -59,6 +59,7 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderId;
 import de.metas.picking.api.Packageable;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.picking.job_schedule.model.PickingJobScheduleCollection;
 import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.product.ProductId;
 import de.metas.user.UserId;
@@ -232,7 +233,27 @@ public class PickingJobService implements PickingSlotListener
 	@NonNull
 	public Stream<Packageable> streamPackageable(@NonNull final PickingJobQuery query)
 	{
-		return shipmentScheduleService.stream(query.toPackageableQuery());
+		final Set<ShipmentScheduleId> onlyShipmentScheduleIds;
+		if (query.isScheduledForWorkplaceOnly())
+		{
+			final PickingJobScheduleCollection jobSchedules = pickingJobScheduleService.list(query.toPickingJobScheduleQuery());
+			if (jobSchedules.isEmpty())
+			{
+				return Stream.of();
+			}
+
+			onlyShipmentScheduleIds = jobSchedules.getShipmentScheduleIds();
+		}
+		else
+		{
+			onlyShipmentScheduleIds = null;
+		}
+
+		return shipmentScheduleService.stream(
+				query.toPackageableQueryBuilder()
+						.onlyShipmentScheduleIds(onlyShipmentScheduleIds)
+						.build()
+		);
 	}
 
 	public ADRefList getQtyRejectedReasons()

@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
+import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job_schedule.service.commands.CreateOrUpdatePickingJobSchedulesCommand;
 import de.metas.handlingunits.picking.job_schedule.service.commands.CreateOrUpdatePickingJobSchedulesRequest;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
@@ -100,7 +101,7 @@ public class PickingJobScheduleService
 		shipmentScheduleBL.flagForRecompute(deletedSchedules.getShipmentScheduleIds());
 	}
 
-	public List<PickingJobSchedule> list(@NonNull final PickingJobScheduleQuery query)
+	public PickingJobScheduleCollection list(@NonNull final PickingJobScheduleQuery query)
 	{
 		return pickingJobScheduleRepository.list(query);
 	}

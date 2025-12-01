@@ -165,9 +165,9 @@ public class PickingJobScheduleRepository
 		return deletedSchedules;
 	}
 
-	public List<PickingJobSchedule> list(@NonNull final PickingJobScheduleQuery query)
+	public PickingJobScheduleCollection list(@NonNull final PickingJobScheduleQuery query)
 	{
-		return stream(query).collect(ImmutableList.toImmutableList());
+		return stream(query).collect(PickingJobScheduleCollection.collect());
 	}
 
 	public Stream<PickingJobSchedule> stream(@NonNull final PickingJobScheduleQuery query)
@@ -177,7 +177,7 @@ public class PickingJobScheduleRepository
 				.map(PickingJobScheduleRepository::fromRecord);
 	}
 
-	public boolean anyMatch (@NonNull final PickingJobScheduleQuery query)
+	public boolean anyMatch(@NonNull final PickingJobScheduleQuery query)
 	{
 		return toSqlQuery(query).anyMatch();
 	}
