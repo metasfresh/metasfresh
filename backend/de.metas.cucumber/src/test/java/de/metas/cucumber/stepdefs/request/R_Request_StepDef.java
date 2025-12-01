@@ -32,7 +32,7 @@ import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.organization.OrgId;
 import de.metas.request.RequestTypeId;
 import de.metas.request.api.IRequestTypeDAO;
-import de.metas.rest_api.request.JsonRRequestUpsertRequest;
+import de.metas.rest_api.request.JsonRRequestUpsertResponse;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -66,7 +66,7 @@ public class R_Request_StepDef
 		{
 			throw new AdempiereException("This does not support multiple rows");
 		}
-		final JsonRRequestUpsertRequest request = restTestContext.getApiResponseBodyAs(JsonRRequestUpsertRequest.class);
+		final JsonRRequestUpsertResponse request = restTestContext.getApiResponseBodyAs(JsonRRequestUpsertResponse.class);
 
 		assertNewRequest(dataTableRows.singleRow(), request.getRequestId());
 	}
