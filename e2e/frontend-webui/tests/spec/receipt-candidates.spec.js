@@ -120,9 +120,9 @@ testCases.forEach(({ language, label }) => {
 
       // Step 5: Open related invoice candidate using Alt+6
       // This navigates directly to the correct invoice candidate for this PO
-      // Note: Invoice candidates are created asynchronously after material receipt
-      // We need to wait longer for them to be generated (up to 15 seconds)
-      await PurchaseOrderPage.openRelatedInvoiceCandidate(15000);
+      // Note: Invoice candidates are created when PO is completed (one IC per PO line)
+      // Additional ICs may be created after material receipt for non-PO items
+      await PurchaseOrderPage.openRelatedInvoiceCandidate();
 
       // Verify Quick Actions button is visible (confirms correct candidate selected)
       await InvoiceCandidatePage.expectQuickActionsVisible();

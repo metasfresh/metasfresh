@@ -441,6 +441,10 @@ export class PurchaseOrderPage {
    * IMPORTANT: Use this method instead of navigating to window 540983 and searching,
    * because it ensures we select the CORRECT invoice candidate for this specific PO.
    *
+   * NOTE: Invoice candidates are created when the PO is completed (one IC per PO line).
+   * Additional ICs may be created if the material receipt includes items not in the PO
+   * (e.g., a pallet that's not part of the PO).
+   *
    * @param {number} waitTime - Time to wait for invoice candidates to be created (default: 5000ms)
    */
   static async openRelatedInvoiceCandidate(waitTime = 5000) {
@@ -448,7 +452,8 @@ export class PurchaseOrderPage {
       const page = getPage();
 
       // Wait for invoice candidates to be created asynchronously by backend
-      // Invoice candidates are created by the app server after material receipt
+      // ICs are created when PO is completed (one IC per PO line)
+      // Additional ICs may be created after material receipt for non-PO items
       await page.waitForTimeout(waitTime);
 
       // Click on the page body to ensure it has focus
