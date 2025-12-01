@@ -1,17 +1,17 @@
-import counterpart from "counterpart";
-import PropTypes from "prop-types";
-import React, { Component } from "react";
-import { connect } from "react-redux";
-import cx from "classnames";
+import counterpart from 'counterpart';
+import PropTypes from 'prop-types';
+import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import cx from 'classnames';
 
 import {
   actionsRequest,
   rowActionsRequest,
-} from "../../actions/GenericActions";
-import { getSelection, getTableId } from "../../reducers/tables";
+} from '../../actions/GenericActions';
+import { getSelection, getTableId } from '../../reducers/tables';
 
-import Loader from "../app/Loader";
-import { findViewByViewId } from "../../reducers/viewHandler";
+import Loader from '../app/Loader';
+import { findViewByViewId } from '../../reducers/viewHandler';
 
 /**
  * @file Class based component.

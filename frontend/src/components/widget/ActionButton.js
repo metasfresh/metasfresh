@@ -1,13 +1,13 @@
-import PropTypes from "prop-types";
-import React, { PureComponent } from "react";
-import { connect } from "react-redux";
-import { get } from "lodash";
-import classnames from "classnames";
+import PropTypes from 'prop-types';
+import React, { PureComponent } from 'react';
+import { connect } from 'react-redux';
+import { get } from 'lodash';
+import classnames from 'classnames';
 
-import { dropdownRequest } from "../../actions/GenericActions";
+import { dropdownRequest } from '../../actions/GenericActions';
 
-import DocumentStatusContextShortcuts from "../keyshortcuts/DocumentStatusContextShortcuts";
-import Prompt from "../../components/app/Prompt";
+import DocumentStatusContextShortcuts from '../keyshortcuts/DocumentStatusContextShortcuts';
+import Prompt from '../../components/app/Prompt';
 
 /**
  * @file Document Status/Action Button (Complete, Reverse)
