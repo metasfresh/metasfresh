@@ -334,4 +334,91 @@ export class InvoiceCandidatePage {
       }
     });
   }
+
+  /**
+   * Verify that the Quick Actions button is visible.
+   * This confirms that an invoice candidate is selected and ready for processing.
+   */
+  static async expectQuickActionsVisible() {
+    return await test.step('InvoiceCandidatePage - Verify Quick Actions button is visible', async () => {
+      const page = getPage();
+
+      // Language-independent: Use data-testid for quick action button
+      const quickActionButton = page.getByTestId('quick-action-button');
+
+      await quickActionButton.waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+
+      await expect(quickActionButton).toBeVisible();
+    });
+  }
+
+  /**
+   * Execute the default Quick Action to generate invoice.
+   *
+   * Workflow:
+   * 1. Click the quick action button
+   * 2. Wait for modal to appear
+   * 3. Click "Start" button in modal
+   * 4. Wait for invoice generation process to complete
+   *
+   * Note: Assumes the invoice candidate is already selected
+   */
+  static async generateInvoice() {
+    return await test.step('InvoiceCandidatePage - Generate invoice via Quick Action', async () => {
+      const page = getPage();
+
+      // Click quick action button
+      const quickActionButton = page.getByTestId('quick-action-button');
+
+      await quickActionButton.waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+
+      await quickActionButton.click();
+
+      // Wait for modal to appear
+      await page.locator('.panel-modal, .modal-content').waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+
+      await page.waitForTimeout(500);
+
+      // Click "Start" button in modal (language-independent: data-testid)
+      // Try data-testid first, fall back to text-based selector
+      const startButton = page.getByTestId('modal-start').or(
+        page.locator('.panel-modal button, .modal-content button')
+          .filter({ hasText: /^(Start|Starten)$/i })
+      );
+
+      await startButton.waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+
+      await startButton.click();
+
+      // Wait for modal to close OR page to navigate (invoice generation started)
+      // Note: After clicking Start, the page might navigate away, so we handle both cases
+      await Promise.race([
+        page.locator('.panel-modal, .modal-content').waitFor({
+          state: 'detached',
+          timeout: VERY_SLOW_ACTION_TIMEOUT,
+        }),
+        page.waitForURL(/.*/, { timeout: VERY_SLOW_ACTION_TIMEOUT }),
+      ]).catch(() => {
+        // Ignore if modal is already closed or page already navigated
+      });
+
+      // Give the page a moment to stabilize
+      // Use a shorter timeout and catch the error if page was closed
+      await page.waitForTimeout(500).catch(() => {
+        // Page might have been closed - this is ok
+      });
+    });
+  }
 }
