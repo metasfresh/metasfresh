@@ -32,7 +32,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.With;
 import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
@@ -47,8 +46,6 @@ import java.time.LocalDate;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class JsonRRequestUpsertRequest
 {
-	@Nullable @With JsonMetasfreshId requestId;
-
 	@ApiModelProperty(value = SwaggerDocConstants.ORG_CODE_PARAMETER_DOC)
 	@NonNull String orgCode;
 
