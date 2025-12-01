@@ -353,4 +353,79 @@ export class PurchaseOrderPage {
       });
     });
   }
+
+  /**
+   * Open the related Material Receipt Candidates window using ALT-6.
+   * This navigates directly to the receipt candidate(s) created for this purchase order.
+   *
+   * IMPORTANT: Use this method instead of navigating to window 540196 and searching,
+   * because it ensures we select the CORRECT receipt candidate for this specific PO.
+   *
+   * @param {number} waitTime - Time to wait for receipt candidates to be created (default: 5000ms)
+   */
+  static async openRelatedReceiptCandidate(waitTime = 5000) {
+    return await test.step('PurchaseOrderPage - Open related receipt candidate (Alt+6)', async () => {
+      const page = getPage();
+
+      // Wait for receipt candidates to be created asynchronously by backend
+      // Receipt candidates are created by the app server after PO completion
+      await page.waitForTimeout(waitTime);
+
+      // Click on the page body to ensure it has focus
+      await page.locator('body').click();
+      await page.waitForTimeout(200);
+
+      // Press Alt+6 to open related documents panel
+      await page.keyboard.press('Alt+6');
+
+      // Wait for the related documents panel to appear
+      // The panel typically contains links like "Material Receipt Candidates (#1)"
+      await page.waitForTimeout(1000);
+
+      // Wait for any loading spinners in the related documents panel to disappear
+      await page
+        .locator('.rotating, .spinner')
+        .waitFor({
+          state: 'detached',
+          timeout: SLOW_ACTION_TIMEOUT,
+        })
+        .catch(() => {
+          // Ignore if spinner doesn't exist
+        });
+
+      // Click on "Material Receipt Candidates" link (or "Wareneingangsdisposition" in German)
+      // This navigates to window 540196 with the correct candidate already selected
+      // Language-independent: Use regex to match English or German text with count indicator
+      // English: "Material Receipt Candidates (#1)"
+      // German: "Wareneingangsdisposition (#1)"
+      await page.getByText(/(?:Material Receipt Candidates|Wareneingangsdisposition).*\(#\d+\)/).first().click();
+
+      // Wait for navigation to Receipt Candidates window with pre-selected candidate
+      // URL pattern: /window/540196?page=1&refDocumentId={poId}&refType=181&...
+      await page.waitForURL(/\/window\/540196/, {
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+
+      // Wait for the window to fully load
+      await page.waitForLoadState('networkidle', {
+        timeout: SLOW_ACTION_TIMEOUT,
+      }).catch(() => {
+        // Ignore timeout
+      });
+
+      // Wait for any loading spinners to disappear
+      await page
+        .locator('.rotating, .panel-spaced-lg')
+        .waitFor({
+          state: 'detached',
+          timeout: SLOW_ACTION_TIMEOUT,
+        })
+        .catch(() => {
+          // Ignore if spinner doesn't exist
+        });
+
+      // Give the window a moment to be ready
+      await page.waitForTimeout(500);
+    });
+  }
 }

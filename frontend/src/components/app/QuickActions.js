@@ -173,6 +173,7 @@ export class QuickActions extends Component {
                   ? 'tag-default '
                   : 'pointer ')
               }
+              data-testid="quick-action-button"
               onMouseEnter={this.showListTooltip}
               onMouseLeave={this.hideListTooltip}
               onClick={this.onClick}
@@ -194,6 +195,7 @@ export class QuickActions extends Component {
                   'btn-disabled': isDropdownOpen || disabledDuringProcessing,
                 }
               )}
+              data-testid="quick-action-dropdown-toggle"
               onMouseEnter={this.showBtnTooltip}
               onMouseLeave={this.hideBtnTooltip}
               onClick={this.toggleDropdown}
