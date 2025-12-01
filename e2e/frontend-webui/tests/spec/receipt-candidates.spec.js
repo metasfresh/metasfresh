@@ -84,7 +84,11 @@ testCases.forEach(({ language, label }) => {
       const poDocumentNo = await PurchaseOrderPage.getDocumentNo();
       const poUrl = page.url(); // Save the PO URL for later navigation
 
-      console.log(`✓ Purchase Order created: ${poDocumentNo} (${label} UI)`);
+      // Verify document number was assigned
+      expect(poDocumentNo).toBeTruthy();
+      expect(poDocumentNo.length).toBeGreaterThan(0);
+
+      console.log(`[${language}] Purchase Order created: ${poDocumentNo}`);
 
       // Step 2: Open related receipt candidate using Alt+6
       // This navigates directly to the correct receipt candidate for this PO
@@ -97,7 +101,7 @@ testCases.forEach(({ language, label }) => {
       // Step 3: Create material receipt using default Quick Action
       await ReceiptCandidatesPage.createReceipt();
 
-      console.log(`✓ Material Receipt created from PO ${poDocumentNo} (${label} UI)`);
+      console.log(`[${language}] Material Receipt created from PO ${poDocumentNo}`);
 
       // Step 4: Navigate back to the Purchase Order to access invoice candidates
       // Use the saved PO URL from step 1
@@ -116,7 +120,7 @@ testCases.forEach(({ language, label }) => {
 
       await page.waitForTimeout(1000);
 
-      console.log(`✓ Navigated back to Purchase Order ${poDocumentNo} (${label} UI)`);
+      console.log(`[${language}] Navigated back to Purchase Order ${poDocumentNo}`);
 
       // Step 5: Open related invoice candidate using Alt+6
       // This navigates directly to the correct invoice candidate for this PO
@@ -127,12 +131,12 @@ testCases.forEach(({ language, label }) => {
       // Verify Quick Actions button is visible (confirms correct candidate selected)
       await InvoiceCandidatePage.expectQuickActionsVisible();
 
-      console.log(`✓ Invoice Candidate opened for PO ${poDocumentNo} (${label} UI)`);
+      console.log(`[${language}] Invoice Candidate opened for PO ${poDocumentNo}`);
 
       // Step 6: Generate invoice using Quick Action
       await InvoiceCandidatePage.generateInvoice();
 
-      console.log(`✓ Invoice generated from PO ${poDocumentNo} (${label} UI)`);
+      console.log(`[${language}] Invoice generated from PO ${poDocumentNo}`);
 
       // The invoice generation is now complete
       // We could verify the invoice document number, but that's optional
