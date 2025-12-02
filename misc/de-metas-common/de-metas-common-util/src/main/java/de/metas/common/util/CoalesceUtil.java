@@ -233,23 +233,6 @@ public class CoalesceUtil
 		return 0;
 	}
 
-	@Nullable
-	public Integer firstGreaterThanZeroOrNull(final int... values)
-	{
-		if (values == null)
-		{
-			return null;
-		}
-		for (final int value : values)
-		{
-			if (value > 0)
-			{
-				return value;
-			}
-		}
-		return null;
-	}
-
 	/**
 	 * Analog to {@link #coalesce(Object...)}, returns the first <code>int</code> value that is greater than 0.
 	 *
@@ -258,7 +241,7 @@ public class CoalesceUtil
 	@NonNull
 	public BigDecimal firstGreaterThanZero(@Nullable final BigDecimal... values)
 	{
-		if (values == null)
+		if (values == null || values.length == 0)
 		{
 			return BigDecimal.ZERO;
 		}
@@ -321,7 +304,7 @@ public class CoalesceUtil
 	@Nullable
 	public String firstNotBlank(@Nullable final String... values)
 	{
-		if (values == null)
+		if(values == null)
 		{
 			return null;
 		}
@@ -342,7 +325,7 @@ public class CoalesceUtil
 	@SafeVarargs
 	public String firstNotBlank(@Nullable final Supplier<String>... valueSuppliers)
 	{
-		if (valueSuppliers == null)
+		if(valueSuppliers == null)
 		{
 			return null;
 		}
