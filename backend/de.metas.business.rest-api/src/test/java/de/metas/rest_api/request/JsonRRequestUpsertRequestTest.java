@@ -67,18 +67,20 @@ class JsonRRequestUpsertRequestTest
                 "\"priority\":\"3\"," +
                 "\"summary\":\"Help needed\"," +
                 "\"confidentialityLevel\":\"I\"," +
-                "\"isEscalated\":true," +
-                "\"isSelfService\":false," +
-                "\"orderIdentifier\":\"doc-12345\"," +
                 "\"vendorIdentifier\":\"ext-Other-123456\"," +
                 // date format yyyy-MM-dd
                 "\"dateDelivered\":\"2025-11-28\"," +
+                "\"dateTrx\":\"2025-11-20\"," +
+                "\"reminderDate\":\"2025-12-05\"," +
+                "\"projectValue\":\"PRJ-42\"," +
                 "\"productIdentifier\":\"ext-Other-1234567\"," +
+                "\"orderIdentifier\":\"doc-12345\"," +
                 "\"inOutId\":123456," +
+                "\"invoiceId\":654321," +
+                "\"paymentId\":777888," +
                 "\"qualityNote\":\"NoQualityProblem\"," +
                 "\"salesRepIdentifier\":\"ext-Other-12345678\"," +
-                "\"result\":\"No solution yet\"," +
-                "\"status\":\"MyStatus\"" +
+                "\"statusName\":\"MyStatus\"" +
                 "}";
 
         final JsonRRequestUpsertRequest parsed = objectMapper.readValue(inputJson, JsonRRequestUpsertRequest.class);
@@ -99,16 +101,12 @@ class JsonRRequestUpsertRequestTest
                 .priority(JsonRequestPriority.Urgent)
                 .summary("Machine down in line 3")
                 .confidentialityLevel(JsonConfidentialType.PartnerConfidential)
-                .isEscalated(true)
-                .isSelfService(false)
                 .orderIdentifier("SO-9001")
                 .vendorIdentifier("333333")
                 .dateDelivered(LocalDate.of(2025, 11, 27))
                 .productIdentifier("P-100")
                 .qualityNote("Please prioritize")
                 .salesRepIdentifier("SR-5")
-                .result("Replaced faulty sensor")
-                .status("Closed")
                 .build();
 
         final String json = objectMapper.writeValueAsString(original);

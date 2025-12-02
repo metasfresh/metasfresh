@@ -60,28 +60,31 @@ public class JsonRRequestUpsertRequest
 	@Nullable JsonRequestPriority priority;
 	@NonNull String summary;
 	@Nullable JsonConfidentialType confidentialityLevel;
-	@Nullable Boolean isEscalated;
-	@Nullable Boolean isSelfService;
-
-	@Nullable String orderIdentifier;
 
 	@ApiModelProperty(value = SwaggerDocConstants.BPARTNER_VALUE_DOC)
 	@Nullable String vendorIdentifier;
 
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-	@NonNull LocalDate dateDelivered;
+	@Nullable LocalDate dateDelivered;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	@Nullable LocalDate dateTrx;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	@Nullable LocalDate reminderDate;
+
+	@Nullable String projectValue;
 
 	@ApiModelProperty(value = SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC)
 	@Nullable String productIdentifier;
 
+	@Nullable String orderIdentifier;
 	@Nullable JsonMetasfreshId inOutId;
+	@Nullable JsonMetasfreshId invoiceId;
+	@Nullable JsonMetasfreshId paymentId;
 
 	@Nullable String qualityNote;
 
 	@ApiModelProperty(value = SwaggerDocConstants.CONTACT_IDENTIFIER_DOC)
 	@Nullable String salesRepIdentifier;
 
-	@Nullable String result;
-
-	@Nullable String status;
+	@Nullable String statusName;
 }

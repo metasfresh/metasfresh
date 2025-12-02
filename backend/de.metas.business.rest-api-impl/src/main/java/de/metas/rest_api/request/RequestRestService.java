@@ -24,15 +24,21 @@
 package de.metas.rest_api.request;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.externalreference.ExternalIdentifier;
+import de.metas.inout.InOutId;
 import de.metas.inout.QualityNoteId;
 import de.metas.inout.api.IQualityNoteDAO;
 import de.metas.inout.model.I_M_QualityNote;
+import de.metas.invoice.InvoiceId;
 import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
+import de.metas.project.service.ProjectService;
 import de.metas.request.RequestConfidentialType;
 import de.metas.request.RequestPriority;
 import de.metas.request.RequestStatusId;
@@ -45,6 +51,7 @@ import de.metas.rest_api.v2.bpartner.BPartnerMasterdataProvider;
 import de.metas.rest_api.v2.order.sales.OrderService;
 import de.metas.rest_api.v2.ordercandidates.impl.ProductMasterDataProvider;
 import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -53,17 +60,20 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_R_Request;
-import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 
 import static de.metas.RestUtils.retrieveOrgIdOrDefault;
+import static org.compiere.util.TimeUtil.asZonedDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -72,10 +82,13 @@ public class RequestRestService
 	private final IRequestBL requestBL = Services.get(IRequestBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IQualityNoteDAO qualityNoteDAO = Services.get(IQualityNoteDAO.class);
+	private final IUserDAO userDAO = Services.get(IUserDAO.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final OrderService orderService;
 	@NonNull private final RequestService requestService;
 	@NonNull private final BPartnerMasterdataProvider bPartnerMasterdataProvider;
 	@NonNull private final ProductMasterDataProvider productMasterDataProvider;
+	@NonNull private final ProjectService projectService;
 
 	public JsonRRequestUpsertResponse upsert(@NonNull final JsonRRequestUpsertRequest request)
 	{
@@ -101,11 +114,12 @@ public class RequestRestService
 				? RequestConfidentialType.ofCode(request.getConfidentialityLevel().getCode())
 				: RequestConfidentialType.PartnerConfidential;
 
-		final ZonedDateTime dateDelivered = TimeUtil.asZonedDateTime(request.getDateDelivered(), orgZoneId);
+		final BPartnerId bPartnerId = resolveBPartnerIdOrNull(ExternalIdentifier.ofOrNull(request.getBpartnerIdentifier()), orgId, "C_BPartner_ID");
+		final BPartnerId vendorId = getVendorIdOrNull(resolveBPartnerIdOrNull(ExternalIdentifier.ofOrNull(request.getVendorIdentifier()), orgId, "C_BP_Vendor_ID"));
 
-		final UserId userId = resolveUserIdOrNull(ExternalIdentifier.ofOrNull(request.getUserIdentifier()), orgId);
+		final UserId userId = resolveUserIdOrNull(ExternalIdentifier.ofOrNull(request.getUserIdentifier()), orgId, "AD_User_ID");
+		final UserId salesRepId = getSalesRepIdOrNull(resolveUserIdOrNull(ExternalIdentifier.ofOrNull(request.getSalesRepIdentifier()), orgId, "SalesRep_ID"));
 		final ProductId productId = resolveProductIdOrNull(ExternalIdentifier.ofOrNull(request.getProductIdentifier()), orgId);
-		final BPartnerId bPartnerId = resolveBPartnerIdOrNull(ExternalIdentifier.ofOrNull(request.getBpartnerIdentifier()), orgId);
 
 		final OrderId orderId = resolveOrderId(IdentifierString.ofOrNull(request.getOrderIdentifier()), orgId);
 		TableRecordReference recordRef = null;
@@ -113,11 +127,20 @@ public class RequestRestService
 		{
 			recordRef = TableRecordReference.of(I_C_Order.Table_Name, orderId.getRepoId());
 		}
-
-		final JsonMetasfreshId inOutId = request.getInOutId();
+		final InOutId inOutId = request.getInOutId() == null ? null : InOutId.ofRepoId(request.getInOutId().getValue());
 		if (inOutId != null)
 		{
-			recordRef = TableRecordReference.of(I_M_InOut.Table_Name, inOutId.getValue());
+			recordRef = TableRecordReference.of(I_M_InOut.Table_Name, inOutId);
+		}
+		final InvoiceId invoiceId = request.getInvoiceId() == null ? null : InvoiceId.ofRepoId(request.getInvoiceId().getValue());
+		if (invoiceId != null)
+		{
+			recordRef = TableRecordReference.of(I_C_Invoice.Table_Name, invoiceId);
+		}
+		final PaymentId paymentId = request.getPaymentId() == null ? null : PaymentId.ofRepoId(request.getPaymentId().getValue());
+		if (paymentId != null)
+		{
+			recordRef = TableRecordReference.of(I_C_Payment.Table_Name, paymentId);
 		}
 
 		final String qualityNote = request.getQualityNote();
@@ -131,16 +154,14 @@ public class RequestRestService
 		}
 
 		RequestStatusId statusId = null;
-		if (Check.isNotBlank(request.getStatus()))
+		if (Check.isNotBlank(request.getStatusName()))
 		{
-			statusId = requestService.getStatusIdByRequestTypeIdAndName(requestTypeId, request.getStatus());
+			statusId = requestService.getStatusIdByRequestTypeIdAndName(requestTypeId, request.getStatusName());
 		}
 
-		RequestPriority priority = null;
-		if (request.getPriority() != null)
-		{
-			priority = RequestPriority.ofCode(request.getPriority().getCode());
-		}
+		final RequestPriority priority = request.getPriority() == null ? null : RequestPriority.ofCode(request.getPriority().getCode());
+		final ProjectId projectId = request.getProjectValue() == null ? null : projectService.getIdByValueOrNull(request.getProjectValue());
+
 		return RequestCandidate.builder()
 				.orgId(orgId)
 				.requestTypeId(requestTypeId)
@@ -148,17 +169,59 @@ public class RequestRestService
 				.userId(userId)
 				.confidentialType(confidentialType)
 				.summary(request.getSummary())
-				.dateDelivered(dateDelivered)
+				.dateDelivered(asZonedDateTime(request.getDateDelivered(), orgZoneId))
+				.dateTrx(asZonedDateTime(request.getDateTrx(), orgZoneId))
+				.reminderDate(asZonedDateTime(request.getReminderDate(), orgZoneId))
 				.productId(productId)
 				.recordRef(recordRef)
 				.performanceType(performanceType)
 				.qualityNoteId(qualityNoteId)
-				.isEscalated(request.getIsEscalated())
-				.isSelfService(request.getIsSelfService())
-				.result(request.getStatus())
-				.statusId(statusId)
 				.priority(priority)
+				.orderId(orderId)
+				.inOutId(inOutId)
+				.invoiceId(invoiceId)
+				.paymentId(paymentId)
+				.projectId(projectId)
+				.vendorId(vendorId)
+				.salesRepId(salesRepId)
+				.statusId(statusId)
 				.build();
+	}
+
+	@Nullable
+	private BPartnerId getVendorIdOrNull(@Nullable final BPartnerId vendorId)
+	{
+		if (vendorId == null)
+		{
+			return null;
+		}
+
+		final I_C_BPartner bp = bpartnerDAO.getById(vendorId);
+		//As per field validation rule, only allow active BPs marked as vendor
+		final boolean isValidVendor = bp.isActive() && !bp.isSummary() && bp.isVendor();
+		if (!isValidVendor)
+		{
+			throw new AdempiereException("@NotFound@ @C_BP_Vendor_ID@");
+		}
+		return vendorId;
+	}
+
+	@Nullable
+	private UserId getSalesRepIdOrNull(@Nullable final UserId salesRepId)
+	{
+		if (salesRepId == null)
+		{
+			return null;
+		}
+
+		final I_AD_User user = userDAO.getById(salesRepId);
+		//As per field validation rule, only allow AD_User.IsSystemUser = 'Y' as sales rep
+		final boolean isValidSalesRep = user.isActive() && user.isSystemUser();
+		if (!isValidSalesRep)
+		{
+			throw new AdempiereException("@NotFound@ @SalesRep_ID@");
+		}
+		return salesRepId;
 	}
 
 	@Nullable
@@ -177,25 +240,25 @@ public class RequestRestService
 	}
 
 	@Nullable
-	private UserId resolveUserIdOrNull(final @Nullable ExternalIdentifier userIdentifier, @NonNull final OrgId orgId)
+	private UserId resolveUserIdOrNull(final @Nullable ExternalIdentifier userIdentifier, @NonNull final OrgId orgId, @NonNull final String fieldName)
 	{
 		if (userIdentifier == null)
 		{
 			return null;
 		}
 		return bPartnerMasterdataProvider.resolveUserExternalIdentifier(orgId, userIdentifier)
-				.orElseThrow(() -> new AdempiereException("@NotFound@ @AD_User_ID@"));
+				.orElseThrow(() -> new AdempiereException("@NotFound@ @" + fieldName + "@"));
 	}
 
 	@Nullable
-	private BPartnerId resolveBPartnerIdOrNull(final @Nullable ExternalIdentifier bpartnerIdentifier, @NonNull final OrgId orgId)
+	private BPartnerId resolveBPartnerIdOrNull(final @Nullable ExternalIdentifier bpartnerIdentifier, @NonNull final OrgId orgId, @NonNull final String fieldName)
 	{
 		if (bpartnerIdentifier == null)
 		{
 			return null;
 		}
 		return bPartnerMasterdataProvider.resolveBPartnerExternalIdentifier(orgId, bpartnerIdentifier)
-				.orElseThrow(() -> new AdempiereException("@NotFound@ @C_BPartner_ID@"));
+				.orElseThrow(() -> new AdempiereException("@NotFound@ @" + fieldName + "@"));
 	}
 
 	@Nullable
