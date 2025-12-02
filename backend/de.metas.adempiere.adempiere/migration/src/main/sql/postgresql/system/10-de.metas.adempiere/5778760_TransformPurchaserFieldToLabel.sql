@@ -856,3 +856,21 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=758508
 
 
 
+-- 2025-12-02T13:41:22.857Z
+UPDATE AD_Tab_Trl trl SET Name='Purchaser' WHERE AD_Tab_ID=548594 AND AD_Language='de_DE'
+;
+
+-- 2025-12-02T13:41:22.864Z
+/* DDL */  select update_tab_translation_from_ad_element(584321)
+;
+
+-- 2025-12-02T13:41:22.885Z
+/* DDL */ select AD_Element_Link_Create_Missing_Tab(548594)
+;
+
+-- Tab: Bestellung_OLD(181,D) -> Purchaser
+-- Table: AD_User_Purchaser_BPartner_V
+-- 2025-12-02T13:41:22.849Z
+UPDATE AD_Tab SET AD_Element_ID=584321, CommitWarning=NULL, Description=NULL, EntityType='D', Help=NULL, Name='Purchaser',Updated=TO_TIMESTAMP('2025-12-02 13:41:22.849000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Tab_ID=548594
+;
+
