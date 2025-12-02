@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_Order
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 909993800L;
+	private static final long serialVersionUID = -1340350522L;
 
     /** Standard Constructor */
     public X_C_Order (final Properties ctx, final int C_Order_ID, @Nullable final String trxName)
@@ -1121,6 +1121,21 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
+	public void setExternalSystem_ID (final int ExternalSystem_ID)
+	{
+		if (ExternalSystem_ID < 1) 
+			set_Value (COLUMNNAME_ExternalSystem_ID, null);
+		else 
+			set_Value (COLUMNNAME_ExternalSystem_ID, ExternalSystem_ID);
+	}
+
+	@Override
+	public int getExternalSystem_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ExternalSystem_ID);
+	}
+
+	@Override
 	public void setFreightAmt (final BigDecimal FreightAmt)
 	{
 		set_Value (COLUMNNAME_FreightAmt, FreightAmt);
@@ -1353,6 +1368,30 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public boolean isApproved() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsApproved);
+	}
+
+	@Override
+	public void setIsAutoInvoice (final boolean IsAutoInvoice)
+	{
+		set_Value (COLUMNNAME_IsAutoInvoice, IsAutoInvoice);
+	}
+
+	@Override
+	public boolean isAutoInvoice() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAutoInvoice);
+	}
+
+	@Override
+	public void setIsConfirmedBySupplier (final boolean IsConfirmedBySupplier)
+	{
+		set_Value (COLUMNNAME_IsConfirmedBySupplier, IsConfirmedBySupplier);
+	}
+
+	@Override
+	public boolean isConfirmedBySupplier()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsConfirmedBySupplier);
 	}
 
 	@Override
@@ -1821,9 +1860,9 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	/** Sofortüberweisung = R */
 	public static final String PAYMENTRULE_Sofortueberweisung = "R";
 	/** Reimbursement = E */
-	public static final String PAYMENTRULE_Reimbursement  = "E";
+	public static final String PAYMENTRULE_Reimbursement = "E";
 	/** Settlement = F */
-	public static final String PAYMENTRULE_Settlement  = "F";
+	public static final String PAYMENTRULE_Settlement = "F";
 	@Override
 	public void setPaymentRule (final java.lang.String PaymentRule)
 	{
@@ -2272,20 +2311,5 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Weight);
 		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setExternalSystem_ID (final int ExternalSystem_ID)
-	{
-		if (ExternalSystem_ID < 1)
-			set_Value (COLUMNNAME_ExternalSystem_ID, null);
-		else
-			set_Value (COLUMNNAME_ExternalSystem_ID, ExternalSystem_ID);
-	}
-
-	@Override
-	public int getExternalSystem_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_ExternalSystem_ID);
 	}
 }
