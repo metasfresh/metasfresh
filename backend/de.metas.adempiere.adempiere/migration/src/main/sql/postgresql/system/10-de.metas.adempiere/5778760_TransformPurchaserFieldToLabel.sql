@@ -874,3 +874,13 @@ UPDATE AD_Tab_Trl trl SET Name='Purchaser' WHERE AD_Tab_ID=548594 AND AD_Languag
 UPDATE AD_Tab SET AD_Element_ID=584321, CommitWarning=NULL, Description=NULL, EntityType='D', Help=NULL, Name='Purchaser',Updated=TO_TIMESTAMP('2025-12-02 13:41:22.849000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Tab_ID=548594
 ;
 
+-- Column: AD_User_Purchaser_BPartner_V.AD_User_ID
+-- 2025-12-02T14:12:43.376Z
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2025-12-02 14:12:43.376000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591643
+;
+
+-- Column: AD_User_Purchaser_BPartner_V.AD_User_ID
+-- 2025-12-02T14:15:27.882Z
+UPDATE AD_Column SET AD_Reference_Value_ID=540401,Updated=TO_TIMESTAMP('2025-12-02 14:15:27.882000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591643
+;
+
