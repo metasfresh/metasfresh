@@ -1,4 +1,4 @@
-CREATE VIEW AD_User_Purchaser_BPartner_V AS
+CREATE OR REPLACE VIEW AD_User_Purchaser_BPartner_V AS
 SELECT p.AD_Client_ID,
        p.AD_Org_ID,
        p.AD_User_ID,
