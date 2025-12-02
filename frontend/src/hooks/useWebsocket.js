@@ -1,34 +1,73 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { connectWS, disconnectWS } from '../utils/websockets';
 
 const WS_DEBUG = true;
 const log = WS_DEBUG ? console.debug : () => {};
 
 export const useWebsocket = ({ topic, traceName = '', onMessage }) => {
+  const wsStateRef = useRef({});
+  const topicRef = useRef(topic);
+  const onMessageRef = useRef(onMessage);
+
+  // Update refs without triggering re-connection
+  useEffect(() => {
+    onMessageRef.current = onMessage;
+  }, [onMessage]);
+
   useEffect(() => {
     if (!topic) {
-      return () => {};
+      // Clean up if the topic becomes null/undefined
+      if (topicRef.current) {
+        disconnectWS.call(wsStateRef.current);
+        log(
+          `[WS ${topicRef.current} ${traceName}] Disconnected due to empty topic`
+        );
+      }
+      topicRef.current = topic;
+      return;
     }
 
-    const wsState = {};
+    // Only reconnect if the topic actually changed
+    if (topicRef.current !== topic) {
+      // Disconnect from the previous topic
+      if (topicRef.current) {
+        disconnectWS.call(wsStateRef.current);
+        log(
+          `[WS ${topicRef.current} ${traceName}] Disconnected due to topic change`
+        );
+      }
 
-    if (topic) {
-      connectWS.call(wsState, topic, (event) => {
-        log(`[WS ${topic} ${traceName}] Received event`, { event });
+      // Connect to the new topic
+      topicRef.current = topic;
 
-        onMessage({ topic, event });
-      });
+      try {
+        connectWS.call(wsStateRef.current, topic, (event) => {
+          log(`[WS ${topic} ${traceName}] Received event`, { event });
 
-      log(`[WS ${topic} ${traceName}] Connected`, { wsState });
+          // Use ref to get the latest callback to avoid stale closures
+          if (onMessageRef.current) {
+            onMessageRef.current({ topic, event });
+          }
+        });
+
+        log(`[WS ${topic} ${traceName}] Connected`);
+      } catch (error) {
+        console.error(`[WS ${topic} ${traceName}] Connection failed:`, error);
+      }
     }
 
     return () => {
-      if (!wsState) {
-        return;
+      if (wsStateRef.current && topicRef.current) {
+        try {
+          disconnectWS.call(wsStateRef.current);
+          log(`[WS ${topicRef.current} ${traceName}] Disconnected (cleanup)`);
+        } catch (error) {
+          console.error(
+            `[WS ${topicRef.current} ${traceName}] Disconnection failed on cleanup:`,
+            error
+          );
+        }
       }
-
-      disconnectWS.call(wsState);
-      log(`[WS ${topic} ${traceName}] Disconnected`, { wsState });
     };
-  }, [topic]);
+  }, [topic, traceName]); // Only depend on the topic and traceName, not onMessage
 };
