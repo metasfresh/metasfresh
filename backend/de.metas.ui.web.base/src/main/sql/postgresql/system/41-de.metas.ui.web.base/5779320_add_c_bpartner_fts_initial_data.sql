@@ -1,3 +1,4 @@
+
 /*
  * #%L
  * de.metas.ui.web.base
@@ -20,21 +21,24 @@
  * #L%
  */
 
-package de.metas.ui.web.document.filter.provider;
+-- =====================================================================
+-- Backfill Script
+-- =====================================================================
 
-import lombok.experimental.UtilityClass;
-
-@UtilityClass
-public class DocumentFilterDescriptorsConstants
-{
-	public final int SORT_NO_DEFAULT_DATE = Integer.MIN_VALUE;
-	public final int SORT_NO_DEFAULT_FILTERS_GROUP = 10000;
-	public final int SORT_NO_INLINE_FILTERS = 11000;
-	public final int SORT_NO_USER_QUERY_START = 20000;
-	public final int SORT_NO_FULL_TEXT_SEARCH = 30000;
-	public final int SORT_NO_POSTGRES_FULL_TEXT_SEARCH = 31000;
-	public final int SORT_NO_GEO_LOCATION = 40000;
-	public final int SORT_NO_FACT_ACCT = 50000;
-
-	public final int SORT_NO_FACETS_START = Integer.MAX_VALUE / 10000 * 10000;
-}
+-- Run the one-time backfill to populate the C_BPartner_FTS table.
+TRUNCATE TABLE C_BPartner_FTS;
+WITH BPartnerText AS (
+    SELECT
+        bp.c_bpartner_id,
+        get_c_bpartner_aggregated_text(bp.c_bpartner_id) AS aggregated_text
+    FROM c_bpartner bp
+    WHERE bp.c_bpartner_id IS NOT NULL
+)
+INSERT INTO C_BPartner_FTS (c_bpartner_id, fts_string, fts_document, updated)
+SELECT
+    c_bpartner_id,
+    aggregated_text,
+    to_tsvector(get_fts_config(), aggregated_text), -- Reuse the result
+    now()
+FROM BPartnerText
+;

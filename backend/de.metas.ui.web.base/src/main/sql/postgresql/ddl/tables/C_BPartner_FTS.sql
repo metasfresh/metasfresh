@@ -20,21 +20,25 @@
  * #L%
  */
 
-package de.metas.ui.web.document.filter.provider;
+CREATE TABLE public.C_BPartner_FTS
+(
+    C_BPartner_ID NUMERIC(10)              NOT NULL,
+    FTS_document  tsvector                 NOT NULL,
+    FTS_string    TEXT                     NOT NULL,
+    Updated       TIMESTAMP WITH TIME ZONE NOT NULL,
+    CONSTRAINT C_BPartner_FTS_Key PRIMARY KEY (C_BPartner_ID),
+    CONSTRAINT CBPartner_CBPartnerFTS FOREIGN KEY (C_BPartner_ID) REFERENCES public.C_BPartner ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
+);
 
-import lombok.experimental.UtilityClass;
+CREATE INDEX IF NOT EXISTS c_bpartner_fts_document_idx 
+    ON c_bpartner_fts 
+        USING GIN (fts_document)
+;
 
-@UtilityClass
-public class DocumentFilterDescriptorsConstants
-{
-	public final int SORT_NO_DEFAULT_DATE = Integer.MIN_VALUE;
-	public final int SORT_NO_DEFAULT_FILTERS_GROUP = 10000;
-	public final int SORT_NO_INLINE_FILTERS = 11000;
-	public final int SORT_NO_USER_QUERY_START = 20000;
-	public final int SORT_NO_FULL_TEXT_SEARCH = 30000;
-	public final int SORT_NO_POSTGRES_FULL_TEXT_SEARCH = 31000;
-	public final int SORT_NO_GEO_LOCATION = 40000;
-	public final int SORT_NO_FACT_ACCT = 50000;
+CREATE EXTENSION IF NOT EXISTS pg_trgm
+;
 
-	public final int SORT_NO_FACETS_START = Integer.MAX_VALUE / 10000 * 10000;
-}
+CREATE INDEX IF NOT EXISTS c_bpartner_fts_string_trgm_idx
+    ON c_bpartner_fts
+        USING GIN (fts_string gin_trgm_ops)
+;
