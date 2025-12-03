@@ -7,7 +7,7 @@ import { getUserSession } from '../api/userSession';
 
 const DISCONNECT_DELAY_MS = 3000; // 3 seconds delay before disconnecting
 const MAX_RECONNECT_TIMES = 4;
-const WS_DEBUG = true;
+const WS_DEBUG = false;
 const log = WS_DEBUG ? console.debug : () => {};
 
 // Global connection state to prevent multiple connections

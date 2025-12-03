@@ -5,7 +5,7 @@ import {
   newSubscriptionId,
 } from '../utils/websockets';
 
-const WS_DEBUG = true;
+const WS_DEBUG = false;
 const log = WS_DEBUG ? console.debug : () => {};
 
 export const useWebsocket = ({
