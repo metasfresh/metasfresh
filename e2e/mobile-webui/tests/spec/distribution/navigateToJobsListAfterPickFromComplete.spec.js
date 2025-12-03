@@ -56,7 +56,7 @@ test('Happy case', async ({ page }) => {
     await DistributionJobsListScreen.expectDropAllButton({ visible: false });
     await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
 
-    await test.step('Pick P1 -> expect natigate to job screen since the job is not fully picked', async () => {
+    await test.step('Pick P1 -> expect navigate to job screen since the job is not fully picked', async () => {
         await DistributionJobScreen.scanHUToMove({
             huQRCode: masterdata.handlingUnits.HU1.qrCode,
             productScannedCode: masterdata.products.P1.gtin,
