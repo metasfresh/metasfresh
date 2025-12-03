@@ -113,6 +113,8 @@ public class RequestRestService
 	private JsonRRequest toJson(@NonNull final I_R_Request request)
 	{
 		final I_AD_Org org = orgDAO.getById(request.getAD_Org_ID());
+		final OrgId orgId = OrgId.ofRepoId(org.getAD_Org_ID());
+		final ZoneId orgZoneId = orgDAO.getTimeZone(orgId);
 		final I_R_RequestType requestType = requestTypeService.getById(RequestTypeId.ofRepoId(request.getR_RequestType_ID()));
 		final JsonRRequest.JsonRRequestBuilder builder = JsonRRequest.builder()
 				.id(JsonMetasfreshId.of(request.getR_Request_ID()))
@@ -120,14 +122,14 @@ public class RequestRestService
 				.requestType(requestType.getInternalName())
 				.bpartnerId(JsonMetasfreshId.ofOrNull(request.getC_BPartner_ID()))
 				.userId(JsonMetasfreshId.ofOrNull(request.getAD_User_ID()))
-				.priority(JsonRequestPriority.valueOf(request.getPriority()))
+				.priority(JsonRequestPriority.fromJson(request.getPriority()))
 				.summary(request.getSummary())
-				.confidentialityLevel(JsonConfidentialType.valueOf(request.getConfidentialType()))
+				.confidentialityLevel(JsonConfidentialType.fromJson(request.getConfidentialType()))
 				.vendorId(JsonMetasfreshId.ofOrNull(request.getC_BP_Vendor_ID()))
 				.salesRepId(JsonMetasfreshId.ofOrNull(request.getSalesRep_ID()))
-				.dateDelivered(TimeUtil.asLocalDate(request.getDateDelivered()))
-				.dateTrx(TimeUtil.asLocalDate(request.getDateTrx()))
-				.reminderDate(TimeUtil.asLocalDate(request.getReminderDate()))
+				.dateDelivered(TimeUtil.asLocalDate(request.getDateDelivered(), orgZoneId))
+				.dateTrx(TimeUtil.asLocalDate(request.getDateTrx(), orgZoneId))
+				.reminderDate(TimeUtil.asLocalDate(request.getReminderDate(), orgZoneId))
 				.projectId(JsonMetasfreshId.ofOrNull(request.getC_Project_ID()))
 				.productId(JsonMetasfreshId.ofOrNull(request.getM_Product_ID()))
 				.orderId(JsonMetasfreshId.ofOrNull(request.getC_Order_ID()))

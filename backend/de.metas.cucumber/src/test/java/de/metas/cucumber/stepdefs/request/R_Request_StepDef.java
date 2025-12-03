@@ -30,6 +30,7 @@ import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.organization.OrgId;
+import de.metas.request.RequestId;
 import de.metas.request.RequestTypeId;
 import de.metas.request.api.IRequestTypeDAO;
 import de.metas.rest_api.request.JsonRRequestUpsertResponse;
@@ -57,6 +58,7 @@ public class R_Request_StepDef
 	@NonNull private final AD_Org_StepDefData orgTable;
 	@NonNull private final TestContext restTestContext;
 	@NonNull private final C_Order_StepDefData orderTable;
+	@NonNull private final R_Request_StepDefData requestTable;
 
 	@And("validate a new request has been created:")
 	public void newRequestExists(@NonNull final DataTable dataTable) throws JsonProcessingException
@@ -102,6 +104,7 @@ public class R_Request_StepDef
 
 		softAssertions.assertAll();
 
-
+		restTestContext.setIdVariableFromRow(dataTableRow, RequestId.ofRepoId(request.getR_Request_ID()));
+		requestTable.putOrReplace(dataTableRow.getAsIdentifier(), request);
 	}
 }
