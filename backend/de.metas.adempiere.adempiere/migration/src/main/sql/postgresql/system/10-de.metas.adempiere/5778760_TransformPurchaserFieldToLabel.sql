@@ -884,3 +884,6 @@ UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMEST
 UPDATE AD_Column SET AD_Reference_Value_ID=540401,Updated=TO_TIMESTAMP('2025-12-02 14:15:27.882000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591643
 ;
 
+CREATE INDEX IF NOT EXISTS idx_ad_user_purchaser_bp_group
+    ON AD_User_Purchaser(C_BP_Group_ID);
+

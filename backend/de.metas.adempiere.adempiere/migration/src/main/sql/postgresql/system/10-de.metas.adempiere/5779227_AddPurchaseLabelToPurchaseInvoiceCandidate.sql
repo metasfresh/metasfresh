@@ -230,3 +230,15 @@ UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2025-12-02 15
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Labels_Selector_Field_ID,Labels_Tab_ID,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,0,543052,544361,639731,'L',TO_TIMESTAMP('2025-12-02 15:15:12.820000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','Y','Y','N','N','N',758533,548596,0,'Einkäufer',90,0,0,TO_TIMESTAMP('2025-12-02 15:15:12.820000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
+
+-- Tab: Rechnungsdisposition Einkauf(540983,de.metas.invoicecandidate) -> Purchaser
+-- Table: AD_User_Purchaser_BPartner_V
+-- 2025-12-03T07:42:15.841Z
+UPDATE AD_Tab SET AllowQuickInput='N',Updated=TO_TIMESTAMP('2025-12-03 07:42:15.841000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Tab_ID=548596
+;
+
+-- Tab: Rechnungsdisposition Einkauf(540983,de.metas.invoicecandidate) -> Purchaser
+-- Table: AD_User_Purchaser_BPartner_V
+-- 2025-12-03T07:49:33.783Z
+UPDATE AD_Tab SET AD_Column_ID=591651,Updated=TO_TIMESTAMP('2025-12-03 07:49:33.783000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Tab_ID=548596
+;
