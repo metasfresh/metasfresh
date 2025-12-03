@@ -97,8 +97,9 @@ public class JasperCompileClassLoader extends ClassLoader
 				.toString();
 	}
 
+	@Nullable
 	@Override
-	protected URL findResource(final String name)
+	protected URL findResource(@NonNull final String name)
 	{
 		final String nameNormalized = StringUtils.trimBlankToNull(name.trim());
 		if (nameNormalized == null)
@@ -169,7 +170,7 @@ public class JasperCompileClassLoader extends ClassLoader
 		{
 			return new File(jrxmlUrl.toURI());
 		}
-		catch (URISyntaxException ex)
+		catch (final URISyntaxException ex)
 		{
 			throw new AdempiereException("Cannot convert URL to local File: " + jrxmlUrl, ex);
 		}
@@ -212,7 +213,7 @@ public class JasperCompileClassLoader extends ClassLoader
 		{
 			return new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
 		}
-		catch (IOException e)
+		catch (final IOException e)
 		{
 			throw AdempiereException.wrapIfNeeded(e);
 		}
@@ -235,6 +236,7 @@ public class JasperCompileClassLoader extends ClassLoader
 		}
 	}
 
+	@Nullable
 	private URL findMiscResource(final String name)
 	{
 		final String resourcePath = toLocalPath(name, FileUtil.getFileExtension(name));
@@ -260,6 +262,7 @@ public class JasperCompileClassLoader extends ClassLoader
 		return url;
 	}
 
+	@Nullable
 	private URL findResourceInAdditionalPathsOrNull(final String resourceName)
 	{
 		for (final File resourceDir : additionalResourceDirNames)
