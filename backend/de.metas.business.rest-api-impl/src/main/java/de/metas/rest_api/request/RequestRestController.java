@@ -24,6 +24,7 @@ package de.metas.rest_api.request;
 
 import de.metas.Profiles;
 import de.metas.logging.LogManager;
+import de.metas.request.RequestId;
 import de.metas.rest_api.utils.JsonErrors;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiResponse;
@@ -88,11 +89,11 @@ public class RequestRestController
 			@ApiResponse(code = 404, message = "The request entity could not be found")
 	})
 	@GetMapping("/{requestId}")
-	public ResponseEntity getById(@PathVariable(name="requestId") @NonNull final String requestIdStr)
+	public ResponseEntity getById(@PathVariable(name = "requestId") @NonNull final String requestIdStr)
 	{
 		try
 		{
-			final int requestId = Integer.parseInt(requestIdStr);
+			final RequestId requestId = RequestId.ofRepoId(Integer.parseInt(requestIdStr));
 
 			final JsonRRequest response = requestRestService.getByIdOrNull(requestId);
 			return response == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(response);

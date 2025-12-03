@@ -103,9 +103,9 @@ public class RequestRestService
 	}
 
 	@Nullable
-	public JsonRRequest getByIdOrNull(@NonNull final Integer requestId)
+	public JsonRRequest getByIdOrNull(@NonNull final RequestId requestId)
 	{
-		final I_R_Request request = requestBL.getById(RequestId.ofRepoId(requestId));
+		final I_R_Request request = requestBL.getById(requestId);
 
 		return toJson(request);
 	}
