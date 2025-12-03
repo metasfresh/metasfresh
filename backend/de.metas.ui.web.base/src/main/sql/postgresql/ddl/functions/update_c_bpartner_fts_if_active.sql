@@ -25,41 +25,31 @@ CREATE OR REPLACE FUNCTION ops.update_c_bpartner_fts_if_active()
 AS
 $$
 BEGIN
-    if (get_sysconfig_value('de.metas.ui.web.document.filter.provider.fullTextSearch.PostgresFTSDocumentFilterDescriptorsProviderFactory.enabled', 'N') <> 'Y') then
-        RETURN;
-    end if;
+    DROP TRIGGER IF EXISTS c_bpartner_fts_trigger ON c_bpartner;
+    DROP TRIGGER IF EXISTS ad_user_fts_trigger ON ad_user;
+    DROP TRIGGER IF EXISTS c_bpartner_location_fts_trigger ON c_bpartner_location;
 
-    DROP TRIGGER IF EXISTS c_bpartner_fts_trigger ON c_bpartner
-    ;
+    IF (get_sysconfig_value('de.metas.ui.web.document.filter.provider.fullTextSearch.PostgresFTSDocumentFilterDescriptorsProviderFactory.enabled', 'N') <> 'Y') THEN
+        RETURN;
+    END IF;
 
     CREATE TRIGGER c_bpartner_fts_trigger
         AFTER INSERT OR UPDATE
         ON c_bpartner
         FOR EACH ROW
-    EXECUTE PROCEDURE c_bpartner_fts_trigger_function()
-    ;
-
-
-    DROP TRIGGER IF EXISTS ad_user_fts_trigger ON ad_user
-    ;
+    EXECUTE PROCEDURE c_bpartner_fts_trigger_function();
 
     CREATE TRIGGER ad_user_fts_trigger
         AFTER INSERT OR UPDATE OR DELETE
         ON ad_user
         FOR EACH ROW
-    EXECUTE PROCEDURE ad_user_fts_trigger_function()
-    ;
-
-
-    DROP TRIGGER IF EXISTS c_bpartner_location_fts_trigger ON c_bpartner_location
-    ;
+    EXECUTE PROCEDURE ad_user_fts_trigger_function();
 
     CREATE TRIGGER c_bpartner_location_fts_trigger
         AFTER INSERT OR UPDATE OR DELETE
         ON c_bpartner_location
         FOR EACH ROW
-    EXECUTE PROCEDURE c_bpartner_location_fts_trigger_function()
-    ;
+    EXECUTE PROCEDURE c_bpartner_location_fts_trigger_function();
 
     TRUNCATE TABLE C_BPartner_FTS;
     PERFORM ops.reindex_c_bpartner_fts();
