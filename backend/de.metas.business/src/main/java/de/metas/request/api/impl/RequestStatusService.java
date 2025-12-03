@@ -33,11 +33,9 @@ import org.compiere.model.I_R_RequestType;
 import org.compiere.model.I_R_Status;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
-
 @Service
 @RequiredArgsConstructor
-public class RequestService
+public class RequestStatusService
 {
 	private final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
 	@NonNull private final RequestStatusRepository requestStatusRepository;
@@ -50,14 +48,4 @@ public class RequestService
 		return RequestStatusId.ofRepoId(status.getR_Status_ID());
 	}
 
-	@Nullable
-	public RequestTypeId retrieveByInternalName(final @NonNull String requestType)
-	{
-		return requestTypeDAO.retrieveRequestTypeIdByInternalName(requestType);
-	}
-
-	public RequestTypeId retrieveCustomerRequestTypeId()
-	{
-		return requestTypeDAO.retrieveCustomerRequestTypeId();
-	}
 }

@@ -38,7 +38,7 @@ import javax.annotation.Nullable;
 import java.time.LocalDate;
 
 /**
- * A json object that maps to/from a R_Request record.
+ * A JSON object used to create a new {@code R_Request} record.
  */
 @Builder(toBuilder = true)
 @Jacksonized

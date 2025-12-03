@@ -45,7 +45,8 @@ import de.metas.request.RequestStatusId;
 import de.metas.request.RequestTypeId;
 import de.metas.request.api.IRequestBL;
 import de.metas.request.api.RequestCandidate;
-import de.metas.request.api.impl.RequestService;
+import de.metas.request.api.impl.RequestStatusService;
+import de.metas.request.api.impl.RequestTypeService;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.v2.bpartner.BPartnerMasterdataProvider;
 import de.metas.rest_api.v2.order.sales.OrderService;
@@ -85,10 +86,11 @@ public class RequestRestService
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final OrderService orderService;
-	@NonNull private final RequestService requestService;
+	@NonNull private final RequestStatusService requestStatusService;
 	@NonNull private final BPartnerMasterdataProvider bPartnerMasterdataProvider;
 	@NonNull private final ProductMasterDataProvider productMasterDataProvider;
 	@NonNull private final ProjectService projectService;
+	@NonNull private final RequestTypeService requestTypeService;
 
 	public JsonRRequestUpsertResponse upsert(@NonNull final JsonRRequestUpsertRequest request)
 	{
@@ -104,10 +106,10 @@ public class RequestRestService
 		final OrgId orgId = OrgId.ofRepoId(org.getAD_Org_ID());
 		final ZoneId orgZoneId = orgDAO.getTimeZone(orgId);
 
-		RequestTypeId requestTypeId = requestService.retrieveByInternalName(request.getRequestType());
+		RequestTypeId requestTypeId = requestTypeService.retrieveByInternalName(request.getRequestType());
 		if (requestTypeId == null)
 		{
-			requestTypeId = requestService.retrieveCustomerRequestTypeId();
+			requestTypeId = requestTypeService.retrieveCustomerRequestTypeId();
 		}
 
 		final RequestConfidentialType confidentialType = request.getConfidentialityLevel() != null
@@ -156,7 +158,7 @@ public class RequestRestService
 		RequestStatusId statusId = null;
 		if (Check.isNotBlank(request.getStatusName()))
 		{
-			statusId = requestService.getStatusIdByRequestTypeIdAndName(requestTypeId, request.getStatusName());
+			statusId = requestStatusService.getStatusIdByRequestTypeIdAndName(requestTypeId, request.getStatusName());
 		}
 
 		final RequestPriority priority = request.getPriority() == null ? null : RequestPriority.ofCode(request.getPriority().getCode());
