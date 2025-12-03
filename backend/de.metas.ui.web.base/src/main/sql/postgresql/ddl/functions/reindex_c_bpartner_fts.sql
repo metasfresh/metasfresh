@@ -47,7 +47,8 @@ WITH UserText AS (
          GROUP BY bpl.c_bpartner_id),
      BPartnerText AS (SELECT bp.c_bpartner_id,
                              (
-                                 bp.name || ' ' || bp.value || ' ' || COALESCE(bp.debtorid::TEXT, '') || ' ' || COALESCE(bp.creditorid::TEXT, '') || ' ' ||
+                                 bp.name || ' ' || COALESCE(bp.name2, '') || ' ' || bp.value || ' ' ||
+                                 COALESCE(bp.debtorid::TEXT, '') || ' ' || COALESCE(bp.creditorid::TEXT, '') || ' ' ||
                                  COALESCE(ut.text, '') || ' ' ||
                                  COALESCE(lt.text, '')
                                  ) AS aggregated_text
