@@ -5,8 +5,9 @@ import { BAD_GATEWAY_ERROR, NO_CONNECTION_ERROR } from '../constants/Constants';
 import store from '../store/store';
 import { getUserSession } from '../api/userSession';
 
-const DISCONNECT_DELAY_MS = 3000; // 3 seconds delay before disconnecting
-const MAX_RECONNECT_TIMES = 4;
+const socketFactory = () => new SockJS(config.WS_URL);
+const MAX_RECONNECT_TIMES = 100;
+const CLIENT_DISCONNECT_DELAY_MS = 3000; // 3-second delay before disconnecting
 const WS_DEBUG = false;
 const log = WS_DEBUG ? console.debug : () => {};
 
@@ -21,7 +22,7 @@ const globalWsState = {
 
   //
   // Topic subscriptions
-  nextSubscriptionId: 0,
+  nextSubscriptionId: 1,
   subscriptionsById: new Map(),
   pendingSubscriptionsById: new Map(),
 };
@@ -32,54 +33,20 @@ const globalWsState = {
 //
 //
 
-function socketFactory() {
-  return new SockJS(config.WS_URL);
-}
-
 //
 //
 // -----------------------------------------------------------------------------
 //
 //
 
-// Create browserState utility inline to avoid import issues
-const clearBrowserState = () => {
-  try {
-    log('Clearing browser state...');
-
-    // Clear all storage
-    localStorage.clear();
-    sessionStorage.clear();
-
-    // Clear service worker cache if present
-    if ('serviceWorker' in navigator && 'caches' in window) {
-      caches.keys().then((names) => {
-        names.forEach((name) => {
-          caches.delete(name);
-        });
-      });
-    }
-
-    log('Browser state cleared successfully');
-  } catch (error) {
-    console.error('Error clearing browser state:', error);
-  }
-};
-
-//
-//
-// -----------------------------------------------------------------------------
-//
-//
-
-function isClientEligibleForDisconnection() {
+const isClientEligibleForDisconnection = () => {
   return (
     globalWsState.client &&
     !globalWsState.connecting &&
     globalWsState.subscriptionsById.size === 0 &&
     globalWsState.pendingSubscriptionsById.size === 0
   );
-}
+};
 
 //
 //
@@ -106,14 +73,14 @@ const scheduleClientDisconnectIfEligible = (onClientDisconnectCallback) => {
 
   // Only schedule disconnect if no subscriptions and not connecting
   if (isClientEligibleForDisconnection()) {
-    log(`WS: Scheduling disconnect in ${DISCONNECT_DELAY_MS}ms`);
+    log(`WS: Scheduling disconnect in ${CLIENT_DISCONNECT_DELAY_MS}ms`);
 
     globalWsState.disconnectTimer = setTimeout(() => {
       // Double-check conditions haven't changed
       if (isClientEligibleForDisconnection()) {
         disconnectClient(onClientDisconnectCallback);
       }
-    }, DISCONNECT_DELAY_MS);
+    }, CLIENT_DISCONNECT_DELAY_MS);
   }
 };
 
@@ -146,7 +113,7 @@ const disconnectClient = (onClientDisconnectCallback) => {
 //
 
 export const newSubscriptionId = () => {
-  return ++globalWsState.nextSubscriptionId;
+  return globalWsState.nextSubscriptionId++;
 };
 
 //
@@ -155,11 +122,11 @@ export const newSubscriptionId = () => {
 //
 //
 
-export function connectWS({
+export const connectWS = ({
   subscriptionId: subscriptionIdParam,
   topic,
   onMessageCallback,
-}) {
+}) => {
   if (!topic) {
     console.warn('WS: Topic is required to subscribe to');
     return;
@@ -192,7 +159,7 @@ export function connectWS({
   checkClientConnectionActive();
 
   return subscriptionId;
-}
+};
 
 //
 //
@@ -331,23 +298,6 @@ const checkClientConnectionActive = () => {
           console.warn(
             'WS: Max reconnection attempts reached, clearing browser state...'
           );
-
-          // Clear browser state and reload page as last resort
-          try {
-            clearBrowserState();
-            // Give user a chance to see what happened
-            setTimeout(() => {
-              if (
-                window.confirm(
-                  'Connection issues detected. Reload page to recover?'
-                )
-              ) {
-                window.location.reload();
-              }
-            }, 2000);
-          } catch (error) {
-            console.error('Failed to clear browser state:', error);
-          }
 
           globalWsState.client.reconnectDelay = 0; // 0 - deactivates the sockClient
           store.dispatch(connectionError({ errorType: connectionErrorType }));
@@ -511,10 +461,10 @@ const processSinglePendingSubscription = ({ subscriptionId }) => {
 
 const fireMessageCallback = ({ subscriptionId, msg }) => {
   const subscriptionData = globalWsState.subscriptionsById.get(subscriptionId);
+  if (!subscriptionData?.callback) return;
+
   try {
-    if (subscriptionData && subscriptionData.callback) {
-      subscriptionData.callback(JSON.parse(msg.body));
-    }
+    subscriptionData.callback(JSON.parse(msg.body));
   } catch (error) {
     console.warn('Failed forwarding websocket message', {
       msg,
@@ -532,4 +482,29 @@ const fireMessageCallback = ({ subscriptionId, msg }) => {
 
 window.printWebsockets = () => {
   console.log('Websocket connections status', globalWsState);
+
+  console.log('clientConnectionId: ', globalWsState.clientConnectionId);
+  console.log('client: ', globalWsState.client);
+  console.log('connecting: ', globalWsState.connecting);
+  console.log('disconnectTimer: ', globalWsState.disconnectTimer);
+
+  if (globalWsState.pendingSubscriptionsById.size > 0) {
+    for (const pendingSubscriptionData of globalWsState.pendingSubscriptionsById.values()) {
+      console.log(
+        `pending: ${pendingSubscriptionData.topic} ID=${pendingSubscriptionData.subscriptionId}`,
+        pendingSubscriptionData
+      );
+    }
+  }
+
+  if (globalWsState.subscriptionsById.size > 0) {
+    for (const subscriptionData of globalWsState.subscriptionsById.values()) {
+      console.log(
+        `subscription: ${subscriptionData.topic} ID=${subscriptionData.subscriptionId}`,
+        subscriptionData
+      );
+    }
+  }
+
+  console.log('nextSubscriptionId: ', globalWsState.nextSubscriptionId);
 };
