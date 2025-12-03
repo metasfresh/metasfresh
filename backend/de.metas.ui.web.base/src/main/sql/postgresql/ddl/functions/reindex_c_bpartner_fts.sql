@@ -1,4 +1,3 @@
-
 /*
  * #%L
  * de.metas.ui.web.base
@@ -20,6 +19,7 @@
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 
 CREATE OR REPLACE FUNCTION ops.reindex_c_bpartner_fts()
     RETURNS void AS $$
@@ -46,5 +46,5 @@ $$ LANGUAGE plpgsql
 COMMENT ON FUNCTION ops.reindex_c_bpartner_fts() IS 'Rebuilds the entire FTS index for all C_BPartner records.'
 ;
 
-SELECT ops.reindex_c_bpartner_fts()
-;
+-- SELECT ops.reindex_c_bpartner_fts()
+-- ;
