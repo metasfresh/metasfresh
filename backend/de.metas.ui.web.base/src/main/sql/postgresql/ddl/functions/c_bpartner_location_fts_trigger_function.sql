@@ -25,15 +25,15 @@ CREATE OR REPLACE FUNCTION c_bpartner_location_fts_trigger_function()
 BEGIN
     IF (TG_OP = 'UPDATE') THEN
         IF NEW.c_bpartner_id IS DISTINCT FROM OLD.c_bpartner_id THEN
-            PERFORM refresh_c_bpartner_fts(OLD.c_bpartner_id);
-            PERFORM refresh_c_bpartner_fts(NEW.c_bpartner_id);
+            PERFORM ops.reindex_c_bpartner_fts(OLD.c_bpartner_id);
+            PERFORM ops.reindex_c_bpartner_fts(NEW.c_bpartner_id);
         ELSE
-            PERFORM refresh_c_bpartner_fts(NEW.c_bpartner_id);
+            PERFORM ops.reindex_c_bpartner_fts(NEW.c_bpartner_id);
         END IF;
     ELSIF (TG_OP = 'DELETE') THEN
-        PERFORM refresh_c_bpartner_fts(OLD.c_bpartner_id);
+        PERFORM ops.reindex_c_bpartner_fts(OLD.c_bpartner_id);
     ELSIF (TG_OP = 'INSERT') THEN
-        PERFORM refresh_c_bpartner_fts(NEW.c_bpartner_id);
+        PERFORM ops.reindex_c_bpartner_fts(NEW.c_bpartner_id);
     END IF;
     RETURN NULL;
 END;

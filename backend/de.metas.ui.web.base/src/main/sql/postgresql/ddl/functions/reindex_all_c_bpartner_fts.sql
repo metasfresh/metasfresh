@@ -1,4 +1,3 @@
-
 /*
  * #%L
  * de.metas.ui.web.base
@@ -21,5 +20,15 @@
  * #L%
  */
 
-SELECT ops.reindex_all_c_bpartner_fts()
+CREATE OR REPLACE FUNCTION ops.reindex_all_c_bpartner_fts()
+    RETURNS void AS $$
+BEGIN
+    TRUNCATE TABLE C_BPartner_FTS;
+    PERFORM ops.reindex_c_bpartner_fts();
+END;
+$$ LANGUAGE plpgsql
 ;
+
+COMMENT ON FUNCTION ops.reindex_all_c_bpartner_fts() IS 'Rebuilds the entire FTS index for all C_BPartner records. This is a maintenance operation and not intended for frequent use.'
+;
+

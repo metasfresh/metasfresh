@@ -64,6 +64,94 @@
  * #L%
  */
 
+/*
+ * #%L
+ * de.metas.ui.web.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+/*
+ * #%L
+ * de.metas.ui.web.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+/*
+ * #%L
+ * de.metas.ui.web.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+/*
+ * #%L
+ * de.metas.ui.web.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 
 CREATE OR REPLACE FUNCTION get_fts_config()
     RETURNS regconfig
@@ -78,78 +166,76 @@ COMMENT ON FUNCTION get_fts_config() IS 'Returns the FTS configuration to be use
 ;
 
 
-CREATE OR REPLACE FUNCTION get_c_bpartner_aggregated_text(p_bpartner_id NUMERIC)
-    RETURNS TEXT AS $$
-DECLARE
-    aggregated_text TEXT;
-BEGIN
-    SELECT
-        bp.name || ' ' || bp.value || ' ' || coalesce(bp.debtorid::TEXT, '') || ' ' || coalesce(bp.creditorid::TEXT, '') || ' ' ||
-        coalesce((
-                     SELECT string_agg(
-                                    u.name || ' ' || coalesce(u.firstname, '') || ' ' || coalesce(u.lastname, '') || ' ' ||
-                                    coalesce(u.email, '') || ' ' || coalesce(u.phone, '') || ' ' || coalesce(u.mobilephone, ''),
-                                    ' ')
-                     FROM ad_user u WHERE u.c_bpartner_id = bp.c_bpartner_id
-                 ), '') || ' ' ||
-        coalesce((
-                     SELECT string_agg(
-                                    bpl.name || ' ' || coalesce(bpl.phone, '') || ' ' || coalesce(bpl.email, '') || ' ' ||
-                                    coalesce(l.city, '') || ' ' || coalesce(l.postal, '') || ' ' || c.name,
-                                    ' ')
-                     FROM c_bpartner_location bpl
-                              JOIN c_location l ON bpl.c_location_id = l.c_location_id
-                              JOIN c_country c ON l.c_country_id = c.c_country_id
-                     WHERE bpl.c_bpartner_id = bp.c_bpartner_id
-                 ), '')
-    INTO aggregated_text
-    FROM c_bpartner bp
-    WHERE bp.c_bpartner_id = p_bpartner_id;
-
-    RETURN aggregated_text;
-END;
-$$ LANGUAGE plpgsql STABLE
-;
-
-COMMENT ON FUNCTION get_c_bpartner_aggregated_text(NUMERIC) IS 'Returns a textual representation of the given bpartner.'
-;
-
-
-CREATE OR REPLACE FUNCTION refresh_c_bpartner_fts(p_bpartner_id NUMERIC)
+CREATE OR REPLACE FUNCTION ops.reindex_c_bpartner_fts(p_c_bpartner_id NUMERIC DEFAULT NULL)
     RETURNS void AS $$
-DECLARE
-    aggregated_text TEXT;
-BEGIN
-    IF p_bpartner_id IS NULL THEN
-        RETURN;
-    END IF;
-
-    aggregated_text := get_c_bpartner_aggregated_text(p_bpartner_id);
-
-    -- If the aggregation is null (e.g., bpartner was just deleted and this is called from a trigger),
-    -- the ON DELETE CASCADE on the foreign key handles the cleanup, so we can just exit.
-    IF aggregated_text IS NULL THEN
-        RETURN;
-    END IF;
-
+    WITH UserText AS (
+        -- Pre-aggregate user data
+        SELECT
+            u.c_bpartner_id,
+            string_agg(u.name || ' ' || coalesce(u.firstname, '') || ' ' || coalesce(u.lastname, '') || ' ' ||
+                       coalesce(u.email, '') || ' ' || coalesce(u.phone, '') || ' ' || coalesce(u.mobilephone, ''), ' ') AS text
+        FROM ad_user u
+        WHERE p_c_bpartner_id IS NULL OR u.c_bpartner_id = p_c_bpartner_id
+        GROUP BY u.c_bpartner_id
+    ),
+     LocationText AS (
+         -- Pre-aggregate location data
+         SELECT
+             bpl.c_bpartner_id,
+             string_agg(bpl.name || ' ' || coalesce(bpl.phone, '') || ' ' || coalesce(bpl.email, '') || ' ' ||
+                        coalesce(l.city, '') || ' ' || coalesce(l.postal, '') || ' ' || c.name, ' ') AS text
+         FROM c_bpartner_location bpl
+                  JOIN c_location l ON bpl.c_location_id = l.c_location_id
+                  JOIN c_country c ON l.c_country_id = c.c_country_id
+         WHERE p_c_bpartner_id IS NULL OR bpl.c_bpartner_id = p_c_bpartner_id
+         GROUP BY bpl.c_bpartner_id
+     ),
+     BPartnerText AS (
+         SELECT
+             bp.c_bpartner_id,
+             (
+                 bp.name || ' ' || bp.value || ' ' || coalesce(bp.debtorid::TEXT, '') || ' ' || coalesce(bp.creditorid::TEXT, '') || ' ' ||
+                 coalesce(ut.text, '') || ' ' ||
+                 coalesce(lt.text, '')
+                 ) AS aggregated_text
+         FROM c_bpartner bp
+                  LEFT JOIN UserText ut ON bp.c_bpartner_id = ut.c_bpartner_id
+                  LEFT JOIN LocationText lt ON bp.c_bpartner_id = lt.c_bpartner_id
+         WHERE (p_c_bpartner_id IS NULL OR bp.c_bpartner_id = p_c_bpartner_id)
+     )
     -- Perform an "UPSERT" into the FTS table.
-    INSERT INTO C_BPartner_FTS (c_bpartner_id, fts_document, fts_string, updated)
-    VALUES (
-               p_bpartner_id,
-               to_tsvector(get_fts_config(), aggregated_text),
-               aggregated_text,
-               now()
-           )
+    INSERT INTO C_BPartner_FTS (c_bpartner_id, fts_string, fts_document, updated)
+    SELECT
+        BPartnerText.c_bpartner_id,
+        BPartnerText.aggregated_text,
+        to_tsvector(get_fts_config(), BPartnerText.aggregated_text),
+        now()
+    FROM BPartnerText
+    WHERE BPartnerText.aggregated_text IS NOT NULL
     ON CONFLICT (c_bpartner_id) DO UPDATE
         SET
             fts_document = EXCLUDED.fts_document,
             fts_string = EXCLUDED.fts_string,
             updated = now();
+$$ LANGUAGE sql
+;
+
+COMMENT ON FUNCTION ops.reindex_c_bpartner_fts(NUMERIC) IS 'Rebuilds the FTS index for all C_BPartner records if no ID is provided (ops.reindex_all_c_bpartner_fts() should be used if indices already exist ), '
+'or updates the index for a single C_BPartner if an ID is provided.'
+;
+
+
+CREATE OR REPLACE FUNCTION ops.reindex_all_c_bpartner_fts()
+    RETURNS void AS $$
+BEGIN
+    TRUNCATE TABLE C_BPartner_FTS;
+    PERFORM ops.reindex_c_bpartner_fts();
+
 END;
 $$ LANGUAGE plpgsql
 ;
 
-COMMENT ON FUNCTION refresh_c_bpartner_fts(NUMERIC) IS 'Calculates and upserts the FTS data for a given C_BPartner_ID.'
+COMMENT ON FUNCTION ops.reindex_all_c_bpartner_fts() IS 'Rebuilds the entire FTS index for all C_BPartner records. This is a maintenance operation and not intended for frequent use.'
 ;
 
 
@@ -157,12 +243,14 @@ CREATE OR REPLACE FUNCTION c_bpartner_fts_trigger_function()
     RETURNS trigger AS $$
 BEGIN
     IF (TG_OP = 'INSERT' OR TG_OP = 'UPDATE') THEN
-        PERFORM refresh_c_bpartner_fts(NEW.c_bpartner_id);
+        PERFORM ops.reindex_c_bpartner_fts(NEW.c_bpartner_id);
     END IF;
     -- The DELETE case is handled automatically by the "ON DELETE CASCADE" constraint.
+    -- CONSTRAINT CBPartner_CBPartnerFTS FOREIGN KEY (C_BPartner_ID) REFERENCES public.C_BPartner ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
     RETURN NULL;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql
+;
 
 COMMENT ON FUNCTION c_bpartner_fts_trigger_function() IS 'Refresh the C_BPartner_FTS table when a C_BPartner record is inserted or updated';
 
@@ -176,17 +264,16 @@ CREATE OR REPLACE FUNCTION ad_user_fts_trigger_function()
     RETURNS trigger AS $$
 BEGIN
     IF (TG_OP = 'UPDATE') THEN
-        -- If the bpartner ID differs, refresh both old and new. Otherwise, refresh only once.
         IF NEW.c_bpartner_id IS DISTINCT FROM OLD.c_bpartner_id THEN
-            PERFORM refresh_c_bpartner_fts(OLD.c_bpartner_id);
-            PERFORM refresh_c_bpartner_fts(NEW.c_bpartner_id);
+            PERFORM ops.reindex_c_bpartner_fts(OLD.c_bpartner_id);
+            PERFORM ops.reindex_c_bpartner_fts(NEW.c_bpartner_id);
         ELSE
-            PERFORM refresh_c_bpartner_fts(NEW.c_bpartner_id);
+            PERFORM ops.reindex_c_bpartner_fts(NEW.c_bpartner_id);
         END IF;
     ELSIF (TG_OP = 'DELETE') THEN
-        PERFORM refresh_c_bpartner_fts(OLD.c_bpartner_id);
+        PERFORM ops.reindex_c_bpartner_fts(OLD.c_bpartner_id);
     ELSIF (TG_OP = 'INSERT') THEN
-        PERFORM refresh_c_bpartner_fts(NEW.c_bpartner_id);
+        PERFORM ops.reindex_c_bpartner_fts(NEW.c_bpartner_id);
     END IF;
     RETURN NULL;
 END;
@@ -207,15 +294,15 @@ CREATE OR REPLACE FUNCTION c_bpartner_location_fts_trigger_function()
 BEGIN
     IF (TG_OP = 'UPDATE') THEN
         IF NEW.c_bpartner_id IS DISTINCT FROM OLD.c_bpartner_id THEN
-            PERFORM refresh_c_bpartner_fts(OLD.c_bpartner_id);
-            PERFORM refresh_c_bpartner_fts(NEW.c_bpartner_id);
+            PERFORM ops.reindex_c_bpartner_fts(OLD.c_bpartner_id);
+            PERFORM ops.reindex_c_bpartner_fts(NEW.c_bpartner_id);
         ELSE
-            PERFORM refresh_c_bpartner_fts(NEW.c_bpartner_id);
+            PERFORM ops.reindex_c_bpartner_fts(NEW.c_bpartner_id);
         END IF;
     ELSIF (TG_OP = 'DELETE') THEN
-        PERFORM refresh_c_bpartner_fts(OLD.c_bpartner_id);
+        PERFORM ops.reindex_c_bpartner_fts(OLD.c_bpartner_id);
     ELSIF (TG_OP = 'INSERT') THEN
-        PERFORM refresh_c_bpartner_fts(NEW.c_bpartner_id);
+        PERFORM ops.reindex_c_bpartner_fts(NEW.c_bpartner_id);
     END IF;
     RETURN NULL;
 END;

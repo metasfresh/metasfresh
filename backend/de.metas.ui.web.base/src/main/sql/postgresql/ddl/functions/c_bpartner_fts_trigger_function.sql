@@ -25,9 +25,10 @@ CREATE OR REPLACE FUNCTION c_bpartner_fts_trigger_function()
     RETURNS trigger AS $$
 BEGIN
     IF (TG_OP = 'INSERT' OR TG_OP = 'UPDATE') THEN
-        PERFORM refresh_c_bpartner_fts(NEW.c_bpartner_id);
+        PERFORM ops.reindex_c_bpartner_fts(NEW.c_bpartner_id);
     END IF;
     -- The DELETE case is handled automatically by the "ON DELETE CASCADE" constraint.
+    -- CONSTRAINT CBPartner_CBPartnerFTS FOREIGN KEY (C_BPartner_ID) REFERENCES public.C_BPartner ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
     RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
