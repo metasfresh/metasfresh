@@ -35,9 +35,11 @@ import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RequestMapping(value = {
@@ -75,6 +77,37 @@ public class RequestRestController
 					.body(JsonRRequestUpsertResponse.builder()
 							.error(JsonErrors.ofThrowable(ex, adLanguage))
 							.build());
+		}
+	}
+
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Successfully created or updated request"),
+			@ApiResponse(code = 400, message = "The provided requestId is not a number"),
+			@ApiResponse(code = 401, message = "You are not authorized to get the resource"),
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(code = 404, message = "The request entity could not be found")
+	})
+	@GetMapping("/{requestId}")
+	public ResponseEntity createRequest(@RequestParam(name = "requestId") @NonNull final String requestIdStr)
+	{
+		try
+		{
+			final int requestId = Integer.parseInt(requestIdStr);
+
+			final JsonRRequest response = requestRestService.getByIdOrNull(requestId);
+			return response == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(response);
+		}
+		catch (final NumberFormatException ex)
+		{
+			logger.error("Invalid requestId: {}", requestIdStr);
+			return ResponseEntity.badRequest().build();
+		}
+		catch (final Exception ex)
+		{
+			logger.error("Get request failed for {}", requestIdStr, ex);
+			final String adLanguage = Env.getADLanguageOrBaseLanguage();
+			return ResponseEntity.unprocessableEntity()
+					.body(JsonErrors.ofThrowable(ex, adLanguage));
 		}
 	}
 }

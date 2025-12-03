@@ -26,6 +26,8 @@ package de.metas.rest_api.request;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.request.JsonConfidentialType;
+import de.metas.common.rest_api.request.JsonRequestPriority;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.inout.InOutId;
 import de.metas.inout.QualityNoteId;
@@ -40,6 +42,7 @@ import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.project.service.ProjectService;
 import de.metas.request.RequestConfidentialType;
+import de.metas.request.RequestId;
 import de.metas.request.RequestPriority;
 import de.metas.request.RequestStatusId;
 import de.metas.request.RequestTypeId;
@@ -68,6 +71,8 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_R_Request;
+import org.compiere.model.I_R_RequestType;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -98,6 +103,51 @@ public class RequestRestService
 		return JsonRRequestUpsertResponse.builder()
 				.requestId(JsonMetasfreshId.of(persistedRequest.getR_Request_ID()))
 				.build();
+	}
+
+	@Nullable
+	public JsonRRequest getByIdOrNull(@NonNull final Integer requestId)
+	{
+		final I_R_Request request = requestBL.getById(RequestId.ofRepoId(requestId));
+
+		return toJson(request);
+	}
+
+	private JsonRRequest toJson(@NonNull final I_R_Request request)
+	{
+		final I_AD_Org org = orgDAO.getById(request.getAD_Org_ID());
+		final I_R_RequestType requestType = requestTypeService.getById(RequestTypeId.ofRepoId(request.getR_RequestType_ID()));
+		final JsonRRequest.JsonRRequestBuilder builder = JsonRRequest.builder()
+				.id(JsonMetasfreshId.of(request.getR_Request_ID()))
+				.orgCode(org.getValue())
+				.requestType(requestType.getInternalName())
+				.bpartnerId(JsonMetasfreshId.ofOrNull(request.getC_BPartner_ID()))
+				.userId(JsonMetasfreshId.ofOrNull(request.getAD_User_ID()))
+				.priority(JsonRequestPriority.valueOf(request.getPriority()))
+				.summary(request.getSummary())
+				.confidentialityLevel(JsonConfidentialType.valueOf(request.getConfidentialType()))
+				.vendorId(JsonMetasfreshId.ofOrNull(request.getC_BP_Vendor_ID()))
+				.salesRepId(JsonMetasfreshId.ofOrNull(request.getSalesRep_ID()))
+				.dateDelivered(TimeUtil.asLocalDate(request.getDateDelivered()))
+				.dateTrx(TimeUtil.asLocalDate(request.getDateTrx()))
+				.reminderDate(TimeUtil.asLocalDate(request.getReminderDate()))
+				.projectId(JsonMetasfreshId.ofOrNull(request.getC_Project_ID()))
+				.productId(JsonMetasfreshId.ofOrNull(request.getM_Product_ID()))
+				.orderId(JsonMetasfreshId.ofOrNull(request.getC_Order_ID()))
+				.inOutId(JsonMetasfreshId.ofOrNull(request.getM_InOut_ID()))
+				.invoiceId(JsonMetasfreshId.ofOrNull(request.getC_Invoice_ID()))
+				.paymentId(JsonMetasfreshId.ofOrNull(request.getC_Payment_ID()));
+		final QualityNoteId qualityNoteId = QualityNoteId.ofRepoIdOrNull(request.getM_QualityNote_ID());
+		if (qualityNoteId != null)
+		{
+			builder.qualityNoteValue(qualityNoteDAO.getById(qualityNoteId).getValue());
+		}
+		final RequestStatusId statusId = RequestStatusId.ofRepoIdOrNull(request.getR_Status_ID());
+		if (statusId != null)
+		{
+			builder.statusName(requestStatusService.getById(statusId).getName());
+		}
+		return builder.build();
 	}
 
 	private RequestCandidate createRequestCandidate(final @NonNull JsonRRequestUpsertRequest request)

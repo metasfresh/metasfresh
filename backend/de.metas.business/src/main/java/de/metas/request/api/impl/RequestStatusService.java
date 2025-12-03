@@ -48,4 +48,9 @@ public class RequestStatusService
 		return RequestStatusId.ofRepoId(status.getR_Status_ID());
 	}
 
+	public I_R_Status getById(@NonNull final RequestStatusId statusId)
+	{
+		return requestStatusRepository.getById(statusId);
+	}
+
 }

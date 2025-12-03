@@ -46,13 +46,11 @@ public class ProjectRepository
 	public ProjectId getIdByValueOrNull(@NonNull final String value)
 	{
 		return queryBL.createQueryBuilder(I_C_Project.class)
-				.addOnlyContextClient()
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Project.COLUMNNAME_Value, value)
 				.create()
 				.firstId(ProjectId::ofRepoIdOrNull);
 	}
-
-
 
 	public void save(@NonNull final I_C_Project project)
 	{

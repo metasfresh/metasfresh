@@ -26,6 +26,7 @@ import de.metas.request.RequestTypeId;
 import de.metas.request.api.IRequestTypeDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.I_R_RequestType;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -44,5 +45,10 @@ public class RequestTypeService
 	public RequestTypeId retrieveCustomerRequestTypeId()
 	{
 		return requestTypeDAO.retrieveCustomerRequestTypeId();
+	}
+
+	public I_R_RequestType getById(final @NonNull RequestTypeId id)
+	{
+		return requestTypeDAO.getById(id);
 	}
 }

@@ -30,6 +30,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 import static de.metas.common.util.CoalesceUtil.optionalOfFirstNonNullSupplied;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.compiere.util.TimeUtil.asTimestamp;
@@ -108,7 +109,7 @@ public class RequestDAO implements IRequestDAO
 		request.setR_Status_ID(RequestStatusId.toRepoId(candidate.getStatusId()));
 		if (candidate.getPriority() != null)
 		{
-			request.setPriority(RequestPriority.toValue(candidate.getPriority()));
+			request.setPriority(coalesceNotNull(RequestPriority.toValue(candidate.getPriority()), RequestPriority.Medium.getCode()));
 		}
 		request.setSalesRep_ID(UserId.toRepoId(candidate.getSalesRepId()));
 		request.setC_BP_Vendor_ID(BPartnerId.toRepoId(candidate.getVendorId()));
@@ -121,9 +122,11 @@ public class RequestDAO implements IRequestDAO
 	@Nullable
 	private static <T extends RepoIdAware> T getIdFromReferenceOrNull(final @NonNull RequestCandidate candidate, @NonNull final String tableName, @NonNull final Function<Integer, T> idMapper)
 	{
-		return candidate.getRecordRef() != null ?
-				candidate.getRecordRef().getTableName().equals(tableName) ? idMapper.apply(candidate.getRecordRef().getRecord_ID()) : null
-				: null;
+		if (candidate.getRecordRef() != null && candidate.getRecordRef().getTableName().equals(tableName))
+		{
+			return idMapper.apply(candidate.getRecordRef().getRecord_ID());
+		}
+		return null;
 	}
 
 	@Override
