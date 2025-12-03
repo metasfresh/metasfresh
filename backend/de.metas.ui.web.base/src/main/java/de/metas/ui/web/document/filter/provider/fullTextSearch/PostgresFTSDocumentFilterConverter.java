@@ -29,15 +29,19 @@ import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.service.ISysConfigBL;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 public class PostgresFTSDocumentFilterConverter implements SqlDocumentFilterConverter
 {
-	private final static String SYSCONFIG_DISTANCE = "0.96"; //TODO
+	@NonNull private final static String SYSCONFIG_DISTANCE = "de.metas.ui.web.document.filter.provider.fullTextSearch.PostgresFTSDocumentFilterConverter.Distance";
+	@NonNull public static final PostgresFTSDocumentFilterConverter instance = new PostgresFTSDocumentFilterConverter();
 
-	public static final PostgresFTSDocumentFilterConverter instance = new PostgresFTSDocumentFilterConverter();
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@Override
 	public boolean canConvert(final String filterId)
@@ -61,20 +65,28 @@ public class PostgresFTSDocumentFilterConverter implements SqlDocumentFilterConv
 		final String mainTableAlias = sqlOpts.getTableNameOrAlias();
 		final String ftsTableAlias = "fts_bpartner";
 		final String ftsTableName = "C_BPartner_FTS";
+		final String keyColumnName = "C_BPartner_ID";
 
-		final SqlAndParams whereClause = SqlAndParams.builder()
+		final BigDecimal distance = sysConfigBL.getBigDecimalValue(SYSCONFIG_DISTANCE, BigDecimal.ONE);
+
+		final SqlAndParams.Builder whereClause = SqlAndParams.builder()
 				.append("EXISTS (")
 				.append(" SELECT 1 FROM ").append(ftsTableName).append(" ").append(ftsTableAlias)
-				.append(" WHERE ").append(ftsTableAlias).append(".C_BPartner_ID = ").append(mainTableAlias).append(".C_BPartner_ID")
+				.append(" WHERE ").append(ftsTableAlias).append(".").append(keyColumnName)
+				.append(" = ").append(mainTableAlias).append(ftsTableAlias).append(".").append(keyColumnName)
 				.append(" AND (")
-				.append(ftsTableAlias).append(".fts_document @@ websearch_to_tsquery(get_fts_config(), ?)", searchText) // https://www.postgresql.org/docs/current/textsearch.html
-				.append(" OR ")
-				.append(ftsTableAlias).append(".fts_string <-> ? < ", searchText).append(SYSCONFIG_DISTANCE) // https://www.postgresql.org/docs/current/pgtrgm.html (ngram search)
-				.append(" )")
-				.append(")")
-				.build();
+				.append(ftsTableAlias).append(".fts_document @@ websearch_to_tsquery(get_fts_config(), ?)", searchText); // https://www.postgresql.org/docs/current/textsearch.html
 
-		return FilterSql.builder().whereClause(whereClause).build();
+				if (distance.compareTo(BigDecimal.ZERO) > 0 && BigDecimal.ONE.compareTo(distance) > 0) // 0 < distance < 1
+				{
+					whereClause.append(" OR ")
+					.append(ftsTableAlias).append(".fts_string <-> ? < ?", searchText, distance); // https://www.postgresql.org/docs/current/pgtrgm.html (ngram search)
+				}
+
+				whereClause.append(" )")
+				.append(")");
+
+		return FilterSql.builder().whereClause(whereClause.build()).build();
 
 	}
 }

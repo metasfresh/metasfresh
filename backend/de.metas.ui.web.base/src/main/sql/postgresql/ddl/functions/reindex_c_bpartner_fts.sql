@@ -63,7 +63,6 @@ SELECT BPartnerText.c_bpartner_id,
        TO_TSVECTOR(get_fts_config(), BPartnerText.aggregated_text),
        NOW()
 FROM BPartnerText
-WHERE BPartnerText.aggregated_text IS NOT NULL
 ON CONFLICT (c_bpartner_id) DO UPDATE
     SET fts_document = EXCLUDED.fts_document,
         fts_string   = EXCLUDED.fts_string,
@@ -72,6 +71,6 @@ $$
     LANGUAGE sql
 ;
 
-COMMENT ON FUNCTION ops.reindex_c_bpartner_fts(NUMERIC) IS 'Rebuilds the FTS index for all C_BPartner records if no ID is provided (ops.reindex_all_c_bpartner_fts() should be used if indices already exist), '
-    'or updates the index for a single C_BPartner if an ID is provided.'
+
+COMMENT ON FUNCTION ops.reindex_c_bpartner_fts(NUMERIC) IS 'Rebuilds the FTS index for all C_BPartner records if no ID is provided or updates the index for a single C_BPartner if an ID is provided.'
 ;

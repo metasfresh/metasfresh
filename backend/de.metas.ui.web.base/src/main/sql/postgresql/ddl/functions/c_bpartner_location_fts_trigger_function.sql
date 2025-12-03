@@ -45,13 +45,3 @@ $$
 
 COMMENT ON FUNCTION c_bpartner_location_fts_trigger_function() IS 'Refreshes the C_BPartner_Location_FTS table when a C_BPartner_Location record is inserted, updated or deleted.'
 ;
-
-DROP TRIGGER IF EXISTS c_bpartner_location_fts_trigger ON c_bpartner_location
-;
-
-CREATE TRIGGER c_bpartner_location_fts_trigger
-    AFTER INSERT OR UPDATE OR DELETE
-    ON c_bpartner_location
-    FOR EACH ROW
-EXECUTE PROCEDURE c_bpartner_location_fts_trigger_function()
-;

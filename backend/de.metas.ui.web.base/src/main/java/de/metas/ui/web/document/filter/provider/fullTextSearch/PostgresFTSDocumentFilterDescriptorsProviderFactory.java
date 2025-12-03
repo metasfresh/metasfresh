@@ -23,8 +23,8 @@
 package de.metas.ui.web.document.filter.provider.fullTextSearch;
 
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterInlineRenderMode;
@@ -33,11 +33,13 @@ import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsConstan
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProviderFactory;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BPartner;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
@@ -47,13 +49,15 @@ import javax.annotation.Nullable;
 @Component
 public class PostgresFTSDocumentFilterDescriptorsProviderFactory implements DocumentFilterDescriptorsProviderFactory
 {
-	// services
-	private static final Logger logger = LogManager.getLogger(PostgresFTSDocumentFilterDescriptorsProviderFactory.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull protected static final String FILTER_ID = "postgres-full-text-search";
+	@NonNull private static final AdMessageKey MSG_FULL_TEXT_SEARCH_CAPTION = AdMessageKey.of("Search");
+	@NonNull private static final String PARAM_SearchText = "Search";
+	@NonNull private static final String SYSCONFIG_ENABLED =  "de.metas.ui.web.document.filter.provider.fullTextSearch.PostgresFTSDocumentFilterDescriptorsProviderFactory.enabled";
 
-	private static final AdMessageKey MSG_FULL_TEXT_SEARCH_CAPTION = AdMessageKey.of("Search");
-	static final String FILTER_ID = "postgres-full-text-search";
-	static final String PARAM_SearchText = "Search";
+	// services
+	@NonNull private static final Logger logger = LogManager.getLogger(PostgresFTSDocumentFilterDescriptorsProviderFactory.class);
+    @NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
 
 	@Nullable
 	@Override
@@ -64,16 +68,23 @@ public class PostgresFTSDocumentFilterDescriptorsProviderFactory implements Docu
 				.orElse(null);
 	}
 
-	@Nullable
+	@NonNull
 	private DocumentFilterDescriptorsProvider createFiltersProvider(
 			@NonNull final String tableName)
 	{
 		if (!I_C_BPartner.Table_Name.equals(tableName))
 		{
 			logger.debug("Skip creating Postgres FTS filters because table {} isn't supported", tableName);
+			return NullDocumentFilterDescriptorsProvider.instance;
 		}
 
-		final ITranslatableString caption = msgBL.getTranslatableMsgText(MSG_FULL_TEXT_SEARCH_CAPTION);
+		if (!sysConfigBL.getBooleanValue(SYSCONFIG_ENABLED, false))
+		{
+			logger.debug("Skip creating Postgres FTS filters because it is disabled by {}", SYSCONFIG_ENABLED);
+			return NullDocumentFilterDescriptorsProvider.instance;
+		}
+
+		final ITranslatableString caption = TranslatableStrings.adMessage(MSG_FULL_TEXT_SEARCH_CAPTION);
 
 		return ImmutableDocumentFilterDescriptorsProvider.of(
 				DocumentFilterDescriptor.builder()

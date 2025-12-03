@@ -20,5 +20,5 @@
  * #L%
  */
 
-SELECT ops.reindex_all_c_bpartner_fts()
+SELECT ops.update_c_bpartner_fts_if_active()
 ;

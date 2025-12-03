@@ -39,13 +39,3 @@ $$
 
 COMMENT ON FUNCTION c_bpartner_fts_trigger_function() IS 'Refresh the C_BPartner_FTS table when a C_BPartner record is inserted or updated'
 ;
-
-DROP TRIGGER IF EXISTS c_bpartner_fts_trigger ON c_bpartner
-;
-
-CREATE TRIGGER c_bpartner_fts_trigger
-    AFTER INSERT OR UPDATE
-    ON c_bpartner
-    FOR EACH ROW
-EXECUTE PROCEDURE c_bpartner_fts_trigger_function()
-;

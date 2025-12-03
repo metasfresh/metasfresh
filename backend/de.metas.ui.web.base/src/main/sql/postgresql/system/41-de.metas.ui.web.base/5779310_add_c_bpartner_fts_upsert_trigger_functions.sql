@@ -86,94 +86,6 @@
  * #L%
  */
 
-/*
- * #%L
- * de.metas.ui.web.base
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-/*
- * #%L
- * de.metas.ui.web.base
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-/*
- * #%L
- * de.metas.ui.web.base
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-/*
- * #%L
- * de.metas.ui.web.base
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 
 CREATE OR REPLACE FUNCTION get_fts_config()
     RETURNS regconfig
@@ -232,7 +144,6 @@ SELECT BPartnerText.c_bpartner_id,
        TO_TSVECTOR(get_fts_config(), BPartnerText.aggregated_text),
        NOW()
 FROM BPartnerText
-WHERE BPartnerText.aggregated_text IS NOT NULL
 ON CONFLICT (c_bpartner_id) DO UPDATE
     SET fts_document = EXCLUDED.fts_document,
         fts_string   = EXCLUDED.fts_string,
@@ -241,25 +152,7 @@ $$
     LANGUAGE sql
 ;
 
-COMMENT ON FUNCTION ops.reindex_c_bpartner_fts(NUMERIC) IS 'Rebuilds the FTS index for all C_BPartner records if no ID is provided (ops.reindex_all_c_bpartner_fts() should be used if indices already exist ), '
-    'or updates the index for a single C_BPartner if an ID is provided.'
-;
-
-
-CREATE OR REPLACE FUNCTION ops.reindex_all_c_bpartner_fts()
-    RETURNS void
-AS
-$$
-BEGIN
-    TRUNCATE TABLE C_BPartner_FTS;
-    PERFORM ops.reindex_c_bpartner_fts();
-
-END;
-$$
-    LANGUAGE plpgsql
-;
-
-COMMENT ON FUNCTION ops.reindex_all_c_bpartner_fts() IS 'Rebuilds the entire FTS index for all C_BPartner records. This is a maintenance operation and not intended for frequent use.'
+COMMENT ON FUNCTION ops.reindex_c_bpartner_fts(NUMERIC) IS 'Rebuilds the FTS index for all C_BPartner records if no ID is provided or updates the index for a single C_BPartner if an ID is provided.'
 ;
 
 
@@ -280,16 +173,6 @@ $$
 ;
 
 COMMENT ON FUNCTION c_bpartner_fts_trigger_function() IS 'Refresh the C_BPartner_FTS table when a C_BPartner record is inserted or updated'
-;
-
-DROP TRIGGER IF EXISTS c_bpartner_fts_trigger ON c_bpartner
-;
-
-CREATE TRIGGER c_bpartner_fts_trigger
-    AFTER INSERT OR UPDATE
-    ON c_bpartner
-    FOR EACH ROW
-EXECUTE PROCEDURE c_bpartner_fts_trigger_function()
 ;
 
 
@@ -319,16 +202,6 @@ $$
 COMMENT ON FUNCTION ad_user_fts_trigger_function() IS 'Refresh the C_BPartner_FTS table when an AD_User is updated.'
 ;
 
-DROP TRIGGER IF EXISTS ad_user_fts_trigger ON ad_user
-;
-
-CREATE TRIGGER ad_user_fts_trigger
-    AFTER INSERT OR UPDATE OR DELETE
-    ON ad_user
-    FOR EACH ROW
-EXECUTE PROCEDURE ad_user_fts_trigger_function()
-;
-
 
 CREATE OR REPLACE FUNCTION c_bpartner_location_fts_trigger_function()
     RETURNS trigger
@@ -356,13 +229,55 @@ $$
 COMMENT ON FUNCTION c_bpartner_location_fts_trigger_function() IS 'Refreshes the C_BPartner_Location_FTS table when a C_BPartner_Location record is inserted, updated or deleted.'
 ;
 
-DROP TRIGGER IF EXISTS c_bpartner_location_fts_trigger ON c_bpartner_location
+
+
+CREATE OR REPLACE FUNCTION ops.update_c_bpartner_fts_if_active()
+    RETURNS void
+AS
+$$
+BEGIN
+    if (get_sysconfig_value('de.metas.ui.web.document.filter.provider.fullTextSearch.PostgresFTSDocumentFilterDescriptorsProviderFactory.enabled', 'N') <> 'Y') then
+        RETURN;
+    end if;
+
+    DROP TRIGGER IF EXISTS c_bpartner_fts_trigger ON c_bpartner
+    ;
+
+    CREATE TRIGGER c_bpartner_fts_trigger
+        AFTER INSERT OR UPDATE
+        ON c_bpartner
+        FOR EACH ROW
+    EXECUTE PROCEDURE c_bpartner_fts_trigger_function()
+    ;
+
+
+    DROP TRIGGER IF EXISTS ad_user_fts_trigger ON ad_user
+    ;
+
+    CREATE TRIGGER ad_user_fts_trigger
+        AFTER INSERT OR UPDATE OR DELETE
+        ON ad_user
+        FOR EACH ROW
+    EXECUTE PROCEDURE ad_user_fts_trigger_function()
+    ;
+
+
+    DROP TRIGGER IF EXISTS c_bpartner_location_fts_trigger ON c_bpartner_location
+    ;
+
+    CREATE TRIGGER c_bpartner_location_fts_trigger
+        AFTER INSERT OR UPDATE OR DELETE
+        ON c_bpartner_location
+        FOR EACH ROW
+    EXECUTE PROCEDURE c_bpartner_location_fts_trigger_function()
+    ;
+
+    TRUNCATE TABLE C_BPartner_FTS;
+    PERFORM ops.reindex_c_bpartner_fts();
+END;
+$$
+    LANGUAGE plpgsql
 ;
 
-CREATE TRIGGER c_bpartner_location_fts_trigger
-    AFTER INSERT OR UPDATE OR DELETE
-    ON c_bpartner_location
-    FOR EACH ROW
-EXECUTE PROCEDURE c_bpartner_location_fts_trigger_function()
+COMMENT ON FUNCTION ops.update_c_bpartner_fts_if_active() IS 'Rebuilds the entire FTS index for all C_BPartner records and enables the triggers. This is a maintenance operation and not intended for frequent use.'
 ;
-

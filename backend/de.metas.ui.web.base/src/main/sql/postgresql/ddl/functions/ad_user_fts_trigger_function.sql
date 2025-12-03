@@ -46,13 +46,3 @@ $$
 
 COMMENT ON FUNCTION ad_user_fts_trigger_function() IS 'Refresh the C_BPartner_FTS table when an AD_User is updated.'
 ;
-
-DROP TRIGGER IF EXISTS ad_user_fts_trigger ON ad_user
-;
-
-CREATE TRIGGER ad_user_fts_trigger
-    AFTER INSERT OR UPDATE OR DELETE
-    ON ad_user
-    FOR EACH ROW
-EXECUTE PROCEDURE ad_user_fts_trigger_function()
-;
