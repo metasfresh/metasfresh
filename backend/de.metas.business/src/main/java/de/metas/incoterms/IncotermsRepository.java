@@ -29,7 +29,9 @@ import de.metas.cache.CCache;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
@@ -68,6 +70,12 @@ public class IncotermsRepository
 		return getIncotermsMap().getById(id);
 	}
 
+	@NotNull
+	public Incoterms getByValue(@NotNull final String value, @NotNull final OrgId orgId)
+	{
+		return getIncotermsMap().getByValue(value, orgId);
+	}
+
 	@NonNull
 	private IncotermsMap getIncotermsMap()
 	{
@@ -103,12 +111,14 @@ public class IncotermsRepository
 	{
 		private final ImmutableMap<IncotermsId, Incoterms> byId;
 		private final ImmutableMap<OrgId, Incoterms> defaultByOrgId;
+		private final ImmutableMap<ValueAndOrgId, Incoterms> byValueAndOrgId;
 
 		IncotermsMap(final List<Incoterms> list)
 		{
 			this.byId = Maps.uniqueIndex(list, Incoterms::getId);
 			this.defaultByOrgId = list.stream().filter(Incoterms::isDefault)
 					.collect(ImmutableMap.toImmutableMap(Incoterms::getOrgId, incoterms->incoterms));
+			this.byValueAndOrgId = Maps.uniqueIndex(list, incoterm -> ValueAndOrgId.builder().value(incoterm.getValue()).orgId(incoterm.getOrgId()).build());
 		}
 
 		@NonNull
@@ -126,6 +136,25 @@ public class IncotermsRepository
 		public Incoterms getDefaultByOrgId(@NonNull final OrgId orgId)
 		{
 			return CoalesceUtil.coalesce(defaultByOrgId.get(orgId), defaultByOrgId.get(OrgId.ANY));
+		}
+
+		@NonNull Incoterms getByValue(@NonNull final String value, @NonNull final OrgId orgId)
+		{
+			final Incoterms incoterms = CoalesceUtil.coalesce(byValueAndOrgId.get(ValueAndOrgId.builder().value(value).orgId(orgId).build()),
+					byValueAndOrgId.get(ValueAndOrgId.builder().value(value).orgId(OrgId.ANY).build()));
+			if (incoterms == null)
+			{
+				throw new AdempiereException("Incoterms not found by value: " + value + " and orgIds: " + orgId + " or " + OrgId.ANY);
+			}
+			return incoterms;
+		}
+
+		@Builder
+		@Value
+		private static class ValueAndOrgId
+		{
+			@NonNull String value;
+			@NonNull OrgId orgId;
 		}
 	}
 }
