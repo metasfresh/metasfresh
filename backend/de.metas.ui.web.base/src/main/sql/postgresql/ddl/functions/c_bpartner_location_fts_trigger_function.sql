@@ -21,7 +21,9 @@
  */
 
 CREATE OR REPLACE FUNCTION c_bpartner_location_fts_trigger_function()
-    RETURNS trigger AS $$
+    RETURNS trigger
+AS
+$$
 BEGIN
     IF (TG_OP = 'UPDATE') THEN
         IF NEW.c_bpartner_id IS DISTINCT FROM OLD.c_bpartner_id THEN
@@ -37,12 +39,19 @@ BEGIN
     END IF;
     RETURN NULL;
 END;
-$$ LANGUAGE plpgsql
+$$
+    LANGUAGE plpgsql
 ;
 
-COMMENT ON FUNCTION c_bpartner_location_fts_trigger_function() IS 'Refreshes the C_BPartner_Location_FTS table when a C_BPartner_Location record is inserted, updated or deleted.';
+COMMENT ON FUNCTION c_bpartner_location_fts_trigger_function() IS 'Refreshes the C_BPartner_Location_FTS table when a C_BPartner_Location record is inserted, updated or deleted.'
+;
 
-DROP TRIGGER IF EXISTS c_bpartner_location_fts_trigger ON c_bpartner_location;
-CREATE TRIGGER c_bpartner_location_fts_trigger AFTER INSERT OR UPDATE OR DELETE ON c_bpartner_location
-    FOR EACH ROW EXECUTE PROCEDURE c_bpartner_location_fts_trigger_function()
+DROP TRIGGER IF EXISTS c_bpartner_location_fts_trigger ON c_bpartner_location
+;
+
+CREATE TRIGGER c_bpartner_location_fts_trigger
+    AFTER INSERT OR UPDATE OR DELETE
+    ON c_bpartner_location
+    FOR EACH ROW
+EXECUTE PROCEDURE c_bpartner_location_fts_trigger_function()
 ;

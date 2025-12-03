@@ -23,11 +23,13 @@
 
 CREATE OR REPLACE FUNCTION get_fts_config()
     RETURNS regconfig
-AS $$
+AS
+$$
 BEGIN
     RETURN 'pg_catalog.simple';
 END;
-$$ LANGUAGE plpgsql IMMUTABLE
+$$
+    LANGUAGE plpgsql IMMUTABLE
 ;
 
 COMMENT ON FUNCTION get_fts_config() IS 'Returns the FTS configuration to be used for indexing C_BPartner records.'

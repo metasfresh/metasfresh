@@ -22,7 +22,9 @@
 
 
 CREATE OR REPLACE FUNCTION c_bpartner_fts_trigger_function()
-    RETURNS trigger AS $$
+    RETURNS trigger
+AS
+$$
 BEGIN
     IF (TG_OP = 'INSERT' OR TG_OP = 'UPDATE') THEN
         PERFORM ops.reindex_c_bpartner_fts(NEW.c_bpartner_id);
@@ -31,11 +33,19 @@ BEGIN
     -- CONSTRAINT CBPartner_CBPartnerFTS FOREIGN KEY (C_BPartner_ID) REFERENCES public.C_BPartner ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
     RETURN NULL;
 END;
-$$ LANGUAGE plpgsql;
+$$
+    LANGUAGE plpgsql
+;
 
-COMMENT ON FUNCTION c_bpartner_fts_trigger_function() IS 'Refresh the C_BPartner_FTS table when a C_BPartner record is inserted or updated';
+COMMENT ON FUNCTION c_bpartner_fts_trigger_function() IS 'Refresh the C_BPartner_FTS table when a C_BPartner record is inserted or updated'
+;
 
-DROP TRIGGER IF EXISTS c_bpartner_fts_trigger ON c_bpartner;
-CREATE TRIGGER c_bpartner_fts_trigger AFTER INSERT OR UPDATE ON c_bpartner
-    FOR EACH ROW EXECUTE PROCEDURE c_bpartner_fts_trigger_function()
+DROP TRIGGER IF EXISTS c_bpartner_fts_trigger ON c_bpartner
+;
+
+CREATE TRIGGER c_bpartner_fts_trigger
+    AFTER INSERT OR UPDATE
+    ON c_bpartner
+    FOR EACH ROW
+EXECUTE PROCEDURE c_bpartner_fts_trigger_function()
 ;

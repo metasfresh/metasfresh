@@ -21,7 +21,9 @@
  */
 
 CREATE OR REPLACE FUNCTION ad_user_fts_trigger_function()
-    RETURNS trigger AS $$
+    RETURNS trigger
+AS
+$$
 BEGIN
     IF (TG_OP = 'UPDATE') THEN
         -- If the bpartner ID differs, refresh both old and new. Otherwise, refresh only once.
@@ -38,13 +40,19 @@ BEGIN
     END IF;
     RETURN NULL;
 END;
-$$ LANGUAGE plpgsql
+$$
+    LANGUAGE plpgsql
 ;
 
 COMMENT ON FUNCTION ad_user_fts_trigger_function() IS 'Refresh the C_BPartner_FTS table when an AD_User is updated.'
 ;
 
-DROP TRIGGER IF EXISTS ad_user_fts_trigger ON ad_user;
-CREATE TRIGGER ad_user_fts_trigger AFTER INSERT OR UPDATE OR DELETE ON ad_user
-    FOR EACH ROW EXECUTE PROCEDURE ad_user_fts_trigger_function()
+DROP TRIGGER IF EXISTS ad_user_fts_trigger ON ad_user
+;
+
+CREATE TRIGGER ad_user_fts_trigger
+    AFTER INSERT OR UPDATE OR DELETE
+    ON ad_user
+    FOR EACH ROW
+EXECUTE PROCEDURE ad_user_fts_trigger_function()
 ;

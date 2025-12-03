@@ -1,4 +1,3 @@
-
 /*
  * #%L
  * de.metas.ui.web.base

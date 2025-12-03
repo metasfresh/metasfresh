@@ -28,10 +28,11 @@ CREATE TABLE public.C_BPartner_FTS
     Updated       TIMESTAMP WITH TIME ZONE NOT NULL,
     CONSTRAINT C_BPartner_FTS_Key PRIMARY KEY (C_BPartner_ID),
     CONSTRAINT CBPartner_CBPartnerFTS FOREIGN KEY (C_BPartner_ID) REFERENCES public.C_BPartner ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
-);
+)
+;
 
-CREATE INDEX IF NOT EXISTS c_bpartner_fts_document_idx 
-    ON c_bpartner_fts 
+CREATE INDEX IF NOT EXISTS c_bpartner_fts_document_idx
+    ON c_bpartner_fts
         USING GIN (fts_document)
 ;
 
