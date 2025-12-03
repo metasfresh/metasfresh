@@ -18,7 +18,7 @@ export const DistributionJobScreen = {
         await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
-    scanHUToMove: async ({ huQRCode, productScannedCode, expectQuantityDialog = true, expectedQtyToMove }) => await test.step(`${NAME} - Scan HU to move`, async () => {
+    scanHUToMove: async ({ huQRCode, productScannedCode, expectQuantityDialog = true, expectedQtyToMove, expectNextScreen }) => await test.step(`${NAME} - Scan HU to move`, async () => {
         await BarcodeScannerComponent.type({ scannedCode: huQRCode });
         await DistributionLinePickFromScreen.waitForScreen();
         await DistributionLinePickFromScreen.typeProductCode(productScannedCode);
@@ -28,8 +28,15 @@ export const DistributionJobScreen = {
                 expectedQtyToMove,
             });
         }
-        
-        await DistributionJobScreen.waitForScreen();
+
+        if(!expectNextScreen || expectNextScreen === 'DistributionJobScreen') {
+            await DistributionJobScreen.waitForScreen();
+        }
+        else if(expectNextScreen === 'DistributionJobsListScreen') {
+            await DistributionJobsListScreen.waitForScreen();
+        } else {
+            throw new Error(`Invalid expectNextScreen: ${expectNextScreen}`);
+        }
     }),
 
     clickLineButton: async ({ index }) => await test.step(`${NAME} - Click line ${index}`, async () => {
