@@ -76,7 +76,7 @@ public class JsonRRequestUpsertRequest
 	@ApiModelProperty(value = SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC)
 	@Nullable String productIdentifier;
 
-	@Nullable String orderIdentifier;
+	@Nullable JsonMetasfreshId orderId;
 	@Nullable JsonMetasfreshId inOutId;
 	@Nullable JsonMetasfreshId invoiceId;
 	@Nullable JsonMetasfreshId paymentId;

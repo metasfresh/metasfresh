@@ -50,9 +50,7 @@ import de.metas.request.api.IRequestBL;
 import de.metas.request.api.RequestCandidate;
 import de.metas.request.api.impl.RequestStatusService;
 import de.metas.request.api.impl.RequestTypeService;
-import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.v2.bpartner.BPartnerMasterdataProvider;
-import de.metas.rest_api.v2.order.sales.OrderService;
 import de.metas.rest_api.v2.ordercandidates.impl.ProductMasterDataProvider;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
@@ -90,7 +88,6 @@ public class RequestRestService
 	private final IQualityNoteDAO qualityNoteDAO = Services.get(IQualityNoteDAO.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	@NonNull private final OrderService orderService;
 	@NonNull private final RequestStatusService requestStatusService;
 	@NonNull private final BPartnerMasterdataProvider bPartnerMasterdataProvider;
 	@NonNull private final ProductMasterDataProvider productMasterDataProvider;
@@ -173,8 +170,9 @@ public class RequestRestService
 		final UserId salesRepId = getSalesRepIdOrNull(resolveUserIdOrNull(ExternalIdentifier.ofOrNull(request.getSalesRepIdentifier()), orgId, "SalesRep_ID"));
 		final ProductId productId = resolveProductIdOrNull(ExternalIdentifier.ofOrNull(request.getProductIdentifier()), orgId);
 
-		final OrderId orderId = resolveOrderId(IdentifierString.ofOrNull(request.getOrderIdentifier()), orgId);
 		TableRecordReference recordRef = null;
+
+		final OrderId orderId = request.getOrderId() == null ? null : OrderId.ofRepoId(request.getOrderId().getValue());
 		if (orderId != null)
 		{
 			recordRef = TableRecordReference.of(I_C_Order.Table_Name, orderId.getRepoId());
@@ -311,16 +309,5 @@ public class RequestRestService
 		}
 		return bPartnerMasterdataProvider.resolveBPartnerExternalIdentifier(orgId, bpartnerIdentifier)
 				.orElseThrow(() -> new AdempiereException("@NotFound@ @" + fieldName + "@"));
-	}
-
-	@Nullable
-	private OrderId resolveOrderId(final @Nullable IdentifierString identifierString, @NonNull final OrgId orgId)
-	{
-		if (identifierString == null)
-		{
-			return null;
-		}
-		return orderService.resolveOrderId(identifierString, orgId)
-				.orElseThrow(() -> new AdempiereException("@NotFound@ @C_Order_ID@"));
 	}
 }

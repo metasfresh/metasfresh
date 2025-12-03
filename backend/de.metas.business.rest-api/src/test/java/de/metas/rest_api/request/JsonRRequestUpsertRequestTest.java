@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.request.JsonConfidentialType;
 import de.metas.common.rest_api.request.JsonRequestPriority;
 import org.junit.jupiter.api.BeforeEach;
@@ -74,7 +75,7 @@ class JsonRRequestUpsertRequestTest
                 "\"reminderDate\":\"2025-12-05\"," +
                 "\"projectValue\":\"PRJ-42\"," +
                 "\"productIdentifier\":\"ext-Other-1234567\"," +
-                "\"orderIdentifier\":\"doc-12345\"," +
+                "\"orderId\":12345," +
                 "\"inOutId\":123456," +
                 "\"invoiceId\":654321," +
                 "\"paymentId\":777888," +
@@ -101,7 +102,7 @@ class JsonRRequestUpsertRequestTest
                 .priority(JsonRequestPriority.Urgent)
                 .summary("Machine down in line 3")
                 .confidentialityLevel(JsonConfidentialType.PartnerConfidential)
-                .orderIdentifier("SO-9001")
+                .orderId(JsonMetasfreshId.of(9001))
                 .vendorIdentifier("333333")
                 .dateDelivered(LocalDate.of(2025, 11, 27))
                 .productIdentifier("P-100")

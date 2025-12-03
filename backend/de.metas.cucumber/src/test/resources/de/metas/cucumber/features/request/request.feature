@@ -54,10 +54,10 @@ Feature: R_Request upsert and retrieval via API
   "dateDelivered" : "2025-06-15",
   "priority" : "Medium",
   "confidentialityLevel" : "PartnerConfidential",
-  "orderIdentifier" : "@orderId@"
+  "orderId" : @orderId@
 }
 """
 
     Then validate a new request has been created:
-      | AD_Org_ID | R_RequestType_ID    | Summary         | DateDelivered | Priority | ConfidentialType | C_Order_ID |
-      | 002       | A_CustomerComplaint | Another summary | 2025-06-15    | 5        | C                | o1         |
+      | Identifier | AD_Org_ID | R_RequestType_ID    | Summary         | DateDelivered | Priority | ConfidentialType | C_Order_ID |
+      | Identifier | 002       | A_CustomerComplaint | Another summary | 2025-06-15    | 5        | C                | o1         |
