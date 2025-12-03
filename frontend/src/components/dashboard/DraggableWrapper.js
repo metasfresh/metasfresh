@@ -165,7 +165,6 @@ const DraggableWrapper = ({ editmode }) => {
   // WebSocket connection
   useWebsocket({
     topic: websocketEndpoint,
-    traceName: 'DraggableWrapper',
     onMessage: (msg) => {
       msg.event.events.map((event) => onWebsocketEvent(event));
     },
