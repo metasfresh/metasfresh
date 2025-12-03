@@ -77,16 +77,27 @@ public class PostgresFTSDocumentFilterConverter implements SqlDocumentFilterConv
 				.append(" AND (")
 				.append(ftsTableAlias).append(".fts_document @@ websearch_to_tsquery(get_fts_config(), ?)", searchText); // https://www.postgresql.org/docs/current/textsearch.html
 
-				if (distance.compareTo(BigDecimal.ZERO) > 0 && BigDecimal.ONE.compareTo(distance) > 0) // 0 < distance < 1
-				{
-					whereClause.append(" OR ")
-					.append(ftsTableAlias).append(".fts_string <-> ? < ?", searchText, distance); // https://www.postgresql.org/docs/current/pgtrgm.html (ngram search)
-				}
+		final SqlAndParams.Builder orderByClause = SqlAndParams.builder()
+				.append("(SELECT ts_rank(").append(ftsTableAlias).append(".fts_document, websearch_to_tsquery(get_fts_config(), ?))", searchText)
+				.append(" FROM ").append(ftsTableName).append(" ").append(ftsTableAlias)
+				.append(" WHERE ").append(ftsTableAlias).append(".").append(keyColumnName).append(" = ").append(mainTableAlias).append(".").append(keyColumnName)
+				.append(") DESC NULLS LAST");
 
-				whereClause.append(" )")
+		if (distance.compareTo(BigDecimal.ZERO) > 0 && BigDecimal.ONE.compareTo(distance) > 0) // 0 < distance < 1
+		{
+			whereClause.append(" OR ")
+					.append(ftsTableAlias).append(".fts_string <-> ? < ?", searchText, distance); // https://www.postgresql.org/docs/current/pgtrgm.html (ngram search)
+
+			orderByClause.append(", (SELECT fts.fts_string <-> ?", searchText)
+					.append(" FROM ").append(ftsTableName).append(" fts")
+					.append(" WHERE fts.").append(keyColumnName).append(" = ").append(mainTableAlias).append(".").append(keyColumnName)
+					.append(") ASC NULLS LAST");
+		}
+
+		whereClause.append(" )")
 				.append(")");
 
-		return FilterSql.builder().whereClause(whereClause.build()).build();
+		return FilterSql.builder().whereClause(whereClause.build()).orderBy(orderByClause.build()).build();
 
 	}
 }
