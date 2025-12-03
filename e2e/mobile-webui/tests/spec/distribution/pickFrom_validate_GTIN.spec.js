@@ -76,7 +76,7 @@ test.describe('Scan directly in job screen, expect scanning the product code too
 
         await DistributionJobScreen.expectLineButton({ index: 1, qtyToPick: '100 Stk', qtyPicked: '0 Stk', color: 'red' });
         await DistributionJobScreen.scanHUToMove({
-            huQRCode: masterdata.handlingUnits.HU1.id,
+            huQRCode: masterdata.handlingUnits.HU1.huId,
             productScannedCode: masterdata.products.P1.gtin,
         });
         await DistributionJobScreen.expectLineButton({ index: 1, qtyToPick: '100 Stk', qtyPicked: '100 Stk', color: 'yellow' });
