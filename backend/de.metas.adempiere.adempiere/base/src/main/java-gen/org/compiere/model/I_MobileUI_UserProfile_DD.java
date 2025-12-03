@@ -163,6 +163,29 @@ public interface I_MobileUI_UserProfile_DD
 	String COLUMNNAME_IsCompleteJobAutomatically = "IsCompleteJobAutomatically";
 
 	/**
+	 * Set Navigate to List on Pick Complete.
+	 * Goes to the Jobs List after picking an entire order.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsNavigateToJobsListAfterPickFromComplete (boolean IsNavigateToJobsListAfterPickFromComplete);
+
+	/**
+	 * Get Navigate to List on Pick Complete.
+	 * Goes to the Jobs List after picking an entire order.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isNavigateToJobsListAfterPickFromComplete();
+
+	ModelColumn<I_MobileUI_UserProfile_DD, Object> COLUMN_IsNavigateToJobsListAfterPickFromComplete = new ModelColumn<>(I_MobileUI_UserProfile_DD.class, "IsNavigateToJobsListAfterPickFromComplete", null);
+	String COLUMNNAME_IsNavigateToJobsListAfterPickFromComplete = "IsNavigateToJobsListAfterPickFromComplete";
+
+	/**
 	 * Set Is Require Product Code Scan.
 	 * If enabled, the user must scan the Product Code (e.g., GTIN/EAN) after scanning the Handling Unit (HU) QR Code during mobile picking.
 	 *

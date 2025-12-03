@@ -86,6 +86,7 @@ public class JsonMobileConfigRequest
 		@Nullable String orderBys;
 
 		@Nullable Boolean requireScanningProductCode;
+		@Nullable Boolean navigateToJobsListAfterPickFromComplete;
 		@Nullable Boolean completeJobAutomatically;
 
 		@Nullable QueryLimit maxLaunchers;

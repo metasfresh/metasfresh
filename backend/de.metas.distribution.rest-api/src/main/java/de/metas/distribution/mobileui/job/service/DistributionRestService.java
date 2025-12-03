@@ -237,7 +237,7 @@ public class DistributionRestService
 		final DistributionJob job = getJobById(jobId);
 		job.assertCanEdit(callerId);
 
-		final HUQRCode huQRCode = HUQRCode.fromScannedCode(request.getHuQRCode()); // expect already valid HUQRCode
+		final HUQRCode huQRCode = huService.resolveHUQRCode(request.getHuQRCode());
 
 		final ProductId productId;
 		if (request.getProductScannedCode() != null)

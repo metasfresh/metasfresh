@@ -41,6 +41,7 @@ public class MoveWFActivityHandler implements WFActivityHandler
 				.qtyRejectedReasons(JsonRejectReasonsList.of(distributionRestService.getQtyRejectedReasons(), jsonOpts))
 				.requireScanningProductCode(config.isRequireScanningProductCode())
 				.completeJobAutomatically(config.isCompleteJobAutomatically())
+				.navigateToJobsListAfterPickFromComplete(config.isNavigateToJobsListAfterPickFromComplete())
 				.build();
 
 		return UIComponent.builderFrom(COMPONENT_TYPE, wfActivity)
