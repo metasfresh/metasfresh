@@ -184,18 +184,8 @@ public class PickingWorkflowLaunchersProvider
 			if (productsAvailableStocks != null)
 			{
 				stream = StreamUtils.dice(stream, limit.toIntOr(20))
-						.flatMap(chunkList -> {
-							PickingJobCandidateList chunk = PickingJobCandidateList.ofList(chunkList);
-							productsAvailableStocks.warmUpByProductIds(chunk.getProductIds());
 
-							chunk = chunk.updateEach(productsAvailableStocks::allocate);
-							if (query.isFilterByQtyAvailableAtPickFromLocator())
-							{
-								chunk = chunk.removeIf(job -> job.hasQtyAvailableToPick().isFalse());
-							}
-
-							return chunk.stream();
-						});
+						.flatMap(chunkList -> updateAndApplyQtyAvailableFilters(chunkList, query, productsAvailableStocks));
 			}
 
 			final PickingJobCandidateList newPickingJobCandidates = stream
@@ -209,6 +199,23 @@ public class PickingWorkflowLaunchersProvider
 		}
 
 		return toComputedWorkflowLaunchers(query, currentResult);
+	}
+
+	private static Stream<PickingJobCandidate> updateAndApplyQtyAvailableFilters(
+			@NonNull final List<PickingJobCandidate> chunkList,
+			@NonNull final WorkflowLaunchersQuery query,
+			@NonNull final ProductAvailableStocks productsAvailableStocks)
+	{
+		PickingJobCandidateList chunk = PickingJobCandidateList.ofList(chunkList);
+		productsAvailableStocks.warmUpByProductIds(chunk.getProductIds());
+
+		chunk = chunk.updateEach(productsAvailableStocks::allocate);
+		if (query.isFilterByQtyAvailableAtPickFromLocator())
+		{
+			chunk = chunk.removeIf(job -> job.hasQtyAvailableToPick().isFalse());
+		}
+
+		return chunk.stream();
 	}
 
 	@NotNull
