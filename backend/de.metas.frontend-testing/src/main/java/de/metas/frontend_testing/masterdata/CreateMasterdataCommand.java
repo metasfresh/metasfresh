@@ -308,15 +308,13 @@ public class CreateMasterdataCommand
 
 	private ImmutableMap<String, JsonSalesOrderCreateResponse> createSalesOrders()
 	{
-		return process(request.getSalesOrders(), this::createSalesOrder);
-	}
+		final Map<String, JsonSalesOrderCreateRequest> createSalesOrdersRequests = request.getSalesOrders();
+		if (createSalesOrdersRequests == null || createSalesOrdersRequests.isEmpty()) {return ImmutableMap.of();}
 
-	private JsonSalesOrderCreateResponse createSalesOrder(final String identifier, final JsonSalesOrderCreateRequest request)
-	{
 		return SalesOrderCreateCommand.builder()
 				.pickingJobScheduleService(services.pickingJobScheduleService)
 				.context(context)
-				.request(request)
+				.requests(createSalesOrdersRequests)
 				.build()
 				.execute();
 	}

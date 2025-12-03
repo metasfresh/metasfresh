@@ -2,6 +2,7 @@ package de.metas.frontend_testing.masterdata.sales_order;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -38,6 +39,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Builder
 public class SalesOrderCreateCommand
@@ -48,25 +50,31 @@ public class SalesOrderCreateCommand
 	@NonNull private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	@NonNull private final PickingJobScheduleService pickingJobScheduleService;
 
-	@NonNull private final JsonSalesOrderCreateRequest request;
+	@NonNull Map<String, JsonSalesOrderCreateRequest> requests;
 	@NonNull private final MasterdataContext context;
 
 	//
 	// State
-	private transient OrderFactory salesOrderFactory;
 	private final ArrayList<LineCreateRequestAndBuilder> lineCreateRequestAndBuilders = new ArrayList<>();
 
 	private static Duration JOB_SCHEDULE_CREATE_TIMEOUT = Duration.ofSeconds(30);
 	private static Duration JOB_SCHEDULE_CREATE_SLEEP_BETWEEN = Duration.ofMillis(1000);
 
-	public JsonSalesOrderCreateResponse execute()
+	public ImmutableMap<String, JsonSalesOrderCreateResponse> execute()
 	{
-		final JsonSalesOrderCreateResponse response = trxManager.callInThreadInheritedTrx(this::execute0);
+		final Map<String, JsonSalesOrderCreateResponse> response = trxManager.callInThreadInheritedTrx(this::createSalesOrders);
 		trxManager.runInThreadInheritedTrx(this::createSchedules);
+		return ImmutableMap.copyOf(response);
+	}
+
+	private Map<String, JsonSalesOrderCreateResponse> createSalesOrders()
+	{
+		final Map<String, JsonSalesOrderCreateResponse> response = new HashMap<>();
+		requests.forEach((identifier, request) -> response.put(identifier, createSalesOrder(request)));
 		return response;
 	}
 
-	private JsonSalesOrderCreateResponse execute0()
+	private JsonSalesOrderCreateResponse createSalesOrder(@NonNull JsonSalesOrderCreateRequest request)
 	{
 		final BPartnerLocationId shipBPartnerLocationId = request.getLocation() != null ? context.getId(request.getLocation(), BPartnerLocationId.class) : null;
 		final BPartnerId shipBPartnerId = CoalesceUtil.coalesceSuppliers(
@@ -85,11 +93,11 @@ public class SalesOrderCreateCommand
 					.setParameter("request", request);
 		}
 
-		this.salesOrderFactory = OrderFactory.newSalesOrder()
+		final OrderFactory salesOrderFactory = OrderFactory.newSalesOrder()
 				.shipBPartner(shipBPartnerId, shipBPartnerLocationId, null)
 				.warehouseId(context.getId(request.getWarehouse(), WarehouseId.class))
 				.datePromised(request.getDatePromised());
-		request.getLines().forEach(this::createOrderLine);
+		request.getLines().forEach(lineRequest -> createOrderLine(salesOrderFactory, lineRequest));
 
 		final I_C_Order salesOrderRecord = salesOrderFactory.createAndComplete();
 
@@ -99,7 +107,7 @@ public class SalesOrderCreateCommand
 				.build();
 	}
 
-	private void createOrderLine(final JsonSalesOrderCreateRequest.Line salesOrderLine)
+	private void createOrderLine(final OrderFactory salesOrderFactory, final JsonSalesOrderCreateRequest.Line salesOrderLine)
 	{
 		final ProductId productId = context.getId(salesOrderLine.getProduct(), ProductId.class);
 		final I_C_UOM uom = productBL.getStockUOM(productId);

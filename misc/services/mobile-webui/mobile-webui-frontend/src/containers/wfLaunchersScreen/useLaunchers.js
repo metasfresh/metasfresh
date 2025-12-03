@@ -34,7 +34,7 @@ export const useLaunchers = ({ applicationId, showFilterByQRCode, facets, filter
         })
         .finally(() => setLoading(false));
     } else {
-      console.log('Skip fetching querying launchers is prohibited');
+      console.log('Skip fetching. Querying launchers is prohibited');
       dispatch(clearLaunchers({ applicationId }));
     }
   }, [isEnabled, applicationId, filterByQRCodeString, ...Object.values(filters), facets, requestTimestamp]);
