@@ -97,6 +97,7 @@ test.describe('Scan directly in job screen, expect scanning the product code too
 
 });
 
+// noinspection JSUnusedLocalSymbols
 test('Do not ask for picked qty when it is one', async ({ page }) => {
     const masterdata = await createMasterdataAndStartJob({ qtyToMove: 100 });
 
