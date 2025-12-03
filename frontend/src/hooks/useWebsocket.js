@@ -12,8 +12,8 @@ import { useIsLoggedIn } from './useIsLoggedIn';
 const socketFactory = () => new SockJS(config.WS_URL);
 const MAX_RECONNECT_TIMES = 100;
 const CLIENT_DISCONNECT_DELAY_MS = 3000; // 3-second delay before disconnecting
-const WS_DEBUG = true;
-const log = WS_DEBUG ? console.debug : () => {};
+const log = (...params) =>
+  globalWsState.debugLogging ? console.debug(...params) : () => {};
 
 // Global connection state to prevent multiple connections
 const globalWsState = {
@@ -29,6 +29,10 @@ const globalWsState = {
   nextSubscriptionId: 1,
   subscriptionsById: new Map(),
   pendingSubscriptionsById: new Map(),
+
+  //
+  // Misc
+  debugLogging: false,
 };
 
 //
@@ -157,19 +161,16 @@ const cancelScheduledClientDisconnect = ({ reason } = {}) => {
 //
 
 const scheduleClientDisconnectIfEligible = () => {
+  if (!isClientEligibleForDisconnection()) return;
+
   cancelScheduledClientDisconnect();
-
-  // Only schedule disconnect if no subscriptions and not connecting
-  if (isClientEligibleForDisconnection()) {
-    log(`WS: Scheduling disconnect in ${CLIENT_DISCONNECT_DELAY_MS}ms`);
-
-    globalWsState.disconnectTimer = setTimeout(() => {
-      // Double-check conditions haven't changed
-      if (isClientEligibleForDisconnection()) {
-        disconnectClient();
-      }
-    }, CLIENT_DISCONNECT_DELAY_MS);
-  }
+  log(`WS: Scheduling disconnect in ${CLIENT_DISCONNECT_DELAY_MS}ms`);
+  globalWsState.disconnectTimer = setTimeout(() => {
+    // Double-check conditions haven't changed
+    if (isClientEligibleForDisconnection()) {
+      disconnectClient();
+    }
+  }, CLIENT_DISCONNECT_DELAY_MS);
 };
 
 //
@@ -178,7 +179,7 @@ const scheduleClientDisconnectIfEligible = () => {
 //
 //
 
-const disconnectClient = (onClientDisconnectCallback) => {
+const disconnectClient = () => {
   cancelScheduledClientDisconnect();
 
   if (!globalWsState.client) return;
@@ -186,9 +187,7 @@ const disconnectClient = (onClientDisconnectCallback) => {
   try {
     globalWsState.client.deactivate();
     globalWsState.client = null;
-    log('WS: Client disconnected');
-
-    onClientDisconnectCallback?.();
+    // log('WS: Client disconnected');
   } catch (error) {
     console.error('WS: Error deactivating client:', error);
   }
@@ -405,6 +404,8 @@ const checkClientConnectionActive = () => {
     };
     globalWsState.client.onDisconnect = () => {
       globalWsState.connecting = false;
+      globalWsState.subscriptionsById.clear();
+      globalWsState.pendingSubscriptionsById.clear();
       log('WS: Client disconnected');
     };
     globalWsState.client.onStompError = (frame) => {
@@ -565,7 +566,7 @@ const fireMessageCallback = ({ subscriptionId, msg }) => {
 //
 //
 
-window.printWebsockets = () => {
+const dumpStatus = () => {
   console.log('Websocket connections status', globalWsState);
 
   console.log('clientConnectionId: ', globalWsState.clientConnectionId);
@@ -580,6 +581,8 @@ window.printWebsockets = () => {
         pendingSubscriptionData
       );
     }
+  } else {
+    console.log('No pending subscriptions');
   }
 
   if (globalWsState.subscriptionsById.size > 0) {
@@ -589,7 +592,23 @@ window.printWebsockets = () => {
         subscriptionData
       );
     }
+  } else {
+    console.log('No subscriptions');
   }
 
   console.log('nextSubscriptionId: ', globalWsState.nextSubscriptionId);
+};
+
+//
+//
+// -----------------------------------------------------------------------------
+//
+//
+
+window.websockets = {
+  status: dumpStatus,
+  debug: () => {
+    globalWsState.debugLogging = true;
+    console.log('Enabled websocket debug logging');
+  },
 };
