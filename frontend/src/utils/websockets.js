@@ -5,16 +5,25 @@ import { BAD_GATEWAY_ERROR, NO_CONNECTION_ERROR } from '../constants/Constants';
 import store from '../store/store';
 import { getUserSession } from '../api/userSession';
 
+const DISCONNECT_DELAY_MS = 3000; // 3 seconds delay before disconnecting
+const MAX_RECONNECT_TIMES = 4;
+const WS_DEBUG = true;
+const log = WS_DEBUG ? console.debug : () => {};
+
 // Global connection state to prevent multiple connections
 const globalWsState = {
+  //
+  // Client-related state
+  clientConnectionId: 0,
   client: null,
-  subscriptions: new Map(),
   connecting: false,
-  clientConnectionId: 0, // Renamed: tracks client connection lifecycle
-  pendingSubscriptions: new Map(), // Changed: Map to track per-subscription state
   disconnectTimer: null,
-  DISCONNECT_DELAY: 3000, // 3 seconds delay before disconnecting
-  nextSubscriptionId: 0, // Added: unique ID generator for subscriptions
+
+  //
+  // Topic subscriptions
+  nextSubscriptionId: 0,
+  subscriptionsById: new Map(),
+  pendingSubscriptionsById: new Map(),
 };
 
 //
@@ -36,7 +45,7 @@ function socketFactory() {
 // Create browserState utility inline to avoid import issues
 const clearBrowserState = () => {
   try {
-    console.log('Clearing browser state...');
+    log('Clearing browser state...');
 
     // Clear all storage
     localStorage.clear();
@@ -51,7 +60,7 @@ const clearBrowserState = () => {
       });
     }
 
-    console.log('Browser state cleared successfully');
+    log('Browser state cleared successfully');
   } catch (error) {
     console.error('Error clearing browser state:', error);
   }
@@ -65,10 +74,10 @@ const clearBrowserState = () => {
 
 function isClientEligibleForDisconnection() {
   return (
-    globalWsState.subscriptions.size === 0 &&
-    globalWsState.pendingSubscriptions.size === 0 &&
+    globalWsState.client &&
     !globalWsState.connecting &&
-    globalWsState.client
+    globalWsState.subscriptionsById.size === 0 &&
+    globalWsState.pendingSubscriptionsById.size === 0
   );
 }
 
@@ -78,38 +87,35 @@ function isClientEligibleForDisconnection() {
 //
 //
 
-function scheduleDisconnectIfEmpty(onDisconnectCallback) {
-  // Clear any existing disconnect timer
-  if (globalWsState.disconnectTimer) {
-    clearTimeout(globalWsState.disconnectTimer);
-    globalWsState.disconnectTimer = null;
-  }
+const cancelScheduledClientDisconnect = ({ reason } = {}) => {
+  if (!globalWsState.disconnectTimer) return;
+
+  clearTimeout(globalWsState.disconnectTimer);
+  globalWsState.disconnectTimer = null;
+  log(`WS: Cancelled scheduled disconnect (${reason})`);
+};
+
+//
+//
+// -----------------------------------------------------------------------------
+//
+//
+
+const scheduleClientDisconnectIfEligible = (onClientDisconnectCallback) => {
+  cancelScheduledClientDisconnect();
 
   // Only schedule disconnect if no subscriptions and not connecting
   if (isClientEligibleForDisconnection()) {
-    console.debug(
-      `WS: Scheduling disconnect in ${globalWsState.DISCONNECT_DELAY}ms`
-    );
+    log(`WS: Scheduling disconnect in ${DISCONNECT_DELAY_MS}ms`);
 
     globalWsState.disconnectTimer = setTimeout(() => {
       // Double-check conditions haven't changed
       if (isClientEligibleForDisconnection()) {
-        try {
-          globalWsState.client.deactivate();
-          globalWsState.client = null;
-          globalWsState.disconnectTimer = null;
-          console.debug('WS: Client deactivated after delay');
-
-          if (onDisconnectCallback) {
-            onDisconnectCallback();
-          }
-        } catch (error) {
-          console.error('WS: Error deactivating client:', error);
-        }
+        disconnectClient(onClientDisconnectCallback);
       }
-    }, globalWsState.DISCONNECT_DELAY);
+    }, DISCONNECT_DELAY_MS);
   }
-}
+};
 
 //
 //
@@ -117,298 +123,75 @@ function scheduleDisconnectIfEmpty(onDisconnectCallback) {
 //
 //
 
-export function connectWS(topic, onMessageCallback) {
-  const maxReconnectTimesNo = 4;
+const disconnectClient = (onClientDisconnectCallback) => {
+  cancelScheduledClientDisconnect();
 
-  // Cancel any scheduled disconnect when new connection is requested
-  if (globalWsState.disconnectTimer) {
-    clearTimeout(globalWsState.disconnectTimer);
-    globalWsState.disconnectTimer = null;
-    console.debug('WS: Cancelled scheduled disconnect due to new subscription');
+  if (!globalWsState.client) return;
+
+  try {
+    globalWsState.client.deactivate();
+    globalWsState.client = null;
+    log('WS: Client disconnected');
+
+    onClientDisconnectCallback?.();
+  } catch (error) {
+    console.error('WS: Error deactivating client:', error);
   }
+};
 
-  // Generate a unique subscription ID to track this specific subscription
-  const subscriptionId = ++globalWsState.nextSubscriptionId;
-  const clientConnectionId = globalWsState.clientConnectionId;
+//
+//
+// -----------------------------------------------------------------------------
+//
+//
 
-  // Avoid disconnecting and reconnecting to same topic.
-  // IMPORTANT: we assume the "onMessageCallback" is the same
-  if (this.sockTopic === topic) {
-    // console.log("WS: Skip subscribing because already subscribed to %s", this.sockTopic);
+export const newSubscriptionId = () => {
+  return ++globalWsState.nextSubscriptionId;
+};
+
+//
+//
+// -----------------------------------------------------------------------------
+//
+//
+
+export function connectWS({
+  subscriptionId: subscriptionIdParam,
+  topic,
+  onMessageCallback,
+}) {
+  if (!topic) {
+    console.warn('WS: Topic is required to subscribe to');
+    return;
+  }
+  if (!onMessageCallback) {
+    console.warn('WS: onMessageCallback is required to subscribe to');
     return;
   }
 
-  const subscribe = ({ tries = 5 } = {}) => {
-    // Check if this specific subscription was cancelled
-    if (
-      !globalWsState.pendingSubscriptions.has(topic) ||
-      globalWsState.pendingSubscriptions.get(topic).subscriptionId !==
-        subscriptionId
-    ) {
-      // Subscription was superseded or cancelled, abort
-      console.debug(
-        `WS: Subscription ${subscriptionId} to ${topic} was cancelled`
-      );
-      return;
-    }
+  cancelScheduledClientDisconnect({ reason: 'new subscription' });
 
-    // Check if the client connection was recreated (legitimate abort case)
-    if (clientConnectionId !== globalWsState.clientConnectionId) {
-      console.debug(
-        `WS: Client was recreated, aborting subscription ${subscriptionId} to ${topic}`
-      );
-      globalWsState.pendingSubscriptions.delete(topic);
-      return;
-    }
+  // Generate a unique subscription ID to track this specific subscription
+  const subscriptionId = subscriptionIdParam
+    ? subscriptionIdParam
+    : newSubscriptionId();
 
-    // Check if client exists and is in a valid state - KEY FIX
-    if (
-      !globalWsState.client ||
-      globalWsState.client.state === 'CLOSED' ||
-      globalWsState.client.state === 'CLOSING'
-    ) {
-      if (tries > 0) {
-        setTimeout(() => {
-          subscribe({ tries: tries - 1 });
-        }, 300); // Slightly longer delay
-        return;
-      } else {
-        console.error(
-          `WS: Failed to subscribe to ${topic} - client not available`
-        );
-        globalWsState.pendingSubscriptions.delete(topic);
-        return;
-      }
-    }
-
-    if (globalWsState.client && globalWsState.client.connected) {
-      try {
-        this.sockSubscription = globalWsState.client.subscribe(topic, (msg) => {
-          //console.log('WS: Got event on %s: %s', topic, msg.body);
-          if (topic === this.sockTopic) {
-            try {
-              onMessageCallback(JSON.parse(msg.body));
-            } catch (error) {
-              console.log('Failed forwarding websocket message', {
-                msg,
-                onMessageCallback,
-                error,
-              });
-            }
-          } else {
-            // console.warn(
-            //   "Discard event because the WS topic changed. Current WS topic is %s",
-            //   this.sockTopic
-            // );
-          }
-        });
-
-        this.sockTopic = topic;
-        this.subscriptionId = subscriptionId; // Track subscription ID instead of connection ID
-
-        // Track subscription globally
-        globalWsState.subscriptions.set(topic, {
-          subscription: this.sockSubscription,
-          callback: onMessageCallback,
-          subscriptionId,
-          clientConnectionId,
-          context: this,
-        });
-
-        globalWsState.pendingSubscriptions.delete(topic);
-        console.debug(
-          `WS: Successfully subscribed to ${topic} (subscriptionId=${subscriptionId})`
-        );
-      } catch (error) {
-        console.error(`WS: Failed to subscribe to ${topic}:`, error);
-        globalWsState.pendingSubscriptions.delete(topic);
-        // If subscription fails, retry if we have tries left
-        if (tries > 0) {
-          setTimeout(() => {
-            subscribe({ tries: tries - 1 });
-          }, 500);
-        }
-      }
-    } else if (tries > 0) {
-      // Client exists but not connected yet, retry
-      setTimeout(() => {
-        subscribe({ tries: tries - 1 });
-      }, 300);
-    } else {
-      console.error(
-        `WS: Failed to subscribe to ${topic} - client not connected after retries`
-      );
-      globalWsState.pendingSubscriptions.delete(topic);
-    }
-  };
-
-  const connect = () => {
-    let clientWasRecreated = false;
-
-    // Clean up the existing client if it's in a bad state
-    if (
-      globalWsState.client &&
-      (globalWsState.client.state === 'CLOSED' ||
-        globalWsState.client.state === 'CLOSING')
-    ) {
-      try {
-        globalWsState.client.deactivate();
-      } catch (error) {
-        console.warn('WS: Error cleaning up old client:', error);
-      }
-      globalWsState.client = null;
-      globalWsState.connecting = false;
-      // Increment client connection ID when we recreate the client
-      globalWsState.clientConnectionId++;
-      clientWasRecreated = true;
-      console.debug('WS: Client was recreated due to bad state');
-    }
-
-    // Prevent multiple connection attempts
-    if (
-      globalWsState.connecting ||
-      (globalWsState.client &&
-        globalWsState.client.connected &&
-        globalWsState.client.state === 'CONNECTED')
-    ) {
-      globalWsState.pendingSubscriptions.set(topic, { subscriptionId });
-      subscribe();
-      return;
-    }
-
-    // Only create new client if we don't have one
-    if (!globalWsState.client) {
-      globalWsState.connecting = true;
-      globalWsState.pendingSubscriptions.set(topic, { subscriptionId });
-      let reconnectCounter = 0;
-      let connectionErrorType = NO_CONNECTION_ERROR;
-
-      // Only increment if we haven't already done so during cleanup
-      if (!clientWasRecreated) {
-        globalWsState.clientConnectionId++;
-        console.debug('WS: Creating new client connection');
-      }
-
-      globalWsState.client = new Client({
-        brokerURL: config.WS_URL,
-        debug: (strMessage) => {
-          // console.log('debug: ', strMessage);
-          // -- detect reconnect and increment the reconnect counter
-          if (strMessage.includes('reconnect')) {
-            getUserSession()
-              .then(({ data, status }) => {
-                if (status === 502) {
-                  connectionErrorType = BAD_GATEWAY_ERROR;
-                  reconnectCounter += 1;
-                } else if (data && !data.loggedIn) {
-                  reconnectCounter += 1;
-                } else {
-                  // Reset counter on successful authentication
-                  reconnectCounter = 0;
-                }
-              })
-              .catch(() => {
-                reconnectCounter += 1;
-              });
-          }
-
-          // -- if more than max allowed to reconnect times  ->  deactivate
-          if (reconnectCounter > maxReconnectTimesNo) {
-            console.warn(
-              'WS: Max reconnection attempts reached, clearing browser state...'
-            );
-
-            // Clear browser state and reload page as last resort
-            try {
-              clearBrowserState();
-              // Give user a chance to see what happened
-              setTimeout(() => {
-                if (
-                  window.confirm(
-                    'Connection issues detected. Reload page to recover?'
-                  )
-                ) {
-                  window.location.reload();
-                }
-              }, 2000);
-            } catch (error) {
-              console.error('Failed to clear browser state:', error);
-            }
-
-            globalWsState.client.reconnectDelay = 0; // 0 - deactivates the sockClient
-            store.dispatch(
-              connectionError({
-                errorType: connectionErrorType,
-              })
-            );
-          }
-        },
-        reconnectDelay: 5000,
-        heartbeatIncoming: 4000,
-        heartbeatOutgoing: 4000,
-      });
-
-      if (process.env.JEST_WORKER_ID === undefined) {
-        globalWsState.client.webSocketFactory = socketFactory;
-      }
-
-      globalWsState.client.onConnect = () => {
-        globalWsState.connecting = false;
-        reconnectCounter = 0; // Reset on a successful connection
-        console.debug('WS: Client connected successfully');
-
-        // Process all pending subscriptions
-        Array.from(globalWsState.pendingSubscriptions.keys()).forEach(
-          (pendingTopic) => {
-            if (pendingTopic === topic) {
-              subscribe();
-            }
-          }
-        );
-      };
-
-      globalWsState.client.onDisconnect = () => {
-        globalWsState.connecting = false;
-        console.debug('WS: Client disconnected');
-      };
-
-      globalWsState.client.onStompError = function (frame) {
-        globalWsState.connecting = false;
-        globalWsState.pendingSubscriptions.clear();
-        console.log('Broker reported error: ' + frame.headers['message']);
-        console.log('Additional details: ' + frame.body);
-      };
-
-      globalWsState.client.onWebSocketError = (error) => {
-        globalWsState.connecting = false;
-        globalWsState.pendingSubscriptions.clear();
-        console.error('WS: WebSocket error:', error);
-      };
-
-      // Add onWebSocketClose handler
-      globalWsState.client.onWebSocketClose = (event) => {
-        globalWsState.connecting = false;
-        console.debug('WS: WebSocket closed:', event);
-      };
-
-      try {
-        globalWsState.client.activate();
-      } catch (error) {
-        globalWsState.connecting = false;
-        globalWsState.pendingSubscriptions.delete(topic);
-        console.error('WS: Failed to activate client:', error);
-      }
-    } else {
-      // Client exists and is in good state, just add to pending subscriptions
-      globalWsState.pendingSubscriptions.set(topic, { subscriptionId });
-      subscribe();
-    }
-  };
-
-  const wasConnected = disconnectWS.call(this, connect);
-  if (!wasConnected) {
-    connect();
+  // Avoid disconnecting and reconnecting.
+  // IMPORTANT: we assume the "onMessageCallback" is the same
+  const subscriptionData = globalWsState.subscriptionsById.get(subscriptionId);
+  if (subscriptionData && subscriptionData.topic === topic) {
+    log(`WS: Already subscribed to ${topic} (ID=${subscriptionId}), skipping`);
+    return subscriptionId;
   }
+
+  globalWsState.pendingSubscriptionsById.set(subscriptionId, {
+    topic,
+    callback: onMessageCallback,
+  });
+
+  checkClientConnectionActive();
+
+  return subscriptionId;
 }
 
 //
@@ -417,47 +200,336 @@ export function connectWS(topic, onMessageCallback) {
 //
 //
 
-export function disconnectWS(onDisconnectCallback) {
+export const disconnectWS = ({
+  subscriptionId,
+  onClientDisconnectCallback,
+}) => {
+  if (!subscriptionId) return false;
+
   let wasConnected = false;
 
-  if (this.sockTopic && globalWsState.subscriptions.has(this.sockTopic)) {
-    const subscriptionData = globalWsState.subscriptions.get(this.sockTopic);
+  const subscriptionData = globalWsState.subscriptionsById.get(subscriptionId);
+  if (subscriptionData) {
+    wasConnected = unsubscribe({ subscriptionData });
 
+    globalWsState.subscriptionsById.delete(subscriptionId);
+  }
+
+  globalWsState.pendingSubscriptionsById.delete(subscriptionId);
+
+  scheduleClientDisconnectIfEligible(onClientDisconnectCallback);
+
+  return wasConnected;
+};
+
+//
+//
+// -----------------------------------------------------------------------------
+//
+//
+
+const unsubscribe = ({ subscriptionData }) => {
+  try {
+    if (
+      subscriptionData.subscription &&
+      globalWsState.client &&
+      globalWsState.client.connected
+    ) {
+      subscriptionData.subscription.unsubscribe();
+
+      log(
+        `WS: Unsubscribed from ${subscriptionData.topic} (ID=${subscriptionData.subscriptionId})`
+      );
+      return true; // wasConnected
+    }
+  } catch (error) {
+    console.error(
+      `WS: Error unsubscribing from ${subscriptionData.topic} (ID=${subscriptionData.subscriptionId}):`,
+      error
+    );
+  }
+
+  return false;
+};
+
+//
+//
+// -----------------------------------------------------------------------------
+//
+//
+
+const checkClientConnectionActive = () => {
+  let clientWasRecreated = false;
+
+  // Clean up the existing client if it's in a bad state
+  if (
+    globalWsState.client &&
+    (globalWsState.client.state === 'CLOSED' ||
+      globalWsState.client.state === 'CLOSING')
+  ) {
     try {
-      if (
-        subscriptionData.subscription &&
-        globalWsState.client &&
-        globalWsState.client.connected
-      ) {
-        subscriptionData.subscription.unsubscribe();
-        wasConnected = true;
-      }
+      globalWsState.client.deactivate();
     } catch (error) {
-      console.error(`WS: Error unsubscribing from ${this.sockTopic}:`, error);
+      console.warn('WS: Error cleaning up old client:', error);
+    }
+    globalWsState.client = null;
+    globalWsState.connecting = false;
+    // Increment client connection ID when we recreate the client
+    globalWsState.clientConnectionId++;
+    clientWasRecreated = true;
+    log('WS: Client was recreated due to bad state');
+  }
+
+  // Prevent multiple connection attempts
+  if (
+    globalWsState.connecting ||
+    (globalWsState.client &&
+      globalWsState.client.connected &&
+      globalWsState.client.state === 'CONNECTED')
+  ) {
+    processPendingSubscriptions();
+    return;
+  }
+
+  // Only create a new client if we don't have one
+  if (!globalWsState.client) {
+    globalWsState.connecting = true;
+    let reconnectCounter = 0;
+    let connectionErrorType = NO_CONNECTION_ERROR;
+
+    // Only increment if we haven't already done so during cleanup
+    if (!clientWasRecreated) {
+      globalWsState.clientConnectionId++;
+      log('WS: Creating new client connection');
     }
 
-    globalWsState.subscriptions.delete(this.sockTopic);
-    globalWsState.pendingSubscriptions.delete(this.sockTopic);
-    console.debug(`WS: Unsubscribed from ${this.sockTopic}`);
-  } else if (this.sockSubscription) {
-    // Fallback for old-style subscriptions
+    globalWsState.client = new Client({
+      brokerURL: config.WS_URL,
+      debug: (strMessage) => {
+        // console.log('debug: ', strMessage);
+        // -- detect reconnect and increment the reconnect counter
+        if (strMessage.includes('reconnect')) {
+          getUserSession()
+            .then(({ data, status }) => {
+              if (status === 502) {
+                connectionErrorType = BAD_GATEWAY_ERROR;
+                reconnectCounter += 1;
+              } else if (data && !data.loggedIn) {
+                reconnectCounter += 1;
+              } else {
+                // Reset counter on successful authentication
+                reconnectCounter = 0;
+              }
+            })
+            .catch(() => {
+              reconnectCounter += 1;
+            });
+        }
+
+        // -- if more than max allowed to reconnect times  ->  deactivate
+        if (reconnectCounter > MAX_RECONNECT_TIMES) {
+          console.warn(
+            'WS: Max reconnection attempts reached, clearing browser state...'
+          );
+
+          // Clear browser state and reload page as last resort
+          try {
+            clearBrowserState();
+            // Give user a chance to see what happened
+            setTimeout(() => {
+              if (
+                window.confirm(
+                  'Connection issues detected. Reload page to recover?'
+                )
+              ) {
+                window.location.reload();
+              }
+            }, 2000);
+          } catch (error) {
+            console.error('Failed to clear browser state:', error);
+          }
+
+          globalWsState.client.reconnectDelay = 0; // 0 - deactivates the sockClient
+          store.dispatch(connectionError({ errorType: connectionErrorType }));
+        }
+      },
+      reconnectDelay: 5000,
+      heartbeatIncoming: 4000,
+      heartbeatOutgoing: 4000,
+    });
+
+    if (process.env.JEST_WORKER_ID === undefined) {
+      globalWsState.client.webSocketFactory = socketFactory;
+    }
+
+    globalWsState.client.onConnect = () => {
+      globalWsState.connecting = false;
+      reconnectCounter = 0; // Reset on a successful connection
+      log('WS: Client connected successfully');
+      processPendingSubscriptions();
+    };
+    globalWsState.client.onDisconnect = () => {
+      globalWsState.connecting = false;
+      log('WS: Client disconnected');
+    };
+    globalWsState.client.onStompError = (frame) => {
+      globalWsState.connecting = false;
+      globalWsState.pendingSubscriptionsById.clear();
+      console.log('Broker reported error: ' + frame.headers['message']);
+      console.log('Additional details: ' + frame.body);
+    };
+    globalWsState.client.onWebSocketError = (error) => {
+      globalWsState.connecting = false;
+      globalWsState.pendingSubscriptionsById.clear();
+      console.error('WS: WebSocket error:', error);
+    };
+    globalWsState.client.onWebSocketClose = (event) => {
+      globalWsState.connecting = false;
+      log('WS: WebSocket closed:', event);
+    };
+
     try {
-      if (globalWsState.client && globalWsState.client.connected) {
-        this.sockSubscription.unsubscribe();
-        wasConnected = true;
-      }
+      globalWsState.client.activate();
     } catch (error) {
-      console.error('WS: Error unsubscribing fallback:', error);
+      globalWsState.connecting = false;
+      console.error('WS: Failed to activate client:', error);
+    }
+  } else {
+    // Client exists and is in a good state, just process pending subscriptions
+    processPendingSubscriptions();
+  }
+};
+
+//
+//
+// -----------------------------------------------------------------------------
+//
+//
+
+const processPendingSubscriptions = ({ tries = 5 } = {}) => {
+  if (globalWsState.pendingSubscriptionsById.size === 0) return;
+
+  // Check if the client exists and is in a valid state
+  if (
+    !globalWsState.client ||
+    globalWsState.client.state === 'CLOSED' ||
+    globalWsState.client.state === 'CLOSING'
+  ) {
+    if (tries > 0) {
+      setTimeout(() => {
+        processPendingSubscriptions({ tries: tries - 1 });
+      }, 300); // Slightly longer delay
+      return;
+    } else {
+      console.error(
+        `WS: Client is closing. Aborting all pending subscriptions.`
+      );
+      globalWsState.pendingSubscriptionsById.clear();
+      return;
     }
   }
 
-  // Clean up context references
-  this.sockTopic = null;
-  this.sockSubscription = null;
-  this.subscriptionId = null; // Changed from connectionId
+  if (globalWsState.client?.connected) {
+    processPendingSubscriptionsNow();
+  } else if (tries > 0) {
+    // Client exists but not connected yet, retry
+    setTimeout(() => {
+      processPendingSubscriptions({ tries: tries - 1 });
+    }, 300);
+  } else {
+    console.error(
+      `WS: Client not connected after retries. Aborting all pending subscriptions.`
+    );
+    globalWsState.pendingSubscriptionsById.clear();
+  }
+};
 
-  // Schedule delayed disconnect if no more subscriptions - KEY CHANGE
-  scheduleDisconnectIfEmpty(onDisconnectCallback);
+//
+//
+// -----------------------------------------------------------------------------
+//
+//
 
-  return wasConnected;
-}
+const processPendingSubscriptionsNow = () => {
+  const pendingSubscriptionsById = globalWsState.pendingSubscriptionsById;
+  if (pendingSubscriptionsById.size === 0) return;
+
+  const subscriptionIds = Array.from(pendingSubscriptionsById.keys());
+  for (const subscriptionId of subscriptionIds) {
+    processSinglePendingSubscription({ subscriptionId });
+  }
+};
+
+//
+//
+// -----------------------------------------------------------------------------
+//
+//
+
+const processSinglePendingSubscription = ({ subscriptionId }) => {
+  const subscriptionsById = globalWsState.subscriptionsById;
+  const pendingSubscriptionsById = globalWsState.pendingSubscriptionsById;
+  const pendingSubscriptionData = pendingSubscriptionsById.get(subscriptionId);
+  if (!pendingSubscriptionData) return;
+
+  const { topic, callback } = pendingSubscriptionData;
+  try {
+    const subscriptionData = subscriptionsById.get(subscriptionId);
+    if (subscriptionData) {
+      unsubscribe({ subscriptionData });
+      subscriptionsById.delete(subscriptionId);
+    }
+
+    const subscription = globalWsState.client.subscribe(topic, (msg) => {
+      fireMessageCallback({ subscriptionId, msg });
+    });
+
+    // Store subscription in the global state
+    subscriptionsById.set(subscriptionId, {
+      topic,
+      clientConnectionId: globalWsState.clientConnectionId,
+      subscriptionId,
+      subscription,
+      callback,
+    });
+
+    pendingSubscriptionsById.delete(subscriptionId);
+    log(`WS: Successfully subscribed to ${topic} (ID=${subscriptionId})`);
+  } catch (error) {
+    console.error(
+      `WS: Failed to subscribe to ${topic} (ID=${subscriptionId}):`,
+      error
+    );
+  }
+};
+
+//
+//
+// -----------------------------------------------------------------------------
+//
+//
+
+const fireMessageCallback = ({ subscriptionId, msg }) => {
+  const subscriptionData = globalWsState.subscriptionsById.get(subscriptionId);
+  try {
+    if (subscriptionData && subscriptionData.callback) {
+      subscriptionData.callback(JSON.parse(msg.body));
+    }
+  } catch (error) {
+    console.warn('Failed forwarding websocket message', {
+      msg,
+      subscriptionData,
+      error,
+    });
+  }
+};
+
+//
+//
+// -----------------------------------------------------------------------------
+//
+//
+
+window.printWebsockets = () => {
+  console.log('Websocket connections status', globalWsState);
+};

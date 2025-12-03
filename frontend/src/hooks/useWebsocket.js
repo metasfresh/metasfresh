@@ -1,13 +1,23 @@
 import { useEffect, useRef } from 'react';
-import { connectWS, disconnectWS } from '../utils/websockets';
+import {
+  connectWS,
+  disconnectWS,
+  newSubscriptionId,
+} from '../utils/websockets';
 
 const WS_DEBUG = true;
 const log = WS_DEBUG ? console.debug : () => {};
 
-export const useWebsocket = ({ topic, traceName = '', onMessage }) => {
-  const wsStateRef = useRef({});
-  const topicRef = useRef(topic);
+export const useWebsocket = ({
+  topic: topicParam,
+  traceName = '',
+  onMessage,
+}) => {
   const onMessageRef = useRef(onMessage);
+  const topicRef = useRef();
+  const subscriptionIdRef = useRef();
+
+  const topic = normalizeTopicName(topicParam);
 
   // Update refs without triggering re-connection
   useEffect(() => {
@@ -15,59 +25,80 @@ export const useWebsocket = ({ topic, traceName = '', onMessage }) => {
   }, [onMessage]);
 
   useEffect(() => {
-    if (!topic) {
-      // Clean up if the topic becomes null/undefined
-      if (topicRef.current) {
-        disconnectWS.call(wsStateRef.current);
-        log(
-          `[WS ${topicRef.current} ${traceName}] Disconnected due to empty topic`
-        );
-      }
-      topicRef.current = topic;
-      return;
+    // do nothing if no topic changed
+    if (topicRef.current === topic) return;
+
+    // Disconnect from the previous topic
+    const oldSubscriptionId = subscriptionIdRef.current;
+    if (oldSubscriptionId) {
+      subscriptionIdRef.current = null;
+      disconnectWS({ subscriptionId: oldSubscriptionId });
+      log(
+        `[WS ${topicRef.current} ID=${oldSubscriptionId} ${traceName}] Disconnected due to topic change`
+      );
     }
 
-    // Only reconnect if the topic actually changed
-    if (topicRef.current !== topic) {
-      // Disconnect from the previous topic
-      if (topicRef.current) {
-        disconnectWS.call(wsStateRef.current);
-        log(
-          `[WS ${topicRef.current} ${traceName}] Disconnected due to topic change`
-        );
-      }
-
-      // Connect to the new topic
+    // Connect to the new topic
+    if (topic) {
+      const subscriptionId = newSubscriptionId();
+      subscriptionIdRef.current = subscriptionId;
       topicRef.current = topic;
 
       try {
-        connectWS.call(wsStateRef.current, topic, (event) => {
-          log(`[WS ${topic} ${traceName}] Received event`, { event });
+        connectWS({
+          subscriptionId,
+          topic: topic,
+          onMessageCallback: (event) => {
+            // log(
+            //   `[WS ${topic} ID=${subscriptionId} ${traceName}] Received event`,
+            //   { event }
+            // );
 
-          // Use ref to get the latest callback to avoid stale closures
-          if (onMessageRef.current) {
-            onMessageRef.current({ topic, event });
-          }
+            // Use ref to get the latest callback to avoid stale closures
+            if (onMessageRef.current) {
+              onMessageRef.current({ topic, event });
+            }
+          },
         });
 
-        log(`[WS ${topic} ${traceName}] Connected`);
+        log(`[WS ${topic} ID=${subscriptionId} ${traceName}] Connected`);
       } catch (error) {
-        console.error(`[WS ${topic} ${traceName}] Connection failed:`, error);
+        console.error(
+          `[WS ${topic} ID=${subscriptionId} ${traceName}] Connection failed:`,
+          error
+        );
       }
     }
 
     return () => {
-      if (wsStateRef.current && topicRef.current) {
+      if (subscriptionIdRef.current) {
         try {
-          disconnectWS.call(wsStateRef.current);
-          log(`[WS ${topicRef.current} ${traceName}] Disconnected (cleanup)`);
+          disconnectWS({ subscriptionId: subscriptionIdRef.current });
+          log(
+            `[WS ${topicRef.current} ID=${subscriptionIdRef.current} ${traceName}] Disconnected (cleanup)`
+          );
         } catch (error) {
           console.error(
-            `[WS ${topicRef.current} ${traceName}] Disconnection failed on cleanup:`,
+            `[WS ${topicRef.current} ID=${subscriptionIdRef.current} ${traceName}] Disconnection failed on cleanup:`,
             error
           );
         }
       }
     };
   }, [topic, traceName]); // Only depend on the topic and traceName, not onMessage
+};
+
+//
+//
+// ----------------------------
+//
+//
+
+const normalizeTopicName = (topic) => {
+  if (!topic) return null;
+
+  let topicNorm = topic.trim();
+  if (topicNorm.length === 0) return null;
+
+  return topicNorm;
 };
