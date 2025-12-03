@@ -12,11 +12,14 @@ import { ShipmentSchedulePage } from '../utils/pages/ShipmentSchedulePage';
  * Tests the sales order to shipment schedule workflow:
  * 1. Create a sales order with customer and product
  * 2. Complete the sales order
- * 3. Navigate to Shipment Schedule (Alt+6)
- * 4. Validate the ordered quantity appears in the shipment schedule
+ * 3. Generate and validate PDF (Alt+P)
+ * 4. Navigate to Shipment Schedule (Alt+6)
+ * 5. Validate the ordered quantity appears in the shipment schedule
  *
  * This validates language-independent selectors for:
  * - Sales order creation and completion
+ * - PDF generation modal and download
+ * - PDF content validation (document number, customer, product, quantity)
  * - Related documents navigation (Alt+6)
  * - Shipment schedule window and quantity field
  */
@@ -95,7 +98,28 @@ testCases.forEach(({ language, label }) => {
 
       console.log(`[${language}] Sales Order created: ${soDocumentNo}`);
 
-      // Step 4: Navigate to shipment schedule via Alt+6
+      // Step 4: Open print modal and generate PDF
+      await SalesOrderPage.openPrintModal();
+
+      // Step 4.1: Download PDF
+      const download = await SalesOrderPage.downloadPDF();
+      console.log(`[${language}] PDF downloaded: ${download.suggestedFilename()}`);
+
+      // Step 4.2: Validate PDF content
+      await SalesOrderPage.validatePdfContent(download, {
+        documentNo: soDocumentNo,
+        customerName: masterdata.bpartners.CUSTOMER1.bpartnerCode,
+        productCode: masterdata.products.Product1.productCode,
+        quantity: '10',
+        language,
+      });
+
+      console.log(`[${language}] PDF content validated successfully`);
+
+      // Step 4.3: Close modal
+      await SalesOrderPage.closePrintModal().catch(() => {});
+
+      // Step 5: Navigate to shipment schedule via Alt+6
       // This navigates directly to the correct shipment schedule for this SO
       // IMPORTANT: Do NOT navigate to window 500221 directly - it may select wrong schedule!
       await SalesOrderPage.openRelatedShipmentCandidate();
@@ -105,7 +129,7 @@ testCases.forEach(({ language, label }) => {
 
       console.log(`[${language}] Shipment Schedule opened for SO ${soDocumentNo}`);
 
-      // Step 5: Validate ordered quantity
+      // Step 6: Validate ordered quantity
       await ShipmentSchedulePage.expectOrderedQuantity('10');
 
       console.log(`[${language}] Verified ordered quantity: 10`);

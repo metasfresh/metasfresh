@@ -55,9 +55,37 @@ export const BUSINESS_PARTNER_WINDOW_ID = 123;
 export const PRODUCT_WINDOW_ID = 140;
 
 // ============================================================================
-// SALES SIDE WINDOWS (for reference)
+// SALES SIDE WINDOWS
 // ============================================================================
 
-// Sales Order window: Different from PURCHASE_ORDER_WINDOW_ID
-// Sales Invoice window: Different from VENDOR_INVOICE_WINDOW_ID
-// (Add when needed for sales-side tests)
+/**
+ * Sales Order window (Auftrag)
+ * Table: C_Order (ad_window_id)
+ * Window ID: 143
+ * Description: Aufträge eingeben und verwalten
+ */
+export const SALES_ORDER_WINDOW_ID = 143;
+
+/**
+ * Shipment Candidates window (Lieferdisposition)
+ * Table: M_ShipmentSchedule
+ * Window ID: 500221
+ * Description: Lieferdisposition verwalten
+ */
+export const SHIPMENT_CANDIDATES_WINDOW_ID = 500221;
+
+/**
+ * Invoice Candidate window - Sales side (Rechnungsdisposition)
+ * Table: C_Invoice_Candidate (ad_window_id)
+ * Window ID: 540092
+ * Description: Rechnungsdisposition (Verkauf)
+ */
+export const SALES_INVOICE_CANDIDATE_WINDOW_ID = 540092;
+
+/**
+ * Material Receipt Candidates window (Wareneingangsdisposition)
+ * Table: M_ReceiptSchedule
+ * Window ID: 540196
+ * Description: Wareneingangsdisposition verwalten
+ */
+export const RECEIPT_CANDIDATES_WINDOW_ID = 540196;
