@@ -73,7 +73,7 @@ public class PostgresFTSDocumentFilterConverter implements SqlDocumentFilterConv
 				.append("EXISTS (")
 				.append(" SELECT 1 FROM ").append(ftsTableName).append(" ").append(ftsTableAlias)
 				.append(" WHERE ").append(ftsTableAlias).append(".").append(keyColumnName)
-				.append(" = ").append(mainTableAlias).append(ftsTableAlias).append(".").append(keyColumnName)
+				.append(" = ").append(mainTableAlias).append(".").append(keyColumnName)
 				.append(" AND (")
 				.append(ftsTableAlias).append(".fts_document @@ websearch_to_tsquery(get_fts_config(), ?)", searchText); // https://www.postgresql.org/docs/current/textsearch.html
 
