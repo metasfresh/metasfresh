@@ -111,11 +111,16 @@ export default class TableHeader extends PureComponent {
       cols.map((item, index) => {
         if (shouldRenderColumn(item)) {
           // Use database field name for language-independent column identification
-          const fieldName = item.fields && item.fields[0] ? item.fields[0].field : null;
+          const fieldName =
+            item.fields && item.fields[0] ? item.fields[0].field : null;
           const dataTestId = fieldName ? `column-${fieldName}` : undefined;
 
           return (
-            <th key={index} className={getSizeClass(item)} data-testid={dataTestId}>
+            <th
+              key={index}
+              className={getSizeClass(item)}
+              data-testid={dataTestId}
+            >
               {onSortTable
                 ? this.renderSorting(
                     item.fields[0].field,
