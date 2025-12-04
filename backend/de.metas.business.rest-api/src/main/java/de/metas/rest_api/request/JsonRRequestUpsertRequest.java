@@ -27,6 +27,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.request.JsonConfidentialType;
 import de.metas.common.rest_api.request.JsonRequestPriority;
+import de.metas.common.rest_api.v2.SwaggerDocConstants;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -36,27 +38,31 @@ import javax.annotation.Nullable;
 import java.time.LocalDate;
 
 /**
- * A JSON object that represents a {@code R_Request}.
+ * A JSON object used to create a new {@code R_Request} record.
  */
 @Builder(toBuilder = true)
 @Jacksonized
 @Value
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class JsonRRequest
+public class JsonRRequestUpsertRequest
 {
-	@NonNull JsonMetasfreshId id;
-
+	@ApiModelProperty(value = SwaggerDocConstants.ORG_CODE_PARAMETER_DOC)
 	@NonNull String orgCode;
+
 	@NonNull String requestType;
-	@Nullable JsonMetasfreshId bpartnerId;
-	@Nullable JsonMetasfreshId userId;
+
+	@ApiModelProperty(value = SwaggerDocConstants.BPARTNER_VALUE_DOC)
+	@Nullable String bpartnerIdentifier;
+
+	@ApiModelProperty(value = SwaggerDocConstants.CONTACT_IDENTIFIER_DOC)
+	@Nullable String userIdentifier;
 
 	@Nullable JsonRequestPriority priority;
 	@NonNull String summary;
 	@Nullable JsonConfidentialType confidentialityLevel;
 
-	@Nullable JsonMetasfreshId vendorId;
-	@Nullable JsonMetasfreshId salesRepId;
+	@ApiModelProperty(value = SwaggerDocConstants.BPARTNER_VALUE_DOC)
+	@Nullable String vendorIdentifier;
 
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@Nullable LocalDate dateDelivered;
@@ -65,16 +71,20 @@ public class JsonRRequest
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@Nullable LocalDate reminderDate;
 
-	@Nullable JsonMetasfreshId projectId;
-	@Nullable JsonMetasfreshId productId;
+	@Nullable String projectValue;
+
+	@ApiModelProperty(value = SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC)
+	@Nullable String productIdentifier;
 
 	@Nullable JsonMetasfreshId orderId;
 	@Nullable JsonMetasfreshId inOutId;
 	@Nullable JsonMetasfreshId invoiceId;
 	@Nullable JsonMetasfreshId paymentId;
 
-	@Nullable String qualityNoteValue;
+	@Nullable String qualityNote;
+
+	@ApiModelProperty(value = SwaggerDocConstants.CONTACT_IDENTIFIER_DOC)
+	@Nullable String salesRepIdentifier;
 
 	@Nullable String statusName;
-
 }
