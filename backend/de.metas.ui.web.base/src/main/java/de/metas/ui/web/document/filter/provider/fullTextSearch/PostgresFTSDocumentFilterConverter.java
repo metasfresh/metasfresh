@@ -85,7 +85,7 @@ public class PostgresFTSDocumentFilterConverter implements SqlDocumentFilterConv
 		if (distance.compareTo(BigDecimal.ZERO) > 0 && BigDecimal.ONE.compareTo(distance) > 0)
 		{
 			// https://www.postgresql.org/docs/current/pgtrgm.html (ngram search)
-			final int fuzzySearchLimit = sysConfigBL.getIntValue(SYSCONFIG_NGRAM_LIMIT, 5000);
+			final int fuzzySearchLimit = sysConfigBL.getIntValue(SYSCONFIG_NGRAM_LIMIT, 1000);
 			whereClause.append(" UNION ")
 					.append("(SELECT ").append(keyColumnName).append(" FROM ").append(ftsTableName)
 					.append(" WHERE fts_string <-> ? < ?", searchText, distance)

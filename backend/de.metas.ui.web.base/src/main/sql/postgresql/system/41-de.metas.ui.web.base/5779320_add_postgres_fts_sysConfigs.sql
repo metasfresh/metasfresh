@@ -51,5 +51,5 @@ INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLe
 - A **lower value** is faster but might miss relevant results if the user''s search term is very different from the indexed text.
 
 This limit only applies when the fuzzy search feature is enabled (i.e., when the `Distance` threshold is configured to a value less than 1).
-','D','Y','de.metas.ui.web.document.filter.provider.fullTextSearch.PostgresFTSDocumentFilterConverter.NgramLimit',TO_TIMESTAMP('2025-12-04 09:43:22.314000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'5000')
+','D','Y','de.metas.ui.web.document.filter.provider.fullTextSearch.PostgresFTSDocumentFilterConverter.NgramLimit',TO_TIMESTAMP('2025-12-04 09:43:22.314000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'1000')
 ;
