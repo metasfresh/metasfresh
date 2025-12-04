@@ -19,7 +19,6 @@ const log = (...params) =>
 const globalWsState = {
   //
   // Client-related state
-  clientConnectionId: 0,
   client: null,
   connecting: false,
   reconnectCounter: 0,
@@ -326,8 +325,6 @@ const unsubscribe = ({ subscriptionData }) => {
 //
 
 const checkClientConnectionActive = () => {
-  let clientWasRecreated = false;
-
   // Clean up the existing client if it's in a bad state
   if (
     globalWsState.client &&
@@ -341,9 +338,6 @@ const checkClientConnectionActive = () => {
     }
     globalWsState.client = null;
     globalWsState.connecting = false;
-    // Increment client connection ID when we recreate the client
-    globalWsState.clientConnectionId++;
-    clientWasRecreated = true;
     log('WS: Client was recreated due to bad state');
   }
 
@@ -361,12 +355,7 @@ const checkClientConnectionActive = () => {
   // Only create a new client if we don't have one
   if (!globalWsState.client) {
     globalWsState.connecting = true;
-
-    // Only increment if we haven't already done so during cleanup
-    if (!clientWasRecreated) {
-      globalWsState.clientConnectionId++;
-      log('WS: Creating new client connection');
-    }
+    log('WS: Creating new client connection');
 
     globalWsState.client = new Client({
       brokerURL: config.WS_URL,
@@ -585,7 +574,6 @@ const processSinglePendingSubscription = ({ subscriptionId }) => {
     // Store subscription in the global state
     subscriptionsById.set(subscriptionId, {
       topic,
-      clientConnectionId: globalWsState.clientConnectionId,
       subscriptionId,
       subscription,
       callback,
@@ -631,7 +619,6 @@ const fireMessageCallback = ({ subscriptionId, msg }) => {
 const dumpStatus = () => {
   console.log('Websocket connections status', globalWsState);
 
-  console.log('clientConnectionId: ', globalWsState.clientConnectionId);
   console.log('client: ', globalWsState.client);
   console.log('connecting: ', globalWsState.connecting);
   console.log(
