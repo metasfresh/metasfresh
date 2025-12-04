@@ -20,21 +20,22 @@
  * #L%
  */
 
-package de.metas.ui.web.document.filter.provider;
 
-import lombok.experimental.UtilityClass;
+CREATE OR REPLACE FUNCTION c_bpartner_fts_trigger_function()
+    RETURNS trigger
+AS
+$$
+BEGIN
+    IF (TG_OP = 'INSERT' OR TG_OP = 'UPDATE') THEN
+        PERFORM ops.reindex_c_bpartner_fts(NEW.c_bpartner_id);
+    END IF;
+    -- The DELETE case is handled automatically by the "ON DELETE CASCADE" constraint.
+    -- CONSTRAINT CBPartner_CBPartnerFTS FOREIGN KEY (C_BPartner_ID) REFERENCES public.C_BPartner ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
+    RETURN NULL;
+END;
+$$
+    LANGUAGE plpgsql
+;
 
-@UtilityClass
-public class DocumentFilterDescriptorsConstants
-{
-	public final int SORT_NO_DEFAULT_DATE = Integer.MIN_VALUE;
-	public final int SORT_NO_DEFAULT_FILTERS_GROUP = 10000;
-	public final int SORT_NO_INLINE_FILTERS = 11000;
-	public final int SORT_NO_USER_QUERY_START = 20000;
-	public final int SORT_NO_FULL_TEXT_SEARCH = 30000;
-	public final int SORT_NO_POSTGRES_FULL_TEXT_SEARCH = 31000;
-	public final int SORT_NO_GEO_LOCATION = 40000;
-	public final int SORT_NO_FACT_ACCT = 50000;
-
-	public final int SORT_NO_FACETS_START = Integer.MAX_VALUE / 10000 * 10000;
-}
+COMMENT ON FUNCTION c_bpartner_fts_trigger_function() IS 'Refresh the C_BPartner_FTS table when a C_BPartner record is inserted or updated'
+;
