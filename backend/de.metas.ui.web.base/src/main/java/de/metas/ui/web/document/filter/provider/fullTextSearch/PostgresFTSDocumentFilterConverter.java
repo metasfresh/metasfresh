@@ -39,6 +39,7 @@ import java.math.BigDecimal;
 public class PostgresFTSDocumentFilterConverter implements SqlDocumentFilterConverter
 {
 	@NonNull private final static String SYSCONFIG_DISTANCE = "de.metas.ui.web.document.filter.provider.fullTextSearch.PostgresFTSDocumentFilterConverter.Distance";
+	@NonNull private final static String SYSCONFIG_NGRAM_LIMIT = "de.metas.ui.web.document.filter.provider.fullTextSearch.PostgresFTSDocumentFilterConverter.NgramLimit";
 	@NonNull public static final PostgresFTSDocumentFilterConverter instance = new PostgresFTSDocumentFilterConverter();
 
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -66,36 +67,39 @@ public class PostgresFTSDocumentFilterConverter implements SqlDocumentFilterConv
 		final String ftsTableAlias = "fts_bpartner";
 		final String ftsTableName = "C_BPartner_FTS";
 		final String keyColumnName = "C_BPartner_ID";
+		final String mainTableKeyColumn = mainTableAlias + "." + keyColumnName;
 
-		final BigDecimal distance = sysConfigBL.getBigDecimalValue(SYSCONFIG_DISTANCE, BigDecimal.ONE);
-
+		// https://www.postgresql.org/docs/current/textsearch.html
 		final SqlAndParams.Builder whereClause = SqlAndParams.builder()
-				.append("EXISTS (")
-				.append(" SELECT 1 FROM ").append(ftsTableName).append(" ").append(ftsTableAlias)
-				.append(" WHERE ").append(ftsTableAlias).append(".").append(keyColumnName)
-				.append(" = ").append(mainTableAlias).append(".").append(keyColumnName)
-				.append(" AND (")
-				.append(ftsTableAlias).append(".fts_document @@ websearch_to_tsquery(get_fts_config(), ?)", searchText); // https://www.postgresql.org/docs/current/textsearch.html
+				.append(mainTableKeyColumn).append(" IN (")
+				.append("SELECT ").append(keyColumnName).append(" FROM ").append(ftsTableName)
+				.append(" WHERE fts_document @@ websearch_to_tsquery(get_fts_config(), ?)", searchText);
 
 		final SqlAndParams.Builder orderByClause = SqlAndParams.builder()
 				.append("(SELECT ts_rank(").append(ftsTableAlias).append(".fts_document, websearch_to_tsquery(get_fts_config(), ?))", searchText)
 				.append(" FROM ").append(ftsTableName).append(" ").append(ftsTableAlias)
-				.append(" WHERE ").append(ftsTableAlias).append(".").append(keyColumnName).append(" = ").append(mainTableAlias).append(".").append(keyColumnName)
+				.append(" WHERE ").append(ftsTableAlias).append(".").append(keyColumnName).append(" = ").append(mainTableKeyColumn)
 				.append(") DESC NULLS LAST");
 
-		if (distance.compareTo(BigDecimal.ZERO) > 0 && BigDecimal.ONE.compareTo(distance) > 0) // 0 < distance < 1
+		final BigDecimal distance = sysConfigBL.getBigDecimalValue(SYSCONFIG_DISTANCE, BigDecimal.ONE);
+		if (distance.compareTo(BigDecimal.ZERO) > 0 && BigDecimal.ONE.compareTo(distance) > 0)
 		{
-			whereClause.append(" OR ")
-					.append(ftsTableAlias).append(".fts_string <-> ? < ?", searchText, distance); // https://www.postgresql.org/docs/current/pgtrgm.html (ngram search)
+			// https://www.postgresql.org/docs/current/pgtrgm.html (ngram search)
+			final int fuzzySearchLimit = sysConfigBL.getIntValue(SYSCONFIG_NGRAM_LIMIT, 5000);
+			whereClause.append(" UNION ")
+					.append("(SELECT ").append(keyColumnName).append(" FROM ").append(ftsTableName)
+					.append(" WHERE fts_string <-> ? < ?", searchText, distance)
+					.append(" ORDER BY fts_string <-> ? ASC", searchText)
+					.append(" LIMIT ?)", fuzzySearchLimit);
 
-			orderByClause.append(", (SELECT fts.fts_string <-> ?", searchText)
-					.append(" FROM ").append(ftsTableName).append(" fts")
-					.append(" WHERE fts.").append(keyColumnName).append(" = ").append(mainTableAlias).append(".").append(keyColumnName)
+			orderByClause.append(", ")
+					.append("(SELECT ").append(ftsTableAlias).append(".fts_string <-> ?", searchText)
+					.append(" FROM ").append(ftsTableName).append(" ").append(ftsTableAlias)
+					.append(" WHERE ").append(ftsTableAlias).append(".").append(keyColumnName).append(" = ").append(mainTableKeyColumn)
 					.append(") ASC NULLS LAST");
 		}
 
-		whereClause.append(" )")
-				.append(")");
+		whereClause.append(" )");
 
 		return FilterSql.builder().whereClause(whereClause.build()).orderBy(orderByClause.build()).build();
 

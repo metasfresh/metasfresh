@@ -39,7 +39,7 @@ CREATE INDEX IF NOT EXISTS c_bpartner_fts_document_idx
 CREATE EXTENSION IF NOT EXISTS pg_trgm
 ;
 
-CREATE INDEX IF NOT EXISTS c_bpartner_fts_string_trgm_idx
+CREATE INDEX IF NOT EXISTS c_bpartner_fts_string_trgm_gist_idx
     ON c_bpartner_fts
-        USING GIN (fts_string gin_trgm_ops)
+        USING GIST (fts_string gist_trgm_ops)
 ;

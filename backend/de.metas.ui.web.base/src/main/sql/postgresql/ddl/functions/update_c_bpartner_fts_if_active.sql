@@ -53,6 +53,7 @@ BEGIN
 
     TRUNCATE TABLE C_BPartner_FTS;
     PERFORM ops.reindex_c_bpartner_fts();
+    ANALYSE C_BPartner_FTS;
 END;
 $$
     LANGUAGE plpgsql

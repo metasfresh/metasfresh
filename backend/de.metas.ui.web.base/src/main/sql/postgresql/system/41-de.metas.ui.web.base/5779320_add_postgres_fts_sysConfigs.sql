@@ -39,3 +39,17 @@ INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLe
      - A threshold of `0.96` is more lenient and will find matches with more significant typos or variations.',
 'D','Y','de.metas.ui.web.document.filter.provider.fullTextSearch.PostgresFTSDocumentFilterConverter.Distance',TO_TIMESTAMP('2025-12-03 12:48:36.983000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'0.96')
 ;
+
+-- SysConfig Name: de.metas.ui.web.document.filter.provider.fullTextSearch.PostgresFTSDocumentFilterConverter.NgramLimit
+-- SysConfig Value: 5000
+-- 2025-12-04T09:43:22.433Z
+INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLevel,Created,CreatedBy,Description,EntityType,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,541778,'S',TO_TIMESTAMP('2025-12-04 09:43:22.314000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Controls the maximum number of typo-tolerant matches to consider during the initial phase of a search.
+**How it Works:** When a user searches, the system runs a "fuzzy" search in parallel to find results with potential typos. This setting limits how many of these potential matches are retrieved from the database for further processing.
+**Important:** This limit is applied  before any other filters (such as security or business-specific view filters). If a record is not within this initial set of fuzzy matches, it will be excluded from the final results, even if the user would otherwise have access to it.
+**The Trade-off:**
+- A **higher value** increases the chance of finding a result despite significant typos, but may impact performance on very large systems.
+- A **lower value** is faster but might miss relevant results if the user''s search term is very different from the indexed text.
+
+This limit only applies when the fuzzy search feature is enabled (i.e., when the `Distance` threshold is configured to a value less than 1).
+','D','Y','de.metas.ui.web.document.filter.provider.fullTextSearch.PostgresFTSDocumentFilterConverter.NgramLimit',TO_TIMESTAMP('2025-12-04 09:43:22.314000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'5000')
+;
