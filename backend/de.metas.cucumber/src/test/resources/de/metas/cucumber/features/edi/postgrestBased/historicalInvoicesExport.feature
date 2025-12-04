@@ -536,8 +536,8 @@ Feature: Invoice export via postgREST
       | salesInvoiceS0474_040 | product_S0474_040 | 1 PCE       |
     And the invoice identified by salesInvoiceS0474_040 is completed
     And metasfresh contains C_Invoice:
-      | Identifier              | ExternalId             | ExternalSystem.Value | C_BPartner_ID | C_DocTypeTarget_ID.Name | DocumentNo  | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
-      | salesInvoiceS0474_040_2 | externalId_S0474_040_2 | test_S0474_040       | customer1     | Ausgangsrechnung        | S0474_040_2 | 2025-05-04   | Spot                     | true    | EUR                 |
+      | Identifier              | REST.Context               | ExternalId             | ExternalSystem.Value | C_BPartner_ID | C_DocTypeTarget_ID.Name | DocumentNo  | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | salesInvoiceS0474_040_2 | salesInvoiceS0474_040_2_ID | externalId_S0474_040_2 | test_S0474_040       | customer1     | Ausgangsrechnung        | S0474_040_2 | 2025-05-04   | Spot                     | true    | EUR                 |
     And metasfresh contains C_InvoiceLines
       | C_Invoice_ID            | M_Product_ID      | QtyInvoiced |
       | salesInvoiceS0474_040_2 | product_S0474_040 | 1 PCE       |
@@ -575,12 +575,12 @@ Feature: Invoice export via postgREST
     """
 [
   {
-    "Invoice_ID": @salesInvoiceS0474_040_ID@,
+    "Invoice_ID": @salesInvoiceS0474_040_2_ID@,
     "Invoice_Receiver_Tec_GLN": null,
     "Invoice_Sender_Tec_GLN": null,
     "Invoice_Sender_CountryCode": "DE",
     "Invoice_Sender_VATaxId": null,
-    "Invoice_DocumentNo": "S0474_040",
+    "Invoice_DocumentNo": "S0474_040_2",
     "Invoice_Date": "2025-05-04T00:00:00",
     "Invoice_Acct_Date": "2025-05-01T00:00:00",
     "DocType_Base": "ARI",
@@ -601,7 +601,7 @@ Feature: Invoice export via postgREST
     "Invoice_TotalLinesWithSurchargeAmt": 5.0,
     "Invoice_TotalVATWithSurchargeAmt": 0.95,
     "Invoice_GrandTotalWithSurchargeAmt": 5.95,
-    "ExternalId": "externalId_S0474_040",
+    "ExternalId": "externalId_S0474_040_2",
     "ExternalSystemCode": "test_S0474_040",
     "DataSource": "",
     "DocStatus": "CO",

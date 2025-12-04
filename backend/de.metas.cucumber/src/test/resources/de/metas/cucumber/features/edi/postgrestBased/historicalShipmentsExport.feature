@@ -661,7 +661,7 @@ Feature: Shipments export via postgREST
   {
     "Shipment_ID": @shipment_S0475_050_1_ID@,
     "Shipment_DocumentNo": "@shipment_S0475_050_1_DocumentNo@",
-    "Shipment_Date": "2025-05-16T00:00:00",
+    "Shipment_Date": "2025-05-17T00:00:00",
     "DocStatus": "CO",
     "ExternalId": "externalId_S0475_050",
     "ExternalSystemCode": "test_S0475_050",
@@ -887,6 +887,10 @@ Feature: Shipments export via postgREST
     {
       "name": "ShipmentDateGE",
       "value": "2025-05-16 00:00:00"
+    },
+    {
+      "name": "ExternalSystemCode",
+      "value": "test_S0475_060"
     }
   ]
 }
