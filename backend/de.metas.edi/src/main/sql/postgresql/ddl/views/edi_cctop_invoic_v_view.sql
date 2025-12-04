@@ -7,6 +7,7 @@ CREATE OR REPLACE VIEW EDI_Cctop_INVOIC_v AS
 SELECT i.C_Invoice_ID                                                                                       AS EDI_Cctop_INVOIC_v_ID
      , i.C_Invoice_ID
      , i.C_Order_ID
+     , i.C_BPartner_ID
      , REGEXP_REPLACE(i.DocumentNo, '\s+$', '')                                                             AS Invoice_DocumentNo
      , i.DateInvoiced
      , i.DateAcct
