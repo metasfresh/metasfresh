@@ -59,6 +59,11 @@ public class DocOutboundConfigRepository
 		return new DocOutboundConfigRepository();
 	}
 
+	public void resetCache()
+	{
+		cache.reset();
+	}
+
 	@Nullable
 	public DocOutboundConfig getByQuery(@NonNull final DocOutboundConfigQuery query)
 	{

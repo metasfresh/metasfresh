@@ -76,6 +76,7 @@ class C_Doc_Outbound_Config
 
 	private void unregisterOutboundProducer(@NonNull final AdTableId tableId)
 	{
+		docOutboundConfigRepository.resetCache(); // prevent raceConditions
 		if (docOutboundConfigRepository.getByTableId(tableId).isEmpty())
 		{
 			producerService.unregisterProducerByTableId(tableId);
