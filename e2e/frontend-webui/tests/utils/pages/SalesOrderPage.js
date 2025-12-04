@@ -457,16 +457,14 @@ export class SalesOrderPage {
   static async downloadPDF() {
     return await test.step('SalesOrderPage - Download PDF', async () => {
       const page = getPage();
-      const axios = require('axios');
       const fs = require('fs');
       const path = require('path');
 
       // Wait for modal to be fully loaded and buttons to be ready
       await page.waitForTimeout(1000);
 
-      // Find the "Print" button - it's the one with text "Print" (not "Cancel")
-      // Use text content to be more specific
-      const printButton = page.locator('.btn.btn-meta-outline-secondary:has-text("Print")').first();
+      // Find the Print button using data-testid (language-independent)
+      const printButton = page.getByTestId('print-modal-button');
 
       await printButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
@@ -482,13 +480,10 @@ export class SalesOrderPage {
       console.log('Clicking Print button...');
       await printButton.click();
 
-      // Give it a moment for the action to start
-      await page.waitForTimeout(2000);
-
       // Wait for either download OR popup
       const result = await Promise.race([
-        downloadPromise.then(d => ({ type: 'download', data: d })),
-        popupPromise.then(p => ({ type: 'popup', data: p })),
+        downloadPromise.then(d => d ? { type: 'download', data: d } : null),
+        popupPromise.then(p => p ? { type: 'popup', data: p } : null),
       ]);
 
       if (!result || !result.data) {
@@ -499,28 +494,18 @@ export class SalesOrderPage {
         console.log('PDF download started:', result.data.suggestedFilename());
         return result.data;
       } else {
-        // Handle popup - fetch PDF from new tab URL
-        console.log('PDF opened in new tab, fetching from URL...');
+        // Handle popup - PDF opened in new tab
+        console.log('PDF opened in new tab');
         const popup = result.data;
 
-        // Wait for popup to load
+        // Wait for popup to load the PDF
         await popup.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
 
         const pdfUrl = popup.url();
         console.log('PDF URL:', pdfUrl);
 
-        // Get authentication cookies from the browser context
-        const cookies = await page.context().cookies();
-        const cookieHeader = cookies.map(c => `${c.name}=${c.value}`).join('; ');
-
-        // Download PDF using axios with authentication
-        const response = await axios.get(pdfUrl, {
-          responseType: 'arraybuffer',
-          timeout: VERY_SLOW_ACTION_TIMEOUT,
-          headers: {
-            'Cookie': cookieHeader,
-          },
-        });
+        // Get PDF content directly from the popup using CDP (Chrome DevTools Protocol)
+        const buffer = await popup.pdf({ format: 'A4' });
 
         // Save to temp file
         const tempDir = path.join(process.cwd(), 'test-results', 'temp-pdfs');
@@ -530,7 +515,7 @@ export class SalesOrderPage {
 
         const timestamp = Date.now();
         const tempPath = path.join(tempDir, `sales-order-${timestamp}.pdf`);
-        fs.writeFileSync(tempPath, Buffer.from(response.data));
+        fs.writeFileSync(tempPath, buffer);
 
         console.log('PDF downloaded from popup:', tempPath);
 
@@ -595,10 +580,9 @@ export class SalesOrderPage {
 
       // Validate customer name/code
       if (!text.includes(expectedData.customerName)) {
-        console.warn(`Customer name "${expectedData.customerName}" not found in PDF (may use different format)`);
-      } else {
-        console.log(`✓ Customer name validated: ${expectedData.customerName}`);
+        throw new Error(`Customer name "${expectedData.customerName}" not found in PDF`);
       }
+      console.log(`✓ Customer name validated: ${expectedData.customerName}`);
 
       // Validate product code
       if (!text.includes(expectedData.productCode)) {
@@ -606,23 +590,34 @@ export class SalesOrderPage {
       }
       console.log(`✓ Product code validated: ${expectedData.productCode}`);
 
-      // Validate quantity (handle multiple formats: "10", "10.00", "10,00")
-      const quantityPatterns = [
-        expectedData.quantity,
-        `${expectedData.quantity}.00`,
-        `${expectedData.quantity},00`,
-      ];
+      // Validate quantity - look for quantity AFTER product code in the line
+      // PDF line format example: "50,00Product1_20251204T080445991Stk500,0019 % 1010 Product1_20251204T080445991"
+      // Format: Price Product UOM LineAmount Tax% Pos Qty Product
+      // The quantity appears after the position number (e.g., "1010" = position 10, quantity 10)
 
-      const quantityFound = quantityPatterns.some((pattern) => text.includes(pattern));
+      const productCodeIndex = text.indexOf(expectedData.productCode);
+      if (productCodeIndex === -1) {
+        throw new Error(`Product code not found in PDF text for quantity validation`);
+      }
+
+      // Get text around the product (500 chars should cover the order line)
+      const productLineText = text.substring(productCodeIndex, productCodeIndex + 500);
+
+      // The PDF format has: "...19 % 1010 Product..." where "10" is pos, "10" is qty
+      // We need to match the pattern more carefully - look for "Pos Qty Product"
+      // Use a regex to find: whitespace + digits + whitespace + our quantity + whitespace
+      const qtyRegex = new RegExp(`\\s\\d+\\s?(${expectedData.quantity})\\s`);
+      const qtyDecimalRegex = new RegExp(`\\s\\d+\\s?(${expectedData.quantity}[.,]00)\\s`);
+
+      const quantityFound = qtyRegex.test(productLineText) || qtyDecimalRegex.test(productLineText);
 
       if (!quantityFound) {
-        console.warn(
-          `Quantity "${expectedData.quantity}" not found in expected formats. ` +
-          `Tried: ${quantityPatterns.join(', ')}`
+        throw new Error(
+          `Quantity "${expectedData.quantity}" not found in PDF near product "${expectedData.productCode}". ` +
+          `Product line text: "${productLineText}"`
         );
-      } else {
-        console.log(`✓ Quantity validated: ${expectedData.quantity}`);
       }
+      console.log(`✓ Quantity validated: ${expectedData.quantity}`);
 
       console.log(`PDF content validation completed successfully for ${expectedData.language}`);
     });
