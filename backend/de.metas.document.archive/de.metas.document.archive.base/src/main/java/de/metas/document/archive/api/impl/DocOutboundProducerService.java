@@ -30,10 +30,10 @@ import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
 import de.metas.document.archive.api.IDocOutboundProducerService;
-import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.spi.IDocOutboundProducer;
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.adempiere.ad.table.api.AdTableId;
 
 /**
  * Default implementation of {@link IDocOutboundProducerService}
@@ -48,7 +48,7 @@ public class DocOutboundProducerService implements IDocOutboundProducerService
 	/**
 	 * Map of Doc Outbound Producers (C_Doc_Outbound_Config_ID -> DocOutboundProducerValidator)
 	 */
-	private final Map<Integer, IDocOutboundProducer> outboundProducers = new HashMap<>();
+	private final Map<AdTableId, IDocOutboundProducer> outboundProducers = new HashMap<>();
 	private final ReentrantLock outboundProducersLock = new ReentrantLock();
 
 	public DocOutboundProducerService()
@@ -72,22 +72,24 @@ public class DocOutboundProducerService implements IDocOutboundProducerService
 
 	private void registerProducer0(@NonNull final IDocOutboundProducer producer)
 	{
-		final I_C_Doc_Outbound_Config config = producer.getC_Doc_Outbound_Config();
-		Check.assumeNotNull(config, "Producer {} shall have a config", producer);
-
-		unregisterProducerByConfig0(config);
+		final AdTableId tableId = producer.getTableId();
+		Check.assumeNotNull(tableId, "Producer {} shall have a tableId", producer);
+		if(outboundProducers.containsKey(tableId))
+		{
+			return;
+		}
 
 		producer.init(this);
-		outboundProducers.put(config.getC_Doc_Outbound_Config_ID(), producer);
+		outboundProducers.put(tableId, producer);
 	}
 
 	@Override
-	public void unregisterProducerByConfig(final I_C_Doc_Outbound_Config config)
+	public void unregisterProducerByTableId(@NonNull final AdTableId tableId)
 	{
 		outboundProducersLock.lock();
 		try
 		{
-			unregisterProducerByConfig0(config);
+			unregisterProducerByTableId0(tableId);
 		}
 		finally
 		{
@@ -95,11 +97,10 @@ public class DocOutboundProducerService implements IDocOutboundProducerService
 		}
 	}
 
-	private void unregisterProducerByConfig0(final I_C_Doc_Outbound_Config config)
+	private void unregisterProducerByTableId0(@NonNull final AdTableId tableId)
 	{
-		Check.assumeNotNull(config, "config not null");
-		final int configId = config.getC_Doc_Outbound_Config_ID();
-		final IDocOutboundProducer producer = outboundProducers.get(configId);
+		Check.assumeNotNull(tableId, "tableId not null");
+		final IDocOutboundProducer producer = outboundProducers.get(tableId);
 		if (producer == null)
 		{
 			// no producer was not registered for given config, nothing to unregister
@@ -107,13 +108,12 @@ public class DocOutboundProducerService implements IDocOutboundProducerService
 		}
 
 		producer.destroy(this);
-		outboundProducers.remove(configId);
+		outboundProducers.remove(tableId);
 	}
 
 	private List<IDocOutboundProducer> getProducersList()
 	{
-		final List<IDocOutboundProducer> producersList = new ArrayList<>(outboundProducers.values());
-		return producersList;
+		return new ArrayList<>(outboundProducers.values());
 	}
 
 	@Override

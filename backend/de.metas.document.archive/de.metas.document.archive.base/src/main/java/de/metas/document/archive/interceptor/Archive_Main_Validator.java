@@ -62,7 +62,7 @@ import de.metas.util.Services;
  */
 public class Archive_Main_Validator implements ModelValidator
 {
-	private static final transient Logger logger = LogManager.getLogger(Archive_Main_Validator.class);
+	private static final Logger logger = LogManager.getLogger(Archive_Main_Validator.class);
 
 	private int m_AD_Client_ID = -1;
 	private ModelValidationEngine engine;

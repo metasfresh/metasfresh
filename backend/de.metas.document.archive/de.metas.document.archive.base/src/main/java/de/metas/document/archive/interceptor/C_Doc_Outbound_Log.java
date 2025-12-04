@@ -131,4 +131,10 @@ public class C_Doc_Outbound_Log
 
 	}
 
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
+	public void sendMailAutomaticallyIfActive(@NonNull final I_C_Doc_Outbound_Log docOutboundLog)
+	{
+		docOutBoundService.sendMailAutomaticallyIfActive(docOutboundLog);
+	}
+
 }

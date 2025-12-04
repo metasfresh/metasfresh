@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.document.archive.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,18 +20,23 @@
  * #L%
  */
 
-package org.adempiere.archive.api;
+package de.metas.document.archive.config;
 
+import de.metas.document.DocBaseType;
+import de.metas.organization.OrgId;
+import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_AD_Archive;
+import lombok.Value;
+import lombok.With;
+import org.adempiere.ad.table.api.AdTableId;
 
-import java.util.Optional;
+import javax.annotation.Nullable;
 
-// @Service
-public interface IPDFArchiveProvider
+@Builder
+@Value
+public class DocOutboundConfigQuery
 {
-	<T extends I_AD_Archive> Optional<T> getPDFArchiveForModel(
-			@NonNull TableRecordReference recordRef,
-			@NonNull Class<T> archiveClass);
+	@NonNull AdTableId tableId;
+	@Nullable @With DocBaseType docBaseType;
+	@NonNull @With OrgId orgId;
 }

@@ -23,14 +23,15 @@ package de.metas.document.archive.interceptor;
  */
 
 
-import java.util.List;
-
+import de.metas.document.archive.config.DocOutboundConfigRepository;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
 
-import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.api.IDocOutboundProducerService;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.util.Check;
@@ -40,7 +41,7 @@ import lombok.NonNull;
 /**
  * Handles all jobs related to {@link I_C_Doc_Outbound_Config}:
  * <ul>
- * <li>on initialization, it registers all {@link DocOutboundProducerValidator} to {@link IDocOutboundProducerService}, one for each {@link I_C_Doc_Outbound_Config}
+ * <li>on initialization, it registers all {@link DocOutboundProducerValidator} to {@link IDocOutboundProducerService}, one for each {@link org.adempiere.ad.table.api.AdTableId}
  * <li>automatically register/unregister {@link DocOutboundProducerValidator} when a particular {@link I_C_Doc_Outbound_Config} is created, was changed or was deleted
  * </ul>
  *
@@ -51,6 +52,8 @@ import lombok.NonNull;
 class C_Doc_Outbound_Config
 {
 	private final Archive_Main_Validator parent;
+	private final IDocOutboundProducerService producerService = Services.get(IDocOutboundProducerService.class);
+	private final DocOutboundConfigRepository docOutboundConfigRepository = SpringContextHolder.instance.getBean(DocOutboundConfigRepository.class);
 
 	public C_Doc_Outbound_Config(@NonNull final Archive_Main_Validator parent)
 	{
@@ -62,37 +65,59 @@ class C_Doc_Outbound_Config
 	@Init
 	public void registerAllOutboundProducers()
 	{
-		final List<I_C_Doc_Outbound_Config> configs = Services.get(IDocOutboundDAO.class).retrieveAllConfigs();
-		for (final I_C_Doc_Outbound_Config config : configs)
+		docOutboundConfigRepository.getDistinctConfigTableIds()
+				.forEach(this::registerOutboundProducer);
+	}
+
+	private void registerOutboundProducer(@NonNull final AdTableId tableId)
+	{
+		producerService.registerProducer(new DocOutboundProducerValidator(parent.getEngine(), tableId));
+	}
+
+	private void unregisterOutboundProducer(@NonNull final AdTableId tableId)
+	{
+		if (docOutboundConfigRepository.getByTableId(tableId).isEmpty())
 		{
-			registerOutboundProducer(config);
+			producerService.unregisterProducerByTableId(tableId);
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, })
 	public void registerOutboundProducer(final I_C_Doc_Outbound_Config config)
 	{
-		// Make sure is not registered
-		unregisterOutboundProducer(config);
+		registerOutboundProducer(AdTableId.ofRepoId(config.getAD_Table_ID()));
+	}
 
-		if (!config.isActive())
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {
+			I_C_Doc_Outbound_Config.COLUMNNAME_AD_Table_ID })
+	public void onTableIdChange(final I_C_Doc_Outbound_Config config)
+	{
+		final AdTableId tableId = AdTableId.ofRepoId(config.getAD_Table_ID());
+		final AdTableId oldAdTableId = AdTableId.ofRepoId(InterfaceWrapperHelper.createOld(config, I_C_Doc_Outbound_Config.class).getAD_Table_ID());
+		if (!AdTableId.equals(tableId, oldAdTableId))
 		{
-			// configuration is not active, no need to be (re-)registered
-			return;
+			unregisterOutboundProducer(oldAdTableId);
+			registerOutboundProducer(tableId);
 		}
+	}
 
-		//
-		// Register the producer to service
-		final DocOutboundProducerValidator producer = new DocOutboundProducerValidator(parent.getEngine(), config);
-
-		final IDocOutboundProducerService producerService = Services.get(IDocOutboundProducerService.class);
-		producerService.registerProducer(producer);
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {
+			I_C_Doc_Outbound_Config.COLUMNNAME_IsActive, })
+	public void onIsActiveChange(final I_C_Doc_Outbound_Config config)
+	{
+		if(config.isActive())
+		{
+			registerOutboundProducer(AdTableId.ofRepoId(config.getAD_Table_ID()));
+		}
+		else
+		{
+			unregisterOutboundProducer(AdTableId.ofRepoId(config.getAD_Table_ID()));
+		}
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
 	public void unregisterOutboundProducer(final I_C_Doc_Outbound_Config config)
 	{
-		final IDocOutboundProducerService producerService = Services.get(IDocOutboundProducerService.class);
-		producerService.unregisterProducerByConfig(config);
+		unregisterOutboundProducer(AdTableId.ofRepoId(config.getAD_Table_ID()));
 	}
 }
