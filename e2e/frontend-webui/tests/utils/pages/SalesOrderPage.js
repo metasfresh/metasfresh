@@ -504,8 +504,17 @@ export class SalesOrderPage {
         const pdfUrl = popup.url();
         console.log('PDF URL:', pdfUrl);
 
-        // Get PDF content directly from the popup using CDP (Chrome DevTools Protocol)
-        const buffer = await popup.pdf({ format: 'A4' });
+        // Download PDF directly from the URL using fetch
+        const axios = require('axios');
+        const response = await axios.get(pdfUrl, {
+          responseType: 'arraybuffer',
+          headers: {
+            // Forward cookies from the browser context
+            Cookie: (await page.context().cookies()).map(c => `${c.name}=${c.value}`).join('; '),
+          },
+        });
+
+        const buffer = Buffer.from(response.data);
 
         // Save to temp file
         const tempDir = path.join(process.cwd(), 'test-results', 'temp-pdfs');
@@ -541,85 +550,31 @@ export class SalesOrderPage {
    * @param {string} expectedData.quantity - Quantity (e.g., '10')
    * @param {string} expectedData.language - Language code (en_US, de_DE)
    */
+  /**
+   * Validate PDF content and layout
+   * @param {Download} download - Playwright Download object
+   * @param {Object} expectedData - Expected data to validate
+   * @param {string} expectedData.documentNo - Document number
+   * @param {string} expectedData.customerName - Customer name/code
+   * @param {string} expectedData.productCode - Product code
+   * @param {string} expectedData.quantity - Quantity
+   * @param {string} expectedData.language - Language (e.g., 'en_US', 'de_DE')
+   * @returns {Promise<void>}
+   */
   static async validatePdfContent(download, expectedData) {
     return await test.step('SalesOrderPage - Validate PDF content', async () => {
-      const fs = require('fs');
-      const pdfParse = require('pdf-parse');
+      const { PdfValidator } = require('../PdfValidator');
 
-      // Get file path (Playwright manages temp file)
-      const filePath = await download.path();
-
-      // Read file
-      const buffer = fs.readFileSync(filePath);
-
-      console.log('PDF file size:', buffer.length, 'bytes');
-
-      // Parse PDF
-      let pdfData;
-      try {
-        pdfData = await pdfParse(buffer);
-      } catch (error) {
-        console.error('Failed to parse PDF:', error.message);
-        throw new Error(`PDF parsing failed: ${error.message}`);
-      }
-
-      console.log('PDF pages:', pdfData.numpages);
-      console.log('PDF text length:', pdfData.text.length);
-
-      // Extract and normalize text (replace multiple whitespaces with single space)
-      const text = pdfData.text.replace(/\s+/g, ' ');
-
-      // Log first 1000 chars for debugging
-      console.log('PDF text preview:', text.substring(0, 1000));
-
-      // Validate document number
-      if (!text.includes(expectedData.documentNo)) {
-        throw new Error(`Document number "${expectedData.documentNo}" not found in PDF`);
-      }
-      console.log(`✓ Document number validated: ${expectedData.documentNo}`);
-
-      // Validate customer name/code
-      if (!text.includes(expectedData.customerName)) {
-        throw new Error(`Customer name "${expectedData.customerName}" not found in PDF`);
-      }
-      console.log(`✓ Customer name validated: ${expectedData.customerName}`);
-
-      // Validate product code
-      if (!text.includes(expectedData.productCode)) {
-        throw new Error(`Product code "${expectedData.productCode}" not found in PDF`);
-      }
-      console.log(`✓ Product code validated: ${expectedData.productCode}`);
-
-      // Validate quantity - look for quantity AFTER product code in the line
-      // PDF line format example: "50,00Product1_20251204T080445991Stk500,0019 % 1010 Product1_20251204T080445991"
-      // Format: Price Product UOM LineAmount Tax% Pos Qty Product
-      // The quantity appears after the position number (e.g., "1010" = position 10, quantity 10)
-
-      const productCodeIndex = text.indexOf(expectedData.productCode);
-      if (productCodeIndex === -1) {
-        throw new Error(`Product code not found in PDF text for quantity validation`);
-      }
-
-      // Get text around the product (500 chars should cover the order line)
-      const productLineText = text.substring(productCodeIndex, productCodeIndex + 500);
-
-      // The PDF format has: "...19 % 1010 Product..." where "10" is pos, "10" is qty
-      // We need to match the pattern more carefully - look for "Pos Qty Product"
-      // Use a regex to find: whitespace + digits + whitespace + our quantity + whitespace
-      const qtyRegex = new RegExp(`\\s\\d+\\s?(${expectedData.quantity})\\s`);
-      const qtyDecimalRegex = new RegExp(`\\s\\d+\\s?(${expectedData.quantity}[.,]00)\\s`);
-
-      const quantityFound = qtyRegex.test(productLineText) || qtyDecimalRegex.test(productLineText);
-
-      if (!quantityFound) {
-        throw new Error(
-          `Quantity "${expectedData.quantity}" not found in PDF near product "${expectedData.productCode}". ` +
-          `Product line text: "${productLineText}"`
-        );
-      }
-      console.log(`✓ Quantity validated: ${expectedData.quantity}`);
-
-      console.log(`PDF content validation completed successfully for ${expectedData.language}`);
+      // Use unified PDF validator (includes text + layout validation)
+      await PdfValidator.validate(download, {
+        documentNo: expectedData.documentNo,
+        customerName: expectedData.customerName,
+        productCode: expectedData.productCode,
+        quantity: expectedData.quantity,
+        language: expectedData.language,
+        checkOverlaps: true,         // Enabled - detects true 2D overlaps
+        checkMargins: false,         // Disabled - not needed yet
+      });
     });
   }
 

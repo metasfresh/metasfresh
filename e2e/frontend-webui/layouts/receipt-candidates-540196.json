@@ -1,0 +1,1056 @@
+{
+  "windowId": "540196",
+  "type": "540196",
+  "caption": "Material Receipt Candidates",
+  "documentSummaryElement": {
+    "caption": "",
+    "description": "",
+    "widgetType": "Text",
+    "fields": [
+      {
+        "field": "V$DocumentSummary",
+        "caption": "V$DocumentSummary",
+        "emptyText": "none",
+        "clearValueText": "none"
+      }
+    ]
+  },
+  "sections": [
+    {
+      "columns": [
+        {
+          "elementGroups": [
+            {
+              "type": "primary",
+              "internalName": "X_AD_UI_ElementGroup[AD_UI_ElementGroup_ID=540132, Name=default, trxName=<<ThreadInherited>>]",
+              "elementsLine": [
+                {
+                  "elements": [
+                    {
+                      "caption": "Business Partner ",
+                      "description": "Identifies a Business Partner",
+                      "widgetType": "Lookup",
+                      "type": "primary",
+                      "size": "L",
+                      "viewEditorRenderMode": "never",
+                      "fields": [
+                        {
+                          "field": "C_BPartner_ID",
+                          "caption": "Business Partner ",
+                          "emptyText": "Business Partner ",
+                          "clearValueText": "none",
+                          "newRecordWindowId": "540327",
+                          "newRecordCaption": "New Business Partner",
+                          "advSearchWindowId": "541045",
+                          "advSearchCaption": "Search Assistant",
+                          "source": "lookup",
+                          "lookupSearchStringMinLength": -1,
+                          "lookupSearchStartDelayMillis": 500,
+                          "supportZoomInto": true
+                        },
+                        {
+                          "field": "C_BPartner_Location_ID",
+                          "caption": "Partner Location",
+                          "emptyText": "Partner Location",
+                          "clearValueText": "none",
+                          "newRecordWindowId": "541941",
+                          "newRecordCaption": "New Location",
+                          "source": "list",
+                          "lookupSearchStringMinLength": -1,
+                          "lookupSearchStartDelayMillis": 500,
+                          "supportZoomInto": true
+                        },
+                        {
+                          "field": "AD_User_ID",
+                          "caption": "User/Contact",
+                          "emptyText": "User/Contact",
+                          "clearValueText": "none",
+                          "source": "list",
+                          "lookupSearchStringMinLength": -1,
+                          "lookupSearchStartDelayMillis": 500,
+                          "supportZoomInto": true
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "elements": [
+                    {
+                      "caption": "Product",
+                      "description": "Product, Service, Item",
+                      "widgetType": "Lookup",
+                      "size": "L",
+                      "viewEditorRenderMode": "never",
+                      "fields": [
+                        {
+                          "field": "M_Product_ID",
+                          "caption": "Product",
+                          "emptyText": "Product",
+                          "clearValueText": "none",
+                          "source": "lookup",
+                          "lookupSearchStringMinLength": -1,
+                          "lookupSearchStartDelayMillis": 500,
+                          "supportZoomInto": true
+                        },
+                        {
+                          "field": "M_HU_PI_Item_Product_ID",
+                          "caption": "Packing Item",
+                          "emptyText": "Packing Item",
+                          "clearValueText": "none",
+                          "source": "lookup",
+                          "lookupSearchStringMinLength": -1,
+                          "lookupSearchStartDelayMillis": 500,
+                          "supportZoomInto": true
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "elements": [
+                    {
+                      "caption": "Attributes",
+                      "description": "Attribute Instances for Products",
+                      "widgetType": "ProductAttributes",
+                      "size": "L",
+                      "viewEditorRenderMode": "never",
+                      "restrictToMediaTypes": [
+                        "screen"
+                      ],
+                      "fields": [
+                        {
+                          "field": "M_AttributeSetInstance_ID",
+                          "caption": "Attributes",
+                          "emptyText": "none",
+                          "clearValueText": "none",
+                          "source": "lookup",
+                          "lookupSearchStringMinLength": -1,
+                          "lookupSearchStartDelayMillis": 500
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "elements": [
+                    {
+                      "caption": "Ordered Quantity",
+                      "description": "Ordered Quantity",
+                      "widgetType": "Quantity",
+                      "size": "S",
+                      "viewEditorRenderMode": "never",
+                      "fields": [
+                        {
+                          "field": "QtyOrdered",
+                          "caption": "Ordered Quantity",
+                          "emptyText": "none",
+                          "clearValueText": "none"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "elements": [
+                    {
+                      "caption": "Moved Quantity",
+                      "description": "",
+                      "widgetType": "Quantity",
+                      "size": "S",
+                      "viewEditorRenderMode": "never",
+                      "fields": [
+                        {
+                          "field": "QtyMoved",
+                          "caption": "Moved Quantity",
+                          "emptyText": "none",
+                          "clearValueText": "none"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "elements": [
+                    {
+                      "caption": "UOM",
+                      "description": "Unit of Measure",
+                      "widgetType": "List",
+                      "size": "S",
+                      "viewEditorRenderMode": "never",
+                      "fields": [
+                        {
+                          "field": "C_UOM_ID",
+                          "caption": "UOM",
+                          "emptyText": "none",
+                          "clearValueText": "none",
+                          "source": "list",
+                          "lookupSearchStringMinLength": -1,
+                          "lookupSearchStartDelayMillis": 500,
+                          "supportZoomInto": true
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "elements": [
+                    {
+                      "caption": "Order Reference",
+                      "description": "Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner",
+                      "widgetType": "Text",
+                      "maxLength": 40,
+                      "viewEditorRenderMode": "never",
+                      "fields": [
+                        {
+                          "field": "POReference",
+                          "caption": "Order Reference",
+                          "emptyText": "none",
+                          "clearValueText": "none"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "internalName": "X_AD_UI_ElementGroup[AD_UI_ElementGroup_ID=541315, Name=target, trxName=<<ThreadInherited>>]",
+              "elementsLine": [
+                {
+                  "elements": [
+                    {
+                      "caption": "Material Receipt Info",
+                      "description": "",
+                      "widgetType": "LongText",
+                      "maxLength": 2000,
+                      "viewEditorRenderMode": "never",
+                      "fields": [
+                        {
+                          "field": "MaterialReceiptInfo",
+                          "caption": "Material Receipt Info",
+                          "emptyText": "none",
+                          "clearValueText": "none"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "elements": [
+                    {
+                      "caption": "Destination warehouse locator",
+                      "description": "",
+                      "widgetType": "List",
+                      "viewEditorRenderMode": "never",
+                      "fields": [
+                        {
+                          "field": "M_Warehouse_Dest_ID",
+                          "caption": "Destination warehouse locator",
+                          "emptyText": "none",
+                          "clearValueText": "none",
+                          "source": "list",
+                          "lookupSearchStringMinLength": -1,
+                          "lookupSearchStartDelayMillis": 500,
+                          "supportZoomInto": true
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "elements": [
+                    {
+                      "caption": "Packings Description",
+                      "description": "",
+                      "widgetType": "Text",
+                      "maxLength": 500,
+                      "viewEditorRenderMode": "never",
+                      "restrictToMediaTypes": [
+                        "screen"
+                      ],
+                      "fields": [
+                        {
+                          "field": "PackDescription",
+                          "caption": "Packings Description",
+                          "emptyText": "none",
+                          "clearValueText": "none"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "elements": [
+                    {
+                      "caption": "Moved TU Qty",
+                      "description": "",
+                      "widgetType": "Quantity",
+                      "size": "S",
+                      "viewEditorRenderMode": "never",
+                      "restrictToMediaTypes": [
+                        "screen"
+                      ],
+                      "fields": [
+                        {
+                          "field": "QtyMovedTU",
+                          "caption": "Moved TU Qty",
+                          "emptyText": "none",
+                          "clearValueText": "none"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "elements": [
+                    {
+                      "caption": "Qty Ordered TU",
+                      "description": "",
+                      "widgetType": "Quantity",
+                      "size": "S",
+                      "viewEditorRenderMode": "never",
+                      "restrictToMediaTypes": [
+                        "screen"
+                      ],
+                      "fields": [
+                        {
+                          "field": "QtyOrderedTU",
+                          "caption": "Qty Ordered TU",
+                          "emptyText": "none",
+                          "clearValueText": "none"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "elementGroups": [
+            {
+              "internalName": "X_AD_UI_ElementGroup[AD_UI_ElementGroup_ID=540133, Name=dates, trxName=<<ThreadInherited>>]",
+              "elementsLine": [
+                {
+                  "elements": [
+                    {
+                      "caption": "Purchase Orders",
+                      "description": "Related Purchase Orders",
+                      "widgetType": "Lookup",
+                      "size": "S",
+                      "viewEditorRenderMode": "never",
+                      "fields": [
+                        {
+                          "field": "C_Order_ID",
+                          "caption": "Purchase Orders",
+                          "emptyText": "none",
+                          "clearValueText": "none",
+                          "source": "lookup",
+                          "lookupSearchStringMinLength": -1,
+                          "lookupSearchStartDelayMillis": 500,
+                          "supportZoomInto": true
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "elements": [
+                    {
+                      "caption": "KW",
+                      "description": "",
+                      "widgetType": "Number",
+                      "size": "S",
+                      "viewEditorRenderMode": "never",
+                      "fields": [
+                        {
+                          "field": "CalendarWeek",
+                          "caption": "KW",
+                          "emptyText": "none",
+                          "clearValueText": "none"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "elements": [
+                    {
+                      "caption": "Purchase Order Date",
+                      "description": "Date of the Purchase Order",
+                      "widgetType": "Date",
+                      "size": "S",
+                      "viewEditorRenderMode": "never",
+                      "fields": [
+                        {
+                          "field": "DateOrdered",
+                          "caption": "Purchase Order Date",
+                          "emptyText": "none",
+                          "clearValueText": "none"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "elements": [
+                    {
+                      "caption": "Date Promised",
+                      "description": "Date Order was promised",
+                      "widgetType": "ZonedDateTime",
+                      "size": "S",
+                      "viewEditorRenderMode": "never",
+                      "fields": [
+                        {
+                          "field": "MovementDate",
+                          "caption": "Date Promised",
+                          "emptyText": "none",
+                          "clearValueText": "none"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "elements": [
+                    {
+                      "caption": "Date Promised override",
+                      "description": "",
+                      "widgetType": "ZonedDateTime",
+                      "viewEditorRenderMode": "never",
+                      "fields": [
+                        {
+                          "field": "DatePromised_Override",
+                          "caption": "Date Promised override",
+                          "emptyText": "none",
+                          "clearValueText": "none"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "elements": [
+                    {
+                      "caption": "Date Promised eff.",
+                      "description": "",
+                      "widgetType": "ZonedDateTime",
+                      "viewEditorRenderMode": "never",
+                      "fields": [
+                        {
+                          "field": "DatePromised_Effective",
+                          "caption": "Date Promised eff.",
+                          "emptyText": "none",
+                          "clearValueText": "none"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "elements": [
+                    {
+                      "caption": "Document Type",
+                      "description": "Document type or rules",
+                      "widgetType": "List",
+                      "size": "M",
+                      "viewEditorRenderMode": "never",
+                      "fields": [
+                        {
+                          "field": "C_DocType_ID",
+                          "caption": "Document Type",
+                          "emptyText": "none",
+                          "clearValueText": "none",
+                          "source": "list",
+                          "lookupSearchStringMinLength": -1,
+                          "lookupSearchStartDelayMillis": 500,
+                          "supportZoomInto": true
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "internalName": "X_AD_UI_ElementGroup[AD_UI_ElementGroup_ID=540134, Name=org, trxName=<<ThreadInherited>>]",
+              "elementsLine": [
+                {
+                  "elements": [
+                    {
+                      "caption": "Warehouse",
+                      "description": "Storage Warehouse and Service Point",
+                      "widgetType": "List",
+                      "viewEditorRenderMode": "never",
+                      "fields": [
+                        {
+                          "field": "M_Warehouse_ID",
+                          "caption": "Warehouse",
+                          "emptyText": "none",
+                          "clearValueText": "none",
+                          "source": "list",
+                          "lookupSearchStringMinLength": -1,
+                          "lookupSearchStartDelayMillis": 500,
+                          "supportZoomInto": true
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "elements": [
+                    {
+                      "caption": "Organisation",
+                      "description": "Organisational entity within client",
+                      "widgetType": "Lookup",
+                      "size": "M",
+                      "viewEditorRenderMode": "never",
+                      "fields": [
+                        {
+                          "field": "AD_Org_ID",
+                          "caption": "Organisation",
+                          "emptyText": "none",
+                          "clearValueText": "none",
+                          "source": "lookup",
+                          "lookupSearchStringMinLength": -1,
+                          "lookupSearchStartDelayMillis": 500,
+                          "supportZoomInto": true
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "elements": [
+                    {
+                      "caption": "Status",
+                      "description": "Status of the currently running check",
+                      "widgetType": "Text",
+                      "maxLength": 2000,
+                      "viewEditorRenderMode": "never",
+                      "fields": [
+                        {
+                          "field": "Status",
+                          "caption": "Status",
+                          "emptyText": "none",
+                          "clearValueText": "none"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "elements": [
+                    {
+                      "caption": "Processed",
+                      "description": "The document has been processed",
+                      "widgetType": "YesNo",
+                      "viewEditorRenderMode": "never",
+                      "fields": [
+                        {
+                          "field": "Processed",
+                          "caption": "Processed",
+                          "emptyText": "none",
+                          "clearValueText": "none"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "closableMode": "ALWAYS_OPEN"
+    },
+    {
+      "columns": [
+        {
+          "elementGroups": [
+            {
+              "type": "primary",
+              "internalName": "X_AD_UI_ElementGroup[AD_UI_ElementGroup_ID=540129, Name=advanced edit, trxName=<<ThreadInherited>>]",
+              "elementsLine": [
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {
+                  "elements": [
+                    {
+                      "caption": "Can be exported from",
+                      "description": "Timestamp from which onwards the record may be exported",
+                      "widgetType": "ZonedDateTime",
+                      "viewEditorRenderMode": "never",
+                      "fields": [
+                        {
+                          "field": "CanBeExportedFrom",
+                          "caption": "Can be exported from",
+                          "emptyText": "none",
+                          "clearValueText": "none"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "elements": [
+                    {
+                      "caption": "Export Status",
+                      "description": "",
+                      "widgetType": "List",
+                      "viewEditorRenderMode": "never",
+                      "fields": [
+                        {
+                          "field": "ExportStatus",
+                          "caption": "Export Status",
+                          "emptyText": "none",
+                          "clearValueText": "none",
+                          "source": "list",
+                          "lookupSearchStringMinLength": -1,
+                          "lookupSearchStartDelayMillis": 500
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {}
+              ]
+            }
+          ]
+        }
+      ],
+      "closableMode": "ALWAYS_OPEN"
+    }
+  ],
+  "tabs": [
+    {
+      "windowId": "540196",
+      "tabId": "AD_Tab-540530",
+      "internalName": "M_ReceiptSchedule_Alloc",
+      "caption": "Allocated Material Receipt",
+      "description": "",
+      "emptyResultText": "There are no detail rows",
+      "emptyResultHint": "You can create them in this window.",
+      "elements": [
+        {
+          "caption": "Organisation",
+          "description": "Organisational entity within client",
+          "widgetType": "Lookup",
+          "size": "M",
+          "gridAlign": "left",
+          "viewEditorRenderMode": "never",
+          "sortable": true,
+          "fields": [
+            {
+              "field": "AD_Org_ID",
+              "caption": "Organisation",
+              "emptyText": "none",
+              "clearValueText": "none",
+              "source": "lookup",
+              "lookupSearchStringMinLength": -1,
+              "lookupSearchStartDelayMillis": 500,
+              "supportZoomInto": true
+            }
+          ]
+        },
+        {
+          "caption": "Shipment/Receipt",
+          "description": "Material Shipment Document",
+          "widgetType": "Lookup",
+          "gridAlign": "left",
+          "viewEditorRenderMode": "never",
+          "sortable": true,
+          "fields": [
+            {
+              "field": "M_InOut_ID",
+              "caption": "Shipment/Receipt",
+              "emptyText": "none",
+              "clearValueText": "none",
+              "source": "lookup",
+              "lookupSearchStringMinLength": -1,
+              "lookupSearchStartDelayMillis": 500,
+              "supportZoomInto": true
+            }
+          ]
+        },
+        {
+          "caption": "Status",
+          "description": "",
+          "widgetType": "List",
+          "size": "S",
+          "gridAlign": "left",
+          "viewEditorRenderMode": "never",
+          "sortable": true,
+          "fields": [
+            {
+              "field": "DocStatus",
+              "caption": "Status",
+              "emptyText": "none",
+              "clearValueText": "none",
+              "source": "list",
+              "lookupSearchStringMinLength": -1,
+              "lookupSearchStartDelayMillis": 500
+            }
+          ]
+        },
+        {
+          "caption": "Receipt Line",
+          "description": "Line on Receipt document",
+          "widgetType": "Lookup",
+          "gridAlign": "left",
+          "viewEditorRenderMode": "never",
+          "sortable": true,
+          "fields": [
+            {
+              "field": "M_InOutLine_ID",
+              "caption": "Receipt Line",
+              "emptyText": "none",
+              "clearValueText": "none",
+              "source": "lookup",
+              "lookupSearchStringMinLength": -1,
+              "lookupSearchStartDelayMillis": 500,
+              "supportZoomInto": true
+            }
+          ]
+        },
+        {
+          "caption": "Qualitydiscount %",
+          "description": "",
+          "widgetType": "Number",
+          "gridAlign": "right",
+          "viewEditorRenderMode": "never",
+          "sortable": true,
+          "fields": [
+            {
+              "field": "QualityDiscountPercent",
+              "caption": "Qualitydiscount %",
+              "emptyText": "none",
+              "clearValueText": "none"
+            }
+          ]
+        },
+        {
+          "caption": "Qualitynote",
+          "description": "",
+          "widgetType": "Text",
+          "maxLength": 50,
+          "gridAlign": "left",
+          "viewEditorRenderMode": "never",
+          "sortable": true,
+          "fields": [
+            {
+              "field": "QualityNote",
+              "caption": "Qualitynote",
+              "emptyText": "none",
+              "clearValueText": "none"
+            }
+          ]
+        },
+        {
+          "caption": "Material Receipt Candidates",
+          "description": "",
+          "widgetType": "Integer",
+          "gridAlign": "right",
+          "viewEditorRenderMode": "never",
+          "sortable": true,
+          "fields": [
+            {
+              "field": "M_ReceiptSchedule_ID",
+              "caption": "Material Receipt Candidates",
+              "emptyText": "none",
+              "clearValueText": "none"
+            }
+          ]
+        },
+        {
+          "caption": "Active",
+          "description": "The record is active in the system",
+          "widgetType": "Switch",
+          "gridAlign": "center",
+          "viewEditorRenderMode": "never",
+          "sortable": true,
+          "fields": [
+            {
+              "field": "IsActive",
+              "caption": "Active",
+              "emptyText": "none",
+              "clearValueText": "none"
+            }
+          ]
+        },
+        {
+          "caption": "Allocated Quantity",
+          "description": "",
+          "widgetType": "Quantity",
+          "size": "S",
+          "gridAlign": "right",
+          "viewEditorRenderMode": "never",
+          "sortable": true,
+          "fields": [
+            {
+              "field": "QtyAllocated",
+              "caption": "Allocated Quantity",
+              "emptyText": "none",
+              "clearValueText": "none"
+            }
+          ]
+        },
+        {
+          "caption": "Quantity with Issues",
+          "description": "",
+          "widgetType": "Quantity",
+          "size": "S",
+          "gridAlign": "right",
+          "viewEditorRenderMode": "never",
+          "sortable": true,
+          "fields": [
+            {
+              "field": "QtyWithIssues",
+              "caption": "Quantity with Issues",
+              "emptyText": "none",
+              "clearValueText": "none"
+            }
+          ]
+        },
+        {
+          "caption": "Allocated HU quantity",
+          "description": "Allocated (stock-)quantity from the respective HU, in the receipt schedule's uom.",
+          "widgetType": "Quantity",
+          "size": "S",
+          "gridAlign": "right",
+          "viewEditorRenderMode": "never",
+          "sortable": true,
+          "fields": [
+            {
+              "field": "HU_QtyAllocated",
+              "caption": "Allocated HU quantity",
+              "emptyText": "none",
+              "clearValueText": "none"
+            }
+          ]
+        },
+        {
+          "caption": "LU",
+          "description": "Loading Unit",
+          "widgetType": "Lookup",
+          "gridAlign": "left",
+          "viewEditorRenderMode": "never",
+          "sortable": true,
+          "fields": [
+            {
+              "field": "M_LU_HU_ID",
+              "caption": "LU",
+              "emptyText": "none",
+              "clearValueText": "none",
+              "source": "lookup",
+              "lookupSearchStringMinLength": -1,
+              "lookupSearchStartDelayMillis": 500,
+              "supportZoomInto": true
+            }
+          ]
+        },
+        {
+          "caption": "TU",
+          "description": "Trading Unit",
+          "widgetType": "Lookup",
+          "gridAlign": "left",
+          "viewEditorRenderMode": "never",
+          "sortable": true,
+          "fields": [
+            {
+              "field": "M_TU_HU_ID",
+              "caption": "TU",
+              "emptyText": "none",
+              "clearValueText": "none",
+              "source": "lookup",
+              "lookupSearchStringMinLength": -1,
+              "lookupSearchStartDelayMillis": 500,
+              "supportZoomInto": true
+            }
+          ]
+        },
+        {
+          "caption": "Virtual Handling Unit (VHU)",
+          "description": "Customer Unit",
+          "widgetType": "Lookup",
+          "gridAlign": "left",
+          "viewEditorRenderMode": "never",
+          "sortable": true,
+          "fields": [
+            {
+              "field": "VHU_ID",
+              "caption": "Virtual Handling Unit (VHU)",
+              "emptyText": "none",
+              "clearValueText": "none",
+              "source": "lookup",
+              "lookupSearchStringMinLength": -1,
+              "lookupSearchStartDelayMillis": 500,
+              "supportZoomInto": true
+            }
+          ]
+        },
+        {
+          "caption": "HU Transaction Line",
+          "description": "",
+          "widgetType": "Lookup",
+          "gridAlign": "left",
+          "viewEditorRenderMode": "never",
+          "sortable": true,
+          "fields": [
+            {
+              "field": "M_HU_Trx_Line_ID",
+              "caption": "HU Transaction Line",
+              "emptyText": "none",
+              "clearValueText": "none",
+              "source": "lookup",
+              "lookupSearchStringMinLength": -1,
+              "lookupSearchStartDelayMillis": 500,
+              "supportZoomInto": true
+            }
+          ]
+        }
+      ],
+      "defaultOrderBys": [
+        {
+          "fieldName": "M_ReceiptSchedule_Alloc_ID",
+          "ascending": true
+        }
+      ],
+      "queryOnActivate": true,
+      "newRecordInputMode": "ALL_METHODS"
+    },
+    {
+      "windowId": "540196",
+      "tabId": "AD_Tab-540624",
+      "internalName": "M_HU_Assignment",
+      "caption": "Handling Unit Assignment",
+      "description": "",
+      "emptyResultText": "There are no detail rows",
+      "emptyResultHint": "You can create them in this window.",
+      "elements": [
+        {
+          "caption": "Organisation",
+          "description": "Organisational entity within client",
+          "widgetType": "Lookup",
+          "size": "M",
+          "gridAlign": "left",
+          "viewEditorRenderMode": "never",
+          "sortable": true,
+          "fields": [
+            {
+              "field": "AD_Org_ID",
+              "caption": "Organisation",
+              "emptyText": "none",
+              "clearValueText": "none",
+              "source": "lookup",
+              "lookupSearchStringMinLength": -1,
+              "lookupSearchStartDelayMillis": 500,
+              "supportZoomInto": true
+            }
+          ]
+        },
+        {
+          "caption": "Handling Units",
+          "description": "",
+          "widgetType": "Lookup",
+          "gridAlign": "left",
+          "viewEditorRenderMode": "never",
+          "sortable": true,
+          "fields": [
+            {
+              "field": "M_HU_ID",
+              "caption": "Handling Units",
+              "emptyText": "none",
+              "clearValueText": "none",
+              "source": "lookup",
+              "lookupSearchStringMinLength": -1,
+              "lookupSearchStartDelayMillis": 500,
+              "supportZoomInto": true
+            }
+          ]
+        },
+        {
+          "caption": "Quantity",
+          "description": "Quantity",
+          "widgetType": "Quantity",
+          "size": "S",
+          "gridAlign": "right",
+          "viewEditorRenderMode": "never",
+          "sortable": true,
+          "fields": [
+            {
+              "field": "Qty",
+              "caption": "Quantity",
+              "emptyText": "none",
+              "clearValueText": "none"
+            }
+          ]
+        },
+        {
+          "caption": "Products",
+          "description": "",
+          "widgetType": "LongText",
+          "maxLength": 250,
+          "gridAlign": "left",
+          "viewEditorRenderMode": "never",
+          "sortable": true,
+          "fields": [
+            {
+              "field": "Products",
+              "caption": "Products",
+              "emptyText": "none",
+              "clearValueText": "none"
+            }
+          ]
+        },
+        {
+          "caption": "Active",
+          "description": "The record is active in the system",
+          "widgetType": "Switch",
+          "gridAlign": "center",
+          "viewEditorRenderMode": "never",
+          "sortable": true,
+          "fields": [
+            {
+              "field": "IsActive",
+              "caption": "Active",
+              "emptyText": "none",
+              "clearValueText": "none"
+            }
+          ]
+        }
+      ],
+      "defaultOrderBys": [
+        {
+          "fieldName": "M_HU_Assignment_ID",
+          "ascending": true
+        }
+      ],
+      "queryOnActivate": true,
+      "newRecordInputMode": "ALL_METHODS"
+    }
+  ]
+}
