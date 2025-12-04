@@ -3,7 +3,7 @@
 -- Process: Historical_Shipments_JSON(de.metas.postgrest.process.PostgRESTProcessExecutor)
 -- ParameterName: Order_ID
 -- 2025-12-02T15:14:24.621Z
-INSERT INTO AD_Process_Para (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,585488,543062,30,'Order_ID',TO_TIMESTAMP('2025-12-02 15:14:24.340000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D',22,'Y','N','Y','N','N','N','Auftrag',40,TO_TIMESTAMP('2025-12-02 15:14:24.340000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Process_Para (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,585488,543062,11,'Order_ID',TO_TIMESTAMP('2025-12-02 15:14:24.340000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D',22,'Y','N','Y','N','N','N','Auftrag',40,TO_TIMESTAMP('2025-12-02 15:14:24.340000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-12-02T15:14:24.629Z
@@ -37,7 +37,7 @@ INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Hel
 -- Process: Historical_Invoices_JSON(de.metas.postgrest.process.PostgRESTProcessExecutor)
 -- ParameterName: Order_ID
 -- 2025-12-03T14:14:56.903Z
-INSERT INTO AD_Process_Para (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,585485,543067,30,'Order_ID',TO_TIMESTAMP('2025-12-03 14:14:56.621000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D',22,'Y','N','Y','N','N','N','Auftrag',40,TO_TIMESTAMP('2025-12-03 14:14:56.621000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Process_Para (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,585485,543067,11,'Order_ID',TO_TIMESTAMP('2025-12-03 14:14:56.621000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D',22,'Y','N','Y','N','N','N','Auftrag',40,TO_TIMESTAMP('2025-12-03 14:14:56.621000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-12-03T14:14:56.922Z
