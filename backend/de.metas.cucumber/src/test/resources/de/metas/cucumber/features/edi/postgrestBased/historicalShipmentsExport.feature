@@ -612,6 +612,10 @@ Feature: Shipments export via postgREST
       | s_s_1      | ol_1                      | N             |
       | s_s_2      | ol_2                      | N             |
 
+    And update shipment schedules
+      | M_ShipmentSchedule_ID.Identifier | DeliveryDate_Override |
+      | s_s_1                            | 2025-05-10            |
+
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | true                | false       |
@@ -622,7 +626,7 @@ Feature: Shipments export via postgREST
 
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
-      | s_s_2                            | D            | true                | false       |
+      | s_s_2                            | D            | true                | true        |
 
     And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | REST.Context.M_InOut_ID | REST.Context.DocumentNo         |
@@ -655,8 +659,8 @@ Feature: Shipments export via postgREST
     """
 [
   {
-    "Shipment_ID": @shipment_S0475_050_1_ID@,
-    "Shipment_DocumentNo": "@shipment_S0475_050_1_DocumentNo@",
+    "Shipment_ID": @shipment_S0475_050_2_ID@,
+    "Shipment_DocumentNo": "@shipment_S0475_050_2_DocumentNo@",
     "Shipment_Date": "2025-05-15T00:00:00",
     "DocStatus": "CO",
     "ExternalId": "externalId_S0475_050",

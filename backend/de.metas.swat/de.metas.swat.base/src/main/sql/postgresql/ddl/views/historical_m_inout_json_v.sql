@@ -55,7 +55,9 @@ SELECT io.m_inout_id                                   AS "Shipment_ID",
 
 FROM m_inout io
          LEFT JOIN c_bpartner partner ON io.c_bpartner_id = partner.c_bpartner_id
-         LEFT JOIN s_externalreference bPartnerExternalReference ON bPartnerExternalReference.record_id = partner.c_bpartner_id AND type = 'BPartner'
+         LEFT JOIN s_externalreference bPartnerExternalReference ON bPartnerExternalReference.record_id = partner.c_bpartner_id
+    AND bPartnerExternalReference.type = 'BPartner'
+    AND bPartnerExternalReference.isactive = 'Y'
          LEFT JOIN externalsystem bPartnerExternalSystem ON bPartnerExternalSystem.externalsystem_id = bPartnerExternalReference.externalsystem_id
          LEFT JOIN c_order o ON io.c_order_id = o.c_order_id
          LEFT JOIN AD_InputDataSource dsource ON dsource.AD_InputDataSource_ID = io.AD_InputDataSource_ID
@@ -74,5 +76,5 @@ FROM m_inout io
          LEFT JOIN json_object.bpartner_location_object_v bpl_supplier ON bpl_supplier.c_bpartner_location_id = org.orgbp_location_id
          LEFT JOIN ExternalSystem esystem ON esystem.externalsystem_id = io.externalsystem_id
 WHERE io.isactive = 'Y'
-ORDER BY io.m_inout_id
+ORDER BY io.movementdate DESC, io.m_inout_id
 ;

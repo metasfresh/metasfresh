@@ -44,7 +44,9 @@ SELECT invoic_v.c_invoice_id                       AS "Invoice_ID",
        edi_901_991_v.json_data                     AS "Sums"
 FROM edi_cctop_invoic_v invoic_v
          LEFT JOIN c_bpartner bpartner ON bpartner.c_bpartner_id = invoic_v.C_BPartner_ID
-         LEFT JOIN s_externalreference bPartnerExternalReference ON bPartnerExternalReference.record_id = bpartner.c_bpartner_id AND type = 'BPartner'
+         LEFT JOIN s_externalreference bPartnerExternalReference ON bPartnerExternalReference.record_id = bpartner.c_bpartner_id
+    AND bPartnerExternalReference.type = 'BPartner'
+    AND bPartnerExternalReference.isactive = 'Y'
          LEFT JOIN externalsystem bPartnerExternalSystem ON bPartnerExternalSystem.externalsystem_id = bPartnerExternalReference.externalsystem_id
          LEFT JOIN (SELECT c_invoice_id,
                            JSON_AGG(JSON_BUILD_OBJECT(
@@ -142,5 +144,5 @@ FROM edi_cctop_invoic_v invoic_v
                                         ) ORDER BY rate DESC) AS json_data
                     FROM edi_cctop_901_991_v
                     GROUP BY c_invoice_id) edi_901_991_v ON edi_901_991_v.c_invoice_id = invoic_v.c_invoice_id
-ORDER BY invoic_v.updated, invoic_v.c_invoice_id
+ORDER BY invoic_v.DateInvoiced DESC, invoic_v.c_invoice_id
 ;
