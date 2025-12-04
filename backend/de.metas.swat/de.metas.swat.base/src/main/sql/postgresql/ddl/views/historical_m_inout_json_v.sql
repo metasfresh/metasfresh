@@ -76,5 +76,5 @@ FROM m_inout io
          LEFT JOIN json_object.bpartner_location_object_v bpl_supplier ON bpl_supplier.c_bpartner_location_id = org.orgbp_location_id
          LEFT JOIN ExternalSystem esystem ON esystem.externalsystem_id = io.externalsystem_id
 WHERE io.isactive = 'Y'
-ORDER BY io.movementdate DESC, io.m_inout_id
+ORDER BY io.movementdate DESC, io.updated DESC, io.m_inout_id DESC
 ;

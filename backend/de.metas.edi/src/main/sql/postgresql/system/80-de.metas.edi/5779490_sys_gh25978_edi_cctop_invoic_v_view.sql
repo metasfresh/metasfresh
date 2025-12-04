@@ -448,5 +448,5 @@ FROM edi_cctop_invoic_v invoic_v
                                         ) ORDER BY rate DESC) AS json_data
                     FROM edi_cctop_901_991_v
                     GROUP BY c_invoice_id) edi_901_991_v ON edi_901_991_v.c_invoice_id = invoic_v.c_invoice_id
-ORDER BY invoic_v.DateInvoiced DESC, invoic_v.c_invoice_id
+ORDER BY invoic_v.dateinvoiced DESC, invoic_v.updated DESC, invoic_v.c_invoice_id DESC
 ;
