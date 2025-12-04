@@ -53,7 +53,7 @@ public class DocOutboundConfigService
 	public final DocOutboundConfig retrieveConfigForModel(@NonNull final Object model)
 	{
 		final DocBaseType docBaseType = documentBL.getDocTypeId(model)
-				.map(id -> docTypeDAO.getDocBaseAndSubTypeById(id).getDocBaseType())
+				.map(docTypeDAO::getDocBaseTypeById)
 				.orElse(null);
 
 		return docOutboundConfigRepository.getByQuery(
