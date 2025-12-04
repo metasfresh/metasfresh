@@ -39,11 +39,13 @@ Feature: R_Request upsert and retrieval via API
   Scenario: R_Request upsert
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | REST.Context |
-      | o1         | true    | customer      | 2024-03-30  | 2024-03-29T21:00:00Z | orderId      |
+      | o1         | true    | customer      | 2024-03-30  | 2024-03-29T21:00:00Z | C_Order_ID   |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | ol_1       | o1         | p1           | 3          |
     And the order identified by o1 is completed
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/request' and fulfills with '201' status code
 """
@@ -52,12 +54,40 @@ Feature: R_Request upsert and retrieval via API
   "requestType" : "A_CustomerComplaint",
   "summary" : "Another summary",
   "dateDelivered" : "2025-06-15",
+  "dateTrx" : "2025-06-15",
   "priority" : "Medium",
   "confidentialityLevel" : "PartnerConfidential",
-  "orderIdentifier" : "@orderId@"
+  "orderId" : @C_Order_ID@
 }
 """
 
     Then validate a new request has been created:
-      | AD_Org_ID | R_RequestType_ID    | Summary         | DateDelivered | Priority | ConfidentialType | C_Order_ID |
-      | 002       | A_CustomerComplaint | Another summary | 2025-06-15    | 5        | C                | o1         |
+      | Identifier | AD_Org_ID | R_RequestType_ID    | Summary         | DateDelivered | Priority | ConfidentialType | C_Order_ID | REST.Context |
+      | req1       | 002       | A_CustomerComplaint | Another summary | 2025-06-15    | 5        | C                | o1         | R_Request_ID |
+
+    And invoke 'GET' 'api/request/@R_Request_ID@' with response code '200'
+
+    And the returned request body of type 'de.metas.rest_api.request.JsonRRequest' is:
+"""
+{
+  "id" : @R_Request_ID@,
+  "orgCode" : "org-2",
+  "requestType" : "A_CustomerComplaint",
+  "bpartnerId" : 0,
+  "userId" : 0,
+  "priority" : "5",
+  "summary" : "Another summary",
+  "confidentialityLevel" : "C",
+  "vendorId" : 0,
+  "salesRepId" : 0,
+  "dateDelivered" : "2025-06-15",
+  "dateTrx" : "2025-06-15",
+  "projectId" : 0,
+  "productId" : 0,
+  "orderId" : @C_Order_ID@,
+  "inOutId" : 0,
+  "invoiceId" : 0,
+  "paymentId" : 0,
+  "statusName" : "offen"
+}
+"""
