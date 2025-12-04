@@ -621,8 +621,8 @@ Feature: Shipments export via postgREST
       | s_s_1                            | s_1                   | shipment_S0475_050_1_ID | shipment_S0475_050_1_DocumentNo |
 
     And update shipment schedules
-      | M_ShipmentSchedule_ID.Identifier | DeliveryDate_Override |
-      | s_s_2                            | 2025-05-10            |
+      | M_ShipmentSchedule_ID.Identifier | DeliveryDate |
+      | s_s_2                            | 2025-05-10   |
 
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
