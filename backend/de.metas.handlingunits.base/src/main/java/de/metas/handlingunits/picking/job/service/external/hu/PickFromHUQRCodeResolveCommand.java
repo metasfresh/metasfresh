@@ -1,12 +1,10 @@
-package de.metas.handlingunits.picking.job.service.commands.pick;
+package de.metas.handlingunits.picking.job.service.external.hu;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.gs1.GTIN;
 import de.metas.gs1.ean13.EAN13;
-import de.metas.gs1.ean13.EAN13ProductCode;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.job.model.HUInfo;
-import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.handlingunits.picking.job.service.external.product.PickingJobProductService;
 import de.metas.handlingunits.qrcodes.custom.CustomHUQRCode;
 import de.metas.handlingunits.qrcodes.ean13.EAN13HUQRCode;
@@ -15,6 +13,8 @@ import de.metas.handlingunits.qrcodes.leich_und_mehl.LMQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.BooleanWithReason;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -26,22 +26,25 @@ import javax.annotation.Nullable;
 import java.util.Objects;
 
 @Builder
-class PickFromHUQRCodeResolver
+class PickFromHUQRCodeResolveCommand
 {
 	private final static AdMessageKey ERR_NotEnoughTUsFound = AdMessageKey.of("de.metas.handlingunits.picking.job.NOT_ENOUGH_TUS_ERROR_MSG");
 	private final static AdMessageKey ERR_LMQ_LotNoNotFound = AdMessageKey.of("de.metas.handlingunits.picking.job.L_M_QR_CODE_ERROR_MSG");
 	private final static AdMessageKey ERR_NoLotNoFoundForQRCode = AdMessageKey.of("de.metas.handlingunits.picking.job.QR_CODE_EXTERNAL_LOT_ERROR_MSG");
-	private final static AdMessageKey ERR_QR_ProductNotMatching = AdMessageKey.of("de.metas.handlingunits.picking.job.QR_CODE_PRODUCT_ERROR_MSG");
+	public final static AdMessageKey ERR_QR_ProductNotMatching = AdMessageKey.of("de.metas.handlingunits.picking.job.QR_CODE_PRODUCT_ERROR_MSG");
 
+	// services
 	@NonNull private final PickingJobProductService productService;
 	@NonNull private final PickingJobHUService huService;
 
+	// params
+	@Nullable final IHUQRCode pickFromHUQRCode;
+	@NonNull final ProductId productId;
+	@NonNull final BPartnerId customerId;
+	@NonNull final WarehouseId warehouseId;
+
 	@NonNull
-	public HUInfo resolve(
-			@Nullable final IHUQRCode pickFromHUQRCode,
-			@NonNull final ProductId productId,
-			@NonNull final BPartnerId customerId,
-			@NonNull final WarehouseId warehouseId)
+	public ExplainedOptional<HUInfo> execute()
 	{
 		if (pickFromHUQRCode == null)
 		{
@@ -51,7 +54,7 @@ class PickFromHUQRCodeResolver
 		{
 			final HUQRCode huQRCode = (HUQRCode)pickFromHUQRCode;
 			final HuId huId = huService.getHuIdByQRCode(huQRCode);
-			return HUInfo.ofHuIdAndQRCode(huId, huQRCode);
+			return ExplainedOptional.of(HUInfo.ofHuIdAndQRCode(huId, huQRCode));
 		}
 		else if (pickFromHUQRCode instanceof LMQRCode)
 		{
@@ -61,19 +64,33 @@ class PickFromHUQRCodeResolver
 		else if (pickFromHUQRCode instanceof GS1HUQRCode)
 		{
 			final GS1HUQRCode gs1QRCode = (GS1HUQRCode)pickFromHUQRCode;
-			validateQRCode_GTIN(gs1QRCode, productId);
+			final BooleanWithReason valid = validateQRCode_GTIN(gs1QRCode, productId);
+			if (valid.isFalse())
+			{
+				return ExplainedOptional.emptyBecause(valid.getReason());
+			}
+
 			return findHUByExternalLotNo(gs1QRCode);
 		}
 		else if (pickFromHUQRCode instanceof EAN13HUQRCode)
 		{
 			final EAN13HUQRCode ean13QRCode = (EAN13HUQRCode)pickFromHUQRCode;
-			validateQRCode_EAN13ProductNo(ean13QRCode, productId, customerId);
+			final BooleanWithReason valid = validateQRCode_EAN13ProductNo(ean13QRCode, productId, customerId);
+			if (valid.isFalse())
+			{
+				return ExplainedOptional.emptyBecause(valid.getReason());
+			}
+
 			return findFirstByWarehouseAndProduct(warehouseId, productId);
 		}
 		else if (pickFromHUQRCode instanceof CustomHUQRCode)
 		{
 			final CustomHUQRCode customQRCode = (CustomHUQRCode)pickFromHUQRCode;
-			validateQRCode_ProductNo(customQRCode, productId);
+			final BooleanWithReason valid = validateQRCode_ProductNo(customQRCode, productId);
+			if (valid.isFalse())
+			{
+				return ExplainedOptional.emptyBecause(valid.getReason());
+			}
 			return findHUByQRCodeAttribute(pickFromHUQRCode, productId);
 		}
 		else
@@ -82,44 +99,55 @@ class PickFromHUQRCodeResolver
 		}
 	}
 
-	private HUInfo findHUByExternalLotNo(final IHUQRCode pickFromHUQRCode)
+	private ExplainedOptional<HUInfo> findHUByExternalLotNo(final IHUQRCode pickFromHUQRCode)
 	{
-		final String lotNumber = pickFromHUQRCode.getLotNumber()
-				.orElseThrow(() -> new AdempiereException(ERR_LMQ_LotNoNotFound)
-						.setParameter("pickFromHUQRCode", pickFromHUQRCode));
-		final HuId huId = huService.getFirstHuIdByExternalLotNo(lotNumber)
-				.orElseThrow(() -> new AdempiereException(ERR_NoLotNoFoundForQRCode)
-						.appendParametersToMessage()
-						.setParameter("LotNumber", lotNumber));
+		final String lotNumber = pickFromHUQRCode.getLotNumber().orElse(null);
+		if (lotNumber == null)
+		{
+			return ExplainedOptional.emptyBecause(ERR_LMQ_LotNoNotFound);
+		}
+
+		final HuId huId = huService.getFirstHuIdByExternalLotNo(lotNumber).orElse(null);
+		if (huId == null)
+		{
+			return ExplainedOptional.emptyBecause(ERR_NoLotNoFoundForQRCode);
+		}
+
 		return getHUInfoById(huId);
 	}
 
-	private HUInfo getHUInfoById(final HuId huId)
+	private ExplainedOptional<HUInfo> getHUInfoById(final HuId huId)
 	{
 		final HUQRCode huQRCode = huService.getQRCodeByHuId(huId);
-		return HUInfo.ofHuIdAndQRCode(huId, huQRCode);
+		return ExplainedOptional.of(HUInfo.ofHuIdAndQRCode(huId, huQRCode));
 	}
 
-	private HUInfo findHUByQRCodeAttribute(
+	private ExplainedOptional<HUInfo> findHUByQRCodeAttribute(
 			@NonNull final IHUQRCode scannedQRCode,
 			@NonNull final ProductId productId)
 	{
-		final HuId huId = huService.getFirstHUIdByQRCodeAttribute(scannedQRCode, productId)
-				.orElseThrow(() -> new AdempiereException(ERR_NotEnoughTUsFound) // TODO introduce a better AD_Message
-						.setParameter("QRCode", scannedQRCode));
+		final HuId huId = huService.getFirstHUIdByQRCodeAttribute(scannedQRCode, productId).orElse(null);
+		if (huId == null)
+		{
+			return ExplainedOptional.emptyBecause(ERR_NotEnoughTUsFound); // TODO introduce a better AD_Message
+		}
 
 		return getHUInfoById(huId);
 	}
 
-	private HUInfo findFirstByWarehouseAndProduct(@NonNull final WarehouseId warehouseId, @NonNull final ProductId productId)
+	private ExplainedOptional<HUInfo> findFirstByWarehouseAndProduct(@NonNull final WarehouseId warehouseId, @NonNull final ProductId productId)
 	{
-		final HuId huId = huService.getFirstHuIdByWarehouseAndProduct(warehouseId, productId)
-				.orElseThrow(() -> new AdempiereException(ERR_NotEnoughTUsFound)); // TODO introduce a better AD_Message
+		final HuId huId = huService.getFirstHuIdByWarehouseAndProduct(warehouseId, productId).orElse(null);
+
+		if (huId == null)
+		{
+			return ExplainedOptional.emptyBecause(ERR_NotEnoughTUsFound);// TODO introduce a better AD_Message
+		}
 
 		return getHUInfoById(huId);
 	}
 
-	private void validateQRCode_GTIN(
+	private BooleanWithReason validateQRCode_GTIN(
 			@NonNull final GS1HUQRCode pickFromHUQRCode,
 			@NonNull final ProductId expectedProductId)
 	{
@@ -129,45 +157,54 @@ class PickFromHUQRCodeResolver
 			final ProductId gs1ProductId = productService.getProductIdByGTINStrictlyNotNull(gtin, ClientId.METASFRESH);
 			if (!ProductId.equals(expectedProductId, gs1ProductId))
 			{
-				throw new AdempiereException(ERR_QR_ProductNotMatching)
-						.setParameter("GTIN", gtin)
-						.setParameter("expected", expectedProductId)
-						.setParameter("actual", gs1ProductId);
+				return BooleanWithReason.falseBecause(ERR_QR_ProductNotMatching);
+				// throw new AdempiereException(ERR_QR_ProductNotMatching)
+				// 		.setParameter("GTIN", gtin)
+				// 		.setParameter("expected", expectedProductId)
+				// 		.setParameter("actual", gs1ProductId);
 			}
 		}
+
+		return BooleanWithReason.TRUE;
 	}
 
-	private void validateQRCode_EAN13ProductNo(
+	private BooleanWithReason validateQRCode_EAN13ProductNo(
 			@NonNull final EAN13HUQRCode pickFromQRCode,
 			@NonNull final ProductId expectedProductId,
 			@NonNull final BPartnerId customerId)
 	{
-		final String expectedProductNo = productService.getProductValue(expectedProductId);
 		final EAN13 ean13 = pickFromQRCode.unbox();
-		final EAN13ProductCode ean13ProductNo = ean13.getProductNo();
 		if (!productService.isValidEAN13Product(ean13, expectedProductId, customerId))
 		{
-			throw new AdempiereException(ERR_QR_ProductNotMatching)
-					.setParameter("ean13ProductNo", ean13ProductNo)
-					.setParameter("expectedProductNo", expectedProductNo)
-					.setParameter("expectedProductId", expectedProductId);
+			return BooleanWithReason.falseBecause(ERR_QR_ProductNotMatching);
+			// final String expectedProductNo = productService.getProductValue(expectedProductId);
+			// final EAN13ProductCode ean13ProductNo = ean13.getProductNo();
+			// throw new AdempiereException(ERR_QR_ProductNotMatching)
+			// 		.setParameter("ean13ProductNo", ean13ProductNo)
+			// 		.setParameter("expectedProductNo", expectedProductNo)
+			// 		.setParameter("expectedProductId", expectedProductId);
 		}
+
+		return BooleanWithReason.TRUE;
 	}
 
-	private void validateQRCode_ProductNo(
+	private BooleanWithReason validateQRCode_ProductNo(
 			@NonNull final CustomHUQRCode customQRCode,
 			@NonNull final ProductId expectedProductId)
 	{
 		final String qrCodeProductNo = customQRCode.getProductNo().orElse(null);
-		if (qrCodeProductNo == null) {return;}
+		if (qrCodeProductNo == null) {return BooleanWithReason.TRUE;}
 
 		final String expectedProductNo = productService.getProductValue(expectedProductId);
 		if (!Objects.equals(qrCodeProductNo, expectedProductNo))
 		{
-			throw new AdempiereException(ERR_QR_ProductNotMatching)
-					.setParameter("qrCodeProductNo", qrCodeProductNo)
-					.setParameter("expectedProductNo", expectedProductNo)
-					.setParameter("expectedProductId", expectedProductId);
+			return BooleanWithReason.falseBecause(ERR_QR_ProductNotMatching);
+			// throw new AdempiereException(ERR_QR_ProductNotMatching)
+			// 		.setParameter("qrCodeProductNo", qrCodeProductNo)
+			// 		.setParameter("expectedProductNo", expectedProductNo)
+			// 		.setParameter("expectedProductId", expectedProductId);
 		}
+
+		return BooleanWithReason.TRUE;
 	}
 }

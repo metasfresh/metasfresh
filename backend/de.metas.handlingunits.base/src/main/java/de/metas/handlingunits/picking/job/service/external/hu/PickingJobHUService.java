@@ -26,11 +26,13 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.candidate.commands.PackToHUsProducer;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
+import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingJobStep;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
+import de.metas.handlingunits.picking.job.service.external.product.PickingJobProductService;
 import de.metas.handlingunits.picking.job.service.external.warehouse.PickingJobWarehouseService;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsSupplier;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
@@ -43,6 +45,7 @@ import de.metas.handlingunits.report.labels.HULabelSourceDocType;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.reservation.ReserveHUsRequest;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.scannable_code.ScannedCode;
@@ -77,6 +80,7 @@ public class PickingJobHUService
 	@NonNull private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	@NonNull private final MobileUIPickingUserProfileService configService;
 	@NonNull private final PickingJobWarehouseService warehouseService;
+	@NonNull private final PickingJobProductService productService;
 	@NonNull @Getter private final HUQRCodesService huQRCodesService;
 	@NonNull private final HULabelService huLabelService;
 	@NonNull private final HUReservationService huReservationService;
@@ -175,7 +179,24 @@ public class PickingJobHUService
 		return huPIItemProductBL.getById(huPIItemProductId);
 	}
 
-	public IHUQRCode parse(final ScannedCode pickFromQRCode) {return huQRCodesService.parse(pickFromQRCode);}
+	public IHUQRCode parsePickFromScannedCode(final ScannedCode pickFromScannedCode) {return huQRCodesService.parse(pickFromScannedCode);}
+
+	public ExplainedOptional<HUInfo> resolvePickFromHUQRCode(
+			@Nullable final IHUQRCode pickFromHUQRCode,
+			@NonNull final ProductId productId,
+			@NonNull final BPartnerId customerId,
+			@NonNull final WarehouseId warehouseId)
+	{
+		return PickFromHUQRCodeResolveCommand.builder()
+				.huService(this)
+				.productService(productService)
+				.pickFromHUQRCode(pickFromHUQRCode)
+				.productId(productId)
+				.customerId(customerId)
+				.warehouseId(warehouseId)
+				//
+				.build().execute();
+	}
 
 	public HUQRCode getQRCodeByHuId(@NonNull final HuId huId) {return huQRCodesService.getQRCodeByHuId(huId);}
 
@@ -306,5 +327,4 @@ public class PickingJobHUService
 				.pickFromLocatorIds(pickFromLocatorIds)
 				.build();
 	}
-
 }
