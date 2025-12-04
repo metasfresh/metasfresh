@@ -22,33 +22,19 @@
 
 package de.metas.request.api.impl;
 
-import de.metas.request.RequestStatusCategoryId;
-import de.metas.request.RequestStatusId;
 import de.metas.request.RequestTypeId;
 import de.metas.request.api.IRequestTypeDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.compiere.model.I_R_RequestType;
-import org.compiere.model.I_R_Status;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 
 @Service
-@RequiredArgsConstructor
-public class RequestService
+public class RequestTypeService
 {
 	private final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
-	@NonNull private final RequestStatusRepository requestStatusRepository;
-
-	public RequestStatusId getStatusIdByRequestTypeIdAndName(final RequestTypeId requestTypeId, final String statusName)
-	{
-		final I_R_RequestType requestType = requestTypeDAO.getById(requestTypeId);
-		final RequestStatusCategoryId requestStatusCategoryId = RequestStatusCategoryId.ofRepoId(requestType.getR_StatusCategory_ID());
-		final I_R_Status status = requestStatusRepository.getByCategoryAndName(requestStatusCategoryId, statusName);
-		return RequestStatusId.ofRepoId(status.getR_Status_ID());
-	}
 
 	@Nullable
 	public RequestTypeId retrieveByInternalName(final @NonNull String requestType)
@@ -59,5 +45,10 @@ public class RequestService
 	public RequestTypeId retrieveCustomerRequestTypeId()
 	{
 		return requestTypeDAO.retrieveCustomerRequestTypeId();
+	}
+
+	public I_R_RequestType getById(final @NonNull RequestTypeId id)
+	{
+		return requestTypeDAO.getById(id);
 	}
 }

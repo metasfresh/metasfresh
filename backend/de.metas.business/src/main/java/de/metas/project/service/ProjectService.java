@@ -80,6 +80,12 @@ public class ProjectService
 		return projectRepository.getById(id);
 	}
 
+	@Nullable
+	public ProjectId getIdByValueOrNull(@NonNull final String projectValue)
+	{
+		return projectRepository.getIdByValueOrNull(projectValue);
+	}
+
 	public ProjectType getProjectTypeById(@NonNull final ProjectTypeId id)
 	{
 		return projectTypeRepository.getById(id);
