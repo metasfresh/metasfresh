@@ -12,6 +12,10 @@ import java.util.Map;
 @Jacksonized
 public class JsonCreateBPartnerRequest
 {
+	// Allow custom bpartner code and name (if null, use timestamp-based generation)
+	@Nullable String bpartnerCode;
+	@Nullable String name;
+
 	@Nullable String gln;
 	@Nullable Map<String, Location> locations;
 
