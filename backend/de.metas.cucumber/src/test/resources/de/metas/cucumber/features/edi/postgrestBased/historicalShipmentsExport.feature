@@ -1048,7 +1048,7 @@ Feature: Shipments export via postgREST
     "DeliveryViaRule": "P",
     "BPartnerValue": "@customer_value_S0475_010@",
     "BPartnerExternalReference": "S0475_070",
-    "BPartnerExternalSystemValue": "Test_S0475_070",
+    "BPartnerExternalSystemValue": "test_S0475_070",
     "Supplier": {
       "Name": "metasfresh AG",
       "Name2": null,
