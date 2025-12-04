@@ -10,7 +10,7 @@ import { useIsLoggedIn } from './useIsLoggedIn';
 //
 // Config
 const socketFactory = () => new SockJS(config.WS_URL);
-const MAX_RECONNECT_TIMES = 100;
+const MAX_RECONNECT_TIMES = 4;
 const CLIENT_DISCONNECT_DELAY_MS = 3000; // 3-second delay before disconnecting
 const log = (...params) =>
   globalWsState.debugLogging ? console.debug(...params) : () => {};
@@ -22,6 +22,8 @@ const globalWsState = {
   clientConnectionId: 0,
   client: null,
   connecting: false,
+  reconnectCounter: 0,
+  reconnectLastErrorType: null,
   disconnectTimer: null,
 
   //
@@ -239,7 +241,8 @@ const connectWS = ({
     return subscriptionId;
   }
 
-  globalWsState.pendingSubscriptionsById.set(subscriptionId, {
+  addToPendingSubscriptions({
+    subscriptionId,
     topic,
     callback: onMessageCallback,
   });
@@ -247,6 +250,19 @@ const connectWS = ({
   checkClientConnectionActive();
 
   return subscriptionId;
+};
+
+//
+//
+// -----------------------------------------------------------------------------
+//
+//
+
+const addToPendingSubscriptions = ({ subscriptionId, topic, callback }) => {
+  globalWsState.pendingSubscriptionsById.set(subscriptionId, {
+    topic,
+    callback,
+  });
 };
 
 //
@@ -345,8 +361,6 @@ const checkClientConnectionActive = () => {
   // Only create a new client if we don't have one
   if (!globalWsState.client) {
     globalWsState.connecting = true;
-    let reconnectCounter = 0;
-    let connectionErrorType = NO_CONNECTION_ERROR;
 
     // Only increment if we haven't already done so during cleanup
     if (!clientWasRecreated) {
@@ -356,37 +370,7 @@ const checkClientConnectionActive = () => {
 
     globalWsState.client = new Client({
       brokerURL: config.WS_URL,
-      debug: (strMessage) => {
-        // console.log('debug: ', strMessage);
-        // -- detect reconnect and increment the reconnect counter
-        if (strMessage.includes('reconnect')) {
-          getUserSession()
-            .then(({ data, status }) => {
-              if (status === 502) {
-                connectionErrorType = BAD_GATEWAY_ERROR;
-                reconnectCounter += 1;
-              } else if (data && !data.loggedIn) {
-                reconnectCounter += 1;
-              } else {
-                // Reset counter on successful authentication
-                reconnectCounter = 0;
-              }
-            })
-            .catch(() => {
-              reconnectCounter += 1;
-            });
-        }
-
-        // -- if more than max allowed to reconnect times  ->  deactivate
-        if (reconnectCounter > MAX_RECONNECT_TIMES) {
-          console.warn(
-            'WS: Max reconnection attempts reached, clearing browser state...'
-          );
-
-          globalWsState.client.reconnectDelay = 0; // 0 - deactivates the sockClient
-          store.dispatch(connectionError({ errorType: connectionErrorType }));
-        }
-      },
+      debug: readWebsocketDebugMessagesAndTrackConnectionState,
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
@@ -397,9 +381,13 @@ const checkClientConnectionActive = () => {
     }
 
     globalWsState.client.onConnect = () => {
+      // Reset on a successful connection:
       globalWsState.connecting = false;
-      reconnectCounter = 0; // Reset on a successful connection
+      globalWsState.reconnectCounter = 0;
+      globalWsState.reconnectLastErrorType = null;
       log('WS: Client connected successfully');
+
+      resubscribeActiveSubscriptions();
       processPendingSubscriptions();
     };
     globalWsState.client.onDisconnect = () => {
@@ -434,6 +422,80 @@ const checkClientConnectionActive = () => {
     // Client exists and is in a good state, just process pending subscriptions
     processPendingSubscriptions();
   }
+};
+
+//
+//
+// -----------------------------------------------------------------------------
+//
+//
+
+const readWebsocketDebugMessagesAndTrackConnectionState = (strMessage) => {
+  // console.log('debug: ', strMessage);
+
+  // -- detect reconnect and increment the reconnect counter
+  if (strMessage.includes('reconnect')) {
+    getUserSession()
+      .then(({ data, status }) => {
+        console.log('Got user session response', { data, status });
+        if (status === 502) {
+          globalWsState.reconnectLastErrorType = BAD_GATEWAY_ERROR;
+          globalWsState.reconnectCounter++;
+        } else if (data && !data.loggedIn) {
+          globalWsState.reconnectCounter++;
+        } else {
+          // Reset counter on successful authentication
+          globalWsState.reconnectCounter = 0;
+        }
+      })
+      .catch((error) => {
+        console.log('Got error while getting user session', { error });
+        globalWsState.reconnectCounter++;
+      });
+  }
+
+  // -- if more than the maximum allowed reconnecting times -> deactivate
+  if (globalWsState.reconnectCounter > MAX_RECONNECT_TIMES) {
+    console.warn(
+      'WS: Max reconnection attempts reached, clearing browser state...'
+    );
+
+    globalWsState.client.reconnectDelay = 0; // 0 - deactivates the sockClient
+    store.dispatch(
+      connectionError({
+        errorType: globalWsState.reconnectLastErrorType ?? NO_CONNECTION_ERROR,
+      })
+    );
+  }
+};
+
+//
+//
+// -----------------------------------------------------------------------------
+//
+//
+
+const resubscribeActiveSubscriptions = () => {
+  if (globalWsState.subscriptionsById.size === 0) return;
+
+  // Move active subscriptions to pending for re-subscription
+  let movedCount = 0;
+  for (const [
+    subscriptionId,
+    subscriptionData,
+  ] of globalWsState.subscriptionsById) {
+    addToPendingSubscriptions({
+      subscriptionId,
+      topic: subscriptionData.topic,
+      callback: subscriptionData.callback,
+    });
+    movedCount++;
+  }
+
+  // Clear the active subscriptions since they're now invalid
+  globalWsState.subscriptionsById.clear();
+
+  log(`WS: Moved ${movedCount} subscriptions to pending for re-subscription`);
 };
 
 //
@@ -572,6 +634,13 @@ const dumpStatus = () => {
   console.log('clientConnectionId: ', globalWsState.clientConnectionId);
   console.log('client: ', globalWsState.client);
   console.log('connecting: ', globalWsState.connecting);
+  console.log(
+    `reconnectCounter: ${
+      globalWsState.reconnectCounter
+    }/${MAX_RECONNECT_TIMES} (last error: ${
+      globalWsState.reconnectLastErrorType ?? '-'
+    })`
+  );
   console.log('disconnectTimer: ', globalWsState.disconnectTimer);
 
   if (globalWsState.pendingSubscriptionsById.size > 0) {
