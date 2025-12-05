@@ -45,6 +45,8 @@ import de.metas.handlingunits.report.labels.HULabelSourceDocType;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.reservation.ReserveHUsRequest;
+import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -61,6 +63,7 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -326,5 +329,21 @@ public class PickingJobHUService
 				.handlingUnitsBL(handlingUnitsBL)
 				.pickFromLocatorIds(pickFromLocatorIds)
 				.build();
+	}
+
+	public boolean containsProduct(@NonNull final HuId huId, @NonNull ProductId productId)
+	{
+		return getHUProductStorage(huId, productId)
+				.map(IHUProductStorage::getQty)
+				.map(Quantity::isPositive)
+				.orElse(false);
+	}
+
+	private Optional<IHUProductStorage> getHUProductStorage(final @NotNull HuId huId, final @NotNull ProductId productId)
+	{
+		final I_M_HU hu = handlingUnitsBL.getById(huId);
+
+		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
+		return Optional.ofNullable(storageFactory.getStorage(hu).getProductStorageOrNull(productId));
 	}
 }

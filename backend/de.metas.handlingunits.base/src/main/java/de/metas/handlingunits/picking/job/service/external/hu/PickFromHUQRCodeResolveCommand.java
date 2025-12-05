@@ -54,6 +54,11 @@ class PickFromHUQRCodeResolveCommand
 		{
 			final HUQRCode huQRCode = (HUQRCode)pickFromHUQRCode;
 			final HuId huId = huService.getHuIdByQRCode(huQRCode);
+			if (!huService.containsProduct(huId, productId))
+			{
+				return ExplainedOptional.emptyBecause(ERR_QR_ProductNotMatching);
+			}
+
 			return ExplainedOptional.of(HUInfo.ofHuIdAndQRCode(huId, huQRCode));
 		}
 		else if (pickFromHUQRCode instanceof LMQRCode)
