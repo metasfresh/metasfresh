@@ -100,7 +100,7 @@ public class Archive_Main_Validator implements ModelValidator
 		final DocOutboundArchiveEventListener docOutboundArchiveEventListener = Adempiere.getBean(DocOutboundArchiveEventListener.class);
 		archiveEventManager.registerArchiveEventListener(docOutboundArchiveEventListener);
 
-		engine.addModelValidator(new C_Doc_Outbound_Config(this), client);
+		engine.addModelValidator(new C_Doc_Outbound_Config(), client);
 		engine.addModelValidator(new AD_User(), client);
 		engine.addModelValidator(new C_BPartner(), client);
 

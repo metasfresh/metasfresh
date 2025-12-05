@@ -22,21 +22,25 @@ package de.metas.document.archive.interceptor;
  * #L%
  */
 
-
-import de.metas.document.archive.config.DocOutboundConfigRepository;
-import org.adempiere.ad.modelvalidator.annotations.Init;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.ad.table.api.AdTableId;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.ModelValidator;
-
+import com.google.common.collect.ImmutableSet;
 import de.metas.document.archive.api.IDocOutboundProducerService;
+import de.metas.document.archive.config.DocOutboundConfigRepository;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
+import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.adempiere.ad.modelvalidator.annotations.Init;
+import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.ad.table.api.AdTableId;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.ModelValidationEngine;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.HashSet;
+import java.util.Objects;
 
 /**
  * Handles all jobs related to {@link I_C_Doc_Outbound_Config}:
@@ -51,74 +55,72 @@ import lombok.NonNull;
 @Validator(I_C_Doc_Outbound_Config.class)
 class C_Doc_Outbound_Config
 {
-	private final Archive_Main_Validator parent;
-	private final IDocOutboundProducerService producerService = Services.get(IDocOutboundProducerService.class);
-	private final DocOutboundConfigRepository docOutboundConfigRepository = SpringContextHolder.instance.getBean(DocOutboundConfigRepository.class);
+	@NonNull private static final Logger logger = LogManager.getLogger(C_Doc_Outbound_Config.class);
+	@NonNull private final IDocOutboundProducerService producerService = Services.get(IDocOutboundProducerService.class);
+	@NonNull private final DocOutboundConfigRepository configRepository = SpringContextHolder.instance.getBean(DocOutboundConfigRepository.class);
+	@Nullable private ModelValidationEngine engine;
 
-	public C_Doc_Outbound_Config(@NonNull final Archive_Main_Validator parent)
-	{
-		Check.assumeNotNull(parent.getEngine(), "engine is available");
-
-		this.parent = parent;
-	}
+	@NonNull private ImmutableSet<AdTableId> tableIds = ImmutableSet.of();
+	@NonNull private final HashSet<AdTableId> registeredTableIds = new HashSet<>();
 
 	@Init
-	public void registerAllOutboundProducers()
+	protected void onInit(@NonNull final IModelValidationEngine engine)
 	{
-		docOutboundConfigRepository.getDistinctConfigTableIds()
-				.forEach(this::registerOutboundProducer);
+		this.engine = (ModelValidationEngine)engine;
+		configRepository.addCacheResetListener(this::updateFromRepository);
+
+		updateFromRepository();
+	}
+
+	private synchronized void updateFromRepository()
+	{
+		final ImmutableSet<AdTableId> tableIdsPrev = this.tableIds;
+		this.tableIds = configRepository.getDistinctConfigTableIds();
+		if (Objects.equals(this.tableIds, tableIdsPrev))
+		{
+			return;
+		}
+
+		updateRegisteredInterceptors();
+	}
+
+	private synchronized void updateRegisteredInterceptors()
+	{
+		final HashSet<AdTableId> registeredTableIdsNoLongerNeeded = new HashSet<>(this.registeredTableIds);
+
+		for (final AdTableId tableId : this.tableIds)
+		{
+			registeredTableIdsNoLongerNeeded.remove(tableId);
+
+			if (registeredTableIds.contains(tableId))
+			{
+				// already registered
+				continue;
+			}
+
+			registerOutboundProducer(tableId);
+		}
+
+		//
+		// Remove no longer necessary interceptors
+		for (final AdTableId tableId : registeredTableIdsNoLongerNeeded)
+		{
+			unregisterOutboundProducer(tableId);
+		}
 	}
 
 	private void registerOutboundProducer(@NonNull final AdTableId tableId)
 	{
-		producerService.registerProducer(new DocOutboundProducerValidator(parent.getEngine(), tableId));
+		final ModelValidationEngine engine = Check.assumeNotNull(this.engine, "engine not null");
+		producerService.registerProducer(new DocOutboundProducerValidator(engine, tableId));
+		registeredTableIds.add(tableId);
+		logger.info("Registered producer for {}", tableId);
 	}
 
 	private void unregisterOutboundProducer(@NonNull final AdTableId tableId)
 	{
-		docOutboundConfigRepository.resetCache(); // prevent raceConditions
-		if (docOutboundConfigRepository.getByTableId(tableId).isEmpty())
-		{
-			producerService.unregisterProducerByTableId(tableId);
-		}
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, })
-	public void registerOutboundProducer(final I_C_Doc_Outbound_Config config)
-	{
-		registerOutboundProducer(AdTableId.ofRepoId(config.getAD_Table_ID()));
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {
-			I_C_Doc_Outbound_Config.COLUMNNAME_AD_Table_ID })
-	public void onTableIdChange(final I_C_Doc_Outbound_Config config)
-	{
-		final AdTableId tableId = AdTableId.ofRepoId(config.getAD_Table_ID());
-		final AdTableId oldAdTableId = AdTableId.ofRepoId(InterfaceWrapperHelper.createOld(config, I_C_Doc_Outbound_Config.class).getAD_Table_ID());
-		if (!AdTableId.equals(tableId, oldAdTableId))
-		{
-			unregisterOutboundProducer(oldAdTableId);
-			registerOutboundProducer(tableId);
-		}
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {
-			I_C_Doc_Outbound_Config.COLUMNNAME_IsActive, })
-	public void onIsActiveChange(final I_C_Doc_Outbound_Config config)
-	{
-		if(config.isActive())
-		{
-			registerOutboundProducer(AdTableId.ofRepoId(config.getAD_Table_ID()));
-		}
-		else
-		{
-			unregisterOutboundProducer(AdTableId.ofRepoId(config.getAD_Table_ID()));
-		}
-	}
-
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_DELETE)
-	public void unregisterOutboundProducer(final I_C_Doc_Outbound_Config config)
-	{
-		unregisterOutboundProducer(AdTableId.ofRepoId(config.getAD_Table_ID()));
+		producerService.unregisterProducerByTableId(tableId);
+		registeredTableIds.remove(tableId);
+		logger.info("Unregistered trigger for {}", tableId);
 	}
 }

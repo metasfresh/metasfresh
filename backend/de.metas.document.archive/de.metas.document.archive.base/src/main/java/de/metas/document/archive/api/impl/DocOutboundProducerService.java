@@ -22,18 +22,16 @@ package de.metas.document.archive.api.impl;
  * #L%
  */
 
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.locks.ReentrantLock;
-
 import de.metas.document.archive.api.IDocOutboundProducerService;
 import de.metas.document.archive.spi.IDocOutboundProducer;
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.ad.table.api.AdTableId;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Default implementation of {@link IDocOutboundProducerService}
@@ -43,18 +41,8 @@ import org.adempiere.ad.table.api.AdTableId;
  */
 public class DocOutboundProducerService implements IDocOutboundProducerService
 {
-	// private static final transient Logger logger = CLogMgt.getLogger(DocOutboundProducerService.class);
-
-	/**
-	 * Map of Doc Outbound Producers (C_Doc_Outbound_Config_ID -> DocOutboundProducerValidator)
-	 */
-	private final Map<AdTableId, IDocOutboundProducer> outboundProducers = new HashMap<>();
+	private final HashMap<AdTableId, IDocOutboundProducer> outboundProducers = new HashMap<>();
 	private final ReentrantLock outboundProducersLock = new ReentrantLock();
-
-	public DocOutboundProducerService()
-	{
-		super();
-	}
 
 	@Override
 	public void registerProducer(final IDocOutboundProducer producer)
@@ -99,7 +87,6 @@ public class DocOutboundProducerService implements IDocOutboundProducerService
 
 	private void unregisterProducerByTableId0(@NonNull final AdTableId tableId)
 	{
-		Check.assumeNotNull(tableId, "tableId not null");
 		final IDocOutboundProducer producer = outboundProducers.get(tableId);
 		if (producer == null)
 		{

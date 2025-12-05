@@ -23,11 +23,10 @@
 package de.metas.document.archive.config;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
-import de.metas.common.util.CoalesceUtil;
+import de.metas.cache.CacheMgt;
+import de.metas.cache.ICacheResetListener;
 import de.metas.document.DocBaseType;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.organization.OrgId;
@@ -41,17 +40,15 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
 @Repository
 public class DocOutboundConfigRepository
 {
-	private final CCache<Integer, DocOutboundConfigRepository.DocOutboundConfigMap> cache = CCache.<Integer, DocOutboundConfigRepository.DocOutboundConfigMap>builder()
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	@NonNull private final CCache<Integer, DocOutboundConfigMap> cache = CCache.<Integer, DocOutboundConfigMap>builder()
 			.tableName(I_C_Doc_Outbound_Config.Table_Name)
 			.maximumSize(1)
 			.build();
-
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public static DocOutboundConfigRepository newInstanceForUnitTesting()
 	{
@@ -59,9 +56,15 @@ public class DocOutboundConfigRepository
 		return new DocOutboundConfigRepository();
 	}
 
-	public void resetCache()
+	public void addCacheResetListener(@NonNull final DocOutboundConfigChangedListener listener)
 	{
-		cache.reset();
+		final ICacheResetListener cacheResetListener = (request) -> {
+			listener.onConfigChanged();
+			return 1L;
+		};
+
+		final CacheMgt cacheMgt = CacheMgt.get();
+		cacheMgt.addCacheResetListener(I_C_Doc_Outbound_Config.Table_Name, cacheResetListener);
 	}
 
 	@Nullable
@@ -71,13 +74,13 @@ public class DocOutboundConfigRepository
 	}
 
 	@NonNull
-	private DocOutboundConfigRepository.DocOutboundConfigMap getDocOutboundConfigMap()
+	private DocOutboundConfigMap getDocOutboundConfigMap()
 	{
 		return cache.getOrLoadNonNull(0, this::retrieveDocOutboundConfigMap);
 	}
 
 	@NotNull
-	private DocOutboundConfigRepository.DocOutboundConfigMap retrieveDocOutboundConfigMap()
+	private DocOutboundConfigMap retrieveDocOutboundConfigMap()
 	{
 		final ImmutableList<DocOutboundConfig> docOutboundConfig = queryBL.createQueryBuilder(I_C_Doc_Outbound_Config.class)
 				.addOnlyActiveRecordsFilter()
@@ -86,7 +89,7 @@ public class DocOutboundConfigRepository
 				.map(DocOutboundConfigRepository::ofRecord)
 				.collect(ImmutableList.toImmutableList());
 
-		return new DocOutboundConfigRepository.DocOutboundConfigMap(docOutboundConfig);
+		return new DocOutboundConfigMap(docOutboundConfig);
 	}
 
 	private static DocOutboundConfig ofRecord(@NotNull final I_C_Doc_Outbound_Config record)
@@ -105,48 +108,8 @@ public class DocOutboundConfigRepository
 	}
 
 	@NonNull
-	public ImmutableList<DocOutboundConfig> getByTableId(@NonNull final AdTableId tableId)
-	{
-		return getDocOutboundConfigMap().getByTableId(tableId);
-	}
-
-	@NonNull
 	public ImmutableSet<AdTableId> getDistinctConfigTableIds()
 	{
-		return getDocOutboundConfigMap().byTableId.keySet();
-	}
-
-	private static final class DocOutboundConfigMap
-	{
-		private final ImmutableMap<DocOutboundConfigQuery, DocOutboundConfig> byQuery;
-		private final ImmutableMap<AdTableId, ImmutableList<DocOutboundConfig>> byTableId;
-
-		DocOutboundConfigMap(final List<DocOutboundConfig> list)
-		{
-			this.byQuery = Maps.uniqueIndex(list, config -> DocOutboundConfigQuery.builder()
-					.tableId(config.getTableId())
-					.docBaseType(config.getDocBaseType())
-					.orgId(config.getOrgId())
-					.build()
-			);
-			this.byTableId = list.stream().collect(ImmutableMap.toImmutableMap(DocOutboundConfig::getTableId, ImmutableList::of));
-		}
-
-		@Nullable
-		public DocOutboundConfig getByQuery(@NonNull final DocOutboundConfigQuery query)
-		{
-            return CoalesceUtil.coalesceSuppliers(
-					() -> byQuery.get(query),
-					() -> byQuery.get(query.withDocBaseType(null)),
-					() -> byQuery.get(query.withOrgId(OrgId.ANY)),
-					() -> byQuery.get(query.withDocBaseType(null).withOrgId(OrgId.ANY))
-			);
-		}
-
-		@NonNull
-		public ImmutableList<DocOutboundConfig> getByTableId(@NonNull final AdTableId tableId)
-		{
-			return byTableId.getOrDefault(tableId, ImmutableList.of());
-		}
+		return getDocOutboundConfigMap().getTableIds();
 	}
 }
