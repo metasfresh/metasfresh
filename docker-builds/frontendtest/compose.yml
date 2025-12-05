@@ -155,6 +155,7 @@ services:
       - ./test-results:/app/test-results
     environment:
       - "FRONTEND_BASE_URL=http://webui:80"
+      - "WEBAPI_BASE_URL=http://webui:80/rest/api"
       - "TESTING_API_BASE_URL=http://app-test:8282/api/v2"
       - "CI=true"
     depends_on:
