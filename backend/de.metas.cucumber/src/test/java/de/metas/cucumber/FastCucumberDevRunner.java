@@ -13,8 +13,9 @@ public class FastCucumberDevRunner
 {
 	private static final String CUCUMBER_GLUE_PACKAGE = "de.metas.cucumber.stepdefs"; // The package where your Step Definitions live
 
-	public static void main(String[] args)
+	public static void main(final String[] args)
 	{
+		System.setProperty("user.timezone", "Europe/Berlin");
 		loopReadAndExecute();
 	}
 
@@ -31,7 +32,7 @@ public class FastCucumberDevRunner
 			if (lastFeatureFilePath != null)
 			{
 				// Extract just the filename for a cleaner display or use the full path if needed
-				String filename = new File(lastFeatureFilePath).getName();
+				final String filename = new File(lastFeatureFilePath).getName();
 				System.out.println("  > Hit ENTER to re-run last file: **" + filename + "**");
 			}
 			else
@@ -87,7 +88,7 @@ public class FastCucumberDevRunner
 
 			// Run Cucumber 7 using the Main CLI entry point
 			// This returns a byte exit status (0 = success, 1 = failure) but does NOT kill the JVM
-			byte exitStatus = Main.run(argv, classLoader);
+			final byte exitStatus = Main.run(argv, classLoader);
 
 			if (exitStatus == 0)
 			{
@@ -101,13 +102,13 @@ public class FastCucumberDevRunner
 			// --- PRINT CLICKABLE LINK ---
 			if (java.nio.file.Files.exists(reportFilePath))
 			{
-				String clickableUri = reportFilePath.toUri().toString();
+				final String clickableUri = reportFilePath.toUri().toString();
 				System.out.println("\n>>> 📄 **Report Link (Clickable):**");
 				System.out.println(clickableUri);
 			}
 			// ----------------------------------------
 		}
-		catch (Throwable t)
+		catch (final Throwable t)
 		{
 			//noinspection CallToPrintStackTrace
 			t.printStackTrace();
@@ -118,8 +119,8 @@ public class FastCucumberDevRunner
 	{
 		final Path featurePath = Paths.get(featureFilePath);
 
-		String featureFileName = featurePath.getFileName().toString();
-		String baseFolderName = featureFileName.replace(".feature", "");
+		final String featureFileName = featurePath.getFileName().toString();
+		final String baseFolderName = featureFileName.replace(".feature", "");
 
 		final Path baseReportPath = Paths.get("target", "FastCucumberDevRunner", baseFolderName);
 		final Path reportFilePath = baseReportPath.resolve("test_results.html");
@@ -130,7 +131,7 @@ public class FastCucumberDevRunner
 			java.nio.file.Files.createDirectories(baseReportPath);
 			System.out.println(">>> Report directory created/verified: " + baseReportPath.toAbsolutePath());
 		}
-		catch (IOException e)
+		catch (final IOException e)
 		{
 			// Throw a RuntimeException since this is a critical failure before running the test
 			throw new RuntimeException("Failed to create report directory: " + baseReportPath.toAbsolutePath(), e);

@@ -14,6 +14,7 @@ public class MobileUIDistributionConfig
 	@NonNull DistributionJobCaptionFormat captionFormat;
 	@NonNull DistributionJobSorting sorting;
 	boolean isRequireScanningProductCode;
+	boolean isNavigateToJobsListAfterPickFromComplete;
 	boolean isCompleteJobAutomatically;
 
 	@NonNull @Default QueryLimit maxLaunchers = QueryLimit.NO_LIMIT;
