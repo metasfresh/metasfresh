@@ -109,7 +109,8 @@ public interface IDocTypeDAO extends ISingletonService
 
 	DocBaseType getDocBaseTypeById(@NonNull DocTypeId docTypeId);
 
-	DocBaseAndSubType getDocBaseAndSubTypeById(DocTypeId docTypeId);
+	@NonNull
+	DocBaseAndSubType getDocBaseAndSubTypeById(@NonNull DocTypeId docTypeId);
 
 	@NonNull
 	ImmutableList<I_C_DocType> retrieveForSelection(@NonNull PInstanceId pinstanceId);
