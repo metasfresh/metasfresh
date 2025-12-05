@@ -56,6 +56,7 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.archive.ArchiveId;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
@@ -83,6 +84,12 @@ public class DocOutboundService
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 	private final DocOutboundConfigRepository docOutboundConfigRepository;
+
+	public static DocOutboundService newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new DocOutboundService(DocOutboundConfigRepository.newInstanceForUnitTesting());
+	}
 
 	@Nullable
 	public String getDocumentEmail(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)

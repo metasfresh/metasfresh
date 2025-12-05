@@ -13,6 +13,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.archive.DocOutboundUtils;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.api.impl.DocOutboundService;
+import de.metas.document.archive.config.DocOutboundConfigRepository;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipients;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRegistry;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
@@ -38,6 +39,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
@@ -45,6 +47,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -59,6 +62,15 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 	@NonNull private final DocOutboundService docOutboundService;
 	@NonNull private final IDocOutboundDAO docOutboundDAO = Services.get(IDocOutboundDAO.class);
 	@NonNull private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
+
+	public static DocOutboundArchiveEventListener newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new DocOutboundArchiveEventListener(
+				AttachmentEntryService.createInstanceForUnitTesting(),
+				new DocOutboundLogMailRecipientRegistry(Optional.empty()),
+				DocOutboundService.newInstanceForUnitTesting());
+	}
 
 	@Override
 	public void onPdfUpdate(@Nullable final I_AD_Archive archive, @Nullable final UserId userId)
