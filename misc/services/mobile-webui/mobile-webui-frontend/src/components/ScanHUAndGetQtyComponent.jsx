@@ -84,7 +84,12 @@ const ScanHUAndGetQtyComponent = ({
   // IMPORTANT: this shall be called after the "Init / reset resolvedBarcodeData" effect
   useEffect(() => {
     if (scannedBarcodeParam) {
-      handleResolveHUScannedBarcode({ scannedBarcode: scannedBarcodeParam }).then(onHUBarcodeResolvedResult);
+      handleResolveHUScannedBarcode({ scannedBarcode: scannedBarcodeParam })
+        .then(onHUBarcodeResolvedResult)
+        .catch((error) => {
+          toastErrorFromObj(error);
+          setProgressStatus(STATUS_READ_HU_BARCODE);
+        });
     } else {
       setProgressStatus(STATUS_READ_HU_BARCODE);
     }
@@ -93,6 +98,9 @@ const ScanHUAndGetQtyComponent = ({
   const handleResolveHUScannedBarcode = async ({ scannedBarcode, huId }) => {
     // If an eligible barcode was provided, make sure the scanned barcode is matching it
     if (eligibleBarcode && scannedBarcode !== eligibleBarcode) {
+      console.warn(
+        `Scanned barcode (${scannedBarcode}) does not match the provided eligible barcode (${eligibleBarcode})`
+      );
       return {
         error: trl(invalidBarcodeMessageKey ?? DEFAULT_MSG_notEligibleHUBarcode),
       };
