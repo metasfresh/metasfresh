@@ -22,17 +22,24 @@ package de.metas.document.archive.api.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.document.archive.DocOutboundLogId;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
+import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
 import de.metas.document.engine.DocStatus;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
@@ -47,7 +54,12 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Archive;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -119,7 +131,7 @@ public class DocOutboundDAO implements IDocOutboundDAO
 	}
 
 	@Override
-	public I_C_Doc_Outbound_Log retrieveLog(final IContextAware contextProvider, int bpartnerId, int AD_Table_ID)
+	public I_C_Doc_Outbound_Log retrieveLog(final IContextAware contextProvider, final int bpartnerId, final int AD_Table_ID)
 	{
 		final IQueryBuilder<I_C_Doc_Outbound_Log> queryBuilder = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class, contextProvider)
 				.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMNNAME_C_BPartner_ID, bpartnerId)
@@ -163,6 +175,20 @@ public class DocOutboundDAO implements IDocOutboundDAO
 				.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMN_Record_ID, tableRecordReference.getRecord_ID())
 				.create()
 				.firstOnly(I_C_Doc_Outbound_Log.class);
+	}
+
+	@Override
+	@NonNull
+	public ImmutableList<I_C_Doc_Outbound_Log> retrieveLogs(@NonNull final IQueryFilter<I_C_Doc_Outbound_Log> filter, final boolean isFilterCurrentMailSet)
+	{
+		final IQueryBuilder<I_C_Doc_Outbound_Log> builder = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class)
+				.addOnlyActiveRecordsFilter()
+				.filter(filter);
+		if(isFilterCurrentMailSet)
+		{
+			builder.addNotNull(I_C_Doc_Outbound_Log.COLUMNNAME_CurrentEMailAddress);
+		}
+		return builder.create().listImmutable(I_C_Doc_Outbound_Log.class);
 	}
 
 	@Override
@@ -212,4 +238,56 @@ public class DocOutboundDAO implements IDocOutboundDAO
 				.create()
 				.update(queryUpdaterLogLine);
 	}
+
+	@Override
+	@NonNull
+	public ImmutableList<LogWithLines> retrieveLogsWithLines(@NonNull final ImmutableList<I_C_Doc_Outbound_Log> logs)
+	{
+		if (logs.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final ImmutableSet<DocOutboundLogId> ids = logs.stream()
+				.map(log -> DocOutboundLogId.ofRepoId(log.getC_Doc_Outbound_Log_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+
+		final Map<Integer, List<I_C_Doc_Outbound_Log_Line>> linesByLogId = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log_Line.class)
+				.addInArrayFilter(I_C_Doc_Outbound_Log_Line.COLUMNNAME_C_Doc_Outbound_Log_ID, ids)
+				.create()
+				.list()
+				.stream()
+				.collect(Collectors.groupingBy(I_C_Doc_Outbound_Log_Line::getC_Doc_Outbound_Log_ID));
+
+		return logs.stream()
+				.map(log -> LogWithLines.builder()
+						.log(log)
+						.lines(linesByLogId.getOrDefault(log.getC_Doc_Outbound_Log_ID(), Collections.emptyList()))
+						.build())
+				.collect(ImmutableList.toImmutableList());
+	}
+
+
+	@Value
+	@Builder(toBuilder = true)
+	public static class LogWithLines
+	{
+		@NonNull I_C_Doc_Outbound_Log log;
+		@NonNull @Singular List<I_C_Doc_Outbound_Log_Line> lines;
+
+		public Optional<I_C_Doc_Outbound_Log_Line> findCurrentPDFArchiveLogLine()
+		{
+			return getLines().stream()
+					.filter(line -> ArchiveAction.PDF_EXPORT.getCode().equals(line.getAction()))
+					.max(Comparator.comparingInt(I_C_Doc_Outbound_Log_Line::getC_Doc_Outbound_Log_Line_ID));
+		}
+
+		public boolean wasEmailSentAtLeastOnce()
+		{
+			return getLines().stream()
+					.anyMatch(line -> X_C_Doc_Outbound_Log_Line.ACTION_EMail.equals(line.getAction()) &&
+							X_C_Doc_Outbound_Log_Line.STATUS_Email_Success.equals(line.getStatus()));
+		}
+	}
+
 }

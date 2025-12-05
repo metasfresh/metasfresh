@@ -29,6 +29,7 @@ import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.archive.DocOutboundLogId;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.async.spi.impl.MailWorkpackageProcessor;
 import de.metas.document.archive.config.DocOutboundConfig;
@@ -51,9 +52,9 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.archive.ArchiveId;
-import org.adempiere.util.lang.MutableInt;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
@@ -62,6 +63,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
@@ -74,7 +76,6 @@ public class DocOutboundService
 	private static final AdMessageKey MSG_EMPTY_AD_Archive_ID = AdMessageKey.of("SendMailsForSelection.EMPTY_AD_Archive_ID");
 
 	private final IDocOutboundDAO docOutboundDAO = Services.get(IDocOutboundDAO.class);
-	private final IDocOutboundDAO archiveDAO = Services.get(IDocOutboundDAO.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
@@ -138,11 +139,17 @@ public class DocOutboundService
 			@NonNull final TableRecordReference recordReference,
 			@Nullable final String poReference)
 	{
-		archiveDAO.updatePOReferenceIfExists(recordReference, poReference);
+		docOutboundDAO.updatePOReferenceIfExists(recordReference, poReference);
 	}
 
-	public void sendMailAutomaticallyIfActive(@NonNull final I_C_Doc_Outbound_Log docOutboundLog)
+	public ImmutableList<I_C_Doc_Outbound_Log> retrieveLogs(@NonNull final IQueryFilter<I_C_Doc_Outbound_Log> filter, final boolean isFilterCurrentMailSet)
 	{
+		return docOutboundDAO.retrieveLogs(filter, isFilterCurrentMailSet);
+	}
+
+	public void sendMailAutomaticallyIfActive(@NonNull final I_C_Doc_Outbound_Log_Line docOutboundLogLine)
+	{
+		final I_C_Doc_Outbound_Log docOutboundLog = docOutboundDAO.retrieveLog(DocOutboundLogId.ofRepoId(docOutboundLogLine.getC_Doc_Outbound_Log_ID()));
 		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(docOutboundLog.getC_DocType_ID());
 		final DocBaseType docBaseType = docTypeId != null ? docTypeDAO.getDocBaseTypeById(docTypeId) : null;
 
@@ -153,22 +160,51 @@ public class DocOutboundService
 				.build());
 		if (config != null && config.isAutoSendDocument())
 		{
-			sendMail(Stream.of(docOutboundLog), null, true, false);
+			sendMails(Stream.of(docOutboundLogLine), null, true);
 		}
 	}
 
-
-
-	public MutableInt sendMail(@NonNull final Stream<I_C_Doc_Outbound_Log> docOutboundLogStream,
-							   @Nullable final PInstanceId pInstanceId,
-							   final boolean isBindToThreadInheritedTrx,
-							   final boolean onlyNotSendMails)
+	public int sendMails(@NonNull final IQueryFilter<I_C_Doc_Outbound_Log> filter,
+						@Nullable final PInstanceId pInstanceId,
+						final boolean isBindToThreadInheritedTrx,
+						final boolean onlyNotSendMails)
 	{
-		final MutableInt counter = MutableInt.zero();
+		final ImmutableList<DocOutboundDAO.LogWithLines> logsWithLines = docOutboundDAO.retrieveLogsWithLines(docOutboundDAO.retrieveLogs(filter, true));
+		final Stream<I_C_Doc_Outbound_Log_Line> lines = getPDFArchiveDocOutboundLines(logsWithLines, onlyNotSendMails);
+		return sendMails(lines, pInstanceId, isBindToThreadInheritedTrx);
+	}
+
+	private Stream<I_C_Doc_Outbound_Log_Line> getPDFArchiveDocOutboundLines(@NonNull final ImmutableList<DocOutboundDAO.LogWithLines> logsWithLines, final boolean onlyNotSendMails)
+	{
+		return logsWithLines.stream()
+				.map(logWithLines -> logWithLines.findCurrentPDFArchiveLogLine()
+						.filter(currentLine -> isEmailSendable(logWithLines, currentLine, onlyNotSendMails))
+						.orElse(null))
+				.filter(Objects::nonNull);
+	}
+
+	private boolean isEmailSendable(@NonNull final DocOutboundDAO.LogWithLines logWithLines, @NonNull final I_C_Doc_Outbound_Log_Line currentLogLine, final boolean onlyNotSendMails)
+	{
+		if (ArchiveId.ofRepoIdOrNull(currentLogLine.getAD_Archive_ID()) == null)
+		{
+			final I_C_Doc_Outbound_Log log = logWithLines.getLog();
+			Loggables.addLog(msgBL.getMsg( MSG_EMPTY_AD_Archive_ID, ImmutableList.of(StringUtils.nullToEmpty(log.getDocumentNo()))));
+			return false;
+		}
+
+		return !onlyNotSendMails || !logWithLines.wasEmailSentAtLeastOnce();
+	}
+
+
+	private int sendMails(@NonNull final Stream<I_C_Doc_Outbound_Log_Line> lines,
+						@Nullable final PInstanceId pInstanceId,
+						final boolean isBindToThreadInheritedTrx)
+	{
+		final AtomicInteger counter = new AtomicInteger();
 
 		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(MailWorkpackageProcessor.class);
 
-		getPDFArchiveDocOutboundLines(docOutboundLogStream, onlyNotSendMails).forEach(docOutboundLogLine -> {
+		lines.forEach(docOutboundLogLine -> {
 			final IWorkPackageBuilder builder = queue.newWorkPackage()
 					.addElement(docOutboundLogLine);
 
@@ -181,36 +217,10 @@ public class DocOutboundService
 				builder.bindToThreadInheritedTrx();
 			}
 
-
 			builder.buildAndEnqueue();
 
-			counter.incrementAndGet();
+			counter.getAndIncrement();
 		});
-		return counter;
-	}
-
-	private Stream<I_C_Doc_Outbound_Log_Line> getPDFArchiveDocOutboundLines(@NonNull final Stream<I_C_Doc_Outbound_Log> docOutboundLogStream, final boolean onlyNotSendMails)
-	{
-		return docOutboundLogStream.map(docOutboundDAO::retrieveCurrentPDFArchiveLogLineOrNull)
-				.filter(Objects::nonNull)
-				.filter(line -> isEmailSendable(line, onlyNotSendMails));
-	}
-
-	private boolean isEmailSendable(@NonNull final I_C_Doc_Outbound_Log_Line logLine, final boolean onlyNotSendMails)
-	{
-		if (ArchiveId.ofRepoIdOrNull(logLine.getAD_Archive_ID()) == null)
-		{
-			final I_C_Doc_Outbound_Log docOutBoundLogRecord = logLine.getC_Doc_Outbound_Log();
-			Loggables.addLog(msgBL.getMsg( MSG_EMPTY_AD_Archive_ID, ImmutableList.of(StringUtils.nullToEmpty(docOutBoundLogRecord.getDocumentNo()))));
-			return false;
-		}
-
-		return !onlyNotSendMails || !isSentAtLeastOnce(logLine);
-	}
-
-	private boolean isSentAtLeastOnce(final I_C_Doc_Outbound_Log_Line docOutboundLine)
-	{
-		final I_C_Doc_Outbound_Log log = docOutboundLine.getC_Doc_Outbound_Log();
-		return log.getEMailCount() > 0;
+		return counter.get();
 	}
 }

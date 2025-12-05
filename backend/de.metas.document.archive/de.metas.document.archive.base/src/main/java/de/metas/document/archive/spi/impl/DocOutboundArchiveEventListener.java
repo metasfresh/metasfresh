@@ -12,6 +12,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.document.archive.DocOutboundUtils;
 import de.metas.document.archive.api.IDocOutboundDAO;
+import de.metas.document.archive.api.impl.DocOutboundService;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipients;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRegistry;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
@@ -22,12 +23,12 @@ import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.email.EMailAddress;
 import de.metas.email.mailboxes.UserEMailConfig;
-import de.metas.i18n.IMsgBL;
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.archive.ArchiveId;
 import org.adempiere.archive.api.ArchiveAction;
 import org.adempiere.archive.api.ArchiveEmailSentStatus;
@@ -50,21 +51,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 @Component
+@RequiredArgsConstructor
 public class DocOutboundArchiveEventListener implements IArchiveEventListener
 {
-	private final AttachmentEntryService attachmentEntryService;
-	private final DocOutboundLogMailRecipientRegistry docOutboundLogMailRecipientRegistry;
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final IDocOutboundDAO docOutboundDAO = Services.get(IDocOutboundDAO.class);
-	private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-
-	public DocOutboundArchiveEventListener(
-			@NonNull final AttachmentEntryService attachmentEntryService,
-			@NonNull final DocOutboundLogMailRecipientRegistry docOutboundLogMailRecipientRegistry)
-	{
-		this.attachmentEntryService = attachmentEntryService;
-		this.docOutboundLogMailRecipientRegistry = docOutboundLogMailRecipientRegistry;
-	}
+	@NonNull private final AttachmentEntryService attachmentEntryService;
+	@NonNull private final DocOutboundLogMailRecipientRegistry docOutboundLogMailRecipientRegistry;
+	@NonNull private final DocOutboundService docOutboundService;
+	@NonNull private final IDocOutboundDAO docOutboundDAO = Services.get(IDocOutboundDAO.class);
+	@NonNull private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
 	@Override
 	public void onPdfUpdate(@Nullable final I_AD_Archive archive, @Nullable final UserId userId)
@@ -156,6 +150,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		docOutboundLogLineRecord.setStatus(status.getCode());
 
 		save(docOutboundLogLineRecord);
+		docOutboundService.sendMailAutomaticallyIfActive(docOutboundLogLineRecord);
 	}
 
 	@Override

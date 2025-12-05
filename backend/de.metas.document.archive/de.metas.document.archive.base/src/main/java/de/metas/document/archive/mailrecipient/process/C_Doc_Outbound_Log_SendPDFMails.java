@@ -14,18 +14,11 @@ import de.metas.process.Param;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.SelectionSize;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ConstantQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.MutableInt;
 import org.compiere.SpringContextHolder;
-
-import java.util.Iterator;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 public class C_Doc_Outbound_Log_SendPDFMails
 	extends JavaProcess
@@ -35,8 +28,7 @@ public class C_Doc_Outbound_Log_SendPDFMails
 	private static final AdMessageKey MSG_No_DocOutboundLog_Selection = AdMessageKey.of("AbstractMailDocumentsForSelection.No_DocOutboundLog_Selection");
 	private static final String PARA_OnlyNotSentMails = "OnlyNotSentMails";
 
-	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final transient DocOutboundService docOutboundService = SpringContextHolder.instance.getBean(DocOutboundService.class);
+	@NonNull private final transient DocOutboundService docOutboundService = SpringContextHolder.instance.getBean(DocOutboundService.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
@@ -70,18 +62,7 @@ public class C_Doc_Outbound_Log_SendPDFMails
 	@Override
 	protected final void prepare()
 	{
-		final IQueryFilter<I_C_Doc_Outbound_Log> filter = getFilter();
-		final PInstanceId pinstanceId = getPinstanceId();
-
-		//
-		// Create selection for PInstance and make sure we're enqueuing something
-		final int selectionCount = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class, this)
-				.addOnlyActiveRecordsFilter()
-				.filter(filter)
-				.create()
-				.createSelection(pinstanceId);
-
-		if (selectionCount == 0)
+		if (docOutboundService.retrieveLogs(getFilter(), true).isEmpty())
 		{
 			throw new AdempiereException(MSG_No_DocOutboundLog_Selection);
 		}
@@ -90,32 +71,15 @@ public class C_Doc_Outbound_Log_SendPDFMails
 	protected IQueryFilter<I_C_Doc_Outbound_Log> getFilter()
 	{
 		final ProcessInfo pi = getProcessInfo();
-		final IQueryFilter<I_C_Doc_Outbound_Log> selectedRecordsFilter = pi.getQueryFilterOrElse(ConstantQueryFilter.of(false));
-
-		return queryBL
-				.createCompositeQueryFilter(I_C_Doc_Outbound_Log.class)
-				.addNotNull(I_C_Doc_Outbound_Log.COLUMNNAME_CurrentEMailAddress)
-				.addFilter(selectedRecordsFilter);
+		return pi.getQueryFilterOrElse(ConstantQueryFilter.of(false));
 	}
 
 	@Override
 	protected final String doIt() throws Exception
 	{
 		final PInstanceId pinstanceId = getPinstanceId();
-		final MutableInt counter = docOutboundService.sendMail( retrieveSelectedDocOutboundLogs(pinstanceId), pinstanceId, false, p_OnlyNotSentMails);
+		final int counter = docOutboundService.sendMails( getFilter(), pinstanceId, false, p_OnlyNotSentMails);
 
-		return msgBL.getMsg(Async_Constants.MSG_WORKPACKAGES_CREATED, ImmutableList.of(counter.getValue()));
-	}
-
-	private Stream<I_C_Doc_Outbound_Log> retrieveSelectedDocOutboundLogs(final PInstanceId pinstanceId)
-	{
-		final Iterator<I_C_Doc_Outbound_Log> iterator = queryBL
-				.createQueryBuilder(I_C_Doc_Outbound_Log.class)
-				.setOnlySelection(pinstanceId)
-				.create()
-				.iterate(I_C_Doc_Outbound_Log.class);
-
-		final Iterable<I_C_Doc_Outbound_Log> iterable = () -> iterator;
-		return StreamSupport.stream(iterable.spliterator(), false);
+		return msgBL.getMsg(Async_Constants.MSG_WORKPACKAGES_CREATED, ImmutableList.of(counter));
 	}
 }

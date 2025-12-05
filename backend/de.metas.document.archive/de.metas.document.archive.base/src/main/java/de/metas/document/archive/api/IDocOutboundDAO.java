@@ -22,13 +22,16 @@ package de.metas.document.archive.api;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
 import de.metas.document.archive.DocOutboundLogId;
+import de.metas.document.archive.api.impl.DocOutboundDAO;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.engine.DocStatus;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.archive.ArchiveId;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -71,7 +74,13 @@ public interface IDocOutboundDAO extends ISingletonService
 	 */
 	I_C_Doc_Outbound_Log retrieveLog(final IContextAware contextProvider, int bpartnerId, int AD_Table_ID);
 
+	@NonNull
+	ImmutableList<I_C_Doc_Outbound_Log> retrieveLogs(@NonNull IQueryFilter<I_C_Doc_Outbound_Log> filter, boolean isFilterCurrentMailSet);
+
 	void updatePOReferenceIfExists(@NonNull TableRecordReference recordReference, @Nullable String poReference);
 
 	void updateLogAndLinesDocStatus(@NonNull TableRecordReference tableRecordReference, @Nullable DocStatus docStatus);
+
+	@NonNull
+	ImmutableList<DocOutboundDAO.LogWithLines> retrieveLogsWithLines(@NonNull final ImmutableList<I_C_Doc_Outbound_Log> logs);
 }
