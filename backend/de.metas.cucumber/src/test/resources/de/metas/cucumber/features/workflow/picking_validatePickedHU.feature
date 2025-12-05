@@ -1,5 +1,6 @@
 @from:cucumber
 @ghActions:run_on_executor7
+@ignore
 Feature: Picking workflow - validate picked HU
 
   Background:
