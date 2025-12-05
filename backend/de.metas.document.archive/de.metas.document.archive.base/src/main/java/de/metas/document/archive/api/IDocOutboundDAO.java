@@ -24,20 +24,26 @@ package de.metas.document.archive.api;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.document.archive.DocOutboundLogId;
-import de.metas.document.archive.api.impl.DocOutboundDAO;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
+import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
 import de.metas.document.engine.DocStatus;
 import de.metas.util.ISingletonService;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.archive.ArchiveId;
+import org.adempiere.archive.api.ArchiveAction;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public interface IDocOutboundDAO extends ISingletonService
@@ -82,5 +88,27 @@ public interface IDocOutboundDAO extends ISingletonService
 	void updateLogAndLinesDocStatus(@NonNull TableRecordReference tableRecordReference, @Nullable DocStatus docStatus);
 
 	@NonNull
-	ImmutableList<DocOutboundDAO.LogWithLines> retrieveLogsWithLines(@NonNull final ImmutableList<I_C_Doc_Outbound_Log> logs);
+	ImmutableList<LogWithLines> retrieveLogsWithLines(@NonNull final ImmutableList<I_C_Doc_Outbound_Log> logs);
+
+	@Value
+	@Builder(toBuilder = true)
+	class LogWithLines
+	{
+		@NonNull I_C_Doc_Outbound_Log log;
+		@NonNull @Singular List<I_C_Doc_Outbound_Log_Line> lines;
+
+		public Optional<I_C_Doc_Outbound_Log_Line> findCurrentPDFArchiveLogLine()
+		{
+			return getLines().stream()
+					.filter(line -> ArchiveAction.PDF_EXPORT.getCode().equals(line.getAction()))
+					.max(Comparator.comparingInt(I_C_Doc_Outbound_Log_Line::getC_Doc_Outbound_Log_Line_ID));
+		}
+
+		public boolean wasEmailSentAtLeastOnce()
+		{
+			return getLines().stream()
+					.anyMatch(line -> ArchiveAction.EMAIL.getCode().equals(line.getAction()) &&
+							X_C_Doc_Outbound_Log_Line.STATUS_Email_Success.equals(line.getStatus()));
+		}
+	}
 }

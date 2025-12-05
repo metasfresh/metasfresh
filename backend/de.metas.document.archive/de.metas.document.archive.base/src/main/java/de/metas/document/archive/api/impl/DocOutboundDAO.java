@@ -28,14 +28,10 @@ import de.metas.document.archive.DocOutboundLogId;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
-import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
 import de.metas.document.engine.DocStatus;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -55,10 +51,8 @@ import org.compiere.model.I_AD_Archive;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -266,28 +260,4 @@ public class DocOutboundDAO implements IDocOutboundDAO
 						.build())
 				.collect(ImmutableList.toImmutableList());
 	}
-
-
-	@Value
-	@Builder(toBuilder = true)
-	public static class LogWithLines
-	{
-		@NonNull I_C_Doc_Outbound_Log log;
-		@NonNull @Singular List<I_C_Doc_Outbound_Log_Line> lines;
-
-		public Optional<I_C_Doc_Outbound_Log_Line> findCurrentPDFArchiveLogLine()
-		{
-			return getLines().stream()
-					.filter(line -> ArchiveAction.PDF_EXPORT.getCode().equals(line.getAction()))
-					.max(Comparator.comparingInt(I_C_Doc_Outbound_Log_Line::getC_Doc_Outbound_Log_Line_ID));
-		}
-
-		public boolean wasEmailSentAtLeastOnce()
-		{
-			return getLines().stream()
-					.anyMatch(line -> X_C_Doc_Outbound_Log_Line.ACTION_EMail.equals(line.getAction()) &&
-							X_C_Doc_Outbound_Log_Line.STATUS_Email_Success.equals(line.getStatus()));
-		}
-	}
-
 }

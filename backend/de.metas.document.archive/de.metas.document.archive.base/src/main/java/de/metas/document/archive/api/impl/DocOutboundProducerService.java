@@ -24,9 +24,11 @@ package de.metas.document.archive.api.impl;
 
 import de.metas.document.archive.api.IDocOutboundProducerService;
 import de.metas.document.archive.spi.IDocOutboundProducer;
+import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.ad.table.api.AdTableId;
+import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,8 +43,9 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class DocOutboundProducerService implements IDocOutboundProducerService
 {
-	private final HashMap<AdTableId, IDocOutboundProducer> outboundProducers = new HashMap<>();
-	private final ReentrantLock outboundProducersLock = new ReentrantLock();
+	@NonNull private static final Logger logger = LogManager.getLogger(DocOutboundProducerService.class);
+	@NonNull private final HashMap<AdTableId, IDocOutboundProducer> outboundProducers = new HashMap<>();
+	@NonNull private final ReentrantLock outboundProducersLock = new ReentrantLock();
 
 	@Override
 	public void registerProducer(final IDocOutboundProducer producer)
@@ -64,6 +67,7 @@ public class DocOutboundProducerService implements IDocOutboundProducerService
 		Check.assumeNotNull(tableId, "Producer {} shall have a tableId", producer);
 		if(outboundProducers.containsKey(tableId))
 		{
+			logger.warn("Tried to register producer for tableId {} but it was already registered. This should be checked beforehand.", tableId);
 			return;
 		}
 

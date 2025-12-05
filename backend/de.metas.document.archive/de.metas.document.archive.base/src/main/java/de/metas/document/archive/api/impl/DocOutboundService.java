@@ -29,7 +29,6 @@ import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
-import de.metas.document.archive.DocOutboundLogId;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.async.spi.impl.MailWorkpackageProcessor;
 import de.metas.document.archive.config.DocOutboundConfig;
@@ -154,9 +153,8 @@ public class DocOutboundService
 		return docOutboundDAO.retrieveLogs(filter, isFilterCurrentMailSet);
 	}
 
-	public void sendMailAutomaticallyIfActive(@NonNull final I_C_Doc_Outbound_Log_Line docOutboundLogLine)
+	public void sendMailAutomaticallyIfActive(@NonNull final I_C_Doc_Outbound_Log docOutboundLog)
 	{
-		final I_C_Doc_Outbound_Log docOutboundLog = docOutboundDAO.retrieveLog(DocOutboundLogId.ofRepoId(docOutboundLogLine.getC_Doc_Outbound_Log_ID()));
 		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(docOutboundLog.getC_DocType_ID());
 		final DocBaseType docBaseType = docTypeId != null ? docTypeDAO.getDocBaseTypeById(docTypeId) : null;
 
@@ -165,23 +163,24 @@ public class DocOutboundService
 						.docBaseType(docBaseType)
 						.orgId(OrgId.ofRepoId(docOutboundLog.getAD_Org_ID()))
 				.build());
-		if (config != null && config.isAutoSendDocument())
+		if (config != null && config.isAutoSendDocument() && StringUtils.trimBlankToNull(docOutboundLog.getCurrentEMailAddress()) != null)
 		{
-			sendMails(Stream.of(docOutboundLogLine), null, true);
+			final ImmutableList<IDocOutboundDAO.LogWithLines> logsWithLines = docOutboundDAO.retrieveLogsWithLines(ImmutableList.of(docOutboundLog));
+			final Stream<I_C_Doc_Outbound_Log_Line> lines = getPDFArchiveDocOutboundLines(logsWithLines, true);
+			sendMails(lines, null);
 		}
 	}
 
 	public int sendMails(@NonNull final IQueryFilter<I_C_Doc_Outbound_Log> filter,
 						@Nullable final PInstanceId pInstanceId,
-						final boolean isBindToThreadInheritedTrx,
 						final boolean onlyNotSendMails)
 	{
-		final ImmutableList<DocOutboundDAO.LogWithLines> logsWithLines = docOutboundDAO.retrieveLogsWithLines(docOutboundDAO.retrieveLogs(filter, true));
+		final ImmutableList<IDocOutboundDAO.LogWithLines> logsWithLines = docOutboundDAO.retrieveLogsWithLines(docOutboundDAO.retrieveLogs(filter, true));
 		final Stream<I_C_Doc_Outbound_Log_Line> lines = getPDFArchiveDocOutboundLines(logsWithLines, onlyNotSendMails);
-		return sendMails(lines, pInstanceId, isBindToThreadInheritedTrx);
+		return sendMails(lines, pInstanceId);
 	}
 
-	private Stream<I_C_Doc_Outbound_Log_Line> getPDFArchiveDocOutboundLines(@NonNull final ImmutableList<DocOutboundDAO.LogWithLines> logsWithLines, final boolean onlyNotSendMails)
+	private Stream<I_C_Doc_Outbound_Log_Line> getPDFArchiveDocOutboundLines(@NonNull final ImmutableList<IDocOutboundDAO.LogWithLines> logsWithLines, final boolean onlyNotSendMails)
 	{
 		return logsWithLines.stream()
 				.map(logWithLines -> logWithLines.findCurrentPDFArchiveLogLine()
@@ -190,7 +189,7 @@ public class DocOutboundService
 				.filter(Objects::nonNull);
 	}
 
-	private boolean isEmailSendable(@NonNull final DocOutboundDAO.LogWithLines logWithLines, @NonNull final I_C_Doc_Outbound_Log_Line currentLogLine, final boolean onlyNotSendMails)
+	private boolean isEmailSendable(@NonNull final IDocOutboundDAO.LogWithLines logWithLines, @NonNull final I_C_Doc_Outbound_Log_Line currentLogLine, final boolean onlyNotSendMails)
 	{
 		if (ArchiveId.ofRepoIdOrNull(currentLogLine.getAD_Archive_ID()) == null)
 		{
@@ -204,8 +203,7 @@ public class DocOutboundService
 
 
 	private int sendMails(@NonNull final Stream<I_C_Doc_Outbound_Log_Line> lines,
-						@Nullable final PInstanceId pInstanceId,
-						final boolean isBindToThreadInheritedTrx)
+						@Nullable final PInstanceId pInstanceId)
 	{
 		final AtomicInteger counter = new AtomicInteger();
 
@@ -213,15 +211,12 @@ public class DocOutboundService
 
 		lines.forEach(docOutboundLogLine -> {
 			final IWorkPackageBuilder builder = queue.newWorkPackage()
-					.addElement(docOutboundLogLine);
+					.addElement(docOutboundLogLine)
+					.bindToThreadInheritedTrx();
 
 			if (pInstanceId != null)
 			{
 				builder.setAD_PInstance_ID(pInstanceId);
-			}
-			if (isBindToThreadInheritedTrx)
-			{
-				builder.bindToThreadInheritedTrx();
 			}
 
 			builder.buildAndEnqueue();

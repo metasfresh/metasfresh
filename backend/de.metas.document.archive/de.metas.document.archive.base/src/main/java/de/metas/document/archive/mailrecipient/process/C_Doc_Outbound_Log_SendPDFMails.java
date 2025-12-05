@@ -13,6 +13,7 @@ import de.metas.process.PInstanceId;
 import de.metas.process.Param;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.RunOutOfTrx;
 import de.metas.process.SelectionSize;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ConstantQueryFilter;
@@ -75,10 +76,11 @@ public class C_Doc_Outbound_Log_SendPDFMails
 	}
 
 	@Override
+	@RunOutOfTrx
 	protected final String doIt() throws Exception
 	{
 		final PInstanceId pinstanceId = getPinstanceId();
-		final int counter = docOutboundService.sendMails( getFilter(), pinstanceId, false, p_OnlyNotSentMails);
+		final int counter = docOutboundService.sendMails( getFilter(), pinstanceId, p_OnlyNotSentMails);
 
 		return msgBL.getMsg(Async_Constants.MSG_WORKPACKAGES_CREATED, ImmutableList.of(counter));
 	}

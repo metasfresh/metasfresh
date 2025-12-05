@@ -13,7 +13,6 @@ import de.metas.document.DocTypeId;
 import de.metas.document.archive.DocOutboundUtils;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.api.impl.DocOutboundService;
-import de.metas.document.archive.config.DocOutboundConfigRepository;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipients;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRegistry;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
@@ -97,6 +96,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		final I_C_Doc_Outbound_Log log = docExchangeLine.getC_Doc_Outbound_Log();
 		log.setDateLastPrint(SystemTime.asTimestamp());
 		save(log);
+		docOutboundService.sendMailAutomaticallyIfActive(log);
 	}
 
 	@Override
@@ -162,7 +162,6 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		docOutboundLogLineRecord.setStatus(status.getCode());
 
 		save(docOutboundLogLineRecord);
-		docOutboundService.sendMailAutomaticallyIfActive(docOutboundLogLineRecord);
 	}
 
 	@Override
