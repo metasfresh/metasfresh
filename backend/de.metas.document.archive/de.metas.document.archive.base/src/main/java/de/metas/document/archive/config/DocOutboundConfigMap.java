@@ -1,6 +1,7 @@
 package de.metas.document.archive.config;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -15,7 +16,7 @@ import java.util.List;
 final class DocOutboundConfigMap
 {
 	private final ImmutableMap<DocOutboundConfigQuery, DocOutboundConfig> byQuery;
-	private final ImmutableMap<AdTableId, ImmutableList<DocOutboundConfig>> byTableId;
+	private final ImmutableListMultimap<AdTableId, DocOutboundConfig> byTableId;
 
 	DocOutboundConfigMap(final List<DocOutboundConfig> list)
 	{
@@ -25,7 +26,7 @@ final class DocOutboundConfigMap
 				.orgId(config.getOrgId())
 				.build()
 		);
-		this.byTableId = list.stream().collect(ImmutableMap.toImmutableMap(DocOutboundConfig::getTableId, ImmutableList::of));
+		this.byTableId = list.stream().collect(ImmutableListMultimap.toImmutableListMultimap(DocOutboundConfig::getTableId, config -> config));
 	}
 
 	public ImmutableSet<AdTableId> getTableIds() {return this.byTableId.keySet();}
@@ -44,6 +45,6 @@ final class DocOutboundConfigMap
 	@NonNull
 	public ImmutableList<DocOutboundConfig> getByTableId(@NonNull final AdTableId tableId)
 	{
-		return byTableId.getOrDefault(tableId, ImmutableList.of());
+		return byTableId.get(tableId);
 	}
 }
