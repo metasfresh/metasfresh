@@ -64,6 +64,7 @@ public class JsonMobileConfigResponse
 	{
 		@Nullable Boolean allowPickingAnyHU;
 		@Nullable Boolean requireScanningProductCode;
+		@Nullable Boolean navigateToJobsListAfterPickFromComplete;
 		@Nullable Boolean completeJobAutomatically;
 	}
 

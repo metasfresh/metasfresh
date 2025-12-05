@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { getNextEligiblePickFromLine, postDistributionPickFrom } from '../../../api/distribution';
+import { getNextEligiblePickFromLine } from '../../../api/distribution';
 import { toQRCodeString } from '../../../utils/qrCode/hu';
-import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { trl } from '../../../utils/translations';
 import { distributionJobScreenLocation, distributionLineScreenLocation } from '../../../routes/distribution';
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
@@ -14,6 +13,7 @@ import { getLineByIdFromActivity, useWFActivity } from '../../../reducers/wfProc
 import { computeQtyToPickRemaining } from '../../../reducers/wfProcesses/distribution/computeQtyToPickRemaining';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { isRequireScanningProductCode } from '../../../reducers/wfProcesses/distribution/getDistributionJobCompleteStatus';
+import { postDistributionPickFromThunk } from '../../../apps/distribution/redux/postDistributionPickFromThunk';
 
 const DistributionPickFromScreen = () => {
   const {
@@ -71,18 +71,16 @@ const DistributionPickFromScreen = () => {
   };
 
   const onResult = ({ qty, scannedBarcode: huScannedCode, lineId: lineIdParam }) => {
-    return postDistributionPickFrom({
-      wfProcessId,
-      activityId,
-      lineId: lineIdParam ? lineIdParam : lineId,
-      pickFrom: {
-        qrCode: toQRCodeString(huScannedCode),
-        qtyPicked: qty,
-      },
-    }).then((wfProcess) => {
-      dispatch(updateWFProcess({ wfProcess }));
-      history.goBack();
-    });
+    return dispatch(
+      postDistributionPickFromThunk({
+        history,
+        wfProcessId,
+        activityId,
+        lineId: lineIdParam ? lineIdParam : lineId,
+        huScannedCode,
+        qty,
+      })
+    );
   };
 
   return (

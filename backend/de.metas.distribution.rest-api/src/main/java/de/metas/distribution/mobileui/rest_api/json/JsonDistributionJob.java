@@ -18,6 +18,7 @@ public class JsonDistributionJob
 	@NonNull List<JsonDistributionJobLine> lines;
 	boolean requireScanningProductCode;
 	boolean completeJobAutomatically;
+	boolean navigateToJobsListAfterPickFromComplete;
 	@NonNull JsonRejectReasonsList qtyRejectedReasons;
 
 	public static JsonDistributionJob.JsonDistributionJobBuilder builderFrom(
