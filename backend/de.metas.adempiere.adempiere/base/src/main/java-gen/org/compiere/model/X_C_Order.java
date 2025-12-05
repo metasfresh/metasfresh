@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Order
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1340350522L;
+	private static final long serialVersionUID = -370267365L;
 
     /** Standard Constructor */
     public X_C_Order (final Properties ctx, final int C_Order_ID, @Nullable final String trxName)
@@ -1383,18 +1383,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public void setIsConfirmedBySupplier (final boolean IsConfirmedBySupplier)
-	{
-		set_Value (COLUMNNAME_IsConfirmedBySupplier, IsConfirmedBySupplier);
-	}
-
-	@Override
-	public boolean isConfirmedBySupplier()
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsConfirmedBySupplier);
-	}
-
-	@Override
 	public void setIsCreditApproved (final boolean IsCreditApproved)
 	{
 		set_ValueNoCheck (COLUMNNAME_IsCreditApproved, IsCreditApproved);
@@ -2022,17 +2010,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public java.lang.String getPromotionCode() 
 	{
 		return get_ValueAsString(COLUMNNAME_PromotionCode);
-	}
-
-	@Override
-	public void setPurchaser_User_ID (final int Purchaser_User_ID)
-	{
-		throw new IllegalArgumentException ("Purchaser_User_ID is virtual column");	}
-
-	@Override
-	public int getPurchaser_User_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_Purchaser_User_ID);
 	}
 
 	@Override
