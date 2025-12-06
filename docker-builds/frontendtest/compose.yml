@@ -33,6 +33,7 @@ services:
       start_period: 60s
       retries: 30
     environment:
+      # TEST ONLY - DO NOT USE IN PRODUCTION
       - RABBITMQ_DEFAULT_USER=metasfresh
       - RABBITMQ_DEFAULT_PASS=metasfresh
       - RABBITMQ_DEFAULT_VHOST=/

@@ -216,7 +216,7 @@ class ActionButton extends PureComponent {
           }
           title={item.description ? item.description : null}
           onClick={() => this.handleChangeStatus(item)}
-          data-testid={`status-${item.key}`}
+          data-testid={`status-${item.key || 'unknown'}`}
         >
           {item.caption}
         </li>

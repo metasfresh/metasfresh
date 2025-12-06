@@ -21,7 +21,9 @@ const ModalButton = ({
       onMouseLeave={() => onHideTooltip && onHideTooltip(name)}
       disabled={disabled}
       data-testid={
-        name ? `modal-${name.toLowerCase().replace(/\s+/g, '-')}` : undefined
+        name
+          ? `modal-${name.toLowerCase().replace(/\s+/g, '-')}`
+          : 'modal-unnamed'
       }
     >
       {children}
