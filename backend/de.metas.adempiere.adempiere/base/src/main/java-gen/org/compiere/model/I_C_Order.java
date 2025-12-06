@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Order
  *  @author metasfresh (generated) 
@@ -1934,27 +1933,6 @@ public interface I_C_Order
 	String COLUMNNAME_IsAutoInvoice = "IsAutoInvoice";
 
 	/**
-	 * Set Bestätigt durch Lieferant.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsConfirmedBySupplier (boolean IsConfirmedBySupplier);
-
-	/**
-	 * Get Bestätigt durch Lieferant.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isConfirmedBySupplier();
-
-	ModelColumn<I_C_Order, Object> COLUMN_IsConfirmedBySupplier = new ModelColumn<>(I_C_Order.class, "IsConfirmedBySupplier", null);
-	String COLUMNNAME_IsConfirmedBySupplier = "IsConfirmedBySupplier";
-
-	/**
 	 * Set Credit Approved.
 	 * Credit  has been approved
 	 *
@@ -2896,32 +2874,6 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_PromotionCode = new ModelColumn<>(I_C_Order.class, "PromotionCode", null);
 	String COLUMNNAME_PromotionCode = "PromotionCode";
-
-	/**
-	 * Set Purchaser.
-	 * Purchasing Responsible
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	void setPurchaser_User_ID (int Purchaser_User_ID);
-
-	/**
-	 * Get Purchaser.
-	 * Purchasing Responsible
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
-	 */
-	@Deprecated
-	int getPurchaser_User_ID();
-
-	String COLUMNNAME_Purchaser_User_ID = "Purchaser_User_ID";
 
 	/**
 	 * Set Qty without Trading Unit.

@@ -1,0 +1,2 @@
+update ad_boilerplate_trl set subject = ad_boilerplate.subject
+from ad_boilerplate where ad_boilerplate_trl.ad_boilerplate_id=ad_boilerplate.ad_boilerplate_id;
