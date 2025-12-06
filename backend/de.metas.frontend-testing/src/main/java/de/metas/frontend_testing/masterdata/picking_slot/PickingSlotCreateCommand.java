@@ -12,6 +12,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
 
+import javax.annotation.Nullable;
+
 @Builder
 public class PickingSlotCreateCommand
 {
@@ -28,7 +30,7 @@ public class PickingSlotCreateCommand
 				? context.getId(request.getLocator(), LocatorId.class)
 				: context.getIdOfType(LocatorId.class);
 		final BPartnerLocationId bpartnerLocationId = request.getBpartnerLocation() != null
-				? context.getId(request.getBpartnerLocation(), BPartnerLocationId.class)
+				? resolveBPartnerLocationId(request.getBpartnerLocation())
 				: null;
 
 		final PickingSlotIdAndCaption pickingSlot = pickingSlotDAO.createPickingSlot(PickingSlotCreateRequest.builder()
@@ -44,5 +46,19 @@ public class PickingSlotCreateCommand
 				.code(code)
 				.qrCode(PickingSlotQRCode.ofPickingSlotIdAndCaption(pickingSlot).toGlobalQRCodeJsonString())
 				.build();
+	}
+
+	@Nullable
+	private BPartnerLocationId resolveBPartnerLocationId(@NonNull final Identifier identifier)
+	{
+		// Try direct lookup first
+		return context.getOptionalId(identifier, BPartnerLocationId.class)
+				// Fallback: try with _singleBPLocationI suffix (for single-location BPartners)
+				.orElseGet(() -> context.getOptionalId(
+						Identifier.ofString(identifier.getAsString() + "_singleBPLocationI"),
+						BPartnerLocationId.class
+				).orElseThrow(() -> new IllegalArgumentException(
+						"No BPartnerLocationId found for identifier: " + identifier
+								+ " (also tried: " + identifier.getAsString() + "_singleBPLocationI)")));
 	}
 }
