@@ -76,7 +76,7 @@ services:
       start_period: 60s
       retries: 30
     environment:
-      - "JAVA_TOOL_OPTIONS=-Xmx512M -XX:+HeapDumpOnOutOfMemoryError"
+      - "JAVA_TOOL_OPTIONS=-Xmx512M -XX:+HeapDumpOnOutOfMemoryError -Dde.metas.adempiere.report.jasper.JRServerServlet=http://app:8282/adempiereJasper/ReportServlet -Dde.metas.adempiere.report.barcode.BarcodeServlet=http://app:8282/adempiereJasper/BarcodeServlet"
       - "SPRING_RABBITMQ_HOST=rabbitmq"
       - "SPRING_RABBITMQ_PORT=5672"
       - "SPRING_RABBITMQ_USERNAME=metasfresh"
@@ -110,7 +110,7 @@ services:
       retries: 30
     environment:
       # missing  ${metasfresh_es_enable_params}, ${metasfresh_db_connectionpool_params} and  ${metasfresh_admin_params}
-      - "JAVA_TOOL_OPTIONS=-Xmx1024M -XX:+HeapDumpOnOutOfMemoryError -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8788 -Dde.metas.adempiere.report.jasper.JRServerServlet=http://app:8282/adempiereJasper/ReportServlet"
+      - "JAVA_TOOL_OPTIONS=-Xmx1024M -XX:+HeapDumpOnOutOfMemoryError -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8788 -Dde.metas.adempiere.report.jasper.JRServerServlet=http://app:8282/adempiereJasper/ReportServlet -Dde.metas.adempiere.report.barcode.BarcodeServlet=http://app:8282/adempiereJasper/BarcodeServlet"
       - PropertyFile=/opt/metasfresh/metasfresh.properties
       - "METASFRESH_ELASTICSEARCH_HOST=search:9300"
       - "SPRING_RABBITMQ_HOST=rabbitmq"
