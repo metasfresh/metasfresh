@@ -143,7 +143,7 @@ public class CreateBPartnerCommand
 			singleGLN = GLN.ofNullableString(bpLocationRecord.getGLN());
 			responseLocations = null;
 
-			@NonNull final Identifier bpLocationIdentifier = Identifier.ofString(bpIdentifier.getAsString() + "_singleBPLocationI");
+			@NonNull final Identifier bpLocationIdentifier = Identifier.ofString(bpIdentifier.getAsString() + MasterdataContext.SINGLE_BP_LOCATION_SUFFIX);
 			context.putIdentifier(bpLocationIdentifier, singleBPLocationId);
 		}
 		else
