@@ -176,3 +176,9 @@ UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.U
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(2761,'en_US')
 ;
 
+-- UI Element: Auftrag(541059,de.metas.endcustomer.gk196) -> Auftragsposition(543622,de.metas.endcustomer.gk196) -> main -> 10 -> main.Projekt
+-- Column: C_OrderLine.C_Project_ID
+-- 2025-12-07T14:50:59.051Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,637409,0,543622,545248,639759,'F',TO_TIMESTAMP('2025-12-07 14:50:58.766000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Financial Project','A Project allows you to track and control internal or external activities.','Y','Y','N','Y','N','N','N',0,'Projekt',420,0,0,TO_TIMESTAMP('2025-12-07 14:50:58.766000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
