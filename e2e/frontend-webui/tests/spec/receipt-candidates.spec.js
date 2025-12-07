@@ -54,7 +54,6 @@ testCases.forEach(({ language, label }) => {
           products: {
             Product1: {
               name: `Test Product for Receipt (${language})`,
-              value: `TEST-RECEIPT-${language}-001`,
               type: 'Item',
               prices: [
                 {
