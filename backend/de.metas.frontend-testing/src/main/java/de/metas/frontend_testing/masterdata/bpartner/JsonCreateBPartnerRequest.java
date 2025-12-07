@@ -23,15 +23,13 @@ public class JsonCreateBPartnerRequest
 	 * Whether this business partner is a vendor (purchase side).
 	 * Default: false
 	 */
-	@Builder.Default
-	boolean isVendor = false;
+	@Builder.Default boolean isVendor = false;
 
 	/**
 	 * Whether this business partner is a customer (sales side).
 	 * Default: true
 	 */
-	@Builder.Default
-	boolean isCustomer = true;
+	@Builder.Default boolean isCustomer = true;
 
 	/**
 	 * Whether to create a sales price list (true) or purchase price list (false).
@@ -39,8 +37,7 @@ public class JsonCreateBPartnerRequest
 	 * For customers, this should typically be true.
 	 * Default: true (sales price list)
 	 */
-	@Builder.Default
-	boolean isSoPriceList = true;
+	@Builder.Default boolean isSoPriceList = true;
 
 	@Value
 	@Builder
