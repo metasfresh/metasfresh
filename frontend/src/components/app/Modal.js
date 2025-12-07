@@ -683,6 +683,7 @@ class Modal extends Component {
                   )}
                   onClick={this.handlePrinting}
                   tabIndex={0}
+                  data-testid="print-modal-button"
                 >
                   {printBtnCaption}
                 </button>
