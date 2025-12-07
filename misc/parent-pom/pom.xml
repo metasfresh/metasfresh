@@ -342,6 +342,12 @@
                     <groupId>org.jvnet.jaxb2.maven2</groupId>
                     <artifactId>maven-jaxb2-plugin</artifactId>
                     <version>0.14.0</version>
+                    <configuration>
+                        <!-- Suppress timestamp in generated file headers to avoid unnecessary git changes -->
+                        <args>
+                            <arg>-no-header</arg>
+                        </args>
+                    </configuration>
                 </plugin>
 
                 <plugin>
