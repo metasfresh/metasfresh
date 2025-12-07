@@ -201,10 +201,12 @@ public class PickingJobTestHelper
 				new HULabelConfigService(new HULabelConfigRepository()),
 				huQRCodeService
 		);
+		final PickingJobProductService productService = new PickingJobProductService();
 
 		this.huService = new PickingJobHUService(
 				configService,
 				warehouseService,
+				productService,
 				huQRCodeService,
 				huLabelService,
 				huReservationService,
@@ -215,7 +217,7 @@ public class PickingJobTestHelper
 				new PickingJobSalesOrderService(),
 				warehouseService,
 				bpartnerService,
-				new PickingJobProductService(),
+				productService,
 				pickingJobSlotService,
 				pickingJobLockService,
 				huService
@@ -224,7 +226,7 @@ public class PickingJobTestHelper
 		pickingJobService = new PickingJobService(
 				bpartnerService,
 				warehouseService,
-				new PickingJobProductService(),
+				productService,
 				new PickingJobShipmentScheduleService(),
 				pickingJobRepository,
 				pickingJobLockService,

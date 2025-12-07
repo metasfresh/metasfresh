@@ -89,8 +89,8 @@ const PickLineScanScreen = () => {
   useHeaderUpdate({ url, caption, uom, qtyToPick, qtyPicked });
 
   const resolveScannedBarcode = useCallback(
-    async (scannedBarcode) =>
-      await convertScannedBarcodeToResolvedResult({
+    (scannedBarcode) =>
+      convertScannedBarcodeToResolvedResult({
         scannedBarcode,
         expectedProductId: productId,
         customQRCodeFormats,
@@ -216,6 +216,12 @@ export const convertScannedBarcodeToResolvedResult = async ({
   }
 
   if (expectedProductId != null && parsedQRCode.productId != null && parsedQRCode.productId !== expectedProductId) {
+    console.warn('Scanned barcode does not match the expected product', {
+      expectedProductId,
+      actualProductId: parsedQRCode.productId,
+      parsedQRCode,
+      scannedBarcode,
+    });
     throw trl('activities.picking.notEligibleHUBarcode');
   }
 

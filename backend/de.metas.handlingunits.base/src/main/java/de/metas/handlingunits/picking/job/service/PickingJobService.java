@@ -41,6 +41,9 @@ import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateComma
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobReopenCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobUnPickCommand;
+import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackCommand;
+import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackRequest;
+import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackResponse;
 import de.metas.handlingunits.picking.job.service.commands.get_qty_available.PickingJobGetQtyAvailableCommand;
 import de.metas.handlingunits.picking.job.service.commands.pick.PickingJobPickCommand;
 import de.metas.handlingunits.picking.job.service.commands.pick_all.PickingJobPickAllCommand;
@@ -741,6 +744,16 @@ public class PickingJobService implements PickingSlotListener
 				.pickingJobId(pickingJobId)
 				.callerId(callerId)
 				//
+				.build().execute();
+	}
+
+	public GetNextEligibleLineToPackResponse getNextEligibleLineToPack(@NonNull GetNextEligibleLineToPackRequest request)
+	{
+		return GetNextEligibleLineToPackCommand.builder()
+				.pickingJobService(this)
+				.huService(huService)
+				.shipmentSchedules(shipmentScheduleService.newLoadingCache())
+				.request(request)
 				.build().execute();
 	}
 }

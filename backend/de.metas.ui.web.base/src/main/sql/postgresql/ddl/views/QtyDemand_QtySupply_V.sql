@@ -60,13 +60,12 @@ FROM m_product p
                 0::numeric                                                                                                                      AS qtyToProduce,
                 0::numeric                                                                                                                      AS qtyForecasted,
                 0::numeric                                                                                                                      AS qtyStock,
-                CASE WHEN o.IsConfirmedBySupplier = 'Y' THEN SUM(uomconvert(rs.m_product_id, rs.c_uom_id, p.c_uom_id, rs.qtyToMove)) ELSE 0 END AS qtyConfirmedBySupplier,
-                CASE WHEN o.IsConfirmedBySupplier = 'N' THEN SUM(uomconvert(rs.m_product_id, rs.c_uom_id, p.c_uom_id, rs.qtyToMove)) ELSE 0 END AS qtyUnconfirmedBySupplier
+                CASE WHEN rs.IsConfirmedBySupplier = 'Y' THEN SUM(uomconvert(rs.m_product_id, rs.c_uom_id, p.c_uom_id, rs.qtyToMove)) ELSE 0 END AS qtyConfirmedBySupplier,
+                CASE WHEN rs.IsConfirmedBySupplier = 'N' THEN SUM(uomconvert(rs.m_product_id, rs.c_uom_id, p.c_uom_id, rs.qtyToMove)) ELSE 0 END AS qtyUnconfirmedBySupplier
          FROM m_receiptschedule rs
                   INNER JOIN m_product p ON rs.m_product_id = p.m_product_id
-                  LEFT JOIN C_Order o ON rs.C_Order_ID = o.C_Order_ID
          WHERE COALESCE(rs.qtyToMove, 0) <> 0
-         GROUP BY rs.ad_client_id, rs.ad_org_id, rs.m_warehouse_id, rs.m_product_id, p.c_uom_id, attributesKey, o.IsConfirmedBySupplier
+         GROUP BY rs.ad_client_id, rs.ad_org_id, rs.m_warehouse_id, rs.m_product_id, p.c_uom_id, attributesKey, rs.IsConfirmedBySupplier
 
          UNION ALL
 
@@ -136,5 +135,4 @@ GROUP BY t.ad_client_id, t.ad_org_id, p.m_product_id, p.m_product_category_id, p
 
 -- default grouping by t.ad_client_id, t.ad_org_id, p.m_product_id, p.m_product_category_id, p.name, p.value, t.c_uom_id, t.attributesKey, t.m_warehouse_id
 -- grouping can be adjusted as needed
-
 

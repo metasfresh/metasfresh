@@ -354,6 +354,7 @@ public class DocTypeDAO implements IDocTypeDAO
 		return DocBaseType.ofCode(docTypeRecord.getDocBaseType());
 	}
 
+	@NonNull
 	@Override
 	public DocBaseAndSubType getDocBaseAndSubTypeById(@NonNull final DocTypeId docTypeId)
 	{
