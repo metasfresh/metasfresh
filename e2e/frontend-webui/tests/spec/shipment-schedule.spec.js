@@ -1,11 +1,11 @@
-const { expect } = require('@playwright/test');
-const { test } = require('../../playwright.config');
-const { Backend } = require('../utils/Backend');
-const { LoginPage } = require('../utils/pages/LoginPage');
-const { DashboardPage } = require('../utils/pages/DashboardPage');
-const { SalesOrderPage } = require('../utils/pages/SalesOrderPage');
-const { ShipmentSchedulePage } = require('../utils/pages/ShipmentSchedulePage');
-const { AllureHelpers } = require('../utils/AllureHelpers');
+import { expect } from '@playwright/test';
+import { test } from '../../playwright.config';
+import { Backend } from '../utils/Backend';
+import { LoginPage } from '../utils/pages/LoginPage';
+import { DashboardPage } from '../utils/pages/DashboardPage';
+import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
+import { ShipmentSchedulePage } from '../utils/pages/ShipmentSchedulePage';
+import { AllureHelpers } from '../utils/AllureHelpers';
 
 /**
  * Sales Order to Shipment Schedule E2E test suite.
@@ -73,6 +73,7 @@ Ensures the sales-to-delivery flow works correctly across UI languages.
                     login: {
                         user: {
                             language,
+                            // login not specified - backend will auto-generate unique user_timestamp
                             firstname: 'first',
                             lastname: 'last'
                         },
@@ -80,14 +81,14 @@ Ensures the sales-to-delivery flow works correctly across UI languages.
                     bpartners: {
                         CUSTOMER1: {
                             isVendor: false,
-                            isCustomer: true,
-                            isSoPriceList: true,
+                            isCustomer: true, // ← Sales customer
+                            isSoPriceList: true, // ← Sales price list
                             name: 'Customer'
                         },
                     },
                     products: {
                         Product1: {
-                            name: 'PROD',
+                            name: 'PROD',  // Short base name - backend will append timestamp (max 16 chars total)
                             type: 'Item',
                             prices: [
                                 {
@@ -119,10 +120,11 @@ Ensures the sales-to-delivery flow works correctly across UI languages.
             await SalesOrderPage.goto();
             await SalesOrderPage.clickNew();
 
+            // Select customer - this waits for record to be saved (auto-fill completes)
             const recordId = await SalesOrderPage.selectCustomer(masterdata.bpartners.CUSTOMER1.bpartnerCode);
             console.log(`[${language}] Sales Order ${recordId} created and saved`);
 
-            // Add order line
+            // Add order line - this waits for tab to allow new records before proceeding
             const orderLineData = {
                 product: masterdata.products.Product1.productCode,
                 quantity: '10',
@@ -144,6 +146,7 @@ Ensures the sales-to-delivery flow works correctly across UI languages.
             // Step 3: Complete the order
             await SalesOrderPage.complete();
 
+            // Get and verify document number
             const soDocumentNo = await SalesOrderPage.getDocumentNo();
             expect(soDocumentNo).toBeTruthy();
             expect(soDocumentNo.length).toBeGreaterThan(0);
@@ -172,6 +175,7 @@ Ensures the sales-to-delivery flow works correctly across UI languages.
             // Validate PDF content
             await SalesOrderPage.validatePdfContent(download, {
                 documentNo: soDocumentNo,
+                // customerName: masterdata.bpartners.CUSTOMER1.bpartnerCode,  // TODO: PDF text extraction breaks long strings with line breaks
                 productCode: masterdata.products.Product1.productCode,
                 quantity: '10',
                 language,
@@ -182,6 +186,8 @@ Ensures the sales-to-delivery flow works correctly across UI languages.
             await SalesOrderPage.closePrintModal().catch(() => {});
 
             // Step 5: Navigate to Shipment Schedule
+            // This navigates directly to the correct shipment schedule for this SO
+            // IMPORTANT: Do NOT navigate to window 500221 directly - it may select wrong schedule!
             await SalesOrderPage.openRelatedShipmentCandidate();
             await ShipmentSchedulePage.expectVisible();
 
