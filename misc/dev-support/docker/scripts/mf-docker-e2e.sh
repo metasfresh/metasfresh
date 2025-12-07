@@ -21,7 +21,8 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 METASFRESH_ROOT="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
 VERSION_FILE="$SCRIPT_DIR/.mf-docker-version"
-COMPOSE_DIR="$METASFRESH_ROOT/docker-builds/compose"
+# Use frontendtest compose which has FRONTEND_TESTING=true and Jasper config
+COMPOSE_DIR="$METASFRESH_ROOT/docker-builds/frontendtest"
 PROJECT_NAME="mfstack"
 
 # Colors for output
@@ -82,7 +83,7 @@ generate_env_file() {
 
 mfregistry=metasfresh
 mfversion=$tag
-dbqualifier=-preloaded
+dbqualifier=preloaded
 EOF
 
     success "Generated $COMPOSE_DIR/.env with tag: $tag"
@@ -100,16 +101,13 @@ build_compose_cmd() {
     echo "$cmd"
 }
 
-# Get list of services to start
+# Get list of services to start (matches frontendtest/compose.yml)
 get_services() {
-    local services="db rabbitmq search webapi app external edi"
+    # Core services for E2E testing (no playwright - we run tests locally)
+    local services="db rabbitmq search webapi app"
 
     if [ "$NO_WEBUI" != "true" ]; then
         services="$services webui"
-    fi
-
-    if [ "$NO_MOBILE" != "true" ]; then
-        services="$services mobile"
     fi
 
     echo "$services"

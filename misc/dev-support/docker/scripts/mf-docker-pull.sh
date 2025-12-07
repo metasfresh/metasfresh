@@ -98,7 +98,7 @@ get_mf_version() {
 get_latest_build_number() {
     local branch="$1"
 
-    info "Querying GitHub for latest successful build on branch: $branch"
+    info "Querying GitHub for latest successful build on branch: $branch" >&2
 
     # Query GitHub Actions API for the latest successful run of cicd.yaml
     local run_info=$(gh run list \
@@ -111,8 +111,8 @@ get_latest_build_number() {
 
     if [ -z "$run_info" ] || [ "$run_info" == "[]" ]; then
         error "No successful CI builds found for branch: $branch"
-        echo "  Check if the branch exists and has a successful cicd workflow run."
-        echo "  You can view runs at: https://github.com/metasfresh/metasfresh/actions"
+        echo "  Check if the branch exists and has a successful cicd workflow run." >&2
+        echo "  You can view runs at: https://github.com/metasfresh/metasfresh/actions" >&2
         exit 1
     fi
 
@@ -125,7 +125,7 @@ get_latest_build_number() {
         exit 1
     fi
 
-    info "Found: build #$run_number (created: $created_at)"
+    info "Found: build #$run_number (created: $created_at)" >&2
 
     echo "$run_number"
 }
@@ -142,7 +142,11 @@ pull_image() {
     local image="$1"
 
     info "Pulling $image..."
-    if docker pull "$image" --quiet > /dev/null 2>&1; then
+    # Use || true to prevent set -e from exiting on failure
+    local result=0
+    docker pull "$image" || result=$?
+
+    if [ $result -eq 0 ]; then
         success "$image"
         return 0
     else
@@ -205,7 +209,7 @@ main() {
     local failed=0
     for image in "${images[@]}"; do
         if ! pull_image "$image"; then
-            ((failed++))
+            failed=$((failed + 1))
         fi
     done
 
