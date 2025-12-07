@@ -22,6 +22,10 @@ const allure = require('allure-js-commons');
 const { ContentType } = require('allure-js-commons');
 const { Features, Epics, getFeature } = require('./FeatureRegistry.generated.js');
 
+// PDF content type is not in allure-js-commons ContentType enum
+// Define it as a custom constant
+const PDF_CONTENT_TYPE = 'application/pdf';
+
 /**
  * Google Sheets configuration for linking
  */
@@ -136,7 +140,7 @@ const AllureHelpers = {
       pdfBuffer = fs.readFileSync(content);
     }
 
-    await allure.attachment(name, pdfBuffer, ContentType.PDF);
+    await allure.attachment(name, pdfBuffer, PDF_CONTENT_TYPE);
 
     // Attach metadata as JSON if provided
     if (Object.keys(metadata).length > 0) {
