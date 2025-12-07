@@ -21,6 +21,10 @@ import java.util.List;
 @Jacksonized
 public class JsonCreateProductRequest
 {
+	// Allow exact value/name (if both null, use valuePrefix or timestamp)
+	@Nullable String value;
+	@Nullable String name;
+
 	@Nullable String valuePrefix;
 	@Nullable RandomValueSpec randomValue;
 	@Nullable GTIN gtin;

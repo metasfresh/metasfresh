@@ -21,11 +21,9 @@ test.describe('Product Window', () => {
         products: {
           PROD1: {
             name: 'Test Product 1',
-            value: 'TEST-PROD-001',
           },
           PROD2: {
             name: 'Test Product 2',
-            value: 'TEST-PROD-002',
           },
         },
       },
@@ -58,7 +56,6 @@ test.describe('Product Window', () => {
         products: {
           PROD1: {
             name: 'Test Product Detail',
-            value: 'TEST-PROD-DETAIL',
           },
         },
       },

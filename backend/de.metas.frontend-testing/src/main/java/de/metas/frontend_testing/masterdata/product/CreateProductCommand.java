@@ -113,7 +113,15 @@ public class CreateProductCommand
 
 		productRecord.setAD_Org_ID(orgId.getRepoId());
 		productRecord.setValue(value);
-		productRecord.setName(value);
+
+		// Allow custom name separate from value (max 600 chars - very generous)
+		final String customName = org.apache.commons.lang3.StringUtils.trimToNull(request.getName());
+		if (customName != null && customName.length() > 600)
+		{
+			throw new AdempiereException("product name must not exceed 600 characters (got: " + customName.length() + ")");
+		}
+		final String name = customName != null ? customName : value;
+		productRecord.setName(name);
 		productRecord.setGTIN(request.getGtin() != null ? request.getGtin().getAsString() : null);
 		productRecord.setEAN13_ProductCode(request.getEan13ProductCode() != null ? request.getEan13ProductCode().getAsString() : null);
 		productRecord.setC_UOM_ID(productUomId.getRepoId());
@@ -132,6 +140,18 @@ public class CreateProductCommand
 
 	private String generateValue()
 	{
+		// Use custom value if provided (no timestamp, max 255 chars)
+		final String customValue = org.apache.commons.lang3.StringUtils.trimToNull(request.getValue());
+		if (customValue != null)
+		{
+			if (customValue.length() > 255)
+			{
+				throw new AdempiereException("product value must not exceed 255 characters (got: " + customValue.length() + ")");
+			}
+			return customValue;
+		}
+
+		// or Use valuePrefix with timestamp
 		final String valuePrefix = StringUtils.trimBlankToNull(request.getValuePrefix());
 		final JsonCreateProductRequest.RandomValueSpec randomValueSpec = request.getRandomValue();
 		if (valuePrefix != null && randomValueSpec != null)
@@ -149,6 +169,7 @@ public class CreateProductCommand
 		}
 		else
 		{
+			// or use Default timestamp-based
 			return identifier.toUniqueString();
 		}
 	}
