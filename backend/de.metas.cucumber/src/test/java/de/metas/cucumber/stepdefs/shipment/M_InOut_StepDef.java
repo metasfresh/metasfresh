@@ -193,7 +193,7 @@ public class M_InOut_StepDef
 		row.getAsOptionalBoolean("processed")
 				.ifPresent(processed -> softly.assertThat(inout.isProcessed()).isEqualTo(processed));
 
-		row.getAsOptionalString(I_M_InOut.COLUMNNAME_POReference)
+		row.getAsOptionalString(COLUMNNAME_DocStatus)
 				.ifPresent(docStatus -> softly.assertThat(inout.getDocStatus()).isEqualTo(docStatus));
 
 		row.getAsOptionalString(I_M_InOut.COLUMNNAME_AD_InputDataSource_ID + "." + I_AD_InputDataSource.COLUMNNAME_InternalName)
