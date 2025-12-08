@@ -39,7 +39,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
-import java.util.Set;
 
 /*
  * #%L
@@ -141,7 +140,7 @@ public class BankStatementDocumentHandler implements DocumentHandler
 	}
 
 	@Override
-	public BigDecimal getApprovalAmt(DocumentTableFields docFields)
+	public BigDecimal getApprovalAmt(final DocumentTableFields docFields)
 	{
 		final I_C_BankStatement bankStatement = extractBankStatement(docFields);
 		return bankStatement.getStatementDifference();
@@ -265,7 +264,14 @@ public class BankStatementDocumentHandler implements DocumentHandler
 				}
 			}
 
-			services.findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, line, consideredPaymentIds);
+			if (services.isFindMatchingPaymentEnabled())
+			{
+				services.findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, line, consideredPaymentIds);
+			}
+			else
+			{
+				services.createSinglePaymentAndLink(bankStatement, line);
+			}
 
 			final PaymentId paymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
 			if (paymentId != null)

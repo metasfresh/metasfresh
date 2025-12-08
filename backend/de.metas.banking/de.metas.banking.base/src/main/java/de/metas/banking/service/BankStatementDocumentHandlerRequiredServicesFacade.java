@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.util.Env;
@@ -51,14 +52,17 @@ import lombok.NonNull;
 @Service
 class BankStatementDocumentHandlerRequiredServicesFacade
 {
-	private final IBankStatementPaymentBL bankStatmentPaymentBL;
-	private final IBankStatementBL bankStatementBL;
+	@NonNull private static final String SYSCONFIG_FIND_MATCHING_PAYMENT_ENABLED = "de.metas.banking.payment.findMatchingPayment.enabled";
 
-	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
-	private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
-	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
-	private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final IBankStatementPaymentBL bankStatmentPaymentBL;
+	@NonNull private final IBankStatementBL bankStatementBL;
+
+	@NonNull private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
+	@NonNull private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
+	@NonNull private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+	@NonNull private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	public BankStatementDocumentHandlerRequiredServicesFacade(
 			@NonNull final IBankStatementPaymentBL bankStatmentPaymentBL,
@@ -98,12 +102,25 @@ class BankStatementDocumentHandlerRequiredServicesFacade
 		bankStatementDAO.save(line);
 	}
 
+	public boolean isFindMatchingPaymentEnabled()
+	{
+		return sysConfigBL.getBooleanValue(SYSCONFIG_FIND_MATCHING_PAYMENT_ENABLED, true);
+	}
+
 	public void findOrCreateSinglePaymentAndLinkIfPossible(
-			final I_C_BankStatement bankStatement,
-			final I_C_BankStatementLine line,
-			final Set<PaymentId> excludePaymentIds)
+			@NonNull final I_C_BankStatement bankStatement,
+			@NonNull final I_C_BankStatementLine line,
+			@NonNull final Set<PaymentId> excludePaymentIds)
 	{
 		bankStatmentPaymentBL.findOrCreateSinglePaymentAndLinkIfPossible(bankStatement, line, excludePaymentIds);
+	}
+
+	public void createSinglePaymentAndLink(
+			@NonNull final I_C_BankStatement bankStatement,
+			@NonNull final I_C_BankStatementLine bankStatementLine
+	)
+	{
+		bankStatmentPaymentBL.createSinglePaymentAndLink(bankStatement, bankStatementLine);
 	}
 
 	public void markReconciled(final List<PaymentReconcileRequest> requests)
