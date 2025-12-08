@@ -177,11 +177,11 @@ public class M_InOut_StepDef
 
 		row.getAsOptionalIdentifier(I_M_InOut.COLUMNNAME_C_BPartner_ID)
 				.map(bpartnerTable::getIdOrParse)
-				.ifPresent(expectedBPartnerId -> softly.assertThat(inout.getC_BPartner_ID()).isEqualTo(expectedBPartnerId));
+				.ifPresent(expectedBPartnerId -> softly.assertThat(inout.getC_BPartner_ID()).isEqualTo(expectedBPartnerId.getRepoId()));
 
 		row.getAsOptionalIdentifier(I_M_InOut.COLUMNNAME_C_BPartner_Location_ID)
 				.map(bpartnerLocationTable::getIdOrParse)
-				.ifPresent(expectedBPartnerLocationId -> softly.assertThat(inout.getC_BPartner_Location_ID()).isEqualTo(expectedBPartnerLocationId));
+				.ifPresent(expectedBPartnerLocationId -> softly.assertThat(inout.getC_BPartner_Location_ID()).isEqualTo(expectedBPartnerLocationId.getRepoId()));
 
 		row.getAsOptionalLocalDate(I_M_InOut.COLUMNNAME_DateOrdered)
 				.ifPresent(dateOrdered -> softly.assertThat(TimeUtil.asLocalDate(inout.getDateOrdered())).isEqualTo(dateOrdered));
