@@ -18,6 +18,7 @@ import de.metas.sscc18.SSCC18;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -186,6 +187,12 @@ public class PurchaseOrderToShipperTransportationRepository
 
 	private IQueryBuilder<I_M_ShippingPackage> toShippingPackageQueryBuilder(final @NonNull ShippingPackageQuery query)
 	{
+		if(query.getOrderIds().isEmpty() && query.getOrderLineIds().isEmpty())
+		{
+			return queryBL.createQueryBuilder(I_M_ShippingPackage.class)
+					.filter(ConstantQueryFilter.of(false));
+		}
+
 		final IQueryBuilder<I_M_ShippingPackage> builder = queryBL.createQueryBuilder(I_M_ShippingPackage.class)
 				.addOnlyActiveRecordsFilter();
 
