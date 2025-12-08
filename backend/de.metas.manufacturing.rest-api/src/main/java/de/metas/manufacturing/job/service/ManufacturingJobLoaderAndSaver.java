@@ -134,9 +134,9 @@ public class ManufacturingJobLoaderAndSaver
 		return bomLines.computeIfAbsent(ppOrderId, supportingServices::getOrderBOMLines);
 	}
 
-	private boolean hasAnyLinesWithIssueMethod(@NonNull final PPOrderId ppOrderId, @NonNull final BOMComponentIssueMethod method)
+	private boolean hasAnyIssueOnlyForReceivedLines(@NonNull final PPOrderId ppOrderId)
 	{
-		return getBOMLines(ppOrderId).stream().anyMatch(line -> method.getCode().equals(line.getIssueMethod()));
+		return getBOMLines(ppOrderId).stream().anyMatch(line -> BOMComponentIssueMethod.IssueOnlyForReceived.getCode().equals(line.getIssueMethod()));
 	}
 
 	private ImmutableListMultimap<PPOrderBOMLineId, PPOrderIssueSchedule> getIssueSchedules(final PPOrderId ppOrderId)
@@ -427,7 +427,7 @@ public class ManufacturingJobLoaderAndSaver
 	@NonNull
 	private Optional<ManufacturingJobActivity> toIssueOnlyWhatWasReceivedActivity(final @NonNull PPOrderRoutingActivity from)
 	{
-		if (!hasAnyLinesWithIssueMethod(from.getOrderId(), BOMComponentIssueMethod.IssueOnlyForReceived))
+		if (!hasAnyIssueOnlyForReceivedLines(from.getOrderId()))
 		{
 			return Optional.empty();
 		}

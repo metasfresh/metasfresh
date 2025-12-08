@@ -3,7 +3,6 @@ package de.metas.handlingunits.pporder.api;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
@@ -46,7 +45,6 @@ public class HUPPOrderIssueProducer
 	// Services
 	private final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
 	private final IPPOrderBOMDAO ppOrderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	//
 	// Parameters
@@ -216,7 +214,7 @@ public class HUPPOrderIssueProducer
 	{
 		return ppOrderBOMsRepo.retrieveOrderBOMLines(orderId)
 				.stream()
-				.filter(line -> BOMComponentType.ofCode(line.getComponentType()).isIssue())
+				.filter(line -> BOMComponentType.ofNullableCodeOrComponent(line.getComponentType()).isIssue())
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -232,7 +230,7 @@ public class HUPPOrderIssueProducer
 		//
 		// Make sure we have only issue BOM lines
 		final List<I_PP_Order_BOMLine> notIssueBOMLines = targetOrderBOMLines.stream()
-				.filter(bomLine -> !BOMComponentType.ofCode(bomLine.getComponentType()).isIssue())
+				.filter(bomLine -> !BOMComponentType.ofNullableCodeOrComponent(bomLine.getComponentType()).isIssue())
 				.collect(ImmutableList.toImmutableList());
 		if (!notIssueBOMLines.isEmpty())
 		{
