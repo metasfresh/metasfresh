@@ -31,7 +31,6 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.pricing.C_TaxCategory_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.C_TaxCategory_StepDefData;
@@ -361,6 +360,9 @@ public class C_InvoiceLine_StepDef
 					assertThat(qtyMatchedActual).as("QtyMatched").isEqualTo(qtyMatchedExpected);
 				});
 
+		row.getAsOptionalString(I_C_InvoiceLine.COLUMNNAME_ExternalIds)
+				.ifPresent(externalIds -> softly.assertThat(invoiceLine.getExternalIds()).as(I_C_InvoiceLine.COLUMNNAME_ExternalIds).isEqualTo(externalIds));
+		
 		softly.assertAll();
 
 		row.getAsOptionalIdentifier().ifPresent(identifier -> invoiceLineTable.putOrReplace(identifier, invoiceLine));

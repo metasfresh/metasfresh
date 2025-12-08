@@ -60,6 +60,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -609,6 +610,7 @@ public class InOutProducer implements IInOutProducer
 		// Order Line Link
 		line.setC_Order_ID(rs.getC_Order_ID());
 		line.setC_OrderLine_ID(rs.getC_OrderLine_ID());
+		line.setExternalId(rs.getExternalLineId());
 
 		//
 		// Contract
@@ -698,9 +700,10 @@ public class InOutProducer implements IInOutProducer
 
 		final ReceiptScheduleExternalInfo externalInfo = externalInfoByReceiptScheduleId.get(receiptScheduleId);
 
-		return externalInfo != null
-				? StringUtils.trimBlankToNull(externalInfo.getExternalId())
-				: null;
+		return Optional.ofNullable(externalInfo)
+				.map(ReceiptScheduleExternalInfo::getExternalId)
+				.map(StringUtils::trimBlankToNull)
+				.orElseGet(receiptSchedule::getExternalHeaderId);
 	}
 
 	@Nullable

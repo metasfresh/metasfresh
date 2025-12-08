@@ -16,6 +16,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.OrderId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -353,22 +354,71 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 	}
 
 	@Override
+	@NonNull
 	public List<ReceiptScheduleId> listIdsByQuery(@NonNull final ReceiptScheduleQuery query)
 	{
+		return buildQuery(query)
+				.listIds(ReceiptScheduleId::ofRepoId);
+	}
+
+	@NonNull
+	@Override
+	public ReceiptScheduleId getIdByQuery(@NonNull final ReceiptScheduleQuery query)
+	{
+		final I_M_ReceiptSchedule receiptSchedule = buildQuery(query)
+				.firstOnlyNotNull();
+
+		return ReceiptScheduleId.ofRepoId(receiptSchedule.getM_ReceiptSchedule_ID());
+	}
+
+	@NonNull
+	private IQuery<I_M_ReceiptSchedule> buildQuery(@NonNull final ReceiptScheduleQuery query)
+	{
 		final IQueryBuilder<I_M_ReceiptSchedule> builder = queryBL.createQueryBuilder(I_M_ReceiptSchedule.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_M_Product_ID, query.getProductId())
-				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_M_Warehouse_ID, query.getWarehouseId())
-				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_AD_Org_ID, query.getOrgId())
-				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_M_AttributeSetInstance_ID, query.getAttributesKey().getAsString(), ASIQueryFilterModifier.instance);
+				.addOnlyActiveRecordsFilter();
+
+		if (query.getExternalHeaderIdWithExternalLineIds() != null)
+		{
+			final ExternalHeaderIdWithExternalLineIds externalIds = query.getExternalHeaderIdWithExternalLineIds();
+			builder.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_ExternalHeaderId, externalIds.getExternalHeaderId().getValue());
+
+			if (!Check.isEmpty(externalIds.getExternalLineIdsAsString()))
+			{
+				builder.addInArrayFilter(I_M_ReceiptSchedule.COLUMNNAME_ExternalLineId, externalIds.getExternalLineIdsAsString());
+			}
+		}
+
+		if (query.getOrderLineId() != null)
+		{
+			builder.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_C_OrderLine_ID, query.getOrderLineId());
+		}
+		
+		if (query.getProductId() != null)
+		{
+			builder.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_M_Product_ID, query.getProductId());
+		}
+
+		if (query.getWarehouseId() != null)
+		{
+			builder.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_M_Warehouse_ID, query.getWarehouseId());
+		}
+
+		if (query.getOrgId() != null)
+		{
+			builder.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_AD_Org_ID, query.getOrgId());
+		}
+
+		if (query.getAttributesKey() != null)
+		{
+			builder.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_M_AttributeSetInstance_ID, query.getAttributesKey().getAsString(), ASIQueryFilterModifier.instance);
+		}
+
+		// Filter by quantity
 		if (query.isOnlyNonZeroQty())
 		{
 			builder.addNotEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_QtyToMove, 0);
 		}
-		return builder
-				.addNotEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_QtyToMove, 0)
-				.create()
-				.listIds(ReceiptScheduleId::ofRepoId);
-	}
 
+		return builder.create();
+	}
 }

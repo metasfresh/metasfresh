@@ -253,7 +253,7 @@ public class PurchaseOrderItem implements PurchaseItem
 	{
 		return purchaseCandidate.getPriceUomId();
 	}
-	
+
 	@Nullable
 	public Percent getDiscount()
 	{
@@ -270,6 +270,12 @@ public class PurchaseOrderItem implements PurchaseItem
 	public ExternalId getExternalHeaderId()
 	{
 		return purchaseCandidate.getExternalHeaderId();
+	}
+
+	@Nullable
+	public ExternalId getExternalLineId()
+	{
+		return purchaseCandidate.getExternalLineId();
 	}
 
 	@Nullable

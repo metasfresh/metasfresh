@@ -133,6 +133,7 @@ import java.util.Set;
 		}
 		orderLineBuilder.manualPrice(purchaseOrderItem.getPrice());
 		orderLineBuilder.priceUomId(purchaseOrderItem.getPriceUomId());
+		orderLineBuilder.externalId(purchaseOrderItem.getExternalLineId());
 
 		purchaseItem2OrderLine.put(purchaseOrderItem, orderLineBuilder);
 	}
