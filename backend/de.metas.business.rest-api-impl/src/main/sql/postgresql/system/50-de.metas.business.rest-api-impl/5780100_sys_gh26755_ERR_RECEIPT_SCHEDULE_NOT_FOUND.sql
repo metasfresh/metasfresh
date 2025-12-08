@@ -35,3 +35,13 @@ UPDATE AD_Message_Trl SET MsgText='Exactly one identification method must be pro
 -- 2025-12-08T19:17:14.622Z
 UPDATE AD_Message base SET MsgText=trl.MsgText, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Message_Trl trl  WHERE trl.AD_Message_ID=base.AD_Message_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
 ;
+
+-- Value: ERR_RECEIPT_SCHEDULE_INVALID_IDENTIFICATION_METHOD
+-- 2025-12-08T19:26:42.272Z
+UPDATE AD_Message SET ErrorCode='INVALID_IDENTIFICATION_METHOD',Updated=TO_TIMESTAMP('2025-12-08 19:26:42.272000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Message_ID=545619
+;
+
+-- Value: ERR_RECEIPT_SCHEDULE_NOT_FOUND
+-- 2025-12-08T19:27:28.928Z
+UPDATE AD_Message SET ErrorCode='RECEIPT_SCHEDULE_NOT_FOUND',Updated=TO_TIMESTAMP('2025-12-08 19:27:28.928000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Message_ID=545618
+;
