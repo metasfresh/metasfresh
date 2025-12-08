@@ -76,7 +76,7 @@ const RawMaterialIssueLineScreen = () => {
               key={stepItem.id}
               testId={`step-${stepIdx + 1}-button`}
               caption={stepItem.locatorName + ' - ' + (toQRCodeDisplayable(stepItem.huQRCode) ?? '')}
-              completeStatus={stepItem.completeStatus}
+              completeStatus={readOnly ? undefined : stepItem.completeStatus}
               onClick={() => onStepButtonClick({ stepId: stepItem.id })}
             >
               <ButtonQuantityProp

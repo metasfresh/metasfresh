@@ -91,6 +91,10 @@ export const getBackendBaseUrl = async () => {
 }
 
 export const loadConfigFromFrontendApp = async () => await test.step(`Fetching from mobile-webui-frontend/public/config.js`, async () => {
+    if (!page) {
+        throw Error("page is not set yet. Make sure you test has page as parameter, even if not used!");
+    }
+    
     const url = await page.url();
     if (!url || url === 'about:blank') {
         await page.goto(FRONTEND_BASE_URL, { waitUntil: 'load' });

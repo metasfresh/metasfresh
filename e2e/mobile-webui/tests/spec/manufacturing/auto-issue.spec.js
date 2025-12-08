@@ -1,6 +1,5 @@
 import { Backend } from '../../utils/screens/Backend';
 import { test } from '../../../playwright.config';
-import { expect } from "@playwright/test";
 import { LoginScreen } from '../../utils/screens/LoginScreen';
 import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScreen';
 import { ManufacturingJobsListScreen } from '../../utils/screens/manufacturing/ManufacturingJobsListScreen';
@@ -54,23 +53,26 @@ const createMasterdata = async () => {
     });
 };
 
-test.describe('Manufacturing - Auto-issue read-only UI', () => {
-    test('Auto-issue first line hides Scan button; manual second line shows it (assume same order as created)', async () => {
-        const masterdata = await createMasterdata();
+// noinspection JSUnusedLocalSymbols
+test('Auto-issue first line hides Scan button; manual second line shows it', async ({ page }) => {
+    const masterdata = await createMasterdata();
 
-        await LoginScreen.login(masterdata.login.user);
-        await ApplicationsListScreen.expectVisible();
-        await ApplicationsListScreen.startApplication('mfg');
-        await ManufacturingJobsListScreen.waitForScreen();
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('mfg');
+    await ManufacturingJobsListScreen.waitForScreen();
 
-        await ManufacturingJobsListScreen.startJob({ documentNo: masterdata.manufacturingOrders.PP1.documentNo });
+    await ManufacturingJobsListScreen.startJob({ documentNo: masterdata.manufacturingOrders.PP1.documentNo });
 
-        // 1) Auto-issue line (created first) => Scan button hidden
+    await test.step('Line 1: Auto-issue line (created first) => Scan button hidden and no indicators', async () => {
+        await ManufacturingJobScreen.expectIssueButton({ index: 1, noIndicators: true })
         await ManufacturingJobScreen.clickIssueButton({ index: 1 });
         await RawMaterialIssueLineScreen.expectScanButtonVisible({ visible: false });
         await RawMaterialIssueLineScreen.goBack();
+    });
 
-        // 2) Manual line (created second) => Scan button visible
+    await test.step('Line 2: Manual line (created second) => Scan button visible', async () => {
+        await ManufacturingJobScreen.expectIssueButton({ index: 2 })
         await ManufacturingJobScreen.clickIssueButton({ index: 2 });
         await RawMaterialIssueLineScreen.expectScanButtonVisible({ visible: true });
     });
