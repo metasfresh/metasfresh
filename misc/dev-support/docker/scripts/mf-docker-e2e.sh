@@ -84,6 +84,9 @@ generate_env_file() {
 mfregistry=metasfresh
 mfversion=$tag
 dbqualifier=preloaded
+
+# For compose-dev.yml volume mounts (used in dev-mode)
+METASFRESH_ROOT=$METASFRESH_ROOT
 EOF
 
     success "Generated $COMPOSE_DIR/.env with tag: $tag"
@@ -113,6 +116,76 @@ get_services() {
     echo "$services"
 }
 
+# Extract artifacts from CI images for dev-mode
+# This allows zero-build startup - no local Maven/yarn build required
+extract_artifacts_if_needed() {
+    local tag="$1"
+    local artifacts_dir="$METASFRESH_ROOT/.dev-artifacts"
+    local registry="metasfresh"
+
+    echo ""
+    info "Preparing dev-mode artifacts..."
+
+    # Create artifacts directories
+    mkdir -p "$artifacts_dir"/{webapi,app,webui,reports}
+
+    # Extract webapi JAR if not exists
+    if [ ! -f "$artifacts_dir/webapi/metasfresh-webui-api.jar" ]; then
+        info "Extracting webapi JAR from $registry/metas-api:$tag..."
+        docker run --rm -v "$artifacts_dir/webapi:/out" \
+            "$registry/metas-api:$tag" \
+            cp /opt/metasfresh-webui-api/metasfresh-webui-api.jar /out/
+        success "Extracted webapi JAR"
+    else
+        info "Using existing webapi JAR (delete .dev-artifacts/ to refresh)"
+    fi
+
+    # Extract app JAR if not exists
+    if [ ! -f "$artifacts_dir/app/metasfresh_server.jar" ]; then
+        info "Extracting app JAR from $registry/metas-app:$tag..."
+        docker run --rm -v "$artifacts_dir/app:/out" \
+            "$registry/metas-app:$tag" \
+            cp /opt/metasfresh/metasfresh_server.jar /out/
+        success "Extracted app JAR"
+    else
+        info "Using existing app JAR (delete .dev-artifacts/ to refresh)"
+    fi
+
+    # Extract reports if not exists (JRXML files for Jasper reports)
+    if [ ! -d "$artifacts_dir/reports/jasper" ] || [ -z "$(ls -A "$artifacts_dir/reports" 2>/dev/null)" ]; then
+        info "Extracting reports from $registry/metas-app:$tag..."
+        docker run --rm -v "$artifacts_dir/reports:/out" \
+            "$registry/metas-app:$tag" \
+            sh -c "cp -r /opt/metasfresh/reports/* /out/ 2>/dev/null || echo 'No reports directory'"
+        success "Extracted reports"
+    else
+        info "Using existing reports (delete .dev-artifacts/ to refresh)"
+    fi
+
+    # Extract frontend assets if not exists
+    if [ ! -f "$artifacts_dir/webui/index.html" ]; then
+        info "Extracting frontend assets from $registry/metas-frontend:$tag..."
+        docker run --rm -v "$artifacts_dir/webui:/out" \
+            "$registry/metas-frontend:$tag" \
+            sh -c "cp -r /usr/share/nginx/html/* /out/"
+        success "Extracted frontend assets"
+    else
+        info "Using existing frontend assets (delete .dev-artifacts/ to refresh)"
+    fi
+
+    # Always copy web-config.js to webui assets (ensures proper config.js)
+    # This is critical because the extracted config.js from CI may have incorrect URLs
+    local config_src="$COMPOSE_DIR/web-config.js"
+    if [ -f "$config_src" ]; then
+        cp "$config_src" "$artifacts_dir/webui/config.js"
+        success "Copied config.js to webui artifacts"
+    fi
+
+    echo ""
+    success "Dev-mode artifacts ready in $artifacts_dir"
+    echo ""
+}
+
 # Start the stack
 cmd_start() {
     local tag=$(get_image_tag)
@@ -126,10 +199,18 @@ cmd_start() {
 
     info "Image tag: $tag"
     info "Services: $services"
+    if [ "$DEV_MODE" == "true" ]; then
+        info "Dev mode: ENABLED (hot-reload support)"
+    fi
     echo ""
 
     # Generate .env file
     generate_env_file "$tag"
+
+    # Extract artifacts from CI images for dev-mode (zero-build startup)
+    if [ "$DEV_MODE" == "true" ]; then
+        extract_artifacts_if_needed "$tag"
+    fi
 
     # Start services
     info "Starting containers..."
@@ -169,13 +250,17 @@ cmd_start() {
     echo "║  Stack is ready! Access points:                           ║"
     echo "║                                                            ║"
     if [ "$NO_WEBUI" != "true" ]; then
-    echo "║  • Frontend:  http://localhost:80                         ║"
+    echo "║  • Frontend:  http://localhost:3000                       ║"
     else
     echo "║  • Frontend:  (not started - use local yarn start)        ║"
     fi
     echo "║  • API:       http://localhost:8080                       ║"
     echo "║  • App:       http://localhost:8282                       ║"
     echo "║  • Database:  localhost:15432 (user: metasfresh)          ║"
+    if [ "$DEV_MODE" == "true" ]; then
+    echo "║                                                            ║"
+    echo "║  Dev mode: Use 'mf-docker.sh build <component>' to update ║"
+    fi
     echo "╚════════════════════════════════════════════════════════════╝"
     echo ""
 }
