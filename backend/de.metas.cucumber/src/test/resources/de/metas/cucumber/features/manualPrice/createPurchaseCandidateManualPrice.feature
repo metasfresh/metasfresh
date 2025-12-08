@@ -120,5 +120,5 @@ Feature: create Purchase Candidate having manual price set
       | M_InOut_ID.Identifier | ExternalId                  |
       | inOut_1               | externalHeaderId_17052022_1 |
     And validate the created material receipt lines
-      | M_InOutLine_ID | M_InOut_ID | ExternalId                |
-      | inOutLine_1    | inOut_1    | externalLineId_17052022_1 |
+      | M_InOutLine_ID | M_InOut_ID | ExternalId                | M_Product_ID |
+      | inOutLine_1    | inOut_1    | externalLineId_17052022_1 | p_1          |
