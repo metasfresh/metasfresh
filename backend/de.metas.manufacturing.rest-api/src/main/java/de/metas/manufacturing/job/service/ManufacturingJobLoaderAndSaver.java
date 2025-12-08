@@ -39,7 +39,6 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.eevolution.api.BOMComponentIssueMethod;
 import org.eevolution.api.BOMComponentType;
-import org.eevolution.api.BOMIssueMethod;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRouting;
@@ -135,7 +134,7 @@ public class ManufacturingJobLoaderAndSaver
 		return bomLines.computeIfAbsent(ppOrderId, supportingServices::getOrderBOMLines);
 	}
 
-	private boolean hasAnyLinesWithIssueMethod(@NonNull final PPOrderId ppOrderId, @NonNull final BOMIssueMethod method)
+	private boolean hasAnyLinesWithIssueMethod(@NonNull final PPOrderId ppOrderId, @NonNull final BOMComponentIssueMethod method)
 	{
 		return getBOMLines(ppOrderId).stream().anyMatch(line -> method.getCode().equals(line.getIssueMethod()));
 	}
@@ -428,7 +427,7 @@ public class ManufacturingJobLoaderAndSaver
 	@NonNull
 	private Optional<ManufacturingJobActivity> toIssueOnlyWhatWasReceivedActivity(final @NonNull PPOrderRoutingActivity from)
 	{
-		if (!hasAnyLinesWithIssueMethod(from.getOrderId(), BOMIssueMethod.Planning))
+		if (!hasAnyLinesWithIssueMethod(from.getOrderId(), BOMComponentIssueMethod.IssueOnlyForReceived))
 		{
 			return Optional.empty();
 		}
