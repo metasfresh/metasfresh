@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.common.shipping.v2.receipt.JsonCreateReceiptInfo;
 import de.metas.common.shipping.v2.receipt.JsonCreateReceiptsRequest;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inout.InOutId;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.ReceiptScheduleId;
@@ -49,6 +50,7 @@ import de.metas.util.Services;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.CreateAttributeInstanceReq;
 import org.compiere.util.Env;
@@ -65,20 +67,18 @@ import java.util.stream.Collectors;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 
 @Service
+@RequiredArgsConstructor
 public class ReceiptService
 {
-	private final AttributeSetHelper attributeSetHelper;
+	private static final AdMessageKey ERR_RECEIPT_SCHEDULE_NOT_FOUND = AdMessageKey.of("ERR_RECEIPT_SCHEDULE_NOT_FOUND");
+	
+	@NonNull private final AttributeSetHelper attributeSetHelper;
 
 	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
 	private final IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-
-	public ReceiptService(final AttributeSetHelper attributeSetHelper)
-	{
-		this.attributeSetHelper = attributeSetHelper;
-	}
 
 	@NonNull
 	public List<InOutId> updateReceiptCandidatesAndGenerateReceipts(@NonNull final JsonCreateReceiptsRequest request)
@@ -226,7 +226,10 @@ public class ReceiptService
 			receiptScheduleQueryBuilder.orderLineId(OrderLineId.ofRepoId(receiptInfo.getOrderLineId().getValue()));
 		}
 
-		return receiptScheduleDAO.getIdByQuery(receiptScheduleQueryBuilder.build());
+		return receiptScheduleDAO.getIdByQuery(receiptScheduleQueryBuilder.build())
+				.orElseThrow(() -> new AdempiereException(ERR_RECEIPT_SCHEDULE_NOT_FOUND)
+						.appendParametersToMessage()
+						.setParameter("receiptInfo", receiptInfo));
 	}
 
 	@NonNull

@@ -36,6 +36,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -363,12 +364,10 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 
 	@NonNull
 	@Override
-	public ReceiptScheduleId getIdByQuery(@NonNull final ReceiptScheduleQuery query)
+	public Optional<ReceiptScheduleId> getIdByQuery(@NonNull final ReceiptScheduleQuery query)
 	{
-		final I_M_ReceiptSchedule receiptSchedule = buildQuery(query)
-				.firstOnlyNotNull();
-
-		return ReceiptScheduleId.ofRepoId(receiptSchedule.getM_ReceiptSchedule_ID());
+		return buildQuery(query)
+				.firstIdOnlyOptional(ReceiptScheduleId::ofRepoId);
 	}
 
 	@NonNull
