@@ -915,6 +915,7 @@ public class ProcessExecutionResult
 	public void syncLogsToDB()
 	{
 		logsDebouncer.processAndClearBufferSync();
+		logsDebouncer.shutdown();
 	}
 
 	private void syncCollectedLogsToDB(@NonNull final List<ProcessInfoLog> collectedProcessInfoLogs)
