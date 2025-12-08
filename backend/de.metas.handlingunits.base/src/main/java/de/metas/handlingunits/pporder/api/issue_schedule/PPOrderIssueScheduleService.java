@@ -81,6 +81,7 @@ public class PPOrderIssueScheduleService
 			final I_M_HU issueFromHU = handlingUnitsBL.getById(issueSchedule.getIssueFromHUId());
 
 			huPPOrderBL.createIssueProducer(ppOrderId)
+					.failIfIssueOnlyForReceived(request.isFailIfIssueOnlyForReceived())
 					.fixedQtyToIssue(qtyIssued)
 					.processCandidates(HUPPOrderIssueProducer.ProcessIssueCandidatesPolicy.ALWAYS)
 					.generatedBy(IssueCandidateGeneratedBy.ofIssueScheduleId(issueScheduleId))
