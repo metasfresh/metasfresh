@@ -281,7 +281,7 @@ public class CTableColumns2GridTabSynchronizer
 		final boolean visible = table.isColumnVisible(column);
 
 		final GridFieldVO gridFieldVO = gridField.getVO();
-		gridFieldVO.setIsDisplayedGrid(visible);
+		gridFieldVO.setDisplayedGrid(visible);
 
 		if (visible)
 		{

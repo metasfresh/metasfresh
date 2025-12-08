@@ -3,16 +3,26 @@ import PropTypes from 'prop-types';
 
 import PickStepButton from './PickStepButton';
 
-const PickAlternatives = ({ applicationId, wfProcessId, activityId, lineId, stepId, pickFromAlternatives, uom }) => {
+const PickAlternatives = ({
+  applicationId,
+  wfProcessId,
+  activityId,
+  lineId,
+  stepId,
+  pickFromAlternatives,
+  uom,
+  disabled,
+}) => {
   return (
     <>
       {pickFromAlternatives &&
-        Object.values(pickFromAlternatives)
+        pickFromAlternatives
           .filter((pickFromAlternative) => pickFromAlternative.isDisplayed)
           .map((pickFromAlternative) => {
             return (
               <PickStepButton
                 key={pickFromAlternative.alternativeId}
+                disabled={disabled}
                 applicationId={applicationId}
                 wfProcessId={wfProcessId}
                 activityId={activityId}
@@ -36,8 +46,9 @@ PickAlternatives.propTypes = {
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,
   stepId: PropTypes.string.isRequired,
-  pickFromAlternatives: PropTypes.object.isRequired,
+  pickFromAlternatives: PropTypes.array.isRequired,
   uom: PropTypes.string.isRequired,
+  disabled: PropTypes.bool,
 };
 
 export default PickAlternatives;

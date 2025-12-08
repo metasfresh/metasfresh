@@ -1,35 +1,10 @@
 package org.adempiere.mm.attributes.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
+import de.metas.javaclasses.model.I_AD_JavaClass;
+import de.metas.javaclasses.model.I_AD_JavaClass_Type;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeCode;
@@ -48,13 +23,14 @@ import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_AttributeValue_Mapping;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 
-import de.metas.javaclasses.model.I_AD_JavaClass;
-import de.metas.javaclasses.model.I_AD_JavaClass_Type;
-import de.metas.util.Services;
-import lombok.Builder;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
  * Base context and helpers for {@link M_Attribute}s related tests.
@@ -62,7 +38,7 @@ import lombok.NonNull;
  * @author tsa
  *
  */
-@Ignore
+@Disabled
 public class AttributesTestHelper
 {
 	public final Properties ctx;

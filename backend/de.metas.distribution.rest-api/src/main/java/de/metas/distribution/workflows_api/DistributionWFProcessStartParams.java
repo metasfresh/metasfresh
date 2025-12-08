@@ -1,11 +1,11 @@
 package de.metas.distribution.workflows_api;
 
+import de.metas.distribution.ddorder.DDOrderId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.api.Params;
-import de.metas.distribution.ddorder.DDOrderId;
 
 @Value
 @Builder

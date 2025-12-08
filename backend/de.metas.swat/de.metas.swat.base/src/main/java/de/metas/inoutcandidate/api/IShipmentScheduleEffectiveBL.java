@@ -22,25 +22,23 @@ package de.metas.inoutcandidate.api;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.location.DocumentLocation;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.interfaces.I_C_BPartner;
+import de.metas.order.DeliveryRule;
+import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.interfaces.I_C_BPartner;
-import de.metas.order.DeliveryRule;
-import de.metas.util.ISingletonService;
-
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 
 /**
  * Returns the "effective" values for a given shipment schedules when it has both an "original" and an "override" column.
@@ -102,5 +100,5 @@ public interface IShipmentScheduleEffectiveBL extends ISingletonService
 	 * If none of them is set, try to fallback to the given {@code sched}'s order's preparation date. If the order has no proparation date, falls back to the order's promised date.
 	 * If the given {@code sched} doesn't have an order, return the current time.,
 	 */
-	ZonedDateTime getPreparationDate(I_M_ShipmentSchedule sched);
+	ZonedDateTime getPreparationDate(@NonNull I_M_ShipmentSchedule sched);
 }

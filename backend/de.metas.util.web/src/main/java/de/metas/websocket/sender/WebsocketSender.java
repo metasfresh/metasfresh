@@ -57,7 +57,7 @@ import java.util.List;
 @ConditionalOnBean(SimpMessagingTemplate.class)
 public class WebsocketSender implements InitializingBean
 {
-	private static final transient Logger logger = LogManager.getLogger(WebsocketSender.class);
+	private static final Logger logger = LogManager.getLogger(WebsocketSender.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final SimpMessagingTemplate websocketMessagingTemplate;

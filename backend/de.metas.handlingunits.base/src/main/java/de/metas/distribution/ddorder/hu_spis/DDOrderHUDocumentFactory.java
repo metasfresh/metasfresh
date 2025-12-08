@@ -104,7 +104,7 @@ public class DDOrderHUDocumentFactory extends AbstractHUDocumentFactory<I_DD_Ord
 
 			//
 			// Create target Capacities
-			final Quantity qtyToDeliver = Quantitys.create(
+			final Quantity qtyToDeliver = Quantitys.of(
 					line.getQtyOrdered().subtract(line.getQtyDelivered()),
 					UomId.ofRepoId(line.getC_UOM_ID()));
 			final Capacity targetCapacity = Capacity.createCapacity(

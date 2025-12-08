@@ -25,21 +25,26 @@ package org.eevolution.api.impl;
 import de.metas.product.ProductId;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.mrp.api.impl.MRPTestHelper;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class ProductBOMCycleDetectionTest
 {
 	private MRPTestHelper helper;
 
-	@Before
-	public void init()
+	@BeforeEach
+	public void beforeEach()
 	{
+		AdempiereTestHelper.get().init();
+
 		POJOWrapper.setDefaultStrictValues(false);
 		helper = new MRPTestHelper();
 	}
@@ -57,8 +62,13 @@ public class ProductBOMCycleDetectionTest
 	 *          F  (A)
 	 * </pre>
 	 */
-	@Test(expected = AdempiereException.class)
-	public void testBOMCycles()
+	@Test
+	public void testBOMCyclesException()
+	{
+		assertThrows(AdempiereException.class, this::testBOMCycles);
+	}
+
+	private void testBOMCycles() throws AdempiereException
 	{
 		final I_M_Product pA = helper.createProduct("A");
 		final I_M_Product pB = helper.createProduct("B");
@@ -91,5 +101,4 @@ public class ProductBOMCycleDetectionTest
 				.newBOMLine().product(pA).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE).endLine()
 				.build();
 	}
-
 }

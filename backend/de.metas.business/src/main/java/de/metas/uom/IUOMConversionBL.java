@@ -90,6 +90,14 @@ public interface IUOMConversionBL extends ISingletonService, QuantityUOMConverte
 		return convertQty(conversionCtx, qty, uomFrom, uomTo);
 	}
 
+	default Quantity convertQuantityTo(
+			@NonNull final Quantity quantity,
+			@Nullable final ProductId productId,
+			@NonNull final I_C_UOM uomTo)
+	{
+		return convertQuantityTo(quantity, UOMConversionContext.of(productId), uomTo);
+	}
+
 	Quantity convertQuantityTo(
 			Quantity quantity,
 			UOMConversionContext conversionCtx,
@@ -246,4 +254,7 @@ public interface IUOMConversionBL extends ISingletonService, QuantityUOMConverte
 			UomId toUomId);
 
 	void createUOMConversion(@NonNull CreateUOMConversionRequest request);
+
+	@NonNull
+	Quantity convertToKilogram(@NonNull Quantity weight, @NonNull ProductId productId);
 }

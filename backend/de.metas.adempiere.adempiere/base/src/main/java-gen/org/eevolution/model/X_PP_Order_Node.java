@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order_Node, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 914342006L;
+	private static final long serialVersionUID = -1792738769L;
 
     /** Standard Constructor */
     public X_PP_Order_Node (final Properties ctx, final int PP_Order_Node_ID, @Nullable final String trxName)
@@ -341,6 +341,14 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 	public static final String PP_ACTIVITY_TYPE_ScanScaleDevice = "ScanScaleDevice";
 	/** RawMaterialsIssueAdjustment = MIA */
 	public static final String PP_ACTIVITY_TYPE_RawMaterialsIssueAdjustment = "MIA";
+	/** CallExternalSystem = CallExternalSystem */
+	public static final String PP_ACTIVITY_TYPE_CallExternalSystem = "CallExternalSystem";
+	/** PrintReceivedHUQRCodes = PrintReceivedHUQRCodes */
+	public static final String PP_ACTIVITY_TYPE_PrintReceivedHUQRCodes = "PrintReceivedHUQRCodes";
+	/** Validate Locator = ValidateLocator */
+	public static final String PP_ACTIVITY_TYPE_ValidateLocator = "ValidateLocator";
+	/** Issue Only What Was Received = IssueOnlyWhatWasReceived */
+	public static final String PP_ACTIVITY_TYPE_IssueOnlyWhatWasReceived = "IssueOnlyWhatWasReceived";
 	@Override
 	public void setPP_Activity_Type (final java.lang.String PP_Activity_Type)
 	{
@@ -351,6 +359,27 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 	public java.lang.String getPP_Activity_Type() 
 	{
 		return get_ValueAsString(COLUMNNAME_PP_Activity_Type);
+	}
+
+	/** 
+	 * PP_AlwaysAvailableToUser AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int PP_ALWAYSAVAILABLETOUSER_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String PP_ALWAYSAVAILABLETOUSER_Yes = "Y";
+	/** No = N */
+	public static final String PP_ALWAYSAVAILABLETOUSER_No = "N";
+	@Override
+	public void setPP_AlwaysAvailableToUser (final @Nullable java.lang.String PP_AlwaysAvailableToUser)
+	{
+		set_Value (COLUMNNAME_PP_AlwaysAvailableToUser, PP_AlwaysAvailableToUser);
+	}
+
+	@Override
+	public java.lang.String getPP_AlwaysAvailableToUser() 
+	{
+		return get_ValueAsString(COLUMNNAME_PP_AlwaysAvailableToUser);
 	}
 
 	@Override
@@ -423,6 +452,18 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 	}
 
 	@Override
+	public void setPP_UserInstructions (final @Nullable java.lang.String PP_UserInstructions)
+	{
+		set_Value (COLUMNNAME_PP_UserInstructions, PP_UserInstructions);
+	}
+
+	@Override
+	public java.lang.String getPP_UserInstructions() 
+	{
+		return get_ValueAsString(COLUMNNAME_PP_UserInstructions);
+	}
+
+	@Override
 	public void setQtyDelivered (final @Nullable BigDecimal QtyDelivered)
 	{
 		set_Value (COLUMNNAME_QtyDelivered, QtyDelivered);
@@ -486,6 +527,25 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 		return get_ValueAsInt(COLUMNNAME_QueuingTime);
 	}
 
+	/** 
+	 * RawMaterialsIssueStrategy AD_Reference_ID=541877
+	 * Reference name: RawMaterialsIssueStrategy
+	 */
+	public static final int RAWMATERIALSISSUESTRATEGY_AD_Reference_ID=541877;
+	/** Only assigned HUs = AssignedHUsOnly */
+	public static final String RAWMATERIALSISSUESTRATEGY_OnlyAssignedHUs = "AssignedHUsOnly";
+	@Override
+	public void setRawMaterialsIssueStrategy (final @Nullable java.lang.String RawMaterialsIssueStrategy)
+	{
+		set_Value (COLUMNNAME_RawMaterialsIssueStrategy, RawMaterialsIssueStrategy);
+	}
+
+	@Override
+	public java.lang.String getRawMaterialsIssueStrategy() 
+	{
+		return get_ValueAsString(COLUMNNAME_RawMaterialsIssueStrategy);
+	}
+
 	@Override
 	public org.compiere.model.I_S_Resource getS_Resource()
 	{
@@ -511,6 +571,18 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 	public int getS_Resource_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_S_Resource_ID);
+	}
+
+	@Override
+	public void setScannedQRCode (final @Nullable java.lang.String ScannedQRCode)
+	{
+		set_Value (COLUMNNAME_ScannedQRCode, ScannedQRCode);
+	}
+
+	@Override
+	public java.lang.String getScannedQRCode() 
+	{
+		return get_ValueAsString(COLUMNNAME_ScannedQRCode);
 	}
 
 	@Override

@@ -22,9 +22,6 @@ package de.metas.handlingunits.hutransaction;
  * #L%
  */
 
-import java.util.List;
-import java.util.Properties;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -32,6 +29,9 @@ import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+
+import java.util.List;
+import java.util.Properties;
 
 public interface IHUTrxDAO extends ISingletonService
 {
@@ -65,5 +65,4 @@ public interface IHUTrxDAO extends ISingletonService
 	 */
 	@Deprecated
 	List<I_M_HU_Trx_Line> retrieveReferencingTrxLinesForHU(I_M_HU hu);
-
 }

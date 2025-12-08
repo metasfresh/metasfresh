@@ -156,7 +156,7 @@ public class FilterSql
 		public SqlAndParams buildExistsWhereClause(@NonNull final String targetTableNameOrAlias)
 		{
 			return SqlAndParams.builder()
-					.append("EXISTS (SELECT 1 FROM ").append(I_T_ES_FTS_Search_Result.Table_Name).append("fts")
+					.append("EXISTS (SELECT 1 FROM ").append(I_T_ES_FTS_Search_Result.Table_Name).append(" fts")
 					.append(" WHERE ").append(buildJoinCondition(targetTableNameOrAlias, "fts"))
 					.append(")")
 					.build();

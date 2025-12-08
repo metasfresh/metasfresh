@@ -13,7 +13,7 @@
 	<packaging>jar</packaging>
 
 	<properties>
-		<migration-sql-basedir></migration-sql-basedir>
+		<migration-sql-basedir/>
 		<metasfresh.version>[1,10.0.0]</metasfresh.version>
 	</properties>
 
@@ -70,6 +70,7 @@
 			<version>${metasfresh.version}</version>
 		</dependency>
 
+		<!-- needed because we implement InvoiceDueDateProvider for contract-related invoices -->
 		<dependency>
 			<groupId>de.metas.dunning</groupId>
 			<artifactId>de.metas.dunning</artifactId>

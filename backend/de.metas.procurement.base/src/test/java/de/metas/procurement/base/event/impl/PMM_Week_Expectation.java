@@ -5,7 +5,7 @@ import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.TimeUtil;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 import java.time.LocalDate;
 
@@ -78,14 +78,14 @@ public class PMM_Week_Expectation
 				+ "\n Actual: " + actual
 				+ "\n Expectation: " + this;
 
-		Assert.assertNotNull("exists - " + msgToUse, actual);
-		Assert.assertEquals("C_BPartner_ID - " + msgToUse, C_BPartner_ID, (Integer)actual.getC_BPartner_ID());
-		Assert.assertEquals("M_Product_ID - " + msgToUse, M_Product_ID, (Integer)actual.getM_Product_ID());
-		Assert.assertEquals("M_AttributeSetInstance_ID - " + msgToUse, M_AttributeSetInstance_ID, (Integer)actual.getM_AttributeSetInstance_ID());
+		Assertions.assertNotNull(actual, "exists - " + msgToUse);
+		Assertions.assertEquals(C_BPartner_ID, (Integer)actual.getC_BPartner_ID(), "C_BPartner_ID - " + msgToUse);
+		Assertions.assertEquals(M_Product_ID, (Integer)actual.getM_Product_ID(), "M_Product_ID - " + msgToUse);
+		Assertions.assertEquals(M_AttributeSetInstance_ID, (Integer)actual.getM_AttributeSetInstance_ID(), "M_AttributeSetInstance_ID - " + msgToUse);
 
-		Assert.assertEquals("DateWeek - " + msgToUse, dateWeek, TimeUtil.asLocalDate(actual.getWeekDate()));
+		Assertions.assertEquals(dateWeek, TimeUtil.asLocalDate(actual.getWeekDate()), "DateWeek - " + msgToUse);
 
-		Assert.assertEquals("PMM_Trend - " + msgToUse, PMM_Trend, actual.getPMM_Trend());
+		Assertions.assertEquals(PMM_Trend, actual.getPMM_Trend(), "PMM_Trend - " + msgToUse);
 
 		return this;
 	}

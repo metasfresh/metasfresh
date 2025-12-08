@@ -1,5 +1,6 @@
 package de.metas.distribution.workflows_api;
 
+import de.metas.distribution.config.MobileUIDistributionConfig;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
@@ -19,8 +20,8 @@ public class DistributionJobCreateCommand
 	private final DistributionJobLoaderSupportingServices loadingSupportServices;
 	private final DistributionJobHUReservationService distributionJobHUReservationService;
 
-	private final @NonNull DDOrderId ddOrderId;
-	private final @NonNull UserId responsibleId;
+	@NonNull private final DDOrderId ddOrderId;
+	@NonNull private final UserId responsibleId;
 
 	@Builder
 	private DistributionJobCreateCommand(
@@ -50,15 +51,19 @@ public class DistributionJobCreateCommand
 
 	public DistributionJob executeInTrx()
 	{
+		final MobileUIDistributionConfig config = loadingSupportServices.getConfig();
+
 		final I_DD_Order ddOrder = ddOrderService.getById(ddOrderId);
 		ddOrderService.assignToResponsible(ddOrder, responsibleId);
 
-		final DDOrderMovePlan plan = ddOrderMoveScheduleService.createPlan(DDOrderMovePlanCreateRequest.builder()
-				.ddOrder(ddOrder)
-				.failIfNotFullAllocated(true)
-				.build());
-
-		ddOrderMoveScheduleService.savePlan(plan);
+		if (!config.isAllowPickingAnyHU())
+		{
+			final DDOrderMovePlan plan = ddOrderMoveScheduleService.createPlan(DDOrderMovePlanCreateRequest.builder()
+					.ddOrder(ddOrder)
+					.failIfNotFullAllocated(true)
+					.build());
+			ddOrderMoveScheduleService.savePlan(plan);
+		}
 
 		final DistributionJob job = new DistributionJobLoader(loadingSupportServices)
 				.load(ddOrder);

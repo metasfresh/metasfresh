@@ -22,19 +22,6 @@ package de.metas.handlingunits.storage.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import de.metas.quantity.Quantitys;
-import de.metas.uom.UOMPrecision;
-import de.metas.uom.UomId;
-import org.compiere.model.I_C_UOM;
-
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -54,8 +41,11 @@ import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UOMPrecision;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -228,7 +218,7 @@ public class HUItemStorage implements IHUItemStorage
 	{
 		final I_M_HU_Item_Storage storage = dao.retrieveItemStorage(item, productId);
 		return storage != null
-				? Optional.of(Quantitys.create(storage.getQty(), UomId.ofRepoId(storage.getC_UOM_ID())))
+				? Optional.of(Quantitys.of(storage.getQty(), UomId.ofRepoId(storage.getC_UOM_ID())))
 				: Optional.empty();
 	}
 

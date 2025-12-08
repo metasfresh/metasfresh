@@ -25,8 +25,8 @@ package de.metas.contracts.callorder.detail.model;
 import de.metas.contracts.callorder.summary.model.CallOrderSummaryId;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.quantity.Quantity;
@@ -65,10 +65,10 @@ public class CallOrderDetailData
 			@Nullable final InOutLineId shipmentLineId,
 			@Nullable final Quantity qtyDelivered,
 			@Nullable final InvoiceId invoiceId,
-			@Nullable final InvoiceLineId invoiceLineId,
+			@Nullable final InvoiceAndLineId invoiceAndLineId,
 			@Nullable final Quantity qtyInvoiced)
 	{
-		final long nonNullSources = Stream.of(orderLineId, shipmentLineId, invoiceLineId)
+		final long nonNullSources = Stream.of(orderLineId, shipmentLineId, invoiceAndLineId)
 				.filter(Objects::nonNull)
 				.count();
 
@@ -119,7 +119,7 @@ public class CallOrderDetailData
 
 			this.invoiceDetail = InvoiceDetail.builder()
 					.invoiceId(invoiceId)
-					.invoiceLineId(invoiceLineId)
+					.invoiceAndLineId(invoiceAndLineId)
 					.qtyInvoiced(qtyInvoiced)
 					.build();
 
@@ -137,7 +137,7 @@ public class CallOrderDetailData
 		@NonNull
 		InvoiceId invoiceId;
 		@NonNull
-		InvoiceLineId invoiceLineId;
+		InvoiceAndLineId invoiceAndLineId;
 		@NonNull
 		Quantity qtyInvoiced;
 	}

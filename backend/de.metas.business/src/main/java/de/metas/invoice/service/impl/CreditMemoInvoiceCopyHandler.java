@@ -1,15 +1,15 @@
 package de.metas.invoice.service.impl;
 
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_InvoiceLine;
-
 import de.metas.document.IDocCopyHandler;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_InvoiceLine;
 
 /**
  * Note: This class is currently instantiated and called directly from BLs in this package.<br>
@@ -33,7 +33,7 @@ class CreditMemoInvoiceCopyHandler implements IDocCopyHandler<I_C_Invoice, I_C_I
 	}
 
 	@Override
-	public void copyValues(final I_C_Invoice from, final I_C_Invoice to)
+	public void copyValues(@NonNull final I_C_Invoice from, @NonNull final I_C_Invoice to)
 	{
 		final de.metas.adempiere.model.I_C_Invoice invoice = InterfaceWrapperHelper.create(from, de.metas.adempiere.model.I_C_Invoice.class);
 		final de.metas.adempiere.model.I_C_Invoice creditMemo = InterfaceWrapperHelper.create(to, de.metas.adempiere.model.I_C_Invoice.class);

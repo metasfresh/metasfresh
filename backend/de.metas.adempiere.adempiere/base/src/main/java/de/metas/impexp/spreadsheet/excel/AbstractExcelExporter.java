@@ -36,6 +36,9 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
+import org.apache.poi.common.usermodel.HyperlinkType;
+import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.BuiltinFormats;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -67,6 +70,7 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
@@ -76,6 +80,10 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
  */
 public abstract class AbstractExcelExporter
 {
+	private final static String SYS_CONFIG_NUMERIC_FORMAT = "de.metas.impexp.spreadsheet.excel.NumericFormat";
+
+	final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
 	/**
 	 * Is the current Row a Function Row
 	 *
@@ -269,7 +277,7 @@ public abstract class AbstractExcelExporter
 		if (fontHeader == null)
 		{
 			fontHeader = createFont();
-			fontHeader.setBoldweight(Font.BOLDWEIGHT_BOLD);
+			fontHeader.setBold(true);
 		}
 		return fontHeader;
 	}
@@ -288,7 +296,7 @@ public abstract class AbstractExcelExporter
 		if (fontFunctionRow == null)
 		{
 			fontFunctionRow = createFont();
-			fontFunctionRow.setBoldweight(Font.BOLDWEIGHT_BOLD);
+			fontFunctionRow.setBold(true);
 			fontFunctionRow.setItalic(true);
 		}
 		return fontFunctionRow;
@@ -382,10 +390,10 @@ public abstract class AbstractExcelExporter
 		// Border
 		if(isApplyFormatting())
 		{
-			style.setBorderLeft((short)1);
-			style.setBorderTop((short)1);
-			style.setBorderRight((short)1);
-			style.setBorderBottom((short)1);
+			style.setBorderLeft(BorderStyle.valueOf((short)1));
+			style.setBorderTop(BorderStyle.valueOf((short)1));
+			style.setBorderRight(BorderStyle.valueOf((short)1));
+			style.setBorderBottom(BorderStyle.valueOf((short)1));
 		}
 
 		//
@@ -399,7 +407,12 @@ public abstract class AbstractExcelExporter
 		else if (DisplayType.isNumeric(displayType))
 		{
 			final DecimalFormat df = DisplayType.getNumberFormat(displayType, getLanguage());
-			final String format = getNumberFormatString(df, isHighlightNegativeNumbers);
+
+			final String format = Optional.ofNullable(sysConfigBL.getValue(SYS_CONFIG_NUMERIC_FORMAT,
+																		   null,
+																		   Env.getAD_Org_ID(Env.getCtx()),
+																		   Env.getAD_Client_ID()))
+					.orElseGet(() -> getNumberFormatString(df, isHighlightNegativeNumbers));
 
 			final DataFormat dataFormat = getDataFormat();
 			style.setDataFormat(dataFormat.getFormat(format));
@@ -421,10 +434,10 @@ public abstract class AbstractExcelExporter
 		style.setFont(font);
 		if(isApplyFormatting())
 		{
-			style.setBorderLeft((short)2);
-			style.setBorderTop((short)2);
-			style.setBorderRight((short)2);
-			style.setBorderBottom((short)2);
+			style.setBorderLeft(BorderStyle.valueOf((short)2));
+			style.setBorderTop(BorderStyle.valueOf((short)2));
+			style.setBorderRight(BorderStyle.valueOf((short)2));
+			style.setBorderBottom(BorderStyle.valueOf((short)2));
 		}
 		style.setDataFormat((short)BuiltinFormats.getBuiltinFormat("text"));
 		style.setWrapText(true);
@@ -717,7 +730,7 @@ public abstract class AbstractExcelExporter
 			try
 			{
 				new URI(urlStr);
-				final Hyperlink hyperlink = getWorkbook().getCreationHelper().createHyperlink(org.apache.poi.common.usermodel.Hyperlink.LINK_URL);
+				final Hyperlink hyperlink = getWorkbook().getCreationHelper().createHyperlink(HyperlinkType.URL);
 				hyperlink.setAddress(urlStr);
 				return hyperlink;
 			}
@@ -732,12 +745,12 @@ public abstract class AbstractExcelExporter
 		}
 	}
 
-	public File exportToTempFile()
+	public File exportToTempFile(@NonNull String fileNamePrefix)
 	{
 		final File file;
 		try
 		{
-			file = File.createTempFile("Report_", "." + excelFormat.getFileExtension());
+			file = File.createTempFile(fileNamePrefix, "." + excelFormat.getFileExtension());
 		}
 		catch (final IOException ex)
 		{

@@ -22,7 +22,6 @@
 
 package de.metas.servicerepair.project.repository;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
@@ -61,7 +60,7 @@ class ServiceRepairProjectConsumptionSummaryRepository
 		{
 			record = InterfaceWrapperHelper.newInstance(I_C_Project_Repair_Consumption_Summary.class);
 
-			final Quantity zero = Quantitys.createZero(groupingKey.getUomId());
+			final Quantity zero = Quantitys.zero(groupingKey.getUomId());
 			summary = ServiceRepairProjectConsumptionSummary.builder()
 					.groupingKey(groupingKey)
 					.qtyReserved(zero)
@@ -88,8 +87,8 @@ class ServiceRepairProjectConsumptionSummaryRepository
 		final ServiceRepairProjectConsumptionSummary.GroupingKey groupingKey = extractGroupingKey(record);
 		return ServiceRepairProjectConsumptionSummary.builder()
 				.groupingKey(groupingKey)
-				.qtyReserved(Quantitys.create(record.getQtyReserved(), groupingKey.getUomId()))
-				.qtyConsumed(Quantitys.create(record.getQtyConsumed(), groupingKey.getUomId()))
+				.qtyReserved(Quantitys.of(record.getQtyReserved(), groupingKey.getUomId()))
+				.qtyConsumed(Quantitys.of(record.getQtyConsumed(), groupingKey.getUomId()))
 				.build();
 	}
 

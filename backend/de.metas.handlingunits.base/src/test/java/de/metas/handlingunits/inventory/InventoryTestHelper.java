@@ -116,8 +116,8 @@ public class InventoryTestHelper
 	public static DocTypeId createDocType(@NonNull final DocBaseAndSubType docBaseAndSubType)
 	{
 		final I_C_DocType docType = newInstance(I_C_DocType.class);
-		docType.setDocBaseType(docBaseAndSubType.getDocBaseType());
-		docType.setDocSubType(docBaseAndSubType.getDocSubType());
+		docType.setDocBaseType(docBaseAndSubType.getDocBaseType().getCode());
+		docType.setDocSubType(docBaseAndSubType.getDocSubType().getCode());
 		saveRecord(docType);
 		return DocTypeId.ofRepoId(docType.getC_DocType_ID());
 	}

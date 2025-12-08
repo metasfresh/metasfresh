@@ -22,20 +22,19 @@ package org.adempiere.ad.trx.api.impl;
  * #L%
  */
 
+import lombok.Getter;
+import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.ITrxSavepoint;
+import org.compiere.util.Util;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.api.ITrxSavepoint;
-import org.compiere.util.Util;
-import org.junit.Assert;
-import org.junit.Ignore;
-
-import lombok.Getter;
-import lombok.NonNull;
-
-@Ignore
+@Disabled
 public class MockedTrx extends PlainTrx
 {
 	/** exception this mock shall throw on rollback */
@@ -121,7 +120,7 @@ public class MockedTrx extends PlainTrx
 				}
 				else
 				{
-					Assert.fail("Invalid type of exception to be thrown: " + exception + " (" + exception.getClass() + ")");
+					Assertions.fail("Invalid type of exception to be thrown: " + exception + " (" + exception.getClass() + ")");
 				}
 			}
 			else
@@ -137,7 +136,7 @@ public class MockedTrx extends PlainTrx
 	{
 		super.closeNative();
 		// Assume that at this point the transaction is no longer active because it was never active or because it was commit/rollback first.
-		Assert.assertFalse("Transaction shall not be active at this point", isActive());
+		Assertions.assertFalse(isActive(), "Transaction shall not be active at this point");
 
 		closeCalled = true;
 		return true;

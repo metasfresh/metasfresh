@@ -1,13 +1,14 @@
 import React from 'react';
-import { useHistory } from 'react-router-dom';
 import PropTypes from 'prop-types';
 
 import { distributionLineScreenLocation } from '../../../routes/distribution';
 
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../components/buttons/ButtonQuantityProp';
+import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
 
 const DistributionLineButton = ({
+  testId,
   applicationId,
   wfProcessId,
   activityId,
@@ -19,13 +20,14 @@ const DistributionLineButton = ({
   completeStatus,
   isUserEditable,
 }) => {
-  const history = useHistory();
+  const history = useMobileNavigation();
   const handleClick = () => {
     history.push(distributionLineScreenLocation({ applicationId, wfProcessId, activityId, lineId }));
   };
 
   return (
     <ButtonWithIndicator
+      testId={testId}
       caption={caption}
       completeStatus={completeStatus}
       disabled={!isUserEditable}
@@ -39,6 +41,7 @@ const DistributionLineButton = ({
 DistributionLineButton.propTypes = {
   //
   // Props
+  testId: PropTypes.string,
   applicationId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,

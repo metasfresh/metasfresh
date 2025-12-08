@@ -5,10 +5,11 @@ import numeral from 'numeral';
 import * as types from '../constants/ActionTypes';
 import { setCurrentActiveLocale } from '../utils/locale';
 import {
-  getNotificationsRequest,
   getNotificationsEndpointRequest,
-  getUserSession,
+  getNotificationsRequest,
 } from '../api';
+import { updateDefaultPrecisionsFromUserSettings } from '../utils/tableHelpers';
+import { getUserSession } from '../api/userSession';
 
 // TODO: All requests should be moved to API
 
@@ -341,6 +342,7 @@ export function loginSuccess(auth) {
           setCurrentActiveLocale(data.language['key']);
           initNumeralLocales(data.language['key'], data.locale);
           MomentTZ.tz.setDefault(data.timeZone);
+          updateDefaultPrecisionsFromUserSettings(data.settings);
 
           auth.initSessionClient(data.websocketEndpoint, (msg) => {
             const me = JSON.parse(msg.body);

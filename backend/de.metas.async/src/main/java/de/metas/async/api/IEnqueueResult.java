@@ -25,5 +25,7 @@ package de.metas.async.api;
 @FunctionalInterface
 public interface IEnqueueResult
 {
+	IEnqueueResult ONE_WORKPACKAGE_ENQUEUED = () -> 1;
+
 	int getWorkpackageEnqueuedCount();
 }

@@ -24,10 +24,10 @@ package de.metas.handlingunits.pporder.api;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
-import org.eevolution.api.PPOrderId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.eevolution.api.PPCostCollectorId;
+import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -67,4 +67,6 @@ public interface IHUPPOrderQtyDAO extends ISingletonService
 	List<I_PP_Order_Qty> retrieveOrderQtyForFinishedGoodsReceive(PPOrderId ppOrderId);
 
 	Optional<I_PP_Order_Qty> retrieveOrderQtyForHu(@NonNull PPOrderId ppOrderId, @NonNull HuId huId);
+	
+	boolean hasUnprocessedOrderQty(@NonNull PPOrderId ppOrderId);
 }

@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_BPartner_QuickInput
  *  @author metasfresh (generated) 
@@ -441,6 +441,10 @@ public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_
 	public static final String PAYMENTRULE_Mixed = "M";
 	/** PayPal = L */
 	public static final String PAYMENTRULE_PayPal = "L";
+	/** Rückerstattung = E */
+	public static final String PAYMENTRULE_Reimbursement = "E";
+	/** Verrechnung = F */
+	public static final String PAYMENTRULE_Settlement = "F";
 	@Override
 	public void setPaymentRule (final @Nullable java.lang.String PaymentRule)
 	{

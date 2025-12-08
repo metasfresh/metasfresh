@@ -1,0 +1,13 @@
+POST {{baseURL}}/api/v2/processes/C_Invoice_EDI_Export_JSON/invoke
+Authorization: {{authToken}}
+Content-Type: application/json;charset=UTF-8
+accept: application/json;charset=UTF-8
+
+{
+  "processParameters": [
+    {
+      "name": "C_Invoice_ID",
+      "value": "1000000"
+    }
+  ]
+}

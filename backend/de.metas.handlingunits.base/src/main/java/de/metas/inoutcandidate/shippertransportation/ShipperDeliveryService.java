@@ -29,11 +29,11 @@ import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
-import de.metas.handlingunits.impl.ShipperTransportationRepository;
-import de.metas.handlingunits.transportation.InOutToTransportationOrderService;
+import de.metas.handlingunits.shipping.InOutToTransportationOrderService;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -41,6 +41,7 @@ import de.metas.shipper.gateway.commons.ShipperGatewayFacade;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderCreateRequest;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;
@@ -68,28 +69,38 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 @Service
 public class ShipperDeliveryService
 {
-	private final static transient Logger logger = LogManager.getLogger(ShipperDeliveryService.class);
+	private final static Logger logger = LogManager.getLogger(ShipperDeliveryService.class);
 
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
 
 	private final InOutToTransportationOrderService inOutToTransportationOrderService;
 	private final ShipperGatewayFacade shipperGatewayFacade;
-	private final ShipperTransportationRepository shipperTransportationRepository;
 
 	public ShipperDeliveryService(
 			@NonNull final ShipperGatewayFacade shipperGatewayFacade,
-			@NonNull final ShipperTransportationRepository shipperTransportationRepository,
 			@NonNull final InOutToTransportationOrderService inOutToTransportationOrderService)
 	{
 		this.shipperGatewayFacade = shipperGatewayFacade;
-		this.shipperTransportationRepository = shipperTransportationRepository;
 		this.inOutToTransportationOrderService = inOutToTransportationOrderService;
 	}
 
+	public void addToDailyTransportationOrder(@NonNull final InOutId inOutId)
+	{
+		createTransportationAndPackagesForShipment(inOutId, true);
+	}
+
 	public void createTransportationAndPackagesForShipment(@NonNull final InOutId inOutId)
+	{
+		createTransportationAndPackagesForShipment(inOutId, false);
+	}
+
+	private void createTransportationAndPackagesForShipment(
+			@NonNull final InOutId inOutId,
+			final boolean createOneTransportationOrderPerDay)
 	{
 		final I_M_InOut shipment = inOutDAO.getById(inOutId);
 
@@ -101,21 +112,27 @@ public class ShipperDeliveryService
 			return;
 		}
 
-		final WarehouseId warehouseId = WarehouseId.ofRepoId(shipment.getM_Warehouse_ID());
-		final BPartnerLocationAndCaptureId shipFromBPWarehouseLocation = warehouseDAO.getWarehouseLocationById(warehouseId);
-
-		final LocalDate shipDate = inOutBL.retrieveMovementDate(shipment);
+		final BPartnerLocationAndCaptureId shipFromBPWarehouseLocation = warehouseDAO.getWarehouseLocationById(WarehouseId.ofRepoId(shipment.getM_Warehouse_ID()));
 
 		final CreateShipperTransportationRequest createShipperTransportationRequest = CreateShipperTransportationRequest
 				.builder()
 				.shipperId(shipperId)
 				.shipperBPartnerAndLocationId(shipFromBPWarehouseLocation.getBpartnerLocationId())
 				.orgId(OrgId.ofRepoId(shipment.getAD_Org_ID()))
-				.shipDate(shipDate)
-				.assignAnonymouslyPickedHUs(true) // a metasfresh user is supposed to find and ship exactly those HUs
+				.shipDate(inOutBL.retrieveMovementDate(shipment))
+				.assignAnonymouslyPickedHUs(true)
+				.isSOTrx(SOTrx.SALES)
 				.build();
 
-		final ShipperTransportationId shipperTransportationId = shipperTransportationRepository.create(createShipperTransportationRequest);
+		final ShipperTransportationId shipperTransportationId;
+		if (createOneTransportationOrderPerDay)
+		{
+			shipperTransportationId = shipperTransportationDAO.getOrCreate(createShipperTransportationRequest);
+		}
+		else
+		{
+			shipperTransportationId = shipperTransportationDAO.create(createShipperTransportationRequest);
+		}
 
 		final List<I_M_Package> addedPackages = inOutToTransportationOrderService.addShipmentsToTransportationOrder(shipperTransportationId, ImmutableList.of(inOutId));
 		if (addedPackages.isEmpty())
@@ -128,7 +145,7 @@ public class ShipperDeliveryService
 
 		generateShipperDeliveryOrderIfPossible(shipperId, shipperTransportationId, addedPackages, shipmentAsyncBatchId);
 	}
-	
+
 	/**
 	 * Call the remote Shipper Gateway API and request that the Shipper comes to retrieve the packages.
 	 * The Shipper delivery papers are created as a consequence.
@@ -177,8 +194,9 @@ public class ShipperDeliveryService
 	private LocalDate getPickupDate(@NonNull final I_M_ShipperTransportation shipperTransportation)
 	{
 		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(shipperTransportation.getAD_Org_ID()));
-		return CoalesceUtil.coalesce(
-				TimeUtil.asLocalDate(shipperTransportation.getDateToBeFetched(), timeZone), 
+		return CoalesceUtil.coalesceNotNull(
+				TimeUtil.asLocalDate(shipperTransportation.getDateToBeFetched(), timeZone),
 				TimeUtil.asLocalDate(shipperTransportation.getDateDoc(), timeZone));
 	}
+
 }

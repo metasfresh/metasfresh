@@ -22,28 +22,26 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
-
-import java.sql.Timestamp;
-
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.sql.Timestamp;
 
 /**
  * Tests {@link AddHoursQueryFilterModifier} by using an {@link CompareQueryFilter}.
  *
  * @author tsa
- *
  */
 public class AddHoursQueryFilterModifierTest
 {
-	public static interface ITestModel
+	public interface ITestModel
 	{
 		String Table_Name = "TestModel";
 
@@ -60,7 +58,7 @@ public class AddHoursQueryFilterModifierTest
 		void setHoursToAdd(int hoursToAdd);
 	}
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -76,16 +74,10 @@ public class AddHoursQueryFilterModifierTest
 		return testModel;
 	}
 
-	/**
-	 * @param operand1_date
-	 * @param operand1_hoursToAdd
-	 * @param operator
-	 * @param operand2
-	 */
 	private void assertComparation(final boolean matchedExpected,
-			final Timestamp operand1_date, final int operand1_hoursToAdd,
-			final Operator operator,
-			final Timestamp operand2)
+								   final Timestamp operand1_date, final int operand1_hoursToAdd,
+								   final Operator operator,
+								   final Timestamp operand2)
 	{
 		final ITestModel testModel = createTestModel(operand1_date, operand1_hoursToAdd);
 
@@ -102,7 +94,7 @@ public class AddHoursQueryFilterModifierTest
 				+ "\nOperand1: Date=" + operand1_date + ", HoursToAdd=" + operand1_hoursToAdd
 				+ "\nOperator: " + operator
 				+ "\nOperand2: " + operand2;
-		Assert.assertEquals(message, matchedExpected, matchedActual);
+		Assertions.assertEquals(matchedExpected, matchedActual, message);
 	}
 
 	private void assertSqlValid(Timestamp operand1_date, int operand1_hoursToAdd, Operator operator, Timestamp operand2)

@@ -8,8 +8,8 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.Commission
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerType;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline.SalesInvoiceLine.SalesInvoiceLineBuilder;
 import de.metas.contracts.commission.commissioninstance.services.CommissionProductService;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IInvoiceLineBL;
@@ -183,7 +183,7 @@ public class SalesInvoiceFactory
 						.negateIf(invoiceIsCreditMemo);
 
 				final SalesInvoiceLineBuilder invoiceLine = SalesInvoiceLine.builder()
-						.id(InvoiceLineId.ofRepoId(invoiceLineRecord.getC_Invoice_ID(), invoiceLineRecord.getC_InvoiceLine_ID()))
+						.id(InvoiceAndLineId.ofRepoId(invoiceLineRecord.getC_Invoice_ID(), invoiceLineRecord.getC_InvoiceLine_ID()))
 						.updated(TimeUtil.asInstantNonNull(invoiceLineRecord.getUpdated()))
 						.invoicedCommissionPoints(invoicedCommissionPoints)
 						.productId(productId)

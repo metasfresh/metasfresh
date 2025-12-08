@@ -23,15 +23,26 @@
 package de.metas.cucumber.stepdefs.distributionorder;
 
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
+import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.distribution.ddorder.DDOrderLineId;
+import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 
 /**
  * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
  */
 public class DD_OrderLine_StepDefData extends StepDefData<I_DD_OrderLine>
+		implements StepDefDataGetIdAware<DDOrderLineId, I_DD_OrderLine>
 {
 	public DD_OrderLine_StepDefData()
 	{
 		super(I_DD_OrderLine.class);
+	}
+
+	@Override
+	public DDOrderLineId extractIdFromRecord(final I_DD_OrderLine record)
+	{
+		return DDOrderLineId.ofRepoId(record.getDD_OrderLine_ID());
 	}
 }

@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
+import lombok.NonNull;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Region;
 import org.compiere.util.Env;
@@ -89,6 +90,8 @@ public interface ICountryDAO extends ISingletonService
 
 	CountryId getCountryIdByCountryCode(String countryCode);
 
+	CountryId getCountryIdByCountryCodeOrNull(String countryCode);
+
 	String retrieveCountryCode2ByCountryId(CountryId countryId);
 
 	String retrieveCountryCode3ByCountryId(CountryId countryId);
@@ -96,4 +99,6 @@ public interface ICountryDAO extends ISingletonService
 	ITranslatableString getCountryNameById(CountryId countryId);
 
 	Optional<CurrencyId> getCountryCurrencyId(CountryId countryId);
+
+	String getCountryCode(@NonNull CountryId countryId);
 }

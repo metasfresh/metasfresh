@@ -1,19 +1,18 @@
 package de.metas.material.event.procurement;
 
-import java.math.BigDecimal;
-import java.time.Instant;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+
+import java.math.BigDecimal;
+import java.time.Instant;
 
 /*
  * #%L
@@ -62,4 +61,7 @@ public class PurchaseOfferDeletedEvent extends AbstractPurchaseOfferEvent
 	{
 		return getQty().negate();
 	}
+
+	@Override
+	public String getEventName() {return TYPE;}
 }

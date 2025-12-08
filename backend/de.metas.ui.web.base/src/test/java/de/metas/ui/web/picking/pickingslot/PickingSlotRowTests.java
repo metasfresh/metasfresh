@@ -1,12 +1,12 @@
 package de.metas.ui.web.picking.pickingslot;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.jupiter.api.Test;
-
+import com.google.common.collect.ImmutableMap;
 import de.metas.handlingunits.HuId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.ui.web.handlingunits.HUEditorRowType;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -56,6 +56,7 @@ public class PickingSlotRowTests
 				.huId(HuId.ofRepoId(124))
 				.huEditorRowType(HUEditorRowType.TU)
 				.topLevelHU(true)
+				.huId2OpenPickingOrderIds(ImmutableMap.of())
 				.build();
 		assertThat(pickedHURow.isPickingSlotRow()).isFalse();
 		assertThat(pickedHURow.isPickedHURow()).isTrue();

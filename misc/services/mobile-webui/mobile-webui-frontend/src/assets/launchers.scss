@@ -3,4 +3,42 @@
   padding-bottom: 2rem;
   padding-left: 1.5rem;
   padding-right: 1.5rem;
+
+  .loading {
+    padding: 1.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .loading-icon {
+      font-size: 3rem;
+    }
+  }
+
+  .button {
+    height: auto;
+
+    .full-size-btn {
+      height: auto;
+
+      .row {
+        span {
+          white-space: break-spaces !important;
+        }
+      }
+    }
+  }
+
+  .filter-button {
+    color: white;
+    background-color: $base-mf-green;
+  }
 }
+
+@media only screen and (max-width: $small-screen-width) {
+  .launchers-container {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+}
+

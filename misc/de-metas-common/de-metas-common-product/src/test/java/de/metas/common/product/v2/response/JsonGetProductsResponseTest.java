@@ -52,6 +52,7 @@ public class JsonGetProductsResponseTest
 								 .ean("ean")
 								 .name("name")
 								 .uom("uom")
+						         .uomX12DE355("uomX12DE355")
 								 .albertaProductInfo(JsonAlbertaProductInfo.builder()
 															 .albertaProductId("albertaProductId")
 															 .additionalDescription("additionalDescription")

@@ -152,7 +152,7 @@ public class RemadvXmlToJsonProcessor implements Processor
 			throw missingMandatoryDataExSupplier.get();
 		}
 
-		return JsonRemittanceAdviceLineProducer.of(remadvLineItemExtension).getLine();
+		return JsonRemittanceAdviceLineProducer.of(lineItemType.getPositionNumber(), remadvLineItemExtension).getLine();
 	}
 
 	@Nullable

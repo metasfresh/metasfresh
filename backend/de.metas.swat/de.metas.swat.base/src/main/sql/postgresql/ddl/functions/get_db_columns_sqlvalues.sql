@@ -44,6 +44,7 @@ BEGIN
 					or lower(c.ColumnName) like '%logic%'
 					or lower(c.ColumnName) like lower('%DefaultValue%')
 				)
+				and c.columnname not in ('AD_SQLColumn_SourceTableColumn_ID')
 				order by t.tableName, c.ColumnName
 	) loop
 		if (v_sql <> '') then
@@ -53,10 +54,11 @@ BEGIN
 	end loop;
 	
 	v_sql := 'SELECT * FROM ('||v_sql||') t';
+	raise notice 'SQL: %', v_sql;
 	
 	return query execute v_sql;
 END;
 $$ LANGUAGE plpgsql;
 
 
-ALTER FUNCTION get_db_columns_sqlvalues() OWNER TO adempiere;
+

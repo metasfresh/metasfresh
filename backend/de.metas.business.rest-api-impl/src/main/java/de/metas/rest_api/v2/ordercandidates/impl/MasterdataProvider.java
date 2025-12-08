@@ -20,10 +20,10 @@ import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.externalreference.shipper.ShipperExternalReferenceType;
-import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.api.impl.InputDataSourceQuery;
 import de.metas.impex.api.impl.InputDataSourceQuery.InputDataSourceQueryBuilder;
+import de.metas.impexp.InputDataSourceId;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -38,6 +38,7 @@ import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.v2.bpartner.BpartnerRestController;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.ordercandidates.impl.ProductMasterDataProvider.ProductInfo;
+import de.metas.rest_api.v2.product.ExternalIdentifierProductLookupService;
 import de.metas.security.permissions2.PermissionService;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
@@ -80,7 +81,7 @@ import java.util.Optional;
  * #L%
  */
 
-final class MasterdataProvider
+public final class MasterdataProvider
 {
 	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -108,7 +109,9 @@ final class MasterdataProvider
 		this.bpartnerEndpointAdapter = new BPartnerEndpointAdapter(bpartnerRestController);
 		this.jsonRetrieverService = jsonRetrieverService;
 		this.externalReferenceService = externalReferenceRestControllerService;
-		this.productMasterDataProvider = new ProductMasterDataProvider(externalReferenceRestControllerService);
+		
+		final ExternalIdentifierProductLookupService productLookupService = new ExternalIdentifierProductLookupService(externalReferenceRestControllerService);
+		this.productMasterDataProvider = new ProductMasterDataProvider(productLookupService);
 	}
 
 	public void assertCanCreateNewOLCand(final OrgId orgId)
@@ -332,9 +335,9 @@ final class MasterdataProvider
 		if (ExternalBusinessKey.Type.VALUE.equals(externalBusinessKey.getType()))
 		{
 			return bPartnerDAO.retrieveBPartnerIdBy(BPartnerQuery.builder()
-													 .bpartnerValue(externalBusinessKey.asValue())
-													 .onlyOrgId(orgId)
-													 .build());
+					.bpartnerValue(externalBusinessKey.asValue())
+					.onlyOrgId(orgId)
+					.build());
 		}
 		else if (ExternalBusinessKey.Type.EXTERNAL_REFERENCE.equals(externalBusinessKey.getType()))
 		{

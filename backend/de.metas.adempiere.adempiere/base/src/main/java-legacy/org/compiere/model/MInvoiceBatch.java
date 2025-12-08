@@ -137,7 +137,7 @@ public class MInvoiceBatch extends X_C_InvoiceBatch
 		String set = "SET Processed='"
 			+ (processed ? "Y" : "N")
 			+ "' WHERE C_InvoiceBatch_ID=" + getC_InvoiceBatch_ID();
-		int noLine = DB.executeUpdate("UPDATE C_InvoiceBatchLine " + set, get_TrxName());
+		int noLine = DB.executeUpdateAndSaveErrorOnFail("UPDATE C_InvoiceBatchLine " + set, get_TrxName());
 		m_lines = null;
 		log.debug(processed + " - Lines=" + noLine);
 	}	//	setProcessed

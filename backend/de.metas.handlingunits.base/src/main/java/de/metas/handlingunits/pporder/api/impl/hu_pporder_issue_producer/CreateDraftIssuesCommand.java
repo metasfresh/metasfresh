@@ -19,6 +19,7 @@ import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.pporder.api.IssueCandidateGeneratedBy;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.DraftPPOrderQuantities;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
@@ -69,9 +70,10 @@ import java.util.Objects;
  */
 public class CreateDraftIssuesCommand
 {
-	private static final String MSG_IssuingAggregatedTUsNotAllowed = "de.metas.handlingunits.pporder.api.impl.HUPPOrderIssueProducer.IssuingAggregatedTUsNotAllowed";
-	private static final String MSG_IssuingVHUsNotAllowed = "de.metas.handlingunits.pporder.api.impl.HUPPOrderIssueProducer.IssuingVHUsNotAllowed";
-	private static final String MSG_IssuingHUWithMultipleProductsNotAllowed = "de.metas.handlingunits.pporder.api.impl.HUPPOrderIssueProducer.IssuingHUsWithMultipleProductsNotAllowed";
+	private static final AdMessageKey MSG_IssuingAggregatedTUsNotAllowed = AdMessageKey.of("de.metas.handlingunits.pporder.api.impl.HUPPOrderIssueProducer.IssuingAggregatedTUsNotAllowed");
+	private static final AdMessageKey MSG_IssuingVHUsNotAllowed = AdMessageKey.of("de.metas.handlingunits.pporder.api.impl.HUPPOrderIssueProducer.IssuingVHUsNotAllowed");
+	private static final AdMessageKey MSG_IssuingHUWithMultipleProductsNotAllowed = AdMessageKey.of("de.metas.handlingunits.pporder.api.impl.HUPPOrderIssueProducer.IssuingHUsWithMultipleProductsNotAllowed");
+	private static final AdMessageKey MSG_IssuingNotClearedHUsNotAllowed = AdMessageKey.of("de.metas.handlingunits.pporder.IssuingNotClearedHUsNotAllowed");
 
 	//
 	// Services
@@ -219,11 +221,13 @@ public class CreateDraftIssuesCommand
 
 		if (handlingUnitsBL.isAggregateHU(hu))
 		{
-			throw HUException.ofAD_Message(MSG_IssuingAggregatedTUsNotAllowed);
+			throw new HUException(MSG_IssuingAggregatedTUsNotAllowed)
+					.markAsUserValidationError();
 		}
 		if (handlingUnitsBL.isVirtual(hu))
 		{
-			throw HUException.ofAD_Message(MSG_IssuingVHUsNotAllowed);
+			throw new HUException(MSG_IssuingVHUsNotAllowed)
+					.markAsUserValidationError();
 		}
 		else
 		{
@@ -249,7 +253,8 @@ public class CreateDraftIssuesCommand
 
 		if (productStorages.size() != 1)
 		{
-			throw HUException.ofAD_Message(MSG_IssuingHUWithMultipleProductsNotAllowed)
+			throw new HUException(MSG_IssuingHUWithMultipleProductsNotAllowed)
+					.markAsUserValidationError()
 					.setParameter("HU", hu)
 					.setParameter("ProductStorages", productStorages);
 		}
@@ -275,20 +280,20 @@ public class CreateDraftIssuesCommand
 			}
 
 			final I_PP_Order_Qty candidate = huPPOrderQtyDAO.save(CreateIssueCandidateRequest.builder()
-																		  .orderId(PPOrderId.ofRepoId(targetBOMLine.getPP_Order_ID()))
-																		  .orderBOMLineId(PPOrderBOMLineId.ofRepoId(targetBOMLine.getPP_Order_BOMLine_ID()))
-																		  //
-																		  .date(movementDate)
-																		  //
-																		  .locatorId(warehousesRepo.getLocatorIdByRepoIdOrNull(hu.getM_Locator_ID()))
-																		  .issueFromHUId(HuId.ofRepoId(hu.getM_HU_ID()))
-																		  .productId(productId)
-																		  //
-																		  .qtyToIssue(qtyToIssue)
-																		  //
+					.orderId(PPOrderId.ofRepoId(targetBOMLine.getPP_Order_ID()))
+					.orderBOMLineId(PPOrderBOMLineId.ofRepoId(targetBOMLine.getPP_Order_BOMLine_ID()))
+					//
+					.date(movementDate)
+					//
+					.locatorId(warehousesRepo.getLocatorIdByRepoIdOrNull(hu.getM_Locator_ID()))
+					.issueFromHUId(HuId.ofRepoId(hu.getM_HU_ID()))
+					.productId(productId)
+					//
+					.qtyToIssue(qtyToIssue)
+					//
 					.generatedBy(generatedBy)
-																		  //
-																		  .build());
+					//
+					.build());
 
 			ppOrderProductAttributeBL.addPPOrderProductAttributesFromIssueCandidate(candidate);
 
@@ -309,9 +314,24 @@ public class CreateDraftIssuesCommand
 	private I_PP_Order_BOMLine getTargetOrderBOMLine(@NonNull final ProductId productId)
 	{
 		final List<I_PP_Order_BOMLine> targetBOMLines = targetOrderBOMLines;
-		return targetBOMLines
+
+		//
+		// Find the BOM line which is strictly matching our product
+		final I_PP_Order_BOMLine targetBOMLine = targetBOMLines
 				.stream()
 				.filter(bomLine -> bomLine.getM_Product_ID() == productId.getRepoId())
+				.findFirst()
+				.orElse(null);
+		if (targetBOMLine != null)
+		{
+			return targetBOMLine;
+		}
+
+		//
+		// Find a BOM line which accepts any product
+		return targetBOMLines
+				.stream()
+				.filter(I_PP_Order_BOMLine::isAllowIssuingAnyProduct)
 				.findFirst()
 				.orElseThrow(() -> new HUException("No BOM line found for productId=" + productId + " in " + targetBOMLines));
 	}
@@ -358,8 +378,8 @@ public class CreateDraftIssuesCommand
 		{
 			if (!handlingUnitsBL.isHUHierarchyCleared(HuId.ofRepoId(hu.getM_HU_ID())))
 			{
-				throw new AdempiereException("Non 'Cleared' HUs cannot be issued!")
-						.appendParametersToMessage()
+				throw new HUException(MSG_IssuingNotClearedHUsNotAllowed)
+						.markAsUserValidationError()
 						.setParameter("M_HU_ID", hu.getM_HU_ID());
 			}
 		}

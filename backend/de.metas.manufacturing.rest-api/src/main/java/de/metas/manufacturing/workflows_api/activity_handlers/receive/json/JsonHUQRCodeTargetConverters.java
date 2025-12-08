@@ -1,8 +1,8 @@
 package de.metas.manufacturing.workflows_api.activity_handlers.receive.json;
 
 import de.metas.common.util.CoalesceUtil;
+import de.metas.global_qrcodes.JsonDisplayableQRCode;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.qrcodes.model.json.JsonRenderedHUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.manufacturing.job.model.ReceivingTarget;
 import lombok.NonNull;
@@ -37,7 +37,7 @@ public class JsonHUQRCodeTargetConverters
 				.build();
 	}
 
-	private static JsonRenderedHUQRCode toJsonRenderedHUQRCode(
+	private static JsonDisplayableQRCode toJsonRenderedHUQRCode(
 			@NonNull final HuId huId,
 			@NonNull final HUQRCodesService huQRCodeService)
 	{

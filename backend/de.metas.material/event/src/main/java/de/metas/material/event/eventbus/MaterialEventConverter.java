@@ -1,13 +1,10 @@
 package de.metas.material.event.eventbus;
 
-import de.metas.async.QueueWorkPackageId;
 import de.metas.event.Event;
 import de.metas.material.event.MaterialEvent;
 import de.metas.util.JSONObjectMapper;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -35,7 +32,6 @@ import javax.annotation.Nullable;
  * Converts {@link Event}s to {@link MaterialEvent}s and vice versa.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Service
 public class MaterialEventConverter
@@ -51,26 +47,32 @@ public class MaterialEventConverter
 
 	public MaterialEvent toMaterialEvent(@NonNull final Event metasfreshEvent)
 	{
-		final String materialEventStr = metasfreshEvent.getProperty(PROPERTY_MATERIAL_EVENT);
+		final Object materialEventObj = metasfreshEvent.getProperty(PROPERTY_MATERIAL_EVENT);
 
-		return jsonObjectMapper.readValue(materialEventStr);
+		if (materialEventObj instanceof MaterialEvent)
+		{
+			return (MaterialEvent)materialEventObj;
+		}
+
+		if (materialEventObj instanceof String)
+		{
+			// in case the Event has not been deserialized, then the material event is still a string
+			return jsonObjectMapper.readValue(materialEventObj.toString());
+		}
+
+		throw new IllegalArgumentException("Cannot convert " + materialEventObj + " to MaterialEvent");
 	}
 
 	/**
 	 * Note: the returned metasfresh event shall be logged.
 	 */
-	public Event fromMaterialEvent(@NonNull final MaterialEvent materialEvent, @Nullable final QueueWorkPackageId queueWorkPackageId)
+	public Event fromMaterialEvent(@NonNull final MaterialEvent materialEvent)
 	{
-		final String eventStr = jsonObjectMapper.writeValueAsString(materialEvent);
-
-		final Event.Builder builder = Event.builder()
-				.putProperty(PROPERTY_MATERIAL_EVENT, eventStr)
-				.shallBeLogged();
-		if (queueWorkPackageId != null)
-		{
-			builder.setQueueWorkPackageId(queueWorkPackageId);
-		}
-		return builder
+		return Event.builder()
+				.putProperty(PROPERTY_MATERIAL_EVENT, materialEvent)
+				.setEventName(materialEvent.getEventName())
+				.setSourceRecordReference(materialEvent.getSourceTableReference())
+				.shallBeLogged()
 				.build();
 	}
 }

@@ -1,16 +1,25 @@
 package de.metas.handlingunits.materialtracking.spi.impl.attribute;
 
-import static de.metas.materialtracking.model.I_M_Material_Tracking.COLUMNNAME_C_BPartner_ID;
-import static de.metas.materialtracking.model.I_M_Material_Tracking.COLUMNNAME_M_Material_Tracking_ID;
-import static de.metas.materialtracking.model.I_M_Material_Tracking.COLUMNNAME_M_Product_ID;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
+import de.metas.cache.CCache;
+import de.metas.cache.CCacheStats;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.materialtracking.IMaterialTrackingDAO;
+import de.metas.materialtracking.IMaterialTrackingQuery;
+import de.metas.materialtracking.MaterialTrackingId;
+import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.product.ProductId;
+import de.metas.util.NumberUtils;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
@@ -24,26 +33,15 @@ import org.compiere.util.Evaluatees;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import javax.annotation.Nullable;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.cache.CCache;
-import de.metas.cache.CCache.CCacheStats;
-import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.attribute.IHUAttributesBL;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.storage.IHUStorage;
-import de.metas.materialtracking.IMaterialTrackingDAO;
-import de.metas.materialtracking.IMaterialTrackingQuery;
-import de.metas.materialtracking.MaterialTrackingId;
-import de.metas.materialtracking.model.I_M_Material_Tracking;
-import de.metas.product.ProductId;
-import de.metas.util.NumberUtils;
-import de.metas.util.Services;
-import lombok.NonNull;
-import lombok.Value;
+import static de.metas.materialtracking.model.I_M_Material_Tracking.COLUMNNAME_C_BPartner_ID;
+import static de.metas.materialtracking.model.I_M_Material_Tracking.COLUMNNAME_M_Material_Tracking_ID;
+import static de.metas.materialtracking.model.I_M_Material_Tracking.COLUMNNAME_M_Product_ID;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -75,16 +73,16 @@ public class MaterialTrackingAttributeValuesProvider implements IAttributeValues
 	private static final String PARAM_C_BPartner_ID = COLUMNNAME_C_BPartner_ID;
 	private static final ImmutableSet<String> PARAMS = ImmutableSet.of(PARAM_M_Product_ID, PARAM_C_BPartner_ID);
 
-	@VisibleForTesting
-	static final CtxName CTXNAME_C_BPartner_ID = CtxNames.ofNameAndDefaultValue(COLUMNNAME_C_BPartner_ID, "/-1");
+	@VisibleForTesting static final CtxName CTXNAME_C_BPartner_ID = CtxNames.ofNameAndDefaultValue(COLUMNNAME_C_BPartner_ID, "/-1");
+	@VisibleForTesting static final CtxName CTXNAME_M_Product_ID = CtxNames.ofNameAndDefaultValue(COLUMNNAME_M_Product_ID, "/-1");
+	@VisibleForTesting static final CtxName CTXNAME_M_Material_Tracking = CtxNames.ofNameAndDefaultValue(COLUMNNAME_M_Material_Tracking_ID, "/-1");
 
-	@VisibleForTesting
-	static final CtxName CTXNAME_M_Product_ID = CtxNames.ofNameAndDefaultValue(COLUMNNAME_M_Product_ID, "/-1");
+	@NonNull private final IMaterialTrackingDAO materialTrackingDAO;
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL;
+	@NonNull private final IHUAttributesBL huAttributesBL;
 
-	@VisibleForTesting
-	static final CtxName CTXNAME_M_Material_Tracking = CtxNames.ofNameAndDefaultValue(COLUMNNAME_M_Material_Tracking_ID, "/-1");
-
-	private final I_M_Attribute attributeRecord;
+	@NonNull private final AttributeCode attributeCode;
+	private final boolean isHighVolume;
 
 	private final CCache<ProductAndBPartner, ImmutableList<I_M_Material_Tracking>> productAndBPartner2materialTracking = CCache.<ProductAndBPartner, ImmutableList<I_M_Material_Tracking>>builder()
 			.tableName(CACHE_MAIN_TABLE_NAME)
@@ -97,28 +95,32 @@ public class MaterialTrackingAttributeValuesProvider implements IAttributeValues
 			.build();
 
 	@Value(staticConstructor = "of")
-	private static final class ProductAndBPartnerAndTracking
+	private static class ProductAndBPartnerAndTracking
 	{
-		@Nullable
-		ProductAndBPartner productAndBPartner;
-
-		@Nullable
-		MaterialTrackingId materialTrackingId;
+		@Nullable ProductAndBPartner productAndBPartner;
+		@Nullable MaterialTrackingId materialTrackingId;
 	}
 
 	@Value(staticConstructor = "of")
-	private static final class ProductAndBPartner
+	private static class ProductAndBPartner
 	{
-		@NonNull
-		ProductId productId;
-
-		@NonNull
-		BPartnerId bpartnerId;
+		@NonNull ProductId productId;
+		@NonNull BPartnerId bpartnerId;
 	}
 
-	public MaterialTrackingAttributeValuesProvider(@NonNull final I_M_Attribute attributeRecord)
+	@Builder
+	private MaterialTrackingAttributeValuesProvider(
+			@NonNull final IMaterialTrackingDAO materialTrackingDAO,
+			@NonNull final IHandlingUnitsBL handlingUnitsBL,
+			@NonNull final IHUAttributesBL huAttributesBL,
+			//
+			@NonNull final I_M_Attribute attribute)
 	{
-		this.attributeRecord = attributeRecord;
+		this.materialTrackingDAO = materialTrackingDAO;
+		this.handlingUnitsBL = handlingUnitsBL;
+		this.huAttributesBL = huAttributesBL;
+		this.attributeCode = AttributeCode.ofString(attribute.getValue());
+		this.isHighVolume = attribute.isHighVolume();
 	}
 
 	/**
@@ -140,9 +142,6 @@ public class MaterialTrackingAttributeValuesProvider implements IAttributeValues
 	@Override
 	public Evaluatee prepareContext(@NonNull final IAttributeSet attributeSet)
 	{
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
-
 		final Evaluatees.MapEvaluateeBuilder result = Evaluatees.mapBuilder();
 
 		final I_M_HU hu = huAttributesBL.getM_HU_OrNull(attributeSet);
@@ -161,9 +160,9 @@ public class MaterialTrackingAttributeValuesProvider implements IAttributeValues
 			result.put(CTXNAME_M_Product_ID, -1);
 		}
 
-		if (attributeSet.hasAttribute(attributeRecord))
+		if (attributeSet.hasAttribute(attributeCode))
 		{
-			final int currentMaterialTrackingId = attributeSet.getValueAsInt(attributeRecord);
+			final int currentMaterialTrackingId = attributeSet.getValueAsInt(attributeCode);
 			result.put(CTXNAME_M_Material_Tracking, idOrMinusOne(currentMaterialTrackingId));
 		}
 		else
@@ -198,7 +197,7 @@ public class MaterialTrackingAttributeValuesProvider implements IAttributeValues
 		final MaterialTrackingId materialTrackingId = productBPartnerAndTracking.getMaterialTrackingId();
 		if (materialTrackingId != null)
 		{
-			result.add(materialTrackingId2KeyNamePair.getOrLoad(materialTrackingId, id -> createNamePair(id)));
+			result.add(materialTrackingId2KeyNamePair.getOrLoad(materialTrackingId, this::createNamePair));
 		}
 
 		if (productBPartnerAndTracking.getProductAndBPartner() != null)
@@ -230,7 +229,6 @@ public class MaterialTrackingAttributeValuesProvider implements IAttributeValues
 
 	private ImmutableList<I_M_Material_Tracking> retrieveForCache(@NonNull final ProductAndBPartner productAndBPartner)
 	{
-		final IMaterialTrackingDAO materialTrackingDAO = Services.get(IMaterialTrackingDAO.class);
 		final List<I_M_Material_Tracking> materialTrackingRecords = materialTrackingDAO.retrieveMaterialTrackings(
 				Env.getCtx(),
 				asMaterialTrackingQuery(productAndBPartner));
@@ -255,7 +253,7 @@ public class MaterialTrackingAttributeValuesProvider implements IAttributeValues
 			return getNullValue();
 		}
 		// note that we ignore evalCtx because it might not be complete enough to say if the value is valid or not.
-		return materialTrackingId2KeyNamePair.getOrLoad(materialTrackingId, id -> createNamePair(id));
+		return materialTrackingId2KeyNamePair.getOrLoad(materialTrackingId, this::createNamePair);
 	}
 
 	private ProductAndBPartnerAndTracking extractProductPartnerAndTrackingOrNull(@Nullable final Evaluatee evalCtx)
@@ -295,24 +293,18 @@ public class MaterialTrackingAttributeValuesProvider implements IAttributeValues
 
 	private IMaterialTrackingQuery asMaterialTrackingQuery(@NonNull final ProductAndBPartner productAndBPartner)
 	{
-		final IMaterialTrackingDAO materialTrackingRepo = Services.get(IMaterialTrackingDAO.class);
-
-		final IMaterialTrackingQuery materialTrackingQuery = materialTrackingRepo
-				.createMaterialTrackingQuery()
+		return materialTrackingDAO.createMaterialTrackingQuery()
 				.setProcessed(false) // only show "open" trackings
 				.setReturnReadOnlyRecords(true) // we are not going to alter our cached records
 				.setM_Product_ID(productAndBPartner.getProductId().getRepoId())
 				.setC_BPartner_ID(productAndBPartner.getBpartnerId().getRepoId());
-
-		return materialTrackingQuery;
 	}
 
 	private KeyNamePair createNamePair(@NonNull final I_M_Material_Tracking materialTrackingRecord)
 	{
-		final KeyNamePair valueNamePair = KeyNamePair.of(
+		return KeyNamePair.of(
 				materialTrackingRecord.getM_Material_Tracking_ID(),
 				materialTrackingRecord.getLot());
-		return valueNamePair;
 	}
 
 	@Nullable
@@ -340,19 +332,14 @@ public class MaterialTrackingAttributeValuesProvider implements IAttributeValues
 		return null;
 	}
 
-	/** @return {@code null}. */
+	/**
+	 * @return {@code null}.
+	 */
 	@Override
-	public NamePair getNullValue()
-	{
-		return null;
-	}
+	public NamePair getNullValue() {return null;}
 
-	/** @return {@code false}. */
 	@Override
-	public boolean isHighVolume()
-	{
-		return false;
-	}
+	public boolean isHighVolume() {return isHighVolume;}
 
 	@Override
 	public String getCachePrefix()

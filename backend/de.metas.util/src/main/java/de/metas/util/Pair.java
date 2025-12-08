@@ -1,7 +1,7 @@
 package de.metas.util;
 
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
 
 /*
  * #%L

@@ -22,43 +22,44 @@
 
 package de.metas.edi.api;
 
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.List;
-
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
-import lombok.NonNull;
-import org.adempiere.util.lang.IContextAware;
-
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_C_OrderLine;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.model.I_M_InOutLine;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
-import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
+import de.metas.esb.edi.model.I_M_InOut_Desadv_V;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.inout.InOutId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.List;
 
 public interface IDesadvDAO extends ISingletonService
 {
 	/**
-	 * Retrieves the desadv record with the given POReference. If there is none, it returns <code>null</code>.
+	 * Retrieves the desadv record for the given query. If there is none, it returns <code>null</code>.
 	 *
-	 * @return the desadv for the given <code>poReference</code>, or <code>null</code> if none exists.
+	 * @return the desadv for the given <code>de.metas.edi.api.EDIDesadvQuery</code>, or <code>null</code> if none exists.
 	 */
 	@Nullable
-	I_EDI_Desadv retrieveMatchingDesadvOrNull(String poReference, IContextAware ctxAware);
+	I_EDI_Desadv retrieveMatchingDesadvOrNull(@NonNull EDIDesadvQuery request);
 
 	I_EDI_Desadv retrieveById(@NonNull EDIDesadvId ediDesadvId);
+
+	I_EDI_DesadvLine retrieveLineById(@NonNull EDIDesadvLineId ediDesadvLineId);
 
 	/**
 	 * Retrieves the desadv line that has the given <code>desadv</code> and <code>line</code> number.
 	 */
 	@Nullable
-	I_EDI_DesadvLine retrieveMatchingDesadvLinevOrNull(I_EDI_Desadv desadv, int line);
+	I_EDI_DesadvLine retrieveMatchingDesadvLinevOrNull(I_EDI_Desadv desadv, int line, BPartnerId bPartnerId);
 
 	/**
 	 * @return all desadv lines (incl inactive ones) that reference the given <code>desadv</code>.
@@ -112,15 +113,6 @@ public interface IDesadvDAO extends ISingletonService
 	 */
 	List<I_C_Order> retrieveAllOrders(I_EDI_Desadv desadv);
 
-	/**
-	 * @param withInOutLine optional; specifies if only packs with/without an iol shall be selected. If {@code null}, no restriction is added.
-	 */
-	List<I_EDI_DesadvLine_Pack> retrieveDesadvLinePacks(@NonNull I_EDI_DesadvLine desadvLine, @Nullable Boolean withInOutLine);
-
-	List<I_EDI_DesadvLine_Pack> retrieveDesadvLinePackRecords(I_M_InOutLine inOutLineRecord);
-
-	int retrieveDesadvLinePackRecordsCount(I_EDI_DesadvLine desadvLine);
-
 	@Nullable
 	I_M_ShipmentSchedule retrieveM_ShipmentScheduleOrNull(I_EDI_DesadvLine desadvLine);
 
@@ -132,5 +124,21 @@ public interface IDesadvDAO extends ISingletonService
 
 	void save(@NonNull I_EDI_Desadv ediDesadv);
 
-	BPartnerId retrieveBPartnerFromEdiDesadvPackId(int packId);
+	void save(@NonNull I_EDI_DesadvLine ediDesadvLine);
+
+	@NonNull
+	List<I_M_InOut> retrieveShipmentsWithStatus(@NonNull I_EDI_Desadv desadv, @NonNull ImmutableSet<EDIExportStatus> statusSet);
+
+	@NonNull
+	I_M_InOut_Desadv_V getInOutDesadvByInOutId(@NonNull InOutId shipmentId);
+
+	/**
+	 * @return the max {@link de.metas.esb.edi.model.I_EDI_Desadv_Pack#COLUMNNAME_SeqNo} value for the given desadvId.
+	 */
+	int retrieveMaxDesadvPackSeqNo(@NonNull EDIDesadvId desadvId);
+
+	/**
+	 * @return the max {@link de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item#COLUMNNAME_Line} value for the given desadvId.
+	 */
+	int retrieveMaxDesadvPackItemLine(@NonNull EDIDesadvId ediDesadvId);
 }

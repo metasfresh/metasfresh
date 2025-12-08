@@ -1,16 +1,16 @@
 package org.adempiere.ad.window.process;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.annotation.Nullable;
-
+import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Ordering;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.element.api.AdUIElementGroupId;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.window.api.IADWindowDAO;
-import org.adempiere.ad.window.api.UIElementGroupId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Element;
@@ -25,15 +25,12 @@ import org.compiere.model.I_AD_Window;
 import org.compiere.model.X_AD_UI_Element;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Ordering;
-
-import ch.qos.logback.classic.Level;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /*
  * #%L
@@ -70,11 +67,11 @@ public final class WindowUIElementsGenerator
 
 	private static final ModelDynAttributeAccessor<I_AD_UI_Element, Integer> DYNATTR_UIElementField_NextSeqNo = new ModelDynAttributeAccessor<>("UIElementField_NextSeqNo", Integer.class);
 	private static final Ordering<I_AD_Field> ORDERING_AD_Field_BySeqNo = Ordering.natural()
-			.onResultOf((adField) -> adField.getSeqNo());
+			.onResultOf(I_AD_Field::getSeqNo);
 	private static final Ordering<I_AD_Field> ORDERING_AD_Field_BySeqNoGrid = Ordering.natural()
-			.onResultOf((adField) -> adField.getSeqNoGrid());
+			.onResultOf(I_AD_Field::getSeqNoGrid);
 
-	private static final Map<String, String> HARDCODED_columnName2elementId = ImmutableMap.<String, String> builder()
+	private static final Map<String, String> HARDCODED_columnName2elementId = ImmutableMap.<String, String>builder()
 			//
 			.put("C_BPartner_ID", "C_BPartner_ID")
 			.put("C_BPartner_Location_ID", "C_BPartner_ID")
@@ -105,6 +102,7 @@ public final class WindowUIElementsGenerator
 		this.consumer = consumer;
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private void log(final String msg, final Object... msgParameters)
 	{
 		Loggables.withLogger(logger, Level.DEBUG).addLog(msg, msgParameters);
@@ -183,8 +181,7 @@ public final class WindowUIElementsGenerator
 		final I_AD_UI_Section uiSection = createUISection(masterTab, 10);
 
 		final I_AD_UI_Column uiColumnLeft = createUIColumn(uiSection, 10);
-		@SuppressWarnings("unused")
-		final I_AD_UI_Column uiColumnRight = createUIColumn(uiSection, 20);
+		@SuppressWarnings("unused") final I_AD_UI_Column uiColumnRight = createUIColumn(uiSection, 20);
 
 		final I_AD_UI_ElementGroup uiElementGroup_Left_Default = createUIElementGroup(uiColumnLeft, 10);
 
@@ -332,12 +329,12 @@ public final class WindowUIElementsGenerator
 	}
 
 	public static I_AD_UI_Element createUIElementNoSave(
-			@Nullable final UIElementGroupId uiElementGroupId,
+			@Nullable final AdUIElementGroupId uiElementGroupId,
 			@NonNull final I_AD_Field adField)
 	{
 		final I_AD_UI_Element uiElement = InterfaceWrapperHelper.newInstance(I_AD_UI_Element.class);
 		uiElement.setAD_Tab_ID(adField.getAD_Tab_ID());
-		uiElement.setAD_UI_ElementGroup_ID(UIElementGroupId.toRepoId(uiElementGroupId));
+		uiElement.setAD_UI_ElementGroup_ID(AdUIElementGroupId.toRepoId(uiElementGroupId));
 		uiElement.setAD_UI_ElementType(X_AD_UI_Element.AD_UI_ELEMENTTYPE_Field);
 		uiElement.setAD_Field(adField);
 		uiElement.setName(adField.getName());
@@ -367,7 +364,7 @@ public final class WindowUIElementsGenerator
 			final AtomicInteger nextSeqNo,
 			final AtomicInteger nextSeqNoGrid)
 	{
-		final UIElementGroupId uiElementGroupId = UIElementGroupId.ofRepoIdOrNull(uiElementGroup.getAD_UI_ElementGroup_ID()); // might not be saved
+		final AdUIElementGroupId uiElementGroupId = AdUIElementGroupId.ofRepoIdOrNull(uiElementGroup.getAD_UI_ElementGroup_ID()); // might not be saved
 		final I_AD_UI_Element uiElement = createUIElementNoSave(uiElementGroupId, adField);
 
 		final boolean displayed = adField.isDisplayed();
@@ -395,7 +392,7 @@ public final class WindowUIElementsGenerator
 			final I_AD_UI_ElementGroup uiElementGroup,
 			final I_AD_Field adField, final int seqNo)
 	{
-		final UIElementGroupId uiElementGroupId = UIElementGroupId.ofRepoIdOrNull(uiElementGroup.getAD_UI_ElementGroup_ID()); // might not be saved
+		final AdUIElementGroupId uiElementGroupId = AdUIElementGroupId.ofRepoIdOrNull(uiElementGroup.getAD_UI_ElementGroup_ID()); // might not be saved
 		final I_AD_UI_Element uiElement = createUIElementNoSave(uiElementGroupId, adField);
 		uiElement.setIsDisplayedGrid(true);
 		uiElement.setSeqNoGrid(seqNo);

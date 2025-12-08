@@ -1,10 +1,10 @@
 package de.metas.ui.web.exceptions;
 
+import de.metas.i18n.ITranslatableString;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
-
-import lombok.NonNull;
 
 /*
  * #%L
@@ -30,11 +30,10 @@ import lombok.NonNull;
 
 /**
  * Exception thrown when some entity (document, process etc) was not found.
- *
+ * <p>
  * NOTE: this exceptions binds to HTTP 404
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @SuppressWarnings("serial")
 @ResponseStatus(code = HttpStatus.NOT_FOUND)
@@ -48,7 +47,7 @@ public class EntityNotFoundException extends AdempiereException
 		}
 
 		final Throwable cause = extractCause(throwable);
-		if(cause != throwable)
+		if (cause != throwable)
 		{
 			return wrapIfNeeded(cause);
 		}
@@ -57,6 +56,11 @@ public class EntityNotFoundException extends AdempiereException
 	}
 
 	public EntityNotFoundException(final String message)
+	{
+		super(message);
+	}
+
+	public EntityNotFoundException(final ITranslatableString message)
 	{
 		super(message);
 	}

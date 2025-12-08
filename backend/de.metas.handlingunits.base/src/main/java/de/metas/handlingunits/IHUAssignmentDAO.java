@@ -22,6 +22,7 @@ package de.metas.handlingunits;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
@@ -36,12 +37,12 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 
 public interface IHUAssignmentDAO extends ISingletonService
 {
@@ -149,7 +150,7 @@ public interface IHUAssignmentDAO extends ISingletonService
 
 	IQueryBuilder<I_M_HU_Assignment> retrieveHUAssignmentsForModelQuery(Object model);
 
-	ImmutableSetMultimap<TableRecordReference, HuId> retrieveHUsByRecordRefs(@NonNull Set<TableRecordReference> recordRefs);
+	ImmutableSetMultimap<TableRecordReference, HuId> retrieveHUsByRecordRefs(@NonNull TableRecordReferenceSet recordRefs);
 
 	/**
 	 * @see #retrieveTopLevelHUsForModel(Object, String)
@@ -220,7 +221,14 @@ public interface IHUAssignmentDAO extends ISingletonService
 	 * @param topLevel if <code>true</code>, then only assignments which reference the given <code>hu</code> via <code>M_HU_ID</code> are considered, and none which reference the <code>hu</code> via
 	 *                 <code>M_LU_HU_ID</code>. If <code>false</code>, then it is the other way round.
 	 */
-	<T> List<T> retrieveModelsForHU(I_M_HU hu, Class<T> clazz, boolean topLevel);
+	<T> List<T> retrieveModelsForHU(@NonNull I_M_HU hu, Class<T> clazz, boolean topLevel);
+
+	/**
+	 * Similar to {@link #retrieveModelsForHU(I_M_HU, Class)}, but returns {@link TableRecordReference}s instead.
+	 * Those references may have different {@code AD_Table_ID}s.
+	 */
+	@NonNull
+	ImmutableList<TableRecordReference> retrieveReferencingRecordsForHU(@NonNull I_M_HU hu, boolean topLevel);
 
 	/**
 	 * Retrieve the table hu assignments for the given HU even if they have LU and/or TU set. This is useful in the shipment hu assignments.

@@ -3,6 +3,7 @@ package de.metas.contracts.commission.commissioninstance.testhelpers;
 import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.pair.IPair;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionSettingsLineId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.hierarchy.HierarchyConfigId;
@@ -18,7 +19,6 @@ import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-import org.adempiere.util.lang.IPair;
 import org.compiere.model.I_C_BPartner;
 
 import java.util.HashMap;

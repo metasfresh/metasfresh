@@ -22,13 +22,14 @@
 
 package de.metas.shipper.gateway.spi.model;
 
-import de.metas.mpackage.PackageId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /**
  * 1 DeliveryOrderLine represents 1 Package
@@ -39,7 +40,7 @@ public class DeliveryOrderLine
 	@Nullable
 	String content;
 
-	private final int grossWeightKg;
+	@NonNull BigDecimal grossWeightKg;
 
 	@NonNull
 	PackageDimensions packageDimensions;
@@ -53,12 +54,13 @@ public class DeliveryOrderLine
 	@Builder(toBuilder = true)
 	private DeliveryOrderLine(
 			@Nullable final String content,
-			final int grossWeightKg,
+			@NonNull final BigDecimal grossWeightKg,
 			@NonNull final PackageDimensions packageDimensions,
 			@Nullable final CustomDeliveryData customDeliveryData,
 			@NonNull final PackageId packageId)
 	{
-		Check.assume(grossWeightKg > 0, "grossWeightKg > 0");
+
+		Check.assume(grossWeightKg.signum() > 0, "grossWeightKg > 0");
 
 		this.grossWeightKg = grossWeightKg;
 		this.content = content;

@@ -29,6 +29,7 @@ import de.metas.common.rest_api.v2.warehouse.JsonOutOfStockResponseItem;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.document.engine.IDocument;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.invoicecandidate.model.I_M_InventoryLine;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -40,8 +41,8 @@ import org.compiere.model.I_M_Inventory;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class OutOfStockNotice_StepDef
 {

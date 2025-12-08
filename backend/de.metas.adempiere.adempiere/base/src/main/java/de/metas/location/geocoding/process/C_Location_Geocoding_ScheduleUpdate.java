@@ -86,7 +86,7 @@ public class C_Location_Geocoding_ScheduleUpdate extends JavaProcess
 				.setLimit(limit)
 				//
 				.create()
-				.listIds(LocationId::ofRepoId);
+				.idsAsSet(LocationId::ofRepoId);
 	}
 
 	private void scheduleUpdates(@NonNull final Set<LocationId> locationIds)
@@ -96,7 +96,7 @@ public class C_Location_Geocoding_ScheduleUpdate extends JavaProcess
 
 	private void scheduleUpdate(@NonNull final LocationId locationId)
 	{
-		eventBus.postObject(LocationGeocodeEventRequest.of(locationId));
+		eventBus.enqueueObject(LocationGeocodeEventRequest.of(locationId));
 
 		countScheduled++;
 

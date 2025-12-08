@@ -173,7 +173,7 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		//
 		final HUReceiptLineCandidatesBuilder receiptLineCandidatesBuilder = new HUReceiptLineCandidatesBuilder(rs);
 		receiptLineCandidatesBuilder.setHUContext(huContext);
-		final List<I_M_ReceiptSchedule_Alloc> allocsAll = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(rs, huContext.getTrxName());
+		final List<I_M_ReceiptSchedule_Alloc> allocsAll = huReceiptScheduleDAO.retrieveAllHandlingUnitAllocations(rs, huContext.getTrxName());
 		for (final I_M_ReceiptSchedule_Alloc alloc : allocsAll)
 		{
 			if (!isRsaEligible(alloc))

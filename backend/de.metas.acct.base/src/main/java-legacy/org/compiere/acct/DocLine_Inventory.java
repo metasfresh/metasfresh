@@ -1,6 +1,9 @@
 package org.compiere.acct;
 
+import de.metas.acct.Account;
+import de.metas.acct.accounts.WarehouseAccountType;
 import de.metas.acct.api.AcctSchema;
+import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailReverseRequest;
@@ -10,7 +13,9 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InventoryLine;
 
@@ -41,8 +46,8 @@ import java.math.BigDecimal;
 
 public class DocLine_Inventory extends DocLine<Doc_Inventory>
 {
-	@Nullable
-	private BigDecimal explicitCostPriceBD;
+	@Nullable private final BigDecimal explicitCostPriceBD;
+	@NonNull private final LocatorId locatorId;
 
 	public DocLine_Inventory(final I_M_InventoryLine inventoryLine, final Doc_Inventory doc)
 	{
@@ -74,6 +79,9 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 		setQty(getQuantityInStockingUOM(qty, inventoryLine.getC_UOM_ID()), false);
 
 		setReversalLine_ID(inventoryLine.getReversalLine_ID());
+
+		final AcctDocRequiredServicesFacade services = doc.getServices();
+		this.locatorId = services.getLocatorIdByRepoId(inventoryLine.getM_Locator_ID());
 	}
 
 	public CostAmount getCreateCosts(final AcctSchema as)
@@ -81,12 +89,12 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 		if (isReversalLine())
 		{
 			return services.createReversalCostDetails(CostDetailReverseRequest.builder()
-															  .acctSchemaId(as.getId())
-															  .reversalDocumentRef(CostingDocumentRef.ofInventoryLineId(get_ID()))
-															  .initialDocumentRef(CostingDocumentRef.ofInventoryLineId(getReversalLine_ID()))
-															  .date(getDateAcct())
-															  .build())
-					.getTotalAmountToPost(as);
+							.acctSchemaId(as.getId())
+							.reversalDocumentRef(CostingDocumentRef.ofInventoryLineId(get_ID()))
+							.initialDocumentRef(CostingDocumentRef.ofInventoryLineId(getReversalLine_ID()))
+							.date(getDateAcctAsInstant())
+							.build())
+					.getMainAmountToPost(as);
 		}
 		else
 		{
@@ -101,9 +109,9 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 									.qty(getQty())
 									.amt(CostAmount.zero(as.getCurrencyId()))
 									.explicitCostPrice(explicitCostPriceBD != null ? CostAmount.of(explicitCostPriceBD, as.getCurrencyId()) : null)
-									.date(getDateAcct())
+									.date(getDateAcctAsInstant())
 									.build())
-					.getTotalAmountToPost(as);
+					.getMainAmountToPost(as);
 		}
 	}
 
@@ -129,4 +137,17 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 
 		return quantityInStockingUOM;
 	}
+
+	@NonNull
+	public Account getInvDifferencesAccount(final AcctSchema as, final BigDecimal amount)
+	{
+		final Account chargeAcct = getChargeAccount(as, amount.negate());
+		if (chargeAcct != null)
+		{
+			return chargeAcct;
+		}
+
+		return getAccountProvider().getWarehouseAccount(as.getId(), locatorId.getWarehouseId(), WarehouseAccountType.W_Differences_Acct);
+	}
+
 }

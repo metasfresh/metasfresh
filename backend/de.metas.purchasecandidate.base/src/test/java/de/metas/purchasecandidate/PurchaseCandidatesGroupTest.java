@@ -4,14 +4,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
-import org.junit.Before;
-import org.junit.Test;
+import org.compiere.util.TimeUtil;
 
 import com.google.common.collect.ImmutableList;
 
@@ -21,6 +21,8 @@ import de.metas.pricing.conditions.PricingConditions;
 import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L
@@ -32,12 +34,12 @@ import lombok.Builder;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -48,7 +50,7 @@ public class PurchaseCandidatesGroupTest
 {
 	private I_C_UOM uom;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -93,6 +95,7 @@ public class PurchaseCandidatesGroupTest
 				.vendorProductNo("123")
 				.vendorProductName("product name")
 				.pricingConditions(PricingConditions.builder()
+						.validFrom(TimeUtil.asInstant(Timestamp.valueOf("2017-01-01 10:10:10.0")))
 						.build())
 				.aggregatePOs(vendorAggregatePOs)
 				.build();

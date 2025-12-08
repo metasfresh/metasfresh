@@ -22,21 +22,10 @@ package org.adempiere.inout.util;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.warehouse.WarehouseId;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
-
 import de.metas.material.event.commons.AttributesKey;
-import org.eevolution.api.QtyCalculationsBOM;
-import org.eevolution.api.QtyCalculationsBOMLine;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.AccessLevel;
@@ -45,6 +34,14 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
+import org.eevolution.api.QtyCalculationsBOM;
+import org.eevolution.api.QtyCalculationsBOMLine;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * Stock detail with mutable qtyOnHand.

@@ -59,8 +59,6 @@ public interface IInterfaceWrapperHelper
 	Properties getCtx(final Object model, final boolean useClientOrgFromModel);
 
 	/**
-	 *
-	 * @param model
 	 * @param ignoreIfNotHandled if <code>true</code> and the given model can not be handeled (no PO, GridTab etc), then just return {@link ITrx#TRXNAME_None} without logging a warning.
 	 *
 	 * @return trxName
@@ -68,9 +66,6 @@ public interface IInterfaceWrapperHelper
 	String getTrxName(final Object model, final boolean ignoreIfNotHandled);
 
 	/**
-	 *
-	 * @param model
-	 * @param trxName
 	 * @param ignoreIfNotHandled <code>true</code> and the given model can not be handled (no PO, GridTab etc), then don't throw an exception,
 	 *
 	 * @throws AdempiereException if the given model is not handled and ignoreIfNotHandled is <code>false</code>.
@@ -87,20 +82,18 @@ public interface IInterfaceWrapperHelper
 
 	/**
 	 * Get TableName of wrapped model.
-	 *
+	 * <p>
 	 * This method returns null when:
 	 * <ul>
 	 * <li>model is null
 	 * <li>model is not supported
 	 * </ul>
 	 *
-	 * @param model
 	 * @return table name or null
 	 */
 	String getModelTableNameOrNull(Object model);
 
 	/**
-	 * @param model
 	 * @return true if model is a new record (not yet saved in database)
 	 */
 	boolean isNew(Object model);
@@ -127,7 +120,7 @@ public interface IInterfaceWrapperHelper
 	boolean isNull(Object model, String columnName);
 	
 	@Nullable
-	<T> T getDynAttribute(@NonNull final Object model, final String attributeName);
+	<T> T getDynAttribute(@NonNull Object model, final String attributeName);
 
 	Object setDynAttribute(final Object model, final String attributeName, final Object value);
 

@@ -120,11 +120,6 @@ public class AD_ColumnCallout_Migrate extends JavaProcess
 			InterfaceWrapperHelper.save(cc);
 			seqNo += 10;
 		}
-//		// Update AD_Column.Callout 
-//		DB.executeUpdateEx(
-//				"UPDATE AD_Column SET Callout=NULL, Updated=now(), UpdatedBy=? WHERE AD_Column_ID=?",
-//				new Object[]{getAD_User_ID(), AD_Column_ID},
-//				get_TrxName());
 	}
 	
 	private List<String> toCalloutsList(String callouts)

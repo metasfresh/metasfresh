@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.handlingunits.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for M_HU_PI_Item_Product
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M_HU_PI_Item_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -531668251L;
+	private static final long serialVersionUID = -1867951871L;
 
     /** Standard Constructor */
     public X_M_HU_PI_Item_Product (final Properties ctx, final int M_HU_PI_Item_Product_ID, @Nullable final String trxName)
@@ -147,6 +147,18 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 	public boolean isInfiniteCapacity() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsInfiniteCapacity);
+	}
+
+	@Override
+	public void setIsOrderInTuUomWhenMatched (final boolean IsOrderInTuUomWhenMatched)
+	{
+		set_Value (COLUMNNAME_IsOrderInTuUomWhenMatched, IsOrderInTuUomWhenMatched);
+	}
+
+	@Override
+	public boolean isOrderInTuUomWhenMatched() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsOrderInTuUomWhenMatched);
 	}
 
 	@Override

@@ -10,6 +10,7 @@ import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
@@ -43,13 +44,8 @@ import java.util.List;
 
 public class ReturnInOutUserNotificationsProducer
 {
-
-	/**
-	 * M_InOut PO
-	 */
-	private static final int WINDOW_RETURN_TO_VENDOR = 53098; // FIXME: HARDCODED
-
-	private static final int WINDOW_RETURN_FROM_CUSTOMER = 53097; // FIXME: HARDCODED
+	private static final AdWindowId WINDOW_RETURN_TO_VENDOR = AdWindowId.ofRepoId(53098); // FIXME: HARDCODED
+	private static final AdWindowId WINDOW_RETURN_FROM_CUSTOMER = AdWindowId.ofRepoId(53097); // FIXME: HARDCODED
 
 	public static ReturnInOutUserNotificationsProducer newInstance()
 	{
@@ -127,17 +123,12 @@ public class ReturnInOutUserNotificationsProducer
 				.topic(EVENTBUS_TOPIC);
 	}
 
-	private int getWindowId(final I_M_InOut inout)
+	private AdWindowId getWindowId(final I_M_InOut inout)
 	{
 		return inout.isSOTrx() ? WINDOW_RETURN_FROM_CUSTOMER : WINDOW_RETURN_TO_VENDOR;
 	}
 
-	private AdMessageKey getNotificationAD_Message(final I_M_InOut inout)
-	{
-
-		return inout.isSOTrx() ? MSG_Event_RETURN_FROM_CUSTOMER_Generated : MSG_Event_RETURN_TO_VENDOR_Generated;
-
-	}
+	private AdMessageKey getNotificationAD_Message(final I_M_InOut inout) {return inout.isSOTrx() ? MSG_Event_RETURN_FROM_CUSTOMER_Generated : MSG_Event_RETURN_TO_VENDOR_Generated;}
 
 	private UserId getNotificationRecipientUserId(final I_M_InOut inout)
 	{

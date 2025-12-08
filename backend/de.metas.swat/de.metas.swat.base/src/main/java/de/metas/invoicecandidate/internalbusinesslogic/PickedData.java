@@ -103,6 +103,6 @@ public class PickedData
 			return null;
 		}
 
-		return Quantitys.create(qtyCatch, UOMConversionContext.of(productId), qtyPickedInUOM.getUomId());
+		return Quantitys.of(qtyCatch, UOMConversionContext.of(productId), qtyPickedInUOM.getUomId());
 	}
 }

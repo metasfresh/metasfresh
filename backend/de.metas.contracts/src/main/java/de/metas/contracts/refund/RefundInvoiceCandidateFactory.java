@@ -1,36 +1,7 @@
 package de.metas.contracts.refund;
 
-import static de.metas.util.collections.CollectionUtils.extractSingleElement;
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.ZERO;
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-import static org.adempiere.model.InterfaceWrapperHelper.getValueOverrideOrValue;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.compiere.util.TimeUtil.asTimestamp;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
-import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.invoicecandidate.FlatrateTerm_Handler;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -38,6 +9,7 @@ import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.refund.RefundConfig.RefundInvoiceType;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
 import de.metas.contracts.refund.RefundContract.NextInvoiceDate;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.DocTypeQuery.DocTypeQueryBuilder;
@@ -46,6 +18,7 @@ import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
+import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
@@ -60,6 +33,29 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import static de.metas.util.collections.CollectionUtils.extractSingleElement;
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+import static org.adempiere.model.InterfaceWrapperHelper.getValueOverrideOrValue;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.compiere.util.TimeUtil.asTimestamp;
 
 /*
  * #%L
@@ -229,10 +225,10 @@ public class RefundInvoiceCandidateFactory
 		switch (refundInvoiceType)
 		{
 			case INVOICE:
-				docTypeQueryBuilder.docSubType(X_C_DocType.DOCSUBTYPE_Rueckverguetungsrechnung);
+				docTypeQueryBuilder.docSubType(DocSubType.RefundInvoice);
 				break;
 			case CREDITMEMO:
-				docTypeQueryBuilder.docSubType(X_C_DocType.DOCSUBTYPE_Rueckverguetungsgutschrift);
+				docTypeQueryBuilder.docSubType(DocSubType.RefundCreditMemo);
 				break;
 			default:
 				Check.fail("The current refundConfig has an ussupported invoice type={}", refundInvoiceType);

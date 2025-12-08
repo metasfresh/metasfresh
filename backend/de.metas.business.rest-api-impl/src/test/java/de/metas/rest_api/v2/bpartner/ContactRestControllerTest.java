@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,7 +22,10 @@
 
 package de.metas.rest_api.v2.bpartner;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.bpartner.BPGroupRepository;
+import de.metas.bpartner.BPGroupService;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
@@ -43,24 +46,24 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
-import de.metas.externalreference.ExternalSystems;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
+import de.metas.externalsystem.ExternalSystemTestHelper;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.job.JobRepository;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
-import de.metas.test.SnapshotFunctionFactory;
 import de.metas.title.TitleRepository;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
-import de.metas.util.Services;
 import de.metas.util.lang.UIDStringUtil;
 import de.metas.vertical.healthcare.alberta.bpartner.AlbertaBPartnerCompositeService;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.table.RecordChangeLogEntry;
+import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -70,8 +73,6 @@ import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.util.Env;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -91,15 +92,12 @@ import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.C_BP_GROUP_ID;
 import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.createBPartnerData;
 import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.resetTimeSource;
 import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.setupTimeSource;
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
-@ExtendWith(AdempiereTestWatcher.class)
+@ExtendWith({ AdempiereTestWatcher.class, SnapshotExtension.class })
 class ContactRestControllerTest
 {
 	private ContactRestController contactRestController;
@@ -108,22 +106,14 @@ class ContactRestControllerTest
 
 	private MockLogEntriesRepository recordChangeLogRepository;
 
-	@BeforeAll
-	static void initStatic()
-	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG, SnapshotFunctionFactory.newFunction());
-	}
-
-	@AfterAll
-	static void afterAll()
-	{
-		validateSnapshots();
-	}
+	private Expect expect;
 
 	@BeforeEach
 	void init()
 	{
 		AdempiereTestHelper.get().init();
+		POJOLookupMap.setNextIdSupplier_PerTableSequence();
+		
 		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));
 
 		final BPartnerBL partnerBL = new BPartnerBL(new UserRepository());
@@ -132,18 +122,20 @@ class ContactRestControllerTest
 
 		recordChangeLogRepository = new MockLogEntriesRepository();
 
-		final ExternalReferenceRepository externalReferenceRepository =
-				new ExternalReferenceRepository(Services.get(IQueryBL.class), new ExternalSystems(), new ExternalReferenceTypes());
+		ExternalSystemTestHelper.createExternalSystemIfNotExists(ExternalSystemType.Other);
 
 		final ExternalReferenceRestControllerService externalReferenceRestControllerService =
-				new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystems(), new ExternalReferenceTypes());
+				new ExternalReferenceRestControllerService(ExternalReferenceRepository.newInstanceForUnitTesting(new ExternalReferenceTypes()), ExternalSystemRepository.newInstanceForUnitTesting(), new ExternalReferenceTypes());
 
 		bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, recordChangeLogRepository, new UserRoleRepository());
+		final BPGroupRepository bpGroupRepository = new BPGroupRepository();
+		
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
 				new JsonRequestConsolidateService(),
 				new BPartnerQueryService(),
 				bpartnerCompositeRepository,
-				new BPGroupRepository(),
+				bpGroupRepository,
+				new BPGroupService(bpGroupRepository),
 				new GreetingRepository(),
 				new TitleRepository(),
 				new CurrencyRepository(),
@@ -228,7 +220,9 @@ class ContactRestControllerTest
 		assertThat(page3Body.getPagingDescriptor().getNextPage()).isNull();
 		assertThat(page3Body.getPagingDescriptor().getResultTimestamp()).isEqualTo(1561014385);
 
-		expect(page1Body, page2Body, page3Body).toMatchSnapshot();
+		expect.scenario("page1").serializer("orderedJson").toMatchSnapshot(page1Body);
+		expect.scenario("page2").serializer("orderedJson").toMatchSnapshot(page2Body);
+		expect.scenario("page3").serializer("orderedJson").toMatchSnapshot(page3Body);
 	}
 
 	@Test
@@ -240,7 +234,7 @@ class ContactRestControllerTest
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseContact resultBody = result.getBody();
 
-		expect(resultBody).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(resultBody);
 	}
 
 	@Test
@@ -252,7 +246,7 @@ class ContactRestControllerTest
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseContact resultBody = result.getBody();
 
-		expect(resultBody).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(resultBody);
 	}
 
 	@Test
@@ -282,7 +276,7 @@ class ContactRestControllerTest
 
 		assertThat(resultBody.getChangeInfo().getChangeLogs()).isNotEmpty();
 
-		expect(resultBody).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(resultBody);
 	}
 
 	@Test
@@ -322,21 +316,21 @@ class ContactRestControllerTest
 		final BPartnerComposite persistedResult = bpartnerCompositeRepository.getById(insertedContactId.getBpartnerId());
 		final Optional<BPartnerContact> insertedContact = persistedResult.extractContact(insertedContactId);
 
-		expect(insertedContact.get()).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(insertedContact.get());
 	}
 
 	@Test
 	void createOrUpdateContact_update_extContactIdentifier()
 	{
 		final BPartnerContact updateContact = perform_createOrUpdateContact_update("ext-" + "Other" + "-" + AD_USER_EXTERNAL_ID);
-		expect(updateContact).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(updateContact);
 	}
 
 	@Test
 	void createOrUpdateContact_update_idContactIdentifier()
 	{
 		final BPartnerContact updateContact = perform_createOrUpdateContact_update(Integer.toString(AD_USER_ID));
-		expect(updateContact).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(updateContact);
 	}
 
 	private BPartnerContact perform_createOrUpdateContact_update(@NonNull final String contactIdentifier)

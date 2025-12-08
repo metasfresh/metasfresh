@@ -110,9 +110,9 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 
 		BigDecimal openItems = null;
 
-		final Object[] sqlParams = new Object[] { stats.getC_BPartner_ID() };
+		final Object[] sqlParams = new Object[] { SystemTime.asTimestamp(), stats.getC_BPartner_ID() };
 		final String sql = "SELECT "
-				+ "currencyBase(openamt,C_Currency_ID,DateInvoiced,AD_Client_ID,AD_Org_ID) from de_metas_endcustomer_fresh_reports.OpenItems_Report(now()::date) where  C_BPartner_ID=?";
+				+ "COALESCE((SELECT SUM(currencyBase(openamt,C_Currency_ID,DateInvoiced,AD_Client_ID,AD_Org_ID)) from de_metas_endcustomer_fresh_reports.OpenItems_Report(p_Reference_Date=>?, p_c_bpartner_id=>?)), 0)";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 

@@ -1,5 +1,6 @@
 package de.metas.rest_api.utils.v2;
 
+import com.google.common.collect.ImmutableMap;
 import de.metas.common.rest_api.v2.JsonErrorItem;
 import de.metas.common.rest_api.v2.JsonErrorItem.JsonErrorItemBuilder;
 import de.metas.i18n.ITranslatableString;
@@ -13,7 +14,9 @@ import org.compiere.model.Null;
 import org.compiere.util.Trace;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -56,9 +59,11 @@ public class JsonErrors
 
 		final JsonErrorItemBuilder builder = JsonErrorItem.builder()
 				.message(AdempiereException.extractMessageTrl(cause).translate(adLanguage))
+				.errorCode(AdempiereException.extractErrorCodeOrNull(cause))
 				.userFriendlyError(AdempiereException.isUserValidationError(cause))
 				.stackTrace(Trace.toOneLineStackTraceString(cause.getStackTrace()))
 				.parameters(extractParameters(throwable, adLanguage))
+				.errorCode(AdempiereException.extractErrorCodeOrNull(throwable))
 				.throwable(throwable);
 		if (detail != null)
 		{
@@ -67,19 +72,72 @@ public class JsonErrors
 		return builder.build();
 	}
 
-	private static Map<String, String> extractParameters(@NonNull final Throwable throwable, @NonNull final String adLanguage)
+	private static Map<String, Object> extractParameters(@NonNull final Throwable throwable, @NonNull final String adLanguage)
 	{
-		return AdempiereException.extractParameters(throwable)
+		return convertParametersMapToJson(AdempiereException.extractParameters(throwable), adLanguage);
+	}
+
+	@NonNull
+	public static Map<String, Object> convertParametersMapToJson(@Nullable final Map<?, Object> map, @NonNull final String adLanguage)
+	{
+		if (map == null || map.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		return map
 				.entrySet()
 				.stream()
-				.map(e -> GuavaCollectors.entry(e.getKey(), convertParameterToJson(e.getValue(), adLanguage)))
+				.map(e -> GuavaCollectors.entry(
+						convertParameterToStringJson(e.getKey(), adLanguage),
+						convertParameterToJson(e.getValue(), adLanguage)))
 				.collect(GuavaCollectors.toImmutableMap());
 	}
 
 	@NonNull
-	private static String convertParameterToJson(final Object value, final String adLanguage)
+	private static Object convertParameterToJson(@Nullable final Object value, @NonNull final String adLanguage)
 	{
-		if (Null.isNull(value))
+		if (value == null || Null.isNull(value))
+		{
+			return "<null>";
+		}
+		else if (value instanceof ITranslatableString)
+		{
+			return ((ITranslatableString)value).translate(adLanguage);
+		}
+		else if (value instanceof RepoIdAware)
+		{
+			return String.valueOf(((RepoIdAware)value).getRepoId());
+		}
+		else if (value instanceof ReferenceListAwareEnum)
+		{
+			return ((ReferenceListAwareEnum)value).getCode();
+		}
+		else if (value instanceof Collection)
+		{
+			//noinspection unchecked
+			final Collection<Object> collection = (Collection<Object>)value;
+			return collection.stream()
+					.map(item -> convertParameterToJson(item, adLanguage))
+					.collect(Collectors.toList());
+		}
+		else if (value instanceof Map)
+		{
+			//noinspection unchecked
+			final Map<Object, Object> map = (Map<Object, Object>)value;
+			return convertParametersMapToJson(map, adLanguage);
+		}
+		else
+		{
+			return value.toString();
+			// return JsonObjectMapperHolder.toJsonOrToString(value);
+		}
+	}
+
+	@NonNull
+	private static String convertParameterToStringJson(@Nullable final Object value, @NonNull final String adLanguage)
+	{
+		if (value == null || Null.isNull(value))
 		{
 			return "<null>";
 		}
@@ -100,4 +158,5 @@ public class JsonErrors
 			return value.toString();
 		}
 	}
+
 }

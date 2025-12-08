@@ -59,11 +59,12 @@ class JsonGetSingleHUResponseTest
 				.build();
 
 		JsonTestHelper.testSerializeDeserialize(
-				JsonGetSingleHUResponse.builder()
-						.result(JsonHU.builder()
+				JsonGetSingleHUResponse.ofResult(
+						JsonHU.builder()
 								.id("id")
 								.huStatus("huStatus")
 								.huStatusCaption("huStatusCaption")
+								.unitType(JsonHUType.TU)
 								.displayName("displayName")
 								.qrCode(JsonHUQRCode.builder()
 										.code("qrCode")
@@ -84,8 +85,8 @@ class JsonGetSingleHUResponseTest
 										.uom("KGM")
 										.build())
 								.attributes2(attributes)
-								.build())
-						.build()
+								.build()
+				)
 		);
 	}
 

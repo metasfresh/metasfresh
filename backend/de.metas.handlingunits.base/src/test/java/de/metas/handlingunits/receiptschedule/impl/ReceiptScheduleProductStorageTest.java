@@ -22,18 +22,17 @@ package de.metas.handlingunits.receiptschedule.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-
-import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.WarehouseId;
-import org.junit.Assume;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.handlingunits.storage.impl.AbstractProductStorageTest;
+import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.junit.jupiter.api.Assumptions;
+
+import java.math.BigDecimal;
 
 public class ReceiptScheduleProductStorageTest extends AbstractProductStorageTest
 {
@@ -52,8 +51,8 @@ public class ReceiptScheduleProductStorageTest extends AbstractProductStorageTes
 	@Override
 	protected IProductStorage createStorage(final String qtyStr, final boolean reversal, final boolean outboundTrx)
 	{
-		Assume.assumeTrue("We are not supporting outboundTrx for ReceiptSchedules", !outboundTrx);
-		Assume.assumeTrue("We are not supporting not reversal transactions only", !reversal);
+		Assumptions.assumeTrue(!outboundTrx, "We are not supporting outboundTrx for ReceiptSchedules");
+		Assumptions.assumeTrue(!reversal, "We are not supporting not reversal transactions only");
 
 		final BigDecimal qtyAbs = new BigDecimal(qtyStr);
 		final BigDecimal qty = qtyAbs;

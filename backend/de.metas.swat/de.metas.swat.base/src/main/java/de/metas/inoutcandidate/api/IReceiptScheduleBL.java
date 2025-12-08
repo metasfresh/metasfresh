@@ -25,6 +25,7 @@ package de.metas.inoutcandidate.api;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
@@ -228,4 +229,6 @@ public interface IReceiptScheduleBL extends ISingletonService
 	void updateExportStatus(@NonNull APIExportStatus exportStatus, @NonNull PInstanceId pinstanceId);
 
 	void updateCanBeExportedFrom(@NonNull I_M_ReceiptSchedule receiptSchedule);
+
+	List<ReceiptScheduleId> retainLUQtySchedules(List<ReceiptScheduleId> receiptSchedules);
 }

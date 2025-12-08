@@ -1,8 +1,7 @@
 package de.metas.ui.web.base.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for WEBUI_KPI
  *  @author metasfresh (generated) 

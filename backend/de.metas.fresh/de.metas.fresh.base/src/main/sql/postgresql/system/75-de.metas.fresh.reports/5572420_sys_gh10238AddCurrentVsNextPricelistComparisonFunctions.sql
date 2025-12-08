@@ -57,7 +57,7 @@ WITH PriceListVersionsByValidFrom AS
                       AND plv.issotrx = p_IsSoTrx
                       AND (p_C_BPartner_ID IS NULL OR plv.c_bpartner_id = p_C_BPartner_ID)
                       AND (p_C_BP_Group_ID IS NULL OR plv.c_bpartner_id IN (SELECT DISTINCT b.c_bpartner_id FROM c_bpartner b WHERE b.c_bp_group_id = p_C_BP_Group_ID))
-                    ORDER BY TRUE,
+                    order by
                              plv.validfrom DESC,
                              plv.m_pricelist_version_id DESC
                     LIMIT 1)
@@ -74,7 +74,7 @@ WITH PriceListVersionsByValidFrom AS
                       AND plv.issotrx = p_IsSoTrx
                       AND (p_C_BPartner_ID IS NULL OR plv.c_bpartner_id = p_C_BPartner_ID)
                       AND (p_C_BP_Group_ID IS NULL OR plv.c_bpartner_id IN (SELECT DISTINCT b.c_bpartner_id FROM c_bpartner b WHERE b.c_bp_group_id = p_C_BP_Group_ID))
-                    ORDER BY TRUE,
+                    order by
                              plv.validfrom ASC,
                              plv.m_pricelist_version_id ASC
                     LIMIT 1)
@@ -147,7 +147,7 @@ SELECT --
        r.AD_Org_ID,
        p_show_product_price_pi_flag AS show_product_price_pi_flag
 FROM result r
-ORDER BY TRUE,
+order by
          r.bp_value,
          r.productCategory,
          r.value
@@ -256,7 +256,7 @@ WITH PriceListVersionsByValidFrom AS
                       AND plv.issotrx = p_IsSoTrx
                       AND (p_C_BPartner_ID IS NULL OR plv.c_bpartner_id = p_C_BPartner_ID)
                       AND (p_C_BP_Group_ID IS NULL OR plv.c_bpartner_id IN (SELECT DISTINCT b.c_bpartner_id FROM c_bpartner b WHERE b.c_bp_group_id = p_C_BP_Group_ID))
-                    ORDER BY TRUE,
+                    order by
                              plv.validfrom DESC,
                              plv.m_pricelist_version_id DESC
                     LIMIT 1)
@@ -273,7 +273,7 @@ WITH PriceListVersionsByValidFrom AS
                       AND plv.issotrx = p_IsSoTrx
                       AND (p_C_BPartner_ID IS NULL OR plv.c_bpartner_id = p_C_BPartner_ID)
                       AND (p_C_BP_Group_ID IS NULL OR plv.c_bpartner_id IN (SELECT DISTINCT b.c_bpartner_id FROM c_bpartner b WHERE b.c_bp_group_id = p_C_BP_Group_ID))
-                    ORDER BY TRUE,
+                    order by
                              plv.validfrom ASC,
                              plv.m_pricelist_version_id ASC
                     LIMIT 1)
@@ -346,7 +346,7 @@ SELECT --
        r.AD_Org_ID,
        p_show_product_price_pi_flag AS show_product_price_pi_flag
 FROM result r
-ORDER BY TRUE,
+order by
          r.bp_value,
          r.productCategory,
          r.value

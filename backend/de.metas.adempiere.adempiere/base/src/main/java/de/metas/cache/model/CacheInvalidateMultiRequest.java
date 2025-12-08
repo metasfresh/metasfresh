@@ -1,25 +1,23 @@
 package de.metas.cache.model;
 
-import java.util.Collection;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Function;
-
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+
+import java.util.Collection;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Function;
 
 /*
  * #%L
@@ -47,7 +45,7 @@ import lombok.Value;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class CacheInvalidateMultiRequest
 {
-	public static final CacheInvalidateMultiRequest of(@NonNull final CacheInvalidateRequest request)
+	public static CacheInvalidateMultiRequest of(@NonNull final CacheInvalidateRequest request)
 	{
 		if (request == CacheInvalidateRequest.all())
 		{
@@ -56,17 +54,17 @@ public class CacheInvalidateMultiRequest
 		return new CacheInvalidateMultiRequest(ImmutableSet.of(request));
 	}
 
-	public static final CacheInvalidateMultiRequest of(@NonNull final Collection<CacheInvalidateRequest> requests)
+	public static CacheInvalidateMultiRequest of(@NonNull final Collection<CacheInvalidateRequest> requests)
 	{
 		return new CacheInvalidateMultiRequest(ImmutableSet.copyOf(requests));
 	}
 
-	public static final CacheInvalidateMultiRequest of(@NonNull final CacheInvalidateRequest... requests)
+	public static CacheInvalidateMultiRequest of(@NonNull final CacheInvalidateRequest... requests)
 	{
 		return new CacheInvalidateMultiRequest(ImmutableSet.copyOf(requests));
 	}
 
-	public static final CacheInvalidateMultiRequest ofMultiRequests(@NonNull final Collection<CacheInvalidateMultiRequest> multiRequests)
+	public static CacheInvalidateMultiRequest ofMultiRequests(@NonNull final Collection<CacheInvalidateMultiRequest> multiRequests)
 	{
 		final Set<CacheInvalidateRequest> requests = multiRequests.stream()
 				.flatMap(multiRequest -> multiRequest.getRequests().stream())
@@ -95,7 +93,7 @@ public class CacheInvalidateMultiRequest
 		return of(CacheInvalidateRequest.rootRecord(rootTableName, rootRecordId));
 	}
 
-	public static <T extends RepoIdAware> CacheInvalidateMultiRequest rootRecords(@NonNull final String rootTableName, @NonNull final Set<? extends RepoIdAware> ids)
+	public static CacheInvalidateMultiRequest rootRecords(@NonNull final String rootTableName, @NonNull final Set<? extends RepoIdAware> ids)
 	{
 		return rootRecords(rootTableName, ids, Function.identity());
 	}
@@ -163,8 +161,7 @@ public class CacheInvalidateMultiRequest
 
 	private static final CacheInvalidateMultiRequest ALL = new CacheInvalidateMultiRequest(ImmutableSet.of(CacheInvalidateRequest.all()));
 
-	@JsonProperty("requests")
-	private final Set<CacheInvalidateRequest> requests;
+	@JsonProperty("requests") Set<CacheInvalidateRequest> requests;
 
 	@Builder
 	@JsonCreator
@@ -188,17 +185,6 @@ public class CacheInvalidateMultiRequest
 	public boolean isResetAll()
 	{
 		return requests.stream().anyMatch(CacheInvalidateRequest::isAll);
-	}
-
-	public boolean matchesTableNameEffective(final String tableName)
-	{
-		return requests.stream().anyMatch(request -> matchesTableNameEffective(request, tableName));
-	}
-
-	private static boolean matchesTableNameEffective(final CacheInvalidateRequest request, final String tableName)
-	{
-		final String tableNameEffective = request.getTableNameEffective();
-		return Objects.equals(tableName, tableNameEffective);
 	}
 
 	public Set<String> getTableNamesEffective()

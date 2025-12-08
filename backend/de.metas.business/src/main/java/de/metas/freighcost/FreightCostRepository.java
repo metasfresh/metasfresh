@@ -9,8 +9,6 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.location.CountryAreaId;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
@@ -69,7 +67,7 @@ public class FreightCostRepository
 
 	private static final AdMessageKey MSG_NO_FREIGHT_COST_DETAIL = AdMessageKey.of("freightCost.Order.noFreightCostDetail");
 
-	private final CCache<Integer, IndexedFreightCosts> freightCostsCache = CCache.<Integer, IndexedFreightCosts> builder()
+	private final CCache<Integer, IndexedFreightCosts> freightCostsCache = CCache.<Integer, IndexedFreightCosts>builder()
 			.additionalTableNameToResetFor(I_M_FreightCost.Table_Name)
 			.additionalTableNameToResetFor(I_M_FreightCostShipper.Table_Name)
 			.additionalTableNameToResetFor(I_M_FreightCostDetail.Table_Name)
@@ -153,11 +151,7 @@ public class FreightCostRepository
 
 		if (Check.isEmpty(breaks))
 		{
-			final IMsgBL msgBL = Services.get(IMsgBL.class);
-
-			final ITranslatableString translatableMsgText = msgBL.getTranslatableMsgText(MSG_NO_FREIGHT_COST_DETAIL);
-
-			throw new AdempiereException(translatableMsgText);
+			throw new AdempiereException(MSG_NO_FREIGHT_COST_DETAIL);
 		}
 
 		final ListMultimap<FreightCostId, FreightCostShipper> result = ArrayListMultimap.create();
@@ -202,7 +196,7 @@ public class FreightCostRepository
 				.collect(ImmutableListMultimap.toImmutableListMultimap(
 						record -> FreightCostShipperId.ofRepoId(record.getM_FreightCostShipper_ID()), // keyFunction
 						record -> toFreightCostBreak(record)) // valueFunction
-		);
+				);
 	}
 
 	private FreightCostBreak toFreightCostBreak(final I_M_FreightCostDetail record)

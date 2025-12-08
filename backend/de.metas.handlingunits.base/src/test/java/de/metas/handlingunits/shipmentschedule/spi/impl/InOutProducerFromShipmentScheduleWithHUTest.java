@@ -1,18 +1,19 @@
 package de.metas.handlingunits.shipmentschedule.spi.impl;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocBaseType;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
-import de.metas.handlingunits.impl.ShipperTransportationRepository;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -23,6 +24,7 @@ import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
+import de.metas.inoutcandidate.api.ShipmentScheduleAllowConsolidatePredicateComposite;
 import de.metas.inoutcandidate.api.impl.DefaultInOutGenerateResult;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.impl.ShipmentScheduleInvalidateBL;
@@ -54,7 +56,6 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -64,6 +65,7 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule.FORCE_SHIPMENT_DATE_DELIVERY_DATE;
@@ -71,7 +73,7 @@ import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShipping
 import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule.NONE;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -102,8 +104,6 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-
-		SpringContextHolder.registerJUnitBean(new ShipperTransportationRepository());
 
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
@@ -336,6 +336,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 			Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 			Services.registerService(IShipmentScheduleInvalidateBL.class, new ShipmentScheduleInvalidateBL(new PickingBOMService()));
 			Services.get(IShipmentScheduleHandlerBL.class).registerHandler(OrderLineShipmentScheduleHandler.newInstanceWithoutExtensions());
+			SpringContextHolder.registerJUnitBean(new ShipmentScheduleAllowConsolidatePredicateComposite(ImmutableList.of()));
 
 			final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 			trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
@@ -343,7 +344,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 			Env.setLoggedUserId(Env.getCtx(), UserId.METASFRESH); // needed for notifications
 
 			huContext = huContextFactory.createMutableHUContext();
-			createDocType(DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_MaterialDelivery));
+			createDocType(DocBaseAndSubType.of(DocBaseType.Shipment));
 			bpartnerAndLocationId = bpartnerAndLocation("BP");
 			warehouseId = warehouse("WH");
 
@@ -409,7 +410,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 			return BPartnerLocationId.ofRepoId(bpLocation.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID());
 		}
 
-		private WarehouseId warehouse(String name)
+		private WarehouseId warehouse(final String name)
 		{
 			final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
 			warehouse.setName(name);
@@ -420,8 +421,8 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 		private void createDocType(final DocBaseAndSubType docBaseAndSubType)
 		{
 			final I_C_DocType docTypeRecord = newInstance(I_C_DocType.class);
-			docTypeRecord.setDocBaseType(docBaseAndSubType.getDocBaseType());
-			docTypeRecord.setDocSubType(docBaseAndSubType.getDocSubType());
+			docTypeRecord.setDocBaseType(docBaseAndSubType.getDocBaseType().getCode());
+			docTypeRecord.setDocSubType(docBaseAndSubType.getDocSubType().getCode());
 			saveRecord(docTypeRecord);
 		}
 
@@ -513,7 +514,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 					.orderId(order())
 					.productId(product("product", uom("uom")));
 
-			final List<ShipmentScheduleWithHU> candidates = Arrays.asList(
+			final List<ShipmentScheduleWithHU> candidates = Collections.singletonList(
 					candidateBuilder.qtyOrdered("100").qtyToDeliver("100").build() //
 			);
 

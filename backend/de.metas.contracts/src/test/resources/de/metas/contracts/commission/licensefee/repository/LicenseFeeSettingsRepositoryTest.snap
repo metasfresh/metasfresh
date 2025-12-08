@@ -1,18 +1,18 @@
 de.metas.contracts.commission.licensefee.repository.LicenseFeeSettingsRepositoryTest.givenValidId_whenGetById_thenReturnSettings=[
   {
-    "orgId" : 1,
-    "licenseFeeSettingsId" : 100001,
-    "commissionProductId" : 1001,
-    "pointsPrecision" : 2,
-    "lines" : [
+    "commissionProductId": 1001,
+    "licenseFeeSettingsId": 100001,
+    "lines": [
       {
-        "licenseFeeSettingsLineId" : 100002,
-        "licenseFeeSettingsId" : 100001,
-        "seqNo" : 10,
-        "percentOfBasedPoints" : 10,
-        "bpGroupIdMatch" : 1000000,
-        "active" : true
+        "active": true,
+        "bpGroupIdMatch": 1000000,
+        "licenseFeeSettingsId": 100001,
+        "licenseFeeSettingsLineId": 100002,
+        "percentOfBasedPoints": 10,
+        "seqNo": 10
       }
-    ]
+    ],
+    "orgId": 1,
+    "pointsPrecision": 2
   }
 ]

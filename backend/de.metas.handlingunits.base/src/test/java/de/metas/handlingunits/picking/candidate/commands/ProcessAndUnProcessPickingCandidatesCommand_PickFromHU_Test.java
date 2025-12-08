@@ -2,6 +2,7 @@ package de.metas.handlingunits.picking.candidate.commands;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.expectations.HUStorageExpectation;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
@@ -25,6 +26,7 @@ public class ProcessAndUnProcessPickingCandidatesCommand_PickFromHU_Test
 {
 	private ProcessPickingCandidatesCommandTestHelper helper;
 	private PickingCandidateRepository pickingCandidateRepository;
+	private InventoryService inventoryService;
 	private I_C_UOM uomEach;
 	private ProductId productId;
 
@@ -33,6 +35,7 @@ public class ProcessAndUnProcessPickingCandidatesCommand_PickFromHU_Test
 	{
 		this.helper = new ProcessPickingCandidatesCommandTestHelper();
 		this.pickingCandidateRepository = helper.pickingCandidateRepository;
+		this.inventoryService = helper.inventoryService;
 		this.uomEach = helper.uomEach;
 		this.productId = helper.createProduct("P1", uomEach);
 	}
@@ -56,8 +59,7 @@ public class ProcessAndUnProcessPickingCandidatesCommand_PickFromHU_Test
 		final HuId pickFromVHUId = helper.createVHU(productId, Quantity.of("100", uomEach));
 		final PickingCandidateId pickingCandidateId = createPickingCandidate(pickFromVHUId, Quantity.of("10", uomEach), PackToSpec.VIRTUAL);
 
-		ProcessPickingCandidatesCommand.builder()
-				.pickingCandidateRepository(pickingCandidateRepository)
+		newProcessPickingCandidatesCommand()
 				.request(ProcessPickingCandidatesRequest.builder()
 						.pickingCandidateId(pickingCandidateId)
 						.build())
@@ -88,14 +90,20 @@ public class ProcessAndUnProcessPickingCandidatesCommand_PickFromHU_Test
 		}
 	}
 
+	private ProcessPickingCandidatesCommand.ProcessPickingCandidatesCommandBuilder newProcessPickingCandidatesCommand()
+	{
+		return ProcessPickingCandidatesCommand.builder()
+				.pickingCandidateRepository(pickingCandidateRepository)
+				.inventoryService(inventoryService);
+	}
+
 	@Test
 	public void packTo_sameQtyAsPickFrom_samePackingInstructions()
 	{
 		final HuId pickFromVHUId = helper.createVHU(productId, Quantity.of("100", uomEach));
 		final PickingCandidateId pickingCandidateId = createPickingCandidate(pickFromVHUId, Quantity.of("100", uomEach), PackToSpec.VIRTUAL);
 
-		ProcessPickingCandidatesCommand.builder()
-				.pickingCandidateRepository(pickingCandidateRepository)
+		newProcessPickingCandidatesCommand()
 				.request(ProcessPickingCandidatesRequest.builder()
 						.pickingCandidateId(pickingCandidateId)
 						.build())
@@ -128,8 +136,7 @@ public class ProcessAndUnProcessPickingCandidatesCommand_PickFromHU_Test
 		final PackToSpec packToSpec = helper.createTUPackingInstructions(productId, Quantity.of("100", uomEach));
 		final PickingCandidateId pickingCandidateId = createPickingCandidate(pickFromVHUId, Quantity.of("100", uomEach), packToSpec);
 
-		ProcessPickingCandidatesCommand.builder()
-				.pickingCandidateRepository(pickingCandidateRepository)
+		newProcessPickingCandidatesCommand()
 				.request(ProcessPickingCandidatesRequest.builder()
 						.pickingCandidateId(pickingCandidateId)
 						.build())

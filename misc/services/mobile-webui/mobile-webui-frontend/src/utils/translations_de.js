@@ -1,29 +1,65 @@
 const translations = {
   appName: 'metasfresh mobile',
   error: {
+    qrcode: {
+      differentProduct: 'The scanned QR Product does not match',
+    },
     PleaseTryAgain: 'Oops, das sollte nicht passieren',
     network: {
       noResponse: 'Verbindung Fehler',
     },
+    qrCode: {
+      invalid: 'Ungültiger QR Code',
+    },
+  },
+  errorScreen: {
+    retryButton: 'Erneut versuchen',
   },
   general: {
+    Yes: 'Ja',
+    No: 'Nein',
+    OK: 'OK',
+    DocumentNo: 'Dokument Nr',
     Product: 'Produkt',
+    ProductValue: 'Artikelnummer',
     Locator: 'Lagerort',
     QRCode: 'QR-Code',
     QtyToPick: 'Pick Menge',
+    QtyToPick_Total: 'Pick Menge (total)',
     QtyPicked: 'Menge gepickt',
     QtyMoved: 'Menge bewegt',
     QtyToMove: 'Bewegungsmenge',
-    QtyRejected: 'Menge verworfen',
+    QtyRejected: 'verworfen',
+    Qty: 'Qty',
+    QtyTU: 'Gebindemenge',
+    CatchWeight: 'Gewicht',
+    PackingItemName: 'Packvorschrift',
+    BestBeforeDate: 'MHD',
+    LotNo: 'Lot-Nr',
     DropToLocator: 'Ziel Lagerort',
     cancelText: 'Abbrechen',
+    closeText: 'Schließen',
+    clearText: 'Lösen',
+    reOpenText: 'Wieder öffnen',
     scanQRCode: 'QR scannen',
     Back: 'Zurück',
     Home: 'Home',
+    filter: {
+      showResults: 'Ergebnisse anzeigen (%(count)s)',
+      clearFilters: 'Filter löschen',
+    },
+    workplace: 'Arbeitsplatz',
+    workstation: 'Arbeitsstation',
   },
   login: {
     submitButton: 'Login',
+    alternativeMethods: 'Wechseln zu...',
+    authMethod: {
+      qrCode: 'QR Code',
+      userAndPass: 'Passwort',
+    },
   },
+  logout: 'Abmelden',
   mobileui: {
     manufacturing: {
       appName: 'Produktion',
@@ -35,22 +71,62 @@ const translations = {
       appName: 'Bereitstellung',
     },
   },
+  components: {
+    BarcodeScannerComponent: {
+      scanTextPlaceholder: 'scan...',
+      scanWorkplacePlaceholder: 'Arbeitsplatz scannen...',
+      scanWorkstationPlaceholder: 'Arbeitsstation scannen...',
+    },
+  },
   activities: {
     scanBarcode: {
       defaultCaption: 'Scan',
       invalidScannedBarcode: 'Code ist ungültig',
     },
+    huManager: {
+      missingTargetQrCode: 'Der Ziel-QR-Code muss zuerst gescannt werden!',
+      scanLuOrLocator: 'Scannen LU oder Lagerort',
+    },
     picking: {
       PickingLine: 'Pick Zeile',
+      PickFromManufacturingOrder: 'Produzieren',
       PickHU: 'HU kommissionieren',
       scanQRCode: 'QR scannen',
+      pickQtyButton: 'Menge kommissionieren',
       notEligibleHUBarcode: 'HU Code passt nicht',
-      invalidQtyPicked: 'Falsche Menge gepickt',
+      qtyAboveMax: '%(qtyDiff)s über max',
+      notPositiveQtyNotAllowed: 'Null oder negative Menge nicht erlaubt', // TODO verify trl
       confirmDone: 'OK',
+      confirmDoneAndCloseTarget: 'OK und LU schließen',
       rejectedPrompt: 'Es gibt %(qtyRejected)s %(uom)s ungepickte Mengen. Warum?',
       unPickBtn: 'Rückgängig',
       target: 'Soll',
       picked: 'Ist',
+      switchToManualInput: 'Manuell',
+      switchToQrCodeInput: 'QR scannen',
+      skip: 'Überspringen',
+      scanTargetHU: 'Ziel HU scannen',
+      qtyRejectedIgnoreReason: 'Keinen Grund eintragen',
+      qrcode: {
+        missingQty: 'Der gescannte QR-Code enthält keine Mengenangaben!',
+        differentUOM: 'Der gescannte QR UOM stimmt nicht mit dem Ziel überein!',
+        differentProduct: 'Das gescannte QR Produkt stimmt nicht mit dem in der Pickingzeile überein',
+      },
+      pickingTarget: {
+        New: 'Neues Gebinde',
+        Select: 'Gebinde',
+        Current: 'Offenes Gebinde',
+        CloseTarget: 'Schließen',
+      },
+      tuPickingTarget: {
+        New: 'New TU',
+        Select: 'Select Target',
+        Current: 'Current',
+        CloseTarget: 'Close',
+      },
+      overPickConfirmationPrompt: 'Möchten Sie wirklich mehr kommissionieren als beauftragt wurde?',
+      reopenLU: 'LU wieder öffnen',
+      pickingSlot: 'Kommissionier Fach  ',
     },
     distribution: {
       DistributionLine: 'Bereitstellung Zeile',
@@ -60,6 +136,9 @@ const translations = {
       scanLocator: 'Scan Ziel Lagerort',
       invalidLocatorQRCode: 'Lagerort QR ungültig',
       invalidQtyToMove: 'Bewegungsmenge ungültig',
+      qrcode: {
+        differentProduct: 'Das gescannte QR Produkt stimmt nicht mit dem im Bereitstellungsauftrag überein',
+      },
     },
     confirmButton: {
       default: {
@@ -79,6 +158,8 @@ const translations = {
         packing: 'Verpackung',
         qtyTUs: 'Anzahl TUs',
         print: 'Drucken',
+        numberOfHUs: 'Anzahl der Gebinde',
+        numberOfCopies: 'Kopien',
       },
       issues: {
         target: 'Zuf. Soll',
@@ -101,6 +182,11 @@ const translations = {
         newHU: 'Neues Gebinde',
         target: 'Empf. Soll',
         picked: 'Ist',
+      },
+      validateSourceLocator: {
+        noValidOption: 'Keine gültige Option verfügbar',
+        qrMatches: `OK!`,
+        qrDoesNotMatch: `Der gescannte QR stimmt nicht mit der Quelle Locator überein!`,
       },
     },
   },

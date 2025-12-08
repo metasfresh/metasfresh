@@ -22,42 +22,29 @@
 
 package de.metas.audit.data;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.audit.data.model.CreateDataExportAuditLogRequest;
 import de.metas.audit.data.model.DataExportAuditId;
 import de.metas.audit.data.model.DataExportAuditLog;
 import de.metas.audit.data.repository.DataExportAuditLogRepository;
 import de.metas.process.PInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
-
+@ExtendWith(SnapshotExtension.class)
 public class DataExportAuditLogRepositoryTest
 {
 	private DataExportAuditLogRepository dataExportAuditLogRepository;
+	private Expect expect;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 		dataExportAuditLogRepository = new DataExportAuditLogRepository();
-	}
-
-	@BeforeAll
-	static void initStatic()
-	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
-	}
-
-	@AfterAll
-	static void afterAll()
-	{
-		validateSnapshots();
 	}
 
 	@Test
@@ -75,6 +62,6 @@ public class DataExportAuditLogRepositoryTest
 		final DataExportAuditLog result = dataExportAuditLogRepository.createNew(dataAuditLogRequest);
 
 		// then
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 }

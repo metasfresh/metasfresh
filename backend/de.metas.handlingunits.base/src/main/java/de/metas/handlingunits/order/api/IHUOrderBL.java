@@ -60,7 +60,6 @@ public interface IHUOrderBL extends ISingletonService
 	 * the given <code>ol</code>'s <code>M_HU_PI_Item_Product<code>'s <code>M_Product_ID</code>.</li>
 	 * </ul>
 	 *
-	 * @param ol
 	 * @param changedColumnName optional, may be <code>null</code>. Can be used to explicitly state a column has been changed (for using the method in invoice).
 	 */
 	void updateOrderLine(I_C_OrderLine ol, String changedColumnName);
@@ -68,7 +67,6 @@ public interface IHUOrderBL extends ISingletonService
 	/**
 	 * Update the product quantity (Qty CU) if the M_HU_PI_Item_Produc's qty (Qty TU) was changed
 	 *
-	 * @param order
 	 * @return true if the qty CU was modified, false otherwise
 	 */
 	boolean updateQtyCU(I_C_Order order);

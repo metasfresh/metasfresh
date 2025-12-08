@@ -1,0 +1,4 @@
+
+GET {{baseURL}}/api/v2/manufacturing/orders/1015094
+Authorization: {{authToken}}
+accept: application/json;charset=UTF-8

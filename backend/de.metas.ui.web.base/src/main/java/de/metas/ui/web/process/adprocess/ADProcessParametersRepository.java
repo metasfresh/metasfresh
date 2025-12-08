@@ -1,8 +1,5 @@
 package de.metas.ui.web.process.adprocess;
 
-import java.util.List;
-import java.util.Map;
-
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfoParameter;
@@ -25,6 +22,11 @@ import de.metas.ui.web.window.model.OrderedDocumentsList;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.lang.RepoIdAware;
+import org.jetbrains.annotations.NotNull;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Map;
 
 /*
  * #%L
@@ -115,7 +117,7 @@ import de.metas.util.lang.RepoIdAware;
 		throw new UnsupportedOperationException();
 	}
 
-	Document createNewParametersDocument(final DocumentEntityDescriptor parametersDescriptor, final DocumentId adPInstanceId, final IDocumentEvaluatee evalCtx)
+	Document createNewParametersDocument(final DocumentEntityDescriptor parametersDescriptor, final DocumentId adPInstanceId, @Nullable final IDocumentEvaluatee evalCtx)
 	{
 		final IDocumentEvaluatee evalCtxEffective;
 		if (evalCtx != null)
@@ -133,7 +135,7 @@ import de.metas.util.lang.RepoIdAware;
 	}
 
 	@Override
-	public void refresh(final Document processParameters)
+	public void refresh(final @NotNull Document processParameters)
 	{
 		final DocumentId adPInstanceId = processParameters.getDocumentId();
 		final Map<String, ProcessInfoParameter> processInfoParameters = retrieveProcessInfoParameters(adPInstanceId);
@@ -149,7 +151,7 @@ import de.metas.util.lang.RepoIdAware;
 	}
 
 	@Override
-	public SaveResult save(final Document processParameters)
+	public SaveResult save(final @NotNull Document processParameters)
 	{
 		final PInstanceId pinstanceId = processParameters.getDocumentId().toId(PInstanceId::ofRepoId);
 		final List<ProcessInfoParameter> piParams = processParameters.getFieldViews()
@@ -213,7 +215,7 @@ import de.metas.util.lang.RepoIdAware;
 	}
 
 	@Override
-	public void delete(final Document processParameters)
+	public void delete(final @NotNull Document processParameters)
 	{
 		throw new UnsupportedOperationException();
 	}

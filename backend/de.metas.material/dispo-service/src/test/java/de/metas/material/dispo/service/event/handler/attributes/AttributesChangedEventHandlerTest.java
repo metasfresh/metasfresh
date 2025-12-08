@@ -3,6 +3,7 @@ package de.metas.material.dispo.service.event.handler.attributes;
 import com.google.common.collect.ImmutableList;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.repository.CandidateSaveResult;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
 import de.metas.material.event.attributes.AttributesChangedEvent;
@@ -38,12 +39,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -138,7 +139,7 @@ public class AttributesChangedEventHandlerTest
 		private int nextGroupId = 100001;
 
 		@Getter
-		private ArrayList<Candidate> savedCandidates = new ArrayList<>();
+		private final ArrayList<Candidate> savedCandidates = new ArrayList<>();
 
 		@Override
 		public Collection<CandidateType> getHandeledTypes()
@@ -147,9 +148,9 @@ public class AttributesChangedEventHandlerTest
 		}
 
 		@Override
-		public Candidate onCandidateNewOrChange(
+		public CandidateSaveResult onCandidateNewOrChange(
 				@NonNull final Candidate candidate,
-				final OnNewOrChangeAdvise onNewOrChangeAdvise)
+				@NonNull final OnNewOrChangeAdvise onNewOrChangeAdvise)
 		{
 			final Candidate candidateToReturn = candidate.getGroupId() != null
 					? candidate
@@ -157,7 +158,7 @@ public class AttributesChangedEventHandlerTest
 
 			savedCandidates.add(candidateToReturn);
 
-			return candidateToReturn;
+			return CandidateSaveResult.builder().candidate(candidateToReturn).build();
 		}
 
 		private MaterialDispoGroupId generateGroupId()

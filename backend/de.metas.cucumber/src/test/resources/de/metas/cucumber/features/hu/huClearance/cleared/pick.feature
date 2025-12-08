@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor5
 Feature: Cleared HU can be picked on the fly and manually picked
 
   Background:
@@ -36,15 +37,15 @@ Feature: Cleared HU can be picked on the fly and manually picked
       | M_HU_PI_ID.Identifier | Name            |
       | huPackingVirtualPI    | No Packing Item |
     And metasfresh contains M_HU_PI_Version:
-      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name             | HU_UnitType | IsCurrent |
-      | packingVersionCU              | huPackingVirtualPI    | No Packing Item  | V           | Y         |
+      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name            | HU_UnitType | IsCurrent |
+      | packingVersionCU              | huPackingVirtualPI    | No Packing Item | V           | Y         |
 
-    And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier | MovementDate         | DocumentNo     |
-      | huProduct_inventory       | 2022-03-20T00:00:00Z | inventoryDocNo |
-    And metasfresh initially has M_InventoryLine data
-      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount |
-      | huProduct_inventory       | huProduct_inventoryLine       | huProduct               | 0       | 10       |
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | DocumentNo     | M_Warehouse_ID |
+      | huProduct_inventory       | 2022-03-20   | inventoryDocNo | warehouseStd   |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | huProduct_inventory       | huProduct_inventoryLine       | huProduct               | 0       | 10       | PCE          |
     And complete inventory with inventoryIdentifier 'huProduct_inventory'
     And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
@@ -76,7 +77,7 @@ Feature: Cleared HU can be picked on the fly and manually picked
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | true                | false       |
 
@@ -133,3 +134,17 @@ Feature: Cleared HU can be picked on the fly and manually picked
     And validate M_HUs:
       | M_HU_ID.Identifier | M_HU_PI_Version_ID.Identifier | HUStatus | OPT.M_Locator_ID.Identifier | OPT.ClearanceStatus | OPT.ClearanceNote |
       | createdCU          | packingVersionCU              | S        | locatorHauptlager           | C                   | Cleared HU        |
+
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | s_s_2                            | P            | true                | false       |
+
+    And after not more than 30s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | s_s_2                            | s_1_09242025          |
+
+    And the shipment identified by s_1_09242025 is reversed
+
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID.Identifier | OPT.IsClosed | OPT.Processed | OPT.QtyToDeliver |
+      | s_s_2                            | false        | false         | 10               |

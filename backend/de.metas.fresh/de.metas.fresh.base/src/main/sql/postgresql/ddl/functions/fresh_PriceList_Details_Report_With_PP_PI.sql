@@ -71,9 +71,9 @@ SELECT --
        p_show_product_price_pi_flag                                                                         AS show_product_price_pi_flag
 
 FROM report.reportPriceListComparation_With_PP_PI(
-             C_BPartner_ID := p_c_bpartner_id,
-             M_PriceList_Version_ID := p_m_pricelist_version_id,
-             Alt_PriceList_Version_ID := p_alt_pricelist_version_id
+             p_C_BPartner_ID := p_c_bpartner_id,
+             p_M_PriceList_Version_ID := p_m_pricelist_version_id,
+             p_Alt_PriceList_Version_ID := p_alt_pricelist_version_id
          ) plc
          LEFT OUTER JOIN M_Product_Trl p_trl ON p_trl.M_Product_ID = plc.M_Product_ID AND p_trl.AD_Language = p_ad_language AND p_trl.isActive = 'Y'
          LEFT OUTER JOIN C_BPartner bp ON bp.C_BPartner_ID = plc.C_BPartner_ID AND bp.isActive = 'Y'

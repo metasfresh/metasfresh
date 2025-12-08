@@ -23,6 +23,7 @@
 package org.eevolution.api;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.BPPrintFormatQuery;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.i18n.Language;
@@ -93,12 +94,20 @@ public class ManufacturingOrderDocumentReportAdvisor implements DocumentReportAd
 			throw new AdempiereException("@NotFound@ @AD_PrintFormat_ID@");
 		}
 
-		final Language language = bpartner == null? null : util.getBPartnerLanguage(bpartner).orElse(null);
+		final Language language = bpartner == null ? null : util.getBPartnerLanguage(bpartner).orElse(null);
+
+		final BPPrintFormatQuery bpPrintFormatQuery = bpartnerId == null ? null : BPPrintFormatQuery.builder()
+				.adTableId(recordRef.getAdTableId())
+				.bpartnerId(bpartnerId)
+				.bPartnerLocationId(null)
+				.docTypeId(docTypeId)
+				.onlyCopiesGreaterZero(true)
+				.build();
 
 		return DocumentReportInfo.builder()
 				.recordRef(TableRecordReference.of(I_PP_Order.Table_Name, manufacturingOrderId))
 				.reportProcessId(util.getReportProcessIdByPrintFormatId(printFormatId))
-				.copies(util.getDocumentCopies(bpartner, docType))
+				.copies(util.getDocumentCopies(docType, bpPrintFormatQuery))
 				.documentNo(manufacturingOrder.getDocumentNo())
 				.bpartnerId(bpartnerId)
 				.docTypeId(docTypeId)

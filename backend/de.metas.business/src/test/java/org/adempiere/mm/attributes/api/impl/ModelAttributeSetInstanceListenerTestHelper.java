@@ -27,14 +27,14 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product_Category;
-import org.junit.Assert;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 
 import javax.annotation.Nullable;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Base context and helpers for all {@link IModelAttributeSetInstanceListener}s which are about updating the document line's ASI.
@@ -42,7 +42,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  * @author tsa
  */
 
-@Ignore
+@Disabled
 public class ModelAttributeSetInstanceListenerTestHelper extends AttributesTestHelper
 {
 	// services
@@ -187,12 +187,12 @@ public class ModelAttributeSetInstanceListenerTestHelper extends AttributesTestH
 		final I_M_AttributeInstance ai = attributeDAO.retrieveAttributeInstance(asiId, AttributeId.ofRepoId(attribute.getM_Attribute_ID()));
 		if (expectedAttributeValue == null)
 		{
-			Assert.assertNull("No AI expected", ai);
+			assertThat(ai).as("No AI expected").isNull();
 		}
 		else
 		{
-			Assert.assertNotNull("AI expected", ai);
-			Assert.assertEquals("Invalid attribute value", expectedAttributeValue, ai.getValue());
+			assertThat(ai).as("AI expected").isNotNull();
+			assertThat(ai.getValue()).as("Invalid attribute value").isEqualTo(expectedAttributeValue);
 		}
 	}
 

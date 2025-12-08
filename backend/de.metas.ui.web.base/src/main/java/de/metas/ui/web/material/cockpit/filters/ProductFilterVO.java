@@ -1,10 +1,9 @@
 package de.metas.ui.web.material.cockpit.filters;
 
-import org.compiere.model.I_M_Product;
-
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import lombok.Builder;
 import lombok.Value;
+import org.compiere.model.I_M_Product;
 
 /*
  * #%L
@@ -50,4 +49,10 @@ public class ProductFilterVO
 
 	public static final String PARAM_IsSold = I_M_Product.COLUMNNAME_IsSold;
 	Boolean isSold;
+
+	public static final String PARAM_IsActive = I_M_Product.COLUMNNAME_IsActive;
+	Boolean isActive;
+
+	public static final String PARAM_IsDiscontinued = I_M_Product.COLUMNNAME_Discontinued;
+	Boolean isDiscontinued;
 }

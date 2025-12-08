@@ -1,12 +1,11 @@
 package de.metas.contracts.impl;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-import java.sql.Timestamp;
-import java.util.List;
-
 import de.metas.common.util.time.SystemTime;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Matching;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.X_C_Flatrate_Conditions;
+import de.metas.document.engine.IDocument;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
@@ -15,11 +14,10 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.Test;
 
-import de.metas.contracts.model.I_C_Flatrate_Conditions;
-import de.metas.contracts.model.I_C_Flatrate_Matching;
-import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.X_C_Flatrate_Conditions;
-import de.metas.document.engine.IDocument;
+import java.sql.Timestamp;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -84,7 +82,7 @@ public class FlatrateDAOTest extends ContractsTestBase
 				0,
 				ITrx.TRXNAME_ThreadInherited);
 
-		assertThat(result.size(), is(1));
-		assertThat(result.get(0), is(ft));
+		assertThat(result).hasSize(1);
+		assertThat(result.get(0)).isEqualTo(ft);
 	}
 }

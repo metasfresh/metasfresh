@@ -26,9 +26,8 @@ import de.metas.util.ISingletonService;
 
 /**
  * {@link IFactAcctListener}s dispatcher.
- * 
- * @author metas-dev <dev@metasfresh.com>
  *
+ * @author metas-dev <dev@metasfresh.com>
  */
 public interface IFactAcctListenersService extends ISingletonService
 {
@@ -38,5 +37,5 @@ public interface IFactAcctListenersService extends ISingletonService
 
 	void fireAfterPost(final Object document);
 
-	void fireAfterUnpost(final Object document);
+	// void fireAfterUnpost(final Object document);
 }

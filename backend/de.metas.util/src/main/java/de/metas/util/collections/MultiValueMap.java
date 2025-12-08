@@ -23,6 +23,7 @@ package de.metas.util.collections;
  */
 
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -41,11 +42,11 @@ import java.util.Set;
 // NOTE: this class was inspired by org.springframework.util.MultiValueMap<K, V> 
 public class MultiValueMap<K, V> implements Map<K, List<V>>
 {
-	private final Map<K, List<V>> map;
+	private final HashMap<K, List<V>> map;
 
 	public MultiValueMap()
 	{
-		this.map = new HashMap<K, List<V>>();
+		this.map = new HashMap<>();
 	}
 
 	@Override
@@ -61,7 +62,7 @@ public class MultiValueMap<K, V> implements Map<K, List<V>>
 	}
 
 	@Override
-	public boolean containsKey(Object key)
+	public boolean containsKey(@Nullable final Object key)
 	{
 		return map.containsKey(key);
 	}
@@ -69,7 +70,7 @@ public class MultiValueMap<K, V> implements Map<K, List<V>>
 	@Override
 	public boolean containsValue(final Object value)
 	{
-		for (List<V> values : map.values())
+		for (final List<V> values : map.values())
 		{
 			if (values == null || values.isEmpty())
 			{
@@ -86,13 +87,13 @@ public class MultiValueMap<K, V> implements Map<K, List<V>>
 	}
 
 	@Override
-	public List<V> get(Object key)
+	public List<V> get(final Object key)
 	{
 		return map.get(key);
 	}
 
 	@Override
-	public List<V> put(K key, List<V> value)
+	public List<V> put(final K key, final List<V> value)
 	{
 		return map.put(key, value);
 	}
@@ -103,7 +104,7 @@ public class MultiValueMap<K, V> implements Map<K, List<V>>
 	 * @param key the key
 	 * @param value the value to be added
 	 */
-	public void add(K key, V value)
+	public void add(final K key, final V value)
 	{
 		List<V> values = map.get(key);
 		if (values == null)
@@ -126,7 +127,7 @@ public class MultiValueMap<K, V> implements Map<K, List<V>>
 	 * @param key the key
 	 * @param value the value to set
 	 */
-	public void set(K key, V value)
+	public void set(final K key, final V value)
 	{
 		List<V> values = map.get(key);
 		if (values == null)
@@ -143,7 +144,7 @@ public class MultiValueMap<K, V> implements Map<K, List<V>>
 	}
 
 	@Override
-	public List<V> remove(Object key)
+	public List<V> remove(final Object key)
 	{
 		return map.remove(key);
 	}

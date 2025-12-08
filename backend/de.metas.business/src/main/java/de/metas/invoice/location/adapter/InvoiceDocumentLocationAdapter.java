@@ -22,6 +22,7 @@
 
 package de.metas.invoice.location.adapter;
 
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.document.location.DocumentLocation;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.location.RecordBasedLocationAdapter;
@@ -113,14 +114,44 @@ public class InvoiceDocumentLocationAdapter
 		IDocumentLocationAdapter.super.setRenderedAddressAndCapturedLocation(from);
 	}
 
+	@Override
+	public void setRenderedAddress(final @NonNull RenderedAddressAndCapturedLocation from)
+	{
+		IDocumentLocationAdapter.super.setRenderedAddress(from);
+	}
+	
 	public void setFromBillLocation(final I_C_Order from)
 	{
-		setFrom(OrderDocumentLocationAdapterFactory.billLocationAdapter(from).toDocumentLocation());
+		final DocumentLocation fromDocumentLocationAdapter = OrderDocumentLocationAdapterFactory.billLocationAdapter(from).toDocumentLocation();
+
+		final BPartnerContactId fromContactId = fromDocumentLocationAdapter.getContactId();
+		final BPartnerContactId invoiceContactId = getBPartnerContactId().orElse(null);
+
+		if(invoiceContactId != null && !BPartnerContactId.equals(invoiceContactId, fromContactId))
+		{
+			setFrom(fromDocumentLocationAdapter.withContactId(null));
+		}
+		else
+		{
+			setFrom(fromDocumentLocationAdapter);
+		}
 	}
 
 	public void setFrom(final I_C_Invoice from)
 	{
-		setFrom(new InvoiceDocumentLocationAdapter(from).toDocumentLocation());
+		final DocumentLocation fromDocumentLocationAdapter = new InvoiceDocumentLocationAdapter(from).toDocumentLocation();
+
+		final BPartnerContactId fromContactId = fromDocumentLocationAdapter.getContactId();
+		final BPartnerContactId invoiceContactId = getBPartnerContactId().orElse(null);
+
+		if(invoiceContactId != null && !BPartnerContactId.equals(invoiceContactId, fromContactId))
+		{
+			setFrom(fromDocumentLocationAdapter.withContactId(null));
+		}
+		else
+		{
+			setFrom(fromDocumentLocationAdapter);
+		}
 	}
 
 	@Override

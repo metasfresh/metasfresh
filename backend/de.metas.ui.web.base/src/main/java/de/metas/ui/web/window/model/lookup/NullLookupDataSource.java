@@ -1,13 +1,14 @@
 package de.metas.ui.web.window.model.lookup;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.cache.CCache.CCacheStats;
+import de.metas.cache.CCacheStats;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.model.lookup.zoom_into.DocumentZoomIntoInfo;
 import lombok.NonNull;
 import org.compiere.util.Evaluatee;
 

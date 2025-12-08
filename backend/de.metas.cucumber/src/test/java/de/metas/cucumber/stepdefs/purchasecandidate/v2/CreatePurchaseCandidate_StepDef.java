@@ -41,8 +41,9 @@ import de.metas.common.rest_api.v2.JsonPurchaseCandidateResponse;
 import de.metas.common.rest_api.v2.JsonQuantity;
 import de.metas.common.rest_api.v2.JsonVendor;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.cucumber.stepdefs.APIResponse;
+import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.api.APIResponse;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
@@ -77,9 +78,12 @@ public class CreatePurchaseCandidate_StepDef
 	private JsonPurchaseCandidateCreateItem.JsonPurchaseCandidateCreateItemBuilder jsonPurchaseCandidateCreateItem;
 	private final JsonPurchaseCandidateRequest.JsonPurchaseCandidateRequestBuilder jsonPurchaseCandidateRequest = JsonPurchaseCandidateRequest.builder();
 
-	public CreatePurchaseCandidate_StepDef(final TestContext testContext)
+	private final C_OrderLine_StepDefData orderLineTable;
+
+	public CreatePurchaseCandidate_StepDef(@NonNull final TestContext testContext, @NonNull final C_OrderLine_StepDefData orderLineTable)
 	{
 		this.testContext = testContext;
+		this.orderLineTable = orderLineTable;
 		this.purchaseCandidateRepo = SpringContextHolder.instance.getBean(PurchaseCandidateRepository.class);
 	}
 
@@ -109,12 +113,14 @@ public class CreatePurchaseCandidate_StepDef
 	}
 
 	@And("the purchase candidate request is set in context")
-	public void set_req_in_context() throws JsonProcessingException
+	public void set_req_in_context() throws com.fasterxml.jackson.core.JsonProcessingException
 	{
 		final JsonPurchaseCandidateCreateRequest jsonPurchaseCandidateCreateRequest = JsonPurchaseCandidateCreateRequest.builder()
 				.purchaseCandidate(jsonPurchaseCandidateCreateItem.build())
 				.build();
-		testContext.setRequestPayload(new ObjectMapper().writeValueAsString(jsonPurchaseCandidateCreateRequest));
+		// Use JavaTime-enabled mapper to serialize dates as ISO-8601 strings
+		final com.fasterxml.jackson.databind.ObjectMapper mapper = newJsonObjectMapper();
+		testContext.setRequestPayload(mapper.writeValueAsString(jsonPurchaseCandidateCreateRequest));
 	}
 
 	@Given("the purchase candidate enqueue-status request is set in context")
@@ -128,7 +134,8 @@ public class CreatePurchaseCandidate_StepDef
 	public void verify_purchase_candidate_is_persisted_correctly() throws IOException
 	{
 		final String responseJson = testContext.getApiResponse().getContent();
-		final com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+		// Use the same JavaTime-enabled mapper to read ZonedDateTime as ISO strings
+		final com.fasterxml.jackson.databind.ObjectMapper mapper = newJsonObjectMapper();
 
 		//response
 		final JsonPurchaseCandidateResponse response = mapper.readValue(responseJson, JsonPurchaseCandidateResponse.class);
@@ -170,7 +177,7 @@ public class CreatePurchaseCandidate_StepDef
 		return JsonPrice.builder()
 				.value(DataTableUtil.extractBigDecimalForColumnName(map, "value"))
 				.currencyCode(DataTableUtil.extractStringOrNullForColumnName(map, "OPT.currencyCode"))
-				.currencyCode(DataTableUtil.extractStringOrNullForColumnName(map, "OPT.priceUomCode"))
+				.priceUomCode(DataTableUtil.extractStringOrNullForColumnName(map, "OPT.priceUomCode"))
 				.build();
 	}
 
@@ -248,6 +255,8 @@ public class CreatePurchaseCandidate_StepDef
 		assertThat(persistedResult.getExternalHeaderId().getValue()).isEqualTo(candidate.getExternalHeaderId().getValue());
 		assertThat(persistedResult.getExternalLineId().getValue()).isEqualTo(candidate.getExternalLineId().getValue());
 		assertThat(persistedResult.getExternalPurchaseOrderUrl()).isEqualTo(candidate.getExternalPurchaseOrderUrl());
+		assertThat(persistedResult.getPurchaseDateOrdered()).isEqualTo(candidate.getPurchaseDateOrdered());
+		assertThat(persistedResult.getPurchaseDatePromised()).isEqualTo(candidate.getPurchaseDatePromised());
 	}
 
 	private Collection<JsonPurchaseCandidateReference> mapEnqueueRequest(final List<Map<String, String>> dataTable)

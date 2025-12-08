@@ -22,22 +22,6 @@ package de.metas.handlingunits.attribute.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Set;
-
-import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.spi.IAttributeValueContext;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.Util;
-import org.compiere.util.Util.ArrayKey;
-import org.slf4j.Logger;
-
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
@@ -48,6 +32,21 @@ import de.metas.handlingunits.hutransaction.MutableHUTransactionAttribute;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.spi.IAttributeValueContext;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Util;
+import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Set;
 
 /**
  * Listens on {@link IAttributeStorage}s changes and logs the change.

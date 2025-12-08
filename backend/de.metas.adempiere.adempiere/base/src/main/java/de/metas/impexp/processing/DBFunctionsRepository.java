@@ -50,17 +50,23 @@ public class DBFunctionsRepository
 {
 	private static final transient Logger log = LogManager.getLogger(DBFunctionsRepository.class);
 	private static final String IMPORT_AFTER_ROW = "IMPORT_AFTER_ROW";
+	private static final String IMPORT_AFTER_ALL = "IMPORT_AFTER_ALL";
 
 	public DBFunctions retrieveByTableName(@NonNull final String tableName)
 	{
 		final ImmutableList<DBFunction> functions = retrieveAvailableImportFunctionsByTableName(tableName);
 
 		final List<DBFunction> availableAfterRowFunctions = new ArrayList<>();
+		final List<DBFunction> availableAfterAllFunctions = new ArrayList<>();
 		for (final DBFunction function : functions)
 		{
-			if (isEligibleFunction(function))
+			if (isEligibleAfterRowFunction(function))
 			{
 				availableAfterRowFunctions.add(function);
+			}
+			else if (isEligibleAfterAllFunction(function))
+			{
+				availableAfterAllFunctions.add(function);
 			}
 			else
 			{
@@ -71,6 +77,7 @@ public class DBFunctionsRepository
 		return DBFunctions.builder()
 				.tableName(tableName)
 				.availableAfterRowFunctions(ImmutableList.copyOf(availableAfterRowFunctions))
+				.availableAfterAllFunctions(ImmutableList.copyOf(availableAfterAllFunctions))
 				.build();
 	}
 
@@ -93,10 +100,16 @@ public class DBFunctionsRepository
 				.build();
 	}
 	
-	private boolean isEligibleFunction(@NonNull final DBFunction function)
+	private boolean isEligibleAfterRowFunction(@NonNull final DBFunction function)
 	{
 		final String routine_name = function.getName();
 		return StringUtils.containsIgnoreCase(routine_name, IMPORT_AFTER_ROW);
+	}
+
+	private boolean isEligibleAfterAllFunction(@NonNull final DBFunction function)
+	{
+		final String routine_name = function.getName();
+		return StringUtils.containsIgnoreCase(routine_name, IMPORT_AFTER_ALL);
 	}
 
 }

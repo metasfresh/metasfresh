@@ -38,10 +38,11 @@ package org.eevolution.model.wrapper;
  * #L%
  */
 
+import org.adempiere.ad.column.AdColumnId;
+import org.compiere.model.PO;
+
 import java.sql.Timestamp;
 import java.util.Properties;
-
-import org.compiere.model.PO;
 
 /**
  * @author Gunther Hoppe, tranSIT GmbH Ilmenau/Germany
@@ -166,7 +167,7 @@ public abstract class AbstractPOWrapper {
 	 *  @param AD_Column_ID column
 	 *  @return value or null
 	 */
-	public Object get_ValueOfColumn(int AD_Column_ID) {
+	public Object get_ValueOfColumn(AdColumnId AD_Column_ID) {
 
 		return  po.get_ValueOfColumn(AD_Column_ID); //  get_ValueOfColumn
 	}
@@ -209,32 +210,6 @@ public abstract class AbstractPOWrapper {
 	public boolean is_ValueChanged(String columnName) {
 
 		return  po.is_ValueChanged(columnName); //  is_ValueChanged
-	}
-
-	/**
-	 *  Return new - old.
-	 * 	- New Value if Old Value is null
-	 * 	- New Value - Old Value if Number
-	 * 	- otherwise null
-	 *  @param index index
-	 *  @return new - old or null if not appropriate or not changed
-	 */
-	public Object get_ValueDifference(int index) {
-
-		return  po.get_ValueDifference(index); //  get_ValueDifference
-	}
-
-	/**
-	 *  Return new - old.
-	 * 	- New Value if Old Value is null
-	 * 	- New Value - Old Value if Number
-	 * 	- otherwise null
-	 *  @param columnName column name
-	 *  @return new - old or null if not appropriate or not changed
-	 */
-	public Object get_ValueDifference(String columnName) {
-
-		return  po.get_ValueDifference(columnName); //  get_ValueDifference
 	}
 
 	/**

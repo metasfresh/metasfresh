@@ -1,19 +1,10 @@
 package de.metas.invoicecandidate.internalbusinesslogic;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_InvoiceLine;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
-
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.money.CurrencyId;
@@ -28,6 +19,13 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_InvoiceLine;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /*
  * #%L
@@ -89,8 +87,8 @@ public class InvoicedDataLoader
 
 			final UomId stockUomId = stockUomIds.get(invoiceCandidateId);
 
-			Quantity qty = Quantitys.createZero(icUomIds.get(invoiceCandidateId));
-			Quantity qtyInStockUom = Quantitys.createZero(stockUomId);
+			Quantity qty = Quantitys.zero(icUomIds.get(invoiceCandidateId));
+			Quantity qtyInStockUom = Quantitys.zero(stockUomId);
 
 			Money netAmount = Money.zero(currencyId);
 
@@ -109,7 +107,7 @@ public class InvoicedDataLoader
 
 				qtyInStockUom = Quantitys.add(conversionCtx,
 						qtyInStockUom,
-						Quantitys.create(ila.getQtyInvoiced(), stockUomId));
+						Quantitys.of(ila.getQtyInvoiced(), stockUomId));
 
 				final I_C_InvoiceLine invoiceLineRecord = rawData
 						.getInvoiceLineId2InvoiceLineRecord()
@@ -144,7 +142,7 @@ public class InvoicedDataLoader
 		final UomId uomId = UomId.ofRepoIdOrNull(ila.getC_UOM_ID());
 		
 		return uomId != null
-				? Quantitys.create(ila.getQtyInvoicedInUOM(), uomId)
+				? Quantitys.of(ila.getQtyInvoicedInUOM(), uomId)
 				: null;
 	}
 

@@ -22,17 +22,16 @@ package de.metas.acct.api;
  * #L%
  */
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.acct.api.impl.AcctSegmentType;
+import de.metas.sales_region.SalesRegionId;
 import de.metas.util.NumberUtils;
-import de.metas.util.StringUtils;
-import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Immutable {@link AccountDimension} implementation
@@ -43,7 +42,7 @@ public final class AccountDimension
 {
 	public static final AccountDimension NULL = builder().build();
 
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
@@ -167,6 +166,11 @@ public final class AccountDimension
 	public int getC_Activity_ID()
 	{
 		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Activity),0);
+	}
+
+	public int getSalesOrderId()
+	{
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.SalesOrder), 0);
 	}
 
 	public int getUser1_ID()
@@ -371,9 +375,9 @@ public final class AccountDimension
 			return this;
 		}
 
-		public Builder setC_SalesRegion_ID(final int C_SalesRegion_ID)
+		public Builder setC_SalesRegion_ID(@Nullable final SalesRegionId C_SalesRegion_ID)
 		{
-			setSegmentValue(AcctSegmentType.SalesRegion, C_SalesRegion_ID);
+			setSegmentValue(AcctSegmentType.SalesRegion, SalesRegionId.toRepoId(C_SalesRegion_ID));
 			return this;
 		}
 
@@ -392,6 +396,12 @@ public final class AccountDimension
 		public Builder setC_Activity_ID(final int C_Activity_ID)
 		{
 			setSegmentValue(AcctSegmentType.Activity, C_Activity_ID);
+			return this;
+		}
+
+		public Builder setSalesOrderId(final int C_OrderSO_ID)
+		{
+			setSegmentValue(AcctSegmentType.SalesOrder, C_OrderSO_ID);
 			return this;
 		}
 

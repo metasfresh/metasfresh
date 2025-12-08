@@ -39,7 +39,7 @@ public interface IProcessPrecondition
 	/**
 	 * Determines if a process should be displayed in current context.
 	 * <p>
-	 * <b>IMPORTANT:</b> this method will <b>not</b> be invoked on the same instance that shall later execute <code>prepare()</code> {@link JavaProcess#doIt(String, String, Object[])},
+	 * <b>IMPORTANT:</b> this method will <b>not</b> be invoked on the same instance that shall later execute <code>prepare()</code> {@link JavaProcess#doIt()},
 	 * so it does not make any sense to set any values to be used later. Also, when this method is called, there is no process info instance yet, so e.g.
 	 * {@link JavaProcess#getRecord_ID()} won't work.
 	 *

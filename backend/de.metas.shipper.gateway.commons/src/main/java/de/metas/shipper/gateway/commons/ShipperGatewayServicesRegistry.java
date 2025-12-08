@@ -1,24 +1,21 @@
 package de.metas.shipper.gateway.commons;
 
-import java.util.List;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
-import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.logging.LogManager;
-import de.metas.shipper.gateway.spi.DeliveryOrderRepository;
+import de.metas.shipper.gateway.spi.DeliveryOrderService;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.ShipperGatewayClientFactory;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 /*
  * #%L
@@ -47,19 +44,19 @@ public class ShipperGatewayServicesRegistry
 {
 	private final transient Logger logger = LogManager.getLogger(getClass());
 
-	private final ImmutableMap<String, DeliveryOrderRepository> repositoriesByGatewayId;
+	private final ImmutableMap<String, DeliveryOrderService> servicesByGatewayId;
 	private final ImmutableMap<String, ShipperGatewayClientFactory> clientFactoriesByGatewayId;
 	private final ImmutableMap<String, DraftDeliveryOrderCreator> draftDeliveryOrderCreatorsByGatewayId;
 
 	public ShipperGatewayServicesRegistry(
-			@NonNull final Optional<List<DeliveryOrderRepository>> deliveryOrderRepositories,
+			@NonNull final Optional<List<DeliveryOrderService>> deliveryOrderServices,
 			@NonNull final Optional<List<ShipperGatewayClientFactory>> shipperGatewayClientFactories,
 			@NonNull final Optional<List<DraftDeliveryOrderCreator>> services)
 	{
-		repositoriesByGatewayId = deliveryOrderRepositories.orElse(ImmutableList.of())
+		servicesByGatewayId = deliveryOrderServices.orElse(ImmutableList.of())
 				.stream()
 				.filter(Objects::nonNull)
-				.collect(GuavaCollectors.toImmutableMapByKey(DeliveryOrderRepository::getShipperGatewayId));
+				.collect(GuavaCollectors.toImmutableMapByKey(DeliveryOrderService::getShipperGatewayId));
 
 		clientFactoriesByGatewayId = shipperGatewayClientFactories.orElse(ImmutableList.of())
 				.stream()
@@ -71,13 +68,13 @@ public class ShipperGatewayServicesRegistry
 				.filter(Objects::nonNull)
 				.collect(GuavaCollectors.toImmutableMapByKey(DraftDeliveryOrderCreator::getShipperGatewayId));
 
-		logger.info("deliveryOrderRepositories: {}", repositoriesByGatewayId);
+		logger.info("deliveryOrderServices: {}", servicesByGatewayId);
 	}
 
-	public DeliveryOrderRepository getDeliveryOrderRepository(@NonNull final String shipperGatewayId)
+	public DeliveryOrderService getDeliveryOrderService(@NonNull final String shipperGatewayId)
 	{
-		final DeliveryOrderRepository deliveryOrderRepository = repositoriesByGatewayId.get(shipperGatewayId);
-		return Check.assumeNotNull(deliveryOrderRepository, "deliveryOrderRepository shall exist for shipperGatewayId={}", shipperGatewayId);
+		final DeliveryOrderService deliveryOrderService = servicesByGatewayId.get(shipperGatewayId);
+		return Check.assumeNotNull(deliveryOrderService, "deliveryOrderService shall exist for shipperGatewayId={}", shipperGatewayId);
 	}
 
 	public ShipperGatewayClientFactory getClientFactory(@NonNull final String shipperGatewayId)

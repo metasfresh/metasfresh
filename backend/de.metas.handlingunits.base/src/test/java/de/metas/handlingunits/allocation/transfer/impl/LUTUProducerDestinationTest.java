@@ -1,13 +1,12 @@
 package de.metas.handlingunits.allocation.transfer.impl;
 
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-
-import org.junit.Before;
-import org.junit.Test;
-
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 /*
  * #%L
@@ -36,7 +35,7 @@ public class LUTUProducerDestinationTest
 
 	private HUTestHelper helper;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		helper = new HUTestHelper();

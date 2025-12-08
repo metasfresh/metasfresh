@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-shopware6
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -63,6 +63,7 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
+import org.apache.camel.test.junit5.CamelContextConfiguration;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -98,7 +99,7 @@ import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuild
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.PROCESS_ORDERS_PAGE_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.PROCESS_ORDER_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.UPSERT_RUNTIME_PARAMS_ROUTE_ID;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
@@ -129,18 +130,21 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 	private static final String JSON_OL_CAND_PROCESS_REQUEST = HAPPY_FLOW_ZERO_TAX + "70_JsonOLCandProcessRequest.json";
 
 	@Override
-	protected Properties useOverridePropertiesWithPropertiesComponent()
+	public void configureContext(@NonNull final CamelContextConfiguration camelContextConfiguration)
 	{
+		super.configureContext(camelContextConfiguration);
+
+		testConfiguration().withUseAdviceWith(true);
 		final var properties = new Properties();
 		try
 		{
 			properties.load(GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests.class.getClassLoader().getResourceAsStream("application.properties"));
-			return properties;
 		}
 		catch (final IOException e)
 		{
 			throw new RuntimeException(e);
 		}
+		camelContextConfiguration.withUseOverridePropertiesWithPropertiesComponent(properties);
 	}
 
 	@Override
@@ -150,12 +154,6 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 		final ProducerTemplate producerTemplate = Mockito.mock(ProducerTemplate.class);
 
 		return new GetOrdersRouteBuilder(processLogger, producerTemplate);
-	}
-
-	@Override
-	public boolean isUseAdviceWith()
-	{
-		return true;
 	}
 
 	@Test
@@ -169,9 +167,9 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 		final GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyCalledGetOrderPage successfullyCalledGetOrderPage = new GetOrdersRouteBuilder_HappyFlow_Tests.MockSuccessfullyCalledGetOrderPage();
 
 		prepareRouteForTesting(createdBPartnerProcessor,
-				successfullyCreatedOLCandProcessor,
+							   successfullyCreatedOLCandProcessor,
 							   successfullyProcessOLCandProcessor,
-				runtimeParamsProcessor,
+							   runtimeParamsProcessor,
 							   createPaymentProcessor,
 							   successfullyCalledGetOrderPage);
 
@@ -218,7 +216,7 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 		assertThat(runtimeParamsProcessor.called).isEqualTo(1);
 		assertThat(createPaymentProcessor.called).isEqualTo(1);
 		assertThat(successfullyCalledGetOrderPage.called).isEqualTo(1);
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 	}
 
 	private void prepareRouteForTesting(
@@ -231,7 +229,7 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 	{
 		AdviceWith.adviceWith(context, GET_ORDERS_ROUTE_ID,
 							  advice -> advice.weaveById(BUILD_ORDERS_CONTEXT_PROCESSOR_ID)
-						.replace()
+									  .replace()
 									  .process(new MockBuildOrdersContextProcessor()));
 
 		AdviceWith.adviceWith(context, PROCESS_ORDERS_PAGE_ROUTE_ID,
@@ -240,40 +238,40 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 									  .process(successfullyCalledGetOrderPage));
 
 		AdviceWith.adviceWith(context, PROCESS_ORDER_ROUTE_ID,
-				advice -> {
-					advice.weaveById(CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID)
-							.after()
-							.to(MOCK_BPARTNER_UPSERT);
+							  advice -> {
+								  advice.weaveById(CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID)
+										  .after()
+										  .to(MOCK_BPARTNER_UPSERT);
 
-					advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
-							.skipSendToOriginalEndpoint()
-							.process(upsertBPartnerProcessor);
+								  advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
+										  .skipSendToOriginalEndpoint()
+										  .process(upsertBPartnerProcessor);
 
-					advice.weaveById(OLCAND_REQ_PROCESSOR_ID)
-							.after()
-							.to(MOCK_OL_CAND_CREATE);
+								  advice.weaveById(OLCAND_REQ_PROCESSOR_ID)
+										  .after()
+										  .to(MOCK_OL_CAND_CREATE);
 
-					advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID)
-							.skipSendToOriginalEndpoint()
-							.process(olCandProcessor);
+								  advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID)
+										  .skipSendToOriginalEndpoint()
+										  .process(olCandProcessor);
 
-					advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_CREATE_ORDER_PAYMENT_ROUTE_ID)
-							.skipSendToOriginalEndpoint()
-							.to(MOCK_CREATE_PAYMENT)
-							.process(createPaymentProcessor);
-				});
+								  advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_CREATE_ORDER_PAYMENT_ROUTE_ID)
+										  .skipSendToOriginalEndpoint()
+										  .to(MOCK_CREATE_PAYMENT)
+										  .process(createPaymentProcessor);
+							  });
 
 		AdviceWith.adviceWith(context, PROCESS_OLCAND_ROUTE_ID,
 							  advice -> advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_PROCESS_OL_CANDIDATES_ROUTE_ID)
-						.skipSendToOriginalEndpoint()
+									  .skipSendToOriginalEndpoint()
 									  .to(MOCK_OL_CAND_PROCESS)
 									  .process(processOLCandProcessor));
 
 		AdviceWith.adviceWith(context, UPSERT_RUNTIME_PARAMS_ROUTE_ID,
-				advice -> advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_UPSERT_RUNTIME_PARAMETERS_ROUTE_ID)
-						.skipSendToOriginalEndpoint()
-						.to(MOCK_UPSERT_RUNTIME_PARAMETERS)
-						.process(runtimeParamsProcessor));
+							  advice -> advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_UPSERT_RUNTIME_PARAMETERS_ROUTE_ID)
+									  .skipSendToOriginalEndpoint()
+									  .to(MOCK_UPSERT_RUNTIME_PARAMETERS)
+									  .process(runtimeParamsProcessor));
 	}
 
 	public static class MockBuildOrdersContextProcessor implements Processor
@@ -296,7 +294,7 @@ public class GetOrdersRouteBuilder_HappyFlow_zeroTax_Tests extends CamelTestSupp
 
 			final SalutationInfoProvider salutationInfoProvider = SalutationInfoProvider.builder()
 					.salutationId2DisplayName(ImmutableMap.of(MOCK_SALUTATION_ID, MOCK_SALUTATION_DISPLAY_NAME,
-							MOCK_BILLING_SALUTATION_ID, MOCK_BILLING_SALUTATION_DISPLAY_NAME))
+															  MOCK_BILLING_SALUTATION_ID, MOCK_BILLING_SALUTATION_DISPLAY_NAME))
 					.build();
 
 			final JsonExternalSystemRequest externalSystemRequest = GetOrdersRouteBuilder_HappyFlow_Tests.createJsonExternalSystemRequestBuilder()

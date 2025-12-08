@@ -27,10 +27,12 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.v2.SyncAdvise;
+import de.metas.common.util.CoalesceUtil;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -44,18 +46,39 @@ public class JsonRequestBankAccountUpsertItem
 {
 	@ApiModelProperty(position = 10, allowEmptyValue = false)
 	@JsonProperty("iban")
-	final String iban;
+	String iban;
 
 	@ApiModelProperty(position = 20, allowEmptyValue = true)
 	@JsonProperty("currencyCode")
-	final String currencyCode;
+	String currencyCode;
 
 	@ApiModelProperty(position = 30, required = false, value = "If not specified but required (e.g. because a new contact is created), then `true` is assumed")
 	@JsonInclude(Include.NON_NULL)
 	@JsonProperty("active")
 	Boolean active;
 
-	@ApiModelProperty(position = 40, required = false, value = "Sync advise about this contact's individual properties.\n" + PARENT_SYNC_ADVISE_DOC)
+	@ApiModelProperty(position = 40, allowEmptyValue = true)
+	@JsonProperty("accountName")
+	String accountName;
+
+	@ApiModelProperty(position = 50, allowEmptyValue = true)
+	@JsonProperty("accountStreet")
+	String accountStreet;
+
+	@ApiModelProperty(position = 60, allowEmptyValue = true)
+	@JsonProperty("accountZip")
+	String accountZip;
+
+	@ApiModelProperty(position = 70, allowEmptyValue = true)
+	@JsonProperty("accountCity")
+	String accountCity;
+
+	@ApiModelProperty(position = 80, allowEmptyValue = true)
+	@JsonProperty("accountCountry")
+	String accountCountry;
+
+	@Setter
+	@ApiModelProperty(value = "Sync advise about this contact's individual properties.\n" + PARENT_SYNC_ADVISE_DOC)
 	@JsonInclude(Include.NON_NULL)
 	SyncAdvise syncAdvise;
 
@@ -64,11 +87,26 @@ public class JsonRequestBankAccountUpsertItem
 			@JsonProperty("iban") @NonNull String iban,
 			@JsonProperty("currencyCode") @Nullable final String currencyCode,
 			@JsonProperty("active") @Nullable final Boolean active,
+			@JsonProperty("accountName") @Nullable final String accountName,
+			@JsonProperty("accountStreet") @Nullable final String accountStreet,
+			@JsonProperty("accountZip") @Nullable final String accountZip,
+			@JsonProperty("accountCity") @Nullable final String accountCity,
+			@JsonProperty("accountCountry") @Nullable final String accountCountry,
 			@JsonProperty("syncAdvise") @Nullable final SyncAdvise syncAdvise)
 	{
 		this.iban = iban;
 		this.currencyCode = currencyCode;
 		this.active = active;
+		this.accountName = accountName;
+		this.accountStreet = accountStreet;
+		this.accountZip = accountZip;
+		this.accountCity = accountCity;
+		this.accountCountry = accountCountry;
 		this.syncAdvise = syncAdvise;
+	}
+
+	public boolean getIsActive()
+	{
+		return CoalesceUtil.coalesceNotNull(active, true);
 	}
 }

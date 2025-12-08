@@ -7,11 +7,12 @@ DECLARE
 
 BEGIN
 
-    hasEUTax := (select case when (count(1) > 0) then 'Y' else 'N' end
-                 from c_invoiceline il
-                          join C_Tax t on il.c_tax_id = t.c_tax_id
-                 where t.istoeulocation = 'Y' and t.isTaxexempt='Y'
-                   and il.c_invoice_id = p_C_Invoice_ID);
+    hasEUTax := (SELECT CASE WHEN (COUNT(1) > 0) THEN 'Y' ELSE 'N' END
+                 FROM c_invoiceline il
+                          JOIN C_Tax t ON il.c_tax_id = t.c_tax_id
+                 WHERE t.TypeOfDestCountry = 'WITHIN_COUNTRY_AREA'
+                   AND t.isTaxexempt = 'Y'
+                   AND il.c_invoice_id = p_C_Invoice_ID);
 
     IF hasEUTax IS NOT NUll THEN
         RETURN hasEUTax;

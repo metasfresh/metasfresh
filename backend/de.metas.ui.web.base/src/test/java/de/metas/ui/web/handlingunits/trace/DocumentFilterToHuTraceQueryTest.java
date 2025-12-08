@@ -1,29 +1,28 @@
 package de.metas.ui.web.handlingunits.trace;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import java.util.Date;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.model.X_M_HU_Trace;
 import de.metas.handlingunits.trace.HUTraceEventQuery;
 import de.metas.handlingunits.trace.HUTraceEventQuery.EventTimeOperator;
 import de.metas.handlingunits.trace.HUTraceEventQuery.RecursionMode;
-import de.metas.printing.esb.base.util.Check;
+import de.metas.handlingunits.trace.HUTraceType;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import de.metas.util.Check;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.Date;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /*
  * #%L
@@ -123,7 +122,7 @@ public class DocumentFilterToHuTraceQueryTest
 		assertThat(huTraceQuery.getOrgId().getRepoId()).isEqualTo(20);
 		assertThat(huTraceQuery.getDocTypeId().get().getRepoId()).isEqualTo(30);
 		assertThat(huTraceQuery.getDocStatus()).isEqualTo("CO");
-		assertThat(huTraceQuery.getType().toString()).isEqualTo(X_M_HU_Trace.HUTRACETYPE_MATERIAL_PICKING);
+		assertThat(huTraceQuery.getTypes()).contains(HUTraceType.MATERIAL_PICKING);
 		assertThat(huTraceQuery.getTopLevelHuIds()).isEqualTo(ImmutableSet.of(HuId.ofRepoId(60)));
 		assertThat(huTraceQuery.getHuTraceEventId().getAsInt()).isEqualTo(70);
 		assertThat(huTraceQuery.getHuTrxLineId()).isEqualTo(80);

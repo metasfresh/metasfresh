@@ -134,7 +134,7 @@ public class ExecuteSQLWorkpackageProcessor extends WorkpackageProcessorAdapter
 	@VisibleForTesting
 	int executeSql(final String sql)
 	{
-		return DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+		return DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private static String parseSql(final String sqlRaw, final I_C_Queue_WorkPackage workpackage)

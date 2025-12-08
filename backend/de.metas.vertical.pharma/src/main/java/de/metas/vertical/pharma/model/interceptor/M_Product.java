@@ -1,17 +1,13 @@
 package de.metas.vertical.pharma.model.interceptor;
 
+import de.metas.i18n.AdMessageKey;
+import de.metas.vertical.pharma.PharmaModulo11Validator;
+import de.metas.vertical.pharma.model.I_M_Product;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
-
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
-import de.metas.util.Services;
-import de.metas.vertical.pharma.PharmaModulo11Validator;
-import de.metas.vertical.pharma.model.I_M_Product;
 
 /*
  * #%L
@@ -59,10 +55,7 @@ public class M_Product
 
 		if (!isValidPZN)
 		{
-			final IMsgBL msgBL = Services.get(IMsgBL.class);
-			final ITranslatableString invalidPZNMessage = msgBL.getTranslatableMsgText(ERR_Invalid_PZN, pzn);
-
-			throw new AdempiereException(invalidPZNMessage)
+			throw new AdempiereException(ERR_Invalid_PZN, pzn)
 					.markAsUserValidationError();
 		}
 	}

@@ -22,6 +22,11 @@ package de.metas.edi.esb.xls;
  * #L%
  */
 
+import de.metas.edi.esb.commons.Util;
+import de.metas.edi.esb.excelimport.Excel_OLCand_Row;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDIImpCCurrencyLookupISOCodeType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDIImpCUOMLookupUOMSymbolType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.XLSImpCOLCandType;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -30,14 +35,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.hamcrest.Matchers;
-import org.junit.Assert;
-
-import de.metas.edi.esb.excelimport.Excel_OLCand_Row;
-import de.metas.edi.esb.commons.Util;
-import de.metas.edi.esb.jaxb.metasfresh.EDIImpCCurrencyLookupISOCodeType;
-import de.metas.edi.esb.jaxb.metasfresh.EDIImpCUOMLookupUOMSymbolType;
-import de.metas.edi.esb.jaxb.metasfresh.XLSImpCOLCandType;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Defines and asserts expectations on an {@link Excel_OLCand_Row} or {@link XLSImpCOLCandType}.
@@ -84,72 +82,72 @@ public class XLS_OLCand_Row_Expectation
 
 		if (lineNoSet)
 		{
-			Assert.assertEquals("LineNo" + messageSuffix, lineNo, row.getLineNo());
+			assertThat(row.getLineNo()).as("LineNo" + messageSuffix).isEqualTo(lineNo);
 		}
 		if (productDescriptionSet)
 		{
-			Assert.assertEquals("ProductDescription" + messageSuffix, productDescription, row.getProductDescription());
+			assertThat(row.getProductDescription()).as("ProductDescription" + messageSuffix).isEqualTo(productDescription);
 		}
 		if (uom_x12de355_set)
 		{
-			Assert.assertEquals("UOM" + messageSuffix, uom_x12de355, row.getUOM_x12de355());
+			assertThat(row.getUOM_x12de355()).as("UOM" + messageSuffix).isEqualTo(uom_x12de355);
 		}
 
 		if (M_Product_ID != null)
 		{
-			Assert.assertEquals("M_Product_ID" + messageSuffix, M_Product_ID, (Integer)row.getM_Product_ID());
+			assertThat(row.getM_Product_ID()).as("M_Product_ID" + messageSuffix).isEqualTo(M_Product_ID);
 		}
 		if (M_ProductPrice_ID != null)
 		{
-			Assert.assertEquals("M_ProductPrice_ID" + messageSuffix, M_ProductPrice_ID, (Integer)row.getM_ProductPrice_ID());
+			assertThat(row.getM_ProductPrice_ID()).as("M_ProductPrice_ID" + messageSuffix).isEqualTo(M_ProductPrice_ID);
 		}
 		if (M_ProductPrice_Attribute_ID != null)
 		{
-			Assert.assertEquals("M_ProductPrice_Attribute_ID" + messageSuffix, M_ProductPrice_Attribute_ID, (Integer)row.getM_ProductPrice_Attribute_ID());
+			assertThat(row.getM_ProductPrice_Attribute_ID()).as("M_ProductPrice_Attribute_ID" + messageSuffix).isEqualTo(M_ProductPrice_Attribute_ID);
 		}
 		if (M_HU_PI_Item_Product_ID != null)
 		{
-			Assert.assertEquals("M_HU_PI_Item_Product_ID" + messageSuffix, M_HU_PI_Item_Product_ID, (Integer)row.getM_HU_PI_Item_Product_ID());
+			assertThat(row.getM_HU_PI_Item_Product_ID()).as("M_HU_PI_Item_Product_ID" + messageSuffix).isEqualTo(M_HU_PI_Item_Product_ID);
 		}
 
 		if (C_BPartner_ID != null)
 		{
-			Assert.assertEquals("C_BPartner_ID" + messageSuffix, C_BPartner_ID, (Integer)row.getC_BPartner_ID());
+			assertThat(row.getC_BPartner_ID()).as("C_BPartner_ID" + messageSuffix).isEqualTo(C_BPartner_ID);
 		}
 		if (C_BPartner_Location_ID != null)
 		{
-			Assert.assertEquals("C_BPartner_Location_ID" + messageSuffix, C_BPartner_Location_ID, (Integer)row.getC_BPartner_Location_ID());
+			assertThat(row.getC_BPartner_Location_ID()).as("C_BPartner_Location_ID" + messageSuffix).isEqualTo(C_BPartner_Location_ID);
 		}
 
 		if (price != null)
 		{
-			Assert.assertThat("Price" + messageSuffix, row.getPrice(), Matchers.comparesEqualTo(price));
+			assertThat(row.getPrice()).as("Price" + messageSuffix).isEqualByComparingTo(price);
 		}
 		if (currencyISOCode != null)
 		{
-			Assert.assertThat("Currency" + messageSuffix, row.getCurrencyISOCode(), Matchers.equalTo(currencyISOCode));
+			assertThat(row.getCurrencyISOCode()).as("Currency" + messageSuffix).isEqualTo(currencyISOCode);
 		}
 
 		if (qtyTUs != null)
 		{
-			Assert.assertThat("QtyTUs" + messageSuffix, row.getQtyTUs(), Matchers.comparesEqualTo(qtyTUs));
+			assertThat(row.getQtyTUs()).as("QtyTUs" + messageSuffix).isEqualByComparingTo(qtyTUs);
 		}
 		if (qtyCUsPerTU != null)
 		{
-			Assert.assertThat("QtyCUsPerTU" + messageSuffix, row.getQtyCUsPerTU(), Matchers.comparesEqualTo(qtyCUsPerTU));
+			assertThat(row.getQtyCUsPerTU()).as("QtyCUsPerTU" + messageSuffix).isEqualByComparingTo(qtyCUsPerTU);
 		}
 		if (qtyUOM != null)
 		{
-			Assert.assertThat("QtyUOM" + messageSuffix, row.getQtyInUOM(), Matchers.comparesEqualTo(qtyUOM));
+			assertThat(row.getQtyInUOM()).as("QtyUOM" + messageSuffix).isEqualByComparingTo(qtyUOM);
 		}
 
 		if (datePromised != null)
 		{
-			Assert.assertThat("DatePromised" + messageSuffix, row.getDatePromised(), Matchers.comparesEqualTo(datePromised));
+			assertThat(row.getDatePromised()).as("DatePromised" + messageSuffix).isEqualTo(datePromised);
 		}
 		if (poReferenceSet)
 		{
-			Assert.assertEquals("POReference" + messageSuffix, poReference, row.getPOReference());
+			assertThat(row.getPOReference()).as("POReference" + messageSuffix).isEqualTo(poReference);
 		}
 	}
 
@@ -158,89 +156,86 @@ public class XLS_OLCand_Row_Expectation
 		final String messageSuffix = "\nXML: " + xml
 				+ "\n";
 
-		Assert.assertNotNull("XML not null", xml);
+		assertThat(xml).as("XML not null").isNotNull();
 		if (lineNoSet)
 		{
-			Assert.assertEquals("LineNo" + messageSuffix, BigInteger.valueOf(lineNo), xml.getLine());
+			assertThat(xml.getLine()).as("LineNo" + messageSuffix).isEqualTo(BigInteger.valueOf(lineNo));
 		}
 		if (productDescriptionSet)
 		{
-			Assert.assertEquals("ProductDescription" + messageSuffix, productDescription, xml.getProductDescription());
+			assertThat(xml.getProductDescription()).as("ProductDescription" + messageSuffix).isEqualTo(productDescription);
 		}
 		if (uom_x12de355_set)
 		{
 			final EDIImpCUOMLookupUOMSymbolType uomLookup = xml.getCUOMID();
 			final String uom_x12de355_actual = uomLookup == null ? null : uomLookup.getX12DE355();
-			Assert.assertEquals("UOM_x12de355" + messageSuffix, uom_x12de355, uom_x12de355_actual);
+			assertThat(uom_x12de355_actual).as("UOM_x12de355" + messageSuffix).isEqualTo(uom_x12de355);
 		}
 
 		if (M_Product_ID != null)
 		{
-			Assert.assertEquals("M_Product_ID" + messageSuffix, BigInteger.valueOf(M_Product_ID), xml.getMProductID());
+			assertThat(xml.getMProductID()).as("M_Product_ID" + messageSuffix).isEqualTo(BigInteger.valueOf(M_Product_ID));
 		}
 		if (M_ProductPrice_ID != null)
 		{
-			Assert.assertEquals("M_ProductPrice_ID" + messageSuffix, BigInteger.valueOf(M_ProductPrice_ID), xml.getMProductPriceID());
+			assertThat(xml.getMProductPriceID()).as("M_ProductPrice_ID" + messageSuffix).isEqualTo(BigInteger.valueOf(M_ProductPrice_ID));
 		}
 
-		Assert.assertEquals("IsExplicitProductPriceAttribute" + messageSuffix, "Y", xml.getIsExplicitProductPriceAttribute());
+		assertThat(xml.getIsExplicitProductPriceAttribute()).as("IsExplicitProductPriceAttribute" + messageSuffix).isEqualTo("Y");
 		if (M_ProductPrice_Attribute_ID != null)
 		{
-			Assert.assertEquals("M_ProductPrice_Attribute_ID" + messageSuffix, BigInteger.valueOf(M_ProductPrice_Attribute_ID), xml.getMProductPriceAttributeID());
+			assertThat(xml.getMProductPriceAttributeID()).as("M_ProductPrice_Attribute_ID" + messageSuffix).isEqualTo(BigInteger.valueOf(M_ProductPrice_Attribute_ID));
 		}
 
 		if (M_HU_PI_Item_Product_ID != null)
 		{
-			Assert.assertEquals("M_HU_PI_Item_Product_ID" + messageSuffix, BigInteger.valueOf(M_HU_PI_Item_Product_ID), xml.getMHUPIItemProductID());
+			assertThat(xml.getMHUPIItemProductID()).as("M_HU_PI_Item_Product_ID" + messageSuffix).isEqualTo(BigInteger.valueOf(M_HU_PI_Item_Product_ID));
 		}
 
 		if (C_BPartner_ID != null)
 		{
-			Assert.assertEquals("C_BPartner_ID" + messageSuffix, BigInteger.valueOf(C_BPartner_ID), xml.getCBPartnerID());
+			assertThat(xml.getCBPartnerID()).as("C_BPartner_ID" + messageSuffix).isEqualTo(BigInteger.valueOf(C_BPartner_ID));
 		}
 		if (C_BPartner_Location_ID != null)
 		{
-			Assert.assertEquals("C_BPartner_Location_ID" + messageSuffix, BigInteger.valueOf(C_BPartner_Location_ID), xml.getCBPartnerLocationID());
+			assertThat(xml.getCBPartnerLocationID()).as("C_BPartner_Location_ID" + messageSuffix).isEqualTo(BigInteger.valueOf(C_BPartner_Location_ID));
 		}
 
 		if (price != null)
 		{
-			Assert.assertThat("Price" + messageSuffix, xml.getPriceEntered(), Matchers.comparesEqualTo(price));
+			assertThat(xml.getPriceEntered()).as("Price" + messageSuffix).isEqualByComparingTo(price);
 		}
 		if (currencyISOCode != null)
 		{
 			final EDIImpCCurrencyLookupISOCodeType currencyLookup = xml.getCCurrencyID();
 			final String currencyISOCode_actual = currencyLookup == null ? null : currencyLookup.getISOCode();
-			Assert.assertThat("Currency" + messageSuffix, currencyISOCode_actual, Matchers.equalTo(currencyISOCode));
+			assertThat(currencyISOCode_actual).as("Currency" + messageSuffix).isEqualTo(currencyISOCode);
 		}
 
 		// N/A
 		// if (qtyTUs != null)
-		// Assert.assertThat("QtyTUs" + messageSuffix, xml.getQtyTU(), Matchers.comparesEqualTo(qtyTUs));
+		// assertThat(xml.getQtyTU()).as("QtyTUs" + messageSuffix).isEqualByComparingTo(qtyTUs);
 		if (qtyCUsPerTU != null)
 		{
-			Assert.assertThat("QtyCUsPerTU" + messageSuffix, xml.getQtyItemCapacity(), Matchers.comparesEqualTo(qtyCUsPerTU));
+			assertThat(xml.getQtyItemCapacity()).as("QtyCUsPerTU" + messageSuffix).isEqualByComparingTo(qtyCUsPerTU);
 		}
 		if (qtyUOM != null)
 		{
-			Assert.assertThat("QtyUOM" + messageSuffix, xml.getQty(), Matchers.comparesEqualTo(qtyUOM));
+			assertThat(xml.getQty()).as("QtyUOM" + messageSuffix).isEqualByComparingTo(qtyUOM);
 		}
 
 		if (datePromised != null)
 		{
-			Assert.assertThat("DatePromised" + messageSuffix, Util.toDate(xml.getDatePromised()), Matchers.comparesEqualTo(datePromised));
+			assertThat(Util.toDate(xml.getDatePromised())).as("DatePromised" + messageSuffix).isEqualTo(datePromised);
 		}
 		if (poReferenceSet)
 		{
-			Assert.assertEquals("POReference" + messageSuffix, poReference, xml.getPOReference());
+			assertThat(xml.getPOReference()).as("POReference" + messageSuffix).isEqualTo(poReference);
 		}
-
 	}
 
 	/**
 	 * Sets Excel row number used to identify the row
-	 *
-	 * @param lineNo
 	 */
 	public XLS_OLCand_Row_Expectation setLineNo(final int lineNo)
 	{

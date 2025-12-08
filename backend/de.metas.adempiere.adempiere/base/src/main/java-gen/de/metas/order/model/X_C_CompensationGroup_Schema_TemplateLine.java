@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.order.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_CompensationGroup_Schema_TemplateLine
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_CompensationGroup_Schema_TemplateLine extends org.compiere.model.PO implements I_C_CompensationGroup_Schema_TemplateLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1225025715L;
+	private static final long serialVersionUID = 1689134861L;
 
     /** Standard Constructor */
     public X_C_CompensationGroup_Schema_TemplateLine (final Properties ctx, final int C_CompensationGroup_Schema_TemplateLine_ID, @Nullable final String trxName)
@@ -105,6 +105,30 @@ public class X_C_CompensationGroup_Schema_TemplateLine extends org.compiere.mode
 	public int getC_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
+	}
+
+	@Override
+	public void setIsAllowSeparateInvoicing (final boolean IsAllowSeparateInvoicing)
+	{
+		set_Value (COLUMNNAME_IsAllowSeparateInvoicing, IsAllowSeparateInvoicing);
+	}
+
+	@Override
+	public boolean isAllowSeparateInvoicing() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowSeparateInvoicing);
+	}
+
+	@Override
+	public void setIsHideWhenPrinting (final boolean IsHideWhenPrinting)
+	{
+		set_Value (COLUMNNAME_IsHideWhenPrinting, IsHideWhenPrinting);
+	}
+
+	@Override
+	public boolean isHideWhenPrinting() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsHideWhenPrinting);
 	}
 
 	@Override

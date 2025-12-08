@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.invoicecandidate.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_Invoice_Line_Alloc
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Invoice_Line_Alloc extends org.compiere.model.PO implements I_C_Invoice_Line_Alloc, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1468716236L;
+	private static final long serialVersionUID = -1893886973L;
 
     /** Standard Constructor */
     public X_C_Invoice_Line_Alloc (final Properties ctx, final int C_Invoice_Line_Alloc_ID, @Nullable final String trxName)
@@ -112,9 +112,11 @@ public class X_C_Invoice_Line_Alloc extends org.compiere.model.PO implements I_C
 	/** CreatedFromIC = CreatedFromIC */
 	public static final String C_INVOICE_LINE_ALLOC_TYPE_CreatedFromIC = "CreatedFromIC";
 	/** CreditMemoReinvoicable = CreditMemoReinvoiceable */
-	public static final String C_INVOICE_LINE_ALLOC_TYPE_CreditMemoReinvoiceable = "CreditMemoReinvoiceable";
+	public static final String C_INVOICE_LINE_ALLOC_TYPE_CreditMemoReinvoicable = "CreditMemoReinvoiceable";
 	/** CreditMemoNotReinvoicable = CreditMemoNotReinvoiceable */
-	public static final String C_INVOICE_LINE_ALLOC_TYPE_CreditMemoNotReinvoiceable = "CreditMemoNotReinvoiceable";
+	public static final String C_INVOICE_LINE_ALLOC_TYPE_CreditMemoNotReinvoicable = "CreditMemoNotReinvoiceable";
+	/** InvoiceVoided = InvoiceVoided */
+	public static final String C_INVOICE_LINE_ALLOC_TYPE_InvoiceVoided = "InvoiceVoided";
 	@Override
 	public void setC_Invoice_Line_Alloc_Type (final @Nullable java.lang.String C_Invoice_Line_Alloc_Type)
 	{

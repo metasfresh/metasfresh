@@ -2,7 +2,6 @@ package de.metas.ui.web.handlingunits.process;
 
 import de.metas.handlingunits.empties.IHUEmptiesService;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
-import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -13,10 +12,12 @@ import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOut;
 
 /*
@@ -61,16 +62,14 @@ import org.compiere.model.I_M_InOut;
 
 	// services
 	private final transient IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
-	private final transient IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
-	private final DocumentCollection documentsRepo = Adempiere.getBean(DocumentCollection.class);
+	private final DocumentCollection documentsRepo = SpringContextHolder.instance.getBean(DocumentCollection.class);
 
 	private final String _returnMovementType;
-	private final int _targetWindowId;
+	private final AdWindowId _targetWindowId;
 
-	public WEBUI_M_ReceiptSchedule_CreateEmptiesReturns_Base(final String returnMovementType, final int targetWindowId)
+	public WEBUI_M_ReceiptSchedule_CreateEmptiesReturns_Base(@NonNull final String returnMovementType, @NonNull final AdWindowId targetWindowId)
 	{
 		Check.assumeNotEmpty(returnMovementType, "returnMovementType is not empty");
-		Check.assume(targetWindowId > 0, "targetWindowId > 0");
 
 		_returnMovementType = returnMovementType;
 		_targetWindowId = targetWindowId;
@@ -82,7 +81,7 @@ import org.compiere.model.I_M_InOut;
 		return _returnMovementType;
 	}
 
-	private int getTargetWindowId()
+	private AdWindowId getTargetWindowId()
 	{
 		return _targetWindowId;
 	}

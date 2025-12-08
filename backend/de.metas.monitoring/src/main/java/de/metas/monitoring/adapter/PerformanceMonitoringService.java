@@ -1,17 +1,16 @@
 package de.metas.monitoring.adapter;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.function.BiConsumer;
-import javax.annotation.Nullable;
-
 import com.google.common.collect.ImmutableSet;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 /*
  * #%L
@@ -37,78 +36,52 @@ import lombok.Value;
 
 public interface PerformanceMonitoringService
 {
-	public static final String LABEL_RECORD_ID = "recordId";
-	public static final String LABEL_EXTERNAL_HEADER_ID = "externalHeaderId";
-	public static final String LABEL_EXTERNAL_LINE_ID = "externalLineId";
-	public static final String LABEL_WORKPACKAGE_ID = "de.metas.async.C_Queue_WorkPackage_ID";
-	public static final Set<String> VOLATILE_LABELS = ImmutableSet.of(LABEL_RECORD_ID, LABEL_EXTERNAL_LINE_ID, LABEL_EXTERNAL_HEADER_ID, LABEL_WORKPACKAGE_ID);
-	
-	/** Invoke the given {@code callable} as a span. Capture exception and re-throw it, wrapped as RuntimeException if required. */
-	<V> V monitorSpan(Callable<V> callable, SpanMetadata metadata);
+	String LABEL_RECORD_ID = "recordId";
+	String LABEL_EXTERNAL_HEADER_ID = "externalHeaderId";
+	String LABEL_EXTERNAL_LINE_ID = "externalLineId";
+	String LABEL_WORKPACKAGE_ID = "de.metas.async.C_Queue_WorkPackage_ID";
+	ImmutableSet<String> VOLATILE_LABELS = ImmutableSet.of(LABEL_RECORD_ID, LABEL_EXTERNAL_LINE_ID, LABEL_EXTERNAL_HEADER_ID, LABEL_WORKPACKAGE_ID);
 
-	default void monitorSpan(final Runnable runnable, final SpanMetadata metadata)
+	/**
+	 * Invoke the given {@code callable} as a span. Capture exception and re-throw it, wrapped as RuntimeException if required.
+	 */
+	<V> V monitor(Callable<V> callable, Metadata metadata);
+
+	default void monitor(final Runnable runnable, final Metadata metadata)
 	{
-		monitorSpan(
+		monitor(
 				() -> {
 					runnable.run();
 					return null;
 				},
 				metadata);
 	}
-	
-	@Value
-	@Builder
-	class SpanMetadata
-	{
-		@NonNull
-		String name;
 
-		@NonNull
-		String type;
-
-		@Nullable
-		String subType;
-
-		@Nullable
-		String action;
-
-		@Singular
-		Map<String, String> labels;
-
-		@Nullable
-		BiConsumer<String, String> distributedHeadersInjector;
-	}
-
-	/** Invoke the given {@code callable} as a transaction. Capture exception and re-throw it, wrapped as RuntimeException if required. */
-	<V> V monitorTransaction(Callable<V> callable, TransactionMetadata request);
-
-	default void monitorTransaction(
-			@NonNull final Runnable runnable,
-			@NonNull final TransactionMetadata request)
-	{
-		monitorTransaction(
-				() -> {
-					runnable.run();
-					return null;
-				},
-				request);
-	}
+	void recordElapsedTime(final long duration, TimeUnit unit, final Metadata metadata);
 
 	@Value
 	@Builder
-	class TransactionMetadata
+	class Metadata
 	{
-		@NonNull
-		String name;
-
-		@Singular
-		Map<String, String> labels;
-
 		@NonNull
 		Type type;
 
+		@NonNull
+		String className;
+
+		@NonNull
+		String functionName;
+
+		@Nullable
+		String windowNameAndId;
+
+		boolean isGroupingPlaceholder;
+
 		@Singular
-		Map<String, String> distributedTransactionHeaders;
+		Map<String, String> labels;
+
+		public String getFunctionNameFQ() {return className + " - " + functionName;}
+
 	}
 
 	enum Type
@@ -121,38 +94,24 @@ public interface PerformanceMonitoringService
 
 		SCHEDULER("scheduler"),
 
-		REST_API_PROCESSING("rest-API"),
+		EVENTBUS_REMOTE_ENDPOINT("eventbus-remote-endpoint"),
 
-		CACHE_OPERATION("cache-operation"),
+		REST_CONTROLLER("rest-controller"),
 
-		EVENTBUS_REMOTE_ENDPOINT("eventbus-remote-endpoint");
+		REST_CONTROLLER_WITH_WINDOW_ID("rest-controller-with-windowId"),
+
+		PO("po"),
+
+		DB("db");
 
 		Type(final String code)
 		{
 			this.code = code;
 		}
 
-		@Getter
-		private final String code;
-	}
-
-	enum SubType
-	{
-		MODEL_CHANGE("modelChange"),
-
-		DOC_VALIDATE("docValidate"),
-
-		CACHE_INVALIDATE("cache-invalidate"),
-
-		ADD_TO_CACHE("addToCache"),
-
-		EVENT_SEND("event-send"),
-
-		EVENT_RECEIVE("event-receive");
-
-		SubType(final String code)
+		public boolean isAnyRestControllerType()
 		{
-			this.code = code;
+			return this == Type.REST_CONTROLLER || this == Type.REST_CONTROLLER_WITH_WINDOW_ID;
 		}
 
 		@Getter

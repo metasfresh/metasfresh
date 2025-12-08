@@ -1,6 +1,29 @@
+/*
+ * #%L
+ * de.metas.business.rest-api-impl
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.rest_api.v1.ordercandidates.impl;
 
 import de.metas.bpartner.BPGroupRepository;
+import de.metas.bpartner.BPGroupService;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.impl.BPartnerBL;
@@ -28,7 +51,6 @@ import de.metas.rest_api.v1.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.security.permissions2.PermissionService;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
-import de.metas.util.JSONObjectMapper;
 import de.metas.util.Services;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.trx.api.ITrx;
@@ -44,39 +66,13 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.util.Env;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
-
-/*
- * #%L
- * de.metas.ordercandidate.rest-api-impl
- * %%
- * Copyright (C) 2018 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class MasterdataProviderTest
 {
@@ -91,18 +87,6 @@ public class MasterdataProviderTest
 	private JsonRequestLocation jsonBPartnerLocation;
 
 	private I_C_Country countryRecord;
-
-	@BeforeAll
-	public static void beforeAll()
-	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG, o -> JSONObjectMapper.forClass(Object.class).writeValueAsString(o));
-	}
-
-	@AfterAll
-	public static void afterAll()
-	{
-		validateSnapshots();
-	}
 
 	@BeforeEach
 	public void beforeEach()
@@ -130,11 +114,14 @@ public class MasterdataProviderTest
 		// bpartnerRestController
 		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository());
 		final CurrencyRepository currencyRepository = new CurrencyRepository();
+		final BPGroupRepository bpGroupRepository = new BPGroupRepository();
+		
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
 				new JsonRequestConsolidateService(),
 				new BPartnerQueryService(),
 				bpartnerCompositeRepository,
-				new BPGroupRepository(),
+				bpGroupRepository,
+				new BPGroupService(bpGroupRepository),
 				new GreetingRepository(),
 				currencyRepository,
 				Mockito.mock(ExternalReferenceRestControllerService.class));

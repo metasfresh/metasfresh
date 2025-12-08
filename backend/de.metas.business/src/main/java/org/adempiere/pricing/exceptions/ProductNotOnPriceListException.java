@@ -105,7 +105,7 @@ public class ProductNotOnPriceListException extends AdempiereException
 
 		//
 		// Price List
-		final I_M_PriceList priceList = plv == null ? null : plv.getM_PriceList();
+		final I_M_PriceList priceList = plv == null ? null : Services.get(IPriceListDAO.class).getById(PriceListId.ofRepoId(plv.getM_PriceList_ID()));
 		sb.append("\n@M_PriceList_ID@: ").append(priceList == null ? "-" : priceList.getName());
 
 		//

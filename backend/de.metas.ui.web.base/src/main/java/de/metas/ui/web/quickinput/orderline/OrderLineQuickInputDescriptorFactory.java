@@ -1,6 +1,7 @@
 package de.metas.ui.web.quickinput.orderline;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -25,8 +26,10 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
-import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
+import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptorProviderBuilder;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -34,6 +37,8 @@ import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
 import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
+import org.adempiere.ad.validationRule.AdValRuleId;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.DisplayType;
 import org.springframework.stereotype.Component;
@@ -67,10 +72,17 @@ import java.util.Set;
 @Component
 /* package */ final class OrderLineQuickInputDescriptorFactory implements IQuickInputDescriptorFactory
 {
+	private static final String SYS_CONFIG_FilterFlatrateConditionsADValRule = "OrderLineQuickInputDescriptorFactory.FilterFlatrateConditionsADValRule";
+	public static final AdValRuleId VAL_RULE_M_HU_PI_Item_Product_For_Org_and_Product_and_DatePromised = AdValRuleId.ofRepoId(540365);
+	public static final AdValRuleId VAL_RULE_M_HU_PI_Only_LUs = AdValRuleId.ofRepoId(540737);
+	public static final AdValRuleId VAL_RULE_M_HU_PI_Item_Product_for_BP_M_LU_HU_PI_ID = AdValRuleId.ofRepoId(540738);
+	public static final ReferenceId AD_Reference_M_HU_PI = ReferenceId.ofRepoId(540396);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final AvailableToPromiseAdapter availableToPromiseAdapter;
 	private final AvailableForSaleAdapter availableForSaleAdapter;
 	private final AvailableForSalesConfigRepo availableForSalesConfigRepo;
+	private final LookupDescriptorProviders lookupDescriptorProviders;
 
 	private final OrderLineQuickInputCallout callout;
 
@@ -79,11 +91,13 @@ import java.util.Set;
 			@NonNull final AvailableToPromiseAdapter availableToPromiseAdapter,
 			@NonNull final AvailableForSaleAdapter availableForSaleAdapter,
 			@NonNull final AvailableForSalesConfigRepo availableForSalesConfigRepo,
+			@NonNull final LookupDescriptorProviders lookupDescriptorProviders,
 			@NonNull final PackingItemProductFieldHelper packingItemProductFieldHelper)
 	{
 		this.availableToPromiseAdapter = availableToPromiseAdapter;
 		this.availableForSaleAdapter = availableForSaleAdapter;
 		this.availableForSalesConfigRepo = availableForSalesConfigRepo;
+		this.lookupDescriptorProviders = lookupDescriptorProviders;
 
 		callout = OrderLineQuickInputCallout.builder()
 				.bpartnersService(bpartnersService)
@@ -122,6 +136,7 @@ import java.util.Set;
 			final DetailId tabId,
 			@NonNull final Optional<SOTrx> soTrx)
 	{
+		final boolean isLUFieldsEnabled = soTrx.map(QuickInputConstants::isLUFieldsEnabled).orElse(false);
 		return DocumentEntityDescriptor.builder()
 				.setDocumentType(DocumentType.QuickInput, rootDocumentTypeId)
 				.setIsSOTrx(soTrx)
@@ -130,10 +145,12 @@ import java.util.Set;
 				.setTableName(I_C_OrderLine.Table_Name) // TODO: figure out if it's needed
 				//
 				.addField(createProductField(soTrx))
-				.addFieldIf(QuickInputConstants.isEnablePackingInstructionsField(), this::createPackingInstructionField)
+				.addFieldIf(isLUFieldsEnabled, this::createLUPackingInstructionField)
+				.addFieldIf(QuickInputConstants.isEnablePackingInstructionsField(), () -> this.createPackingInstructionField(soTrx))
 				.addField(createCompensationGroupSchemaField())
 				.addField(createContractConditionsField())
-				.addField(createQuantityField())
+				.addFieldIf(!isLUFieldsEnabled, this::createQuantityField)
+				.addFieldIf(isLUFieldsEnabled, this::createLUQuantityField)
 				.addFieldIf(QuickInputConstants.isEnableBestBeforePolicy(), this::createBestBeforePolicyField)
 				//
 				.build();
@@ -186,22 +203,58 @@ import java.util.Set;
 		}
 	}
 
-	private DocumentFieldDescriptor.Builder createPackingInstructionField()
+	private DocumentFieldDescriptor.Builder createLUPackingInstructionField()
 	{
-		return DocumentFieldDescriptor.builder(IOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
-				.setCaption(msgBL.translatable(IOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID))
+		return DocumentFieldDescriptor.builder(IOrderLineQuickInput.COLUMNNAME_M_LU_HU_PI_ID)
+				.setCaption(msgBL.translatable(IOrderLineQuickInput.COLUMNNAME_M_LU_HU_PI_ID))
 				//
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setLookupDescriptorProvider(SqlLookupDescriptor.builder()
+				.setLookupDescriptorProvider(lookupDescriptorProviders.sql()
 						.setCtxTableName(null) // ctxTableName
-						.setCtxColumnName(IOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
-						.setDisplayType(DisplayType.TableDir)
-						.setAD_Val_Rule_ID(540365)// FIXME: hardcoded "M_HU_PI_Item_Product_For_Org_and_Product_and_DatePromised"
-						.buildProvider())
+						.setCtxColumnName(IOrderLineQuickInput.COLUMNNAME_M_LU_HU_PI_ID)
+						.setDisplayType(DisplayType.Search)
+						.setAD_Val_Rule_ID(VAL_RULE_M_HU_PI_Only_LUs)
+						.setAD_Reference_Value_ID(AD_Reference_M_HU_PI)
+						.build())
 				.setValueClass(IntegerLookupValue.class)
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)
 				.setAlwaysUpdateable(true)
 				.setMandatoryLogic(ConstantLogicExpression.FALSE)
+				.setDisplayLogic(ConstantLogicExpression.TRUE)
+				.addCharacteristic(Characteristic.PublicField);
+	}
+
+	private DocumentFieldDescriptor.Builder createPackingInstructionField(final @NonNull Optional<SOTrx> soTrx)
+	{
+		final Boolean isEnableLUFields = soTrx.map(QuickInputConstants::isLUFieldsEnabled).orElse(false);
+		final AdValRuleId valRuleToUse = isEnableLUFields ? VAL_RULE_M_HU_PI_Item_Product_for_BP_M_LU_HU_PI_ID : VAL_RULE_M_HU_PI_Item_Product_For_Org_and_Product_and_DatePromised;
+
+		return DocumentFieldDescriptor.builder(IOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
+				.setCaption(msgBL.translatable(IOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID))
+				//
+				.setWidgetType(DocumentFieldWidgetType.Lookup)
+				.setLookupDescriptorProvider(lookupDescriptorProviders.sql()
+													 .setCtxTableName(null) // ctxTableName
+													 .setCtxColumnName(IOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
+													 .setDisplayType(DisplayType.TableDir)
+													 .setAD_Val_Rule_ID(valRuleToUse)
+													 .build())
+				.setValueClass(IntegerLookupValue.class)
+				.setReadonlyLogic(ConstantLogicExpression.FALSE)
+				.setAlwaysUpdateable(true)
+				.setMandatoryLogic(ConstantLogicExpression.FALSE)
+				.setDisplayLogic(ConstantLogicExpression.TRUE)
+				.addCharacteristic(Characteristic.PublicField);
+	}
+
+	private DocumentFieldDescriptor.Builder createLUQuantityField()
+	{
+		return DocumentFieldDescriptor.builder(IOrderLineQuickInput.COLUMNNAME_QtyLU)
+				.setCaption(msgBL.translatable(IOrderLineQuickInput.COLUMNNAME_QtyLU))
+				.setWidgetType(DocumentFieldWidgetType.Quantity)
+				.setReadonlyLogic(ConstantLogicExpression.FALSE)
+				.setAlwaysUpdateable(true)
+				.setMandatoryLogic(ConstantLogicExpression.TRUE)
 				.setDisplayLogic(ConstantLogicExpression.TRUE)
 				.addCharacteristic(Characteristic.PublicField);
 	}
@@ -224,7 +277,7 @@ import java.util.Set;
 				.setCaption(msgBL.translatable(IOrderLineQuickInput.COLUMNNAME_ShipmentAllocation_BestBefore_Policy))
 				//
 				.setWidgetType(DocumentFieldWidgetType.List)
-				.setLookupDescriptorProvider(SqlLookupDescriptor.listByAD_Reference_Value_ID(ShipmentAllocationBestBeforePolicy.AD_REFERENCE_ID))
+				.setLookupDescriptorProvider(lookupDescriptorProviders.listByAD_Reference_Value_ID(ShipmentAllocationBestBeforePolicy.AD_REFERENCE_ID))
 				.setValueClass(StringLookupValue.class)
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)
 				.setAlwaysUpdateable(true)
@@ -247,16 +300,23 @@ import java.util.Set;
 	private DocumentFieldDescriptor.Builder createContractConditionsField()
 	{
 		final ILogicExpression compensationGroupSchemaIsSet = LogicExpressionCompiler.instance.compile("@" + IOrderLineQuickInput.COLUMNNAME_C_CompensationGroup_Schema_ID + "/0@ > 0");
+
+		final boolean isMandatory = compensationGroupSchemaIsSet.toOptionalBoolean()
+				.orElse(QuickInputConstants.isContractConditionsFieldMandatory());
+
+		final boolean isDisplayLogic = compensationGroupSchemaIsSet.toOptionalBoolean()
+				.orElse(QuickInputConstants.isEnableContractConditionsField());
+
 		return DocumentFieldDescriptor.builder(IOrderLineQuickInput.COLUMNNAME_C_Flatrate_Conditions_ID)
 				.setCaption(msgBL.translatable(IOrderLineQuickInput.COLUMNNAME_C_Flatrate_Conditions_ID))
 				//
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setLookupDescriptorProvider(SqlLookupDescriptor.searchInTable(I_C_Flatrate_Conditions.Table_Name))
+				.setLookupDescriptorProvider(getLookupDescriptorProvider())
 				.setValueClass(IntegerLookupValue.class)
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)
 				.setAlwaysUpdateable(true)
-				.setMandatoryLogic(compensationGroupSchemaIsSet)
-				.setDisplayLogic(compensationGroupSchemaIsSet)
+				.setMandatoryLogic(isMandatory)
+				.setDisplayLogic(isDisplayLogic)
 				.addCharacteristic(Characteristic.PublicField);
 
 	}
@@ -292,11 +352,30 @@ import java.util.Set;
 	private static QuickInputLayoutDescriptor createLayout(final DocumentEntityDescriptor entityDescriptor)
 	{
 		// IMPORTANT: if Qty is not the last field then frontend will not react on pressing "ENTER" to complete the entry
-		return QuickInputLayoutDescriptor.build(entityDescriptor, new String[][] {
-				{ "M_Product_ID", "M_HU_PI_Item_Product_ID" },
-				{ "ShipmentAllocation_BestBefore_Policy" },
-				{ "C_Flatrate_Conditions_ID" },
-				{ "Qty" },
+		return QuickInputLayoutDescriptor.onlyFields(entityDescriptor, new String[][] {
+				{ IOrderLineQuickInput.COLUMNNAME_M_Product_ID, IOrderLineQuickInput.COLUMNNAME_M_LU_HU_PI_ID, IOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID },
+				{ IOrderLineQuickInput.COLUMNNAME_ShipmentAllocation_BestBefore_Policy },
+				{ IOrderLineQuickInput.COLUMNNAME_C_Flatrate_Conditions_ID },
+				{ IOrderLineQuickInput.COLUMNNAME_QtyLU, IOrderLineQuickInput.COLUMNNAME_Qty },
 		});
+	}
+
+	@NonNull
+	private LookupDescriptorProvider getLookupDescriptorProvider()
+	{
+		final AdValRuleId valueRuleId = AdValRuleId.ofRepoIdOrNull(sysConfigBL.getIntValue(SYS_CONFIG_FilterFlatrateConditionsADValRule, -1));
+
+		if (valueRuleId == null)
+		{
+			return lookupDescriptorProviders.searchInTable(I_C_Flatrate_Conditions.Table_Name);
+		}
+
+		final SqlLookupDescriptorProviderBuilder descriptorProviderBuilder = lookupDescriptorProviders.sql()
+				.setCtxTableName(I_C_Flatrate_Conditions.Table_Name)
+				.setCtxColumnName(IOrderLineQuickInput.COLUMNNAME_C_Flatrate_Conditions_ID)
+				.setDisplayType(DisplayType.Search)
+				.setAD_Val_Rule_ID(valueRuleId);
+
+		return descriptorProviderBuilder.build();
 	}
 }

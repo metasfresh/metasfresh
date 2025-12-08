@@ -22,24 +22,22 @@
 
 package de.metas.edi.esb.commons.processor.feedback.helper;
 
-import java.math.BigInteger;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.xml.bind.JAXBElement;
-import javax.xml.namespace.QName;
-
+import de.metas.edi.esb.commons.Constants;
+import de.metas.edi.esb.commons.Util;
+import de.metas.edi.esb.commons.processor.exception.HeaderNotFoundException;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDIExportStatusEnum;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.ReplicationEventEnum;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.ReplicationModeEnum;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.ReplicationTypeEnum;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.commons.lang.exception.ExceptionUtils;
 
-import de.metas.edi.esb.commons.Constants;
-import de.metas.edi.esb.commons.Util;
-import de.metas.edi.esb.jaxb.metasfresh.EDIExportStatusEnum;
-import de.metas.edi.esb.jaxb.metasfresh.ReplicationEventEnum;
-import de.metas.edi.esb.jaxb.metasfresh.ReplicationModeEnum;
-import de.metas.edi.esb.jaxb.metasfresh.ReplicationTypeEnum;
-import de.metas.edi.esb.commons.processor.exception.HeaderNotFoundException;
+import javax.xml.bind.JAXBElement;
+import javax.xml.namespace.QName;
+import java.math.BigInteger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public final class EDIXmlFeedbackHelper
 {

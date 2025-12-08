@@ -10,6 +10,7 @@ import de.metas.location.CountryId;
 import de.metas.location.LocationId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.tax.api.VATIdentifier;
 import de.metas.user.User;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
@@ -23,8 +24,10 @@ import org.compiere.model.I_C_BPartner_Location;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.function.Predicate;
 
 /*
@@ -53,16 +56,22 @@ public interface IBPartnerBL extends ISingletonService
 {
 	I_C_BPartner getById(BPartnerId bpartnerId);
 
+	<T extends I_C_BPartner> T getById(@NonNull BPartnerId bpartnerId, @NonNull Class<T> type);
+
 	String getBPartnerValue(final BPartnerId bpartnerId);
 
 	String getBPartnerName(@Nullable final BPartnerId bpartnerId);
 
 	String getBPartnerValueAndName(final BPartnerId bpartnerId);
 
+	Map<BPartnerId, String> getBPartnerNames(@NonNull Set<BPartnerId> bpartnerIds);
+
 	/**
 	 * make full address
 	 */
 	String mkFullAddress(@NonNull I_C_BPartner bpartner, @Nullable I_C_BPartner_Location bpLocation, @Nullable LocationId locationId, @Nullable I_AD_User bpContact);
+
+	User getContactById(UserId userId);
 
 	/**
 	 * Retrieve user/contact assigned to default/first ship to address. If no user/contact found, the first default user contact will be returned.
@@ -85,6 +94,8 @@ public interface IBPartnerBL extends ISingletonService
 	void setAddress(I_C_BPartner_Location bpLocation);
 
 	void updateAllAddresses(I_C_BPartner bpartner);
+
+	void updateMemo(@NonNull final BPartnerId bpartnerId, String memo);
 
 	I_AD_User retrieveShipContact(I_C_BPartner bpartner);
 
@@ -172,6 +183,8 @@ public interface IBPartnerBL extends ISingletonService
 
 	void setPreviousIdIfPossible(@NonNull I_C_BPartner_Location location);
 
+	boolean isInvoiceEmailCcToMember(@NonNull BPartnerId bpartnerId);
+
 	@Value
 	@Builder
 	class RetrieveContactRequest
@@ -213,6 +226,9 @@ public interface IBPartnerBL extends ISingletonService
 		@NonNull
 		Comparator<User> comparator = Comparator.comparing(User::getName);
 
+		@Default
+		boolean onlyIfInvoiceEmailEnabled = false;
+
 		boolean onlyActive;
 
 		@Default
@@ -250,4 +266,10 @@ public interface IBPartnerBL extends ISingletonService
 	 * @return
 	 */
 	I_C_BPartner_Location extractShipToLocation(@NonNull I_C_BPartner bp);
+
+	@NonNull
+	Optional<UserId> getDefaultDunningContact(@NonNull final BPartnerId bPartnerId);
+
+	@NonNull
+	Optional<VATIdentifier> getVATTaxId(@NonNull BPartnerLocationId bpartnerLocationId);
 }

@@ -1,5 +1,6 @@
 package de.metas.acct.api;
 
+import de.metas.acct.Account;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -31,12 +32,12 @@ import lombok.Value;
 public class AcctSchemaDefaultAccounts
 {
 	@NonNull
-	AccountId realizedGainAcctId;
+	Account realizedGainAcct;
 	@NonNull
-	AccountId realizedLossAcctId;
+	Account realizedLossAcct;
 
 	@NonNull
-	AccountId unrealizedGainAcctId;
+	Account unrealizedGainAcct;
 	@NonNull
-	AccountId unrealizedLossAcctId;
+	Account unrealizedLossAcct;
 }

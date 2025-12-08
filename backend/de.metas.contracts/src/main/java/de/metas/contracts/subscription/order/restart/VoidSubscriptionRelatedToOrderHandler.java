@@ -1,12 +1,7 @@
 package de.metas.contracts.subscription.order.restart;
 
-import java.util.List;
-
+import de.metas.common.util.pair.IPair;
 import de.metas.common.util.time.SystemTime;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.springframework.stereotype.Component;
-
 import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IContractChangeBL.ContractChangeParameters;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -15,6 +10,10 @@ import de.metas.order.voidorderandrelateddocs.VoidOrderAndRelatedDocsHandler;
 import de.metas.order.voidorderandrelateddocs.VoidOrderAndRelatedDocsRequest;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /*
  * #%L

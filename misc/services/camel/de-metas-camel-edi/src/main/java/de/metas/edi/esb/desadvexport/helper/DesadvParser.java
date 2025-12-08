@@ -23,10 +23,10 @@
 package de.metas.edi.esb.desadvexport.helper;
 
 import com.google.common.collect.ImmutableMap;
-import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvLineType;
-import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvLineWithNoPackType;
-import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvPackType;
-import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDIExpDesadvLineType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDIExpDesadvLineWithNoPackType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDIExpDesadvPackType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDIExpDesadvType;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 

@@ -34,13 +34,15 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.rest_api.v2.attributes.JsonAttributeService;
-import de.metas.rest_api.v2.product.ProductRestService;
+import de.metas.rest_api.v2.product.ExternalIdentifierProductLookupService;
+import de.metas.rest_api.v2.product.ProductAndHUPIItemProductId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_UOM;
@@ -54,6 +56,7 @@ import javax.annotation.Nullable;
 
 import static de.metas.RestUtils.retrieveOrgIdOrDefault;
 
+@RequiredArgsConstructor
 @Service
 public class BOMRestService
 {
@@ -61,19 +64,9 @@ public class BOMRestService
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 
-	private final ProductBOMService bomService;
-	private final ProductRestService productRestService;
-	private final JsonAttributeService jsonAttributeService;
-
-	public BOMRestService(
-			@NonNull final ProductRestService productRestService,
-			@NonNull final ProductBOMService bomService,
-			@NonNull final JsonAttributeService jsonAttributeService)
-	{
-		this.productRestService = productRestService;
-		this.bomService = bomService;
-		this.jsonAttributeService = jsonAttributeService;
-	}
+	private final @NonNull ProductBOMService bomService;
+	private final @NonNull ExternalIdentifierProductLookupService productLookupService;
+	private final @NonNull JsonAttributeService jsonAttributeService;
 
 	@NonNull
 	public JsonBOMCreateResponse createBOMs(
@@ -85,7 +78,9 @@ public class BOMRestService
 
 		final ExternalIdentifier productExternalIdentifier = ExternalIdentifier.of(request.getProductIdentifier());
 
-		final ProductId finishedProductId = productRestService.resolveProductExternalIdentifier(productExternalIdentifier, orgId)
+		final ProductId finishedProductId = productLookupService
+				.resolveProductExternalIdentifier(productExternalIdentifier, orgId)
+				.map(ProductAndHUPIItemProductId::getProductId)
 				.orElseThrow(() -> new InvalidIdentifierException(request.getProductIdentifier()));
 
 		final I_M_Product finishedProduct = productDAO.getById(finishedProductId);
@@ -124,7 +119,8 @@ public class BOMRestService
 	{
 		final ExternalIdentifier productExternalIdentifier = ExternalIdentifier.of(lineRequest.getProductIdentifier());
 
-		final ProductId productId = productRestService.resolveProductExternalIdentifier(productExternalIdentifier, orgId)
+		final ProductId productId = productLookupService.resolveProductExternalIdentifier(productExternalIdentifier, orgId)
+				.map(ProductAndHUPIItemProductId::getProductId)
 				.orElseThrow(() -> new InvalidIdentifierException(lineRequest.getProductIdentifier()));
 
 		final X12DE355 uomCode = X12DE355.ofCode(lineRequest.getQtyBom().getUomCode());

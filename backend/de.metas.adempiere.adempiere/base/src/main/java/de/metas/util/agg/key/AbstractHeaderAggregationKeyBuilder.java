@@ -22,12 +22,12 @@
 
 package de.metas.util.agg.key;
 
-import java.util.List;
-
 import org.adempiere.util.agg.key.AbstractAggregationKeyBuilder;
 import org.adempiere.util.agg.key.IAggregationKeyRegistry;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
+
+import java.util.List;
 
 /**
  * Base class for header aggregation key builders that uses {@link IAggregationKeyRegistry#getValuesForModel(String, Object)} to for the aggregation keys' components.
@@ -55,7 +55,7 @@ public class AbstractHeaderAggregationKeyBuilder<T> extends AbstractAggregationK
 		return aggregationKey1.equals(aggregationKey2);
 	}
 
-	private final ArrayKey buildArrayKey(final T item)
+	private ArrayKey buildArrayKey(final T item)
 	{
 		final List<Object> keyValues = aggregationKeyRegistry.getValuesForModel(registrationKey, item);
 		return Util.mkKey(keyValues.toArray());

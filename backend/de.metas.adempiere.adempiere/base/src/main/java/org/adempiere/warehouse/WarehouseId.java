@@ -1,21 +1,19 @@
 package org.adempiere.warehouse;
 
-import java.util.Collection;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -43,16 +41,25 @@ import javax.annotation.Nullable;
 @Value
 public class WarehouseId implements RepoIdAware
 {
+	public static final WarehouseId MAIN = new WarehouseId(540008);
+
 	@JsonCreator
 	public static WarehouseId ofRepoId(final int repoId)
 	{
-		return new WarehouseId(repoId);
+		if (repoId == MAIN.repoId)
+		{
+			return MAIN;
+		}
+		else
+		{
+			return new WarehouseId(repoId);
+		}
 	}
 
 	@Nullable
 	public static WarehouseId ofRepoIdOrNull(final int repoId)
 	{
-		return repoId > 0 ? new WarehouseId(repoId) : null;
+		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
 	public static Optional<WarehouseId> optionalOfRepoId(final int repoId)

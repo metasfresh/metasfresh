@@ -1,10 +1,11 @@
 package de.metas.notification;
 
-import java.util.List;
-
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import java.util.List;
 
 /*
  * #%L
@@ -33,6 +34,8 @@ public interface INotificationRepository extends ISingletonService
 	UserNotification save(UserNotificationRequest request);
 
 	boolean deleteById(int notificationId);
+
+	void deleteByUserAndTableRecordRef(UserId userId, TableRecordReference tableRecordReference);
 
 	void deleteAllByUserId(UserId userId);
 

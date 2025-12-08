@@ -1,8 +1,7 @@
 package de.metas.invoicecandidate.api;
 
-import org.slf4j.Logger;
-
 import de.metas.logging.LogManager;
+import org.slf4j.Logger;
 
 /*
  * #%L
@@ -30,7 +29,7 @@ public class InvoiceCandidate_Constants
 {
 	public static final String LOGGERNAME_ROOT = InvoiceCandidate_Constants.class.getPackage().getName();
 
-	public static final Logger getLogger(Class<?> clazz)
+	public static Logger getLogger(final Class<?> clazz)
 	{
 		return LogManager.getLogger(clazz);
 	}

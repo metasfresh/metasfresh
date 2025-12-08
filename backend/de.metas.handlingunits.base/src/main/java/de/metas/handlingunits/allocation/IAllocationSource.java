@@ -22,12 +22,10 @@ package de.metas.handlingunits.allocation;
  * #L%
  */
 
+import de.metas.common.util.pair.IPair;
+import de.metas.handlingunits.IHUContext;
 
 import java.util.List;
-
-import org.adempiere.util.lang.IPair;
-
-import de.metas.handlingunits.IHUContext;
 
 /**
  * Implementations of this interface define a source of allocation, so that qtys from other parts of adempiere (e.g. material receipts) can be allocated to handling units.

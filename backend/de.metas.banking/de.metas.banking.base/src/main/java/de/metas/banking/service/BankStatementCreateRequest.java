@@ -1,14 +1,15 @@
 package de.metas.banking.service;
 
-import java.time.LocalDate;
-
-import javax.annotation.Nullable;
-
 import de.metas.banking.BankAccountId;
+import de.metas.banking.importfile.BankStatementImportFileId;
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 /*
  * #%L
@@ -36,6 +37,9 @@ import lombok.Value;
 @Builder
 public class BankStatementCreateRequest
 {
+	@Nullable
+	BankStatementImportFileId bankStatementImportFileId;
+	
 	@NonNull
 	OrgId orgId;
 
@@ -50,6 +54,9 @@ public class BankStatementCreateRequest
 
 	@Nullable
 	String description;
+	
+	@Nullable 
+	BigDecimal beginningBalance;
 
 	@Nullable
 	ElectronicFundsTransfer eft;

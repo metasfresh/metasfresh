@@ -149,20 +149,10 @@ public class InvoicesRestController
 			@ApiParam(required = true, value = "metasfreshId of the invoice to get the PDF of") //
 			@PathVariable("invoiceId") final int invoiceRecordId)
 	{
-		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(invoiceRecordId);
-		if (invoiceId == null)
-		{
-			return ResponseEntity.notFound().build();
-		}
-
-		final Optional<byte[]> invoicePDF = jsonInvoiceService.getInvoicePDF(invoiceId);
-
-		if (invoicePDF.isPresent())
-		{
-			return ResponseEntity.ok(invoicePDF.get());
-		}
-
-		return ResponseEntity.notFound().build();
+		return Optional.ofNullable(InvoiceId.ofRepoIdOrNull(invoiceRecordId))
+				.flatMap(jsonInvoiceService::getInvoicePDF)
+				.map(ResponseEntity::ok)
+				.orElseGet(() -> ResponseEntity.notFound().build());
 	}
 
 	@ApiResponses(value = {

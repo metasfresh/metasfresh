@@ -22,13 +22,14 @@
 
 package de.metas.workflow.execution;
 
+import de.metas.ad_reference.ReferenceId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.email.EMailAddress;
 import de.metas.email.templates.MailTemplateId;
-import de.metas.email.templates.MailTextBuilder;
+import de.metas.email.templates.MailText;
 import de.metas.error.AdIssueId;
 import de.metas.i18n.ADMessageAndParams;
 import de.metas.i18n.AdMessageKey;
@@ -40,7 +41,6 @@ import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.reflist.ReferenceId;
 import de.metas.report.ReportResultData;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.permissions.DocumentApprovalConstraint;
@@ -64,6 +64,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.With;
+import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -319,7 +320,7 @@ public class WFActivity
 
 	public TableRecordReference getDocumentRef() { return documentRef; }
 
-	public Object getDocumentColumnValueByColumnId(final int adColumnId) { return context.getDocumentColumnValueByColumnId(getDocumentRef(), adColumnId); }
+	public Object getDocumentColumnValueByColumnId(final AdColumnId adColumnId) { return context.getDocumentColumnValueByColumnId(getDocumentRef(), adColumnId); }
 
 	public Object getDocumentColumnValueByColumnName(final String columnName) { return context.getDocumentColumnValueByColumnName(getDocumentRef(), columnName); }
 
@@ -330,13 +331,8 @@ public class WFActivity
 	Object getAttributeValue()
 	{
 		final WFNode node = getNode();
-		if (node == null)
-		{
-			return null;
-		}
-
-		final int AD_Column_ID = node.getDocumentColumnId();
-		if (AD_Column_ID <= 0)
+		final AdColumnId AD_Column_ID = AdColumnId.ofRepoIdOrNull(node.getDocumentColumnId());
+		if (AD_Column_ID == null)
 		{
 			return null;
 		}
@@ -722,9 +718,9 @@ public class WFActivity
 		{
 			final MailTemplateId mailTemplateId = getNode().getMailTemplateId();
 
-			final MailTextBuilder mailTextBuilder = context.newMailTextBuilder(getDocumentRef(), mailTemplateId);
+			final MailText mailText = context.newMailTextBuilder(getDocumentRef(), mailTemplateId).build();
 
-			final String adLanguage = mailTextBuilder.getAdLanguage();
+			final String adLanguage = mailText.getAdLanguage();
 
 			// metas: tsa: check for null strings
 			final StringBuilder subject = new StringBuilder();
@@ -733,17 +729,17 @@ public class WFActivity
 			{
 				subject.append(description);
 			}
-			if (!Check.isBlank(mailTextBuilder.getMailHeader()))
+			if (!Check.isBlank(mailText.getMailHeader()))
 			{
 				if (subject.length() > 0)
 				{
 					subject.append(": ");
 				}
-				subject.append(mailTextBuilder.getMailHeader());
+				subject.append(mailText.getMailHeader());
 			}
 
 			// metas: tsa: check for null strings
-			final StringBuilder message = new StringBuilder(mailTextBuilder.getFullMailText());
+			final StringBuilder message = new StringBuilder(mailText.getFullMailText());
 			final String help = getNode().getHelp().translate(adLanguage);
 			if (!Check.isBlank(help))
 			{
@@ -753,7 +749,7 @@ public class WFActivity
 			final EMailAddress to = getNode().getEmailTo();
 
 			final MClient client = MClient.get(Env.getCtx(), context.getClientId().getRepoId());
-			client.sendEMail(to, subject.toString(), message.toString(), null);
+			client.sendEMail(to, subject.toString(), message.toString(), null, false);
 		}
 	}
 
@@ -1273,12 +1269,12 @@ public class WFActivity
 	{
 		final WFNode wfNode = getNode();
 		final MailTemplateId mailTemplateId = wfNode.getMailTemplateId();
-		final MailTextBuilder mailTextBuilder = context.newMailTextBuilder(getDocumentRef(), mailTemplateId);
+		final MailText mailText = context.newMailTextBuilder(getDocumentRef(), mailTemplateId).build();
 		//
 		final IDocument doc = getDocument();
 		final String subject = doc.getDocumentInfo()
-				+ ": " + mailTextBuilder.getMailHeader();
-		final String message = mailTextBuilder.getFullMailText()
+				+ ": " + mailText.getMailHeader();
+		final String message = mailText.getFullMailText()
 				+ "\n-----\n" + doc.getDocumentInfo()
 				+ "\n" + doc.getSummary();
 		final File pdf = doc.createPDF();
@@ -1293,14 +1289,14 @@ public class WFActivity
 				subject,
 				message,
 				pdf,
-				mailTextBuilder.isHtml());
+				mailText.isHtml());
 		// Recipient Type
 		final WFNodeEmailRecipient emailRecipient = wfNode.getEmailRecipient();
 		// email to document user
 		if (emailRecipient == null)
 		{
 			final UserId docUserId = UserId.ofRepoIdOrNull(doc.getDoc_User_ID());
-			sendEMail(client, docUserId, null, subject, message, pdf, mailTextBuilder.isHtml());
+			sendEMail(client, docUserId, null, subject, message, pdf, mailText.isHtml());
 		}
 		else if (emailRecipient.equals(WFNodeEmailRecipient.DocumentBusinessPartner))
 		{
@@ -1312,7 +1308,7 @@ public class WFActivity
 					final UserId userId = UserId.ofRepoIdOrNull((Integer)oo);
 					if (userId != null)
 					{
-						sendEMail(client, userId, null, subject, message, pdf, mailTextBuilder.isHtml());
+						sendEMail(client, userId, null, subject, message, pdf, mailText.isHtml());
 					}
 					else
 					{
@@ -1332,7 +1328,7 @@ public class WFActivity
 		else if (emailRecipient.equals(WFNodeEmailRecipient.DocumentOwner))
 		{
 			final UserId docUserId = UserId.ofRepoIdOrNull(doc.getDoc_User_ID());
-			sendEMail(client, docUserId, null, subject, message, pdf, mailTextBuilder.isHtml());
+			sendEMail(client, docUserId, null, subject, message, pdf, mailText.isHtml());
 		}
 		else if (emailRecipient.equals(WFNodeEmailRecipient.WorkflowResponsible))
 		{
@@ -1340,18 +1336,18 @@ public class WFActivity
 			if (resp.isInvoker())
 			{
 				final UserId docUserId = UserId.ofRepoIdOrNull(doc.getDoc_User_ID());
-				sendEMail(client, docUserId, null, subject, message, pdf, mailTextBuilder.isHtml());
+				sendEMail(client, docUserId, null, subject, message, pdf, mailText.isHtml());
 			}
 			else if (resp.isHuman())
 			{
 				final UserId docUserId = UserId.ofRepoIdOrNull(doc.getDoc_User_ID());
-				sendEMail(client, docUserId, null, subject, message, pdf, mailTextBuilder.isHtml());
+				sendEMail(client, docUserId, null, subject, message, pdf, mailText.isHtml());
 			}
 			else if (resp.isRole())
 			{
 				for (final UserId adUserId : context.getUserIdsByRoleId(resp.getRoleId()))
 				{
-					sendEMail(client, adUserId, null, subject, message, pdf, mailTextBuilder.isHtml());
+					sendEMail(client, adUserId, null, subject, message, pdf, mailText.isHtml());
 				}
 			}
 			else if (resp.isOrganization())
@@ -1364,7 +1360,7 @@ public class WFActivity
 				}
 				else
 				{
-					sendEMail(client, org.getSupervisorId(), null, subject, message, pdf, mailTextBuilder.isHtml());
+					sendEMail(client, org.getSupervisorId(), null, subject, message, pdf, mailText.isHtml());
 				}
 			}
 		}
@@ -1398,7 +1394,7 @@ public class WFActivity
 			{
 				if (!m_emails.contains(email))
 				{
-					client.sendEMail(null, user, subject, message, pdf, isHtml);
+					client.sendEMail(user, subject, message, pdf, isHtml);
 					m_emails.add(email);
 				}
 			}

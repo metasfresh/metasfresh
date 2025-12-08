@@ -28,4 +28,7 @@ import lombok.experimental.UtilityClass;
 public class WindowConstants
 {
 	public static final int PACKAGEABLE_VIEW_AD_WINDOW_ID = 540345;
+
+	public static final String FIELDNAME_Labels_Prefix = "Labels_";
+
 }

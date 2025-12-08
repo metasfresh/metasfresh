@@ -1,17 +1,5 @@
 package de.metas.handlingunits.impl;
 
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
-
-import java.math.BigDecimal;
-import java.util.Collections;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.junit.Before;
-import org.junit.Test;
-
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -25,6 +13,14 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.util.Collections;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -63,7 +59,7 @@ public class HUBuilderTests
 	private I_M_HU_PI_Version piTU_Version;
 	private I_M_HU_PI piTU;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		helper = new HUTestHelper();
@@ -81,7 +77,7 @@ public class HUBuilderTests
 		helper.createHU_PI_Item_PackingMaterial(piTU, helper.pmIFCO);
 
 		piTU_Version = piTU_Item.getM_HU_PI_Version();
-		assertThat(piTU_Version.getM_HU_PI(), is(piTU)); // guard
+		assertThat(piTU_Version.getM_HU_PI()).isEqualTo(piTU); // guard
 
 		// create a LU related packing instruction and link to it the TU related PI we created above
 		piLU = helper.createHUDefinition("LU", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
@@ -90,7 +86,7 @@ public class HUBuilderTests
 		piLU_Item_TU = helper.createHU_PI_Item_IncludedHU(piLU, piTU, new BigDecimal("5"));
 
 		piLU_Version = piLU_Item_TU.getM_HU_PI_Version();
-		assertThat(piLU_Version.getM_HU_PI(), is(piLU)); // guard
+		assertThat(piLU_Version.getM_HU_PI()).isEqualTo(piLU); // guard
 	}
 
 	@Test
@@ -102,8 +98,8 @@ public class HUBuilderTests
 		final HUBuilder testee = new HUBuilder(huContext);
 		final I_M_HU result = testee.create(piVersion);
 
-		assertThat(result, notNullValue());
-		assertThat(Services.get(IHandlingUnitsBL.class).getPIVersion(result), is(piVersion));
+		assertThat(result).isNotNull();
+		assertThat(Services.get(IHandlingUnitsBL.class).getPIVersion(result)).isEqualTo(piVersion);
 	}
 
 	/**
@@ -147,32 +143,32 @@ public class HUBuilderTests
 		final HUBuilder testeeLU = new HUBuilder(huContext);
 
 		final I_M_HU luHU = testeeLU.create(piLU_Version);
-		assertThat(luHU, notNullValue());
-		assertThat(luHU.getM_HU_Item_Parent(), nullValue());
+		assertThat(luHU).isNotNull();
+		assertThat(luHU.getM_HU_Item_Parent()).isNull();
 
 		// to create the TU and link it to the LU, we need to give it a parent-item
-		final I_M_HU_Item parentItemAggregate = handlingUnitsDAO.retrieveItem(luHU, piLU_Item_TU);
+		final I_M_HU_Item parentItemAggregate = handlingUnitsDAO.retrieveItemIfExists(luHU, piLU_Item_TU).orElse(null);
 
 		// these asserts are just guards. the real verification happens further down.
 		// it's ok that the DAI returned the aggregate item, but..
-		assertThat(parentItemAggregate, notNullValue());
-		assertThat(parentItemAggregate.getItemType(), is(X_M_HU_Item.ITEMTYPE_HUAggregate));
+		assertThat(parentItemAggregate).isNotNull();
+		assertThat(parentItemAggregate.getItemType()).isEqualTo(X_M_HU_Item.ITEMTYPE_HUAggregate);
 
 		// .. now we explicitly create the HU item..
 		handlingUnitsDAO.createHUItem(luHU, piLU_Item_TU);
-		final I_M_HU_Item parentItem = handlingUnitsDAO.retrieveItem(luHU, piLU_Item_TU);
+		final I_M_HU_Item parentItem = handlingUnitsDAO.retrieveItemIfExists(luHU, piLU_Item_TU).orElse(null);
 
 		// ..and now we don't want the aggregate item to be returned anymore
-		assertThat(parentItem, notNullValue());
-		assertThat(parentItem.getItemType(), is(X_M_HU_Item.ITEMTYPE_HandlingUnit));
+		assertThat(parentItem).isNotNull();
+		assertThat(parentItem.getItemType()).isEqualTo(X_M_HU_Item.ITEMTYPE_HandlingUnit);
 
 		final HUBuilder testeeTU = new HUBuilder(huContext);
 		testeeTU.setM_HU_Item_Parent(parentItem);
 		final I_M_HU luTU = testeeTU.create(piTU_Version);
 
-		assertThat(luTU, notNullValue());
-		assertThat(luTU.getM_HU_Item_Parent(), notNullValue());
-		assertThat(luTU.getM_HU_Item_Parent().getM_HU(), is(luHU));
+		assertThat(luTU).isNotNull();
+		assertThat(luTU.getM_HU_Item_Parent()).isNotNull();
+		assertThat(luTU.getM_HU_Item_Parent().getM_HU()).isEqualTo(luHU);
 
 		//@formatter:off
 		final HUsExpectation compressedHUExpectation = new HUsExpectation()
@@ -223,9 +219,9 @@ public class HUBuilderTests
 		final HUBuilder testeeLU = new HUBuilder(huContext);
 		final I_M_HU luHU = testeeLU.create(piLU_Version);
 
-		final I_M_HU_Item parentItem = handlingUnitsDAO.retrieveItem(luHU, piLU_Item_TU);
-		assertThat(parentItem, notNullValue());
-		assertThat(parentItem.getItemType(), is(X_M_HU_Item.ITEMTYPE_HUAggregate));
+		final I_M_HU_Item parentItem = handlingUnitsDAO.retrieveItemIfExists(luHU, piLU_Item_TU).orElse(null);
+		assertThat(parentItem).isNotNull();
+		assertThat(parentItem.getItemType()).isEqualTo(X_M_HU_Item.ITEMTYPE_HUAggregate);
 
 		final HUBuilder testeeCompressedVHU = new HUBuilder(huContext);
 		testeeCompressedVHU.setM_HU_Item_Parent(parentItem);

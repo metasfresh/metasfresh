@@ -29,7 +29,7 @@ import org.compiere.model.PO;
 
 /**
  * Used in conjunction with sql <code>RETURNING</code> dml statements.
- * And implementor can be passed to {@link DB#executeUpdate(String, Object[], org.compiere.util.DB.OnFail, String, int, ISqlUpdateReturnProcessor)}.<br>
+ * And implementor can be passed to {@link DB#executeUpdate(ExecuteUpdateRequest)}.<br>
  * The implementors job is to process the returned values.
  * <p>
  * Hint: {@link PO} contains an inner class that implements this interface.

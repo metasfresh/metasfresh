@@ -22,18 +22,20 @@
 
 package de.metas.util;
 
+import de.metas.util.collections.IteratorUtils;
+import de.metas.util.collections.PeekIterator;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+
+import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
-
-import de.metas.util.collections.IteratorUtils;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public final class StreamUtils
@@ -43,28 +45,59 @@ public final class StreamUtils
 	 */
 	public static <T> Stream<List<T>> dice(@NonNull final Stream<T> stream, final int chunkSize)
 	{
-		if (chunkSize <= 0)
+		return dice(stream, chunkSize, null);
+	}
+
+	/**
+	 * Dices given stream in smaller chunks, each of them having maximum <code>chunkSize</code> elements. Items should be ordered by groupKey
+	 */
+	public static <T> Stream<List<T>> dice(@NonNull final Stream<T> stream, final int maxChunkSize, @Nullable final Function<T, Object> groupByKeyExtractor)
+	{
+		if (maxChunkSize <= 0)
 		{
 			throw new IllegalArgumentException("chunkSize shall be > 0");
 		}
 
-		final Iterator<T> streamIterator = stream.iterator();
-		return IteratorUtils.stream(() -> readChunkOrNull(streamIterator, chunkSize));
+		final PeekIterator<T> streamIterator = IteratorUtils.asPeekIterator(stream.iterator());
+		return IteratorUtils.stream(() -> readChunkOrNull(streamIterator, maxChunkSize, groupByKeyExtractor));
 	}
 
-	private static final <T> List<T> readChunkOrNull(final Iterator<T> iterator, final int chunkSize)
+	@Nullable
+	private static <T> List<T> readChunkOrNull(
+			@NonNull final PeekIterator<T> iterator,
+			final int maxChunkSize,
+			@Nullable final Function<T, Object> groupByKeyExtractor)
 	{
-		final List<T> list = new ArrayList<>(chunkSize);
-		while (iterator.hasNext() && list.size() < chunkSize)
+		Object previousGroupKey = null;
+		boolean isFirstItem = true;
+
+		final List<T> list = new ArrayList<>(maxChunkSize);
+		while (iterator.hasNext() && list.size() < maxChunkSize)
 		{
+			final T item = iterator.peek();
+
+			if(groupByKeyExtractor != null)
+			{
+				final Object groupKey = groupByKeyExtractor.apply(item);
+				if (isFirstItem)
+				{
+					previousGroupKey = groupKey;
+				}
+				else if (!Objects.equals(previousGroupKey, groupKey))
+				{
+					break;
+				}
+			}
 			list.add(iterator.next());
+
+			isFirstItem = false;
 		}
 
 		return !list.isEmpty() ? list : null;
 	}
 
 	/**
-	 * Thanks to https://stackoverflow.com/a/27872852/1012103
+	 * Thanks to <a href="https://stackoverflow.com/a/27872852/1012103">https://stackoverflow.com/a/27872852/1012103</a>
 	 */
 	public static <T> Predicate<T> distinctByKey(@NonNull final Function<? super T, Object> keyExtractor)
 	{

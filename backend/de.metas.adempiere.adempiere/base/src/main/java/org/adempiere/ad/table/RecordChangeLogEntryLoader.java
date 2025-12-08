@@ -1,15 +1,18 @@
 package org.adempiere.ad.table;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getValueOrNull;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ListMultimap;
+import de.metas.cache.CCache;
+import de.metas.i18n.IModelTranslationMap;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.po.POTrlInfo;
+import de.metas.i18n.po.POTrlRepository;
+import de.metas.user.UserId;
+import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.table.LogEntriesRepository.LogEntriesQuery;
 import org.adempiere.ad.table.RecordRefWithLogEntryProcessor.RecordRefWithLogEntry;
 import org.adempiere.ad.table.api.AdTableId;
@@ -26,18 +29,17 @@ import org.compiere.model.POInfo;
 import org.compiere.model.POInfoColumn;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ListMultimap;
-import de.metas.cache.CCache;
-import de.metas.i18n.IModelTranslationMap;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.po.POTrlInfo;
-import de.metas.i18n.po.POTrlRepository;
-import de.metas.user.UserId;
-import lombok.NonNull;
-import lombok.Value;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+
+import static org.adempiere.model.InterfaceWrapperHelper.getValueOrNull;
 
 /*
  * #%L
@@ -286,7 +288,7 @@ public class RecordChangeLogEntryLoader
 	{
 		final IModelTranslationMap adColumnTrlMap = trlRepo.retrieveAll(
 				adColumnPOInfo.getTrlInfo(),
-				columnInfo.getAD_Column_ID());
+				AdColumnId.toRepoId(columnInfo.getAD_Column_ID()));
 		final ITranslatableString columnTrl = adColumnTrlMap.getColumnTrl(I_AD_Column.COLUMNNAME_Name, columnInfo.getColumnName());
 		return columnTrl;
 	}

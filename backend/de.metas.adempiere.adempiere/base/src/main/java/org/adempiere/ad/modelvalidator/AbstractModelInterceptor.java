@@ -1,9 +1,8 @@
 package org.adempiere.ad.modelvalidator;
 
+import de.metas.security.IUserLoginListener;
 import org.adempiere.ad.session.MFSession;
 import org.compiere.model.I_AD_Client;
-
-import de.metas.security.IUserLoginListener;
 
 /**
  * Template class to be used when implementing custom {@link IModelInterceptor}s.

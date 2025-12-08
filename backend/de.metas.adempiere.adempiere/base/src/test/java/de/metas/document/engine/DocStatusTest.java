@@ -31,7 +31,7 @@ class DocStatusTest
 	@Test
 	public void introspectAD_Reference_ID()
 	{
-		Assertions.assertThat(ReferenceListAwareEnums.getAD_Reference_ID(DocStatus.Completed)).isEqualTo(DocStatus.AD_REFERENCE_ID);
+		Assertions.assertThat(ReferenceListAwareEnums.getAD_Reference_ID(DocStatus.Completed)).isEqualTo(DocStatus.AD_REFERENCE_ID.getRepoId());
 	}
 
 }

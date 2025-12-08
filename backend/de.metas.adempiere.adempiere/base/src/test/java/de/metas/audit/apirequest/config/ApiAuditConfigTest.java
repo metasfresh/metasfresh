@@ -22,7 +22,6 @@
 
 package de.metas.audit.apirequest.config;
 
-import de.metas.audit.apirequest.HttpMethod;
 import de.metas.organization.OrgId;
 import org.junit.jupiter.api.Test;
 

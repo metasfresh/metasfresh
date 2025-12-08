@@ -1,12 +1,12 @@
 package de.metas.material.dispo.service.event.handler.shipmentschedule;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.MDCandidateDimensionFactory;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.repository.CandidateQtyDetailsRepository;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
@@ -22,6 +22,7 @@ import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
+import de.metas.material.event.shipmentschedule.ShipmentScheduleDetail;
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
@@ -34,14 +35,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 
 import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
 import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
 import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -77,23 +77,19 @@ public class ShipmentScheduleCreatedHandlerTests
 	private ShipmentScheduleCreatedHandler shipmentScheduleCreatedHandler;
 	private AvailableToPromiseRepository atpRepository;
 
-	private DimensionService dimensionService;
-
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
-		dimensionFactories.add(new MDCandidateDimensionFactory());
-		dimensionService = new DimensionService(dimensionFactories);
+		final DimensionService dimensionService = new DimensionService(ImmutableList.of(new MDCandidateDimensionFactory()));
 		SpringContextHolder.registerJUnitBean(dimensionService);
 
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 
 		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
-
-		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo);
+		final CandidateQtyDetailsRepository candidateQtyDetailsRepository = new CandidateQtyDetailsRepository();
+		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval, candidateQtyDetailsRepository);
 
 		final PostMaterialEventService postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 
@@ -166,7 +162,7 @@ public class ShipmentScheduleCreatedHandlerTests
 
 	public static ShipmentScheduleCreatedEvent createShipmentScheduleTestEvent()
 	{
-		final ShipmentScheduleCreatedEvent event = ShipmentScheduleCreatedEvent.builder()
+		return ShipmentScheduleCreatedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_AND_ORG_ID))
 				.materialDescriptor(MaterialDescriptor.builder()
 						.date(NOW)
@@ -175,13 +171,17 @@ public class ShipmentScheduleCreatedHandlerTests
 						.quantity(BigDecimal.TEN)
 						.warehouseId(toWarehouseId)
 						.build())
-				.reservedQuantity(new BigDecimal("20"))
+				.shipmentScheduleDetail(ShipmentScheduleDetail.builder()
+												.orderedQuantity(BigDecimal.TEN)
+												.orderedQuantityDelta(BigDecimal.TEN)
+												.reservedQuantity(new BigDecimal("20"))
+												.reservedQuantityDelta(new BigDecimal("20"))
+												.build())
 				.shipmentScheduleId(shipmentScheduleId)
 				.documentLineDescriptor(OrderLineDescriptor.builder()
 						.orderLineId(orderLineId)
 						.orderId(30)
 						.build())
 				.build();
-		return event;
 	}
 }

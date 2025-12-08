@@ -139,6 +139,8 @@ public class ModelInterfaceGenerator
 			//
 			.add("org.compiere.model.I_C_Element")
 			//
+			.add("org.eevolution.model.I_PP_Product_Planning")
+			//
 			.build();
 
 	private final TableAndColumnInfoRepository repository;
@@ -344,8 +346,7 @@ public class ModelInterfaceGenerator
 		//
 		// Model Getter & Setter
 		final String referenceClassName = getReferenceClassName(columnInfo, repository);
-		if (isGenerateInterfaceModelGetterForColumnName(columnInfo.getColumnName())
-				&& isGenerateModelGetterOrSetterForReferencedClassName(referenceClassName)
+		if (isGenerateModelGetterOrSetterForReferencedClassName(columnInfo, referenceClassName)
 				&& DisplayType.isID(columnInfo.getDisplayType())
 				&& !columnInfo.isKey())
 		{
@@ -633,14 +634,39 @@ public class ModelInterfaceGenerator
 	/**
 	 * @return true if a model getter method (method that is returning referenced PO) should be generated
 	 */
-	private static boolean isGenerateInterfaceModelGetterForColumnName(@NonNull final String columnName)
+	private static boolean isGenerateInterfaceModelGetterForColumn(@NonNull final ColumnInfo column)
 	{
-		return !SKIP_InterfaceModelGettersForColumnNames.contains(columnName);
+		// Not skipped
+		if (SKIP_InterfaceModelGettersForColumnNames.contains(column.getColumnName()))
+		{
+			return false;
+		}
+
+		// We are no longer generating model getter for our new models.
+		// An easy way to define this is to pick a fairy new table (e.g. M_Picking_Job) and use that as a threshould
+		if (column.getAdTableId() >= 541906)
+		{
+			return false;
+		}
+
+		// ID type but not the primary key
+		//noinspection RedundantIfStatement
+		if (!DisplayType.isID(column.getDisplayType()) || column.isKey())
+		{
+			return false;
+		}
+
+		return true;
 	}
 
-	static boolean isGenerateModelGetterOrSetterForReferencedClassName(@Nullable final String referencedClassnameFQ)
+	static boolean isGenerateModelGetterOrSetterForReferencedClassName(@NonNull ColumnInfo column, @Nullable final String referencedClassnameFQ)
 	{
 		if (referencedClassnameFQ == null)
+		{
+			return false;
+		}
+
+		if (!isGenerateInterfaceModelGetterForColumn(column))
 		{
 			return false;
 		}
@@ -719,6 +745,8 @@ public class ModelInterfaceGenerator
 		{
 			reflections = new Reflections(new ConfigurationBuilder()
 					.setScanners(new ClassnameScanner())
+					//thx to https://github.com/ronmamo/reflections/issues/373#issue-1080637248
+					.forPackages("de")
 					.addUrls(ClasspathHelper.forClassLoader()));
 		}
 		return reflections;

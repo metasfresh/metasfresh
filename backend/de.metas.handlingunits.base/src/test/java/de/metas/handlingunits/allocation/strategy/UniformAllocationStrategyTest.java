@@ -1,58 +1,8 @@
-package de.metas.handlingunits.allocation.strategy;
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import de.metas.handlingunits.HUXmlConverter;
-import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.IMutableHUContext;
-import de.metas.handlingunits.allocation.transfer.HUTransformService;
-import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
-import de.metas.util.Services;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.X_C_UOM;
-import org.junit.Assert;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-
-import de.metas.business.BusinessTestHelper;
-import de.metas.handlingunits.HUItemType;
-import de.metas.handlingunits.HUTestHelper;
-import de.metas.handlingunits.allocation.impl.AllocationUtils;
-import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
-import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
-import de.metas.handlingunits.allocation.impl.HULoader;
-import de.metas.handlingunits.expectations.HUExpectation;
-import de.metas.handlingunits.expectations.HUItemExpectation;
-import de.metas.handlingunits.expectations.HUStorageExpectation;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_PI;
-import de.metas.handlingunits.model.I_M_HU_PI_Item;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.handlingunits.util.TraceUtils;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.quantity.QuantityTU;
-import de.metas.uom.UOMPrecision;
-import lombok.Builder;
-import lombok.NonNull;
-import org.w3c.dom.Node;
-
-import static org.hamcrest.Matchers.hasXPath;
-import static org.hamcrest.Matchers.is;
-
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -69,6 +19,57 @@ import static org.hamcrest.Matchers.is;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.handlingunits.allocation.strategy;
+
+import de.metas.business.BusinessTestHelper;
+import de.metas.handlingunits.HUItemType;
+import de.metas.handlingunits.HUTestHelper;
+import de.metas.handlingunits.HUXmlConverter;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.IMutableHUContext;
+import de.metas.handlingunits.allocation.impl.AllocationUtils;
+import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
+import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
+import de.metas.handlingunits.allocation.impl.HULoader;
+import de.metas.handlingunits.allocation.transfer.HUTransformService;
+import de.metas.handlingunits.allocation.transfer.LUTUResult;
+import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
+import de.metas.handlingunits.expectations.HUExpectation;
+import de.metas.handlingunits.expectations.HUItemExpectation;
+import de.metas.handlingunits.expectations.HUStorageExpectation;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PI;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.util.TraceUtils;
+import de.metas.material.planning.ddorder.DistributionNetworkRepository;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.QuantityTU;
+import de.metas.uom.UOMPrecision;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.X_C_UOM;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.w3c.dom.Node;
+import org.xmlunit.assertj3.XmlAssert;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.List;
+
+import static de.metas.handlingunits.QtyTU.ONE;
+
 
 public class UniformAllocationStrategyTest
 {
@@ -337,37 +338,93 @@ public class UniformAllocationStrategyTest
 		@BeforeEach
 		public void beforeEach()
 		{
+			SpringContextHolder.registerJUnitBean(new DistributionNetworkRepository());
+
 			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 			final HUTransformService huTransformService = HUTransformService.newInstance(lutuProducerDestinationTestSupport.helper.getHUContext());
 
 			final Quantity two = Quantity.of("2", helper.uomEach);
 			final I_M_HU firstTU = handlingUnitsDAO.retrieveParent(lutuProducerDestinationTestSupport.mkRealCUWithTUandQtyCU(two));
 			final List<I_M_HU> lus = huTransformService.tuToNewLUs(firstTU,
-					BigDecimal.ONE,
-					lutuProducerDestinationTestSupport.piLU_Item_IFCO,
-					true);
+							ONE,
+							lutuProducerDestinationTestSupport.piLU_Item_IFCO,
+							true)
+					.getLURecords();
 			lu = lus.get(0);
 			for (int i = 0; i < 51; i++)
 			{
 				final I_M_HU tu = handlingUnitsDAO.retrieveParent(lutuProducerDestinationTestSupport.mkRealCUWithTUandQtyCU(two));
-				huTransformService.tuToExistingLU(tu, BigDecimal.ONE, lu);
+				huTransformService.tuToExistingLU(tu, ONE, lu);
 			}
 			//helper.commitAndDumpHU(lu);
 
 			final Node luXml = HUXmlConverter.toXml(lu);
-			Assert.assertThat(luXml, hasXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO)", is("52")));
-			Assert.assertThat(luXml, hasXPath("string(HU-LU_Palet/@HUStatus)", is("A")));
-			Assert.assertThat(luXml, hasXPath("string(HU-LU_Palet/Storage/@Qty)", is("104")));
+			XmlAssert.assertThat(luXml).valueByXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO)").isEqualTo("52");
+			XmlAssert.assertThat(luXml).valueByXPath("string(HU-LU_Palet/@HUStatus)").isEqualTo("A");
+			XmlAssert.assertThat(luXml).valueByXPath("string(HU-LU_Palet/Storage/@Qty)").isEqualTo("104");
 		}
 
 		@Test
 		public void subtract104()
 		{
 			subtractQty(lu, "104", AllocationStrategyType.UNIFORM, helper.pTomatoProductId, helper.uomEach);
-			
+
 			final Node luXml = HUXmlConverter.toXml(lu);
-			Assert.assertThat(luXml, hasXPath("string(HU-LU_Palet/@HUStatus)", is("D")));
-			Assert.assertThat(luXml, hasXPath("string(HU-LU_Palet/Storage/@Qty)", is("0")));
+			XmlAssert.assertThat(luXml).valueByXPath("string(HU-LU_Palet/@HUStatus)").isEqualTo("D");
+			XmlAssert.assertThat(luXml).valueByXPath("string(HU-LU_Palet/Storage/@Qty)").isEqualTo("0");
+		}
+	}
+
+	@Nested
+	@DisplayName("1 LU: [50 x TU x 10kg aggregated]")
+	public class preventOverallocation
+	{
+		private I_M_HU lu;
+
+		@BeforeEach
+		public void beforeEach()
+		{
+			SpringContextHolder.registerJUnitBean(new DistributionNetworkRepository());
+			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+			final HUTransformService huTransformService = HUTransformService.newInstance(lutuProducerDestinationTestSupport.helper.getHUContext());
+
+			final Quantity ten = Quantity.of("10", helper.uomEach);
+			final I_M_HU firstTU = handlingUnitsDAO.retrieveParent(lutuProducerDestinationTestSupport.mkRealCUWithTUandQtyCU(ten));
+			final LUTUResult lus = huTransformService.tuToNewLUs(firstTU,
+					ONE,
+					lutuProducerDestinationTestSupport.piLU_Item_IFCO,
+					true);
+			lu = lus.getSingleLURecord();
+			for (int i = 0; i < 49; i++)
+			{
+				final I_M_HU tu = handlingUnitsDAO.retrieveParent(lutuProducerDestinationTestSupport.mkRealCUWithTUandQtyCU(ten));
+				huTransformService.tuToExistingLU(tu, ONE, lu);
+			}
+
+			// dumpHU("initial", lu);
+
+			final Node luXml = HUXmlConverter.toXml(lu);
+			XmlAssert.assertThat(luXml).valueByXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO)").isEqualTo("50");
+			XmlAssert.assertThat(luXml).valueByXPath("string(HU-LU_Palet/@HUStatus)").isEqualTo("A");
+			XmlAssert.assertThat(luXml).valueByXPath("string(HU-LU_Palet/Storage/@Qty)").isEqualTo("500");
+		}
+
+		@Test
+		public void add80()
+		{
+			addQty(lu, "80", AllocationStrategyType.UNIFORM, helper.pTomatoProductId, helper.uomEach);
+			// dumpHU("initial", lu);
+			final Node luXml = HUXmlConverter.toXml(lu);
+			XmlAssert.assertThat(luXml).valueByXPath("count(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO)").isEqualTo("50");
+			XmlAssert.assertThat(luXml).valueByXPath("string(HU-LU_Palet/@HUStatus)").isEqualTo("A");
+			XmlAssert.assertThat(luXml).valueByXPath("string(HU-LU_Palet/Storage/@Qty)").isEqualTo("580");
+
+			for (int i = 1; i <= 50; i++)
+			{
+				final String expectedQty = i <= 40 ? "12" : "10";
+				XmlAssert.assertThat(luXml).valueByXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO[" + i + "]/Storage/@Qty)").isEqualTo(expectedQty);
+				XmlAssert.assertThat(luXml).valueByXPath("string(HU-LU_Palet/Item[@ItemType='HU']/HU-TU_IFCO[" + i + "]/@HUStatus)").isEqualTo("A");
+			}
 		}
 	}
 
@@ -406,7 +463,7 @@ public class UniformAllocationStrategyTest
 
 		final IMutableHUContext huContext = helper.createMutableHUContextForProcessingOutOfTrx();
 		InterfaceWrapperHelper.setTrxName(hu, huContext.getTrxName());
-		
+
 		final HUListAllocationSourceDestination destination = HUListAllocationSourceDestination.of(
 				hu,
 				allocationStrategyType);
@@ -449,8 +506,8 @@ public class UniformAllocationStrategyTest
 		InterfaceWrapperHelper.setTrxName(hu, huContext.getTrxName());
 
 		final HUListAllocationSourceDestination source = HUListAllocationSourceDestination.of(
-				hu,
-				allocationStrategyType)
+						hu,
+						allocationStrategyType)
 				.setDestroyEmptyHUs(true); // make it easeier to evalute the endresult - without empty TUs dangling around
 
 		HULoader.of(source, destination)
@@ -462,6 +519,6 @@ public class UniformAllocationStrategyTest
 						.setFromReferencedModel(destination.getReferenceModel())
 						.setForceQtyAllocation(true)
 						.create());
-		
+
 	}
 }

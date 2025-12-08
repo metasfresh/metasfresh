@@ -22,25 +22,26 @@ package de.metas.shipping.callout;
  * #L%
  */
 
-import org.adempiere.ad.callout.annotations.Callout;
-import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.adempiere.ad.callout.api.ICalloutField;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_M_Inventory;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.shipping.IShipperDAO;
-import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.util.Services;
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.api.ICalloutField;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_M_Inventory;
 
 @Callout(I_M_ShipperTransportation.class)
 public class M_ShipperTransportation
 {
+
+	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
+
 	/**
 	 * Sets the {@link I_M_ShipperTransportation}'s M_Shipper_ID accordingly to {@link I_M_ShipperTransportation}'s Shipper_BPartner_ID
 	 *
@@ -63,8 +64,8 @@ public class M_ShipperTransportation
 			return;
 		}
 
-		final ShipperId shipperId = Services.get(IShipperDAO.class).getShipperIdByShipperPartnerId(shipperPartnerId);
-		shipperTransportation.setM_Shipper_ID(shipperId.getRepoId());
+		shipperDAO.getShipperIdByShipperPartnerId(shipperPartnerId)
+				.ifPresent(shipperId -> shipperTransportation.setM_Shipper_ID(shipperId.getRepoId()));
 	}
 
 	@CalloutMethod(columnNames = I_M_Inventory.COLUMNNAME_C_DocType_ID)

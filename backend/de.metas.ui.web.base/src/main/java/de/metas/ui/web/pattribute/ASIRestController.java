@@ -29,7 +29,7 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.util.Services;
-import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -72,7 +72,7 @@ import java.util.function.Function;
 /**
  * @implNote IMPORTANT: Keep the API endpoints/requests/responses in sync with {@link de.metas.ui.web.address.AddressRestController} because on frontend side they are handled by the same code.
  */
-@Api
+@Tag(name = "ASIRestController")
 @RestController
 @RequestMapping(ASIRestController.ENDPOINT)
 public class ASIRestController

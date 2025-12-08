@@ -22,8 +22,10 @@
 
 package de.metas.printing.printingdata;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.printing.HardwarePrinter;
 import de.metas.printing.HardwareTrayId;
+import de.metas.printing.OutputType;
 import de.metas.printing.PrinterRoutingId;
 import de.metas.printing.model.I_AD_PrinterRouting;
 import de.metas.util.Check;
@@ -48,7 +50,10 @@ public class PrintingSegment
 
 	private final int initialPageFrom;
 	private final int initialPageTo;
+
+	@Getter
 	private final int lastPages;
+
 	private final String routingType;
 
 	@Getter
@@ -60,6 +65,9 @@ public class PrintingSegment
 	@Getter
 	private final HardwareTrayId trayId;
 
+	@Getter
+	private final int copies;
+
 	@Builder
 	private PrintingSegment(
 			final int initialPageFrom,
@@ -68,7 +76,8 @@ public class PrintingSegment
 			@Nullable final String routingType,
 			@Nullable final PrinterRoutingId printerRoutingId,
 			@NonNull final HardwarePrinter printer,
-			@Nullable final HardwareTrayId trayId)
+			@Nullable final HardwareTrayId trayId,
+			final int copies)
 	{
 		this.initialPageFrom = initialPageFrom;
 		this.initialPageTo = initialPageTo;
@@ -77,6 +86,7 @@ public class PrintingSegment
 		this.printerRoutingId = printerRoutingId;
 		this.printer = printer;
 		this.trayId = trayId;
+		this.copies = CoalesceUtil.firstGreaterThanZero(copies, 1);
 
 		Check.assume(initialPageFrom <= initialPageTo, "initialPageFrom={} is less or equal to initialPageTo={}", initialPageFrom, initialPageTo);
 	}
@@ -93,11 +103,6 @@ public class PrintingSegment
 			return pageFrom;
 		}
 		return initialPageFrom;
-	}
-
-	public int getLastPages()
-	{
-		return lastPages;
 	}
 
 	public void setPageTo(final int pageTo)
@@ -122,5 +127,16 @@ public class PrintingSegment
 	public boolean isLastPages()
 	{
 		return I_AD_PrinterRouting.ROUTINGTYPE_LastPages.equals(routingType);
+	}
+
+	public boolean isQueuedForExternalSystems()
+	{
+		return isMatchingOutputType(OutputType.Queue)
+				&& printer.getExternalSystemParentConfigId() != null;
+	}
+
+	public boolean isMatchingOutputType(@NonNull OutputType outputType)
+	{
+		return OutputType.equals(printer.getOutputType(), outputType);
 	}
 }

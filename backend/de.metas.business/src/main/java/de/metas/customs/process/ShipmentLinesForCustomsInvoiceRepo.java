@@ -1,13 +1,6 @@
 package de.metas.customs.process;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.compiere.model.I_M_InOut;
-import org.springframework.stereotype.Repository;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.document.engine.DocStatus;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
@@ -16,6 +9,11 @@ import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.util.Services;
+import org.compiere.model.I_M_InOut;
+import org.springframework.stereotype.Repository;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * #%L
@@ -91,7 +89,7 @@ public class ShipmentLinesForCustomsInvoiceRepo
 
 		final InOutLineId inOutLineId = inoutAndLineId.getInOutLineId();
 
-		final I_M_InOutLine shipmentLineRecord = inOutDAO.getLineById(inOutLineId, I_M_InOutLine.class);
+		final I_M_InOutLine shipmentLineRecord = inOutDAO.getLineByIdOutOfTrx(inOutLineId, I_M_InOutLine.class);
 
 		if (shipmentLineRecord.isPackagingMaterial())
 		{

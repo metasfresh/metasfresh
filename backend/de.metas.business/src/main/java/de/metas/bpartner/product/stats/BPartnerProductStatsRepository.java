@@ -63,7 +63,7 @@ import lombok.NonNull;
  */
 
 @Repository
-class BPartnerProductStatsRepository
+public class BPartnerProductStatsRepository
 {
 	public ImmutableMap<ProductId, BPartnerProductStats> getByPartnerAndProducts(@NonNull final BPartnerId bpartnerId,
 			@NonNull final Set<ProductId> productIds)
@@ -73,7 +73,7 @@ class BPartnerProductStatsRepository
 		return Services.get(IQueryBL.class).createQueryBuilderOutOfTrx(I_C_BPartner_Product_Stats.class)
 				.addEqualsFilter(I_C_BPartner_Product_Stats.COLUMN_C_BPartner_ID, bpartnerId)
 				.addInArrayFilter(I_C_BPartner_Product_Stats.COLUMN_M_Product_ID, productIds).create()
-				.stream(I_C_BPartner_Product_Stats.class).map(record -> toBPartnerProductStats(record))
+				.stream(I_C_BPartner_Product_Stats.class).map(BPartnerProductStatsRepository::toBPartnerProductStats)
 				.collect(ImmutableMap.toImmutableMap(BPartnerProductStats::getProductId, Function.identity()));
 	}
 
@@ -95,7 +95,7 @@ class BPartnerProductStatsRepository
 		return bpartnerStatsQueryBuilder
 				.create()
 				.stream(I_C_BPartner_Product_Stats.class)
-				.map(record -> toBPartnerProductStats(record))
+				.map(BPartnerProductStatsRepository::toBPartnerProductStats)
 				.collect(ImmutableList.toImmutableList());
 	}
 

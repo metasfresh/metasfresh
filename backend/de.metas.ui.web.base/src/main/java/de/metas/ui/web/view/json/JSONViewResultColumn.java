@@ -3,8 +3,6 @@ package de.metas.ui.web.view.json;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.ui.web.view.ViewResultColumn;
 import de.metas.ui.web.window.datatypes.json.JSONLayoutWidgetType;
 import lombok.NonNull;
@@ -32,28 +30,25 @@ import lombok.Value;
  * #L%
  */
 
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
+@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class JSONViewResultColumn
 {
-	public static JSONViewResultColumn of(final ViewResultColumn viewResultColumn)
-	{
-		return new JSONViewResultColumn(viewResultColumn);
-	}
-
-	@JsonProperty("fieldName")
-	private final String fieldName;
-	@JsonProperty("widgetType")
-	private final JSONLayoutWidgetType widgetType;
-	@JsonProperty("maxPrecision")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final Integer maxPrecision;
+	String fieldName;
+	JSONLayoutWidgetType widgetType;
+	@JsonInclude(JsonInclude.Include.NON_NULL) Integer maxPrecision;
+	@JsonInclude(JsonInclude.Include.NON_NULL) Boolean hidden;
 
 	private JSONViewResultColumn(@NonNull final ViewResultColumn viewResultColumn)
 	{
 		fieldName = viewResultColumn.getFieldName();
 		widgetType = JSONLayoutWidgetType.fromNullable(viewResultColumn.getWidgetType());
 		maxPrecision = viewResultColumn.getMaxPrecision();
+		hidden = viewResultColumn.getHidden();
 	}
 
+	public static JSONViewResultColumn of(final ViewResultColumn viewResultColumn)
+	{
+		return new JSONViewResultColumn(viewResultColumn);
+	}
 }

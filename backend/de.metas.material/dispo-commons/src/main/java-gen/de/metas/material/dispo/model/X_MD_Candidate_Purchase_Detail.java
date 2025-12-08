@@ -174,18 +174,6 @@ public class X_MD_Candidate_Purchase_Detail extends org.compiere.model.PO implem
 	}
 
 	@Override
-	public org.eevolution.model.I_PP_Product_Planning getPP_Product_Planning()
-	{
-		return get_ValueAsPO(COLUMNNAME_PP_Product_Planning_ID, org.eevolution.model.I_PP_Product_Planning.class);
-	}
-
-	@Override
-	public void setPP_Product_Planning(org.eevolution.model.I_PP_Product_Planning PP_Product_Planning)
-	{
-		set_ValueFromPO(COLUMNNAME_PP_Product_Planning_ID, org.eevolution.model.I_PP_Product_Planning.class, PP_Product_Planning);
-	}
-
-	@Override
 	public void setPP_Product_Planning_ID (int PP_Product_Planning_ID)
 	{
 		if (PP_Product_Planning_ID < 1) 

@@ -22,10 +22,14 @@ package de.metas.materialtracking.impl;
  * #L%
  */
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.document.engine.IDocument;
+import de.metas.materialtracking.IMaterialTrackingQuery;
+import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -35,16 +39,12 @@ import org.adempiere.ad.dao.IQueryOrderByBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.IQuery;
 
-import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.document.engine.IDocument;
-import de.metas.materialtracking.IMaterialTrackingQuery;
-import de.metas.materialtracking.model.I_M_Material_Tracking;
-import de.metas.materialtracking.model.I_M_Material_Tracking_Ref;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Helper class used to compile {@link IMaterialTrackingQuery} to actual {@link IQuery} or {@link IQueryBuilder}.
@@ -54,8 +54,10 @@ import lombok.NonNull;
  */
 /* package */class MaterialTrackingQueryCompiler
 {
+	public static final String SYS_CONFIG_MaterialTracking_Query_IgnorePartnerAndProduct = "MaterialTracking_Query_IgnorePartnerAndProduct";
 	// Services
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	// Parameters
 	private Properties _ctx;
@@ -98,20 +100,24 @@ import lombok.NonNull;
 
 		final int productId = queryVO.getM_Product_ID();
 		final String lot = queryVO.getLot();
-		Check.assume(productId > 0 || !Check.isEmpty(lot, true), "Either productId or lot has to be set, but is: productId={}, lot={}", productId, lot);
 
-		//
-		// M_Product_ID
-		if (productId > 0)
+		final boolean ignorePartnerAndProduct = sysConfigBL.getBooleanValue(SYS_CONFIG_MaterialTracking_Query_IgnorePartnerAndProduct, false);
+		if(!ignorePartnerAndProduct)
 		{
-			queryBuilder.addEqualsFilter(I_M_Material_Tracking.COLUMNNAME_M_Product_ID, productId);
-		}
+			Check.assume(productId > 0 || Check.isNotBlank(lot), "Either productId or lot has to be set, but is: productId={}, lot={}", productId, lot);
+			//
+			// M_Product_ID
+			if (productId > 0)
+			{
+				queryBuilder.addEqualsFilter(I_M_Material_Tracking.COLUMNNAME_M_Product_ID, productId);
+			}
 
-		//
-		// C_BPartner_ID
-		final int bpartnerId = queryVO.getC_BPartner_ID();
-		queryBuilder.addInArrayOrAllFilter(I_M_Material_Tracking.COLUMNNAME_C_BPartner_ID, null, bpartnerId);
-		orderBy.addColumn(I_M_Material_Tracking.COLUMNNAME_C_BPartner_ID, Direction.Descending, Nulls.Last);
+			//
+			// C_BPartner_ID
+			final int bpartnerId = queryVO.getC_BPartner_ID();
+			queryBuilder.addInArrayOrAllFilter(I_M_Material_Tracking.COLUMNNAME_C_BPartner_ID, null, bpartnerId);
+			orderBy.addColumn(I_M_Material_Tracking.COLUMNNAME_C_BPartner_ID, Direction.Descending, Nulls.Last);
+		}
 
 		// TODO: ValidFrom, ValidTo
 

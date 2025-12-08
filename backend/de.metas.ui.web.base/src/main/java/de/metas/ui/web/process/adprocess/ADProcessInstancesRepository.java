@@ -5,12 +5,12 @@ import com.google.common.base.Strings;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableSet;
-import de.metas.printing.esb.base.util.Check;
 import de.metas.process.ADProcessService;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
+import de.metas.process.ProcessCalledFrom;
 import de.metas.process.ProcessDefaultParametersUpdater;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfo.ProcessInfoBuilder;
@@ -18,6 +18,7 @@ import de.metas.security.IUserRolePermissions;
 import de.metas.ui.web.process.CreateProcessInstanceRequest;
 import de.metas.ui.web.process.IProcessInstanceController;
 import de.metas.ui.web.process.IProcessInstancesRepository;
+import de.metas.ui.web.process.ProcessHandlerType;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.process.WebuiPreconditionsContext;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
@@ -32,14 +33,17 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
+import de.metas.ui.web.window.model.DocumentFieldLogicExpressionResultRevaluator;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentEvaluatee;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.ui.web.window.model.sql.SqlOptions;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
@@ -105,17 +109,18 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 			@NonNull final DocumentDescriptorFactory documentDescriptorFactory,
 			@NonNull final IViewsRepository viewsRepo,
 			@NonNull final DocumentCollection documentsCollection,
-			@NonNull final ADProcessService adProcessService)
+			@NonNull final ADProcessService adProcessService,
+			@NonNull final LookupDescriptorProviders lookupDescriptorProviders)
 	{
 		this.userSession = userSession;
 		this.documentDescriptorFactory = documentDescriptorFactory;
 		this.viewsRepo = viewsRepo;
 		this.documentsCollection = documentsCollection;
-		this.processDescriptorFactory = new ADProcessDescriptorsFactory(adProcessService);
+		this.processDescriptorFactory = new ADProcessDescriptorsFactory(adProcessService, lookupDescriptorProviders);
 	}
 
 	@Override
-	public String getProcessHandlerType()
+	public ProcessHandlerType getProcessHandlerType()
 	{
 		return ProcessId.PROCESSHANDLERTYPE_AD_Process;
 	}
@@ -183,7 +188,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 							parameter.getColumnName(),
 							value,
 							() -> "default parameter value",
-							true // ignoreReadonlyFlag
+							DocumentFieldLogicExpressionResultRevaluator.ALWAYS_RETURN_FALSE
 					))
 					.updateDefaultValue(parametersDoc.getFieldViews(), field -> DocumentFieldAsProcessDefaultParameter.of(windowNo, field));
 
@@ -303,6 +308,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 
 		final ProcessInfoBuilder processInfoBuilder = ProcessInfo.builder()
 				.setCtx(Env.getCtx())
+				.setProcessCalledFrom(ProcessCalledFrom.WebUI)
 				.setCreateTemporaryCtx()
 				.setAD_Process_ID(request.getProcessIdAsInt())
 				.setAdWindowId(adWindowId)
@@ -339,6 +345,12 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 					.addParameter(ViewBasedProcessTemplate.PARAM_ViewId, viewRowIdsSelection.getViewId().toJson())
 					.addParameter(ViewBasedProcessTemplate.PARAM_ViewSelectedIds, viewRowIdsSelection.getRowIds().toCommaSeparatedString());
 		}
+		if(request.getViewOrderBys() != null && !request.getViewOrderBys().isEmpty())
+		{
+			processInfoBuilder
+					.setLoadParametersFromDB(true) // important: we need to load the existing parameters from database, besides the internal ones we are adding here
+					.addParameter(ViewBasedProcessTemplate.PARAM_ViewOrderBys, request.getViewOrderBys().toStringSyntax());
+		}
 		if (request.getParentViewRowIdsSelection() != null)
 		{
 			final ViewRowIdsSelection parentViewRowIdsSelection = request.getParentViewRowIdsSelection();
@@ -366,16 +378,13 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 		// Load process info
 		final PInstanceId pinstanceId = PInstanceId.ofRepoId(adPInstanceDocumentId.toInt());
 		final ProcessInfo processInfo = ProcessInfo.builder()
+				.setProcessCalledFrom(ProcessCalledFrom.WebUI)
 				.setCtx(Env.getCtx())
 				.setCreateTemporaryCtx()
 				.setPInstanceId(pinstanceId)
 				.build();
 
-		final Object processClassInstance = processInfo.newProcessClassInstanceOrNull();
-		if (processClassInstance == null)
-		{
-			throw new AdempiereException("No processClassInstance found: " + processInfo);
-		}
+		final Object processClassInstance = processInfo.newProcessClassInstance();
 
 		try (final IAutoCloseable ignored = JavaProcess.temporaryChangeCurrentInstance(processClassInstance))
 		{
@@ -466,5 +475,11 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 				return result;
 			}
 		}
+	}
+
+
+	public void addProcessParameters(final ProcessId processId, final DocumentEntityDescriptor.Builder parametersDescriptorBuilder)
+	{
+		processDescriptorFactory.addProcessParameters(processId, parametersDescriptorBuilder);
 	}
 }

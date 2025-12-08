@@ -23,7 +23,6 @@
 package de.metas.invoice.invoiceProcessingServiceCompany;
 
 import com.google.common.collect.ImmutableCollection;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
@@ -31,6 +30,7 @@ import de.metas.product.ProductId;
 import de.metas.util.lang.Percent;
 import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
@@ -60,11 +60,6 @@ public class InvoiceProcessingServiceCompanyConfig
 	@Getter(AccessLevel.NONE)
 	@NonNull ImmutableMultimap<BPartnerId, InvoiceProcessingServiceCompanyConfigBPartnerDetails> bpartnerDetails;
 
-	public ImmutableList<BPartnerId> getBPartnerIds()
-	{
-		return bpartnerDetails.keySet().asList();
-	}
-
 	@NonNull
 	public Optional<Percent> getFeePercentageOfGrandTotalByBpartner(@NonNull final BPartnerId bpartnerId, @Nullable final DocTypeId invoiceDocTypeId)
 	{
@@ -79,6 +74,7 @@ public class InvoiceProcessingServiceCompanyConfig
 		if (invoiceDocTypeId != null)
 		{
 			final Optional<Percent> matchingDocTypePercent = detailsList.stream()
+					.filter(InvoiceProcessingServiceCompanyConfigBPartnerDetails::isActive)
 					.filter(details -> invoiceDocTypeId.equals(details.getDocTypeId()))
 					.map(InvoiceProcessingServiceCompanyConfigBPartnerDetails::getPercent)
 					.findFirst();
@@ -90,9 +86,28 @@ public class InvoiceProcessingServiceCompanyConfig
 		}
 
 		return detailsList.stream()
+				.filter(InvoiceProcessingServiceCompanyConfigBPartnerDetails::isActive)
 				.filter(details -> details.getDocTypeId() == null)
 				.map(InvoiceProcessingServiceCompanyConfigBPartnerDetails::getPercent)
 				.findFirst();
+	}
+
+	public boolean isBPartnerDetailsActive(@NonNull final BPartnerId bpartnerId)
+	{
+		final ImmutableCollection<InvoiceProcessingServiceCompanyConfigBPartnerDetails> detailsList = bpartnerDetails.get(bpartnerId);
+
+		if (detailsList.isEmpty())
+		{
+			return false;
+		}
+
+		return detailsList.stream()
+				.anyMatch(InvoiceProcessingServiceCompanyConfigBPartnerDetails::isActive);
+	}
+
+	public boolean isValid(@NonNull final ZonedDateTime validFrom)
+	{
+		return this.validFrom.isBefore(validFrom) || this.validFrom.isEqual(validFrom);
 	}
 }
 
@@ -108,4 +123,7 @@ public class InvoiceProcessingServiceCompanyConfig
 
 	@Nullable
 	DocTypeId docTypeId;
+
+	@Default
+	boolean isActive = true;
 }

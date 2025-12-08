@@ -1,17 +1,18 @@
 package de.metas.material.event.picking;
 
-import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
-
-import java.util.Set;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Value;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import java.util.Set;
+
+import static de.metas.material.event.MaterialEventConstants.M_SHIPMENT_SCHEDULE_TABLE_NAME;
+import static de.metas.material.event.MaterialEventUtils.checkIdGreaterThanZero;
 
 /*
  * #%L
@@ -71,4 +72,13 @@ public class PickingRequestedEvent implements MaterialEvent
 
 		checkIdGreaterThanZero("shipmentScheduleId", shipmentScheduleId);
 	}
+
+	@Override
+	public TableRecordReference getSourceTableReference()
+	{
+		return TableRecordReference.of(M_SHIPMENT_SCHEDULE_TABLE_NAME, shipmentScheduleId);
+	}
+
+	@Override
+	public String getEventName() {return TYPE;}
 }

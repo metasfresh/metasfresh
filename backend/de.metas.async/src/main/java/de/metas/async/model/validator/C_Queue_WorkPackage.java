@@ -21,8 +21,6 @@ import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
-import org.springframework.stereotype.Component;
-
 /**
  * @author cg
  */

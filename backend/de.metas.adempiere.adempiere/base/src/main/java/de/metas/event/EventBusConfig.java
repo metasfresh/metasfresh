@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import java.lang.management.ManagementFactory;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * Misc {@link IEventBus} related constants.
@@ -49,6 +50,7 @@ public final class EventBusConfig
 	}
 
 	private static boolean distributedEventsEnabled = true;
+	private static final CopyOnWriteArraySet<Topic> alwaysConsiderAsyncTopics = new CopyOnWriteArraySet<>();
 
 	private EventBusConfig()
 	{
@@ -83,7 +85,7 @@ public final class EventBusConfig
 	/**
 	 * Topic used for general notifications. To be used mainly for broadcasting messages to everybody.
 	 */
-	public static final Topic TOPIC_GeneralUserNotifications = Topic.remote("de.metas.event.GeneralNotifications");
+	public static final Topic TOPIC_GeneralUserNotifications = Topic.distributed("de.metas.event.GeneralNotifications");
 
 	/**
 	 * Topic used for general notifications inside this JVM instance.
@@ -94,18 +96,29 @@ public final class EventBusConfig
 
 	public static final String JMX_BASE_NAME = "de.metas.event.EventBus";
 
-	/** World wide unique Sender ID of this JVM instance */
-	private static final String SENDER_ID = ManagementFactory.getRuntimeMXBean().getName() + "-" + UUID.randomUUID().toString();
+	/**
+	 * World wide unique Sender ID of this JVM instance
+	 */
+	private static final String SENDER_ID = ManagementFactory.getRuntimeMXBean().getName() + "-" + UUID.randomUUID();
 
-	/** @return world wide unique Sender ID of this JVM instance */
+	/**
+	 * @return world wide unique Sender ID of this JVM instance
+	 */
 	public static String getSenderId()
 	{
 		return SENDER_ID;
 	}
 
-	/** @return true of calls to {@link IEventBus#postEvent(Event)} shall be performed asynchronously */
+	/**
+	 * @return true of calls to {@link IEventBus#processEvent(Event)} shall be performed asynchronously
+	 */
 	public static boolean isEventBusPostAsync(@NonNull final Topic topic)
 	{
+		if (alwaysConsiderAsyncTopics.contains(topic))
+		{
+			return true;
+		}
+
 		// NOTE: in case of unit tests which are checking what notifications were arrived,
 		// allowing the events to be posted async could be a problem because the event might arrive after the check.
 		if (Adempiere.isUnitTestMode())
@@ -114,24 +127,24 @@ public final class EventBusConfig
 		}
 
 		final String nameForAllTopics = "de.metas.event.asyncEventBus";
-		final Map<String, String> valuesForPrefix = Services.get(ISysConfigBL.class).getValuesForPrefix(nameForAllTopics, ClientAndOrgId.SYSTEM);
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		final Map<String, String> valuesForPrefix = sysConfigBL.getValuesForPrefix(nameForAllTopics, ClientAndOrgId.SYSTEM);
 
 		final String keyForTopic = nameForAllTopics + ".topic_" + topic.getName();
 		final String valueForTopic = valuesForPrefix.get(keyForTopic);
 		if (Check.isNotBlank(valueForTopic))
 		{
 			getLogger(EventBusConfig.class).debug("SysConfig returned value={} for keyForTopic={}", valueForTopic, keyForTopic);
-			return StringUtils.toBoolean(valueForTopic, false);
+			return StringUtils.toBoolean(valueForTopic);
 		}
 
 		final String standardValue = valuesForPrefix.get(nameForAllTopics);
 		getLogger(EventBusConfig.class).debug("SysConfig returned value={} for keyForTopic={}", standardValue, keyForTopic);
-		return StringUtils.toBoolean(standardValue, false);
+		return StringUtils.toBoolean(standardValue);
 	}
 
-	public static boolean isMonitorIncomingEvents()
+	public static void alwaysConsiderAsync(@NonNull final Topic topic)
 	{
-		return Services.get(ISysConfigBL.class).getBooleanValue("de.metas.event.MonitorIncomingEvents", false);
+		alwaysConsiderAsyncTopics.add(topic);
 	}
-
 }

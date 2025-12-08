@@ -11,6 +11,7 @@ import de.metas.contracts.commission.CommissionConstants;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
 import de.metas.contracts.location.ContractLocationHelper;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -18,7 +19,6 @@ import de.metas.document.location.DocumentLocation;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
@@ -30,6 +30,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -48,8 +49,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
@@ -210,14 +211,14 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 						orgId,
 						commissionProductId,
 						bPartnerId,
-						Quantitys.create(ONE, commissionProductId),
+						Quantitys.of(ONE, commissionProductId),
 						soTrx)
 				.setPriceListId(priceListId)
 				.setPriceDate(TimeUtil.asLocalDate(icRecord.getDateOrdered(), timeZone))
 				.setFailIfNotCalculated();
 		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContext);
 
-		icRecord.setInvoicableQtyBasedOn(X_C_Invoice_Candidate.INVOICABLEQTYBASEDON_Nominal);
+		icRecord.setInvoicableQtyBasedOn(InvoicableQtyBasedOn.NominalWeight.getCode());
 		icRecord.setM_PricingSystem_ID(PricingSystemId.toRepoId(pricingSystemId));
 		icRecord.setM_PriceList_Version_ID(pricingResult.getPriceListVersionId().getRepoId());
 		icRecord.setC_Currency_ID(pricingResult.getCurrencyId().getRepoId());
@@ -397,7 +398,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		return docTypeDAO.getDocTypeId(
 				DocTypeQuery.builder()
 						.docBaseType(commissionDocType.getDocBaseType())
-						.docSubType(commissionDocType.getDocSubType())
+						.docSubType(DocSubType.ofCode(commissionDocType.getDocSubType()))
 						.adClientId(shareRecord.getAD_Client_ID())
 						.adOrgId(shareRecord.getAD_Org_ID())
 						.build());

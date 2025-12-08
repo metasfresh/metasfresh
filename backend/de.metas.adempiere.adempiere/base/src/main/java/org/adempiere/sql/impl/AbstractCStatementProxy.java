@@ -50,7 +50,7 @@ import java.sql.Statement;
 	@Nullable
 	private Connection ownedConnection;
 
-	private final transient ST stmt;
+	@NonNull private final transient ST stmt;
 
 	public AbstractCStatementProxy(@NonNull final CStatementVO vo)
 	{
@@ -90,8 +90,10 @@ import java.sql.Statement;
 		return vo;
 	}
 
+	@NonNull
 	protected abstract ST createStatement(final Connection conn, final CStatementVO vo) throws SQLException;
 
+	@NonNull
 	protected final ST getStatementImpl()
 	{
 		return stmt;
@@ -133,10 +135,7 @@ import java.sql.Statement;
 
 		try
 		{
-			if (stmt != null)
-			{
-				stmt.close();
-			}
+			stmt.close();
 		}
 		finally
 		{
@@ -292,13 +291,13 @@ import java.sql.Statement;
 	}
 
 	@Override
-	public final void clearBatch() throws SQLException
+	public void clearBatch() throws SQLException
 	{
 		getStatementImpl().clearBatch();
 	}
 
 	@Override
-	public final int[] executeBatch() throws SQLException
+	public int[] executeBatch() throws SQLException
 	{
 		return getStatementImpl().executeBatch();
 	}
@@ -397,17 +396,6 @@ import java.sql.Statement;
 	public final boolean isCloseOnCompletion() throws SQLException
 	{
 		return getStatementImpl().isCloseOnCompletion();
-	}
-
-	@Override
-	public final void finalize() throws Throwable
-	{
-		if (stmt != null && !closed)
-		{
-			close();
-		}
-
-		super.finalize();
 	}
 
 	@Override

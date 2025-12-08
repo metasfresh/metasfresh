@@ -2,6 +2,7 @@ package de.metas.inventory;
 
 import java.util.List;
 
+import lombok.NonNull;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 
@@ -45,4 +46,6 @@ public interface IInventoryBL extends ISingletonService
 	void assignToInventoryCounters(List<I_M_InventoryLine> inventoryLines, int numberOfCounters);
 
 	void setDefaultInternalChargeId(I_M_InventoryLine inventoryLine);
+
+	void markInventoryLinesAsCounted(@NonNull InventoryId inventoryId);
 }

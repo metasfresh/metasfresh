@@ -11,6 +11,7 @@ import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.impl.AggregationEngine;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.location.CountryId;
 import de.metas.money.MoneyService;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.user.UserRepository;
@@ -20,8 +21,9 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.junit.Before;
-import org.junit.Test;
+import org.compiere.model.I_C_Location;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -30,7 +32,7 @@ import java.util.List;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -56,7 +58,7 @@ import static org.assertj.core.api.Assertions.*;
 public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBase
 {
 	@Override
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
@@ -84,7 +86,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 	public void test_updateLocationAndUser_True()
 	{
 		final I_C_Invoice_Candidate ic1 = prepareInvoiceCandidate().build();
-		int partnerId = ic1.getBill_BPartner_ID();
+		final int partnerId = ic1.getBill_BPartner_ID();
 
 		updateInvalidCandidates();
 		refresh(ic1);
@@ -92,7 +94,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		final int newLocationId = createNewDefaultLocation(partnerId, true);
 		final int newUserId = createNewDefaultUser(partnerId, newLocationId, "User1", true);
 
-		final AggregationEngine engine = AggregationEngine.builder()
+		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting()
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.bpartnerBL(new BPartnerBL(new UserRepository()))
 				.useDefaultBillLocationAndContactIfNotOverride(true)
@@ -112,7 +114,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 	public void test_updateLocationAndUser_True_InactiveLocation()
 	{
 		final I_C_Invoice_Candidate ic1 = prepareInvoiceCandidate().build();
-		int partnerId = ic1.getBill_BPartner_ID();
+		final int partnerId = ic1.getBill_BPartner_ID();
 
 		updateInvalidCandidates();
 		refresh(ic1);
@@ -122,7 +124,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		final int newLocationId = createNewDefaultLocation(partnerId, false);
 		final int newUserId = createNewDefaultUser(partnerId, newLocationId, "User1", true);
 
-		final AggregationEngine engine = AggregationEngine.builder()
+		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting()
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.bpartnerBL(new BPartnerBL(new UserRepository()))
 				.useDefaultBillLocationAndContactIfNotOverride(true)
@@ -142,7 +144,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 	public void test_updateLocationAndUser_True_InactiveUser()
 	{
 		final I_C_Invoice_Candidate ic1 = prepareInvoiceCandidate().build();
-		int partnerId = ic1.getBill_BPartner_ID();
+		final int partnerId = ic1.getBill_BPartner_ID();
 
 		updateInvalidCandidates();
 		refresh(ic1);
@@ -153,7 +155,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		final int newLocationId = createNewDefaultLocation(partnerId, false);
 		createNewDefaultUser(partnerId, newLocationId, "User1", false);
 
-		final AggregationEngine engine = AggregationEngine.builder()
+		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting()
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.bpartnerBL(new BPartnerBL(new UserRepository()))
 				.useDefaultBillLocationAndContactIfNotOverride(true)
@@ -173,7 +175,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 	public void test_updateLocationAndUser_True_BothInactive()
 	{
 		final I_C_Invoice_Candidate ic1 = prepareInvoiceCandidate().build();
-		int partnerId = ic1.getBill_BPartner_ID();
+		final int partnerId = ic1.getBill_BPartner_ID();
 
 		updateInvalidCandidates();
 		refresh(ic1);
@@ -185,7 +187,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		final int newLocationId = createNewDefaultLocation(partnerId, false);
 		createNewDefaultUser(partnerId, newLocationId, "User1", false);
 
-		final AggregationEngine engine = AggregationEngine.builder()
+		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting()
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.bpartnerBL(new BPartnerBL(new UserRepository()))
 				.useDefaultBillLocationAndContactIfNotOverride(true)
@@ -205,7 +207,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 	public void test_updateLocationAndUser_True_UserWithNoLocation()
 	{
 		final I_C_Invoice_Candidate ic1 = prepareInvoiceCandidate().build();
-		int partnerId = ic1.getBill_BPartner_ID();
+		final int partnerId = ic1.getBill_BPartner_ID();
 
 		updateInvalidCandidates();
 		refresh(ic1);
@@ -213,7 +215,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		final int newLocationId = createNewDefaultLocation(partnerId, true);
 		final int newUserId = createNewDefaultUser(partnerId, -1, "User1", true);
 
-		final AggregationEngine engine = AggregationEngine.builder()
+		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting()
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.bpartnerBL(new BPartnerBL(new UserRepository()))
 				.useDefaultBillLocationAndContactIfNotOverride(true)
@@ -233,7 +235,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 	public void test_updateLocationAndUser_False()
 	{
 		final I_C_Invoice_Candidate ic1 = prepareInvoiceCandidate().build();
-		int partnerId = ic1.getBill_BPartner_ID();
+		final int partnerId = ic1.getBill_BPartner_ID();
 
 		final int oldLocationId = ic1.getBill_Location_ID();
 		final int oldUserId = ic1.getBill_User_ID() <= 0 ? -1 : ic1.getBill_User_ID();
@@ -244,7 +246,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		final int newLocationId = createNewDefaultLocation(partnerId, true);
 		createNewDefaultUser(partnerId, newLocationId, "User1", true);
 
-		final AggregationEngine engine = AggregationEngine.builder()
+		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting()
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.bpartnerBL(new BPartnerBL(new UserRepository()))
 				.useDefaultBillLocationAndContactIfNotOverride(false)
@@ -264,7 +266,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 	public void test_updateLocationAndUser_True_RespectOverride()
 	{
 		final I_C_Invoice_Candidate ic1 = prepareInvoiceCandidate().build();
-		int partnerId = ic1.getBill_BPartner_ID();
+		final int partnerId = ic1.getBill_BPartner_ID();
 
 		final int overrideLocationId = createNewDefaultLocation(partnerId, true);
 		final int overrideUserId = createNewDefaultUser(partnerId, overrideLocationId, "User1", true);
@@ -280,7 +282,7 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		final int newLocationId = createNewDefaultLocation(partnerId, true);
 		createNewDefaultUser(partnerId, newLocationId, "User2", true);
 
-		final AggregationEngine engine = AggregationEngine.builder()
+		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting()
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.bpartnerBL(new BPartnerBL(new UserRepository()))
 				.useDefaultBillLocationAndContactIfNotOverride(true)
@@ -296,19 +298,26 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 		assertThat(invoice.getBillTo().getContactId().getRepoId()).isEqualTo(overrideUserId);
 	}
 
-	private int createNewDefaultLocation(int partnerId, boolean isActive)
+	private int createNewDefaultLocation(final int partnerId, final boolean isActive)
 	{
-		final I_C_BPartner_Location newBillLocation = newInstance(I_C_BPartner_Location.class);
-		newBillLocation.setC_BPartner_ID(partnerId);
-		newBillLocation.setIsBillToDefault(true);
-		newBillLocation.setIsBillTo(true);
-		newBillLocation.setIsActive(isActive);
-		save(newBillLocation);
+		final CountryId countryId = BusinessTestHelper.createCountry("DE", "de_DE");
 
-		return newBillLocation.getC_BPartner_Location_ID();
+		final I_C_Location newLocation = newInstance(I_C_Location.class);
+		newLocation.setC_Country_ID(countryId.getRepoId());
+		save(newLocation);
+
+		final I_C_BPartner_Location newBPLocation = newInstance(I_C_BPartner_Location.class);
+		newBPLocation.setC_BPartner_ID(partnerId);
+		newBPLocation.setIsBillToDefault(true);
+		newBPLocation.setIsBillTo(true);
+		newBPLocation.setIsActive(isActive);
+		newBPLocation.setC_Location_ID(newLocation.getC_Location_ID());
+		save(newBPLocation);
+
+		return newBPLocation.getC_BPartner_Location_ID();
 	}
 
-	private int createNewDefaultUser(final int partnerId, final int locationId, final String name, boolean isActive)
+	private int createNewDefaultUser(final int partnerId, final int locationId, final String name, final boolean isActive)
 	{
 		final I_AD_User newBillUser = newInstance(I_AD_User.class);
 		newBillUser.setC_BPartner_ID(partnerId);

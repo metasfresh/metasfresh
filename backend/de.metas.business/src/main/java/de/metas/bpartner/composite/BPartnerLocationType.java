@@ -132,12 +132,12 @@ public class BPartnerLocationType
 		return visitorsAddress.orElse(defaultValue);
 	}
 
-	public void setBillToDefault(boolean billToDefault)
+	public void setBillToDefault(final boolean billToDefault)
 	{
 		this.billToDefault = Optional.of(billToDefault);
 	}
 
-	public void setShipToDefault(boolean shipToDefault)
+	public void setShipToDefault(final boolean shipToDefault)
 	{
 		this.shipToDefault = Optional.of(shipToDefault);
 	}

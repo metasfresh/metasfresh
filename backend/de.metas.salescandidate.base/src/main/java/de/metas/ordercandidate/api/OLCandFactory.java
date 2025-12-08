@@ -3,10 +3,16 @@ package de.metas.ordercandidate.api;
 import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
+import de.metas.error.AdIssueId;
+import de.metas.freighcost.FreightCostRule;
+import de.metas.order.BPartnerOrderParams;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
+import de.metas.order.InvoiceRule;
 import de.metas.order.OrderLineGroup;
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
@@ -17,6 +23,13 @@ import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Objects;
 
 /*
  * #%L
@@ -41,42 +54,89 @@ import lombok.ToString;
  */
 
 @ToString
-final class OLCandFactory
+public final class OLCandFactory
 {
-	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
+    public static final String SYSCONFIG_USE_DATE_CANDIDATE_AS_DATE_ORDERED = "de.metas.ordercandidate.Use_DateCandidate_As_DateOrdered";
+    private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
+    private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+    private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+    private final IOLCandBL olCandBL = Services.get(IOLCandBL.class);
 
-	public OLCand toOLCand(@NonNull final I_C_OLCand record)
-	{
-		final OrderLineGroup orderLineGroup = Check.isBlank(record.getCompensationGroupKey())
-				? null
-				: OrderLineGroup.builder()
-				.groupKey(record.getCompensationGroupKey())
-				.isGroupingError(record.isGroupingError())
-				.groupingErrorMessage(record.getGroupingErrorMessage())
-				.discount(Percent.ofNullable(record.getGroupCompensationDiscountPercentage()))
-				.build();
+    public OLCand toOLCand(@NonNull final I_C_OLCand olCandRecord)
+    {
+        return toOLCand(olCandRecord, null);
+    }
 
-		final Quantity qtyItemCapacity = olCandEffectiveValuesBL.getQtyItemCapacity_Effective(record);
-		
-		return OLCand.builder()
-				.olCandEffectiveValuesBL(olCandEffectiveValuesBL)
-				.olCandRecord(record)
-				.pricingSystemId(PricingSystemId.ofRepoIdOrNull(record.getM_PricingSystem_ID()))
-				.deliveryRule(DeliveryRule.ofNullableCode(record.getDeliveryRule()))
-				.deliveryViaRule(DeliveryViaRule.ofNullableCode(record.getDeliveryViaRule()))
-				.shipperId(ShipperId.ofRepoIdOrNull(record.getM_Shipper_ID()))
-				.paymentRule(PaymentRule.ofNullableCode(record.getPaymentRule()))
-				.paymentTermId(PaymentTermId.ofRepoIdOrNull(record.getC_PaymentTerm_ID()))
-				.salesRepId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_SalesRep_ID()))
-				.orderDocTypeId(DocTypeId.ofRepoIdOrNull(record.getC_DocTypeOrder_ID()))
-				.orderLineGroup(orderLineGroup)
-				.asyncBatchId(AsyncBatchId.ofRepoIdOrNull(record.getC_Async_Batch_ID()))
-				.qtyItemCapacityEff(qtyItemCapacity)
-				.salesRepInternalId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_SalesRep_Internal_ID()))
-				.assignSalesRepRule(AssignSalesRepRule.ofCode(record.getApplySalesRepFrom()))
-				.bpartnerName(record.getBPartnerName())
-				.email(record.getEMail())
-				.phone(record.getPhone())
-				.build();
-	}
+    public OLCand toOLCand(
+            @NonNull final I_C_OLCand olCandRecord,
+            @Nullable final OLCandOrderDefaults orderDefaults)
+    {
+        final BPartnerOrderParams params = olCandBL.getBPartnerOrderParams(olCandRecord);
+
+        final DeliveryRule deliveryRule = olCandBL.getDeliveryRule(olCandRecord, params, orderDefaults);
+        final DeliveryViaRule deliveryViaRule = olCandBL.getDeliveryViaRule(olCandRecord, params, orderDefaults);
+        final FreightCostRule freightCostRule = olCandBL.getFreightCostRule(params, orderDefaults);
+        final InvoiceRule invoiceRule = olCandBL.getInvoiceRule(olCandRecord, params, orderDefaults);
+        final PaymentRule paymentRule = olCandBL.getPaymentRule(params, orderDefaults, olCandRecord);
+        final PaymentTermId paymentTermId = olCandBL.getPaymentTermId(params, orderDefaults, olCandRecord);
+        final PricingSystemId pricingSystemId = olCandBL.getPricingSystemId(olCandRecord, params, orderDefaults);
+        final ShipperId shipperId = olCandBL.getShipperId(params, orderDefaults, olCandRecord);
+        final DocTypeId orderDocTypeId = olCandBL.getOrderDocTypeId(orderDefaults, olCandRecord);
+        final Quantity qtyItemCapacity = olCandEffectiveValuesBL.getQtyItemCapacity_Effective(olCandRecord);
+        final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(olCandRecord.getC_BPartner_SalesRep_ID());
+        final BPartnerId salesRepInternalId = BPartnerId.ofRepoIdOrNull(olCandRecord.getC_BPartner_SalesRep_Internal_ID());
+        final AssignSalesRepRule assignSalesRepRule = AssignSalesRepRule.ofCode(olCandRecord.getApplySalesRepFrom());
+
+        final ZoneId tz = orgDAO.getTimeZone(OrgId.ofRepoId(olCandRecord.getAD_Org_ID()));
+        final LocalDate presetDateInvoiced = TimeUtil.asLocalDate(olCandRecord.getPresetDateInvoiced(), tz);
+        final LocalDate presetDateShipped = TimeUtil.asLocalDate(olCandRecord.getPresetDateShipped(), tz);
+
+        final OrderLineGroup orderLineGroup = Check.isBlank(olCandRecord.getCompensationGroupKey())
+                ? null
+                : OrderLineGroup.builder()
+				.groupKey(Objects.requireNonNull(olCandRecord.getCompensationGroupKey()))
+				.isGroupMainItem(olCandRecord.isGroupCompensationLine())
+                .isGroupingError(olCandRecord.isGroupingError())
+                .groupingErrorMessage(olCandRecord.getGroupingErrorMessage())
+                .discount(Percent.ofNullable(olCandRecord.getGroupCompensationDiscountPercentage()))
+                .build();
+
+        final OLCand.OLCandBuilder builder = OLCand.builder()
+                .olCandEffectiveValuesBL(olCandEffectiveValuesBL)
+                .olCandRecord(olCandRecord)
+                .pricingSystemId(pricingSystemId)
+                .deliveryRule(deliveryRule)
+                .deliveryViaRule(deliveryViaRule)
+				.freightCostRule(freightCostRule)
+				.invoiceRule(invoiceRule)
+                .shipperId(shipperId)
+                .paymentRule(paymentRule)
+                .paymentTermId(paymentTermId)
+                .salesRepId(salesRepId)
+                .orderDocTypeId(orderDocTypeId)
+                .orderLineGroup(orderLineGroup)
+                .asyncBatchId(AsyncBatchId.ofRepoIdOrNull(olCandRecord.getC_Async_Batch_ID()))
+                .qtyItemCapacityEff(qtyItemCapacity)
+                .salesRepInternalId(salesRepInternalId)
+                .assignSalesRepRule(assignSalesRepRule)
+                .bpartnerName(olCandRecord.getBPartnerName())
+                .email(olCandRecord.getEMail())
+                .phone(olCandRecord.getPhone())
+                .presetDateShipped(presetDateShipped)
+                .presetDateInvoiced(presetDateInvoiced)
+				.adIssueId(AdIssueId.ofRepoIdOrNull(olCandRecord.getAD_Issue_ID()));
+
+        final boolean useDateCandidate = sysConfigBL.getBooleanValue(SYSCONFIG_USE_DATE_CANDIDATE_AS_DATE_ORDERED, false, olCandRecord.getAD_Client_ID(), olCandRecord.getAD_Org_ID());
+        if (useDateCandidate)
+        {
+            builder.dateOrdered(TimeUtil.asLocalDate(olCandRecord.getDateCandidate(), tz));
+        }
+        else
+        {
+            // this is how it was; but note that DateOrdered was not in the "EDI_Imp_C_OLCand" EXP_Format,
+            // so in the EDI ORDERS-case, it was always null.
+            builder.dateOrdered(TimeUtil.asLocalDate(olCandRecord.getDateOrdered(), tz));
+        }
+        return builder.build();
+    }
 }

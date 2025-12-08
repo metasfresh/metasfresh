@@ -22,27 +22,26 @@ package de.metas.handlingunits.order.api.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Order;
-
 import de.metas.handlingunits.IPackingMaterialDocumentLine;
 import de.metas.handlingunits.IPackingMaterialDocumentLineSource;
 import de.metas.handlingunits.impl.AbstractPackingMaterialDocumentLinesBuilder;
 import de.metas.handlingunits.model.I_C_OrderLine;
-import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Order;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Iterates an order's lines and creates additional lines for the HU packing material.
@@ -144,12 +143,12 @@ public final class OrderPackingMaterialDocumentLinesBuilder extends AbstractPack
 	}
 
 	@Override
-	protected IPackingMaterialDocumentLine createPackingMaterialDocumentLine(final I_M_HU_PackingMaterial packingMaterial)
+	protected IPackingMaterialDocumentLine createPackingMaterialDocumentLine(@NonNull final ProductId productId)
 	{
 		final I_C_OrderLine orderLine = orderLineBL.createOrderLine(order, I_C_OrderLine.class);
-		final UomId uomId = productBL.getStockUOMId(packingMaterial.getM_Product_ID());
+		final UomId uomId = productBL.getStockUOMId(ProductId.toRepoId(productId));
 
-		orderLine.setM_Product_ID(packingMaterial.getM_Product_ID());
+		orderLine.setM_Product_ID(ProductId.toRepoId(productId));
 		orderLine.setC_UOM_ID(uomId.getRepoId()); // prevent the system from picking its default-UOM; there might be no UOM-conversion to/from the product's UOM
 		orderLine.setIsPackagingMaterial(true);
 

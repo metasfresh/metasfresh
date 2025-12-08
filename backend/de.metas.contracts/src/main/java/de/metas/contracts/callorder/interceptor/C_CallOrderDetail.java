@@ -112,12 +112,12 @@ public class C_CallOrderDetail
 	@NonNull
 	private static Quantity getQtyDelivered(@NonNull final I_C_CallOrderDetail callOrderDetail)
 	{
-		return Quantitys.create(callOrderDetail.getQtyDeliveredInUOM(), UomId.ofRepoId(callOrderDetail.getC_UOM_ID()));
+		return Quantitys.of(callOrderDetail.getQtyDeliveredInUOM(), UomId.ofRepoId(callOrderDetail.getC_UOM_ID()));
 	}
 
 	@NonNull
 	private static Quantity getQtyInvoiced(@NonNull final I_C_CallOrderDetail callOrderDetail)
 	{
-		return Quantitys.create(callOrderDetail.getQtyInvoicedInUOM(), UomId.ofRepoId(callOrderDetail.getC_UOM_ID()));
+		return Quantitys.of(callOrderDetail.getQtyInvoicedInUOM(), UomId.ofRepoId(callOrderDetail.getC_UOM_ID()));
 	}
 }

@@ -36,13 +36,18 @@ public class Optionals
 	@SafeVarargs
 	public static <T> Optional<T> firstPresentOfSuppliers(final Supplier<Optional<T>>... suppliers)
 	{
-		if (suppliers == null || suppliers.length == 0)
+		if (suppliers == null)
 		{
 			return Optional.empty();
 		}
 
 		for (final Supplier<Optional<T>> supplier : suppliers)
 		{
+			if (supplier == null)
+			{
+				continue;
+			}
+
 			final Optional<T> optionalValue = supplier.get();
 			if (optionalValue != null && optionalValue.isPresent())
 			{
@@ -51,6 +56,19 @@ public class Optionals
 		}
 
 		return Optional.empty();
+	}
+
+	public static <T> Optional<T> firstPresentOfSuppliers(
+			@NonNull final Supplier<Optional<T>> supplier1,
+			@NonNull final Supplier<Optional<T>> supplier2)
+	{
+		final Optional<T> value1 = supplier1.get();
+		if (value1 != null && value1.isPresent())
+		{
+			return value1;
+		}
+
+		return supplier2.get();
 	}
 
 	/**

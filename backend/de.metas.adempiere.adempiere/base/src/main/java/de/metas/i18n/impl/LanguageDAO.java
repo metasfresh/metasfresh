@@ -252,7 +252,7 @@ public class LanguageDAO implements ILanguageDAO
 	private int deleteTableTranslations(final String trlTableName, final String adLanguage)
 	{
 		final String sql = "DELETE FROM  " + trlTableName + " WHERE AD_Language=?";
-		final int no = DB.executeUpdateEx(sql, new Object[] { adLanguage }, ITrx.TRXNAME_ThreadInherited);
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { adLanguage }, ITrx.TRXNAME_ThreadInherited);
 		logger.info("Removed {} translations for {} ({})", no, trlTableName, adLanguage);
 		return no;
 	}
@@ -333,7 +333,7 @@ public class LanguageDAO implements ILanguageDAO
 		.append("\n WHERE " + trlAlias + "." + keyColumn + " IS NULL");
 		// @formatter:on
 
-		final int no = DB.executeUpdateEx(insertSql.toString(), null, ITrx.TRXNAME_ThreadInherited);
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(insertSql.toString(), null, ITrx.TRXNAME_ThreadInherited);
 		if (no != 0)
 		{
 			logger.info("Added {} missing translations for {} ({})", no, trlTableName, adLanguage);

@@ -1,22 +1,21 @@
 package de.metas.inoutcandidate.api.impl;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
-import de.metas.util.Services;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Tests {@link ShipmentScheduleAllocDAO}.
  *
  * @author tsa
- *
  */
 public class ShipmentScheduleAllocDAOTest
 {
@@ -33,10 +32,10 @@ public class ShipmentScheduleAllocDAOTest
 	/**
 	 * Some simple tests on
 	 * <ul>
-	 * <li>{@link IShipmentScheduleAllocDAO#retrieveNotOnShipmentLineRecords(I_M_ShipmentSchedule, Class)}
-	 * <li>{@link IShipmentScheduleAllocDAO#retrieveOnShipmentLineRecordsQuery(I_M_ShipmentSchedule)}
+	 * <li>{@link IShipmentScheduleAllocDAO#retrieveNotOnShipmentLineRecords(ShipmentScheduleId, Class)}
+	 * <li>{@link IShipmentScheduleAllocDAO#retrieveOnShipmentLineRecordsQuery(ShipmentScheduleId)}
 	 * </ul>
-	 *
+	 * <p>
 	 * to make sure:
 	 * <ul>
 	 * <li>are working correctly
@@ -46,7 +45,7 @@ public class ShipmentScheduleAllocDAOTest
 	@Test
 	public void test_retrievePickedNotDeliveredRecords()
 	{
-		final I_M_ShipmentSchedule ss = createShipmentSchedule();
+		final ShipmentScheduleId ss = createShipmentSchedule();
 		final I_M_ShipmentSchedule_QtyPicked qp1 = createShipmentScheduleQtyPickedRecord(ss, 0);
 		final I_M_ShipmentSchedule_QtyPicked qp2 = createShipmentScheduleQtyPickedRecord(ss, 1);
 		final I_M_ShipmentSchedule_QtyPicked qp3 = createShipmentScheduleQtyPickedRecord(ss, 0);
@@ -61,17 +60,17 @@ public class ShipmentScheduleAllocDAOTest
 				.containsExactly(qp2, qp4);
 	}
 
-	private final I_M_ShipmentSchedule createShipmentSchedule()
+	private ShipmentScheduleId createShipmentSchedule()
 	{
 		final I_M_ShipmentSchedule sched = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule.class);
 		InterfaceWrapperHelper.saveRecord(sched);
-		return sched;
+		return ShipmentScheduleId.ofRepoId(sched.getM_ShipmentSchedule_ID());
 	}
 
-	private final I_M_ShipmentSchedule_QtyPicked createShipmentScheduleQtyPickedRecord(final I_M_ShipmentSchedule ss, final int inoutLineId)
+	private I_M_ShipmentSchedule_QtyPicked createShipmentScheduleQtyPickedRecord(final ShipmentScheduleId shipmentScheduleId, final int inoutLineId)
 	{
 		final I_M_ShipmentSchedule_QtyPicked record = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule_QtyPicked.class);
-		record.setM_ShipmentSchedule_ID(ss.getM_ShipmentSchedule_ID());
+		record.setM_ShipmentSchedule_ID(shipmentScheduleId.getRepoId());
 		record.setM_InOutLine_ID(inoutLineId);
 		InterfaceWrapperHelper.saveRecord(record);
 		return record;

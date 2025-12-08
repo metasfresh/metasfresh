@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import lombok.NonNull;
 import lombok.Value;
 
@@ -44,6 +43,11 @@ public class InOutAndLineId
 	public static InOutAndLineId ofRepoId(final int inOutRepoId, final int inOutLineRepoId)
 	{
 		return new InOutAndLineId(InOutId.ofRepoId(inOutRepoId), InOutLineId.ofRepoId(inOutLineRepoId));
+	}
+
+	public static InOutAndLineId ofRepoId(@NonNull final InOutId inOutId, final int inOutLineRepoId)
+	{
+		return new InOutAndLineId(inOutId, InOutLineId.ofRepoId(inOutLineRepoId));
 	}
 
 	@Nullable

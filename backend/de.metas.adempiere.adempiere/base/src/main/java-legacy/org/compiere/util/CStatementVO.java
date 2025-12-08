@@ -16,12 +16,12 @@
  *****************************************************************************/
 package org.compiere.util;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableMap;
+
 import java.io.Serializable;
 import java.util.Map;
 import java.util.TreeMap;
-
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableMap;
 
 /**
  * Adempiere Statement Value Object
@@ -36,7 +36,7 @@ public class CStatementVO implements Serializable
 	/**
 	 * VO Constructor
 	 *
-	 * @param resultSetType - ResultSet.TYPE_FORWARD_ONLY, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.TYPE_SCROLL_SENSITIVE
+	 * @param resultSetType        - ResultSet.TYPE_FORWARD_ONLY, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.TYPE_SCROLL_SENSITIVE
 	 * @param resultSetConcurrency - ResultSet.CONCUR_READ_ONLY or ResultSet.CONCUR_UPDATABLE
 	 */
 	public CStatementVO(final int resultSetType, final int resultSetConcurrency, final String trxName)
@@ -46,14 +46,14 @@ public class CStatementVO implements Serializable
 		m_resultSetConcurrency = resultSetConcurrency;
 		m_sql = null;
 		m_trxName = trxName;
-	}	// CStatementVO
+	}    // CStatementVO
 
 	/**
 	 * VO Constructor
 	 *
-	 * @param resultSetType - ResultSet.TYPE_FORWARD_ONLY, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.TYPE_SCROLL_SENSITIVE
+	 * @param resultSetType        - ResultSet.TYPE_FORWARD_ONLY, ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.TYPE_SCROLL_SENSITIVE
 	 * @param resultSetConcurrency - ResultSet.CONCUR_READ_ONLY or ResultSet.CONCUR_UPDATABLE
-	 * @param sql sql
+	 * @param sql                  sql
 	 */
 	public CStatementVO(final int resultSetType, final int resultSetConcurrency, final String sql, final String trxName)
 	{
@@ -61,15 +61,23 @@ public class CStatementVO implements Serializable
 		m_resultSetConcurrency = resultSetConcurrency;
 		m_sql = sql;
 		m_trxName = trxName;
-	}	// CStatementVO
+	}    // CStatementVO
 
-	/** Type */
+	/**
+	 * Type
+	 */
 	private final int m_resultSetType;
-	/** Concurrency */
+	/**
+	 * Concurrency
+	 */
 	private final int m_resultSetConcurrency;
-	/** SQL Statement */
+	/**
+	 * SQL Statement
+	 */
 	private String m_sql;
-	/** Transaction Name **/
+	/**
+	 * Transaction Name
+	 **/
 	private final String m_trxName;
 
 	/**
@@ -92,15 +100,10 @@ public class CStatementVO implements Serializable
 				.toString();
 	}
 
-	/**
-	 * Get SQL
-	 *
-	 * @return sql
-	 */
 	public final String getSql()
 	{
 		return m_sql;
-	}	// getSql
+	}
 
 	public void setSql(final String sql)
 	{
@@ -135,6 +138,11 @@ public class CStatementVO implements Serializable
 		return m_trxName;
 	}
 
+	public final void clearDebugSqlParams()
+	{
+		this.debugSqlParams = null;
+	}
+
 	public final void setDebugSqlParam(final int parameterIndex, final Object parameterValue)
 	{
 		if (debugSqlParams == null)
@@ -149,4 +157,12 @@ public class CStatementVO implements Serializable
 		final Map<Integer, Object> debugSqlParams = this.debugSqlParams;
 		return debugSqlParams == null ? ImmutableMap.of() : debugSqlParams;
 	}
-}	// CStatementVO
+
+	public final Map<Integer, Object> getAndClearDebugSqlParams()
+	{
+		final Map<Integer, Object> debugSqlParams = getDebugSqlParams();
+		clearDebugSqlParams();
+		return debugSqlParams;
+	}
+
+}    // CStatementVO

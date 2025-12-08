@@ -65,6 +65,8 @@ export const ARROW_UP_KEY = 'ArrowUp';
  */
 export const AMOUNT_FIELD_TYPES = ['Amount', 'CostPrice', 'Quantity'];
 
+export const NUMERIC_FIELD_TYPES = [...AMOUNT_FIELD_TYPES, 'Integer', 'Number'];
+
 /**
  * @constant
  * @type {array} ToDo: Description for the constant.
@@ -200,12 +202,6 @@ export const HOME_MENU_USER_MAX_ITEMS = 10;
  * @type {integer} Used to indicate the number of rows from where we display the `Show more...` button
  */
 export const INLINE_TAB_SHOW_MORE_FROM = 5;
-
-/**
- * @constant
- * @type {string} Used to identify the type of filter passed to checkClearedFilters
- */
-export const FILTERS_TYPE_NOT_INCLUDED = 'NotIncluded';
 
 /**
  * @constant

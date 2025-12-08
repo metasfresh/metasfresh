@@ -1,14 +1,11 @@
 package de.metas.contracts.subscription.order.restart;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.List;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.common.util.pair.IPair;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.util.RelatedRecordsProvider.SourceRecordsKey;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
@@ -16,10 +13,11 @@ import org.compiere.model.I_C_OrderLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.google.common.collect.ImmutableList;
+import java.util.List;
 
-import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.util.RelatedRecordsProvider.SourceRecordsKey;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L

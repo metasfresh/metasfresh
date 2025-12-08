@@ -1,5 +1,6 @@
 package org.eevolution.api;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
@@ -66,6 +67,17 @@ public enum BOMComponentType implements ReferenceListAwareEnum
 	{
 		return index.ofCode(code);
 	}
+
+	@NonNull
+	public static BOMComponentType ofNullableCodeOrComponent(@Nullable final String code)
+	{
+		final BOMComponentType type = index.ofNullableCode(code);
+		return type != null ? type : Component;
+	}
+
+	@JsonCreator
+	@NonNull
+	public static BOMComponentType ofCodeOrName(@NonNull final String code) {return index.ofCodeOrName(code);}
 
 	public static Optional<BOMComponentType> optionalOfNullableCode(@Nullable final String code)
 	{

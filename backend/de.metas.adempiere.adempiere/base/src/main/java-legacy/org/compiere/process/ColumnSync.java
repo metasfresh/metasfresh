@@ -16,55 +16,35 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import java.util.List;
-
-import org.adempiere.ad.table.api.AdTableId;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.util.LegacyAdapters;
-import org.compiere.model.I_AD_Column;
-import org.compiere.model.I_AD_Table;
-import org.compiere.model.MColumn;
-
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import org.adempiere.ad.column.AdColumnId;
+import org.adempiere.ad.table.ddl.TableDDLSyncService;
+import org.compiere.SpringContextHolder;
+
+import java.util.List;
 
 /**
  * Synchronize Column with Database
- * 
- * @author Victor Perez, Jorg Janke
- * @version $Id: ColumnSync.java,v 1.2 2006/07/30 00:51:01 jjanke Exp $
- * 
- * @author Teo Sarca
- *         <li>BF [ 2854358 ] SyncColumn should load table in transaction
- *         https://sourceforge.net/tracker/?func=detail&aid=2854358&group_id=176962&atid=879332
  */
 public class ColumnSync extends JavaProcess implements IProcessPrecondition
 {
+	private final TableDDLSyncService syncService = SpringContextHolder.instance.getBean(TableDDLSyncService.class);
+
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
-		final I_AD_Column column = context.getSelectedModel(I_AD_Column.class);
-		if (column == null)
+		if (!context.isSingleSelection())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		final String columnSQL = column.getColumnSQL();
-
-		if (!Check.isEmpty(columnSQL, true))
+		final AdColumnId adColumnId = AdColumnId.ofRepoId(context.getSingleSelectedRecordId());
+		if (!syncService.isSynchronizableColumn(adColumnId))
 		{
-			return ProcessPreconditionsResolution.reject("virtual columns are not supported");
-		}
-
-		final AdTableId adTableId = AdTableId.ofRepoId(column.getAD_Table_ID());
-		final I_AD_Table table = Services.get(IADTableDAO.class).retrieveTable(adTableId);
-		if (table.isView())
-		{
-			return ProcessPreconditionsResolution.reject("views are not supported");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Not available for synchronization");
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -73,9 +53,8 @@ public class ColumnSync extends JavaProcess implements IProcessPrecondition
 	@Override
 	protected String doIt()
 	{
-		final MColumn column = LegacyAdapters.convertToPO(getRecord(I_AD_Column.class));
-
-		final List<String> sqlStatements = column.syncDatabase();
+		final AdColumnId adColumnId = AdColumnId.ofRepoId(getRecord_ID());
+		final List<String> sqlStatements = syncService.syncToDatabase(adColumnId);
 		sqlStatements.forEach(this::addLog);
 
 		return MSG_OK;

@@ -22,13 +22,6 @@ package de.metas.tourplanning.process;
  * #L%
  */
 
-import java.util.Iterator;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-
 import de.metas.adempiere.form.IClientUI;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
@@ -42,6 +35,12 @@ import de.metas.tourplanning.model.I_M_ShipperTransportation;
 import de.metas.tourplanning.model.I_M_Tour_Instance;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+
+import java.util.Iterator;
 
 public class M_Tour_Instance_CreateFromSelectedDeliveryDays extends JavaProcess
 {
@@ -235,7 +234,7 @@ public class M_Tour_Instance_CreateFromSelectedDeliveryDays extends JavaProcess
 		shipperTransportation.setShipper_Location_ID(p_Shipper_Location_ID);
 		shipperTransportation.setM_Shipper_ID(p_M_Shipper_ID);
 		Services.get(IShipperTransportationBL.class).setC_DocType(shipperTransportation);
-		shipperTransportation.setCollectiveBillReport("N"); // FIXME: why the fuck we need to set that? / update: not mandatory anymore  but i didn't remove this line because no time to test
+		shipperTransportation.setIsSOTrx(true);
 
 		// 07958
 		// also set the tour id

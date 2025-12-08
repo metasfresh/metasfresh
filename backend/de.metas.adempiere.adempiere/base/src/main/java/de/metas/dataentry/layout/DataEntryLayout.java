@@ -1,24 +1,21 @@
 package de.metas.dataentry.layout;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Predicate;
-
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.table.api.AdTableId;
-import org.adempiere.exceptions.AdempiereException;
-
-import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.dataentry.DataEntrySubTabId;
-import de.metas.dataentry.DataEntryTabId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Predicate;
 
 /*
  * #%L
@@ -68,12 +65,6 @@ public class DataEntryLayout
 	public boolean isEmpty()
 	{
 		return tabs.isEmpty();
-	}
-
-	public DataEntryTab getTabById(@NonNull final DataEntryTabId tabId)
-	{
-		return getFirstTabMatching(tab -> DataEntryTabId.equals(tab.getId(), tabId))
-				.orElseThrow(() -> new AdempiereException("@NotFound@ " + tabId + " in " + this));
 	}
 
 	public Optional<DataEntryTab> getFirstTabMatching(@NonNull final Predicate<DataEntryTab> predicate)

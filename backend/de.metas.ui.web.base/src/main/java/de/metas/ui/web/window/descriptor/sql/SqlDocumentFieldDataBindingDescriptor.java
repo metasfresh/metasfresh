@@ -7,6 +7,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.util.Check;
+import de.metas.util.OptionalBoolean;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.column.ColumnSql;
@@ -17,6 +18,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.Optional;
+import java.util.OptionalInt;
 
 /*
  * #%L
@@ -40,6 +42,7 @@ import java.util.Optional;
  * #L%
  */
 
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataBindingDescriptor, SqlEntityFieldBinding
 {
 	public static Builder builder()
@@ -62,7 +65,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	{
 		if (descriptor instanceof SqlDocumentFieldDataBindingDescriptor)
 		{
-			return (SqlDocumentFieldDataBindingDescriptor)descriptor;
+			return cast(descriptor);
 		}
 		else
 		{
@@ -70,46 +73,40 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		}
 	}
 
-	@Getter
-	private final String fieldName;
-	@Getter
-	private final String sqlColumnName;
-	@Getter
-	private final Class<?> sqlValueClass;
+	@Nullable
+	public static SqlDocumentFieldDataBindingDescriptor cast(final DocumentFieldDataBindingDescriptor descriptor)
+	{
+		return (SqlDocumentFieldDataBindingDescriptor)descriptor;
+	}
+
+	@Getter private final String fieldName;
+	@Getter private final String sqlColumnName;
+	@Getter private final Class<?> sqlValueClass;
 
 	/**
 	 * true if this is a virtual SQL column (i.e. it's has an SQL expression to compute the value, instead of having just the field name)
 	 */
-	@Getter
-	private final boolean virtualColumn;
-	@Getter
-	private final boolean mandatory;
-	@Getter
-	private final boolean keyColumn;
+	@Getter private final boolean virtualColumn;
+	@Getter private final boolean mandatory;
+	@Getter private final boolean keyColumn;
+	@Getter private final boolean hideGridColumnIfEmpty;
 
-	@Getter
-	private final DocumentFieldWidgetType widgetType;
-	@Getter
-	private final Class<?> valueClass;
-	@Getter
-	@Nullable final LookupDescriptor lookupDescriptor;
-	@Getter
-	private final DocumentFieldValueLoader documentFieldValueLoader;
+	@Getter private final DocumentFieldWidgetType widgetType;
+	@Getter private final OptionalInt minPrecision;
+	@Getter private final Class<?> valueClass;
+	@Nullable @Getter final LookupDescriptor lookupDescriptor;
+	@Getter private final DocumentFieldValueLoader documentFieldValueLoader;
 
-	private final Boolean numericKey;
+	@NonNull private final OptionalBoolean numericKey;
 
 	/**
 	 * to be used in SELECT ... 'this field's sql' ... FROM ...
 	 */
-	@Getter
-	private final SqlSelectValue sqlSelectValue;
-	@Getter
-	private final SqlSelectDisplayValue sqlSelectDisplayValue;
+	@Getter private final SqlSelectValue sqlSelectValue;
+	@Getter private final SqlSelectDisplayValue sqlSelectDisplayValue;
 
-	@Getter
-	private final int defaultOrderByPriority;
-	@Getter
-	private final boolean defaultOrderByAscending;
+	@Getter private final int defaultOrderByPriority;
+	@Getter private final boolean defaultOrderByAscending;
 
 	private SqlDocumentFieldDataBindingDescriptor(final Builder builder)
 	{
@@ -122,10 +119,12 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		keyColumn = builder.keyColumn;
 
 		widgetType = builder.getWidgetType();
+		minPrecision = builder.getMinPrecision();
 		valueClass = builder.getValueClass();
 		lookupDescriptor = builder._lookupDescriptor;
 
 		documentFieldValueLoader = builder.getDocumentFieldValueLoader();
+		this.hideGridColumnIfEmpty = builder.hideGridColumnIfEmpty;
 		Check.assumeNotNull(documentFieldValueLoader, "Parameter documentFieldValueLoader is not null");
 
 		numericKey = builder.getNumericKey();
@@ -150,12 +149,12 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	}
 
 	@Override
-	public String getColumnName() { return getSqlColumnName(); }
+	public String getColumnName() {return getSqlColumnName();}
 
-	public boolean isNumericKey() { return numericKey != null && numericKey; }
+	public boolean isNumericKey() {return numericKey.isTrue();}
 
 	@Override
-	public boolean isDefaultOrderBy() { return defaultOrderByPriority != 0; }
+	public boolean isDefaultOrderBy() {return defaultOrderByPriority != 0;}
 
 	@Override
 	public SqlOrderByValue getSqlOrderBy()
@@ -182,9 +181,11 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		private Class<?> _sqlValueClass;
 
 		private Boolean mandatory;
+		private boolean hideGridColumnIfEmpty;
 
 		private Class<?> _valueClass;
 		private DocumentFieldWidgetType _widgetType;
+		private OptionalInt minPrecision = OptionalInt.empty();
 		@Nullable private LookupDescriptor _lookupDescriptor;
 		private boolean keyColumn = false;
 		private boolean encrypted = false;
@@ -194,7 +195,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 
 		// Built values
 		@Nullable private SqlSelectDisplayValue _sqlSelectDisplayValue;
-		@Nullable private Boolean _numericKey;
+		@NonNull private OptionalBoolean _numericKey = OptionalBoolean.UNKNOWN;
 		private DocumentFieldValueLoader _documentFieldValueLoader;
 
 		private Builder()
@@ -210,12 +211,12 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 					&& sqlColumnName != null // in case of Labels, sqlColumnName is null
 					&& _lookupDescriptor instanceof ISqlLookupDescriptor)
 			{
-				_numericKey = _lookupDescriptor.isNumericKey();
+				_numericKey = OptionalBoolean.ofBoolean(_lookupDescriptor.isNumericKey());
 				_sqlSelectDisplayValue = buildSqlSelectDisplayValue();
 			}
 			else
 			{
-				_numericKey = null;
+				_numericKey = OptionalBoolean.UNKNOWN;
 				_sqlSelectDisplayValue = null;
 			}
 
@@ -283,7 +284,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 						getColumnName(),
 						displayColumnName,
 						getValueClass(),
-						getWidgetType(),
+						getMinPrecision(),
 						encrypted,
 						getNumericKey());
 			}
@@ -301,13 +302,13 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 				final String sqlColumnName,
 				final String sqlDisplayColumnName,
 				final Class<?> valueClass,
-				final DocumentFieldWidgetType widgetType,
+				final OptionalInt minPrecision,
 				final boolean encrypted,
-				final Boolean numericKey)
+				@NonNull final OptionalBoolean numericKey)
 		{
 			if (!Check.isEmpty(sqlDisplayColumnName))
 			{
-				return DocumentFieldValueLoaders.toLookupValue(sqlColumnName, sqlDisplayColumnName, /* descriptionColumnName, */ numericKey);
+				return DocumentFieldValueLoaders.toLookupValue(sqlColumnName, sqlDisplayColumnName, /* descriptionColumnName, */ numericKey.isTrue());
 			}
 			else if (java.lang.String.class == valueClass)
 			{
@@ -323,8 +324,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			}
 			else if (java.math.BigDecimal.class == valueClass)
 			{
-				final Integer precision = widgetType.getStandardNumberPrecision();
-				return DocumentFieldValueLoaders.toBigDecimal(sqlColumnName, encrypted, precision);
+				return DocumentFieldValueLoaders.toBigDecimal(sqlColumnName, encrypted, minPrecision);
 			}
 			//
 			// Date & times
@@ -435,6 +435,12 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			return this;
 		}
 
+		public Builder setHideGridColumnIfEmpty(final boolean hideGridColumnIfEmpty)
+		{
+			this.hideGridColumnIfEmpty = hideGridColumnIfEmpty;
+			return this;
+		}
+
 		public Builder setValueClass(final Class<?> valueClass)
 		{
 			this._valueClass = valueClass;
@@ -463,6 +469,17 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			return _widgetType;
 		}
 
+		public Builder setMinPrecision(@NonNull final OptionalInt minPrecision)
+		{
+			this.minPrecision = minPrecision;
+			return this;
+		}
+
+		private OptionalInt getMinPrecision()
+		{
+			return minPrecision;
+		}
+
 		public Builder setSqlValueClass(final Class<?> sqlValueClass)
 		{
 			this._sqlValueClass = sqlValueClass;
@@ -484,8 +501,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			return this;
 		}
 
-		@Nullable
-		public Boolean getNumericKey()
+		public OptionalBoolean getNumericKey()
 		{
 			return _numericKey;
 		}

@@ -1,84 +1,53 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_DiscountSchema
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_M_DiscountSchema extends org.compiere.model.PO implements I_M_DiscountSchema, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -336442302L;
+	private static final long serialVersionUID = 174899977L;
 
     /** Standard Constructor */
-    public X_M_DiscountSchema (Properties ctx, int M_DiscountSchema_ID, String trxName)
+    public X_M_DiscountSchema (final Properties ctx, final int M_DiscountSchema_ID, @Nullable final String trxName)
     {
       super (ctx, M_DiscountSchema_ID, trxName);
-      /** if (M_DiscountSchema_ID == 0)
-        {
-			setBreakValueType (null); // Q
-			setDiscountType (null);
-			setIsBPartnerFlatDiscount (false);
-			setM_DiscountSchema_ID (0);
-			setName (null);
-			setValidFrom (new Timestamp( System.currentTimeMillis() ));
-        } */
     }
 
     /** Load Constructor */
-    public X_M_DiscountSchema (Properties ctx, ResultSet rs, String trxName)
+    public X_M_DiscountSchema (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
+	/** Load Meta Data */
 	@Override
-	public org.compiere.model.I_M_Attribute getBreakValue_Attribute() throws RuntimeException
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
-		return get_ValueAsPO(COLUMNNAME_BreakValue_Attribute_ID, org.compiere.model.I_M_Attribute.class);
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
 	@Override
-	public void setBreakValue_Attribute(org.compiere.model.I_M_Attribute BreakValue_Attribute)
-	{
-		set_ValueFromPO(COLUMNNAME_BreakValue_Attribute_ID, org.compiere.model.I_M_Attribute.class, BreakValue_Attribute);
-	}
-
-	/** Set Merkmal.
-		@param BreakValue_Attribute_ID Merkmal	  */
-	@Override
-	public void setBreakValue_Attribute_ID (int BreakValue_Attribute_ID)
+	public void setBreakValue_Attribute_ID (final int BreakValue_Attribute_ID)
 	{
 		if (BreakValue_Attribute_ID < 1) 
 			set_Value (COLUMNNAME_BreakValue_Attribute_ID, null);
 		else 
-			set_Value (COLUMNNAME_BreakValue_Attribute_ID, Integer.valueOf(BreakValue_Attribute_ID));
+			set_Value (COLUMNNAME_BreakValue_Attribute_ID, BreakValue_Attribute_ID);
 	}
 
-	/** Get Merkmal.
-		@return Merkmal	  */
 	@Override
-	public int getBreakValue_Attribute_ID () 
+	public int getBreakValue_Attribute_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_BreakValue_Attribute_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_BreakValue_Attribute_ID);
 	}
 
 	/** 
@@ -92,21 +61,16 @@ public class X_M_DiscountSchema extends org.compiere.model.PO implements I_M_Dis
 	public static final String BREAKVALUETYPE_Amount = "A";
 	/** Attribute = T */
 	public static final String BREAKVALUETYPE_Attribute = "T";
-	/** Set Break Value Type.
-		@param BreakValueType Break Value Type	  */
 	@Override
-	public void setBreakValueType (java.lang.String BreakValueType)
+	public void setBreakValueType (final java.lang.String BreakValueType)
 	{
-
 		set_Value (COLUMNNAME_BreakValueType, BreakValueType);
 	}
 
-	/** Get Break Value Type.
-		@return Break Value Type	  */
 	@Override
-	public java.lang.String getBreakValueType () 
+	public java.lang.String getBreakValueType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_BreakValueType);
+		return get_ValueAsString(COLUMNNAME_BreakValueType);
 	}
 
 	/** 
@@ -116,40 +80,28 @@ public class X_M_DiscountSchema extends org.compiere.model.PO implements I_M_Dis
 	public static final int CUMULATIVELEVEL_AD_Reference_ID=246;
 	/** Position = L */
 	public static final String CUMULATIVELEVEL_Position = "L";
-	/** Set Anwenden auf.
-		@param CumulativeLevel 
-		Level for accumulative calculations
-	  */
 	@Override
-	public void setCumulativeLevel (java.lang.String CumulativeLevel)
+	public void setCumulativeLevel (final @Nullable java.lang.String CumulativeLevel)
 	{
-
 		set_Value (COLUMNNAME_CumulativeLevel, CumulativeLevel);
 	}
 
-	/** Get Anwenden auf.
-		@return Level for accumulative calculations
-	  */
 	@Override
-	public java.lang.String getCumulativeLevel () 
+	public java.lang.String getCumulativeLevel() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_CumulativeLevel);
+		return get_ValueAsString(COLUMNNAME_CumulativeLevel);
 	}
 
-	/** Set Beschreibung.
-		@param Description Beschreibung	  */
 	@Override
-	public void setDescription (java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Beschreibung.
-		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
 	/** 
@@ -165,176 +117,142 @@ public class X_M_DiscountSchema extends org.compiere.model.PO implements I_M_Dis
 	public static final String DISCOUNTTYPE_Breaks = "B";
 	/** Pricelist = P */
 	public static final String DISCOUNTTYPE_Pricelist = "P";
-	/** Set Rabatt Art.
-		@param DiscountType 
-		Type of trade discount calculation
-	  */
 	@Override
-	public void setDiscountType (java.lang.String DiscountType)
+	public void setDiscountType (final java.lang.String DiscountType)
 	{
-
 		set_Value (COLUMNNAME_DiscountType, DiscountType);
 	}
 
-	/** Get Rabatt Art.
-		@return Type of trade discount calculation
-	  */
 	@Override
-	public java.lang.String getDiscountType () 
+	public java.lang.String getDiscountType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DiscountType);
+		return get_ValueAsString(COLUMNNAME_DiscountType);
 	}
 
-	/** Set Fester Rabatt %.
-		@param FlatDiscount 
-		Flat discount percentage 
-	  */
 	@Override
-	public void setFlatDiscount (java.math.BigDecimal FlatDiscount)
+	public void setDoNotChangeZeroPrices (final boolean DoNotChangeZeroPrices)
+	{
+		set_Value (COLUMNNAME_DoNotChangeZeroPrices, DoNotChangeZeroPrices);
+	}
+
+	@Override
+	public boolean isDoNotChangeZeroPrices() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_DoNotChangeZeroPrices);
+	}
+
+	@Override
+	public void setFlatDiscount (final @Nullable BigDecimal FlatDiscount)
 	{
 		set_Value (COLUMNNAME_FlatDiscount, FlatDiscount);
 	}
 
-	/** Get Fester Rabatt %.
-		@return Flat discount percentage 
-	  */
 	@Override
-	public java.math.BigDecimal getFlatDiscount () 
+	public BigDecimal getFlatDiscount() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_FlatDiscount);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_FlatDiscount);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Fester Rabatt.
-		@param IsBPartnerFlatDiscount 
-		Use flat discount defined on Business Partner Level
-	  */
 	@Override
-	public void setIsBPartnerFlatDiscount (boolean IsBPartnerFlatDiscount)
+	public void setIsBPartnerFlatDiscount (final boolean IsBPartnerFlatDiscount)
 	{
-		set_Value (COLUMNNAME_IsBPartnerFlatDiscount, Boolean.valueOf(IsBPartnerFlatDiscount));
+		set_Value (COLUMNNAME_IsBPartnerFlatDiscount, IsBPartnerFlatDiscount);
 	}
 
-	/** Get Fester Rabatt.
-		@return Use flat discount defined on Business Partner Level
-	  */
 	@Override
-	public boolean isBPartnerFlatDiscount () 
+	public boolean isBPartnerFlatDiscount() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsBPartnerFlatDiscount);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsBPartnerFlatDiscount);
 	}
 
-	/** Set Rabatt Schema.
-		@param M_DiscountSchema_ID 
-		Schema um den prozentualen Rabatt zu berechnen
-	  */
 	@Override
-	public void setM_DiscountSchema_ID (int M_DiscountSchema_ID)
+	public org.compiere.model.I_M_DiscountSchema_Calculated_Surcharge getM_DiscountSchema_Calculated_Surcharge()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_DiscountSchema_Calculated_Surcharge_ID, org.compiere.model.I_M_DiscountSchema_Calculated_Surcharge.class);
+	}
+
+	@Override
+	public void setM_DiscountSchema_Calculated_Surcharge(final org.compiere.model.I_M_DiscountSchema_Calculated_Surcharge M_DiscountSchema_Calculated_Surcharge)
+	{
+		set_ValueFromPO(COLUMNNAME_M_DiscountSchema_Calculated_Surcharge_ID, org.compiere.model.I_M_DiscountSchema_Calculated_Surcharge.class, M_DiscountSchema_Calculated_Surcharge);
+	}
+
+	@Override
+	public void setM_DiscountSchema_Calculated_Surcharge_ID (final int M_DiscountSchema_Calculated_Surcharge_ID)
+	{
+		if (M_DiscountSchema_Calculated_Surcharge_ID < 1) 
+			set_Value (COLUMNNAME_M_DiscountSchema_Calculated_Surcharge_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_DiscountSchema_Calculated_Surcharge_ID, M_DiscountSchema_Calculated_Surcharge_ID);
+	}
+
+	@Override
+	public int getM_DiscountSchema_Calculated_Surcharge_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_DiscountSchema_Calculated_Surcharge_ID);
+	}
+
+	@Override
+	public void setM_DiscountSchema_ID (final int M_DiscountSchema_ID)
 	{
 		if (M_DiscountSchema_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_DiscountSchema_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_DiscountSchema_ID, Integer.valueOf(M_DiscountSchema_ID));
+			set_ValueNoCheck (COLUMNNAME_M_DiscountSchema_ID, M_DiscountSchema_ID);
 	}
 
-	/** Get Rabatt Schema.
-		@return Schema um den prozentualen Rabatt zu berechnen
-	  */
 	@Override
-	public int getM_DiscountSchema_ID () 
+	public int getM_DiscountSchema_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_DiscountSchema_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_DiscountSchema_ID);
 	}
 
-	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
 	@Override
-	public void setName (java.lang.String Name)
+	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
-	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
 	@Override
-	public java.lang.String getName () 
+	public java.lang.String getName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Name);
+		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
-	/** Set Verarbeiten.
-		@param Processing Verarbeiten	  */
 	@Override
-	public void setProcessing (boolean Processing)
+	public void setProcessing (final boolean Processing)
 	{
-		set_Value (COLUMNNAME_Processing, Boolean.valueOf(Processing));
+		set_Value (COLUMNNAME_Processing, Processing);
 	}
 
-	/** Get Verarbeiten.
-		@return Verarbeiten	  */
 	@Override
-	public boolean isProcessing () 
+	public boolean isProcessing() 
 	{
-		Object oo = get_Value(COLUMNNAME_Processing);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_Processing);
 	}
 
-	/** Set Skript.
-		@param Script 
-		Dynamic Java Language Script to calculate result
-	  */
 	@Override
-	public void setScript (java.lang.String Script)
+	public void setScript (final @Nullable java.lang.String Script)
 	{
 		set_Value (COLUMNNAME_Script, Script);
 	}
 
-	/** Get Skript.
-		@return Dynamic Java Language Script to calculate result
-	  */
 	@Override
-	public java.lang.String getScript () 
+	public java.lang.String getScript() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Script);
+		return get_ValueAsString(COLUMNNAME_Script);
 	}
 
-	/** Set Gültig ab.
-		@param ValidFrom 
-		Valid from including this date (first day)
-	  */
 	@Override
-	public void setValidFrom (java.sql.Timestamp ValidFrom)
+	public void setValidFrom (final java.sql.Timestamp ValidFrom)
 	{
 		set_Value (COLUMNNAME_ValidFrom, ValidFrom);
 	}
 
-	/** Get Gültig ab.
-		@return Valid from including this date (first day)
-	  */
 	@Override
-	public java.sql.Timestamp getValidFrom () 
+	public java.sql.Timestamp getValidFrom() 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_ValidFrom);
+		return get_ValueAsTimestamp(COLUMNNAME_ValidFrom);
 	}
 }

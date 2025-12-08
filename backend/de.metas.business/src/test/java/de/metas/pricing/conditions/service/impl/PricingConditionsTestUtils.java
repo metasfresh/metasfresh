@@ -4,6 +4,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
@@ -17,11 +18,12 @@ import org.compiere.model.I_M_DiscountSchemaLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.X_M_DiscountSchema;
-import org.junit.Ignore;
+
 
 import de.metas.pricing.conditions.PricingConditionsBreakQuery;
 import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.util.Services;
+import org.junit.jupiter.api.Disabled;
 
 /*
  * #%L
@@ -45,7 +47,7 @@ import de.metas.util.Services;
  * #L%
  */
 
-@Ignore
+@Disabled
 class PricingConditionsTestUtils
 {
 	public static I_M_Product createM_Product(final String value)
@@ -75,8 +77,10 @@ class PricingConditionsTestUtils
 	{
 		final I_M_DiscountSchema schema = newInstance(I_M_DiscountSchema.class);
 		schema.setBreakValueType(X_M_DiscountSchema.BREAKVALUETYPE_Quantity);
+		schema.setValidFrom(Timestamp.valueOf("2017-01-01 10:10:10.0"));
 		save(schema);
 		return schema;
+
 	}
 
 	public static I_M_DiscountSchemaBreak createBreak(final I_M_DiscountSchema schema, final int seqNo)

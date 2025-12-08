@@ -1,13 +1,12 @@
 package org.eevolution.costing;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import de.metas.costing.CostElementId;
+import lombok.experimental.UtilityClass;
+import org.adempiere.exceptions.AdempiereException;
 
 import java.math.BigDecimal;
 
-import org.adempiere.exceptions.AdempiereException;
-
-import de.metas.costing.CostElementId;
-import lombok.experimental.UtilityClass;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -45,7 +44,7 @@ final class BOMAssertUtils
 		}
 		else
 		{
-			ownCostPrice = costElementPrice.getCostPrice().getOwnCostPrice().getValue();
+			ownCostPrice = costElementPrice.getCostPrice().getOwnCostPrice().toBigDecimal();
 		}
 
 		assertThat(ownCostPrice)
@@ -67,7 +66,7 @@ final class BOMAssertUtils
 		}
 		else
 		{
-			componentsCostPrice = costElementPrice.getCostPrice().getComponentsCostPrice().getValue();
+			componentsCostPrice = costElementPrice.getCostPrice().getComponentsCostPrice().toBigDecimal();
 		}
 
 		assertThat(componentsCostPrice)

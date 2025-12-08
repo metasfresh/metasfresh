@@ -22,9 +22,8 @@ package org.adempiere.mm.attributes.api.impl;
  * #L%
  */
 
-
-import java.util.Properties;
-
+import de.metas.javaclasses.model.I_AD_JavaClass;
+import de.metas.util.Services;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.spi.AbstractAttributeValueGenerator;
@@ -32,13 +31,12 @@ import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import de.metas.javaclasses.model.I_AD_JavaClass;
-import de.metas.util.Services;
+import java.util.Properties;
 
 public class AttributesBLTest
 {
@@ -71,13 +69,13 @@ public class AttributesBLTest
 		}
 	}
 
-	@BeforeClass
+	@BeforeAll
 	public static void staticInit()
 	{
 		AdempiereTestHelper.get().staticInit();
 	}
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -101,7 +99,7 @@ public class AttributesBLTest
 		final IAttributeSet attributeSet = null; // N/A, shall be fine in tests
 		final String generatedValueActual = generator.generateStringValue(Env.getCtx(), attributeSet, attribute);
 
-		Assert.assertEquals(generatedValueExpected, generatedValueActual);
+		Assertions.assertEquals(generatedValueExpected, generatedValueActual);
 	}
 
 	@Test
@@ -117,6 +115,6 @@ public class AttributesBLTest
 
 		final String attributeValueTypeActual = generator.getAttributeValueType();
 
-		Assert.assertEquals(attributeValueTypeExpected, attributeValueTypeActual);
+		Assertions.assertEquals(attributeValueTypeExpected, attributeValueTypeActual);
 	}
 }

@@ -1,7 +1,13 @@
 package de.metas.process.ui;
 
-import java.util.List;
-
+import de.metas.adempiere.model.I_AD_Form;
+import de.metas.process.AdProcessId;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.RelatedProcessDescriptor;
+import de.metas.process.SelectionSize;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
@@ -11,18 +17,12 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_Process;
 import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import de.metas.adempiere.model.I_AD_Form;
-import de.metas.process.AdProcessId;
-import de.metas.process.IProcessPrecondition;
-import de.metas.process.IProcessPreconditionsContext;
-import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.process.RelatedProcessDescriptor;
-import de.metas.process.SelectionSize;
-import lombok.NonNull;
+import java.util.List;
+import java.util.stream.Stream;
 
 public class AProcessModelTest
 {
@@ -59,7 +59,7 @@ public class AProcessModelTest
 	private AProcessModel model;
 	private IProcessPreconditionsContext preconditionsContext;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -96,6 +96,13 @@ public class AProcessModelTest
 
 			@Override
 			public <T> List<T> getSelectedModels(final Class<T> modelClass)
+			{
+				throw new UnsupportedOperationException();
+			}
+
+			@NonNull
+			@Override
+			public <T> Stream<T> streamSelectedModels(@NonNull final Class<T> modelClass)
 			{
 				throw new UnsupportedOperationException();
 			}
@@ -256,6 +263,6 @@ public class AProcessModelTest
 		final boolean actualAccepted = resolution.isAccepted();
 
 		final String messageEffective = message + "\n Resolution: " + resolution;
-		Assert.assertEquals(messageEffective, expectAccepted, actualAccepted);
+		Assertions.assertEquals(expectAccepted, actualAccepted, messageEffective);
 	}
 }

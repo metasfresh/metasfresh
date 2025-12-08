@@ -22,46 +22,54 @@ package de.metas.printing.model.validator;
  * #L%
  */
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Properties;
-
+import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.printing.HardwarePrinterId;
+import de.metas.printing.HardwarePrinterRepository;
 import de.metas.printing.OutputType;
 import de.metas.printing.api.IPrintClientsBL;
+import de.metas.printing.api.IPrinterBL;
+import de.metas.printing.model.I_AD_PrinterHW;
 import de.metas.printing.model.I_AD_Printer_Config;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
-
-import de.metas.logging.LogManager;
-import de.metas.printing.api.IPrintPackageBL;
-import de.metas.printing.api.IPrinterBL;
-import de.metas.printing.api.IPrintingDAO;
-import de.metas.printing.model.I_AD_PrinterHW;
-import de.metas.printing.model.I_AD_PrinterHW_Calibration;
-import de.metas.printing.model.I_AD_PrinterHW_MediaSize;
-import de.metas.printing.model.I_AD_PrinterHW_MediaTray;
-import de.metas.util.Check;
-import de.metas.util.Services;
 import org.slf4j.MDC;
 
+import java.util.Objects;
+import java.util.Properties;
+
 @Interceptor(I_AD_PrinterHW.class)
+@RequiredArgsConstructor
 public class AD_PrinterHW
 {
-	private final Logger logger = LogManager.getLogger(getClass());
+	private static final Logger logger = LogManager.getLogger(AD_PrinterHW.class);
 	private final IPrintClientsBL printClientsBL = Services.get(IPrintClientsBL.class);
+	private final IPrinterBL printerBL = Services.get(IPrinterBL.class);
+	private final HardwarePrinterRepository hardwarePrinterRepository;
 
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_NEW)
-	public void setHostKey(final I_AD_PrinterHW printerHW)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+	public void beforeSave(final I_AD_PrinterHW record, final ModelChangeType timing)
 	{
-		final String hostKeyOld = printerHW.getHostKey();
-		if (Check.isNotBlank(hostKeyOld))
+		if (timing.isNew())
+		{
+			setHostKey(record);
+		}
+
+		HardwarePrinterRepository.validateOnBeforeSave(record);
+	}
+
+	private void setHostKey(final I_AD_PrinterHW printerHW)
+	{
+		if (Check.isNotBlank(printerHW.getHostKey()))
 		{
 			return; // HostKey was already set, nothing to do
 		}
@@ -73,7 +81,7 @@ public class AD_PrinterHW
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(printerHW);
 		final String hostKey = printClientsBL.getHostKeyOrNull(ctx);
-		if (Check.isEmpty(hostKey, true))
+		if (Check.isBlank(hostKey))
 		{
 			logger.debug("HostKey not found in context");
 			return;
@@ -86,23 +94,10 @@ public class AD_PrinterHW
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void deleteAttachedLines(final I_AD_PrinterHW printerHW)
 	{
-		final IPrintingDAO dao = Services.get(IPrintingDAO.class);
-
-		final Properties ctx = InterfaceWrapperHelper.getCtx(printerHW);
-		final String trxName = InterfaceWrapperHelper.getTrxName(printerHW);
-
-		final HardwarePrinterId printerID = HardwarePrinterId.ofRepoId(printerHW.getAD_PrinterHW_ID());
-
-		// Delete attached calibrations first
-		final List<I_AD_PrinterHW_Calibration> calibrations = dao.retrieveCalibrations(ctx, printerID.getRepoId(), trxName);
-		dao.removeCalibrations(calibrations);
-
-		// Delete media trays and sizes
-		final List<I_AD_PrinterHW_MediaTray> trays = dao.retrieveMediaTrays(printerID);
-		dao.removeMediaTrays(trays);
-
-		final List<I_AD_PrinterHW_MediaSize> sizes = dao.retrieveMediaSizes(printerHW);
-		dao.removeMediaSizes(sizes);
+		final HardwarePrinterId hardwarePrinterId = HardwarePrinterId.ofRepoId(printerHW.getAD_PrinterHW_ID());
+		hardwarePrinterRepository.deleteCalibrations(hardwarePrinterId);
+		hardwarePrinterRepository.deleteMediaTrays(hardwarePrinterId);
+		hardwarePrinterRepository.deleteMediaSizes(hardwarePrinterId);
 	}
 
 	/**
@@ -127,6 +122,6 @@ public class AD_PrinterHW
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW_REPLICATION)
 	public void createPrinterConfigIfNoneExists(final I_AD_PrinterHW printerHW)
 	{
-		Services.get(IPrinterBL.class).createConfigAndDefaultPrinterMatching(printerHW);
+		printerBL.createConfigAndDefaultPrinterMatching(printerHW);
 	}
 }

@@ -35,4 +35,10 @@ public class ManufacturingWFProcessStartParams
 		}
 	}
 
+	public static ManufacturingWFProcessStartParams ofPPOrderId(@NonNull final PPOrderId ppOrderId)
+	{
+		return builder()
+				.ppOrderId(ppOrderId)
+				.build();
+	}
 }

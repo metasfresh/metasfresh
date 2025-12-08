@@ -22,7 +22,6 @@ package de.metas.async.api.impl;
  * #L%
  */
 
-
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBuilder;
 import de.metas.async.api.IAsyncBatchDAO;
@@ -34,6 +33,7 @@ import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ObjectUtils;
@@ -59,7 +59,7 @@ class AsyncBatchBuilder implements IAsyncBatchBuilder
 	private I_C_Async_Batch_Type _asyncBatchType;
 	private OrgId orgId;
 
-	AsyncBatchBuilder(final AsyncBatchBL asyncBatchBL)
+	AsyncBatchBuilder(@NonNull final AsyncBatchBL asyncBatchBL)
 	{
 		this.asyncBatchBL = asyncBatchBL;
 	}
@@ -71,7 +71,17 @@ class AsyncBatchBuilder implements IAsyncBatchBuilder
 	}
 
 	@Override
-	public I_C_Async_Batch build()
+	public AsyncBatchId buildAndEnqueue()
+	{
+		// the order is very important: first enque and then set the batch
+		// otherwise, will be counted also the workpackage for the batch
+		final AsyncBatchId asyncBatchId = build0();
+		asyncBatchBL.enqueueAsyncBatch(asyncBatchId);
+
+		return asyncBatchId;
+	}
+
+	private AsyncBatchId build0()
 	{
 		final I_C_Async_Batch asyncBatch = InterfaceWrapperHelper.create(getCtx(), I_C_Async_Batch.class, ITrx.TRXNAME_None);
 		asyncBatch.setAD_PInstance_ID(PInstanceId.toRepoId(getAD_PInstance_Creator_ID()));
@@ -83,18 +93,14 @@ class AsyncBatchBuilder implements IAsyncBatchBuilder
 			final int orgIdRepoId = getOrgId().getRepoId();
 			asyncBatch.setAD_Org_ID(orgIdRepoId);
 		}
-		if (getCountExpected()>0)
+		if (getCountExpected() > 0)
 		{
 			asyncBatch.setCountExpected(getCountExpected());
 		}
 		asyncBatch.setC_Async_Batch_Type(getC_Async_Batch_Type());
 		queueDAO.save(asyncBatch);
 
-		// the orders it's very important: first enque and then set the batch
-		// otherwise, will be counted also the workpackage for the batch
-		asyncBatchBL.enqueueAsyncBatch(AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID()));
-
-		return asyncBatch;
+		return AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
 	}
 
 	@Override
@@ -110,9 +116,8 @@ class AsyncBatchBuilder implements IAsyncBatchBuilder
 		return _ctx;
 	}
 
-
 	@Override
-	public IAsyncBatchBuilder setCountExpected(int expected)
+	public IAsyncBatchBuilder setCountExpected(final int expected)
 	{
 		_countExpected = expected;
 		return this;
@@ -196,5 +201,4 @@ class AsyncBatchBuilder implements IAsyncBatchBuilder
 		this.orgId = orgId;
 		return this;
 	}
-
 }

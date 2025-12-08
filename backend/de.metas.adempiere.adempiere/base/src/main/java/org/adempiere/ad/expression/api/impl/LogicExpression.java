@@ -108,7 +108,7 @@ import lombok.NonNull;
 	{
 		if (constantValue == null)
 		{
-			throw new ExpressionEvaluationException("Not a constant expression: " + this);
+			throw ExpressionEvaluationException.newWithPlainMessage("Not a constant expression: " + this);
 		}
 		return constantValue;
 	}
@@ -216,7 +216,7 @@ import lombok.NonNull;
 		else
 		{
 			// unknown operator
-			throw new ExpressionEvaluationException("Unknown operator: " + operator);
+			throw ExpressionEvaluationException.newWithTranslatableMessage("Unknown operator: " + operator);
 		}
 	}
 

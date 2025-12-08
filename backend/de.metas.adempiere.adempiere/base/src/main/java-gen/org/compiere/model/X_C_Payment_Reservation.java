@@ -281,6 +281,10 @@ public class X_C_Payment_Reservation extends org.compiere.model.PO implements I_
 	public static final String PAYMENTRULE_DirectDebit = "D";
 	/** Mixed = M */
 	public static final String PAYMENTRULE_Mixed = "M";
+	/** Rückerstattung = E */
+	public static final String PAYMENTRULE_Reimbursement = "E";
+	/** Verrechnung = F */
+	public static final String PAYMENTRULE_Settlement = "F";
 	/** Set Zahlungsweise.
 		@param PaymentRule 
 		Wie die Rechnung bezahlt wird

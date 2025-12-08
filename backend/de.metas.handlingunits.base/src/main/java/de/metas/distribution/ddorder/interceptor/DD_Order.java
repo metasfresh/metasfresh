@@ -5,9 +5,11 @@ import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
+import de.metas.distribution.ddordercandidate.DDOrderCandidateService;
 import de.metas.request.service.async.spi.impl.C_Request_CreateFromDDOrder_Async;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.AdempiereException;
@@ -19,6 +21,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.ModelValidator;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
@@ -45,21 +48,16 @@ import java.util.List;
  */
 
 @Interceptor(I_DD_Order.class)
+@Component
+@RequiredArgsConstructor
 public class DD_Order
 {
-	private final IMovementBL movementBL = Services.get(IMovementBL.class);
-	private final IMovementDAO movementDAO = Services.get(IMovementDAO.class);
-	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	private final DDOrderService ddOrderService;
-	private final DDOrderMoveScheduleService ddOrderMoveScheduleService;
-
-	public DD_Order(
-			@NonNull final DDOrderMoveScheduleService ddOrderMoveScheduleService,
-			@NonNull final DDOrderService ddOrderService)
-	{
-		this.ddOrderMoveScheduleService = ddOrderMoveScheduleService;
-		this.ddOrderService = ddOrderService;
-	}
+	@NonNull private final IMovementBL movementBL = Services.get(IMovementBL.class);
+	@NonNull private final IMovementDAO movementDAO = Services.get(IMovementDAO.class);
+	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	@NonNull private final DDOrderService ddOrderService;
+	@NonNull private final DDOrderMoveScheduleService ddOrderMoveScheduleService;
+	@NonNull private final DDOrderCandidateService ddOrderCandidateService;
 
 	@DocValidate(timings = {
 			ModelValidator.TIMING_BEFORE_REVERSEACCRUAL,
@@ -124,5 +122,15 @@ public class DD_Order
 	{
 		final I_M_Warehouse warehouse = warehouseDAO.getWarehouseByLocatorRepoId(ddOrderLine.getM_LocatorTo_ID());
 		return warehouse != null && warehouse.isQuarantineWarehouse();
+	}
+
+	@DocValidate(timings = {
+			ModelValidator.TIMING_BEFORE_REVERSEACCRUAL,
+			ModelValidator.TIMING_BEFORE_REVERSECORRECT,
+			ModelValidator.TIMING_BEFORE_VOID })
+	public void removeDDOrderCandidateAllocations(@NonNull final I_DD_Order ddOrder)
+	{
+		final DDOrderId ddOrderId = DDOrderId.ofRepoId(ddOrder.getDD_Order_ID());
+		ddOrderCandidateService.deleteAndUpdateCandidatesByDDOrderId(ddOrderId);
 	}
 }

@@ -1,7 +1,13 @@
 package de.metas.handlingunits.shipmentschedule.integrationtest;
 
-import java.util.Arrays;
-
+import de.metas.handlingunits.expectations.HUsExpectation;
+import de.metas.handlingunits.expectations.ShipmentScheduleQtyPickedExpectations;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.model.X_M_HU_PI_Item;
+import de.metas.util.Services;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -11,15 +17,9 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOutLine;
-import org.junit.Assert;
-import de.metas.handlingunits.expectations.HUsExpectation;
-import de.metas.handlingunits.expectations.ShipmentScheduleQtyPickedExpectations;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
-import de.metas.handlingunits.model.I_M_ShipmentSchedule;
-import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.model.X_M_HU_PI_Item;
-import de.metas.util.Services;
+import org.junit.jupiter.api.Assertions;
+
+import java.util.Arrays;
 
 /*
  * #%L
@@ -250,23 +250,23 @@ public abstract class HUShipmentProcess_AttributesAggregation_Base extends Abstr
 		// // Shipper Transportation: Make sure TU's M_Package is updated
 		// {
 		// InterfaceWrapperHelper.refresh(mpackage_TU);
-		// Assert.assertEquals("Aggregated HU's M_Package does not have the right M_InOut_ID",
-		// shipment.getM_InOut_ID(), mpackage_TU.getM_InOut_ID());
+		// Assertions.assertEquals(
+		// shipment.getM_InOut_ID(),  mpackage_TU.getM_InOut_ID(), "Aggregated HU's M_Package does not have the right M_InOut_ID");
 		// }
 	}
 
 	protected void assertShipmentLineASIAttributeValueString(final String valueStringExpected, final I_M_InOutLine inoutLine, final I_M_Attribute attribute)
 	{
 		final I_M_AttributeSetInstance asi = inoutLine.getM_AttributeSetInstance();
-		Assert.assertNotNull("ASI exists for " + inoutLine, asi);
+		Assertions.assertNotNull(asi, "ASI exists for " + inoutLine);
 
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
 		final I_M_AttributeInstance ai = Services.get(IAttributeDAO.class).retrieveAttributeInstance(asiId, AttributeId.ofRepoId(attribute.getM_Attribute_ID()));
-		Assert.assertNotNull("AI exists for " + inoutLine + "'s ASI=" + asi + ", Attribute=" + attribute, ai);
+		Assertions.assertNotNull(ai, "AI exists for " + inoutLine + "'s ASI=" + asi + ", Attribute=" + attribute);
 
 		final String valueStringActual = ai.getValue();
 
-		Assert.assertEquals("Invalid value for " + attribute.getName() + " in " + inoutLine, valueStringExpected, valueStringActual);
+		Assertions.assertEquals(valueStringExpected, valueStringActual, "Invalid value for " + attribute.getName() + " in " + inoutLine);
 	}
 
 	protected void assertShipmentLineDoesNotHaveAttribute(final I_M_InOutLine inoutLine, final I_M_Attribute attribute)
@@ -279,6 +279,6 @@ public abstract class HUShipmentProcess_AttributesAggregation_Base extends Abstr
 
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
 		final I_M_AttributeInstance ai = Services.get(IAttributeDAO.class).retrieveAttributeInstance(asiId, AttributeId.ofRepoId(attribute.getM_Attribute_ID()));
-		Assert.assertNull("AI does not exists for " + inoutLine + "'s ASI=" + asi + ", Attribute=" + attribute, ai);
+		Assertions.assertNull(ai, "AI does not exists for " + inoutLine + "'s ASI=" + asi + ", Attribute=" + attribute);
 	}
 }

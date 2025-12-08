@@ -61,7 +61,7 @@ public class M_HU
 			return;
 		}
 
-		if (!handlingUnitsBL.isHUHierarchyCleared(HuId.ofRepoId(hu.getM_HU_ID())))
+		if (!handlingUnitsBL.isHUHierarchyCleared(hu))
 		{
 			throw new AdempiereException("M_HUs that are not cleared can not be picked, shipped or issued!")
 					.appendParametersToMessage()

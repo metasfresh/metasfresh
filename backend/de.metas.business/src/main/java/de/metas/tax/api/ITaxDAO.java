@@ -13,6 +13,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.ExemptTaxNotFoundException;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_TaxCategory;
 
 import java.sql.Timestamp;
@@ -39,11 +40,8 @@ public interface ITaxDAO extends ISingletonService
 	 */
 	TaxId retrieveExemptTax(OrgId orgId);
 
-	/**
-	 * getDefaultTax Get the default tax id associated with this tax category
-	 */
-	TaxId getDefaultTaxId(I_C_TaxCategory taxCategory);
-
+	Tax getDefaultTax(TaxCategoryId taxCategoryId);
+	
 	/**
 	 * If the taxBL can't find a tax, it shall return this one instead
 	 *
@@ -68,7 +66,11 @@ public interface ITaxDAO extends ISingletonService
 
 	Percent getRateById(@NonNull TaxId taxId);
 
+	Optional<Tax> getByIfPresent(@NonNull TaxQuery taxQuery);
+
 	Tax getBy(final TaxQuery taxQuery);
+
+	Optional<TaxId> getIdByName(String name, ClientId clientId);
 
 	@Builder
 	@Value

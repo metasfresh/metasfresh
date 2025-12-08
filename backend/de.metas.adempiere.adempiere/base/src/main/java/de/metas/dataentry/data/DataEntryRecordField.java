@@ -1,18 +1,7 @@
 package de.metas.dataentry.data;
 
-import static de.metas.util.Check.assume;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
-import javax.annotation.Nullable;
-
-import de.metas.CreatedUpdatedInfo;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.TimeUtil;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
+import de.metas.CreatedUpdatedInfo;
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntryListValueId;
 import de.metas.dataentry.FieldType;
@@ -23,6 +12,14 @@ import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+import static de.metas.util.Check.assume;
 
 /*
  * #%L

@@ -22,18 +22,17 @@ package de.metas.materialtracking.qualityBasedInvoicing.spi;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
-
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-
 import de.metas.currency.Currency;
 import de.metas.materialtracking.qualityBasedInvoicing.IInvoicingItem;
 import de.metas.materialtracking.qualityBasedInvoicing.QualityInspectionLineType;
 import de.metas.materialtracking.qualityBasedInvoicing.invoicing.QualityInvoiceLineGroupType;
+import lombok.NonNull;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Interface containing all the information needed to do quality based invoicing
@@ -61,16 +60,9 @@ public interface IQualityBasedConfig
 	 * Returns the quality adjustment for the given month.
 	 *
 	 * @param month 0-based number of the month, i.e. 0 is january. Note that we have it 0-based, because that is also how it's done in <code>java.util.Calendar</code>.
-	 * @return
 	 */
 	BigDecimal getQualityAdjustmentForMonthOrNull(int month);
 
-	/**
-	 * Convenience method, calls {@link #getQualityAdjustmentForDateOrNull(Date)}.
-	 *
-	 * @param outboundDate
-	 * @return
-	 */
 	BigDecimal getQualityAdjustmentForDateOrNull(Date outboundDate);
 
 	BigDecimal getScrapPercentageTreshold();
@@ -79,8 +71,6 @@ public interface IQualityBasedConfig
 
 	/**
 	 * Note: this method can return true, and the fee might still be 0. This would mean that there is an invoice line, but with a net amount of 0.
-	 * 
-	 * @return
 	 */
 	boolean isFeeForScrap();
 
@@ -88,31 +78,27 @@ public interface IQualityBasedConfig
 	 *
 	 * @param m_Product the unwanted (by-)product for which there is a fee when it is produced.
 	 * @param percentage the percentage of the produced product.
-	 * @return
 	 */
 	BigDecimal getFeeForProducedMaterial(I_M_Product m_Product, BigDecimal percentage);
 
 	String getFeeNameForProducedProduct(I_M_Product product);
 
-	List<IInvoicingItem> getAdditionalFeeProducts();
+	@NonNull
+	List<IInvoicingItem> getProducedTotalWithoutByProductsAdditionalFeeProducts();
 
 	Currency getCurrency();
 
 	/**
 	 * Gets a list of {@link QualityInspectionLineType} which needs to be in PP Order Report.
-	 *
+	 * <p>
 	 * Only the those types will be in the report and exactly in the given order.
-	 *
-	 * @return
 	 */
 	List<QualityInspectionLineType> getPPOrderReportLineTypes();
 
 	/**
 	 * Gets a list of {@link QualityInvoiceLineGroupType} which needs to be in invoice candidates.
-	 *
+	 * <p>
 	 * Only the those types will be processed and exactly in the given order.
-	 *
-	 * @return
 	 */
 	List<QualityInvoiceLineGroupType> getQualityInvoiceLineGroupTypes();
 
@@ -131,9 +117,9 @@ public interface IQualityBasedConfig
 
 	/**
 	 * Product for auslagerung.
-	 * 
-	 * @return
-	 * @task 08720
 	 */
 	I_M_Product getRegularPPOrderProduct();
+
+	@NonNull
+	List<IInvoicingItem> getRawAdditionalFeeProducts();
 }

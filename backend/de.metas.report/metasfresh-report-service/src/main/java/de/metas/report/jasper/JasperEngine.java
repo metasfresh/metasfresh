@@ -6,8 +6,8 @@ import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.report.jasper.class_loader.JasperClassLoader;
-import de.metas.report.jasper.data_source.ReportDataSource;
 import de.metas.report.jasper.data_source.JasperDataSourceProvider;
+import de.metas.report.jasper.data_source.ReportDataSource;
 import de.metas.report.jasper.exporter.MetasJRXlsExporter;
 import de.metas.report.server.AbstractReportEngine;
 import de.metas.report.server.OutputType;
@@ -156,6 +156,10 @@ public class JasperEngine extends AbstractReportEngine
 		if (reportContext.getRecord_ID() > 0)
 		{
 			jrParameters.putRecordId(reportContext.getRecord_ID());
+		}
+		if (reportContext.getAD_Table_ID() > 0)
+		{
+			jrParameters.putTableId(reportContext.getAD_Table_ID());
 		}
 		jrParameters.putPInstanceId(reportContext.getPinstanceId());
 		jrParameters.putLocale(jrParameters.getReportLanguageEffective().getLocale());

@@ -236,7 +236,8 @@ public class AddressDescriptorFactory
 													   DocumentFieldWidgetType.Lookup,
 													   IntegerLookupValue.class,
 													   true /*mandatory*/,
-													   false /*allowUsingAutoSequence*/);
+													   false /*allowUsingAutoSequence*/,
+													   null /*DocSequenceId*/);
 			}
 			else
 			{
@@ -279,7 +280,7 @@ public class AddressDescriptorFactory
 				.setCaption(Services.get(IMsgBL.class).translatable(columnName))
 				//
 				// .setValueClass()
-				// .setWidgetType()
+				// .widgetType()
 				.setLookupDescriptorProvider_None()
 				//
 				.setReadonlyLogic(false)

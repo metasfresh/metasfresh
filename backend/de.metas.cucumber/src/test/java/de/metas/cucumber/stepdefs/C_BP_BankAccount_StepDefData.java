@@ -22,12 +22,26 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.banking.BankAccountId;
+import de.metas.bpartner.BPartnerBankAccountId;
 import org.compiere.model.I_C_BP_BankAccount;
 
-public class C_BP_BankAccount_StepDefData extends StepDefData<I_C_BP_BankAccount>
+public class C_BP_BankAccount_StepDefData extends StepDefData<I_C_BP_BankAccount> implements StepDefDataGetIdAware<BPartnerBankAccountId, I_C_BP_BankAccount>
 {
 	public C_BP_BankAccount_StepDefData()
 	{
 		super(I_C_BP_BankAccount.class);
+	}
+
+	@Override
+	public BPartnerBankAccountId extractIdFromRecord(final I_C_BP_BankAccount record)
+	{
+		return BPartnerBankAccountId.ofRepoId(record.getC_BPartner_ID(), record.getC_BP_BankAccount_ID());
+	}
+
+	public BankAccountId getOrgBankAccountId(final StepDefDataIdentifier identifier)
+	{
+		final BPartnerBankAccountId bpartnerBankAccountId = getId(identifier);
+		return BankAccountId.ofRepoId(bpartnerBankAccountId.getRepoId());
 	}
 }

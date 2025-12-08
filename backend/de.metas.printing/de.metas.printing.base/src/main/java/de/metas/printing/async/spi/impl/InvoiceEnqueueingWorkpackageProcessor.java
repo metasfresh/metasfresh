@@ -24,19 +24,15 @@ package de.metas.printing.async.spi.impl;
 
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.api.impl.InvoicingParams;
-import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.api.IParams;
-
-import java.time.LocalDate;
 
 public class InvoiceEnqueueingWorkpackageProcessor extends WorkpackageProcessorAdapter
 {

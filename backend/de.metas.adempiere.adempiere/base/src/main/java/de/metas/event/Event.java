@@ -32,8 +32,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import de.metas.async.QueueWorkPackageId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.event.log.EventLogEntryCollector;
 import de.metas.util.Check;
@@ -45,6 +43,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.DisplayType;
 
 import javax.annotation.Nullable;
@@ -69,6 +68,7 @@ import java.util.function.Supplier;
 public class Event
 {
 	private static final String PROP_Body = "body";
+
 	public static Builder builder()
 	{
 		return new Builder();
@@ -109,9 +109,10 @@ public class Event
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	ImmutableSet<Integer> recipientUserIds;
 
-	@JsonProperty("queueWorkPackageId")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	QueueWorkPackageId queueWorkPackageId;
+	@JsonIgnore
+	@Nullable TableRecordReference sourceRecordReference;
+	@JsonIgnore
+	@Nullable String eventName;
 
 	private enum LoggingStatus
 	{
@@ -132,10 +133,6 @@ public class Event
 	@Getter(value = AccessLevel.NONE)
 	LoggingStatus loggingStatus;
 
-	@JsonIgnore
-	@Getter(AccessLevel.NONE)
-	transient Set<String> receivedByEventBusIds = Sets.newConcurrentHashSet();
-
 	private Event(final Builder builder)
 	{
 		uuid = CoalesceUtil.coalesceSuppliers(() -> builder.uuid, UUID::randomUUID);
@@ -148,7 +145,8 @@ public class Event
 		recipientUserIds = ImmutableSet.copyOf(builder.recipientUserIds);
 		properties = deepCopy(builder.getProperties());
 		loggingStatus = builder.loggingStatus;
-		queueWorkPackageId = builder.getQueueWorkPackageId();
+		sourceRecordReference = builder.sourceRecordReference;
+		eventName = builder.eventName;
 	}
 
 	@JsonCreator
@@ -161,8 +159,9 @@ public class Event
 			@JsonProperty("senderId") final String senderId,
 			@JsonProperty("recipientUserIds") final Set<Integer> recipientUserIds,
 			@JsonProperty("properties") final Map<String, Object> properties,
-			@JsonProperty("queueWorkPackageId") final QueueWorkPackageId queueWorkPackageId,
-			@JsonProperty("loggingStatus") final LoggingStatus loggingStatus)
+			@JsonProperty("loggingStatus") final LoggingStatus loggingStatus,
+			@Nullable @JsonProperty("sourceRecordReference") final TableRecordReference sourceRecordReference,
+			@Nullable @JsonProperty("eventName") final String eventName)
 	{
 		this.uuid = uuid;
 		this.when = when;
@@ -173,8 +172,9 @@ public class Event
 		this.senderId = senderId;
 		this.recipientUserIds = recipientUserIds != null ? ImmutableSet.copyOf(recipientUserIds) : ImmutableSet.of();
 		this.properties = deepCopy(properties);
-		this.queueWorkPackageId = queueWorkPackageId;
 		this.loggingStatus = loggingStatus;
+		this.sourceRecordReference = sourceRecordReference;
+		this.eventName = eventName;
 	}
 
 	private static ImmutableMap<String, Object> deepCopy(final Map<String, Object> properties)
@@ -232,8 +232,7 @@ public class Event
 	 */
 	public <T> T getProperty(final String name)
 	{
-		@SuppressWarnings("unchecked")
-		final T value = (T)properties.get(name);
+		@SuppressWarnings("unchecked") final T value = (T)properties.get(name);
 		return value;
 	}
 
@@ -291,25 +290,6 @@ public class Event
 		return getProperty(PROPERTY_Record);
 	}
 
-	/**
-	 * @return <ul>
-	 * <li>true if event was successfully marked
-	 * <li>false if event was already received by given event bus ID
-	 * </ul>
-	 */
-	public boolean markReceivedByEventBusId(final String eventBusId)
-	{
-		return receivedByEventBusIds.add(eventBusId);
-	}
-
-	/**
-	 * @return true if this event was received by a even bus with given ID.
-	 */
-	public boolean wasReceivedByEventBusId(final String eventBusId)
-	{
-		return receivedByEventBusIds.contains(eventBusId);
-	}
-
 	public Event withStatusWasLogged()
 	{
 		final Builder builder = toBuilder();
@@ -344,7 +324,8 @@ public class Event
 		builder.uuid = uuid;
 		builder.when = when;
 		builder.loggingStatus = loggingStatus;
-		builder.queueWorkPackageId = queueWorkPackageId;
+		builder.sourceRecordReference = sourceRecordReference;
+		builder.eventName = eventName;
 
 		return builder;
 	}
@@ -363,7 +344,8 @@ public class Event
 		private final Set<Integer> recipientUserIds = new HashSet<>();
 		private final Map<String, Object> properties = Maps.newLinkedHashMap();
 		private LoggingStatus loggingStatus = LoggingStatus.SHALL_NOT_BE_LOGGED;
-		private QueueWorkPackageId queueWorkPackageId;
+		private @Nullable TableRecordReference sourceRecordReference;
+		private @Nullable String eventName;
 
 		private Builder()
 		{
@@ -397,6 +379,7 @@ public class Event
 			this.detailPlain = detailPlain;
 			return this;
 		}
+
 		public Builder withBody(final String body)
 		{
 			properties.put(PROP_Body, body);
@@ -435,6 +418,18 @@ public class Event
 			}
 
 			detailADMessage = adMessage;
+			return this;
+		}
+
+		public Builder setSourceRecordReference(@Nullable final TableRecordReference sourceRecordReference)
+		{
+			this.sourceRecordReference = sourceRecordReference;
+			return this;
+		}
+
+		public Builder setEventName(@NonNull final String eventName)
+		{
+			this.eventName = eventName;
 			return this;
 		}
 
@@ -513,6 +508,12 @@ public class Event
 			return properties;
 		}
 
+		public Builder putProperty(final String name, final Object value)
+		{
+			properties.put(name, value);
+			return this;
+		}
+
 		public Builder putProperty(final String name, final int value)
 		{
 			properties.put(name, value);
@@ -580,7 +581,7 @@ public class Event
 			return this;
 		}
 
-		public Builder putPropertyFromObject(final String name, final Object value)
+		public Builder putPropertyFromObject(final String name, @Nullable final Object value)
 		{
 			if (value == null)
 			{
@@ -589,17 +590,17 @@ public class Event
 			}
 			else if (value instanceof Integer)
 			{
-				return putProperty(name, (Integer)value);
+				return putProperty(name, value);
 			}
 			else if (value instanceof Long)
 			{
-				return putProperty(name, (Long)value);
+				return putProperty(name, value);
 			}
 			else if (value instanceof Double)
 			{
-				final Double doubleValue = (Double)value;
-				final int intValue = doubleValue.intValue();
-				if (doubleValue.doubleValue() == intValue)
+				final double doubleValue = (Double)value;
+				final int intValue = (int)doubleValue;
+				if (doubleValue == intValue)
 				{
 					return putProperty(name, intValue);
 				}
@@ -618,7 +619,7 @@ public class Event
 			}
 			else if (value instanceof Boolean)
 			{
-				return putProperty(name, (Boolean)value);
+				return putProperty(name, value);
 			}
 			else if (value instanceof ITableRecordReference)
 			{
@@ -653,17 +654,6 @@ public class Event
 		public Builder shallBeLogged()
 		{
 			this.loggingStatus = LoggingStatus.SHALL_BE_LOGGED;
-			return this;
-		}
-
-		public QueueWorkPackageId getQueueWorkPackageId()
-		{
-			return queueWorkPackageId;
-		}
-
-		public Builder setQueueWorkPackageId(final QueueWorkPackageId workpackageQueueId)
-		{
-			this.queueWorkPackageId = workpackageQueueId;
 			return this;
 		}
 	}

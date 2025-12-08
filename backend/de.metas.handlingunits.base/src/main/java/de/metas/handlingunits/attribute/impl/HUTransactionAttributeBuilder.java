@@ -22,13 +22,6 @@ package de.metas.handlingunits.attribute.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.List;
-
-import org.compiere.model.I_M_Attribute;
-import org.slf4j.Logger;
-
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.IAllocationResult;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
@@ -39,21 +32,26 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferRequest;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferStrategy;
 import de.metas.handlingunits.hutransaction.IHUTransactionAttribute;
-import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.api.IAttributeSet;
+import org.compiere.model.I_M_Attribute;
+import org.slf4j.Logger;
+
+import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Standard {@link IHUTransactionAttributeBuilder} implementation.
- *
+ * <p>
  * <br/>
  * <br/>
  * <b>WARNING: To be used internally by {@link HUContextProcessorExecutor} only. DO NOT use it directly.</b>
  *
  * @author tsa
- *
  */
 public class HUTransactionAttributeBuilder implements IHUTransactionAttributeBuilder
 {
@@ -114,7 +112,7 @@ public class HUTransactionAttributeBuilder implements IHUTransactionAttributeBui
 	{
 		logger.trace("Transfering attributes for {}", request);
 
-		final IAttributeStorage attributesFrom = request.getAttributesFrom();
+		final IAttributeSet attributesFrom = request.getAttributesFrom();
 		final IAttributeStorage attributesTo = request.getAttributesTo();
 
 		for (final I_M_Attribute attribute : attributesFrom.getAttributes())
@@ -144,8 +142,14 @@ public class HUTransactionAttributeBuilder implements IHUTransactionAttributeBui
 
 	private IHUAttributeTransferStrategy getHUAttributeTransferStrategy(final IHUAttributeTransferRequest request, final I_M_Attribute attribute)
 	{
-		final IAttributeStorage attributesFrom = request.getAttributesFrom();
-		return attributesFrom.retrieveTransferStrategy(attribute);
+		final IAttributeSet attributesFrom = request.getAttributesFrom();
+		if (attributesFrom instanceof IAttributeStorage)
+		{
+			return ((IAttributeStorage)attributesFrom).retrieveTransferStrategy(attribute);
+		}
+
+		final IAttributeStorage attributesTo = request.getAttributesTo();
+		return attributesTo.retrieveTransferStrategy(attribute);
 	}
 
 	@Override

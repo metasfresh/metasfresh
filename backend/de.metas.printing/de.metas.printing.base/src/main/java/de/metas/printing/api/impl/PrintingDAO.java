@@ -26,7 +26,6 @@ import de.metas.lock.api.ILockManager;
 import de.metas.printing.api.IPrintClientsBL;
 import de.metas.printing.api.IPrintingQueueQuery;
 import de.metas.printing.model.I_AD_Printer;
-import de.metas.printing.model.I_AD_PrinterHW;
 import de.metas.printing.model.I_AD_PrinterHW_Calibration;
 import de.metas.printing.model.I_AD_PrinterHW_MediaSize;
 import de.metas.printing.model.I_AD_PrinterHW_MediaTray;
@@ -40,6 +39,7 @@ import de.metas.printing.model.X_C_Print_Job_Instructions;
 import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.trx.api.ITrx;
@@ -58,7 +58,7 @@ import java.util.Properties;
 
 public class PrintingDAO extends AbstractPrintingDAO
 {
-
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IPrintClientsBL printClientsBL = Services.get(IPrintClientsBL.class);
 
 	// NOTE: before changing the SeqNo ORDER BY clause, please check were it is used
@@ -176,8 +176,8 @@ public class PrintingDAO extends AbstractPrintingDAO
 
 	@Override
 	public IQuery<I_C_Printing_Queue> createQuery(final Properties ctx,
-			final IPrintingQueueQuery queueQuery,
-			final String trxName)
+												  final IPrintingQueueQuery queueQuery,
+												  final String trxName)
 	{
 		final StringBuilder whereClause = new StringBuilder("1=1");
 		final List<Object> params = new ArrayList<>();
@@ -329,22 +329,6 @@ public class PrintingDAO extends AbstractPrintingDAO
 	}
 
 	@Override
-	public List<I_AD_PrinterHW_MediaSize> retrieveMediaSizes(final I_AD_PrinterHW printerHW)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(printerHW);
-		final String trxName = InterfaceWrapperHelper.getTrxName(printerHW);
-
-		final String whereClause = I_AD_PrinterHW_MediaSize.COLUMNNAME_AD_PrinterHW_ID + " =?";
-
-		final List<I_AD_PrinterHW_MediaSize> result = new Query(ctx, I_AD_PrinterHW_MediaSize.Table_Name, whereClause, trxName)
-				.setOnlyActiveRecords(true)
-				.setParameters(printerHW.getAD_PrinterHW_ID())
-				.list(I_AD_PrinterHW_MediaSize.class);
-
-		return result;
-	}
-
-	@Override
 	public I_AD_PrinterHW_Calibration retrieveCalibration(final I_AD_PrinterHW_MediaSize hwMediaSize, final I_AD_PrinterHW_MediaTray hwTray)
 	{
 		Check.assume(hwMediaSize != null, "Param 'hwMediaSize' is not null");
@@ -355,23 +339,10 @@ public class PrintingDAO extends AbstractPrintingDAO
 
 		return new Query(ctx, I_AD_PrinterHW_Calibration.Table_Name, I_AD_PrinterHW_Calibration.COLUMNNAME_AD_PrinterHW_MediaSize_ID + "=? AND "
 				+ I_AD_PrinterHW_Calibration.COLUMNNAME_AD_PrinterHW_MediaTray_ID + "=?", trxName)
-						.setParameters(hwMediaSize.getAD_PrinterHW_MediaSize_ID(), hwTray.getAD_PrinterHW_MediaTray_ID())
-						.setOnlyActiveRecords(true)
-						.setClient_ID()
-						.firstOnly(I_AD_PrinterHW_Calibration.class);
-	}
-
-	@Override
-	public List<I_AD_PrinterHW_Calibration> retrieveCalibrations(final Properties ctx, final int printerID, final String trxName)
-	{
-		final String whereClause = I_AD_PrinterHW_Calibration.COLUMNNAME_AD_PrinterHW_ID + " =?";
-
-		final List<I_AD_PrinterHW_Calibration> result = new Query(ctx, I_AD_PrinterHW_Calibration.Table_Name, whereClause, trxName)
-				.setParameters(printerID)
+				.setParameters(hwMediaSize.getAD_PrinterHW_MediaSize_ID(), hwTray.getAD_PrinterHW_MediaTray_ID())
 				.setOnlyActiveRecords(true)
-				.list(I_AD_PrinterHW_Calibration.class);
-
-		return result;
+				.setClient_ID()
+				.firstOnly(I_AD_PrinterHW_Calibration.class);
 	}
 
 	@Override

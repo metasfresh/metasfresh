@@ -58,7 +58,7 @@ public class EventBus_SendTestEvent extends JavaProcess
 	{
 		final Topic topic = Topic.builder()
 				.name(p_TopicName)
-				.type(Type.REMOTE)
+				.type(Type.DISTRIBUTED)
 				.build();
 
 		final IEventBus eventBus = Services.get(IEventBusFactory.class)
@@ -71,7 +71,7 @@ public class EventBus_SendTestEvent extends JavaProcess
 					+ "\n Recipient: " + p_AD_User_ID
 					+ "\n Sender: " + getAD_User_ID()
 					+ "\n Summary: " + p_Summary;
-			eventBus.postEvent(Event.builder()
+			eventBus.enqueueEvent(Event.builder()
 					.setSummary(p_Summary)
 					.setDetailPlain(detail)
 					.addRecipient_User_ID(p_AD_User_ID)

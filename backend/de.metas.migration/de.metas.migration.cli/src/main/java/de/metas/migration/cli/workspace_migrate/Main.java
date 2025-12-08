@@ -2,7 +2,7 @@
  * #%L
  * de.metas.migration.cli
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -29,6 +29,7 @@ import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.time.ZonedDateTime;
 
@@ -79,7 +80,7 @@ public class Main
 	private static File getWorkspaceDir()
 	{
 		final String workspaceDirname = System.getProperty(PROP_WORKSPACE);
-		if (!isBlank(workspaceDirname))
+		if (isNotBlank(workspaceDirname))
 		{
 			return new File(workspaceDirname);
 		}
@@ -102,51 +103,64 @@ public class Main
 		return Label.ofCommaSeparatedString(labelsStr);
 	}
 
+	/**
+	 * Note that the property may contain a "." (dot) or a "_" (unterscore) to be found!
+	 */
 	private static String getMandatoryProperty(final String name, final String defaultValue)
 	{
 		final String systemPropertyValue = System.getProperty(name);
-		if (!isBlank(systemPropertyValue))
+		if (isNotBlank(systemPropertyValue))
 		{
 			return systemPropertyValue;
 		}
 
-		final String evnVarValue = System.getenv(name);
-		if (!isBlank(evnVarValue))
+		final String envVarValue = System.getenv(name);
+		if (isNotBlank(envVarValue))
 		{
-			return evnVarValue;
+			return envVarValue;
 		}
-
-		if (!isBlank(defaultValue))
+		final String envVarValueWithUnderscore = System.getenv(name.replace('.', '_'));
+		if (isNotBlank(envVarValueWithUnderscore))
+		{
+			return envVarValueWithUnderscore;
+		}
+		
+		if (isNotBlank(defaultValue))
 		{
 			logger.info("Considering default config: {}={}. To override it start JVM with '-D{}=...' OR set environment-variable '{}=...'.", name, defaultValue, name, name);
 			return defaultValue;
 		}
 
 		throw new RuntimeException("Property '" + name + "' was not set. "
-										   + "\n Please start JVM with '-D" + name + "=...'" 
+										   + "\n Please start JVM with '-D" + name + "=...'"
 										   + " OR set environment-variable '" + name + "=...'.");
 	}
 
 	private static boolean getBooleanProperty(final String name, final boolean defaultValue)
 	{
 		final String systemPropertyValue = System.getProperty(name);
-		if (!isBlank(systemPropertyValue))
+		if (isNotBlank(systemPropertyValue))
 		{
 			return Boolean.parseBoolean(systemPropertyValue.trim());
 		}
 
 		final String evnVarValue = System.getenv(name);
-		if (!isBlank(evnVarValue))
+		if (isNotBlank(evnVarValue))
 		{
 			return Boolean.parseBoolean(evnVarValue);
 		}
-
+		final String envVarValueWithUnderscore = System.getenv(name.replace('.', '_'));
+		if (isNotBlank(envVarValueWithUnderscore))
+		{
+			return Boolean.parseBoolean(envVarValueWithUnderscore);
+		}
+		
 		logger.info("Considering default config: {}={}. To override it start JVM with '-D{}=...' OR set environment-variable '{}=...'.", name, defaultValue, name, name);
 		return defaultValue;
 	}
 
-	private static boolean isBlank(final String str)
+	private static boolean isNotBlank(@Nullable final String str)
 	{
-		return str == null || str.trim().isEmpty();
+		return str != null && !str.trim().isEmpty();
 	}
 }

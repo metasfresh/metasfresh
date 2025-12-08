@@ -1,0 +1,31 @@
+.numpad {
+  width: 20rem;
+
+  display: flex;
+  flex-flow: row;
+  flex-grow: 0;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  //display: grid;
+  //grid-template-columns: 1fr 1fr 1fr 1fr;
+  //column-gap: 0;
+  //row-gap: 0;
+
+  .numpad-key {
+    width: 25%;
+    height: 5rem;
+
+    font-size: 1.8rem;
+    font-weight: bold;
+
+    display: grid;
+    place-content: center;
+    place-items: center;
+
+    div {
+      grid-row: 1;
+      grid-column: 1;
+    }
+  }
+}

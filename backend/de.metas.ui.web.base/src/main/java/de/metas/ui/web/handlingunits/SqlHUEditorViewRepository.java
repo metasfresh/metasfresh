@@ -2,6 +2,7 @@ package de.metas.ui.web.handlingunits;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.HuId;
@@ -32,6 +33,7 @@ import de.metas.ui.web.handlingunits.filter.HUIdsFilterHelper;
 import de.metas.ui.web.handlingunits.filter.HuIdsFilterList;
 import de.metas.ui.web.handlingunits.util.HUPackingInfoFormatter;
 import de.metas.ui.web.handlingunits.util.HUPackingInfos;
+import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.view.SqlViewRowIdsOrderedSelectionFactory;
 import de.metas.ui.web.view.ViewEvaluationCtx;
 import de.metas.ui.web.view.ViewId;
@@ -58,7 +60,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -85,6 +86,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -121,7 +123,6 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final WindowId windowId;
@@ -129,6 +130,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	private final HUEditorRowAttributesProvider attributesProvider;
 	private final HUEditorRowIsProcessedPredicate rowProcessedPredicate;
 	private final HUReservationService huReservationService;
+	private final ADReferenceService adReferenceService;
 
 	private final boolean showBestBeforeDate;
 	private final boolean showWeightGross;
@@ -136,6 +138,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	private final SqlViewBinding sqlViewBinding;
 	private final ViewRowIdsOrderedSelectionFactory viewSelectionFactory;
 	private final SqlViewSelectData sqlViewSelect;
+	private final BiPredicate<HUEditorRow, ProcessDescriptor> customProcessApplyPredicate;
 
 	@Builder
 	private SqlHUEditorViewRepository(
@@ -144,13 +147,15 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 			@Nullable final HUEditorRowAttributesProvider attributesProvider,
 			@Nullable final HUEditorRowIsProcessedPredicate rowProcessedPredicate,
 			@NonNull final HUReservationService huReservationService,
+			@NonNull final ADReferenceService adReferenceService,
 			final boolean showBestBeforeDate,
-			final boolean showWeightGross)
+			final boolean showWeightGross,
+			@Nullable final BiPredicate<HUEditorRow, ProcessDescriptor> customProcessApplyPredicate)
 	{
 		this.windowId = windowId;
 
-		this.attributesProvider = attributesProvider;
 		this.rowProcessedPredicate = rowProcessedPredicate != null ? rowProcessedPredicate : HUEditorRowIsProcessedPredicates.NEVER;
+		this.adReferenceService = adReferenceService;
 		this.showBestBeforeDate = showBestBeforeDate;
 		this.showWeightGross = showWeightGross;
 
@@ -159,6 +164,8 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		sqlViewSelect = sqlViewBinding.getSqlViewSelect();
 
 		this.huReservationService = huReservationService;
+		this.attributesProvider = attributesProvider;
+		this.customProcessApplyPredicate = customProcessApplyPredicate;
 	}
 
 	@Override
@@ -268,7 +275,8 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 				.setHUStatus(hu.getHUStatus())
 				.setReservedForOrderLine(orderLineIdWithReservation.orElse(null))
 				.setPackingInfo(extractPackingInfo(hu, huRecordType))
-				.setClearanceStatus(getHUClearanceStatusLookupValue(hu));
+				.setClearanceStatus(getHUClearanceStatusLookupValue(hu))
+				.setCustomProcessApplyPredicate(customProcessApplyPredicate);
 		//
 		// Acquire Best Before Date if required
 		if (showBestBeforeDate)
@@ -416,6 +424,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 				.setUOM(createUOMLookupValue(huStorage.getC_UOM()))
 				.setQtyCU(huStorage.getQty().toBigDecimal())
 				.setClearanceStatus(getHUClearanceStatusLookupValue(hu))
+				.setCustomProcessApplyPredicate(customProcessApplyPredicate)
 				.build();
 	}
 
@@ -478,7 +487,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		else
 		{
 			huStatusKey = hu.getHUStatus();
-			huStatusDisplayName = adReferenceDAO.retrieveListNameTrl(X_M_HU.HUSTATUS_AD_Reference_ID, huStatusKey);
+			huStatusDisplayName = adReferenceService.retrieveListNameTrl(X_M_HU.HUSTATUS_AD_Reference_ID, huStatusKey);
 		}
 
 		return JSONLookupValue.of(huStatusKey, huStatusDisplayName);
@@ -542,7 +551,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 								SqlOptions.usingTableAlias(sqlViewBinding.getTableAlias()),
 								context))
 				.create()
-				.listIds(HuId::ofRepoId);
+				.idsAsSet(HuId::ofRepoId);
 	}
 
 	@Override

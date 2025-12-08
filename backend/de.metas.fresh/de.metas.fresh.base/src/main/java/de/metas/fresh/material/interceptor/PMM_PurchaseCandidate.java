@@ -1,16 +1,5 @@
 package de.metas.fresh.material.interceptor;
 
-import java.math.BigDecimal;
-
-import org.adempiere.ad.modelvalidator.ModelChangeType;
-import org.adempiere.ad.modelvalidator.ModelChangeUtil;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.Adempiere;
-import org.compiere.model.ModelValidator;
-import org.compiere.util.TimeUtil;
-
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
@@ -19,27 +8,36 @@ import de.metas.material.event.procurement.AbstractPurchaseOfferEvent;
 import de.metas.material.event.procurement.PurchaseOfferCreatedEvent;
 import de.metas.material.event.procurement.PurchaseOfferDeletedEvent;
 import de.metas.material.event.procurement.PurchaseOfferUpdatedEvent;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
+import de.metas.user.UserId;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.ad.modelvalidator.ModelChangeUtil;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.ModelValidator;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Component;
 
-/**
- * @task https://metasfresh.atlassian.net/browse/FRESH-86
- *
- */
+import java.math.BigDecimal;
+
+@Component
+@RequiredArgsConstructor
 @Interceptor(I_PMM_PurchaseCandidate.class)
 public class PMM_PurchaseCandidate
 {
-	public static final PMM_PurchaseCandidate INSTANCE = new PMM_PurchaseCandidate();
+	@NonNull
+	private final ModelProductDescriptorExtractor productDescriptorFactory;
 
-	private PMM_PurchaseCandidate()
-	{
-	}
-
+	@NonNull
+	private final PostMaterialEventService materialEventService;
+	
 	/**
 	 * Note: it's important to do this after tje purchaseCandidate was saved,
 	 * but before it was deleted, because we need its <code>PMM_PurchaseCandidate_ID</code>.
-	 *
-	 * @param purchaseCandidateRecord
 	 */
 	@ModelChange(timings = {
 			ModelValidator.TYPE_AFTER_NEW,
@@ -53,19 +51,22 @@ public class PMM_PurchaseCandidate
 			@NonNull final I_PMM_PurchaseCandidate purchaseCandidateRecord,
 			@NonNull final ModelChangeType type)
 	{
-		final ModelProductDescriptorExtractor productDescriptorFactory = Adempiere.getBean(ModelProductDescriptorExtractor.class);
 		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(purchaseCandidateRecord);
 
 		final AbstractPurchaseOfferEvent event;
 
 		final boolean deleted = type.isDelete() || ModelChangeUtil.isJustDeactivated(purchaseCandidateRecord);
 		final boolean created = type.isNew() || ModelChangeUtil.isJustActivated(purchaseCandidateRecord);
+		
 		final BigDecimal qtyPromised = purchaseCandidateRecord.getQtyPromised();
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(purchaseCandidateRecord.getAD_Client_ID(), purchaseCandidateRecord.getAD_Org_ID());
+		final UserId userId = UserId.ofRepoId(purchaseCandidateRecord.getUpdatedBy());
+		
 		if (deleted)
 		{
 			event = PurchaseOfferDeletedEvent.builder()
 					.date(TimeUtil.asInstant(purchaseCandidateRecord.getDatePromised()))
-					.eventDescriptor(EventDescriptor.ofClientAndOrg(purchaseCandidateRecord.getAD_Client_ID(), purchaseCandidateRecord.getAD_Org_ID()))
+					.eventDescriptor(EventDescriptor.ofClientOrgAndUserId(clientAndOrgId, userId))
 					.procurementCandidateId(purchaseCandidateRecord.getPMM_PurchaseCandidate_ID())
 					.productDescriptor(productDescriptor)
 					.qty(qtyPromised)
@@ -75,7 +76,7 @@ public class PMM_PurchaseCandidate
 		{
 			event = PurchaseOfferCreatedEvent.builder()
 					.date(TimeUtil.asInstant(purchaseCandidateRecord.getDatePromised()))
-					.eventDescriptor(EventDescriptor.ofClientAndOrg(purchaseCandidateRecord.getAD_Client_ID(), purchaseCandidateRecord.getAD_Org_ID()))
+					.eventDescriptor(EventDescriptor.ofClientOrgAndUserId(clientAndOrgId, userId))
 					.procurementCandidateId(purchaseCandidateRecord.getPMM_PurchaseCandidate_ID())
 					.productDescriptor(productDescriptor)
 					.qty(qtyPromised)
@@ -96,7 +97,6 @@ public class PMM_PurchaseCandidate
 					.build();
 		}
 
-		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
-		materialEventService.postEventAfterNextCommit(event);
+		materialEventService.enqueueEventAfterNextCommit(event);
 	}
 }

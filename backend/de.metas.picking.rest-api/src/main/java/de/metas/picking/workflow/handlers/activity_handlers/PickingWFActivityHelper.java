@@ -22,15 +22,10 @@
 
 package de.metas.picking.workflow.handlers.activity_handlers;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.workflow.rest_api.model.WFProcess;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
-
-import java.util.List;
-import java.util.stream.Stream;
 
 @UtilityClass
 public class PickingWFActivityHelper
@@ -38,17 +33,5 @@ public class PickingWFActivityHelper
 	public static PickingJob getPickingJob(@NonNull final WFProcess wfProcess)
 	{
 		return wfProcess.getDocumentAs(PickingJob.class);
-	}
-
-	public static ImmutableSet<ShipmentScheduleId> extractShipmentScheduleIds(@NonNull final List<WFProcess> wfProcesses)
-	{
-		return wfProcesses.stream()
-				.flatMap(PickingWFActivityHelper::streamShipmentScheduleIds)
-				.collect(ImmutableSet.toImmutableSet());
-	}
-
-	private static Stream<ShipmentScheduleId> streamShipmentScheduleIds(@NonNull final WFProcess wfProcess)
-	{
-		return getPickingJob(wfProcess).streamShipmentScheduleIds();
 	}
 }

@@ -34,10 +34,11 @@ import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONTriggerAction;
-import de.metas.ui.web.window.model.DocumentCollection;
-import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
+import de.metas.ui.web.window.model.lookup.zoom_into.DocumentZoomIntoService;
+import de.metas.ui.web.window.model.lookup.zoom_into.DocumentZoomIntoInfo;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -53,20 +54,16 @@ import javax.annotation.Nullable;
 
 @Interceptor(I_C_BPartner_Location.class)
 @Component
+@RequiredArgsConstructor
 public class C_BPartner_Location
 {
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-	private final DocumentCollection documentCollection;
+	@NonNull private final DocumentZoomIntoService documentZoomIntoService;
 
 	private static final String SYSCONFIG_AskForOrgChangeOnRegionChange = "AskForOrgChangeOnRegionChange";
-
-	public C_BPartner_Location(@NonNull final DocumentCollection documentCollection)
-	{
-		this.documentCollection = documentCollection;
-	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_C_BPartner_Location.COLUMNNAME_C_Location_ID)
 	public void afterChange(@NonNull final I_C_BPartner_Location bpLocation)
@@ -152,7 +149,7 @@ public class C_BPartner_Location
 
 	private DocumentPath getBPartnerDocumentPath(@NonNull final I_C_BPartner_Location bpLocation)
 	{
-		return documentCollection.getDocumentPath(DocumentZoomIntoInfo.of(I_C_BPartner.Table_Name, bpLocation.getC_BPartner_ID()));
+		return documentZoomIntoService.getDocumentPath(DocumentZoomIntoInfo.of(I_C_BPartner.Table_Name, bpLocation.getC_BPartner_ID()));
 	}
 
 }

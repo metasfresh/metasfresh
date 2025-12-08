@@ -1,6 +1,6 @@
 package de.metas.contracts.impl;
 
-import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.acct.GLCategoryRepository;
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.interceptor.C_Flatrate_Term;
 import de.metas.contracts.interceptor.M_ShipmentSchedule;
@@ -16,7 +16,6 @@ import de.metas.location.impl.DummyDocumentLocationBL;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.tax.api.Tax;
-import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
@@ -50,18 +49,16 @@ public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
 	@BeforeEach
 	public void before()
 	{
-		SpringContextHolder.registerJUnitBean(PerformanceMonitoringService.class, new NoopPerformanceMonitoringService());
-		SpringContextHolder.registerJUnitBean(IDocumentLocationBL.class, new DummyDocumentLocationBL(new BPartnerBL(new UserRepository())));
+		SpringContextHolder.registerJUnitBean(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
 
-
+		final IDocumentLocationBL documentLocationBL = DummyDocumentLocationBL.newInstanceForUnitTesting();
+		SpringContextHolder.registerJUnitBean(IDocumentLocationBL.class, documentLocationBL);
 
 		contractsRepository = new ContractChangePriceQtyService();
 		final ContractOrderService contractOrderService = new ContractOrderService();
 
-		final IDocumentLocationBL documentLocationBL = new DummyDocumentLocationBL(new BPartnerBL(new UserRepository()));
-
 		final IModelInterceptorRegistry interceptorRegistry = Services.get(IModelInterceptorRegistry.class);
-		interceptorRegistry.addModelInterceptor(new C_Flatrate_Term(contractOrderService,documentLocationBL));
+		interceptorRegistry.addModelInterceptor(new C_Flatrate_Term(contractOrderService, documentLocationBL, new GLCategoryRepository()));
 		interceptorRegistry.addModelInterceptor(M_ShipmentSchedule.INSTANCE);
 
 		final I_C_Tax taxNotFoundRecord = newInstance(I_C_Tax.class);

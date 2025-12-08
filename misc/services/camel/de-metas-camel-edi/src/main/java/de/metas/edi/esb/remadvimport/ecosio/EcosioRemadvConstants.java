@@ -22,10 +22,6 @@
 
 package de.metas.edi.esb.remadvimport.ecosio;
 
-import com.google.common.collect.ImmutableSet;
-
-import java.util.Set;
-
 public interface EcosioRemadvConstants
 {
 	String REMADV_XML_TO_JSON_PROCESSOR = "remadv-xml-to-json-processor-id";
@@ -35,7 +31,7 @@ public interface EcosioRemadvConstants
 	String INPUT_REMADV_LOCAL = "edi.file.remadv.ecosio";
 
 	String ECOSIO_AUTH_TOKEN = "{{metasfresh.api.auth}}";
-	String CREATE_REMADV_MF_URL = "{{metasfresh.api.baseurl}}/payment/remittanceAdvice";
+	String CREATE_REMADV_MF_URL = "{{metasfresh.api.baseurl}}/payments/remittanceAdvice";
 
 	String NUMBER_OF_ITEMS = "NumberOfItems";
 	String AUTHORIZATION = "Authorization";
@@ -43,14 +39,41 @@ public interface EcosioRemadvConstants
 	String DOC_PREFIX = "doc-";
 	String GLN_PREFIX = "gln-";
 	String DOCUMENT_ZONE_ID = "Europe/Vienna";
-	
-	/** Payment discount */
+
+	/**
+	 * According to the Markant-Docu:
+	 * - "Goods Conditions Markant" / "Warenkondition"
+	 * - Same VAT-rate as the REMADV-Line's subject-invoice
+	 */
 	String ADJUSTMENT_CODE_19 = "19";
-	
-	/** Service fee */
+
+	/**
+	 * According to the Markant-Docu:
+	 * - "Goods Conditions Customer (order customer)" / "Mitglieds HSI (Hausinterne Kondition)"
+	 * - Same VAT-rate as the REMADV-Line's subject-invoice
+	 */
+	String ADJUSTMENT_CODE_38 = "38";
+
+	/**
+	 * According to the Markant-Docu:
+	 * - "Payment conditions (discount)" / "Zahlungskondition"
+	 * - Same VAT-rate as the REMADV-Line's subject-invoice
+	 */
+	String ADJUSTMENT_CODE_68 = "68";
+
+	/**
+	 * Service fee
+	 * According to the Markant-Docu:
+	 * - "Service conditions (DL) without BVG" / "Dienstleistungskondition" (BVG means Bürgschaftsvermittlungsgebühr)
+	 * - VAT-rate for service-fees
+	 */
 	String ADJUSTMENT_CODE_67 = "67";
 
-	/** Also a service fee */
+	/**
+	 * According to the Markant-Docu:
+	 * - "Guarantee brokerage fee (BVG)" / "Bürgschaftsvermittlungsgebühr"
+	 * - VAT-rate for service-fees
+	 */
 	String ADJUSTMENT_CODE_90 = "90";
 
 }

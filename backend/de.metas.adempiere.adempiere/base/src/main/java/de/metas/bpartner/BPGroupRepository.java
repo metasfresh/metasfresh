@@ -1,22 +1,20 @@
 package de.metas.bpartner;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOrNew;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
+import de.metas.bpartner.service.IBPGroupDAO;
+import de.metas.organization.OrgId;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BP_Group;
 import org.springframework.stereotype.Repository;
 
-import de.metas.bpartner.service.IBPGroupDAO;
-import de.metas.organization.OrgId;
-import de.metas.util.Services;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOrNew;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L

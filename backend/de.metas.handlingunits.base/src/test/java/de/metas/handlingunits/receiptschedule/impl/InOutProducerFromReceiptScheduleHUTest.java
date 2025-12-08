@@ -2,7 +2,7 @@
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,6 +25,7 @@ package de.metas.handlingunits.receiptschedule.impl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.IProductAcctDAO;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
@@ -36,9 +37,16 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.expectations.HUAttributeExpectation;
 import de.metas.handlingunits.expectations.HUWeightsExpectation;
+import de.metas.handlingunits.impl.HUQtyService;
 import de.metas.handlingunits.inout.impl.DistributeAndMoveReceiptCreator;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleRepository;
+import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
+import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHURepository;
+import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL.CreateReceiptsParameters;
 import de.metas.handlingunits.receiptschedule.IHUToReceiveValidator;
 import de.metas.handlingunits.reservation.HUReservationRepository;
@@ -59,8 +67,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -73,7 +79,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Test creation of material receipts ({@link I_M_InOut}s) from scheduled receipts ({@link I_M_ReceiptSchedule}s) and how line aggregations are made based on products, packing and ASIs.
@@ -103,7 +109,19 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 		final DDOrderService ddOrderService = new DDOrderService(
 				ddOrderLowLevelDAO,
 				ddOrderLowLevelService,
-				new DDOrderMoveScheduleService(ddOrderLowLevelDAO, new DDOrderMoveScheduleRepository(), huReservationService));
+				new DDOrderMoveScheduleService(
+						ddOrderLowLevelDAO,
+						new DDOrderMoveScheduleRepository(),
+						ADReferenceService.newMocked(),
+						huReservationService,
+						new PPOrderSourceHUService(new PPOrderSourceHURepository(),
+								new PPOrderIssueScheduleService(
+										new PPOrderIssueScheduleRepository(),
+										new HUQtyService(InventoryService.newInstanceForUnitTesting())
+								)),
+						HUQRCodesService.newInstanceForUnitTesting()
+				)
+		);
 		SpringContextHolder.registerJUnitBean(new DistributeAndMoveReceiptCreator(lotNumberQuarantineRepository, ddOrderService));
 	}
 
@@ -172,7 +190,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 	public void testDifferentASIAndQualityIssues()
 	{
 		final List<I_M_HU> paloxes = createStandardHUsAndAssignThemToTheReceiptSchedule();
-		MatcherAssert.assertThat(paloxes.size(), is(10)); // guard
+		assertThat(paloxes).hasSize(10); // guard
 
 		//
 		// Setup paloxe attribute structure
@@ -428,7 +446,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 	}
 
 	/**
-	 * @implNote task http://dewiki908/mediawiki/index.php/09670_Tageslot_Einlagerung_%28100236982974%29
+	 * @implNote <a href="http://dewiki908/mediawiki/index.php/09670_Tageslot_Einlagerung_%28100236982974%29">task</a>
 	 */
 	@Test
 	public void test_HU_LotNumberDate_propagated()
@@ -501,7 +519,7 @@ public class InOutProducerFromReceiptScheduleHUTest extends AbstractRSAllocation
 	private List<I_M_HU> createStandardHUsAndAssignThemToTheReceiptSchedule()
 	{
 		final BigDecimal qtyOrdered = receiptSchedule.getQtyOrdered();
-		MatcherAssert.assertThat("precondition: QtyOrdered", qtyOrdered, Matchers.comparesEqualTo(new BigDecimal("4300")));
+		assertThat(qtyOrdered).as("precondition: QtyOrdered").isEqualByComparingTo(new BigDecimal("4300"));
 
 		final List<I_M_HU> paloxes = createIncomingTradingUnits(
 				materialItemTomato_430, // Paloxe x 430 kg

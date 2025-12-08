@@ -24,7 +24,6 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 /*
@@ -53,7 +52,6 @@ import java.util.stream.Stream;
  * {@link Evaluatee} convenient factories.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public final class Evaluatees
 {
@@ -67,11 +65,6 @@ public final class Evaluatees
 		return new SingletonEvaluatee(variableName, value);
 	}
 
-	public static Evaluatee ofSupplier(final String variableName, final Supplier<?> supplier)
-	{
-		return new SupplierEvaluatee(variableName, supplier);
-	}
-
 	public static Evaluatee2 ofMap(final Map<String, ?> map)
 	{
 		return new MapEvaluatee(map);
@@ -82,7 +75,7 @@ public final class Evaluatees
 		return new MapEvaluateeBuilder();
 	}
 
-	public static Evaluatee ofCtx(final Properties ctx, final int windowNo, final boolean onlyWindow)
+	public static Evaluatee ofCtx(@NonNull final Properties ctx, final int windowNo, final boolean onlyWindow)
 	{
 		return new EvaluateeCtx(ctx, windowNo, onlyWindow);
 	}
@@ -93,9 +86,8 @@ public final class Evaluatees
 		return new EvaluateeCtx(ctx, Env.WINDOW_None, onlyWindow);
 	}
 
-	public static Evaluatee ofTableRecordReference(final ITableRecordReference recordRef)
+	public static Evaluatee ofTableRecordReference(@NonNull final ITableRecordReference recordRef)
 	{
-		Check.assumeNotNull(recordRef, "Parameter recordRef is not null");
 		final Object record = recordRef.getModel(PlainContextAware.newWithThreadInheritedTrx(Env.getCtx()));
 		return InterfaceWrapperHelper.getEvaluatee(record);
 	}
@@ -118,16 +110,15 @@ public final class Evaluatees
 	/**
 	 * Compose all evaluates which are not null
 	 */
-	public static Evaluatee2 composeNotNulls(@NonNull final Evaluatee... evaluatees)
+	public static Evaluatee2 composeNotNulls(final Evaluatee... evaluatees)
 	{
 		final ImmutableList<Evaluatee> evaluateesFiltered = Stream.of(evaluatees).filter(Objects::nonNull).collect(ImmutableList.toImmutableList());
 		Check.assumeNotEmpty(evaluateesFiltered, "At least one evaluatee shall be not null: {}", (Object)evaluatees);
-		
+
 		return new CompositeEvaluatee(evaluateesFiltered);
 	}
 
 	/**
-	 *
 	 * @return a special instance that has no variables.
 	 */
 	public static Evaluatee2 empty()
@@ -171,7 +162,6 @@ public final class Evaluatees
 	 * Map
 	 *
 	 * @author metas-dev <dev@metasfresh.com>
-	 *
 	 */
 	private static final class MapEvaluatee implements Evaluatee2
 	{
@@ -195,8 +185,7 @@ public final class Evaluatees
 		@Override
 		public <T> T get_ValueAsObject(final String variableName)
 		{
-			@SuppressWarnings("unchecked")
-			final T value = (T)map.get(variableName);
+			@SuppressWarnings("unchecked") final T value = (T)map.get(variableName);
 			return value;
 		}
 
@@ -269,7 +258,6 @@ public final class Evaluatees
 	 * Wraps a given {@link Properties} context to {@link Evaluatee}
 	 *
 	 * @author tsa
-	 *
 	 */
 	private static final class EvaluateeCtx implements Evaluatee
 	{
@@ -277,9 +265,8 @@ public final class Evaluatees
 		private final int windowNo;
 		private final boolean onlyWindow;
 
-		/* package */ EvaluateeCtx(final Properties ctx, final int windowNo, final boolean onlyWindow)
+		/* package */ EvaluateeCtx(@NonNull final Properties ctx, final int windowNo, final boolean onlyWindow)
 		{
-			Check.assumeNotNull(ctx, "ctx not null");
 			this.ctx = ctx;
 			this.windowNo = windowNo;
 			this.onlyWindow = onlyWindow;
@@ -312,13 +299,32 @@ public final class Evaluatees
 		{
 			return Env.getContextAsDate(ctx, windowNo, variableName, onlyWindow);
 		}
+
+		@Nullable
+		@Override
+		public <T> T get_ValueAsObject(final String variableName)
+		{
+			final String value = Env.getContext(ctx, windowNo, variableName, onlyWindow);
+			if (Env.isPropertyValueNull(variableName, value))
+			{
+				return null;
+			}
+
+			//noinspection unchecked
+			return (T)value;
+		}
+
+		@Override
+		public Optional<Object> get_ValueIfExists(final @NonNull String variableName, final @NonNull Class<?> targetType)
+		{
+			return Evaluatee.super.get_ValueIfExists(variableName, targetType);
+		}
 	}
 
 	/**
 	 * Composite
 	 *
 	 * @author metas-dev <dev@metasfresh.com>
-	 *
 	 */
 	@VisibleForTesting
 	@lombok.ToString
@@ -341,8 +347,7 @@ public final class Evaluatees
 				final Object value = source.get_ValueAsObject(variableName);
 				if (value != null)
 				{
-					@SuppressWarnings("unchecked")
-					final T valueCasted = (T)value;
+					@SuppressWarnings("unchecked") final T valueCasted = (T)value;
 					return valueCasted;
 				}
 			}
@@ -393,6 +398,21 @@ public final class Evaluatees
 			return null;
 		}
 
+		@Override
+		public Optional<Object> get_ValueIfExists(@NonNull final String variableName, @NonNull final Class<?> targetType)
+		{
+			for (final Evaluatee source : sources)
+			{
+				final Optional<Object> optionalValue = source.get_ValueIfExists(variableName, targetType);
+				if (optionalValue.isPresent())
+				{
+					return optionalValue;
+				}
+			}
+
+			return Optional.empty();
+		}
+
 		@VisibleForTesting
 		List<Evaluatee> getSources()
 		{
@@ -404,7 +424,6 @@ public final class Evaluatees
 	 * Singleton implementation of {@link Evaluatee2}
 	 *
 	 * @author tsa
-	 *
 	 */
 	private static final class SingletonEvaluatee implements Evaluatee2
 	{
@@ -437,8 +456,7 @@ public final class Evaluatees
 			{
 				return null;
 			}
-			@SuppressWarnings("unchecked")
-			final T valueCasted = (T)value;
+			@SuppressWarnings("unchecked") final T valueCasted = (T)value;
 			return valueCasted;
 		}
 
@@ -464,55 +482,6 @@ public final class Evaluatees
 		public String get_ValueOldAsString(final String variableName)
 		{
 			return null;
-		}
-	}
-
-	/**
-	 * Supplier implementation of {@link Evaluatee2}
-	 *
-	 * @author tsa
-	 *
-	 */
-	private static final class SupplierEvaluatee implements Evaluatee
-	{
-		private final String variableName;
-		private final Supplier<?> supplier;
-
-		private SupplierEvaluatee(final String variableName, final Supplier<?> supplier)
-		{
-			super();
-			Check.assumeNotEmpty(variableName, "variableName not empty");
-			Check.assumeNotNull(supplier, "Parameter supplier is not null");
-			this.variableName = variableName;
-			this.supplier = supplier;
-		}
-
-		@Nullable
-		@Override
-		public String get_ValueAsString(final String variableName)
-		{
-			if (!this.variableName.equals(variableName))
-			{
-				return null;
-			}
-			final Object valueObj = supplier.get();
-			return valueObj == null ? null : valueObj.toString();
-		}
-
-		@Nullable
-		@Override
-		public <T> T get_ValueAsObject(final String variableName)
-		{
-			if (!this.variableName.equals(variableName))
-			{
-				return null;
-			}
-
-			final Object valueObj = supplier.get();
-
-			@SuppressWarnings("unchecked")
-			final T valueConv = (T)valueObj;
-			return valueConv;
 		}
 	}
 

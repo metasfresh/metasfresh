@@ -4,6 +4,7 @@ import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.column.AdColumnId;
 
 /*
  * #%L
@@ -31,7 +32,7 @@ import lombok.Value;
 public class OLCandAggregationColumn
 {
 	private final String columnName;
-	private final int adColumnId;
+	private final AdColumnId adColumnId;
 	private final int orderBySeqNo;
 	private final boolean splitOrderDiscriminator;
 	private final boolean groupByColumn;
@@ -46,14 +47,13 @@ public class OLCandAggregationColumn
 	@Builder
 	private OLCandAggregationColumn(
 			@NonNull final String columnName,
-			final int adColumnId,
+			@NonNull final AdColumnId adColumnId,
 			final int orderBySeqNo,
 			final boolean splitOrderDiscriminator,
 			final boolean groupByColumn,
 			final Granularity granularity)
 	{
 		Check.assumeNotEmpty(columnName, "columnName is not empty");
-		Check.assume(adColumnId > 0, "adColumnId > 0");
 
 		this.columnName = columnName;
 		this.adColumnId = adColumnId;

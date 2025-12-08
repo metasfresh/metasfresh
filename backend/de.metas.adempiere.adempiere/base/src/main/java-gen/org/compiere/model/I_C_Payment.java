@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_Payment
  *  @author metasfresh (generated) 
@@ -389,28 +390,6 @@ public interface I_C_Payment
 	String COLUMNNAME_C_BankStatementLine_Ref_ID = "C_BankStatementLine_Ref_ID";
 
 	/**
-	 * Set Partner Bank Account.
-	 * Bank Account of the Business Partner
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID);
-
-	/**
-	 * Get Partner Bank Account.
-	 * Bank Account of the Business Partner
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_BP_BankAccount_ID();
-
-	String COLUMNNAME_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
-
-	/**
 	 * Set Business Partner.
 	 *
 	 * <br>Type: Search
@@ -429,6 +408,48 @@ public interface I_C_Payment
 	int getC_BPartner_ID();
 
 	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+
+	/**
+	 * Set Location.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
+
+	/**
+	 * Get Location.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_Location_ID();
+
+	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
+
+	/**
+	 * Set Partner Bank Account.
+	 * Bank Account of the Business Partner
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID);
+
+	/**
+	 * Get Partner Bank Account.
+	 * Bank Account of the Business Partner
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BP_BankAccount_ID();
+
+	String COLUMNNAME_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
 
 	/**
 	 * Set Campaign.

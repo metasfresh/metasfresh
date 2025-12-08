@@ -1,12 +1,12 @@
 package de.metas.ui.web.ddorder.process;
 
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.printing.esb.base.util.Check;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
@@ -17,11 +17,11 @@ import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_MovementLine;
-import de.metas.distribution.ddorder.DDOrderLineId;
 import org.eevolution.model.I_DD_OrderLine;
 
 import java.util.List;

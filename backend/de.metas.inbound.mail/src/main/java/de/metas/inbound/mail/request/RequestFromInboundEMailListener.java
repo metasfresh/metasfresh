@@ -1,12 +1,5 @@
 package de.metas.inbound.mail.request;
 
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.compiere.model.I_R_Request;
-import org.compiere.model.X_R_Request;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Component;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.inbound.mail.InboundEMail;
 import de.metas.inbound.mail.InboundEMailListener;
@@ -17,6 +10,12 @@ import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_R_Request;
+import org.compiere.model.X_R_Request;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Component;
 
 /*
  * #%L
@@ -79,7 +78,7 @@ public class RequestFromInboundEMailListener implements InboundEMailListener
 		request.setConfidentialType(X_R_Request.CONFIDENTIALTYPE_Internal);
 		request.setAD_Org_ID(config.getOrgId().getRepoId());
 		request.setR_RequestType_ID(config.getRequestTypeId().getRepoId());
-		request.setStartDate(TimeUtil.asTimestamp(email.getReceivedDate()));
+		request.setStartTime(TimeUtil.asTimestamp(email.getReceivedDate()));
 		request.setDateTrx(TimeUtil.asTimestamp(email.getReceivedDate()));
 
 		final ClientId adClientId = ClientId.ofRepoId(request.getAD_Client_ID());

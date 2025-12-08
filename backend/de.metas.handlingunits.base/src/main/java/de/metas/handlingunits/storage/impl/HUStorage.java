@@ -22,6 +22,7 @@ package de.metas.handlingunits.storage.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -49,6 +50,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -144,7 +146,7 @@ import java.util.Set;
 	{
 		final I_M_HU_Storage storage = dao.retrieveStorage(hu, productId);
 		return storage != null
-				? Optional.of(Quantitys.create(storage.getQty(), UomId.ofRepoId(storage.getC_UOM_ID())))
+				? Optional.of(Quantitys.of(storage.getQty(), UomId.ofRepoId(storage.getC_UOM_ID())))
 				: Optional.empty();
 	}
 
@@ -304,6 +306,17 @@ import java.util.Set;
 	}
 
 	@Override
+	@NonNull
+	public IHUProductStorage getSingleHUProductStorage()
+	{
+		final List<IHUProductStorage> productStorages = streamProductStorages()
+				.filter(huProductStorage -> !huProductStorage.isEmpty())
+				.collect(ImmutableList.toImmutableList());
+
+		return CollectionUtils.singleElement(productStorages);
+	}
+
+	@Override
 	public List<IHUProductStorage> getProductStorages()
 	{
 		final List<I_M_HU_Storage> storages = dao.retrieveStorages(hu);
@@ -393,6 +406,34 @@ import java.util.Set;
 	public I_C_UOM getC_UOMOrNull()
 	{
 		return dao.getC_UOMOrNull(hu);
+	}
+
+	@Override
+	public boolean isSingleProductWithQtyEqualsTo(@NonNull final ProductId productId, @NonNull final Quantity qty)
+	{
+		final List<IHUProductStorage> productStorages = getProductStorages();
+		return productStorages.size() == 1
+				&& ProductId.equals(productStorages.get(0).getProductId(), productId)
+				&& productStorages.get(0).getQty(qty.getUOM()).compareTo(qty) == 0;
+	}
+
+	@Override
+	public boolean isSingleProductStorageMatching(@NonNull final ProductId productId)
+	{
+		final List<IHUProductStorage> productStorages = getProductStorages();
+		return isSingleProductStorageMatching(productStorages, productId);
+	}
+
+	private static boolean isSingleProductStorageMatching(@NonNull final List<IHUProductStorage> productStorages, @NotNull final ProductId productId)
+	{
+		return productStorages.size() == 1 && ProductId.equals(productStorages.get(0).getProductId(), productId);
+	}
+
+	@Override
+	public boolean isEmptyOrSingleProductStorageMatching(@NonNull final ProductId productId)
+	{
+		final List<IHUProductStorage> productStorages = getProductStorages();
+		return productStorages.isEmpty() || isSingleProductStorageMatching(productStorages, productId);
 	}
 
 }

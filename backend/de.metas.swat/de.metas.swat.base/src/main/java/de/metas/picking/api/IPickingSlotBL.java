@@ -25,4 +25,10 @@ public interface IPickingSlotBL extends ISingletonService
 	Set<PickingSlotIdAndCaption> getPickingSlotIdAndCaptions(@NonNull PickingSlotQuery query);
 
 	QRCodePDFResource createQRCodesPDF(Set<PickingSlotIdAndCaption> pickingSlotIdAndCaptions);
+
+	boolean isAvailableForAnyBPartner(@NonNull PickingSlotId pickingSlotId);
+
+	I_M_PickingSlot getById(PickingSlotId pickingSlotId);
+
+	boolean isPickingRackSystem(@NonNull PickingSlotId pickingSlotId);
 }

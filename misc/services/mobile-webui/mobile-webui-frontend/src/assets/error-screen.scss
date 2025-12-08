@@ -1,0 +1,18 @@
+.error-screen {
+  display: flex;
+  flex-direction: column;
+  font-size: 2.5rem !important;
+  padding-top: 5rem;
+  padding-right: 2rem;
+  padding-left: 2rem;
+  padding-bottom: 2rem;
+
+  .message {
+    color: black;
+    background-color: white;
+  }
+
+  .button {
+
+  }
+}

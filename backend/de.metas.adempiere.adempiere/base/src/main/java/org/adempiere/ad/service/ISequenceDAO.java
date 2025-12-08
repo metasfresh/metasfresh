@@ -22,12 +22,14 @@ package org.adempiere.ad.service;
  * #L%
  */
 
-import java.util.Properties;
-
+import de.metas.document.sequence.DocSequenceId;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.organization.OrgId;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.compiere.model.I_AD_Sequence;
 
-import de.metas.document.sequence.IDocumentNoBuilderFactory;
-import de.metas.util.ISingletonService;
+import java.util.Properties;
 
 /**
  * Service to access the actual {@link I_AD_Sequence} table. To get actual sequence numbers, use {@link IDocumentNoBuilderFactory}.
@@ -45,4 +47,9 @@ public interface ISequenceDAO extends ISingletonService
 	 * Rename the sequence name when a given table name was changed
 	 */
 	void renameTableSequence(Properties ctx, String tableNameOld, String tableNameNew);
+
+	@NonNull
+	I_AD_Sequence retrieveSequenceByName(@NonNull String sequenceName);
+
+	DocSequenceId cloneToOrg(@NonNull DocSequenceId fromDocSequenceId, @NonNull OrgId toOrgId);
 }

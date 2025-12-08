@@ -6,7 +6,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.concurrent.Executors;
@@ -40,11 +39,10 @@ public class ViewConfiguration implements InitializingBean
 {
 	private static final Logger logger = LogManager.getLogger(ViewConfiguration.class);
 
-	private static final String BEANNAME_ViewMaintenanceScheduledExecutorService = "viewMaintenanceScheduledExecutorService";
 	private static final String SYSCONFIG_ClearViewSelectionsRateInSeconds = "metasfresh.view.clearViewSelectionsRateInSeconds";
 
 	@Override
-	public void afterPropertiesSet() throws Exception
+	public void afterPropertiesSet()
 	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		final int clearViewSelectionsRateInSeconds = sysConfigBL.getIntValue(SYSCONFIG_ClearViewSelectionsRateInSeconds, 1800);
@@ -52,7 +50,7 @@ public class ViewConfiguration implements InitializingBean
 		{
 			final ScheduledExecutorService scheduledExecutor = viewMaintenanceScheduledExecutorService();
 			scheduledExecutor.scheduleAtFixedRate(
-					SqlViewSelectionToDeleteHelper::deleteScheduledSelectionsNoFail, // command, don't fail because on failure the task won't be re-scheduled so it's game over
+					SqlViewSelectionToDeleteHelper::deleteScheduledSelectionsNoFail, // command, don't fail because on failure the task won't be re-scheduled, so it's game over
 					clearViewSelectionsRateInSeconds, // initialDelay
 					clearViewSelectionsRateInSeconds, // period
 					TimeUnit.SECONDS // timeUnit
@@ -65,8 +63,7 @@ public class ViewConfiguration implements InitializingBean
 		}
 	}
 
-	@Bean(BEANNAME_ViewMaintenanceScheduledExecutorService)
-	public ScheduledExecutorService viewMaintenanceScheduledExecutorService()
+	private ScheduledExecutorService viewMaintenanceScheduledExecutorService()
 	{
 		return Executors.newScheduledThreadPool(
 				1, // corePoolSize

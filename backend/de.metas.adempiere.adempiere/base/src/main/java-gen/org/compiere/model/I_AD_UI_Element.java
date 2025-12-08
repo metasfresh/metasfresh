@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for AD_UI_Element
  *  @author metasfresh (generated) 
@@ -30,8 +29,8 @@ public interface I_AD_UI_Element
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Feld.
-	 * Ein Feld einer Datenbanktabelle
+	 * Set Field.
+	 * Field on a database table
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -40,8 +39,8 @@ public interface I_AD_UI_Element
 	void setAD_Field_ID (int AD_Field_ID);
 
 	/**
-	 * Get Feld.
-	 * Ein Feld einer Datenbanktabelle
+	 * Get Field.
+	 * Field on a database table
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -106,8 +105,8 @@ public interface I_AD_UI_Element
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Register.
-	 * Register auf einem Fenster
+	 * Set Tab.
+	 * Tab within a Window
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -116,8 +115,8 @@ public interface I_AD_UI_Element
 	void setAD_Tab_ID (int AD_Tab_ID);
 
 	/**
-	 * Get Register.
-	 * Register auf einem Fenster
+	 * Get Tab.
+	 * Tab within a Window
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -205,7 +204,7 @@ public interface I_AD_UI_Element
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
@@ -217,10 +216,13 @@ public interface I_AD_UI_Element
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	int getAD_Window_ID();
 
+	@Deprecated
 	@Nullable org.compiere.model.I_AD_Window getAD_Window();
 
 	@Deprecated

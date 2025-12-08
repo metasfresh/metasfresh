@@ -22,74 +22,72 @@
 
 package de.metas.externalsystem;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfigId;
+import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigId;
+import de.metas.externalsystem.leichmehl.PLUType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6_UOM;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_WooCommerce;
-import de.metas.externalsystem.model.X_ExternalSystem_Config;
+import de.metas.externalsystem.model.X_ExternalSystem_Config_LeichMehl;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
-import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
 import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import de.metas.externalsystem.shopware6.ProductLookup;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
 import de.metas.pricing.PriceListId;
+import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.Optional;
 
+import static de.metas.externalsystem.ExternalSystemType.Alberta;
+import static de.metas.externalsystem.ExternalSystemType.LeichUndMehl;
+import static de.metas.externalsystem.ExternalSystemType.Other;
+import static de.metas.externalsystem.ExternalSystemType.RabbitMQ;
+import static de.metas.externalsystem.ExternalSystemType.Shopware6;
+import static de.metas.externalsystem.ExternalSystemType.WOO;
 import static de.metas.externalsystem.model.X_ExternalSystem_Config_Shopware6Mapping.ISINVOICEEMAILENABLED_Yes;
 import static de.metas.externalsystem.other.ExternalSystemOtherConfigRepositoryTest.createExternalConfigParameterRecord;
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
+@ExtendWith(SnapshotExtension.class)
 class ExternalSystemConfigRepoTest
 {
 
 	private ExternalSystemConfigRepo externalSystemConfigRepo;
+	private Expect expect;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		externalSystemConfigRepo = new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository());
-	}
-
-	@BeforeAll
-	static void initStatic()
-	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
-	}
-
-	@AfterAll
-	static void afterAll()
-	{
-		validateSnapshots();
+		POJOLookupMap.setNextIdSupplier_PerTableSequence();
+		externalSystemConfigRepo = ExternalSystemConfigRepo.newInstanceForUnitTesting();
 	}
 
 	@Test
 	void externalSystem_Config_Alberta_getById()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
-				.type(X_ExternalSystem_Config.TYPE_Alberta)
+		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(Alberta.getValue())
 				.build();
 
 		final I_ExternalSystem_Config_Alberta childRecord = newInstance(I_ExternalSystem_Config_Alberta.class);
@@ -106,15 +104,15 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
 	void externalSystem_Config_Shopware6_getById()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
-				.type(X_ExternalSystem_Config.TYPE_Shopware6)
+		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(Shopware6.getValue())
 				.build();
 
 		final I_ExternalSystem_Config_Shopware6 childRecord = newInstance(I_ExternalSystem_Config_Shopware6.class);
@@ -144,18 +142,18 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
 	void externalSystem_Config_RabbitMQ_getById()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
-				.type(ExternalSystemType.RabbitMQ.getCode())
+		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(RabbitMQ.getValue())
 				.build();
 
-		final I_ExternalSystem_Config_RabbitMQ_HTTP childRecord = ExternalSystemTestUtil.createRabbitMQConfigBuilder()
+		final I_ExternalSystem_Config_RabbitMQ_HTTP childRecord = ExternalSystemConfigTestUtil.createRabbitMQConfigBuilder()
 				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
 				.value("testRabbitMQValue")
 				.isSyncBPartnerToRabbitMQ(true)
@@ -167,15 +165,15 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
 	void externalSystem_Config_Shopware6_getTypeAndValue()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
-				.type(X_ExternalSystem_Config.TYPE_Shopware6)
+		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(Shopware6.getValue())
 				.build();
 
 		final String value = "testShopware6Value";
@@ -202,20 +200,20 @@ class ExternalSystemConfigRepoTest
 		saveRecord(shopware6Uom);
 
 		// when
-		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.Shopware6, value)
+		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(Shopware6, value)
 				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemParentConfig found!"));
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
 	void externalSystem_Config_Alberta_getByTypeAndValue()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
-				.type(X_ExternalSystem_Config.TYPE_Alberta)
+		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(Alberta.getValue())
 				.build();
 
 		final String value = "testAlbertaValue";
@@ -229,25 +227,25 @@ class ExternalSystemConfigRepoTest
 		saveRecord(childRecord);
 
 		// when
-		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.Alberta, value)
+		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(Alberta, value)
 				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemParentConfig found!"));
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
 	void externalSystem_Config_RabbitMQ_getByTypeAndValue()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
-				.type(ExternalSystemType.RabbitMQ.getCode())
+		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(RabbitMQ.getValue())
 				.build();
 
 		final String value = "testRabbitMQValue";
 
-		ExternalSystemTestUtil.createRabbitMQConfigBuilder()
+		ExternalSystemConfigTestUtil.createRabbitMQConfigBuilder()
 				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
 				.value(value)
 				.isSyncBPartnerToRabbitMQ(true)
@@ -256,20 +254,20 @@ class ExternalSystemConfigRepoTest
 				.build();
 
 		// when
-		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.RabbitMQ, value)
+		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(RabbitMQ, value)
 				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemParentConfig found!"));
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
 	void externalSystem_Config_Alberta_getByTypeAndValue_wrongType()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
-				.type(X_ExternalSystem_Config.TYPE_Alberta)
+		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(Alberta.getValue())
 				.build();
 
 		final String value = "testAlbertaValue";
@@ -283,7 +281,7 @@ class ExternalSystemConfigRepoTest
 		saveRecord(childRecord);
 
 		// when
-		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.Shopware6, value);
+		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepo.getByTypeAndValue(Shopware6, value);
 
 		assertThat(externalSystemParentConfig).isEmpty();
 	}
@@ -292,8 +290,8 @@ class ExternalSystemConfigRepoTest
 	void externalSystem_Config_Alberta_getByTypeAndParent()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
-				.type(X_ExternalSystem_Config.TYPE_Alberta)
+		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(Alberta.getValue())
 				.build();
 
 		final String value = "testAlbertaValue";
@@ -308,21 +306,21 @@ class ExternalSystemConfigRepoTest
 
 		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID());
 		// when
-		final IExternalSystemChildConfig result = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId, ExternalSystemType.Alberta)
+		final IExternalSystemChildConfig result = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId, Alberta)
 				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemChildConfig found!"));
 
 		// then
 		assertThat(result).isNotNull();
 		assertThat(result.getId().getRepoId()).isEqualTo(childRecord.getExternalSystem_Config_Alberta_ID());
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
 	void externalSystem_Config_Shopware6_getByTypeAndParent()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
-				.type(X_ExternalSystem_Config.TYPE_Shopware6)
+		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(Shopware6.getValue())
 				.build();
 
 		final String value = "testShopware6Value";
@@ -366,24 +364,24 @@ class ExternalSystemConfigRepoTest
 
 		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID());
 		// when
-		final IExternalSystemChildConfig result = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId, ExternalSystemType.Shopware6)
+		final IExternalSystemChildConfig result = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId, Shopware6)
 				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemChildConfig found!"));
 
 		// then
 		assertThat(result).isNotNull();
 		assertThat(result.getId().getRepoId()).isEqualTo(childRecord.getExternalSystem_Config_Shopware6_ID());
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
 	void externalSystem_Config_RabbitMQ_getByTypeAndParent()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
-				.type(ExternalSystemType.RabbitMQ.getCode())
+		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(RabbitMQ.getValue())
 				.build();
 
-		final I_ExternalSystem_Config_RabbitMQ_HTTP childRecord = ExternalSystemTestUtil.createRabbitMQConfigBuilder()
+		final I_ExternalSystem_Config_RabbitMQ_HTTP childRecord = ExternalSystemConfigTestUtil.createRabbitMQConfigBuilder()
 				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
 				.value("testRabbitMQValue")
 				.isSyncBPartnerToRabbitMQ(true)
@@ -391,21 +389,21 @@ class ExternalSystemConfigRepoTest
 
 		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID());
 		// when
-		final IExternalSystemChildConfig result = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId, ExternalSystemType.RabbitMQ)
+		final IExternalSystemChildConfig result = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId, RabbitMQ)
 				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemChildConfig found!"));
 
 		// then
 		assertThat(result).isNotNull();
 		assertThat(result.getId().getRepoId()).isEqualTo(childRecord.getExternalSystem_Config_RabbitMQ_HTTP_ID());
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
 	void externalSystem_Other_Config_getById()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
-				.type(X_ExternalSystem_Config.TYPE_Other)
+		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(Other.getValue())
 				.build();
 
 		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID());
@@ -420,15 +418,15 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
 	void externalSystem_Config_Woocommerce_getById()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
-				.type(X_ExternalSystem_Config.TYPE_WooCommerce)
+		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(WOO.getValue())
 				.build();
 
 		final I_ExternalSystem_Config_WooCommerce childRecord = newInstance(I_ExternalSystem_Config_WooCommerce.class);
@@ -443,15 +441,15 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
 	void externalSystem_Config_Woocommerce_getTypeAndValue()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
-				.type(X_ExternalSystem_Config.TYPE_WooCommerce)
+		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(WOO.getValue())
 				.build();
 
 		final String value = "testWoocommerceValue";
@@ -467,15 +465,15 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
 	void externalSystem_Config_Woocommerce_getByTypeAndValue_wrongType()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
-				.type(X_ExternalSystem_Config.TYPE_WooCommerce)
+		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(WOO.getValue())
 				.build();
 
 		final String value = "testWoocommerceValue";
@@ -487,7 +485,7 @@ class ExternalSystemConfigRepoTest
 		saveRecord(childRecord);
 
 		// when
-		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.Shopware6, value);
+		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepo.getByTypeAndValue(Shopware6, value);
 
 		//then
 		assertThat(externalSystemParentConfig).isEmpty();
@@ -499,10 +497,10 @@ class ExternalSystemConfigRepoTest
 		// given
 		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
 		parentRecord.setName("name");
-		parentRecord.setType(X_ExternalSystem_Config.TYPE_GRSSignum);
+		parentRecord.setExternalSystem_ID(ExternalSystemTestHelper.createExternalSystemIfNotExists(ExternalSystemType.GRSSignum).getId().getRepoId());
 		saveRecord(parentRecord);
 
-		final I_ExternalSystem_Config_GRSSignum childRecord = ExternalSystemTestUtil.createGrsConfigBuilder()
+		final I_ExternalSystem_Config_GRSSignum childRecord = ExternalSystemConfigTestUtil.createGrsConfigBuilder()
 				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
 				.value("testGRSSignumValue")
 				.syncBPartnersToRestEndpoint(true)
@@ -514,7 +512,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -523,10 +521,10 @@ class ExternalSystemConfigRepoTest
 		// given
 		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
 		parentRecord.setName("name");
-		parentRecord.setType(X_ExternalSystem_Config.TYPE_GRSSignum);
+		parentRecord.setExternalSystem_ID(ExternalSystemTestHelper.createExternalSystemIfNotExists(ExternalSystemType.GRSSignum).getId().getRepoId());
 		saveRecord(parentRecord);
 
-		ExternalSystemTestUtil.createGrsConfigBuilder()
+		ExternalSystemConfigTestUtil.createGrsConfigBuilder()
 				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
 				.value("testGRSSignumValue")
 				.build();
@@ -539,7 +537,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -548,13 +546,13 @@ class ExternalSystemConfigRepoTest
 		// given
 		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
 		parentRecord.setName("name");
-		parentRecord.setType(X_ExternalSystem_Config.TYPE_GRSSignum);
+		parentRecord.setExternalSystem_ID(ExternalSystemTestHelper.createExternalSystemIfNotExists(ExternalSystemType.GRSSignum).getId().getRepoId());
 
 		saveRecord(parentRecord);
 
 		final String value = "testGRSSignumValue";
 
-		ExternalSystemTestUtil.createGrsConfigBuilder()
+		ExternalSystemConfigTestUtil.createGrsConfigBuilder()
 				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
 				.value(value)
 				.syncBPartnersToRestEndpoint(true)
@@ -566,7 +564,7 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -575,18 +573,18 @@ class ExternalSystemConfigRepoTest
 		// given
 		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
 		parentRecord.setName("name");
-		parentRecord.setType(X_ExternalSystem_Config.TYPE_GRSSignum);
+		parentRecord.setExternalSystem_ID(ExternalSystemTestHelper.createExternalSystemIfNotExists(ExternalSystemType.GRSSignum).getId().getRepoId());
 		saveRecord(parentRecord);
 
 		final String value = "testGRSSignumValue";
 
-		ExternalSystemTestUtil.createGrsConfigBuilder()
+		ExternalSystemConfigTestUtil.createGrsConfigBuilder()
 				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
 				.value(value)
 				.build();
 
 		// when
-		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.Shopware6, value);
+		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepo.getByTypeAndValue(Shopware6, value);
 
 		//then
 		assertThat(externalSystemParentConfig).isEmpty();
@@ -596,8 +594,8 @@ class ExternalSystemConfigRepoTest
 	void externalSystem_Config_Shopware6_getByQuery()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
-				.type(X_ExternalSystem_Config.TYPE_Shopware6)
+		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(Shopware6.getValue())
 				.active(false)
 				.build();
 
@@ -629,20 +627,20 @@ class ExternalSystemConfigRepoTest
 				.build();
 
 		// when
-		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByQuery(ExternalSystemType.Shopware6, query)
+		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByQuery(Shopware6, query)
 				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemParentConfig found!"));
 
 		// then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
 	void externalSystem_Config_Shopware6_store()
 	{
 		// given
-		final I_ExternalSystem_Config initialParentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
-				.type(X_ExternalSystem_Config.TYPE_Shopware6)
+		final I_ExternalSystem_Config initialParentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(Shopware6.getValue())
 				.active(false)
 				.build();
 
@@ -686,7 +684,7 @@ class ExternalSystemConfigRepoTest
 		// then
 		final ExternalSystemParentConfig updatedChildConfig = externalSystemConfigRepo.getById(ExternalSystemShopware6ConfigId.ofRepoId(initialChildRecord.getExternalSystem_Config_Shopware6_ID()));
 		assertThat(updatedChildConfig).isNotNull();
-		expect(updatedChildConfig).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(updatedChildConfig);
 
 		assertThat(updatedChildConfig.isActive()).isTrue();
 
@@ -699,44 +697,203 @@ class ExternalSystemConfigRepoTest
 		assertThat(shopware6Config.getValue()).isEqualTo(value);
 	}
 
+	@Test
+	void externalSystem_LeichMehl_Config_getById()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(LeichUndMehl.getValue())
+				.build();
+
+		final I_ExternalSystem_Config_LeichMehl leichMehlConfig = newInstance(I_ExternalSystem_Config_LeichMehl.class);
+		leichMehlConfig.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		leichMehlConfig.setExternalSystemValue("LeichMehl");
+		leichMehlConfig.setProduct_BaseFolderName("productBaseFolderName");
+		leichMehlConfig.setPluFileDestination(X_ExternalSystem_Config_LeichMehl.PLUFILEDESTINATION_Disk);
+		leichMehlConfig.setPluFileLocalFolder("/serverFolder");
+		leichMehlConfig.setTCP_PortNumber(8080);
+		leichMehlConfig.setTCP_Host("tcpHost");
+		leichMehlConfig.setCU_TU_PLU(PLUType.CU.getCode());
+
+		saveRecord(leichMehlConfig);
+
+		// when
+		final ExternalSystemParentConfig result = externalSystemConfigRepo.getById(ExternalSystemLeichMehlConfigId.ofRepoId(leichMehlConfig.getExternalSystem_Config_LeichMehl_ID()));
+
+		// then
+		assertThat(result).isNotNull();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
+	}
+
+	@Test
+	void externalSystem_Config_LeichMehl_getTypeAndValue()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(LeichUndMehl.getValue())
+				.build();
+
+		final String value = "testLeichMehlValue";
+
+		final I_ExternalSystem_Config_LeichMehl leichMehlConfig = newInstance(I_ExternalSystem_Config_LeichMehl.class);
+		leichMehlConfig.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		leichMehlConfig.setExternalSystemValue(value);
+		leichMehlConfig.setProduct_BaseFolderName("productBaseFolderName");
+		leichMehlConfig.setPluFileDestination(X_ExternalSystem_Config_LeichMehl.PLUFILEDESTINATION_TCP);
+		leichMehlConfig.setTCP_PortNumber(8080);
+		leichMehlConfig.setTCP_Host("tcpHost");
+		leichMehlConfig.setCU_TU_PLU(PLUType.CU.getCode());
+		saveRecord(leichMehlConfig);
+
+		// when
+		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.LeichUndMehl, value)
+				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemParentConfig found!"));
+
+		// then
+		assertThat(result).isNotNull();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
+	}
+
+	@Test
+	void externalSystem_Config_LeichMehl_getByTypeAndValue_wrongType()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(LeichUndMehl.getValue())
+				.build();
+
+		final String value = "testLeichMehlValue";
+
+		final I_ExternalSystem_Config_LeichMehl leichMehlConfig = newInstance(I_ExternalSystem_Config_LeichMehl.class);
+		leichMehlConfig.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		leichMehlConfig.setExternalSystemValue(value);
+		leichMehlConfig.setProduct_BaseFolderName("productBaseFolderName");
+		leichMehlConfig.setTCP_PortNumber(8080);
+		leichMehlConfig.setTCP_Host("tcpHost");
+		leichMehlConfig.setCU_TU_PLU(PLUType.CU.getCode());
+
+		saveRecord(leichMehlConfig);
+
+		// when
+		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepo.getByTypeAndValue(Shopware6, value);
+
+		//then
+		assertThat(externalSystemParentConfig).isEmpty();
+	}
+
+	@Test
+	void externalSystem_Config_LeichMehl_getByTypeAndParent()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(LeichUndMehl.getValue())
+				.build();
+
+		final I_ExternalSystem_Config_LeichMehl leichMehlConfig = newInstance(I_ExternalSystem_Config_LeichMehl.class);
+		leichMehlConfig.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		leichMehlConfig.setExternalSystemValue("testLeichMehlValue");
+		leichMehlConfig.setProduct_BaseFolderName("productBaseFolderName");
+		leichMehlConfig.setPluFileDestination(X_ExternalSystem_Config_LeichMehl.PLUFILEDESTINATION_TCP);
+		leichMehlConfig.setTCP_PortNumber(8080);
+		leichMehlConfig.setTCP_Host("tcpHost");
+		leichMehlConfig.setCU_TU_PLU(PLUType.CU.getCode());
+
+		saveRecord(leichMehlConfig);
+
+		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID());
+
+		// when
+		final IExternalSystemChildConfig result = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId, ExternalSystemType.LeichUndMehl)
+				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemChildConfig found!"));
+
+		// then
+		assertThat(result).isNotNull();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
+	}
+
+	@Test
+	void externalSystem_Config_LeichMehl_getActiveByType()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecordActive = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(LeichUndMehl.getValue())
+				.build();
+
+		final I_ExternalSystem_Config_LeichMehl configLeichMehl = newInstance(I_ExternalSystem_Config_LeichMehl.class);
+		configLeichMehl.setExternalSystem_Config_ID(parentRecordActive.getExternalSystem_Config_ID());
+		configLeichMehl.setExternalSystemValue("testLeichMehlValue");
+		configLeichMehl.setProduct_BaseFolderName("productBaseFolderName");
+		configLeichMehl.setPluFileDestination(X_ExternalSystem_Config_LeichMehl.PLUFILEDESTINATION_TCP);
+		configLeichMehl.setTCP_PortNumber(8080);
+		configLeichMehl.setTCP_Host("tcpHost");
+		configLeichMehl.setCU_TU_PLU(PLUType.CU.getCode());
+
+		saveRecord(configLeichMehl);
+
+		// given
+		final I_ExternalSystem_Config parentRecordInactive = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(LeichUndMehl.getValue())
+				.active(false)
+				.build();
+
+		final I_ExternalSystem_Config_LeichMehl configLeichMehlInactive = newInstance(I_ExternalSystem_Config_LeichMehl.class);
+		configLeichMehlInactive.setExternalSystem_Config_ID(parentRecordInactive.getExternalSystem_Config_ID());
+		configLeichMehlInactive.setExternalSystemValue("testLeichMehlValueInactive");
+		configLeichMehlInactive.setProduct_BaseFolderName("productBaseFolderName");
+		configLeichMehlInactive.setPluFileDestination(X_ExternalSystem_Config_LeichMehl.PLUFILEDESTINATION_TCP);
+		configLeichMehlInactive.setTCP_PortNumber(8080);
+		configLeichMehlInactive.setTCP_Host("tcpHost");
+		configLeichMehlInactive.setCU_TU_PLU(PLUType.CU.getCode());
+
+		saveRecord(configLeichMehlInactive);
+
+		// when
+		final ImmutableList<ExternalSystemParentConfig> result = externalSystemConfigRepo.getActiveByType(ExternalSystemType.LeichUndMehl);
+
+		// then
+		assertThat(result).isNotEmpty();
+		assertThat(result.size()).isEqualTo(1);
+		expect.serializer("orderedJson").toMatchSnapshot(result);
+	}
 
 	@Test
 	void externalSystem_Config_getActiveByType_RabbitMQ()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
-				.type(ExternalSystemType.RabbitMQ.getCode())
+		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(RabbitMQ.getValue())
 				.build();
 
-		ExternalSystemTestUtil.createRabbitMQConfigBuilder()
+		ExternalSystemConfigTestUtil.createRabbitMQConfigBuilder()
 				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
 				.build();
 
 		// when
-		final ImmutableList<ExternalSystemParentConfig> result = externalSystemConfigRepo.getActiveByType(ExternalSystemType.RabbitMQ);
+		final ImmutableList<ExternalSystemParentConfig> result = externalSystemConfigRepo.getActiveByType(RabbitMQ);
 
 		// then
 		assertThat(result).isNotEmpty();
 		assertThat(result.size()).isEqualTo(1);
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
 	void externalSystem_Config_getActiveByType_NoRecord()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
-				.type(ExternalSystemType.RabbitMQ.getCode())
+		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(RabbitMQ.getValue())
 				.build();
 
-		ExternalSystemTestUtil.createRabbitMQConfigBuilder()
+		ExternalSystemConfigTestUtil.createRabbitMQConfigBuilder()
 				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
 				.build();
 
 		// when
-		final ImmutableList<ExternalSystemParentConfig> result = externalSystemConfigRepo.getActiveByType(ExternalSystemType.Alberta);
+		final ImmutableList<ExternalSystemParentConfig> result = externalSystemConfigRepo.getActiveByType(Alberta);
 
 		// then
 		assertThat(result).isEmpty();
 	}
 }
+

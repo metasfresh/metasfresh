@@ -150,4 +150,9 @@ public class PPOrderQuantities
 		return toBuilder().qtyRequiredToProduce(qtyRequiredToProduce).build();
 	}
 
+	public boolean isSomethingReceived()
+	{
+		return qtyReceived.signum() > 0;
+	}
+
 }

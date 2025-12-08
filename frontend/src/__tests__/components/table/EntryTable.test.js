@@ -1,21 +1,25 @@
 import React from 'react';
-import { shallow, mount } from 'enzyme';
+import { shallow } from 'enzyme';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import { merge } from 'merge-anything';
 
 import { initialState as appHandlerState } from '../../../reducers/appHandler';
-import { initialState as windowHandlerState } from '../../../reducers/windowHandler';
+import {
+  initialState as windowHandlerState
+} from '../../../reducers/windowHandler';
 import tablesHandler, { getTableId } from '../../../reducers/tables';
 
-import entryTableProps from '../../../../test_setup/fixtures/table/entry_table_props.json';
-import entryTableData from '../../../../test_setup/fixtures/table/entry_table_data.json';
+import entryTableProps
+  from '../../../../test_setup/fixtures/table/entry_table_props.json';
+import entryTableData
+  from '../../../../test_setup/fixtures/table/entry_table_data.json';
 
 import EntryTable from '../../../components/table/EntryTable';
 
 const mockStore = configureStore([]);
 const createStore = function(state = {}) {
-  const res = merge(
+  return merge(
     {
       appHandler: {
         ...appHandlerState,
@@ -26,8 +30,6 @@ const createStore = function(state = {}) {
     },
     state
   );
-
-  return res;
 };
 
 const props = {
@@ -75,7 +77,7 @@ describe('EntryTable', () => {
     );
     expect(html).toContain(`Tab1-Section2-Line1-Field2`);
     expect(html).toContain(
-      `form-group form-group-table form-field-100006 form-field-100006_Info`
+      `form-group row form-group-table widgetType-Composed widgetType-Composed-2 form-field-100006 form-field-100006_Info`
     );
   });
 });

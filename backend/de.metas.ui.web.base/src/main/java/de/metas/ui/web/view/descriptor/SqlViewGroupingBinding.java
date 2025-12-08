@@ -2,7 +2,6 @@ package de.metas.ui.web.view.descriptor;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.ui.web.window.descriptor.sql.SqlSelectValue;
 import lombok.Builder;
 import lombok.Builder.Default;
@@ -21,12 +20,12 @@ import lombok.ToString;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -37,34 +36,16 @@ import lombok.ToString;
 @ToString
 public final class SqlViewGroupingBinding
 {
-	@Singular("groupBy")
-	private final ImmutableSet<String> groupByFieldNames;
-	@Singular("columnSql")
-	private final ImmutableMap<String, SqlSelectValue> columnSqlByFieldName;
+	@Getter @Singular("groupBy") private final ImmutableSet<String> groupByFieldNames;
+	@Singular("columnSql") private final ImmutableMap<String, SqlSelectValue> columnSqlByFieldName;
+	@NonNull @Default @Getter private final SqlViewRowIdsConverter rowIdsConverter = SqlViewRowIdsConverters.TO_INT_STRICT;
 
-	@NonNull
-	@Default
-	@Getter
-	private final SqlViewRowIdsConverter rowIdsConverter = SqlViewRowIdsConverters.TO_INT_STRICT;
+	public boolean isGroupBy(final String fieldName) {return groupByFieldNames.contains(fieldName);}
 
-	public ImmutableSet<String> getGroupByFieldNames()
-	{
-		return groupByFieldNames;
-	}
+	public SqlSelectValue getColumnSqlByFieldName(final String fieldName) {return columnSqlByFieldName.get(fieldName);}
 
-	public boolean isGroupBy(final String fieldName)
-	{
-		return groupByFieldNames.contains(fieldName);
-	}
+	public boolean isAggregated(final String fieldName) {return columnSqlByFieldName.containsKey(fieldName);}
 
-	public SqlSelectValue getColumnSqlByFieldName(final String fieldName)
-	{
-		return columnSqlByFieldName.get(fieldName);
-	}
-
-	public boolean isAggregated(final String fieldName)
-	{
-		return columnSqlByFieldName.containsKey(fieldName);
-	}
+	public boolean hasGroupingFields() {return !groupByFieldNames.isEmpty();}
 
 }

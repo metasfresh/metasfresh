@@ -22,14 +22,13 @@
 
 package de.metas.ui.web.window.datatypes;
 
-import com.google.common.collect.ImmutableListMultimap;
 import de.metas.util.OptionalBoolean;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.With;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.Null;
 import java.util.List;
 import java.util.OptionalInt;
 import java.util.function.Function;
@@ -48,6 +47,7 @@ public class LookupValuesPage
 
 	@NonNull
 	@Builder.Default
+	@With
 	OptionalInt totalRows = OptionalInt.empty();
 
 	int firstRow;
@@ -57,6 +57,7 @@ public class LookupValuesPage
 
 	@NonNull
 	@Builder.Default
+	@With
 	OptionalBoolean hasMoreResults = OptionalBoolean.UNKNOWN;
 
 	public static LookupValuesPage ofValuesAndHasMoreFlag(@NonNull final List<LookupValue> values, boolean hasMoreRecords)

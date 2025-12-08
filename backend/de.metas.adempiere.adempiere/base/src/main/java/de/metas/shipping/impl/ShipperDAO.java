@@ -11,7 +11,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_M_Shipper;
@@ -56,20 +55,15 @@ public class ShipperDAO implements IShipperDAO
 	}
 
 	@Override
-	public ShipperId getShipperIdByShipperPartnerId(@NonNull final BPartnerId shipperPartnerId)
+	@NonNull
+	public Optional<ShipperId> getShipperIdByShipperPartnerId(@NonNull final BPartnerId shipperPartnerId)
 	{
-		final ShipperId shipperId = queryBL.createQueryBuilderOutOfTrx(I_M_Shipper.class)
+		return queryBL.createQueryBuilderOutOfTrx(I_M_Shipper.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Shipper.COLUMNNAME_C_BPartner_ID, shipperPartnerId)
 				.orderByDescending(I_M_Shipper.COLUMNNAME_IsDefault)
 				.create()
-				.firstId(ShipperId::ofRepoIdOrNull);
-		if (shipperId == null)
-		{
-			throw new AdempiereException("@NotFound@ @M_Shipper_ID@ (@C_BPartner_ID@: " + shipperPartnerId + ")");
-		}
-
-		return shipperId;
+				.firstIdOptional(ShipperId::ofRepoIdOrNull);
 	}
 
 	@Override
@@ -106,8 +100,17 @@ public class ShipperDAO implements IShipperDAO
 		return Optional.ofNullable(shipperId);
 	}
 
+	@Override
+	public Optional<I_M_Shipper> getByName(@NonNull final String name)
+	{
+		return queryBL.createQueryBuilder(I_M_Shipper.class)
+				.addEqualsFilter(I_M_Shipper.COLUMNNAME_Name, name)
+				.create()
+				.firstOnlyOptional(I_M_Shipper.class);
+	}
+
 	@NonNull
-	public Map<ShipperId,I_M_Shipper> getByIds(@NonNull final Set<ShipperId> shipperIds)
+	public Map<ShipperId, I_M_Shipper> getByIds(@NonNull final Set<ShipperId> shipperIds)
 	{
 		if (Check.isEmpty(shipperIds))
 		{
@@ -124,7 +127,7 @@ public class ShipperDAO implements IShipperDAO
 	}
 
 	@NonNull
-	public ImmutableMap<String,I_M_Shipper> getByInternalName(@NonNull final Set<String> internalNameSet)
+	public ImmutableMap<String, I_M_Shipper> getByInternalName(@NonNull final Set<String> internalNameSet)
 	{
 		if (Check.isEmpty(internalNameSet))
 		{

@@ -2,7 +2,7 @@ package de.metas.shipper.gateway.derkurier;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.location.CountryCode;
-import de.metas.mpackage.PackageId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipper.gateway.derkurier.DerKurierDeliveryData.DerKurierDeliveryDataBuilder;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperProduct;
 import de.metas.shipper.gateway.derkurier.restapi.models.RequestParticipant;
@@ -19,6 +19,7 @@ import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.Month;
@@ -66,7 +67,7 @@ public class DerKurierTestTools
 				.deliveryPosition(DeliveryPosition.builder()
 						.numberOfPackages(5)
 						.packageIds(createPackageIDs(ImmutableList.of(1, 2, 3, 4, 5)))
-						.grossWeightKg(1)
+						.grossWeightKg(BigDecimal.ONE)
 						.customDeliveryData(derKurierDeliveryDataBuilder.parcelNumber("parcelnumber1").build())
 						.build())
 				.build();
@@ -82,13 +83,13 @@ public class DerKurierTestTools
 				.deliveryPosition(DeliveryPosition.builder()
 						.numberOfPackages(5)
 						.packageIds(createPackageIDs(ImmutableList.of(1, 2, 3, 4, 5)))
-						.grossWeightKg(1)
+						.grossWeightKg(BigDecimal.ONE)
 						.customDeliveryData(derKurierDeliveryDataBuilder.parcelNumber("parcelnumber1").build())
 						.build())
 				.deliveryPosition(DeliveryPosition.builder()
 						.numberOfPackages(1)
 						.packageIds(createPackageIDs(ImmutableList.of(6, 7)))
-						.grossWeightKg(2)
+						.grossWeightKg(BigDecimal.valueOf(2))
 						.customDeliveryData(derKurierDeliveryDataBuilder.parcelNumber("parcelnumber2").build())
 						.build())
 				.build();

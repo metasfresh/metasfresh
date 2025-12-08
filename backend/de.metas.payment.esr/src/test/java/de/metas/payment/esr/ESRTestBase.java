@@ -16,6 +16,7 @@ import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
 import de.metas.interfaces.I_C_DocType;
+import de.metas.invoice.InvoicePaymentStatus;
 import de.metas.money.CurrencyId;
 import de.metas.payment.api.C_Payment_ProcessInterceptor;
 import de.metas.payment.api.IPaymentDAO;
@@ -65,7 +66,7 @@ import java.util.Properties;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(AdempiereTestWatcher.class)
 public class ESRTestBase
@@ -198,10 +199,10 @@ public class ESRTestBase
 	}
 
 	protected I_C_BP_BankAccount createBankAccount(final boolean isEsrAccount,
-			final int orgId,
-			final int userId,
-			final String esrRenderedAcctNo,
-			@NonNull final CurrencyId currencyId)
+												   final int orgId,
+												   final int userId,
+												   final String esrRenderedAcctNo,
+												   @NonNull final CurrencyId currencyId)
 	{
 		// org bp
 		final de.metas.interfaces.I_C_BPartner orgBP = newInstance(de.metas.interfaces.I_C_BPartner.class, contextProvider);
@@ -432,4 +433,22 @@ public class ESRTestBase
 
 		return postFinanceUserNumber;
 	}
+
+	protected void assertInvoiceFullyPaid()
+	{
+		assertInvoiceFullyPaid(getC_Invoice());
+	}
+
+	protected static void assertInvoiceFullyPaid(final org.compiere.model.I_C_Invoice invoice)
+	{
+		assertInvoicePaymentStatus(invoice, InvoicePaymentStatus.FULLY_PAID, "0");
+	}
+
+	protected static void assertInvoicePaymentStatus(final org.compiere.model.I_C_Invoice invoice, InvoicePaymentStatus expectedPaymentStatus, String expectedOpenAmt)
+	{
+		assertThat(invoice.isPaid()).isEqualTo(expectedPaymentStatus.isFullyPaid());
+		assertThat(invoice.isPartiallyPaid()).isEqualTo(expectedPaymentStatus.isPartiallyPaid());
+		assertThat(invoice.getOpenAmt()).isEqualTo(expectedOpenAmt);
+	}
+
 }

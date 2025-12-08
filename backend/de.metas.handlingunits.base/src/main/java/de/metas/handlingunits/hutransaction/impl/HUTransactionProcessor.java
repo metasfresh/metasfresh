@@ -22,20 +22,6 @@ package de.metas.handlingunits.hutransaction.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IReference;
-import org.adempiere.util.lang.LazyInitializer;
-import org.adempiere.warehouse.LocatorId;
-import org.compiere.util.TimeUtil;
-
 import de.metas.handlingunits.HUConstants;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.IAllocationResult;
@@ -56,6 +42,19 @@ import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IReference;
+import org.adempiere.util.lang.LazyInitializer;
+import org.adempiere.warehouse.LocatorId;
+import org.compiere.util.TimeUtil;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class HUTransactionProcessor implements IHUTransactionProcessor
 {
@@ -250,6 +249,7 @@ public class HUTransactionProcessor implements IHUTransactionProcessor
 
 		//
 		// Create and process transaction lines
+		_huContext.setProperty(IHUContext.PROPERTY_AttributeTrxCandidates, result.getAttributeTransactions());
 		final List<IHUTransactionCandidate> trxCandidates = result.getTransactions();
 		createAndProcessTrx(trxHdrRef, trxCandidates);
 

@@ -55,6 +55,17 @@ misc/services/camel/de-metas-camel-shipping/tmp/
 **/node_modules/
 
 /misc/services/camel/de-metas-camel-externalsystems/alberta/de-metas-camel-alberta-camelroutes/src/test/java/de/metas/camel/alberta/GetAlbertaPatientsRouteBuilderTest_dont_commit.java
+/misc/services/mobile-webui/mobile-webui-frontend/public/config.js
+
+# Mac DS_Store files
+.DS_Store
 
 # this is ignored to prevent accidental git check-in of developer credentials
 **/mvn/local-settings.xml
+
+# this is ignored to prevent pusing debug snapshots
+ **/*.snap.debug
+
+# github related
+.github/merge_to_master
+.github/integrate

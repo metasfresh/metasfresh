@@ -22,13 +22,10 @@ package de.metas.handlingunits.shipmentschedule.api.impl;
  * #L%
  */
 
-import java.util.List;
-
-import org.compiere.model.I_M_InOutLine;
-
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.invalidation.impl.ShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleSegmentBuilder;
@@ -37,6 +34,9 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.I_M_InOutLine;
+
+import java.util.List;
 
 /**
  * Subclass of {@link ShipmentScheduleInvalidateBL} with HU-aware code. The concrete benefit of this is that we can create BPartner-specific storage segments which in turn allow us to invalidate less
@@ -74,8 +74,7 @@ public class HUShipmentScheduleInvalidateBL extends ShipmentScheduleInvalidateBL
 			storageSegmentBuilder.bpartnerId(hu.getC_BPartner_ID());
 		}
 
-		final IShipmentScheduleSegment storageSegment = storageSegmentBuilder.build();
-		return storageSegment;
+		return storageSegmentBuilder.build();
 	}
 
 	@Override
@@ -85,7 +84,8 @@ public class HUShipmentScheduleInvalidateBL extends ShipmentScheduleInvalidateBL
 
 		final ShipmentScheduleSegmentBuilder storageSegmentBuilder = ShipmentScheduleSegments.builder();
 
-		final List<I_M_ShipmentSchedule_QtyPicked> pickedNotDeliveredRecords = shipmentScheduleAllocDAO.retrieveNotOnShipmentLineRecords(schedule, I_M_ShipmentSchedule_QtyPicked.class);
+		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
+		final List<I_M_ShipmentSchedule_QtyPicked> pickedNotDeliveredRecords = shipmentScheduleAllocDAO.retrieveNotOnShipmentLineRecords(shipmentScheduleId, I_M_ShipmentSchedule_QtyPicked.class);
 		for (final I_M_ShipmentSchedule_QtyPicked pickedNotDeliveredRecord : pickedNotDeliveredRecords)
 		{
 			if (pickedNotDeliveredRecord.getM_TU_HU_ID() > 0)
@@ -105,11 +105,10 @@ public class HUShipmentScheduleInvalidateBL extends ShipmentScheduleInvalidateBL
 		}
 
 		// finalize the builder and create the segment
-		final IShipmentScheduleSegment storageSegment = storageSegmentBuilder
+		return storageSegmentBuilder
 				.productId(schedule.getM_Product_ID())
 				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(schedule))
 				.attributeSetInstanceId(schedule.getM_AttributeSetInstance_ID())
 				.build();
-		return storageSegment;
 	}
 }

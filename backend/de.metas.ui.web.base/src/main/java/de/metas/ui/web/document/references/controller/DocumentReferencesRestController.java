@@ -17,7 +17,7 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.Services;
-import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -59,7 +59,7 @@ import java.util.concurrent.TimeUnit;
  * #L%
  */
 
-@Api
+@Tag(name = "DocumentReferencesRestController")
 @RestController
 @RequestMapping(DocumentReferencesRestController.ENDPOINT)
 public class DocumentReferencesRestController
@@ -151,7 +151,7 @@ public class DocumentReferencesRestController
 			if (documentReferenceCandidates.isEmpty())
 			{
 				publisher.publishCompleted();
-				return publisher.getSseEmiter();
+				return publisher.getSseEmitter();
 			}
 
 			final JSONOptions jsonOpts = newJSONOptions();
@@ -173,7 +173,7 @@ public class DocumentReferencesRestController
 			publisher.publishCompletedWithError(ex);
 		}
 
-		return publisher.getSseEmiter();
+		return publisher.getSseEmitter();
 	}
 
 	private void evaluateAndPublishAll(

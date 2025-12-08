@@ -22,21 +22,8 @@ package de.metas.printing.api;
  * #L%
  */
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-import javax.print.attribute.standard.MediaSize;
-
 import de.metas.printing.HardwarePrinterId;
 import de.metas.printing.LogicalPrinterId;
-import de.metas.user.UserId;
-import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_AD_Archive;
-
 import de.metas.printing.model.I_AD_Print_Clients;
 import de.metas.printing.model.I_AD_Printer;
 import de.metas.printing.model.I_AD_PrinterHW;
@@ -57,7 +44,20 @@ import de.metas.printing.model.I_C_Print_Package;
 import de.metas.printing.model.I_C_Print_PackageInfo;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.model.I_C_Printing_Queue_Recipient;
+import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
+import de.metas.workplace.WorkplaceId;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_AD_Archive;
+
+import javax.annotation.Nullable;
+import javax.print.attribute.standard.MediaSize;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.stream.Stream;
 
 public interface IPrintingDAO extends ISingletonService
 {
@@ -79,7 +79,7 @@ public interface IPrintingDAO extends ISingletonService
 	 * Retrieve {@link I_C_Print_Job_Line}s, ordered by SeqNo.
 	 *
 	 * @param fromSeqNo first seqno inclusive (or -1)
-	 * @param toSeqNo last seqno inclusive (or -1)
+	 * @param toSeqNo   last seqno inclusive (or -1)
 	 */
 	Iterator<I_C_Print_Job_Line> retrievePrintJobLines(I_C_Print_Job job, int fromSeqNo, int toSeqNo);
 
@@ -101,8 +101,8 @@ public interface IPrintingDAO extends ISingletonService
 
 	/**
 	 * @param printerMatchingRecord The "parent record" of the tray printerMatchingRecord that we are looking for
-	 * @param routing the printer routing record that contains the logical printer and tray for which we search the hardware tray.
-	 * @param throwExIfNull if <code>true</code> and there is no tray printerMatchingRecord, the method will throw an {@link AdempiereException}
+	 * @param routing               the printer routing record that contains the logical printer and tray for which we search the hardware tray.
+	 * @param throwExIfNull         if <code>true</code> and there is no tray printerMatchingRecord, the method will throw an {@link AdempiereException}
 	 * @return the tray printerMatchingRecord or <code>null</code> if there is none and <code>throwExIfNull</code> was <code>false</code>.
 	 */
 	I_AD_PrinterTray_Matching retrievePrinterTrayMatching(I_AD_Printer_Matching printerMatchingRecord, I_AD_PrinterRouting routing, boolean throwExIfNull);
@@ -115,11 +115,13 @@ public interface IPrintingDAO extends ISingletonService
 	 * Retrieves a printer config by host key or user ID. One of both has to be set.
 	 * If no printer config exists, the method returns <code>null</code>.
 	 *
-	 * @param hostKey the hostKey to retrieve the config for. May be <code>null</code> or empty string.
+	 * @param hostKey       the hostKey to retrieve the config for. May be <code>null</code> or empty string.
 	 * @param userToPrintId if the given <code>hostKey</code> is <code>null</code> or empty then this parameter must be <code>> 0</code>. Used to retrieve the config by its
-	 *            {@link I_AD_Printer_Config#COLUMNNAME_CreatedBy CreatedBy} value
+	 *                      {@link I_AD_Printer_Config#COLUMNNAME_CreatedBy CreatedBy} value
 	 */
 	I_AD_Printer_Config retrievePrinterConfig(String hostKey, UserId userToPrintId);
+
+	I_AD_Printer_Config retrievePrinterConfig(String hostKey, UserId userToPrintId, WorkplaceId workplaceId);
 
 	/**
 	 * @return empty list if the given queue item has no recipients or if {@link I_C_Printing_Queue#COLUMN_IsPrintoutForOtherUser} <code>='N'</code>.
@@ -128,15 +130,19 @@ public interface IPrintingDAO extends ISingletonService
 
 	/**
 	 * Delete all existing recipients of given item.
-	 *
+	 * <p>
 	 * NOTE: this method will prevent updating the item's aggregation key.
 	 */
 	void deletePrintingQueueRecipients(I_C_Printing_Queue item);
 
-	/** Retrieve all recipients */
+	/**
+	 * Retrieve all recipients
+	 */
 	List<I_C_Printing_Queue_Recipient> retrieveAllPrintingQueueRecipients(I_C_Printing_Queue item);
 
-	/** @return true if the {@link I_C_Printing_Queue}'s AggregationKey shall not be updated automatically for given recipient; it is assumed that a BL will take care of it */
+	/**
+	 * @return true if the {@link I_C_Printing_Queue}'s AggregationKey shall not be updated automatically for given recipient; it is assumed that a BL will take care of it
+	 */
 	boolean isUpdatePrintingQueueAggregationKey(I_C_Printing_Queue_Recipient recipient);
 
 	/**
@@ -150,35 +156,28 @@ public interface IPrintingDAO extends ISingletonService
 	 * <li>logged/session user; only those instructions for logged user are fetched
 	 * <li>hostkey; if available only those instructions for hostkey are fetched or those whom does not have a hostkey set
 	 * </ul>
-	 *
+	 * <p>
 	 * NOTE: this method locks the returned object
 	 */
 	I_C_Print_Job_Instructions retrieveAndLockNextPrintJobInstructions(Properties ctx, String trxName);
 
 	/**
-	 * Retrieve all (active and inactive) {@link I_AD_PrinterHW_MediaSize}.
-	 */
-	List<I_AD_PrinterHW_MediaSize> retrieveMediaSizes(I_AD_PrinterHW printerHW);
-
-	/**
 	 * @param createIfNotExists if <code>true</code> then the record is created on the fly if necessary. Background is that currently we don't handle different mediasizes anyways. We just need a
-	 *            record for A4 to be present. So if an exotic printer does not have it, just create it on the fly and make no fuss about it. See task 08458
+	 *                          record for A4 to be present. So if an exotic printer does not have it, just create it on the fly and make no fuss about it. See task 08458
 	 */
 	I_AD_PrinterHW_MediaSize retrieveMediaSize(I_AD_PrinterHW hwPrinter, MediaSize mediaSize, boolean createIfNotExists);
 
-	void removeMediaSizes(List<I_AD_PrinterHW_MediaSize> sizes);
+	void deleteMediaSizes(HardwarePrinterId hardwarePrinterId);
 
 	I_AD_PrinterHW_Calibration retrieveCalibration(I_AD_PrinterHW_MediaSize hwMediaSize, I_AD_PrinterHW_MediaTray hwTray);
 
-	List<I_AD_PrinterHW_Calibration> retrieveCalibrations(Properties ctx, int printerID, String trxName);
+	void deleteCalibrations(HardwarePrinterId hardwarePrinterId);
 
-	void removeCalibrations(List<I_AD_PrinterHW_Calibration> calibrations);
-
-	I_AD_PrinterHW retrieveHardwarePrinter(@NonNull HardwarePrinterId hardwarePrinterId);
+	Stream<I_AD_PrinterHW> streamActiveHardwarePrinters();
 
 	List<I_AD_PrinterHW_MediaTray> retrieveMediaTrays(@NonNull HardwarePrinterId hardwarePrinterId);
 
-	void removeMediaTrays(List<I_AD_PrinterHW_MediaTray> trays);
+	void deleteMediaTrays(final HardwarePrinterId hardwarePrinterId);
 
 	/**
 	 * Converts {@link IPrintingQueueQuery} to current database {@link IQuery} implementation.
@@ -228,4 +227,5 @@ public interface IPrintingDAO extends ISingletonService
 	 */
 	I_AD_PrinterHW retrieveAttachToPrintPackagePrinter(final Properties ctx, String hostkey, final String trxName);
 
+	Stream<I_AD_PrinterHW_MediaTray> streamActiveMediaTrays();
 }

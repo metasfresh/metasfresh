@@ -1,30 +1,28 @@
 package de.metas.request.model.validator;
 
-import java.util.Properties;
-
+import de.metas.copy_with_details.CopyRecordFactory;
+import de.metas.inout.QualityNoteId;
+import de.metas.inout.api.IQualityNoteDAO;
+import de.metas.inout.model.I_M_InOut;
+import de.metas.inout.model.I_M_QualityNote;
+import de.metas.security.IRoleDAO;
+import de.metas.security.Role;
+import de.metas.security.RoleId;
+import de.metas.user.UserId;
+import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.I_R_RequestType;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 
-import de.metas.inout.QualityNoteId;
-import de.metas.inout.api.IQualityNoteDAO;
-import de.metas.inout.model.I_M_InOut;
-import de.metas.inout.model.I_M_QualityNote;
-import de.metas.request.RequestPOCopyRecordSupport;
-import de.metas.security.IRoleDAO;
-import de.metas.security.Role;
-import de.metas.security.RoleId;
-import de.metas.user.UserId;
-import de.metas.util.Services;
+import java.util.Properties;
 
 /*
  * #%L
@@ -56,7 +54,6 @@ public class R_Request
 	public void init()
 	{
 		CopyRecordFactory.enableForTableName(I_R_Request.Table_Name);
-		CopyRecordFactory.registerCopyRecordSupport(I_R_Request.Table_Name, RequestPOCopyRecordSupport.class);
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
 

@@ -1,20 +1,23 @@
 package de.metas.error.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Optional;
-import java.util.function.IntFunction;
-
-import javax.annotation.Nullable;
-
 import de.metas.common.util.EmptyUtil;
 import de.metas.error.AdIssueFactory;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
 import de.metas.error.InsertRemoteIssueRequest;
+import de.metas.error.IssueCategory;
+import de.metas.error.IssueCountersByCategory;
+import de.metas.error.IssueCreateRequest;
+import de.metas.logging.LogManager;
+import de.metas.process.AdProcessId;
+import de.metas.process.PInstanceId;
+import de.metas.process.ProcessMDC;
+import de.metas.util.Check;
+import de.metas.util.NumberUtils;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -28,20 +31,16 @@ import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
-import de.metas.error.AdIssueId;
-import de.metas.error.IErrorManager;
-import de.metas.error.IssueCategory;
-import de.metas.error.IssueCountersByCategory;
-import de.metas.error.IssueCreateRequest;
-import de.metas.logging.LogManager;
-import de.metas.process.AdProcessId;
-import de.metas.process.PInstanceId;
-import de.metas.process.ProcessMDC;
-import de.metas.util.Check;
-import de.metas.util.NumberUtils;
-import de.metas.util.Services;
-import de.metas.util.lang.RepoIdAware;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Optional;
+import java.util.function.IntFunction;
+
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class ErrorManager implements IErrorManager
 {
@@ -69,7 +68,6 @@ public class ErrorManager implements IErrorManager
 				.build());
 	}
 
-
 	@Override
 	@NonNull
 	public AdIssueId insertRemoteIssue(@NonNull final InsertRemoteIssueRequest request)
@@ -81,18 +79,15 @@ public class ErrorManager implements IErrorManager
 	private AdIssueId insertRemoteIssueInTrx(@NonNull final InsertRemoteIssueRequest request)
 	{
 		final I_AD_Issue issue = AdIssueFactory.prepareNewIssueRecord(Env.getCtx());
-
-		final IssueCategory issueCategory = IssueCategory.ofNullableCodeOrOther(request.getIssueCategory());
-		issue.setIssueCategory(issueCategory.getCode());
-
+		issue.setIssueCategory(IssueCategory.ofNullableCodeOrOther(request.getIssueCategory()).getCode());
 		issue.setIssueSummary(request.getIssueSummary());
-
 		issue.setSourceClassName(request.getSourceClassName());
 		issue.setSourceMethodName(request.getSourceMethodName());
 		issue.setStackTrace(request.getStacktrace());
-		issue.setAD_PInstance_ID(request.getPInstance_ID().getRepoId());
-		issue.setAD_Org_ID(request.getOrgId().getRepoId() );
-
+		issue.setAD_PInstance_ID(PInstanceId.toRepoId(request.getPInstance_ID()));
+		issue.setErrorCode(request.getErrorCode());
+		issue.setAD_Org_ID(request.getOrgId().getRepoId());
+		issue.setFrontendURL(StringUtils.trimBlankToNull(request.getFrontendUrl()));
 		saveRecord(issue);
 		return AdIssueId.ofRepoId(issue.getAD_Issue_ID());
 	}
@@ -119,6 +114,9 @@ public class ErrorManager implements IErrorManager
 			issue.setIssueSummary(buildIssueSummary(request));
 			issue.setLoggerName(request.getLoggerName());
 
+			final String errorCode = AdempiereException.extractErrorCodeOrNull(throwable);
+			issue.setErrorCode(errorCode);
+
 			// Source class/method name
 			// might be overridden below
 			issue.setSourceClassName(request.getSourceClassname());
@@ -133,7 +131,7 @@ public class ErrorManager implements IErrorManager
 				for (final StackTraceElement element : throwable.getStackTrace())
 				{
 					final String s = element.toString();
-					if (s.indexOf("adempiere") != -1)
+					if (s.contains("adempiere"))
 					{
 						errorTrace.append(s).append("\n");
 						if (count == 0)
@@ -277,7 +275,7 @@ public class ErrorManager implements IErrorManager
 	}
 
 	@Override
-	public void markIssueAcknowledged(@NonNull AdIssueId adIssueId)
+	public void markIssueAcknowledged(@NonNull final AdIssueId adIssueId)
 	{
 		try
 		{
@@ -290,7 +288,7 @@ public class ErrorManager implements IErrorManager
 			adIssueRecord.setProcessed(true);
 			saveRecord(adIssueRecord);
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			logger.warn("Failed marking {} as deprecated. Ignored.", adIssueId, ex);
 		}
@@ -354,7 +352,7 @@ public class ErrorManager implements IErrorManager
 
 			return IssueCountersByCategory.of(counters);
 		}
-		catch (SQLException ex)
+		catch (final SQLException ex)
 		{
 			throw new DBException(ex, sql, sqlParams);
 		}

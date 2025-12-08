@@ -1,12 +1,15 @@
 package de.metas.ui.web.material.cockpit.process;
 
-import java.util.stream.Stream;
-
+import com.google.common.collect.ImmutableSet;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.product.ProductId;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.ui.web.material.cockpit.MaterialCockpitView;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
+
+import java.util.Set;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -45,5 +48,24 @@ public abstract class MaterialCockpitViewBasedProcess extends ViewBasedProcessTe
 	protected Stream<MaterialCockpitRow> streamSelectedRows()
 	{
 		return super.streamSelectedRows().map(MaterialCockpitRow::cast);
+	}
+
+	protected Set<Integer> getSelectedCockpitRecordIdsRecursively()
+	{
+		final MaterialCockpitView materialCockpitView = getView();
+
+		return materialCockpitView.streamByIds(getSelectedRowIds())
+				.flatMap(row -> row.getAllIncludedCockpitRecordIds().stream())
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	protected Set<ProductId> getSelectedProductIdsRecursively()
+	{
+		final MaterialCockpitView materialCockpitView = getView();
+
+		return materialCockpitView.streamByIds(getSelectedRowIds())
+				.map(MaterialCockpitRow::getProductId)
+				.distinct()
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }

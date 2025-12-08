@@ -133,20 +133,23 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=663458
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,663457,0,540279,592800,541086,'F',TO_TIMESTAMP('2021-10-08 15:26:17','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Menge (Lagereinheit)',115,0,0,TO_TIMESTAMP('2021-10-08 15:26:17','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+-- the following 3 AD_Fields are still in use on some instances
 -- 2021-10-08T12:26:43.445Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DELETE FROM AD_Element_Link WHERE AD_Field_ID=582510
-;
+--DELETE FROM AD_Element_Link WHERE AD_Field_ID=582510
+--;
 
 -- 2021-10-08T12:26:43.446Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=582510
-;
+--DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=582510
+--;
+
+DELETE FROM ad_ui_element WHERE AD_Field_ID=582510;
 
 -- 2021-10-08T12:26:43.453Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DELETE FROM AD_Field WHERE AD_Field_ID=582510
-;
+--DELETE FROM AD_Field WHERE AD_Field_ID=582510
+--;
 
 -- 2021-10-08T12:28:25.889Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -303,6 +306,17 @@ UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2021-10-11 19:57:29','Y
 UPDATE AD_Ref_List SET Value='P',Updated=TO_TIMESTAMP('2021-10-15 12:16:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=542903
 ;
 
+/**
+ * Adding the commit; to avoid
+  psql:/opt/metasfresh/dist/sql/20-de.metas.business/5609590_sys_gh11866_InvoiceRule_AfterPick.sql:310: ERROR:  deadlock detected
+  DETAIL:  Process 10819 waits for AccessExclusiveLock on relation 148195189 of database 148180680; blocked by process 10822.
+  Process 10822 waits for AccessShareLock on relation 148195906 of database 148180680; blocked by process 10819.
+  HINT:  See server log for query details.
+  CONTEXT:  SQL statement "alter table public.c_bpartner alter column invoicerule type char(1)"
+  PL/pgSQL function altercolumn(name,name,name,character varying,character varying) line 85 at EXECUTE
+ */
+COMMIT;
+
 -- 2021-10-18T13:11:05.665Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO t_alter_column values('c_bpartner','InvoiceRule','CHAR(1)',null,'D')
@@ -455,5 +469,5 @@ UPDATE AD_Element_Trl SET Name='Auf Packzettel', PrintName='Auf Packzettel',Upda
 
 -- 2021-10-19T07:46:54.176Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580033,'nl_NL')
-;
+--/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(580033,'nl_NL')
+--;

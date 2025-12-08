@@ -1,27 +1,26 @@
 package de.metas.shipper.gateway.derkurier;
 
-import static de.metas.shipper.gateway.derkurier.DerKurierTestTools.M_SHIPPER_ID;
-import static de.metas.shipper.gateway.derkurier.DerKurierTestTools.M_SHIPPER_TRANSPORTATION_ID;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.List;
-
-import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperProduct;
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_Country;
-import org.junit.Before;
-import org.junit.Test;
-
 import de.metas.shipper.gateway.derkurier.misc.Converters;
+import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperProduct;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrder;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder.DeliveryOrderBuilder;
 import de.metas.shipper.gateway.spi.model.PickupDate;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_Country;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static de.metas.shipper.gateway.derkurier.DerKurierTestTools.M_SHIPPER_ID;
+import static de.metas.shipper.gateway.derkurier.DerKurierTestTools.M_SHIPPER_TRANSPORTATION_ID;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -50,7 +49,7 @@ public class DerKurierDeliveryOrderRepositoryTest
 	private DerKurierDeliveryOrderRepository derKurierDeliveryOrderRepository;
 	private I_C_Country countryDe;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

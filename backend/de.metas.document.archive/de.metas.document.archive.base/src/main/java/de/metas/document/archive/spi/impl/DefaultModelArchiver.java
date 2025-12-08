@@ -3,9 +3,8 @@ package de.metas.document.archive.spi.impl;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import de.metas.async.AsyncBatchId;
-import de.metas.async.Async_Constants;
+import de.metas.async.AsyncHelper;
 import de.metas.async.api.IAsyncBatchBL;
-import de.metas.async.model.I_C_Async_Batch;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.async.spi.impl.DocOutboundCCWorkpackageProcessor;
 import de.metas.document.archive.model.I_AD_Archive;
@@ -95,6 +94,8 @@ public class DefaultModelArchiver
 	private final AdProcessId reportProcessId;
 	private final PrintFormatId printFormatId;
 	private final DocumentReportFlavor flavor;
+	private final boolean isDirectEnqueue;
+	private final boolean isDirectProcessQueueItem;
 
 	//
 	// Status & cached values
@@ -107,12 +108,16 @@ public class DefaultModelArchiver
 			@NonNull final Object record,
 			@Nullable final DocumentReportFlavor flavor,
 			@Nullable final AdProcessId reportProcessId,
-			@Nullable final PrintFormatId printFormatId)
+			@Nullable final PrintFormatId printFormatId,
+			final boolean isDirectEnqueue,
+			final boolean isDirectProcessQueueItem)
 	{
 		this.record = record;
 		this.flavor = flavor != null ? flavor : DocumentReportFlavor.PRINT;
 		this.reportProcessId = reportProcessId;
 		this.printFormatId = printFormatId;
+		this.isDirectEnqueue = isDirectEnqueue;
+		this.isDirectProcessQueueItem = isDirectProcessQueueItem;
 	}
 
 	@Override
@@ -218,6 +223,9 @@ public class DefaultModelArchiver
 				.archiveName(report.getFilename())
 				.bpartnerId(report.getBpartnerId())
 				.language(report.getLanguage())
+				.poReference(report.getPoReference())
+				.isDirectEnqueue(isDirectEnqueue)
+				.isDirectProcessQueueItem(isDirectProcessQueueItem)
 				.build());
 
 		final I_AD_Archive archive = InterfaceWrapperHelper.create(
@@ -234,10 +242,10 @@ public class DefaultModelArchiver
 
 		//
 		// forward async batch if there is one
-		final I_C_Async_Batch asyncBatch = InterfaceWrapperHelper.getDynAttribute(getRecord(), Async_Constants.C_Async_Batch);
-		if (asyncBatch != null)
+		final AsyncBatchId asyncBatchId = AsyncHelper.getAsyncBatchId(getRecord());
+		if (asyncBatchId != null)
 		{
-			InterfaceWrapperHelper.setDynAttribute(archive, Async_Constants.C_Async_Batch, asyncBatch);
+			AsyncHelper.setAsyncBatchId(archive, asyncBatchId);
 		}
 
 		InterfaceWrapperHelper.save(archive);

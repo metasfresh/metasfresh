@@ -2,6 +2,7 @@ package de.metas.material.planning;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
+import de.metas.i18n.ITranslatableString;
 import de.metas.product.ProductCategoryId;
 import de.metas.uom.UomId;
 import lombok.AccessLevel;
@@ -15,7 +16,6 @@ import java.sql.Timestamp;
 import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
@@ -47,6 +47,8 @@ import java.time.temporal.TemporalUnit;
 @Builder
 public class ResourceType
 {
+	@NonNull ResourceTypeId id;
+	@NonNull ITranslatableString caption;
 	@Getter(AccessLevel.PRIVATE) boolean active;
 
 	@NonNull ProductCategoryId productCategoryId;

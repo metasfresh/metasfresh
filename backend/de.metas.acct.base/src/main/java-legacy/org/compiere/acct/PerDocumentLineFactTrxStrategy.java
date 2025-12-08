@@ -1,12 +1,11 @@
 package org.compiere.acct;
 
+import com.google.common.collect.ImmutableList;
+import org.compiere.acct.FactTrxLines.FactTrxLinesBuilder;
+
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.compiere.acct.FactTrxLines.FactTrxLinesBuilder;
-
-import com.google.common.collect.ImmutableList;
 
 /*
  * #%L

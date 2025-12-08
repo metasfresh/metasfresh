@@ -105,7 +105,7 @@ public class ImportConversionRate extends JavaProcess
 		{
 			sql = new StringBuffer ("DELETE FROM I_Conversion_Rate "
 				  + "WHERE I_IsImported='Y'").append (clientCheck);
-			no = DB.executeUpdate(sql.toString(), get_TrxName());
+			no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 			log.debug("Deleted Old Imported =" + no);
 		}
 
@@ -129,7 +129,7 @@ public class ImportConversionRate extends JavaProcess
 			+ " Processed = 'N',"	
 			+ " I_IsImported = 'N' "
 			+ "WHERE I_IsImported<>'Y' OR I_IsImported IS NULL");
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.info("Reset =" + no);
 
 		//	Org
@@ -138,7 +138,7 @@ public class ImportConversionRate extends JavaProcess
 			+ "WHERE (AD_Org_ID IS NULL"
 			+ " OR EXISTS (SELECT * FROM AD_Org oo WHERE o.AD_Org_ID=oo.AD_Org_ID AND (oo.IsSummary='Y' OR oo.IsActive='N')))"
 			+ " AND I_IsImported<>'Y'").append (clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		if (no != 0)
 			log.warn("Invalid Org =" + no);
 			
@@ -148,7 +148,7 @@ public class ImportConversionRate extends JavaProcess
 			+ " WHERE c.Value=i.ConversionTypeValue AND c.AD_Client_ID IN (0,i.AD_Client_ID) AND c.IsActive='Y') "
 			+ "WHERE C_ConversionType_ID IS NULL AND ConversionTypeValue IS NOT NULL"
 			+ " AND I_IsImported<>'Y'").append (clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		if (no > 0)
 			log.debug("Set ConversionType =" + no);
 		sql = new StringBuffer ("UPDATE I_Conversion_Rate i "
@@ -158,7 +158,7 @@ public class ImportConversionRate extends JavaProcess
 				+ "WHERE i.C_ConversionType_ID=c.C_ConversionType_ID AND c.IsActive='Y'"
 				+ " AND c.AD_Client_ID IN (0,i.AD_Client_ID)))"
 			+ " AND I_IsImported<>'Y'").append (clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		if (no != 0)
 			log.warn("Invalid ConversionType =" + no);
 		
@@ -168,7 +168,7 @@ public class ImportConversionRate extends JavaProcess
 			+ "	WHERE c.ISO_Code=i.ISO_Code AND c.AD_Client_ID IN (0,i.AD_Client_ID) AND c.IsActive='Y') "
 			+ "WHERE C_Currency_ID IS NULL AND ISO_Code IS NOT NULL"
 			+ " AND I_IsImported<>'Y'").append (clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		if (no > 0)
 			log.debug("Set Currency =" + no);
 		sql = new StringBuffer ("UPDATE I_Conversion_Rate i "
@@ -178,7 +178,7 @@ public class ImportConversionRate extends JavaProcess
 				+ "WHERE i.C_Currency_ID=c.C_Currency_ID AND c.IsActive='Y'"
 				+ " AND c.AD_Client_ID IN (0,i.AD_Client_ID)))"
 			+ " AND I_IsImported<>'Y'").append (clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		if (no != 0)
 			log.warn("Invalid Currency =" + no);
 
@@ -188,7 +188,7 @@ public class ImportConversionRate extends JavaProcess
 			+ "	WHERE c.ISO_Code=i.ISO_Code_To AND c.AD_Client_ID IN (0,i.AD_Client_ID) AND c.IsActive='Y') "
 			+ "WHERE C_Currency_ID_To IS NULL AND ISO_Code_To IS NOT NULL"
 			+ " AND I_IsImported<>'Y'").append (clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		if (no > 0)
 			log.debug("Set Currency To =" + no);
 		sql = new StringBuffer ("UPDATE I_Conversion_Rate i "
@@ -198,7 +198,7 @@ public class ImportConversionRate extends JavaProcess
 				+ "WHERE i.C_Currency_ID_To=c.C_Currency_ID AND c.IsActive='Y'"
 				+ " AND c.AD_Client_ID IN (0,i.AD_Client_ID)))"
 			+ " AND I_IsImported<>'Y'").append (clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		if (no != 0)
 			log.warn("Invalid Currency To =" + no);
 			
@@ -207,21 +207,21 @@ public class ImportConversionRate extends JavaProcess
 			+ "SET MultiplyRate = 1 / DivideRate "
 			+ "WHERE (MultiplyRate IS NULL OR MultiplyRate = 0) AND DivideRate IS NOT NULL AND DivideRate<>0"
 			+ " AND I_IsImported<>'Y'").append (clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		if (no > 0)
 			log.debug("Set MultiplyRate =" + no);
 		sql = new StringBuffer ("UPDATE I_Conversion_Rate i "
 			+ "SET DivideRate = 1 / MultiplyRate "
 			+ "WHERE (DivideRate IS NULL OR DivideRate = 0) AND MultiplyRate IS NOT NULL AND MultiplyRate<>0"
 			+ " AND I_IsImported<>'Y'").append (clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		if (no > 0)
 			log.debug("Set DivideRate =" + no);
 		sql = new StringBuffer ("UPDATE I_Conversion_Rate i "
 			+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Rates, ' "
 			+ "WHERE (MultiplyRate IS NULL OR MultiplyRate = 0 OR DivideRate IS NULL OR DivideRate = 0)"
 			+ " AND I_IsImported<>'Y'").append (clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		if (no != 0)
 			log.warn("Invalid Rates =" + no);
 	//	sql = new StringBuffer ("UPDATE I_Conversion_Rate i "	//	Rate diff > 10%
@@ -291,7 +291,7 @@ public class ImportConversionRate extends JavaProcess
 		sql = new StringBuffer ("UPDATE I_Conversion_Rate "
 			+ "SET I_IsImported='N', Updated=now() "
 			+ "WHERE I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		addLog (0, null, new BigDecimal (no), "@Errors@");
 		//
 		addLog (0, null, new BigDecimal (noInsert), "@C_Conversion_Rate_ID@: @Inserted@");

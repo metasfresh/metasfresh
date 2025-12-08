@@ -11,6 +11,8 @@ import de.metas.invoicecandidate.externallyreferenced.ManualCandidateService;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.pricing.service.impl.PricingTestHelper;
 import de.metas.pricing.service.impl.ProductPriceBuilder;
 import de.metas.rest_api.invoicecandidates.request.JsonCreateInvoiceCandidatesRequest;
@@ -28,6 +30,7 @@ import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_BP_Group;
@@ -50,7 +53,9 @@ import java.util.List;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.tuple;
 
 /*
  * #%L
@@ -122,9 +127,9 @@ class JsonInsertInvoiceCandidateServiceTest
 		new ProductPriceBuilder(
 				pricingTestHelper.getDefaultPriceListVerion(),
 				productRecord)
-						.setTaxCategoryId(pricingTestHelper.getTaxCategoryId())
-						.setPrice(20)
-						.build();
+				.setTaxCategoryId(pricingTestHelper.getTaxCategoryId())
+				.setPrice(20)
+				.build();
 
 		final I_C_BP_Group bpGroupRecord = newInstance(I_C_BP_Group.class);
 		bpGroupRecord.setM_PricingSystem_ID(pricingTestHelper.getDefaultPricingSystem().getM_PricingSystem_ID());
@@ -147,6 +152,7 @@ class JsonInsertInvoiceCandidateServiceTest
 		saveRecord(bpartnerLocationRecord);
 
 		final I_C_Tax taxRecord = newInstance(I_C_Tax.class);
+		taxRecord.setName("tax");
 		taxRecord.setC_TaxCategory_ID(pricingTestHelper.getTaxCategoryId().getRepoId());
 		taxRecord.setC_Country_ID(pricingTestHelper.getDefaultPriceList().getC_Country_ID());
 		taxRecord.setTo_Country_ID(pricingTestHelper.getDefaultPriceList().getC_Country_ID());
@@ -163,6 +169,8 @@ class JsonInsertInvoiceCandidateServiceTest
 				new CurrencyService(),
 				new ManualCandidateService(bpartnerCompositeRepository),
 				new ExternallyReferencedCandidateRepository());
+
+		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 	}
 
 	@Test

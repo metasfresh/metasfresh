@@ -1,18 +1,20 @@
 package de.metas.handlingunits.picking.candidate.commands;
 
-import java.util.List;
-import java.util.Set;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.picking.IHUPickingSlotBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Set;
 
 /*
  * #%L
@@ -39,17 +41,23 @@ import lombok.NonNull;
 public class RemoveHUFromPickingSlotCommand
 {
 	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final PickingCandidateRepository pickingCandidateRepository;
 
 	private final HuId huId;
+	private final PickingSlotId pickingSlotId;
 
 	@Builder
 	private RemoveHUFromPickingSlotCommand(
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
-			@NonNull final HuId huId)
+			@Nullable final HuId huId,
+			@Nullable final PickingSlotId pickingSlotId)
 	{
+		Check.assume(huId != null || pickingSlotId != null, "At least one of HuId or PickingSlot must be set");
+
 		this.pickingCandidateRepository = pickingCandidateRepository;
 		this.huId = huId;
+		this.pickingSlotId = pickingSlotId;
 	}
 
 	public void perform()
@@ -62,9 +70,20 @@ public class RemoveHUFromPickingSlotCommand
 
 	}
 
+	@NonNull
 	private List<PickingCandidate> retrievePickingCandidates()
 	{
-		return pickingCandidateRepository.getByHUIds(ImmutableSet.of(huId));
+		return pickingCandidateRepository.getDraftedByHuIdAndPickingSlotId(getHuIds(), pickingSlotId);
 	}
 
+	@NonNull
+	private ImmutableSet<HuId> getHuIds()
+	{
+		if (huId == null)
+		{
+			return ImmutableSet.of();
+		}
+
+		return handlingUnitsDAO.retrieveHuIdAndDownstream(huId);
+	}
 }

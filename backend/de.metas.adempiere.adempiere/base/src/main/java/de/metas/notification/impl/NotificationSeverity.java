@@ -1,0 +1,65 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.notification.impl;
+
+import de.metas.ad_reference.ReferenceId;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NonNull;
+import org.compiere.model.X_AD_Note;
+
+@Getter
+@AllArgsConstructor
+public enum NotificationSeverity implements ReferenceListAwareEnum
+{
+	Notice(X_AD_Note.NOTIFICATIONSEVERITY_Notice),
+	Warning(X_AD_Note.NOTIFICATIONSEVERITY_Warning),
+	Error(X_AD_Note.NOTIFICATIONSEVERITY_Error);
+
+	public static final ReferenceId AD_Reference_ID = ReferenceId.ofRepoId(X_AD_Note.NOTIFICATIONSEVERITY_AD_Reference_ID);
+
+	@NonNull private static final ReferenceListAwareEnums.ValuesIndex<NotificationSeverity> index = ReferenceListAwareEnums.index(values());
+
+	@NonNull private final String code;
+
+	@NonNull
+	public static NotificationSeverity ofCode(@NonNull final String code)
+	{
+		return index.ofCode(code);
+	}
+
+	public boolean isNotice()
+	{
+		return this == Notice;
+	}
+
+	public ITranslatableString getNameTrl()
+	{
+		return TranslatableStrings.adRefList(AD_Reference_ID, code);
+	}
+
+}

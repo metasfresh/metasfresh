@@ -1,18 +1,20 @@
 package de.metas.esb.edi.model;
 
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for EDI_cctop_111_v
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_EDI_cctop_111_v 
 {
 
-    /** TableName=EDI_cctop_111_v */
-    public static final String Table_Name = "EDI_cctop_111_v";
+	String Table_Name = "EDI_cctop_111_v";
 
-    /** AD_Table_ID=540465 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540465 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -23,10 +25,9 @@ public interface I_EDI_cctop_111_v
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
 	 * Set Organisation.
@@ -36,7 +37,7 @@ public interface I_EDI_cctop_111_v
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
 	 * Get Organisation.
@@ -46,10 +47,9 @@ public interface I_EDI_cctop_111_v
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Sales order.
@@ -59,7 +59,7 @@ public interface I_EDI_cctop_111_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Order_ID (int C_Order_ID);
+	void setC_Order_ID (int C_Order_ID);
 
 	/**
 	 * Get Sales order.
@@ -69,16 +69,14 @@ public interface I_EDI_cctop_111_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_Order_ID();
+	int getC_Order_ID();
 
-	public org.compiere.model.I_C_Order getC_Order();
+	@Nullable org.compiere.model.I_C_Order getC_Order();
 
-	public void setC_Order(org.compiere.model.I_C_Order C_Order);
+	void setC_Order(@Nullable org.compiere.model.I_C_Order C_Order);
 
-    /** Column definition for C_Order_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_111_v, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new org.adempiere.model.ModelColumn<I_EDI_cctop_111_v, org.compiere.model.I_C_Order>(I_EDI_cctop_111_v.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
-    /** Column name C_Order_ID */
-    public static final String COLUMNNAME_C_Order_ID = "C_Order_ID";
+	ModelColumn<I_EDI_cctop_111_v, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new ModelColumn<>(I_EDI_cctop_111_v.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
+	String COLUMNNAME_C_Order_ID = "C_Order_ID";
 
 	/**
 	 * Get Created.
@@ -88,12 +86,10 @@ public interface I_EDI_cctop_111_v
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_111_v, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_EDI_cctop_111_v, Object>(I_EDI_cctop_111_v.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_EDI_cctop_111_v, Object> COLUMN_Created = new ModelColumn<>(I_EDI_cctop_111_v.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
 	 * Get Created By.
@@ -103,10 +99,9 @@ public interface I_EDI_cctop_111_v
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Date.
@@ -116,7 +111,7 @@ public interface I_EDI_cctop_111_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDateOrdered (java.sql.Timestamp DateOrdered);
+	void setDateOrdered (@Nullable java.sql.Timestamp DateOrdered);
 
 	/**
 	 * Get Date.
@@ -126,12 +121,10 @@ public interface I_EDI_cctop_111_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getDateOrdered();
+	@Nullable java.sql.Timestamp getDateOrdered();
 
-    /** Column definition for DateOrdered */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_111_v, Object> COLUMN_DateOrdered = new org.adempiere.model.ModelColumn<I_EDI_cctop_111_v, Object>(I_EDI_cctop_111_v.class, "DateOrdered", null);
-    /** Column name DateOrdered */
-    public static final String COLUMNNAME_DateOrdered = "DateOrdered";
+	ModelColumn<I_EDI_cctop_111_v, Object> COLUMN_DateOrdered = new ModelColumn<>(I_EDI_cctop_111_v.class, "DateOrdered", null);
+	String COLUMNNAME_DateOrdered = "DateOrdered";
 
 	/**
 	 * Set EDI_cctop_111_v.
@@ -140,7 +133,7 @@ public interface I_EDI_cctop_111_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setEDI_cctop_111_v_ID (int EDI_cctop_111_v_ID);
+	void setEDI_cctop_111_v_ID (int EDI_cctop_111_v_ID);
 
 	/**
 	 * Get EDI_cctop_111_v.
@@ -149,12 +142,10 @@ public interface I_EDI_cctop_111_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getEDI_cctop_111_v_ID();
+	int getEDI_cctop_111_v_ID();
 
-    /** Column definition for EDI_cctop_111_v_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_111_v, Object> COLUMN_EDI_cctop_111_v_ID = new org.adempiere.model.ModelColumn<I_EDI_cctop_111_v, Object>(I_EDI_cctop_111_v.class, "EDI_cctop_111_v_ID", null);
-    /** Column name EDI_cctop_111_v_ID */
-    public static final String COLUMNNAME_EDI_cctop_111_v_ID = "EDI_cctop_111_v_ID";
+	ModelColumn<I_EDI_cctop_111_v, Object> COLUMN_EDI_cctop_111_v_ID = new ModelColumn<>(I_EDI_cctop_111_v.class, "EDI_cctop_111_v_ID", null);
+	String COLUMNNAME_EDI_cctop_111_v_ID = "EDI_cctop_111_v_ID";
 
 	/**
 	 * Set Active.
@@ -164,7 +155,7 @@ public interface I_EDI_cctop_111_v
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
 	 * Get Active.
@@ -174,12 +165,10 @@ public interface I_EDI_cctop_111_v
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_111_v, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_EDI_cctop_111_v, Object>(I_EDI_cctop_111_v.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_EDI_cctop_111_v, Object> COLUMN_IsActive = new ModelColumn<>(I_EDI_cctop_111_v.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Shipment/ Receipt.
@@ -189,7 +178,7 @@ public interface I_EDI_cctop_111_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_InOut_ID (int M_InOut_ID);
+	void setM_InOut_ID (int M_InOut_ID);
 
 	/**
 	 * Get Shipment/ Receipt.
@@ -199,41 +188,37 @@ public interface I_EDI_cctop_111_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_InOut_ID();
+	int getM_InOut_ID();
 
-	public org.compiere.model.I_M_InOut getM_InOut();
+	@Nullable org.compiere.model.I_M_InOut getM_InOut();
 
-	public void setM_InOut(org.compiere.model.I_M_InOut M_InOut);
+	void setM_InOut(@Nullable org.compiere.model.I_M_InOut M_InOut);
 
-    /** Column definition for M_InOut_ID */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_111_v, org.compiere.model.I_M_InOut> COLUMN_M_InOut_ID = new org.adempiere.model.ModelColumn<I_EDI_cctop_111_v, org.compiere.model.I_M_InOut>(I_EDI_cctop_111_v.class, "M_InOut_ID", org.compiere.model.I_M_InOut.class);
-    /** Column name M_InOut_ID */
-    public static final String COLUMNNAME_M_InOut_ID = "M_InOut_ID";
+	ModelColumn<I_EDI_cctop_111_v, org.compiere.model.I_M_InOut> COLUMN_M_InOut_ID = new ModelColumn<>(I_EDI_cctop_111_v.class, "M_InOut_ID", org.compiere.model.I_M_InOut.class);
+	String COLUMNNAME_M_InOut_ID = "M_InOut_ID";
 
 	/**
-	 * Set Bewegungs-Datum.
-	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+	 * Set Date.
+	 * Date a product was moved in or out of inventory
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setMovementDate (java.sql.Timestamp MovementDate);
+	void setMovementDate (@Nullable java.sql.Timestamp MovementDate);
 
 	/**
-	 * Get Bewegungs-Datum.
-	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+	 * Get Date.
+	 * Date a product was moved in or out of inventory
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getMovementDate();
+	@Nullable java.sql.Timestamp getMovementDate();
 
-    /** Column definition for MovementDate */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_111_v, Object> COLUMN_MovementDate = new org.adempiere.model.ModelColumn<I_EDI_cctop_111_v, Object>(I_EDI_cctop_111_v.class, "MovementDate", null);
-    /** Column name MovementDate */
-    public static final String COLUMNNAME_MovementDate = "MovementDate";
+	ModelColumn<I_EDI_cctop_111_v, Object> COLUMN_MovementDate = new ModelColumn<>(I_EDI_cctop_111_v.class, "MovementDate", null);
+	String COLUMNNAME_MovementDate = "MovementDate";
 
 	/**
 	 * Set Order Reference.
@@ -243,7 +228,7 @@ public interface I_EDI_cctop_111_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPOReference (java.lang.String POReference);
+	void setPOReference (@Nullable java.lang.String POReference);
 
 	/**
 	 * Get Order Reference.
@@ -253,12 +238,10 @@ public interface I_EDI_cctop_111_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getPOReference();
+	@Nullable java.lang.String getPOReference();
 
-    /** Column definition for POReference */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_111_v, Object> COLUMN_POReference = new org.adempiere.model.ModelColumn<I_EDI_cctop_111_v, Object>(I_EDI_cctop_111_v.class, "POReference", null);
-    /** Column name POReference */
-    public static final String COLUMNNAME_POReference = "POReference";
+	ModelColumn<I_EDI_cctop_111_v, Object> COLUMN_POReference = new ModelColumn<>(I_EDI_cctop_111_v.class, "POReference", null);
+	String COLUMNNAME_POReference = "POReference";
 
 	/**
 	 * Set shipment_documentno.
@@ -267,7 +250,7 @@ public interface I_EDI_cctop_111_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setshipment_documentno (java.lang.String shipment_documentno);
+	void setShipment_DocumentNo (@Nullable java.lang.String Shipment_DocumentNo);
 
 	/**
 	 * Get shipment_documentno.
@@ -276,12 +259,10 @@ public interface I_EDI_cctop_111_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getshipment_documentno();
+	@Nullable java.lang.String getShipment_DocumentNo();
 
-    /** Column definition for shipment_documentno */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_111_v, Object> COLUMN_shipment_documentno = new org.adempiere.model.ModelColumn<I_EDI_cctop_111_v, Object>(I_EDI_cctop_111_v.class, "shipment_documentno", null);
-    /** Column name shipment_documentno */
-    public static final String COLUMNNAME_shipment_documentno = "shipment_documentno";
+	ModelColumn<I_EDI_cctop_111_v, Object> COLUMN_Shipment_DocumentNo = new ModelColumn<>(I_EDI_cctop_111_v.class, "Shipment_DocumentNo", null);
+	String COLUMNNAME_Shipment_DocumentNo = "Shipment_DocumentNo";
 
 	/**
 	 * Get Updated.
@@ -291,12 +272,10 @@ public interface I_EDI_cctop_111_v
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_111_v, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_EDI_cctop_111_v, Object>(I_EDI_cctop_111_v.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_EDI_cctop_111_v, Object> COLUMN_Updated = new ModelColumn<>(I_EDI_cctop_111_v.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
 	 * Get Updated By.
@@ -306,8 +285,7 @@ public interface I_EDI_cctop_111_v
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

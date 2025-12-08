@@ -1,4 +1,5 @@
 @from:cucumber
+@ghActions:run_on_executor5
 Feature: Handling unit data export audit
 
   Background:
@@ -49,7 +50,7 @@ Feature: Handling unit data export audit
       | inventory_line                | createdCU          |
 
   Scenario: The request is good and HU data export audit is created
-    Given store HU endpointPath /api/v2/material/handlingunits/byId/:createdCU in context
+    Given store HU endpointPath /api/v2/material/handlingunits/byId/@createdCU@ in context
 
     When a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
@@ -72,7 +73,7 @@ Feature: Handling unit data export audit
       | ExternalSystem_Config_ID.Identifier | AD_PInstance_ID.Identifier |
       | GRSConfig_HU                        | pInstance_exportHU         |
 
-    And store HU endpointPath /api/v2/material/handlingunits/byId/:createdCU in context
+    And store HU endpointPath /api/v2/material/handlingunits/byId/@createdCU@ in context
 
     When a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
@@ -98,7 +99,7 @@ Feature: Handling unit data export audit
       | ExternalSystem_Config_ID.Identifier | AD_PInstance_ID.Identifier |
       | GRSConfig_HU                        | pInstance_exportHU         |
 
-    And store HU endpointPath /api/v2/material/handlingunits/byId/:createdCU in context
+    And store HU endpointPath /api/v2/material/handlingunits/byId/@createdCU@ in context
 
     When a 'GET' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
@@ -116,7 +117,7 @@ Feature: Handling unit data export audit
     And RabbitMQ MF_TO_ExternalSystem queue is purged
 
     And transform CU to new TUs
-      | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | resultedNewTUs.Identifier | resultedNewCUs.Identifier |
+      | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | OPT.resultedNewTUs.Identifier | OPT.resultedNewCUs.Identifier |
       | createdCU           | 10    | huAuditProductTU                   | createdTU                 | newCreatedCU              |
 
     And RabbitMQ receives a JsonExternalSystemRequest with the following external system config and parameter:

@@ -22,21 +22,22 @@ package de.metas.adempiere.gui.search.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-
 import de.metas.adempiere.gui.search.IHUPackingAware;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.order.IOrderLineBL;
-import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Optional;
 
 /**
  * Wraps an {@link I_C_OrderLine} and makes it behave like an {@link IHUPackingAware}.
  *
  * @author tsa
- *
  */
 public class OrderLineHUPackingAware implements IHUPackingAware
 {
@@ -52,11 +53,8 @@ public class OrderLineHUPackingAware implements IHUPackingAware
 	 */
 	private final PlainHUPackingAware values = new PlainHUPackingAware();
 
-	public OrderLineHUPackingAware(final I_C_OrderLine orderLine)
+	public OrderLineHUPackingAware(@NonNull final I_C_OrderLine orderLine)
 	{
-		super();
-
-		Check.assumeNotNull(orderLine, "orderLine not null");
 		this.orderLine = orderLine;
 	}
 
@@ -86,7 +84,7 @@ public class OrderLineHUPackingAware implements IHUPackingAware
 	}
 
 	/**
-	 * @return QtyEntered of the wrapped order line. Note that qtyEntered is the qty that corresponds the UOM returned by {@link #getC_UOM()}.
+	 * @return QtyEntered of the wrapped order line. Note that qtyEntered is the qty that corresponds the UOM returned by {@link #getC_UOM_ID()}.
 	 */
 	@Override
 	public BigDecimal getQty()
@@ -154,6 +152,19 @@ public class OrderLineHUPackingAware implements IHUPackingAware
 	}
 
 	@Override
+	public void setQtyCUsPerTU(final BigDecimal qtyCUsPerTU)
+	{
+		orderLine.setQtyItemCapacity(qtyCUsPerTU);
+		values.setQtyCUsPerTU(qtyCUsPerTU);
+	}
+
+	@Override
+	public Optional<BigDecimal> getQtyCUsPerTU()
+	{
+		return Optional.of(orderLine.getQtyItemCapacity());
+	}
+
+	@Override
 	public int getC_BPartner_ID()
 	{
 		return orderLine.getC_BPartner_ID();
@@ -164,6 +175,28 @@ public class OrderLineHUPackingAware implements IHUPackingAware
 	{
 		orderLine.setC_BPartner_ID(bpartnerId);
 		values.setC_BPartner_ID(bpartnerId);
+	}
+
+	public void setQtyLU(@NonNull final BigDecimal qtyLU)
+	{
+		orderLine.setQtyLU(qtyLU);
+	}
+
+	public BigDecimal getQtyLU()
+	{
+		return orderLine.getQtyLU();
+	}
+
+	@Override
+	public void setLuId(@Nullable final HuPackingInstructionsId luId)
+	{
+		orderLine.setM_LU_HU_PI_ID(HuPackingInstructionsId.toRepoId(luId));
+	}
+
+	@Override
+	public HuPackingInstructionsId getLuId()
+	{
+		return HuPackingInstructionsId.ofRepoIdOrNull(orderLine.getM_LU_HU_PI_ID());
 	}
 
 	@Override
@@ -183,8 +216,8 @@ public class OrderLineHUPackingAware implements IHUPackingAware
 	public String toString()
 	{
 		return String
-				.format("OrderLineHUPackingAware [orderLine=%s, getM_Product_ID()=%s, getM_Product()=%s, getQty()=%s, getM_HU_PI_Item_Product()=%s, getM_AttributeSetInstance_ID()=%s, getC_UOM()=%s, getQtyPacks()=%s, getC_BPartner()=%s, getM_HU_PI_Item_Product_ID()=%s, isInDispute()=%s]",
+				.format("OrderLineHUPackingAware [orderLine=%s, getM_Product_ID()=%s, getM_Product()=%s, getQty()=%s, getM_HU_PI_Item_Product()=%s, getM_AttributeSetInstance_ID()=%s, getC_UOM()=%s, getQtyPacks()=%s, getC_BPartner()=%s, getM_HU_PI_Item_Product_ID()=%s, qtyLU()=%s, luId()=%s, isInDispute()=%s]",
 						orderLine, getM_Product_ID(), getM_Product_ID(), getQty(), getM_HU_PI_Item_Product_ID(), getM_AttributeSetInstance_ID(), getC_UOM_ID(), getQtyTU(), getC_BPartner_ID(),
-						getM_HU_PI_Item_Product_ID(), isInDispute());
+						getM_HU_PI_Item_Product_ID(), getQtyLU(), getLuId(), isInDispute());
 	}
 }

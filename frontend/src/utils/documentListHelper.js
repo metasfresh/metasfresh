@@ -4,12 +4,14 @@ import Moment from 'moment-timezone';
 import currentDevice from 'current-device';
 import { toInteger } from 'lodash';
 
-import { getItemsByProperty, nullToEmptyStrings, deepUnfreeze } from './index';
-import { viewState, getView } from '../reducers/viewHandler';
-import { getTable, getTableId, getSelection } from '../reducers/tables';
-import { getEntityRelatedId, getCachedFilter } from '../reducers/filters';
+import { deepUnfreeze, getItemsByProperty, nullToEmptyStrings } from './index';
+import { getView, viewState } from '../reducers/viewHandler';
+import { getSelection, getTable, getTableId } from '../reducers/tables';
+import { getCachedFilter, getEntityRelatedId } from '../reducers/filters';
 import { TIME_REGEX_TEST } from '../constants/Constants';
 import { getCurrentActiveLocale } from './locale';
+
+const DEFAULT_PAGE_LENGTH = 20;
 
 /**
  * @typedef {object} Props Component props
@@ -134,6 +136,7 @@ const DLmapStateToProps = (state, props) => {
     viewData: master,
     layout: master.layout,
     layoutPending: master.layoutPending,
+    mapConfig: master.mapConfig,
     referenceId: queryReferenceId,
     refType: queryRefType,
     refDocumentId: queryRefDocumentId,
@@ -392,6 +395,15 @@ export function getScope(isModal) {
   return isModal ? 'modal' : 'master';
 }
 
+export function parseItemToDisplay({ item }) {
+  return item.fieldsByName
+    ? {
+        ...item,
+        fieldsByName: parseToDisplay(item.fieldsByName),
+      }
+    : item;
+}
+
 export function parseToDisplay(fieldsByName) {
   return parseDateToReadable(nullToEmptyStrings(fieldsByName));
 }
@@ -528,27 +540,49 @@ export function mapIncluded(node, indent, isParentLastChild = false) {
   return result;
 }
 
-export function renderHeaderProperties(groups) {
-  return groups.reduce((acc, group, idx) => {
-    let cursor = 0;
+export function renderHeaderPropertiesGroups(groups) {
+  return groups.reduce((acc, group, groupIdx) => {
+    let entryIdx = 0;
 
     do {
-      const entry = group.entries[cursor];
+      const entry = group.entries[entryIdx];
 
       acc.push(
-        <span key={`${idx}_${cursor}`} className="optional-name">
+        <span key={`${groupIdx}_${entryIdx}`} className="optional-name">
           <p className="caption">{entry.caption}:</p>{' '}
           <p className="value">{entry.value}</p>
         </span>
       );
 
-      cursor += 1;
-    } while (cursor < group.entries.length);
+      entryIdx++;
+    } while (entryIdx < group.entries.length);
 
-    if (idx !== groups.length - 1) {
-      acc.push(<span key={`${idx}_${cursor}`} className="separator" />);
+    if (groupIdx !== groups.length - 1) {
+      acc.push(<span key={`${groupIdx}_${entryIdx}`} className="separator" />);
     }
 
     return acc;
   }, []);
 }
+
+export function getInvalidDataItem(data) {
+  return data.find(({ validStatus = {} }) => {
+    const { valid = null } = validStatus;
+
+    if (valid !== null && !valid) {
+      return validStatus;
+    }
+  }, null);
+}
+
+export const computePageLengthEffective = (pageLengthFromLayout) => {
+  if (currentDevice.type === 'mobile' || currentDevice.type === 'tablet') {
+    return 9999;
+  }
+
+  if (pageLengthFromLayout && pageLengthFromLayout > 0) {
+    return pageLengthFromLayout;
+  }
+
+  return DEFAULT_PAGE_LENGTH;
+};

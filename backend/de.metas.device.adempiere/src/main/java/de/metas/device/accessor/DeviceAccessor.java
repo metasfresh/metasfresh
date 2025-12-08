@@ -1,20 +1,31 @@
 package de.metas.device.accessor;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.device.api.IDevice;
 import de.metas.device.api.IDeviceRequest;
 import de.metas.device.api.ISingleValueResponse;
+import de.metas.device.api.hook.BeforeAcquireValueHook;
+import de.metas.device.api.hook.RunParameters;
+import de.metas.device.config.DeviceConfig;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.Set;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -47,36 +58,53 @@ import java.util.Set;
 public final class DeviceAccessor
 {
 	private static final Logger logger = LogManager.getLogger(DeviceAccessor.class);
-
+	
 	@Getter
 	private final DeviceId id;
+	
+	@Getter
+	private final DeviceConfig deviceConfig;
 
 	@Getter
 	private final ITranslatableString displayName;
 	private final IDevice device;
-	private final ImmutableSet<WarehouseId> assignedWarehouseIds;
 	private final IDeviceRequest<ISingleValueResponse> request;
+	private final List<BeforeAcquireValueHook> beforeHooks;
 
 	@Builder
 	private DeviceAccessor(
 			@NonNull final DeviceId id,
+			@NonNull final DeviceConfig deviceConfig,
 			@NonNull final ITranslatableString displayName,
 			@NonNull final IDevice device,
-			@NonNull final Set<WarehouseId> assignedWarehouseIds,
-			@NonNull final IDeviceRequest<ISingleValueResponse> request)
+			@NonNull final IDeviceRequest<ISingleValueResponse> request,
+			@Nullable final List<BeforeAcquireValueHook> beforeHooks)
 	{
 		this.id = id;
+		this.deviceConfig = deviceConfig;
 		this.displayName = displayName;
 		this.device = device;
-		this.assignedWarehouseIds = ImmutableSet.copyOf(assignedWarehouseIds);
 		this.request = request;
+		this.beforeHooks = Optional.ofNullable(beforeHooks).orElseGet(ImmutableList::of);
 	}
 
 	public boolean isAvailableForWarehouse(final WarehouseId warehouseId)
 	{
+		final ImmutableSet<WarehouseId> assignedWarehouseIds = deviceConfig.getAssignedWarehouseIds(); 
 		return assignedWarehouseIds.isEmpty() || assignedWarehouseIds.contains(warehouseId);
 	}
 
+	public boolean isAvailableForLocator(@NonNull final LocatorId locatorId)
+	{
+		if (!isAvailableForWarehouse(locatorId.getWarehouseId()))
+		{
+			return false;
+		}
+
+		final ImmutableSet<LocatorId> assignedLocatorIds = deviceConfig.getAssignedLocatorIds();
+		return assignedLocatorIds.isEmpty() || assignedLocatorIds.contains(locatorId);
+	}
+	
 	public synchronized BigDecimal acquireValue()
 	{
 		logger.debug("This: {}, Device: {}; Request: {}", this, device, request);
@@ -85,5 +113,34 @@ public final class DeviceAccessor
 		logger.debug("Device {}; Response: {}", device, response);
 
 		return response.getSingleValue();
+	}
+
+	public synchronized void beforeAcquireValue(@NonNull final Map<String, List<String>> parameters)
+	{
+		final Map<String, List<String>> runParameters = Stream.concat(parameters.entrySet().stream(),
+																	  getDeviceConfigParams().entrySet().stream())
+				.collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+
+		for (final BeforeAcquireValueHook hook : beforeHooks)
+		{
+			hook.run(RunParameters.of(runParameters), device, request);
+		}
+	}
+
+	public Optional<String> getConfigValue(@NonNull final String parameterName)
+	{
+		return deviceConfig.getDeviceConfigParamValue(parameterName);
+	}
+
+	@NonNull
+	private Map<String, List<String>> getDeviceConfigParams()
+	{
+		return deviceConfig.getDeviceConfigParams()
+				.entrySet()
+				.stream()
+				.collect(Collectors.toMap(
+						Map.Entry::getKey,
+						entry -> ImmutableList.of(entry.getValue())
+				));
 	}
 }

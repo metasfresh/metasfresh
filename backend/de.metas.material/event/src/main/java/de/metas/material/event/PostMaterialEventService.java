@@ -1,19 +1,15 @@
 package de.metas.material.event;
 
-import de.metas.async.QueueWorkPackageId;
-import de.metas.async.api.IWorkPackageBuilder;
-import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.processor.IWorkPackageQueueFactory;
+import com.google.common.collect.ImmutableSet;
 import de.metas.logging.LogManager;
 import de.metas.material.event.eventbus.MetasfreshEventBusService;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-import static org.compiere.util.Env.getCtx;
+import java.util.Collection;
 
 /*
  * #%L
@@ -43,7 +39,6 @@ public class PostMaterialEventService
 	private static final Logger logger = LogManager.getLogger(PostMaterialEventService.class);
 
 	private final MetasfreshEventBusService materialEventService;
-	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 
 	public PostMaterialEventService(@NonNull final MetasfreshEventBusService materialEventService)
 	{
@@ -51,40 +46,29 @@ public class PostMaterialEventService
 	}
 
 	/**
-	 * Adds a trx listener to make sure the given {@code event} will be fired via {@link #postEventNow(MaterialEvent, QueueWorkPackageId)} when the given {@code trxName} is committed.
+	 * Adds a trx listener to make sure the given {@code event} will be fired via {@link #enqueueEventNow(MaterialEvent)} before the given {@code trxName} is committed.
 	 */
-	public void postEventAfterNextCommit(@NonNull final MaterialEvent event)
+	public void enqueueEventAfterNextCommit(@NonNull final MaterialEvent event)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-		trxManager.getCurrentTrxListenerManagerOrAutoCommit()
-				.newEventListener(TrxEventTiming.AFTER_COMMIT)
-				.registerHandlingMethod(innerTrx -> postEventAsync(event));
+		trxManager.accumulateAndProcessAfterCommit(event.getEventName(),
+				ImmutableSet.of(event),
+				this::enqueueEventsNow);
 	}
 
 	/**
 	 * Fires the given event using our (distributed) event framework.
-	 *
-	 * @deprecated should only be used by the workpackage-processor. Please use {@link #postEventAsync(MaterialEvent)} whenever possible, to avoid blocking the UI
+	 * <b>Important:</b> Please make sure to only use this method if you know that all the data which this event refers to is already committed to database!
 	 */
-	@Deprecated
-	public void postEventNow(final MaterialEvent event, final QueueWorkPackageId workPackageId)
+	public void enqueueEventNow(final MaterialEvent event)
 	{
-		materialEventService.postEvent(event, workPackageId);
-		logger.info("Posted MaterialEvent={}", event);
+		materialEventService.enqueueEvent(event);
+		logger.debug("Posted MaterialEvent={}", event);
 	}
 
-	/**
-	 * Creates a work package and queues it for execution.
-	 */
-	public QueueWorkPackageId postEventAsync(final MaterialEvent event)
+	public void enqueueEventsNow(final Collection<MaterialEvent> events)
 	{
-		final String serializedEvent = JacksonMaterialEventSerializer.instance.toString(event);
-		final IWorkPackageBuilder workPackageBuilder = workPackageQueueFactory.getQueueForEnqueuing(getCtx(), MaterialEventWorkpackageProcessor.class)
-				.newWorkPackage(getCtx())
-				.parameter(MaterialEventWorkpackageProcessor.PARAM_Event, serializedEvent);
-
-		final I_C_Queue_WorkPackage result = workPackageBuilder.buildAndEnqueue();
-		return QueueWorkPackageId.ofRepoId(result.getC_Queue_WorkPackage_ID());
+		events.forEach(this::enqueueEventNow);
 	}
 }

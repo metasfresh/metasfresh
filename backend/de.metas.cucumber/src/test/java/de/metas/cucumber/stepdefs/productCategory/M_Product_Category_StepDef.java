@@ -22,15 +22,19 @@
 
 package de.metas.cucumber.stepdefs.productCategory;
 
+import de.metas.common.util.CoalesceUtil;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSet_StepDefData;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.I_M_AttributeSet;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Product_Category;
 
 import java.util.List;
@@ -42,66 +46,80 @@ import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_M_Product_Category.COLUMNNAME_M_AttributeSet_ID;
 import static org.compiere.model.I_M_Product_Category.COLUMNNAME_M_Product_Category_ID;
 
+@RequiredArgsConstructor
 public class M_Product_Category_StepDef
 {
-	private final M_Product_Category_StepDefData productCategoryTable;
-	private final M_AttributeSet_StepDefData attributeSetTable;
-
+	@NonNull
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-	public M_Product_Category_StepDef(
-			@NonNull final M_Product_Category_StepDefData productCategoryTable,
-			@NonNull final M_AttributeSet_StepDefData attributeSetTable)
-	{
-		this.productCategoryTable = productCategoryTable;
-		this.attributeSetTable = attributeSetTable;
-	}
+	@NonNull
+	private final M_Product_Category_StepDefData productCategoryTable;
+	@NonNull
+	private final M_AttributeSet_StepDefData attributeSetTable;
 
 	@And("load M_Product_Category:")
 	public void load_M_Product_Category(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> row : tableRows)
-		{
-			final String name = DataTableUtil.extractStringForColumnName(row, I_M_Product_Category.COLUMNNAME_Name);
-			final String value = DataTableUtil.extractStringForColumnName(row, I_M_Product_Category.COLUMNNAME_Value);
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_M_Product_Category_ID)
+				.forEach(row -> {
+					final String name = row.getAsString(I_M_Product_Category.COLUMNNAME_Name);
+					final String value = row.getAsString(I_M_Product_Category.COLUMNNAME_Value);
 
-			final I_M_Product_Category productCategory = queryBL.createQueryBuilder(I_M_Product_Category.class)
-					.addEqualsFilter(I_M_Product_Category.COLUMNNAME_Name, name)
-					.addEqualsFilter(I_M_Product_Category.COLUMNNAME_Value, value)
-					.addOnlyActiveRecordsFilter()
-					.create()
-					.firstOnly(I_M_Product_Category.class);
-
-			assertThat(productCategory).isNotNull();
-
-			final String productCategoryIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_Category_ID + "." + TABLECOLUMN_IDENTIFIER);
-			productCategoryTable.putOrReplace(productCategoryIdentifier, productCategory);
-		}
+					final I_M_Product_Category productCategory = queryBL.createQueryBuilder(I_M_Product_Category.class)
+							.addEqualsFilter(I_M_Product_Category.COLUMNNAME_Name, name)
+							.addEqualsFilter(I_M_Product_Category.COLUMNNAME_Value, value)
+							.addOnlyActiveRecordsFilter()
+							.create()
+							.firstOnlyNotNull(I_M_Product_Category.class);
+					assertThat(productCategory).as("Unable to load active M_ProductCategory with name=%s and value=%s", name, value).isNotNull();
+					productCategoryTable.putOrReplace(row.getAsIdentifier(), productCategory);
+				});
 	}
 
 	@And("update M_Product_Category:")
 	public void update_M_Product_Category(@NonNull final DataTable dataTable)
 	{
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_M_Product_Category_ID)
+				.forEach(row -> {
+					final StepDefDataIdentifier identifier = row.getAsIdentifier();
+					final I_M_Product_Category productCategory = identifier.lookupIn(productCategoryTable);
+					assertThat(productCategory).as("Unable to load active M_ProductCategory with identifier=%s", identifier).isNotNull();
+
+					row.getAsOptionalIdentifier(COLUMNNAME_M_AttributeSet_ID)
+							.map(attributeSetTable::getId)
+							.ifPresent(attributeSetId -> productCategory.setM_AttributeSet_ID(attributeSetId.getRepoId()));
+
+					saveRecord(productCategory);
+					productCategoryTable.putOrReplace(identifier, productCategory);
+				});
+	}
+
+	@Given("metasfresh contains M_Product_Categories:")
+	public void create_M_Product_Categories(@NonNull final DataTable dataTable)
+	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
 		{
-			final String productCategoryIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_Category_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_Product_Category productCategory = productCategoryTable.get(productCategoryIdentifier);
+			final String name = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product_Category.COLUMNNAME_Name);
+			final String value = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product_Category.COLUMNNAME_Value);
 
-			assertThat(productCategory).isNotNull();
+			final I_M_Product_Category productCategoryRecord =
+					CoalesceUtil.coalesceSuppliersNotNull(
+							() -> queryBL.createQueryBuilder(I_M_Product_Category.class)
+									.addEqualsFilter(I_M_Product_Category.COLUMNNAME_Value, value)
+									.create()
+									.firstOnly(I_M_Product_Category.class),
+							() -> InterfaceWrapperHelper.newInstance(I_M_Product_Category.class)
+					);
 
-			final String attributeSetIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_AttributeSet_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(attributeSetIdentifier))
-			{
-				final I_M_AttributeSet attributeSet = attributeSetTable.get(attributeSetIdentifier);
-				assertThat(attributeSet).isNotNull();
+			productCategoryRecord.setIsActive(true);
+			productCategoryRecord.setName(name);
+			productCategoryRecord.setValue(value);
+			InterfaceWrapperHelper.saveRecord(productCategoryRecord);
 
-				productCategory.setM_AttributeSet_ID(attributeSet.getM_AttributeSet_ID());
-			}
-
-			saveRecord(productCategory);
-			productCategoryTable.putOrReplace(productCategoryIdentifier, productCategory);
+			final String productCategoryIdentifier = DataTableUtil.extractStringForColumnName(tableRow, TABLECOLUMN_IDENTIFIER);
+			productCategoryTable.putOrReplace(productCategoryIdentifier, productCategoryRecord);
 		}
 	}
 }

@@ -44,7 +44,7 @@ const createDummyProps = (props = {}) => {
     dispatch: jest.fn(),
     onDropdownListToggle: jest.fn(),
     onChange: jest.fn(),
-
+    enableAutofocus: jest.fn(),
     //
     // Overrides:
     ...props,

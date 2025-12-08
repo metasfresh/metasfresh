@@ -1,16 +1,6 @@
 package de.metas.impexp;
 
-import java.util.Optional;
-
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
 import com.google.common.base.Stopwatch;
-
 import de.metas.event.Topic;
 import de.metas.event.Type;
 import de.metas.i18n.AdMessageKey;
@@ -26,9 +16,16 @@ import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.user.UserId;
-import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -55,7 +52,7 @@ import lombok.NonNull;
 @Service
 public class DataImportService
 {
-	public static final Topic USER_NOTIFICATIONS_TOPIC = Topic.of("org.adempiere.impexp.async.RecordsImported", Type.REMOTE);
+	public static final Topic USER_NOTIFICATIONS_TOPIC = Topic.of("org.adempiere.impexp.async.RecordsImported", Type.DISTRIBUTED);
 
 	private static final Logger logger = LogManager.getLogger(DataImportService.class);
 	private final IImportProcessFactory importProcessFactory = Services.get(IImportProcessFactory.class);
@@ -105,7 +102,6 @@ public class DataImportService
 
 		return DataImportCommand.builder()
 				.dataImportService(this)
-				.importProcessFactory(importProcessFactory)
 				.dataImportRunService(dataImportRunService)
 				.insertIntoImportTableService(insertIntoImportTableService)
 				//
@@ -134,12 +130,7 @@ public class DataImportService
 		try
 		{
 			final ImportProcessResult processResult = importProcessFactory.newImportProcessForTableName(request.getImportTableName())
-					.setCtx(Env.getCtx())
-					.clientId(request.getClientId())
-					.setParameters(request.getAdditionalParameters())
-					.selectedRecords(request.getSelectionId())
-					.validateOnly(true)
-					.run();
+					.validate(request);
 
 			stopwatch.stop();
 
@@ -155,12 +146,7 @@ public class DataImportService
 	public ValidateAndActualImportRecordsResult validateAndImportRecordsNow(@NonNull final ImportRecordsRequest request)
 	{
 		final ImportProcessResult result = importProcessFactory.newImportProcessForTableName(request.getImportTableName())
-				.setCtx(Env.getCtx())
-				.setLoggable(Loggables.get())
-				.selectedRecords(request.getSelectionId())
-				.completeDocuments(request.isCompleteDocuments())
-				.setParameters(request.getAdditionalParameters())
-				.run();
+				.validateAndImport(request);
 
 		if (request.getNotifyUserId() != null)
 		{
@@ -210,8 +196,6 @@ public class DataImportService
 	public int deleteImportRecords(@NonNull final ImportDataDeleteRequest request)
 	{
 		return importProcessFactory.newImportProcessForTableName(request.getImportTableName())
-				.setCtx(Env.getCtx())
-				.setLoggable(Loggables.get())
 				.setParameters(request.getAdditionalParameters())
 				.deleteImportRecords(request);
 	}

@@ -84,7 +84,7 @@ public class MInOutHUDocumentFactory extends AbstractHUDocumentFactory<I_M_InOut
 		final List<I_M_InOutLine> ioLines = Services.get(IInOutDAO.class).retrieveLines(inOut);
 		if (ioLines.isEmpty())
 		{
-			throw new AdempiereException("@NoLines@ (@M_InOut_ID@: " + inOut.getDocumentNo() + ")");
+			throw AdempiereException.newWithTranslatableMessage("@NoLines@ (@M_InOut_ID@: " + inOut.getDocumentNo() + ")");
 		}
 
 		final List<IHUDocumentLine> sourceLines = new ArrayList<>(ioLines.size());

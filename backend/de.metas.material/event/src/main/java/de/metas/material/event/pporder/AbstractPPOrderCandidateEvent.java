@@ -22,6 +22,7 @@
 
 package de.metas.material.event.pporder;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
@@ -29,6 +30,9 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.eevolution.model.I_PP_Order_Candidate;
+import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 
 import javax.annotation.Nullable;
 
@@ -37,10 +41,9 @@ import javax.annotation.Nullable;
 @ToString
 public abstract class AbstractPPOrderCandidateEvent implements MaterialEvent
 {
-	protected final EventDescriptor eventDescriptor;
-	protected final PPOrderCandidate ppOrderCandidate;
-
-	protected final SupplyRequiredDescriptor supplyRequiredDescriptor;
+	@NonNull protected final EventDescriptor eventDescriptor;
+	@NonNull protected final PPOrderCandidate ppOrderCandidate;
+	@Nullable protected final SupplyRequiredDescriptor supplyRequiredDescriptor;
 
 	public AbstractPPOrderCandidateEvent(
 			@NonNull final EventDescriptor eventDescriptor,
@@ -50,5 +53,15 @@ public abstract class AbstractPPOrderCandidateEvent implements MaterialEvent
 		this.eventDescriptor = eventDescriptor;
 		this.ppOrderCandidate = ppOrderCandidate;
 		this.supplyRequiredDescriptor = supplyRequiredDescriptor;
+	}
+
+	@JsonIgnore
+	public PPOrderCandidateId getPpOrderCandidateId() {return getPpOrderCandidate().getPpOrderCandidateId();}
+
+	@Nullable
+	@Override
+	public TableRecordReference getSourceTableReference()
+	{
+		return TableRecordReference.ofNullable(I_PP_Order_Candidate.Table_Name, getPpOrderCandidateId());
 	}
 }

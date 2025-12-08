@@ -22,36 +22,37 @@ package de.metas.edi.spi.impl;
  * #L%
  */
 
-
-import org.adempiere.model.InterfaceWrapperHelper;
-
 import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocCopyHandler;
 import de.metas.document.IDocLineCopyHandler;
+import de.metas.edi.api.IEDIDocumentBL;
 import de.metas.edi.model.I_C_Invoice;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 
 
 
 public class EdiInvoiceCopyHandler implements IDocCopyHandler<org.compiere.model.I_C_Invoice, org.compiere.model.I_C_InvoiceLine>
 {
+	private final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
 
 	@Override
-	public void copyPreliminaryValues (org.compiere.model.I_C_Invoice from, org.compiere.model.I_C_Invoice to)
+	public void copyPreliminaryValues (final org.compiere.model.I_C_Invoice from, final org.compiere.model.I_C_Invoice to)
 	{
 		// nothing to do
 		
 	}
 
 	@Override
-	public void copyValues(org.compiere.model.I_C_Invoice from, org.compiere.model.I_C_Invoice to)
+	public void copyValues(@NonNull final org.compiere.model.I_C_Invoice from, @NonNull final org.compiere.model.I_C_Invoice to)
 	{
 		final I_C_Invoice fromToUse = InterfaceWrapperHelper.create(from, I_C_Invoice.class);
 		final I_C_Invoice toToUse = InterfaceWrapperHelper.create(to, I_C_Invoice.class);
 		
 		// task 08926
 		// Make sure the EdiEnabled flag is inherited if the invoice is created form another invoice
-		toToUse.setIsEdiEnabled(fromToUse.isEdiEnabled());
+		ediDocumentBL.setEdiEnabled(toToUse, fromToUse.isEdiEnabled());
 		
 	}
 

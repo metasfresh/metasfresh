@@ -24,6 +24,7 @@ import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import org.springframework.lang.Nullable;
 
 /**
  * Re-enqueue {@link I_C_Printing_Queue} items.
@@ -45,6 +46,8 @@ public class C_Printing_Queue_ReEnqueue extends JavaProcess
 	private boolean p_FilterBySelectedQueueItems = false;
 
 	public static final String PARAM_FilterByProcessedQueueItems = "FilterByProcessedQueueItems";
+
+	@Nullable
 	private Boolean p_FilterByProcessedQueueItems = null;
 
 	public static final String PARAM_AD_Table_ID = "AD_Table_ID";
@@ -123,7 +126,7 @@ public class C_Printing_Queue_ReEnqueue extends JavaProcess
 					printingQueueBL.renqueue(item, p_IsRecreatePrintout);
 					countOk++;
 				}
-				catch (Exception e)
+				catch (final Exception e)
 				{
 					countError++;
 					log.warn(e.getLocalizedMessage(), e);
@@ -162,7 +165,7 @@ public class C_Printing_Queue_ReEnqueue extends JavaProcess
 
 		if (!Check.isEmpty(p_WhereClause, true))
 		{
-			final ISqlQueryFilter modelFilter = TypedSqlQueryFilter.<Object> of(p_WhereClause);
+			final ISqlQueryFilter modelFilter = TypedSqlQueryFilter.of(p_WhereClause);
 			queueQuery.setModelFilter(modelFilter);
 		}
 
@@ -176,8 +179,7 @@ public class C_Printing_Queue_ReEnqueue extends JavaProcess
 			loggable.addLog("The query matches {} C_Printing_Queue records; query={}",query.count(), query);
 		}
 
-		final Iterator<I_C_Printing_Queue> it = query.iterate(I_C_Printing_Queue.class);
-		return it;
+		return query.iterate(I_C_Printing_Queue.class);
 	}
 
 	private int createWindowSelectionId(final PInstanceId selectionId)

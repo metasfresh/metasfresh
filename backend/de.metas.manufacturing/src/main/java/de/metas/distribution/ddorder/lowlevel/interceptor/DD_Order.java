@@ -22,13 +22,13 @@ package de.metas.distribution.ddorder.lowlevel.interceptor;
  * #L%
  */
 
+import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.ModelValidator;
@@ -49,14 +49,13 @@ class DD_Order
 	public void init()
 	{
 		CopyRecordFactory.enableForTableName(I_DD_Order.Table_Name);
-		CopyRecordFactory.registerCopyRecordSupport(I_DD_Order.Table_Name, DDOrderPOCopyRecordSupport.class);
-		CopyRecordFactory.registerCopyRecordSupport(I_DD_OrderLine.Table_Name, DDOrderLinePOCopyRecordSupport.class);
 	}
 
 	/**
 	 * Sys config used to Disable the Forward/Backward DD Order processing
 	 * <p>
-	 * Task http://dewiki908/mediawiki/index.php/08059_Trigger_Fertigstellen_for_DD_Orders_%28107323649094%29
+	 *
+	 * @implSpec <a href="http://dewiki908/mediawiki/index.php/08059_Trigger_Fertigstellen_for_DD_Orders_%28107323649094%29">task</a>
 	 */
 	private static final String SYSCONFIG_DisableProcessForwardAndBackwardDraftDDOrders = "org.eevolution.mrp.spi.impl.DDOrderMRPSupplyProducer.DisableProcessForwardAndBackwardDraftDDOrders";
 
@@ -69,11 +68,8 @@ class DD_Order
 		}
 
 		final List<I_DD_OrderLine> ddOrderLines = ddOrderLowLevelService.retrieveLines(ddOrder);
-		for (final I_DD_OrderLine ddOrderLine : ddOrderLines)
-		{
-			InterfaceWrapperHelper.delete(ddOrderLine);
-		}
-	}    // beforeDelete
+		InterfaceWrapperHelper.deleteAll(ddOrderLines);
+	}
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	private boolean isProcessForwardAndBackwaredDDOrdersAutomatically(final I_DD_Order ddOrder)
@@ -92,7 +88,8 @@ class DD_Order
 	/**
 	 * If {@link I_DD_Order#COLUMN_MRP_AllowCleanup} is set to <code>false</code> then propagate this flag to forward and backward DD Orders too.
 	 * <p>
-	 * Task http://dewiki908/mediawiki/index.php/08059_Trigger_Fertigstellen_for_DD_Orders_%28107323649094%29
+	 *
+	 * @implSpec <a href="http://dewiki908/mediawiki/index.php/08059_Trigger_Fertigstellen_for_DD_Orders_%28107323649094%29">task</a>
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_DD_Order.COLUMNNAME_MRP_AllowCleanup)
 	public void propagate_MRPDisallowCleanup(final I_DD_Order ddOrder)
@@ -124,7 +121,8 @@ class DD_Order
 	/**
 	 * Complete all forward and backward DD Orders (but on the same plant)
 	 * <p>
-	 * Task http://dewiki908/mediawiki/index.php/08059_Trigger_Fertigstellen_for_DD_Orders_%28107323649094%29
+	 *
+	 * @implSpec <a href="http://dewiki908/mediawiki/index.php/08059_Trigger_Fertigstellen_for_DD_Orders_%28107323649094%29">task</a>
 	 */
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void completeForwardAndBackwardDDOrders(final I_DD_Order ddOrder)

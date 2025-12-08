@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-externalsystems-core
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,7 +28,7 @@ import de.metas.common.rest_api.v2.attachment.JsonAttachmentRequest;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
+import org.apache.camel.http.common.HttpMethods;
 import org.springframework.stereotype.Component;
 
 import static de.metas.camel.externalsystems.core.to_mf.v2.UnpackV2ResponseRouteBuilder.UNPACK_V2_API_RESPONSE;
@@ -44,7 +44,7 @@ public class AttachmentRouteBuilder extends RouteBuilder
 
 		from(direct(ExternalSystemCamelConstants.MF_ATTACHMENT_ROUTE_ID))
 				.routeId(ExternalSystemCamelConstants.MF_ATTACHMENT_ROUTE_ID)
-				.streamCaching()
+				.streamCache("true")
 				.log("Route invoked!")
 				.process(exchange -> {
 					final Object request = exchange.getIn().getBody();
@@ -56,7 +56,7 @@ public class AttachmentRouteBuilder extends RouteBuilder
 				})
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonAttachmentRequest.class))
 				.removeHeaders("CamelHttp*")
-				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
+				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.POST))
 				.toD("{{metasfresh.attachments.v2.api.uri}}")
 
 				.to(direct(UNPACK_V2_API_RESPONSE));

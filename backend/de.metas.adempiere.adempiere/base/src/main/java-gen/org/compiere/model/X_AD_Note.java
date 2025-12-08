@@ -490,18 +490,6 @@ public class X_AD_Note extends org.compiere.model.PO implements I_AD_Note, org.c
 		return ii.intValue();
 	}
 
-	@Override
-	public org.eevolution.model.I_PP_Product_Planning getPP_Product_Planning() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_PP_Product_Planning_ID, org.eevolution.model.I_PP_Product_Planning.class);
-	}
-
-	@Override
-	public void setPP_Product_Planning(org.eevolution.model.I_PP_Product_Planning PP_Product_Planning)
-	{
-		set_ValueFromPO(COLUMNNAME_PP_Product_Planning_ID, org.eevolution.model.I_PP_Product_Planning.class, PP_Product_Planning);
-	}
-
 	/** Set Product Planning.
 		@param PP_Product_Planning_ID Product Planning	  */
 	@Override
@@ -669,5 +657,28 @@ public class X_AD_Note extends org.compiere.model.PO implements I_AD_Note, org.c
 	public java.lang.String getWhereClause () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_WhereClause);
+	}
+
+	/**
+	 * NotificationSeverity AD_Reference_ID=541947
+	 * Reference name: NotificationSeverity
+	 */
+	public static final int NOTIFICATIONSEVERITY_AD_Reference_ID=541947;
+	/** Notice = Notice */
+	public static final String NOTIFICATIONSEVERITY_Notice = "Notice";
+	/** Warning = Warning */
+	public static final String NOTIFICATIONSEVERITY_Warning = "Warning";
+	/** Error = Error */
+	public static final String NOTIFICATIONSEVERITY_Error = "Error";
+	@Override
+	public void setNotificationSeverity (final java.lang.String NotificationSeverity)
+	{
+		set_Value (COLUMNNAME_NotificationSeverity, NotificationSeverity);
+	}
+
+	@Override
+	public java.lang.String getNotificationSeverity()
+	{
+		return get_ValueAsString(COLUMNNAME_NotificationSeverity);
 	}
 }

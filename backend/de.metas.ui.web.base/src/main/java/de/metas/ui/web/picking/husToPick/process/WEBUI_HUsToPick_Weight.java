@@ -1,13 +1,12 @@
 package de.metas.ui.web.picking.husToPick.process;
 
 import com.google.common.annotations.VisibleForTesting;
-import de.metas.ui.web.process.adprocess.device_providers.DeviceDescriptorsList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.attribute.weightable.IWeightable;
 import de.metas.handlingunits.attribute.weightable.PlainWeightable;
 import de.metas.handlingunits.attribute.weightable.Weightables;
-import de.metas.handlingunits.inventory.InventoryService;
-import de.metas.handlingunits.inventory.draftlinescreator.InventoryLineAggregatorFactory;
+import de.metas.handlingunits.impl.HUQtyService;
+import de.metas.handlingunits.weighting.WeightHUCommand;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessParametersCallout;
@@ -16,6 +15,7 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowAttributesHelper;
+import de.metas.ui.web.process.adprocess.device_providers.DeviceDescriptorsList;
 import de.metas.ui.web.process.descriptor.ProcessParamDevicesProvider;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import org.adempiere.mm.attributes.AttributeCode;
@@ -50,8 +50,7 @@ import java.util.Optional;
 
 public class WEBUI_HUsToPick_Weight extends HUsToPickViewBasedProcess implements IProcessPrecondition, IProcessParametersCallout, IProcessDefaultParametersProvider
 {
-	private final InventoryService inventoryService = SpringContextHolder.instance.getBean(InventoryService.class);
-	private final InventoryLineAggregatorFactory inventoryLineAggregatorFactory = SpringContextHolder.instance.getBean(InventoryLineAggregatorFactory.class);
+	private final HUQtyService huQtyService = SpringContextHolder.instance.getBean(HUQtyService.class);
 
 	private static final String PARAM_WeightGrossInitial = "WeightGrossInitial";
 	@Param(parameterName = PARAM_WeightGrossInitial)
@@ -217,8 +216,7 @@ public class WEBUI_HUsToPick_Weight extends HUsToPickViewBasedProcess implements
 		final PlainWeightable targetWeight = getParametersAsWeightable();
 
 		WeightHUCommand.builder()
-				.inventoryService(inventoryService)
-				.inventoryLineAggregatorFactory(inventoryLineAggregatorFactory)
+				.huQtyService(huQtyService)
 				//
 				.huId(huId)
 				.targetWeight(targetWeight)

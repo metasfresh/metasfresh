@@ -1,8 +1,8 @@
 package de.metas.ui.web.window.descriptor;
 
-import javax.annotation.Nullable;
-
 import de.metas.ui.web.window.model.DocumentsRepository;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -42,9 +42,9 @@ public interface DocumentEntityDataBindingDescriptor
 	}
 
 	@FunctionalInterface
-	public interface DocumentEntityDataBindingDescriptorBuilder
+	interface DocumentEntityDataBindingDescriptorBuilder
 	{
-		final DocumentEntityDataBindingDescriptorBuilder NULL = () -> null;
+		DocumentEntityDataBindingDescriptorBuilder NULL = () -> null;
 
 		@Nullable
 		DocumentEntityDataBindingDescriptor getOrBuild();

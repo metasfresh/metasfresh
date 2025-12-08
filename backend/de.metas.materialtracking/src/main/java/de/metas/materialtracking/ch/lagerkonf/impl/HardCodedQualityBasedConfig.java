@@ -22,23 +22,8 @@ package de.metas.materialtracking.ch.lagerkonf.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
-
+import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
-import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.compiere.util.TimeUtil;
-
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
@@ -49,6 +34,23 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.Setter;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.compiere.util.TimeUtil;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 public class HardCodedQualityBasedConfig extends AbstractQualityBasedConfig
 {
@@ -76,6 +78,7 @@ public class HardCodedQualityBasedConfig extends AbstractQualityBasedConfig
 	private final I_M_Product scrapProduct;
 	private final I_C_UOM scrapUOM;
 
+	@Setter
 	private Timestamp validToDate;
 
 	private static int overallNumberOfInvoicings = 2; // default/old behavior
@@ -153,12 +156,12 @@ public class HardCodedQualityBasedConfig extends AbstractQualityBasedConfig
 	@Override
 	public BigDecimal getWithholdingPercent()
 	{
-		final BigDecimal withholdingPercent = new BigDecimal("50");
-		return withholdingPercent;
+		return new BigDecimal("50");
 	}
 
+	@NonNull
 	@Override
-	public List<IInvoicingItem> getAdditionalFeeProducts()
+	public List<IInvoicingItem> getProducedTotalWithoutByProductsAdditionalFeeProducts()
 	{
 		final IContextAware ctxAware = getContext();
 
@@ -176,6 +179,13 @@ public class HardCodedQualityBasedConfig extends AbstractQualityBasedConfig
 				BigDecimal.ONE,
 				uomDAO.getByX12DE355(C_UOM_FEE_X12DE355)));
 		return result;
+	}
+	
+	@NonNull
+	@Override
+	public List<IInvoicingItem> getRawAdditionalFeeProducts()
+	{
+		return ImmutableList.of();
 	}
 
 	@Override
@@ -272,12 +282,10 @@ public class HardCodedQualityBasedConfig extends AbstractQualityBasedConfig
 	public I_M_Product getRegularPPOrderProduct()
 	{
 		final IContextAware ctxAware = getContext();
-		final I_M_Product regularPPOrderProduct = productPA.retrieveProduct(ctxAware.getCtx(),
-				M_PRODUCT_REGULAR_PP_ORDER_VALUE,
-				true, // throwExIfProductNotFound
-				ctxAware.getTrxName());
-
-		return regularPPOrderProduct;
+		return productPA.retrieveProduct(ctxAware.getCtx(),
+										 M_PRODUCT_REGULAR_PP_ORDER_VALUE,
+										 true, // throwExIfProductNotFound
+										 ctxAware.getTrxName());
 	}
 
 	/**
@@ -291,10 +299,5 @@ public class HardCodedQualityBasedConfig extends AbstractQualityBasedConfig
 			return TimeUtil.addMonths(SystemTime.asDate(), 2);
 		}
 		return validToDate;
-	}
-
-	public void setValidToDate(Timestamp validToDate)
-	{
-		this.validToDate = validToDate;
 	}
 }

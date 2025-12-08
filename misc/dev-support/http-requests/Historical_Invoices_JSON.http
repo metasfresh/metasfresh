@@ -1,0 +1,21 @@
+POST {{baseURL}}/api/v2/processes/Historical_Invoices_JSON/invoke
+Authorization: {{authToken}}
+Content-Type: application/json;charset=UTF-8
+accept: application/json;charset=UTF-8
+
+{
+  "processParameters": [
+    {
+      "name": "ExternalId",
+      "value": "external_id_2"
+    },
+    {
+      "name": "UpdatedGE",
+      "value": "2025-08-01 00:00:00"
+    },
+    {
+      "name": "DataSource",
+      "value": "int-Shopware"
+    }
+  ]
+}

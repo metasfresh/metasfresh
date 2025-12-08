@@ -1,46 +1,5 @@
 package de.metas.printing.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.refresh;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-/*
- * #%L
- * de.metas.printing.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-import java.util.List;
-
-import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.test.AdempiereTestHelper;
-import org.assertj.core.api.Assertions;
-import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
 import de.metas.printing.api.IPrinterBL;
 import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.model.I_AD_Printer;
@@ -52,6 +11,22 @@ import de.metas.printing.model.I_AD_Printer_Config;
 import de.metas.printing.model.I_AD_Printer_Matching;
 import de.metas.printing.model.I_AD_Printer_Tray;
 import de.metas.util.Services;
+import de.metas.workplace.WorkplaceRepository;
+import de.metas.workplace.WorkplaceService;
+import de.metas.workplace.WorkplaceUserAssignRepository;
+import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.Env;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.refresh;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class PrinterBLTest extends AbstractPrintingTest
 {
@@ -59,12 +34,15 @@ public class PrinterBLTest extends AbstractPrintingTest
 
 	private PrinterBL printerBL;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 		printerBL = new PrinterBL();
 		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_User_ID, CTX_USER_ID);
+
+		final WorkplaceService workplaceService = new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository());
+		SpringContextHolder.registerJUnitBean(workplaceService);
 	}
 
 	@Test
@@ -86,9 +64,9 @@ public class PrinterBLTest extends AbstractPrintingTest
 		final int printerID = matching.getAD_Printer_ID();
 		final int hwPrinterID = matching.getAD_PrinterHW_ID();
 
-		Assert.assertNotNull("Match not created", matching);
-		Assert.assertTrue(printerID == printer.getAD_Printer_ID());
-		Assert.assertTrue(hwPrinterID == printerHW.getAD_PrinterHW_ID());
+		Assertions.assertNotNull(matching, "Match not created");
+		Assertions.assertEquals(printerID, printer.getAD_Printer_ID());
+		Assertions.assertEquals(hwPrinterID, printerHW.getAD_PrinterHW_ID());
 	}
 
 	/**
@@ -108,7 +86,7 @@ public class PrinterBLTest extends AbstractPrintingTest
 		final I_AD_PrinterHW firstPrinterHW = newInstance(I_AD_PrinterHW.class);
 		firstPrinterHW.setHostKey("hostKey");
 		save(firstPrinterHW);
-		Assert.assertEquals(firstPrinterHW.getUpdatedBy(), CTX_USER_ID); // guard
+		Assertions.assertEquals(CTX_USER_ID, firstPrinterHW.getUpdatedBy()); // guard
 
 		// when
 		final I_AD_Printer_Matching matching = printerBL.createPrinterMatchingIfNoneExists(config, printer, firstPrinterHW);
@@ -116,16 +94,16 @@ public class PrinterBLTest extends AbstractPrintingTest
 		// then
 		final int printerID = matching.getAD_Printer_ID();
 		final int hwPrinterID = matching.getAD_PrinterHW_ID();
-		Assert.assertNotNull("Match not created", matching);
-		Assert.assertTrue(printerID == printer.getAD_Printer_ID());
-		Assert.assertTrue(hwPrinterID == firstPrinterHW.getAD_PrinterHW_ID());
+		Assertions.assertNotNull(matching, "Match not created");
+		Assertions.assertEquals(printerID, printer.getAD_Printer_ID());
+		Assertions.assertEquals(hwPrinterID, firstPrinterHW.getAD_PrinterHW_ID());
 
 		final I_AD_PrinterHW secondPrinterHW = newInstance(I_AD_PrinterHW.class);
 		secondPrinterHW.setHostKey("otherHostKey");
 		save(secondPrinterHW);
 
 		final I_AD_Printer_Matching secondMatching = printerBL.createPrinterMatchingIfNoneExists(config, printer, secondPrinterHW);
-		Assert.assertNull("Another matching was created, despite the existing one", secondMatching);
+		Assertions.assertNull(secondMatching, "Another matching was created, despite the existing one");
 	}
 
 	@Test
@@ -158,10 +136,10 @@ public class PrinterBLTest extends AbstractPrintingTest
 
 		final int trayHWID = trayMatching.getAD_PrinterHW_MediaTray_ID();
 
-		Assert.assertNotNull("Match not created", trayMatching);
-		Assert.assertTrue(trayID == tray.getAD_Printer_Tray_ID());
-		Assert.assertTrue(matchingID == matching.getAD_Printer_Matching_ID());
-		Assert.assertTrue(trayHWID == printerTrayHW.getAD_PrinterHW_MediaTray_ID());
+		Assertions.assertNotNull(trayMatching, "Match not created");
+		Assertions.assertEquals(trayID, tray.getAD_Printer_Tray_ID());
+		Assertions.assertEquals(matchingID, matching.getAD_Printer_Matching_ID());
+		Assertions.assertEquals(trayHWID, printerTrayHW.getAD_PrinterHW_MediaTray_ID());
 	}
 
 	@Test
@@ -188,22 +166,22 @@ public class PrinterBLTest extends AbstractPrintingTest
 
 		final I_AD_PrinterTray_Matching trayMatching = printerBL.createTrayMatchingIfNoneExists(matching, tray, firstPrinterTrayHW);
 
-		Assert.assertNotNull("Match not created", trayMatching);
+		Assertions.assertNotNull(trayMatching, "Match not created");
 
 		final int trayID = trayMatching.getAD_Printer_Tray_ID();
 		final int matchingID = trayMatching.getAD_Printer_Matching_ID();
 		final int trayHWID = trayMatching.getAD_PrinterHW_MediaTray_ID();
 
-		Assert.assertTrue(trayID == tray.getAD_Printer_Tray_ID());
-		Assert.assertTrue(matchingID == matching.getAD_Printer_Matching_ID());
-		Assert.assertTrue(trayHWID == firstPrinterTrayHW.getAD_PrinterHW_MediaTray_ID());
+		Assertions.assertEquals(trayID, tray.getAD_Printer_Tray_ID());
+		Assertions.assertEquals(matchingID, matching.getAD_Printer_Matching_ID());
+		Assertions.assertEquals(trayHWID, firstPrinterTrayHW.getAD_PrinterHW_MediaTray_ID());
 
 		final I_AD_PrinterHW_MediaTray secondPrinterTrayHW = newInstance(I_AD_PrinterHW_MediaTray.class);
 		secondPrinterTrayHW.setAD_PrinterHW(printerHW);
 		save(secondPrinterTrayHW);
 
 		final I_AD_PrinterTray_Matching secondTrayMatching = printerBL.createTrayMatchingIfNoneExists(matching, tray, secondPrinterTrayHW);
-		Assert.assertNull("Another tray matching was created, despite the existing one", secondTrayMatching);
+		Assertions.assertNull(secondTrayMatching, "Another tray matching was created, despite the existing one");
 	}
 
 	@Test
@@ -238,9 +216,9 @@ public class PrinterBLTest extends AbstractPrintingTest
 		final int printerHW_ID = printerHW.getAD_PrinterHW_ID();
 
 		final I_AD_PrinterHW_Calibration calibration = Services.get(IPrinterBL.class).createCalibrationIfNoneExists(printerTrayMatching);
-		Assert.assertNotNull("Calibartion not created", calibration);
-		Assert.assertTrue(printerHW_ID == calibration.getAD_PrinterHW_ID());
-		Assert.assertTrue(trayHWID == calibration.getAD_PrinterHW_MediaTray_ID());
+		Assertions.assertNotNull(calibration, "Calibartion not created");
+		Assertions.assertEquals(printerHW_ID, calibration.getAD_PrinterHW_ID());
+		Assertions.assertEquals(trayHWID, calibration.getAD_PrinterHW_MediaTray_ID());
 
 	}
 
@@ -276,14 +254,14 @@ public class PrinterBLTest extends AbstractPrintingTest
 		final int printerHW_ID = printerHW.getAD_PrinterHW_ID();
 
 		final I_AD_PrinterHW_Calibration firstCalibration = Services.get(IPrinterBL.class).createCalibrationIfNoneExists(printerTrayMatching);
-		Assert.assertNotNull("Calibartion not created", firstCalibration);
-		Assert.assertTrue(printerHW_ID == firstCalibration.getAD_PrinterHW_ID());
-		Assert.assertTrue(trayHWID == firstCalibration.getAD_PrinterHW_MediaTray_ID());
+		Assertions.assertNotNull(firstCalibration, "Calibartion not created");
+		Assertions.assertEquals(printerHW_ID, firstCalibration.getAD_PrinterHW_ID());
+		Assertions.assertEquals(trayHWID, firstCalibration.getAD_PrinterHW_MediaTray_ID());
 
 		//
 
 		final I_AD_PrinterHW_Calibration secondCalibration = Services.get(IPrinterBL.class).createCalibrationIfNoneExists(printerTrayMatching);
-		Assert.assertNull("Another calibartion was created, despite the existing one", secondCalibration);
+		Assertions.assertNull(secondCalibration, "Another calibartion was created, despite the existing one");
 	}
 
 	/**
@@ -349,9 +327,9 @@ public class PrinterBLTest extends AbstractPrintingTest
 		//
 		// test
 		final List<I_AD_PrinterTray_Matching> trayMatchings = Services.get(IPrintingDAO.class).retrievePrinterTrayMatchings(printerMatching);
-		assertThat("After the HW printer change, there should be still one tray matching", trayMatchings.size(), equalTo(1));
-		assertThat(trayMatchings.get(0).getAD_PrinterHW_MediaTray(), equalTo(printerTrayHW2));
-		assertThat(trayMatchings.get(0), equalTo(printerTrayMatching));
+		Assertions.assertEquals(1, trayMatchings.size(), "After the HW printer change, there should be still one tray matching");
+		Assertions.assertEquals(printerTrayHW2, trayMatchings.get(0).getAD_PrinterHW_MediaTray());
+		Assertions.assertEquals(printerTrayMatching, trayMatchings.get(0));
 	}
 
 	/**
@@ -395,7 +373,7 @@ public class PrinterBLTest extends AbstractPrintingTest
 		//
 		// test
 		final List<I_AD_PrinterTray_Matching> trayMatchings = Services.get(IPrintingDAO.class).retrievePrinterTrayMatchings(printerMatching);
-		assertThat("There should still be no tray matching", trayMatchings.isEmpty(), is(true));
+		Assertions.assertTrue(trayMatchings.isEmpty(), "There should still be no tray matching");
 	}
 
 	/**
@@ -449,7 +427,7 @@ public class PrinterBLTest extends AbstractPrintingTest
 		//
 		// test
 		final List<I_AD_PrinterTray_Matching> trayMatchings = Services.get(IPrintingDAO.class).retrievePrinterTrayMatchings(printerMatching);
-		assertThat("There should be no tray matching anymore", trayMatchings.isEmpty(), is(true));
+		Assertions.assertTrue(trayMatchings.isEmpty(), "There should be no tray matching anymore");
 	}
 
 	/**
@@ -497,7 +475,7 @@ public class PrinterBLTest extends AbstractPrintingTest
 		//
 		// test
 		final List<I_AD_PrinterTray_Matching> trayMatchings = Services.get(IPrintingDAO.class).retrievePrinterTrayMatchings(printerMatching);
-		assertThat("After the HW printer change, there should be one tray matching", trayMatchings.size(), equalTo(1));
-		assertThat(trayMatchings.get(0).getAD_PrinterHW_MediaTray(), equalTo(printerTrayHW2));
+		Assertions.assertEquals(1, trayMatchings.size(), "After the HW printer change, there should be one tray matching");
+		Assertions.assertEquals(printerTrayHW2, trayMatchings.get(0).getAD_PrinterHW_MediaTray());
 	}
 }

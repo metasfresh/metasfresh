@@ -426,7 +426,7 @@ public final class AdempierePLAF
 	 *
 	 *  @param plaf     ValueNamePair of the PLAF to be set
 	 *  @param themeVNP    Optional Theme name
-	 *  @param upateIni     Update setting to INI
+	 *  @param updateIni     Update setting to INI
 	 */
 	public static void setPLAF(final ValueNamePair plaf, ValueNamePair themeVNP, final boolean updateIni)
 	{
@@ -646,8 +646,6 @@ public final class AdempierePLAF
 	/**
 	 * Gets integer value of given key. If no value was found or the value is not {@link Integer} the default value will be returned.
 	 *
-	 * @param key
-	 * @param defaultValue
 	 * @return integer value or default value
 	 */
 	public static int getInt(final String key, final int defaultValue)
@@ -660,7 +658,7 @@ public final class AdempierePLAF
 		return defaultValue;
 	}
 
-	public static final boolean getBoolean(final String key, final boolean defaultValue)
+	public static boolean getBoolean(final String key, final boolean defaultValue)
 	{
 		final Object value = UIManager.getDefaults().get(key);
 		if (value instanceof Boolean)
@@ -670,47 +668,7 @@ public final class AdempierePLAF
 		return defaultValue;
 	}
 
-	/**
-	 * Extracts the "uiClassID" from given component class.
-	 *
-	 * Usually this method shall not fail, but in case it fails, the error will be logged and <code>defaultUIClassID</code> will be returned.
-	 *
-	 * @param componentClass
-	 * @param defaultUIClassID
-	 * @return uiClassID or <code>defaultUIClassID</code>.
-	 */
-	public static final String getUIClassID(final Class<?> componentClass, final String defaultUIClassID)
-	{
-		Check.assumeNotNull(componentClass, "componentClass not null");
-		try
-		{
-			@SuppressWarnings("unchecked")
-			final Set<Field> fields = ReflectionUtils.getFields(componentClass, new Predicate<Field>()
-			{
-
-				@Override
-				public boolean apply(final Field field)
-				{
-					return "uiClassID".equals(field.getName());
-				}
-			});
-
-			final Field field = CollectionUtils.singleElement(fields);
-			if (!field.isAccessible())
-			{
-				field.setAccessible(true);
-			}
-			final String uiClassID = (String)field.get(null);
-			return uiClassID;
-		}
-		catch (Exception e)
-		{
-			log.warn("Failed getting the uiClassID of " + componentClass, e);
-			return defaultUIClassID;
-		}
-	}
-
-	public static final String getString(final String key, final String defaultValue)
+	public static String getString(final String key, final String defaultValue)
 	{
 		final Object value = UIManager.getDefaults().get(key);
 		if(value == null)

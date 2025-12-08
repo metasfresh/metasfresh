@@ -65,6 +65,8 @@ public final class InvoiceCandidateIdsSelection
 		this.ids = ids;
 	}
 
+	public boolean isEmpty() {return selectionId == null && (ids == null || ids.isEmpty());}
+
 	public boolean isDatabaseSelection()
 	{
 		return selectionId != null;
@@ -74,9 +76,9 @@ public final class InvoiceCandidateIdsSelection
 	{
 		void empty();
 
-		void fixedSet(ImmutableSet<InvoiceCandidateId> ids);
+		void fixedSet(@NonNull ImmutableSet<InvoiceCandidateId> ids);
 
-		void selectionId(PInstanceId selectionId);
+		void selectionId(@NonNull PInstanceId selectionId);
 	}
 
 	public void apply(@NonNull final CaseMapper mapper)

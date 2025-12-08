@@ -7,7 +7,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
-import org.adempiere.ad.modelvalidator.Pointcut.PointcutBuilder;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.DocValidates;
 import org.adempiere.ad.modelvalidator.annotations.Init;
@@ -28,6 +27,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -250,14 +250,45 @@ final class AnnotatedModelInterceptorDescriptorBuilder
 
 	private void loadPointcut(final ModelChange annModelChange, final Method method)
 	{
-		addPointcut(preparePointcut(PointcutType.ModelChange, method)
-				.timings(annModelChange.timings())
-				.afterCommit(annModelChange.afterCommit())
-				.columnNamesToCheckForChanges(annModelChange.ifColumnsChanged())
-				.ignoreColumnNames(annModelChange.ignoreColumnsChanged())
-				.onlyIfUIAction(annModelChange.ifUIAction())
-				.skipIfCopying(annModelChange.skipIfCopying())
-				.build());
+		try
+		{
+			addPointcut(preparePointcut(PointcutType.ModelChange, method)
+					.timings(extractTimings(annModelChange))
+					.afterCommit(annModelChange.afterCommit())
+					.columnNamesToCheckForChanges(annModelChange.ifColumnsChanged())
+					.ignoreColumnNames(annModelChange.ignoreColumnsChanged())
+					.onlyIfUIAction(annModelChange.ifUIAction())
+					.skipIfCopying(annModelChange.skipIfCopying())
+					.build());
+		}
+		catch (final AdempiereException ex)
+		{
+			throw ex.setParameter("annotation", annModelChange)
+					.setParameter("method", method)
+					.appendParametersToMessage();
+		}
+	}
+
+	private static int[] extractTimings(final ModelChange annModelChange)
+	{
+		if (annModelChange.timings().length > 0 && annModelChange.types().length > 0)
+		{
+			throw new AdempiereException("Only `timings` or `types` shall be set, but not both");
+		}
+		else if (annModelChange.timings().length > 0)
+		{
+			return annModelChange.timings();
+		}
+		else if (annModelChange.types().length > 0)
+		{
+			return Stream.of(annModelChange.types())
+					.mapToInt(ModelChangeType::toInt)
+					.toArray();
+		}
+		else
+		{
+			throw new AdempiereException("At least `timings` or `types` shall be set");
+		}
 	}
 
 	private void loadPointcut(final DocValidate annDocValidate, final Method method)
@@ -268,7 +299,7 @@ final class AnnotatedModelInterceptorDescriptorBuilder
 				.build());
 	}
 
-	private PointcutBuilder preparePointcut(PointcutType type, final Method method)
+	private Pointcut.PointcutBuilder preparePointcut(PointcutType type, final Method method)
 	{
 		return Pointcut.builder()
 				.type(type)

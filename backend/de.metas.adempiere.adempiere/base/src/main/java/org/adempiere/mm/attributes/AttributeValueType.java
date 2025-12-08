@@ -5,6 +5,7 @@ import de.metas.util.lang.ReferenceListAwareEnums;
 import de.metas.util.lang.ReferenceListAwareEnums.ValuesIndex;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_M_Attribute;
 
@@ -30,21 +31,17 @@ import org.compiere.model.X_M_Attribute;
  * #L%
  */
 
+@Getter
+@RequiredArgsConstructor
 public enum AttributeValueType implements ReferenceListAwareEnum
 {
-	STRING(X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40), //
-	NUMBER(X_M_Attribute.ATTRIBUTEVALUETYPE_Number), //
-	DATE(X_M_Attribute.ATTRIBUTEVALUETYPE_Date), //
-	LIST(X_M_Attribute.ATTRIBUTEVALUETYPE_List) //
+	STRING(X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40),
+	NUMBER(X_M_Attribute.ATTRIBUTEVALUETYPE_Number),
+	DATE(X_M_Attribute.ATTRIBUTEVALUETYPE_Date),
+	LIST(X_M_Attribute.ATTRIBUTEVALUETYPE_List),
 	;
 
-	@Getter
-	private final String code;
-
-	AttributeValueType(final String code)
-	{
-		this.code = code;
-	}
+	@NonNull private final String code;
 
 	public static AttributeValueType ofCode(@NonNull final String code)
 	{
@@ -90,4 +87,6 @@ public enum AttributeValueType implements ReferenceListAwareEnum
 			}
 		}
 	}
+
+	public boolean isList() {return LIST.equals(this);}
 }

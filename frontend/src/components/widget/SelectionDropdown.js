@@ -9,7 +9,7 @@ import classnames from 'classnames';
  * @module SelectionDropdown
  * @extends Component
  */
-export default class SelectionDropdown extends Component {
+class SelectionDropdown extends Component {
   /* Those are instance variables since no rendering needs to be done depending on
    * those properties. Additionally, setState can't be used with the callback in
    * an event listener since it needs to return synchronously */
@@ -32,17 +32,11 @@ export default class SelectionDropdown extends Component {
   componentDidMount() {
     window.addEventListener('keydown', this.handleKeyDown);
     window.addEventListener('keyup', this.handleKeyUp);
-
-    const { onMount } = this.props;
-    onMount && onMount();
   }
 
   componentWillUnmount() {
     window.removeEventListener('keydown', this.handleKeyDown);
     window.removeEventListener('keyup', this.handleKeyUp);
-
-    const { onUnmount } = this.props;
-    onUnmount && onUnmount();
   }
 
   UNSAFE_componentWillReceiveProps(propsNext) {
@@ -334,6 +328,6 @@ SelectionDropdown.propTypes = {
   onChange: PropTypes.func.isRequired,
   onSelect: PropTypes.func.isRequired,
   onCancel: PropTypes.func,
-  onMount: PropTypes.func,
-  onUnmount: PropTypes.func,
 };
+
+export default SelectionDropdown;

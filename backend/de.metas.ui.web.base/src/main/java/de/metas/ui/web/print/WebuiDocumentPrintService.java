@@ -22,7 +22,7 @@
 
 package de.metas.ui.web.print;
 
-import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipients;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRegistry;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
 import de.metas.document.engine.IDocumentBL;
@@ -77,7 +77,7 @@ public class WebuiDocumentPrintService
 		this.docOutboundLogMailRecipientRegistry = docOutboundLogMailRecipientRegistry;
 	}
 
-	public ReportResultData createDocumentPrint(@NonNull final WebuiDocumentPrintRequest request)
+	public Optional<ReportResultData> createDocumentPrint(@NonNull final WebuiDocumentPrintRequest request)
 	{
 		final DocumentPath documentPath = request.getDocumentPath();
 		final Document document = documentCollection.getDocumentReadonly(documentPath);
@@ -101,7 +101,7 @@ public class WebuiDocumentPrintService
 																					   //.setJRDesiredOutputType(OutputType.PDF)
 																					   .build());
 
-		return result.getReportResultData();
+		return Optional.ofNullable(result.getReportResultData());
 	}
 
 	public JSONDocumentPrintingOptions getPrintingOptions(
@@ -112,7 +112,7 @@ public class WebuiDocumentPrintService
 		final AdProcessId printProcessId = entityDescriptor.getPrintProcessId();
 		final TableRecordReference recordRef = documentCollection.getTableRecordReference(documentPath);
 		final DocumentReportFlavor flavor = getDocOutBoundRecipient(recordRef)
-				.filter(DocOutBoundRecipient::isInvoiceAsEmail)
+				.filter(DocOutBoundRecipients::isInvoiceAsEmail)
 				.map(recipient -> DocumentReportFlavor.EMAIL)
 				.orElse(DocumentReportFlavor.PRINT);
 
@@ -124,7 +124,7 @@ public class WebuiDocumentPrintService
 		return toJSONDocumentPrintingOptions(printOptions, adLanguage);
 	}
 
-	private Optional<DocOutBoundRecipient> getDocOutBoundRecipient(@NonNull final TableRecordReference recordRef)
+	private Optional<DocOutBoundRecipients> getDocOutBoundRecipient(@NonNull final TableRecordReference recordRef)
 	{
 		try
 		{
@@ -139,7 +139,7 @@ public class WebuiDocumentPrintService
 									.docTypeId(documentBL.getDocTypeId(record).orElse(null))
 									.build());
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			logger.warn("Failed retrieving DocOutBoundRecipient from {}. Returning empty.", recordRef, ex);
 			return Optional.empty();

@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import de.metas.bpartner.BPartnerId;
-import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
+import org.adempiere.mm.attributes.keys.AttributesKeyPatternsUtil;
 import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
 import de.metas.material.dispo.commons.model.I_C_OrderLine;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery;

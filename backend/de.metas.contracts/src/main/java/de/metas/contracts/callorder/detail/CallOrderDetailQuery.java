@@ -24,7 +24,7 @@ package de.metas.contracts.callorder.detail;
 
 import de.metas.contracts.callorder.summary.model.CallOrderSummaryId;
 import de.metas.inout.InOutLineId;
-import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.order.OrderLineId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -48,16 +48,16 @@ public class CallOrderDetailQuery
 	InOutLineId inOutLineId;
 
 	@Nullable
-	InvoiceLineId invoiceLineId;
+	InvoiceAndLineId invoiceAndLineId;
 
 	@Builder
 	public CallOrderDetailQuery(
 			@NonNull final CallOrderSummaryId summaryId,
 			@Nullable final OrderLineId orderLineId,
 			@Nullable final InOutLineId inOutLineId,
-			@Nullable final InvoiceLineId invoiceLineId)
+			@Nullable final InvoiceAndLineId invoiceAndLineId)
 	{
-		final long nonNullSources = Stream.of(orderLineId, inOutLineId, invoiceLineId)
+		final long nonNullSources = Stream.of(orderLineId, inOutLineId, invoiceAndLineId)
 				.filter(Objects::nonNull)
 				.count();
 
@@ -74,6 +74,6 @@ public class CallOrderDetailQuery
 		this.summaryId = summaryId;
 		this.orderLineId = orderLineId;
 		this.inOutLineId = inOutLineId;
-		this.invoiceLineId = invoiceLineId;
+		this.invoiceAndLineId = invoiceAndLineId;
 	}
 }

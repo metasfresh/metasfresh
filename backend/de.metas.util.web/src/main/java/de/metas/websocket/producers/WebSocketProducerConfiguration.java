@@ -1,6 +1,8 @@
 package de.metas.websocket.producers;
 
+import com.google.common.collect.ImmutableMap;
 import de.metas.logging.LogManager;
+import de.metas.websocket.WebsocketHeaders;
 import de.metas.websocket.WebsocketSessionId;
 import de.metas.websocket.WebsocketSubscriptionId;
 import de.metas.websocket.WebsocketTopicName;
@@ -19,7 +21,9 @@ import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 @Configuration
@@ -58,9 +62,10 @@ public class WebSocketProducerConfiguration
 	{
 		final WebsocketSubscriptionId subscriptionId = extractUniqueSubscriptionId(event);
 		final WebsocketTopicName topicName = extractTopicName(event);
+		final WebsocketHeaders headers = WebsocketHeaders.of(extractNativeHeaders(event));
 
 		activeSubscriptionsIndex.addSubscription(subscriptionId, topicName);
-		websocketProducersRegistry.onTopicSubscribed(subscriptionId, topicName);
+		websocketProducersRegistry.onTopicSubscribed(subscriptionId, topicName, headers);
 
 		logger.debug("Subscribed to topicName={} [ subscriptionId={} ]", topicName, subscriptionId);
 	}
@@ -98,4 +103,16 @@ public class WebSocketProducerConfiguration
 		return WebsocketSubscriptionId.of(sessionId, Objects.requireNonNull(simpSubscriptionId, "simpSubscriptionId"));
 	}
 
+	@NonNull
+	private static Map<String, List<String>> extractNativeHeaders(@NonNull final AbstractSubProtocolEvent event)
+	{
+		final Object nativeHeaders = event.getMessage().getHeaders().get("nativeHeaders");
+		
+		return Optional.ofNullable(nativeHeaders)
+				.filter(headers -> headers instanceof Map)
+				.filter(headers -> !((Map<?, ?>)headers).isEmpty())
+				.map(headers -> (Map<String, List<String>>)headers)
+				.map(ImmutableMap::copyOf)
+				.orElseGet(ImmutableMap::of);
+	}
 }

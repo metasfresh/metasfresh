@@ -1,16 +1,32 @@
 package de.metas.ui.web.session;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.i18n.Language;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.session.json.JSONUserSession;
+import de.metas.ui.web.session.json.JsonChangeWorkplaceRequest;
+import de.metas.ui.web.session.json.JsonGetWorkplaceResponse;
+import de.metas.ui.web.session.json.JsonGetWorkplaceResponse.JsonGetWorkplaceResponseBuilder;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.model.DocumentCollection;
-import org.springframework.beans.factory.annotation.Autowired;
+import de.metas.util.Services;
+import de.metas.workplace.Workplace;
+import de.metas.workplace.WorkplaceAssignmentCreateRequest;
+import de.metas.workplace.WorkplaceService;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Comparator;
+import java.util.Map;
 
 /*
  * #%L
@@ -35,24 +51,29 @@ import org.springframework.web.bind.annotation.RestController;
  */
 
 @RestController
-@RequestMapping(value = UserSessionRestController.ENDPOINT)
+@RequestMapping(UserSessionRestController.ENDPOINT)
+@RequiredArgsConstructor
 public class UserSessionRestController
 {
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/userSession";
 
-	@Autowired
-	private UserSession userSession;
+	private static final String SYSCONFIG_SETTINGS_PREFIX = "webui.frontend.";
 
-	@Autowired
-	private UserSessionRepository userSessionRepo;
-
-	@Autowired
-	private DocumentCollection documentCollection;
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final UserSession userSession;
+	@NonNull private final UserSessionRepository userSessionRepo;
+	@NonNull private final DocumentCollection documentCollection;
+	@NonNull private final WorkplaceService workplaceService;
 
 	@GetMapping
 	public JSONUserSession getAll()
 	{
-		return JSONUserSession.of(userSession);
+		final Map<String, String> settings = sysConfigBL.getValuesForPrefix(
+				SYSCONFIG_SETTINGS_PREFIX,
+				true,
+				ClientAndOrgId.ofClientAndOrg(userSession.getClientId(), userSession.getOrgId()));
+
+		return new JSONUserSession(userSession, settings);
 	}
 
 	@PutMapping("/language")
@@ -70,5 +91,58 @@ public class UserSessionRestController
 	{
 		final Language language = userSession.getLanguage();
 		return JSONLookupValue.of(language.getAD_Language(), language.getName());
+	}
+
+	@GetMapping("/workplace")
+	public JsonGetWorkplaceResponse getWorkplace(@RequestParam(name = "includeAvailable", required = false) final boolean includeAvailable)
+	{
+		userSession.assertLoggedIn();
+
+		final boolean isWorkplacesEnabled = userSession.isWorkplacesEnabled();
+		if (isWorkplacesEnabled)
+		{
+			final JsonGetWorkplaceResponseBuilder builder = JsonGetWorkplaceResponse.builder().workplacesEnabled(true);
+
+			userSession.getWorkplace()
+					.map(UserSessionRestController::toJSONLookupValue)
+					.ifPresent(builder::currentWorkplace);
+
+			if (includeAvailable)
+			{
+				builder.available(workplaceService.getAllActive()
+						.stream()
+						.map(UserSessionRestController::toJSONLookupValue)
+						.sorted(Comparator.comparing(JSONLookupValue::getCaption))
+						.collect(ImmutableList.toImmutableList()));
+			}
+
+			return builder.build();
+		}
+		else
+		{
+			return JsonGetWorkplaceResponse.NOT_ENABLED;
+		}
+	}
+
+	private static JSONLookupValue toJSONLookupValue(@NonNull Workplace workplace)
+	{
+		return JSONLookupValue.of(workplace.getId(), workplace.getName());
+	}
+
+	@PutMapping("/workplace")
+	public void setWorkplace(@RequestBody @NonNull final JsonChangeWorkplaceRequest request)
+	{
+		userSession.assertLoggedIn();
+
+		if (!userSession.isWorkplacesEnabled())
+		{
+			throw new AdempiereException("Workplaces not enabled");
+		}
+
+		workplaceService.assignWorkplace(WorkplaceAssignmentCreateRequest.builder()
+				.workplaceId(request.getWorkplaceId())
+				.userId(userSession.getLoggedUserId())
+				.build());
+
 	}
 }

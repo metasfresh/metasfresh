@@ -4,12 +4,14 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostAmount;
+import de.metas.costing.CostDetail;
+import de.metas.costing.CostDetailAdjustment;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostPrice;
-import de.metas.costing.CostSegment;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
@@ -18,9 +20,6 @@ import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.material.planning.IResourceProductService;
-import org.eevolution.api.PPOrderBOMLineId;
-import org.eevolution.api.PPOrderId;
-import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
@@ -31,12 +30,14 @@ import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderCostBL;
 import org.eevolution.api.PPCostCollectorId;
+import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderCosts;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
-import java.util.Optional;
+import java.util.List;
 import java.util.Set;
 
 /*
@@ -72,14 +73,18 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	//
 	private final CostingMethodHandlerUtils utils;
 
+	private final AveragePOCostingMethodHandler averagePOCostingMethodHandler;
+
 	private static final ImmutableSet<String> HANDLED_TABLE_NAMES = ImmutableSet.<String>builder()
 			.add(CostingDocumentRef.TABLE_NAME_PP_Cost_Collector)
 			.build();
 
 	public ManufacturingAveragePOCostingMethodHandler(
-			@NonNull final CostingMethodHandlerUtils utils)
+			@NonNull final CostingMethodHandlerUtils utils,
+			@NonNull final AveragePOCostingMethodHandler averagePOCostingMethodHandler)
 	{
 		this.utils = utils;
+		this.averagePOCostingMethodHandler = averagePOCostingMethodHandler;
 	}
 
 	@Override
@@ -95,9 +100,24 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	}
 
 	@Override
-	public Optional<CostDetailCreateResult> createOrUpdateCost(final CostDetailCreateRequest request)
+	public CostDetailCreateResultsList createOrUpdateCost(final CostDetailCreateRequest request)
 	{
-		final PPCostCollectorId costCollectorId = request.getDocumentRef().getCostCollectorId(PPCostCollectorId::ofRepoId);
+		final List<CostDetail> existingCostDetails = utils.getExistingCostDetails(request);
+		if (!existingCostDetails.isEmpty())
+		{
+			// make sure DateAcct is up-to-date
+			final List<CostDetail> existingCostDetailsUpdated = utils.updateDateAcct(existingCostDetails, request.getDate());
+			return utils.toCostDetailCreateResultsList(existingCostDetailsUpdated);
+		}
+		else
+		{
+			return createCost(request);
+		}
+	}
+
+	private CostDetailCreateResultsList createCost(final CostDetailCreateRequest request)
+	{
+		final PPCostCollectorId costCollectorId = request.getDocumentRef().getCostCollectorId();
 		final I_PP_Cost_Collector cc = costCollectorsService.getById(costCollectorId);
 		final CostCollectorType costCollectorType = CostCollectorType.ofCode(cc.getCostCollectorType());
 		final PPOrderId orderId = PPOrderId.ofRepoId(cc.getPP_Order_ID());
@@ -122,6 +142,11 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 		else if (costCollectorType.isActivityControl())
 		{
 			final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
+			if (actualResourceId.isNoResource())
+			{
+				return null;
+			}
+
 			final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
 			final Duration totalDuration = costCollectorsService.getTotalDurationReported(cc);
 
@@ -159,7 +184,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 			utils.saveCurrentCost(currentCost);
 		}
 
-		return Optional.ofNullable(result);
+		return CostDetailCreateResultsList.ofNullable(result);
 	}
 
 	private CurrencyPrecision getCostingPrecision(final CostDetailCreateRequest request)
@@ -242,8 +267,8 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	}
 
 	private CostDetailCreateResult createActivityControl(
-			final CostDetailCreateRequest request,
-			final Duration totalDuration)
+			final CostDetailCreateRequest ignoredRequest,
+			final Duration ignoredTotalDuration)
 	{
 		// TODO Auto-generated method stub
 		throw new AdempiereException("Computing activity costs is not yet supported");
@@ -257,17 +282,15 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	}
 
 	@Override
-	public Optional<CostAmount> calculateSeedCosts(
-			final CostSegment costSegment,
-			final OrderLineId orderLineId)
-	{
-		return Optional.empty();
-	}
-
-	@Override
 	public MoveCostsResult createMovementCosts(@NonNull final MoveCostsRequest request)
 	{
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public CostDetailAdjustment recalculateCostDetailAmountAndUpdateCurrentCost(final CostDetail costDetail, final CurrentCost currentCost)
+	{
+		return averagePOCostingMethodHandler.recalculateCostDetailAmountAndUpdateCurrentCost(costDetail, currentCost);
 	}
 }

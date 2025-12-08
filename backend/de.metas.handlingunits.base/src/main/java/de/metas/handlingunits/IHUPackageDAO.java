@@ -22,18 +22,16 @@ package de.metas.handlingunits;
  * #L%
  */
 
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
-
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_Package;
-
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Package_HU;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.ISingletonService;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_Package;
+
+import java.util.Collection;
+import java.util.List;
 
 public interface IHUPackageDAO extends ISingletonService
 {
@@ -42,10 +40,9 @@ public interface IHUPackageDAO extends ISingletonService
 
 	List<I_M_HU> retrieveHUs(org.compiere.model.I_M_Package mpackage);
 
-	List<I_M_Package> retrievePackages(Properties ctx, Collection<Integer> packageIds);
+	List<I_M_Package> retrievePackages(Collection<PackageId> packageIds);
 
 	/**
-	 *
 	 * @param hu
 	 * @return true if given hu is assigned to any {@link I_M_Package}
 	 */
@@ -64,7 +61,6 @@ public interface IHUPackageDAO extends ISingletonService
 	 * Retrieve {@link I_M_Package}s where given <code>hu</code> is assigned.
 	 *
 	 * @param hu
-	 * @param trxName
 	 * @return package or null
 	 * @throws HUException if HU is assigned to more then one package
 	 */
@@ -77,5 +73,7 @@ public interface IHUPackageDAO extends ISingletonService
 	 * @return packages
 	 */
 	List<I_M_Package> retrievePackagesForShipment(I_M_InOut shipment);
+
+	Collection<PackageId> retainPackageIdsWithHUs(Collection<PackageId> packageIds);
 
 }

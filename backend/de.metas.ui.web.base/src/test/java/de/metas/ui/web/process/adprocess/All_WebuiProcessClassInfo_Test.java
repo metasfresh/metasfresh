@@ -71,6 +71,8 @@ public class All_WebuiProcessClassInfo_Test
 			final Reflections reflections = new Reflections(new ConfigurationBuilder()
 					.addUrls(ClasspathHelper.forClassLoader())
 					.addUrls(ClasspathHelper.forManifest())
+					//thx to https://github.com/ronmamo/reflections/issues/373#issue-1080637248
+					.forPackages("de")
 					.setScanners(new SubTypesScanner()));
 
 			final Set<Class<? extends JavaProcess>> classes = reflections.getSubTypesOf(JavaProcess.class);

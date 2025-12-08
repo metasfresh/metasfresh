@@ -1,8 +1,8 @@
 package de.metas.letter.process;
 
+import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IWorkPackageQueue;
-import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.letter.LetterConstants;
 import de.metas.letter.service.async.spi.impl.C_Letter_CreateFromMKTG_ContactPerson_Async;
@@ -11,8 +11,9 @@ import de.metas.marketing.base.model.I_MKTG_Campaign_ContactPerson;
 import de.metas.process.JavaProcess;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 
+import javax.annotation.Nullable;
 import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -43,7 +44,7 @@ public class C_Letter_CreateFrom_MKTG_ContactPerson extends JavaProcess
 {
 	// Services
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
-	private final ContactPersonRepository contactPersonRepo = Adempiere.getBean(ContactPersonRepository.class);
+	private final ContactPersonRepository contactPersonRepo = SpringContextHolder.instance.getBean(ContactPersonRepository.class);
 
 	private int campaignId;
 
@@ -63,16 +64,16 @@ public class C_Letter_CreateFrom_MKTG_ContactPerson extends JavaProcess
 			return MSG_Error + ": 0 records enqueued";
 		}
 
-		final I_C_Async_Batch asyncbatch = createAsyncBatch();
+		final AsyncBatchId asyncbatchId = createAsyncBatch();
 		for (final Integer campaignContactPersonId : campaignContactPersonIds)
 		{
-			enqueue(asyncbatch, campaignContactPersonId);
+			enqueue(asyncbatchId, campaignContactPersonId);
 		}
 
 		return MSG_OK;
 	}
 
-	private I_C_Async_Batch createAsyncBatch()
+	private AsyncBatchId createAsyncBatch()
 	{
 		// Create Async Batch for tracking
 		return asyncBatchBL.newAsyncBatch()
@@ -80,10 +81,12 @@ public class C_Letter_CreateFrom_MKTG_ContactPerson extends JavaProcess
 				.setC_Async_Batch_Type(LetterConstants.C_Async_Batch_InternalName_CreateLettersAsync)
 				.setAD_PInstance_Creator_ID(getPinstanceId())
 				.setName("Create Letters for Campaign " + campaignId)
-				.build();
+				.buildAndEnqueue();
 	}
 
-	private void enqueue(@NonNull final I_C_Async_Batch asyncBatch, final Integer campaignContactPersonId)
+	private void enqueue(
+			@NonNull final AsyncBatchId asyncbatchId,
+			@Nullable final Integer campaignContactPersonId)
 	{
 		if (campaignContactPersonId == null || campaignContactPersonId <= 0)
 		{
@@ -96,7 +99,7 @@ public class C_Letter_CreateFrom_MKTG_ContactPerson extends JavaProcess
 		final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(getCtx(), C_Letter_CreateFromMKTG_ContactPerson_Async.class);
 		queue.newWorkPackage()
-				.setC_Async_Batch(asyncBatch) // set the async batch in workpackage in order to track it
+				.setC_Async_Batch_ID(asyncbatchId) // set the async batch in workpackage in order to track it
 				.addElement(campaignContactPerson)
 				.setUserInChargeId(getUserId())
 				.buildAndEnqueue();

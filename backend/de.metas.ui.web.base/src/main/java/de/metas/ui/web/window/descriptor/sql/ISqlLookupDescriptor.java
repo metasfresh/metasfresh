@@ -2,6 +2,8 @@ package de.metas.ui.web.window.descriptor.sql;
 
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -26,5 +28,6 @@ import de.metas.ui.web.window.descriptor.LookupDescriptor;
 
 public interface ISqlLookupDescriptor extends LookupDescriptor
 {
+	@Nullable
 	SqlForFetchingLookupById getSqlForFetchingLookupByIdExpression();
 }

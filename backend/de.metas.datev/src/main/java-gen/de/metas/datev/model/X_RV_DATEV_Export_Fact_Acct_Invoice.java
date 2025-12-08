@@ -1,282 +1,299 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.datev.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for RV_DATEV_Export_Fact_Acct_Invoice
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_RV_DATEV_Export_Fact_Acct_Invoice extends org.compiere.model.PO implements I_RV_DATEV_Export_Fact_Acct_Invoice, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 1722459338L;
+	private static final long serialVersionUID = -277796288L;
 
     /** Standard Constructor */
-    public X_RV_DATEV_Export_Fact_Acct_Invoice (Properties ctx, int RV_DATEV_Export_Fact_Acct_Invoice_ID, String trxName)
+    public X_RV_DATEV_Export_Fact_Acct_Invoice (final Properties ctx, final int RV_DATEV_Export_Fact_Acct_Invoice_ID, @Nullable final String trxName)
     {
       super (ctx, RV_DATEV_Export_Fact_Acct_Invoice_ID, trxName);
-      /** if (RV_DATEV_Export_Fact_Acct_Invoice_ID == 0)
-        {
-        } */
     }
 
     /** Load Constructor */
-    public X_RV_DATEV_Export_Fact_Acct_Invoice (Properties ctx, ResultSet rs, String trxName)
+    public X_RV_DATEV_Export_Fact_Acct_Invoice (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set Activity Name.
-		@param ActivityName Activity Name	  */
+	/** Load Meta Data */
 	@Override
-	public void setActivityName (java.lang.String ActivityName)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setActivityName (final @Nullable java.lang.String ActivityName)
 	{
 		set_ValueNoCheck (COLUMNNAME_ActivityName, ActivityName);
 	}
 
-	/** Get Activity Name.
-		@return Activity Name	  */
 	@Override
-	public java.lang.String getActivityName () 
+	public java.lang.String getActivityName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ActivityName);
+		return get_ValueAsString(COLUMNNAME_ActivityName);
 	}
 
-	/** Set Betrag.
-		@param Amt 
-		Betrag
-	  */
 	@Override
-	public void setAmt (java.math.BigDecimal Amt)
+	public void setAmt (final @Nullable BigDecimal Amt)
 	{
 		set_ValueNoCheck (COLUMNNAME_Amt, Amt);
 	}
 
-	/** Get Betrag.
-		@return Betrag
-	  */
 	@Override
-	public java.math.BigDecimal getAmt () 
+	public BigDecimal getAmt() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Amt);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Amt);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Name.
-		@param BPName 
-		Name des Sponsors.
-	  */
 	@Override
-	public void setBPName (java.lang.String BPName)
+	public void setAmtSource (final @Nullable BigDecimal AmtSource)
+	{
+		set_ValueNoCheck (COLUMNNAME_AmtSource, AmtSource);
+	}
+
+	@Override
+	public BigDecimal getAmtSource() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_AmtSource);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setBPName (final @Nullable java.lang.String BPName)
 	{
 		set_ValueNoCheck (COLUMNNAME_BPName, BPName);
 	}
 
-	/** Get Name.
-		@return Name des Sponsors.
-	  */
 	@Override
-	public java.lang.String getBPName () 
+	public java.lang.String getBPName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_BPName);
+		return get_ValueAsString(COLUMNNAME_BPName);
 	}
 
-	/** Set Nr..
-		@param BPValue 
-		Sponsor-Nr.
-	  */
 	@Override
-	public void setBPValue (java.lang.String BPValue)
+	public void setBPValue (final @Nullable java.lang.String BPValue)
 	{
 		set_ValueNoCheck (COLUMNNAME_BPValue, BPValue);
 	}
 
-	/** Get Nr..
-		@return Sponsor-Nr.
-	  */
 	@Override
-	public java.lang.String getBPValue () 
+	public java.lang.String getBPValue() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_BPValue);
+		return get_ValueAsString(COLUMNNAME_BPValue);
 	}
 
 	@Override
-	public org.compiere.model.I_C_Activity getC_Activity() throws RuntimeException
+	public org.compiere.model.I_C_AcctSchema getC_AcctSchema()
 	{
-		return get_ValueAsPO(COLUMNNAME_C_Activity_ID, org.compiere.model.I_C_Activity.class);
+		return get_ValueAsPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class);
 	}
 
 	@Override
-	public void setC_Activity(org.compiere.model.I_C_Activity C_Activity)
+	public void setC_AcctSchema(final org.compiere.model.I_C_AcctSchema C_AcctSchema)
 	{
-		set_ValueFromPO(COLUMNNAME_C_Activity_ID, org.compiere.model.I_C_Activity.class, C_Activity);
+		set_ValueFromPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class, C_AcctSchema);
 	}
 
-	/** Set Kostenstelle.
-		@param C_Activity_ID 
-		Kostenstelle
-	  */
 	@Override
-	public void setC_Activity_ID (int C_Activity_ID)
+	public void setC_AcctSchema_ID (final int C_AcctSchema_ID)
+	{
+		if (C_AcctSchema_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_AcctSchema_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_AcctSchema_ID, C_AcctSchema_ID);
+	}
+
+	@Override
+	public int getC_AcctSchema_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_AcctSchema_ID);
+	}
+
+	@Override
+	public void setC_Activity_ID (final int C_Activity_ID)
 	{
 		if (C_Activity_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Activity_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Activity_ID, Integer.valueOf(C_Activity_ID));
+			set_ValueNoCheck (COLUMNNAME_C_Activity_ID, C_Activity_ID);
 	}
 
-	/** Get Kostenstelle.
-		@return Kostenstelle
-	  */
 	@Override
-	public int getC_Activity_ID () 
+	public int getC_Activity_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Activity_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Activity_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_C_BPartner getC_BPartner() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class);
-	}
-
-	@Override
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.class, C_BPartner);
-	}
-
-	/** Set Geschäftspartner.
-		@param C_BPartner_ID 
-		Bezeichnet einen Geschäftspartner
-	  */
-	@Override
-	public void setC_BPartner_ID (int C_BPartner_ID)
+	public void setC_BPartner_ID (final int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
 	}
 
-	/** Get Geschäftspartner.
-		@return Bezeichnet einen Geschäftspartner
-	  */
 	@Override
-	public int getC_BPartner_ID () 
+	public int getC_BPartner_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_C_Invoice getC_Invoice() throws RuntimeException
+	public void setC_DocType_ID (final int C_DocType_ID)
+	{
+		if (C_DocType_ID < 0) 
+			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, C_DocType_ID);
+	}
+
+	@Override
+	public int getC_DocType_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_DocType_ID);
+	}
+
+	@Override
+	public void setC_DocType_Name (final @Nullable java.lang.String C_DocType_Name)
+	{
+		set_ValueNoCheck (COLUMNNAME_C_DocType_Name, C_DocType_Name);
+	}
+
+	@Override
+	public java.lang.String getC_DocType_Name() 
+	{
+		return get_ValueAsString(COLUMNNAME_C_DocType_Name);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Invoice getC_Invoice()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class);
 	}
 
 	@Override
-	public void setC_Invoice(org.compiere.model.I_C_Invoice C_Invoice)
+	public void setC_Invoice(final org.compiere.model.I_C_Invoice C_Invoice)
 	{
 		set_ValueFromPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class, C_Invoice);
 	}
 
-	/** Set Rechnung.
-		@param C_Invoice_ID 
-		Invoice Identifier
-	  */
 	@Override
-	public void setC_Invoice_ID (int C_Invoice_ID)
+	public void setC_Invoice_ID (final int C_Invoice_ID)
 	{
 		if (C_Invoice_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Invoice_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Invoice_ID, Integer.valueOf(C_Invoice_ID));
+			set_ValueNoCheck (COLUMNNAME_C_Invoice_ID, C_Invoice_ID);
 	}
 
-	/** Get Rechnung.
-		@return Invoice Identifier
-	  */
 	@Override
-	public int getC_Invoice_ID () 
+	public int getC_Invoice_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Invoice_ID);
 	}
 
-	/** Set Credit Account.
-		@param CR_Account Credit Account	  */
 	@Override
-	public void setCR_Account (java.lang.String CR_Account)
+	public void setCR_Account (final @Nullable java.lang.String CR_Account)
 	{
 		set_ValueNoCheck (COLUMNNAME_CR_Account, CR_Account);
 	}
 
-	/** Get Credit Account.
-		@return Credit Account	  */
 	@Override
-	public java.lang.String getCR_Account () 
+	public java.lang.String getCR_Account() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_CR_Account);
+		return get_ValueAsString(COLUMNNAME_CR_Account);
 	}
 
-	/** Set Buchungsdatum.
-		@param DateAcct 
-		Accounting Date
-	  */
 	@Override
-	public void setDateAcct (java.sql.Timestamp DateAcct)
+	public void setC_Tax_ID (final int C_Tax_ID)
+	{
+		if (C_Tax_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_Tax_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_Tax_ID, C_Tax_ID);
+	}
+
+	@Override
+	public int getC_Tax_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Tax_ID);
+	}
+
+	@Override
+	public void setC_Tax_Rate (final @Nullable BigDecimal C_Tax_Rate)
+	{
+		set_ValueNoCheck (COLUMNNAME_C_Tax_Rate, C_Tax_Rate);
+	}
+
+	@Override
+	public BigDecimal getC_Tax_Rate() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_C_Tax_Rate);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setCurrency (final @Nullable java.lang.String Currency)
+	{
+		set_ValueNoCheck (COLUMNNAME_Currency, Currency);
+	}
+
+	@Override
+	public java.lang.String getCurrency() 
+	{
+		return get_ValueAsString(COLUMNNAME_Currency);
+	}
+
+	@Override
+	public void setDateAcct (final @Nullable java.sql.Timestamp DateAcct)
 	{
 		set_ValueNoCheck (COLUMNNAME_DateAcct, DateAcct);
 	}
 
-	/** Get Buchungsdatum.
-		@return Accounting Date
-	  */
 	@Override
-	public java.sql.Timestamp getDateAcct () 
+	public java.sql.Timestamp getDateAcct() 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateAcct);
+		return get_ValueAsTimestamp(COLUMNNAME_DateAcct);
 	}
 
-	/** Set Beschreibung.
-		@param Description Beschreibung	  */
 	@Override
-	public void setDescription (java.lang.String Description)
+	public void setDateTrx (final @Nullable java.sql.Timestamp DateTrx)
+	{
+		set_ValueNoCheck (COLUMNNAME_DateTrx, DateTrx);
+	}
+
+	@Override
+	public java.sql.Timestamp getDateTrx() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_DateTrx);
+	}
+
+	@Override
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_ValueNoCheck (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Beschreibung.
-		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
 	/** 
@@ -322,8 +339,6 @@ public class X_RV_DATEV_Export_Fact_Acct_Invoice extends org.compiere.model.PO i
 	public static final String DOCBASETYPE_CashJournal = "CMC";
 	/** PaymentAllocation = CMA */
 	public static final String DOCBASETYPE_PaymentAllocation = "CMA";
-	/** MaterialProduction = MMP */
-	public static final String DOCBASETYPE_MaterialProduction = "MMP";
 	/** MatchInvoice = MXI */
 	public static final String DOCBASETYPE_MatchInvoice = "MXI";
 	/** MatchPO = MXP */
@@ -350,130 +365,141 @@ public class X_RV_DATEV_Export_Fact_Acct_Invoice extends org.compiere.model.PO i
 	public static final String DOCBASETYPE_SpeditionsauftragLadeliste = "MST";
 	/** CustomerContract = CON */
 	public static final String DOCBASETYPE_CustomerContract = "CON";
-	/** Set Dokument Basis Typ.
-		@param DocBaseType Dokument Basis Typ	  */
+	/** DunningDoc = DUN */
+	public static final String DOCBASETYPE_DunningDoc = "DUN";
+	/** Shipment Declaration = SDD */
+	public static final String DOCBASETYPE_ShipmentDeclaration = "SDD";
+	/** Shipment Declaration Correction = SDC */
+	public static final String DOCBASETYPE_ShipmentDeclarationCorrection = "SDC";
+	/** Customs Invoice = CUI */
+	public static final String DOCBASETYPE_CustomsInvoice = "CUI";
+	/** ServiceRepairOrder = MRO */
+	public static final String DOCBASETYPE_ServiceRepairOrder = "MRO";
+	/** Remittance Advice = RMA */
+	public static final String DOCBASETYPE_RemittanceAdvice = "RMA";
+	/** BOM & Formula = BOM */
+	public static final String DOCBASETYPE_BOMFormula = "BOM";
 	@Override
-	public void setDocBaseType (java.lang.String DocBaseType)
+	public void setDocBaseType (final @Nullable java.lang.String DocBaseType)
 	{
-
 		set_ValueNoCheck (COLUMNNAME_DocBaseType, DocBaseType);
 	}
 
-	/** Get Dokument Basis Typ.
-		@return Dokument Basis Typ	  */
 	@Override
-	public java.lang.String getDocBaseType () 
+	public java.lang.String getDocBaseType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DocBaseType);
+		return get_ValueAsString(COLUMNNAME_DocBaseType);
 	}
 
-	/** Set Nr..
-		@param DocumentNo 
-		Document sequence number of the document
-	  */
 	@Override
-	public void setDocumentNo (java.lang.String DocumentNo)
+	public void setDocumentNo (final @Nullable java.lang.String DocumentNo)
 	{
 		set_ValueNoCheck (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
-	/** Get Nr..
-		@return Document sequence number of the document
-	  */
 	@Override
-	public java.lang.String getDocumentNo () 
+	public java.lang.String getDocumentNo() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DocumentNo);
+		return get_ValueAsString(COLUMNNAME_DocumentNo);
 	}
 
-	/** Set Debit Account.
-		@param DR_Account Debit Account	  */
 	@Override
-	public void setDR_Account (java.lang.String DR_Account)
+	public void setDR_Account (final @Nullable java.lang.String DR_Account)
 	{
 		set_ValueNoCheck (COLUMNNAME_DR_Account, DR_Account);
 	}
 
-	/** Get Debit Account.
-		@return Debit Account	  */
 	@Override
-	public java.lang.String getDR_Account () 
+	public java.lang.String getDR_Account() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DR_Account);
+		return get_ValueAsString(COLUMNNAME_DR_Account);
 	}
 
-	/** Set Datum Fälligkeit.
-		@param DueDate 
-		Datum, zu dem Zahlung fällig wird
-	  */
 	@Override
-	public void setDueDate (java.sql.Timestamp DueDate)
+	public void setDueDate (final @Nullable java.sql.Timestamp DueDate)
 	{
 		set_ValueNoCheck (COLUMNNAME_DueDate, DueDate);
 	}
 
-	/** Get Datum Fälligkeit.
-		@return Datum, zu dem Zahlung fällig wird
-	  */
 	@Override
-	public java.sql.Timestamp getDueDate () 
+	public java.sql.Timestamp getDueDate() 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_DueDate);
+		return get_ValueAsTimestamp(COLUMNNAME_DueDate);
 	}
 
 	@Override
-	public org.compiere.model.I_Fact_Acct getFact_Acct() throws RuntimeException
+	public void setIsSOTrx (final @Nullable java.lang.String IsSOTrx)
 	{
-		return get_ValueAsPO(COLUMNNAME_Fact_Acct_ID, org.compiere.model.I_Fact_Acct.class);
+		set_ValueNoCheck (COLUMNNAME_IsSOTrx, IsSOTrx);
 	}
 
 	@Override
-	public void setFact_Acct(org.compiere.model.I_Fact_Acct Fact_Acct)
+	public java.lang.String getIsSOTrx() 
 	{
-		set_ValueFromPO(COLUMNNAME_Fact_Acct_ID, org.compiere.model.I_Fact_Acct.class, Fact_Acct);
+		return get_ValueAsString(COLUMNNAME_IsSOTrx);
 	}
 
-	/** Set Accounting Fact.
-		@param Fact_Acct_ID Accounting Fact	  */
 	@Override
-	public void setFact_Acct_ID (int Fact_Acct_ID)
+	public void setPOReference (final @Nullable java.lang.String POReference)
 	{
-		if (Fact_Acct_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_Fact_Acct_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_Fact_Acct_ID, Integer.valueOf(Fact_Acct_ID));
+		set_ValueNoCheck (COLUMNNAME_POReference, POReference);
 	}
 
-	/** Get Accounting Fact.
-		@return Accounting Fact	  */
 	@Override
-	public int getFact_Acct_ID () 
+	public java.lang.String getPOReference() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Fact_Acct_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsString(COLUMNNAME_POReference);
 	}
 
-	/** Set RV_DATEV_Export_Fact_Acct_Invoice.
-		@param RV_DATEV_Export_Fact_Acct_Invoice_ID RV_DATEV_Export_Fact_Acct_Invoice	  */
 	@Override
-	public void setRV_DATEV_Export_Fact_Acct_Invoice_ID (int RV_DATEV_Export_Fact_Acct_Invoice_ID)
+	public void setPostingType (final @Nullable java.lang.String PostingType)
+	{
+		set_ValueNoCheck (COLUMNNAME_PostingType, PostingType);
+	}
+
+	@Override
+	public java.lang.String getPostingType() 
+	{
+		return get_ValueAsString(COLUMNNAME_PostingType);
+	}
+
+	@Override
+	public void setRV_DATEV_Export_Fact_Acct_Invoice_ID (final int RV_DATEV_Export_Fact_Acct_Invoice_ID)
 	{
 		if (RV_DATEV_Export_Fact_Acct_Invoice_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_RV_DATEV_Export_Fact_Acct_Invoice_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_RV_DATEV_Export_Fact_Acct_Invoice_ID, Integer.valueOf(RV_DATEV_Export_Fact_Acct_Invoice_ID));
+			set_ValueNoCheck (COLUMNNAME_RV_DATEV_Export_Fact_Acct_Invoice_ID, RV_DATEV_Export_Fact_Acct_Invoice_ID);
 	}
 
-	/** Get RV_DATEV_Export_Fact_Acct_Invoice.
-		@return RV_DATEV_Export_Fact_Acct_Invoice	  */
 	@Override
-	public int getRV_DATEV_Export_Fact_Acct_Invoice_ID () 
+	public int getRV_DATEV_Export_Fact_Acct_Invoice_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_RV_DATEV_Export_Fact_Acct_Invoice_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_RV_DATEV_Export_Fact_Acct_Invoice_ID);
+	}
+
+	@Override
+	public void setTaxAmtSource (final @Nullable BigDecimal TaxAmtSource)
+	{
+		set_ValueNoCheck (COLUMNNAME_TaxAmtSource, TaxAmtSource);
+	}
+
+	@Override
+	public BigDecimal getTaxAmtSource() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_TaxAmtSource);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setVATCode (final @Nullable java.lang.String VATCode)
+	{
+		set_ValueNoCheck (COLUMNNAME_VATCode, VATCode);
+	}
+
+	@Override
+	public java.lang.String getVATCode() 
+	{
+		return get_ValueAsString(COLUMNNAME_VATCode);
 	}
 }

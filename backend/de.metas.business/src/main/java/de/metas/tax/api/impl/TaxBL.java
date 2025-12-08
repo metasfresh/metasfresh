@@ -7,6 +7,7 @@ import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
+import de.metas.tax.api.CalculateTaxResult;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
@@ -67,9 +68,9 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		if (taxCategoryId != null)
 		{
 			final CountryId countryFromId = Optional.ofNullable(warehouseId)
-				.map(warehouseBL::getCountryId)
-				.orElseGet(() -> Optional.ofNullable(bPartnerOrgBL.getOrgCountryId(orgId))
-						.orElseGet(countryDAO::getDefaultCountryId));
+					.map(warehouseBL::getCountryId)
+					.orElseGet(() -> Optional.ofNullable(bPartnerOrgBL.getOrgCountryId(orgId))
+							.orElseGet(countryDAO::getDefaultCountryId));
 
 			final Tax tax = taxDAO.getBy(TaxQuery.builder()
 					.fromCountryId(countryFromId)
@@ -107,9 +108,14 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		return TaxId.ofRepoId(Tax.C_TAX_ID_NO_TAX_FOUND);
 	}
 
-	public BigDecimal calculateTax(final I_C_Tax tax, final BigDecimal amount, final boolean taxIncluded, final int scale)
+	public CalculateTaxResult calculateTax(final I_C_Tax tax, final BigDecimal amount, final boolean taxIncluded, final int scale)
 	{
 		return TaxUtils.from(tax).calculateTax(amount, taxIncluded, scale);
+	}
+
+	public BigDecimal calculateTaxAmt(final I_C_Tax tax, final BigDecimal amount, final boolean taxIncluded, final int scale)
+	{
+		return calculateTax(tax, amount, taxIncluded, scale).getTaxAmount();
 	}
 
 	@Override
@@ -165,4 +171,11 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 				.map(I_C_TaxCategory::getC_TaxCategory_ID)
 				.map(TaxCategoryId::ofRepoId);
 	}
+
+	@Override
+	public Tax getDefaultTax(final TaxCategoryId taxCategoryId)
+	{
+		return taxDAO.getDefaultTax(taxCategoryId);
+	}
+
 }

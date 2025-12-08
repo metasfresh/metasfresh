@@ -29,6 +29,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAware;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.ad.persistence.ModelClassIntrospector;
@@ -62,12 +63,12 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 
 /**
  * Simple implementation which binds an given interface to a internal Map.
  *
  * @author tsa
- *
  */
 public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 {
@@ -110,8 +111,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		final Map<String, Object> values = null;
 		final POJOWrapper wrapper = new POJOWrapper(ctx, tableName, interfaceClass, values, lookup);
 
-		@SuppressWarnings("unchecked")
-		final T object = (T)Proxy.newProxyInstance(interfaceClass.getClassLoader(),
+		@SuppressWarnings("unchecked") final T object = (T)Proxy.newProxyInstance(interfaceClass.getClassLoader(),
 				new Class<?>[] { interfaceClass },
 				wrapper);
 
@@ -139,8 +139,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 
 	public static <T> T create(final Properties ctx, final Class<T> cl, final IPOJOLookupMap lookup)
 	{
-		@SuppressWarnings("unchecked")
-		final T object = (T)Proxy.newProxyInstance(cl.getClassLoader(),
+		@SuppressWarnings("unchecked") final T object = (T)Proxy.newProxyInstance(cl.getClassLoader(),
 				new Class<?>[] { cl },
 				new POJOWrapper(ctx, cl, lookup));
 
@@ -167,8 +166,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		final boolean modelIsInstaceOfGivenClass = cl.isInstance(model);
 		if (!useOldValuesEffective && modelIsInstaceOfGivenClass)
 		{
-			@SuppressWarnings("unchecked")
-			final T result = (T)model;
+			@SuppressWarnings("unchecked") final T result = (T)model;
 			return result;
 		}
 
@@ -185,16 +183,14 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 
 		if (wrapper.useOldValues == useOldValuesEffective && modelIsInstaceOfGivenClass)
 		{
-			@SuppressWarnings("unchecked")
-			final T result = (T)model;
+			@SuppressWarnings("unchecked") final T result = (T)model;
 			return result;
 		}
 
 		final POJOWrapper wrapperNew = new POJOWrapper(cl, wrapper);
 		wrapperNew.useOldValues = useOldValuesEffective;
 
-		@SuppressWarnings("unchecked")
-		final T result = (T)Proxy.newProxyInstance(cl.getClassLoader(),
+		@SuppressWarnings("unchecked") final T result = (T)Proxy.newProxyInstance(cl.getClassLoader(),
 				new Class<?>[] { cl },
 				wrapperNew);
 
@@ -205,7 +201,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		return result;
 	}
 
-	public static <T> List<T> loadByIds(final Set<Integer> ids, final Class<T> modelClass, final String trxName)
+	public static <RT, MT> List<MT> loadByIds(@NonNull final Set<Integer> ids, @NonNull final Class<RT> modelClass, @Nullable final String trxName, @NonNull final Function<RT, MT> modelMapper)
 	{
 		if (ids.isEmpty())
 		{
@@ -216,6 +212,8 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 
 		return ids.stream()
 				.map(id -> create(ctx, id, modelClass, trxName))
+				.filter(Objects::nonNull)
+				.map(modelMapper)
 				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -286,8 +284,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		wrapperCopy.instanceName = wrapper.instanceName;
 		wrapperCopy.dynAttrs = null;
 
-		@SuppressWarnings("unchecked")
-		final T modelCopy = (T)Proxy.newProxyInstance(
+		@SuppressWarnings("unchecked") final T modelCopy = (T)Proxy.newProxyInstance(
 				wrapper.interfaceClass.getClassLoader(),      // FIXME: better store the class loader as class field and access it; check on InterfaceWrapperHelper and do the same
 				new Class<?>[] { wrapper.interfaceClass },
 				wrapperCopy);
@@ -304,7 +301,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	{
 		final Map<String, Object> values = getInnerValues();
 		final Map<String, Object> valuesCopy = new HashMap<>(values);
-		for (final Iterator<Entry<String, Object>> it = valuesCopy.entrySet().iterator(); it.hasNext();)
+		for (final Iterator<Entry<String, Object>> it = valuesCopy.entrySet().iterator(); it.hasNext(); )
 		{
 			final Entry<String, Object> e = it.next();
 			final Object value = e.getValue();
@@ -454,12 +451,12 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 
 	/**
 	 * Old Values map.
-	 *
+	 * <p>
 	 * NOTE: this map will contain values only for those properties that were changed
 	 */
 	private final Map<String, Object> valuesOld;
 	private boolean useOldValues = false;
-	private final String idColumnName;
+	@Getter private final String idColumnName;
 
 	private boolean strictValues = false;
 	public static final boolean DEFAULT_StrictValues = false;
@@ -473,9 +470,9 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	private String instanceName;
 
 	private POJOWrapper(final Properties ctx,
-			final String tableName, final Class<?> interfaceClass,
-			final Map<String, Object> values,
-			final IPOJOLookupMap lookup)
+						final String tableName, final Class<?> interfaceClass,
+						final Map<String, Object> values,
+						final IPOJOLookupMap lookup)
 	{
 		super();
 
@@ -582,8 +579,8 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		{
 			e.printStackTrace();
 			throw new AdempiereException("Error invoking method=\"" + method.getName() + "\""
-												 //+ "; proxy=" + proxy // commented out because in some cases this causes StackOverflow
-												 + "; args=" + args, e);
+					//+ "; proxy=" + proxy // commented out because in some cases this causes StackOverflow
+					+ "; args=" + args, e);
 		}
 	}
 
@@ -1085,9 +1082,8 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 
 	/**
 	 * @return zero for most new models,
-	 *         but e.g. for an unsaved {@code I_AD_User} record, it will return {@code -1},
-	 *         because there actually is a saved AD_User with ID=0 (system user).
-	 *
+	 * but e.g. for an unsaved {@code I_AD_User} record, it will return {@code -1},
+	 * because there actually is a saved AD_User with ID=0 (system user).
 	 * @see InterfaceWrapperHelper#getFirstValidIdByColumnName(String)
 	 */
 	public int idForNewModel()
@@ -1232,7 +1228,6 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	}
 
 	/**
-	 *
 	 * @return a copy of column values. This map does not contain dynamic attributes or models.
 	 */
 	public Map<String, Object> getValuesMap()
@@ -1241,7 +1236,6 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	}
 
 	/**
-	 *
 	 * @return inner {@link #valuesRO} map (readonly!) which contains column values, dynamic attributes and cached models.
 	 */
 	private Map<String, Object> getInnerValues()
@@ -1323,7 +1317,6 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	}
 
 	/**
-	 *
 	 * @param model
 	 * @param discardChanges
 	 * @param trxName
@@ -1382,7 +1375,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 
 	/**
 	 * Refresh this POJO.
-	 *
+	 * <p>
 	 * Design contract:
 	 * <ul>
 	 * <li>this method shall fail if the underlying database row does not exists anymore. Please keep it like this because there are tests were we rely on this to make sure that a given record still
@@ -1539,8 +1532,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 			return null;
 		}
 
-		@SuppressWarnings("unchecked")
-		final T value = (T)dynAttrs.get(attributeName);
+		@SuppressWarnings("unchecked") final T value = (T)dynAttrs.get(attributeName);
 		return value;
 	}
 
@@ -1588,7 +1580,6 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	}
 
 	/**
-	 *
 	 * @return if true then toString() method will also print referenced models (if available) and not just the IDs
 	 */
 	public static boolean isPrintReferencedModels()

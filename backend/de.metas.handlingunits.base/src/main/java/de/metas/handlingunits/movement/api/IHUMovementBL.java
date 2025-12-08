@@ -33,6 +33,7 @@ import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 
+import java.util.Collection;
 import java.util.List;
 
 public interface IHUMovementBL extends ISingletonService
@@ -57,11 +58,11 @@ public interface IHUMovementBL extends ISingletonService
 	/**
 	 * Create movements to move given HUs to warehouseTo
 	 */
-	HUMovementGeneratorResult moveHUsToWarehouse(List<I_M_HU> hus, WarehouseId warehouseToId);
+	HUMovementGeneratorResult moveHUsToWarehouse(Collection<I_M_HU> hus, WarehouseId warehouseToId);
 
-	HUMovementGeneratorResult moveHUs(@NonNull HUMovementGenerateRequest request);
+	void moveHUs(@NonNull HUMovementGenerateRequest request);
 
-	HUMovementGeneratorResult moveHUsToLocator(List<I_M_HU> hus, LocatorId locatorToId);
+	HUMovementGeneratorResult moveHUsToLocator(Collection<I_M_HU> hus, LocatorId locatorToId);
 
 	LocatorId getDirectMoveLocatorId();
 

@@ -6,6 +6,7 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.order.OrderLineId;
@@ -15,6 +16,7 @@ import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.assertj.core.api.Condition;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -80,6 +82,7 @@ public class HUReservationServiceTest
 
 		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		SpringContextHolder.registerJUnitBean(HUQRCodesService.newInstanceForUnitTesting());
 	}
 
 	@Test

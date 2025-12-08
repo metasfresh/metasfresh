@@ -53,8 +53,8 @@ public class WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingConfig extends WEBUI_M_Rece
 				return getDefaultLUTUConfiguration().getM_HU_PI_Item_Product_ID();
 			case PARAM_M_LU_HU_PI_ID:
 				return getDefaultLUTUConfiguration().getM_LU_HU_PI_ID();
-			case PARAM_QtyCU:
-				return getDefaultLUTUConfiguration().getQtyCU();
+			case PARAM_QtyCUsPerTU:
+				return getDefaultLUTUConfiguration().getQtyCUsPerTU();
 			case PARAM_QtyTU:
 				return getDefaultLUTUConfiguration().getQtyTU();
 			case PARAM_QtyLU:
@@ -92,9 +92,9 @@ public class WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingConfig extends WEBUI_M_Rece
 	@Param(parameterName = PARAM_M_LU_HU_PI_ID)
 	private int p_M_LU_HU_PI_ID;
 	//
-	private static final String PARAM_QtyCU = "QtyCU";
-	@Param(parameterName = PARAM_QtyCU)
-	private BigDecimal p_QtyCU;
+	private static final String PARAM_QtyCUsPerTU = "QtyCUsPerTU";
+	@Param(parameterName = PARAM_QtyCUsPerTU)
+	private BigDecimal p_QtyCUsPerTU;
 	//
 	private static final String PARAM_QtyTU = "QtyTU";
 	@Param(parameterName = PARAM_QtyTU)
@@ -116,16 +116,16 @@ public class WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingConfig extends WEBUI_M_Rece
 		// Validate parameters
 		final int M_LU_HU_PI_ID = p_M_LU_HU_PI_ID;
 		final int M_HU_PI_Item_Product_ID = p_M_HU_PI_Item_Product_ID;
-		final BigDecimal qtyCU = p_QtyCU;
+		final BigDecimal qtyCUsPerTU = p_QtyCUsPerTU;
 		final BigDecimal qtyTU = p_QtyTU;
 		final BigDecimal qtyLU = p_QtyLU;
 		if (M_HU_PI_Item_Product_ID <= 0)
 		{
 			throw new FillMandatoryException(PARAM_M_HU_PI_Item_Product_ID);
 		}
-		if (qtyCU == null || qtyCU.signum() <= 0)
+		if (qtyCUsPerTU == null || qtyCUsPerTU.signum() <= 0)
 		{
-			throw new FillMandatoryException(PARAM_QtyCU);
+			throw new FillMandatoryException(PARAM_QtyCUsPerTU);
 		}
 		if (qtyTU == null || qtyTU.signum() <= 0)
 		{
@@ -140,7 +140,7 @@ public class WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingConfig extends WEBUI_M_Rece
 			.baseLUTUConfiguration(template)
 			.qtyLU(qtyLU)
 			.qtyTU(qtyTU)
-			.qtyCU(qtyCU)
+			.qtyCUsPerTU(qtyCUsPerTU)
 			.tuHUPIItemProductID(M_HU_PI_Item_Product_ID)
 			.luHUPIID(M_LU_HU_PI_ID)
 			.build();

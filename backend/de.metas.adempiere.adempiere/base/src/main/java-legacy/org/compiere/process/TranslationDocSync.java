@@ -138,7 +138,7 @@ public class TranslationDocSync extends JavaProcess
 			.append(baseTable).append("_ID=b.").append(baseTable).append("_ID) WHERE AD_Client_ID=")
 			.append(clientId.getRepoId());
 		
-		int no = DB.executeUpdate(DB.convertSqlToNative(sql.toString()), get_TrxName());
+		int no = DB.executeUpdateAndSaveErrorOnFail(DB.convertSqlToNative(sql.toString()), get_TrxName());
 		addLog(0, null, new BigDecimal(no), baseTable);
 	}	//	processTable
 	

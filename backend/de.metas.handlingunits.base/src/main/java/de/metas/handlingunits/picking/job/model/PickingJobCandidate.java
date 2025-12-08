@@ -23,8 +23,14 @@
 package de.metas.handlingunits.picking.job.model;
 
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
+import de.metas.i18n.ITranslatableString;
 import de.metas.order.OrderId;
 import de.metas.organization.InstantAndOrgId;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -36,11 +42,20 @@ import javax.annotation.Nullable;
 @Builder
 public class PickingJobCandidate
 {
-	@NonNull InstantAndOrgId preparationDate;
-	@NonNull String salesOrderDocumentNo;
-	@NonNull OrderId salesOrderId;
-	@NonNull String customerName;
-	@NonNull BPartnerLocationId deliveryBPLocationId;
+	@NonNull PickingJobAggregationType aggregationType;
+	@Nullable InstantAndOrgId preparationDate;
+	@Nullable String salesOrderDocumentNo;
+	@Nullable OrderId salesOrderId;
+	@Nullable String customerName;
+	@Nullable BPartnerLocationId deliveryBPLocationId;
 	@Nullable WarehouseTypeId warehouseTypeId;
 	boolean partiallyPickedBefore;
+	@Nullable BPartnerLocationId handoverLocationId;
+	@Nullable ProductId productId;
+	@Nullable ITranslatableString productName;
+	@Nullable Quantity qtyToDeliver;
+	@Nullable ShipmentScheduleAndJobScheduleIdSet scheduleIds;
+
+	@Nullable
+	public UomId getUomId() {return qtyToDeliver != null ? qtyToDeliver.getUomId() : null;}
 }

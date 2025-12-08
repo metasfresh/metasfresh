@@ -27,7 +27,8 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientId;
-import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipientService;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipients;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientProvider;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
 import de.metas.order.IOrderBL;
@@ -38,6 +39,7 @@ import de.metas.user.User;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Component;
 
@@ -46,14 +48,13 @@ import java.util.Optional;
 @Component
 public class OrderDocOutboundLogMailRecipientProvider implements DocOutboundLogMailRecipientProvider
 {
-	private final DocOutBoundRecipientRepository recipientRepository;
+	private final DocOutBoundRecipientService recipientRepository;
 	private final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository;
 	private final IBPartnerBL bpartnerBL;
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
-
 	public OrderDocOutboundLogMailRecipientProvider(
-			@NonNull final DocOutBoundRecipientRepository recipientRepository,
+			@NonNull final DocOutBoundRecipientService recipientRepository,
 			@NonNull final IBPartnerBL bpartnerBL,
 			@NonNull final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository)
 	{
@@ -75,7 +76,7 @@ public class OrderDocOutboundLogMailRecipientProvider implements DocOutboundLogM
 	}
 
 	@Override
-	public Optional<DocOutBoundRecipient> provideMailRecipient(
+	public Optional<DocOutBoundRecipients> provideMailRecipient(
 			@NonNull final DocOutboundLogMailRecipientRequest request)
 	{
 		final I_C_Order orderRecord = request.getRecordRef()
@@ -87,6 +88,9 @@ public class OrderDocOutboundLogMailRecipientProvider implements DocOutboundLogM
 
 		final String locationEmail = orderBL.getLocationEmail(OrderId.ofRepoId(orderRecord.getC_Order_ID()));
 
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(orderRecord.getC_BPartner_ID());
+		final I_C_BPartner bpartnerPO = bpartnerBL.getById(bpartnerId);
+
 		final int orderUserRecordId = orderRecord.getAD_User_ID();
 		if (orderUserRecordId > 0)
 		{
@@ -94,21 +98,45 @@ public class OrderDocOutboundLogMailRecipientProvider implements DocOutboundLogM
 
 			if (Check.isNotBlank(orderEmail))
 			{
-				return Optional.of(orderUser.withEmailAddress(orderEmail));
+				return DocOutBoundRecipients.optionalOfTo(orderUser.withEmailAddress(orderEmail));
 			}
 
 			if (Check.isNotBlank(orderUser.getEmailAddress()))
 			{
-				return Optional.of(orderUser);
+				return DocOutBoundRecipients.optionalOfTo(orderUser);
 			}
 
 			if (Check.isNotBlank(locationEmail))
 			{
-				return Optional.of(orderUser.withEmailAddress(locationEmail));
+				return DocOutBoundRecipients.optionalOfTo(orderUser.withEmailAddress(locationEmail));
+			}
+
+			if (Check.isNotBlank(bpartnerPO.getEMail()))
+			{
+				return DocOutBoundRecipients.optionalOfTo(orderUser.withEmailAddress(bpartnerPO.getEMail()));
 			}
 		}
 
-		final BPartnerId bpartnerId = BPartnerId.ofRepoId(orderRecord.getC_BPartner_ID());
+		final int billingUserRecordId = orderRecord.getBill_User_ID();
+		if (billingUserRecordId > 0)
+		{
+			final DocOutBoundRecipient orderBillingUser = recipientRepository.getById(DocOutBoundRecipientId.ofRepoId(billingUserRecordId));
+
+			if (Check.isNotBlank(orderEmail))
+			{
+				return DocOutBoundRecipients.optionalOfTo(orderBillingUser.withEmailAddress(orderEmail));
+			}
+
+			if (!Check.isBlank(orderBillingUser.getEmailAddress()))
+			{
+				return DocOutBoundRecipients.optionalOfTo(orderBillingUser);
+			}
+
+			if (Check.isNotBlank(bpartnerPO.getEMail()))
+			{
+				return DocOutBoundRecipients.optionalOfTo(orderBillingUser.withEmailAddress(bpartnerPO.getEMail()));
+			}
+		}
 
 		final User billContact = bpartnerBL.retrieveContactOrNull(
 				IBPartnerBL.RetrieveContactRequest
@@ -116,25 +144,33 @@ public class OrderDocOutboundLogMailRecipientProvider implements DocOutboundLogM
 						.bpartnerId(bpartnerId)
 						.bPartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, orderRecord.getC_BPartner_Location_ID()))
 						.contactType(IBPartnerBL.RetrieveContactRequest.ContactType.BILL_TO_DEFAULT)
+						.onlyActive(true)
+						.filter(user -> !Check.isEmpty(user.getEmailAddress(), true))
 						.build());
-		if (billContact != null)
+
+		if (billContact != null && billContact.getId() != null)
 		{
 			final DocOutBoundRecipientId recipientId = DocOutBoundRecipientId.ofRepoId(billContact.getId().getRepoId());
 			final DocOutBoundRecipient docOutBoundRecipient = recipientRepository.getById(recipientId);
 
 			if (Check.isNotBlank(orderEmail))
 			{
-				return Optional.of(docOutBoundRecipient.withEmailAddress(orderEmail));
+				return DocOutBoundRecipients.optionalOfTo(docOutBoundRecipient.withEmailAddress(orderEmail));
 			}
 
 			if (Check.isNotBlank(locationEmail))
 			{
-				return Optional.of(docOutBoundRecipient.withEmailAddress(locationEmail));
+				return DocOutBoundRecipients.optionalOfTo(docOutBoundRecipient.withEmailAddress(locationEmail));
 			}
 
 			if (Check.isNotBlank(docOutBoundRecipient.getEmailAddress()))
 			{
-				return Optional.of(docOutBoundRecipient);
+				return DocOutBoundRecipients.optionalOfTo(docOutBoundRecipient);
+			}
+
+			if (Check.isNotBlank(bpartnerPO.getEMail()))
+			{
+				return DocOutBoundRecipients.optionalOfTo(docOutBoundRecipient.withEmailAddress(bpartnerPO.getEMail()));
 			}
 		}
 

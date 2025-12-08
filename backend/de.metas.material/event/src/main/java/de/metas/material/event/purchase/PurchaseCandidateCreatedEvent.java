@@ -1,10 +1,7 @@
 package de.metas.material.event.purchase;
 
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
@@ -13,6 +10,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -41,6 +40,7 @@ import lombok.ToString;
 @ToString
 public class PurchaseCandidateCreatedEvent extends PurchaseCandidateEvent
 {
+
 	public static PurchaseCandidateCreatedEvent cast(@NonNull final PurchaseCandidateEvent event)
 	{
 		return (PurchaseCandidateCreatedEvent)event;
@@ -74,4 +74,7 @@ public class PurchaseCandidateCreatedEvent extends PurchaseCandidateEvent
 		this.supplyCandidateRepoId = supplyCandidateRepoId;
 		this.supplyRequiredDescriptor = supplyRequiredDescriptor;
 	}
+
+	@Override
+	public String getEventName() {return TYPE;}
 }

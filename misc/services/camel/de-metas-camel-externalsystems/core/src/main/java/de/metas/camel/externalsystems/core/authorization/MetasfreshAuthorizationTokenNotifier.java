@@ -30,6 +30,7 @@ import de.metas.common.util.StringUtils;
 import lombok.NonNull;
 import org.apache.camel.Endpoint;
 import org.apache.camel.Exchange;
+import org.apache.camel.Message;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.http.base.HttpOperationFailedException;
@@ -93,7 +94,8 @@ public class MetasfreshAuthorizationTokenNotifier extends EventNotifierSupport
 	{
 		final Endpoint endpoint = event.getEndpoint();
 
-		if (endpoint.getEndpointUri() == null || !metasfreshAPIURL.contains(endpoint.getEndpointUri()))
+		if (endpoint.getEndpointUri() == null
+				|| (!metasfreshAPIURL.contains(endpoint.getEndpointUri()) && !endpoint.getEndpointUri().contains(metasfreshAPIURL)))
 		{
 			return;
 		}
@@ -105,7 +107,9 @@ public class MetasfreshAuthorizationTokenNotifier extends EventNotifierSupport
 			throw new RuntimeCamelException("No authorization token provided by MetasfreshAuthProvider!");
 		}
 
-		event.getExchange().getIn().setHeader(CoreConstants.AUTHORIZATION, authToken);
+		final Message in = event.getExchange().getIn();
+		in.setHeader(CoreConstants.AUTHORIZATION, authToken);
+		in.setHeader(CoreConstants.ACCEPT, "application/json;charset=UTF-8");
 	}
 
 	private void handleSentEvent(@NonNull final CamelEvent.ExchangeSentEvent sentEvent)

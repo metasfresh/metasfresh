@@ -47,6 +47,7 @@ public class PlainInvoicingParams implements IInvoicingParams
 	private boolean poReferenceSet = false;
 	private BigDecimal check_NetAmtToInvoice = null;
 	private boolean updateLocationAndContactForInvoice = false;
+	private boolean completeInvoices = true; // default=true for backwards-compantibility
 
 	public PlainInvoicingParams()
 	{
@@ -290,5 +291,17 @@ public class PlainInvoicingParams implements IInvoicingParams
 	public void setUpdateLocationAndContactForInvoice(boolean updateLocationAndContactForInvoice)
 	{
 		this.updateLocationAndContactForInvoice = updateLocationAndContactForInvoice;
+	}
+
+	public PlainInvoicingParams setCompleteInvoices(final boolean completeInvoices)
+	{
+		this.completeInvoices = completeInvoices;
+		return this;
+	}
+	
+	@Override
+	public boolean isCompleteInvoices()
+	{
+		return completeInvoices;
 	}
 }

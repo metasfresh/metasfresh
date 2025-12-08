@@ -24,7 +24,7 @@ public class JsonDistributionJob
 		return builder()
 				.lines(job.getLines()
 						.stream()
-						.map(line -> JsonDistributionJobLine.of(line, jsonOpts))
+						.map(line -> JsonDistributionJobLine.of(line, job, jsonOpts))
 						.collect(ImmutableList.toImmutableList()))
 				.build();
 	}

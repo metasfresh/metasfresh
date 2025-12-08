@@ -231,6 +231,16 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		setNextIdSupplier(newNextIdSupplier());
 	}
 
+	public static void setNextIdSupplier_SingleSharedSequence()
+	{
+		POJOLookupMap.setNextIdSupplier(POJONextIdSuppliers.newSingleSharedSequence());
+	}
+
+	public static void setNextIdSupplier_PerTableSequence()
+	{
+		POJOLookupMap.setNextIdSupplier(POJONextIdSuppliers.newPerTableSequence());
+	}
+
 	public static void setNextIdSupplier(@NonNull final POJONextIdSupplier nextIdSupplier)
 	{
 		final POJONextIdSupplier nextIdSupplierOld = instance.nextIdSupplier;
@@ -698,10 +708,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 			}
 
 			sb.append("\nTable ").append(tableName).append(": ").append(map.size()).append(" records");
-			for (final Object o : map.values())
-			{
-				sb.append("\n\t").append(o);
-			}
+			sb.append("\n").append(POJOWrapperUtils.fromPOJOWrappers(map.values(), 1));
 		}
 
 		return sb.toString();

@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1272209807L;
+	private static final long serialVersionUID = -412496844L;
 
     /** Standard Constructor */
     public X_C_Order (final Properties ctx, final int C_Order_ID, @Nullable final String trxName)
@@ -352,7 +352,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_SalesRep_ID);
 	}
-
 	@Override
 	public void setC_BP_BankAccount_ID (final int C_BP_BankAccount_ID)
 	{
@@ -1356,6 +1355,30 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
+	public void setIsFixedDatePromised (final boolean IsFixedDatePromised)
+	{
+		set_Value (COLUMNNAME_IsFixedDatePromised, IsFixedDatePromised);
+	}
+
+	@Override
+	public boolean isFixedDatePromised() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsFixedDatePromised);
+	}
+
+	@Override
+	public void setIsFixedPreparationDate (final boolean IsFixedPreparationDate)
+	{
+		set_Value (COLUMNNAME_IsFixedPreparationDate, IsFixedPreparationDate);
+	}
+
+	@Override
+	public boolean isFixedPreparationDate() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsFixedPreparationDate);
+	}
+
+	@Override
 	public void setIsInvoiced (final boolean IsInvoiced)
 	{
 		set_ValueNoCheck (COLUMNNAME_IsInvoiced, IsInvoiced);
@@ -1736,6 +1759,10 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public static final String PAYMENTRULE_KreditkarteExtern = "U";
 	/** Sofortüberweisung = R */
 	public static final String PAYMENTRULE_Sofortueberweisung = "R";
+	/** Rückerstattung = E */
+	public static final String PAYMENTRULE_Reimbursement = "E";
+	/** Verrechnung = F */
+	public static final String PAYMENTRULE_Settlement = "F";
 	@Override
 	public void setPaymentRule (final java.lang.String PaymentRule)
 	{
@@ -2123,6 +2150,30 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public int getUser2_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_User2_ID);
+	}
+
+	@Override
+	public void setValidUntil (final @Nullable java.sql.Timestamp ValidUntil)
+	{
+		set_Value (COLUMNNAME_ValidUntil, ValidUntil);
+	}
+
+	@Override
+	public java.sql.Timestamp getValidUntil() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_ValidUntil);
+	}
+
+	@Override
+	public void setVersionNo (final @Nullable java.lang.String VersionNo)
+	{
+		set_Value (COLUMNNAME_VersionNo, VersionNo);
+	}
+
+	@Override
+	public java.lang.String getVersionNo() 
+	{
+		return get_ValueAsString(COLUMNNAME_VersionNo);
 	}
 
 	@Override

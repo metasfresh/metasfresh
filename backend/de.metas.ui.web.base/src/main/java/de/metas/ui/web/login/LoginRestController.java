@@ -11,11 +11,13 @@ import de.metas.organization.OrgId;
 import de.metas.security.Role;
 import de.metas.security.RoleId;
 import de.metas.security.UserAuthToken;
+import de.metas.security.user_2fa.User2FAService;
+import de.metas.security.user_2fa.totp.OTP;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.dashboard.UserDashboardSessionContextHolder;
 import de.metas.ui.web.kpi.data.KPIDataContext;
-import de.metas.ui.web.login.exceptions.NotAuthenticatedException;
 import de.metas.ui.web.login.exceptions.NotLoggedInException;
+import de.metas.ui.web.login.json.JSONLoginAuth2FARequest;
 import de.metas.ui.web.login.json.JSONLoginAuthRequest;
 import de.metas.ui.web.login.json.JSONLoginAuthResponse;
 import de.metas.ui.web.login.json.JSONLoginRole;
@@ -38,6 +40,7 @@ import de.metas.util.Services;
 import de.metas.util.hash.HashableString;
 import de.metas.util.web.security.UserAuthTokenService;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.exceptions.AdempiereException;
@@ -48,6 +51,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_User;
 import org.compiere.util.Env;
 import org.compiere.util.Login;
+import org.compiere.util.LoginAuthenticateResponse;
 import org.compiere.util.LoginContext;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -63,6 +67,8 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -91,6 +97,7 @@ import java.util.Set;
 
 @RestController
 @RequestMapping(LoginRestController.ENDPOINT)
+@RequiredArgsConstructor
 public class LoginRestController
 {
 	static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/login";
@@ -107,38 +114,20 @@ public class LoginRestController
 	private final WebuiImageService imageService;
 	private final UserAuthTokenService userAuthTokenService;
 	private final UserDashboardSessionContextHolder userDashboardContextHolder;
-
+	private final User2FAService user2FAService;
 	private final static AdMessageKey MSG_UserLoginInternalError = AdMessageKey.of("UserLoginInternalError");
 
-	public LoginRestController(
-			@NonNull final UserSession userSession,
-			@NonNull final UserSessionRepository userSessionRepo,
-			@NonNull final UserNotificationsService userNotificationsService,
-			@NonNull final WebuiImageService imageService,
-			@NonNull final UserAuthTokenService userAuthTokenService,
-			@NonNull final UserDashboardSessionContextHolder userDashboardContextHolder)
-	{
-		this.userSession = userSession;
-		this.userSessionRepo = userSessionRepo;
-		this.userNotificationsService = userNotificationsService;
-		this.imageService = imageService;
-		this.userAuthTokenService = userAuthTokenService;
-		this.userDashboardContextHolder = userDashboardContextHolder;
-	}
+	private static final Comparator<JSONLoginRole> ROLES_ORDERING = Comparator.<JSONLoginRole, Integer>comparing(role -> RoleId.isRegular(role.getRoleId()) ? 0 : 100) // Regular roles first
+			.thenComparing(JSONLoginRole::getCaption); // by caption
 
 	private Login getLoginService()
 	{
 		final LoginContext loginCtx = new LoginContext(Env.getCtx());
 		loginCtx.setWebui(true);
-		return new Login(loginCtx);
-	}
 
-	private void assertAuthenticated()
-	{
-		getLoginService()
-				.getCtx()
-				.getUserIdIfExists()
-				.orElseThrow(NotLoggedInException::new);
+		final Login loginService = new Login(loginCtx);
+		loginService.setUser2FAService(user2FAService);
+		return loginService;
 	}
 
 	@PostMapping("/authenticate")
@@ -147,11 +136,11 @@ public class LoginRestController
 		final JSONLoginAuthRequest.Type authType = request.getType();
 		if (JSONLoginAuthRequest.Type.password.equals(authType))
 		{
-			if (Check.isEmpty(request.getUsername(), true))
+			if (Check.isBlank(request.getUsername()))
 			{
 				throw new FillMandatoryException("Username");
 			}
-			if (Check.isEmpty(request.getPassword(), true))
+			if (Check.isBlank(request.getPassword()))
 			{
 				throw new FillMandatoryException("Password");
 			}
@@ -181,7 +170,7 @@ public class LoginRestController
 	private JSONLoginAuthResponse authenticate(
 			@NonNull final String username,
 			@Nullable final HashableString password,
-			@Nullable final JSONLoginRole role)
+			@Nullable final JSONLoginRole roleToLogin)
 	{
 		userSession.assertNotLoggedIn();
 
@@ -190,35 +179,67 @@ public class LoginRestController
 
 		try
 		{
-			final List<Role> availableRolesList = loginService.authenticate(username, password).getAvailableRoles();
-			final List<JSONLoginRole> jsonAvailableRoles;
-			final JSONLoginRole roleToLogin;
-			if (role != null)
+			final LoginAuthenticateResponse authResponse = loginService.authenticate(username, password);
+			if (authResponse.is2FARequired())
 			{
-				roleToLogin = role;
-				jsonAvailableRoles = ImmutableList.of(role);
-			}
-			else
-			{
-				jsonAvailableRoles = createJSONLoginRoles(loginService, availableRolesList);
-				roleToLogin = jsonAvailableRoles.size() == 1 ? jsonAvailableRoles.iterator().next() : null;
+				return JSONLoginAuthResponse.requires2FA();
 			}
 
-			if (roleToLogin != null)
-			{
-				loginComplete(roleToLogin);
-				return JSONLoginAuthResponse.loginComplete(roleToLogin);
-			}
-			else
-			{
-				return JSONLoginAuthResponse.of(jsonAvailableRoles);
-			}
+			final List<Role> availableRolesList = authResponse.getAvailableRoles();
+			return continueAuthenticationSelectingRole(loginService, availableRolesList, roleToLogin);
 		}
 		catch (final Exception ex)
 		{
 			userSession.setLoggedIn(false);
 			destroyMFSession(loginService);
 			throw convertToUserFriendlyException(ex);
+		}
+	}
+
+	@PostMapping("/2fa")
+	public JSONLoginAuthResponse authenticate2FA(@RequestBody final JSONLoginAuth2FARequest request)
+	{
+		userSession.assertNotLoggedIn();
+
+		final OTP otp = OTP.ofString(request.getCode());
+		final Login loginService = getLoginService();
+		try
+		{
+			final LoginAuthenticateResponse authResponse = loginService.authenticate2FA(otp);
+			return continueAuthenticationSelectingRole(loginService, authResponse.getAvailableRoles(), null);
+		}
+		catch (final Exception ex)
+		{
+			throw convertToUserFriendlyException(ex);
+		}
+	}
+
+	private JSONLoginAuthResponse continueAuthenticationSelectingRole(
+			@NonNull final Login loginService,
+			@NonNull final List<Role> availableRoles,
+			@Nullable final JSONLoginRole roleToLogin)
+	{
+		final List<JSONLoginRole> jsonAvailableRoles;
+		final JSONLoginRole roleToLoginEffective;
+		if (roleToLogin != null)
+		{
+			roleToLoginEffective = roleToLogin;
+			jsonAvailableRoles = ImmutableList.of(roleToLogin);
+		}
+		else
+		{
+			jsonAvailableRoles = createJSONLoginRoles(loginService, availableRoles);
+			roleToLoginEffective = jsonAvailableRoles.size() == 1 ? jsonAvailableRoles.get(0) : null;
+		}
+
+		if (roleToLoginEffective != null)
+		{
+			loginComplete(roleToLoginEffective);
+			return JSONLoginAuthResponse.loginComplete(roleToLoginEffective);
+		}
+		else
+		{
+			return JSONLoginAuthResponse.of(jsonAvailableRoles);
 		}
 	}
 
@@ -248,7 +269,7 @@ public class LoginRestController
 
 		final Joiner captionJoiner = Joiner.on(", ");
 
-		final ImmutableList.Builder<JSONLoginRole> result = ImmutableList.builder();
+		final ArrayList<JSONLoginRole> result = new ArrayList<>();
 		for (final Role role : availableRoles)
 		{
 			final RoleId roleId = role.getId();
@@ -277,7 +298,9 @@ public class LoginRestController
 			}
 		}
 
-		return result.build();
+		result.sort(ROLES_ORDERING);
+
+		return result;
 	}
 
 	private void startMFSession(final Login loginService)
@@ -337,8 +360,13 @@ public class LoginRestController
 	@PostMapping("/loginComplete")
 	public void loginComplete(@RequestBody final JSONLoginRole loginRole)
 	{
-		assertAuthenticated();
 		userSession.assertNotLoggedIn();
+
+		final Login loginService = getLoginService();
+		if (!loginService.isAuthenticated())
+		{
+			throw new NotLoggedInException();
+		}
 
 		final RoleId roleId = RoleId.ofRepoId(loginRole.getRoleId());
 		final ClientId clientId = ClientId.ofRepoId(loginRole.getTenantId());
@@ -346,18 +374,16 @@ public class LoginRestController
 
 		//
 		// Update context
-		final Login loginService = getLoginService();
-
 		// TODO: optimize
 		loginService.setRoleAndGetClients(roleId);
 		loginService.setClientAndGetOrgs(clientId);
 
 		//
 		// Load preferences and export them to context
-		final LoginContext ctx = loginService.getCtx();
+		final LoginContext loginCtx = loginService.getCtx();
 		final UserPreference userPreference = userSession.getUserPreference();
-		userPreference.loadPreference(ctx.getSessionContext());
-		userPreference.updateContext(ctx.getSessionContext());
+		userPreference.loadPreference(loginCtx.getSessionContext());
+		userPreference.updateContext(loginCtx.getSessionContext());
 
 		//
 		// Validate login: fires login complete model interceptors
@@ -373,7 +399,7 @@ public class LoginRestController
 		// Load preferences
 		{
 			final String msg = loginService.loadPreferences(orgId, null);
-			if (!Check.isEmpty(msg, true))
+			if (!Check.isBlank(msg))
 			{
 				throw new AdempiereException(msg);
 			}
@@ -381,7 +407,6 @@ public class LoginRestController
 
 		//
 		// Save user preferences
-		final LoginContext loginCtx = loginService.getCtx();
 		// userPreference.setProperty(UserPreference.P_LANGUAGE, Env.getContext(Env.getCtx(), UserPreference.LANGUAGE_NAME));
 		userPreference.setProperty(UserPreference.P_ROLE, RoleId.toRepoId(loginCtx.getRoleId()));
 		userPreference.setProperty(UserPreference.P_CLIENT, ClientId.toRepoId(loginCtx.getClientId()));
@@ -422,7 +447,7 @@ public class LoginRestController
 				.stream()
 				.map(JSONLookupValue::ofNamePair)
 				.collect(JSONLookupValuesList.collect())
-				.setDefaultValue(userSession.getAD_Language());
+				.setDefaultId(userSession.getAD_Language());
 	}
 
 	@GetMapping("/logout")
@@ -480,7 +505,7 @@ public class LoginRestController
 		final WebuiImageId avatarId = WebuiImageId.ofRepoIdOrNull(user.getAvatar_ID());
 		if (avatarId == null)
 		{
-			return ResponseEntity.notFound().build();
+			return imageService.getEmptyImage();
 		}
 
 		return imageService.getWebuiImage(avatarId, maxWidth, maxHeight)

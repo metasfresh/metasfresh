@@ -14,6 +14,7 @@ import javax.annotation.Nullable;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -41,7 +42,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * Allows to combine a number of different handlers and will delegate the actual works to the particular handler for the particular type of <code>model</code>.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 {
@@ -122,8 +122,8 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 	@Override
 	public boolean setValue(
 			@NonNull final Object model,
-			@NonNull final String columnName, 
-			@Nullable final Object value, 
+			@NonNull final String columnName,
+			@Nullable final Object value,
 			final boolean throwExIfColumnNotFound)
 	{
 		return getHelperThatCanHandle(model)
@@ -260,6 +260,13 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 				.setDynAttribute(model, attributeName, value);
 	}
 
+	@Nullable
+	@Override
+	public <T> T computeDynAttributeIfAbsent(@NonNull final Object model, @NonNull final String attributeName, @NonNull final Supplier<T> supplier)
+	{
+		return getHelperThatCanHandle(model).computeDynAttributeIfAbsent(model, attributeName, supplier);
+	}
+
 	@Override
 	public <T extends PO> T getPO(final Object model, final boolean strict)
 	{
@@ -271,8 +278,7 @@ public class CompositeInterfaceWrapperHelper implements IInterfaceWrapperHelper
 		// Short-circuit: model is already a PO instance
 		if (model instanceof PO)
 		{
-			@SuppressWarnings("unchecked")
-			final T po = (T)model;
+			@SuppressWarnings("unchecked") final T po = (T)model;
 			return po;
 		}
 

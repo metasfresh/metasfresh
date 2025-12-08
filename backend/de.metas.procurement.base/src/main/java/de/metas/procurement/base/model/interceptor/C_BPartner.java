@@ -1,15 +1,14 @@
 package de.metas.procurement.base.model.interceptor;
 
+import de.metas.procurement.base.IPMMContractsDAO;
+import de.metas.procurement.base.IWebuiPush;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.ModelValidator;
-
-import de.metas.procurement.base.IPMMContractsDAO;
-import de.metas.procurement.base.IWebuiPush;
-import de.metas.util.Services;
 
 /*
  * #%L

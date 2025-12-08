@@ -23,6 +23,7 @@
 package de.metas.inoutcandidate;
 
 import de.metas.business.BusinessTestHelper;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.inoutcandidate.ShipmentScheduleRepository.ShipmentScheduleQuery;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -42,7 +43,6 @@ import java.sql.Timestamp;
 import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -61,7 +61,7 @@ class ShipmentScheduleRepositoryTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		shipmentScheduleRepository = new ShipmentScheduleRepository();
+		shipmentScheduleRepository = new ShipmentScheduleRepository(ModelCacheInvalidationService.newInstanceForUnitTesting());
 
 		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId());
 		bPartner = BusinessTestHelper.createBPartner("bpartner");

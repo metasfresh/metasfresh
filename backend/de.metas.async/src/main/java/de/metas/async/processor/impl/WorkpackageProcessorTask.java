@@ -54,9 +54,7 @@ import de.metas.lock.api.ILockManager;
 import de.metas.lock.exceptions.LockFailedException;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
-import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringService.TransactionMetadata;
 import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
@@ -80,12 +78,12 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBDeadLockDetectedException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.logging.LoggingHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
@@ -105,7 +103,6 @@ import static de.metas.async.event.WorkpackageProcessedEvent.Status.SKIPPED;
 class WorkpackageProcessorTask implements Runnable
 {
 	private static final AdMessageKey MSG_PROCESSING_ERROR_NOTIFICATION_TEXT = AdMessageKey.of("de.metas.async.WorkpackageProcessorTask.ProcessingErrorNotificationText");
-	private static final AdMessageKey MSG_PROCESSING_ERROR_NOTIFICATION_TITLE = AdMessageKey.of("de.metas.async.WorkpackageProcessorTask.ProcessingErrorNotificationTitle");
 	// services
 	private static final Logger logger = LogManager.getLogger(WorkpackageProcessorTask.class);
 
@@ -133,16 +130,24 @@ class WorkpackageProcessorTask implements Runnable
 	// task 09933 just adding this member for now, because it's unclear if in future we want to or have to extend on it or not.
 	private final boolean retryOnDeadLock = true;
 
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final PerformanceMonitoringService perfMonService;
+	private static final String PERF_MON_SYSCONFIG_NAME = "de.metas.monitoring.asyncWorkpackage.enable";
+	private static final boolean SYS_CONFIG_DEFAULT_VALUE = false;
+
 	public WorkpackageProcessorTask(
 			final IQueueProcessor queueProcessor,
 			final IWorkpackageProcessor workPackageProcessor,
 			@NonNull final I_C_Queue_WorkPackage workPackage,
-			@NonNull final IWorkpackageLogsRepository logsRepository)
+			@NonNull final IWorkpackageLogsRepository logsRepository,
+			@NonNull final PerformanceMonitoringService perfMonService)
 	{
 		this.logsRepository = logsRepository;
 
 		this.queueProcessor = queueProcessor;
 		this.workPackage = workPackage;
+
+		this.perfMonService = perfMonService;
 
 		workPackageProcessorOriginal = workPackageProcessor;
 		workPackageProcessorWrapped = WorkpackageProcessor2Wrapper.wrapIfNeeded(workPackageProcessor);
@@ -163,18 +168,22 @@ class WorkpackageProcessorTask implements Runnable
 	@Override
 	public void run()
 	{
-		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
-				PerformanceMonitoringService.class,
-				NoopPerformanceMonitoringService.INSTANCE);
-
-		service.monitorTransaction(
-				this::run0,
-				TransactionMetadata.builder()
-						.type(Type.ASYNC_WORKPACKAGE)
-						.name("Workpackage-Processor - " + queueProcessor.getName())
-						.label("de.metas.async.queueProcessor.name", queueProcessor.getName())
-						.label(PerformanceMonitoringService.LABEL_WORKPACKAGE_ID, Integer.toString(workPackage.getC_Queue_WorkPackage_ID()))
-						.build());
+		final boolean perfMonIsActive = sysConfigBL.getBooleanValue(PERF_MON_SYSCONFIG_NAME, SYS_CONFIG_DEFAULT_VALUE);
+		if(!perfMonIsActive){
+			run0();
+		}
+		else
+		{
+			perfMonService.monitor(
+					this::run0,
+					PerformanceMonitoringService.Metadata.builder()
+							.type(Type.ASYNC_WORKPACKAGE)
+							.className("WorkpackageProcessorTask")
+							.functionName("run")
+							.label("de.metas.async.queueProcessor.name", queueProcessor.getName())
+							.label(PerformanceMonitoringService.LABEL_WORKPACKAGE_ID, Integer.toString(workPackage.getC_Queue_WorkPackage_ID()))
+							.build());
+		}
 	}
 
 	private void run0()
@@ -320,7 +329,6 @@ class WorkpackageProcessorTask implements Runnable
 	private void beforeWorkpackageProcessing()
 	{
 		// If the current workpackage's processor creates a follow-up-workpackage, the asyncBatch and priority will be forwarded.
-		contextFactory.setThreadInheritedAsyncBatch(AsyncBatchId.ofRepoIdOrNull(workPackage.getC_Async_Batch_ID()));
 		contextFactory.setThreadInheritedWorkpackageAsyncBatch(AsyncBatchId.ofRepoIdOrNull(workPackage.getC_Async_Batch_ID()));
 
 		final String priority = workPackage.getPriority();
@@ -430,7 +438,6 @@ class WorkpackageProcessorTask implements Runnable
 	{
 		// get rid of inherited AsyncBatchId and priority
 		// actually it's not necessary, but we are doing it for safety reasons
-		contextFactory.setThreadInheritedAsyncBatch(null);
 		contextFactory.setThreadInheritedWorkpackageAsyncBatch(null);
 		contextFactory.setThreadInheritedPriority(null);
 
@@ -578,26 +585,26 @@ class WorkpackageProcessorTask implements Runnable
 
 	private void markError(final I_C_Queue_WorkPackage workPackage, final AdempiereException ex)
 	{
-		final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(ex);
-
-		//
-		// Allow retry processing this workpackage?
-		if (workPackageProcessorWrapped.isAllowRetryOnError())
-		{
-			workPackage.setProcessed(false); // just in case it was true
+		final AdIssueId issueId;
+		if(ex instanceof WorkpackageSkipRequestException)
+		{ // don't clutter the database with AD_Issue records for this type of exception
+			issueId = null;
 		}
 		else
-		{
-			// Flag the workpackage as processed in order to:
-			// * not allow future retries
-			// * avoid discarding items from this workpackage on future workpackages because they were enqueued here
-			// TODO shall we also release the elements lock if any?
-			workPackage.setProcessed(true);
+		{ // ordinary issue => create AD_Issue record
+			issueId = Services.get(IErrorManager.class).createIssue(ex);
 		}
+
+		// If we don't allow retry processing this workpackage, then flag it as processed in order to:
+		// * not allow future retries
+		// * avoid discarding items from this workpackage on future workpackages because they were enqueued here
+		// TODO shall we also release the elements lock if any?
+		// Otherwise, just set it as unprocessed (even if it was marked as processed), because we're dealing with an error.
+		workPackage.setProcessed(!workPackageProcessorWrapped.isAllowRetryOnError());
 
 		workPackage.setIsError(true);
 		workPackage.setErrorMsg(ex.getLocalizedMessage());
-		workPackage.setAD_Issue_ID(issueId.getRepoId());
+		workPackage.setAD_Issue_ID(AdIssueId.toRepoId(issueId));
 
 		setLastEndTime(workPackage); // update statistics
 
@@ -628,7 +635,7 @@ class WorkpackageProcessorTask implements Runnable
 				.workPackageId(QueueWorkPackageId.ofRepoId(workPackage.getC_Queue_WorkPackage_ID()))
 				.status(status)
 				.build();
-		eventBusFactory.getEventBus(Async_Constants.WORKPACKAGE_LIFECYCLE_TOPIC).postObject(processingDoneEvent);
+		eventBusFactory.getEventBus(Async_Constants.WORKPACKAGE_LIFECYCLE_TOPIC).enqueueObject(processingDoneEvent);
 	}
 
 	private void notifyErrorAfterCommit(final I_C_Queue_WorkPackage workpackage, final AdempiereException ex)

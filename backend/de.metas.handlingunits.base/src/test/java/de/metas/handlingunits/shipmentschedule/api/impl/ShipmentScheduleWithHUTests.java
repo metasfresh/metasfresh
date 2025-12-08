@@ -1,5 +1,7 @@
 package de.metas.handlingunits.shipmentschedule.api.impl;
 
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -20,8 +22,6 @@ import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_InOut;
 import org.compiere.util.Env;

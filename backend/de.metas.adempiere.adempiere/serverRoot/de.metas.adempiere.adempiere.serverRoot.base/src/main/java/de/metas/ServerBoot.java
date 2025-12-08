@@ -12,7 +12,6 @@ import de.metas.util.ConnectionUtil;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Getter;
-import lombok.NonNull;
 import org.adempiere.ad.housekeeping.HouseKeepingService;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
@@ -34,17 +33,9 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
-import org.springframework.http.MediaType;
-import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import javax.annotation.Nullable;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -88,6 +79,8 @@ public class ServerBoot implements InitializingBean
 	 */
 	public static final String SYSTEM_PROPERTY_HEADLESS = "app-server-run-headless";
 
+	private static final String SYSTEM_PROPERTY_APP_NAME = "spring.application.name";
+
 	private static final Logger logger = LogManager.getLogger(ServerBoot.class);
 
 	private static final String SYSCONFIG_PREFIX_APP_SPRING_PROFILES_ACTIVE = "de.metas.spring.profiles.active";
@@ -126,6 +119,8 @@ public class ServerBoot implements InitializingBean
 			activeProfiles.add(Profiles.PROFILE_PrintService);
 			activeProfiles.add(Profiles.PROFILE_AccountingService);
 
+			setDefaultProperties();
+
 			final String headless = System.getProperty(SYSTEM_PROPERTY_HEADLESS, Boolean.toString(true));
 			new SpringApplicationBuilder(ServerBoot.class)
 					.headless(StringUtils.toBoolean(headless)) // we need headless=false for initial connection setup popup (if any), usually this only applies on dev workstations.
@@ -137,6 +132,8 @@ public class ServerBoot implements InitializingBean
 					.run(args);
 		}
 		SpringContextHolder.instance.getBean(ServerBoot.class).commandLineOptions = commandLineOptions;
+		
+		final ServerBootHealthIndicator healthIndicator = SpringContextHolder.instance.getBean(ServerBootHealthIndicator.class);
 
 		// now init the model validation engine
 		ModelValidationEngine.get();
@@ -147,6 +144,7 @@ public class ServerBoot implements InitializingBean
 
 		logger.info("Metasfresh Server started in {}", stopwatch);
 		logger.info("End of {} main-method ", ServerBoot.class);
+		healthIndicator.setStatusUp();
 	}
 
 	private static ArrayList<String> retrieveActiveProfilesFromSysConfig()
@@ -192,6 +190,14 @@ public class ServerBoot implements InitializingBean
 					TimeUnit.SECONDS // timeUnit
 			);
 			logger.info("Clearing query selection tables each {} seconds", clearQuerySelectionsRateInSeconds);
+		}
+	}
+
+	private static void setDefaultProperties()
+	{
+		if (Check.isBlank(System.getProperty(SYSTEM_PROPERTY_APP_NAME)))
+		{
+			System.setProperty(SYSTEM_PROPERTY_APP_NAME, ServerBoot.class.getSimpleName());
 		}
 	}
 }

@@ -42,6 +42,8 @@ public class CommissionConstants
 	private static final String MEDIATED_COMMISSION_DOC_SUBTYPE_VALUE = "RD";
 	private static final String LICENSE_COMMISSION_DOC_SUBTYPE_VALUE = "LS";
 
+	public static final String SYSCONFIG_UPDATE_SALESPARTNER_IN_MASTER_DATA = "de.metas.contracts.commission.UpdateSalesPartnerInCustomerMaterdata";
+
 	@AllArgsConstructor
 	@Getter
 	public enum CommissionDocType

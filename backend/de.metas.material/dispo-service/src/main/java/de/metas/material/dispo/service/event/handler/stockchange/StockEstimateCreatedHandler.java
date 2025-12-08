@@ -86,7 +86,7 @@ public class StockEstimateCreatedHandler implements MaterialEventHandler<Abstrac
 				.build();
 
 		final Candidate.CandidateBuilder supplyCandidateBuilder = Candidate.builder()
-				.clientAndOrgId(event.getEventDescriptor().getClientAndOrgId())
+				.clientAndOrgId(event.getClientAndOrgId())
 				.materialDescriptor(event.getMaterialDescriptor())
 				.businessCase(CandidateBusinessCase.STOCK_CHANGE)
 				.businessCaseDetail(stockChangeDetail);

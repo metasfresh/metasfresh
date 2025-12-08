@@ -7,10 +7,13 @@ import ButtonWithIndicator from './ButtonWithIndicator';
 import YesNoDialog from '../dialogs/YesNoDialog';
 
 const ConfirmButton = ({
+  id,
   caption,
   promptQuestion,
+  userInstructions,
   isUserEditable,
   isDangerousAction,
+  isProcessing,
   completeStatus,
   onUserConfirmed,
 }) => {
@@ -29,12 +32,21 @@ const ConfirmButton = ({
 
   return (
     <>
-      {isDialogDisplayed && <YesNoDialog promptQuestion={promptQuestion} onYes={onDialogYes} onNo={onDialogNo} />}
+      {isDialogDisplayed && (
+        <YesNoDialog
+          promptQuestion={promptQuestion}
+          userInstructions={userInstructions}
+          onYes={onDialogYes}
+          onNo={onDialogNo}
+        />
+      )}
       <ButtonWithIndicator
+        id={id}
         caption={captionEffective}
         completeStatus={completeStatus}
         disabled={!isUserEditable || isDialogDisplayed}
         isDanger={isDangerousAction}
+        typeFASIconName={isProcessing ? 'fa-spinner fa-spin' : null}
         onClick={() => setDialogDisplayed(true)}
       />
     </>
@@ -50,10 +62,13 @@ const ConfirmButton = ({
  * @prop {func} onUserConfirmed
  */
 ConfirmButton.propTypes = {
+  id: PropTypes.string,
   caption: PropTypes.string,
   promptQuestion: PropTypes.string,
+  userInstructions: PropTypes.string,
   isUserEditable: PropTypes.bool,
   isDangerousAction: PropTypes.bool,
+  isProcessing: PropTypes.bool,
   completeStatus: PropTypes.string,
   //
   onUserConfirmed: PropTypes.func.isRequired,

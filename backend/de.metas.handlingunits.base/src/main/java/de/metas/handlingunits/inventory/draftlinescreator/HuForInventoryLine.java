@@ -2,6 +2,7 @@ package de.metas.handlingunits.inventory.draftlinescreator;
 
 import javax.annotation.Nullable;
 
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import org.adempiere.warehouse.LocatorId;
 
 import de.metas.handlingunits.HuId;
@@ -42,8 +43,8 @@ public class HuForInventoryLine
 	@NonNull
 	OrgId orgId;
 
-	@NonNull
-	HuId huId;
+	@Nullable HuId huId;
+	@Nullable HUQRCode huQRCode;
 
 	@NonNull
 	Quantity quantityBooked;
@@ -65,7 +66,8 @@ public class HuForInventoryLine
 	@Builder
 	private HuForInventoryLine(
 			@NonNull final OrgId orgId,
-			@NonNull final HuId huId,
+			@Nullable final HuId huId,
+			@Nullable final HUQRCode huQRCode,
 			@NonNull final Quantity quantityBooked,
 			@Nullable final Quantity quantityCount,
 			@NonNull final ProductId productId,
@@ -77,6 +79,7 @@ public class HuForInventoryLine
 
 		this.orgId = orgId;
 		this.huId = huId;
+		this.huQRCode = huQRCode;
 		this.quantityBooked = quantityBooked;
 		this.quantityCount = quantityCount;
 

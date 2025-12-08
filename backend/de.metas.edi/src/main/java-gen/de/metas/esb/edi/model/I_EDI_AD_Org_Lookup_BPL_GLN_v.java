@@ -1,18 +1,20 @@
 package de.metas.esb.edi.model;
 
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for EDI_AD_Org_Lookup_BPL_GLN_v
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_EDI_AD_Org_Lookup_BPL_GLN_v 
 {
 
-    /** TableName=EDI_AD_Org_Lookup_BPL_GLN_v */
-    public static final String Table_Name = "EDI_AD_Org_Lookup_BPL_GLN_v";
+	String Table_Name = "EDI_AD_Org_Lookup_BPL_GLN_v";
 
-    /** AD_Table_ID=540546 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540546 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -23,7 +25,7 @@ public interface I_EDI_AD_Org_Lookup_BPL_GLN_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
 	 * Get Organisation.
@@ -33,10 +35,9 @@ public interface I_EDI_AD_Org_Lookup_BPL_GLN_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set GLN.
@@ -45,7 +46,7 @@ public interface I_EDI_AD_Org_Lookup_BPL_GLN_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setGLN (java.lang.String GLN);
+	void setGLN (@Nullable java.lang.String GLN);
 
 	/**
 	 * Get GLN.
@@ -54,12 +55,10 @@ public interface I_EDI_AD_Org_Lookup_BPL_GLN_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getGLN();
+	@Nullable java.lang.String getGLN();
 
-    /** Column definition for GLN */
-    public static final org.adempiere.model.ModelColumn<I_EDI_AD_Org_Lookup_BPL_GLN_v, Object> COLUMN_GLN = new org.adempiere.model.ModelColumn<I_EDI_AD_Org_Lookup_BPL_GLN_v, Object>(I_EDI_AD_Org_Lookup_BPL_GLN_v.class, "GLN", null);
-    /** Column name GLN */
-    public static final String COLUMNNAME_GLN = "GLN";
+	ModelColumn<I_EDI_AD_Org_Lookup_BPL_GLN_v, Object> COLUMN_GLN = new ModelColumn<>(I_EDI_AD_Org_Lookup_BPL_GLN_v.class, "GLN", null);
+	String COLUMNNAME_GLN = "GLN";
 
 	/**
 	 * Set Active.
@@ -69,7 +68,7 @@ public interface I_EDI_AD_Org_Lookup_BPL_GLN_v
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
 	 * Get Active.
@@ -79,10 +78,8 @@ public interface I_EDI_AD_Org_Lookup_BPL_GLN_v
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_EDI_AD_Org_Lookup_BPL_GLN_v, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_EDI_AD_Org_Lookup_BPL_GLN_v, Object>(I_EDI_AD_Org_Lookup_BPL_GLN_v.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_EDI_AD_Org_Lookup_BPL_GLN_v, Object> COLUMN_IsActive = new ModelColumn<>(I_EDI_AD_Org_Lookup_BPL_GLN_v.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 }

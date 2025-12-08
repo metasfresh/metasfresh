@@ -1,15 +1,15 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { useHistory } from 'react-router-dom';
 
 import { trl } from '../../utils/translations';
 import { abortWorkflowRequest } from '../../api/launchers';
 import { appLaunchersLocation } from '../../routes/launchers';
 
 import ConfirmButton from '../../components/buttons/ConfirmButton';
+import { useMobileNavigation } from '../../hooks/useMobileNavigation';
 
 const AbortButton = ({ applicationId, wfProcessId }) => {
-  const history = useHistory();
+  const history = useMobileNavigation();
   const onUserConfirmed = () => {
     abortWorkflowRequest(wfProcessId).then(() => history.push(appLaunchersLocation({ applicationId })));
   };
@@ -17,6 +17,7 @@ const AbortButton = ({ applicationId, wfProcessId }) => {
   return (
     <div className="mt-5">
       <ConfirmButton
+        id="abort-button"
         caption={trl('activities.confirmButton.abort')}
         isDangerousAction={true}
         isUserEditable={true}

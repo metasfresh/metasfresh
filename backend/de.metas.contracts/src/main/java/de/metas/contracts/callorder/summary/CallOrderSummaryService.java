@@ -90,7 +90,7 @@ public class CallOrderSummaryService
 		final CallOrderSummary callOrderSummary = summaryRepo.getById(callOrderSummaryId);
 		final CallOrderSummaryData summaryData = callOrderSummary.getSummaryData();
 
-		final Quantity currentQtyDelivered = Quantitys.create(summaryData.getQtyDelivered(), summaryData.getUomId());
+		final Quantity currentQtyDelivered = Quantitys.of(summaryData.getQtyDelivered(), summaryData.getUomId());
 
 		final Quantity sum = conversionBL.computeSum(
 				UOMConversionContext.of(callOrderSummary.getSummaryData().getProductId()),
@@ -107,7 +107,7 @@ public class CallOrderSummaryService
 		final CallOrderSummary callOrderSummary = summaryRepo.getById(callOrderSummaryId);
 		final CallOrderSummaryData summaryData = callOrderSummary.getSummaryData();
 
-		final Quantity currentQtyInvoiced = Quantitys.create(summaryData.getQtyInvoiced(), summaryData.getUomId());
+		final Quantity currentQtyInvoiced = Quantitys.of(summaryData.getQtyInvoiced(), summaryData.getUomId());
 
 		final Quantity sum = conversionBL.computeSum(
 				UOMConversionContext.of(callOrderSummary.getSummaryData().getProductId()),

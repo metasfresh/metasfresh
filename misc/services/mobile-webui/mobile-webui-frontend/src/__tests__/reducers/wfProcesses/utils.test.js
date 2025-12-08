@@ -35,6 +35,7 @@ describe('reducers: utils tests', () => {
                         "completeStatus": "NOT_STARTED",
                         "isUserEditable": false,
                       },
+                      "userInstructions": undefined,
                     },
                     "A3": Object {
                       "activityId": "A3",
@@ -45,6 +46,7 @@ describe('reducers: utils tests', () => {
                         "completeStatus": "NOT_STARTED",
                         "isUserEditable": false,
                       },
+                      "userInstructions": undefined,
                     },
                     "A4": Object {
                       "activityId": "A4",
@@ -55,6 +57,7 @@ describe('reducers: utils tests', () => {
                         "completeStatus": "NOT_STARTED",
                         "isUserEditable": false,
                       },
+                      "userInstructions": undefined,
                     },
                     "A5": Object {
                       "activityId": "A5",
@@ -65,6 +68,7 @@ describe('reducers: utils tests', () => {
                         "completeStatus": "NOT_STARTED",
                         "isUserEditable": false,
                       },
+                      "userInstructions": undefined,
                     },
                   },
                   "activityIdsInOrder": Array [

@@ -22,6 +22,7 @@
 
 package de.metas.pricing.interceptor;
 
+import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
@@ -35,7 +36,6 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.CopyRecordFactory;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.ModelValidator;
@@ -66,16 +66,15 @@ public class M_PriceList_Version
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW }, ifColumnsChanged = { I_M_PriceList_Version.COLUMNNAME_ValidFrom })
 	public void updatePLVName(@NonNull final I_M_PriceList_Version priceListVersion)
 	{
-		final PriceListId priceListId = PriceListId.ofRepoId(priceListVersion.getM_PriceList_ID());
-		final I_M_PriceList priceList = priceListDAO.getById(priceListId);
 		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(priceListVersion.getAD_Org_ID()));
 		final LocalDate date = TimeUtil.asLocalDate(priceListVersion.getValidFrom(), timeZone);
-
 		if (date == null)
 		{
 			return;
 		}
 
+		final PriceListId priceListId = PriceListId.ofRepoId(priceListVersion.getM_PriceList_ID());
+		final I_M_PriceList priceList = priceListDAO.getByIdInTrx(priceListId);
 		final String plvName = priceListBL.createPLVName(priceList.getName(), date);
 		priceListVersion.setName(plvName);
 	}

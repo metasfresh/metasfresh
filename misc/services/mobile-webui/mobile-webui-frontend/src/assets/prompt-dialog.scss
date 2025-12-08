@@ -27,10 +27,11 @@
       .buttons {
         padding-top: 10px;
         display: flex;
-        flex-wrap: nowrap;
+        flex-flow: row wrap;
 
         .button {
-          flex: 50%;
+          flex-grow: 1;
+          flex-shrink: 0;
         }
       }
     }

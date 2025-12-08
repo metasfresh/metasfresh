@@ -22,7 +22,12 @@ package org.adempiere.mm.attributes.listeners.inAusLand;
  * #L%
  */
 
-
+import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.organization.OrgId;
+import de.metas.user.UserRepository;
+import de.metas.util.Services;
 import org.adempiere.mm.attributes.api.impl.InAusLandAttributeBL;
 import org.adempiere.mm.attributes.api.impl.InAusLandAttributeDAO;
 import org.adempiere.mm.attributes.api.impl.ModelAttributeSetInstanceListenerTestHelper;
@@ -33,15 +38,8 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOutLine;
-import org.junit.Before;
-import org.junit.Test;
-
-import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.impl.BPartnerBL;
-import de.metas.organization.OrgId;
-import de.metas.user.UserRepository;
-import de.metas.util.Services;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for
@@ -61,7 +59,7 @@ public class InAusLandModelAttributeSetInstanceListenerTest
 	private I_C_Country country_InLand;
 	private I_C_Country country_AusLand;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

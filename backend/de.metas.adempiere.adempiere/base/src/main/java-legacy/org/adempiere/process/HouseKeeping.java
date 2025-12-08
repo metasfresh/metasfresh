@@ -85,7 +85,7 @@ public class HouseKeeping extends JavaProcess{
 			String sql = "INSERT INTO hst_"+tableName + " SELECT * FROM " + tableName;
 			if (whereClause != null && whereClause.length() > 0)				
 				sql = sql + " WHERE " + whereClause;
-			noins = DB.executeUpdate(sql, get_TrxName());
+			noins = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 			if (noins == -1)
 				throw new AdempiereSystemError("Cannot insert into hst_"+tableName);
 			addLog("@Inserted@ " + noins);
@@ -132,7 +132,7 @@ public class HouseKeeping extends JavaProcess{
 		String sql = "DELETE FROM " + tableName;
 		if (whereClause != null && whereClause.length() > 0)				
 			sql = sql + " WHERE " + whereClause;
-		nodel = DB.executeUpdate(sql, get_TrxName());
+		nodel = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		if (nodel == -1)
 			throw new AdempiereSystemError("Cannot delete from " + tableName);
 		Timestamp time = new Timestamp(date.getTime());

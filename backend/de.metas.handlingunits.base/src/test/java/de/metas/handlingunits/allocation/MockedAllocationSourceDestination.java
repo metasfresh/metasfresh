@@ -22,19 +22,17 @@ package de.metas.handlingunits.allocation;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import org.adempiere.util.lang.IPair;
-import org.compiere.util.Util;
-
+import de.metas.common.util.pair.IPair;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.IMutableAllocationResult;
 import de.metas.handlingunits.hutransaction.impl.HUTransactionCandidate;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.util.Check;
+import org.compiere.util.Util;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 public class MockedAllocationSourceDestination implements IAllocationSource, IAllocationDestination
 {

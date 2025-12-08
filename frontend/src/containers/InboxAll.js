@@ -11,7 +11,6 @@ const mapStateToProps = (state) => ({
   modal: state.windowHandler.modal,
   rawModal: state.windowHandler.rawModal,
   pluginModal: state.windowHandler.pluginModal,
-  indicator: state.windowHandler.indicator,
   includedView: state.viewHandler.includedView,
 });
 
@@ -23,20 +22,12 @@ class InboxAll extends Component {
     modal: PropTypes.any,
     rawModal: PropTypes.any,
     processStatus: PropTypes.any,
-    indicator: PropTypes.any,
     includedView: PropTypes.any,
   };
 
   render() {
-    const {
-      inbox,
-      modal,
-      rawModal,
-      pluginModal,
-      processStatus,
-      indicator,
-      includedView,
-    } = this.props;
+    const { inbox, modal, rawModal, pluginModal, processStatus, includedView } =
+      this.props;
 
     return (
       <Container
@@ -45,7 +36,6 @@ class InboxAll extends Component {
         rawModal={rawModal}
         pluginModal={pluginModal}
         processStatus={processStatus}
-        indicator={indicator}
         includedView={includedView}
       >
         <Inbox all inbox={inbox} />

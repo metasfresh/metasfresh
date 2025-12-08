@@ -1,6 +1,7 @@
 /** Generated Model - DO NOT CHANGE */
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
@@ -301,6 +302,18 @@ public class X_M_CostDetail extends org.compiere.model.PO implements I_M_CostDet
 		return ii.intValue();
 	}
 
+	@Override
+	public void setDateAcct (final java.sql.Timestamp DateAcct)
+	{
+		set_ValueNoCheck (COLUMNNAME_DateAcct, DateAcct);
+	}
+
+	@Override
+	public java.sql.Timestamp getDateAcct()
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_DateAcct);
+	}
+
 	/** Set Delta Amount.
 		@param DeltaAmt 
 		Difference Amount
@@ -469,10 +482,30 @@ public class X_M_CostDetail extends org.compiere.model.PO implements I_M_CostDet
 	@Override
 	public int getM_CostDetail_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_CostDetail_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_CostDetail_ID);
+	}
+
+	/** 
+	 * M_CostDetail_Type AD_Reference_ID=541722
+	 * Reference name: M_CostDetail_Type
+	 */
+	public static final int M_COSTDETAIL_TYPE_AD_Reference_ID=541722;
+	/** Main = M */
+	public static final String M_COSTDETAIL_TYPE_Main = "M";
+	/** Cost Adjustment = A */
+	public static final String M_COSTDETAIL_TYPE_CostAdjustment = "A";
+	/** Already Shipped = S */
+	public static final String M_COSTDETAIL_TYPE_AlreadyShipped = "S";
+	@Override
+	public void setM_CostDetail_Type (final java.lang.String M_CostDetail_Type)
+	{
+		set_Value (COLUMNNAME_M_CostDetail_Type, M_CostDetail_Type);
+	}
+
+	@Override
+	public java.lang.String getM_CostDetail_Type() 
+	{
+		return get_ValueAsString(COLUMNNAME_M_CostDetail_Type);
 	}
 
 	@Override
@@ -510,6 +543,61 @@ public class X_M_CostDetail extends org.compiere.model.PO implements I_M_CostDet
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+
+	@Override
+	public org.compiere.model.I_M_CostRevaluation getM_CostRevaluation()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_CostRevaluation_ID, org.compiere.model.I_M_CostRevaluation.class);
+	}
+
+	@Override
+	public void setM_CostRevaluation(final org.compiere.model.I_M_CostRevaluation M_CostRevaluation)
+	{
+		set_ValueFromPO(COLUMNNAME_M_CostRevaluation_ID, org.compiere.model.I_M_CostRevaluation.class, M_CostRevaluation);
+	}
+
+	@Override
+	public void setM_CostRevaluation_ID (final int M_CostRevaluation_ID)
+	{
+		if (M_CostRevaluation_ID < 1)
+			set_ValueNoCheck (COLUMNNAME_M_CostRevaluation_ID, null);
+		else
+			set_ValueNoCheck (COLUMNNAME_M_CostRevaluation_ID, M_CostRevaluation_ID);
+	}
+
+	@Override
+	public int getM_CostRevaluation_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_M_CostRevaluation_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_M_CostRevaluationLine getM_CostRevaluationLine()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_CostRevaluationLine_ID, org.compiere.model.I_M_CostRevaluationLine.class);
+	}
+
+	@Override
+	public void setM_CostRevaluationLine(final org.compiere.model.I_M_CostRevaluationLine M_CostRevaluationLine)
+	{
+		set_ValueFromPO(COLUMNNAME_M_CostRevaluationLine_ID, org.compiere.model.I_M_CostRevaluationLine.class, M_CostRevaluationLine);
+	}
+
+	@Override
+	public void setM_CostRevaluationLine_ID (final int M_CostRevaluationLine_ID)
+	{
+		if (M_CostRevaluationLine_ID < 1)
+			set_ValueNoCheck (COLUMNNAME_M_CostRevaluationLine_ID, null);
+		else
+			set_ValueNoCheck (COLUMNNAME_M_CostRevaluationLine_ID, M_CostRevaluationLine_ID);
+	}
+
+	@Override
+	public int getM_CostRevaluationLine_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_M_CostRevaluationLine_ID);
 	}
 
 	@Override
@@ -930,5 +1018,33 @@ public class X_M_CostDetail extends org.compiere.model.PO implements I_M_CostDet
 		if (bd == null)
 			 return BigDecimal.ZERO;
 		return bd;
+	}
+
+	@Override
+	public void setSourceAmt (final @Nullable BigDecimal SourceAmt)
+	{
+		set_Value (COLUMNNAME_SourceAmt, SourceAmt);
+	}
+
+	@Override
+	public BigDecimal getSourceAmt()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_SourceAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setSource_Currency_ID (final int Source_Currency_ID)
+	{
+		if (Source_Currency_ID < 1)
+			set_Value (COLUMNNAME_Source_Currency_ID, null);
+		else
+			set_Value (COLUMNNAME_Source_Currency_ID, Source_Currency_ID);
+	}
+
+	@Override
+	public int getSource_Currency_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_Source_Currency_ID);
 	}
 }

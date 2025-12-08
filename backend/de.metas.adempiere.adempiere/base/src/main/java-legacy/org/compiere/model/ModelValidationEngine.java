@@ -25,8 +25,7 @@ import de.metas.impexp.processing.IImportProcess;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringService.SpanMetadata;
-import de.metas.monitoring.adapter.PerformanceMonitoringService.SubType;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.Metadata;
 import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
 import de.metas.script.IADRuleDAO;
 import de.metas.script.ScriptEngineFactory;
@@ -57,20 +56,19 @@ import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
 import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere.RunMode;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
-import org.compiere.util.KeyNamePair;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
 import org.springframework.context.ApplicationContext;
 
 import javax.annotation.Nullable;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -93,15 +91,20 @@ import java.util.Properties;
  *         <li>FR [ 1670025 ] ModelValidator.afterLoadPreferences will be useful
  *         <li>BF [ 1679692 ] fireDocValidate doesn't treat exceptions as errors
  *         <li>FR [ 1724662 ] Support Email should contain model validators info
- *         <li>FR [ 2788276 ] Data Import Validator https://sourceforge.net/tracker/?func=detail&aid=2788276&group_id=176962&atid=879335
+ *         <li>FR [ 2788276 ] Data Import Validator <a href="https://sourceforge.net/tracker/?func=detail&aid=2788276&group_id=176962&atid=879335">https://sourceforge.net/tracker/?func=detail&aid=2788276&group_id=176962&atid=879335</a>
  *         <li>BF [ 2804135 ] Global FactsValidator are not invoked https://sourceforge.net/tracker/?func=detail&aid=2804135&group_id=176962&atid=879332
  *         <li>BF [ 2819617 ] NPE if script validator rule returns null https://sourceforge.net/tracker/?func=detail&aid=2819617&group_id=176962&atid=879332
  *         </ul>
  * @author Tobias Schoeneberg, t.schoeneberg@metas.de
- *         <li>FR [ADEMPIERE-28] ModelValidatorException https://adempiere.atlassian.net/browse/ADEMPIERE-28
+ *         <li>FR [ADEMPIERE-28] ModelValidatorException <a href="https://adempiere.atlassian.net/browse/ADEMPIERE-28">https://adempiere.atlassian.net/browse/ADEMPIERE-28</a>
  */
 public class ModelValidationEngine implements IModelValidationEngine
 {
+
+	private static final String PERF_MON_SYSCONFIG_NAME = "de.metas.monitoring.modelInterceptor.enable";
+	private static final boolean SYS_CONFIG_DEFAULT_VALUE = false;
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private static PerformanceMonitoringService _performanceMonitoringService;
 
 	/**
 	 * Get Singleton
@@ -139,13 +142,11 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	/**
 	 * Sets the list of EntityTypes for which the model interceptors shall be loaded.
-	 *
+	 * <p>
 	 * You can provide a custom list of entity types, or you can use a predefined one:
 	 * <ul>
 	 * <li>{@link #INITENTITYTYPE_Minimal} - only the core entity types. It is used when we need to start adempiere from other tools and we don't want to start the servers, processors and stuff.
 	 * </ul>
-	 *
-	 * @param initEntityTypes
 	 */
 	public synchronized static void setInitEntityTypes(final List<String> initEntityTypes)
 	{
@@ -258,7 +259,6 @@ public class ModelValidationEngine implements IModelValidationEngine
 			//
 			// Register from Spring context
 			stopwatch.reset().start();
-			currentClassName = null;
 			for (final Object springInterceptor : springInterceptors)
 			{
 				currentClassName = springInterceptor.getClass().getName();
@@ -306,18 +306,18 @@ public class ModelValidationEngine implements IModelValidationEngine
 		return interceptorsByName.values();
 	}
 
-	private final void addModelInterceptorInitError(final String modelInterceptorClassName, final Throwable error)
+	private void addModelInterceptorInitError(final String modelInterceptorClassName, final Throwable error)
 	{
 		final ModelInterceptorInitException initException = new ModelInterceptorInitException(modelInterceptorClassName, error);
 		_modelInterceptorInitErrors.add(initException);
 	}
 
-	private final boolean hasInitErrors()
+	private boolean hasInitErrors()
 	{
 		return !_modelInterceptorInitErrors.isEmpty();
 	}
 
-	private final String getInitErrorsAsString()
+	private String getInitErrorsAsString()
 	{
 		final StringBuilder msg = new StringBuilder();
 		for (final ModelInterceptorInitException initError : _modelInterceptorInitErrors)
@@ -331,7 +331,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 		return msg.toString();
 	}
 
-	private final void logModelInterceptorInitErrors()
+	private void logModelInterceptorInitErrors()
 	{
 		if (_modelInterceptorInitErrors.isEmpty())
 		{
@@ -350,7 +350,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 		}
 	}
 
-	private final boolean isFailOnMissingModelInteceptors()
+	private boolean isFailOnMissingModelInteceptors()
 	{
 		final Boolean failOnMissingModelInteceptorsOverride = _failOnMissingModelInteceptors;
 		if (failOnMissingModelInteceptorsOverride != null)
@@ -362,7 +362,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 		return system.isFailOnMissingModelValidator();
 	}
 
-	public static final void setFailOnMissingModelInteceptors(final boolean failOnMissingModelInteceptors)
+	public static void setFailOnMissingModelInteceptors(final boolean failOnMissingModelInteceptors)
 	{
 		_failOnMissingModelInteceptors = failOnMissingModelInteceptors;
 	}
@@ -407,20 +407,20 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	/**
 	 * Loads module activator class for given name.
-	 *
+	 * <p>
 	 * If the class was not found this method will return null and the exception will be silently swallowed.
 	 *
-	 * @param classname
 	 * @return module activator class or null if class was not found.
 	 */
-	private static final Class<?> getModuleActivatorClassOrNull(final String classname)
+	@Nullable
+	private static Class<?> getModuleActivatorClassOrNull(final String classname)
 	{
 		try
 		{
 			final ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 			return classLoader.loadClass(classname);
 		}
-		catch (ClassNotFoundException e)
+		catch (final ClassNotFoundException e)
 		{
 			// silently ignore it
 		}
@@ -434,29 +434,26 @@ public class ModelValidationEngine implements IModelValidationEngine
 	// private VetoableChangeSupport m_changeSupport = new VetoableChangeSupport(this);
 
 	/** Validators */
-	private ArrayList<ModelValidator> m_validators = new ArrayList<>();
+	private final ArrayList<ModelValidator> m_validators = new ArrayList<>();
 	/** Model Change Listeners */
-	private Hashtable<String, ArrayList<ModelValidator>> m_modelChangeListeners = new Hashtable<>();
+	private final Hashtable<String, ArrayList<ModelValidator>> m_modelChangeListeners = new Hashtable<>();
 	/** Document Validation Listeners */
-	private Hashtable<String, ArrayList<ModelValidator>> m_docValidateListeners = new Hashtable<>();
+	private final Hashtable<String, ArrayList<ModelValidator>> m_docValidateListeners = new Hashtable<>();
 	/** Data Import Validation Listeners */
-	private Hashtable<String, ArrayList<IImportInterceptor>> m_impValidateListeners = new Hashtable<>();
+	private final Hashtable<String, ArrayList<IImportInterceptor>> m_impValidateListeners = new Hashtable<>();
 
-	private ArrayList<ModelValidator> m_globalValidators = new ArrayList<>();
+	private final ArrayList<ModelValidator> m_globalValidators = new ArrayList<>();
 
 	/**
 	 * Contains model validators for subsequent processing. The boolean value tells if the subsequent processing takes place directly when fireModelChange() is invoked with this type (
 	 * <code>true</code>) or later on (<code>false</code>).
 	 */
-	private Map<ModelValidator, Boolean> m_modelChangeSubsequent = Collections.synchronizedMap(new HashMap<ModelValidator, Boolean>());
+	private final Map<ModelValidator, Boolean> m_modelChangeSubsequent = Collections.synchronizedMap(new HashMap<ModelValidator, Boolean>());
 
 	/**
 	 * Initialize and add validator
-	 *
-	 * @param validator
-	 * @param client
 	 */
-	private void initialize(final ModelValidator validator, final I_AD_Client client)
+	private void initialize(final ModelValidator validator, @Nullable final I_AD_Client client)
 	{
 		if (client == null)
 		{
@@ -477,14 +474,15 @@ public class ModelValidationEngine implements IModelValidationEngine
 	 * @param AD_User_ID user
 	 * @return error message or empty/null
 	 */
-	public String loginComplete(int AD_Client_ID, int AD_Org_ID, int AD_Role_ID, int AD_User_ID)
+	@Nullable
+	public String loginComplete(final int AD_Client_ID, final int AD_Org_ID, final int AD_Role_ID, final int AD_User_ID)
 	{
-		for (ModelValidator validator : m_validators)
+		for (final ModelValidator validator : m_validators)
 		{
 			if (appliesFor(validator, AD_Client_ID))
 			{
-				String error = validator.login(AD_Org_ID, AD_Role_ID, AD_User_ID);
-				if (error != null && error.length() > 0)
+				final String error = validator.login(AD_Org_ID, AD_Role_ID, AD_User_ID);
+				if (Check.isNotBlank(error))
 				{
 					return error;
 				}
@@ -513,8 +511,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 				catch (final Exception e)
 				{
 					logger.warn("Failed executing login script for {}", loginRule, e);
-					final String error = AdempiereException.extractMessage(e);
-					return error;
+					return AdempiereException.extractMessage(e);
 				}
 			}
 		}
@@ -546,21 +543,20 @@ public class ModelValidationEngine implements IModelValidationEngine
 	private List<IUserLoginListener> getUserLoginListener(final int adClientId)
 	{
 		final List<IUserLoginListener> listeners = new ArrayList<>();
-		for (ModelValidator m_validator : m_validators)
+		for (final ModelValidator m_validator : m_validators)
 		{
-			final ModelValidator validator = m_validator;
 
-			if (!(validator instanceof IUserLoginListener))
+			if (!(m_validator instanceof IUserLoginListener))
 			{
 				continue;
 			}
 
-			if (!appliesFor(validator, adClientId))
+			if (!appliesFor(m_validator, adClientId))
 			{
 				continue;
 			}
 
-			final IUserLoginListener loginListener = (IUserLoginListener)validator;
+			final IUserLoginListener loginListener = (IUserLoginListener)m_validator;
 			listeners.add(loginListener);
 		}
 		return listeners;
@@ -576,7 +572,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 			{
 				listener.beforeLogout(session);
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				logger.error(e.getLocalizedMessage(), e);
 			}
@@ -593,7 +589,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 			{
 				listener.afterLogout(session);
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 				logger.error(e.getLocalizedMessage(), e);
 			}
@@ -606,7 +602,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 	 * @param tableName table name
 	 * @param listener listener
 	 */
-	public void addModelChange(String tableName, ModelValidator listener)
+	public void addModelChange(@Nullable final String tableName, @Nullable final ModelValidator listener)
 	{
 		if (tableName == null || listener == null)
 		{
@@ -617,7 +613,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 		{
 			registerGlobal(listener);
 		}
-		String propertyName = getPropertyName(tableName, listener);
+		final String propertyName = getPropertyName(tableName, listener);
 		ArrayList<ModelValidator> list = m_modelChangeListeners.get(propertyName);
 		if (list == null)
 		{
@@ -640,7 +636,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 	}	// addModelValidator
 
 	@Override
-	public void addModelChange(String tableName, IModelInterceptor interceptor)
+	public void addModelChange(@Nullable String tableName, @Nullable final IModelInterceptor interceptor)
 	{
 		if (interceptor == null)
 		{
@@ -666,21 +662,21 @@ public class ModelValidationEngine implements IModelValidationEngine
 			return;
 		}
 
-		String propertyName = getPropertyName(tableName, listener);
-		ArrayList<ModelValidator> list = m_modelChangeListeners.get(propertyName);
+		final String propertyName = getPropertyName(tableName, listener);
+		final ArrayList<ModelValidator> list = m_modelChangeListeners.get(propertyName);
 		if (list == null)
 		{
 			return;
 		}
 		list.remove(listener);
-		if (list.size() == 0)
+		if (list.isEmpty())
 		{
 			m_modelChangeListeners.remove(propertyName);
 		}
 	}	// removeModelValidator
 
 	@Override
-	public void removeModelChange(String tableName, IModelInterceptor interceptor)
+	public void removeModelChange(@Nullable final String tableName, @Nullable final IModelInterceptor interceptor)
 	{
 		if (interceptor == null)
 		{
@@ -693,26 +689,33 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	public void fireModelChange(@NonNull final PO po, final ModelChangeType changeType)
 	{
-		final PerformanceMonitoringService performanceMonitoringService = SpringContextHolder.instance.getBeanOr(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
-		final String tableName = po.get_TableName();
-		final String changeTypeStr = changeType.toString();
 
-		performanceMonitoringService.monitorSpan(
-				() -> fireModelChange0(po, changeType),
-				SpanMetadata
-						.builder()
-						.name(changeTypeStr + " " + tableName)
-						.type(Type.MODEL_INTERCEPTOR.getCode())
-						.subType(SubType.MODEL_CHANGE.getCode())
-						.action(changeTypeStr)
-						.label("tableName", tableName)
-						.label(PerformanceMonitoringService.LABEL_RECORD_ID, Integer.toString(po.get_ID()))
-						.build());
+		if(!isPerformanceMonitorActive())
+		{
+			fireModelChange0(po, changeType);
+		}
+		else
+		{
+			final String tableName = po.get_TableName();
+			final String changeTypeStr = changeType.toString();
+
+			performanceMonitoringService().monitor(
+					() -> fireModelChange0(po, changeType),
+					Metadata
+							.builder()
+							.className("ModelValidationEngine")
+							.type(Type.MODEL_INTERCEPTOR)
+							.functionName("fireModelChange")
+							.label("changeType", changeTypeStr)
+							.label("tableName", tableName)
+							.label(PerformanceMonitoringService.LABEL_RECORD_ID, Integer.toString(po.get_ID()))
+							.build());
+		}
 	}
 
 	public void fireModelChange0(@Nullable final PO po, @NonNull final ModelChangeType changeType)
 	{
-		try (final MDCCloseable mdcCloseable = MDC.putCloseable("changeType", changeType.toString()))
+		try (final MDCCloseable ignored = MDC.putCloseable("changeType", changeType.toString()))
 		{
 			if (po == null || m_modelChangeListeners.isEmpty())
 			{
@@ -783,7 +786,24 @@ public class ModelValidationEngine implements IModelValidationEngine
 		}
 	}	// fireModelChange
 
-	private final void executeInTrx(final String trxName, final TimingType changeTypeOrDocTiming, @NonNull final Runnable runnable)
+	private boolean isPerformanceMonitorActive()
+	{
+		return sysConfigBL.getBooleanValue(PERF_MON_SYSCONFIG_NAME, SYS_CONFIG_DEFAULT_VALUE);
+	}
+
+	private PerformanceMonitoringService performanceMonitoringService()
+	{
+		PerformanceMonitoringService performanceMonitoringService = _performanceMonitoringService;
+		if (performanceMonitoringService == null || performanceMonitoringService instanceof NoopPerformanceMonitoringService)
+		{
+			performanceMonitoringService = _performanceMonitoringService = SpringContextHolder.instance.getBeanOr(
+					PerformanceMonitoringService.class,
+					NoopPerformanceMonitoringService.INSTANCE);
+		}
+		return performanceMonitoringService;
+	}
+
+	private void executeInTrx(final String trxName, final TimingType changeTypeOrDocTiming, @NonNull final Runnable runnable)
 	{
 		final boolean runInTrx = changeTypeOrDocTiming != ModelChangeType.BEFORE_SAVE_TRX;
 
@@ -813,12 +833,12 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	}
 
-	private final void fireModelChange0(
+	private void fireModelChange0(
 			@NonNull final PO po,
 			@NonNull final ModelChangeType changeType,
-			@Nullable List<ModelValidator> interceptorsSystem,
-			@Nullable List<ModelValidator> interceptorsClient,
-			@Nullable List<I_AD_Table_ScriptValidator> scriptValidators)
+			@Nullable final List<ModelValidator> interceptorsSystem,
+			@Nullable final List<ModelValidator> interceptorsClient,
+			@Nullable final List<I_AD_Table_ScriptValidator> scriptValidators)
 	{
 		if (interceptorsSystem != null)
 		{
@@ -844,7 +864,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 		}
 	}
 
-	private final void fireModelChangeForScriptValidators(
+	private void fireModelChangeForScriptValidators(
 			final PO po,
 			final String ruleEventType,
 			final TimingType changeTypeOrDocTiming,
@@ -890,7 +910,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 							.setThrowExceptionIfResultNotEmpty()
 							.execute(rule.getScript());
 				}
-				catch (Exception e)
+				catch (final Exception e)
 				{
 					throw AdempiereException.wrapIfNeeded(e);
 				}
@@ -901,16 +921,14 @@ public class ModelValidationEngine implements IModelValidationEngine
 	/**
 	 * Makes sure given <code>model</code> is valid before firing listeners.<br>
 	 * Logs (but doesn't throw!) an exception if the given model has no trxName.
-	 *
+	 * <p>
 	 * Background: if trxName is null when firing the events that is usually some development/framework error.<br>
 	 * We rely on this trxName when creating <b>further</b> objects, so if trxName is <code>null</code> then we can't cleanly roll back and will end in some inconsistency fxxx-up in case something
 	 * fails.
 	 * <p>
 	 * Note: In future we might throw the exception instead of just logging it.
-	 *
-	 * @param model
 	 */
-	private final void assertModelValidBeforeFiringEvent(@NonNull final PO model, @NonNull final TimingType timingType)
+	private void assertModelValidBeforeFiringEvent(@NonNull final PO model, @NonNull final TimingType timingType)
 	{
 		//
 		// Validate PO's transaction
@@ -930,7 +948,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 		}
 	}
 
-	private final void invokeModelChangeMethods(
+	private void invokeModelChangeMethods(
 			@NonNull final PO po,
 			@NonNull final ModelChangeType changeType,
 			@NonNull final List<ModelValidator> validators)
@@ -946,7 +964,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 			@NonNull final ModelChangeType changeType,
 			@NonNull final ModelValidator validator)
 	{
-		try (final MDCCloseable mdcCloseable = MDC.putCloseable("interceptor", validator.toString()))
+		try (final MDCCloseable ignored = MDC.putCloseable("interceptor", validator.toString()))
 		{
 			if (!appliesFor(validator, po.getAD_Client_ID()))
 			{
@@ -954,35 +972,32 @@ public class ModelValidationEngine implements IModelValidationEngine
 				return;
 			}
 
-		final Stopwatch stopwatch = Stopwatch.createStarted();
-				try
-		{
-
-			// the default cause
-			final String error = validator.modelChange(po, changeType.toInt());
-			if (!Check.isEmpty(error))
+			final Stopwatch stopwatch = Stopwatch.createStarted();
+			try
 			{
-				throw new AdempiereException(error);
-			}
 
-					logger.debug("Executed in {}: {} ({}) for {}", stopwatch, validator, changeType, po);
-		}
-		catch (final Exception ex)
-		{
-					logger.debug("Failed executing in {}: {} ({}) for {}", stopwatch, validator, changeType, po, ex);
-			throw AdempiereException.wrapIfNeeded(ex);
-		}
-	}
-
+				// the default cause
+				final String error = validator.modelChange(po, changeType.toInt());
+				if (Check.isNotBlank(error))
+				{
+					throw new AdempiereException(error);
 				}
+
+				logger.debug("Executed in {}: {} ({}) for {}", stopwatch, validator, changeType, po);
+			}
+			catch (final Exception ex)
+			{
+				logger.debug("Failed executing in {}: {} ({}) for {}", stopwatch, validator, changeType, po, ex);
+				throw AdempiereException.wrapIfNeeded(ex);
+			}
+		}
+
+	}
 
 	/**************************************************************************
 	 * Add Document Validation Listener
-	 *
-	 * @param tableName table name
-	 * @param listener listener
 	 */
-	public void addDocValidate(String tableName, ModelValidator listener)
+	public void addDocValidate(@Nullable final String tableName, @Nullable final ModelValidator listener)
 	{
 		if (tableName == null || listener == null)
 		{
@@ -993,7 +1008,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 		{
 			registerGlobal(listener);
 		}
-		String propertyName = getPropertyName(tableName, listener);
+		final String propertyName = getPropertyName(tableName, listener);
 		ArrayList<ModelValidator> list = m_docValidateListeners.get(propertyName);
 		if (list == null)
 		{
@@ -1008,7 +1023,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 	}	// addDocValidate
 
 	@Override
-	public void addDocValidate(String tableName, IModelInterceptor interceptor)
+	public void addDocValidate(@Nullable final String tableName, @Nullable final IModelInterceptor interceptor)
 	{
 		if (interceptor == null)
 		{
@@ -1021,24 +1036,21 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	/**
 	 * Remove Document Validation Listener
-	 *
-	 * @param tableName table name
-	 * @param listener listener
 	 */
-	public void removeDocValidate(String tableName, ModelValidator listener)
+	public void removeDocValidate(@Nullable final String tableName, @Nullable final ModelValidator listener)
 	{
 		if (tableName == null || listener == null)
 		{
 			return;
 		}
-		String propertyName = getPropertyName(tableName, listener);
-		ArrayList<ModelValidator> list = m_docValidateListeners.get(propertyName);
+		final String propertyName = getPropertyName(tableName, listener);
+		final ArrayList<ModelValidator> list = m_docValidateListeners.get(propertyName);
 		if (list == null)
 		{
 			return;
 		}
 		list.remove(listener);
-		if (list.size() == 0)
+		if (list.isEmpty())
 		{
 			m_docValidateListeners.remove(propertyName);
 		}
@@ -1052,36 +1064,44 @@ public class ModelValidationEngine implements IModelValidationEngine
 	 * @return always returns <code>null</code>; we keep this string return type only for legacy purposes (when the error message was returned)
 	 * @throws AdempiereException in case of failure
 	 */
+	@Nullable
 	public String fireDocValidate(final Object model, final int docTimingInt)
 	{
 		final DocTimingType docTiming = DocTimingType.valueOf(docTimingInt);
 		return fireDocValidate(model, docTiming);
 	}
 
+	@Nullable
 	public String fireDocValidate(@NonNull final Object model, @NonNull final DocTimingType docTiming)
 	{
-		try (final MDCCloseable mdcCloseable = MDC.putCloseable("docTiming", docTiming.toString()))
+		try (final MDCCloseable ignored = MDC.putCloseable("docTiming", docTiming.toString()))
 		{
-			final PerformanceMonitoringService perfMonService = SpringContextHolder.instance.getBeanOr(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
+			if(!isPerformanceMonitorActive())
+			{
+				return fireDocValidate0(model, docTiming);
+			}
+			else
+			{
+				final String tableName = InterfaceWrapperHelper.getModelTableName(model);
+				final int recordId = InterfaceWrapperHelper.getId(model);
+				final String docTimingStr = docTiming.toString();
 
-			final String tableName = InterfaceWrapperHelper.getModelTableName(model);
-			final int recordId = InterfaceWrapperHelper.getId(model);
-			final String docTimingStr = docTiming.toString();
-
-			return perfMonService.monitorSpan(
-					() -> fireDocValidate0(model, docTiming),
-					SpanMetadata
-							.builder()
-							.name(docTimingStr + " " + tableName)
-							.type(Type.MODEL_INTERCEPTOR.getCode())
-							.subType(SubType.DOC_VALIDATE.getCode())
-							.action(docTimingStr)
-							.label("tableName", tableName)
-							.label(PerformanceMonitoringService.LABEL_RECORD_ID, Integer.toString(recordId))
-							.build());
+				return performanceMonitoringService().monitor(
+						() -> fireDocValidate0(model, docTiming),
+						Metadata
+								.builder()
+								.className("ModelValidationEngine")
+								.type(Type.MODEL_INTERCEPTOR)
+								.functionName("fireDocValidate")
+								.label("docTiming", docTimingStr)
+								.label("tableName", tableName)
+								.label(PerformanceMonitoringService.LABEL_RECORD_ID, Integer.toString(recordId))
+								.build());
+			}
 		}
 	}
 
+	@Nullable
 	private String fireDocValidate0(final Object model, final DocTimingType docTiming)
 	{
 		if (model == null)
@@ -1152,11 +1172,11 @@ public class ModelValidationEngine implements IModelValidationEngine
 		return null;
 	}
 
-	private void fireDocValidate0(final PO po,
-			final DocTimingType docTiming,
-			final List<ModelValidator> interceptorsSystem,
-			final List<ModelValidator> interceptorsClient,
-			final List<I_AD_Table_ScriptValidator> scriptValidators)
+	private void fireDocValidate0(@NonNull final PO po,
+			@NonNull final DocTimingType docTiming,
+			@Nullable final List<ModelValidator> interceptorsSystem,
+			@Nullable final List<ModelValidator> interceptorsClient,
+			@Nullable final List<I_AD_Table_ScriptValidator> scriptValidators)
 	{
 		if (interceptorsSystem != null)
 		{
@@ -1182,9 +1202,9 @@ public class ModelValidationEngine implements IModelValidationEngine
 	}
 
 	private void fireDocValidate(
-			final PO po,
-			final DocTimingType docTiming,
-			final List<ModelValidator> interceptors)
+			@NonNull final PO po,
+			@NonNull final DocTimingType docTiming,
+			@NonNull final List<ModelValidator> interceptors)
 	{
 		for (final ModelValidator interceptor : interceptors)
 		{
@@ -1222,9 +1242,9 @@ public class ModelValidationEngine implements IModelValidationEngine
 	}
 
 	@Override
-	public void addImportInterceptor(String importTableName, IImportInterceptor listener)
+	public void addImportInterceptor(final  String importTableName, final IImportInterceptor listener)
 	{
-		String propertyName = getPropertyName(importTableName);
+		final String propertyName = getPropertyName(importTableName);
 		ArrayList<IImportInterceptor> list = m_impValidateListeners.get(propertyName);
 		if (list == null)
 		{
@@ -1246,18 +1266,22 @@ public class ModelValidationEngine implements IModelValidationEngine
 	 * @param targetModel target model (e.g. MBPartner, MBPartnerLocation, MUser)
 	 * @param timing see ImportValidator.TIMING_* constants
 	 */
-	public <ImportRecordType> void fireImportValidate(IImportProcess<ImportRecordType> process, ImportRecordType importModel, Object targetModel, int timing)
+	public <ImportRecordType> void fireImportValidate(
+			final IImportProcess<ImportRecordType> process,
+			final ImportRecordType importModel,
+			final Object targetModel,
+			final int timing)
 	{
-		if (m_impValidateListeners.size() == 0)
+		if (m_impValidateListeners.isEmpty())
 		{
 			return;
 		}
 
-		String propertyName = getPropertyName(process.getImportTableName());
-		ArrayList<IImportInterceptor> list = m_impValidateListeners.get(propertyName);
+		final String propertyName = getPropertyName(process.getImportTableName());
+		final ArrayList<IImportInterceptor> list = m_impValidateListeners.get(propertyName);
 		if (list != null)
 		{
-			for (IImportInterceptor intercepto : list)
+			for (final IImportInterceptor intercepto : list)
 			{
 				intercepto.onImport(process, importModel, targetModel, timing);
 			}
@@ -1272,12 +1296,10 @@ public class ModelValidationEngine implements IModelValidationEngine
 	@Override
 	public String toString()
 	{
-		StringBuffer sb = new StringBuffer("ModelValidationEngine[");
-		sb.append("Validators=#").append(m_validators.size())
-				.append(", ModelChange=#").append(m_modelChangeListeners.size())
-				.append(", DocValidate=#").append(m_docValidateListeners.size())
-				.append("]");
-		return sb.toString();
+		return "ModelValidationEngine[" + "Validators=#" + m_validators.size()
+				+ ", ModelChange=#" + m_modelChangeListeners.size()
+				+ ", DocValidate=#" + m_docValidateListeners.size()
+				+ "]";
 	}	// toString
 
 	/**
@@ -1297,7 +1319,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 		}
 		sb.append("=== ModelValidationEngine ===").append(Env.NL);
 		sb.append("Validators #").append(m_validators.size()).append(Env.NL);
-		for (ModelValidator mv : m_validators)
+		for (final ModelValidator mv : m_validators)
 		{
 			sb.append(mv.toString()).append(Env.NL);
 		}
@@ -1307,9 +1329,9 @@ public class ModelValidationEngine implements IModelValidationEngine
 		Iterator<String> it = m_modelChangeListeners.keySet().iterator();
 		while (it.hasNext())
 		{
-			String key = it.next();
-			ArrayList<ModelValidator> list = m_modelChangeListeners.get(key);
-			for (ModelValidator mv : list)
+			final String key = it.next();
+			final ArrayList<ModelValidator> list = m_modelChangeListeners.get(key);
+			for (final ModelValidator mv : list)
 			{
 				sb.append(key).append(": ").append(mv.toString()).append(Env.NL);
 			}
@@ -1320,9 +1342,9 @@ public class ModelValidationEngine implements IModelValidationEngine
 		it = m_docValidateListeners.keySet().iterator();
 		while (it.hasNext())
 		{
-			String key = it.next();
-			ArrayList<ModelValidator> list = m_docValidateListeners.get(key);
-			for (ModelValidator mv : list)
+			final String key = it.next();
+			final ArrayList<ModelValidator> list = m_docValidateListeners.get(key);
+			for (final ModelValidator mv : list)
 			{
 				sb.append(key).append(": ").append(mv.toString()).append(Env.NL);
 			}
@@ -1336,14 +1358,13 @@ public class ModelValidationEngine implements IModelValidationEngine
 	 * After Load Preferences into Context for selected client.
 	 *
 	 * @param ctx context
-	 * @author Teo Sarca - FR [ 1670025 ] - https://sourceforge.net/tracker/index.php?func=detail&aid=1670025&group_id=176962&atid=879335
+	 * @author Teo Sarca - FR [ 1670025 ] - <a href="https://sourceforge.net/tracker/index.php?func=detail&aid=1670025&group_id=176962&atid=879335">https://sourceforge.net/tracker/index.php?func=detail&aid=1670025&group_id=176962&atid=879335</a>
 	 */
-	public void afterLoadPreferences(Properties ctx)
+	public void afterLoadPreferences(@NonNull final Properties ctx)
 	{
-		int AD_Client_ID = Env.getAD_Client_ID(ctx);
-		for (int i = 0; i < m_validators.size(); i++)
+		final int AD_Client_ID = Env.getAD_Client_ID(ctx);
+		for (final ModelValidator validator : m_validators)
 		{
-			ModelValidator validator = m_validators.get(i);
 			if (AD_Client_ID == validator.getAD_Client_ID()
 					|| m_globalValidators.contains(validator))
 			{
@@ -1352,7 +1373,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 				{
 					m = validator.getClass().getMethod("afterLoadPreferences", new Class[] { Properties.class });
 				}
-				catch (NoSuchMethodException e)
+				catch (final NoSuchMethodException e)
 				{
 					// ignore
 				}
@@ -1363,9 +1384,9 @@ public class ModelValidationEngine implements IModelValidationEngine
 						m.invoke(validator, ctx);
 					}
 				}
-				catch (Exception e)
+				catch (final Exception e)
 				{
-					logger.warn("" + validator + ": " + e.getLocalizedMessage());
+					logger.warn("{}: {}", validator, e.getLocalizedMessage());
 				}
 			}
 		}
@@ -1376,10 +1397,9 @@ public class ModelValidationEngine implements IModelValidationEngine
 	 */
 	public void beforeSaveProperties()
 	{
-		int AD_Client_ID = Env.getAD_Client_ID(Env.getCtx());
-		for (int i = 0; i < m_validators.size(); i++)
+		final int AD_Client_ID = Env.getAD_Client_ID(Env.getCtx());
+		for (final ModelValidator validator : m_validators)
 		{
-			ModelValidator validator = m_validators.get(i);
 			if (AD_Client_ID == validator.getAD_Client_ID()
 					|| m_globalValidators.contains(validator))
 			{
@@ -1388,7 +1408,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 				{
 					m = validator.getClass().getMethod("beforeSaveProperties");
 				}
-				catch (NoSuchMethodException e)
+				catch (final NoSuchMethodException e)
 				{
 					// ignore
 				}
@@ -1399,15 +1419,15 @@ public class ModelValidationEngine implements IModelValidationEngine
 						m.invoke(validator);
 					}
 				}
-				catch (Exception e)
+				catch (final Exception e)
 				{
-					logger.warn("" + validator + ": " + e.getLocalizedMessage());
+					logger.warn("{}: {}", validator, e.getLocalizedMessage());
 				}
 			}
 		}
 	}
 
-	private final void registerGlobal(ModelValidator validator)
+	private void registerGlobal(final ModelValidator validator)
 	{
 		if (!m_globalValidators.contains(validator))
 		{
@@ -1421,17 +1441,17 @@ public class ModelValidationEngine implements IModelValidationEngine
 				|| m_globalValidators.contains(validator);
 	}
 
-	private final String getPropertyName(String tableName)
+	private String getPropertyName(final String tableName)
 	{
 		return tableName + "*";
 	}
 
-	private final String getPropertyName(String tableName, int AD_Client_ID)
+	private String getPropertyName(final String tableName, final int AD_Client_ID)
 	{
 		return tableName + AD_Client_ID;
 	}
 
-	private final String getPropertyName(String tableName, ModelValidator listener)
+	private String getPropertyName(final String tableName, final ModelValidator listener)
 	{
 		if (m_globalValidators.contains(listener))
 		{

@@ -1,14 +1,15 @@
 package de.metas.dlm.model.interceptor;
 
-import org.adempiere.ad.callout.annotations.Callout;
-import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.adempiere.ad.service.ILookupDAO;
-import org.adempiere.ad.service.TableRefInfo;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.compiere.util.DisplayType;
-
+import de.metas.ad_reference.ADRefTable;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.dlm.model.I_DLM_Partition_Config_Reference;
 import de.metas.util.Services;
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.compiere.model.I_AD_Column;
+import org.compiere.util.DisplayType;
 
 /*
  * #%L
@@ -49,22 +50,24 @@ public class DLM_Partition_Config_Reference
 			return;
 		}
 
-		final int ad_Reference_ID = ref.getDLM_Referencing_Column().getAD_Reference_ID();
-		if (!DisplayType.isLookup(ad_Reference_ID))
+		final I_AD_Column adColumn = ref.getDLM_Referencing_Column();
+		final int displayType = adColumn.getAD_Reference_ID();
+		if (!DisplayType.isLookup(displayType))
 		{
 			return;
 		}
 
-		final ILookupDAO lookupDAO = Services.get(ILookupDAO.class);
-		final TableRefInfo tableRefInfo;
-		if (lookupDAO.isTableReference(ad_Reference_ID))
+		final ADReferenceService adReferenceService = ADReferenceService.get();
+		final ADRefTable tableRefInfo;
+		final ReferenceId adReferenceValueId = ReferenceId.ofRepoIdOrNull(adColumn.getAD_Reference_Value_ID());
+		if (adReferenceService.isTableReference(adReferenceValueId))
 		{
-			tableRefInfo = lookupDAO.retrieveTableRefInfo(ad_Reference_ID);
+			tableRefInfo = adReferenceService.retrieveTableRefInfo(adReferenceValueId);
 		}
 		else
 		{
-			final String columnName = ref.getDLM_Referencing_Column().getColumnName();
-			tableRefInfo = lookupDAO.retrieveTableDirectRefInfo(columnName);
+			final String columnName = adColumn.getColumnName();
+			tableRefInfo = adReferenceService.getTableDirectRefInfo(columnName);
 		}
 
 		if (tableRefInfo == null)

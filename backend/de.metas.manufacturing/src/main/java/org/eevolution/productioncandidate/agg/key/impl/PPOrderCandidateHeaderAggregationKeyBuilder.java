@@ -22,11 +22,11 @@
 
 package org.eevolution.productioncandidate.agg.key.impl;
 
-import org.adempiere.util.lang.ObjectUtils;
 import de.metas.util.agg.key.AbstractHeaderAggregationKeyBuilder;
+import org.adempiere.util.lang.ObjectUtils;
 import org.eevolution.model.I_PP_Order_Candidate;
 
-public class PPOrderCandidateHeaderAggregationKeyBuilder extends AbstractHeaderAggregationKeyBuilder<I_PP_Order_Candidate>
+class PPOrderCandidateHeaderAggregationKeyBuilder extends AbstractHeaderAggregationKeyBuilder<I_PP_Order_Candidate>
 {
 	public static final String REGISTRATION_KEY = I_PP_Order_Candidate.Table_Name;
 

@@ -17,4 +17,19 @@
     }
   }
 
+  .alternative-button {
+    background-color: white;
+    color: $base-mf-green;
+    border-color: $base-mf-green;
+    font-size: 1.25rem;
+  }
+
+  .qr-code-auth {
+    .barcode-scanner {
+      max-height: 50vh;
+      video {
+        max-height: 50vh;
+      }
+    }
+  }
 }

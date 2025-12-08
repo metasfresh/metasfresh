@@ -84,7 +84,7 @@ public class HULotNumberQuarantineService
 	public boolean isQuarantineHU(final I_M_HU huRecord)
 	{
 		// retrieve the attribute
-		final AttributeId quarantineAttributeId = attributeDAO.retrieveAttributeIdByValue(HUAttributeConstants.ATTR_Quarantine);
+		final AttributeId quarantineAttributeId = attributeDAO.getAttributeIdByCode(HUAttributeConstants.ATTR_Quarantine);
 
 		final I_M_HU_Attribute huAttribute = huAttributesDAO.retrieveAttribute(huRecord, quarantineAttributeId);
 
@@ -99,7 +99,7 @@ public class HULotNumberQuarantineService
 	public void markHUAsQuarantine(final I_M_HU huRecord)
 	{
 		// retrieve the attribute
-		final AttributeId quarantineAttributeId = attributeDAO.retrieveAttributeIdByValue(HUAttributeConstants.ATTR_Quarantine);
+		final AttributeId quarantineAttributeId = attributeDAO.getAttributeIdByCode(HUAttributeConstants.ATTR_Quarantine);
 
 		final I_M_HU_Attribute huAttribute = huAttributesDAO.retrieveAttribute(huRecord, quarantineAttributeId);
 

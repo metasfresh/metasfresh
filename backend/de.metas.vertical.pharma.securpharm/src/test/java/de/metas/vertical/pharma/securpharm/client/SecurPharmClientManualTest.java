@@ -23,13 +23,13 @@
 
 package de.metas.vertical.pharma.securpharm.client;
 
-import org.junit.Ignore;
 
 import de.metas.vertical.pharma.securpharm.config.SecurPharmConfig;
 import de.metas.vertical.pharma.securpharm.product.DataMatrixCode;
 import de.metas.vertical.pharma.securpharm.service.PlainSecurPharmConfigRespository;
+import org.junit.jupiter.api.Disabled;
 
-@Ignore
+@Disabled
 public class SecurPharmClientManualTest
 {
 	public static void main(final String[] args)

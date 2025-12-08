@@ -11,6 +11,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
@@ -56,7 +57,6 @@ public final class DetailId implements Comparable<DetailId>
 	{
 		return new DetailId(PREFIX_AD_TAB_ID, adTabId.getRepoId());
 	}
-
 
 	public static DetailId fromPrefixAndId(final String prefix, final int id)
 	{
@@ -134,11 +134,12 @@ public final class DetailId implements Comparable<DetailId>
 
 	public String getTableAlias()
 	{
-		if (_tableAlias == null)
+		String tableAlias = this._tableAlias;
+		if (tableAlias == null)
 		{
-			_tableAlias = "d" + idInt;
+			tableAlias = this._tableAlias = "d" + idInt;
 		}
-		return _tableAlias;
+		return tableAlias;
 	}
 
 	@Nullable
@@ -165,5 +166,19 @@ public final class DetailId implements Comparable<DetailId>
 	public static boolean equals(@Nullable final DetailId o1, @Nullable final DetailId o2)
 	{
 		return Objects.equals(o1, o2);
+	}
+
+	public int getIdIntAssumingPrefix(@NonNull final String expectedPrefix)
+	{
+		assertIdPrefix(expectedPrefix);
+		return getIdInt();
+	}
+
+	private void assertIdPrefix(@NonNull final String expectedPrefix)
+	{
+		if (!expectedPrefix.equals(idPrefix))
+		{
+			throw new AdempiereException("Expected id prefix `" + expectedPrefix + "` for " + this);
+		}
 	}
 }

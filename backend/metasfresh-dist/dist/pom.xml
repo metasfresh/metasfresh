@@ -137,6 +137,14 @@
         </dependency>
 
         <dependency>
+            <groupId>de.metas.qualitymgmt</groupId>
+            <artifactId>de.metas.qualitymgmt</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
+
+        <dependency>
             <groupId>de.metas.business</groupId>
             <artifactId>de.metas.business.rest-api-impl</artifactId>
             <version>${metasfresh.version}</version>
@@ -155,6 +163,13 @@
         <dependency>
             <groupId>de.metas.manufacturing</groupId>
             <artifactId>de.metas.manufacturing</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.manufacturing</groupId>
+            <artifactId>de.metas.manufacturing.webui</artifactId>
             <version>${metasfresh.version}</version>
             <classifier>migration-postgres-sql</classifier>
             <type>zip</type>
@@ -407,6 +422,14 @@
         </dependency>
 
         <dependency>
+            <groupId>de.metas.payment.sumup</groupId>
+            <artifactId>de.metas.payment.sumup</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
+
+        <dependency>
             <artifactId>de.metas.printing.base</artifactId>
             <groupId>de.metas.printing</groupId>
             <version>${metasfresh.version}</version>
@@ -517,6 +540,24 @@
             <classifier>migration-postgres-sql</classifier>
             <type>zip</type>
         </dependency>
+
+        <dependency>
+            <groupId>de.metas.pos</groupId>
+            <artifactId>de.metas.pos.base</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
+
+        <dependency>
+            <groupId>de.metas.hu_consolidation</groupId>
+            <artifactId>de.metas.hu_consolidation.mobile</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
+
+
 
         <!-- Elasticsearch -->
         <dependency>

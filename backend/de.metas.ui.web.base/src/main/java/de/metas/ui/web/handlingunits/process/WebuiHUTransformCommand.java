@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.IHUSplitBuilder;
 import de.metas.handlingunits.model.I_M_HU;
@@ -22,7 +23,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -98,17 +98,17 @@ public class WebuiHUTransformCommand
 		CU_To_ExistingTU,
 
 		/**
-		 * Invokes {@link HUTransformService#tuToNewTUs(I_M_HU, BigDecimal)}.
+		 * Invokes {@link HUTransformService#tuToNewTUs(I_M_HU, QtyTU)}.
 		 */
 		TU_To_NewTUs,
 
 		/**
-		 * Invokes {@link HUTransformService#tuToNewLUs(I_M_HU, BigDecimal, I_M_HU_PI_Item, boolean)}.
+		 * Invokes {@link HUTransformService#tuToNewLUs(I_M_HU, QtyTU, I_M_HU_PI_Item, boolean)}.
 		 */
 		TU_To_NewLUs,
 
 		/**
-		 * Invokes {@link HUTransformService#tuToExistingLU(I_M_HU, BigDecimal, I_M_HU).
+		 * Invokes {@link HUTransformService#tuToExistingLU(I_M_HU, QtyTU, I_M_HU).
 		 */
 		TU_To_ExistingLU,
 
@@ -190,7 +190,7 @@ public class WebuiHUTransformCommand
 				{
 					throw new FillMandatoryException(WEBUI_M_HU_Transform.PARAM_M_HU_PI_Item_Product_ID);
 				}
-					return action_SplitCU_To_NewTUs(row, parameters.getHuPIItemProduct(), Quantity.of(parameters.getQtyCU(), row.getC_UOM()), parameters.isHuPlanningReceiptOwnerPM_TU());
+				return action_SplitCU_To_NewTUs(row, parameters.getHuPIItemProduct(), Quantity.of(parameters.getQtyCU(), row.getC_UOM()), parameters.isHuPlanningReceiptOwnerPM_TU());
 			}
 			case TU_Set_Ownership:
 			{
@@ -293,8 +293,8 @@ public class WebuiHUTransformCommand
 	/**
 	 * Split selected CU to new top level TUs
 	 *
-	 * @param cuRow                 cu row to split
-	 * @param qtyCU                 quantity CU to split
+	 * @param cuRow cu row to split
+	 * @param qtyCU quantity CU to split
 	 */
 	private WebuiHUTransformCommandResult action_SplitCU_To_NewTUs(
 			final HUEditorRow cuRow, final I_M_HU_PI_Item_Product tuPIItemProduct, final Quantity qtyCU, final boolean isOwnPackingMaterials)
@@ -313,7 +313,7 @@ public class WebuiHUTransformCommand
 				.build();
 	}
 
-	private WebuiHUTransformCommandResult action_SplitTU_To_ExistingLU(final HUEditorRow tuRow, final I_M_HU luHU, final BigDecimal qtyTU)
+	private WebuiHUTransformCommandResult action_SplitTU_To_ExistingLU(final HUEditorRow tuRow, final I_M_HU luHU, final QtyTU qtyTU)
 	{
 		newHUTransformation().tuToExistingLU(tuRow.getM_HU(), qtyTU, luHU);
 
@@ -329,13 +329,13 @@ public class WebuiHUTransformCommand
 	/**
 	 * Split TU to new LU (only one LU!).
 	 *
-	 * @param tuRow                 represents the TU (or TUs in the aggregate-HU-case) that is our split source
-	 * @param qtyTU                 the number of TUs we want to split from the given {@code tuRow}
+	 * @param tuRow represents the TU (or TUs in the aggregate-HU-case) that is our split source
+	 * @param qtyTU the number of TUs we want to split from the given {@code tuRow}
 	 */
 	private WebuiHUTransformCommandResult action_SplitTU_To_NewLU(
-			final HUEditorRow tuRow, final I_M_HU_PI_Item huPIItem, final BigDecimal qtyTU, final boolean isOwnPackingMaterials)
+			final HUEditorRow tuRow, final I_M_HU_PI_Item huPIItem, final QtyTU qtyTU, final boolean isOwnPackingMaterials)
 	{
-		final List<I_M_HU> createdHUs = newHUTransformation().tuToNewLUs(tuRow.getM_HU(), qtyTU, huPIItem, isOwnPackingMaterials);
+		final List<I_M_HU> createdHUs = newHUTransformation().tuToNewLUs(tuRow.getM_HU(), qtyTU, huPIItem, isOwnPackingMaterials).getLURecords();
 
 		final ImmutableSet<HuId> huIdsToAddToView = createdHUs.stream()
 				.map(I_M_HU::getM_HU_ID)
@@ -353,7 +353,7 @@ public class WebuiHUTransformCommand
 	/**
 	 * Split a given number of TUs from current selected TU line to new TUs.
 	 */
-	private WebuiHUTransformCommandResult action_SplitTU_To_NewTUs(final HUEditorRow tuRow, final BigDecimal qtyTU)
+	private WebuiHUTransformCommandResult action_SplitTU_To_NewTUs(final HUEditorRow tuRow, final QtyTU qtyTU)
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
@@ -361,7 +361,7 @@ public class WebuiHUTransformCommand
 		final I_M_HU fromTU = tuRow.getM_HU();
 		final I_M_HU fromTopLevelHU = handlingUnitsBL.getTopLevelParent(fromTU);
 
-		final List<I_M_HU> createdHUs = newHUTransformation().tuToNewTUs(fromTU, qtyTU);
+		final List<I_M_HU> createdHUs = newHUTransformation().tuToNewTUs(fromTU, qtyTU).getAllTURecords();
 
 		final ImmutableSet<HuId> huIdsToAddToView = createdHUs.stream()
 				.map(I_M_HU::getM_HU_ID)

@@ -22,24 +22,8 @@ package de.metas.tourplanning.api.impl;
  * #L%
  */
 
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-
-import de.metas.tourplanning.model.TourId;
-import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.ImmutablePair;
-import org.compiere.util.TimeUtil;
-
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.lang.SOTrx;
 import de.metas.tourplanning.api.IDeliveryDayAllocable;
 import de.metas.tourplanning.api.IDeliveryDayBL;
@@ -50,6 +34,7 @@ import de.metas.tourplanning.model.I_M_DeliveryDay;
 import de.metas.tourplanning.model.I_M_DeliveryDay_Alloc;
 import de.metas.tourplanning.model.I_M_TourVersion;
 import de.metas.tourplanning.model.I_M_TourVersionLine;
+import de.metas.tourplanning.model.TourId;
 import de.metas.tourplanning.model.validator.DeliveryDayAllocableInterceptor;
 import de.metas.tourplanning.spi.CompositeDeliveryDayHandler;
 import de.metas.tourplanning.spi.IDeliveryDayCreateHandler;
@@ -57,6 +42,20 @@ import de.metas.tourplanning.spi.IDeliveryDayHandler;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.util.TimeUtil;
+
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 public class DeliveryDayBL implements IDeliveryDayBL
 {

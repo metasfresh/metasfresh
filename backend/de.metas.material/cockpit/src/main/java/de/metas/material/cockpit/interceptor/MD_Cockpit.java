@@ -39,17 +39,17 @@ import static de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler.c
 public class MD_Cockpit
 {
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW },
-			ifColumnsChanged = { I_MD_Cockpit.COLUMNNAME_MDCandidateQtyStock,
-					I_MD_Cockpit.COLUMNNAME_QtySupplyRequired,
-					I_MD_Cockpit.COLUMNNAME_QtySupplySum,
-					I_MD_Cockpit.COLUMNNAME_QtyDemandSum
+			ifColumnsChanged = { I_MD_Cockpit.COLUMNNAME_MDCandidateQtyStock_AtDate,
+					I_MD_Cockpit.COLUMNNAME_QtySupplyRequired_AtDate,
+					I_MD_Cockpit.COLUMNNAME_QtySupplySum_AtDate,
+					I_MD_Cockpit.COLUMNNAME_QtyDemandSum_AtDate
 			})
 	public void updateCounts(@NonNull final I_MD_Cockpit cockpit)
 	{
-		final BigDecimal qtyStockCurrent = cockpit.getMDCandidateQtyStock();
+		final BigDecimal qtyStockCurrent = cockpit.getMDCandidateQtyStock_AtDate();
 
-		cockpit.setQtyStockCurrent(qtyStockCurrent);
-		cockpit.setQtySupplyToSchedule(computeQtySupplyToSchedule(cockpit));
-		cockpit.setQtyExpectedSurplus(computeQtyExpectedSurplus(cockpit));
+		cockpit.setQtyStockCurrent_AtDate(qtyStockCurrent);
+		cockpit.setQtySupplyToSchedule_AtDate(computeQtySupplyToSchedule(cockpit));
+		cockpit.setQtyExpectedSurplus_AtDate(computeQtyExpectedSurplus(cockpit));
 	}
 }

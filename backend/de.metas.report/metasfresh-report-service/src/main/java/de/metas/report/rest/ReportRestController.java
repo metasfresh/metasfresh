@@ -71,25 +71,37 @@ public class ReportRestController
 			@RequestParam(name = "AD_Process_ID", required = false) final int processId,
 			@RequestParam(name = "AD_PInstance_ID", required = false) final int pinstanceId,
 			@RequestParam(name = "AD_Language", required = false) final String adLanguage,
-			@RequestParam(name = "output", required = false) final String outputStr)
+			@RequestParam(name = "output", required = false) final String outputStr,
+			@RequestParam(name = "raw", required = false, defaultValue = "false") final boolean raw)
 	{
 		try (final MDCCloseable ignored = MDC.putCloseable("AD_Process_ID", String.valueOf(processId));
 				final MDCCloseable ignored1 = MDC.putCloseable("AD_PInstance_ID", String.valueOf(pinstanceId));
 				final MDCCloseable ignored2 = MDC.putCloseable("output", String.valueOf(outputStr)))
 		{
 			final OutputType outputType = outputStr == null ? IReportServer.DEFAULT_OutputType : OutputType.valueOf(outputStr);
-
 			final ReportResult report = server.report(processId, pinstanceId, adLanguage, outputType);
-			final String reportFilename = extractReportFilename(report);
 
 			final HttpHeaders headers = new HttpHeaders();
-			headers.setContentType(MediaType.APPLICATION_JSON);
-			headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + reportFilename + "\"");
 			headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
 
-			return ResponseEntity.ok()
-					.headers(headers)
-					.body(report);
+			if (raw)
+			{
+				headers.setContentType(MediaType.parseMediaType(report.getOutputType().getContentType()));
+				return ResponseEntity.ok()
+						.headers(headers)
+						.body(report.getReportContent())
+						;
+			}
+			else
+			{
+				final String reportFilename = extractReportFilename(report);
+				headers.setContentType(MediaType.APPLICATION_JSON);
+				headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + reportFilename + "\"");
+
+				return ResponseEntity.ok()
+						.headers(headers)
+						.body(report);
+			}
 		}
 		catch (final Throwable ex)
 		{

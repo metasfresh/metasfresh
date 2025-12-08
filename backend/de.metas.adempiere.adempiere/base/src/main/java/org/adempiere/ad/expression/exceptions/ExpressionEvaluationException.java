@@ -1,14 +1,15 @@
 package org.adempiere.ad.expression.exceptions;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.adempiere.ad.expression.api.IExpression;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Check;
+import lombok.NonNull;
+import org.adempiere.ad.expression.api.IExpression;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
 
 /*
  * #%L
@@ -36,11 +37,10 @@ import de.metas.util.Check;
  * Exception thrown when expression evaluation fails
  *
  * @author tsa
- *
  */
 public class ExpressionEvaluationException extends ExpressionException
 {
-	public static final ExpressionEvaluationException wrapIfNeeded(final Throwable throwable)
+	public static ExpressionEvaluationException wrapIfNeeded(final Throwable throwable)
 	{
 		Check.assumeNotNull(throwable, "throwable not null");
 
@@ -58,20 +58,29 @@ public class ExpressionEvaluationException extends ExpressionException
 		return new ExpressionEvaluationException(extractMessage(throwable), cause);
 	}
 
-	private static final long serialVersionUID = -4311254481298308224L;
-
-	private final List<IExpression<?>> expressions = new ArrayList<>();
+	private final ArrayList<IExpression<?>> expressions = new ArrayList<>();
 
 	private String partialEvaluatedExpression;
 
-	public ExpressionEvaluationException(final String msg)
-	{
-		super(msg);
-	}
-
-	public ExpressionEvaluationException(final String msg, final Throwable cause)
+	protected ExpressionEvaluationException(final String msg, final Throwable cause)
 	{
 		super(msg, cause);
+	}
+
+	protected ExpressionEvaluationException(final @NonNull ITranslatableString message)
+	{
+		// ExpressionEvaluationException are usually internal errors, so userValidationError=false
+		super(message, false);
+	}
+
+	public static ExpressionEvaluationException newWithPlainMessage(@Nullable final String plainMessage)
+	{
+		return new ExpressionEvaluationException(TranslatableStrings.constant(plainMessage));
+	}
+
+	public static AdempiereException newWithTranslatableMessage(@Nullable final String translatableMessage)
+	{
+		return new ExpressionEvaluationException(TranslatableStrings.parse(translatableMessage));
 	}
 
 	public ExpressionEvaluationException addExpression(final IExpression<?> expression)

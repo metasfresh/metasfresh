@@ -1,6 +1,9 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.invoice_440;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice_gateway.spi.model.BPartner;
 import de.metas.invoice_gateway.spi.model.GLN;
@@ -61,7 +64,7 @@ public class Invoice440ExportClientTest
 
 		final InvoiceToExport invoice = InvoiceToExport.builder()
 				.id(invoiceId)
-				.docSubType("EA")
+				.docBaseAndSubType(DocBaseAndSubType.of(DocBaseType.SalesInvoice, DocSubType.Healthcare_CH_EA))
 				.metasfreshVersion(matasfreshVersion)
 				.recipient(recipient)
 				.biller(biller)

@@ -1,14 +1,13 @@
 package de.metas.purchasecandidate.material.event;
 
-import org.compiere.model.I_M_Product;
-import org.eevolution.model.I_PP_Product_Planning;
-import org.springframework.stereotype.Service;
-
 import de.metas.material.planning.IMaterialDemandMatcher;
-import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.ProductPlanning;
+import de.metas.material.planning.MaterialPlanningContext;
+import de.metas.product.IProductBL;
 import de.metas.util.Loggables;
-import de.metas.util.StringUtils;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.springframework.stereotype.Service;
 
 /*
  * #%L
@@ -35,20 +34,22 @@ import lombok.NonNull;
 @Service
 public class PurchaseOrderDemandMatcher implements IMaterialDemandMatcher
 {
-	@Override
-	public boolean matches(@NonNull final IMaterialPlanningContext mrpContext)
-	{
-		final I_PP_Product_Planning productPlanning = mrpContext.getProductPlanning();
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
-		if (StringUtils.toBoolean(productPlanning.getIsPurchased()))
+	@Override
+	public boolean matches(@NonNull final MaterialPlanningContext context)
+	{
+		final ProductPlanning productPlanning = context.getProductPlanning();
+
+		if (productPlanning.isPurchased())
 		{
 			return true;
 		}
 
-		final I_M_Product product = mrpContext.getM_Product();
+		final String productName = productBL.getProductValueAndName(context.getProductId());
 		Loggables.addLog(
-				"Product {}_{} is not set to be purchased; PurchaseOrderDemandMatcher returns false; productPlanning={}; product={}",
-				product.getValue(), product.getName(), productPlanning, product);
+				"Product {} is not set to be purchased; PurchaseOrderDemandMatcher returns false; productPlanning={}; product={}",
+				productName, productPlanning, context.getProductId());
 		return false;
 	}
 

@@ -1,19 +1,6 @@
 package de.metas.ui.web.menu;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.security.UserRolePermissionsKey;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.menu.MenuNode.MenuNodeType;
@@ -26,8 +13,19 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import lombok.NonNull;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.LinkedHashMap;
+import java.util.List;
 
 /*
  * #%L
@@ -65,13 +63,20 @@ public class MenuRestController
 	private static final String PARAM_IncludeLastNode = "inclusive";
 	private static final String PARAM_ChildrenLimit = "childrenLimit";
 
-	@Autowired
-	private UserSession userSession;
+	private final UserSession userSession;
 
-	@Autowired
-	private MenuTreeRepository menuTreeRepository;
-	@Autowired
-	private DocumentDescriptorFactory documentDescriptorFactory;
+	private final MenuTreeRepository menuTreeRepository;
+	private final DocumentDescriptorFactory documentDescriptorFactory;
+
+	public MenuRestController(
+			@NonNull final UserSession userSession,
+			@NonNull final MenuTreeRepository menuTreeRepository,
+			@NonNull final DocumentDescriptorFactory documentDescriptorFactory)
+	{
+		this.userSession = userSession;
+		this.menuTreeRepository = menuTreeRepository;
+		this.documentDescriptorFactory = documentDescriptorFactory;
+	}
 
 	private MenuTree getMenuTree()
 	{
@@ -128,7 +133,7 @@ public class MenuRestController
 		return JSONMenuNode.builder(node)
 				.setMaxDepth(depth)
 				.setMaxChildrenPerNode(childrenLimit)
-				.setIsFavoriteProvider(menuTreeRepository::isFavorite)
+				.setIsFavoriteProvider(menuTreeRepository)
 				.build();
 	}
 
@@ -154,11 +159,11 @@ public class MenuRestController
 		return JSONMenuNode.ofList(changedMenuNodesById.values(), menuTreeRepository);
 	}
 
-	@ApiOperation("Gets node's path (from root node) ")
+	@Operation(summary = "Gets node's path (from root node) ")
 	@GetMapping("/node/{nodeId}/path")
 	public JSONMenuNode getPath(
 			@PathVariable(PARAM_NodeId) final String nodeId,
-			@RequestParam(name = PARAM_IncludeLastNode, required = false, defaultValue = "false") @ApiParam("Shall we include the last node") final boolean includeLastNode //
+			@RequestParam(name = PARAM_IncludeLastNode, required = false, defaultValue = "false") @Parameter(description = "Shall we include the last node") final boolean includeLastNode //
 	)
 	{
 		userSession.assertLoggedIn();
@@ -166,11 +171,10 @@ public class MenuRestController
 		final List<MenuNode> path = getMenuTree()
 				.getPath(nodeId);
 
-		final boolean skipRootNode = true;
-		return JSONMenuNode.ofPath(path, skipRootNode, includeLastNode, menuTreeRepository);
+		return JSONMenuNode.ofPath(path, includeLastNode, menuTreeRepository);
 	}
 
-	@ApiOperation("Gets breadcrumb menu to be displayed when user clicks on that node in the breadcrumb")
+	@Operation(summary = "Gets breadcrumb menu to be displayed when user clicks on that node in the breadcrumb")
 	@GetMapping("/node/{nodeId}/breadcrumbMenu")
 	public List<JSONMenuNode> getNodeBreadcrumbMenu(@PathVariable(PARAM_NodeId) final String nodeId)
 	{
@@ -179,7 +183,7 @@ public class MenuRestController
 		final List<MenuNode> children = getMenuTree().getNodeById(nodeId)
 				.getChildren()
 				.stream()
-				.filter(child -> child.isEffectiveLeafNode())
+				.filter(MenuNode::isEffectiveLeafNode)
 				.collect(ImmutableList.toImmutableList());
 
 		return JSONMenuNode.ofList(children, menuTreeRepository);
@@ -187,9 +191,9 @@ public class MenuRestController
 
 	@GetMapping("/elementPath")
 	public JSONMenuNode getPath(
-			@RequestParam(name = PARAM_Type, required = true) final JSONMenuNodeType jsonType,
-			@RequestParam(name = PARAM_ElementId, required = true) final String elementIdStr,
-			@RequestParam(name = PARAM_IncludeLastNode, required = false, defaultValue = "false") @ApiParam("Shall we include the last node") final boolean includeLastNode)
+			@RequestParam(name = PARAM_Type) final JSONMenuNodeType jsonType,
+			@RequestParam(name = PARAM_ElementId) final String elementIdStr,
+			@RequestParam(name = PARAM_IncludeLastNode, required = false, defaultValue = "false") @Parameter(description = "Shall we include the last node") final boolean includeLastNode)
 	{
 		userSession.assertLoggedIn();
 
@@ -199,8 +203,7 @@ public class MenuRestController
 				.getPath(menuNodeType, elementId)
 				.orElseGet(() -> getPathOfMissingElement(menuNodeType, elementId, userSession.getAD_Language()));
 
-		final boolean skipRootNode = true;
-		return JSONMenuNode.ofPath(path, skipRootNode, includeLastNode, menuTreeRepository);
+		return JSONMenuNode.ofPath(path, includeLastNode, menuTreeRepository);
 	}
 
 	private List<MenuNode> getPathOfMissingElement(final MenuNodeType type, final DocumentId elementId, final String adLanguage)
@@ -225,9 +228,9 @@ public class MenuRestController
 
 	@GetMapping("/queryPaths")
 	public JSONMenuNode query(
-			@RequestParam(name = PARAM_NameQuery, required = true) final String nameQuery,
+			@RequestParam(name = PARAM_NameQuery) final String nameQuery,
 			@RequestParam(name = PARAM_ChildrenLimit, required = false, defaultValue = "0") final int childrenLimit,
-			@RequestParam(name = "childrenInclusive", required = false, defaultValue = "false") @ApiParam("true if groups that were matched shall be populated with it's leafs, even if those leafs are not matching") final boolean includeLeafsIfGroupAccepted)
+			@RequestParam(name = "childrenInclusive", required = false, defaultValue = "false") @Parameter(description = "true if groups that were matched shall be populated with it's leafs, even if those leafs are not matching") final boolean includeLeafsIfGroupAccepted)
 	{
 		userSession.assertLoggedIn();
 

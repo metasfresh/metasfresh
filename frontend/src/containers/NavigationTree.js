@@ -8,8 +8,11 @@ import history from '../services/History';
 import { nodePathsRequest, queryPathsRequest, rootRequest } from '../api';
 import { openModal } from '../actions/WindowActions';
 import Container from '../components/Container';
-import MenuOverlayContainer from '../components/header/MenuOverlayContainer';
+import MenuOverlayContainer from '../components/header/main_menu/MenuOverlayContainer';
 
+/**
+ * Sitemap
+ */
 class NavigationTree extends Component {
   constructor(props) {
     super(props);

@@ -22,6 +22,8 @@
 
 package de.metas.handlingunits.inventory;
 
+import de.metas.handlingunits.picking.job.model.PickingJobId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -39,24 +41,23 @@ import java.time.ZonedDateTime;
 @Builder
 public class CreateVirtualInventoryWithQtyReq
 {
-	@NonNull
-	WarehouseId warehouseId;
+	@NonNull WarehouseId warehouseId;
+	@NonNull OrgId orgId;
+	@NonNull ClientId clientId;
+	@NonNull ProductId productId;
+	@NonNull Quantity qty;
+	@NonNull ZonedDateTime movementDate;
+	@Nullable AttributeSetInstanceId attributeSetInstanceId;
+	@Nullable PickingJobId pickingJobId;
 
-	@NonNull
-    OrgId orgId;
-
-	@NonNull
-	ClientId clientId;
-
-	@NonNull
-	ProductId productId;
-
-	@NonNull
-	Quantity qty;
-
-	@NonNull
-	ZonedDateTime movementDate;
-
-	@Nullable
-	AttributeSetInstanceId attributeSetInstanceId;
+	@SuppressWarnings("unused")
+	public static class CreateVirtualInventoryWithQtyReqBuilder
+	{
+		public CreateVirtualInventoryWithQtyReqBuilder clientAndOrgId(@NonNull ClientAndOrgId clientAndOrgId)
+		{
+			clientId(clientAndOrgId.getClientId());
+			orgId(clientAndOrgId.getOrgId());
+			return this;
+		}
+	}
 }

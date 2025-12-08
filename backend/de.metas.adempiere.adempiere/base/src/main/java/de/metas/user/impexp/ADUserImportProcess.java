@@ -90,7 +90,7 @@ public class ADUserImportProcess extends SimpleImportProcessTemplate<I_I_User>
 	}
 
 	@Override
-	protected void updateAndValidateImportRecords()
+	protected void updateAndValidateImportRecordsImpl()
 	{
 		final ImportRecordsSelection selection = getImportRecordsSelection();
 
@@ -125,7 +125,7 @@ public class ADUserImportProcess extends SimpleImportProcessTemplate<I_I_User>
 
 							.append(sqlImportWhereClause);
 
-			final int resultsForValueUpdate = DB.executeUpdateEx(sqlUpdateByValue.toString(), trxName);
+			final int resultsForValueUpdate = DB.executeUpdateAndThrowExceptionOnFail(sqlUpdateByValue.toString(), trxName);
 			log.debug("Set C_BPartner_ID for {} records", resultsForValueUpdate);
 
 		}
@@ -144,7 +144,7 @@ public class ADUserImportProcess extends SimpleImportProcessTemplate<I_I_User>
 
 							.append(sqlImportWhereClause);
 
-			final int resultsForGlobalIdUpdate = DB.executeUpdateEx(sqlUpdateByGlobalId.toString(), trxName);
+			final int resultsForGlobalIdUpdate = DB.executeUpdateAndThrowExceptionOnFail(sqlUpdateByGlobalId.toString(), trxName);
 			log.debug("Set C_BPartner_ID for {} records", resultsForGlobalIdUpdate);
 
 		}
@@ -168,22 +168,23 @@ public class ADUserImportProcess extends SimpleImportProcessTemplate<I_I_User>
 				+ "\n WHERE " + sqlImportWhereClause
 				+ "\n AND i." + I_I_User.COLUMNNAME_AD_Role_ID + " IS NULL";
 
-		final int no = DB.executeUpdateEx(sql, trxName);
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, trxName);
 		log.debug("Set R_RequestType_ID for {} records", no);
 	}
 
-	private final void markAsError(final String errorMsg, final String sqlWhereClause)
+	@SuppressWarnings("SameParameterValue")
+	private void markAsError(final String errorMsg, final String sqlWhereClause)
 	{
 		final String sql = "UPDATE " + I_I_User.Table_Name + " i "
 				+ "\n SET " + COLUMNNAME_I_IsImported + "=?, " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||? "
 				+ "\n WHERE " + sqlWhereClause;
 		final Object[] sqlParams = new Object[] { X_I_User.I_ISIMPORTED_ImportFailed, errorMsg + "; " };
-		DB.executeUpdateEx(sql, sqlParams, ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams, ITrx.TRXNAME_ThreadInherited);
 
 	}
 
 	@Override
-	protected I_I_User retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
+	public I_I_User retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
 	{
 		final PO po = TableModelLoader.instance.getPO(ctx, I_I_User.Table_Name, rs, ITrx.TRXNAME_ThreadInherited);
 		return InterfaceWrapperHelper.create(po, I_I_User.class);

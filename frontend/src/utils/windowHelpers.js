@@ -19,3 +19,8 @@ export const toOrderBysCommaSeparatedString = (orderBysArray) => {
 
 const toSingleOrderByClause = ({ ascending, fieldName }) =>
   (ascending ? '+' : '-') + fieldName;
+
+export const extractWindowIdFromViewId = (viewId) => {
+  // we assume the viewId has the following format: <windowId>-<unique id>
+  return viewId?.split('-')?.[0] ?? null;
+};

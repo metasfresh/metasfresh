@@ -16,42 +16,18 @@
  *****************************************************************************/
 package org.compiere.apps;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dialog;
-import java.awt.Dimension;
-import java.awt.EventQueue;
-import java.awt.Frame;
-import java.awt.GraphicsConfiguration;
-import java.awt.Insets;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
-import java.awt.Window;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.util.Enumeration;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.KeyStroke;
-import javax.swing.RepaintManager;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-
+import de.metas.cache.CCache;
+import de.metas.document.references.zoom_into.RecordWindowFinder;
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.images.Images;
-import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.apps.form.FormFrame;
 import org.compiere.grid.ed.Calculator;
 import org.compiere.grid.ed.Calendar;
@@ -68,28 +44,23 @@ import org.compiere.util.Ini;
 import org.compiere.util.SwingUtils;
 import org.slf4j.Logger;
 
-import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
-import de.metas.acct.api.IPostingService;
-import de.metas.adempiere.form.IClientUIInvoker.OnFail;
-import de.metas.cache.CCache;
-import de.metas.document.references.zoom_into.RecordWindowFinder;
-import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
-import de.metas.security.IUserRolePermissions;
-import de.metas.security.permissions.Access;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import javax.annotation.Nullable;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.Enumeration;
+import java.util.Set;
 
 /**
  * Windows Application Environment and utilities
  *
  * @author Jorg Janke
- * @version $Id: AEnv.java,v 1.2 2006/07/30 00:51:27 jjanke Exp $
- *
  * @author Colin Rooney (croo) & kstan_79 RFE#1670185
  * @author victor.perez@e-evolution.com
  * see FR [ 1966328 ] New Window Info to MRP and CRP into View http://sourceforge.net/tracker/index.php?func=detail&aid=1966328&group_id=176962&atid=879335
- *
+ * @version $Id: AEnv.java,v 1.2 2006/07/30 00:51:27 jjanke Exp $
  */
 public final class AEnv
 {
@@ -113,8 +84,6 @@ public final class AEnv
 	}
 
 	/**
-	 *
-	 * @param window
 	 * @return true if given window is modal
 	 */
 	private static boolean isModal(final Window window)
@@ -161,7 +130,6 @@ public final class AEnv
 	/**
 	 * Show Window as maximized.
 	 *
-	 * @param window
 	 */
 	public static void showMaximized(final Window window)
 	{
@@ -193,7 +161,6 @@ public final class AEnv
 	/**
 	 * Calls {@link #showCenterScreen(Window)} or {@link #showMaximized(Window)} beased on {@link Ini#P_OPEN_WINDOW_MAXIMIZED} flag.
 	 *
-	 * @param window
 	 */
 	public static void showCenterScreenOrMaximized(final Window window)
 	{
@@ -215,12 +182,12 @@ public final class AEnv
 	public static void positionCenterScreen(final Window window)
 	{
 		positionScreen(window, SwingConstants.CENTER);
-	}	// positionCenterScreen
+	}    // positionCenterScreen
 
 	/**
 	 * Show in the center of the screen. (pack, set location and set visibility)
 	 *
-	 * @param window Window to position
+	 * @param window   Window to position
 	 * @param position SwingConstants
 	 */
 	public static void showScreen(final Window window, final int position)
@@ -232,12 +199,23 @@ public final class AEnv
 	/**
 	 * Position window in center of the screen
 	 *
-	 * @param window Window to position
+	 * @param window   Window to position
 	 * @param position SwingConstants
 	 */
 	public static void positionScreen(final Window window, final int position)
 	{
-		window.pack();
+		// guard against
+		// java.lang.NullPointerException: Cannot invoke "sun.awt.X11.XBaseWindow.isVisible()" because "parent" is null
+		// see https://stackoverflow.com/q/75209745/1012103
+		try
+		{
+			window.pack();
+		}
+		catch (final Exception e)
+		{
+			log.info("Unable to pack the window (known issue for java17 andd x2go). Will continue without packing it. window={}", window);
+		}
+
 		final Dimension sSize = Toolkit.getDefaultToolkit().getScreenSize();
 		// take into account task bar and other adornments
 		final GraphicsConfiguration config = window.getGraphicsConfiguration();
@@ -261,7 +239,7 @@ public final class AEnv
 		int y = (sSize.height - wSize.height) / 2;
 		if (position == SwingConstants.CENTER)
 		{
-			
+
 		}
 		else if (position == SwingConstants.NORTH_WEST)
 		{
@@ -301,7 +279,7 @@ public final class AEnv
 		}
 		//
 		window.setLocation(x + insets.left, y + insets.top);
-	}	// positionScreen
+	}    // positionScreen
 
 	public static void setMaximumSizeAsScreenSize(final Window window)
 	{
@@ -340,7 +318,20 @@ public final class AEnv
 			positionCenterScreen(window);
 			return;
 		}
-		window.pack();
+
+		// guard against
+		// java.lang.NullPointerException: Cannot invoke "sun.awt.X11.XBaseWindow.isVisible()" because "parent" is null
+		// see https://stackoverflow.com/q/75209745/1012103
+		try
+		{
+			window.pack();
+		}
+		catch (final Exception e)
+		{
+			positionCenterScreen(window);
+			return;
+		}
+
 		//
 		final Dimension sSize = Toolkit.getDefaultToolkit().getScreenSize();
 		// take into account task bar and other adornments
@@ -393,12 +384,11 @@ public final class AEnv
 		// System.out.println("Position: x=" + x + " y=" + y + " w=" + wSize.getWidth() + " h=" + wSize.getHeight()
 		// + " - Parent loc x=" + pLoc.x + " y=" + y + " w=" + pSize.getWidth() + " h=" + pSize.getHeight());
 		window.setLocation(x + insets.left, y + insets.top);
-	}	// positionCenterScreen
+	}    // positionCenterScreen
 
 	/*************************************************************************
 	 * Get Button
 	 *
-	 * @param iconName
 	 * @return button
 	 */
 	public static CButton getButton(final String iconName)
@@ -408,7 +398,7 @@ public final class AEnv
 		button.setToolTipText(Services.get(IMsgBL.class).getMsg(Env.getCtx(), iconName));
 		button.setDefaultCapable(false);
 		return button;
-	}	// getButton
+	}    // getButton
 
 	/**
 	 * Create Menu Title (translate it and set Mnemonics). Based on MS notation of &Help => H is Mnemonics
@@ -421,7 +411,7 @@ public final class AEnv
 		final JMenu menu = new JMenu();
 		String text = Services.get(IMsgBL.class).getMsg(Env.getCtx(), AD_Message);
 		final int pos = text.indexOf('&');
-		if (pos != -1 && text.length() > pos)   	// We have a nemonic
+		if (pos != -1 && text.length() > pos)    // We have a nemonic
 		{
 			final char ch = text.toUpperCase().charAt(pos + 1);
 			if (ch != ' ')
@@ -432,16 +422,16 @@ public final class AEnv
 		}
 		menu.setText(text);
 		return menu;
-	}	// getMenu
+	}    // getMenu
 
 	/**
 	 * Create Menu Item.
 	 *
-	 * @param actionName action command
+	 * @param actionName      action command
 	 * @param defaultIconName optional icon name (without size, without file extension), to be used when no icon was found for <code>actionName</code>
-	 * @param ks optional key stroke
-	 * @param menu optional menu to add menu item to
-	 * @param al action listener to register
+	 * @param ks              optional key stroke
+	 * @param menu            optional menu to add menu item to
+	 * @param al              action listener to register
 	 * @return menu item
 	 */
 	public static JMenuItem addMenuItem(final String actionName, String defaultIconName, final KeyStroke ks, final JMenu menu, final ActionListener al)
@@ -477,8 +467,8 @@ public final class AEnv
 	 * Perform action command for common menu items. Created in AMenu.createMenu(), APanel.createMenu(), FormFrame.createMenu()
 	 *
 	 * @param actionCommand known action command
-	 * @param WindowNo window no
-	 * @param c Container parent
+	 * @param WindowNo      window no
+	 * @param c             Container parent
 	 * @return true if actionCommand was found and performed
 	 */
 	public static boolean actionPerformed(final String actionCommand, final int WindowNo, final Container c)
@@ -532,10 +522,6 @@ public final class AEnv
 		{
 			OnlineHelp.openInDefaultBrowser();
 		}
-		else if (actionCommand.equals("EMailSupport"))
-		{
-			ADialog.createSupportEMail(SwingUtils.getFrame(c), SwingUtils.getFrame(c).getTitle(), "\n\n");
-		}
 		else if (actionCommand.equals("About"))
 		{
 			showCenterScreen(new AboutBox(SwingUtils.getFrame(c)));
@@ -551,7 +537,7 @@ public final class AEnv
 	/**
 	 * Set Text and Mnemonic for Button. Create Mnemonics of text containing '&'. Based on MS notation of &Help => H is Mnemonics
 	 *
-	 * @param b The button
+	 * @param b    The button
 	 * @param text The text with optional Mnemonics
 	 */
 	public static void setTextMnemonic(final JButton b, final String text)
@@ -561,7 +547,7 @@ public final class AEnv
 			return;
 		}
 		final int pos = text.indexOf('&');
-		if (pos != -1)   					// We have a nemonic
+		if (pos != -1)                    // We have a nemonic
 		{
 			final char ch = text.charAt(pos + 1);
 			b.setMnemonic(ch);
@@ -638,8 +624,6 @@ public final class AEnv
 	/**
 	 * Zoom into a given window based on a query
 	 *
-	 * @param query
-	 * @param adWindowId
 	 */
 	public static void zoom(final MQuery query, final int adWindowId)
 	{
@@ -660,7 +644,6 @@ public final class AEnv
 	/**
 	 * Track open frame in window manager
 	 *
-	 * @param frame
 	 */
 	public static void addToWindowManager(final Window frame)
 	{
@@ -672,8 +655,6 @@ public final class AEnv
 	}
 
 	/**
-	 *
-	 * @param adWindowId
 	 * @return the found window or <code>null</code>
 	 */
 	// task 05796
@@ -708,7 +689,7 @@ public final class AEnv
 	public static void exit(final int status)
 	{
 		Env.exitEnv(status);
-	}	// exit
+	}    // exit
 
 	/**
 	 * Is Workflow Process view enabled.
@@ -720,14 +701,14 @@ public final class AEnv
 		if (s_workflow == null)
 		{
 			s_workflow = Boolean.FALSE;
-			int AD_Table_ID = 645;	// AD_WF_Process
+			int AD_Table_ID = 645;    // AD_WF_Process
 			if (Env.getUserRolePermissions().isTableAccess(AD_Table_ID, Access.READ))
 			{
 				s_workflow = Boolean.TRUE;
 			}
 			else
 			{
-				AD_Table_ID = 644;	// AD_WF_Activity
+				AD_Table_ID = 644;    // AD_WF_Activity
 				if (Env.getUserRolePermissions().isTableAccess(AD_Table_ID, Access.READ))
 				{
 					s_workflow = Boolean.TRUE;
@@ -741,18 +722,18 @@ public final class AEnv
 						"SELECT AD_Window_ID FROM AD_Table WHERE AD_Table_ID=?", AD_Table_ID));
 				if (s_workflow_Window_ID == null)
 				{
-					s_workflow_Window_ID = AdWindowId.ofRepoId(297);	// fallback HARDCODED
+					s_workflow_Window_ID = AdWindowId.ofRepoId(297);    // fallback HARDCODED
 				}
 			}
 		}
 		return s_workflow.booleanValue();
-	}	// isWorkflowProcess
+	}    // isWorkflowProcess
 
 	/**
 	 * Start Workflow Process Window
 	 *
 	 * @param AD_Table_ID optional table
-	 * @param Record_ID optional record
+	 * @param Record_ID   optional record
 	 */
 	public static void startWorkflowProcess(final int AD_Table_ID, final int Record_ID)
 	{
@@ -777,28 +758,38 @@ public final class AEnv
 		addToWindowManager(frame);
 		showCenterScreenOrMaximized(frame);
 		frame = null;
-	}	// startWorkflowProcess
+	}    // startWorkflowProcess
 
 	/*************************************************************************/
 
-	/** Workflow Menu */
+	/**
+	 * Workflow Menu
+	 */
 	private static Boolean s_workflow = null;
-	/** Workflow Menu */
+	/**
+	 * Workflow Menu
+	 */
 	private static AdWindowId s_workflow_Window_ID = null;
 
-	/** Server Re-tries */
+	/**
+	 * Server Re-tries
+	 */
 	private static int s_serverTries = 0;
 
-	/** Logger */
+	/**
+	 * Logger
+	 */
 	private static final transient Logger log = LogManager.getLogger(AEnv.class);
 
-	/** Window Cache */
+	/**
+	 * Window Cache
+	 */
 	private static final CCache<AdWindowId, GridWindowVO> s_windows = new CCache<>("AD_Window", 10);
 
 	/**
 	 * Get Window Model
 	 *
-	 * @param WindowNo Window No
+	 * @param WindowNo   Window No
 	 * @param adWindowId window
 	 * @param AD_Menu_ID menu
 	 * @return Model Window Value Object; never returns <code>null</code>
@@ -808,7 +799,7 @@ public final class AEnv
 		//
 		// Check cache (if any)
 		GridWindowVO mWindowVO = null;
-		if (adWindowId != null && Ini.isCacheWindow())   	// try cache
+		if (adWindowId != null && Ini.isCacheWindow())    // try cache
 		{
 			mWindowVO = s_windows.get(adWindowId);
 			if (mWindowVO != null)
@@ -831,7 +822,7 @@ public final class AEnv
 					.build();
 			Check.assumeNotNull(mWindowVO, "mWindowVO not null"); // shall never happen because GridWindowVO.create throws exception if no window found
 			s_windows.put(adWindowId, mWindowVO);
-		}   	// from Client
+		}    // from Client
 
 		// Check (remote) context
 		if (!mWindowVO.getCtx().equals(Env.getCtx()))
@@ -856,34 +847,21 @@ public final class AEnv
 
 	/**
 	 * Post Immediate. This method is usually triggered from the UI.
-	 *
+	 * <p>
 	 * If there is any error, an error dialog will be displayed to user.
-	 *
+	 * <p>
 	 * Always use this method when you want to post a document from UI and you want to give instant feedback to user.
 	 *
-	 * @param WindowNo window
+	 * @param WindowNo     window
 	 * @param AD_Client_ID Client ID of Document
-	 * @param AD_Table_ID Table ID of Document
-	 * @param Record_ID Record ID of this document
-	 * @param force force posting
+	 * @param AD_Table_ID  Table ID of Document
+	 * @param Record_ID    Record ID of this document
+	 * @param force        force posting
 	 */
 	public static void postImmediate(final int WindowNo, final int AD_Client_ID,
-			final int AD_Table_ID, final int Record_ID, final boolean force)
+									 final int AD_Table_ID, final int Record_ID, final boolean force)
 	{
-		Services.get(IPostingService.class)
-				.newPostingRequest()
-				.setClientId(ClientId.ofRepoId(AD_Client_ID))
-				.setDocumentRef(TableRecordReference.of(AD_Table_ID, Record_ID))
-				.setForce(force)
-				.setPostImmediate(PostImmediate.Yes)
-				.setFailOnError(true) // yes, because we will display a pop-up to user in this case (see below)
-				//
-				// Run it on UI
-				.postItOnUI()
-				.setParentComponentByWindowNo(WindowNo)
-				.setOnFail(OnFail.ShowErrorPopup)
-				.setLongOperation(true)
-				.invoke();
+		throw new UnsupportedOperationException();
 	}   // postImmediate
 
 	/**
@@ -924,7 +902,6 @@ public final class AEnv
 	/**
 	 * Helper method which gets the {@link Window} of given {@link Component}
 	 *
-	 * @param comp
 	 * @return {@link Window} or null
 	 */
 	public static Window getWindow(final Component comp)
@@ -935,8 +912,7 @@ public final class AEnv
 	/**
 	 * Searches for nearest parent of <code>comp</code> which implements given <code>parentType</code>.
 	 *
-	 * @param comp component or null
-	 * @param parentType
+	 * @param comp       component or null
 	 * @return parent component which implements given type or <code>null</code>
 	 */
 	public static <T> T getParentComponent(@Nullable final Component comp, final Class<T> parentType)
@@ -951,8 +927,7 @@ public final class AEnv
 		{
 			if (parentType.isAssignableFrom(c.getClass()))
 			{
-				@SuppressWarnings("unchecked")
-				final T retValue = (T)c;
+				@SuppressWarnings("unchecked") final T retValue = (T)c;
 				return retValue;
 			}
 			c = c.getParent();
@@ -964,7 +939,6 @@ public final class AEnv
 	/**
 	 * Helper method which gets the {@link Dialog} of given {@link Component}
 	 *
-	 * @param comp
 	 * @return {@link Dialog} or null
 	 */
 	public static Dialog getDialog(final Component comp)
@@ -984,9 +958,6 @@ public final class AEnv
 	/**
 	 * Make a {@link JFrame} behave like a modal {@link JDialog}.
 	 *
-	 * @param modalFrame
-	 * @param parentFrame
-	 * @param onCloseCallback
 	 */
 	public static void showCenterWindowModal(final JFrame modalFrame, final JFrame parentFrame, final Runnable onCloseCallback)
 	{
@@ -1091,7 +1062,6 @@ public final class AEnv
 	/**
 	 * Create a {@link FormFrame} for the given {@link I_AD_Form}.
 	 *
-	 * @param form
 	 * @return formFrame which was created or null
 	 */
 	public static FormFrame createForm(final I_AD_Form form)
@@ -1109,4 +1079,4 @@ public final class AEnv
 		}
 	}
 
-}	// AEnv
+}    // AEnv

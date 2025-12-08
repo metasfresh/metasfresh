@@ -22,21 +22,8 @@ package de.metas.handlingunits.hutransaction.impl;
  * #L%
  */
 
-
-import java.util.List;
-import java.util.Properties;
-
-import de.metas.handlingunits.HuId;
-import lombok.NonNull;
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.IQuery;
-
 import de.metas.handlingunits.HUConstants;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.hutransaction.IHUTrxDAO;
 import de.metas.handlingunits.hutransaction.IHUTrxQuery;
 import de.metas.handlingunits.model.I_M_HU;
@@ -45,7 +32,18 @@ import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery;
 import org.compiere.util.Env;
+
+import java.util.List;
+import java.util.Properties;
 
 public class HUTrxDAO implements IHUTrxDAO
 {

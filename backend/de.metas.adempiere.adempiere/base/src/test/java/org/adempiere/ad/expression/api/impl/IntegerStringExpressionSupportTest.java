@@ -1,18 +1,16 @@
 package org.adempiere.ad.expression.api.impl;
 
-import java.util.Map;
-
+import com.google.common.collect.ImmutableMap;
+import de.metas.util.Services;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.impl.IntegerStringExpressionSupport.IntegerStringExpression;
 import org.compiere.util.Evaluatees;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.util.Services;
+import java.util.Map;
 
 /*
  * #%L
@@ -40,7 +38,7 @@ public class IntegerStringExpressionSupportTest
 {
 	private IExpressionFactory expressionFactory;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		expressionFactory = Services.get(IExpressionFactory.class);
@@ -50,7 +48,7 @@ public class IntegerStringExpressionSupportTest
 	public void test_NullExpression()
 	{
 		final IntegerStringExpression expr = expressionFactory.compile("", IntegerStringExpression.class);
-		Assert.assertTrue("Expect null expression: " + expr, expr.isNullExpression());
+		Assertions.assertTrue(expr.isNullExpression(),"Expect null expression: " + expr);
 	}
 
 	@Test
@@ -58,7 +56,7 @@ public class IntegerStringExpressionSupportTest
 	{
 		final IntegerStringExpression expr = expressionFactory.compile("123456", IntegerStringExpression.class);
 		final Integer value = expr.evaluate(Evaluatees.empty(), OnVariableNotFound.Fail);
-		Assert.assertEquals((Integer)123456, value);
+		Assertions.assertEquals((Integer)123456, value);
 	}
 
 	@Test
@@ -66,16 +64,16 @@ public class IntegerStringExpressionSupportTest
 	{
 		final IntegerStringExpression expr = expressionFactory.compile("@ValueBD@", IntegerStringExpression.class);
 		final Integer value = expr.evaluate(Evaluatees.ofSingleton("ValueBD", "123456"), OnVariableNotFound.Fail);
-		Assert.assertEquals((Integer)123456, value);
+		Assertions.assertEquals((Integer)123456, value);
 	}
 
 	@Test
 	public void test_GeneralExpression()
 	{
 		final IntegerStringExpression expr = expressionFactory.compile("@DecimalPart1@@DecimalPart2@", IntegerStringExpression.class);
-		final Map<String, ? extends Object> ctx = ImmutableMap.of("DecimalPart1", 12, "DecimalPart2", "3456");
+		final Map<String, ?> ctx = ImmutableMap.of("DecimalPart1", 12, "DecimalPart2", "3456");
 		final Integer value = expr.evaluate(Evaluatees.ofMap(ctx), OnVariableNotFound.Fail);
-		Assert.assertEquals((Integer)123456, value);
+		Assertions.assertEquals((Integer)123456, value);
 	}
 
 }

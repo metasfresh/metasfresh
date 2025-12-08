@@ -1,19 +1,18 @@
 package de.metas.tourplanning.api.impl;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.common.util.pair.ImmutablePair;
+import de.metas.lang.SOTrx;
+import de.metas.tourplanning.TourPlanningTestBase;
+import de.metas.tourplanning.model.TourId;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.ImmutablePair;
-import org.junit.jupiter.api.Test;
-
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.lang.SOTrx;
-import de.metas.tourplanning.TourPlanningTestBase;
-import de.metas.tourplanning.model.TourId;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L

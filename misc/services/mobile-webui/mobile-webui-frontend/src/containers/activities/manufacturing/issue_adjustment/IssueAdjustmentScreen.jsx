@@ -1,25 +1,26 @@
 import React, { useEffect } from 'react';
-import { useHistory, useRouteMatch } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { getActivityById } from '../../../../reducers/wfProcesses';
 import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
 import { issueAdjustmentLineScreenLocation } from '../../../../routes/manufacturing_issue_adjustment';
-import { pushHeaderEntry } from '../../../../actions/HeaderActions';
+import { updateHeaderEntry } from '../../../../actions/HeaderActions';
+import { useScreenDefinition } from '../../../../hooks/useScreenDefinition';
+import { getWFProcessScreenLocation } from '../../../../routes/workflow_locations';
 
 const IssueAdjustmentScreen = () => {
-  const {
-    url,
-    params: { applicationId, workflowId: wfProcessId, activityId },
-  } = useRouteMatch();
+  const { history, url, applicationId, wfProcessId, activityId } = useScreenDefinition({
+    back: getWFProcessScreenLocation,
+  });
 
-  const { caption, lines } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId }));
+  const { caption, userInstructions, lines } = useSelector((state) =>
+    getPropsFromState({ state, wfProcessId, activityId })
+  );
 
   const dispatch = useDispatch();
   useEffect(() => {
-    dispatch(pushHeaderEntry({ location: url, caption: caption }));
+    dispatch(updateHeaderEntry({ location: url, caption, userInstructions }));
   }, []);
 
-  const history = useHistory();
   const onButtonClick = (lineId) => {
     history.push(issueAdjustmentLineScreenLocation({ applicationId, wfProcessId, activityId, lineId }));
   };
@@ -48,6 +49,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId }) => {
   //const line = getLineByIdFromActivity(activity, lineId);
   return {
     caption: activity.caption,
+    userInstructions: activity.userInstructions,
     lines: rawMaterialsIssueActivity.dataStored.lines,
   };
 };

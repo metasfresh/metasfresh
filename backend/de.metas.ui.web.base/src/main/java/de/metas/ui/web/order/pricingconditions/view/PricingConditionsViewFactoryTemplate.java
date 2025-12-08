@@ -52,6 +52,7 @@ import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -68,12 +69,15 @@ public abstract class PricingConditionsViewFactoryTemplate implements IViewFacto
 			.expireAfterAccess(1, TimeUnit.HOURS)
 			.build();
 
-	private final PricingConditionsRowLookups lookups = PricingConditionsRowLookups.newInstance();
+	private final PricingConditionsRowLookups lookups;
 	private final PricingConditionsViewFilters filtersFactory = new PricingConditionsViewFilters();
 
-	protected PricingConditionsViewFactoryTemplate(@NonNull final WindowId windowId)
+	protected PricingConditionsViewFactoryTemplate(
+			@NonNull final LookupDataSourceFactory lookupDataSourceFactory,
+			@NonNull final WindowId windowId)
 	{
 		this.windowId = windowId;
+		this.lookups = new PricingConditionsRowLookups(lookupDataSourceFactory);
 	}
 
 	@Override

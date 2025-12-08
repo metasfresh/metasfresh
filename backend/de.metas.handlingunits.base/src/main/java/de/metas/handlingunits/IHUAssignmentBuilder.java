@@ -28,6 +28,8 @@ import java.util.Properties;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 
+import javax.annotation.Nullable;
+
 /**
  * Builder for {@link I_M_HU_Assignment}s. Use {@link IHUAssignmentBL#createHUAssignmentBuilder()} to get an instance.
  * <p>
@@ -40,36 +42,26 @@ public interface IHUAssignmentBuilder
 {
 	/**
 	 * Set document model which will be referenced
-	 *
-	 * @param model
 	 */
 	IHUAssignmentBuilder setModel(Object model);
 
 	/**
 	 * Set {@link I_M_HU_Assignment#setM_HU(I_M_HU)}
-	 *
-	 * @param topLevelHU
 	 */
 	IHUAssignmentBuilder setTopLevelHU(I_M_HU topLevelHU);
 
 	/**
 	 * Set {@link I_M_HU_Assignment#setM_LU_HU(I_M_HU)}
-	 *
-	 * @param luHU
 	 */
 	IHUAssignmentBuilder setM_LU_HU(I_M_HU luHU);
 
 	/**
 	 * Set {@link I_M_HU_Assignment#setM_TU_HU(I_M_HU)}
-	 *
-	 * @param tuHU
 	 */
 	IHUAssignmentBuilder setM_TU_HU(I_M_HU tuHU);
 
 	/**
 	 * Sets {@link I_M_HU_Assignment#setVHU(I_M_HU)}.
-	 *
-	 * @param vhu
 	 */
 	IHUAssignmentBuilder setVHU(I_M_HU vhu);
 
@@ -85,11 +77,8 @@ public interface IHUAssignmentBuilder
 
 	/**
 	 * Initialize this builder with an "empty" assignment.
-	 *
-	 * @param ctx
-	 * @param trxName
 	 */
-	IHUAssignmentBuilder initializeAssignment(Properties ctx, String trxName);
+	IHUAssignmentBuilder initializeAssignment(Properties ctx, @Nullable String trxName);
 
 	/**
 	 * Initialize this builder with values from the given pre-existing {@code assignment}.

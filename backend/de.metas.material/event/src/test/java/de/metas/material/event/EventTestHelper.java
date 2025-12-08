@@ -1,25 +1,28 @@
 package de.metas.material.event;
 
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-
+import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
+import de.metas.event.Event;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.AttributesKeyPart;
+import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.eventbus.MaterialEventConverter;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.OrgId;
+import de.metas.util.JSONObjectMapper;
+import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.Env;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.material.event.commons.AttributesKey;
-import de.metas.material.event.commons.AttributesKeyPart;
-import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.material.event.commons.SupplyRequiredDescriptor;
-import de.metas.organization.ClientAndOrgId;
-import de.metas.organization.OrgId;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -72,22 +75,7 @@ public class EventTestHelper
 
 	public static final AttributesKey STORAGE_ATTRIBUTES_KEY = AttributesKey.ofString("1");
 
-	public static SupplyRequiredDescriptor createSupplyRequiredDescriptor()
-	{
-		return createSupplyRequiredDescriptorWithProductId(PRODUCT_ID);
-	}
-
-	public static SupplyRequiredDescriptor createSupplyRequiredDescriptorWithProductId(final int productId)
-	{
-		return SupplyRequiredDescriptor.builder()
-				.shipmentScheduleId(SHIPMENT_SCHEDULE_ID)
-				.demandCandidateId(41)
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_AND_ORG_ID))
-				.materialDescriptor(createMaterialDescriptorWithProductId(productId))
-				.build();
-	}
-
-	public static MaterialDescriptor createMaterialDescriptor()
+	public static MaterialDescriptor newMaterialDescriptor()
 	{
 		return createMaterialDescriptorWithProductId(PRODUCT_ID);
 	}
@@ -126,4 +114,31 @@ public class EventTestHelper
 				AttributesKey.ofParts(AttributesKeyPart.ofAttributeValueId(newAttributeValueId)),
 				ATTRIBUTE_SET_INSTANCE_ID + offset);
 	}
+
+	public static void assertEventEqualAfterSerializeDeserialize(@NonNull final MaterialEvent originalEvent)
+	{
+		//
+		// Test direct serialization/deserialization
+		{
+			final JSONObjectMapper<MaterialEvent> jsonObjectMapper = JSONObjectMapper.forClass(MaterialEvent.class);
+
+			final String serializedEvent = jsonObjectMapper.writeValueAsString(originalEvent);
+			final MaterialEvent deserializedEvent = jsonObjectMapper.readValue(serializedEvent);
+
+			assertThat(deserializedEvent).usingRecursiveComparison().isEqualTo(originalEvent);
+			assertThat(deserializedEvent).isEqualTo(originalEvent);
+		}
+
+		//
+		// Test via materialEventConverter
+		{
+			final MaterialEventConverter materialEventConverter = new MaterialEventConverter();
+			final Event eventbusEvent = materialEventConverter.fromMaterialEvent(originalEvent);
+			final MaterialEvent deserializedEvent = materialEventConverter.toMaterialEvent(eventbusEvent);
+
+			assertThat(deserializedEvent).usingRecursiveComparison().isEqualTo(originalEvent);
+			assertThat(deserializedEvent).isEqualTo(originalEvent);
+		}
+	}
+
 }

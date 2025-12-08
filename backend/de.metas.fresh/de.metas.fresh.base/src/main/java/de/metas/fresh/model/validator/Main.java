@@ -22,9 +22,9 @@ package de.metas.fresh.model.validator;
  * #L%
  */
 
+import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
 import de.metas.fresh.printing.spi.impl.C_Order_MFGWarehouse_Report_RecordTextProvider;
-import de.metas.fresh.product.ProductPOCopyRecordSupport;
 import de.metas.i18n.Language;
 import de.metas.notification.INotificationBL;
 import de.metas.util.Services;
@@ -54,7 +54,6 @@ import org.adempiere.mm.attributes.listeners.inAusLand.InvoiceInAusLandModelAttr
 import org.adempiere.mm.attributes.listeners.inAusLand.InvoiceLineInAusLandModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.listeners.inAusLand.OrderInAusLandModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.listeners.inAusLand.OrderLineInAusLandModelAttributeSetInstanceListener;
-import org.adempiere.model.CopyRecordFactory;
 import org.compiere.model.I_M_Product;
 
 import java.text.DateFormat;
@@ -120,7 +119,6 @@ public class Main extends AbstractModuleInterceptor
 		//
 		// register ProductPOCopyRecordSupport, which needs to know about many different tables
 		CopyRecordFactory.enableForTableName(I_M_Product.Table_Name);
-		CopyRecordFactory.registerCopyRecordSupport(I_M_Product.Table_Name, ProductPOCopyRecordSupport.class);
 	}
 
 	@Override
@@ -133,7 +131,7 @@ public class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(new de.metas.fresh.freshQtyOnHand.model.validator.Fresh_QtyOnHand());
 		engine.addModelValidator(new de.metas.fresh.freshQtyOnHand.model.validator.Fresh_QtyOnHand_Line());
 
-		engine.addModelValidator(de.metas.fresh.material.interceptor.PMM_PurchaseCandidate.INSTANCE);
+		//engine.addModelValidator(de.metas.fresh.material.interceptor.PMM_PurchaseCandidate.INSTANCE); // added via spring now
 
 		// these two are now spring components
 		// engine.addModelValidator(de.metas.fresh.ordercheckup.model.validator.C_Order.instance); // task 09028

@@ -48,12 +48,12 @@ import de.metas.edi.esb.invoicexport.stepcom.qualifier.TaxQual;
 import de.metas.edi.esb.invoicexport.stepcom.qualifier.TermsQual;
 import de.metas.edi.esb.invoicexport.stepcom.qualifier.TimePeriodType;
 import de.metas.edi.esb.invoicexport.stepcom.qualifier.TimeRelation;
-import de.metas.edi.esb.jaxb.metasfresh.EDICctop119VType;
-import de.metas.edi.esb.jaxb.metasfresh.EDICctop120VType;
-import de.metas.edi.esb.jaxb.metasfresh.EDICctop140VType;
-import de.metas.edi.esb.jaxb.metasfresh.EDICctop901991VType;
-import de.metas.edi.esb.jaxb.metasfresh.EDICctopInvoic500VType;
-import de.metas.edi.esb.jaxb.metasfresh.EDICctopInvoicVType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDICctop119VType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDICctop120VType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDICctop140VType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDICctop901991VType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDICctopInvoic500VType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDICctopInvoicVType;
 import de.metas.edi.esb.jaxb.stepcom.invoic.DAMOU1;
 import de.metas.edi.esb.jaxb.stepcom.invoic.DETAILXrech;
 import de.metas.edi.esb.jaxb.stepcom.invoic.DPRDE1;
@@ -84,9 +84,7 @@ import org.apache.commons.lang.StringUtils;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.Comparator;
-import java.util.Date;
 
 import static de.metas.edi.esb.commons.Util.formatNumber;
 import static de.metas.edi.esb.commons.Util.isEmpty;
@@ -96,7 +94,8 @@ import static de.metas.edi.esb.commons.Util.toFormattedStringDate;
 import static de.metas.edi.esb.commons.Util.trimAndTruncate;
 import static de.metas.edi.esb.commons.ValidationHelper.validateString;
 
-public class StepComXMLInvoicBean
+public class 
+StepComXMLInvoicBean
 {
 	public static final String METHOD_createXMLEDIData = "createXMLEDIData";
 
@@ -250,7 +249,7 @@ public class StepComXMLInvoicBean
 		final TAMOU1 trailerTaxAmount = INVOIC_objectFactory.createTAMOU1();
 		trailerTaxAmount.setDOCUMENTID(documentId);
 		trailerTaxAmount.setAMOUNTQUAL(AmountQual.TZAX.name());
-		trailerTaxAmount.setAMOUNT(formatNumber(invoice.getTotalvat(), decimalFormat));
+		trailerTaxAmount.setAMOUNT(formatNumber(invoice.getTotalVat(), decimalFormat));
 		trailerTaxAmount.setCURRENCY(invoice.getISOCode());
 		docTrailer.getTAMOU1().add(trailerTaxAmount);
 

@@ -7,6 +7,7 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.exceptions.IExceptionWrapper;
 import org.compiere.util.DB;
+import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nullable;
 import java.sql.SQLException;
@@ -25,11 +26,16 @@ import java.util.Objects;
  */
 public class DBException extends AdempiereException
 {
+
+	public static final String DB_ERROR_CODE_PREFIX = "DB-";
+
 	/**
 	 * Wraps given throwable to {@link DBException} if is not already an {@link DBException}.
 	 *
 	 * @return {@link DBException} or null if throwable is null
 	 */
+	@Nullable
+	@Contract("!null -> !null")
 	public static DBException wrapIfNeeded(final Throwable throwable)
 	{
 		if (throwable == null)
@@ -109,7 +115,7 @@ public class DBException extends AdempiereException
 		}
 	}
 
-	public DBException(final Exception e, final CharSequence sql)
+	public DBException(final Exception e, @Nullable final CharSequence sql)
 	{
 		this(e, sql, (Object[])null);
 	}
@@ -140,6 +146,11 @@ public class DBException extends AdempiereException
 	}
 
 	public DBException(final String msg)
+	{
+		super(msg);
+	}
+
+	protected DBException(final ITranslatableString msg)
 	{
 		super(msg);
 	}
@@ -189,10 +200,18 @@ public class DBException extends AdempiereException
 	/**
 	 * @see java.sql.SQLException#getErrorCode()
 	 */
-	public int getErrorCode()
+	public int getSQLErrorCode()
 	{
 		final SQLException e = getSQLException();
 		return e != null ? e.getErrorCode() : -1;
+	}
+
+	@Nullable
+	@Override
+	public String getErrorCode()
+	{
+		final SQLException e = getSQLException();
+		return DB_ERROR_CODE_PREFIX + (e != null ? e.getSQLState() : null);
 	}
 
 	/**

@@ -15,8 +15,8 @@
     <sendergln>1234567890124</sendergln>
     <shipment_documentno>1171035</shipment_documentno>
     <TotalLines>117.76</TotalLines>
-    <totaltaxbaseamt>117.76</totaltaxbaseamt>
-    <totalvat>2.94</totalvat>
+    <TotalTaxbaseAmt>117.76</TotalTaxbaseAmt>
+    <TotalVat>2.94</TotalVat>
     <EDI_cctop_000_v>
         <!--EDI_cctop_000_v via C_BPartner_Location_ID-->
         <C_BPartner_Location_ID>2209104</C_BPartner_Location_ID>

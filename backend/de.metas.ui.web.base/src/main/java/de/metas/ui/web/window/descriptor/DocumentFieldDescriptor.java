@@ -15,6 +15,7 @@ import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyType;
+import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.model.IDocumentFieldValueProvider;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
@@ -22,6 +23,7 @@ import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 import de.metas.util.Check;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdFieldId;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
@@ -35,6 +37,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -73,42 +76,45 @@ public final class DocumentFieldDescriptor
 	/**
 	 * Internal field name (aka ColumnName)
 	 */
-	private final String fieldName;
-	private final ITranslatableString caption;
-	private final ITranslatableString description;
+	@Getter private final String fieldName;
+	@Getter private final ITranslatableString caption;
+	@Getter private final ITranslatableString description;
 	/**
 	 * Detail ID or null if this is a field in main sections
 	 */
-	private final DetailId detailId;
+	@Getter private final DetailId detailId;
 
 	/**
 	 * Is this the key field ?
 	 */
-	private final boolean key;
-	private final boolean calculated;
+	@Getter private final boolean key;
+	@Getter private final boolean calculated;
 
 	@Getter
 	private final boolean parentLink;
 	@Getter
 	private final String parentLinkFieldName;
 
-	private final DocumentFieldWidgetType widgetType;
-	private final int fieldMaxLength;
-	private final boolean allowShowPassword; // in case widgetType is Password
-	private final ButtonFieldActionDescriptor buttonActionDescriptor;
-	private final BarcodeScannerType barcodeScannerType;
+	@Getter private final DocumentFieldWidgetType widgetType;
+	@Getter
+	private final OptionalInt minPrecision;
+	@Getter private final int fieldMaxLength;
+	@Getter private final boolean allowShowPassword; // in case widgetType is Password
+	@Getter private final boolean forbidNewRecordCreation;
+	@Getter private final ButtonFieldActionDescriptor buttonActionDescriptor;
+	@Getter private final BarcodeScannerType barcodeScannerType;
 
-	private final WidgetSize widgetSize;
+	@Getter private final WidgetSize widgetSize;
 
-	private final Class<?> valueClass;
+	@Getter private final Class<?> valueClass;
 
 	private final LookupDescriptorProvider lookupDescriptorProvider;
-	private final boolean supportZoomInto;
+	@Getter private final boolean supportZoomInto;
 
-	private final boolean virtualField;
-	private final Optional<IDocumentFieldValueProvider> virtualFieldValueProvider;
+	@Getter private final boolean virtualField;
+	@Getter private final Optional<IDocumentFieldValueProvider> virtualFieldValueProvider;
 
-	private final Optional<IExpression<?>> defaultValueExpression;
+	@Getter private final Optional<IExpression<?>> defaultValueExpression;
 	private final ImmutableList<IDocumentFieldCallout> callouts;
 
 	public enum Characteristic
@@ -133,18 +139,18 @@ public final class DocumentFieldDescriptor
 
 	private final Set<Characteristic> characteristics;
 
-	private final ILogicExpression readonlyLogic;
-	private final boolean alwaysUpdateable;
-	private final ILogicExpression displayLogic;
-	private final ILogicExpression mandatoryLogic;
+	@Getter private final ILogicExpression readonlyLogic;
+	@Getter private final boolean alwaysUpdateable;
+	@Getter private final ILogicExpression displayLogic;
+	@Getter private final ILogicExpression mandatoryLogic;
 
-	private final Optional<DocumentFieldDataBindingDescriptor> dataBinding;
+	@Getter private final Optional<DocumentFieldDataBindingDescriptor> dataBinding;
 
-	private final DocumentFieldDependencyMap dependencies;
+	@Getter private final DocumentFieldDependencyMap dependencies;
 
 	//
 	// Default filtering options
-	private final DocumentFieldDefaultFilterDescriptor defaultFilterInfo;
+	@Getter private final DocumentFieldDefaultFilterDescriptor defaultFilterInfo;
 
 	@Getter
 	private final DeviceDescriptorsProvider deviceDescriptorsProvider;
@@ -163,10 +169,12 @@ public final class DocumentFieldDescriptor
 		parentLinkFieldName = builder.parentLinkFieldName;
 
 		widgetType = builder.getWidgetType();
+		minPrecision = builder.getMinPrecision();
 		fieldMaxLength = builder.getFieldMaxLength();
 
 		widgetSize = builder.getWidgetSize();
 		allowShowPassword = builder.isAllowShowPassword();
+		forbidNewRecordCreation = builder.isForbidNewRecordCreation();
 		buttonActionDescriptor = builder.getButtonActionDescriptor();
 		barcodeScannerType = builder.getBarcodeScannerType();
 		valueClass = builder.getValueClass();
@@ -211,89 +219,9 @@ public final class DocumentFieldDescriptor
 				.toString();
 	}
 
-	public String getFieldName()
-	{
-		return fieldName;
-	}
-
-	public ITranslatableString getCaption()
-	{
-		return caption;
-	}
-
-	public ITranslatableString getDescription()
-	{
-		return description;
-	}
-
-	public DetailId getDetailId()
-	{
-		return detailId;
-	}
-
-	public boolean isKey()
-	{
-		return key;
-	}
-
-	public boolean isVirtualField()
-	{
-		return virtualField;
-	}
-
 	public boolean isReadonlyVirtualField()
 	{
 		return isVirtualField() && getReadonlyLogic().isConstantTrue();
-	}
-
-	public Optional<IDocumentFieldValueProvider> getVirtualFieldValueProvider()
-	{
-		return virtualFieldValueProvider;
-	}
-
-	public boolean isCalculated()
-	{
-		return calculated;
-	}
-
-	public DocumentFieldWidgetType getWidgetType()
-	{
-		return widgetType;
-	}
-
-	public int getFieldMaxLength()
-	{
-		return fieldMaxLength;
-	}
-
-	public WidgetSize getWidgetSize()
-	{
-		return widgetSize;
-	}
-
-	public boolean isAllowShowPassword()
-	{
-		return allowShowPassword;
-	}
-
-	public BarcodeScannerType getBarcodeScannerType()
-	{
-		return barcodeScannerType;
-	}
-
-	public ButtonFieldActionDescriptor getButtonActionDescriptor()
-	{
-		return buttonActionDescriptor;
-	}
-
-	public Class<?> getValueClass()
-	{
-		return valueClass;
-	}
-
-	public boolean isSupportZoomInto()
-	{
-		return supportZoomInto;
 	}
 
 	public Optional<LookupDescriptor> getLookupDescriptor()
@@ -309,12 +237,7 @@ public final class DocumentFieldDescriptor
 	public Optional<LookupDataSource> createLookupDataSource()
 	{
 		return getLookupDescriptor()
-				.map(LookupDataSourceFactory.instance::getLookupDataSource);
-	}
-
-	public Optional<IExpression<?>> getDefaultValueExpression()
-	{
-		return defaultValueExpression;
+				.map(lookupDescriptor -> LookupDataSourceFactory.sharedInstance().getLookupDataSource(lookupDescriptor));
 	}
 
 	public boolean hasCharacteristic(final Characteristic c)
@@ -322,43 +245,10 @@ public final class DocumentFieldDescriptor
 		return characteristics.contains(c);
 	}
 
-	public ILogicExpression getReadonlyLogic()
-	{
-		return readonlyLogic;
-	}
-
-	public boolean isAlwaysUpdateable()
-	{
-		return alwaysUpdateable;
-	}
-
-	public ILogicExpression getDisplayLogic()
-	{
-		return displayLogic;
-	}
-
-	public ILogicExpression getMandatoryLogic()
-	{
-		return mandatoryLogic;
-	}
-
-	/**
-	 * @return field data binding info
-	 */
-	public Optional<DocumentFieldDataBindingDescriptor> getDataBinding()
-	{
-		return dataBinding;
-	}
-
-	public <T extends DocumentFieldDataBindingDescriptor> T getDataBindingNotNull(final Class<T> bindingClass)
+	public <T extends DocumentFieldDataBindingDescriptor> T getDataBindingNotNull(@SuppressWarnings("unused") final Class<T> bindingClass)
 	{
 		@SuppressWarnings("unchecked") final T dataBindingCasted = (T)dataBinding.orElseThrow(() -> new IllegalStateException("No databinding defined for " + this));
 		return dataBindingCasted;
-	}
-
-	public DocumentFieldDependencyMap getDependencies()
-	{
-		return dependencies;
 	}
 
 	public Object convertToValueClass(@Nullable final Object value, @Nullable final LookupValueByIdSupplier lookupDataSource)
@@ -395,19 +285,30 @@ public final class DocumentFieldDescriptor
 		return defaultFilterInfo != null;
 	}
 
-	public DocumentFieldDefaultFilterDescriptor getDefaultFilterInfo()
+	public boolean isBooleanWidgetType()
 	{
-		return defaultFilterInfo;
+		return widgetType.isBoolean();
 	}
+
+	//
+	//
+	//
+	//
+	// ------------------------------------------------------------------------------------------------------------------------
+	//
+	//
+	//
+	//
 
 	/**
 	 * Builder
 	 */
+	@SuppressWarnings("UnusedReturnValue")
 	public static final class Builder
 	{
 		private DocumentFieldDescriptor _fieldBuilt;
 
-		private final String fieldName;
+		@Getter private final String fieldName;
 		private ITranslatableString caption;
 		private ITranslatableString description;
 		public DetailId _detailId;
@@ -415,9 +316,10 @@ public final class DocumentFieldDescriptor
 		private boolean key = false;
 		private boolean parentLink = false;
 		private String parentLinkFieldName;
-		private boolean virtualField;
+		@Getter private boolean virtualField;
 		private Optional<IDocumentFieldValueProvider> virtualFieldValueProvider = Optional.empty();
 		private boolean calculated;
+		@Getter private boolean forbidNewRecordCreation;
 
 		private DocumentFieldWidgetType _widgetType;
 		private WidgetSize _widgetSize;
@@ -436,8 +338,8 @@ public final class DocumentFieldDescriptor
 		private ILogicExpression _readonlyLogic = ConstantLogicExpression.FALSE;
 		private ILogicExpression _readonlyLogicEffective = null;
 
-		private boolean alwaysUpdateable = false;
-		private ILogicExpression displayLogic = ConstantLogicExpression.TRUE;
+		@Getter private boolean alwaysUpdateable = false;
+		@Getter private ILogicExpression displayLogic = ConstantLogicExpression.TRUE;
 		private ILogicExpression _mandatoryLogic = ConstantLogicExpression.FALSE;
 		private ILogicExpression _mandatoryLogicEffective = null;
 
@@ -445,7 +347,7 @@ public final class DocumentFieldDescriptor
 
 		private final List<IDocumentFieldCallout> callouts = new ArrayList<>();
 
-		private ButtonFieldActionDescriptor buttonActionDescriptor = null;
+		@Getter private ButtonFieldActionDescriptor buttonActionDescriptor = null;
 
 		/**
 		 * See {@link #setTooltipIconName(String)}.
@@ -458,6 +360,8 @@ public final class DocumentFieldDescriptor
 		private DocumentFieldDefaultFilterDescriptor defaultFilterInfo = null;
 
 		private DeviceDescriptorsProvider deviceDescriptorsProvider = DeviceDescriptorsProviders.empty();
+
+		@Nullable private AdFieldId mainAdFieldId = null;
 
 		private Builder(final String fieldName)
 		{
@@ -492,11 +396,6 @@ public final class DocumentFieldDescriptor
 			{
 				throw new IllegalStateException("Already built: " + this);
 			}
-		}
-
-		public String getFieldName()
-		{
-			return fieldName;
 		}
 
 		public Builder setCaption(final Map<String, String> captionTrls, final String defaultCaption)
@@ -615,11 +514,6 @@ public final class DocumentFieldDescriptor
 			return this;
 		}
 
-		public boolean isVirtualField()
-		{
-			return virtualField;
-		}
-
 		private Optional<IDocumentFieldValueProvider> getVirtualFieldValueProvider()
 		{
 			return virtualFieldValueProvider;
@@ -654,6 +548,27 @@ public final class DocumentFieldDescriptor
 			return _widgetType;
 		}
 
+		private OptionalInt getMinPrecision()
+		{
+			final SqlDocumentFieldDataBindingDescriptor sqlFieldBinding = getDataBinding()
+					.map(SqlDocumentFieldDataBindingDescriptor::castOrNull)
+					.orElse(null);
+			if (sqlFieldBinding != null)
+			{
+				return sqlFieldBinding.getMinPrecision();
+			}
+			else
+			{
+				return WidgetTypeStandardNumberPrecision.DEFAULT.getMinPrecision(getWidgetType());
+			}
+		}
+
+		public Builder setWidgetSize(final WidgetSize widgetSize)
+		{
+			this._widgetSize = widgetSize;
+			return this;
+		}
+
 		public WidgetSize getWidgetSize()
 		{
 			return _widgetSize;
@@ -679,6 +594,13 @@ public final class DocumentFieldDescriptor
 		private boolean isAllowShowPassword()
 		{
 			return _allowShowPassword;
+		}
+
+		public Builder setForbidNewRecordCreation(final boolean forbidNewRecordCreation)
+		{
+			assertNotBuilt();
+			this.forbidNewRecordCreation = forbidNewRecordCreation;
+			return this;
 		}
 
 		public Builder barcodeScannerType(final BarcodeScannerType barcodeScannerType)
@@ -764,7 +686,7 @@ public final class DocumentFieldDescriptor
 		public Builder setDefaultValueExpression(@Nullable final IExpression<?> defaultValueExpression)
 		{
 			assertNotBuilt();
-			this.defaultValueExpression = Optional.of(defaultValueExpression);
+			this.defaultValueExpression = Optional.ofNullable(defaultValueExpression);
 			return this;
 		}
 
@@ -812,7 +734,7 @@ public final class DocumentFieldDescriptor
 			return _entityReadonlyLogic;
 		}
 
-		public Builder setReadonlyLogic(final ILogicExpression readonlyLogic)
+		public Builder setReadonlyLogic(@NonNull final ILogicExpression readonlyLogic)
 		{
 			assertNotBuilt();
 			_readonlyLogic = Preconditions.checkNotNull(readonlyLogic);
@@ -900,11 +822,6 @@ public final class DocumentFieldDescriptor
 			return this;
 		}
 
-		public boolean isAlwaysUpdateable()
-		{
-			return alwaysUpdateable;
-		}
-
 		public Builder setDisplayLogic(final ILogicExpression displayLogic)
 		{
 			assertNotBuilt();
@@ -922,11 +839,6 @@ public final class DocumentFieldDescriptor
 		{
 			setDisplayLogic(LogicExpressionCompiler.instance.compile(displayLogic));
 			return this;
-		}
-
-		public ILogicExpression getDisplayLogic()
-		{
-			return displayLogic;
 		}
 
 		public boolean isPossiblePublicField()
@@ -1038,17 +950,11 @@ public final class DocumentFieldDescriptor
 					.add(fieldName, getDisplayLogic().getParameterNames(), DependencyType.DisplayLogic)
 					.add(fieldName, getMandatoryLogicEffective().getParameterNames(), DependencyType.MandatoryLogic);
 
-			final LookupDescriptor lookupDescriptor = getLookupDescriptorProvider().provide().orElse(null);
-			if (lookupDescriptor != null)
-			{
-				dependencyMapBuilder.add(fieldName, lookupDescriptor.getDependsOnFieldNames(), DependencyType.LookupValues);
-			}
+			getLookupDescriptorProvider().provide()
+					.ifPresent(lookupDescriptor -> dependencyMapBuilder.add(fieldName, lookupDescriptor.getDependsOnFieldNames(), DependencyType.LookupValues));
 
-			final IDocumentFieldValueProvider virtualFieldValueProvider = getVirtualFieldValueProvider().orElse(null);
-			if (virtualFieldValueProvider != null)
-			{
-				dependencyMapBuilder.add(fieldName, virtualFieldValueProvider.getDependsOnFieldNames(), DependencyType.FieldValue);
-			}
+			getVirtualFieldValueProvider()
+					.ifPresent(virtualFieldValueProvider -> dependencyMapBuilder.add(fieldName, virtualFieldValueProvider.getDependsOnFieldNames(), DependencyType.FieldValue));
 
 			return dependencyMapBuilder.build();
 		}
@@ -1084,11 +990,6 @@ public final class DocumentFieldDescriptor
 			return this;
 		}
 
-		public ButtonFieldActionDescriptor getButtonActionDescriptor()
-		{
-			return buttonActionDescriptor;
-		}
-
 		public boolean isSupportZoomInto()
 		{
 			// Allow zooming into key column. It shall open precisely this record in a new window
@@ -1112,12 +1013,7 @@ public final class DocumentFieldDescriptor
 			}
 
 			final String lookupTableName = getLookupTableName().orElse(null);
-			if (WindowConstants.TABLENAME_AD_Ref_List.equals(lookupTableName))
-			{
-				return false;
-			}
-
-			return true;
+			return !WindowConstants.TABLENAME_AD_Ref_List.equals(lookupTableName);
 		}
 
 		public Builder setDefaultFilterInfo(@Nullable DocumentFieldDefaultFilterDescriptor defaultFilterInfo)
@@ -1142,18 +1038,20 @@ public final class DocumentFieldDescriptor
 		public boolean isDefaultOrderBy()
 		{
 			final DocumentFieldDataBindingDescriptor dataBinding = getDataBinding().orElse(null);
-			return dataBinding != null ? dataBinding.isDefaultOrderBy() : false;
+			return dataBinding != null && dataBinding.isDefaultOrderBy();
 		}
 
 		public int getDefaultOrderByPriority()
 		{
 			// we assume isDefaultOrderBy() was checked before calling this method
+			//noinspection OptionalGetWithoutIsPresent
 			return getDataBinding().get().getDefaultOrderByPriority();
 		}
 
 		public boolean isDefaultOrderByAscending()
 		{
 			// we assume isDefaultOrderBy() was checked before calling this method
+			//noinspection OptionalGetWithoutIsPresent
 			return getDataBinding().get().isDefaultOrderByAscending();
 		}
 
@@ -1167,5 +1065,14 @@ public final class DocumentFieldDescriptor
 		{
 			return deviceDescriptorsProvider;
 		}
+
+		public Builder mainAdFieldId(@Nullable final AdFieldId mainAdFieldId)
+		{
+			this.mainAdFieldId = mainAdFieldId;
+			return this;
+		}
+
+		@Nullable
+		public AdFieldId getMainAdFieldId() {return mainAdFieldId;}
 	}
 }

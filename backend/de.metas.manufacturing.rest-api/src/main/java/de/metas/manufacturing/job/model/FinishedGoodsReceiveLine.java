@@ -1,8 +1,11 @@
 package de.metas.manufacturing.job.model;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import de.metas.workflow.rest_api.model.WFActivityStatus;
 import lombok.Builder;
 import lombok.NonNull;
@@ -19,12 +22,14 @@ public class FinishedGoodsReceiveLine
 	@NonNull FinishedGoodsReceiveLineId id;
 	@NonNull ProductId productId;
 	@NonNull ITranslatableString productName;
+	@NonNull String productValue;
 	@NonNull ImmutableAttributeSet attributes;
 	@NonNull Quantity qtyToReceive;
 	@NonNull Quantity qtyReceived;
 	@Nullable PPOrderBOMLineId coProductBOMLineId;
 
 	@Nullable ReceivingTarget receivingTarget;
+	@Nullable UomId catchWeightUOMId;
 
 	@NonNull WFActivityStatus status;
 
@@ -32,14 +37,17 @@ public class FinishedGoodsReceiveLine
 	private FinishedGoodsReceiveLine(
 			@NonNull final ProductId productId,
 			@NonNull final ITranslatableString productName,
+			@NonNull final String productValue,
 			@NonNull final ImmutableAttributeSet attributes,
 			@NonNull final Quantity qtyToReceive,
 			@NonNull final Quantity qtyReceived,
 			@Nullable final PPOrderBOMLineId coProductBOMLineId,
-			@Nullable final ReceivingTarget receivingTarget)
+			@Nullable final ReceivingTarget receivingTarget,
+			@Nullable final UomId catchWeightUOMId)
 	{
 		this.productId = productId;
 		this.productName = productName;
+		this.productValue = productValue;
 		this.attributes = attributes;
 		this.qtyToReceive = qtyToReceive;
 		this.qtyReceived = qtyReceived;
@@ -50,6 +58,7 @@ public class FinishedGoodsReceiveLine
 		this.id = coProductBOMLineId == null
 				? FinishedGoodsReceiveLineId.FINISHED_GOODS
 				: FinishedGoodsReceiveLineId.ofCOProductBOMLineId(coProductBOMLineId);
+		this.catchWeightUOMId = catchWeightUOMId;
 
 		this.status = computeStatus(qtyToReceive, qtyReceived);
 	}
@@ -72,5 +81,23 @@ public class FinishedGoodsReceiveLine
 		return !Objects.equals(this.receivingTarget, receivingTarget)
 				? toBuilder().receivingTarget(receivingTarget).build()
 				: this;
+	}
+
+	public FinishedGoodsReceiveLine withQtyReceived(@NonNull final Quantity qtyReceived)
+	{
+		return !Objects.equals(this.qtyReceived, qtyReceived)
+				? toBuilder().qtyReceived(qtyReceived).build()
+				: this;
+	}
+
+	@NonNull
+	public ITranslatableString getProductValueAndProductName()
+	{
+		final TranslatableStringBuilder message = TranslatableStrings.builder()
+				.append(getProductValue())
+				.append(" ")
+				.append(getProductName());
+
+		return message.build();
 	}
 }

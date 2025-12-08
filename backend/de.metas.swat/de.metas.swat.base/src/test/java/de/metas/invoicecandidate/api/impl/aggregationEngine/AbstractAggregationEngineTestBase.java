@@ -56,10 +56,9 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.TestWatcher;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import java.math.BigDecimal;
@@ -68,20 +67,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.lessThan;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-
+@ExtendWith(AdempiereTestWatcher.class)
 public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSupport
 {
 
 	protected I_C_ILCandHandler manualHandler;
 
-	@Rule
-	public TestWatcher testWatchman = new AdempiereTestWatcher();
-
-	@Before
+	@BeforeEach
 	@OverridingMethodsMustInvokeSuper
 	public void init()
 	{
@@ -157,9 +149,9 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 	}
 
 	protected AggregationEngine test_2StepShipment_CommonSetup_Step02(final String invoiceRuleOverride,
-			final I_C_Invoice_Candidate ic,
-			final StockQtyAndUOMQty partialQty1,
-			final StockQtyAndUOMQty partialQty2)
+																	  final I_C_Invoice_Candidate ic,
+																	  final StockQtyAndUOMQty partialQty1,
+																	  final StockQtyAndUOMQty partialQty2)
 	{
 		//
 		// Partially invoice both at the same time
@@ -187,10 +179,10 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 
 		// guard; this is tested more in-depth in InvoiceCandBLUpdateInvalidCandidatesTest
 		final StockQtyAndUOMQty summedQty = partialQty1.add(partialQty2);
-		assertThat("Invalid QtyToDeliver on the IC level", ic.getQtyDelivered(), comparesEqualTo(summedQty.getStockQty().toBigDecimal()));
-		assertThat("Invalid QtyToInvoice on the IC level", ic.getQtyToInvoice(), comparesEqualTo(summedQty.getStockQty().toBigDecimal()));
+		Assertions.assertEquals(0, ic.getQtyDelivered().compareTo(summedQty.getStockQty().toBigDecimal()), "Invalid QtyDelivered on the IC level");
+		Assertions.assertEquals(0, ic.getQtyToInvoice().compareTo(summedQty.getStockQty().toBigDecimal()), "Invalid QtyToInvoice on the IC level");
 
-		final AggregationEngine engine = AggregationEngine.newInstance();
+		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting().build();
 		engine.addInvoiceCandidate(ic);
 
 		return engine;
@@ -209,7 +201,7 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 			}
 		}
 
-		Assert.fail("No Invoice was found for M_InOut_ID=" + inOutId + " in " + invoices);
+		Assertions.fail("No Invoice was found for M_InOut_ID=" + inOutId + " in " + invoices);
 		return null; // shall not reach this point
 	}
 
@@ -238,7 +230,7 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 	protected final IInvoiceLineRW getSingleForInOutLine(final List<IInvoiceLineRW> invoiceLines, final I_M_InOutLine iol)
 	{
 		final List<IInvoiceLineRW> result = getForInOutLine(invoiceLines, iol);
-		assertThat(result.size(), lessThan(2));
+		Assertions.assertTrue(result.size() < 2);
 		if (result.isEmpty())
 		{
 			return null;
@@ -263,29 +255,29 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 
 		final String messagePrefix = message + " - IC=" + POJOWrapper.getInstanceName(fromIC);
 
-		assertEquals(messagePrefix + " - Invalid AD_Org_ID", fromIC.getAD_Org_ID(), invoice.getOrgId().getRepoId());
+		Assertions.assertEquals(fromIC.getAD_Org_ID(), invoice.getOrgId().getRepoId(), messagePrefix + " - Invalid AD_Org_ID");
 
 		if (fromIC.getM_PriceList_Version_ID() > 0)
 		{
 
 			final I_M_PriceList priceList = priceListDAO.getPriceListByPriceListVersionId(PriceListVersionId.ofRepoId(fromIC.getM_PriceList_Version_ID()));
 			// if our IC had a M_PriceListVersion_ID, we want that PLV's M_PriceList to be in the invoice
-			assertEquals(messagePrefix + " - Invalid M_PriceList_ID(", priceList.getM_PriceList_ID(), invoice.getM_PriceList_ID());
+			Assertions.assertEquals(priceList.getM_PriceList_ID(), invoice.getM_PriceList_ID(), messagePrefix + " - Invalid M_PriceList_ID(");
 		}
 
-		assertEquals(messagePrefix + " - Invalid Bill_BPartner_ID", fromIC.getBill_BPartner_ID(), invoice.getBillTo().getBpartnerId().getRepoId());
-		assertEquals(messagePrefix + " - Invalid Bill_Location_ID", fromIC.getBill_Location_ID(), invoice.getBillTo().getBpartnerLocationId().getRepoId());
+		Assertions.assertEquals(fromIC.getBill_BPartner_ID(), invoice.getBillTo().getBpartnerId().getRepoId(), messagePrefix + " - Invalid Bill_BPartner_ID");
+		Assertions.assertEquals(fromIC.getBill_Location_ID(), invoice.getBillTo().getBpartnerLocationId().getRepoId(), messagePrefix + " - Invalid Bill_Location_ID");
 
 		// task 08241: we want to aggregate candidates with different Bill_User_IDs into one invoice
 		// this commented-out check is synchronized with ICHeaderAggregationKeyValueHandler
-		// assertEquals(messagePrefix + " - Invalid Bill_User_ID", fromIC.getBill_User_ID(), invoice.getBill_User_ID());
+		// Assertions.assertEquals( fromIC.getBill_User_ID(),  invoice.getBill_User_ID(), messagePrefix + " - Invalid Bill_User_ID");
 
-		assertEquals(messagePrefix + " - Invalid C_Currency_ID", fromIC.getC_Currency_ID(), CurrencyId.toRepoId(invoice.getCurrencyId()));
+		Assertions.assertEquals(fromIC.getC_Currency_ID(), CurrencyId.toRepoId(invoice.getCurrencyId()), messagePrefix + " - Invalid C_Currency_ID");
 		if (invoiceReferencesOrder)
 		{
-			assertEquals(messagePrefix + " - Invalid C_Order_ID", fromIC.getC_Order_ID(), invoice.getC_Order_ID());
+			Assertions.assertEquals(fromIC.getC_Order_ID(), invoice.getC_Order_ID(), messagePrefix + " - Invalid C_Order_ID");
 		}
-		assertEquals(messagePrefix + " - Invalid isSOTrx", fromIC.isSOTrx(), invoice.isSOTrx());
+		Assertions.assertEquals(fromIC.isSOTrx(), invoice.isSOTrx(), messagePrefix + " - Invalid isSOTrx");
 	}
 
 	protected InvoiceCandidateInOutLineToUpdate retrieveIcIolToUpdateIfExists(final IInvoiceLineRW invoiceLineRW, final I_M_InOutLine iol)

@@ -22,42 +22,40 @@
 
 package de.metas.workflow.rest_api.model;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.ITranslatableString;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
-import lombok.ToString;
+import lombok.Value;
 import lombok.With;
 
 import javax.annotation.Nullable;
 
-@ToString
+@Value
 public class WFActivity
 {
-	@Getter
-	@NonNull private final WFActivityId id;
-
-	@Getter
-	@NonNull private final ITranslatableString caption;
-
-	@Getter
-	@NonNull private final WFActivityType wfActivityType;
-
-	@Getter
-	@With
-	@NonNull private final WFActivityStatus status;
+	@NonNull WFActivityId id;
+	@NonNull ITranslatableString caption;
+	@NonNull WFActivityType wfActivityType;
+	@With @NonNull WFActivityStatus status;
+	@NonNull WFActivityAlwaysAvailableToUser alwaysAvailableToUser;
+	@Nullable String userInstructions;
 
 	@Builder
 	private WFActivity(
 			@NonNull final WFActivityId id,
 			@NonNull final ITranslatableString caption,
 			@NonNull final WFActivityType wfActivityType,
-			@Nullable final WFActivityStatus status)
+			@Nullable final WFActivityStatus status,
+			@Nullable final WFActivityAlwaysAvailableToUser alwaysAvailableToUser,
+			@Nullable final String userInstructions)
 	{
 		this.id = id;
 		this.caption = caption;
 		this.wfActivityType = wfActivityType;
 		this.status = status != null ? status : WFActivityStatus.NOT_STARTED;
+		this.alwaysAvailableToUser = CoalesceUtil.coalesceNotNull(alwaysAvailableToUser, WFActivityAlwaysAvailableToUser.DEFAULT);
+		this.userInstructions = userInstructions;
 	}
 
 	public boolean isCompleted()

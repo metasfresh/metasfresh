@@ -1,30 +1,12 @@
 package de.metas.ui.web.process.adprocess;
 
-import static de.metas.report.server.ReportConstants.REPORT_PARAM_REPORT_FORMAT;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
-
-import javax.annotation.Nullable;
-
-import de.metas.ui.web.window.datatypes.LookupValuesPage;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.api.IRangeAwareParams;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.slf4j.Logger;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
+import de.metas.process.ProcessCalledFrom;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 import de.metas.report.server.OutputType;
@@ -38,10 +20,12 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.DocumentCollection;
+import de.metas.ui.web.window.model.DocumentFieldLogicExpressionResultRevaluator;
 import de.metas.ui.web.window.model.DocumentSaveStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
@@ -50,6 +34,21 @@ import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.api.IRangeAwareParams;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
+
+import static de.metas.report.server.ReportConstants.REPORT_PARAM_REPORT_FORMAT;
 
 /*
  * #%L
@@ -81,7 +80,7 @@ import lombok.NonNull;
  */
 /* package */final class ADProcessInstanceController implements IProcessInstanceController
 {
-	private static final transient Logger logger = LogManager.getLogger(ADProcessInstanceController.class);
+	private static final Logger logger = LogManager.getLogger(ADProcessInstanceController.class);
 
 	@Getter
 	private final DocumentId instanceId;
@@ -273,12 +272,11 @@ import lombok.NonNull;
 			valueNorm = value;
 		}
 
-		final boolean ignoreReadonlyFlag = true;
 		parameters.processValueChange(
 				parameterName,
 				valueNorm,
 				() -> "update from java process annotated fields",
-				ignoreReadonlyFlag);
+				DocumentFieldLogicExpressionResultRevaluator.ALWAYS_RETURN_FALSE);
 	}
 
 	@Override
@@ -333,6 +331,7 @@ import lombok.NonNull;
 		//
 		// Create the process info and execute the process synchronously
 		final ProcessExecutor processExecutor = ProcessInfo.builder()
+				.setProcessCalledFrom(ProcessCalledFrom.WebUI)
 				.setCtx(context.getCtx())
 				.setCreateTemporaryCtx()
 				.setPInstanceId(PInstanceId.ofRepoId(getInstanceId().toInt()))

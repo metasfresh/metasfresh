@@ -98,10 +98,10 @@ public class SaveOnCommitHUAttributesDAO implements IHUAttributesDAO
 	}
 
 	@Override
-	public List<I_M_HU_Attribute> retrieveAttributesNoCache(final Collection<HuId> huIds)
+	public List<I_M_HU_Attribute> retrieveAllAttributesNoCache(final Collection<HuId> huIds)
 	{
 		final SaveDecoupledHUAttributesDAO delegate = getDelegate();
-		return delegate.retrieveAttributesNoCache(huIds);
+		return delegate.retrieveAllAttributesNoCache(huIds);
 	}
 
 	@Override

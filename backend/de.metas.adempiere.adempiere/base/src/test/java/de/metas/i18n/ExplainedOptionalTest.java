@@ -26,6 +26,8 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.util.Optional;
+
 class ExplainedOptionalTest
 {
 
@@ -52,6 +54,31 @@ class ExplainedOptionalTest
 							(explanation) -> "explanation: " + explanation.getDefaultValue());
 
 			Assertions.assertThat(result).isEqualTo("explanation: some missing reason");
+		}
+	}
+
+	@Nested
+	class mapIfAbsent
+	{
+		@Test
+		void whenPresent()
+		{
+			final Optional<String> result = ExplainedOptional.of(12345)
+					.mapIfAbsent(explanation -> {
+						Assertions.fail("Shall not be called");
+						return explanation.getDefaultValue();
+					});
+
+			Assertions.assertThat(result).isEmpty();
+		}
+
+		@Test
+		void whenAbsent()
+		{
+			final Optional<String> result = ExplainedOptional.emptyBecause("some missing reason")
+					.mapIfAbsent(ITranslatableString::getDefaultValue);
+
+			Assertions.assertThat(result).contains("some missing reason");
 		}
 	}
 }

@@ -1,8 +1,8 @@
 import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
 import PropTypes from 'prop-types';
 import React from 'react';
-import { useHistory } from 'react-router-dom';
 import { issueAdjustmentScreenLocation } from '../../../../routes/manufacturing_issue_adjustment';
+import { useMobileNavigation } from '../../../../hooks/useMobileNavigation';
 
 const IssueAdjustmentActivity = (props) => {
   const {
@@ -15,7 +15,7 @@ const IssueAdjustmentActivity = (props) => {
     },
   } = props;
 
-  const history = useHistory();
+  const history = useMobileNavigation();
   const onButtonClick = () => {
     history.push(issueAdjustmentScreenLocation({ applicationId, wfProcessId, activityId }));
   };

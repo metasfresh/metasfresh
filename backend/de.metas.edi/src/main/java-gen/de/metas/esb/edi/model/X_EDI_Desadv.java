@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.esb.edi.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for EDI_Desadv
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1839509513L;
+	private static final long serialVersionUID = 635426762L;
 
     /** Standard Constructor */
     public X_EDI_Desadv (final Properties ctx, final int EDI_Desadv_ID, @Nullable final String trxName)
@@ -107,6 +107,17 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 		return get_ValueAsTimestamp(COLUMNNAME_DateOrdered);
 	}
 
+	@Override
+	public void setDatePromised (final @Nullable java.sql.Timestamp DatePromised)
+	{
+		throw new IllegalArgumentException ("DatePromised is virtual column");	}
+
+	@Override
+	public java.sql.Timestamp getDatePromised() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_DatePromised);
+	}
+
 	/** 
 	 * DeliveryViaRule AD_Reference_ID=152
 	 * Reference name: C_Order DeliveryViaRule
@@ -123,7 +134,7 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 	/** Luftpost = LU */
 	public static final String DELIVERYVIARULE_Luftpost = "LU";
 	@Override
-	public void setDeliveryViaRule (final @Nullable java.lang.String DeliveryViaRule)
+	public void setDeliveryViaRule (final java.lang.String DeliveryViaRule)
 	{
 		set_Value (COLUMNNAME_DeliveryViaRule, DeliveryViaRule);
 	}
@@ -311,6 +322,17 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 	}
 
 	@Override
+	public void setIsShipmentsNotSent (final boolean IsShipmentsNotSent)
+	{
+		throw new IllegalArgumentException ("IsShipmentsNotSent is virtual column");	}
+
+	@Override
+	public boolean isShipmentsNotSent() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsShipmentsNotSent);
+	}
+
+	@Override
 	public void setMovementDate (final @Nullable java.sql.Timestamp MovementDate)
 	{
 		set_Value (COLUMNNAME_MovementDate, MovementDate);
@@ -356,6 +378,17 @@ public class X_EDI_Desadv extends org.compiere.model.PO implements I_EDI_Desadv,
 	public boolean isProcessing() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processing);
+	}
+
+	@Override
+	public void setShipment_DocumentNo (final @Nullable java.lang.String Shipment_DocumentNo)
+	{
+		throw new IllegalArgumentException ("Shipment_DocumentNo is virtual column");	}
+
+	@Override
+	public java.lang.String getShipment_DocumentNo() 
+	{
+		return get_ValueAsString(COLUMNNAME_Shipment_DocumentNo);
 	}
 
 	@Override

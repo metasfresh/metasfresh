@@ -1,26 +1,24 @@
 package de.metas.marketing.base;
 
+import de.metas.i18n.Language;
+import de.metas.marketing.base.model.CampaignId;
+import de.metas.marketing.base.model.ContactPerson;
+import de.metas.marketing.base.model.ContactPerson.ContactPersonBuilder;
+import de.metas.marketing.base.model.ContactPersonRepository;
+import de.metas.marketing.base.model.EmailAddress;
+import de.metas.marketing.base.model.SyncResult;
+import de.metas.user.User;
+import de.metas.user.UserId;
+import de.metas.user.UserRepository;
+import de.metas.util.Check;
+import lombok.NonNull;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import de.metas.marketing.base.model.CampaignId;
-import de.metas.marketing.base.model.SyncResult;
-import de.metas.user.UserId;
-import de.metas.user.UserRepository;
-import org.springframework.stereotype.Service;
-
-import de.metas.i18n.Language;
-import de.metas.marketing.base.model.ContactPerson;
-import de.metas.marketing.base.model.ContactPerson.ContactPersonBuilder;
-import de.metas.user.User;
-import de.metas.marketing.base.model.ContactPersonRepository;
-import de.metas.marketing.base.model.EmailAddress;
-import de.metas.util.Check;
-import lombok.NonNull;
 
 /*
  * #%L

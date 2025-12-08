@@ -30,6 +30,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 @Value
 public class ElementValueId implements RepoIdAware
@@ -61,8 +62,10 @@ public class ElementValueId implements RepoIdAware
 		return repoId;
 	}
 
-	public static int toRepoId(final ElementValueId id)
+	public static int toRepoId(@Nullable final ElementValueId id)
 	{
 		return id != null ? id.getRepoId() : -1;
 	}
+
+	public static boolean equals(@Nullable final ElementValueId id1, @Nullable final ElementValueId id2) {return Objects.equals(id1, id2);}
 }

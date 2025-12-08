@@ -22,14 +22,7 @@ package de.metas.handlingunits.shipmentschedule.segments;
  * #L%
  */
 
-import java.util.Collections;
-import java.util.Set;
-
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.model.InterfaceWrapperHelper;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
@@ -38,6 +31,11 @@ import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleAttributeSe
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import java.util.Collections;
+import java.util.Set;
 
 @ToString
 public class ShipmentScheduleSegmentFromHUAttribute implements IShipmentScheduleSegment

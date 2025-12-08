@@ -1,23 +1,5 @@
 package de.metas.ui.web.quickinput;
 
-import java.util.List;
-import java.util.function.Function;
-
-import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import de.metas.cache.CCache;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.session.UserSession;
@@ -32,6 +14,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONQuickInputLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
@@ -42,8 +25,23 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
-import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.NonNull;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+import java.util.function.Function;
 
 /*
  * #%L
@@ -67,26 +65,36 @@ import lombok.NonNull;
  * #L%
  */
 
-@Api
+@Tag(name = "WindowQuickInputRestController")
 @RestController
 @RequestMapping(WindowQuickInputRestController.ENDPOINT)
 public class WindowQuickInputRestController
 {
 	public static final String ENDPOINT = WindowRestController.ENDPOINT + "/{windowId}/{documentId}/{tabId}/quickInput";
 
-	@Autowired
-	private UserSession userSession;
+	private final UserSession userSession;
 
-	@Autowired
-	private DocumentCollection documentsCollection;
+	private final DocumentCollection documentsCollection;
 
-	@Autowired
-	private QuickInputDescriptorFactoryService quickInputDescriptors;
-	@Autowired
-	private NewRecordDescriptorsProvider newRecordDescriptorsProvider;
+	private final QuickInputDescriptorFactoryService quickInputDescriptors;
 
-	@Autowired
-	private DocumentWebsocketPublisher websocketPublisher;
+	private final NewRecordDescriptorsProvider newRecordDescriptorsProvider;
+
+	private final DocumentWebsocketPublisher websocketPublisher;
+
+	public WindowQuickInputRestController(
+			final UserSession userSession,
+			final DocumentCollection documentsCollection,
+			final QuickInputDescriptorFactoryService quickInputDescriptors,
+			final NewRecordDescriptorsProvider newRecordDescriptorsProvider,
+			final DocumentWebsocketPublisher websocketPublisher)
+	{
+		this.userSession = userSession;
+		this.documentsCollection = documentsCollection;
+		this.quickInputDescriptors = quickInputDescriptors;
+		this.newRecordDescriptorsProvider = newRecordDescriptorsProvider;
+		this.websocketPublisher = websocketPublisher;
+	}
 
 	private final CCache<DocumentId, QuickInput> _quickInputDocuments = CCache.newLRUCache("QuickInputDocuments", 200, 0);
 

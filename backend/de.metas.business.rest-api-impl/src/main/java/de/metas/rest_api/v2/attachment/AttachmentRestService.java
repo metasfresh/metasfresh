@@ -34,6 +34,7 @@ import de.metas.common.rest_api.v2.attachment.JsonAttachmentRequest;
 import de.metas.common.rest_api.v2.attachment.JsonAttachmentResponse;
 import de.metas.common.rest_api.v2.attachment.JsonAttachmentSourceType;
 import de.metas.common.rest_api.v2.attachment.JsonExternalReferenceTarget;
+import de.metas.common.rest_api.v2.attachment.JsonTableRecordReference;
 import de.metas.common.rest_api.v2.attachment.JsonTag;
 import de.metas.common.util.FileUtil;
 import de.metas.externalreference.ExternalIdentifier;
@@ -88,8 +89,6 @@ public class AttachmentRestService
 	@NonNull
 	private JsonAttachmentResponse createAttachmentWithTrx(@NonNull final JsonAttachmentRequest jsonAttachmentRequest) throws IOException
 	{
-		final String orgCode = jsonAttachmentRequest.getOrgCode();
-
 		final JsonAttachment attachment = jsonAttachmentRequest.getAttachment();
 
 		final AttachmentTags attachmentTags = extractAttachmentTags(attachment.getTags());
@@ -128,10 +127,7 @@ public class AttachmentRestService
 				.url(url)
 				.build();
 
-		final List<TableRecordReference> references = jsonAttachmentRequest.getTargets()
-				.stream()
-				.map(target -> extractTableRecordReference(orgCode, target))
-				.collect(ImmutableList.toImmutableList());
+		final List<TableRecordReference> references = extractTableRecordReferences(jsonAttachmentRequest);
 
 		final AttachmentEntry entry = attachmentEntryService.createNewAttachment(references, request);
 
@@ -200,6 +196,30 @@ public class AttachmentRestService
 				.collect(ImmutableMap.toImmutableMap(JsonTag::getName, JsonTag::getValue));
 
 		return AttachmentTags.ofMap(tagName2Value);
+	}
+
+	@NonNull
+	private List<TableRecordReference> extractTableRecordReferences(@NonNull final JsonAttachmentRequest request)
+	{
+		final ImmutableList.Builder<TableRecordReference> tableRecordReferenceBuilder = ImmutableList.builder();
+
+		request.getTargets()
+				.stream()
+				.map(target -> extractTableRecordReference(request.getOrgCode(), target))
+				.forEach(tableRecordReferenceBuilder::add);
+
+		request.getReferences()
+				.stream()
+				.map(AttachmentRestService::extractTableRecordReference)
+				.forEach(tableRecordReferenceBuilder::add);
+
+		return tableRecordReferenceBuilder.build();
+	}
+
+	@NonNull
+	private static TableRecordReference extractTableRecordReference(@NonNull final JsonTableRecordReference reference)
+	{
+		return TableRecordReference.of(reference.getTableName(), reference.getRecordId().getValue());
 	}
 
 	private static void validateLocalFileURL(@NonNull final URL url)

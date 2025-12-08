@@ -35,6 +35,7 @@ import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
@@ -123,7 +124,7 @@ public class CustomerTradeMarginService
 		final LocationId locationId = LocationId.ofRepoId(salesRepShipToLocation.getC_Location_ID());
 		final CountryId countryId = locationDAO.getCountryIdByLocationId(locationId);
 
-		final PriceListId priceListId = priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, countryId, request.getSoTrx());
+		final PriceListId priceListId = priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, countryId, request.getSoTrx(), null);
 
 		if (priceListId == null)
 		{
@@ -187,7 +188,7 @@ public class CustomerTradeMarginService
 				salesRepPricingResult.getProductId().getRepoId(),
 				Objects.requireNonNull(TimeUtil.asTimestamp(request.getCommissionDate())),
 				salesRepOrgId,
-				(WarehouseId)null,
+				null,
 				salesRepBillToLocationAndCapture,
 				request.getSoTrx());
 
@@ -207,10 +208,10 @@ public class CustomerTradeMarginService
 			@NonNull final ComputeSalesRepPriceRequest request,
 			@NonNull final Money salesRepUnitPrice)
 	{
-		final CurrencyConversionContext currencyConversionContext = currencyBL.createCurrencyConversionContext(request.getCommissionDate(),
+		final CurrencyConversionContext currencyConversionContext = currencyBL.createCurrencyConversionContext(
+				LocalDateAndOrgId.ofLocalDate(request.getCommissionDate(), salesRepOrgId),
 																											   ConversionTypeMethod.Spot,
-																											   Env.getClientId(),
-																											   salesRepOrgId);
+				Env.getClientId());
 
 		return moneyService.convertMoneyToCurrency(salesRepUnitPrice, request.getCustomerCurrencyId(), currencyConversionContext);
 	}

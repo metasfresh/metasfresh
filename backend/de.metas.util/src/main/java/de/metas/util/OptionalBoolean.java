@@ -1,8 +1,13 @@
 package de.metas.util;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -26,6 +31,7 @@ import javax.annotation.Nullable;
  * #L%
  */
 
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 public enum OptionalBoolean
 {
 	TRUE, FALSE, UNKNOWN;
@@ -35,6 +41,7 @@ public enum OptionalBoolean
 		return value ? TRUE : FALSE;
 	}
 
+	@JsonCreator
 	public static OptionalBoolean ofNullableBoolean(@Nullable final Boolean value)
 	{
 		return value != null ? ofBoolean(value) : UNKNOWN;
@@ -85,6 +92,19 @@ public enum OptionalBoolean
 		}
 	}
 
+	@NonNull
+	public OptionalBoolean ifUnknown(@NonNull final OptionalBoolean other)
+	{
+		return isPresent() ? this : other;
+	}
+
+	@NonNull
+	public OptionalBoolean ifUnknown(@NonNull final Supplier<OptionalBoolean> otherSupplier)
+	{
+		return isPresent() ? this : otherSupplier.get();
+	}
+
+	@JsonValue
 	@Nullable
 	public Boolean toBooleanOrNull()
 	{
@@ -101,6 +121,12 @@ public enum OptionalBoolean
 		}
 	}
 
+	@Nullable
+	public String toBooleanString()
+	{
+		return StringUtils.ofBoolean(toBooleanOrNull());
+	}
+
 	public void ifPresent(@NonNull final BooleanConsumer action)
 	{
 		if (this == TRUE)
@@ -113,4 +139,16 @@ public enum OptionalBoolean
 		}
 	}
 
+	public void ifTrue(@NonNull final Runnable action)
+	{
+		if (this == TRUE)
+		{
+			action.run();
+		}
+	}
+
+	public <U> Optional<U> map(@NonNull final BooleanFunction<? extends U> mapper)
+	{
+		return isPresent() ? Optional.ofNullable(mapper.apply(isTrue())) : Optional.empty();
+	}
 }

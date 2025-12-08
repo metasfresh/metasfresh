@@ -248,7 +248,7 @@ import lombok.NonNull;
 	@Override
 	public IHUPIItemProductDisplayNameBuilder setM_HU_PI_Item_Product(@NonNull final HUPIItemProductId id)
 	{
-		final I_M_HU_PI_Item_Product huPIItemProduct = Services.get(IHUPIItemProductDAO.class).getById(id);
+		final I_M_HU_PI_Item_Product huPIItemProduct = Services.get(IHUPIItemProductDAO.class).getRecordById(id);
 		return setM_HU_PI_Item_Product(huPIItemProduct);
 	}
 

@@ -23,9 +23,11 @@
 package de.metas.acct.aggregation;
 
 import ch.qos.logback.classic.Level;
-import de.metas.acct.aggregation.impl.FactAcctLogBLTestHelper;
-import de.metas.acct.aggregation.impl.FactAcctLogDAO;
-import de.metas.acct.aggregation.impl.Fact_Acct_Log_Builder;
+import de.metas.acct.aggregation.legacy.FactAcctLogProcessResult;
+import de.metas.acct.aggregation.legacy.ILegacyFactAcctLogDAO;
+import de.metas.acct.aggregation.legacy.impl.FactAcctLogBLTestHelper;
+import de.metas.acct.aggregation.legacy.impl.Fact_Acct_Log_Builder;
+import de.metas.acct.aggregation.legacy.impl.LegacyFactAcctLogDAO;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.acct.model.X_Fact_Acct_Log;
@@ -50,7 +52,7 @@ import static org.assertj.core.api.Assertions.*;
 
 class FactAcctLogDBTableWatcherTest
 {
-	private FactAcctLogDAO factAcctLogDAO;
+	private LegacyFactAcctLogDAO legacyFactAcctLogDAO;
 	private ISysConfigBL sysConfigBL;
 	private FactAcctLogDBTableWatcher watcher;
 
@@ -64,12 +66,11 @@ class FactAcctLogDBTableWatcherTest
 
 		//
 		// Services + service under test
-		final IFactAcctLogBL factAcctLogBL = Services.get(IFactAcctLogBL.class);
-		factAcctLogDAO = (FactAcctLogDAO)Services.get(IFactAcctLogDAO.class);
+		legacyFactAcctLogDAO = (LegacyFactAcctLogDAO)Services.get(ILegacyFactAcctLogDAO.class);
 		sysConfigBL = Services.get(ISysConfigBL.class);
 
 		watcher = FactAcctLogDBTableWatcher.builder()
-				.factAcctLogBL(factAcctLogBL)
+				.factAcctLogService(new FactAcctLogService())
 				.sysConfigBL(sysConfigBL)
 				.build();
 
@@ -82,7 +83,7 @@ class FactAcctLogDBTableWatcherTest
 	}
 
 	@SuppressWarnings("SameParameterValue")
-	private void setRetrieveBatchSize(int retrieveBatchSize)
+	private void setRetrieveBatchSize(final int retrieveBatchSize)
 	{
 		sysConfigBL.setValue(FactAcctLogDBTableWatcher.SYSCONFIG_RetrieveBatchSize, retrieveBatchSize, ClientId.SYSTEM, OrgId.ANY);
 	}
@@ -112,7 +113,7 @@ class FactAcctLogDBTableWatcherTest
 
 	private AbstractBooleanAssert<?> assertHasLogs()
 	{
-		return assertThat(factAcctLogDAO.hasLogs(Env.getCtx(), IFactAcctLogDAO.PROCESSINGTAG_NULL));
+		return assertThat(legacyFactAcctLogDAO.hasLogs(Env.getCtx(), ILegacyFactAcctLogDAO.PROCESSINGTAG_NULL));
 	}
 
 	@Nested
@@ -126,7 +127,7 @@ class FactAcctLogDBTableWatcherTest
 			generateLogs(2);
 			assertHasLogs().isTrue();
 
-			FactAcctLogProcessResult result = watcher.processNow();
+			final FactAcctLogProcessResult result = watcher.processNow();
 
 			assertHasLogs().isFalse();
 			assertThat(result)
@@ -146,7 +147,7 @@ class FactAcctLogDBTableWatcherTest
 			generateLogs(10);
 			assertHasLogs().isTrue();
 
-			FactAcctLogProcessResult result = watcher.processNow();
+			final FactAcctLogProcessResult result = watcher.processNow();
 
 			assertHasLogs().isFalse();
 			assertThat(result)

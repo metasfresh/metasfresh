@@ -3,7 +3,7 @@ package de.metas.ui.web.picking.husToPick;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.picking.IHUPickingSlotBL;
+import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.requests.RetrieveAvailableHUIdsToPickRequest;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -84,17 +84,17 @@ class HUsToPickViewFilters
 				.setFrequentUsed(true)
 				.setParametersLayoutType(PanelLayoutType.SingleOverlayField)
 				.addParameter(DocumentFilterParamDescriptor.builder()
-						.setFieldName(PARAM_Barcode)
-						.setDisplayName(Services.get(IMsgBL.class).getTranslatableMsgText(MSG_LocatorBarcodeFilter))
-						.setMandatory(true)
-						.setWidgetType(DocumentFieldWidgetType.Text)
+						.fieldName(PARAM_Barcode)
+						.displayName(Services.get(IMsgBL.class).getTranslatableMsgText(MSG_LocatorBarcodeFilter))
+						.mandatory(true)
+						.widgetType(DocumentFieldWidgetType.Text)
 						.barcodeScannerType(BarcodeScannerType.QRCode))
 				.build();
 	}
 
 	private static class LocatorBarcodeFilterConverter implements SqlDocumentFilterConverter
 	{
-		public static final transient LocatorBarcodeFilterConverter instance = new LocatorBarcodeFilterConverter();
+		public static final LocatorBarcodeFilterConverter instance = new LocatorBarcodeFilterConverter();
 
 		@Override
 		public boolean canConvert(final String filterId)
@@ -126,11 +126,11 @@ class HUsToPickViewFilters
 				.setFilterId(HU_IDS_FilterId)
 				.setFrequentUsed(true)
 				.addParameter(DocumentFilterParamDescriptor.builder()
-						.setFieldName(PARAM_ConsiderAttributes)
-						.setDisplayName(Services.get(IMsgBL.class).translatable(PARAM_ConsiderAttributes))
-						.setMandatory(false)
-						.setDefaultValue(true)
-						.setWidgetType(DocumentFieldWidgetType.YesNo))
+						.fieldName(PARAM_ConsiderAttributes)
+						.displayName(Services.get(IMsgBL.class).translatable(PARAM_ConsiderAttributes))
+						.mandatory(false)
+						.defaultValue(true)
+						.widgetType(DocumentFieldWidgetType.YesNo))
 				.build();
 	}
 
@@ -141,7 +141,7 @@ class HUsToPickViewFilters
 
 	private static class HUIdsFilterConverter implements SqlDocumentFilterConverter
 	{
-		public static final transient HUIdsFilterConverter instance = new HUIdsFilterConverter();
+		public static final HUIdsFilterConverter instance = new HUIdsFilterConverter();
 
 		@Override
 		public boolean canConvert(final String filterId)

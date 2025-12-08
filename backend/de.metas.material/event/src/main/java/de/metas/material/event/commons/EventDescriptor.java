@@ -2,13 +2,15 @@ package de.metas.material.event.commons;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.user.UserId;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 import org.adempiere.service.ClientId;
+import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.util.UUID;
@@ -35,52 +37,62 @@ import java.util.UUID;
  * #L%
  */
 @Value
+@Builder(toBuilder = true)
+@Jacksonized
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class EventDescriptor
 {
+	@NonNull String eventId;
+	@NonNull ClientAndOrgId clientAndOrgId;
+	@NonNull UserId userId;
+	@Nullable String traceId;
+
 	public static EventDescriptor ofClientAndOrg(final int adClientId, final int adOrgId)
 	{
-		return ofClientAndOrg(ClientAndOrgId.ofClientAndOrg(adClientId, adOrgId));
+		return ofClientOrgAndTraceId(ClientAndOrgId.ofClientAndOrg(adClientId, adOrgId), null);
 	}
 
 	public static EventDescriptor ofClientAndOrg(@NonNull final ClientId adClientId, @NonNull final OrgId adOrgId)
 	{
-		return ofClientAndOrg(ClientAndOrgId.ofClientAndOrg(adClientId, adOrgId));
+		return ofClientOrgAndTraceId(ClientAndOrgId.ofClientAndOrg(adClientId, adOrgId), null);
 	}
 
 	public static EventDescriptor ofClientAndOrg(@NonNull final ClientAndOrgId clientAndOrgId)
 	{
-		return new EventDescriptor(clientAndOrgId, UUID.randomUUID().toString(), null);
+		return ofClientOrgAndTraceId(clientAndOrgId, null);
 	}
 
-	public static EventDescriptor ofClientOrgAndTraceId(@NonNull final ClientAndOrgId clientAndOrgId, @Nullable final String traceId)
+	public static EventDescriptor ofClientOrgAndUserId(@NonNull final ClientAndOrgId clientAndOrgId,
+													   @NonNull final UserId userId)
 	{
-		return new EventDescriptor(clientAndOrgId, UUID.randomUUID().toString(), traceId);
+		return ofClientOrgUserIdAndTraceId(clientAndOrgId, userId, null);
 	}
 
-	public static EventDescriptor ofEventDescriptor(@NonNull final EventDescriptor eventDescriptor)
+	public static EventDescriptor ofClientOrgAndTraceId(@NonNull final ClientAndOrgId clientAndOrgId,
+														@Nullable final String traceId)
 	{
-		return ofClientOrgAndTraceId(eventDescriptor.clientAndOrgId, eventDescriptor.getTraceId());
+		return ofClientOrgUserIdAndTraceId(
+				clientAndOrgId,
+				Env.getLoggedUserIdIfExists().orElse(UserId.SYSTEM),
+				traceId);
 	}
 
-	@JsonProperty("clientAndOrgId")
-	ClientAndOrgId clientAndOrgId;
-
-	@JsonProperty("eventId")
-	String eventId;
-
-	@JsonProperty("traceId")
-	String traceId;
-
-	@JsonCreator
-	private EventDescriptor(
-			@JsonProperty("clientAndOrgId") @NonNull final ClientAndOrgId clientAndOrgId,
-			@JsonProperty("eventId") @NonNull final String eventId,
-			@JsonProperty("traceId") @Nullable final String traceId)
+	public static EventDescriptor ofClientOrgUserIdAndTraceId(
+			@NonNull final ClientAndOrgId clientAndOrgId,
+			@NonNull final UserId userId,
+			@Nullable final String traceId)
 	{
-		this.clientAndOrgId = clientAndOrgId;
-		this.eventId = eventId;
-		this.traceId = traceId;
+		return builder()
+				.eventId(newEventId())
+				.clientAndOrgId(clientAndOrgId)
+				.userId(userId)
+				.traceId(traceId)
+				.build();
+	}
+
+	private static String newEventId()
+	{
+		return UUID.randomUUID().toString();
 	}
 
 	public ClientId getClientId()
@@ -91,5 +103,21 @@ public class EventDescriptor
 	public OrgId getOrgId()
 	{
 		return getClientAndOrgId().getOrgId();
+	}
+
+	@NonNull
+	public EventDescriptor withNewEventId()
+	{
+		return toBuilder()
+				.eventId(newEventId())
+				.build();
+	}
+
+	@NonNull
+	public EventDescriptor withClientAndOrg(@NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		return toBuilder()
+				.clientAndOrgId(clientAndOrgId)
+				.build();
 	}
 }

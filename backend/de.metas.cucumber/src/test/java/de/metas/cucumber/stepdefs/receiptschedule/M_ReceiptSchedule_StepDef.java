@@ -26,13 +26,18 @@ import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.M_ReceiptSchedule_StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.handlingunits.empties.IHUEmptiesService;
+import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
@@ -43,7 +48,9 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.Mutable;
 import org.assertj.core.api.Assertions;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -58,7 +65,6 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.inoutcandidate.model.I_M_ReceiptSchedule.COLUMNNAME_C_BPartner_ID;
@@ -82,6 +88,7 @@ public class M_ReceiptSchedule_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IReceiptScheduleProducerFactory receiptScheduleProducerFactory = Services.get(IReceiptScheduleProducerFactory.class);
 	private final IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
+	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 
 	private final M_ReceiptSchedule_StepDefData receiptScheduleTable;
 	private final C_Order_StepDefData orderTable;
@@ -113,59 +120,76 @@ public class M_ReceiptSchedule_StepDef
 	}
 
 	@And("^after not more than (.*)s, M_ReceiptSchedule are found:$")
-	public void there_are_receiptSchedule(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	public void there_are_receiptSchedule(final int timeoutSec, @NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> tableRow : dataTable.asMaps())
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_M_ReceiptSchedule_ID)
+				.forEach(row -> loadAndValidate(row, timeoutSec));
+	}
+
+	private void loadAndValidate(final DataTableRow row, final int timeoutSec) throws InterruptedException
+	{
+		waitAndLoadReceiptSchedule(row, timeoutSec);
+		validateReceiptSchedule(row);
+	}
+
+	private void validateReceiptSchedule(final DataTableRow row)
+	{
+		final StepDefDataIdentifier receiptScheduleIdentifier = row.getAsIdentifier(COLUMNNAME_M_ReceiptSchedule_ID);
+		final I_M_ReceiptSchedule receiptSchedule = receiptScheduleTable.get(receiptScheduleIdentifier);
+		InterfaceWrapperHelper.refresh(receiptSchedule);
+
+		final StepDefDataIdentifier orderIdentifier = row.getAsIdentifier(COLUMNNAME_C_Order_ID);
+		final I_C_Order order = orderTable.get(orderIdentifier);
+
+		final StepDefDataIdentifier orderLineIdentifier = row.getAsIdentifier(COLUMNNAME_C_OrderLine_ID);
+		final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
+
+		final StepDefDataIdentifier bPartnerIdentifier = row.getAsIdentifier(COLUMNNAME_C_BPartner_ID);
+		final I_C_BPartner bPartnerRecord = bPartnerTable.get(bPartnerIdentifier);
+
+		final StepDefDataIdentifier bpPartnerLocationIdentifier = row.getAsIdentifier(COLUMNNAME_C_BPartner_Location_ID);
+		final Integer bPartnerLocationID = bPartnerLocationTable.getOptional(bpPartnerLocationIdentifier)
+				.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
+				.orElseGet(bpPartnerLocationIdentifier::getAsInt);
+		Assertions.assertThat(bPartnerLocationID).isNotNull();
+
+		final StepDefDataIdentifier productIdentifier = row.getAsIdentifier(COLUMNNAME_M_Product_ID);
+		final Integer productID = productTable.getOptional(productIdentifier)
+				.map(I_M_Product::getM_Product_ID)
+				.orElseGet(productIdentifier::getAsInt);
+		Assertions.assertThat(productID).isNotNull();
+
+		final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_QtyOrdered);
+
+		final StepDefDataIdentifier warehouseIdentifier = row.getAsIdentifier(COLUMNNAME_M_Warehouse_ID);
+		final I_M_Warehouse warehouse = warehouseTable.get(warehouseIdentifier);
+
+		assertThat(receiptSchedule.getC_Order_ID()).isEqualTo(order.getC_Order_ID());
+		assertThat(receiptSchedule.getC_OrderLine_ID()).isEqualTo(orderLine.getC_OrderLine_ID());
+		assertThat(receiptSchedule.getC_BPartner_ID()).isEqualTo(bPartnerRecord.getC_BPartner_ID());
+		assertThat(receiptSchedule.getC_BPartner_Location_ID()).isEqualTo(bPartnerLocationID);
+		assertThat(receiptSchedule.getM_Product_ID()).isEqualTo(productID);
+		assertThat(receiptSchedule.getQtyOrdered()).isEqualTo(qtyOrdered);
+		assertThat(receiptSchedule.getM_Warehouse_ID()).isEqualTo(warehouse.getM_Warehouse_ID());
+
+		final BigDecimal qtyOrderedTU = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_M_ReceiptSchedule.COLUMNNAME_QtyOrderedTU);
+		if (qtyOrderedTU != null)
 		{
-			StepDefUtil.tryAndWait(timeoutSec, 500, () -> loadReceiptSchedule(tableRow));
-
-			final String receiptScheduleIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_ReceiptSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_ReceiptSchedule receiptSchedule = receiptScheduleTable.get(receiptScheduleIdentifier);
-			InterfaceWrapperHelper.refresh(receiptSchedule);
-
-			final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_Order order = orderTable.get(orderIdentifier);
-
-			final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
-
-			final String bPartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_BPartner bPartnerRecord = bPartnerTable.get(bPartnerIdentifier);
-
-			final String bpPartnerLocationIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final Integer bPartnerLocationID = bPartnerLocationTable.getOptional(bpPartnerLocationIdentifier)
-					.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
-					.orElseGet(() -> Integer.parseInt(bpPartnerLocationIdentifier));
-			Assertions.assertThat(bPartnerLocationID).isNotNull();
-
-			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final Integer productID = productTable.getOptional(productIdentifier)
-					.map(I_M_Product::getM_Product_ID)
-					.orElseGet(() -> Integer.parseInt(productIdentifier));
-			Assertions.assertThat(productID).isNotNull();
-
-			final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalForColumnName(tableRow, COLUMNNAME_QtyOrdered);
-
-			final String warehouseIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_Warehouse warehouse = warehouseTable.get(warehouseIdentifier);
-
-			assertThat(receiptSchedule.getC_Order_ID()).isEqualTo(order.getC_Order_ID());
-			assertThat(receiptSchedule.getC_OrderLine_ID()).isEqualTo(orderLine.getC_OrderLine_ID());
-			assertThat(receiptSchedule.getC_BPartner_ID()).isEqualTo(bPartnerRecord.getC_BPartner_ID());
-			assertThat(receiptSchedule.getC_BPartner_Location_ID()).isEqualTo(bPartnerLocationID);
-			assertThat(receiptSchedule.getM_Product_ID()).isEqualTo(productID);
-			assertThat(receiptSchedule.getQtyOrdered()).isEqualTo(qtyOrdered);
-			assertThat(receiptSchedule.getM_Warehouse_ID()).isEqualTo(warehouse.getM_Warehouse_ID());
-
-			final BigDecimal qtyOrderedTU = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ReceiptSchedule.COLUMNNAME_QtyOrderedTU);
-			if (qtyOrderedTU != null)
-			{
-				final de.metas.handlingunits.model.I_C_OrderLine orderLine1 = InterfaceWrapperHelper.load(receiptSchedule.getC_OrderLine_ID(), de.metas.handlingunits.model.I_C_OrderLine.class);
-				assertThat(orderLine1.getQtyEnteredTU()).isEqualTo(qtyOrderedTU);
-			}
-
-			receiptScheduleTable.putOrReplace(receiptScheduleIdentifier, receiptSchedule);
+			final de.metas.handlingunits.model.I_C_OrderLine orderLine1 = InterfaceWrapperHelper.load(receiptSchedule.getC_OrderLine_ID(), de.metas.handlingunits.model.I_C_OrderLine.class);
+			assertThat(orderLine1.getQtyEnteredTU()).isEqualTo(qtyOrderedTU);
 		}
+
+		final BigDecimal qtyMoved = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_M_ReceiptSchedule.COLUMNNAME_QtyMoved);
+		if (qtyMoved != null)
+		{
+			assertThat(receiptSchedule.getQtyMoved()).isEqualTo(qtyMoved);
+		}
+
+		final boolean processed = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_M_ReceiptSchedule.COLUMNNAME_Processed, false);
+		assertThat(receiptSchedule.isProcessed()).isEqualTo(processed);
+
+		receiptScheduleTable.putOrReplace(receiptScheduleIdentifier, receiptSchedule);
 	}
 
 	@And("^there is no M_ReceiptSchedule for C_OrderLine (.*)$")
@@ -203,25 +227,55 @@ public class M_ReceiptSchedule_StepDef
 		}
 	}
 
-	@NonNull
-	private Boolean loadReceiptSchedule(@NonNull final Map<String, String> tableRow)
+	@And("^the M_ReceiptSchedule identified by (.*) is (closed|reactivated)$")
+	public void M_ReceiptSchedule_action(@NonNull final String receiptScheduleIdentifier, @NonNull final String action)
 	{
-		final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_C_OrderLine purchaseOrderLine = orderLineTable.get(orderLineIdentifier);
-		assertThat(purchaseOrderLine).isNotNull();
+		final I_M_ReceiptSchedule receiptSchedule = receiptScheduleTable.get(receiptScheduleIdentifier);
 
-		final Optional<I_M_ReceiptSchedule> receiptSchedule = queryBL.createQueryBuilder(I_M_ReceiptSchedule.class)
-				.addEqualsFilter(I_M_ReceiptSchedule.COLUMN_C_OrderLine_ID, purchaseOrderLine.getC_OrderLine_ID())
+		switch (StepDefDocAction.valueOf(action))
+		{
+			case closed:
+				receiptScheduleBL.close(receiptSchedule);
+				break;
+			case reactivated:
+				receiptScheduleBL.reopen(receiptSchedule);
+				break;
+			default:
+				throw new AdempiereException("Unhandled M_ReceiptSchedule action")
+						.appendParametersToMessage()
+						.setParameter("action:", action);
+		}
+	}
+
+	@NonNull
+	public I_M_ReceiptSchedule waitAndLoadReceiptSchedule(final DataTableRow row, final int timeoutSec) throws InterruptedException
+	{
+		final Mutable<I_M_ReceiptSchedule> receiptScheduleHolder = new Mutable<>();
+		StepDefUtil.tryAndWait(timeoutSec, 500, () -> loadReceiptSchedule(row, receiptScheduleHolder));
+
+		return receiptScheduleHolder.getValueNotNull();
+	}
+
+	@NonNull
+	private Boolean loadReceiptSchedule(@NonNull final DataTableRow row, @NonNull final Mutable<I_M_ReceiptSchedule> receiptScheduleHolder)
+	{
+		final StepDefDataIdentifier orderLineIdentifier = row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID);
+		final OrderLineId purchaseOrderLineId = orderLineTable.getId(orderLineIdentifier);
+
+		final I_M_ReceiptSchedule receiptSchedule = queryBL.createQueryBuilder(I_M_ReceiptSchedule.class)
+				.addEqualsFilter(I_M_ReceiptSchedule.COLUMN_C_OrderLine_ID, purchaseOrderLineId)
 				.create()
-				.firstOnlyOptional(I_M_ReceiptSchedule.class);
+				.firstOnly(I_M_ReceiptSchedule.class);
 
-		if (!receiptSchedule.isPresent())
+		if (receiptSchedule == null)
 		{
 			return false;
 		}
 
-		final String receiptScheduleIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_ReceiptSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
-		receiptScheduleTable.putOrReplace(receiptScheduleIdentifier, receiptSchedule.get());
+		receiptScheduleHolder.setValue(receiptSchedule);
+
+		row.getAsOptionalIdentifier(COLUMNNAME_M_ReceiptSchedule_ID)
+				.ifPresent(receiptScheduleIdentifier -> receiptScheduleTable.putOrReplace(receiptScheduleIdentifier, receiptSchedule));
 
 		return true;
 	}
@@ -239,7 +293,7 @@ public class M_ReceiptSchedule_StepDef
 	private void createInOutEmpties(@NonNull final String movementType, @NonNull final Map<String, String> row)
 	{
 		final String receiptScheduleIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_ReceiptSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if(Check.isNotBlank(receiptScheduleIdentifier))
+		if (Check.isNotBlank(receiptScheduleIdentifier))
 		{
 			createDraftEmptiesForReceiptSchedule(movementType, row);
 			return;

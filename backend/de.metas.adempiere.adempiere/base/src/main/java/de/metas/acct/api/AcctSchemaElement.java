@@ -1,10 +1,14 @@
 package de.metas.acct.api;
 
-import javax.annotation.Nullable;
-
+import de.metas.acct.api.impl.AcctSchemaElementId;
+import de.metas.organization.OrgId;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.Value;
+import lombok.Setter;
+import lombok.ToString;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -28,26 +32,27 @@ import lombok.Value;
  * #L%
  */
 
-@Value
 @Builder
+@Getter
+@ToString
 public class AcctSchemaElement
 {
-	@NonNull
-	AcctSchemaElementType elementType;
-	@NonNull
-	String name;
-	int seqNo;
+	@NonNull final AcctSchemaId acctSchemaId;
+	@NonNull final AcctSchemaElementType elementType;
+	@NonNull final String name;
+	final int seqNo;
+	final int defaultValue;
+	final @NonNull OrgId OrgId;
+	final @NonNull String displayColumnName;
+	final boolean mandatory;
+	final boolean displayedInEditor;
+	final boolean balanced;
 
-	int defaultValue;
 	@Nullable
-	ChartOfAccountsId chartOfAccountsId;
-
-	@NonNull
-	String displayColumnName;
-
-	boolean mandatory;
-	boolean displayedInEditor;
-	boolean balanced;
+	@Setter
+	AcctSchemaElementId id;
+	@Setter
+	@Nullable ChartOfAccountsId chartOfAccountsId;
 
 	public String getColumnName()
 	{

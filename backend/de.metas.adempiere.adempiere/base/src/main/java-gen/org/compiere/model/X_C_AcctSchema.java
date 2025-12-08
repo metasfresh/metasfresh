@@ -317,6 +317,18 @@ public class X_C_AcctSchema extends org.compiere.model.PO implements I_C_AcctSch
 	}
 
 	@Override
+	public void setIsAllowMultiDebitAndCredit (final boolean IsAllowMultiDebitAndCredit)
+	{
+		set_Value (COLUMNNAME_IsAllowMultiDebitAndCredit, IsAllowMultiDebitAndCredit);
+	}
+
+	@Override
+	public boolean isAllowMultiDebitAndCredit() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowMultiDebitAndCredit);
+	}
+
+	@Override
 	public void setIsAllowNegativePosting (final boolean IsAllowNegativePosting)
 	{
 		set_Value (COLUMNNAME_IsAllowNegativePosting, IsAllowNegativePosting);

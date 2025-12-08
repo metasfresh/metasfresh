@@ -34,6 +34,7 @@ import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.processor.IWorkPackageQueueFactory;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
@@ -69,6 +70,7 @@ import lombok.Value;
 import lombok.experimental.Delegate;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.Mutable;
@@ -86,11 +88,10 @@ import java.util.stream.Collectors;
 
 public class PrintJobBL implements IPrintJobBL
 {
+	private final static Logger logger = LogManager.getLogger(PrintJobBL.class);
+
 	public final static int DEFAULT_MAX_JOBPRINTLINES = 500;
-
 	public final static String SYSCONFIG_MAX_LINES_PER_JOB = Printing_Constants.SYSCONFIG_Printing_PREFIX + "MaxLinesPerJob";
-
-	private final static transient Logger logger = LogManager.getLogger(PrintJobBL.class);
 
 	private final IPrinterRoutingDAO printerRoutingDAO = Services.get(IPrinterRoutingDAO.class);
 	private final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
@@ -98,6 +99,8 @@ public class PrintJobBL implements IPrintJobBL
 	private final IPrinterBL printerBL = Services.get(IPrinterBL.class);
 	private final IPrintingQueueBL printingQueueBL = Services.get(IPrintingQueueBL.class);
 	private final IPrintClientsBL printClientsBL = Services.get(IPrintClientsBL.class);
+
+	private final AdMessageKey MSG_NotFound_AD_Printer_Config = AdMessageKey.of("NotFound_AD_Printer_Config");
 
 	private int maxLinesPerJob = -1;
 
@@ -109,7 +112,7 @@ public class PrintJobBL implements IPrintJobBL
 		return maxLinesPerJob;
 	}
 
-	public void setMaxLinesPerJob(int maxLinesPerJob)
+	public void setMaxLinesPerJob(final int maxLinesPerJob)
 	{
 		this.maxLinesPerJob = maxLinesPerJob;
 	}
@@ -119,7 +122,7 @@ public class PrintJobBL implements IPrintJobBL
 	{
 		final PrintingQueueProcessingInfo printingQueueProcessingInfo = source.getProcessingInfo();
 
-		int printJobCount = 0;
+		final int printJobCount = 0;
 		final List<I_C_Print_Job_Instructions> pdfPrintingJobInstructions = new ArrayList<>();
 
 		try
@@ -233,14 +236,14 @@ public class PrintJobBL implements IPrintJobBL
 	}
 
 	private List<I_C_Print_Job_Instructions> createPrintJobInstructionsAndPrintJobs(final IPrintingQueueSource source,
-			final Iterator<I_C_Printing_Queue> items,
-			final PrintingQueueProcessingInfo printingQueueProcessingInfo)
+																					final Iterator<I_C_Printing_Queue> items,
+																					final PrintingQueueProcessingInfo printingQueueProcessingInfo)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 		final Mutable<List<I_C_Print_Job_Instructions>> instructionsMutable = new Mutable<>();
 
-		trxManager.run(ITrx.TRXNAME_ThreadInherited, (TrxRunnable)localTrxName -> instructionsMutable.setValue(createPrintJobInstructionsAndPrintJobs0(source, items, printingQueueProcessingInfo, localTrxName)));
+		trxManager.run(ITrx.TRXNAME_ThreadInherited, localTrxName -> instructionsMutable.setValue(createPrintJobInstructionsAndPrintJobs0(source, items, printingQueueProcessingInfo, localTrxName)));
 
 		if (instructionsMutable.getValue() == null)
 		{
@@ -274,7 +277,7 @@ public class PrintJobBL implements IPrintJobBL
 		ContextForAsyncProcessing printJobContext;
 	}
 
-	private void enqueuePrintJobInstructionsForPDFPrintingIfNeeded(@NonNull final List<I_C_Print_Job_Instructions> printJobInstructions, @NonNull PrintingAsyncBatch printingAsyncBatch)
+	private void enqueuePrintJobInstructionsForPDFPrintingIfNeeded(@NonNull final List<I_C_Print_Job_Instructions> printJobInstructions, @NonNull final PrintingAsyncBatch printingAsyncBatch)
 	{
 		if (printJobInstructions.isEmpty())
 		{
@@ -282,11 +285,12 @@ public class PrintJobBL implements IPrintJobBL
 		}
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(printJobInstructions.get(0));
-		final I_C_Async_Batch asyncBatch = createAsyncBatchForPDFPrinting(ctx, printingAsyncBatch);
-		printJobInstructions.forEach(pji -> enqueuePrintJobInstructions(pji, asyncBatch));
+		final AsyncBatchId asyncBatchId = createAsyncBatchForPDFPrinting(ctx, printingAsyncBatch);
+		
+		printJobInstructions.forEach(pji -> enqueuePrintJobInstructions(pji, asyncBatchId));
 	}
 
-	private I_C_Async_Batch createAsyncBatchForPDFPrinting(@NonNull final Properties ctx, @NonNull PrintingAsyncBatch printingAsyncBatch)
+	private AsyncBatchId createAsyncBatchForPDFPrinting(@NonNull final Properties ctx, @NonNull final PrintingAsyncBatch printingAsyncBatch)
 	{
 		final String name = Check.isEmpty(printingAsyncBatch.getName(), true) ? "Print to pdf" : printingAsyncBatch.getName();
 		final int printJobCount = printingAsyncBatch.getPrintJobCount();
@@ -300,10 +304,10 @@ public class PrintJobBL implements IPrintJobBL
 				.setParentAsyncBatchId(AsyncBatchId.ofRepoIdOrNull(parentAsyncBatchId))
 				.setCountExpected(printJobCount)
 				.setName(name)
-				.build();
+				.buildAndEnqueue();
 	}
 
-	private PInstanceId getAdPInstanceId(@NonNull PrintingAsyncBatch printingAsyncBatch)
+	private PInstanceId getAdPInstanceId(@NonNull final PrintingAsyncBatch printingAsyncBatch)
 	{
 		final I_C_Async_Batch parentAsyncBatch = getParentAsyncPatchIfExists(printingAsyncBatch.getParentAsyncBatchId());
 		return parentAsyncBatch == null ? printingAsyncBatch.getAdPInstanceId() : PInstanceId.ofRepoIdOrNull(parentAsyncBatch.getAD_PInstance_ID());
@@ -315,29 +319,30 @@ public class PrintJobBL implements IPrintJobBL
 	}
 
 	@Override
-	public void enqueuePrintJobInstructions(final I_C_Print_Job_Instructions jobInstructions, final I_C_Async_Batch asyncBatch)
+	public void enqueuePrintJobInstructions(final I_C_Print_Job_Instructions jobInstructions, 
+											final AsyncBatchId asyncBatchId)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(jobInstructions);
 
 		final IWorkPackageQueue queue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, PDFDocPrintingWorkpackageProcessor.class);
 		queue
 				.newWorkPackage()
-				.setC_Async_Batch(asyncBatch) // set the async batch in workpackage in order to track it
+				.setC_Async_Batch_ID(asyncBatchId) // set the async batch in workpackage in order to track it
 				.addElement(jobInstructions)
 				.buildAndEnqueue();
 	}
 
 	/**
 	 * Creates a print job, print job lines and a print job instructions for at most <code>maxLines</code> items (see {@link #getMaxLinesPerJob(I_C_Print_Job)}) for the given <code>items</code>.<br>
-	 *
+	 * <p>
 	 * Note that <code>items</code> contains both the source's items and related items.
 	 *
 	 * @return one print job instruction per user-to-print
 	 */
 	private List<I_C_Print_Job_Instructions> createPrintJobInstructionsAndPrintJobs0(final IPrintingQueueSource source,
-			final Iterator<I_C_Printing_Queue> items,
-			final PrintingQueueProcessingInfo printingQueueProcessingInfo,
-			final String trxName)
+																					 final Iterator<I_C_Printing_Queue> items,
+																					 final PrintingQueueProcessingInfo printingQueueProcessingInfo,
+																					 final String trxName)
 	{
 		I_C_Print_Job printJob = null;
 		int lineCount = 0;
@@ -436,9 +441,9 @@ public class PrintJobBL implements IPrintJobBL
 	}
 
 	private I_C_Print_Job_Line createPrintJobLine(final IPrintingQueueSource source,
-			final I_C_Print_Job printJob,
-			final I_C_Printing_Queue item,
-			final int seqNo)
+												  final I_C_Print_Job printJob,
+												  final I_C_Printing_Queue item,
+												  final int seqNo)
 	{
 		// Create print job line
 		final I_C_Print_Job_Line printJobLine = InterfaceWrapperHelper.newInstance(I_C_Print_Job_Line.class, printJob);
@@ -511,15 +516,26 @@ public class PrintJobBL implements IPrintJobBL
 			final String hostKeyToUse;
 			final UserId userToPrintIdToUse;
 			final I_AD_Printer_Config printerConfig = printingDAO.retrievePrinterConfig(hostKey, userToPrintId);
-			Check.errorIf(printerConfig == null,
-					"Missing AD_Printer_Config record for hostKey={}, userToPrintId={}",
-					hostKey, UserId.toRepoId(userToPrintId));
+			if (printerConfig == null)
+			{
+				throw new AdempiereException(MSG_NotFound_AD_Printer_Config)
+						.markAsUserValidationError()
+						.setParameter("hostKey", hostKey)
+						.setParameter("userToPrintId", userToPrintId);
+			}
 
 			if (printerConfig.getAD_Printer_Config_Shared_ID() > 0)
 			{
 				final I_AD_Printer_Config ad_Printer_Config_Shared = printerConfig.getAD_Printer_Config_Shared();
 				hostKeyToUse = ad_Printer_Config_Shared.getConfigHostKey();
-				userToPrintIdToUse = UserId.ofRepoId(ad_Printer_Config_Shared.getAD_User_PrinterMatchingConfig_ID());
+				if (ad_Printer_Config_Shared.getC_Workplace_ID() <= 0)
+				{
+					userToPrintIdToUse = UserId.ofRepoId(ad_Printer_Config_Shared.getAD_User_PrinterMatchingConfig_ID());
+				}
+				else
+				{
+					userToPrintIdToUse = userToPrintId;
+				}
 			}
 			else
 			{

@@ -2,6 +2,7 @@ package de.metas.distribution.workflows_api.json;
 
 import de.metas.distribution.workflows_api.DistributionJobLine;
 import de.metas.distribution.workflows_api.DistributionJobStep;
+import de.metas.distribution.workflows_api.DistributionJobStepId;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import lombok.Builder;
 import lombok.NonNull;
@@ -15,7 +16,7 @@ import java.math.BigDecimal;
 @Jacksonized
 public class JsonDistributionJobStep
 {
-	@NonNull String id;
+	@NonNull DistributionJobStepId id;
 
 	@NonNull String productName;
 
@@ -41,7 +42,7 @@ public class JsonDistributionJobStep
 		final String adLanguage = jsonOpts.getAdLanguage();
 
 		return builder()
-				.id(String.valueOf(step.getId().toJson()))
+				.id(step.getId())
 				.productName(line.getProduct().getCaption().translate(adLanguage))
 				.uom(step.getQtyToMoveTarget().getUOMSymbol())
 				.qtyToMove(step.getQtyToMoveTarget().toBigDecimal())

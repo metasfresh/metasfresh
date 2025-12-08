@@ -7,6 +7,7 @@ import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.business.BusinessTestHelper;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.engine.IDocument;
 import de.metas.invoicecandidate.AbstractICTestSupport;
@@ -21,19 +22,18 @@ import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -41,11 +41,9 @@ import java.util.Properties;
 
 import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.ZERO;
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, MoneyService.class, CurrencyRepository.class, InvoiceCandidateRecordService.class })
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS) // without this, this test fails when run in eclipse together with all tests of this project
 public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSupport
@@ -59,7 +57,7 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 
 	private InvoiceCandBL invoiceCandBL;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		invoiceCandBL = new InvoiceCandBL();
@@ -103,7 +101,7 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 		invoiceCandBL.handleReversalForInvoice(invoiceAndLine.getLeft());
 
 		final List<I_C_Invoice_Line_Alloc> ilaForIc = Services.get(IInvoiceCandDAO.class).retrieveIlaForIc(InvoiceCandidateIds.ofRecord(ic));
-		assertThat(ilaForIc.isEmpty(), is(false));
+		assertThat(ilaForIc.isEmpty()).isFalse();
 
 		for (final I_C_Invoice_Line_Alloc currentIla : ilaForIc)
 		{
@@ -111,7 +109,7 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 			{
 				continue; // skip the invoice's ila..we only look at the credit memo's ila
 			}
-			assertThat(currentIla.getQtyInvoiced(), comparesEqualTo(invoiceQtyInvoiced.negate()));
+			assertThat(currentIla.getQtyInvoiced()).isEqualByComparingTo(invoiceQtyInvoiced.negate());
 		}
 	}
 
@@ -250,17 +248,17 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 		// guard: at this point, we expect 1 out of the original 10 to be still invoiceable
 		I_C_Invoice_Line_Alloc creditMemoIla = null;
 		final List<I_C_Invoice_Line_Alloc> ilasForIcAfterCreditMemo = Services.get(IInvoiceCandDAO.class).retrieveIlaForIc(InvoiceCandidateIds.ofRecord(ic));
-		assertThat(ilasForIcAfterCreditMemo.isEmpty(), is(false));
+		assertThat(ilasForIcAfterCreditMemo.isEmpty()).isFalse();
 		for (final I_C_Invoice_Line_Alloc currentIla : ilasForIcAfterCreditMemo)
 		{
 			if (currentIla.equals(invoiceIla))
 			{
 				continue; // skip the invoice's ila..we only look at the credit memo's ila
 			}
-			assertThat(currentIla.getQtyInvoiced(), comparesEqualTo(CREDI_MEMO_QTY_INVOICE_NINE.negate()));
+			assertThat(currentIla.getQtyInvoiced()).isEqualByComparingTo(CREDI_MEMO_QTY_INVOICE_NINE.negate());
 			creditMemoIla = currentIla;
 		}
-		assertThat(invoiceCandBL.sumupQtyInvoicedAndNetAmtInvoiced(ic).get().getLeft().getStockQty().toBigDecimal(), comparesEqualTo(BigDecimal.ONE)); // 10 invoiced, 9 credited
+		assertThat(invoiceCandBL.sumupQtyInvoicedAndNetAmtInvoiced(ic).get().getLeft().getStockQty().toBigDecimal()).isEqualByComparingTo(BigDecimal.ONE); // 10 invoiced, 9 credited
 
 		// create a reversal for the invoice or credit memo
 		// the actual test starts with invoiceCandBL.handleReversalForInvoice()
@@ -288,24 +286,24 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 		//
 		// checking the result
 		final List<I_C_Invoice_Line_Alloc> ilasForIcAfterReversal = Services.get(IInvoiceCandDAO.class).retrieveIlaForIc(InvoiceCandidateIds.ofRecord(ic));
-		assertThat(ilasForIcAfterCreditMemo.isEmpty(), is(false));
+		assertThat(ilasForIcAfterCreditMemo.isEmpty()).isFalse();
 		for (final I_C_Invoice_Line_Alloc currentIla : ilasForIcAfterReversal)
 		{
 			if (currentIla.equals(invoiceIla))
 			{
-				assertThat(currentIla.getQtyInvoiced(), comparesEqualTo(INVOICE_QTY_INVOICED_TEN)); // should be unchanged since the beginning
+				assertThat(currentIla.getQtyInvoiced()).isEqualByComparingTo(INVOICE_QTY_INVOICED_TEN); // should be unchanged since the beginning
 				continue;
 			}
 			if (currentIla.equals(creditMemoIla))
 			{
-				assertThat(currentIla.getQtyInvoiced(), comparesEqualTo(CREDI_MEMO_QTY_INVOICE_NINE.negate())); // should be unchanged since we last checked
+				assertThat(currentIla.getQtyInvoiced()).isEqualByComparingTo(CREDI_MEMO_QTY_INVOICE_NINE.negate()); // should be unchanged since we last checked
 				continue;
 			}
 
-			assertThat(currentIla.getQtyInvoiced(), comparesEqualTo(reversalIlaExpectedQtyInvoiced));
+			assertThat(currentIla.getQtyInvoiced()).isEqualByComparingTo(reversalIlaExpectedQtyInvoiced);
 		}
 
-		assertThat(invoiceCandBL.sumupQtyInvoicedAndNetAmtInvoiced(ic).get().getLeft().getStockQty().toBigDecimal(), comparesEqualTo(expectedQtyInvoicedSumAfterReversal));
+		assertThat(invoiceCandBL.sumupQtyInvoicedAndNetAmtInvoiced(ic).get().getLeft().getStockQty().toBigDecimal()).isEqualByComparingTo(expectedQtyInvoicedSumAfterReversal);
 	}
 
 	/**
@@ -369,17 +367,17 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 		// guard: at this point, we expect 1 out of the original 10 to be still invoiceable
 		I_C_Invoice_Line_Alloc creditMemoIla = null;
 		final List<I_C_Invoice_Line_Alloc> ilasForIcAfterCreditMemo = Services.get(IInvoiceCandDAO.class).retrieveIlaForIc(InvoiceCandidateIds.ofRecord(ic));
-		assertThat(ilasForIcAfterCreditMemo.isEmpty(), is(false));
+		assertThat(ilasForIcAfterCreditMemo.isEmpty()).isFalse();
 		for (final I_C_Invoice_Line_Alloc currentIla : ilasForIcAfterCreditMemo)
 		{
 			if (currentIla.equals(invoiceIla))
 			{
 				continue; // skip the invoice's ila..we only look at the credit memo's ila
 			}
-			assertThat(currentIla.getQtyInvoiced(), comparesEqualTo(ZERO));
+			assertThat(currentIla.getQtyInvoiced()).isEqualByComparingTo(ZERO);
 			creditMemoIla = currentIla;
 		}
-		assertThat(invoiceCandBL.sumupQtyInvoicedAndNetAmtInvoiced(ic).get().getLeft().getStockQty().toBigDecimal(), comparesEqualTo(INVOICE_QTY_INVOICED_TEN)); // 10 invoiced, 9 credited
+		assertThat(invoiceCandBL.sumupQtyInvoicedAndNetAmtInvoiced(ic).get().getLeft().getStockQty().toBigDecimal()).isEqualByComparingTo(INVOICE_QTY_INVOICED_TEN); // 10 invoiced, 9 credited
 
 		// create a reversal for the invoice or credit memo
 		// the actual test starts with invoiceCandBL.handleReversalForInvoice()
@@ -395,24 +393,24 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 		//
 		// checking the result
 		final List<I_C_Invoice_Line_Alloc> ilasForIcAfterReversal = Services.get(IInvoiceCandDAO.class).retrieveIlaForIc(InvoiceCandidateIds.ofRecord(ic));
-		assertThat(ilasForIcAfterCreditMemo.isEmpty(), is(false));
+		assertThat(ilasForIcAfterCreditMemo.isEmpty()).isFalse();
 		for (final I_C_Invoice_Line_Alloc currentIla : ilasForIcAfterReversal)
 		{
 			if (currentIla.equals(invoiceIla))
 			{
-				assertThat(currentIla.getQtyInvoiced(), comparesEqualTo(INVOICE_QTY_INVOICED_TEN)); // should be unchanged since the beginning
+				assertThat(currentIla.getQtyInvoiced()).isEqualByComparingTo(INVOICE_QTY_INVOICED_TEN); // should be unchanged since the beginning
 				continue;
 			}
 			if (currentIla.equals(creditMemoIla))
 			{
-				assertThat(currentIla.getQtyInvoiced(), comparesEqualTo(ZERO)); // should be unchanged since we last checked
+				assertThat(currentIla.getQtyInvoiced()).isEqualByComparingTo(ZERO); // should be unchanged since we last checked
 				continue;
 			}
 
-			assertThat(currentIla.getQtyInvoiced(), comparesEqualTo(ZERO));
+			assertThat(currentIla.getQtyInvoiced()).isEqualByComparingTo(ZERO);
 		}
 
-		assertThat(invoiceCandBL.sumupQtyInvoicedAndNetAmtInvoiced(ic).get().getLeft().getStockQty().toBigDecimal(), comparesEqualTo(expectedQtyInvoicedSumAfterReversal));
+		assertThat(invoiceCandBL.sumupQtyInvoicedAndNetAmtInvoiced(ic).get().getLeft().getStockQty().toBigDecimal()).isEqualByComparingTo(expectedQtyInvoicedSumAfterReversal);
 	}
 
 	private void doTestCreditMemoReversal(final BigDecimal reversalIlaExpectedQtyInvoiced)
@@ -445,17 +443,17 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 		InterfaceWrapperHelper.save(invoiceIla);
 
 		final List<I_C_Invoice_Line_Alloc> ilasForIcAfterCreditMemo = Services.get(IInvoiceCandDAO.class).retrieveIlaForIc(InvoiceCandidateIds.ofRecord(ic));
-		assertThat(ilasForIcAfterCreditMemo.isEmpty(), is(false));
+		assertThat(ilasForIcAfterCreditMemo.isEmpty()).isFalse();
 		for (final I_C_Invoice_Line_Alloc currentIla : ilasForIcAfterCreditMemo)
 		{
 			if (currentIla.equals(invoiceIla))
 			{
 				continue; // skip the invoice's ila..we only look at the credit memo's ila
 			}
-			assertThat(currentIla.getQtyInvoiced(), comparesEqualTo(INVOICE_QTY_INVOICED_TEN));
+			assertThat(currentIla.getQtyInvoiced()).isEqualByComparingTo(INVOICE_QTY_INVOICED_TEN);
 
 		}
-		assertThat(invoiceCandBL.sumupQtyInvoicedAndNetAmtInvoiced(ic).get().getLeft().getStockQty().toBigDecimal(), comparesEqualTo(INVOICE_QTY_INVOICED_TEN)); // 10 invoiced, 9 credited
+		assertThat(invoiceCandBL.sumupQtyInvoicedAndNetAmtInvoiced(ic).get().getLeft().getStockQty().toBigDecimal()).isEqualByComparingTo(INVOICE_QTY_INVOICED_TEN); // 10 invoiced, 9 credited
 
 		// create a reversal for the invoice or credit memo
 		// the actual test starts with invoiceCandBL.handleReversalForInvoice()
@@ -471,19 +469,19 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 		//
 		// checking the result
 		final List<I_C_Invoice_Line_Alloc> ilasForIcAfterReversal = Services.get(IInvoiceCandDAO.class).retrieveIlaForIc(InvoiceCandidateIds.ofRecord(ic));
-		assertThat(ilasForIcAfterCreditMemo.isEmpty(), is(false));
+		assertThat(ilasForIcAfterCreditMemo.isEmpty()).isFalse();
 		for (final I_C_Invoice_Line_Alloc currentIla : ilasForIcAfterReversal)
 		{
 			if (currentIla.equals(invoiceIla))
 			{
-				assertThat(currentIla.getQtyInvoiced(), comparesEqualTo(INVOICE_QTY_INVOICED_TEN)); // should be unchanged since the beginning
+				assertThat(currentIla.getQtyInvoiced()).isEqualByComparingTo(INVOICE_QTY_INVOICED_TEN); // should be unchanged since the beginning
 				continue;
 			}
 
-			assertThat(currentIla.getQtyInvoiced(), comparesEqualTo(reversalIlaExpectedQtyInvoiced));
+			assertThat(currentIla.getQtyInvoiced()).isEqualByComparingTo(reversalIlaExpectedQtyInvoiced);
 		}
 
-		assertThat(invoiceCandBL.sumupQtyInvoicedAndNetAmtInvoiced(ic).get().getLeft().getStockQty().toBigDecimal(), comparesEqualTo(expectedQtyInvoicedSumAfterReversal));
+		assertThat(invoiceCandBL.sumupQtyInvoicedAndNetAmtInvoiced(ic).get().getLeft().getStockQty().toBigDecimal()).isEqualByComparingTo(expectedQtyInvoicedSumAfterReversal);
 	}
 
 	private void doTest(final boolean isCreditedInvoiceReinvoicable,
@@ -523,7 +521,7 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 		invoiceCandBL.handleCompleteForInvoice(creditMemoAndLine.getLeft());
 
 		final List<I_C_Invoice_Line_Alloc> ilaForIc = Services.get(IInvoiceCandDAO.class).retrieveIlaForIc(InvoiceCandidateIds.ofRecord(ic));
-		assertThat(ilaForIc.isEmpty(), is(false));
+		assertThat(ilaForIc.isEmpty()).isFalse();
 
 		for (final I_C_Invoice_Line_Alloc currentIla : ilaForIc)
 		{
@@ -531,7 +529,7 @@ public class InvoiceCandBLHandlCompleteAndReversalTest extends AbstractICTestSup
 			{
 				continue; // skip the invoice's ila..we only look at the credit memo's ila
 			}
-			assertThat(currentIla.getQtyInvoiced(), comparesEqualTo(expectedNewIlaQtyInvoiced));
+			assertThat(currentIla.getQtyInvoiced()).isEqualByComparingTo(expectedNewIlaQtyInvoiced);
 		}
 	}
 

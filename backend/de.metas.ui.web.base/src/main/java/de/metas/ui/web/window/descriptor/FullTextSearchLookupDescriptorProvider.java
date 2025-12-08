@@ -43,7 +43,7 @@ public class FullTextSearchLookupDescriptorProvider implements LookupDescriptorP
 {
 	// services
 	private final Client elasticsearchClient;
-	private final LookupDataSourceFactory lookupDataSourceFactory = LookupDataSourceFactory.instance;
+	private final LookupDataSourceFactory lookupDataSourceFactory;
 
 	private final String modelTableName;
 	private final String esIndexName;
@@ -55,12 +55,14 @@ public class FullTextSearchLookupDescriptorProvider implements LookupDescriptorP
 
 	@Builder
 	private FullTextSearchLookupDescriptorProvider(
+			@NonNull final LookupDataSourceFactory lookupDataSourceFactory,
 			@NonNull final Client elasticsearchClient,
 			@NonNull final String modelTableName,
 			@NonNull final String esIndexName,
 			@NonNull final Set<String> esSearchFieldNames,
 			@NonNull final LookupDescriptorProvider databaseLookupDescriptorProvider)
 	{
+		this.lookupDataSourceFactory = lookupDataSourceFactory;
 		this.elasticsearchClient = elasticsearchClient;
 		this.modelTableName = modelTableName;
 		this.esIndexName = esIndexName;

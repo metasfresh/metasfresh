@@ -71,6 +71,7 @@ public interface I_M_PickingSlot
 
 	/**
 	 * Set Location.
+	 * Identifies the address of the business partner
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -80,6 +81,7 @@ public interface I_M_PickingSlot
 
 	/**
 	 * Get Location.
+	 * Identifies the address of the business partner
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -180,6 +182,27 @@ public interface I_M_PickingSlot
 	String COLUMNNAME_IsPickingRackSystem = "IsPickingRackSystem";
 
 	/**
+	 * Set Handling Unit.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_HU_ID (int M_HU_ID);
+
+	/**
+	 * Get Handling Unit.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_HU_ID();
+
+	ModelColumn<I_M_PickingSlot, Object> COLUMN_M_HU_ID = new ModelColumn<>(I_M_PickingSlot.class, "M_HU_ID", null);
+	String COLUMNNAME_M_HU_ID = "M_HU_ID";
+
+	/**
 	 * Set Locator.
 	 * Warehouse Locator
 	 *
@@ -244,8 +267,8 @@ public interface I_M_PickingSlot
 	String COLUMNNAME_M_PickingSlot_ID = "M_PickingSlot_ID";
 
 	/**
-	 * Set Warehouse.
-	 * Storage Warehouse and Service Point
+	 * Set Lager.
+	 * Lager oder Ort für Dienstleistung
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -254,8 +277,8 @@ public interface I_M_PickingSlot
 	void setM_Warehouse_ID (int M_Warehouse_ID);
 
 	/**
-	 * Get Warehouse.
-	 * Storage Warehouse and Service Point
+	 * Get Lager.
+	 * Lager oder Ort für Dienstleistung
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -266,18 +289,18 @@ public interface I_M_PickingSlot
 	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
-	 * Set PickingSlot.
+	 * Set Picking Slot.
 	 *
-	 * <br>Type: List
+	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setPickingSlot (java.lang.String PickingSlot);
 
 	/**
-	 * Get PickingSlot.
+	 * Get Picking Slot.
 	 *
-	 * <br>Type: List
+	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */

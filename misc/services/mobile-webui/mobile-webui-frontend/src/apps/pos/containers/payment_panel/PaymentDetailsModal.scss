@@ -1,0 +1,28 @@
+.payment-details-modal {
+  .modal-card-body {
+    .detail-line {
+      display: flex;
+      flex-flow: row nowrap;
+
+      .detail-caption {
+        flex-grow: 1;
+      }
+
+      .detail-value {
+        flex-grow: 0;
+        font-weight: bold;
+      }
+    }
+    
+    .detail-line-spinner {
+      
+    }
+
+    .numpad-container {
+      display: flex;
+      flex-flow: row nowrap;
+      align-items: center;
+      justify-content: right;
+    }
+  }
+}

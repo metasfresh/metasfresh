@@ -1,6 +1,7 @@
 package de.metas.tourplanning.api;
 
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.lang.SOTrx;
 import de.metas.tourplanning.model.I_M_DeliveryDay;
 import de.metas.tourplanning.model.I_M_DeliveryDay_Alloc;
@@ -10,7 +11,6 @@ import de.metas.tourplanning.spi.IDeliveryDayHandler;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.ImmutablePair;
 
 import java.time.ZonedDateTime;
 import java.util.Date;

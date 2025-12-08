@@ -418,7 +418,7 @@ public class MDunningRunLine extends X_C_DunningRunLine
 				+ " AND (NOT C_Invoice_ID IS NULL OR NOT C_Payment_ID IS NULL))"
 				+ " WHERE C_DunningRunEntry_ID=" + getC_DunningRunEntry_ID();
 
-		DB.executeUpdate(sql, get_TrxName());
+		DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 	}	// updateEntry
 
 }	// MDunningRunLine

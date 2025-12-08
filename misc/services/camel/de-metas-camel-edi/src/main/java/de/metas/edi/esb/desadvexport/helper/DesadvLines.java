@@ -23,7 +23,7 @@
 package de.metas.edi.esb.desadvexport.helper;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvLineType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDIExpDesadvLineType;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -53,7 +53,7 @@ public class DesadvLines
 	public List<EDIExpDesadvLineType> getAllLines()
 	{
 		return Stream.concat(lineId2LineWithNoPacks.values().stream(),
-							 lineId2LineWithPacks.values().stream().map(DesadvLineWithPacks::getDesadvLine))
+						lineId2LineWithPacks.values().stream().map(DesadvLineWithPacks::getDesadvLine))
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -61,7 +61,7 @@ public class DesadvLines
 	public List<EDIExpDesadvLineType> getAllSortedByLine()
 	{
 		return Stream.concat(lineId2LineWithNoPacks.values().stream(),
-							 lineId2LineWithPacks.values().stream().map(DesadvLineWithPacks::getDesadvLine))
+						lineId2LineWithPacks.values().stream().map(DesadvLineWithPacks::getDesadvLine))
 				.sorted(Comparator.comparing(EDIExpDesadvLineType::getLine))
 				.collect(ImmutableList.toImmutableList());
 	}

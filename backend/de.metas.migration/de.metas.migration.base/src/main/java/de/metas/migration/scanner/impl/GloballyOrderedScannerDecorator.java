@@ -1,5 +1,13 @@
 package de.metas.migration.scanner.impl;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+import de.metas.migration.IScript;
+import de.metas.migration.scanner.IScriptScanner;
+import org.apache.commons.lang3.builder.CompareToBuilder;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -8,16 +16,6 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.SortedSet;
-
-import org.apache.commons.lang3.builder.CompareToBuilder;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
-
-import de.metas.migration.IScript;
-import de.metas.migration.scanner.IScriptScanner;
 
 /*
  * #%L

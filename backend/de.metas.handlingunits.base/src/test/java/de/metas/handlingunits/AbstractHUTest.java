@@ -9,10 +9,9 @@ import de.metas.document.dimension.InOutLineDimensionFactory;
 import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.document.references.zoom_into.NullCustomizedWindowInfoMapRepository;
 import de.metas.email.MailService;
-import de.metas.email.mailboxes.MailboxRepository;
-import de.metas.email.templates.MailTemplateRepository;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_Locator;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleUpdater;
 import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
@@ -20,20 +19,11 @@ import de.metas.notification.INotificationRepository;
 import de.metas.notification.impl.NotificationRepository;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.product.ProductId;
+import de.metas.shipping.PurchaseOrderToShipperTransportationRepository;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.test.ErrorMessage;
-import org.adempiere.warehouse.LocatorId;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_UOM;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
-
-import java.util.ArrayList;
-import java.util.List;
 import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.test.ErrorMessage;
@@ -43,7 +33,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.junit.Before;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -98,6 +87,10 @@ public abstract class AbstractHUTest
 	protected I_M_Attribute attr_Volume;
 	protected I_M_Attribute attr_FragileSticker;
 
+	protected I_M_Attribute attr_Age;
+
+	protected I_M_Attribute attr_AgeOffset;
+
 	/**
 	 * See {@link de.metas.handlingunits.HUTestHelper#attr_WeightGross}
 	 */
@@ -114,8 +107,6 @@ public abstract class AbstractHUTest
 	 * See {@link de.metas.handlingunits.HUTestHelper#attr_WeightTareAdjust}
 	 */
 	protected I_M_Attribute attr_WeightTareAdjust;
-
-	protected I_M_Attribute attr_AttributeNotFound;
 
 	/**
 	 * See {@link de.metas.handlingunits.HUTestHelper#attr_QualityDiscountPercent}
@@ -144,7 +135,9 @@ public abstract class AbstractHUTest
 		POJOWrapper.setDefaultStrictValues(false);
 	}
 
-	/** HU Test helper */
+	/**
+	 * HU Test helper
+	 */
 	public HUTestHelper helper;
 
 	@BeforeEach
@@ -156,11 +149,12 @@ public abstract class AbstractHUTest
 		dimensionFactories.add(new InOutLineDimensionFactory());
 
 		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
+		SpringContextHolder.registerJUnitBean(PurchaseOrderToShipperTransportationRepository.newInstanceForUnitTesting());
 
 		setupMasterData();
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
-		SpringContextHolder.registerJUnitBean(new MailService(new MailboxRepository(), new MailTemplateRepository()));
+		SpringContextHolder.registerJUnitBean(MailService.newInstanceForUnitTesting());
 
 		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
 
@@ -170,12 +164,13 @@ public abstract class AbstractHUTest
 
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
+		SpringContextHolder.registerJUnitBean(HUQRCodesService.newInstanceForUnitTesting());
 
 		initialize();
 	}
 
 	/**
-	 * Balled by the test's {@link Before} method, after the basic master data was set up.
+	 * Balled by the test's {@link BeforeEach} method, after the basic master data was set up.
 	 */
 	abstract protected void initialize();
 
@@ -198,6 +193,9 @@ public abstract class AbstractHUTest
 		attr_WeightNet = helper.attr_WeightNet;
 		attr_WeightTare = helper.attr_WeightTare;
 		attr_WeightTareAdjust = helper.attr_WeightTareAdjust;
+
+		attr_Age = helper.attr_Age;
+		attr_AgeOffset = helper.attr_AgeOffset;
 
 		attr_QualityDiscountPercent = helper.attr_QualityDiscountPercent;
 		attr_QualityNotice = helper.attr_QualityNotice;

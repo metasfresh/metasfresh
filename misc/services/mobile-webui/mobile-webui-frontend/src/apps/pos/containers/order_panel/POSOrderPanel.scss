@@ -1,0 +1,15 @@
+.pos-screen {
+  .pos-order-panel {
+    display: flex;
+    flex-flow: row nowrap;
+
+    .current-order {
+      flex-grow: 0;
+      margin-right: 1px;
+    }
+
+    .products-container {
+      flex-grow: 1;
+    }
+  }
+}

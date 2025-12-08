@@ -115,6 +115,18 @@ public class DocumentQueryOrderBy
 		return Comparator.comparing(keyExtractor, keyComparator);
 	}
 
+	@Deprecated
+	@Override
+	public String toString()
+	{
+		return toStringSyntax();
+	}
+
+	public String toStringSyntax()
+	{
+		return ascending ? fieldName : "-" + fieldName;
+	}
+
 	@FunctionalInterface
 	public interface FieldValueExtractor<T>
 	{
@@ -136,10 +148,10 @@ public class DocumentQueryOrderBy
 			}
 		}
 
-		public static final transient ValueComparator ASCENDING_NULLS_FIRST = new ValueComparator(true, false);
-		public static final transient ValueComparator ASCENDING_NULLS_LAST = new ValueComparator(true, true);
-		public static final transient ValueComparator DESCENDING_NULLS_FIRST = new ValueComparator(false, false);
-		public static final transient ValueComparator DESCENDING_NULLS_LAST = new ValueComparator(false, true);
+		public static final ValueComparator ASCENDING_NULLS_FIRST = new ValueComparator(true, false);
+		public static final ValueComparator ASCENDING_NULLS_LAST = new ValueComparator(true, true);
+		public static final ValueComparator DESCENDING_NULLS_FIRST = new ValueComparator(false, false);
+		public static final ValueComparator DESCENDING_NULLS_LAST = new ValueComparator(false, true);
 
 		private final boolean ascending;
 		private final boolean nullsLast;
@@ -167,8 +179,7 @@ public class DocumentQueryOrderBy
 			}
 			else if (o1 instanceof Comparable)
 			{
-				@SuppressWarnings("unchecked")
-				final Comparable<Object> o1cmp = (Comparable<Object>)o1;
+				@SuppressWarnings("unchecked") final Comparable<Object> o1cmp = (Comparable<Object>)o1;
 				return o1cmp.compareTo(o2) * (ascending ? +1 : -1);
 			}
 			else

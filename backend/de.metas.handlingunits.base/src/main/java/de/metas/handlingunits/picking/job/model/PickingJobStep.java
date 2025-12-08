@@ -25,10 +25,11 @@ package de.metas.handlingunits.picking.job.model;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PackToSpec;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.i18n.ITranslatableString;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -39,7 +40,9 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 import org.compiere.model.I_C_UOM;
 
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.UnaryOperator;
 
 @Value
@@ -48,9 +51,10 @@ import java.util.function.UnaryOperator;
 public class PickingJobStep
 {
 	@NonNull PickingJobStepId id;
+	boolean isGeneratedOnFly;
 
 	@NonNull OrderAndLineId salesOrderAndLineId;
-	@NonNull ShipmentScheduleId shipmentScheduleId;
+	@NonNull ShipmentScheduleAndJobScheduleId scheduleId;
 
 	//
 	// What?
@@ -63,7 +67,7 @@ public class PickingJobStep
 	@NonNull PickingJobStepPickFromMap pickFroms;
 
 	//
-	// Pick To Specification
+	// Pack To Specification
 	@NonNull PackToSpec packToSpec;
 
 	@NonNull PickingJobProgress progress;
@@ -72,8 +76,9 @@ public class PickingJobStep
 	@Jacksonized
 	private PickingJobStep(
 			@NonNull final PickingJobStepId id,
+			final boolean isGeneratedOnFly,
 			@NonNull final OrderAndLineId salesOrderAndLineId,
-			@NonNull final ShipmentScheduleId shipmentScheduleId,
+			@NonNull final ShipmentScheduleAndJobScheduleId scheduleId,
 			//
 			// What?
 			@NonNull final ProductId productId,
@@ -87,8 +92,9 @@ public class PickingJobStep
 			@NonNull final PackToSpec packToSpec)
 	{
 		this.id = id;
+		this.isGeneratedOnFly = isGeneratedOnFly;
 		this.salesOrderAndLineId = salesOrderAndLineId;
-		this.shipmentScheduleId = shipmentScheduleId;
+		this.scheduleId = scheduleId;
 		this.productId = productId;
 		this.productName = productName;
 		this.qtyToPick = qtyToPick;
@@ -99,6 +105,18 @@ public class PickingJobStep
 	}
 
 	public I_C_UOM getUOM() {return qtyToPick.getUOM();}
+
+	public boolean isNothingPicked() {return pickFroms.isNothingPicked();}
+
+	public Quantity getQtyPicked()
+	{
+		return pickFroms.getQtyPicked().orElseGet(qtyToPick::toZero);
+	}
+
+	public Quantity getQtyRejected()
+	{
+		return pickFroms.getQtyRejected().orElseGet(qtyToPick::toZero);
+	}
 
 	public PickingJobStep reduceWithPickedEvent(
 			@NonNull PickingJobStepPickFromKey key,
@@ -137,4 +155,15 @@ public class PickingJobStep
 		return pickFroms.getPickFromByHUQRCode(qrCode);
 	}
 
+	@NonNull
+	public List<HuId> getPickedHUIds()
+	{
+		return pickFroms.getPickedHUIds();
+	}
+
+	@NonNull
+	public Optional<PickingJobStepPickedToHU> getLastPickedHU()
+	{
+		return pickFroms.getLastPickedHU();
+	}
 }

@@ -1,10 +1,8 @@
-package de.metas.handlingunits.expectations;
-
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,20 +20,7 @@ package de.metas.handlingunits.expectations;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.Date;
-
-import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.test.ErrorMessage;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.util.TimeUtil;
-import org.junit.Assert;
+package de.metas.handlingunits.expectations;
 
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -45,16 +30,34 @@ import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.test.ErrorMessage;
+import org.assertj.core.api.Fail;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.util.TimeUtil;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.Date;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class HUAttributeExpectation<ParentExpectationType> extends AbstractHUExpectation<ParentExpectationType>
 {
-	public static final HUAttributeExpectation<Object> newExpectation()
+	public static HUAttributeExpectation<Object> newExpectation()
 	{
 		return new HUAttributeExpectation<>();
 	}
 
 	private I_M_Attribute attribute;
-	/** i.e. M_Attribute.Value */
+	/**
+	 * i.e. M_Attribute.Value
+	 */
 	private AttributeCode attributeCode;
 	private I_M_HU_PI_Attribute piAttribute;
 	private String valueString;
@@ -113,7 +116,7 @@ public class HUAttributeExpectation<ParentExpectationType> extends AbstractHUExp
 		}
 		if (valueNumberSet)
 		{
-			assertEquals(messageActual.expect("ValueNumber"), valueNumber, huAttribute.getValueNumber());
+			assertThat(huAttribute.getValueNumber()).as(messageActual.expect("ValueNumber").toString()).isEqualByComparingTo(valueNumber);
 		}
 		if (valueDateSet)
 		{
@@ -158,7 +161,8 @@ public class HUAttributeExpectation<ParentExpectationType> extends AbstractHUExp
 		}
 		if (valueNumberSet)
 		{
-			assertEquals(messageToUse.expect("ValueNumber"), valueNumber, attributeValueActual.getValueAsBigDecimal());
+			assertThat(attributeValueActual.getValueAsBigDecimal()).as(messageToUse.expect("ValueNumber").toString()).isEqualByComparingTo(valueNumber);
+
 		}
 		if (valueDateSet)
 		{
@@ -177,9 +181,7 @@ public class HUAttributeExpectation<ParentExpectationType> extends AbstractHUExp
 	/**
 	 * Assert expected "HU_CostPrice" on all included VHUs of given TU
 	 *
-	 * @param message
 	 * @param tuAttributeStorage TU's attribute storage
-	 * @return
 	 */
 	public HUAttributeExpectation<ParentExpectationType> assertExpectedOnTU(final String message, final IAttributeStorage tuAttributeStorage)
 	{
@@ -187,8 +189,8 @@ public class HUAttributeExpectation<ParentExpectationType> extends AbstractHUExp
 				+ "\nTU Attribute Storage: " + tuAttributeStorage
 				+ "\n\n";
 		final Collection<IAttributeStorage> vhuAttributeStorages = tuAttributeStorage.getChildAttributeStorages(true);
-		Assert.assertNotNull(prefix + "No VHU storages found on TU", vhuAttributeStorages);
-		Assert.assertFalse(prefix + "No VHU storages found on TU", vhuAttributeStorages.isEmpty());
+		assertThat(vhuAttributeStorages).as(prefix + "No VHU storages found on TU").isNotNull();
+		assertThat(vhuAttributeStorages).as(prefix + "No VHU storages found on TU").isNotEmpty();
 
 		for (final IAttributeStorage vhuAttributeStorage : vhuAttributeStorages)
 		{
@@ -200,11 +202,8 @@ public class HUAttributeExpectation<ParentExpectationType> extends AbstractHUExp
 
 	/**
 	 * Sets "HU_CostPrice" attribute to all VHUs of given TU
-	 *
+	 * <p>
 	 * The cost price settings will be taken from {@link #rs_PriceActual_Expectation}.
-	 *
-	 * @param tuHU TU
-	 * @return
 	 */
 	public HUAttributeExpectation<ParentExpectationType> updateCostPriceToTU(final IAttributeStorage tuAttributeStorage)
 	{
@@ -214,13 +213,13 @@ public class HUAttributeExpectation<ParentExpectationType> extends AbstractHUExp
 		final String prefix = "TU Attribute Storage: " + tuAttributeStorage
 				+ "\n\n";
 
-		Assert.assertNotNull(prefix + "tuAttributeStorage shall not be null", tuAttributeStorage);
-
+		assertThat(tuAttributeStorage).as(prefix + "tuAttributeStorage shall not be null").isNotNull();
 		//
 		// Get VHU attribute storages
 		final Collection<IAttributeStorage> vhuAttributeStorages = tuAttributeStorage.getChildAttributeStorages(true);
-		Assert.assertNotNull(prefix + "No VHU storages found on TU", vhuAttributeStorages);
-		Assert.assertFalse(prefix + "No VHU storages found on TU", vhuAttributeStorages.isEmpty());
+		assertThat(vhuAttributeStorages).as(prefix + "No VHU storages found on TU").isNotNull();
+
+		assertThat(vhuAttributeStorages).as(prefix + "No VHU storages found on TU").isNotEmpty();
 
 		//
 		// Iterate VHU attribute storages and set the CostPrice
@@ -315,7 +314,7 @@ public class HUAttributeExpectation<ParentExpectationType> extends AbstractHUExp
 		}
 
 		// Fail
-		Assert.fail(messageIfNotFound.toString());
+		Fail.fail(messageIfNotFound.toString());
 		return null; // shall not reach this point
 	}
 

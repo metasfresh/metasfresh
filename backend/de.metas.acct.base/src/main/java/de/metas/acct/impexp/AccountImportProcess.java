@@ -98,7 +98,7 @@ public class AccountImportProcess extends SimpleImportProcessTemplate<I_I_Elemen
 	}
 
 	@Override
-	protected void updateAndValidateImportRecords()
+	protected void updateAndValidateImportRecordsImpl()
 	{
 		// nothing
 	}
@@ -110,7 +110,7 @@ public class AccountImportProcess extends SimpleImportProcessTemplate<I_I_Elemen
 	}
 
 	@Override
-	protected I_I_ElementValue retrieveImportRecord(Properties ctx, ResultSet rs)
+	public I_I_ElementValue retrieveImportRecord(Properties ctx, ResultSet rs)
 	{
 		return new X_I_ElementValue(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}
@@ -120,15 +120,13 @@ public class AccountImportProcess extends SimpleImportProcessTemplate<I_I_Elemen
 											  @NonNull final I_I_ElementValue importRecord,
 											  final boolean isInsertOnly)
 	{
-		chartOfAccountsImportHelper.importChartOfAccounts(importRecord);
+		final ChartOfAccountsId chartOfAccountsId = chartOfAccountsImportHelper.importChartOfAccounts(importRecord);
 
 		final ElementValueId existingElementValueId = ElementValueId.ofRepoIdOrNull(importRecord.getC_ElementValue_ID());
 		if (existingElementValueId != null && isInsertOnly)
 		{
 			return ImportRecordResult.Nothing;
 		}
-
-		final ChartOfAccountsId chartOfAccountsId = ChartOfAccountsId.ofRepoId(importRecord.getC_Element_ID());
 
 		final ElementValue elementValue = elementValueService.createOrUpdate(
 				ElementValueCreateOrUpdateRequest.builder()

@@ -31,6 +31,8 @@ import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -41,25 +43,30 @@ import java.util.List;
 
 @Interceptor(I_EDI_Desadv.class)
 @Component
+@RequiredArgsConstructor
 public class EDI_Desadv
 {
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
+	@NonNull private final IDesadvBL desadvBL;
+
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void onDesadvDelete(final I_EDI_Desadv desadv)
 	{
-		final List<I_EDI_DesadvLine> allLines = Services.get(IDesadvDAO.class).retrieveAllDesadvLines(desadv);
+		final List<I_EDI_DesadvLine> allLines = desadvDAO.retrieveAllDesadvLines(desadv);
 		for (final I_EDI_DesadvLine line : allLines)
 		{
 			InterfaceWrapperHelper.delete(line);
 		}
 
-		final List<I_M_InOut> allInOuts = Services.get(IDesadvDAO.class).retrieveAllInOuts(desadv);
+		final List<I_M_InOut> allInOuts = desadvDAO.retrieveAllInOuts(desadv);
 		for (final I_M_InOut inOut : allInOuts)
 		{
 			inOut.setEDI_Desadv_ID(0);
 			InterfaceWrapperHelper.save(inOut);
 		}
 
-		final List<I_C_Order> allIOrders = Services.get(IDesadvDAO.class).retrieveAllOrders(desadv);
+		final List<I_C_Order> allIOrders = desadvDAO.retrieveAllOrders(desadv);
 		for (final I_C_Order order : allIOrders)
 		{
 			order.setEDI_Desadv_ID(0);
@@ -74,7 +81,6 @@ public class EDI_Desadv
 			ifColumnsChanged = I_EDI_Desadv.COLUMNNAME_EDI_ExportStatus)
 	public void onDesadvStatusChanged(final I_EDI_Desadv desadv)
 	{
-		// Services
 		final String exportStatus = desadv.getEDI_ExportStatus();
 
 		final boolean processing = I_EDI_Document.EDI_EXPORTSTATUS_Enqueued.equals(exportStatus) || I_EDI_Document.EDI_EXPORTSTATUS_SendingStarted.equals(exportStatus);
@@ -82,12 +88,13 @@ public class EDI_Desadv
 
 		final boolean processed = I_EDI_Document.EDI_EXPORTSTATUS_Sent.equals(exportStatus) || I_EDI_Document.EDI_EXPORTSTATUS_DontSend.equals(exportStatus);
 		desadv.setProcessed(processed);
+
+		desadvBL.propagateEDIStatus(desadv);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_EDI_Desadv.COLUMNNAME_EDIErrorMsg })
 	public void translateErrorMessage(final I_EDI_Desadv desadv)
 	{
-		final IMsgBL msgBL = Services.get(IMsgBL.class);
 		final String errorMsgTrl = msgBL.parseTranslation(InterfaceWrapperHelper.getCtx(desadv), desadv.getEDIErrorMsg());
 		desadv.setEDIErrorMsg(errorMsgTrl);
 	}
@@ -97,6 +104,6 @@ public class EDI_Desadv
 	{
 		// set the minimum sum percentage on each new desadv.
 		// Even if the percentage will be changed via sys config, for this desadv it won't change
-		Services.get(IDesadvBL.class).setMinimumPercentage(desadv);
+		desadvBL.setMinimumPercentage(desadv);
 	}
 }

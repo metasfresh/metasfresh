@@ -1,5 +1,6 @@
 package de.metas.distribution.ddorder.movement.schedule.plan;
 
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.product.ProductId;
@@ -9,10 +10,13 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.warehouse.LocatorId;
 
+import javax.annotation.Nullable;
+
 @Value
 @Builder
 public class DDOrderMovePlanStep
 {
+	@Nullable DDOrderMoveScheduleId scheduleId;
 	@NonNull ProductId productId;
 
 	//

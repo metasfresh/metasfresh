@@ -25,16 +25,20 @@ package de.metas.lock.spi.impl;
 import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSetMultimap;
+import com.google.common.collect.SetMultimap;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.IUnlockCommand;
 import de.metas.lock.api.LockOwner;
 import de.metas.lock.api.impl.AbstractLockDatabase;
+import de.metas.lock.api.impl.LockRecordsByFilter;
 import de.metas.lock.exceptions.LockFailedException;
 import de.metas.lock.spi.ExistingLockInfo;
 import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
@@ -42,11 +46,15 @@ import lombok.Value;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.POJOInSelectionQueryFilter;
 import org.adempiere.ad.dao.impl.POJOQuery;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.table.api.impl.TableIdsCache;
 import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.concurrent.CloseableReentrantLock;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.IQuery;
 import org.slf4j.Logger;
 
@@ -66,7 +74,6 @@ import java.util.function.ToIntFunction;
  * In-memory locks database
  *
  * @author tsa
- *
  */
 public class PlainLockDatabase extends AbstractLockDatabase
 {
@@ -78,12 +85,10 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	public void dump()
 	{
 		System.out.println("\n\n\n LOCKS (" + getClass() + ") ------------------------------------------------------------ ");
-		locks.values()
-				.stream()
-				.forEach(lock -> System.out.println(lock));
+		locks.values().forEach(System.out::println);
 	}
 
-	private final LockKey createKey(final int adTableId, final int recordId)
+	private LockKey createKey(final int adTableId, final int recordId)
 	{
 		Check.assume(adTableId > 0, "adTableId > 0");
 		Check.assume(recordId > 0, "recordId > 0");
@@ -100,7 +105,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	@Override
 	public boolean isLocked(final int adTableId, final int recordId, final LockOwner lockOwner)
 	{
-		try (final CloseableReentrantLock lock = mainLock.open())
+		try (final CloseableReentrantLock ignored = mainLock.open())
 		{
 			final LockKey key = createKey(adTableId, recordId);
 			final RecordLocks recordLock = locks.get(key);
@@ -114,9 +119,24 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	}
 
 	@Override
+	public <T> IQueryFilter<T> getNotLockedFilter(@NonNull final String modelTableName, @NonNull final String joinColumnNameFQ)
+	{
+		final int columnNameDotIdx = joinColumnNameFQ.lastIndexOf(".");
+		final String columnName = columnNameDotIdx > 0 ? joinColumnNameFQ.substring(columnNameDotIdx + 1) : joinColumnNameFQ;
+		final AdTableId modelTableId = TableIdsCache.instance.getTableId(modelTableName).get();
+
+		return model -> {
+			final Object recordIdObj = InterfaceWrapperHelper.getValue(model, columnName).get();
+			final int recordId = NumberUtils.asInt(recordIdObj);
+			return !isLocked(modelTableId.getRepoId(), recordId, LockOwner.ANY);
+		};
+
+	}
+
+	@Override
 	protected int lockBySelection(final ILockCommand lockCommand)
 	{
-		final int adTableId = lockCommand.getSelectionToLock_AD_Table_ID();
+		final AdTableId adTableId = lockCommand.getSelectionToLock_AD_Table_ID();
 		final PInstanceId adPInstanceId = lockCommand.getSelectionToLock_AD_PInstance_ID();
 
 		int countLocked = 0;
@@ -138,34 +158,35 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	@Override
 	protected int lockByFilters(final ILockCommand lockCommand)
 	{
-		@SuppressWarnings("unchecked")
-		final IQueryFilter<Object> selectionToLockFilters = (IQueryFilter<Object>)lockCommand.getSelectionToLock_Filters();
+		final List<LockRecordsByFilter> lockRecordsByFilterList = lockCommand.getSelectionToLock_Filters();
 
 		final LockOwner lockOwner = lockCommand.getOwner();
 		assertValidLockOwner(lockOwner);
 
-		//
-		// Retrieve records to lock
-		final int adTableId = lockCommand.getSelectionToLock_AD_Table_ID();
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-		final String tableName = adTableDAO.retrieveTableName(adTableId);
-		final Comparator<Object> orderByComparator = null; // don't care
-		final List<Object> recordsToLock = POJOLookupMap.get().getRecords(tableName, Object.class, selectionToLockFilters, orderByComparator);
-
 		int countLocked = 0;
-		for (final Object recordToLock : recordsToLock)
+		for (final LockRecordsByFilter lockRecordsByFilter : lockRecordsByFilterList)
 		{
-			final TableRecordReference recordToLockRef = TableRecordReference.of(recordToLock);
-			final boolean locked = lockRecord(lockCommand, recordToLockRef);
-			if (!locked)
-			{
-				throw new LockFailedException("Record already locked: " + recordToLock)
-						.setLockCommand(lockCommand);
-			}
+			//
+			// Retrieve records to lock
+			final String tableName = adTableDAO.retrieveTableName(lockRecordsByFilter.getTableId());
+			final IQueryFilter<Object> filters = (IQueryFilter<Object>)lockRecordsByFilter.getFilters();
+			final Comparator<Object> orderByComparator = null; // don't care
+			final List<Object> recordsToLock = POJOLookupMap.get().getRecords(tableName, Object.class, filters, orderByComparator);
 
-			if (locked)
+			for (final Object recordToLock : recordsToLock)
 			{
-				countLocked++;
+				final TableRecordReference recordToLockRef = TableRecordReference.of(recordToLock);
+				final boolean locked = lockRecord(lockCommand, recordToLockRef);
+				if (locked)
+				{
+					countLocked++;
+				}
+				else
+				{
+					throw new LockFailedException("Record already locked: " + recordToLock)
+							.setLockCommand(lockCommand);
+				}
 			}
 		}
 
@@ -182,7 +203,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	{
 		final LockKey recordKey = createKeyForRecord(record);
 
-		try (final CloseableReentrantLock lock = mainLock.open())
+		try (final CloseableReentrantLock ignored = mainLock.open())
 		{
 			final RecordLocks recordLock = locks.computeIfAbsent(recordKey, RecordLocks::new);
 			return recordLock.addLock(new LockInfo(recordKey, lockCommand));
@@ -194,7 +215,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	{
 		final LockKey recordKey = createKeyForRecord(record);
 
-		try (final CloseableReentrantLock lock = mainLock.open())
+		try (final CloseableReentrantLock ignored = mainLock.open())
 		{
 			final RecordLocks recordLock = locks.get(recordKey);
 			if (recordLock == null)
@@ -231,7 +252,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 
 	private boolean unlockForKey(final LockOwner ownerRequired, final LockKey recordKey)
 	{
-		try (final CloseableReentrantLock lock = mainLock.open())
+		try (final CloseableReentrantLock ignored = mainLock.open())
 		{
 			final RecordLocks recordLock = locks.get(recordKey);
 			if (recordLock == null)
@@ -260,13 +281,13 @@ public class PlainLockDatabase extends AbstractLockDatabase
 		return countUnlocked;
 	}
 
-	private final int updateRecordLocks(final ToIntFunction<RecordLocks> processor)
+	private int updateRecordLocks(final ToIntFunction<RecordLocks> processor)
 	{
-		try (final CloseableReentrantLock lock = mainLock.open())
+		try (final CloseableReentrantLock ignored = mainLock.open())
 		{
 			int countAffected = 0;
 
-			for (final Iterator<RecordLocks> it = locks.values().iterator(); it.hasNext();)
+			for (final Iterator<RecordLocks> it = locks.values().iterator(); it.hasNext(); )
 			{
 				final RecordLocks recordLocks = it.next();
 				final int count = processor.applyAsInt(recordLocks);
@@ -286,7 +307,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	@Override
 	protected int unlockBySelection(final IUnlockCommand unlockCommand)
 	{
-		final int adTableId = unlockCommand.getSelectionToUnlock_AD_Table_ID();
+		final AdTableId adTableId = unlockCommand.getSelectionToUnlock_AD_Table_ID();
 		final PInstanceId adPInstanceId = unlockCommand.getSelectionToUnlock_AD_PInstance_ID();
 
 		int countUnlocked = 0;
@@ -302,7 +323,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 		return countUnlocked;
 	}
 
-	private List<TableRecordReference> retrieveSelection(final int adTableId, final PInstanceId pinstanceId)
+	private List<TableRecordReference> retrieveSelection(final AdTableId adTableId, final PInstanceId pinstanceId)
 	{
 		// NOTE: below comes a fucked up, not optimum implementation shit which shall do the work for testing
 
@@ -326,7 +347,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 
 	public List<LockKey> getLocks()
 	{
-		try (final CloseableReentrantLock lock = mainLock.open())
+		try (final CloseableReentrantLock ignored = mainLock.open())
 		{
 			return new ArrayList<>(locks.keySet());
 		}
@@ -368,7 +389,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 
 	public String getLockedObjectsInfo()
 	{
-		try (final CloseableReentrantLock lock = mainLock.open())
+		try (final CloseableReentrantLock ignored = mainLock.open())
 		{
 			final StringBuilder sb = new StringBuilder();
 			for (final LockKey key : locks.keySet())
@@ -391,7 +412,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 
 	public int getLocksCount()
 	{
-		try (final CloseableReentrantLock lock = mainLock.open())
+		try (final CloseableReentrantLock ignored = mainLock.open())
 		{
 			return locks.size();
 		}
@@ -410,8 +431,8 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	//
 	private static class RecordLocks
 	{
+		@Getter private final LockKey key;
 		private final Map<LockOwner, LockInfo> locksByLockOwner = new HashMap<>();
-		private final LockKey key;
 
 		private RecordLocks(final LockKey key)
 		{
@@ -424,11 +445,6 @@ public class PlainLockDatabase extends AbstractLockDatabase
 			return MoreObjects.toStringHelper(this)
 					.addValue(Joiner.on("\n").join(locksByLockOwner.values()))
 					.toString();
-		}
-
-		public LockKey getKey()
-		{
-			return key;
 		}
 
 		public synchronized boolean isLockedBy(final LockOwner lockOwner)
@@ -452,7 +468,9 @@ public class PlainLockDatabase extends AbstractLockDatabase
 			return Objects.equals(lockOwner, lockInfo.getLockOwner());
 		}
 
-		/** @return true if lock was added; false if already exists */
+		/**
+		 * @return true if lock was added; false if already exists
+		 */
 		public synchronized boolean addLock(final LockInfo lockInfo)
 		{
 			final LockOwner lockOwner = lockInfo.getLockOwner();
@@ -460,7 +478,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 
 			if (existingLockInfo == null && !isAllowMultipleOwners() && !locksByLockOwner.isEmpty())
 			{
-				logger.warn("Locked by a different owner: {} with allowMultipleOwner={}, see lockCandidateInfo={}",lockOwner, isAllowMultipleOwners(), lockInfo);
+				logger.warn("Locked by a different owner: {} with allowMultipleOwner={}, see lockCandidateInfo={}", lockOwner, isAllowMultipleOwners(), lockInfo);
 				return false;
 			}
 
@@ -475,7 +493,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 		}
 
 		// not sync
-		private final boolean isAllowMultipleOwners()
+		private boolean isAllowMultipleOwners()
 		{
 			return locksByLockOwner.values().stream().anyMatch(LockInfo::isAllowMultipleOwners);
 		}
@@ -520,6 +538,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 			}
 		}
 
+		@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 		public synchronized boolean hasLocks()
 		{
 			return !locksByLockOwner.isEmpty();
@@ -535,10 +554,12 @@ public class PlainLockDatabase extends AbstractLockDatabase
 			return locksByLockOwner.get(lockOwner);
 		}
 
+		public synchronized ImmutableList<LockInfo> getLocks() {return ImmutableList.copyOf(locksByLockOwner.values());}
+
 		public int removeAutoCleanupLocks()
 		{
 			int countRemoved = 0;
-			for (Iterator<LockInfo> it = locksByLockOwner.values().iterator(); it.hasNext();)
+			for (Iterator<LockInfo> it = locksByLockOwner.values().iterator(); it.hasNext(); )
 			{
 				LockInfo lockInfo = it.next();
 				if (lockInfo.isAutoCleanup())
@@ -635,7 +656,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 	}
 
 	@Override
-	protected String getLockedWhereClauseAllowNullLock(final Class<?> modelClass, final String joinColumnNameFQ, final LockOwner lockOwner)
+	protected String getLockedWhereClauseAllowNullLock(final @NonNull Class<?> modelClass, final @NonNull String joinColumnNameFQ, final LockOwner lockOwner)
 	{
 		logger.warn("getLockedWhereClauseAllowNullLock() not supported; returning '1=1'");
 		return "1=1";
@@ -647,7 +668,7 @@ public class PlainLockDatabase extends AbstractLockDatabase
 		Check.assumeNotNull(lockOwner, "Lock owner shall not be null");
 		Check.assumeNotNull(lockOwner.isRealOwner(), "Lock owner shall be real owner but it was {}", lockOwner);
 
-		try (CloseableReentrantLock l = mainLock.open())
+		try (CloseableReentrantLock ignored = mainLock.open())
 		{
 			final List<RecordLocks> recordLocksList = locks.values().stream()
 					.filter(recordLocks -> recordLocks.hasOwner(lockOwner))
@@ -676,11 +697,11 @@ public class PlainLockDatabase extends AbstractLockDatabase
 
 	@Override
 	@Nullable
-	public ExistingLockInfo getLockInfo(@NonNull final TableRecordReference tableRecordReference,@Nullable final LockOwner lockOwner)
+	public ExistingLockInfo getLockInfo(@NonNull final TableRecordReference tableRecordReference, @Nullable final LockOwner lockOwner)
 	{
-		try (final CloseableReentrantLock lock = mainLock.open())
+		try (final CloseableReentrantLock ignored = mainLock.open())
 		{
-			final LockKey lockKey = LockKey.of(tableRecordReference.getAD_Table_ID(), tableRecordReference.getRecord_ID());
+			final LockKey lockKey = LockKey.ofTableRecordReference(tableRecordReference);
 
 			final RecordLocks recordLocks = locks.get(lockKey);
 			if (recordLocks == null)
@@ -689,29 +710,65 @@ public class PlainLockDatabase extends AbstractLockDatabase
 			}
 
 			final LockOwner lockOwnerToUse = lockOwner == null ? LockOwner.NONE : lockOwner;
-
 			final LockInfo lockInfo = recordLocks.getLockByOwner(lockOwnerToUse);
-
 			if (lockInfo == null)
 			{
 				return null;
 			}
 
-			return ExistingLockInfo
-					.builder()
-					.ownerName(lockInfo.getLockOwner().getOwnerName())
-					.lockedRecord(tableRecordReference)
-					.allowMultipleOwners(lockInfo.isAllowMultipleOwners())
-					.autoCleanup(lockInfo.isAutoCleanup())
-					.created(lockInfo.getAcquiredAt())
-					.build();
+			return toExistingLockInfo(lockInfo, tableRecordReference);
 		}
+	}
+
+	private static ExistingLockInfo toExistingLockInfo(@NonNull final LockInfo lockInfo, @NonNull final TableRecordReference tableRecordReference)
+	{
+		return ExistingLockInfo.builder()
+				.ownerName(lockInfo.getLockOwner().getOwnerName())
+				.lockedRecord(tableRecordReference)
+				.allowMultipleOwners(lockInfo.isAllowMultipleOwners())
+				.autoCleanup(lockInfo.isAutoCleanup())
+				.created(lockInfo.getAcquiredAt())
+				.build();
+	}
+
+	@Override
+	public SetMultimap<TableRecordReference, ExistingLockInfo> getLockInfosByRecordIds(@NonNull final TableRecordReferenceSet recordRefs)
+	{
+		if (recordRefs.isEmpty())
+		{
+			return ImmutableSetMultimap.of();
+		}
+
+		final ImmutableSetMultimap.Builder<TableRecordReference, ExistingLockInfo> result = ImmutableSetMultimap.builder();
+		try (final CloseableReentrantLock ignored = mainLock.open())
+		{
+			for (final TableRecordReference recordRef : recordRefs)
+			{
+				final LockKey lockKey = LockKey.ofTableRecordReference(recordRef);
+
+				final RecordLocks recordLocks = locks.get(lockKey);
+				if (recordLocks == null)
+				{
+					continue;
+				}
+
+				for (final LockInfo lockInfo : recordLocks.getLocks())
+				{
+					result.put(recordRef, toExistingLockInfo(lockInfo, recordRef));
+				}
+			}
+
+			return result.build();
+		}
+
 	}
 
 	@Value(staticConstructor = "of")
 	public static class LockKey
 	{
-		final int adTableId;
-		final int recordId;
+		int adTableId;
+		int recordId;
+
+		public static LockKey ofTableRecordReference(@NonNull final TableRecordReference recordRef) {return of(recordRef.getAD_Table_ID(), recordRef.getRecord_ID());}
 	}
 }

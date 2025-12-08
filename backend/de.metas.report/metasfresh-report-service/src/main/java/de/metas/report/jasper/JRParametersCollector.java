@@ -31,6 +31,7 @@ class JRParametersCollector
 	private static final String PARAM_AD_PINSTANCE_ID = "AD_PINSTANCE_ID";
 	private static final String PARAM_REPORT_LANGUAGE = "REPORT_LANGUAGE";
 	private static final String PARAM_RECORD_ID = "RECORD_ID";
+	private static final String PARAM_AD_Table_ID = "AD_Table_ID";
 	private static final String PARAM_BARCODE_URL = "barcodeURL";
 
 	private final HashMap<String, Object> map = new HashMap<>();
@@ -187,6 +188,11 @@ class JRParametersCollector
 	public void putRecordId(final int recordId)
 	{
 		put(PARAM_RECORD_ID, recordId);
+	}
+
+	public void putTableId(final int tableId)
+	{
+		put(PARAM_AD_Table_ID, tableId);
 	}
 
 	public void putBarcodeURL(final String barcodeURL)

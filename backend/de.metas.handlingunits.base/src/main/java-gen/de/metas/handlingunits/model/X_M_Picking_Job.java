@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Picking_Job, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1637187471L;
+	private static final long serialVersionUID = -385561628L;
 
     /** Standard Constructor */
     public X_M_Picking_Job (final Properties ctx, final int M_Picking_Job_ID, @Nullable final String trxName)
@@ -92,7 +92,19 @@ public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Pickin
 	}
 
 	@Override
-	public void setDeliveryToAddress (final java.lang.String DeliveryToAddress)
+	public void setDeliveryDate (final @Nullable java.sql.Timestamp DeliveryDate)
+	{
+		set_Value (COLUMNNAME_DeliveryDate, DeliveryDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getDeliveryDate() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_DeliveryDate);
+	}
+
+	@Override
+	public void setDeliveryToAddress (final @Nullable java.lang.String DeliveryToAddress)
 	{
 		set_ValueNoCheck (COLUMNNAME_DeliveryToAddress, DeliveryToAddress);
 	}
@@ -145,6 +157,102 @@ public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Pickin
 	}
 
 	@Override
+	public void setHandOver_Location_ID (final int HandOver_Location_ID)
+	{
+		if (HandOver_Location_ID < 1) 
+			set_Value (COLUMNNAME_HandOver_Location_ID, null);
+		else 
+			set_Value (COLUMNNAME_HandOver_Location_ID, HandOver_Location_ID);
+	}
+
+	@Override
+	public int getHandOver_Location_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_HandOver_Location_ID);
+	}
+
+	@Override
+	public void setHandOver_Partner_ID (final int HandOver_Partner_ID)
+	{
+		if (HandOver_Partner_ID < 1) 
+			set_Value (COLUMNNAME_HandOver_Partner_ID, null);
+		else 
+			set_Value (COLUMNNAME_HandOver_Partner_ID, HandOver_Partner_ID);
+	}
+
+	@Override
+	public int getHandOver_Partner_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_HandOver_Partner_ID);
+	}
+
+	@Override
+	public void setIsAllowPickingAnyHU (final boolean IsAllowPickingAnyHU)
+	{
+		set_Value (COLUMNNAME_IsAllowPickingAnyHU, IsAllowPickingAnyHU);
+	}
+
+	@Override
+	public boolean isAllowPickingAnyHU() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowPickingAnyHU);
+	}
+
+	@Override
+	public de.metas.handlingunits.model.I_M_HU getM_LU_HU()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_LU_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
+	}
+
+	@Override
+	public void setM_LU_HU(final de.metas.handlingunits.model.I_M_HU M_LU_HU)
+	{
+		set_ValueFromPO(COLUMNNAME_M_LU_HU_ID, de.metas.handlingunits.model.I_M_HU.class, M_LU_HU);
+	}
+
+	@Override
+	public void setM_LU_HU_ID (final int M_LU_HU_ID)
+	{
+		if (M_LU_HU_ID < 1) 
+			set_Value (COLUMNNAME_M_LU_HU_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_LU_HU_ID, M_LU_HU_ID);
+	}
+
+	@Override
+	public int getM_LU_HU_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_LU_HU_ID);
+	}
+
+	@Override
+	public de.metas.handlingunits.model.I_M_HU_PI getM_LU_HU_PI()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_LU_HU_PI_ID, de.metas.handlingunits.model.I_M_HU_PI.class);
+	}
+
+	@Override
+	public void setM_LU_HU_PI(final de.metas.handlingunits.model.I_M_HU_PI M_LU_HU_PI)
+	{
+		set_ValueFromPO(COLUMNNAME_M_LU_HU_PI_ID, de.metas.handlingunits.model.I_M_HU_PI.class, M_LU_HU_PI);
+	}
+
+	@Override
+	public void setM_LU_HU_PI_ID (final int M_LU_HU_PI_ID)
+	{
+		if (M_LU_HU_PI_ID < 1) 
+			set_Value (COLUMNNAME_M_LU_HU_PI_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_LU_HU_PI_ID, M_LU_HU_PI_ID);
+	}
+
+	@Override
+	public int getM_LU_HU_PI_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_LU_HU_PI_ID);
+	}
+
+	@Override
 	public void setM_Picking_Job_ID (final int M_Picking_Job_ID)
 	{
 		if (M_Picking_Job_ID < 1) 
@@ -175,6 +283,122 @@ public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Pickin
 	}
 
 	@Override
+	public de.metas.handlingunits.model.I_M_HU getM_TU_HU()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_TU_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
+	}
+
+	@Override
+	public void setM_TU_HU(final de.metas.handlingunits.model.I_M_HU M_TU_HU)
+	{
+		set_ValueFromPO(COLUMNNAME_M_TU_HU_ID, de.metas.handlingunits.model.I_M_HU.class, M_TU_HU);
+	}
+
+	@Override
+	public void setM_TU_HU_ID (final int M_TU_HU_ID)
+	{
+		if (M_TU_HU_ID < 1) 
+			set_Value (COLUMNNAME_M_TU_HU_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_TU_HU_ID, M_TU_HU_ID);
+	}
+
+	@Override
+	public int getM_TU_HU_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_TU_HU_ID);
+	}
+
+	@Override
+	public de.metas.handlingunits.model.I_M_HU_PI getM_TU_HU_PI()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_TU_HU_PI_ID, de.metas.handlingunits.model.I_M_HU_PI.class);
+	}
+
+	@Override
+	public void setM_TU_HU_PI(final de.metas.handlingunits.model.I_M_HU_PI M_TU_HU_PI)
+	{
+		set_ValueFromPO(COLUMNNAME_M_TU_HU_PI_ID, de.metas.handlingunits.model.I_M_HU_PI.class, M_TU_HU_PI);
+	}
+
+	@Override
+	public void setM_TU_HU_PI_ID (final int M_TU_HU_PI_ID)
+	{
+		if (M_TU_HU_PI_ID < 1) 
+			set_Value (COLUMNNAME_M_TU_HU_PI_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_TU_HU_PI_ID, M_TU_HU_PI_ID);
+	}
+
+	@Override
+	public int getM_TU_HU_PI_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_TU_HU_PI_ID);
+	}
+
+	@Override
+	public de.metas.handlingunits.model.I_M_HU getPickFrom_HU()
+	{
+		return get_ValueAsPO(COLUMNNAME_PickFrom_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
+	}
+
+	@Override
+	public void setPickFrom_HU(final de.metas.handlingunits.model.I_M_HU PickFrom_HU)
+	{
+		set_ValueFromPO(COLUMNNAME_PickFrom_HU_ID, de.metas.handlingunits.model.I_M_HU.class, PickFrom_HU);
+	}
+
+	@Override
+	public void setPickFrom_HU_ID (final int PickFrom_HU_ID)
+	{
+		if (PickFrom_HU_ID < 1) 
+			set_Value (COLUMNNAME_PickFrom_HU_ID, null);
+		else 
+			set_Value (COLUMNNAME_PickFrom_HU_ID, PickFrom_HU_ID);
+	}
+
+	@Override
+	public int getPickFrom_HU_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_PickFrom_HU_ID);
+	}
+
+	@Override
+	public void setPickFrom_HUQRCode (final @Nullable java.lang.String PickFrom_HUQRCode)
+	{
+		set_Value (COLUMNNAME_PickFrom_HUQRCode, PickFrom_HUQRCode);
+	}
+
+	@Override
+	public java.lang.String getPickFrom_HUQRCode() 
+	{
+		return get_ValueAsString(COLUMNNAME_PickFrom_HUQRCode);
+	}
+
+	/** 
+	 * PickingJobAggregationType AD_Reference_ID=541931
+	 * Reference name: PickingJobAggregationType
+	 */
+	public static final int PICKINGJOBAGGREGATIONTYPE_AD_Reference_ID=541931;
+	/** sales_order = sales_order */
+	public static final String PICKINGJOBAGGREGATIONTYPE_Sales_order = "sales_order";
+	/** product = product */
+	public static final String PICKINGJOBAGGREGATIONTYPE_Product = "product";
+	/** delivery_location = delivery_location */
+	public static final String PICKINGJOBAGGREGATIONTYPE_Delivery_location = "delivery_location";
+	@Override
+	public void setPickingJobAggregationType (final java.lang.String PickingJobAggregationType)
+	{
+		set_Value (COLUMNNAME_PickingJobAggregationType, PickingJobAggregationType);
+	}
+
+	@Override
+	public java.lang.String getPickingJobAggregationType() 
+	{
+		return get_ValueAsString(COLUMNNAME_PickingJobAggregationType);
+	}
+
+	@Override
 	public void setPicking_User_ID (final int Picking_User_ID)
 	{
 		if (Picking_User_ID < 1) 
@@ -190,7 +414,7 @@ public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Pickin
 	}
 
 	@Override
-	public void setPreparationDate (final java.sql.Timestamp PreparationDate)
+	public void setPreparationDate (final @Nullable java.sql.Timestamp PreparationDate)
 	{
 		set_Value (COLUMNNAME_PreparationDate, PreparationDate);
 	}

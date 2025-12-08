@@ -64,7 +64,9 @@ public interface ITaxBL extends ISingletonService
 	 * @param taxIncluded if true tax is calculated from gross otherwise from net
 	 * @return tax amount
 	 */
-	BigDecimal calculateTax(I_C_Tax tax, BigDecimal amount, boolean taxIncluded, int scale);
+	CalculateTaxResult calculateTax(I_C_Tax tax, BigDecimal amount, boolean taxIncluded, int scale);
+
+	BigDecimal calculateTaxAmt(final I_C_Tax tax, final BigDecimal amount, final boolean taxIncluded, final int scale);
 
 	/**
 	 * Calculate base amount, excluding tax
@@ -79,4 +81,6 @@ public interface ITaxBL extends ISingletonService
 	TaxCategoryId retrieveRegularTaxCategoryId();
 
 	Optional<TaxCategoryId> getTaxCategoryIdByInternalName(String internalName);
+
+	Tax getDefaultTax(TaxCategoryId taxCategoryId);
 }

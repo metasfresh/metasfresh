@@ -1,0 +1,115 @@
+{
+  "header": {
+    "closeCashJournal": "Close register",
+    "orders": "Orders"
+  },
+  "openCashJournal": {
+    "title": "Open register",
+    "openingBalance": "Opening cash",
+    "openingNote": "Opening note",
+    "actions": {
+      "open": "Open"
+    }
+  },
+  "closeCashJournal": {
+    "title": "Close register",
+    "paymentMethod": "Payment Method",
+    "bookedAmt": "Booked",
+    "countedAmt": "Counted",
+    "differenceAmt": "Difference",
+    "closingNote": "Closing note",
+    "details": {
+      "type": {
+        "OPENING_BALANCE": "Opening balance",
+        "CLOSING_DIFFERENCE": "Closing difference",
+        "CASH_PAYMENTS": "Cash payments",
+        "CASH_IN": "Cash In",
+        "CASH_OUT": "Cash Out"
+      }
+    },
+    "actions": {
+      "close": "Close",
+      "cancel": "Cancel"
+    }
+  },
+  "selectTerminal": {
+    "title": "Select terminal"
+  },
+  "selectOrder": {
+    "title": "Select order"
+  },
+  "products": {
+    "searchBar": {
+      "placeholder": "Search products..."
+    }
+  },
+  "currentOrder": {
+    "line": {
+      "at": "at"
+    },
+    "getWeightModal": {
+      "title": "Weight (%(uom)s)",
+      "weightPlaceholder": "weight...",
+      "actions": {
+        "ok": "OK"
+      }
+    },
+    "totalAmt": "Total",
+    "taxAmt": "VAT",
+    "actions": {
+      "pay": "Pay",
+      "new": "New",
+      "void": "Void",
+      "deleteLine": "Delete line"
+    }
+  },
+  "payment": {
+    "totalAmt": "Total",
+    "remainingAmt": "Remaining",
+    "method": {
+      "cash": "Cash",
+      "card": "Card"
+    },
+    "status": {
+      "SUCCESSFUL": "Successful",
+      "FAILED": "Failed",
+      "PENDING": "Pending",
+      "NEW": "New"
+    },
+    "actions": {
+      "back": "Back",
+      "validate": "Validate"
+    },
+    "modal": {
+      "cash": {
+        "title": "Cash payment",
+        "payAmt": "Amount to Pay",
+        "tenderedAmt": "Tendered Amount",
+        "changeBackAmt": "Change",
+        "actions": {
+          "ok": "Confirm",
+          "cancel": "Cancel"
+        }
+      },
+      "card": {
+        "title": "Card payment",
+        "orderOpenAmt": "Amount (open)",
+        "payAmt": "Payment amount",
+        "cardReader": "Card reader",
+        "actions": {
+          "checkout": "Checkout",
+          "cancel": "Cancel"
+        }
+      }
+    }
+  },
+  "summary": {
+    "title": "Payment successful",
+    "totalAmt": "Total",
+    "changeBackAmt": "Change",
+    "actions": {
+      "close": "Close",
+      "print": "Print receipt"
+    }
+  }
+}

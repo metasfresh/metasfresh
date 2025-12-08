@@ -3,10 +3,10 @@ package org.compiere.util;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.junit.Assert;
-import org.junit.Test;
 
 import de.metas.util.StringUtils;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L
@@ -47,7 +47,7 @@ public class UtilTest
 	private void test_clearAmp(final String expected, final String input)
 	{
 		final String actual = Util.cleanAmp(input);
-		Assert.assertEquals("Invalid result for input: " + input, expected, actual);
+		Assertions.assertEquals(expected, actual, "Invalid result for input: " + input);
 	}
 
 	@Test
@@ -59,12 +59,12 @@ public class UtilTest
 		assertThat(StringUtils.lpadZero(emptyString, 10, "This Is An Empty String")).isEqualTo(zeroString);
 	}
 
-	@Test(expected = RuntimeException.class)
+	@Test
 	public void lpadZero_StringExceedingSizeTest()
 	{
 		final String value = "123456789";
 
-		StringUtils.lpadZero(value, 2, "This Is An Empty String");
+		Assertions.assertThrows(RuntimeException.class, () -> StringUtils.lpadZero(value, 2, "This Is An Empty String"));
 
 	}
 
@@ -86,12 +86,12 @@ public class UtilTest
 		assertThat(StringUtils.rpadZero(emptyString, 10, "This Is An Empty String")).isEqualTo(zeroString);
 	}
 
-	@Test(expected = RuntimeException.class)
+	@Test
 	public void rpadZero_StringExceedingSizeTest()
 	{
 		final String value = "123456789";
 
-		StringUtils.rpadZero(value, 2, "This Is An Empty String");
+		Assertions.assertThrows(RuntimeException.class, () -> StringUtils.rpadZero(value, 2, "This Is An Empty String"));
 
 	}
 

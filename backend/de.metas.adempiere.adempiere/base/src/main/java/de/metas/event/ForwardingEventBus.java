@@ -4,13 +4,13 @@ import de.metas.event.impl.EventMDC;
 import lombok.NonNull;
 import org.slf4j.MDC.MDCCloseable;
 
+import java.util.Collection;
 import java.util.function.Consumer;
 
 /**
  * Forwarding {@link IEventBus} template implementation.
  *
  * @author tsa
- *
  */
 abstract class ForwardingEventBus implements IEventBus
 {
@@ -33,15 +33,10 @@ abstract class ForwardingEventBus implements IEventBus
 	}
 
 	@Override
-	public String getTopicName()
+	@NonNull
+	public Topic getTopic()
 	{
-		return delegate().getTopicName();
-	}
-
-	@Override
-	public Type getType()
-	{
-		return delegate().getType();
+		return delegate().getTopic();
 	}
 
 	@Override
@@ -69,18 +64,33 @@ abstract class ForwardingEventBus implements IEventBus
 	}
 
 	@Override
-	public void postEvent(final Event event)
+	public void processEvent(final Event event)
 	{
 		try (final MDCCloseable ignored = EventMDC.putEvent(event))
 		{
-			delegate().postEvent(event);
+			delegate().processEvent(event);
 		}
 	}
 
 	@Override
-	public void postObject(final Object obj)
+	public void enqueueEvent(final Event event)
 	{
-		delegate().postObject(obj);
+		try (final MDCCloseable ignored = EventMDC.putEvent(event))
+		{
+			delegate().enqueueEvent(event);
+		}
+	}
+
+	@Override
+	public void enqueueObject(final Object obj)
+	{
+		delegate().enqueueObject(obj);
+	}
+
+	@Override
+	public void enqueueObjectsCollection(@NonNull final Collection<?> objs)
+	{
+		delegate().enqueueObjectsCollection(objs);
 	}
 
 	@Override

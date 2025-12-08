@@ -1,58 +1,115 @@
-.full-size-btn {
+.button {
+  height: 2.5em;
+
+  .full-size-btn {
+    //border: 1px dotted yellow;
     width: 100%;
+    max-width: 100%;
+    height: 2.5em;
+    display: flex;
+
+    .left-btn-side {
+      //border: 1px dotted red;
+
+      flex: 0;
+
+      display: flex;
+      align-items: center;
+      justify-content: left;
+    }
+
+    .caption-btn {
+      //border: 1px dotted green;
+
+      flex: 2;
+      min-width: 0;
+
+      .rows {
+        height: 100%;
+        display: flex;
+        flex-flow: column;
+        justify-content: center;
+
+        flex: 1;
+        min-width: 0;
+
+        .row {
+          //border: 1px dotted pink;
+
+          flex: 1;
+
+          display: flex;
+          justify-content: center; /* align horizontal */
+          align-items: center; /* align vertical */
+
+          span {
+            min-width: 0;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+          }
+        }
+      }
+
+      .hazard-icons-btn {
+      }
+    }
+
+    .right-btn-side {
+      //border: 1px dotted blue;
+
+      flex: 0;
+      height: 100%;
+
+      display: flex;
+      align-items: center;
+      justify-content: right;
+    }
+  }
 }
 
-.caption-btn {
-    width:90%;
-    float: left;
-    text-align: center;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space:nowrap
+.button:has(.hazard-icons-btn), .full-size-btn:has(.hazard-icons-btn) {
+  height: 4em !important;
 }
-.left-btn-side {
-    position: absolute;
-    width: 5%;
-    float: left;
-}
-.right-btn-side {
-    width: 5%;
-    float: right;
-}
+
 
 .indicator-red, .indicator-yellow, .indicator-green {
-    display: inline-block;
-    width: 7px;
-    height: 7px;
-    margin-right: 10px;
-    border: 1px solid #000;
-    border-radius: 7px;
-    margin-bottom: 5px;
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border: 1px solid #000;
+  border-radius: 100%;
+  margin: 4px;
 }
 
 .indicator-red {
-    background-color: $indicator-red;
-    border-color: $indicator-red-border;
-    box-shadow: 0 0 4px 1px $indicator-red;
+  background-color: $indicator-red;
+  border-color: $indicator-red-border;
+  box-shadow: 0 0 4px 1px $indicator-red;
 }
 
 .indicator-green {
-    background-color: $indicator-green;
-    border-color: $indicator-green-border;
-    box-shadow: 0 0 4px 1px $indicator-green;
+  background-color: $indicator-green;
+  border-color: $indicator-green-border;
+  box-shadow: 0 0 4px 1px $indicator-green;
 }
 
 .indicator-yellow {
-    background-color: $indicator-yellow;
-    border-color: $indicator-yellow-border;
-    box-shadow: 0 0 4px 1px $indicator-yellow;
+  background-color: $indicator-yellow;
+  border-color: $indicator-yellow-border;
+  box-shadow: 0 0 4px 1px $indicator-yellow;
 }
 
 .warning-sign {
-    color: $indicator-yellow;
+  color: $indicator-yellow;
 }
 
 .complete-btn {
-    width: 100%;
-    font-size: 1.5rem;
+  width: 100%;
+  font-size: 1.5rem;
+}
+@media only screen and (max-width: $small-screen-width) {
+  .complete-btn {
+    font-size: 1rem;
+  }
 }

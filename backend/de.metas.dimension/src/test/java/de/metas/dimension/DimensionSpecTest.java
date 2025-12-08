@@ -1,24 +1,23 @@
 package de.metas.dimension;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.List;
-
+import de.metas.dimension.model.I_DIM_Dimension_Spec;
+import de.metas.dimension.model.I_DIM_Dimension_Spec_Attribute;
+import de.metas.dimension.model.I_DIM_Dimension_Spec_AttributeValue;
+import de.metas.material.event.commons.AttributesKeyPart;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import de.metas.dimension.model.I_DIM_Dimension_Spec;
-import de.metas.dimension.model.I_DIM_Dimension_Spec_Attribute;
-import de.metas.dimension.model.I_DIM_Dimension_Spec_AttributeValue;
-import de.metas.material.event.commons.AttributesKeyPart;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -50,7 +49,7 @@ public class DimensionSpecTest
 	private I_M_Attribute attr1;
 	private I_M_Attribute attr2;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

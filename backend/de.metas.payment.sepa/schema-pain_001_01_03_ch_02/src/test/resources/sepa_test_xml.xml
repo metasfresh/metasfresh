@@ -1,0 +1,109 @@
+<!--
+  ~ #%L
+  ~ de.metas.payment.sepa.schema.pain_001_01_03_ch_02
+  ~ %%
+  ~ Copyright (C) 2022 metas GmbH
+  ~ %%
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as
+  ~ published by the Free Software Foundation, either version 2 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public
+  ~ License along with this program. If not, see
+  ~ <http://www.gnu.org/licenses/gpl-2.0.html>.
+  ~ #L%
+  -->
+
+<Document xmlns="http://www.six-interbank-clearing.com/de/pain.001.001.03.ch.02.xsd"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://www.six-interbank-clearing.com/de/pain.001.001.03.ch.02.xsd pain.001.001.03.ch.02.xsd">
+	<CstmrCdtTrfInitn>
+		<GrpHdr>
+			<MsgId>1000123</MsgId>
+			<CreDtTm>2022-09-23T10:08:51.964+03:00</CreDtTm>
+			<NbOfTxs>1</NbOfTxs>
+			<CtrlSum>0.67</CtrlSum>
+			<InitgPty>
+				<Nm>metasfresh AG</Nm>
+				<CtctDtls>
+					<Nm>metasfresh</Nm>
+					<Othr>Version info not loaded</Othr>
+				</CtctDtls>
+			</InitgPty>
+		</GrpHdr>
+		<PmtInf>
+			<PmtInfId>PMTINF-1</PmtInfId>
+			<PmtMtd>TRF</PmtMtd>
+			<BtchBookg>true</BtchBookg>
+			<CtrlSum>0.67</CtrlSum>
+			<PmtTpInf/>
+			<ReqdExctnDt>2022-09-22</ReqdExctnDt>
+			<Dbtr>
+				<Nm>metasfresh AG</Nm>
+			</Dbtr>
+			<DbtrAcct>
+				<Id>
+					<IBAN>CH1234567898765432100</IBAN>
+				</Id>
+			</DbtrAcct>
+			<DbtrAgt>
+				<FinInstnId>
+					<BIC>LUKBCH2260A</BIC>
+				</FinInstnId>
+			</DbtrAgt>
+			<ChrgBr>SLEV</ChrgBr>
+			<CdtTrfTxInf>
+				<PmtId>
+					<InstrId>INSTRID-1-1</InstrId>
+					<EndToEndId>ENDTOENDID-1</EndToEndId>
+				</PmtId>
+				<Amt>
+					<InstdAmt Ccy="CHF">0.67</InstdAmt>
+				</Amt>
+				<CdtrAgt>
+					<FinInstnId>
+						<ClrSysMmbId>
+							<ClrSysId>
+								<Cd>CHBCC</Cd>
+							</ClrSysId>
+							<MmbId>12345</MmbId>
+						</ClrSysMmbId>
+					</FinInstnId>
+				</CdtrAgt>
+				<Cdtr>
+					<Nm>Test Lieferant 1</Nm>
+					<PstlAdr>
+						<StrtNm>teststraße</StrtNm>
+						<BldgNb>1</BldgNb>
+						<PstCd>12345</PstCd>
+						<TwnNm>teststadt</TwnNm>
+						<Ctry>DE</Ctry>
+					</PstlAdr>
+				</Cdtr>
+				<CdtrAcct>
+					<Id>
+						<IBAN>CH1234567891234567890</IBAN>
+					</Id>
+				</CdtrAcct>
+				<RmtInf>
+					<Strd>
+						<CdtrRefInf>
+							<Tp>
+								<CdOrPrtry>
+									<Prtry>QRR</Prtry>
+								</CdOrPrtry>
+							</Tp>
+							<Ref>123456000000000000123456789</Ref>
+						</CdtrRefInf>
+					</Strd>
+				</RmtInf>
+			</CdtTrfTxInf>
+		</PmtInf>
+	</CstmrCdtTrfInitn>
+</Document>

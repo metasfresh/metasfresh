@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -65,8 +66,13 @@ public class BankId implements RepoIdAware
 		return repoId;
 	}
 
-	public static int toRepoId(final BankId id)
+	public static int toRepoId(@Nullable final BankId id)
 	{
 		return id != null ? id.getRepoId() : -1;
+	}
+
+	public static int optionalToRepoId(@NonNull final Optional<BankId> idOpt)
+	{
+		return idOpt.map(BankId::getRepoId).orElse(-1);
 	}
 }

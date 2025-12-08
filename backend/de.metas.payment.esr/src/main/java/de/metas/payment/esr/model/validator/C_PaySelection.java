@@ -1,9 +1,10 @@
 package de.metas.payment.esr.model.validator;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-
-import java.util.StringJoiner;
-
+import de.metas.banking.payment.IPaySelectionBL;
+import de.metas.banking.payment.IPaySelectionDAO;
+import de.metas.i18n.AdMessageKey;
+import de.metas.payment.esr.api.IESRBPBankAccountDAO;
+import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.AdempiereException;
@@ -11,11 +12,7 @@ import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
 import org.compiere.model.ModelValidator;
 
-import de.metas.banking.payment.IPaySelectionBL;
-import de.metas.banking.payment.IPaySelectionDAO;
-import de.metas.i18n.AdMessageKey;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.StringJoiner;
 
 /*
  * #%L
@@ -27,12 +24,12 @@ import de.metas.util.Services;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -41,6 +38,8 @@ import de.metas.util.Services;
 @Interceptor(I_C_PaySelection.class)
 public class C_PaySelection
 {
+	private final IESRBPBankAccountDAO esrBPBankAccountDAO = Services.get(IESRBPBankAccountDAO.class);
+
 	private static final AdMessageKey MSG_PaySelectionLines_No_ESRReference = AdMessageKey.of("C_PaySelection_PaySelectionLines_No_ESRReference");
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
@@ -62,7 +61,7 @@ public class C_PaySelection
 
 		if (joiner.length() != 0)
 		{
-			throw new AdempiereException(MSG_PaySelectionLines_No_ESRReference, new Object[] { joiner.toString() });
+			throw new AdempiereException(MSG_PaySelectionLines_No_ESRReference, joiner.toString());
 		}
 
 	}
@@ -84,13 +83,12 @@ public class C_PaySelection
 
 	private boolean hasESRBankAccount(final I_C_PaySelectionLine paySelectionLine)
 	{
-		final org.compiere.model.I_C_BP_BankAccount bpBankAccount = paySelectionLine.getC_BP_BankAccount();
+		final int bpBankAccountId = paySelectionLine.getC_BP_BankAccount_ID();
+		if (bpBankAccountId <= 0)
+		{
+			throw new AdempiereException("The paySelectionLine " + paySelectionLine + " cannot have a null bankAccount");
+		}
 
-		Check.assumeNotNull(bpBankAccount, "The paySelectionLine {} cannot have a null bankAccount", paySelectionLine);
-
-		final de.metas.payment.esr.model.I_C_BP_BankAccount esrBankAccount = create(bpBankAccount, de.metas.payment.esr.model.I_C_BP_BankAccount.class);
-
-		return esrBankAccount.isEsrAccount();
-
+		return esrBPBankAccountDAO.isESRBankAccount(bpBankAccountId);
 	}
 }

@@ -26,6 +26,10 @@ import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.material.cockpit.view.ddorderdetail.DDOrderDetailRequestHandler;
 import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.DistributionDetailsQuery;
+import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.ddorder.DDOrderDeletedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
@@ -47,13 +51,19 @@ public class DDOrderDeletedEventHandler implements MaterialEventHandler<DDOrderD
 
 	private final MainDataRequestHandler mainDataRequestHandler;
 	private final DDOrderDetailRequestHandler ddOrderDetailRequestHandler;
+	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
+	private final CandidateChangeService candidateChangeService;
 
 	public DDOrderDeletedEventHandler(
 			@NonNull final MainDataRequestHandler mainDataRequestHandler,
-			@NonNull final DDOrderDetailRequestHandler ddOrderDetailRequestHandler)
+			@NonNull final DDOrderDetailRequestHandler ddOrderDetailRequestHandler,
+			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval,
+			@NonNull final CandidateChangeService candidateChangeService)
 	{
 		this.mainDataRequestHandler = mainDataRequestHandler;
 		this.ddOrderDetailRequestHandler = ddOrderDetailRequestHandler;
+		this.candidateRepositoryRetrieval = candidateRepositoryRetrieval;
+		this.candidateChangeService = candidateChangeService;
 	}
 
 	@Override
@@ -65,7 +75,7 @@ public class DDOrderDeletedEventHandler implements MaterialEventHandler<DDOrderD
 	@Override
 	public void handleEvent(final DDOrderDeletedEvent event)
 	{
-		final OrgId orgId = event.getEventDescriptor().getOrgId();
+		final OrgId orgId = event.getOrgId();
 		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 
 		for (final DDOrderLine ddOrderLine : event.getDdOrder().getLines())
@@ -81,5 +91,21 @@ public class DDOrderDeletedEventHandler implements MaterialEventHandler<DDOrderD
 			mainDataUpdater.handleDelete();
 		}
 
+		final int ddOrderId = event.getDdOrder().getDdOrderId();
+		event.getDdOrder().getLines().forEach(line -> deleteCandidates(ddOrderId, line));
+	}
+
+	private void deleteCandidates(final int ddOrderId, @NonNull final DDOrderLine ddOrderLine)
+	{
+		final CandidatesQuery query = CandidatesQuery
+				.builder()
+				.distributionDetailsQuery(DistributionDetailsQuery.builder()
+												  .ddOrderId(ddOrderId)
+												  .ddOrderLineId(ddOrderLine.getDdOrderLineId())
+												  .build())
+				.build();
+
+		candidateRepositoryRetrieval.retrieveOrderedByDateAndSeqNo(query)
+				.forEach(candidateChangeService::onCandidateDelete);
 	}
 }

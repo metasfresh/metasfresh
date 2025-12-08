@@ -34,8 +34,8 @@ Feature: Validate order doc outbound log creation
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo | OPT.EMail          |
       | bpLocation | 1111123456789 | sale_bpartner            | true         | true         | location@email.com |
     And metasfresh contains AD_Users:
-      | AD_User_ID.Identifier | Name   | OPT.EMail      | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
-      | bpUser                | bpUser | user@email.com | sale_bpartner                | bpLocation                            |
+      | Identifier | Name   | OPT.EMail      | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
+      | bpUser     | bpUser | user@email.com | sale_bpartner                | bpLocation                            |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier | OPT.POReference   | OPT.DeliveryRule | OPT.DeliveryViaRule | OPT.EMail          |
@@ -69,8 +69,8 @@ Feature: Validate order doc outbound log creation
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo |
       | bpLocation | 2222223456789 | sale_bpartner            | true         | true         |
     And metasfresh contains AD_Users:
-      | AD_User_ID.Identifier | Name             | OPT.EMail           | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
-      | bpUser                | bpUser_secondary | secondary@email.com | sale_bpartner                | bpLocation                            |
+      | Identifier | Name             | OPT.EMail           | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
+      | bpUser     | bpUser_secondary | secondary@email.com | sale_bpartner                | bpLocation                            |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.AD_User_ID.Identifier | OPT.POReference   | OPT.DeliveryRule | OPT.DeliveryViaRule |

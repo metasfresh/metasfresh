@@ -38,7 +38,6 @@ import lombok.NonNull;
  * #L%
  */
 
-@SuppressWarnings("serial")
 @Component
 @Profile(Profiles.PROFILE_Webui)
 public final class WebRestApiContextProvider implements ContextProvider, Serializable
@@ -64,8 +63,6 @@ public final class WebRestApiContextProvider implements ContextProvider, Seriali
 
 	public WebRestApiContextProvider()
 	{
-		super();
-
 		//
 		// Create the server context
 		serverCtx = new Properties();

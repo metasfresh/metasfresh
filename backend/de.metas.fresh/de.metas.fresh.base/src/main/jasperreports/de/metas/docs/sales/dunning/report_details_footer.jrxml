@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-10-06T16:17:05 -->
+<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details_footer" pageWidth="521" pageHeight="842" columnWidth="521" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/order/report" uuid="211ce7c0-5a6a-446e-a1e2-3f2b607dbee5">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="metasfresh"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\dev.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -60,11 +59,26 @@ ORDER BY
 	position
 ;]]>
 	</queryString>
-	<field name="text1" class="java.lang.String"/>
-	<field name="language" class="java.lang.String"/>
-	<field name="c_dunningrunentry_id" class="java.math.BigDecimal"/>
-	<field name="tag" class="java.lang.String"/>
-	<field name="position" class="java.lang.Integer"/>
+	<field name="text1" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="text1"/>
+		<property name="com.jaspersoft.studio.field.label" value="text1"/>
+	</field>
+	<field name="language" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="language"/>
+		<property name="com.jaspersoft.studio.field.label" value="language"/>
+	</field>
+	<field name="c_dunningrunentry_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="c_dunningrunentry_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="c_dunningrunentry_id"/>
+	</field>
+	<field name="tag" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="tag"/>
+		<property name="com.jaspersoft.studio.field.label" value="tag"/>
+	</field>
+	<field name="position" class="java.lang.Integer">
+		<property name="com.jaspersoft.studio.field.name" value="position"/>
+		<property name="com.jaspersoft.studio.field.label" value="position"/>
+	</field>
 	<background>
 		<band splitType="Stretch"/>
 	</background>

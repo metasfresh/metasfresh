@@ -11,7 +11,7 @@ WHERE true
 	AND (dt.docsubtype NOT IN (
 	    'ON', -- Proposal (not binding)
 	    'OB', -- Quotation (binding)
-	    'WR', -- POS Order
+	    -- 'WR', -- POS Order
 	    'FA', -- Frame Agreement
 	    'CE'  -- Cost Estimate
 	))

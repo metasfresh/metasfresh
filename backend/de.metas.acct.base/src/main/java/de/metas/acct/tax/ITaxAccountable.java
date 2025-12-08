@@ -22,14 +22,12 @@ package de.metas.acct.tax;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.currency.CurrencyPrecision;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_ValidCombination;
 
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.currency.CurrencyPrecision;
+import java.math.BigDecimal;
 
 /**
  * Accountable tax record.
@@ -72,6 +70,4 @@ public interface ITaxAccountable
 	void setC_Tax(final I_C_Tax tax);
 
 	int getC_Tax_ID();
-
-	I_C_Tax getC_Tax();
 }

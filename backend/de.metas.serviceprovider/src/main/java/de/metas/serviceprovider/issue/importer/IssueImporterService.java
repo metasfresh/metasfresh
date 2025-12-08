@@ -25,6 +25,9 @@ package de.metas.serviceprovider.issue.importer;
 import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.ad_reference.ADRefListItemCreateRequest;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.externalreference.ExternalId;
 import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceQuery;
@@ -32,7 +35,6 @@ import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
-import de.metas.reflist.ReferenceId;
 import de.metas.serviceprovider.ImportQueue;
 import de.metas.serviceprovider.external.label.IssueLabel;
 import de.metas.serviceprovider.external.label.IssueLabelRepository;
@@ -53,7 +55,6 @@ import de.metas.serviceprovider.timebooking.Effort;
 import de.metas.util.Loggables;
 import de.metas.util.NumberUtils;
 import lombok.NonNull;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
@@ -80,7 +81,7 @@ public class IssueImporterService
 	private final IssueRepository issueRepository;
 	private final ExternalReferenceRepository externalReferenceRepository;
 	private final ITrxManager trxManager;
-	private final IADReferenceDAO referenceDAO;
+	private final ADReferenceService adReferenceService;
 	private final IssueLabelRepository issueLabelRepository;
 
 	public IssueImporterService(
@@ -89,7 +90,7 @@ public class IssueImporterService
 			final IssueRepository issueRepository,
 			final ExternalReferenceRepository externalReferenceRepository,
 			final ITrxManager trxManager,
-			final IADReferenceDAO referenceDAO,
+			final ADReferenceService adReferenceService,
 			final IssueLabelRepository issueLabelRepository)
 	{
 		this.importIssuesQueue = importIssuesQueue;
@@ -97,7 +98,7 @@ public class IssueImporterService
 		this.issueRepository = issueRepository;
 		this.externalReferenceRepository = externalReferenceRepository;
 		this.trxManager = trxManager;
-		this.referenceDAO = referenceDAO;
+		this.adReferenceService = adReferenceService;
 		this.issueLabelRepository = issueLabelRepository;
 	}
 
@@ -341,14 +342,14 @@ public class IssueImporterService
 	private void createMissingRefListForLabels(@NonNull final ImmutableList<IssueLabel> issueLabels)
 	{
 		issueLabels.stream()
-				.filter(label -> referenceDAO.retrieveListItemOrNull(LABEL_AD_Reference_ID, label.getValue()) == null)
+				.filter(label -> adReferenceService.retrieveListItemOrNull(LABEL_AD_Reference_ID, label.getValue()) == null)
 				.map(this::buildRefList)
-				.forEach(referenceDAO::saveRefList);
+				.forEach(adReferenceService::saveRefList);
 	}
 
-	private IADReferenceDAO.ADRefListItemCreateRequest buildRefList(@NonNull final IssueLabel issueLabel)
+	private ADRefListItemCreateRequest buildRefList(@NonNull final IssueLabel issueLabel)
 	{
-		return IADReferenceDAO.ADRefListItemCreateRequest
+		return ADRefListItemCreateRequest
 				.builder()
 				.name(TranslatableStrings.constant(issueLabel.getValue()))
 				.value(issueLabel.getValue())

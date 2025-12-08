@@ -33,6 +33,8 @@ import lombok.Value;
 @ToString(of = { "baseUrl" })
 public class DhlClientConfig
 {
+
+
 	@NonNull
 	String baseUrl;
 

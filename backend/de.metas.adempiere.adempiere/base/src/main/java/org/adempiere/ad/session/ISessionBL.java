@@ -1,8 +1,9 @@
 package org.adempiere.ad.session;
 
-import java.util.Properties;
-
 import de.metas.util.ISingletonService;
+
+import javax.annotation.Nullable;
+import java.util.Properties;
 
 public interface ISessionBL extends ISingletonService
 {
@@ -11,6 +12,7 @@ public interface ISessionBL extends ISingletonService
 	/**
 	 * @return current session or null
 	 */
+	@Nullable
 	MFSession getCurrentSession(Properties ctx);
 
 	/**
@@ -23,14 +25,13 @@ public interface ISessionBL extends ISingletonService
 	void logoutCurrentSession();
 
 	/**
-	 *
 	 * @return true if record change log system is enabled
 	 */
 	boolean isChangeLogEnabled();
 
 	/**
 	 * Disable change log system on current thread.
-	 *
+	 * <p>
 	 * Useful if for example, you are running a process which is creating/changing a lot of master data which has change log enabled but in your case you don't want to do change logs because of
 	 * performance issues.
 	 *

@@ -387,6 +387,31 @@ public interface I_M_ReceiptSchedule
 	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
 
 	/**
+	 * Set Sales Order.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_OrderSO_ID (int C_OrderSO_ID);
+
+	/**
+	 * Get Sales Order.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_OrderSO_ID();
+
+	@Nullable org.compiere.model.I_C_Order getC_OrderSO();
+
+	void setC_OrderSO(@Nullable org.compiere.model.I_C_Order C_OrderSO);
+
+	ModelColumn<I_M_ReceiptSchedule, org.compiere.model.I_C_Order> COLUMN_C_OrderSO_ID = new ModelColumn<>(I_M_ReceiptSchedule.class, "C_OrderSO_ID", org.compiere.model.I_C_Order.class);
+	String COLUMNNAME_C_OrderSO_ID = "C_OrderSO_ID";
+
+	/**
 	 * Set Project.
 	 * Financial Project
 	 *
@@ -1508,4 +1533,27 @@ public interface I_M_ReceiptSchedule
 
 	ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_M_ReceiptSchedule.class, "UserElementString7", null);
 	String COLUMNNAME_UserElementString7 = "UserElementString7";
+
+	/**
+	 * Set Order Reference.
+	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPOReference (@Nullable java.lang.String POReference);
+
+	/**
+	 * Get Order Reference.
+	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPOReference();
+
+	ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_POReference = new ModelColumn<>(I_M_ReceiptSchedule.class, "POReference", null);
+	String COLUMNNAME_POReference = "POReference";
 }

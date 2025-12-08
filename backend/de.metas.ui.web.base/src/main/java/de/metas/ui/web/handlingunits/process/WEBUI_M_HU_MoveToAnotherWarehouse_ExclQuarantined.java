@@ -68,7 +68,7 @@ public class WEBUI_M_HU_MoveToAnotherWarehouse_ExclQuarantined extends WEBUI_M_H
 	{
 		if (isQuarantineHUs(streamSelectedHUs(Select.ONLY_TOPLEVEL)))
 		{
-			throw new AdempiereException(msgBL.getTranslatableMsgText(MSG_WEBUI_HUs_IN_Quarantine));
+			throw new AdempiereException(MSG_WEBUI_HUs_IN_Quarantine);
 		}
 	}
 

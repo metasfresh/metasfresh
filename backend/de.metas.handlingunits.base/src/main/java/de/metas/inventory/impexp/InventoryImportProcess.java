@@ -127,7 +127,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 	}
 
 	@Override
-	protected void updateAndValidateImportRecords()
+	protected void updateAndValidateImportRecordsImpl()
 	{
 		final ImportRecordsSelection selection = getImportRecordsSelection();
 
@@ -193,7 +193,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 				.docTypeId(docTypeId)
 				.warehouseOrgId(warehouseOrgId)
 				.warehouseId(warehouseId)
-				.inventoryDate(CoalesceUtil.coalesce(importRecord.getInventoryDate(), now))
+				.inventoryDate(CoalesceUtil.coalesceNotNull(importRecord.getInventoryDate(), now))
 				.build();
 	}
 
@@ -228,7 +228,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 	}
 
 	@Override
-	protected I_I_Inventory retrieveImportRecord(final Properties ctx, final ResultSet rs)
+	public I_I_Inventory retrieveImportRecord(final Properties ctx, final ResultSet rs)
 	{
 		return new X_I_Inventory(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}
@@ -394,6 +394,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 				.build();
 
 		return husFinder.streamHus()
+				.filter(huForInventoryLine -> ProductId.equals(productId, huForInventoryLine.getProductId()))
 				.collect(ImmutableList.toImmutableList());
 	}
 

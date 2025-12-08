@@ -1,6 +1,7 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.esb.edi.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
@@ -8,20 +9,20 @@ import java.util.Properties;
 /** Generated Model for EDI_cctop_120_v
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_EDI_cctop_120_v extends org.compiere.model.PO implements I_EDI_cctop_120_v, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2068725549L;
+	private static final long serialVersionUID = -1318976726L;
 
     /** Standard Constructor */
-    public X_EDI_cctop_120_v (Properties ctx, int EDI_cctop_120_v_ID, String trxName)
+    public X_EDI_cctop_120_v (final Properties ctx, final int EDI_cctop_120_v_ID, @Nullable final String trxName)
     {
       super (ctx, EDI_cctop_120_v_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_EDI_cctop_120_v (Properties ctx, ResultSet rs, String trxName)
+    public X_EDI_cctop_120_v (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -29,7 +30,7 @@ public class X_EDI_cctop_120_v extends org.compiere.model.PO implements I_EDI_cc
 
 	/** Load Meta Data */
 	@Override
-	protected org.compiere.model.POInfo initPO(Properties ctx)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
@@ -41,18 +42,18 @@ public class X_EDI_cctop_120_v extends org.compiere.model.PO implements I_EDI_cc
 	}
 
 	@Override
-	public void setC_Invoice(org.compiere.model.I_C_Invoice C_Invoice)
+	public void setC_Invoice(final org.compiere.model.I_C_Invoice C_Invoice)
 	{
 		set_ValueFromPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class, C_Invoice);
 	}
 
 	@Override
-	public void setC_Invoice_ID (int C_Invoice_ID)
+	public void setC_Invoice_ID (final int C_Invoice_ID)
 	{
 		if (C_Invoice_ID < 1) 
 			set_Value (COLUMNNAME_C_Invoice_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Invoice_ID, Integer.valueOf(C_Invoice_ID));
+			set_Value (COLUMNNAME_C_Invoice_ID, C_Invoice_ID);
 	}
 
 	@Override
@@ -62,12 +63,12 @@ public class X_EDI_cctop_120_v extends org.compiere.model.PO implements I_EDI_cc
 	}
 
 	@Override
-	public void setEDI_cctop_120_v_ID (int EDI_cctop_120_v_ID)
+	public void setEDI_cctop_120_v_ID (final int EDI_cctop_120_v_ID)
 	{
 		if (EDI_cctop_120_v_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_EDI_cctop_120_v_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_EDI_cctop_120_v_ID, Integer.valueOf(EDI_cctop_120_v_ID));
+			set_ValueNoCheck (COLUMNNAME_EDI_cctop_120_v_ID, EDI_cctop_120_v_ID);
 	}
 
 	@Override
@@ -83,18 +84,18 @@ public class X_EDI_cctop_120_v extends org.compiere.model.PO implements I_EDI_cc
 	}
 
 	@Override
-	public void setEDI_cctop_invoic_v(de.metas.esb.edi.model.I_EDI_cctop_invoic_v EDI_cctop_invoic_v)
+	public void setEDI_cctop_invoic_v(final de.metas.esb.edi.model.I_EDI_cctop_invoic_v EDI_cctop_invoic_v)
 	{
 		set_ValueFromPO(COLUMNNAME_EDI_cctop_invoic_v_ID, de.metas.esb.edi.model.I_EDI_cctop_invoic_v.class, EDI_cctop_invoic_v);
 	}
 
 	@Override
-	public void setEDI_cctop_invoic_v_ID (int EDI_cctop_invoic_v_ID)
+	public void setEDI_cctop_invoic_v_ID (final int EDI_cctop_invoic_v_ID)
 	{
 		if (EDI_cctop_invoic_v_ID < 1) 
 			set_Value (COLUMNNAME_EDI_cctop_invoic_v_ID, null);
 		else 
-			set_Value (COLUMNNAME_EDI_cctop_invoic_v_ID, Integer.valueOf(EDI_cctop_invoic_v_ID));
+			set_Value (COLUMNNAME_EDI_cctop_invoic_v_ID, EDI_cctop_invoic_v_ID);
 	}
 
 	@Override
@@ -104,7 +105,7 @@ public class X_EDI_cctop_120_v extends org.compiere.model.PO implements I_EDI_cc
 	}
 
 	@Override
-	public void setISO_Code (java.lang.String ISO_Code)
+	public void setISO_Code (final @Nullable java.lang.String ISO_Code)
 	{
 		set_Value (COLUMNNAME_ISO_Code, ISO_Code);
 	}
@@ -112,11 +113,11 @@ public class X_EDI_cctop_120_v extends org.compiere.model.PO implements I_EDI_cc
 	@Override
 	public java.lang.String getISO_Code() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ISO_Code);
+		return get_ValueAsString(COLUMNNAME_ISO_Code);
 	}
 
 	@Override
-	public void setnetdate (java.sql.Timestamp netdate)
+	public void setnetdate (final @Nullable java.sql.Timestamp netdate)
 	{
 		set_Value (COLUMNNAME_netdate, netdate);
 	}
@@ -128,9 +129,9 @@ public class X_EDI_cctop_120_v extends org.compiere.model.PO implements I_EDI_cc
 	}
 
 	@Override
-	public void setNetDays (int NetDays)
+	public void setNetDays (final int NetDays)
 	{
-		set_Value (COLUMNNAME_NetDays, Integer.valueOf(NetDays));
+		set_Value (COLUMNNAME_NetDays, NetDays);
 	}
 
 	@Override
@@ -140,22 +141,22 @@ public class X_EDI_cctop_120_v extends org.compiere.model.PO implements I_EDI_cc
 	}
 
 	@Override
-	public void setsinglevat (java.math.BigDecimal singlevat)
+	public void setsinglevat (final @Nullable BigDecimal singlevat)
 	{
 		set_Value (COLUMNNAME_singlevat, singlevat);
 	}
 
 	@Override
-	public java.math.BigDecimal getsinglevat() 
+	public BigDecimal getsinglevat() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_singlevat);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_singlevat);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void settaxfree (boolean taxfree)
+	public void settaxfree (final boolean taxfree)
 	{
-		set_Value (COLUMNNAME_taxfree, Boolean.valueOf(taxfree));
+		set_Value (COLUMNNAME_taxfree, taxfree);
 	}
 
 	@Override

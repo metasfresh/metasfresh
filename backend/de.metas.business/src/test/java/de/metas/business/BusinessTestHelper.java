@@ -18,12 +18,14 @@ import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.mm.attributes.AttributeSetId;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BP_BankAccount;
@@ -46,6 +48,7 @@ import org.eevolution.model.I_PP_Product_BOMVersions;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
@@ -87,11 +90,18 @@ public class BusinessTestHelper
 	 * Standard in metasfresh
 	 */
 	private final int UOM_Precision_3 = 3;
+	private final ProductCategoryId defaultProductCategoryId = ProductCategoryId.ofRepoId(1000000);
 
 	public CountryId createCountry(@NonNull final String countryCode)
 	{
+		return createCountry(countryCode, null);
+	}
+
+	public CountryId createCountry(@NonNull final String countryCode, @Nullable final String adLanguage)
+	{
 		final I_C_Country record = newInstance(I_C_Country.class);
 		record.setCountryCode(countryCode);
+		record.setAD_Language(adLanguage);
 		POJOWrapper.setInstanceName(record, countryCode);
 		saveRecord(record);
 		return CountryId.ofRepoId(record.getC_Country_ID());
@@ -127,7 +137,7 @@ public class BusinessTestHelper
 		return uom;
 	}
 
-	public I_C_UOM createUOM(final String name, final int stdPrecision, final int costingPrecission)
+	public I_C_UOM createUOM(@NonNull final String name, final int stdPrecision, final int costingPrecission)
 	{
 		final I_C_UOM uom = createUOM(name);
 		uom.setStdPrecision(stdPrecision);
@@ -136,19 +146,36 @@ public class BusinessTestHelper
 		return uom;
 	}
 
-	public I_C_UOM createUOM(final String name)
+	public I_C_UOM createUOM(@NonNull final String name)
 	{
 		final X12DE355 x12de355 = X12DE355.ofCode(name);
 		return createUOM(name, x12de355);
 	}
 
-	public I_C_UOM createUOM(final String name, final X12DE355 x12de355)
+	public I_C_UOM createUOM(@NonNull final String name, @Nullable final X12DE355 x12de355)
 	{
 		final I_C_UOM uom = newInstanceOutOfTrx(I_C_UOM.class);
 		POJOWrapper.setInstanceName(uom, name);
 		uom.setName(name);
 		uom.setUOMSymbol(name);
 		uom.setX12DE355(x12de355 != null ? x12de355.getCode() : null);
+
+		saveRecord(uom);
+
+		return uom;
+	}
+
+	@NonNull
+	public I_C_UOM createUOM(@NonNull final String name, final int stdPrecision)
+	{
+		return createUOM(name, stdPrecision, null);
+	}
+
+	@NonNull
+	public I_C_UOM createUOM(@NonNull final String name, final int stdPrecision, @Nullable final X12DE355 x12de355)
+	{
+		final I_C_UOM uom = createUOM(name, x12de355);
+		uom.setStdPrecision(stdPrecision);
 
 		saveRecord(uom);
 
@@ -163,8 +190,13 @@ public class BusinessTestHelper
 
 	public CurrencyId getEURCurrencyId()
 	{
+		return getOrCreateCurrencyId(CurrencyCode.EUR);
+	}
+
+	public CurrencyId getOrCreateCurrencyId(final CurrencyCode currencyCode)
+	{
 		final PlainCurrencyDAO currenciesRepo = (PlainCurrencyDAO)Services.get(ICurrencyDAO.class);
-		return currenciesRepo.getOrCreateByCurrencyCode(CurrencyCode.EUR).getId();
+		return currenciesRepo.getOrCreateByCurrencyCode(currencyCode).getId();
 	}
 
 	public ProductId createProductId(final String name, final I_C_UOM uom)
@@ -209,6 +241,7 @@ public class BusinessTestHelper
 		product.setC_UOM_ID(UomId.toRepoId(uomId));
 		product.setProductType(ProductType.Item.getCode());
 		product.setIsStocked(true);
+		product.setM_Product_Category_ID(ProductCategoryId.toRepoId(getOrCreateStandardProductCategory()));
 
 		if (weightKg != null)
 		{
@@ -229,6 +262,25 @@ public class BusinessTestHelper
 		return ProductCategoryId.ofRepoId(category.getM_Product_Category_ID());
 	}
 
+	private ProductCategoryId getOrCreateStandardProductCategory()
+	{
+		final Optional<I_M_Product_Category> existingCategory = Services.get(IQueryBL.class).createQueryBuilder(I_M_Product_Category.class)
+				.addEqualsFilter(I_M_Product_Category.COLUMNNAME_M_Product_Category_ID, defaultProductCategoryId)
+				.create()
+				.firstOnlyOptional();
+
+		final I_M_Product_Category category = existingCategory.orElse(newInstance(I_M_Product_Category.class));
+
+		if (Check.isBlank(category.getName()))
+		{
+			category.setName("StandardProductCategory");
+		}
+
+		save(category);
+
+		return ProductCategoryId.ofRepoId(category.getM_Product_Category_ID());
+	}
+
 	public I_M_Product_Category createM_Product_Cagetory(@NonNull final String name, @NonNull final I_M_AttributeSet attributeSet)
 	{
 		final I_M_Product_Category category = newInstance(I_M_Product_Category.class);
@@ -240,8 +292,8 @@ public class BusinessTestHelper
 	}
 
 	public ProductId createProduct(@NonNull final String name,
-			@Nullable final I_C_UOM uom,
-			@Nullable final ProductCategoryId categoryId)
+								   @Nullable final I_C_UOM uom,
+								   @Nullable final ProductCategoryId categoryId)
 	{
 		final I_M_Product product = createProduct(name, uom);
 
@@ -251,8 +303,8 @@ public class BusinessTestHelper
 	}
 
 	public I_M_Product createProduct(@NonNull final String name,
-			@Nullable final I_C_UOM uom,
-			@NonNull final I_M_Product_Category category)
+									 @Nullable final I_C_UOM uom,
+									 @NonNull final I_M_Product_Category category)
 	{
 		final I_M_Product product = createProduct(name, uom);
 

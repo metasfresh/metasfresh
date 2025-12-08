@@ -22,50 +22,38 @@
 
 package de.metas.externalsystem.externalservice.externalserviceinstance;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableSet;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.externalservice.ExternalSystemServiceTestHelper;
 import de.metas.externalsystem.externalservice.common.ExternalStatus;
 import de.metas.externalsystem.externalservice.model.ExternalSystemServiceId;
 import de.metas.externalsystem.externalservice.model.ExternalSystemServiceRepository;
-import de.metas.externalsystem.model.X_ExternalSystem_Config;
 import de.metas.externalsystem.model.X_ExternalSystem_Status;
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
-import static org.assertj.core.api.Assertions.*;
+import static de.metas.externalsystem.ExternalSystemType.GRSSignum;
+import static org.assertj.core.api.Assertions.assertThat;
 
+@ExtendWith(SnapshotExtension.class)
 public class ExternalSystemServiceInstanceRepositoryTest
 {
 	private ExternalSystemServiceInstanceRepository externalSystemServiceInstanceRepo;
+	private Expect expect;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		externalSystemServiceInstanceRepo = new ExternalSystemServiceInstanceRepository(new ExternalSystemServiceRepository());
-	}
-
-	@BeforeAll
-	static void initStatic()
-	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
-	}
-
-	@AfterAll
-	static void afterAll()
-	{
-		validateSnapshots();
+		externalSystemServiceInstanceRepo = new ExternalSystemServiceInstanceRepository(ExternalSystemServiceRepository.newInstanceForUnitTesting());
 	}
 
 	@Test
@@ -73,12 +61,12 @@ public class ExternalSystemServiceInstanceRepositoryTest
 	{
 		//given
 		final ExternalSystemParentConfigId configId = ExternalSystemServiceTestHelper.createExternalConfigBuilder()
-				.type(X_ExternalSystem_Config.TYPE_GRSSignum)
+				.type(GRSSignum.getValue())
 				.name("Name")
 				.build();
 
 		final ExternalSystemServiceId serviceId = ExternalSystemServiceTestHelper.createExternalSystemServiceBuilder()
-				.type(X_ExternalSystem_Config.TYPE_GRSSignum)
+				.type(GRSSignum.getValue())
 				.name("Name")
 				.value("grs_service_value")
 				.build();
@@ -94,7 +82,7 @@ public class ExternalSystemServiceInstanceRepositoryTest
 
 		//then
 		assertThat(result).isNotEmpty();
-		expect(result.get()).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result.get());
 	}
 
 	@Test
@@ -102,12 +90,12 @@ public class ExternalSystemServiceInstanceRepositoryTest
 	{
 		//given
 		final ExternalSystemParentConfigId configId = ExternalSystemServiceTestHelper.createExternalConfigBuilder()
-				.type(X_ExternalSystem_Config.TYPE_GRSSignum)
+				.type(GRSSignum.getValue())
 				.name("Name")
 				.build();
 
 		final ExternalSystemServiceId serviceId = ExternalSystemServiceTestHelper.createExternalSystemServiceBuilder()
-				.type(X_ExternalSystem_Config.TYPE_GRSSignum)
+				.type(GRSSignum.getValue())
 				.name("Name")
 				.value("grs_service_value")
 				.build();
@@ -131,12 +119,12 @@ public class ExternalSystemServiceInstanceRepositoryTest
 
 		//given
 		final ExternalSystemParentConfigId configId = ExternalSystemServiceTestHelper.createExternalConfigBuilder()
-				.type(X_ExternalSystem_Config.TYPE_GRSSignum)
+				.type(GRSSignum.getValue())
 				.name("Name")
 				.build();
 
 		final ExternalSystemServiceId serviceId = ExternalSystemServiceTestHelper.createExternalSystemServiceBuilder()
-				.type(X_ExternalSystem_Config.TYPE_GRSSignum)
+				.type(GRSSignum.getValue())
 				.name("Name")
 				.value("grs_service_value")
 				.build();
@@ -152,7 +140,7 @@ public class ExternalSystemServiceInstanceRepositoryTest
 
 		//then
 		assertThat(result).isNotNull();
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -161,12 +149,12 @@ public class ExternalSystemServiceInstanceRepositoryTest
 
 		//given
 		final ExternalSystemParentConfigId configId = ExternalSystemServiceTestHelper.createExternalConfigBuilder()
-				.type(X_ExternalSystem_Config.TYPE_GRSSignum)
+				.type(GRSSignum.getValue())
 				.name("Name")
 				.build();
 
 		final ExternalSystemServiceId serviceId = ExternalSystemServiceTestHelper.createExternalSystemServiceBuilder()
-				.type(X_ExternalSystem_Config.TYPE_GRSSignum)
+				.type(GRSSignum.getValue())
 				.name("Name")
 				.value("grs_service_value")
 				.build();
@@ -184,7 +172,7 @@ public class ExternalSystemServiceInstanceRepositoryTest
 
 		//then
 		assertThat(updated).isNotNull();
-		expect(updated).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(updated);
 	}
 
 	@Test
@@ -193,17 +181,17 @@ public class ExternalSystemServiceInstanceRepositoryTest
 
 		//given
 		final ExternalSystemParentConfigId configId_1 = ExternalSystemServiceTestHelper.createExternalConfigBuilder()
-				.type(X_ExternalSystem_Config.TYPE_GRSSignum)
+				.type(GRSSignum.getValue())
 				.name("Name")
 				.build();
 
 		final ExternalSystemParentConfigId configId_2 = ExternalSystemServiceTestHelper.createExternalConfigBuilder()
-				.type(X_ExternalSystem_Config.TYPE_GRSSignum)
+				.type(GRSSignum.getValue())
 				.name("Name")
 				.build();
 
 		final ExternalSystemServiceId serviceId = ExternalSystemServiceTestHelper.createExternalSystemServiceBuilder()
-				.type(X_ExternalSystem_Config.TYPE_GRSSignum)
+				.type(GRSSignum.getValue())
 				.name("Name")
 				.value("grs_service_value")
 				.build();
@@ -227,6 +215,6 @@ public class ExternalSystemServiceInstanceRepositoryTest
 		//then
 		assertThat(result).isNotNull();
 		assertThat(result.size()).isEqualTo(1);
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 }

@@ -1,15 +1,5 @@
 package de.metas.inoutcandidate.process;
 
-import java.util.Iterator;
-
-import org.adempiere.ad.dao.ConstantQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.apache.commons.collections4.IteratorUtils;
-import org.compiere.util.TrxRunnable;
-
 import de.metas.i18n.AdMessageKey;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
@@ -20,15 +10,23 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ConstantQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.apache.commons.collections4.IteratorUtils;
+import org.compiere.util.TrxRunnable;
+
+import java.util.Iterator;
 
 /**
  * Close receipt schedule line.
- *
+ * <p>
  * This is counter-part of {@link M_ReceiptSchedule_ReOpen}.
  *
  * @author tsa
  * @task http://dewiki908/mediawiki/index.php/08480_Korrekturm%C3%B6glichkeit_Wareneingang_-_Menge%2C_Packvorschrift%2C_Merkmal_%28109195602347%29
- *
  */
 public class M_ReceiptSchedule_Close extends JavaProcess implements IProcessPrecondition
 {
@@ -47,7 +45,7 @@ public class M_ReceiptSchedule_Close extends JavaProcess implements IProcessPrec
 		}
 
 		// Make sure at least one receipt schedule is open
-		final boolean someSchedsAreStillOpen = context.getSelectedModels(I_M_ReceiptSchedule.class).stream()
+		final boolean someSchedsAreStillOpen = context.streamSelectedModels(I_M_ReceiptSchedule.class)
 				.anyMatch(receiptSchedule -> !receiptScheduleBL.isClosed(receiptSchedule));
 
 		if (!someSchedsAreStillOpen)

@@ -86,7 +86,7 @@ public class RequestImportProcess extends SimpleImportProcessTemplate<I_I_Reques
 	}
 
 	@Override
-	protected void updateAndValidateImportRecords()
+	protected void updateAndValidateImportRecordsImpl()
 	{
 		final ImportRecordsSelection selection = getImportRecordsSelection();
 
@@ -123,7 +123,7 @@ public class RequestImportProcess extends SimpleImportProcessTemplate<I_I_Reques
 				+ "\n WHERE " + sqlImportWhereClause
 				+ "\n AND i." + I_I_Request.COLUMNNAME_C_BPartner_ID + " IS NULL";
 
-		final int no = DB.executeUpdateEx(sql, trxName);
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, trxName);
 		log.debug("Set C_BPartner_ID for {} records", no);
 		//
 		// Flag missing BPartners
@@ -145,7 +145,7 @@ public class RequestImportProcess extends SimpleImportProcessTemplate<I_I_Reques
 				+ "\n WHERE " + sqlImportWhereClause
 				+ "\n AND i." + I_I_Request.COLUMNNAME_R_RequestType_ID + " IS NULL";
 
-		final int no = DB.executeUpdateEx(sql, trxName);
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, trxName);
 		log.debug("Set R_RequestType_ID for {} records", no);
 		//
 		// Flag missing R_RequestType_ID
@@ -167,7 +167,7 @@ public class RequestImportProcess extends SimpleImportProcessTemplate<I_I_Reques
 				+ "\n WHERE " + sqlImportWhereClause
 				+ "\n AND i." + I_I_Request.COLUMNNAME_R_Status_ID + " IS NULL";
 
-		final int no = DB.executeUpdateEx(sql, trxName);
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, trxName);
 		log.debug("Set M_Product_ID for {} records (by Value)", no);
 		//
 		// Flag missing status
@@ -175,18 +175,18 @@ public class RequestImportProcess extends SimpleImportProcessTemplate<I_I_Reques
 				+ "\n AND " + sqlImportWhereClause);
 	}
 
-	private final void markAsError(final String errorMsg, final String sqlWhereClause)
+	private void markAsError(final String errorMsg, final String sqlWhereClause)
 	{
 		final String sql = "UPDATE " + I_I_Request.Table_Name + " i "
 				+ "\n SET " + COLUMNNAME_I_IsImported + "=?, " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||? "
 				+ "\n WHERE " + sqlWhereClause;
 		final Object[] sqlParams = new Object[] { X_I_Request.I_ISIMPORTED_ImportFailed, errorMsg + "; " };
-		DB.executeUpdateEx(sql, sqlParams, ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams, ITrx.TRXNAME_ThreadInherited);
 
 	}
 
 	@Override
-	protected I_I_Request retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
+	public I_I_Request retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
 	{
 		final PO po = TableModelLoader.instance.getPO(ctx, I_I_Request.Table_Name, rs, ITrx.TRXNAME_ThreadInherited);
 		return InterfaceWrapperHelper.create(po, I_I_Request.class);

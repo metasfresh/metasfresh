@@ -1,14 +1,11 @@
 package de.metas.material.dispo.service.event;
 
-import org.adempiere.warehouse.WarehouseId;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
 import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.DemandDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
@@ -16,6 +13,11 @@ import de.metas.util.Loggables;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.warehouse.WarehouseId;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import java.time.Instant;
 
 /*
  * #%L
@@ -61,14 +63,17 @@ public class SupplyProposalEvaluator
 
 	public boolean isProposalAccepted(@NonNull final SupplyProposal proposal)
 	{
+		final DemandDetailsQuery demandDetailsQuery = DemandDetailsQuery.ofDemandDetailOrNull(proposal.getDemandDetail());
+		
 		final CandidatesQuery proposedDemandExistsQuery = CandidatesQuery
 				.builder()
 				.type(CandidateType.DEMAND)
-				.demandDetailsQuery(DemandDetailsQuery.ofDemandDetailOrNull(proposal.getDemandDetail()))
-				.materialDescriptorQuery(MaterialDescriptorQuery
-						.builder()
-						.warehouseId(proposal.getDemandWarehouseId())
-						.build())
+				.demandDetailsQuery(demandDetailsQuery)
+				.materialDescriptorQuery(MaterialDescriptorQuery.builder()
+												 .atTime(DateAndSeqNo.atTimeNoSeqNo(proposal.getDate()))
+												 .productId(proposal.getProductId())
+												 .warehouseId(proposal.getSupplyWarehouseId())
+												 .build())
 				.build();
 		final Candidate existingDemandCandidate = candidateRepository.retrieveLatestMatchOrNull(proposedDemandExistsQuery);
 		if (existingDemandCandidate == null)
@@ -79,11 +84,12 @@ public class SupplyProposalEvaluator
 		final CandidatesQuery proposedSupplyExistsQuery = CandidatesQuery
 				.builder()
 				.type(CandidateType.SUPPLY)
-				.demandDetailsQuery(DemandDetailsQuery.ofDemandDetailOrNull(proposal.getDemandDetail()))
-				.materialDescriptorQuery(MaterialDescriptorQuery
-						.builder()
-						.warehouseId(proposal.getSupplyWarehouseId())
-						.build())
+				.demandDetailsQuery(demandDetailsQuery)
+				.materialDescriptorQuery(MaterialDescriptorQuery.builder()
+												 .atTime(DateAndSeqNo.atTimeNoSeqNo(proposal.getDate()))
+												 .productId(proposal.getProductId())
+												 .warehouseId(proposal.getDemandWarehouseId())
+												 .build())
 				.build();
 		final Candidate existingsupplyCandidate = candidateRepository.retrieveLatestMatchOrNull(proposedSupplyExistsQuery);
 		if (existingsupplyCandidate == null)
@@ -119,5 +125,10 @@ public class SupplyProposalEvaluator
 		 */
 		@NonNull
 		WarehouseId demandWarehouseId;
+
+		int productId;
+
+		@NonNull
+		Instant date;
 	}
 }

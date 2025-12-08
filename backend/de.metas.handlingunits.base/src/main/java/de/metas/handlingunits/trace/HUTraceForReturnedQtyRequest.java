@@ -27,11 +27,11 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.inout.InOutId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Set;
 
@@ -64,5 +64,5 @@ public class HUTraceForReturnedQtyRequest
 	ProductId productId;
 
 	@NonNull
-	BigDecimal qty;
+	Quantity qty;
 }

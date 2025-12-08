@@ -1,10 +1,12 @@
 package de.metas.bpartner.exceptions;
 
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
@@ -21,14 +23,20 @@ public abstract class BPartnerException extends AdempiereException
 			@NonNull final AdMessageKey adMessage,
 			@Nullable final I_C_BPartner bpartner)
 	{
-		super(buildMsg(adMessage, extractBPartnerName(bpartner)));
+		super(buildMsg(adMessage, extractBPartnerName(bpartner)), getErrorCode(adMessage));
 	}
 
 	BPartnerException(
 			@NonNull final AdMessageKey adMessage,
 			@Nullable final String bpartnerName)
 	{
-		super(buildMsg(adMessage, bpartnerName));
+		super(buildMsg(adMessage, bpartnerName), getErrorCode(adMessage));
+	}
+
+	@Nullable
+	private static String getErrorCode(final @NonNull AdMessageKey adMessage)
+	{
+		return Services.get(IMsgBL.class).getErrorCode(adMessage);
 	}
 
 	private static String extractBPartnerName(final I_C_BPartner bpartner)

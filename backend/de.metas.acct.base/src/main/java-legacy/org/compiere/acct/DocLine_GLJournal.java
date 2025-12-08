@@ -1,16 +1,20 @@
 package org.compiere.acct;
 
-import java.math.BigDecimal;
-
+import de.metas.acct.Account;
+import de.metas.acct.api.AccountId;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.order.OrderId;
+import de.metas.product.ProductId;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.LegacyAdapters;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_GL_JournalLine;
-import org.compiere.model.MAccount;
 
-import de.metas.acct.api.AcctSchemaId;
-import lombok.Getter;
-import lombok.Setter;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -36,31 +40,39 @@ import lombok.Setter;
 
 class DocLine_GLJournal extends DocLine<Doc_GLJournal>
 {
-	@Getter
-	@Setter
-	private AcctSchemaId acctSchemaId;
-	
-	@Getter
-	@Setter
-	private BigDecimal fixedCurrencyRate;
+	@Getter private final int groupNo;
+	@Getter @Setter private AcctSchemaId acctSchemaId;
+	@Getter @Setter private BigDecimal fixedCurrencyRate;
+	@Getter private Account account;
+	@Nullable @Setter private ProductId productId;
+	@Nullable @Setter private OrderId salesOrderId;
+	@Nullable @Getter @Setter private LocatorId locatorId;
 
-	private MAccount m_account = null;
-
-
-	public DocLine_GLJournal(final I_GL_JournalLine glJournalLine, final Doc_GLJournal doc)
+	DocLine_GLJournal(@NonNull final I_GL_JournalLine glJournalLine, @NonNull final Doc_GLJournal doc)
 	{
 		super(InterfaceWrapperHelper.getPO(glJournalLine), doc);
-		
+		groupNo = glJournalLine.getGL_JournalLine_Group();
 		fixedCurrencyRate = glJournalLine.getCurrencyRate();
 	}
-	
-	public final void setAccount(final I_C_ValidCombination acct)
+
+	final void setAccount(@NonNull final I_C_ValidCombination acct)
 	{
-		m_account = LegacyAdapters.convertToPO(acct);
+		setAccount(Account.ofId(AccountId.ofRepoId(acct.getC_ValidCombination_ID())));
 	}
 
-	public final MAccount getAccount()
+	final void setAccount(@NonNull final Account account)
 	{
-		return m_account;
-	}   // getAccount
+		this.account = account;
+	}
+
+	@Override
+	@Nullable
+	public ProductId getProductId() {return productId;}
+
+	@Nullable
+	@Override
+	protected OrderId getSalesOrderId() {return salesOrderId;}
+
+	@Override
+	public int getM_Locator_ID() {return LocatorId.toRepoId(getLocatorId());}
 }

@@ -32,12 +32,14 @@ import de.metas.bpartner.BPartnerType;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.GeographicalCoordinatesWithBPartnerLocationId;
 import de.metas.bpartner.OrgMappingId;
+import de.metas.bpartner.service.impl.GLNQuery;
 import de.metas.email.EMailAddress;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.location.LocationId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.sales_region.SalesRegionId;
 import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
@@ -80,6 +82,8 @@ public interface IBPartnerDAO extends ISingletonService
 	I_C_BPartner getById(final BPartnerId bpartnerId);
 
 	<T extends I_C_BPartner> T getById(BPartnerId bpartnerId, Class<T> modelClass);
+
+	List<I_C_BPartner> getByIds(@NonNull Collection<BPartnerId> bpartnerIds);
 
 	/**
 	 * @deprecated Please use {@link IBPartnerDAO#retrieveBPartnerIdBy(BPartnerQuery)} instead.
@@ -257,6 +261,8 @@ public interface IBPartnerDAO extends ISingletonService
 	 */
 	List<I_C_BPartner_Location> retrieveBPartnerShipToLocations(I_C_BPartner bpartner);
 
+	List<I_C_BPartner_Location> retrieveBPartnerLocationsByIds(Set<BPartnerLocationId> ids);
+
 	/**
 	 * Performs an non-strict search (e.g. if BP has only one address, it returns it even if it's not flagged as the default ShipTo address).
 	 *
@@ -270,7 +276,8 @@ public interface IBPartnerDAO extends ISingletonService
 	@Nullable
 	CountryId getDefaultShipToLocationCountryIdOrNull(BPartnerId bpartnerId);
 
-	CountryId getCountryId(BPartnerLocationId bpLocationId);
+	@NonNull
+	CountryId getCountryId(@NonNull BPartnerLocationId bpLocationId);
 	/**
 	 * Retrieve default/first bill to location.
 	 *
@@ -316,7 +323,8 @@ public interface IBPartnerDAO extends ISingletonService
 
 	BPartnerLocationId retrieveBPartnerLocationId(BPartnerLocationQuery query);
 
-	I_C_BPartner_Location retrieveBPartnerLocation(BPartnerLocationQuery query);
+	@Nullable
+	I_C_BPartner_Location retrieveBPartnerLocation(@NonNull BPartnerLocationQuery query);
 
 	BPartnerPrintFormatMap getPrintFormats(@NonNull BPartnerId bpartnerId);
 
@@ -327,6 +335,13 @@ public interface IBPartnerDAO extends ISingletonService
 	BPartnerId cloneBPartnerRecord(@NonNull CloneBPartnerRequest request);
 
 	List<I_C_BPartner> retrieveVendors(@NonNull QueryLimit limit);
+
+	Optional<SalesRegionId> getSalesRegionIdByBPLocationId(@NonNull BPartnerLocationId bpartnerLocationId);
+
+	@NonNull
+	List<String> getOtherLocationNamesOfBPartner(@NonNull BPartnerId bPartnerId, @Nullable BPartnerLocationId bPartnerLocationId);
+
+	Optional<ShipperId> getShipperIdByBPLocationId(@NonNull BPartnerLocationId bpartnerLocationId);
 
 	@Value
 	@Builder
@@ -394,4 +409,7 @@ public interface IBPartnerDAO extends ISingletonService
 	List<I_C_BPartner> retrieveByIds(Set<BPartnerId> bpartnerIds);
 
 	BPartnerLocationId getCurrentLocation(final BPartnerLocationId locationId);
+
+	@NonNull
+	Optional<BPartnerLocationId> retrieveSingleBPartnerLocationIdBy(@NonNull GLNQuery query);
 }

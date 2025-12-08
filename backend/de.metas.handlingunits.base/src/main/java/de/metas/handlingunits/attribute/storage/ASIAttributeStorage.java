@@ -3,6 +3,7 @@ package de.metas.handlingunits.attribute.storage;
 import java.util.List;
 import java.util.Map;
 
+import lombok.Getter;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
@@ -27,30 +28,24 @@ import lombok.NonNull;
 public class ASIAttributeStorage extends AbstractAttributeStorage
 {
 
-	public static IAttributeStorage createNew(
+	public static ASIAttributeStorage createNew(
 			@NonNull final IAttributeStorageFactory attributeStorageFactory,
 			@NonNull final I_M_AttributeSetInstance attributeSetInstance)
 	{
 		return new ASIAttributeStorage(attributeStorageFactory, attributeSetInstance);
 	}
 
-	private final String id;
-	private final I_M_AttributeSetInstance asi;
+	@NonNull @Getter private final String id;
+	@NonNull private final I_M_AttributeSetInstance asi;
 
 	private ASIAttributeStorage(
-			final IAttributeStorageFactory storageFactory,
+			@NonNull final IAttributeStorageFactory storageFactory,
 			@NonNull final I_M_AttributeSetInstance asi)
 	{
-		super(Check.assumeNotNull(storageFactory, "storageFactory"));
+		super(storageFactory);
 
 		this.asi = asi;
 		this.id = I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID + "=" + asi.getM_AttributeSetInstance_ID();
-	}
-
-	@Override
-	public String getId()
-	{
-		return id;
 	}
 
 	@Override

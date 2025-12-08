@@ -1,23 +1,8 @@
 package de.metas.ui.web.dataentry.window.descriptor.factory;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
-import static java.lang.Integer.parseInt;
-
-import java.util.List;
-
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.table.api.AdTableId;
-import org.adempiere.test.AdempiereTestHelper;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntryListValueId;
 import de.metas.dataentry.DataEntrySectionId;
@@ -42,6 +27,16 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.user.UserRepository;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.util.List;
+
+import static java.lang.Integer.parseInt;
 
 /*
  * #%L
@@ -65,11 +60,13 @@ import de.metas.user.UserRepository;
  * #L%
  */
 
+@ExtendWith(SnapshotExtension.class)
 public class DataEntryTabLoaderTest
 {
 
 	private JSONDocumentLayoutOptions jsonLayoutOptions;
 	private DataEntryTabLoader dataEntryTabLoader;
+	private Expect expect;
 
 	@BeforeEach
 	public void init()
@@ -90,7 +87,7 @@ public class DataEntryTabLoaderTest
 		final DataEntryRecordRepository dataEntryRecordRepository = new DataEntryRecordRepository(jsonDataEntryRecordMapper);
 
 		final DataEntrySubTabBindingDescriptorBuilder //
-		dataEntrySubTabBindingDescriptorBuilder = new DataEntrySubTabBindingDescriptorBuilder(
+				dataEntrySubTabBindingDescriptorBuilder = new DataEntrySubTabBindingDescriptorBuilder(
 				dataEntryRecordRepository,
 				dataEntryWebuiTools);
 
@@ -102,20 +99,8 @@ public class DataEntryTabLoaderTest
 				.build();
 	}
 
-	@BeforeAll
-	public static void beforeAll()
-	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
-	}
-
-	@AfterAll
-	public static void afterAll()
-	{
-		validateSnapshots();
-	}
-
 	@Test
-	public void createLayoutDescriptors_verify_DocumentLayoutDetailDescriptor() throws JsonProcessingException
+	public void createLayoutDescriptors_verify_DocumentLayoutDetailDescriptor()
 	{
 		final DataEntryTab dataEntryTab = createSimpleDataEntryTab();
 
@@ -127,11 +112,11 @@ public class DataEntryTabLoaderTest
 						.tab(dataEntryTab)
 						.build());
 
-		expect(descriptors).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(descriptors);
 	}
 
 	@Test
-	public void createLayoutDescriptors_verify_JSONDocumentLayoutTab() throws JsonProcessingException
+	public void createLayoutDescriptors_verify_JSONDocumentLayoutTab()
 	{
 		final DataEntryTab dataEntryTab = createSimpleDataEntryTab();
 
@@ -144,7 +129,7 @@ public class DataEntryTabLoaderTest
 						.build());
 
 		final List<JSONDocumentLayoutTab> jsonTabs = JSONDocumentLayoutTab.ofList(descriptors, jsonLayoutOptions);
-		expect(jsonTabs).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(jsonTabs);
 	}
 
 	@Test
@@ -160,7 +145,7 @@ public class DataEntryTabLoaderTest
 						.tab(dataEntryTab)
 						.build());
 
-		expect(descriptors).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(descriptors);
 	}
 
 	public static DataEntryTab createSimpleDataEntryTab()

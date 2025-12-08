@@ -22,19 +22,18 @@ package de.metas.shipping.api;
  * #L%
  */
 
-import java.util.List;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
-import org.compiere.model.I_M_Package;
-
+import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.compiere.model.I_M_Package;
+
+import javax.annotation.Nullable;
+import java.time.Instant;
+import java.util.List;
 
 public interface IShipperTransportationDAO extends ISingletonService
 {
@@ -42,6 +41,9 @@ public interface IShipperTransportationDAO extends ISingletonService
 	I_M_ShipperTransportation getById(ShipperTransportationId shipperItransportationId);
 
 	List<I_M_ShippingPackage> retrieveShippingPackages(@NonNull ShipperTransportationId shipperTransportation);
+
+	@Nullable
+	ShipperTransportationId retrieveNextOpenShipperTransportationIdOrNull(@NonNull ShipperId shipperId, @Nullable Instant date);
 
 	/**
 	 * Retrieve all {@link I_M_ShippingPackage}s which are pointing to givem {@link I_M_Package}.
@@ -51,7 +53,8 @@ public interface IShipperTransportationDAO extends ISingletonService
 	@Nullable
 	I_M_ShipperTransportation retrieve(@NonNull final ShipperTransportationId shipperTransportationId);
 
-	<T extends I_M_ShipperTransportation> List<T> retrieveOpenShipperTransportations(Properties ctx, Class<T> clazz);
+	ShipperTransportationId create(@NonNull CreateShipperTransportationRequest request);
 
-	ShipperTransportationId retrieveNextOpenShipperTransportationIdOrNull(ShipperId shipperId);
+	@NonNull
+	ShipperTransportationId getOrCreate(@NonNull CreateShipperTransportationRequest request);
 }

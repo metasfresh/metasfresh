@@ -23,7 +23,7 @@
 package de.metas.cucumber.stepdefs.workflow;
 
 import de.metas.cucumber.stepdefs.StepDefData;
-import de.metas.cucumber.stepdefs.workflow.dto.WFProcessId;
+import de.metas.workflow.rest_api.model.WFProcessId;
 
 public class JsonWFProcess_StepDefData extends StepDefData<WFProcessId>
 {

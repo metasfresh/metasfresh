@@ -1,10 +1,5 @@
 package de.metas.material.dispo.service.event.handler.receiptschedule;
 
-import static java.math.BigDecimal.ZERO;
-
-import java.math.BigDecimal;
-import java.util.List;
-
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
@@ -19,6 +14,11 @@ import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.receiptschedule.AbstractReceiptScheduleEvent;
 import lombok.NonNull;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import static java.math.BigDecimal.ZERO;
 
 /*
  * #%L
@@ -93,10 +93,10 @@ abstract class ReceiptsScheduleCreatedOrUpdatedHandler<T extends AbstractReceipt
 
 	protected abstract CandidatesQuery createCandidatesQuery(@NonNull final AbstractReceiptScheduleEvent event);
 
-	private final CandidateBuilder prepareInitialSupplyCandidate(@NonNull final AbstractReceiptScheduleEvent event)
+	private CandidateBuilder prepareInitialSupplyCandidate(@NonNull final AbstractReceiptScheduleEvent event)
 	{
 		return Candidate.builder()
-				.clientAndOrgId(event.getEventDescriptor().getClientAndOrgId())
+				.clientAndOrgId(event.getClientAndOrgId())
 				.type(CandidateType.SUPPLY)
 				.materialDescriptor(event.getMaterialDescriptor())
 				.businessCase(CandidateBusinessCase.PURCHASE);

@@ -224,7 +224,7 @@ import de.metas.util.Check;
 			final Object[] sqlParams = new Object[] { paReportCubeId, paReportCube.getC_Calendar_ID() };
 
 			final long startMillis = System.currentTimeMillis();
-			final int rows = DB.executeUpdateEx(sql, sqlParams, trxName);
+			final int rows = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams, trxName);
 			final long seconds = (System.currentTimeMillis() - startMillis) / 1000;
 
 			final String insertResult = "Inserted " + rows + " in " + seconds + " s.";
@@ -350,7 +350,7 @@ import de.metas.util.Check;
 				paReportCubeId,
 		};
 
-		final int locked = DB.executeUpdateEx(sql, sqlParams, trxName);
+		final int locked = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams, trxName);
 		if (locked != 1)
 		{
 			throw new AdempiereException("Unable to lock cube for update:" + getPA_ReportCube().getName());
@@ -371,7 +371,7 @@ import de.metas.util.Check;
 				, paReportCubeId // PA_ReportCube_ID
 		};
 
-		DB.executeUpdateEx(sql, sqlParams, trxName);
+		DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams, trxName);
 	}
 
 	private int deleteFactAcctSummary(final String where)
@@ -382,7 +382,7 @@ import de.metas.util.Check;
 		final String sql = "DELETE FROM Fact_Acct_Summary fas " + where;
 		log.debug("Delete sql: " + sql);
 
-		final int deletedNo = DB.executeUpdateEx(sql, trxName);
+		final int deletedNo = DB.executeUpdateAndThrowExceptionOnFail(sql, trxName);
 		return deletedNo;
 	}
 

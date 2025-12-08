@@ -1,70 +1,95 @@
 package de.metas.handlingunits.picking.job.repository;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.gs1.GS1ProductCodes;
+import de.metas.gs1.GS1ProductCodesCollection;
+import de.metas.handlingunits.HUPIItemProduct;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.IHUPIItemProductBL;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
+import de.metas.handlingunits.picking.job.model.ScheduledPackageable;
+import de.metas.handlingunits.picking.job.model.ScheduledPackageableList;
+import de.metas.handlingunits.picking.job.model.ScheduledPackageableLocks;
+import de.metas.handlingunits.picking.job.service.PickingJobLockService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.i18n.ITranslatableString;
 import de.metas.order.IOrderBL;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
-import de.metas.picking.api.Packageable;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 
+import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * A bunch of services needed to support the loading of a given PickingJob.
  *
  * @implNote Please don't instantiate it in Repositories.
  */
+@RequiredArgsConstructor
 public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoaderSupportingServices
 {
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IBPartnerBL bpartnerBL;
-	private final PickingJobSlotService pickingSlotService;
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final HUQRCodesService huQRCodeService;
+	private final IHUPIItemProductBL huPIItemProductBL = Services.get(IHUPIItemProductBL.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
+	@NonNull private final IBPartnerBL bpartnerBL;
+	@NonNull private final PickingJobSlotService pickingSlotService;
+	@NonNull private final PickingJobLockService pickingJobLockService;
+	@NonNull private final HUQRCodesService huQRCodeService;
+	private final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository;
 
 	private final HashMap<OrderId, String> salesOrderDocumentNosCache = new HashMap<>();
 	private final HashMap<BPartnerId, String> bpartnerNamesCache = new HashMap<>();
 	private final HashMap<PickingSlotId, PickingSlotIdAndCaption> pickingSlotIdAndCaptionsCache = new HashMap<>();
-	private final HashMap<ProductId, ITranslatableString> productNamesCache = new HashMap<>();
+	private final HashMap<ProductId, ProductInfo> productInfoCache = new HashMap<>();
 	private final HashMap<LocatorId, String> locatorNamesCache = new HashMap<>();
 
-	public DefaultPickingJobLoaderSupportingServices(
-			@NonNull final IBPartnerBL bpartnerBL,
-			@NonNull final PickingJobSlotService pickingSlotService,
-			@NonNull final HUQRCodesService huQRCodeService)
-	{
-		this.bpartnerBL = bpartnerBL;
-		this.pickingSlotService = pickingSlotService;
-		this.huQRCodeService = huQRCodeService;
-	}
+	@Override
+	public PickingJobOptions getPickingJobOptions(@Nullable final BPartnerId customerId) {return mobileUIPickingUserProfileRepository.getPickingJobOptions(customerId);}
 
 	@Override
-	public void warmUpCachesFrom(@NonNull final ImmutableList<Packageable> items)
+	public void warmUpCachesFrom(@NonNull final ScheduledPackageableList items)
 	{
 		items.forEach(this::loadCacheFrom);
 	}
 
-	private void loadCacheFrom(@NonNull final Packageable packageable)
+	private void loadCacheFrom(@NonNull final ScheduledPackageable packageable)
 	{
 		if (packageable.getSalesOrderId() != null)
 		{
@@ -73,9 +98,21 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	}
 
 	@Override
+	public void warmUpSalesOrderDocumentNosCache(@NonNull final Collection<OrderId> orderIds)
+	{
+		CollectionUtils.getAllOrLoad(salesOrderDocumentNosCache, orderIds, orderBL::getDocumentNosByIds);
+	}
+
+	@Override
 	public String getSalesOrderDocumentNo(@NonNull final OrderId salesOrderId)
 	{
 		return salesOrderDocumentNosCache.computeIfAbsent(salesOrderId, orderBL::getDocumentNoById);
+	}
+
+	@Override
+	public void warmUpBPartnerNamesCache(@NonNull final Set<BPartnerId> bpartnerIds)
+	{
+		CollectionUtils.getAllOrLoad(bpartnerNamesCache, bpartnerIds, bpartnerBL::getBPartnerNames);
 	}
 
 	@Override
@@ -98,9 +135,60 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	}
 
 	@Override
+	public String getProductNo(@NonNull final ProductId productId)
+	{
+		return getProductInfo(productId).getProductNo();
+	}
+
+	@Override
+	public Optional<GS1ProductCodes> getGS1ProductCodes(@NonNull final ProductId productId, @Nullable final BPartnerId customerId)
+	{
+		return getProductInfo(productId).getGs1ProductCodes().getEffectiveCodes(customerId);
+	}
+
+	@Override
+	public ProductCategoryId getProductCategoryId(@NonNull final ProductId productId)
+	{
+		return getProductInfo(productId).getProductCategoryId();
+	}
+
+	@Override
 	public ITranslatableString getProductName(@NonNull final ProductId productId)
 	{
-		return productNamesCache.computeIfAbsent(productId, productBL::getProductNameTrl);
+		return getProductInfo(productId).getName();
+	}
+
+	private ProductInfo getProductInfo(@NonNull final ProductId productId)
+	{
+		return productInfoCache.computeIfAbsent(productId, this::retrieveProductInfo);
+	}
+
+	@NonNull
+	private ProductInfo retrieveProductInfo(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = productBL.getById(productId);
+		final GS1ProductCodesCollection gs1ProductCodes = productBL.getGS1ProductCodesCollection(product);
+
+		return ProductInfo.builder()
+				.productId(productId)
+				.productNo(product.getValue())
+				.gs1ProductCodes(gs1ProductCodes)
+				.productCategoryId(ProductCategoryId.ofRepoId(product.getM_Product_Category_ID()))
+				.name(InterfaceWrapperHelper.getModelTranslationMap(product).getColumnTrl(I_M_Product.COLUMNNAME_Name, product.getName()))
+				.build();
+
+	}
+
+	@Override
+	public HUPIItemProduct getPackingInfo(@NonNull final HUPIItemProductId huPIItemProductId)
+	{
+		return huPIItemProductBL.getById(huPIItemProductId);
+	}
+
+	@Override
+	public String getPICaption(@NonNull final HuPackingInstructionsId piId)
+	{
+		return handlingUnitsBL.getPI(piId).getName();
 	}
 
 	@Override
@@ -113,5 +201,32 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	public HUQRCode getQRCodeByHUId(final HuId huId)
 	{
 		return huQRCodeService.getQRCodeByHuId(huId);
+	}
+
+	@Override
+	public ScheduledPackageableLocks getLocks(final ShipmentScheduleAndJobScheduleIdSet scheduleIds)
+	{
+		return pickingJobLockService.getLocks(scheduleIds);
+	}
+
+	@Override
+	public int getSalesOrderLineSeqNo(@NonNull final OrderAndLineId orderAndLineId)
+	{
+		return orderDAO.getOrderLineById(orderAndLineId).getLine();
+	}
+
+	//
+	//
+	//
+
+	@Value
+	@Builder
+	private static class ProductInfo
+	{
+		@NonNull ProductId productId;
+		@NonNull String productNo;
+		@NonNull GS1ProductCodesCollection gs1ProductCodes;
+		@NonNull ProductCategoryId productCategoryId;
+		@NonNull ITranslatableString name;
 	}
 }

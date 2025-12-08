@@ -22,6 +22,7 @@
 
 package de.metas.invoice.invoiceProcessingServiceCompany;
 
+import de.metas.acct.GLCategoryId;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
@@ -97,7 +98,7 @@ import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.X_C_DocType.DOCBASETYPE_APInvoice;
 import static org.compiere.model.X_C_DocType.DOCSUBTYPE_PaymentServiceProviderInvoice;
 
@@ -118,7 +119,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 
 		final CurrencyRepository currencyRepo = new CurrencyRepository();
 		SpringContextHolder.registerJUnitBean(currencyRepo);
-		
+
 		configRepository = new InvoiceProcessingServiceCompanyConfigRepository();
 		final MoneyService moneyService = new MoneyService(currencyRepo);
 		invoiceProcessingServiceCompanyService = new InvoiceProcessingServiceCompanyService(configRepository, moneyService);
@@ -248,7 +249,6 @@ public class InvoiceProcessingServiceCompanyServiceTest
 			assertThat(result).isEmpty();
 		}
 
-
 		@Test
 		public void customerIsNotAssignedToInvoiceProcessingServiceCompany()
 		{
@@ -340,11 +340,70 @@ public class InvoiceProcessingServiceCompanyServiceTest
 
 			assertThat(configRepository.getByCustomerId(bpartner2, LocalDate.parse("2019-12-31").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
 
-			assertCorrectConfigReturned(bpartner2, "3030-01-01", 3);
-			assertCorrectConfigReturned(bpartner2, "2020-04-02", 3);
-			assertCorrectConfigReturned(bpartner2, "2020-04-01", 3);
+			assertThat(configRepository.getByCustomerId(bpartner2, LocalDate.parse("3030-01-01").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
+			assertThat(configRepository.getByCustomerId(bpartner2, LocalDate.parse("2020-04-02").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
+			assertThat(configRepository.getByCustomerId(bpartner2, LocalDate.parse("2020-04-01").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
 			assertCorrectConfigReturned(bpartner2, "2020-03-28", 3);
 			assertCorrectConfigReturned(bpartner2, "2020-01-01", 1);
+		}
+
+		@Test
+		void selectCorrectConfigByValidDateWithInactiveDetails()
+		{
+			final BPartnerId bpartner1 = BPartnerId.ofRepoId(2);
+			final BPartnerId bpartner2 = BPartnerId.ofRepoId(7);
+
+			configInactiveDetails()
+					.feePercentageOfGrandTotal("5")
+					.customerId(bpartner1)
+					.validFrom(LocalDate.parse("2020-05-01").atStartOfDay(ZoneId.of("UTC+5")))
+					.build();
+
+			configInactiveDetails()
+					.feePercentageOfGrandTotal("4")
+					.customerId(bpartner2)
+					.customerId(bpartner1)
+					.validFrom(LocalDate.parse("2020-04-01").atStartOfDay(ZoneId.of("UTC+5")))
+					.build();
+
+			config()
+					.feePercentageOfGrandTotal("3")
+					.customerId(bpartner1)
+					.validFrom(LocalDate.parse("2020-03-01").atStartOfDay(ZoneId.of("UTC+5")))
+					.build();
+
+			config()
+					.feePercentageOfGrandTotal("2")
+					.customerId(bpartner1)
+					.customerId(bpartner2)
+					.validFrom(LocalDate.parse("2020-02-01").atStartOfDay(ZoneId.of("UTC+5")))
+					.build();
+
+			config()
+					.feePercentageOfGrandTotal("1")
+					.customerId(bpartner1)
+					.customerId(bpartner2)
+					.validFrom(LocalDate.parse("2020-01-01").atStartOfDay(ZoneId.of("UTC+5")))
+					.build();
+
+			// bpartner1 is effectively not included in any config before 2020-01-01 and after 2020-04-01
+			assertThat(configRepository.getByCustomerId(bpartner1, LocalDate.parse("2019-12-31").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
+			assertCorrectConfigReturned(bpartner1, "2020-01-01", 1);
+			assertCorrectConfigReturned(bpartner1, "2020-02-01", 2);
+			assertCorrectConfigReturned(bpartner1, "2020-03-01", 3);
+			assertThat(configRepository.getByCustomerId(bpartner1, LocalDate.parse("2020-04-28").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
+			assertThat(configRepository.getByCustomerId(bpartner1, LocalDate.parse("2020-05-02").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
+			assertThat(configRepository.getByCustomerId(bpartner1, LocalDate.parse("2020-05-01").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
+			assertThat(configRepository.getByCustomerId(bpartner1, LocalDate.parse("3030-01-01").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
+
+			// bpartner2 is effectively not included in any config before 2020-01-01 and after 2020-03-01
+			assertThat(configRepository.getByCustomerId(bpartner2, LocalDate.parse("2019-12-31").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
+			assertCorrectConfigReturned(bpartner2, "2020-01-01", 1);
+			assertCorrectConfigReturned(bpartner2, "2020-02-01", 2);
+			assertThat(configRepository.getByCustomerId(bpartner2, LocalDate.parse("2020-03-28").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
+			assertThat(configRepository.getByCustomerId(bpartner2, LocalDate.parse("2020-04-01").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
+			assertThat(configRepository.getByCustomerId(bpartner2, LocalDate.parse("2020-04-02").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
+			assertThat(configRepository.getByCustomerId(bpartner2, LocalDate.parse("3030-01-01").atStartOfDay(ZoneId.of("UTC+5")))).isEmpty();
 		}
 
 		@Test
@@ -451,6 +510,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 							.ctx(Env.getCtx())
 							.name("invoice processing fee vendor invoice")
 							.docBaseType(InvoiceDocBaseType.VendorInvoice.getDocBaseType())
+							.glCategoryId(GLCategoryId.ofRepoId(123))
 							.build());
 
 			final I_C_UOM uomEach = BusinessTestHelper.createUomEach();
@@ -660,7 +720,42 @@ public class InvoiceProcessingServiceCompanyServiceTest
 			assignmentRecord.setInvoiceProcessingServiceCompany_ID(configRecord.getInvoiceProcessingServiceCompany_ID());
 			assignmentRecord.setC_BPartner_ID(customerId.getRepoId());
 
-			if(docTypeId != null)
+			if (docTypeId != null)
+			{
+				assignmentRecord.setC_DocType_ID(docTypeId.getRepoId());
+			}
+
+			assignmentRecord.setFeePercentageOfGrandTotal(new BigDecimal(feePercentageOfGrandTotal));
+			saveRecord(assignmentRecord);
+
+		}
+	}
+
+	@Builder(builderMethodName = "configInactiveDetails", builderClassName = "ConfigInactiveDetailsBuilder")
+	private void createConfigInactiveDetails(
+			@NonNull final String feePercentageOfGrandTotal,
+			@NonNull @Singular final Set<BPartnerId> customerIds,
+			@NonNull final ZonedDateTime validFrom,
+			@Nullable final DocTypeId docTypeId)
+	{
+		Check.assumeNotEmpty(customerIds, "customerIds is not empty");
+
+		final I_InvoiceProcessingServiceCompany configRecord = newInstance(I_InvoiceProcessingServiceCompany.class);
+		configRecord.setIsActive(true);
+		configRecord.setServiceCompany_BPartner_ID(serviceCompanyBPartnerId.getRepoId());
+		configRecord.setServiceInvoice_DocType_ID(serviceInvoiceDocTypeId.getRepoId());
+		configRecord.setServiceFee_Product_ID(serviceFeeProductId.getRepoId());
+		configRecord.setValidFrom(TimeUtil.asTimestamp(validFrom));
+		saveRecord(configRecord);
+
+		for (final BPartnerId customerId : customerIds)
+		{
+			final I_InvoiceProcessingServiceCompany_BPartnerAssignment assignmentRecord = newInstance(I_InvoiceProcessingServiceCompany_BPartnerAssignment.class);
+			assignmentRecord.setIsActive(false);
+			assignmentRecord.setInvoiceProcessingServiceCompany_ID(configRecord.getInvoiceProcessingServiceCompany_ID());
+			assignmentRecord.setC_BPartner_ID(customerId.getRepoId());
+
+			if (docTypeId != null)
 			{
 				assignmentRecord.setC_DocType_ID(docTypeId.getRepoId());
 			}

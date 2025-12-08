@@ -3,9 +3,13 @@ import DistributionStepScreen from '../containers/activities/distribution/Distri
 import DistributionStepPickFromScreen from '../containers/activities/distribution/DistributionStepPickFromScreen';
 import DistributionStepDropToScreen from '../containers/activities/distribution/DistributionStepDropToScreen';
 import { getWFProcessScreenLocation } from './workflow_locations';
+import DistributionLinePickFromScreen from '../containers/activities/distribution/DistributionLinePickFromScreen';
 
 export const distributionLineScreenLocation = ({ applicationId, wfProcessId, activityId, lineId }) =>
   getWFProcessScreenLocation({ applicationId, wfProcessId }) + `/dd/A/${activityId}/L/${lineId}`;
+
+export const distributionLinePickFromScreenLocation = ({ applicationId, wfProcessId, activityId, lineId }) =>
+  distributionLineScreenLocation({ applicationId, wfProcessId, activityId, lineId }) + `/scan`;
 
 export const distributionStepScreenLocation = ({ applicationId, wfProcessId, activityId, lineId, stepId }) =>
   distributionLineScreenLocation({ applicationId, wfProcessId, activityId, lineId }) + `/stepId/${stepId}`;
@@ -25,6 +29,15 @@ export const distributionRoutes = [
       lineId: ':lineId',
     }),
     Component: DistributionLineScreen,
+  },
+  {
+    path: distributionLinePickFromScreenLocation({
+      applicationId: ':applicationId',
+      wfProcessId: ':workflowId',
+      activityId: ':activityId',
+      lineId: ':lineId',
+    }),
+    Component: DistributionLinePickFromScreen,
   },
   {
     path: distributionStepScreenLocation({

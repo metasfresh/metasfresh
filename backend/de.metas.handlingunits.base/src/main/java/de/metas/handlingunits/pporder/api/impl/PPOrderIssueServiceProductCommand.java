@@ -200,6 +200,7 @@ class PPOrderIssueServiceProductCommand
 		return bomLineAttributes;
 	}
 
+	@NonNull
 	private Quantity getQtyToIssueForOneFinishedGood()
 	{
 		return _qtyToIssueForOneFinishedGood == null
@@ -207,6 +208,7 @@ class PPOrderIssueServiceProductCommand
 				: _qtyToIssueForOneFinishedGood;
 	}
 
+	@NonNull
 	private Quantity computeQtyToIssueForOneFinishedGood()
 	{
 		return ppOrderBOMBL.getQtyCalculationsBOM(getPPOrderRecord())

@@ -66,7 +66,7 @@ public class PeekIteratorWrapper<E> implements PeekIterator<E>, IteratorWrapper<
 	@Override
 	public void remove()
 	{
-		if (!hasPeeked)
+		if (hasPeeked)
 		{
 			throw new IllegalStateException("Can't remove after you've peeked at next");
 		}

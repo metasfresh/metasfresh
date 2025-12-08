@@ -23,22 +23,28 @@
 package org.adempiere.ad.table;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.common.util.time.SystemTime;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_ChangeLog;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import java.time.temporal.ChronoUnit;
+
 @Repository
 public class ChangeLogEntryRepository
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull
 	public ImmutableList<ChangeLogEntry> getLogEntriesFor(@NonNull final ChangeLogEntryQuery changeLogEntryQuery)
@@ -99,5 +105,22 @@ public class ChangeLogEntryRepository
 				.adTableId(AdTableId.ofRepoId(changeLog.getAD_Table_ID()))
 				.changeTimestamp(TimeUtil.asInstant(changeLog.getCreated()))
 				.build();
+	}
+
+	public int deleteDirectly(@NonNull final ChangeLogConfig changeLogConfig, @NonNull final QueryLimit queryLimit)
+	{
+		final IQueryBuilder<I_AD_ChangeLog> query = queryBL.createQueryBuilder(I_AD_ChangeLog.class)
+				.addEqualsFilter(I_AD_ChangeLog.COLUMNNAME_AD_Table_ID, changeLogConfig.getTableId())
+				.addCompareFilter(I_AD_ChangeLog.COLUMNNAME_Created, CompareQueryFilter.Operator.LESS_OR_EQUAL, SystemTime.asInstant().minus(changeLogConfig.getKeepChangeLogsDays(), ChronoUnit.DAYS))
+				.orderBy(I_AD_ChangeLog.COLUMNNAME_Created)
+				;
+
+		final OrgId orgId = changeLogConfig.getOrgId();
+		if(!OrgId.equals(OrgId.ANY, orgId))
+		{
+			query.addEqualsFilter(I_AD_ChangeLog.COLUMNNAME_AD_Org_ID, orgId);
+		}
+
+		return query.setLimit(queryLimit).create().deleteDirectly();
 	}
 }

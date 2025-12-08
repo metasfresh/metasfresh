@@ -5,7 +5,6 @@ export * from './actions/TabTypes';
 export * from './actions/FilterTypes';
 export * from './actions/Actions';
 export * from './actions/InlineTabTypes';
-export * from './actions/WindowActions';
 
 /**
  * @constant
@@ -21,7 +20,7 @@ export const OPEN_MODAL = 'OPEN_MODAL';
 
 /**
  * @constant
- * @type {string} ToDo: Description for the constant.
+ * @type {string} Clear/reset modal state
  */
 export const CLOSE_MODAL = 'CLOSE_MODAL';
 
@@ -117,6 +116,8 @@ export const UPDATE_DATA_VALID_STATUS = 'UPDATE_DATA_VALID_STATUS';
  * @type {string} ToDo: Description for the constant.
  */
 export const UPDATE_DATA_SAVE_STATUS = 'UPDATE_DATA_SAVE_STATUS';
+
+export const MARK_MASTER_DATA_DISCARDED = 'MARK_MASTER_DATA_DISCARDED';
 
 // END OF SCOPED ACTIONS
 
@@ -284,7 +285,7 @@ export const SET_RAW_MODAL_DESCRIPTION = 'SET_RAW_MODAL_DESCRIPTION';
 
 /**
  * @constant
- * @type {string} ToDo: Description for the constant.
+ * @type {string} Clear/reset rawModal state
  */
 export const CLOSE_RAW_MODAL = 'CLOSE_RAW_MODAL';
 

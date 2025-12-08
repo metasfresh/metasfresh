@@ -28,9 +28,10 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class JavaClassBLTests extends JavaClassTestBase
 {
@@ -49,34 +50,32 @@ public class JavaClassBLTests extends JavaClassTestBase
 	public static class TestClass2 implements TestInterface2
 	{
 	}
-	
+
 	public static class TestSuperClass3
 	{
-		
+
 	}
 
 	public static class TestClass3 extends TestSuperClass3
 	{
 
 	}
-	
+
 	private static class TestClass5 extends TestSuperClass3
 	{
 
 	}
-	
-	
+
 	public static class TestClass4 extends TestSuperClass3
 	{
 		TestClass4()
 		{
 		}
 	}
-	
+
 	public static interface TestInterface3 extends TestInterface2
 	{
 	}
-
 
 	private JavaClassBL javaClassBL;
 
@@ -119,7 +118,7 @@ public class JavaClassBLTests extends JavaClassTestBase
 		assertThat(obj).as("Instance was not created").isNotNull();
 	}
 
-	@Test(expected = AdempiereException.class)
+	@Test
 	public void test_newInstance_invalidConfig()
 	{
 		final I_AD_JavaClass_Type typeDef = InterfaceWrapperHelper.create(Env.getCtx(), I_AD_JavaClass_Type.class, ITrx.TRXNAME_None);
@@ -131,8 +130,7 @@ public class JavaClassBLTests extends JavaClassTestBase
 		javaClassDef.setClassname(TestClass2.class.getName());
 		InterfaceWrapperHelper.save(javaClassDef);
 
-		javaClassBL.newInstance(javaClassDef);
-
+		assertThatThrownBy(() -> javaClassBL.newInstance(javaClassDef)).isInstanceOf(AdempiereException.class);
 	}
 
 	@Test
@@ -169,7 +167,7 @@ public class JavaClassBLTests extends JavaClassTestBase
 		assertThat(instance).isInstanceOf(TestClass4.class);
 	}
 
-	@Test(expected = AdempiereException.class)
+	@Test
 	public void test_newInstance_Interface_Extending_Interface()
 	{
 		final I_AD_JavaClass_Type typeDef = InterfaceWrapperHelper.create(Env.getCtx(), I_AD_JavaClass_Type.class, ITrx.TRXNAME_None);
@@ -181,7 +179,7 @@ public class JavaClassBLTests extends JavaClassTestBase
 		javaClassDef.setClassname(TestInterface3.class.getName());
 		InterfaceWrapperHelper.save(javaClassDef);
 
-		javaClassBL.newInstance(javaClassDef);
+		assertThatThrownBy(() -> javaClassBL.newInstance(javaClassDef)).isInstanceOf(AdempiereException.class);
 	}
 
 	@Test

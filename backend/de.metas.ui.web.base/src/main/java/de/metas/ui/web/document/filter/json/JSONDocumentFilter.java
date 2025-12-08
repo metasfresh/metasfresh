@@ -13,7 +13,9 @@ import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvide
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -113,10 +115,11 @@ public class JSONDocumentFilter
 	List<JSONDocumentFilterParam> parameters;
 
 	@JsonCreator
+	@Builder
 	private JSONDocumentFilter(
 			@JsonProperty("filterId") @NonNull final String filterId,
 			@JsonProperty("caption") @Nullable final String caption,
-			@JsonProperty("parameters") @Nullable final List<JSONDocumentFilterParam> parameters)
+			@JsonProperty("parameters") @Nullable @Singular final List<JSONDocumentFilterParam> parameters)
 	{
 		Check.assumeNotEmpty(filterId, "filterId is not empty");
 

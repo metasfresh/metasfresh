@@ -48,10 +48,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class HUStorageEngine implements IStorageEngine
 {
@@ -70,8 +68,7 @@ public class HUStorageEngine implements IStorageEngine
 	@Override
 	public IStorageQuery newStorageQuery()
 	{
-		final HUStorageQuery huStorageQuery = new HUStorageQuery();
-		return huStorageQuery;
+		return new HUStorageQuery();
 	}
 
 	@Override
@@ -84,6 +81,16 @@ public class HUStorageEngine implements IStorageEngine
 				.create();
 		final List<I_M_HU_Storage> huStorages = huStoragesQuery.list();
 		return createHUStorageRecords(context, huStorages);
+	}
+
+	public boolean anyMatch(
+			@NonNull final IContextAware context,
+			@NonNull final IStorageQuery storageQuery)
+	{
+		return HUStorageQuery.cast(storageQuery)
+				.createQueryBuilder_for_M_HU_Storages(context)
+				.create()
+				.anyMatch();
 	}
 
 	@Override

@@ -1,5 +1,6 @@
 package de.metas.picking.api;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -13,11 +14,15 @@ public interface IPickingSlotDAO extends ISingletonService
 {
 	PickingSlotIdAndCaption getPickingSlotIdAndCaption(@NonNull PickingSlotId pickingSlotId);
 
+	Set<PickingSlotIdAndCaption> getPickingSlotIdAndCaptions(@NonNull Set<PickingSlotId> pickingSlotIds);
+
 	Optional<PickingSlotIdAndCaption> getPickingSlotIdAndCaptionByCode(@NonNull String pickingSlotCode);
 
 	I_M_PickingSlot getById(PickingSlotId pickingSlotId);
 
 	<T extends I_M_PickingSlot> T getById(PickingSlotId pickingSlotId, Class<T> modelType);
+
+	<T extends I_M_PickingSlot> List<T> getByIds(Set<PickingSlotId> pickingSlotIds, Class<T> modelType);
 
 	/**
 	 * @return all picking slots for current tenant/client.
@@ -32,4 +37,12 @@ public interface IPickingSlotDAO extends ISingletonService
 	Set<PickingSlotId> retrievePickingSlotIds(PickingSlotQuery query);
 
 	Set<PickingSlotIdAndCaption> retrievePickingSlotIdAndCaptions(@NonNull PickingSlotQuery query);
+
+	void save(@NonNull I_M_PickingSlot slot);
+
+	PickingSlotIdAndCaption createPickingSlot(@NonNull PickingSlotCreateRequest request);
+
+	boolean isPickingRackSystem(@NonNull PickingSlotId pickingSlotId);
+
+	ImmutableSet<PickingSlotId> getAllPickingSlotIdsWhichAreRackSystems();
 }

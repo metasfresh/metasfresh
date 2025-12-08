@@ -140,6 +140,7 @@ export function clearTableData(id) {
  * @summary Used to set the flag to enable/disable table navigation. Used by some widgets (like attributes)
  *
  * @param {string} id - table id
+ * @param {boolean} active
  */
 export function setTableNavigation(id, active) {
   return {
@@ -175,8 +176,9 @@ export function createTableData(rawData) {
 
     // immer freezes objects to make them immutable, so we have to make a deep copy
     // of entries as otherwise we're just passing references to frozen objects
-    columns: rawData.elements ? cloneDeep(rawData.elements) : undefined,
+    columns: createTableData_Columns(rawData),
     rows: rawData.result ? cloneDeep(rawData.result) : undefined,
+    orderBys: rawData.orderBys,
     defaultOrderBys: rawData.defaultOrderBys
       ? rawData.defaultOrderBys
       : undefined,
@@ -198,6 +200,29 @@ export function createTableData(rawData) {
     {}
   );
 }
+
+const createTableData_Columns = (rawData) => {
+  if (!rawData.elements) return undefined;
+
+  const columnCustomizationByFieldName = rawData?.columnsByFieldName ?? {};
+
+  return rawData.elements.map((element) => {
+    const elementCopy = cloneDeep(element);
+    if (elementCopy.fields?.length > 0) {
+      const hidden = elementCopy.fields.every((field) => {
+        const fieldName = field.field;
+        const columnCustomization = columnCustomizationByFieldName[fieldName];
+        return !!columnCustomization?.hidden;
+      });
+
+      if (hidden) {
+        elementCopy.hidden = true;
+      }
+    }
+
+    return elementCopy;
+  });
+};
 
 // THUNK ACTION CREATORS
 
@@ -270,6 +295,7 @@ export function createGridTable(tableId, tableResponse) {
     const tableData = createTableData({
       ...tableResponse,
       ...tableLayout,
+      ...extractEmptyResultTextAndHint({ tableResponse, tableLayout }),
     });
 
     dispatch(createTable(tableId, tableData));
@@ -300,6 +326,7 @@ export function updateGridTable(tableId, tableResponse) {
       tableData = createTableData({
         ...tableResponse,
         ...tableLayout,
+        ...extractEmptyResultTextAndHint({ tableResponse, tableLayout }),
         headerElements: tableResponse.columnsByFieldName,
         keyProperty: 'id',
       });
@@ -327,6 +354,7 @@ export function updateGridTable(tableId, tableResponse) {
       tableData = createTableData({
         ...tableResponse,
         ...tableLayout,
+        ...extractEmptyResultTextAndHint({ tableResponse, tableLayout }),
         headerElements: tableResponse.columnsByFieldName,
         keyProperty: 'id',
       });
@@ -357,6 +385,25 @@ export function updateGridTable(tableId, tableResponse) {
     return Promise.resolve(true);
   };
 }
+
+const extractEmptyResultTextAndHint = ({ tableResponse, tableLayout }) => {
+  if (tableResponse?.emptyResultText) {
+    return {
+      emptyResultText: tableResponse.emptyResultText,
+      emptyResultHint: tableResponse?.emptyResultHint || '',
+    };
+  } else if (tableLayout?.emptyResultText) {
+    return {
+      emptyResultText: tableLayout.emptyResultText,
+      emptyResultHint: tableLayout?.emptyResultHint || '',
+    };
+  } else {
+    return {
+      emptyResultText: '',
+      emptyResultHint: '',
+    };
+  }
+};
 
 /*
  * @method updateGridTableData
@@ -399,6 +446,13 @@ export function updateGridTableData({
     }
 
     return Promise.resolve(false);
+  };
+}
+
+export function partialUpdateGridTableRows({ tableId, rowsToUpdate }) {
+  return {
+    type: types.PARTIAL_UPDATE_TABLE_DATA,
+    payload: { tableId, rowsToUpdate },
   };
 }
 

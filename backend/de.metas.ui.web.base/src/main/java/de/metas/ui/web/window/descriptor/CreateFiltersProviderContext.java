@@ -22,7 +22,9 @@
 
 package de.metas.ui.web.window.descriptor;
 
+import com.google.common.collect.ImmutableList;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.element.api.AdTabId;
 
@@ -32,12 +34,9 @@ import javax.annotation.Nullable;
 @Builder
 public class CreateFiltersProviderContext
 {
-	@Nullable
-	final AdTabId adTabId;
-
-	@Nullable
-	final String tableName;
-
-	@Builder.Default
-	boolean isAutodetectDefaultDateFilter = true;
+	@Nullable AdTabId adTabId;
+	@Nullable String tableName;
+	@Builder.Default boolean isAutodetectDefaultDateFilter = true;
+	@NonNull ImmutableList<DocumentFieldDescriptor> fields;
+	@NonNull ImmutableList<DocumentEntityDescriptor> includedEntities;
 }

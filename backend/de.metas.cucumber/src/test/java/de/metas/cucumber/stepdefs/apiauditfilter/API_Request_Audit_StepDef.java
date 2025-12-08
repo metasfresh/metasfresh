@@ -25,7 +25,6 @@ package de.metas.cucumber.stepdefs.apiauditfilter;
 import de.metas.audit.apirequest.request.ApiRequestAudit;
 import de.metas.audit.apirequest.request.ApiRequestAuditId;
 import de.metas.audit.apirequest.request.ApiRequestAuditRepository;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
@@ -42,8 +41,10 @@ import org.compiere.model.I_API_Request_Audit;
 import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class API_Request_Audit_StepDef
 {
@@ -72,14 +73,14 @@ public class API_Request_Audit_StepDef
 	@And("on API_Request_Audit record we update the statusCode value from path")
 	public void update_API_Request_Audit(@NonNull final DataTable table)
 	{
-		final JsonMetasfreshId requestId = testContext.getApiResponse().getRequestId();
+		final ApiRequestAuditId requestId = testContext.getApiResponse().getRequestId();
 		assertThat(requestId).isNotNull();
 
 		final Map<String, String> row = table.asMaps().get(0);
 
 		final String statusCode = DataTableUtil.extractStringForColumnName(row, "statusCode");
 
-		final ApiRequestAudit existingApiRequestAudit = apiRequestAuditRepository.getById(ApiRequestAuditId.ofRepoId(requestId.getValue()));
+		final ApiRequestAudit existingApiRequestAudit = apiRequestAuditRepository.getById(requestId);
 
 		final String existingPath = existingApiRequestAudit.getPath();
 
@@ -99,25 +100,40 @@ public class API_Request_Audit_StepDef
 	{
 		StepDefUtil.tryAndWait(timeoutSec, 500, () -> this.getLastApiRequestAuditId().isPresent());
 
-		final JsonMetasfreshId apiRequestAuditId = this.getLastApiRequestAuditId()
+		final ApiRequestAuditId apiRequestAuditId = this.getLastApiRequestAuditId()
 				.map(I_API_Request_Audit::getAPI_Request_Audit_ID)
-				.map(JsonMetasfreshId::of)
+				.map(ApiRequestAuditId::ofRepoId)
 				.orElse(null);
 
 		assertThat(apiRequestAuditId).isNotNull();
 
 		testContext.setApiResponse(testContext
-										   .getApiResponse()
-										   .toBuilder()
-										   .requestId(apiRequestAuditId)
-										   .build());
+				.getApiResponse()
+				.toBuilder()
+				.requestId(apiRequestAuditId)
+				.build());
 	}
 
-	private boolean isApiAuditRequestFound(@NonNull final JsonMetasfreshId apiRequestAuditId, @NonNull final String[] allowedStatuses)
+	@And("^get the API_Request_Audit_ID which was returned from the preceding API-call, insert it into the endpointPath (.*) and store that path in context$")
+	public void store_auditRequestResponse_endpointPath_in_context(@NonNull final String endpointPath)
+	{
+		final String regex = "@[a-zA-Z\\d_-]+@";
+
+		final Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+		final Matcher matcher = pattern.matcher(endpointPath);
+
+		final ApiRequestAuditId requestId = testContext.getApiResponse().getRequestId();
+		assertThat(requestId).isNotNull();
+		final String resolvedEndpointPath = matcher.replaceAll(String.valueOf(requestId.getRepoId()));
+
+		testContext.setEndpointPath(resolvedEndpointPath);
+	}
+
+	private boolean isApiAuditRequestFound(@NonNull final ApiRequestAuditId apiRequestAuditId, @NonNull final String[] allowedStatuses)
 	{
 		return queryBL
 				.createQueryBuilder(I_API_Request_Audit.class)
-				.addEqualsFilter(I_API_Request_Audit.COLUMN_API_Request_Audit_ID, apiRequestAuditId.getValue())
+				.addEqualsFilter(I_API_Request_Audit.COLUMN_API_Request_Audit_ID, apiRequestAuditId)
 				.addInArrayFilter(I_API_Request_Audit.COLUMNNAME_Status, allowedStatuses)
 				.create()
 				.firstOnlyOptional(I_API_Request_Audit.class)
@@ -136,7 +152,7 @@ public class API_Request_Audit_StepDef
 
 	private void validateApiRequestAudit(@NonNull final DataTable table, @Nullable final Integer timeoutSec) throws InterruptedException
 	{
-		final JsonMetasfreshId requestId = testContext.getApiResponse().getRequestId();
+		final ApiRequestAuditId requestId = testContext.getApiResponse().getRequestId();
 		assertThat(requestId).isNotNull();
 
 		final Map<String, String> row = table.asMaps().get(0);
@@ -144,16 +160,16 @@ public class API_Request_Audit_StepDef
 		final String method = DataTableUtil.extractStringForColumnName(row, "Method");
 		final String path = DataTableUtil.extractStringForColumnName(row, "Path");
 		final String name = DataTableUtil.extractStringForColumnName(row, "AD_User.Name");
-		
+
 		final String statuses = DataTableUtil.extractStringForColumnName(row, "Status");
 		final String[] allowedStatuses = statuses.split(" *OR *");
-		
+
 		if (timeoutSec != null)
 		{
 			StepDefUtil.tryAndWait(timeoutSec, 500, () -> isApiAuditRequestFound(requestId, allowedStatuses));
 		}
 
-		final I_API_Request_Audit requestAuditRecord = InterfaceWrapperHelper.load(requestId.getValue(), I_API_Request_Audit.class);
+		final I_API_Request_Audit requestAuditRecord = InterfaceWrapperHelper.load(requestId, I_API_Request_Audit.class);
 
 		assertThat(requestAuditRecord).isNotNull();
 		assertThat(requestAuditRecord.getPath()).contains(path);

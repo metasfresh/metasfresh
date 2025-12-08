@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_BPartner_Product
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_BPartner_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1198950092L;
+	private static final long serialVersionUID = 1699736568L;
 
     /** Standard Constructor */
     public X_C_BPartner_Product (final Properties ctx, final int C_BPartner_Product_ID, @Nullable final String trxName)
@@ -117,6 +117,18 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	}
 
 	@Override
+	public void setEAN13_ProductCode (final @Nullable java.lang.String EAN13_ProductCode)
+	{
+		set_Value (COLUMNNAME_EAN13_ProductCode, EAN13_ProductCode);
+	}
+
+	@Override
+	public java.lang.String getEAN13_ProductCode() 
+	{
+		return get_ValueAsString(COLUMNNAME_EAN13_ProductCode);
+	}
+
+	@Override
 	public void setEAN_CU (final @Nullable java.lang.String EAN_CU)
 	{
 		set_Value (COLUMNNAME_EAN_CU, EAN_CU);
@@ -150,6 +162,18 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	public java.lang.String getExclusionFromSaleReason() 
 	{
 		return get_ValueAsString(COLUMNNAME_ExclusionFromSaleReason);
+	}
+
+	@Override
+	public void setFLO_Identifier (final @Nullable java.lang.String FLO_Identifier)
+	{
+		set_Value (COLUMNNAME_FLO_Identifier, FLO_Identifier);
+	}
+
+	@Override
+	public java.lang.String getFLO_Identifier()
+	{
+		return get_ValueAsString(COLUMNNAME_FLO_Identifier);
 	}
 
 	@Override
@@ -231,7 +255,7 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	}
 
 	@Override
-	public int getLeadTime() 
+	public int getLeadTime()
 	{
 		return get_ValueAsInt(COLUMNNAME_LeadTime);
 	}
@@ -243,7 +267,7 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	}
 
 	@Override
-	public java.lang.String getManufacturer() 
+	public java.lang.String getManufacturer()
 	{
 		return get_ValueAsString(COLUMNNAME_Manufacturer);
 	}
@@ -323,7 +347,7 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	}
 
 	@Override
-	public int getPicking_AgeTolerance_AfterMonths() 
+	public int getPicking_AgeTolerance_AfterMonths()
 	{
 		return get_ValueAsInt(COLUMNNAME_Picking_AgeTolerance_AfterMonths);
 	}
@@ -335,7 +359,7 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	}
 
 	@Override
-	public int getPicking_AgeTolerance_BeforeMonths() 
+	public int getPicking_AgeTolerance_BeforeMonths()
 	{
 		return get_ValueAsInt(COLUMNNAME_Picking_AgeTolerance_BeforeMonths);
 	}

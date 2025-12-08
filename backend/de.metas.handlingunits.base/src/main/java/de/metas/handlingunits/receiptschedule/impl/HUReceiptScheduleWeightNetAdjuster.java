@@ -169,7 +169,7 @@ public class HUReceiptScheduleWeightNetAdjuster
 		final Map<Integer, I_M_HU> huId2hu = new HashMap<>();
 		final String trxName = getInitialTrxName();
 
-		final List<I_M_ReceiptSchedule_Alloc> allocsAll = huReceiptScheduleDAO.retrieveHandlingUnitAllocations(receiptSchedule, trxName);
+		final List<I_M_ReceiptSchedule_Alloc> allocsAll = huReceiptScheduleDAO.retrieveAllHandlingUnitAllocations(receiptSchedule, trxName);
 		logger.debug("Found {} receipt schedule allocations", allocsAll.size());
 
 		for (final I_M_ReceiptSchedule_Alloc rsa : allocsAll)

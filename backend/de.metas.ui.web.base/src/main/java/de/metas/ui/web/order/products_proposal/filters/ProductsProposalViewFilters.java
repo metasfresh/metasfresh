@@ -57,7 +57,7 @@ public class ProductsProposalViewFilters
 				.setInlineRenderMode(DocumentFilterInlineRenderMode.INLINE_PARAMETERS)
 				.setDisplayName(getDefaultFilterCaption())
 				.addParameter(newParamDescriptor(ProductsProposalViewFilter.PARAM_ProductName)
-						.setWidgetType(DocumentFieldWidgetType.Text))
+						.widgetType(DocumentFieldWidgetType.Text))
 				.build();
 	}
 
@@ -69,8 +69,8 @@ public class ProductsProposalViewFilters
 	private static DocumentFilterParamDescriptor.Builder newParamDescriptor(final String fieldName)
 	{
 		return DocumentFilterParamDescriptor.builder()
-				.setFieldName(fieldName)
-				.setDisplayName(Services.get(IMsgBL.class).translatable(fieldName));
+				.fieldName(fieldName)
+				.displayName(Services.get(IMsgBL.class).translatable(fieldName));
 	}
 
 	public static ProductsProposalViewFilter extractPackageableViewFilterVO(@NonNull final JSONFilterViewRequest filterViewRequest)

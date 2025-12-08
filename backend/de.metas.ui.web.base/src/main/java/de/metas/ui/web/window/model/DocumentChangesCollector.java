@@ -1,22 +1,20 @@
 package de.metas.ui.web.window.model;
 
+import com.google.common.base.MoreObjects;
+import de.metas.ui.web.window.datatypes.DataTypes;
+import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.descriptor.DetailId;
+import de.metas.ui.web.window.model.DocumentChanges.IncludedDetailInfo;
+import de.metas.util.Check;
+import lombok.NonNull;
+import org.adempiere.ad.expression.api.LogicExpressionResult;
+
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
-
-import org.adempiere.ad.expression.api.LogicExpressionResult;
-
-import com.google.common.base.MoreObjects;
-
-import de.metas.printing.esb.base.util.Check;
-import de.metas.ui.web.window.datatypes.DataTypes;
-import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.descriptor.DetailId;
-import de.metas.ui.web.window.model.DocumentChanges.IncludedDetailInfo;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -42,7 +40,7 @@ import lombok.NonNull;
 
 public class DocumentChangesCollector implements IDocumentChangesCollector
 {
-	public static final DocumentChangesCollector newInstance()
+	public static DocumentChangesCollector newInstance()
 	{
 		return new DocumentChangesCollector();
 	}

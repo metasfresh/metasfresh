@@ -1,24 +1,11 @@
 package de.metas.shipper.gateway.derkurier.misc;
 
-import static de.metas.shipper.gateway.derkurier.DerKurierConstants.STREET_DELIMITER;
-
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
-import org.springframework.stereotype.Service;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
-
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.shipper.gateway.derkurier.DerKurierConstants;
 import de.metas.shipper.gateway.derkurier.DerKurierDeliveryData;
 import de.metas.shipper.gateway.derkurier.restapi.models.RequestParticipant;
@@ -36,6 +23,17 @@ import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import de.metas.util.StringUtils.TruncateAt;
 import lombok.NonNull;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Optional;
+
+import static de.metas.shipper.gateway.derkurier.DerKurierConstants.STREET_DELIMITER;
 
 /*
  * #%L
@@ -159,7 +157,7 @@ public class Converters
 							timeToString(derKurierDeliveryData.getDesiredTimeFrom()),
 							timeToString(derKurierDeliveryData.getDesiredTimeTo()),
 							intToString(posCounter),
-							intToString(deliveryPosition.getGrossWeightKg()),
+							bigDecimalToString(deliveryPosition.getGrossWeightKg()),
 							intToString(packageDimensions.map(PackageDimensions::getLengthInCM)),
 							intToString(packageDimensions.map(PackageDimensions::getWidthInCM)),
 							intToString(packageDimensions.map(PackageDimensions::getHeightInCM)),
@@ -238,6 +236,15 @@ public class Converters
 			return "";
 		}
 		return Integer.toString(integer);
+	}
+
+	private static String bigDecimalToString(@Nullable final BigDecimal bigDecimal)
+	{
+		if (bigDecimal == null)
+		{
+			return "";
+		}
+		return bigDecimal.toString();
 	}
 
 	private static String stringToString(@NonNull final Optional<String> string)

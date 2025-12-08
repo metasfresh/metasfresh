@@ -24,7 +24,6 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringService.TransactionMetadata;
 import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
@@ -33,12 +32,13 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
 import de.metas.process.PInstanceId;
+import de.metas.process.ProcessCalledFrom;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
-import de.metas.scheduler.AdSchedulerId;
 import de.metas.report.ReportResultData;
+import de.metas.scheduler.AdSchedulerId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.RoleId;
@@ -79,6 +79,7 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -128,7 +129,7 @@ public class Scheduler extends AdempiereServer
 		setSchedulerStatus(X_AD_Scheduler.STATUS_Started, null); // saveLogs=false
 	}	// Scheduler
 
-	private static final transient Logger log = LogManager.getLogger(Scheduler.class);
+	private static final Logger log = LogManager.getLogger(Scheduler.class);
 
 	/** The Concrete Model */
 	private final MScheduler m_model;
@@ -143,10 +144,14 @@ public class Scheduler extends AdempiereServer
 	private it.sauronsoftware.cron4j.Scheduler cronScheduler;
 	private Predictor predictor;
 
+	private static final String PERF_MON_SYSCONFIG_NAME = "de.metas.monitoring.scheduler.enable";
+	private static final boolean SYS_CONFIG_DEFAULT_VALUE = false;
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
 	/**
 	 * Sets AD_Scheduler.Status and save the record
 	 */
-	private void setSchedulerStatus(final String status, final PInstanceId pinstanceId)
+	private void setSchedulerStatus(final String status, @Nullable final PInstanceId pinstanceId)
 	{
 		Services.get(ITrxManager.class).runInNewTrx(new TrxRunnableAdapter()
 		{
@@ -197,17 +202,26 @@ public class Scheduler extends AdempiereServer
 	@Override
 	protected void doWork()
 	{
-		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
-				PerformanceMonitoringService.class,
-				NoopPerformanceMonitoringService.INSTANCE);
+		final boolean perfMonIsActive = sysConfigBL.getBooleanValue(PERF_MON_SYSCONFIG_NAME, SYS_CONFIG_DEFAULT_VALUE);
+		if(!perfMonIsActive)
+		{
+			doWork0();
+		}
+		else
+		{
+			final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+					PerformanceMonitoringService.class,
+					NoopPerformanceMonitoringService.INSTANCE);
 
-		service.monitorTransaction(
-				this::doWork0,
-				TransactionMetadata.builder()
-						.name("Scheduler - " + m_model.getName())
-						.type(Type.SCHEDULER)
-						.label("scheduler.name", m_model.getName())
-						.build());
+			service.monitor(
+					this::doWork0,
+					PerformanceMonitoringService.Metadata.builder()
+							.className("Scheduler")
+							.functionName("doWork")
+							.type(Type.SCHEDULER)
+							.label("scheduler.name", m_model.getName())
+							.build());
+		}
 	}
 
 	private void doWork0()
@@ -461,6 +475,7 @@ public class Scheduler extends AdempiereServer
 		final I_AD_Process adProcess = adScheduler.getAD_Process();
 
 		return ProcessInfo.builder()
+				.setProcessCalledFrom(ProcessCalledFrom.Scheduler)
 				.setCtx(schedulerCtx)
 				.setAD_Process(adProcess)
 				.addParameters(createProcessInfoParameters(schedulerCtx, adScheduler))
@@ -712,7 +727,7 @@ public class Scheduler extends AdempiereServer
 		}
 
 		final String cronPattern = m_model.getCronPattern();
-		if (cronPattern != null && cronPattern.trim().length() > 0 && SchedulingPattern.validate(cronPattern))
+		if (Check.isNotBlank(cronPattern) && SchedulingPattern.validate(cronPattern))
 		{
 			cronScheduler = new it.sauronsoftware.cron4j.Scheduler();
 			cronScheduler.schedule(cronPattern, () -> {

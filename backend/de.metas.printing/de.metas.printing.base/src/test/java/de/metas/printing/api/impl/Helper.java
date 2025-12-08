@@ -41,6 +41,7 @@ import de.metas.printing.model.validator.AD_Archive;
 import de.metas.printing.printingdata.PrintingDataFactory;
 import de.metas.printing.printingdata.PrintingDataToPDFFileStorer;
 import de.metas.printing.rpl.requesthandler.CreatePrintPackageRequestHandler;
+import de.metas.printing.spi.impl.ExternalSystemsPrintingNotifier;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -58,15 +59,15 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.TestClientUI;
 import org.apache.commons.collections4.IteratorUtils;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Session;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_Test;
 import org.compiere.util.Env;
 import org.compiere.util.Util;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.TestInfo;
-import org.junit.rules.TestName;
 
 import javax.annotation.Nullable;
 import javax.print.attribute.standard.MediaSize;
@@ -74,6 +75,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -144,11 +146,6 @@ public class Helper
 	private TestClientUI clientUI = null;
 	private PrintOutputFacade printOutputFacade;
 
-	public Helper(@NonNull final TestName testName)
-	{
-		this.testDisplayName = testName.getMethodName();
-	}
-
 	public Helper(@NonNull final TestInfo testInfo)
 	{
 		this.testDisplayName = testInfo.getDisplayName();
@@ -210,6 +207,8 @@ public class Helper
 		//
 		// Base Language
 		Language.setBaseLanguage(() -> "de_DE");
+
+		SpringContextHolder.registerJUnitBean(new ExternalSystemsPrintingNotifier(new ArrayList<>()));
 
 		printOutputFacade = new PrintOutputFacade(
 				new PrintingDataFactory(new HardwarePrinterRepository(), new ArchiveFileNameService()),
@@ -385,7 +384,7 @@ public class Helper
 							createHWName(trayName),
 							hwTrayNumber,
 							printerName,
-							trayName							);
+							trayName);
 				}
 				finally
 				{
@@ -517,7 +516,7 @@ public class Helper
 			@Nullable final Integer hwTrayNumber,
 			@NonNull final String printerName,
 			@Nullable final String trayName
-			)
+	)
 	{
 		final I_AD_Printer_Config printerConfig = printingDAO
 				.getLookupMap()
@@ -602,7 +601,7 @@ public class Helper
 	{
 		final String resourceName = "/document" + suffix + ".pdf";
 		final InputStream in = getClass().getResourceAsStream(resourceName);
-		Assert.assertNotNull("Resource not found: " + resourceName, in);
+		Assertions.assertNotNull(in, "Resource not found: " + resourceName);
 
 		return Util.readBytes(in);
 	}
@@ -643,7 +642,7 @@ public class Helper
 
 		final String msg = "Produced PDF is not valid for '" + testName + " (matching tolerance: " + PDFCOMPARE_MatchingPercent + ")."
 				+ " Please check " + fileExpected + " and " + fileActual + ".";
-		Assert.assertTrue(msg, equals);
+		Assertions.assertTrue(equals, msg);
 	}
 
 	/**

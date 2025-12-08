@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   ~ #%L
-  ~ de-metas-camel-externalsystems
+  ~ de-metas-camel-shopware6
   ~ %%
-  ~ Copyright (C) 2021 metas GmbH
+  ~ Copyright (C) 2025 metas GmbH
   ~ %%
   ~ This program is free software: you can redistribute it and/or modify
   ~ it under the terms of the GNU General Public License as
@@ -36,52 +36,6 @@
 
     <version>10.0.0</version>
 
-    <properties>
-        <java.version>14</java.version>
-        <spring-boot.version>2.3.1.RELEASE</spring-boot.version>
-        <camel.version>3.7.3</camel.version>
-        <!--
-            3.8.0 is currently the latest and greatest. Spring boot declares some 2.x version that
-            see http://docs.spring.io/spring-boot/docs/1.2.3.RELEASE/reference/htmlsingle/#howto-customize-dependency-versions-with-maven
-        -->
-        <assertj.version>3.19.0</assertj.version>
-        <metasfresh-common.version>10.0.0</metasfresh-common.version>
-        <jackson.version>2.12.1</jackson.version>
-    </properties>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-dependencies</artifactId>
-                <version>${spring-boot.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-
-            <dependency>
-                <groupId>org.apache.camel</groupId>
-                <artifactId>camel-bom</artifactId>
-                <version>${camel.version}</version>
-                <scope>import</scope>
-                <type>pom</type>
-            </dependency>
-
-            <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>${guava.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>org.assertj</groupId>
-                <artifactId>assertj-core</artifactId>
-                <scope>test</scope>
-                <version>${assertj.version}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -90,6 +44,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel.springboot</groupId>
+            <artifactId>camel-jcache-starter</artifactId>
+            <version>${camel.version}</version>
         </dependency>
 
         <!-- unit test -->
@@ -119,36 +78,19 @@
 
         <dependency>
             <groupId>org.apache.camel</groupId>
-            <artifactId>camel-spring-javaconfig</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.camel</groupId>
             <artifactId>camel-endpointdsl</artifactId>
         </dependency>
 
         <dependency>
+             <groupId>org.apache.geronimo</groupId>
+            <artifactId>geronimo-jcache-simple</artifactId>
+            <version>1.0.5</version>
+        </dependency>
+
+
+        <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-jackson</artifactId>
-        </dependency>
-
-
-        <dependency>
-            <groupId>org.apache.camel</groupId>
-            <artifactId>camel-jcache</artifactId>
-            <version>${camel.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>javax.cache</groupId>
-            <artifactId>cache-api</artifactId>
-            <version>1.0.0</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.hazelcast</groupId>
-            <artifactId>hazelcast</artifactId>
-            <version>3.9-EA</version>
         </dependency>
 
         <dependency>
@@ -173,6 +115,7 @@
             <groupId>de.metas.camel.externalsystems</groupId>
             <artifactId>de-metas-camel-externalsystems-common</artifactId>
             <version>10.0.0</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>de.metas.common.ordercandidates</groupId>

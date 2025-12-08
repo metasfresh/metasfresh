@@ -62,7 +62,7 @@ public class M_Element extends X_AD_Element
 		final String whereClause = "UPPER(ColumnName)=?";
 		M_Element retValue = new Query(ctx, M_Element.Table_Name, whereClause, ITrx.TRXNAME_None)
 				.setParameters(new Object[] { columnName.toUpperCase() })
-				.firstOnly();
+				.firstOnly(M_Element.class);
 		return retValue;
 	}    // get
 

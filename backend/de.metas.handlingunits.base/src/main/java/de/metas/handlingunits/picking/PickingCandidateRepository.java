@@ -10,6 +10,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.I_M_Picking_Candidate_IssueToOrder;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.api.PickingSlotId;
@@ -335,11 +336,11 @@ public class PickingCandidateRepository
 		InterfaceWrapperHelper.deleteAll(records);
 	}
 
-	public List<PickingCandidate> getByShipmentScheduleIdAndStatus(
-			@NonNull final ShipmentScheduleId shipmentScheduleId,
+	public List<PickingCandidate> getByScheduleIdAndStatus(
+			@NonNull final ShipmentScheduleAndJobScheduleId scheduleId,
 			@NonNull final PickingCandidateStatus status)
 	{
-		return getByShipmentScheduleIdsAndStatus(ImmutableSet.of(shipmentScheduleId), status);
+		return getByShipmentScheduleIdsAndStatus(ImmutableSet.of(scheduleId.getShipmentScheduleId()), status);
 	}
 
 	public List<PickingCandidate> getByShipmentScheduleIdsAndStatus(
@@ -375,12 +376,12 @@ public class PickingCandidateRepository
 
 	}
 
-	public boolean hasNotClosedCandidatesForPickingSlot(final PickingSlotId pickingSlotId)
+	public boolean hasDraftCandidatesForPickingSlot(final PickingSlotId pickingSlotId)
 	{
 		return queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Picking_Candidate.COLUMN_M_PickingSlot_ID, pickingSlotId)
-				.addNotEqualsFilter(I_M_Picking_Candidate.COLUMN_Status, PickingCandidateStatus.Closed.getCode())
+				.addEqualsFilter(I_M_Picking_Candidate.COLUMN_Status, PickingCandidateStatus.Draft)
 				.create()
 				.anyMatch();
 	}
@@ -437,8 +438,8 @@ public class PickingCandidateRepository
 		// Not Closed + Not Rack System Picking slots
 		if (pickingCandidatesQuery.isOnlyNotClosedOrNotRackSystem())
 		{
-			final IHUPickingSlotDAO huPickingSlotsRepo = Services.get(IHUPickingSlotDAO.class);
-			final Set<PickingSlotId> rackSystemPickingSlotIds = huPickingSlotsRepo.retrieveAllPickingSlotIdsWhichAreRackSystems();
+			final IPickingSlotDAO pickingSlotDAO = Services.get(IPickingSlotDAO.class);
+			final Set<PickingSlotId> rackSystemPickingSlotIds = pickingSlotDAO.getAllPickingSlotIdsWhichAreRackSystems();
 			queryBuilder.addCompositeQueryFilter()
 					.setJoinOr()
 					.addNotEqualsFilter(I_M_Picking_Candidate.COLUMN_Status, PickingCandidateStatus.Closed.getCode())
@@ -447,7 +448,7 @@ public class PickingCandidateRepository
 
 		//
 		// Only Picking Slots
-		if(!pickingCandidatesQuery.getOnlyPickingSlotIds().isEmpty())
+		if (!pickingCandidatesQuery.getOnlyPickingSlotIds().isEmpty())
 		{
 			queryBuilder.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_PickingSlot_ID, pickingCandidatesQuery.getOnlyPickingSlotIds());
 		}
@@ -510,6 +511,32 @@ public class PickingCandidateRepository
 				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_HU_ID, huId)
 				.create()
 				.anyMatch();
+	}
+
+	@NonNull
+	public ImmutableList<PickingCandidate> getDraftedByHuIdAndPickingSlotId(
+			@NonNull final ImmutableSet<HuId> huIds,
+			@Nullable final PickingSlotId pickingSlotId)
+	{
+		Check.assume(!huIds.isEmpty() || pickingSlotId != null, "At least one of HuIds and pickingSlotId must be set!");
+
+		final IQueryBuilder<I_M_Picking_Candidate> queryBuilder = queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_Status, PickingCandidateStatus.Draft);
+
+		if (!huIds.isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_M_Picking_Candidate.COLUMNNAME_M_HU_ID, huIds);
+		}
+		if (pickingSlotId != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Picking_Candidate.COLUMN_M_PickingSlot_ID, pickingSlotId);
+		}
+
+		return queryBuilder.create()
+				.stream()
+				.map(this::toPickingCandidate)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private Collector<I_M_Picking_Candidate, ?, ImmutableList<PickingCandidate>> toPickingCandidatesList()

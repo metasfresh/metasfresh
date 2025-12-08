@@ -1,10 +1,11 @@
 package de.metas.handlingunits.report;
 
-import java.util.List;
-import java.util.stream.Stream;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuUnitType;
+
+import java.util.List;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -34,7 +35,7 @@ public interface HUToReport
 
 	BPartnerId getBPartnerId();
 
-	String getHUUnitType();
+	HuUnitType getHUUnitType();
 
 	boolean isTopLevel();
 

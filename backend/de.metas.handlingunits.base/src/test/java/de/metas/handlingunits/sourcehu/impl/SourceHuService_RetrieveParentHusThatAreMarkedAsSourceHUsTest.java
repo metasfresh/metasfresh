@@ -8,8 +8,6 @@ import java.util.List;
 
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Before;
-import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 
@@ -19,6 +17,8 @@ import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L
@@ -46,7 +46,7 @@ public class SourceHuService_RetrieveParentHusThatAreMarkedAsSourceHUsTest
 {
 	private SourceHUsService sourceHuService;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

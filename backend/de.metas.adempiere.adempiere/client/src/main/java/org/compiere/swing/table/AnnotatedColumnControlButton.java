@@ -22,13 +22,12 @@ package org.compiere.swing.table;
  * #L%
  */
 
-
-import javax.swing.table.TableColumn;
-
 import org.compiere.util.DisplayType;
 import org.jdesktop.swingx.JXTable;
 import org.jdesktop.swingx.table.ColumnControlButton;
 import org.jdesktop.swingx.table.TableColumnExt;
+
+import javax.swing.table.TableColumn;
 
 class AnnotatedColumnControlButton extends ColumnControlButton
 {
@@ -63,7 +62,7 @@ class AnnotatedColumnControlButton extends ColumnControlButton
 
 		final TableColumnExt columnExt = (TableColumnExt)column;
 		final Object disableColumnControlObj = columnExt.getClientProperty(PROPERTY_DisableColumnControl);
-		if (DisplayType.toBoolean(disableColumnControlObj, false))
+		if (DisplayType.toBooleanNonNull(disableColumnControlObj, false))
 		{
 			return false;
 		}

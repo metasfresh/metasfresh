@@ -1,26 +1,27 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_BP_PrintFormat
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_C_BP_PrintFormat extends org.compiere.model.PO implements I_C_BP_PrintFormat, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1808408973L;
+	private static final long serialVersionUID = -670894029L;
 
     /** Standard Constructor */
-    public X_C_BP_PrintFormat (final Properties ctx, final int C_BP_PrintFormat_ID, final String trxName)
+    public X_C_BP_PrintFormat (final Properties ctx, final int C_BP_PrintFormat_ID, @Nullable final String trxName)
     {
       super (ctx, C_BP_PrintFormat_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_C_BP_PrintFormat (final Properties ctx, final ResultSet rs, final String trxName)
+    public X_C_BP_PrintFormat (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -28,6 +29,7 @@ public class X_C_BP_PrintFormat extends org.compiere.model.PO implements I_C_BP_
 
 	/** Load Meta Data */
 	@Override
+	@Nullable
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
@@ -118,6 +120,21 @@ public class X_C_BP_PrintFormat extends org.compiere.model.PO implements I_C_BP_
 	}
 
 	@Override
+	public void setC_BPartner_Location_ID (final int C_BPartner_Location_ID)
+	{
+		if (C_BPartner_Location_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_Location_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_Location_ID, C_BPartner_Location_ID);
+	}
+
+	@Override
+	public int getC_BPartner_Location_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
+	}
+
+	@Override
 	public void setC_BP_PrintFormat_ID (final int C_BP_PrintFormat_ID)
 	{
 		if (C_BP_PrintFormat_ID < 1) 
@@ -145,5 +162,29 @@ public class X_C_BP_PrintFormat extends org.compiere.model.PO implements I_C_BP_
 	public int getC_DocType_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocType_ID);
+	}
+
+	@Override
+	public void setDocumentCopies_Override (final int DocumentCopies_Override)
+	{
+		set_Value (COLUMNNAME_DocumentCopies_Override, DocumentCopies_Override);
+	}
+
+	@Override
+	public int getDocumentCopies_Override() 
+	{
+		return get_ValueAsInt(COLUMNNAME_DocumentCopies_Override);
+	}
+
+	@Override
+	public void setSeqNo (final int SeqNo)
+	{
+		set_Value (COLUMNNAME_SeqNo, SeqNo);
+	}
+
+	@Override
+	public int getSeqNo() 
+	{
+		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
 }

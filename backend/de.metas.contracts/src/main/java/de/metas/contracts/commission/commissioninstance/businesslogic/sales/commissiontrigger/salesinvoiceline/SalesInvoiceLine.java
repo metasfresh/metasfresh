@@ -1,7 +1,7 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline;
 
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
-import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.money.CurrencyId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -38,7 +38,7 @@ import java.time.Instant;
 public class SalesInvoiceLine
 {
 	@NonNull
-	InvoiceLineId id;
+	InvoiceAndLineId id;
 
 	@NonNull
 	ProductId productId;

@@ -4,6 +4,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import de.metas.business.BusinessTestHelper;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -36,6 +37,7 @@ class DDOrderMovePlanCreateCommandTest
 	// Services
 	HUTestHelper helper;
 	HUReservationService huReservationService;
+	DDOrderMoveScheduleRepository ddOrderMoveScheduleRepository;
 	IHandlingUnitsDAO handlingUnitsDAO;
 
 	//
@@ -52,6 +54,7 @@ class DDOrderMovePlanCreateCommandTest
 		helper = HUTestHelper.newInstanceOutOfTrx();
 		ddOrderLowLevelDAO = new DDOrderLowLevelDAO();
 		huReservationService = new HUReservationService(new HUReservationRepository());
+		ddOrderMoveScheduleRepository = new DDOrderMoveScheduleRepository();
 		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 		uomKg = BusinessTestHelper.createUOM("Kg", 3, 3);
@@ -107,6 +110,7 @@ class DDOrderMovePlanCreateCommandTest
 		return DDOrderMovePlanCreateCommand.builder()
 				.ddOrderLowLevelDAO(ddOrderLowLevelDAO)
 				.huReservationService(huReservationService)
+				.ddOrderMoveScheduleRepository(ddOrderMoveScheduleRepository)
 				.request(DDOrderMovePlanCreateRequest.builder()
 						.ddOrder(ddOrder)
 						.failIfNotFullAllocated(true)

@@ -55,7 +55,9 @@ public class C_Invoice_Candidate_RevokeApprovalForInvoicing extends C_Invoice_Ca
 		}
 
 		queryBuilder.addOnlyActiveRecordsFilter() // not processed
+				.addNotNull(I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID)
 				.addNotEqualsFilter(I_C_Invoice_Candidate.COLUMN_ApprovalForInvoicing, false) // not already rejected
+				.addFilter(getSelectionFilter())
 		;
 
 		// Only selected rows

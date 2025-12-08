@@ -1,19 +1,14 @@
 package de.metas.handlingunits.storage.impl;
 
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.model.I_M_HU_Storage;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.handlingunits.model.I_M_HU_Storage;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -25,12 +20,12 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -40,7 +35,7 @@ import de.metas.handlingunits.model.I_M_HU_Storage;
 public class AbstractHUStorageDAOTests
 {
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -48,7 +43,7 @@ public class AbstractHUStorageDAOTests
 
 	/**
 	 * Verifies that {@link AbstractHUStorageDAO#getC_UOMOrNull(java.util.List)} returns the storage's UOM if there is just a single storage.
-	 * 
+	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/1282
 	 */
 	@Test
@@ -63,14 +58,14 @@ public class AbstractHUStorageDAOTests
 		InterfaceWrapperHelper.save(storage);
 
 		final I_C_UOM result = new HUStorageDAO().getC_UOMOrNull(ImmutableList.of(storage));
-
-		assertThat(result, notNullValue());
-		assertThat(result, is(uom));
+		assertThat(result)
+				.isNotNull()
+				.isEqualTo(uom);
 	}
 
 	/**
 	 * Verifies that {@link AbstractHUStorageDAO#getC_UOMOrNull(java.util.List)} returns the storage's UOM if there are two storages with the same UOM.
-	 * 
+	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/1282
 	 */
 	@Test
@@ -90,13 +85,14 @@ public class AbstractHUStorageDAOTests
 
 		final I_C_UOM result = new HUStorageDAO().getC_UOMOrNull(ImmutableList.of(storage, storage2));
 
-		assertThat(result, notNullValue());
-		assertThat(result, is(uom));
+		assertThat(result)
+				.isNotNull()
+				.isEqualTo(uom);
 	}
 
 	/**
 	 * Verifies that {@link AbstractHUStorageDAO#getC_UOMOrNull(java.util.List)} returns the <b>first</b> storage's UOM if there are two storages with different UOMs that have the same UOMType.
-	 * 
+	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/1282
 	 */
 	@Test
@@ -118,13 +114,14 @@ public class AbstractHUStorageDAOTests
 
 		final I_C_UOM result = new HUStorageDAO().getC_UOMOrNull(ImmutableList.of(storage, storage2));
 
-		assertThat(result, notNullValue());
-		assertThat(result, is(uom));
+		assertThat(result)
+				.isNotNull()
+				.isEqualTo(uom);
 	}
 
 	/**
 	 * Verifies that {@link AbstractHUStorageDAO#getC_UOMOrNull(java.util.List)} returns {@code null} if there are two storages with different UOMs that have different UOMTypes.
-	 * 
+	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/1282
 	 */
 	@Test
@@ -145,12 +142,12 @@ public class AbstractHUStorageDAOTests
 		InterfaceWrapperHelper.save(storage2);
 
 		final I_C_UOM result = new HUStorageDAO().getC_UOMOrNull(ImmutableList.of(storage, storage2));
-		assertThat(result, nullValue());
+		assertThat(result).isNull();
 	}
 
 	/**
 	 * Verifies that {@link AbstractHUStorageDAO#getC_UOMOrNull(java.util.List)} returns {@code null} if there are two storages with different UOMs that both have no UOMType.
-	 * 
+	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/1282
 	 */
 	@Test
@@ -171,6 +168,6 @@ public class AbstractHUStorageDAOTests
 		InterfaceWrapperHelper.save(storage2);
 
 		final I_C_UOM result = new HUStorageDAO().getC_UOMOrNull(ImmutableList.of(storage, storage2));
-		assertThat(result, nullValue());
+		assertThat(result).isNull();
 	}
 }

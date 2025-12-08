@@ -16,6 +16,9 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for C_AcctSchema_GL
  *  @author Adempiere (generated) 
@@ -112,6 +115,32 @@ public interface I_C_AcctSchema_GL
     public static final org.adempiere.model.ModelColumn<I_C_AcctSchema_GL, org.compiere.model.I_C_AcctSchema> COLUMN_C_AcctSchema_ID = new org.adempiere.model.ModelColumn<I_C_AcctSchema_GL, org.compiere.model.I_C_AcctSchema>(I_C_AcctSchema_GL.class, "C_AcctSchema_ID", org.compiere.model.I_C_AcctSchema.class);
     /** Column name C_AcctSchema_ID */
     public static final String COLUMNNAME_C_AcctSchema_ID = "C_AcctSchema_ID";
+
+	/**
+	 * Set Cash Rounding Account.
+	 *
+	 * <br>Type: Account
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCashRounding_Acct (int CashRounding_Acct);
+
+	/**
+	 * Get Cash Rounding Account.
+	 *
+	 * <br>Type: Account
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCashRounding_Acct();
+
+	@Nullable
+	org.compiere.model.I_C_ValidCombination getCashRounding_A();
+
+	void setCashRounding_A(@Nullable org.compiere.model.I_C_ValidCombination CashRounding_A);
+
+	ModelColumn<I_C_AcctSchema_GL, I_C_ValidCombination> COLUMN_CashRounding_Acct = new ModelColumn<>(I_C_AcctSchema_GL.class, "CashRounding_Acct", org.compiere.model.I_C_ValidCombination.class);
+	String COLUMNNAME_CashRounding_Acct = "CashRounding_Acct";
 
 	/**
 	 * Set Commitment Offset.

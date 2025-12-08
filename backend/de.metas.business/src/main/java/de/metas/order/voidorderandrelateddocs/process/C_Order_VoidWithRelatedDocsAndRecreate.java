@@ -1,16 +1,8 @@
 package de.metas.order.voidorderandrelateddocs.process;
 
-import java.util.List;
-
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.ImmutablePair;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
-import org.compiere.model.I_C_Order;
-
 import com.google.common.collect.ImmutableList;
-
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.order.OrderId;
@@ -23,6 +15,12 @@ import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
+import org.compiere.model.I_C_Order;
+
+import java.util.List;
 
 /*
  * #%L

@@ -8,7 +8,6 @@ import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
 import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
 
 import javax.annotation.Nullable;
 import java.util.List;

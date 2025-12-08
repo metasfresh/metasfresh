@@ -1,14 +1,13 @@
 package de.metas.cache.model;
 
-import javax.annotation.Nullable;
-
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.ToString;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.PO;
 
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.ToString;
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -20,12 +19,12 @@ import lombok.ToString;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,22 +35,17 @@ import lombok.ToString;
 @ToString
 public class POCacheSourceModel implements ICacheSourceModel
 {
-	public static POCacheSourceModel of(final PO po)
-	{
-		return new POCacheSourceModel(po);
-	}
-
 	public static void setRootRecordReference(@NonNull final PO po, @Nullable final TableRecordReference rootRecordReference)
 	{
 		ATTR_RootRecordReference.setValue(po, rootRecordReference);
 	}
 
 	private static final ModelDynAttributeAccessor<PO, TableRecordReference> //
-	ATTR_RootRecordReference = new ModelDynAttributeAccessor<>(IModelCacheInvalidationService.class.getName(), "RootRecordReference", TableRecordReference.class);
+			ATTR_RootRecordReference = new ModelDynAttributeAccessor<>(ModelCacheInvalidationService.class.getName(), "RootRecordReference", TableRecordReference.class);
 
 	private final PO po;
 
-	private POCacheSourceModel(@NonNull final PO po)
+	POCacheSourceModel(@NonNull final PO po)
 	{
 		this.po = po;
 	}
@@ -78,5 +72,11 @@ public class POCacheSourceModel implements ICacheSourceModel
 	public Integer getValueAsInt(final String columnName, final Integer defaultValue)
 	{
 		return po.get_ValueAsInt(columnName, defaultValue);
+	}
+
+	@Override
+	public boolean isValueChanged(final String columnName)
+	{
+		return po.is_ValueChanged(columnName);
 	}
 }

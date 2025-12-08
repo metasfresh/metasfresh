@@ -10,6 +10,8 @@ import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerContactType;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationType;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.location.CountryId;
 import de.metas.location.LocationId;
@@ -21,8 +23,6 @@ import org.adempiere.ad.table.ComposedRecordId;
 import org.adempiere.ad.table.RecordChangeLog;
 import org.adempiere.ad.table.RecordChangeLogEntry;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_BankAccount;
@@ -154,6 +154,7 @@ final class ChangeLogUtil
 			.put(I_C_BPartner_Location.COLUMNNAME_EMail, BPartnerLocation.EMAIL)
 			.put(I_C_BPartner_Location.COLUMNNAME_Phone, BPartnerLocation.PHONE)
 			.put(I_C_BPartner_Location.COLUMNNAME_VisitorsAddress, BPartnerLocationType.VISITORS_ADDRESS)
+			.put(I_C_BPartner_Location.COLUMNNAME_VATaxID, BPartnerLocation.VAT_TAX_ID)
 
 			// C_Location is immutable and therefore individual C_Location records don't have a change log.
 			// However, when we load the change log records of C_BPartner_Location,
@@ -187,6 +188,11 @@ final class ChangeLogUtil
 			.put(I_C_BP_BankAccount.COLUMNNAME_IBAN, BPartnerBankAccount.IBAN)
 			.put(I_C_BP_BankAccount.COLUMNNAME_C_Currency_ID, BPartnerBankAccount.CURRENCY_ID)
 			.put(I_C_BP_BankAccount.COLUMNNAME_IsActive, BPartnerBankAccount.ACTIVE)
+			.put(I_C_BP_BankAccount.COLUMNNAME_A_Name, BPartnerBankAccount.ACCOUNT_NAME)
+			.put(I_C_BP_BankAccount.COLUMNNAME_A_Street, BPartnerBankAccount.ACCOUNT_STREET)
+			.put(I_C_BP_BankAccount.COLUMNNAME_A_Zip, BPartnerBankAccount.ACCOUNT_ZIP)
+			.put(I_C_BP_BankAccount.COLUMNNAME_A_City, BPartnerBankAccount.ACCOUNT_CITY)
+			.put(I_C_BP_BankAccount.COLUMNNAME_A_Country, BPartnerBankAccount.ACCOUNT_COUNTRY)
 			.build();
 
 	public static RecordChangeLog createBPartnerChangeLog(

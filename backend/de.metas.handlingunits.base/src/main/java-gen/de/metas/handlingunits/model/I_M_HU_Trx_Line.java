@@ -74,28 +74,6 @@ public interface I_M_HU_Trx_Line
 	String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
 
 	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -121,6 +99,28 @@ public interface I_M_HU_Trx_Line
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
 	 * Set Date.
 	 * Transaction Date
 	 *
@@ -144,7 +144,7 @@ public interface I_M_HU_Trx_Line
 	String COLUMNNAME_DateTrx = "DateTrx";
 
 	/**
-	 * Set Gebinde Status.
+	 * Set Packing Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -153,7 +153,7 @@ public interface I_M_HU_Trx_Line
 	void setHUStatus (@Nullable java.lang.String HUStatus);
 
 	/**
-	 * Get Gebinde Status.
+	 * Get Packing Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -263,7 +263,7 @@ public interface I_M_HU_Trx_Line
 	String COLUMNNAME_M_HU_Trx_Hdr_ID = "M_HU_Trx_Hdr_ID";
 
 	/**
-	 * Set HU Transaction Line.
+	 * Set Transaction Line HU.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -272,7 +272,7 @@ public interface I_M_HU_Trx_Line
 	void setM_HU_Trx_Line_ID (int M_HU_Trx_Line_ID);
 
 	/**
-	 * Get HU Transaction Line.
+	 * Get Transaction Line HU.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -328,7 +328,7 @@ public interface I_M_HU_Trx_Line
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set Eltern-Transaktionszeile.
+	 * Set Parent Line.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -337,7 +337,7 @@ public interface I_M_HU_Trx_Line
 	void setParent_HU_Trx_Line_ID (int Parent_HU_Trx_Line_ID);
 
 	/**
-	 * Get Eltern-Transaktionszeile.
+	 * Get Parent Line.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -420,7 +420,7 @@ public interface I_M_HU_Trx_Line
 	String COLUMNNAME_Record_ID = "Record_ID";
 
 	/**
-	 * Set Storno-Zeile.
+	 * Set Reverse Line.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -429,7 +429,7 @@ public interface I_M_HU_Trx_Line
 	void setReversalLine_ID (int ReversalLine_ID);
 
 	/**
-	 * Get Storno-Zeile.
+	 * Get Reverse Line.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false

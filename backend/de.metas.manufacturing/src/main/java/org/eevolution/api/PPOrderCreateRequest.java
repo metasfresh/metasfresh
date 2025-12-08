@@ -3,6 +3,7 @@ package org.eevolution.api;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.planning.ProductPlanningId;
@@ -56,6 +57,7 @@ public class PPOrderCreateRequest
 	@Nullable ProductPlanningId productPlanningId;
 	@Nullable MaterialDispoGroupId materialDispoGroupId;
 	@NonNull ResourceId plantId;
+	@Nullable ResourceId workstationId;
 	@NonNull WarehouseId warehouseId;
 	@Nullable UserId plannerId;
 
@@ -76,6 +78,9 @@ public class PPOrderCreateRequest
 
 	@Nullable Boolean completeDocument;
 
+	@Nullable
+	HUPIItemProductId packingMaterialId;
+
 	@Builder(toBuilder = true)
 	PPOrderCreateRequest(
 			@Nullable final PPOrderDocBaseType docBaseType,
@@ -83,6 +88,7 @@ public class PPOrderCreateRequest
 			@Nullable final ProductPlanningId productPlanningId,
 			@Nullable final MaterialDispoGroupId materialDispoGroupId,
 			@NonNull final ResourceId plantId,
+			@Nullable final ResourceId workstationId,
 			@NonNull final WarehouseId warehouseId,
 			@Nullable final UserId plannerId,
 			//
@@ -102,7 +108,8 @@ public class PPOrderCreateRequest
 			@Nullable final BPartnerId customerId,
 			@Nullable final ProjectId projectId,
 			//
-			@Nullable final Boolean completeDocument)
+			@Nullable final Boolean completeDocument,
+			@Nullable final HUPIItemProductId packingMaterialId)
 	{
 		Check.assume(!qtyRequired.isZero(), "qtyRequired shall not be zero");
 
@@ -111,6 +118,7 @@ public class PPOrderCreateRequest
 		this.productPlanningId = productPlanningId;
 		this.materialDispoGroupId = materialDispoGroupId;
 		this.plantId = plantId;
+		this.workstationId = workstationId;
 		this.warehouseId = warehouseId;
 		this.plannerId = plannerId;
 
@@ -131,6 +139,7 @@ public class PPOrderCreateRequest
 		this.projectId = projectId;
 
 		this.completeDocument = completeDocument;
+		this.packingMaterialId = packingMaterialId;
 	}
 
 	@JsonPOJOBuilder(withPrefix = "")

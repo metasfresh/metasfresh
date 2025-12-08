@@ -96,29 +96,6 @@ public interface I_M_ShipperTransportation
 	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
 	/**
-	 * Set Sammelrechnung erstellen.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCollectiveBillReport(java.lang.String CollectiveBillReport);
-
-	/**
-	 * Get Sammelrechnung erstellen.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getCollectiveBillReport();
-
-	/** Column definition for CollectiveBillReport */
-	org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object> COLUMN_CollectiveBillReport = new org.adempiere.model.ModelColumn<I_M_ShipperTransportation, Object>(I_M_ShipperTransportation.class, "CollectiveBillReport", null);
-	/** Column name CollectiveBillReport */
-	String COLUMNNAME_CollectiveBillReport = "CollectiveBillReport";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -231,7 +208,7 @@ public interface I_M_ShipperTransportation
 
 	/**
 	 * Set Process Batch.
-	 * The targeted status of the document
+	 * Der zukünftige Status des Belegs
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -241,7 +218,7 @@ public interface I_M_ShipperTransportation
 
 	/**
 	 * Get Process Batch.
-	 * The targeted status of the document
+	 * Der zukünftige Status des Belegs
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -343,6 +320,29 @@ public interface I_M_ShipperTransportation
 	String COLUMNNAME_IsApproved = "IsApproved";
 
 	/**
+	 * Set Sales Transaction.
+	 * This is a Sales Transaction
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSOTrx (boolean IsSOTrx);
+
+	/**
+	 * Get Sales Transaction.
+	 * This is a Sales Transaction
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSOTrx();
+
+	ModelColumn<I_M_ShipperTransportation, Object> COLUMN_IsSOTrx = new ModelColumn<>(I_M_ShipperTransportation.class, "IsSOTrx", null);
+	String COLUMNNAME_IsSOTrx = "IsSOTrx";
+
+	/**
 	 * Set Shipper.
 	 * Method or manner of product delivery
 	 *
@@ -433,8 +433,8 @@ public interface I_M_ShipperTransportation
 	String COLUMNNAME_PackageNetTotal = "PackageNetTotal";
 
 	/**
-	 * Set Package Weight.
-	 * Weight of a package
+	 * Set Weight.
+	 * Weight of a package calculation can be changed via system config "de.metas.shipping.WeightSourceTypes"
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -443,8 +443,8 @@ public interface I_M_ShipperTransportation
 	void setPackageWeight (@Nullable BigDecimal PackageWeight);
 
 	/**
-	 * Get Package Weight.
-	 * Weight of a package
+	 * Get Weight.
+	 * Weight of a package calculation can be changed via system config "de.metas.shipping.WeightSourceTypes"
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false

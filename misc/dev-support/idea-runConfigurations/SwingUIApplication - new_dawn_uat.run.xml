@@ -1,0 +1,46 @@
+<!--
+  ~ #%L
+  ~ master
+  ~ %%
+  ~ Copyright (C) 2024 metas GmbH
+  ~ %%
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as
+  ~ published by the Free Software Foundation, either version 2 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public
+  ~ License along with this program. If not, see
+  ~ <http://www.gnu.org/licenses/gpl-2.0.html>.
+  ~ #L%
+  -->
+
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="SwingUIApplication - new_dawn_uat" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" folderName="new_dawn_uat" singleton="false">
+    <module name="metasfresh-dist-swingui" />
+    <option name="PROGRAM_PARAMETERS" value="--debug" />
+    <option name="SHORTEN_COMMAND_LINE" value="MANIFEST" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="de.metas.SwingUIApplication" />
+    <option name="VM_PARAMETERS" value="-DTraceFile=true -Xms256M -Xmx736M -Dorg.compiere.db.DB_PostgreSQL.UseNativeConverter=true -Djava.util.Arrays.useLegacyMergeSort=true -DPropertyFile=$ProjectFileDir$/metasfresh.properties -Dorg.adempiere.client.lang=en_US" />
+    <option name="WORKING_DIRECTORY" value="file://$MODULE_WORKING_DIR$" />
+    <extension name="net.ashald.envfile">
+      <option name="IS_ENABLED" value="true" />
+      <option name="IS_SUBST" value="true" />
+      <option name="IS_PATH_MACRO_SUPPORTED" value="true" />
+      <option name="IS_IGNORE_MISSING_FILES" value="false" />
+      <option name="IS_ENABLE_EXPERIMENTAL_INTEGRATIONS" value="false" />
+      <ENTRIES>
+        <ENTRY IS_ENABLED="true" PARSER="runconfig" IS_EXECUTABLE="false" />
+        <ENTRY IS_ENABLED="true" PARSER="env" IS_EXECUTABLE="false" PATH="metasfresh/misc/dev-support/docker/infrastructure/env-files/new_dawn_uat.env" />
+      </ENTRIES>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

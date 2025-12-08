@@ -6,7 +6,7 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.sales.comm
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoicecandidate.SalesInvoiceCandidateDocumentId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline.SalesInvoiceLineDocumentId;
 import de.metas.contracts.commission.model.I_C_Commission_Instance;
-import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.order.OrderLineId;
 import lombok.NonNull;
@@ -44,9 +44,9 @@ public class CommissionInstanceRepoTools
 			case InvoiceCandidate:
 				return new SalesInvoiceCandidateDocumentId(InvoiceCandidateId.ofRepoId(instanceRecord.getC_Invoice_Candidate_ID()));
 			case SalesInvoice:
-				return new SalesInvoiceLineDocumentId(InvoiceLineId.ofRepoId(instanceRecord.getC_Invoice_ID(), instanceRecord.getC_InvoiceLine_ID()));
+				return new SalesInvoiceLineDocumentId(InvoiceAndLineId.ofRepoId(instanceRecord.getC_Invoice_ID(), instanceRecord.getC_InvoiceLine_ID()));
 			case SalesCreditmemo:
-				return new SalesInvoiceLineDocumentId(InvoiceLineId.ofRepoId(instanceRecord.getC_Invoice_ID(), instanceRecord.getC_InvoiceLine_ID()));
+				return new SalesInvoiceLineDocumentId(InvoiceAndLineId.ofRepoId(instanceRecord.getC_Invoice_ID(), instanceRecord.getC_InvoiceLine_ID()));
 			case MediatedOrder:
 				return new MediatedOrderLineDocId(OrderLineId.ofRepoId(instanceRecord.getC_OrderLine_ID()));
 			default:

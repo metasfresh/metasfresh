@@ -1,0 +1,30 @@
+.pos-journal-open-panel {
+  .modal-card{
+    .modal-card-body{
+      
+      .line {
+        padding: 15px;
+        font-size: 2rem;
+
+        .caption {
+
+        }
+
+        .field {
+          input {
+            font-size: 2rem;
+            width: 100%;
+            height: 100%;
+          }
+
+          textarea {
+            font-size: 2rem;
+            width: 100%;
+            height: 100%;
+          }
+        }
+      }
+
+    }
+  }
+}

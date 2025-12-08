@@ -3,14 +3,14 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { connect } from 'react-redux';
 
-import { getTableId, getTable } from '../../reducers/tables';
+import { getTable, getTableId } from '../../reducers/tables';
 import { updateTableRowProperty } from '../../actions/TableActions';
 import {
+  allowShortcut,
+  disableShortcut,
   openModal,
   patch,
   updatePropertyValue,
-  allowShortcut,
-  disableShortcut,
 } from '../../actions/WindowActions';
 
 import WidgetTooltip from '../widget/WidgetTooltip';
@@ -56,14 +56,7 @@ class EntryTable extends PureComponent {
     });
   };
 
-  /**
-   * @method renderElements
-   * @summary ToDo: Describe the method
-   * @param {*} elements
-   * @param {*} columnsCount
-   * @todo Write the documentation
-   */
-  renderElements = (elements, columnsCount) => {
+  renderRow = (rowLayout) => {
     const {
       data,
       rows,
@@ -84,11 +77,12 @@ class EntryTable extends PureComponent {
     } = this.props;
     const { tooltipToggled } = this.state;
     const renderedArray = [];
+    const columnsCount = rowLayout.colsCount ?? rowLayout.cols.length;
     const colWidth = Math.floor(12 / columnsCount);
 
     if (rows.length) {
-      for (let i = 0; i < columnsCount; i += 1) {
-        const elem = elements.cols[i];
+      for (let i = 0; i < columnsCount && i < rowLayout.cols.length; i++) {
+        const elem = rowLayout.cols[i];
 
         if (elem && elem.fields && elem.fields.length) {
           const fieldName = elem.fields ? elem.fields[0].field : '';
@@ -170,15 +164,15 @@ class EntryTable extends PureComponent {
   };
 
   render() {
-    const { columns } = this.props;
+    const { rowsLayout } = this.props;
 
     return (
       <table className="table js-table layout-fix">
         <tbody>
-          {columns.map((cols, idx) => {
+          {rowsLayout.map((rowLayout, idx) => {
             return (
               <tr className="table-context" key={`entry-row-${idx}`}>
-                {this.renderElements(cols, cols.colsCount)}
+                {this.renderRow(rowLayout)}
               </tr>
             );
           })}
@@ -189,7 +183,7 @@ class EntryTable extends PureComponent {
 }
 
 EntryTable.propTypes = {
-  columns: PropTypes.array.isRequired,
+  rowsLayout: PropTypes.array.isRequired,
   rows: PropTypes.array.isRequired,
   windowId: PropTypes.string.isRequired,
   documentId: PropTypes.string,

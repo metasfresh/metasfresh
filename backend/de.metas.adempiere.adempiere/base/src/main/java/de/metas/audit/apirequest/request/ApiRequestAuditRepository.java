@@ -27,13 +27,15 @@ import de.metas.audit.apirequest.config.ApiAuditConfigId;
 import de.metas.audit.request.ApiRequestIterator;
 import de.metas.audit.request.ApiRequestQuery;
 import de.metas.organization.OrgId;
+import de.metas.process.PInstanceId;
 import de.metas.security.RoleId;
+import de.metas.ui_trace.UITraceExternalId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy;
+import org.adempiere.ad.dao.IQueryOrderByBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.IQuery;
@@ -72,6 +74,8 @@ public class ApiRequestAuditRepository
 		record.setTime(TimeUtil.asTimestamp(apiRequestAudit.getTime()));
 		record.setHttpHeaders(apiRequestAudit.getHttpHeaders());
 		record.setRequestURI(apiRequestAudit.getRequestURI());
+		record.setUI_Trace_ExternalId(apiRequestAudit.getUiTraceExternalId() != null ? apiRequestAudit.getUiTraceExternalId().getAsString() : null);
+		record.setAD_PInstance_ID(PInstanceId.toRepoId(apiRequestAudit.getPInstanceId()));
 
 		saveRecord(record);
 
@@ -99,14 +103,16 @@ public class ApiRequestAuditRepository
 
 		final IQuery<I_API_Request_Audit> apiRequestAuditQuery = apiRequestQueryBuilder.create();
 
+		final IQueryOrderByBuilder<I_API_Request_Audit> orderBy = queryBL.createQueryOrderByBuilder(I_API_Request_Audit.class);
 		if (query.isOrderByTimeAscending())
 		{
-			final IQueryOrderBy orderBy = queryBL.createQueryOrderByBuilder(I_API_Request_Audit.class)
-					.addColumnAscending(I_API_Request_Audit.COLUMNNAME_Time)
-					.createQueryOrderBy();
-
-			apiRequestAuditQuery.setOrderBy(orderBy);
+			orderBy.addColumnAscending(I_API_Request_Audit.COLUMNNAME_Time);
 		}
+		else
+		{
+			orderBy.addColumnAscending(I_API_Request_Audit.COLUMNNAME_API_Request_Audit_ID);
+		}
+		apiRequestAuditQuery.setOrderBy(orderBy.createQueryOrderBy());
 
 		final int bufferSize = sysConfigBL.getIntValue(SYS_CONFIG_ITERATOR_BUFFER_SIZE, -1);
 		if (bufferSize > 0)
@@ -145,6 +151,7 @@ public class ApiRequestAuditRepository
 				.time(TimeUtil.asInstantNonNull(record.getTime()))
 				.httpHeaders(record.getHttpHeaders())
 				.requestURI(record.getRequestURI())
+				.uiTraceExternalId(UITraceExternalId.ofNullableString(record.getUI_Trace_ExternalId()))
 				.build();
 	}
 }

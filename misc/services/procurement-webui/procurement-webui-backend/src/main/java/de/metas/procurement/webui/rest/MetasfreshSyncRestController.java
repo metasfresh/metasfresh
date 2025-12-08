@@ -97,6 +97,10 @@ public class MetasfreshSyncRestController
 		senderToMetasfreshService.requestFromMetasfreshAllMasterdataAsync();
 	}
 
+	/**
+	 * @param dateFromStr inclusive (>=). Value e.g. {@link 2025-02-11}.
+	 * @param dateToStr also inclusive (<=). Value e.g. {@link 2025-02-11}.
+	 */
 	@GetMapping("/pushReports")
 	public void pushReports(
 			@RequestHeader("apiKey") final String apiKey,

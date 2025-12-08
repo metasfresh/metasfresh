@@ -4,9 +4,10 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService.SaveResult;
+import de.metas.material.dispo.commons.repository.CandidateSaveResult;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
 import de.metas.material.event.PostMaterialEventService;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.function.Function;
 
 /*
  * #%L
@@ -45,7 +47,6 @@ import java.util.Collection;
  * This handler might create a {@link SupplyRequiredEvent}, but does not decrease the protected stock quantity.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Service
 @Profile(Profiles.PROFILE_MaterialDispo)
@@ -75,7 +76,7 @@ public class StockUpCandiateHandler implements CandidateHandler
 	}
 
 	@Override
-	public Candidate onCandidateNewOrChange(
+	public CandidateSaveResult onCandidateNewOrChange(
 			@NonNull final Candidate candidate,
 			@NonNull final OnNewOrChangeAdvise advise)
 	{
@@ -88,13 +89,14 @@ public class StockUpCandiateHandler implements CandidateHandler
 
 		assertCorrectCandidateType(candidate);
 
-		final SaveResult candidateSaveResult = candidateRepositoryWriteService
-				.addOrUpdateOverwriteStoredSeqNo(candidate);
-		final Candidate candidateWithQtyDeltaAndId = candidateSaveResult.toCandidateWithQtyDelta();
+		final CandidateSaveResult candidateSaveResult = candidateRepositoryWriteService.addOrUpdateOverwriteStoredSeqNo(candidate);
+		//final Candidate candidateWithQtyDeltaAndId = candidateSaveResult.toCandidateWithQtyDelta();
 
 		if (!candidateSaveResult.isQtyChanged() && !candidateSaveResult.isDateChanged())
 		{
-			return candidateWithQtyDeltaAndId; // this candidate didn't change anything
+			// this candidate didn't change anything
+			//return candidateWithQtyDeltaAndId;
+			return candidateSaveResult;
 		}
 
 		final AvailableToPromiseMultiQuery query = AvailableToPromiseMultiQuery.forDescriptorAndAllPossibleBPartnerIds(candidate.getMaterialDescriptor());
@@ -106,12 +108,13 @@ public class StockUpCandiateHandler implements CandidateHandler
 
 		if (requiredAdditionalQty.signum() > 0)
 		{
-			final SupplyRequiredEvent supplyRequiredEvent = SupplyRequiredEventCreator //
-					.createSupplyRequiredEvent(candidateWithQtyDeltaAndId, requiredAdditionalQty, null);
-			materialEventService.postEventAsync(supplyRequiredEvent);
+			final Candidate candidateWithQtyDeltaAndId = candidateSaveResult.toCandidateWithQtyDelta();
+			final SupplyRequiredEvent supplyRequiredEvent = SupplyRequiredEventCreator.createSupplyRequiredEvent(candidateWithQtyDeltaAndId, requiredAdditionalQty, null);
+			materialEventService.enqueueEventAfterNextCommit(supplyRequiredEvent); // want to avoid the situation that some response comes back before the data here was even committed to DB
 		}
 
-		return candidateWithQtyDeltaAndId;
+		//return candidateWithQtyDeltaAndId;
+		return candidateSaveResult;
 	}
 
 	@Override
@@ -119,13 +122,14 @@ public class StockUpCandiateHandler implements CandidateHandler
 	{
 		assertCorrectCandidateType(candidate);
 
-		candidateRepositoryWriteService.deleteCandidatebyId(candidate.getId());
+		final Function<CandidateId, CandidateRepositoryWriteService.DeleteResult> deleteCandidateFunc = CandidateHandlerUtil.getDeleteFunction(candidate.getBusinessCase(), candidateRepositoryWriteService);
+		deleteCandidateFunc.apply(candidate.getId());
 	}
 
 	private void assertCorrectCandidateType(@NonNull final Candidate candidate)
 	{
 		Preconditions.checkArgument(candidate.getType() == CandidateType.STOCK_UP,
-				"Given parameter 'candidate' has type=%s; demandCandidate=%s",
-				candidate.getType(), candidate);
+									"Given parameter 'candidate' has type=%s; demandCandidate=%s",
+									candidate.getType(), candidate);
 	}
 }

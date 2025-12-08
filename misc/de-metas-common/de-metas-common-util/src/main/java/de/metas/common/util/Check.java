@@ -2,7 +2,7 @@
  * #%L
  * de-metas-common-util
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,6 +23,7 @@
 package de.metas.common.util;
 
 import lombok.NonNull;
+import org.jetbrains.annotations.Contract;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -243,6 +244,7 @@ public final class Check
 	 * @param params            message parameters (@see {@link MessageFormat})
 	 * @see #assume(boolean, String, Object...)
 	 */
+	@Contract("null, _, _ -> fail")
 	@NonNull
 	public static <T> T assumeNotNull(@Nullable final T object, final String assumptionMessage, final Object... params)
 	{
@@ -252,6 +254,7 @@ public final class Check
 	/**
 	 * Like {@link #assumeNotNull(Object, String, Object...)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in {@link #setDefaultExClass(Class)}.
 	 */
+	@Contract("null, _, _, _ -> fail")
 	@NonNull
 	public static <T> T assumeNotNull(@Nullable final T object, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
 	{
@@ -299,6 +302,7 @@ public final class Check
 	 * @see #assume(boolean, String, Object...)
 	 * @see #isEmpty(String, boolean)
 	 */
+	@NonNull
 	public static String assumeNotEmpty(@Nullable final String str, final String assumptionMessage, final Object... params)
 	{
 		return assumeNotEmpty(str, defaultExClazz, assumptionMessage, params);
@@ -311,6 +315,7 @@ public final class Check
 	 * <p>
 	 * Also see {@link ExceptionWithOwnHeaderMessage}
 	 */
+	@NonNull
 	public static String assumeNotEmpty(@Nullable final String str, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
 	{
 		final boolean trimWhitespaces = true;
@@ -327,7 +332,7 @@ public final class Check
 	 * @param params            message parameters (@see {@link MessageFormat})
 	 * @see #assume(boolean, String, Object...)
 	 */
-	public static <T extends Collection<? extends Object>> T assumeNotEmpty(
+	public static <T extends Collection<?>> T assumeNotEmpty(
 			final T collection,
 			final String assumptionMessage,
 			final Object... params)
@@ -585,6 +590,7 @@ public final class Check
 	/**
 	 * @return return true if the string is null, has length 0, or contains only whitespace.
 	 */
+	@Contract("null -> true")
 	public static boolean isBlank(@Nullable final String str)
 	{
 		return EmptyUtil.isBlank(str);
@@ -605,6 +611,7 @@ public final class Check
 	 * @param trimWhitespaces trim whitespaces
 	 * @return true if >= 1 char
 	 */
+	@Contract("null, _ ->true")
 	public static boolean isEmpty(@Nullable final String str, final boolean trimWhitespaces)
 	{
 		return EmptyUtil.isEmpty(str, trimWhitespaces);

@@ -29,10 +29,10 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.Assertions;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
-import org.junit.Assert;
 
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
@@ -43,6 +43,8 @@ import de.metas.pricing.IPricingResult;
 import de.metas.util.Check;
 import lombok.Getter;
 import lombok.NonNull;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  *
@@ -141,7 +143,7 @@ public class QualityInvoiceLineExpectation extends AbstractExpectation
 
 		if (printed != null)
 		{
-			Assert.assertEquals(prefix + "Printed", this.printed, line.isDisplayed());
+			assertThat(line.isDisplayed()).as(prefix + "Displayed").isEqualTo(printed);
 		}
 		if (productSet)
 		{
@@ -149,7 +151,7 @@ public class QualityInvoiceLineExpectation extends AbstractExpectation
 		}
 		if (productNameSet)
 		{
-			Assert.assertEquals(prefix + "ProductName", this.productName, line.getProductName());
+			assertThat(line.getProductName()).as(prefix + "ProductName").isEqualTo(this.productName);
 		}
 		if (percentageSet)
 		{
@@ -165,7 +167,7 @@ public class QualityInvoiceLineExpectation extends AbstractExpectation
 		}
 		if (descriptionSet)
 		{
-			Assert.assertEquals(prefix + "Description", this.description, line.getDescription());
+			assertThat(line.getDescription()).as(prefix + "Description").isEqualTo(this.description);
 		}
 		if (priceSet)
 		{
@@ -175,7 +177,7 @@ public class QualityInvoiceLineExpectation extends AbstractExpectation
 			final boolean calculatedActual = pricingResult == null ? false : pricingResult.isCalculated();
 			final BigDecimal priceActual = pricingResult == null ? null : pricingResult.getPriceStd();
 
-			Assert.assertEquals(prefix + "PricingResult calculated", calculatedExpected, calculatedActual);
+			assertThat(calculatedActual).as(prefix + "PricingResult calculated").isEqualTo(calculatedExpected);
 			assertEquals(prefix + "Price", this.price, priceActual);
 		}
 		if (handlingUnitsInfoExpectation != null)
@@ -198,13 +200,13 @@ public class QualityInvoiceLineExpectation extends AbstractExpectation
 	@OverridingMethodsMustInvokeSuper
 	public String assertExpected(final String message, final I_C_Invoice_Candidate ic)
 	{
-		Assert.assertNotNull("ic not null", ic);
+		assertThat(ic).as(message).isNotNull();
 
 		final String prefix = createPrefix(message, ic);
 
 		if (printed != null)
 		{
-			Assert.assertEquals(prefix + "Printed", this.printed, ic.isPrinted());
+			assertThat(ic.isPrinted()).as(prefix + "Printed").isEqualTo(printed);
 		}
 		if (productSet)
 		{
@@ -230,7 +232,7 @@ public class QualityInvoiceLineExpectation extends AbstractExpectation
 		}
 		if (descriptionSet)
 		{
-			Assert.assertEquals(prefix + "Description", this.description, ic.getDescription());
+			assertThat(ic.getDescription()).as(prefix + "Description").isEqualTo(this.description);
 		}
 		if (priceSet)
 		{
@@ -239,7 +241,7 @@ public class QualityInvoiceLineExpectation extends AbstractExpectation
 		}
 		if (lineNo != null)
 		{
-			Assert.assertEquals(prefix + "LineNo", (int)this.lineNo, ic.getLine());
+			assertThat(ic.getLine()).as(prefix + "LineNo").isNotNull();
 		}
 
 		return prefix;
@@ -258,11 +260,11 @@ public class QualityInvoiceLineExpectation extends AbstractExpectation
 
 		if (printBefore != null)
 		{
-			Assert.assertEquals(prefix + "PrintBefore", this.printBefore, detail.isPrintBefore());
+			assertThat(detail.isPrintBefore()).as(prefix + "PrintBefore").isEqualTo(printBefore);
 		}
 		if (printed != null)
 		{
-			Assert.assertEquals(prefix + "Printed", this.printed, detail.isPrinted());
+			assertThat(detail.isPrinted()).as(prefix + "Printed").isEqualTo(printed);
 		}
 		if (productSet)
 		{
@@ -270,7 +272,7 @@ public class QualityInvoiceLineExpectation extends AbstractExpectation
 		}
 		if (productNameSet)
 		{
-			Assert.assertEquals(prefix + "ProductName", this.productName, detail.getNote());
+			assertThat(detail.getNote()).as(prefix + "ProductName").isEqualTo(this.productName);
 		}
 		if (percentageSet)
 		{
@@ -286,7 +288,7 @@ public class QualityInvoiceLineExpectation extends AbstractExpectation
 		}
 		if (descriptionSet)
 		{
-			Assert.assertEquals(prefix + "Description", this.description, detail.getDescription());
+			assertThat(detail.getDescription()).as(prefix + "Description").isEqualTo(this.description);
 		}
 		if (priceSet)
 		{

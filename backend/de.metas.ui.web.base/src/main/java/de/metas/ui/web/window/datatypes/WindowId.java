@@ -35,6 +35,7 @@ import java.util.OptionalInt;
  */
 
 @EqualsAndHashCode
+@SuppressWarnings({ "OptionalAssignedToNull", "OptionalUsedAsFieldOrParameterType" })
 public final class WindowId
 {
 	@JsonCreator
@@ -153,15 +154,7 @@ public final class WindowId
 
 	public boolean isInt()
 	{
-		try
-		{
-			toInt();
-			return true;
-		}
-		catch (final Exception ex)
-		{
-			return false;
-		}
+		return toOptionalInt().isPresent();
 	}
 
 	public DocumentId toDocumentId()

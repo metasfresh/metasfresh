@@ -24,6 +24,7 @@ package de.metas.acct.model.validator;
 
 import de.metas.acct.AcctSchemaTestHelper;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.interceptor.C_BPartner;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;

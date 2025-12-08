@@ -32,6 +32,8 @@ import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuil
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -45,16 +47,16 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
+import org.jetbrains.annotations.NotNull;
 
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
 public interface IShipmentScheduleBL extends ISingletonService
 {
-	String MSG_ShipmentSchedules_To_Recompute = "ShipmentSchedules_To_Recompute";
-
 	/**
 	 * Please use this method to avoid unneeded work packages.
 	 *
@@ -87,7 +89,7 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * <p>
 	 * <b>IMPORTANT</b> this column does not evaluate the actual schedule's own {@link I_M_ShipmentSchedule#isAllowConsolidateInOut()} value. As of now, that flag is only for the user's information.
 	 */
-	boolean isSchedAllowsConsolidate(I_M_ShipmentSchedule sched);
+	boolean isSchedAllowsConsolidate(@NonNull I_M_ShipmentSchedule sched);
 
 	/**
 	 * Creates a new aggregation key builder which can be used to decide if two given shipment schedules can go into the same shipment.
@@ -99,7 +101,7 @@ public interface IShipmentScheduleBL extends ISingletonService
 	/**
 	 * If the given <code>shipmentSchedule</code> has its {@link I_M_ShipmentSchedule#COLUMN_QtyOrdered_Override QtyOrdered_Override} set, then override its <code>QtyOrdered</code> value with it. If
 	 * QtyOrdered_Override is <code>null</code>, then reset <code>QtyOrdered</code> to the value of <code>QtyOrdered_Calculated</code>.
-	 *
+	 * <p>
 	 * Task 08255
 	 *
 	 */
@@ -107,7 +109,7 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	/**
 	 * Close the given Shipment Schedule.
-	 *
+	 * <p>
 	 * Closing a shipment schedule means overriding its QtyOrdered to the qty which was already delivered.
 	 */
 	void closeShipmentSchedule(I_M_ShipmentSchedule schedule);
@@ -158,13 +160,11 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	WarehouseId getWarehouseId(I_M_ShipmentSchedule schedule);
 
-	ZonedDateTime getPreparationDate(I_M_ShipmentSchedule schedule);
+	ZonedDateTime getPreparationDate(@NonNull I_M_ShipmentSchedule schedule);
 
 	ShipmentAllocationBestBeforePolicy getBestBeforePolicy(ShipmentScheduleId id);
 
 	void applyUserChangesInTrx(ShipmentScheduleUserChangeRequestsList userChanges);
-
-	boolean isCatchWeight(I_M_ShipmentSchedule shipmentScheduleRecord);
 
 	IAttributeSetInstanceAware toAttributeSetInstanceAware(I_M_ShipmentSchedule shipmentSchedule);
 
@@ -189,5 +189,15 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	void updateExportStatus(@NonNull final APIExportStatus newExportStatus, @NonNull final PInstanceId pinstanceId);
 
+	void setAsyncBatchByIds(@NonNull Set<ShipmentScheduleId> shipmentScheduleIds, @NonNull AsyncBatchId asyncBatchId);
+
+	void setAsyncBatchAndSave(@NonNull Collection<I_M_ShipmentSchedule> shipmentSchedules, @NotNull AsyncBatchId asyncBatchId);
+
 	void setAsyncBatch(ShipmentScheduleId shipmentScheduleId, AsyncBatchId asyncBatchId);
+
+	I_M_ShipmentSchedule getByOrderLineId(@NonNull OrderLineId orderLineId);
+
+	void assertSalesOrderCanBeReactivated(@NonNull OrderId salesOrderId);
+
+	Quantity getQtyScheduledForPicking(@NonNull I_M_ShipmentSchedule shipmentScheduleRecord);
 }

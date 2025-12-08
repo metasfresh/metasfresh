@@ -1,13 +1,12 @@
 package de.metas.costing;
 
-import java.time.LocalDate;
-
-import javax.annotation.Nullable;
-
 import de.metas.acct.api.AcctSchemaId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.time.Instant;
 
 /*
  * #%L
@@ -37,7 +36,7 @@ public class CostDetailReverseRequest
 	AcctSchemaId acctSchemaId;
 	CostingDocumentRef reversalDocumentRef;
 	CostingDocumentRef initialDocumentRef;
-	LocalDate date;
+	Instant date;
 	String description;
 
 	@Builder
@@ -45,7 +44,7 @@ public class CostDetailReverseRequest
 			@NonNull AcctSchemaId acctSchemaId,
 			@NonNull CostingDocumentRef reversalDocumentRef,
 			@NonNull CostingDocumentRef initialDocumentRef,
-			@NonNull LocalDate date,
+			@NonNull Instant date,
 			@Nullable String description)
 	{
 		this.acctSchemaId = acctSchemaId;

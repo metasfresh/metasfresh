@@ -10,22 +10,17 @@ package de.metas.handlingunits.attribute.strategy.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-
-import java.math.BigDecimal;
-
-import org.compiere.model.I_C_UOM;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -35,6 +30,10 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import org.adempiere.mm.attributes.api.IAttributeSet;
+import org.compiere.model.I_C_UOM;
+
+import java.math.BigDecimal;
 
 /**
  * @author al
@@ -50,12 +49,14 @@ public final class HUAttributeTransferRequestBuilder implements IHUAttributeTran
 	private IHUStorage huStorageFrom = null;
 	private IHUStorage huStorageTo = null;
 
-	private IAttributeStorage attributeStorageFrom = null;
+	private IAttributeSet attributeStorageFrom = null;
 	private IAttributeStorage attributeStorageTo = null;
 
 	private BigDecimal qtyUnloaded = null;
 
-	/** Virtual HU attributes transfer */
+	/**
+	 * Virtual HU attributes transfer
+	 */
 	private boolean vhuTransfer = false;
 
 	public HUAttributeTransferRequestBuilder(final IHUContext huContext)
@@ -111,7 +112,7 @@ public final class HUAttributeTransferRequestBuilder implements IHUAttributeTran
 	}
 
 	@Override
-	public IHUAttributeTransferRequestBuilder setAttributeStorageFrom(final IAttributeStorage attributeStorageFrom)
+	public IHUAttributeTransferRequestBuilder setAttributeStorageFrom(final IAttributeSet attributeStorageFrom)
 	{
 		this.attributeStorageFrom = attributeStorageFrom;
 		return this;

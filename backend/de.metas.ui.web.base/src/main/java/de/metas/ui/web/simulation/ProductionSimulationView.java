@@ -32,8 +32,6 @@ import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.template.AbstractCustomView;
 import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import lombok.Builder;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
@@ -54,18 +52,6 @@ public class ProductionSimulationView extends AbstractCustomView<ProductionSimul
 		super(viewId, description, rows, NullDocumentFilterDescriptorsProvider.instance);
 	}
 
-	@Override
-	public LookupValuesPage getFieldTypeahead(final RowEditingContext ctx, final String fieldName, final String query)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public LookupValuesList getFieldDropdown(final RowEditingContext ctx, final String fieldName)
-	{
-		throw new UnsupportedOperationException();
-	}
-
 	@Nullable
 	@Override
 	public String getTableNameOrNull(@Nullable final DocumentId documentId)
@@ -76,8 +62,8 @@ public class ProductionSimulationView extends AbstractCustomView<ProductionSimul
 	@Override
 	public void close(final ViewCloseAction closeAction)
 	{
-		postMaterialEventService.postEventAsync(DeactivateAllSimulatedCandidatesEvent.builder()
-													  .eventDescriptor(EventDescriptor.ofClientAndOrg(Env.getClientId(), Env.getOrgId()))
+		postMaterialEventService.enqueueEventNow(DeactivateAllSimulatedCandidatesEvent.builder()
+													  .eventDescriptor(EventDescriptor.ofClientAndOrg(Env.getClientAndOrgId()))
 													  .build());
 	}
 

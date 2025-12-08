@@ -1,7 +1,7 @@
 package de.metas.ui.web.window.model.lookup;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.reflist.ReferenceId;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
@@ -114,20 +114,21 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 			@NonNull final String labelsTableName,
 			@NonNull final String labelsValueColumnName,
 			@NonNull final String labelsLinkColumnName,
-			@NonNull final LookupDescriptor labelsValuesLookupDescriptor,
+			boolean labelsValuesUseNumericKey,
+			@NonNull final LookupDataSource labelsValuesLookupDataSource,
 			@Nullable final ReferenceId labelsValueReferenceId)
 	{
 		this.fieldName = fieldName;
 		this.labelsTableName = labelsTableName;
 		this.labelsValueColumnName = labelsValueColumnName;
 		this.labelsValueReferenceId = labelsValueReferenceId;
-		this.labelsValuesLookupDataSource = LookupDataSourceFactory.instance.getLookupDataSource(labelsValuesLookupDescriptor);
-		this.labelsValuesUseNumericKey = labelsValuesLookupDescriptor.isNumericKey();
+		this.labelsValuesLookupDataSource = labelsValuesLookupDataSource;
+		this.labelsValuesUseNumericKey = labelsValuesUseNumericKey;
 		this.labelsLinkColumnName = labelsLinkColumnName;
 		this.tableName = tableName;
 		this.linkColumnName = linkColumnName;
 
-		parameters = ImmutableSet.of(CtxNames.parse(linkColumnName));
+		parameters = ImmutableSet.of(CtxNames.parse(linkColumnName+"/-1"));
 	}
 
 	@Override

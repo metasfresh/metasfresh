@@ -1,9 +1,9 @@
 package de.metas.ui.web.quickinput.invoiceline;
 
-import java.math.BigDecimal;
-
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import org.compiere.model.I_M_Product;
+
+import java.math.BigDecimal;
 
 /*
  * #%L

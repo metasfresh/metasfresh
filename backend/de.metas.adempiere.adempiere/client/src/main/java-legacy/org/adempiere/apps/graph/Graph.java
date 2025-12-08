@@ -25,6 +25,7 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.util.ArrayList;
 
+import de.metas.ad_reference.ReferenceId;
 import org.compiere.apps.AEnv;
 import org.compiere.grid.ed.VLookup;
 import org.compiere.model.MGoal;
@@ -142,8 +143,8 @@ public class Graph extends CPanel implements ChartMouseListener
 		if (m_userSelection)
 		{
 			final int adColumnId = -1;
-			final int AD_Reference_Value_ID = DB.getSQLValue(null, "SELECT AD_Reference_ID FROM AD_Reference WHERE Name = ?", "PA_Goal ChartType");
-			MLookupInfo info = MLookupFactory.getLookup_List(AD_Reference_Value_ID);
+			final ReferenceId AD_Reference_Value_ID = ReferenceId.ofRepoId(DB.getSQLValue(null, "SELECT AD_Reference_ID FROM AD_Reference WHERE Name = ?", "PA_Goal ChartType"));
+			MLookupInfo info = MLookupFactory.newInstance().getLookup_List(AD_Reference_Value_ID);
 			MLookup mLookup = new MLookup(Env.getCtx(), adColumnId, info, Env.TAB_None);
 			VLookup lookup = new VLookup("ChartType", false, false, true,
 					mLookup);

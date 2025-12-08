@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-12-19T19:11:31 -->
+<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/inout/report" uuid="771c1e7b-347d-4c78-a5e0-6fb78e3c3b48">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -38,63 +37,76 @@
 		<band splitType="Stretch"/>
 	</title>
 	<pageHeader>
-		<band height="24" splitType="Stretch">
-			<textField isStretchWithOverflow="true">
-				<reportElement key="textField-19" x="499" y="11" width="70" height="12" forecolor="#000000" uuid="bacf16ca-eb03-4e70-83fc-7ead5b3d9fc6"/>
+		<band height="35" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-19" x="499" y="17" width="70" height="12" forecolor="#000000" uuid="bacf16ca-eb03-4e70-83fc-7ead5b3d9fc6"/>
 				<textElement markup="none">
-					<font size="9" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{QualityNote}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement key="textField-20" x="399" y="0" width="40" height="12" forecolor="#000000" uuid="bcf49517-5066-429e-a6dc-64c97a459ab0"/>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-20" x="399" y="6" width="40" height="12" forecolor="#000000" uuid="bcf49517-5066-429e-a6dc-64c97a459ab0">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
 				<textElement markup="none">
-					<font size="9" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement key="textField-13" x="228" y="0" width="39" height="12" forecolor="#000000" uuid="60b4107a-7639-4cdf-923a-7af7cc025cd5"/>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-13" x="228" y="6" width="39" height="12" forecolor="#000000" uuid="60b4107a-7639-4cdf-923a-7af7cc025cd5"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{HUQuantity}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement key="textField-20" x="421" y="0" width="74" height="23" forecolor="#000000" uuid="4a06f254-2d43-4b5a-8875-443684dfe832"/>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-20" x="421" y="6" width="74" height="23" forecolor="#000000" uuid="4a06f254-2d43-4b5a-8875-443684dfe832"/>
 				<textElement textAlignment="Right" markup="styled">
-					<font size="9" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{QualityPercent}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement key="textField-19" x="350" y="0" width="47" height="12" forecolor="#000000" uuid="b040ea3d-0c64-4095-aa4b-a1769c19620e"/>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-19" x="350" y="6" width="47" height="12" forecolor="#000000" uuid="b040ea3d-0c64-4095-aa4b-a1769c19620e"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Quantity}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement key="textField-17" x="269" y="0" width="80" height="12" forecolor="#000000" uuid="cc66405f-c1b0-4307-ba43-7fc0b0b92d27"/>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-17" x="269" y="6" width="80" height="12" forecolor="#000000" uuid="cc66405f-c1b0-4307-ba43-7fc0b0b92d27"/>
 				<textElement markup="none">
-					<font size="9" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Pack_Inst}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement key="textField-16" x="36" y="0" width="130" height="12" forecolor="#000000" uuid="50bc7226-6afd-4ce3-b115-2b74cdd846f9"/>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-16" x="36" y="6" width="130" height="12" forecolor="#000000" uuid="50bc7226-6afd-4ce3-b115-2b74cdd846f9"/>
 				<textElement markup="none">
-					<font size="9" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Article}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement key="textField-13" x="165" y="0" width="65" height="12" forecolor="#000000" uuid="7c66cab1-6ef2-4c56-a84b-1a0e01ccb82c"/>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-13" x="165" y="6" width="65" height="12" forecolor="#000000" uuid="7c66cab1-6ef2-4c56-a84b-1a0e01ccb82c"/>
 				<textElement markup="none">
-					<font size="9" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Attributes}]]></textFieldExpression>
 			</textField>
+			<line>
+				<reportElement x="34" y="3" width="545" height="1" uuid="d2f76150-6a27-4bc0-a4ce-85bdd329ff20">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+			</line>
+			<line>
+				<reportElement x="34" y="32" width="545" height="1" uuid="e421f036-9b20-4675-a353-65c1b10def59">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+			</line>
 		</band>
 	</pageHeader>
 	<columnHeader>
@@ -141,7 +153,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{isindispute}.equals("Y")? $F{qualitynote} : $R{qtytoinvoice}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-20" x="399" y="0" width="34" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -154,7 +166,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{uomsymbol}]]></textFieldExpression>
 			</textField>
-			<textField pattern="###0.##" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="###0.##" isBlankWhenNull="true">
 				<reportElement key="textField-20" x="447" y="0" width="48" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281">
 					<printWhenExpression><![CDATA[new Boolean( $F{isindispute}.equals( "Y" ) )]]></printWhenExpression>
 				</reportElement>

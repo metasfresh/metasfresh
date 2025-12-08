@@ -23,6 +23,7 @@
 package de.metas.workflow.rest_api.activity_features.user_confirmation;
 
 import de.metas.workflow.rest_api.model.WFActivity;
+import de.metas.workflow.rest_api.model.WFActivityType;
 import de.metas.workflow.rest_api.model.WFProcess;
 import lombok.Builder;
 import lombok.NonNull;
@@ -34,4 +35,9 @@ public class UserConfirmationRequest
 {
 	@NonNull WFProcess wfProcess;
 	@NonNull WFActivity wfActivity;
+
+	public void assertActivityType(@NonNull final WFActivityType expected)
+	{
+		getWfActivity().getWfActivityType().assertExpected(expected);
+	}
 }

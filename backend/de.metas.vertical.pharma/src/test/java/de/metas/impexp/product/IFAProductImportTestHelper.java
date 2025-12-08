@@ -1,15 +1,5 @@
 package de.metas.impexp.product;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_Product_Category;
-
 import de.metas.handlingunits.model.I_M_ProductPrice;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -23,6 +13,15 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.UtilityClass;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_Product_Category;
+
+import java.math.BigDecimal;
+
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L

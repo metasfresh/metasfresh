@@ -22,20 +22,6 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * #L%
  */
 
-
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.junit.Assert.assertThat;
-
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.List;
-
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.context.junit4.SpringRunner;
-
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.currency.CurrencyRepository;
@@ -48,11 +34,23 @@ import de.metas.money.MoneyService;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import lombok.NonNull;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 
 /**
  * There is no inoutLine with inDispute, so the quality discount is actually zero. This test sets an override discount and verifies the aggregation result.
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = {
 		StartupListener.class,
 		ShutdownListener.class,
@@ -95,16 +93,16 @@ public class TestQualityDiscountPercentOverrideNoDiscountIol extends AbstractTes
 
 		final I_C_Invoice_Candidate ic = invoiceCandidates.get(0);
 
-		assertThat(ic.getQtyToInvoiceBeforeDiscount(), comparesEqualTo(new BigDecimal("100")));
-		assertThat(ic.getQtyToInvoice(), comparesEqualTo(new BigDecimal("90")));
+		assertThat(ic.getQtyToInvoiceBeforeDiscount()).isEqualByComparingTo(new BigDecimal("100"));
+		assertThat(ic.getQtyToInvoice()).isEqualByComparingTo(new BigDecimal("90"));
 
 		// Check QtyWithIssues (from linked inout lines): shall be zero because there are no inout lines with IsInDispute=Y
-		assertThat(ic.getQtyWithIssues(), comparesEqualTo(new BigDecimal("0")));
-		assertThat(ic.getQtyWithIssues_Effective(), comparesEqualTo(new BigDecimal("10")));
+		assertThat(ic.getQtyWithIssues()).isEqualByComparingTo(new BigDecimal("0"));
+		assertThat(ic.getQtyWithIssues_Effective()).isEqualByComparingTo(new BigDecimal("10"));
 	}
 
 	@Override
-	protected void step_validate_after_aggregation(List<I_C_Invoice_Candidate> invoiceCandidates, List<I_M_InOutLine> inOutLines, List<IInvoiceHeader> invoices)
+	protected void step_validate_after_aggregation(@NonNull List<I_C_Invoice_Candidate> invoiceCandidates, @NonNull List<I_M_InOutLine> inOutLines, @NonNull List<IInvoiceHeader> invoices)
 	{
 		super.step_validate_after_aggregation(invoiceCandidates, inOutLines, invoices);
 
@@ -112,6 +110,6 @@ public class TestQualityDiscountPercentOverrideNoDiscountIol extends AbstractTes
 		final List<IInvoiceLineRW> invoiceLines1 = getInvoiceLines(invoice1);
 		final IInvoiceLineRW il1 = getSingleForInOutLine(invoiceLines1, iol11);
 
-		assertThat(il1.getQtysToInvoice().getStockQty().toBigDecimal(), comparesEqualTo(new BigDecimal("90")));
+		assertThat(il1.getQtysToInvoice().getStockQty().toBigDecimal()).isEqualByComparingTo(new BigDecimal("90"));
 	}
 }

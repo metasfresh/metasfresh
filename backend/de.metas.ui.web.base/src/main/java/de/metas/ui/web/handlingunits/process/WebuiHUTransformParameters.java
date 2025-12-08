@@ -2,6 +2,7 @@ package de.metas.ui.web.handlingunits.process;
 
 import java.math.BigDecimal;
 
+import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -49,7 +50,7 @@ public class WebuiHUTransformParameters
 	private final I_M_HU tuHU;
 	private final I_M_HU luHU;
 	private final BigDecimal qtyCU;
-	private final BigDecimal qtyTU;
+	private final QtyTU qtyTU;
 	private final boolean huPlanningReceiptOwnerPM_LU;
 	private final boolean huPlanningReceiptOwnerPM_TU;
 }

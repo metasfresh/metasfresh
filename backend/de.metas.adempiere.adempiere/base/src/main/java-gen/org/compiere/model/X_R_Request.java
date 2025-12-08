@@ -1846,25 +1846,6 @@ public class X_R_Request extends org.compiere.model.PO implements I_R_Request, o
 		return ii.intValue();
 	}
 
-	/** Set Anfangsdatum.
-		@param StartDate 
-		First effective day (inclusive)
-	  */
-	@Override
-	public void setStartDate (java.sql.Timestamp StartDate)
-	{
-		set_Value (COLUMNNAME_StartDate, StartDate);
-	}
-
-	/** Get Anfangsdatum.
-		@return First effective day (inclusive)
-	  */
-	@Override
-	public java.sql.Timestamp getStartDate () 
-	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_StartDate);
-	}
-
 	/** Set Startdatum.
 		@param StartTime Startdatum	  */
 	@Override

@@ -15,6 +15,8 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineBuilder;
 import de.metas.order.event.OrderUserNotifications;
 import de.metas.order.event.OrderUserNotifications.NotificationRequest;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
@@ -27,6 +29,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -40,7 +43,7 @@ import java.util.Set;
  * Copyright (C) 2017 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
+ * it under the terms of the GNU General Public License asr
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
  *
@@ -76,6 +79,7 @@ import java.util.Set;
 
 	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private final OrderFactory orderFactory;
 
@@ -90,14 +94,18 @@ import java.util.Set;
 	{
 		final BPartnerId vendorId = orderAggregationKey.getVendorId();
 
+		final OrgId orgId = orderAggregationKey.getOrgId();
+		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 		this.orderFactory = OrderFactory.newPurchaseOrder()
-				.orgId(orderAggregationKey.getOrgId())
+				.orgId(orgId)
 				.warehouseId(orderAggregationKey.getWarehouseId())
 				.shipBPartner(vendorId)
 				.datePromised(orderAggregationKey.getDatePromised())
+				.dateOrdered(TimeUtil.asLocalDate(orderAggregationKey.getDateOrdered(), timeZone))
 				.poReference(orderAggregationKey.getPoReference())
 				.externalPurchaseOrderUrl(orderAggregationKey.getExternalPurchaseOrderUrl())
 				.externalHeaderId(orderAggregationKey.getExternalId());
+
 
 		if (docType != null)
 		{
@@ -124,6 +132,7 @@ import java.util.Set;
 			orderLineBuilder.manualDiscount(purchaseOrderItem.getDiscount().toBigDecimal());
 		}
 		orderLineBuilder.manualPrice(purchaseOrderItem.getPrice());
+		orderLineBuilder.priceUomId(purchaseOrderItem.getPriceUomId());
 
 		purchaseItem2OrderLine.put(purchaseOrderItem, orderLineBuilder);
 	}
@@ -179,7 +188,7 @@ import java.util.Set;
 		{
 			final ZonedDateTime purchaseDatePromised = purchaseOrderItem.getPurchaseDatePromised();
 
-			if (!Objects.equals(purchaseDatePromised, TimeUtil.asZonedDateTime(order.getDatePromised())))
+			if (!Objects.equals(purchaseDatePromised, TimeUtil.asZonedDateTime(order.getDatePromised(), orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID())))))
 			{
 				deviatingDatePromised = true;
 			}

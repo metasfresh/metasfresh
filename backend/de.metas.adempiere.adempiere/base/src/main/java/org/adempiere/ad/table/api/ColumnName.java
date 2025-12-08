@@ -59,4 +59,9 @@ public class ColumnName
 	{
 		return columnName;
 	}
+
+	public boolean endsWith(@NonNull final String suffix)
+	{
+		return columnName.endsWith(suffix);
+	}
 }

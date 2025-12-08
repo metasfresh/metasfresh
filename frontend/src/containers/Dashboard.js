@@ -11,7 +11,6 @@ const mapStateToProps = (state) => ({
   modal: state.windowHandler.modal,
   rawModal: state.windowHandler.rawModal,
   pluginModal: state.windowHandler.pluginModal,
-  indicator: state.windowHandler.indicator,
   includedView: state.viewHandler.includedView,
   enableTutorial: state.appHandler.enableTutorial,
   processStatus: state.appHandler.processStatus,
@@ -30,7 +29,6 @@ export class Dashboard extends Component {
     pluginModal: PropTypes.object,
     location: PropTypes.object,
     modal: PropTypes.any,
-    indicator: PropTypes.any,
     processStatus: PropTypes.any,
     includedView: PropTypes.any,
     enableTutorial: PropTypes.any,
@@ -69,7 +67,6 @@ export class Dashboard extends Component {
       modal,
       rawModal,
       pluginModal,
-      indicator,
       processStatus,
       includedView,
       // enableTutorial,
@@ -85,7 +82,6 @@ export class Dashboard extends Component {
         modal={modal}
         rawModal={rawModal}
         pluginModal={pluginModal}
-        indicator={indicator}
         processStatus={processStatus}
         includedView={includedView}
         editmode={editmode}

@@ -8,17 +8,19 @@ import de.metas.handlingunits.inventory.CreateVirtualInventoryWithQtyReq;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
-import de.metas.handlingunits.picking.IHUPickingSlotBL;
-import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
+import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
+import de.metas.handlingunits.picking.slot.IHUPickingSlotBL.PickingHUsQuery;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.requests.AddQtyToHURequest;
 import de.metas.handlingunits.picking.requests.RetrieveAvailableHUIdsToPickRequest;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.order.DeliveryRule;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.picking.api.IPackagingDAO;
+import de.metas.picking.api.PickingConfig;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
@@ -32,6 +34,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
+import org.springframework.lang.Nullable;
 
 import java.util.List;
 
@@ -61,7 +64,6 @@ import java.util.List;
  * contains common code of the two fine picking process classes that we have.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 /* package */abstract class WEBUI_Picking_With_M_Source_HU_Base extends PickingSlotViewBasedProcess
 {
@@ -70,7 +72,7 @@ import java.util.List;
 	private final PickingCandidateService pickingCandidateService = SpringContextHolder.instance.getBean(PickingCandidateService.class);
 	private final PickingConfigRepository pickingConfigRepo = SpringContextHolder.instance.getBean(PickingConfigRepository.class);
 	private final InventoryService inventoryService = SpringContextHolder.instance.getBean(InventoryService.class);
-	private final IShipmentSchedulePA shipmentSchedulePA =  Services.get(IShipmentSchedulePA.class);
+	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
 	protected final boolean noSourceHUAvailable()
 	{
@@ -79,7 +81,7 @@ import java.util.List;
 	}
 
 	@NonNull
-	protected ImmutableList<HuId> getSourceHUIds()
+	protected final ImmutableList<HuId> getSourceHUIds()
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = getCurrentShipmentSchedule();
 
@@ -113,27 +115,26 @@ import java.util.List;
 	}
 
 	@NonNull
-	protected ImmutableList<HuId> retrieveTopLevelHUIdsAvailableForPicking()
+	protected final ImmutableList<HuId> retrieveTopLevelHUIdsAvailableForPicking()
 	{
-		final RetrieveAvailableHUIdsToPickRequest request = RetrieveAvailableHUIdsToPickRequest
-				.builder()
-				.scheduleId(getCurrentShipmentScheduleId())
-				.onlyTopLevel(true)
-				.considerAttributes(true)
-				.build();
-
-		return huPickingSlotBL.retrieveAvailableHUIdsToPickForShipmentSchedule(request);
+		return huPickingSlotBL.retrieveAvailableHUIdsToPickForShipmentSchedule(
+				RetrieveAvailableHUIdsToPickRequest
+						.builder()
+						.scheduleId(getCurrentShipmentScheduleId())
+						.onlyTopLevel(true)
+						.considerAttributes(true)
+						.build()
+		);
 	}
 
-	protected boolean isForceDelivery()
+	protected final boolean isForceDelivery()
 	{
-		return DeliveryRule.ofCode(getCurrentShipmentSchedule().getDeliveryRule()).isForce();
+		final DeliveryRule deliveryRule = shipmentScheduleEffectiveBL.getDeliveryRule(getCurrentShipmentSchedule());
+		return deliveryRule.isForce();
 	}
 
-	protected Quantity pickHUsAndPackTo(@NonNull final ImmutableList<HuId> huIdsToPick, @NonNull final Quantity qtyToPack, @NonNull final HuId packToHuId)
+	protected final Quantity pickHUsAndPackTo(@NonNull final ImmutableList<HuId> huIdsToPick, @NonNull final Quantity qtyToPack, @NonNull final HuId packToHuId)
 	{
-		final boolean allowOverDelivery = pickingConfigRepo.getPickingConfig().isAllowOverDelivery();
-
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
 		final PickingSlotId pickingSlotId = pickingSlotRow.getPickingSlotId();
 
@@ -143,11 +144,12 @@ import java.util.List;
 				.sourceHUIds(huIdsToPick)
 				.pickingSlotId(pickingSlotId)
 				.shipmentScheduleId(getCurrentShipmentScheduleId())
-				.allowOverDelivery(allowOverDelivery)
+				.allowOverDelivery(getPickingConfig().isAllowOverDelivery())
+				.isForbidAggCUsForDifferentOrders(getPickingConfig().isForbidAggCUsForDifferentOrders())
 				.build());
 	}
 
-	protected void forcePick(Quantity qtyToPack, final HuId packToHuId)
+	protected final void forcePick(Quantity qtyToPack, final HuId packToHuId)
 	{
 		if (qtyToPack.signum() <= 0)
 		{
@@ -199,6 +201,19 @@ import java.util.List;
 		qtyToPack = qtyToPack.subtract(qtyPickedFromSuppliedHU);
 
 		Loggables.withLogger(log, Level.DEBUG).addLog(" *** forcePick(): packToHuId: {}, qtyLeftToBePicked: {}.", packToHuId, qtyToPack);
+	}
+
+	@NonNull
+	protected final PickingConfig getPickingConfig()
+	{
+		return pickingConfigRepo.getPickingConfig();
+	}
+
+	@Nullable
+	protected final OrderId getCurrentlyPickingOrderId()
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = getCurrentShipmentSchedule();
+		return OrderId.ofRepoIdOrNull(shipmentSchedule.getC_Order_ID());
 	}
 
 	private HuId createInventoryForMissingQty(@NonNull final Quantity qtyToBeAdded)

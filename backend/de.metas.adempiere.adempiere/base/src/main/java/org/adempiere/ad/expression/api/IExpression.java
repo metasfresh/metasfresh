@@ -1,12 +1,12 @@
 package org.adempiere.ad.expression.api;
 
-import java.util.Set;
-
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
 import org.compiere.util.CtxName;
 import org.compiere.util.CtxNames;
 import org.compiere.util.Evaluatee;
+
+import java.util.Set;
 
 /**
  * Root interface for all kind of expressions

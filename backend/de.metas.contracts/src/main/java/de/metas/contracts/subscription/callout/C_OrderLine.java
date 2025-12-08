@@ -66,7 +66,9 @@ public class C_OrderLine
 		{
 			final BigDecimal qtyOrdered = orderLineBL.convertQtyEnteredToStockUOM(ol).toBigDecimal();
 			ol.setQtyOrdered(qtyOrdered);
+			
 			final BigDecimal qtyEnteredInPriceUOM = orderLineBL.convertQtyEnteredToPriceUOM(ol).toBigDecimal();
+			ol.setIsManualQtyInPriceUOM(false);
 			ol.setQtyEnteredInPriceUOM(qtyEnteredInPriceUOM);
 
 			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()

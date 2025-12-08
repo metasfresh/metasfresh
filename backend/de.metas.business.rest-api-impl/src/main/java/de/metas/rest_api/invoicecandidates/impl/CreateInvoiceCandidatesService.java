@@ -10,10 +10,11 @@ import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.BPartnerInfo.BPartnerInfoBuilder;
 import de.metas.bpartner.service.BPartnerQuery;
-import de.metas.common.rest_api.v1.JsonDocTypeInfo;
 import de.metas.common.rest_api.common.JsonExternalId;
+import de.metas.common.rest_api.v1.JsonDocTypeInfo;
 import de.metas.common.rest_api.v1.JsonInvoiceRule;
 import de.metas.common.rest_api.v1.JsonPrice;
+import de.metas.document.DocBaseAndSubType;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -221,7 +222,7 @@ public class CreateInvoiceCandidatesService
 		{
 
 			final StockQtyAndUOMQty qtyOrdered = StockQtyAndUOMQtys.createConvert(
-					Quantitys.create(item.getQtyOrdered(), uomId),
+					Quantitys.of(item.getQtyOrdered(), uomId),
 					productId,
 					uomId);
 			candidate.qtyOrdered(qtyOrdered);
@@ -234,7 +235,7 @@ public class CreateInvoiceCandidatesService
 		// qtyDelivered
 		final BigDecimal qtyDeliveredEff = coalesce(item.getQtyDelivered(), ZERO);
 		final StockQtyAndUOMQty qtyDelivered = StockQtyAndUOMQtys.createConvert(
-				Quantitys.create(qtyDeliveredEff, uomId),
+				Quantitys.of(qtyDeliveredEff, uomId),
 				productId,
 				uomId);
 		candidate.qtyDelivered(qtyDelivered);
@@ -375,7 +376,9 @@ public class CreateInvoiceCandidatesService
 			return;
 		}
 
-		candidate.invoiceDocTypeId(docTypeService.getInvoiceDocTypeId(docType, orgId));
+		final DocBaseAndSubType docBaseAndSubType = DocBaseAndSubType.of(docType.getDocBaseType(), docType.getDocSubType());
+
+		candidate.invoiceDocTypeId(docTypeService.getInvoiceDocTypeId(docBaseAndSubType, orgId));
 	}
 
 	private void syncBPartnerToCandidate(

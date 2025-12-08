@@ -2,10 +2,10 @@ package de.metas.handlingunits.materialtracking.process;
 
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
-import de.metas.distribution.ddorder.producer.HUs2DDOrderProducer;
 import de.metas.distribution.ddorder.producer.HUToDistribute;
+import de.metas.distribution.ddorder.producer.HUs2DDOrderProducer;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.materialtracking.IHUMaterialTrackingBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
@@ -92,7 +92,7 @@ public class DD_Order_GenerateForQualityInspectionFlaggedHUs extends JavaProcess
 	@RunOutOfTrx
 	protected String doIt()
 	{
-		final LocatorId locatorToId = warehouseBL.getDefaultLocatorId(warehouseToId);
+		final LocatorId locatorToId = warehouseBL.getOrCreateDefaultLocatorId(warehouseToId);
 		final OrgId orgId = warehouseBL.getWarehouseOrgId(warehouseToId);
 		final BPartnerLocationId orgBPLocationId = bpartnerOrgBL.retrieveOrgBPLocationId(orgId);
 
@@ -100,6 +100,7 @@ public class DD_Order_GenerateForQualityInspectionFlaggedHUs extends JavaProcess
 				.setLocatorToId(locatorToId)
 				.setBpartnerLocationId(orgBPLocationId)
 				.setHUs(retrieveHUs())
+				.setWarehouseFromId(warehouseFromId)
 				.process();
 
 		return MSG_OK;

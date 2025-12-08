@@ -1,27 +1,10 @@
 package de.metas.purchasecandidate;
 
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.TEN;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import de.metas.common.util.time.SystemTime;
-import de.metas.document.dimension.DimensionService;
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_UOM;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.document.dimension.DimensionService;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
@@ -31,6 +14,22 @@ import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGa
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItemRepository;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import de.metas.quantity.Quantity;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_UOM;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -84,7 +83,6 @@ public class PurchaseCandidateRepositoryTest
 		purchaseCandidateRepository = new PurchaseCandidateRepository(
 				new PurchaseItemRepository(),
 				referenceGenerator,
-				new BPPurchaseScheduleService(new BPPurchaseScheduleRepository()),
 				dimensionService);
 
 		uom = newInstance(I_C_UOM.class);

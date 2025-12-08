@@ -23,12 +23,18 @@
 package de.metas.cucumber.stepdefs.resource;
 
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
+import de.metas.product.ResourceId;
 import org.compiere.model.I_S_Resource;
 
 public class S_Resource_StepDefData extends StepDefData<I_S_Resource>
+		implements StepDefDataGetIdAware<ResourceId, I_S_Resource>
 {
 	public S_Resource_StepDefData()
 	{
 		super(I_S_Resource.class);
 	}
+
+	@Override
+	public ResourceId extractIdFromRecord(final I_S_Resource record) {return ResourceId.ofRepoId(record.getS_Resource_ID());}
 }

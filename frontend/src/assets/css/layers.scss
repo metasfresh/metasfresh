@@ -1,0 +1,19 @@
+/**
+*  IMPORTANT NOTE
+*
+* Layers
+* - 0 - default - all static elements like tables or forms
+* - < 100 - elements that are over static content (order list)
+* - 100 - header
+* - 200 - backdrop
+* - 200 < - elements that are over backdrop (header expanded)
+* - 400 - screen-freeze
+*/
+
+$z-index-backdrop: 200;
+$z-index-spinner-overlay: 200;
+$z-index-header-menu: 201;
+$z-index-tooltip: 202;
+$z-index-modal: 399;
+$z-index-screen-freeze: 400;
+$z-index-filters: 500; /* it has to come on top of the overlay */

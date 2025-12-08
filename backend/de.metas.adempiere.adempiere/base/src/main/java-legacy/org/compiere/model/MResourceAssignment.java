@@ -44,8 +44,6 @@ public class MResourceAssignment extends X_S_ResourceAssignment
 	{
 		super (ctx, S_ResourceAssignment_ID, trxName);
 		
-		// FIXME: get rid of this shit because POInfo shall be immutable
-		getPOInfo().setUpdateable(true);		//	default table is not updateable
 		//	Default values
 		if (S_ResourceAssignment_ID == 0)
 		{

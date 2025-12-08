@@ -1,0 +1,129 @@
+.pos-screen {
+  .pos-order-panel {
+    .current-order {
+      min-width: 500px;
+      background-color: #ffffff;
+      font-size: 1rem;
+
+      display: flex;
+      flex-flow: column nowrap;
+
+      .lines-container {
+        flex-grow: 1;
+
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-gutter: stable;
+
+
+        .line {
+          padding: 8px;
+
+          .main {
+            font-weight: bold;
+
+            display: flex;
+            flex-direction: row;
+
+            .productName {
+              flex-grow: 1;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            }
+
+            .amount {
+              flex-grow: 0;
+              white-space: nowrap;
+            }
+          }
+
+          .description {
+            padding-left: 10px;
+          }
+        }
+
+        .line-selected {
+          background-color: rgba(116, 183, 39, 0.15);
+        }
+        
+        .line-new {
+          font-style: italic;
+        }
+      }
+
+      .summary {
+        flex-grow: 0;
+        padding: 8px;
+        display: flex;
+        flex-flow: column;
+        justify-content: flex-end;
+
+        .summary-line {
+          font-weight: bold;
+          text-align: right;
+        }
+
+        .totalAmt {
+          font-size: 2em;
+        }
+
+        .taxAmt {
+          font-size: 1em;
+        }
+      }
+
+      .current-order-actions {
+        flex-grow: 0;
+
+        display: flex;
+        flex-flow: row nowrap;
+        background-color: #a0a0a0;
+        border: 1px solid #a0a0a0;
+
+        button {
+          font-size: 1.5rem;
+          border: 0;
+          padding: 10px;
+        }
+
+        button:focus {
+          outline: none;
+        }
+
+        button:active:enabled {
+          color: white;
+          background-color: #4b830d;
+        }
+
+        .other-actions-container {
+          flex-grow: 1;
+          margin-right: 1px;
+
+          display: flex;
+          flex-flow: column nowrap;
+          row-gap: 1px;
+          
+          button {
+          }
+        }
+
+        .pay-action {
+          flex-grow: 1;
+          height: 100% !important;
+          
+          display: flex;
+          flex-flow: column nowrap;
+          justify-content: center;
+          align-items: center;
+          text-align: center;
+
+          background-color: #74b727;
+          color: white;
+          font-weight: bold;
+          font-size: 2rem;
+
+        }
+      }
+    }
+  }
+}

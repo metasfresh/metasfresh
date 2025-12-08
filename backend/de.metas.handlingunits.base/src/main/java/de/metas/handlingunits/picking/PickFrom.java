@@ -1,6 +1,7 @@
 package de.metas.handlingunits.picking;
 
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.picking.job.model.HUInfo;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -37,6 +38,11 @@ public class PickFrom
 	public static PickFrom ofHuId(@NonNull final HuId huId)
 	{
 		return builder().huId(huId).build();
+	}
+
+	public static PickFrom ofHUInfo(@NonNull final HUInfo huInfo)
+	{
+		return ofHuId(huInfo.getId());
 	}
 
 	public static PickFrom ofPickingOrderId(@NonNull final PPOrderId pickingOrderId)

@@ -1,7 +1,7 @@
 package de.metas.edi.api;
 
+import de.metas.document.archive.DocOutboundLogId;
 import de.metas.document.archive.api.IDocOutboundDAO;
-import de.metas.edi.model.DocOutboundLogId;
 import de.metas.edi.model.I_C_Doc_Outbound_Log;
 import de.metas.edi.model.I_C_Invoice;
 import de.metas.invoice.InvoiceId;
@@ -11,6 +11,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
@@ -57,11 +58,23 @@ public class EDIDocOutBoundLogService
 		final I_C_Doc_Outbound_Log logRecord = create(docOutboundDAO.retrieveLog(recordReference), I_C_Doc_Outbound_Log.class);
 		if (logRecord != null)
 		{
-			final I_C_Invoice invoiceRecord = recordReference.getModel(I_C_Invoice.class);
-			logRecord.setEDI_ExportStatus(invoiceRecord.getEDI_ExportStatus());
+			logRecord.setEDI_ExportStatus(getEDIExportStatusFromInvoiceRecord(recordReference));
 		}
 		return Optional.ofNullable(logRecord);
 	}
+
+	@Nullable
+	public String getEDIExportStatusFromInvoiceRecord(final @NonNull TableRecordReference recordReference)
+	{
+		if (!I_C_Invoice.Table_Name.equals(recordReference.getTableName()))
+		{
+			return null;
+		}
+
+		final I_C_Invoice invoiceRecord = recordReference.getModel(I_C_Invoice.class);
+		return invoiceRecord.getEDI_ExportStatus();
+	}
+
 
 	public I_C_Doc_Outbound_Log retreiveById(@NonNull final DocOutboundLogId docOutboundLogId)
 	{

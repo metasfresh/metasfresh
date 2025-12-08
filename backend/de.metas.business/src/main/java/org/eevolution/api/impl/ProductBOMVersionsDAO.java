@@ -60,7 +60,7 @@ public class ProductBOMVersionsDAO
 	}
 
 	@NonNull
-	public Optional<ProductBOMVersionsId> retrieveBOMVersionsId(final ProductId productId)
+	public Optional<ProductBOMVersionsId> retrieveBOMVersionsId(@NonNull final ProductId productId)
 	{
 		return getBOMVersionsByProductId(productId)
 				.map(I_PP_Product_BOMVersions::getPP_Product_BOMVersions_ID)
@@ -68,7 +68,7 @@ public class ProductBOMVersionsDAO
 	}
 
 	@NonNull
-	public I_PP_Product_BOMVersions getBOMVersions(final ProductBOMVersionsId versionsId)
+	public I_PP_Product_BOMVersions getBOMVersions(@NonNull final ProductBOMVersionsId versionsId)
 	{
 		return InterfaceWrapperHelper.load(versionsId, I_PP_Product_BOMVersions.class);
 	}

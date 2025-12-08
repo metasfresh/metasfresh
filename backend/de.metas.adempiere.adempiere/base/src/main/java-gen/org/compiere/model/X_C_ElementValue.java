@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_ElementValue extends org.compiere.model.PO implements I_C_ElementValue, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1059934605L;
+	private static final long serialVersionUID = -1614453063L;
 
     /** Standard Constructor */
     public X_C_ElementValue (final Properties ctx, final int C_ElementValue_ID, @Nullable final String trxName)
@@ -32,6 +32,18 @@ public class X_C_ElementValue extends org.compiere.model.PO implements I_C_Eleme
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setAccountConceptualName (final @Nullable java.lang.String AccountConceptualName)
+	{
+		set_Value (COLUMNNAME_AccountConceptualName, AccountConceptualName);
+	}
+
+	@Override
+	public java.lang.String getAccountConceptualName() 
+	{
+		return get_ValueAsString(COLUMNNAME_AccountConceptualName);
 	}
 
 	/** 
@@ -258,6 +270,18 @@ public class X_C_ElementValue extends org.compiere.model.PO implements I_C_Eleme
 	public boolean isMandatoryActivity() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsMandatoryActivity);
+	}
+
+	@Override
+	public void setIsOpenItem (final boolean IsOpenItem)
+	{
+		set_Value (COLUMNNAME_IsOpenItem, IsOpenItem);
+	}
+
+	@Override
+	public boolean isOpenItem() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsOpenItem);
 	}
 
 	@Override

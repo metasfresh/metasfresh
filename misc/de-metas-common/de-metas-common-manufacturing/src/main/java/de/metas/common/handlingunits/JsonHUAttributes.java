@@ -1,5 +1,7 @@
 package de.metas.common.handlingunits;
 
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.Multimaps;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -41,4 +43,16 @@ public class JsonHUAttributes
 		return JsonHUAttributes.builder().list(list).build();
 	}
 
+	public JsonHUAttributes retainOnlyAttributesInOrder(@NonNull final List<String> codes)
+	{
+		final ArrayList<JsonHUAttribute> filteredList = new ArrayList<>();
+		final ImmutableListMultimap<String, JsonHUAttribute> attributesByCode = Multimaps.index(list, JsonHUAttribute::getCode);
+
+		for (String code : codes)
+		{
+			filteredList.addAll(attributesByCode.get(code));
+		}
+
+		return builder().list(filteredList).build();
+	}
 }

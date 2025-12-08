@@ -57,7 +57,7 @@ public class MaterialCandidateChangedHandler implements MaterialEventHandler<Mat
 	@Override
 	public void handleEvent(final MaterialCandidateChangedEvent event)
 	{
-		final ZoneId orgZoneId = orgDAO.getTimeZone(event.getEventDescriptor().getOrgId());
+		final ZoneId orgZoneId = orgDAO.getTimeZone(event.getOrgId());
 
 		final UpdateMainDataRequest updateMainDataRequest = UpdateMainDataRequest.builder()
 				.identifier(MainDataRecordIdentifier.createForMaterial(event.getMaterialDescriptor(), orgZoneId))

@@ -1,25 +1,20 @@
 package de.metas.contracts.refund;
 
-import static de.metas.util.collections.CollectionUtils.extractSingleElement;
-import static de.metas.util.collections.CollectionUtils.hasDifferentValues;
+import com.google.common.collect.ImmutableList;
+import de.metas.contracts.refund.RefundConfig.RefundMode;
+import de.metas.i18n.AdMessageKey;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+import org.adempiere.exceptions.AdempiereException;
 
 import java.util.Comparator;
 import java.util.List;
 
-import org.adempiere.exceptions.AdempiereException;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.contracts.refund.RefundConfig.RefundMode;
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
-import de.metas.product.ProductId;
-import de.metas.util.Check;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
+import static de.metas.util.collections.CollectionUtils.extractSingleElement;
+import static de.metas.util.collections.CollectionUtils.hasDifferentValues;
 
 /*
  * #%L
@@ -110,21 +105,17 @@ public class RefundConfigs
 	{
 		Check.assumeNotEmpty(refundConfigs, "refundConfigs");
 
-		final IMsgBL msgBL = Services.get(IMsgBL.class);
-
 		if (hasDifferentValues(refundConfigs, RefundConfig::getRefundBase))
 		{
 			Loggables.addLog("The given refundConfigs need to all have the same RefundBase; refundConfigs={}", refundConfigs);
 
-			final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_REFUND_CONFIG_SAME_REFUND_BASE);
-			throw new AdempiereException(msg).markAsUserValidationError();
+			throw new AdempiereException(MSG_REFUND_CONFIG_SAME_REFUND_BASE).markAsUserValidationError();
 		}
 		if (hasDifferentValues(refundConfigs, RefundConfig::getRefundMode))
 		{
 			Loggables.addLog("The given refundConfigs need to all have the same RefundMode; refundConfigs={}", refundConfigs);
 
-			final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_REFUND_CONFIG_SAME_REFUND_MODE);
-			throw new AdempiereException(msg).markAsUserValidationError();
+			throw new AdempiereException(MSG_REFUND_CONFIG_SAME_REFUND_MODE).markAsUserValidationError();
 		}
 
 		if (RefundMode.APPLY_TO_ALL_QTIES.equals(extractRefundMode(refundConfigs)))
@@ -136,8 +127,7 @@ public class RefundConfigs
 						"Because refundMode={}, all the given refundConfigs need to all have the same invoiceSchedule; refundConfigs={}",
 						RefundMode.APPLY_TO_ALL_QTIES, refundConfigs);
 
-				final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_REFUND_CONFIG_SAME_INVOICE_SCHEDULE);
-				throw new AdempiereException(msg).markAsUserValidationError();
+				throw new AdempiereException(MSG_REFUND_CONFIG_SAME_INVOICE_SCHEDULE).markAsUserValidationError();
 			}
 			if (hasDifferentValues(refundConfigs, RefundConfig::getRefundInvoiceType))
 			{
@@ -145,8 +135,7 @@ public class RefundConfigs
 						"Because refundMode={}, all the given refundConfigs need to all have the same refundInvoiceType; refundConfigs={}",
 						RefundMode.APPLY_TO_ALL_QTIES, refundConfigs);
 
-				final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_REFUND_CONFIG_SAME_REFUND_INVOICE_TYPE);
-				throw new AdempiereException(msg).markAsUserValidationError();
+				throw new AdempiereException(MSG_REFUND_CONFIG_SAME_REFUND_INVOICE_TYPE).markAsUserValidationError();
 			}
 		}
 	}

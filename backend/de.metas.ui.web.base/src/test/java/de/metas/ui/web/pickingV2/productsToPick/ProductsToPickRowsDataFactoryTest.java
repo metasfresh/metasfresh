@@ -35,6 +35,7 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.picking.api.Packageable;
+import de.metas.picking.api.PackageableList;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
@@ -66,7 +67,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class ProductsToPickRowsDataFactoryTest
 {
@@ -111,28 +112,33 @@ public class ProductsToPickRowsDataFactoryTest
 				.orderDocumentNo("1234")
 				.customer(IntegerLookupValue.of(customerAndLocationId.getBpartnerId().getRepoId(), "customer"))
 				.timeZone(ZoneId.of("Pacific/Guadalcanal"))
-				.packageable(Packageable.builder()
-						.orgId(OrgId.ofRepoId(1))
-						.shipmentScheduleId(shipmentScheduleId)
-						//
-						.qtyOrdered(Quantity.of(1000000, uomKg))
-						.qtyToDeliver(Quantity.of(qtyToDeliver, uomKg))
-						.qtyDelivered(Quantity.of(0, uomKg))
-						.qtyPickedNotDelivered(Quantity.of(qtyPickedNotDelivered, uomKg))
-						.qtyPickedPlanned(Quantity.of(0, uomKg))
-						.qtyPickedAndDelivered(Quantity.of(0, uomKg))
-						//
-						.customerId(customerAndLocationId.getBpartnerId())
-						.customerLocationId(customerAndLocationId)
-						//
-						.warehouseId(locatorId.getWarehouseId())
-						//
-						.bestBeforePolicy(Optional.ofNullable(bestBeforePolicy))
-						//
-						.productId(productId)
-						.asiId(AttributeSetInstanceId.NONE)
-						//
-						.build())
+				.packageables(PackageableList.of(
+								Packageable.builder()
+										.orgId(OrgId.ofRepoId(1))
+										.shipmentScheduleId(shipmentScheduleId)
+										//
+										.qtyOrdered(Quantity.of(1000000, uomKg))
+										.qtyToDeliver(Quantity.of(qtyToDeliver, uomKg))
+										.qtyDelivered(Quantity.of(0, uomKg))
+										.qtyPickedNotDelivered(Quantity.of(qtyPickedNotDelivered, uomKg))
+										.qtyPickedPlanned(Quantity.of(0, uomKg))
+										.qtyPickedAndDelivered(Quantity.of(0, uomKg))
+										//
+										.customerId(customerAndLocationId.getBpartnerId())
+										.customerLocationId(customerAndLocationId)
+										//
+										.handoverLocationId(customerAndLocationId)
+										//
+										.warehouseId(locatorId.getWarehouseId())
+										//
+										.bestBeforePolicy(Optional.ofNullable(bestBeforePolicy))
+										//
+										.productId(productId)
+										.asiId(AttributeSetInstanceId.NONE)
+										//
+										.build()
+						)
+				)
 				.build();
 	}
 

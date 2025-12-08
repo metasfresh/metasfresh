@@ -6,9 +6,10 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -38,6 +39,11 @@ public final class ExplainedOptional<T>
 	public static <T> ExplainedOptional<T> emptyBecause(@NonNull final String explanation)
 	{
 		return emptyBecause(TranslatableStrings.anyLanguage(explanation));
+	}
+
+	public static <T> ExplainedOptional<T> emptyBecause(@NonNull final AdMessageKey explanation)
+	{
+		return emptyBecause(TranslatableStrings.adMessage(explanation));
 	}
 
 	public static <T> ExplainedOptional<T> emptyBecause(@NonNull final ITranslatableString explanation)
@@ -84,7 +90,22 @@ public final class ExplainedOptional<T>
 		return value != null ? value : other;
 	}
 
+	public T orElseGet(@NonNull final Supplier<? extends T> other)
+	{
+		return value != null ? value : other.get();
+	}
+
 	public T orElseThrow()
+	{
+		return orElseThrow(AdempiereException::new);
+	}
+
+	public T orElseThrow(@NonNull final AdMessageKey adMessageKey)
+	{
+		return orElseThrow(message -> new AdempiereException(adMessageKey).setParameter("detail", message));
+	}
+
+	public T orElseThrow(@NonNull final Function<ITranslatableString, RuntimeException> exceptionFactory)
 	{
 		if (value != null)
 		{
@@ -92,7 +113,7 @@ public final class ExplainedOptional<T>
 		}
 		else
 		{
-			throw new AdempiereException(explanation);
+			throw exceptionFactory.apply(explanation);
 		}
 	}
 
@@ -145,17 +166,25 @@ public final class ExplainedOptional<T>
 		return this;
 	}
 
+	/**
+	 * @see #resolve(Function, Function)
+	 */
+	public <R> Optional<R> mapIfAbsent(@NonNull final Function<ITranslatableString, R> mapper)
+	{
+		return isPresent()
+				? Optional.empty()
+				: Optional.ofNullable(mapper.apply(getExplanation()));
+	}
+
+	/**
+	 * @see #mapIfAbsent(Function)
+	 */
 	public <R> R resolve(
 			@NonNull final Function<T, R> mapPresent,
 			@NonNull final Function<ITranslatableString, R> mapAbsent)
 	{
-		if (isPresent())
-		{
-			return mapPresent.apply(value);
-		}
-		else
-		{
-			return mapAbsent.apply(explanation);
-		}
+		return isPresent()
+				? mapPresent.apply(value)
+				: mapAbsent.apply(explanation);
 	}
 }

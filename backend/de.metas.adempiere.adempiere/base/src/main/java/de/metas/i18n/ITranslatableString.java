@@ -30,7 +30,6 @@ import java.util.Set;
  * For more helpers, check {@link TranslatableStrings}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public interface ITranslatableString
 {

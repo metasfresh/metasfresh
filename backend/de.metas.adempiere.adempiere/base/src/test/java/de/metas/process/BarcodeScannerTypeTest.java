@@ -1,15 +1,13 @@
 package de.metas.process;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import de.metas.JsonObjectMapperHolder;
+import org.adempiere.exceptions.AdempiereException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -37,7 +35,7 @@ public class BarcodeScannerTypeTest
 {
 	private ObjectMapper jsonObjectMapper;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();

@@ -22,19 +22,17 @@ package de.metas.edi.model.validator;
  * #L%
  */
 
-
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.util.lang.ImmutablePair;
-import org.compiere.model.MClient;
-import org.compiere.model.ModelValidationEngine;
-import org.compiere.model.ModelValidator;
-import org.compiere.model.PO;
-
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.document.ICopyHandlerBL;
 import de.metas.edi.spi.impl.EdiInvoiceCandidateListener;
 import de.metas.edi.spi.impl.EdiInvoiceCopyHandler;
 import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.compiere.model.MClient;
+import org.compiere.model.ModelValidationEngine;
+import org.compiere.model.ModelValidator;
+import org.compiere.model.PO;
 
 public class Main implements ModelValidator
 {

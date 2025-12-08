@@ -25,6 +25,7 @@ import de.metas.attachments.AttachmentEntryService;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
+import de.metas.util.FileUtil;
 import de.metas.util.Services;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -534,7 +535,7 @@ public final class Attachment extends CDialog implements ActionListener
 
 		try
 		{
-			final String fileName = System.getProperty("java.io.tmpdir") +
+			final String fileName = FileUtil.getTempDir() +
 					System.getProperty("file.separator") +
 					entryItem.getFilename();
 			final File tempFile = new File(fileName);

@@ -9,7 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.util.StringUtils;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
 
 import de.metas.data.export.api.IExportDataDestination;
@@ -62,6 +64,7 @@ public class DATEVCsvExporter extends AbstractExporter
 		config.setProperty(CSVWriter.CONFIG_Encoding, exportFormat.getCsvEncoding());
 		config.setProperty(CSVWriter.CONFIG_FieldDelimiter, exportFormat.getCsvFieldDelimiter());
 		config.setProperty(CSVWriter.CONFIG_FieldQuote, exportFormat.getCsvFieldQuote());
+		config.setProperty(CSVWriter.CONFIG_AllowMultilineFields, "false");
 
 		final CSVWriter csvWriter = new CSVWriter(out, config);
 		csvWriter.setHeader(getDataSource().getFieldNames());

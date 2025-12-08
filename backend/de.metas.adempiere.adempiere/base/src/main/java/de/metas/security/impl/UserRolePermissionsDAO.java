@@ -9,6 +9,7 @@ import de.metas.cache.CCache;
 import de.metas.cache.CacheMgt;
 import de.metas.document.DocTypeId;
 import de.metas.logging.LogManager;
+import de.metas.mobile.application.MobileApplicationRepoId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.process.AdProcessId;
@@ -21,6 +22,8 @@ import de.metas.security.Role;
 import de.metas.security.RoleId;
 import de.metas.security.UserRolePermissionsEventBus;
 import de.metas.security.UserRolePermissionsKey;
+import de.metas.security.mobile_application.MobileApplicationPermissions;
+import de.metas.security.mobile_application.MobileApplicationPermissionsRepository;
 import de.metas.security.permissions.Access;
 import de.metas.security.permissions.ElementPermission;
 import de.metas.security.permissions.ElementPermissions;
@@ -40,6 +43,7 @@ import de.metas.security.permissions.TablePermissions;
 import de.metas.security.permissions.TableResource;
 import de.metas.security.requests.CreateDocActionAccessRequest;
 import de.metas.security.requests.CreateFormAccessRequest;
+import de.metas.security.requests.CreateMobileApplicationAccessRequest;
 import de.metas.security.requests.CreateProcessAccessRequest;
 import de.metas.security.requests.CreateRecordPrivateAccessRequest;
 import de.metas.security.requests.CreateTaskAccessRequest;
@@ -60,7 +64,6 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.persistence.EntityTypesCache;
@@ -73,6 +76,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.tree.AdTreeId;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Column_Access;
 import org.compiere.model.I_AD_Document_Action_Access;
 import org.compiere.model.I_AD_Form;
@@ -95,11 +99,14 @@ import org.compiere.model.I_AD_Window_Access;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_AD_Workflow_Access;
 import org.compiere.model.I_C_OrgAssignment;
+import org.compiere.model.I_Mobile_Application_Access;
+import org.compiere.model.POInfo;
 import org.compiere.model.X_AD_Table_Access;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -115,11 +122,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 {
-	private static final transient Logger logger = LogManager.getLogger(UserRolePermissionsDAO.class);
+	private static final Logger logger = LogManager.getLogger(UserRolePermissionsDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final MobileApplicationPermissionsRepository mobileApplicationPermissionsRepository = new MobileApplicationPermissionsRepository();
+
+	private static final String COLUMNNAME_AD_Role_ID = "AD_Role_ID";
+	private static final String COLUMNNAME_IsReadWrite = "IsReadWrite";
 
 	private static final ImmutableSet<String> ROLE_DEPENDENT_TABLENAMES = ImmutableSet.of(
 			// I_AD_Role.Table_Name // NEVER include the AD_Role
@@ -137,6 +148,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 			I_AD_Workflow_Access.Table_Name,
 			I_AD_Task_Access.Table_Name,
 			I_AD_Document_Action_Access.Table_Name,
+			I_Mobile_Application_Access.Table_Name,
 			// Table/Record access
 			I_AD_Table_Access.Table_Name);
 
@@ -146,7 +158,6 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 
 	/**
 	 * Aggregated permissions per key
-	 
 	 */
 	private final CCache<UserRolePermissionsKey, IUserRolePermissions> //
 			permissionsByKey = CCache.<UserRolePermissionsKey, IUserRolePermissions>builder()
@@ -661,30 +672,68 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				I_AD_Workflow_Access.COLUMNNAME_AD_Workflow_ID);
 	}
 
-	private <AccessTableType> ElementPermissions retrieveElementPermissions(
-			final RoleId adRoleId,
-			final Class<AccessTableType> accessTableClass,
-			final String elementTableName,
-			final String elementColumnName)
+	MobileApplicationPermissions getMobileApplicationPermissions(final RoleId adRoleId)
 	{
+		return mobileApplicationPermissionsRepository.getMobileApplicationPermissions(adRoleId);
+	}
+
+	private <AccessTableType> ElementPermissions retrieveElementPermissions(
+			@NonNull final RoleId adRoleId,
+			@NonNull final Class<AccessTableType> accessTableClass,
+			@NonNull final String elementTableName,
+			@NonNull final String elementColumnName)
+	{
+		final ArrayList<String> distinctColumnNames = new ArrayList<>();
+		distinctColumnNames.add(elementColumnName);
+
+		final IQueryBuilder<AccessTableType> queryBuilder = queryBL
+				.createQueryBuilderOutOfTrx(accessTableClass)
+				.addEqualsFilter(COLUMNNAME_AD_Role_ID, adRoleId)
+				.addOnlyActiveRecordsFilter();
+
 		//
 		// EntityType filter: filter out those elements where EntityType is not displayed
 		final String accessTableName = InterfaceWrapperHelper.getTableName(accessTableClass);
-		final IQueryFilter<AccessTableType> entityTypeFilter = TypedSqlQueryFilter.of("exists (select 1 from " + elementTableName + " t"
-				+ " where t." + elementColumnName + "=" + accessTableName + "." + elementColumnName
-				+ " and (" + EntityTypesCache.instance.getDisplayedInUIEntityTypeSQLWhereClause("t.EntityType") + ")"
-				+ ")");
+		boolean hasEntityType;
+		if (Adempiere.isUnitTestMode())
+		{
+			hasEntityType = false; // we don't care
+		}
+		else
+		{
+			final POInfo elementPOInfo = POInfo.getPOInfoNotNull(elementTableName);
+			hasEntityType = elementPOInfo.hasColumnName("EntityType");
+		}
+		if (hasEntityType)
+		{
+			queryBuilder.filter(
+					TypedSqlQueryFilter.of("exists (select 1 from " + elementTableName + " t"
+							+ " where t." + elementColumnName + "=" + accessTableName + "." + elementColumnName
+							+ " and (" + EntityTypesCache.instance.getDisplayedInUIEntityTypeSQLWhereClause("t.EntityType") + ")"
+							+ ")")
+			);
+		}
 
-		final String COLUMNNAME_AD_Role_ID = "AD_Role_ID";
-		final String COLUMNNAME_IsReadWrite = "IsReadWrite";
+		//
+		// IsReadWrite flag
+		final String readWriteColumnName;
+		if (Adempiere.isUnitTestMode())
+		{
+			readWriteColumnName = COLUMNNAME_IsReadWrite;
+		}
+		else
+		{
+			final POInfo accessTablePOInfo = POInfo.getPOInfoNotNull(accessTableName);
+			readWriteColumnName = accessTablePOInfo.hasColumnName(COLUMNNAME_IsReadWrite) ? COLUMNNAME_IsReadWrite : null;
+		}
+		if (readWriteColumnName != null)
+		{
+			distinctColumnNames.add(readWriteColumnName);
+		}
 
-		final List<Map<String, Object>> accessesList = queryBL
-				.createQueryBuilderOutOfTrx(accessTableClass)
-				.addEqualsFilter(COLUMNNAME_AD_Role_ID, adRoleId)
-				.addOnlyActiveRecordsFilter()
-				.filter(entityTypeFilter)
+		final List<Map<String, Object>> accessesList = queryBuilder
 				.create()
-				.listDistinct(elementColumnName, COLUMNNAME_IsReadWrite);
+				.listDistinct(distinctColumnNames.toArray(new String[0]));
 
 		final ElementPermissions.Builder elementAccessesBuilder = ElementPermissions.builder()
 				.setElementTableName(elementTableName);
@@ -692,7 +741,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		{
 			final int elementId = (int)accessItem.get(elementColumnName);
 			final ElementResource resource = ElementResource.of(elementTableName, elementId);
-			final boolean readWrite = StringUtils.toBoolean(accessItem.get(COLUMNNAME_IsReadWrite));
+			final boolean readWrite = readWriteColumnName == null || StringUtils.toBoolean(accessItem.get(readWriteColumnName));
 			final ElementPermission access = ElementPermission.ofReadWriteFlag(resource, readWrite);
 			elementAccessesBuilder.addPermission(access);
 		}
@@ -915,7 +964,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				continue;
 			}
 
-			final int deleteCount = DB.executeUpdateEx("DELETE FROM " + accessTableName + " WHERE AD_Role_ID=" + roleId.getRepoId(), ITrx.TRXNAME_ThreadInherited);
+			final int deleteCount = DB.executeUpdateAndThrowExceptionOnFail("DELETE FROM " + accessTableName + " WHERE AD_Role_ID=" + roleId.getRepoId(), ITrx.TRXNAME_ThreadInherited);
 			logger.info("deleteAccessRecords({}): deleted {} rows from {}", roleId, deleteCount, accessTableName);
 		}
 
@@ -1422,6 +1471,18 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 				.addEqualsFilter(I_AD_Private_Access.COLUMNNAME_Record_ID, recordRef.getRecord_ID());
 	}
 
+	@Override
+	public void createMobileApplicationAccess(@NonNull final CreateMobileApplicationAccessRequest request)
+	{
+		mobileApplicationPermissionsRepository.createMobileApplicationAccess(request);
+		resetCacheAfterTrxCommit();
+	}
+
+	@Override
+	public void deleteMobileApplicationAccess(@NonNull final MobileApplicationRepoId applicationId)
+	{
+		mobileApplicationPermissionsRepository.deleteMobileApplicationAccess(applicationId);
+	}
 
 	@Override
 	public void deleteUserOrgAccessByUserId(final UserId userId)

@@ -2,6 +2,7 @@ import queryString from 'query-string';
 import counterpart from 'counterpart';
 import { updateLastBackPage } from '../actions/AppActions';
 import history from '../services/History';
+import * as StaticModalType from '../constants/StaticModalType';
 
 /**
  * @method updateUri
@@ -11,15 +12,15 @@ export function updateUri(pathname, query, updatedQuery) {
   const isDifferentPage =
     query.page && Number(query.page) !== Number(updatedQuery.page);
   const isDifferentView = query.viewId && query.viewId !== updatedQuery.viewId;
+  const isUsePush = isDifferentPage || isDifferentView;
 
-  const queryObject = {
+  const urlQueryString = queryString.stringify({
     ...query,
     ...updatedQuery,
-  };
-  const queryUrl = queryString.stringify(queryObject);
-  const url = `${pathname}?${queryUrl}`;
+  });
+  const url = `${pathname}?${urlQueryString}`;
 
-  isDifferentPage || isDifferentView ? history.push(url) : history.replace(url);
+  isUsePush ? history.push(url) : history.replace(url);
 }
 
 /**
@@ -53,6 +54,11 @@ export function historyDoubleBackOnPopstate(store) {
  */
 export const getQueryString = (query) => {
   return queryString.stringify(query, { arrayFormat: 'comma', skipNull: true });
+};
+
+export const buildURL = (baseUrl, query) => {
+  const queryString = query ? getQueryString(query) : null;
+  return !queryString ? baseUrl : `${baseUrl}?${queryString}`;
 };
 
 // TODO: Move to api ?
@@ -167,7 +173,7 @@ export function translateCaption(caption) {
  */
 export function preFormatPostDATA({ target, postData }) {
   const dataToSend = {};
-  if (target === 'comments') {
+  if (target === StaticModalType.Comments) {
     dataToSend.text = postData.txt;
   }
   return dataToSend;
@@ -279,20 +285,6 @@ export function deepUnfreeze(obj) {
  */
 export function leftTrim(str) {
   return str.replace(/^\s+/, '');
-}
-
-/**
- * @method formatSortingQuery
- * @summary format's the ordering parameters prefixing them with asc/desc sign
- */
-export function formatSortingQuery(orderBy) {
-  if (orderBy && orderBy.map) {
-    return orderBy.map((sortParam) => {
-      return `${sortParam.ascending ? '+' : '-'}${sortParam.fieldName}`;
-    });
-  }
-
-  return orderBy;
 }
 
 export const isBlank = (str) => {

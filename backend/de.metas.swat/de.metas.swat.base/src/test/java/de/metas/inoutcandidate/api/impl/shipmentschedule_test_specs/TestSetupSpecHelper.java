@@ -1,12 +1,15 @@
 package de.metas.inoutcandidate.api.impl.shipmentschedule_test_specs;
 
-import static de.metas.util.Check.assumeNotNull;
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.util.HashMap;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.adempiere.model.I_M_Product;
+import de.metas.document.engine.DocStatus;
+import de.metas.inoutcandidate.api.OlAndSched;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.interfaces.I_C_BPartner;
+import de.metas.material.cockpit.model.I_MD_Stock;
+import de.metas.product.ProductId;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Order;
@@ -14,22 +17,17 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMComponentType;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.junit.jupiter.api.Disabled;
 
-import com.google.common.collect.ImmutableList;
+import java.util.HashMap;
 
-import de.metas.adempiere.model.I_M_Product;
-import de.metas.document.engine.DocStatus;
-import de.metas.inoutcandidate.api.OlAndSched;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.interfaces.I_C_BPartner;
-import de.metas.material.cockpit.model.I_MD_Stock;
-import org.eevolution.api.PPOrderId;
-import de.metas.product.ProductId;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
+import static de.metas.util.Check.assumeNotNull;
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L

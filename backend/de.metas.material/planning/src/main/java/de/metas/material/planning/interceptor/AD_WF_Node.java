@@ -43,7 +43,7 @@ public class AD_WF_Node
 	{
 		final PPRoutingId routingId = PPRoutingId.ofRepoIdOrNull(node.getAD_Workflow_ID());
 
-		final PPRoutingActivityId ppRoutingActivityId = PPRoutingActivityId.ofAD_WF_Node_ID(routingId, node.getAD_WF_Node_ID());
+		final PPRoutingActivityId ppRoutingActivityId = PPRoutingActivityId.ofRepoId(routingId, node.getAD_WF_Node_ID());
 
 		if (ppRoutingRepo.nodesAlreadyExistInWorkflow(ppRoutingActivityId))
 		{

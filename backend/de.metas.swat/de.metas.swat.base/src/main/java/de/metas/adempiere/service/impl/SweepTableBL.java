@@ -280,7 +280,7 @@ public class SweepTableBL implements ISweepTableBL
 			sql = "DELETE FROM " + table + " WHERE " + whereClause;
 		}
 
-		final int no = DB.executeUpdate(sql, sweepCtx.trxName);
+		final int no = DB.executeUpdateAndSaveErrorOnFail(sql, sweepCtx.trxName);
 		if (no < 0)
 		{
 			// sql error, returning false, error is already logged in console
@@ -507,8 +507,8 @@ public class SweepTableBL implements ISweepTableBL
 						+ referingTableCol + "=NULL WHERE " + wc
 						+ " AND AD_Client_ID="
 						+ Env.getAD_Client_ID(sweepCtx.ctx);
-				final int updateCount = DB.executeUpdateEx(updateSQL,
-						new Object[] {}, sweepCtx.trxName);
+				final int updateCount = DB.executeUpdateAndThrowExceptionOnFail(updateSQL,
+																				new Object[] {}, sweepCtx.trxName);
 				if (updateCount != ids.length)
 				{
 					// shall not happen

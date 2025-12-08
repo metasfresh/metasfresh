@@ -22,7 +22,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
-import de.metas.util.StringUtils;
+import de.metas.util.FileUtil;
 import lombok.Setter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.plaf.AdempiereLookAndFeel;
@@ -44,7 +44,6 @@ import java.util.Enumeration;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Load & Save INI Settings from property file
@@ -159,8 +158,6 @@ public final class Ini
 	/**
 	 * Log Migration Script
 	 */
-	public static final String P_LOGMIGRATIONSCRIPT = "LogMigrationScript";    // Log migration script
-	private static final boolean DEFAULT_LOGMIGRATIONSCRIPT = false;
 	/**
 	 * Show Acct Tabs
 	 */
@@ -289,7 +286,6 @@ public final class Ini
 			.put(P_A_LOGIN, DisplayType.toBooleanString(DEFAULT_A_LOGIN))
 			.put(P_A_NEW, DisplayType.toBooleanString(DEFAULT_A_NEW))
 			.put(P_ADEMPIERESYS, DisplayType.toBooleanString(DEFAULT_ADEMPIERESYS))
-			.put(P_LOGMIGRATIONSCRIPT, DisplayType.toBooleanString(DEFAULT_LOGMIGRATIONSCRIPT))
 			.put(P_SHOW_ACCT, DisplayType.toBooleanString(DEFAULT_SHOW_ACCT))
 			.put(P_SHOW_TRL, DisplayType.toBooleanString(DEFAULT_SHOW_TRL))
 			.put(P_SHOW_ADVANCED, DisplayType.toBooleanString(DEFAULT_SHOW_ADVANCED))
@@ -319,12 +315,7 @@ public final class Ini
 	 */
 	private static final Set<String> PROPERTIES_CLIENT = ImmutableSet.<String>builder()
 			.add(P_ADEMPIERESYS)
-			.add(P_LOGMIGRATIONSCRIPT)
 			.build();
-	private static class ServerLocalProps
-	{
-		private static final AtomicBoolean logMigrationScripts = new AtomicBoolean(false);
-	}
 
 	/**
 	 * List of property names which shall be skipped from encryption
@@ -460,7 +451,7 @@ public final class Ini
 		}
 
 		//
-		String tempDir = System.getProperty("java.io.tmpdir");
+		String tempDir = FileUtil.getTempDir();
 		if (tempDir == null || tempDir.length() <= 1)
 			tempDir = getMetasfreshHome();
 		if (tempDir == null)
@@ -576,10 +567,6 @@ public final class Ini
 		if (!Ini.isSwingClient() && PROPERTIES_CLIENT.contains(key))
 		{
 			Env.getCtx().setProperty(key, value);
-			if(P_LOGMIGRATIONSCRIPT.equals(key))
-			{
-				ServerLocalProps.logMigrationScripts.set(StringUtils.toBoolean(value, false));
-			}
 			return;
 		}
 
@@ -635,15 +622,8 @@ public final class Ini
 		// If it's a client property and we are in server mode, get value from context instead of Ini file
 		if (!Ini.isSwingClient() && PROPERTIES_CLIENT.contains(key))
 		{
-			if(P_LOGMIGRATIONSCRIPT.equals(key))
-			{
-				return StringUtils.ofBoolean(ServerLocalProps.logMigrationScripts.get());
-			}
-			else
-			{
-				final String value = Env.getCtx().getProperty(key);
-				return value == null ? "" : value;
-			}
+			final String value = Env.getCtx().getProperty(key);
+			return value == null ? "" : value;
 		}
 
 		final String retStr = s_prop.getProperty(key, "");

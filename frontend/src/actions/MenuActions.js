@@ -24,29 +24,9 @@ export function getRootBreadcrumb() {
   }));
 }
 
-/**
- * Removed the logic that checked for the local variables as it is deprecated - those were added in https://github.com/metasfresh/metasfresh-webui-frontend-legacy/issues/979
- * @param {string} id -> windowId
- */
-export function getWindowBreadcrumb(id) {
+export function setBreadcrumbByWindowId(id) {
   return (dispatch) => {
     elementPathRequest('window', id)
-      .then((response) => {
-        return flattenOneLine(response.data);
-      })
-      .then((item) => {
-        dispatch(setBreadcrumb(item.reverse()));
-      })
-      .catch(() => {
-        dispatch(setBreadcrumb([]));
-      });
-    // }
-  };
-}
-
-export function getElementBreadcrumb(entity, id) {
-  return (dispatch) => {
-    elementPathRequest(entity, id)
       .then((response) => flattenOneLine(response.data))
       .then((item) => dispatch(setBreadcrumb(item.reverse())))
       .catch(() => dispatch(setBreadcrumb([])));

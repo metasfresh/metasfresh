@@ -2,7 +2,6 @@ package de.metas.invoicecandidate.internalbusinesslogic;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.product.ProductId;
 import lombok.NonNull;
 import lombok.Value;
@@ -32,18 +31,17 @@ import lombok.Value;
 @Value
 public class InvoiceCandidateProduct
 {
-
 	ProductId id;
 
-	boolean stocked;
+	boolean itemType;
 
 	@JsonCreator
 	public InvoiceCandidateProduct(
 			@JsonProperty("id") @NonNull final ProductId id,
-			@JsonProperty("stocked") @NonNull final Boolean stocked)
+			@JsonProperty("itemType") @NonNull final Boolean itemType)
 	{
 		this.id = id;
-		this.stocked = stocked;
+		this.itemType = itemType;
 	}
 
 
