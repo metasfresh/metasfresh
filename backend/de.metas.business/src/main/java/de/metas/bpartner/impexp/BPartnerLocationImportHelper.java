@@ -17,6 +17,10 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.model.ModelValidationEngine;
 
+import javax.annotation.Nullable;
+
+import static org.compiere.model.MakeUniqueLocationNameCommand.BPARTNER_LOCATION_NAME_DEFAULT;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -79,6 +83,7 @@ import org.compiere.model.ModelValidationEngine;
 	/**
 	 * retrieve existent BPartner location and call method for updating the fields
 	 */
+	@Nullable
 	private I_C_BPartner_Location fetchAndUpdateExistingBPLocation(@NonNull final BPartnerImportContext context)
 	{
 		final BPartnersCache cache = context.getBpartnersCache();
@@ -116,6 +121,7 @@ import org.compiere.model.ModelValidationEngine;
 	 * * City not empty
 	 * </ul>
 	 */
+	@Nullable
 	private I_C_BPartner_Location createNewBPartnerLocation(@NonNull final BPartnerImportContext context)
 	{
 		final I_I_BPartner importRecord = context.getCurrentImportRecord();
@@ -220,12 +226,12 @@ import org.compiere.model.ModelValidationEngine;
 	@VisibleForTesting
 	static boolean extractIsShipTo(@NonNull final I_I_BPartner importRecord)
 	{
-		return importRecord.isShipToDefault() ? true : importRecord.isShipTo();
+		return importRecord.isShipToDefault() || importRecord.isShipTo();
 	}
 
 	@VisibleForTesting
 	static boolean extractIsBillTo(@NonNull final I_I_BPartner importRecord)
 	{
-		return importRecord.isBillToDefault() ? true : importRecord.isBillTo();
+		return importRecord.isBillToDefault() || importRecord.isBillTo();
 	}
 }
