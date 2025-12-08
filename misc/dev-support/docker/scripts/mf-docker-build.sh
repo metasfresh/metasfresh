@@ -13,16 +13,17 @@
 #
 # Options:
 #   --no-restart    Build only, don't restart containers
-#   --skip-tests    Skip tests during build (default for speed)
 #
 # Prerequisites:
 #   - E2E stack running in dev-mode: mf-docker.sh e2e-stack start --dev-mode
-#   - Maven and Node.js/yarn available
-#   - Parent POM installed: mvn_build.sh --deps-only
+#   - Maven available locally
+#   - Maven repository extracted to .m2-local/ (done automatically by --dev-mode)
 #
 # How it works:
-#   - Builds to standard Maven target directories
-#   - Copies results to .dev-artifacts/ (which is mounted by compose-dev.yml)
+#   - Runs Maven with -pl (project list) and -am (also-make) to build
+#     the target module AND all its dependencies that have changed
+#   - Uses workspace-local Maven repo (.m2-local/) for fast builds
+#   - Copies results to .dev-artifacts/ (mounted by compose-dev.yml)
 #   - Restarts container to pick up changes (for backend)
 
 set -e
@@ -32,6 +33,11 @@ METASFRESH_ROOT="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
 COMPOSE_DIR="$METASFRESH_ROOT/docker-builds/frontendtest"
 PROJECT_NAME="mfstack"
 ARTIFACTS_DIR="$METASFRESH_ROOT/.dev-artifacts"
+
+# Maven configuration
+SETTINGS_FILE="$METASFRESH_ROOT/misc/dev-support/maven/settings.xml"
+LOCAL_REPO="$METASFRESH_ROOT/.m2-local"
+BACKEND_DIR="$METASFRESH_ROOT/backend"
 
 # Colors
 RED='\033[0;31m'
@@ -46,7 +52,7 @@ success() { echo -e "${GREEN}✓${NC} $1"; }
 warn() { echo -e "${YELLOW}!${NC} $1"; }
 error() { echo -e "${RED}✗${NC} $1" >&2; }
 
-# Check if running in dev mode
+# Check if E2E stack is running in dev mode
 check_dev_mode() {
     if [ ! -f "$COMPOSE_DIR/compose-dev.yml" ]; then
         error "compose-dev.yml not found. Cannot use incremental builds."
@@ -57,96 +63,129 @@ check_dev_mode() {
     if ! docker compose -p "$PROJECT_NAME" -f "$COMPOSE_DIR/compose.yml" ps --format json 2>/dev/null | grep -q "running"; then
         warn "E2E stack is not running. Start it first with:"
         echo "  mf-docker.sh e2e-stack start --dev-mode"
+        # Don't exit - allow building without running stack
+    fi
+}
+
+# Check Maven repository is available
+check_maven_repo() {
+    if [ ! -d "$LOCAL_REPO/de/metas" ]; then
+        error "Maven repository not found in .m2-local/"
+        echo ""
+        echo "  The workspace-local Maven repository is required for incremental builds."
+        echo "  It should be extracted automatically when starting in dev-mode:"
+        echo ""
+        echo "    mf-docker.sh e2e-stack start --dev-mode"
+        echo ""
+        echo "  Or pull images and extract manually with:"
+        echo ""
+        echo "    mf-docker.sh pull new_dawn_uat"
+        echo "    rm -rf .dev-artifacts/  # Force re-extraction"
+        echo "    mf-docker.sh e2e-stack start --dev-mode"
+        echo ""
         exit 1
     fi
+}
+
+# Build Maven arguments
+get_maven_args() {
+    local args=""
+
+    # Use workspace-local settings and repo
+    if [ -f "$SETTINGS_FILE" ]; then
+        args="$args -s $SETTINGS_FILE"
+    fi
+    args="$args -Dmaven.repo.local=$LOCAL_REPO"
+
+    # Skip tests and git plugin
+    args="$args -DskipTests -Dmaven.test.skip=true -Dmaven.gitcommitid.skip=true"
+
+    # Parallel builds
+    args="$args -T 1C"
+
+    echo "$args"
+}
+
+# Run Maven build from reactor root with -pl and -am
+run_maven_build() {
+    local module="$1"
+    local output_path="$2"
+    local artifact_dest="$3"
+
+    info "Building $module (with dependencies)..."
+    echo "  Using: mvn -pl $module -am package"
+    echo ""
+
+    local mvn_args=$(get_maven_args)
+
+    # Change to backend directory (reactor root)
+    cd "$BACKEND_DIR"
+
+    # Run Maven with -pl (project list) and -am (also-make dependencies)
+    if ! mvn -pl "$module" -am package $mvn_args; then
+        error "Maven build failed"
+        cd "$METASFRESH_ROOT"
+        return 1
+    fi
+
+    cd "$METASFRESH_ROOT"
+    echo ""
+
+    # Check if JAR was created
+    local full_output_path="$BACKEND_DIR/$output_path"
+    if [ ! -f "$full_output_path" ]; then
+        error "Build output not found: $full_output_path"
+        return 1
+    fi
+
+    # Get JAR size
+    local jar_size=$(du -h "$full_output_path" | cut -f1)
+
+    # Copy JAR to artifacts directory
+    info "Copying artifact to $artifact_dest..."
+    mkdir -p "$(dirname "$ARTIFACTS_DIR/$artifact_dest")"
+    cp "$full_output_path" "$ARTIFACTS_DIR/$artifact_dest"
+
+    success "Built: $artifact_dest ($jar_size)"
+
+    return 0
 }
 
 # Build webapi (metasfresh-webui-api)
 build_webapi() {
     info "Building metasfresh-webui-api..."
+    echo ""
 
-    local pom="$METASFRESH_ROOT/backend/metasfresh-webui-api/pom.xml"
-    local output="$METASFRESH_ROOT/backend/metasfresh-webui-api/target/docker/metasfresh-webui-api.jar"
-    local artifact_dest="$ARTIFACTS_DIR/webapi"
+    check_maven_repo
 
-    if [ ! -f "$pom" ]; then
-        error "POM not found: $pom"
-        exit 1
-    fi
+    mkdir -p "$ARTIFACTS_DIR/webapi"
 
-    # Build with Maven
-    local mvn_args="-f $pom package -DskipTests -Dmaven.gitcommitid.skip=true"
-
-    # Use workspace-local Maven repo
-    local settings="$METASFRESH_ROOT/misc/dev-support/maven/settings.xml"
-    local local_repo="$METASFRESH_ROOT/.m2-local"
-    if [ -f "$settings" ]; then
-        mvn_args="$mvn_args -s $settings -Dmaven.repo.local=$local_repo"
-    fi
-
-    info "Running: mvn $mvn_args"
-    mvn $mvn_args
-
-    if [ -f "$output" ]; then
-        success "Built: $output"
-        echo "  Size: $(du -h "$output" | cut -f1)"
-
-        # Copy to .dev-artifacts/ for compose-dev.yml volume mount
-        mkdir -p "$artifact_dest"
-        cp "$output" "$artifact_dest/metasfresh-webui-api.jar"
-        success "Copied to: $artifact_dest/metasfresh-webui-api.jar"
-    else
-        error "Build failed - JAR not found: $output"
-        exit 1
-    fi
+    run_maven_build \
+        "metasfresh-webui-api" \
+        "metasfresh-webui-api/target/docker/metasfresh-webui-api.jar" \
+        "webapi/metasfresh-webui-api.jar"
 }
 
 # Build app (metasfresh-dist/serverRoot)
 build_app() {
     info "Building metasfresh-dist (app server)..."
+    echo ""
 
-    local pom="$METASFRESH_ROOT/backend/metasfresh-dist/serverRoot/pom.xml"
-    local output="$METASFRESH_ROOT/backend/metasfresh-dist/dist/target/docker/app/metasfresh_server.jar"
-    local reports_src="$METASFRESH_ROOT/backend/metasfresh-dist/dist/target/docker/app/reports"
-    local artifact_dest="$ARTIFACTS_DIR/app"
-    local reports_dest="$ARTIFACTS_DIR/reports"
+    check_maven_repo
 
-    if [ ! -f "$pom" ]; then
-        error "POM not found: $pom"
-        exit 1
-    fi
+    mkdir -p "$ARTIFACTS_DIR/app"
 
-    # Build with Maven
-    local mvn_args="-f $pom package -DskipTests -Dmaven.gitcommitid.skip=true"
+    run_maven_build \
+        "metasfresh-dist/serverRoot" \
+        "metasfresh-dist/dist/target/docker/app/metasfresh_server.jar" \
+        "app/metasfresh_server.jar"
 
-    # Use workspace-local Maven repo
-    local settings="$METASFRESH_ROOT/misc/dev-support/maven/settings.xml"
-    local local_repo="$METASFRESH_ROOT/.m2-local"
-    if [ -f "$settings" ]; then
-        mvn_args="$mvn_args -s $settings -Dmaven.repo.local=$local_repo"
-    fi
-
-    info "Running: mvn $mvn_args"
-    mvn $mvn_args
-
-    if [ -f "$output" ]; then
-        success "Built: $output"
-        echo "  Size: $(du -h "$output" | cut -f1)"
-
-        # Copy JAR to .dev-artifacts/ for compose-dev.yml volume mount
-        mkdir -p "$artifact_dest"
-        cp "$output" "$artifact_dest/metasfresh_server.jar"
-        success "Copied to: $artifact_dest/metasfresh_server.jar"
-
-        # Copy reports if they exist
-        if [ -d "$reports_src" ]; then
-            mkdir -p "$reports_dest"
-            cp -r "$reports_src"/* "$reports_dest/" 2>/dev/null || true
-            success "Copied reports to: $reports_dest/"
-        fi
-    else
-        error "Build failed - JAR not found: $output"
-        exit 1
+    # Also copy reports if they exist
+    local reports_src="$BACKEND_DIR/metasfresh-dist/dist/target/docker/app/reports"
+    if [ -d "$reports_src" ]; then
+        mkdir -p "$ARTIFACTS_DIR/reports"
+        cp -r "$reports_src"/* "$ARTIFACTS_DIR/reports/" 2>/dev/null || true
+        success "Copied reports to $ARTIFACTS_DIR/reports/"
     fi
 }
 
@@ -251,7 +290,7 @@ restart_container() {
 
         # Wait for health check
         info "Waiting for health check..."
-        local timeout=60
+        local timeout=90
         local elapsed=0
 
         while [ $elapsed -lt $timeout ]; do
@@ -292,25 +331,21 @@ show_help() {
     echo ""
     echo "Prerequisites:"
     echo "  - E2E stack running in dev-mode"
-    echo "  - Maven and Node.js/yarn available"
-    echo "  - Parent POM installed: ./mvn_build.sh --deps-only"
-    echo ""
-    echo "Examples:"
-    echo "  mf-docker-build.sh webapi     # Build and restart webapi"
-    echo "  mf-docker-build.sh webui      # Build frontend (refresh browser)"
-    echo "  mf-docker-build.sh all        # Build everything"
+    echo "  - Maven available locally"
+    echo "  - Maven repository in .m2-local/ (extracted by dev-mode)"
     echo ""
     echo "How it works:"
-    echo "  1. Builds to standard Maven/yarn output directories"
-    echo "  2. Copies artifacts to .dev-artifacts/ (mounted by compose-dev.yml)"
-    echo "  3. Restarts container to pick up changes (for backend)"
+    echo "  1. Runs Maven from backend/ reactor root"
+    echo "  2. Uses -pl -am to build module AND its changed dependencies"
+    echo "  3. Uses .m2-local/ workspace-local Maven repository"
+    echo "  4. Copies JAR to .dev-artifacts/ (mounted by compose-dev.yml)"
+    echo "  5. Restarts container to pick up changes"
     echo ""
-    echo "Artifact locations (.dev-artifacts/):"
-    echo "  webapi:  .dev-artifacts/webapi/metasfresh-webui-api.jar"
-    echo "  app:     .dev-artifacts/app/metasfresh_server.jar"
-    echo "  reports: .dev-artifacts/reports/"
-    echo "  webui:   .dev-artifacts/webui/"
-    echo "  mobile:  .dev-artifacts/mobile/"
+    echo "Examples:"
+    echo "  mf-docker-build.sh webapi           # Build and restart webapi"
+    echo "  mf-docker-build.sh webapi --no-restart"
+    echo "  mf-docker-build.sh webui            # Build frontend (refresh browser)"
+    echo "  mf-docker-build.sh all              # Build everything"
 }
 
 # Main
