@@ -550,14 +550,14 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 			receiptSchedule.setQtyToMove_Override(applyReceiptScheduleChangesRequest.getQtyInStockingUOM());
 		}
 
-		if (applyReceiptScheduleChangesRequest.hasAttributes())
+		if (applyReceiptScheduleChangesRequest.isSingleASI())
 		{
 			final AttributeSetInstanceId existingAttributeSetIdOrNone = AttributeSetInstanceId.ofRepoIdOrNone(receiptSchedule.getM_AttributeSetInstance_ID());
 
 			final AddAttributesRequest addAttributesRequest = AddAttributesRequest.builder()
 					.productId(ProductId.ofRepoId(receiptSchedule.getM_Product_ID()))
 					.existingAttributeSetIdOrNone(existingAttributeSetIdOrNone)
-					.attributeInstanceBasicInfos(applyReceiptScheduleChangesRequest.getNonNullAttributeReqList())
+					.attributeInstanceBasicInfos(applyReceiptScheduleChangesRequest.getSingleASIRequest().getAttrAndValues())
 					.build();
 
 			final AttributeSetInstanceId newAttributeSetInstanceId = attributeSetInstanceBL.addAttributes(addAttributesRequest);

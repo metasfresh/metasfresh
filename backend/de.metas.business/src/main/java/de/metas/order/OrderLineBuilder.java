@@ -16,6 +16,7 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -83,6 +84,7 @@ public class OrderLineBuilder
 	private String description;
 
 	private boolean hideWhenPrinting;
+	@Nullable private ExternalId externalId;
 
 	private final ArrayList<OrderLineDetailCreateRequest> detailCreateRequests = new ArrayList<>();
 
@@ -144,6 +146,7 @@ public class OrderLineBuilder
 		}
 
 		orderLine.setIsHideWhenPrinting(hideWhenPrinting);
+		orderLine.setExternalId(ExternalId.toValue(externalId));
 
 		saveRecord(orderLine);
 
@@ -249,6 +252,13 @@ public class OrderLineBuilder
 	{
 		assertNotBuilt();
 		this.manualPrice = manualPrice;
+		return this;
+	}
+
+	public OrderLineBuilder externalId(@Nullable final ExternalId externalId)
+	{
+		assertNotBuilt();
+		this.externalId = externalId;
 		return this;
 	}
 

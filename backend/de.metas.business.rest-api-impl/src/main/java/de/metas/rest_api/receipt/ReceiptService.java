@@ -46,7 +46,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.CreateAttributeInstanceReq;
+import org.adempiere.mm.attributes.api.CreateASIRequest;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
@@ -55,7 +55,9 @@ import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
@@ -131,12 +133,20 @@ public class ReceiptService
 
 	private Map<ReceiptScheduleId, ReceiptScheduleExternalInfo> buildExternalInfoByScheduleIdMap(@NonNull final JsonCreateReceiptsRequest request, @NonNull final ReceiptScheduleCache cache)
 	{
+		final BinaryOperator<ReceiptScheduleExternalInfo> combiner = (existing, newInfo) ->
+		{
+			if (Objects.equals(existing, newInfo))
+			{
+				return existing;
+			}
+			throw new AdempiereException("Cannot merge external info! Existing: " + existing + ", new: " + newInfo);
+		};
 		return request.getJsonCreateReceiptInfoList()
 				.stream()
 				.filter(createReceiptInfo -> createReceiptInfo.getDateReceived() != null
 						|| createReceiptInfo.getMovementDate() != null
 						|| Check.isNotBlank(createReceiptInfo.getExternalId()))
-				.collect(Collectors.toMap(this::extractReceiptScheduleId, (createReceiptInfo) -> this.extractExternalInfo(createReceiptInfo, cache)));
+				.collect(Collectors.toMap(this::extractReceiptScheduleId, (createReceiptInfo) -> this.extractExternalInfo(createReceiptInfo, cache), combiner));
 	}
 
 	private void updateReceiptSchedules(@NonNull final JsonCreateReceiptsRequest request, @NonNull final ReceiptScheduleCache receiptScheduleCache)
@@ -224,18 +234,18 @@ public class ReceiptService
 			return Optional.empty();
 		}
 
-		final List<CreateAttributeInstanceReq> createAttributeInstanceReqList = createReceiptInfo.getAttributes() != null
-				? attributeSetHelper.toCreateAttributeInstanceReqList(createReceiptInfo.getAttributes())
+		final CreateASIRequest createAttributeInstanceReqList = createReceiptInfo.getAttributes() != null
+				? CreateASIRequest.of(attributeSetHelper.toCreateAttributeInstanceReqList(createReceiptInfo.getAttributes()))
 				: null;
 
 		return Optional.of(
 				ApplyReceiptScheduleChangesRequest.builder()
 						.receiptScheduleId(extractReceiptScheduleId(createReceiptInfo))
 						.qtyInStockingUOM(createReceiptInfo.getMovementQuantity())
-						.attributes(createAttributeInstanceReqList)
+						.asiRequestList(createAttributeInstanceReqList)
 						.externalResourceURL(createReceiptInfo.getExternalResourceURL())
 						.build()
-				);
+		);
 	}
 
 	//

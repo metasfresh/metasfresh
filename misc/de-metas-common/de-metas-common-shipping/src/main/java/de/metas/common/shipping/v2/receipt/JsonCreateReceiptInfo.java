@@ -22,56 +22,82 @@
 
 package de.metas.common.shipping.v2.receipt;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import de.metas.common.rest_api.v2.JsonAttributeInstance;
+import com.google.common.collect.ImmutableList;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.JsonAttributeInstance;
+import de.metas.common.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Value
-@Builder
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
-@JsonDeserialize(builder = JsonCreateReceiptInfo.JsonCreateReceiptInfoBuilder.class)
 public class JsonCreateReceiptInfo
 {
-	@JsonProperty("externalId")
 	String externalId;
-
-	@JsonProperty("receiptScheduleId")
-	@NonNull
-	JsonMetasfreshId receiptScheduleId;
-
-	@JsonProperty("productSearchKey")
+	@NonNull JsonMetasfreshId receiptScheduleId;
 	String productSearchKey;
-
-	@JsonProperty("movementQuantity")
-	BigDecimal movementQuantity;
-
-	@JsonProperty("dateReceived")
 	LocalDateTime dateReceived;
-
-	@JsonProperty("movementDate")
 	LocalDate movementDate;
-
-	@JsonProperty("attributes")
-	List<JsonAttributeInstance> attributes;
-
-	@JsonProperty("externalResourceURL")
 	String externalResourceURL;
 
-	@JsonPOJOBuilder(withPrefix = "")
-	@JsonIgnoreProperties(ignoreUnknown = true)
-	public static class JsonCreateReceiptInfoBuilder
+	@Nullable BigDecimal movementQuantity;
+	@Nullable List<JsonAttributeInstance> attributes;
+	@Nullable List<HU> hus;
+
+	@Builder
+	@Jacksonized
+	private JsonCreateReceiptInfo(
+			final String externalId,
+			@NonNull final JsonMetasfreshId receiptScheduleId,
+			final String productSearchKey,
+			final LocalDateTime dateReceived,
+			final LocalDate movementDate,
+			final String externalResourceURL,
+			@Nullable final BigDecimal movementQuantity,
+			@Nullable final List<JsonAttributeInstance> attributes,
+			@Nullable final List<HU> hus)
 	{
+		this.externalId = externalId;
+		this.receiptScheduleId = receiptScheduleId;
+		this.productSearchKey = productSearchKey;
+		this.dateReceived = dateReceived;
+		this.movementDate = movementDate;
+		this.externalResourceURL = externalResourceURL;
+
+		if (hus == null || hus.isEmpty())
+		{
+			this.movementQuantity = Check.assumeNotNull(movementQuantity, "movementQuantity shall be not null if hus is null or empty");
+			this.attributes = attributes;
+			this.hus = null;
+		}
+		else
+		{
+			Check.assumeNull(movementQuantity, "movementQuantity shall be null if hus is null or empty");
+			Check.assumeNull(attributes, "attributes shall be null if hus is null or empty");
+			this.hus = ImmutableList.copyOf(hus);
+			this.movementQuantity = null;
+			this.attributes = null;
+		}
 	}
+
+	//
+	//
+	//
+
+	@Value
+	@Builder
+	@Jacksonized
+	public static class HU
+	{
+		@NonNull BigDecimal qty;
+		@Nullable List<JsonAttributeInstance> attributes;
+	}
+
 }

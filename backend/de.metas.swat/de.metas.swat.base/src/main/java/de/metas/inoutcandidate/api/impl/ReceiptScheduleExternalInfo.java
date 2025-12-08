@@ -24,12 +24,14 @@ package de.metas.inoutcandidate.api.impl;
 
 import de.metas.util.Check;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.Objects;
 
 @Value
 public class ReceiptScheduleExternalInfo
@@ -61,5 +63,14 @@ public class ReceiptScheduleExternalInfo
 		this.dateAcct = dateAcct;
 		this.dateReceived = dateReceived;
 		this.externalId = externalId;
+	}
+
+	public ReceiptScheduleExternalInfo returnIfSame(@NonNull final ReceiptScheduleExternalInfo other)
+	{
+		if (Objects.equals(this, other))
+		{
+			return this;
+		}
+		throw new AdempiereException("Expecting  " + other);
 	}
 }

@@ -22,13 +22,15 @@
 
 package de.metas.inoutcandidate.api;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.CreateAttributeInstanceReq;
+import org.adempiere.mm.attributes.api.CreateASIRequest;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -44,44 +46,52 @@ public class ApplyReceiptScheduleChangesRequest
 	BigDecimal qtyInStockingUOM;
 
 	@Nullable
-	List<CreateAttributeInstanceReq> attributes;
+	@Singular
+	List<CreateASIRequest> asiRequestList;
 
 	@Nullable
 	String externalResourceURL;
 
 	@Builder
 	public ApplyReceiptScheduleChangesRequest(
-			@NonNull  final ReceiptScheduleId receiptScheduleId,
+			@NonNull final ReceiptScheduleId receiptScheduleId,
 			@Nullable final BigDecimal qtyInStockingUOM,
-			@Nullable final List<CreateAttributeInstanceReq> attributes,
+			@Nullable final CreateASIRequest asiRequestList,
 			@Nullable final String externalResourceURL)
 	{
 		if (qtyInStockingUOM == null
-				&& Check.isEmpty(attributes)
-		        && Check.isBlank(externalResourceURL))
+				&& Check.isEmpty(asiRequestList)
+				&& Check.isBlank(externalResourceURL))
 		{
 			throw new AdempiereException("Empty request!");
 		}
 
 		this.receiptScheduleId = receiptScheduleId;
 		this.qtyInStockingUOM = qtyInStockingUOM;
-		this.attributes = attributes;
 		this.externalResourceURL = externalResourceURL;
+		if (asiRequestList != null && !asiRequestList.isEmpty())
+		{
+			this.asiRequestList = ImmutableList.of(asiRequestList);
+		}
+		else
+		{
+			this.asiRequestList = ImmutableList.of();
+		}
 	}
 
-	public boolean hasAttributes()
+	public boolean isSingleASI()
 	{
-		return !Check.isEmpty(attributes);
+		return !Check.isEmpty(asiRequestList) && asiRequestList.size() == 1;
 	}
 
 	@NonNull
-	public List<CreateAttributeInstanceReq> getNonNullAttributeReqList()
+	public CreateASIRequest getSingleASIRequest()
 	{
-		if (Check.isEmpty(attributes))
+		if (!isSingleASI())
 		{
-			throw new AdempiereException("CreateAttributeInstanceReq list is empty or null!");
+			throw new AdempiereException(" request contains more than one ASI!");
 		}
 
-		return attributes;
+		return asiRequestList.get(0);
 	}
 }

@@ -273,6 +273,12 @@ public class PurchaseOrderItem implements PurchaseItem
 	}
 
 	@Nullable
+	public ExternalId getExternalLineId()
+	{
+		return purchaseCandidate.getExternalLineId();
+	}
+
+	@Nullable
 	public String getPOReference()
 	{
 		return purchaseCandidate.getPOReference();
