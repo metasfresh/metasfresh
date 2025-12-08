@@ -22,6 +22,7 @@
 
 package de.metas.location.geocoding.interceptor;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
 import de.metas.location.LocationId;
@@ -37,6 +38,8 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 @Interceptor(I_C_Location.class)
