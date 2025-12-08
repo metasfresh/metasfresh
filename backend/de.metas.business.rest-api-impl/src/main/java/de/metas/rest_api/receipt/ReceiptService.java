@@ -71,6 +71,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.create;
 public class ReceiptService
 {
 	private static final AdMessageKey ERR_RECEIPT_SCHEDULE_NOT_FOUND = AdMessageKey.of("ERR_RECEIPT_SCHEDULE_NOT_FOUND");
+	private static final AdMessageKey ERR_RECEIPT_SCHEDULE_INVALID_IDENTIFICATION_METHOD = AdMessageKey.of("ERR_RECEIPT_SCHEDULE_INVALID_IDENTIFICATION_METHOD");
 	
 	@NonNull private final AttributeSetHelper attributeSetHelper;
 
@@ -174,6 +175,8 @@ public class ReceiptService
 
 	private void validateCreateReceiptInfo(@NonNull final JsonCreateReceiptInfo jsonCreateReceiptInfo, @NonNull final ReceiptScheduleCache cache)
 	{
+		validateOneIdentificationMethod(jsonCreateReceiptInfo);
+
 		final I_M_ReceiptSchedule receiptSchedule = cache.getById(extractReceiptScheduleId(jsonCreateReceiptInfo));
 
 		if (receiptSchedule.isProcessed())
@@ -206,6 +209,8 @@ public class ReceiptService
 	@NonNull
 	private ReceiptScheduleId extractReceiptScheduleId(@NonNull final JsonCreateReceiptInfo receiptInfo)
 	{
+		validateOneIdentificationMethod(receiptInfo);
+		
 		if (receiptInfo.getReceiptScheduleId() != null)
 		{
 			return ReceiptScheduleId.ofRepoId(receiptInfo.getReceiptScheduleId().getValue());
@@ -268,6 +273,16 @@ public class ReceiptService
 						.externalResourceURL(createReceiptInfo.getExternalResourceURL())
 						.build()
 				);
+	}
+
+	private void validateOneIdentificationMethod(@NonNull final JsonCreateReceiptInfo createReceiptInfo)
+	{
+		if (createReceiptInfo.countIdentificationMethods() != 1)
+		{
+			throw new AdempiereException(ERR_RECEIPT_SCHEDULE_INVALID_IDENTIFICATION_METHOD)
+					.appendParametersToMessage()
+					.setParameter("jsonCreateReceiptInfo", createReceiptInfo);
+		}
 	}
 
 	//

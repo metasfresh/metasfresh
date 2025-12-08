@@ -32,13 +32,14 @@ import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Value
+@Builder
+@Jacksonized
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class JsonCreateReceiptInfo
 {
@@ -75,43 +76,8 @@ public class JsonCreateReceiptInfo
 	@JsonProperty("externalResourceURL")
 	String externalResourceURL;
 
-	@Builder
-	@Jacksonized
-	public JsonCreateReceiptInfo(
-			@Nullable final String externalHeaderId,
-			@Nullable final String externalLineId,
-			@Nullable final JsonMetasfreshId receiptScheduleId,
-			@Nullable final JsonMetasfreshId orderLineId,
-			@Nullable final String externalId,
-			@Nullable final String productSearchKey,
-			@Nullable final BigDecimal movementQuantity,
-			@Nullable final LocalDateTime dateReceived,
-			@Nullable final LocalDate movementDate,
-			@Nullable final List<JsonAttributeInstance> attributes,
-			@Nullable final String externalResourceURL)
-	{
-		this.externalHeaderId = externalHeaderId;
-		this.externalLineId = externalLineId;
-		this.receiptScheduleId = receiptScheduleId;
-		this.orderLineId = orderLineId;
-		this.externalId = externalId;
-		this.productSearchKey = productSearchKey;
-		this.movementQuantity = movementQuantity;
-		this.dateReceived = dateReceived;
-		this.movementDate = movementDate;
-		this.attributes = attributes;
-		this.externalResourceURL = externalResourceURL;
-
-		if (countIdentificationMethods() != 1)
-		{
-			throw new IllegalArgumentException(
-					"Exactly one identification method must be provided: " +
-							"receiptScheduleId, (externalHeaderId AND externalLineId), or orderLineId");
-		}
-	}
-
 	@JsonIgnore
-	private int countIdentificationMethods()
+	public int countIdentificationMethods()
 	{
 		int count = 0;
 		if (receiptScheduleId != null)
