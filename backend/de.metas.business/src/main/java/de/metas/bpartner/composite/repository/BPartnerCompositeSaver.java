@@ -399,53 +399,30 @@ final class BPartnerCompositeSaver
 	{
 		if (bpartnerLocation.isAddressSpecifiedByExistingLocationIdOnly())
 		{
-			final LocationId existingLocationId = Check.assumeNotNull(
-					bpartnerLocation.getExistingLocationId(),
-					"existingLocationId not null: {}", bpartnerLocation);
-
-			final I_C_Location existingLocationRecord = locationDAO.getById(existingLocationId);
+			final I_C_Location existingLocationRecord = locationDAO.getById(bpartnerLocation.getExistingLocationIdNotNull());
 			return BPartnerCompositesLoader.toBPartnerLocationAddressPart(
-					existingLocationRecord,
-					locationDAO,
-					countryDAO);
-		}
-
-		final BPartnerLocationAddressPart oldAddress;
-		if (bpartnerLocation.getExistingLocationId() != null)
-		{
-			final I_C_Location existingLocationRecord = locationDAO.getById(bpartnerLocation.getExistingLocationId());
-			oldAddress = BPartnerCompositesLoader.toBPartnerLocationAddressPart(
 					existingLocationRecord,
 					locationDAO,
 					countryDAO);
 		}
 		else
 		{
-			oldAddress = null;
+			return createOrReuseLocationRecord(bpartnerLocation.toAddress());
 		}
-
-		BPartnerLocationAddressPart newAddress = bpartnerLocation.toAddress();
-		if (oldAddress == null || !BPartnerLocationAddressPart.equals(oldAddress, newAddress))
-		{
-			newAddress = createNewLocationRecord(newAddress);
-		}
-
-		return newAddress;
 	}
 
-	private BPartnerLocationAddressPart createNewLocationRecord(@NonNull final BPartnerLocationAddressPart address)
+	private BPartnerLocationAddressPart createOrReuseLocationRecord(@NonNull final BPartnerLocationAddressPart address)
 	{
 		final LocationCreateRequest.LocationCreateRequestBuilder requestBuilder = LocationCreateRequest.builder()
+				.existingLocationId(address.getExistingLocationId())
 				.address1(address.getAddress1())
 				.address2(address.getAddress2())
 				.address3(address.getAddress3())
 				.address4(address.getAddress4());
 
-		if (address.getCountryCode() != null && !isBlank(address.getCountryCode()))
-		{
-			final CountryId countryId = countryDAO.getCountryIdByCountryCode(address.getCountryCode());
-			requestBuilder.countryId(countryId);
-		}
+		StringUtils.trimBlankToOptional(address.getCountryCode())
+				.map(countryDAO::getCountryIdByCountryCode)
+				.ifPresent(requestBuilder::countryId);
 
 		boolean postalDataSetFromPostalRecord = false;
 		final I_C_Postal postalRecord = retrievePostal(address);
@@ -469,7 +446,7 @@ final class BPartnerCompositeSaver
 
 		requestBuilder.poBox(address.getPoBox());
 
-		final LocationId newLocationId = locationDAO.createLocation(requestBuilder.build());
+		final LocationId newLocationId = locationDAO.createOrReuseLocation(requestBuilder.build());
 		return address.withExistingLocationId(newLocationId);
 	}
 
