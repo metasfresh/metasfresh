@@ -130,6 +130,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 			receiptSchedule.setRecord_ID(line.getC_OrderLine_ID());
 			receiptSchedule.setC_Order_ID(line.getC_Order_ID());
 			receiptSchedule.setC_OrderLine_ID(line.getC_OrderLine_ID());
+			receiptSchedule.setExternalLineId(line.getExternalId());
 
 			// #388
 			// set isPackagingMaterial according to the order line
@@ -161,6 +162,8 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		final I_C_Order order = line.getC_Order();
 		receiptSchedule.setAD_User_ID(order.getAD_User_ID());
 		receiptSchedule.setPOReference(order.getPOReference());
+		receiptSchedule.setExternalHeaderId(order.getExternalId());
+		receiptSchedule.setExternalSystem_ID(order.getExternalSystem_ID());
 		//
 		// Delivery rule, Priority rule
 		{
