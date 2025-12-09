@@ -6,19 +6,19 @@ create function m_hu_trace_report_retailer(p_ad_pinstance_id numeric)
                 lotnumber           character varying,
                 hutracetype         character varying,
                 product             character varying,
-                inout               character varying,
-                movementdate        timestamp with time zone,
+                "InOut"             character varying,
+                documentdate        timestamp with time zone,
                 qty                 numeric,
                 uom                 character varying,
-                recipient_no        character varying,
-                recipient_name      character varying,
+                customer_vendor_no  character varying,
+                customer_vendor     character varying,
                 bpartneraddress     text,
                 sales_order_no      character varying,
                 invoice_no          character varying,
                 shipper             character varying,
                 delivery_date       character varying,
                 receipt_date        character varying,
-                current_stock       numeric,
+                prod_stock          numeric,
                 traceid             numeric,
                 reportdate          character varying
             )
@@ -32,7 +32,7 @@ SELECT DISTINCT t.LotNumber                                                     
                 'Current Stock'                                                                                 AS HUTraceType,
                 p.value || '_' || p.name                                                                        AS Product,
                 NULL                                                                                            AS InOut,
-                NOW()                                                                                           AS MovementDate,
+                NOW()                                                                                           AS DocumentDate,
                 getcurrentstoragestock(t.m_product_id,
                                        t.c_uom_id,
                                        1000017, -- Lot-Nummer
@@ -41,8 +41,8 @@ SELECT DISTINCT t.LotNumber                                                     
                                        t.ad_org_id
                     )                                                                                           AS Qty,
                 u.uomsymbol                                                                                     AS UOM,
-                NULL                                                                                            AS recipient_no,
-                NULL                                                                                            AS recipient_name,
+                NULL                                                                                            AS customer_vendor_no,
+                NULL                                                                                            AS customer_vendor,
                 NULL                                                                                            AS BPartnerAddress,
                 NULL                                                                                            AS sales_order_no,
                 NULL                                                                                            AS invoice_no,
@@ -55,7 +55,7 @@ SELECT DISTINCT t.LotNumber                                                     
                                        t.lotnumber,
                                        t.ad_client_id,
                                        t.ad_org_id
-                    )                                                                                           AS current_stock,
+                    )                                                                                           AS prod_stock,
                 NULL::numeric                                                                                   AS traceid,
                 to_char(now(), 'DD.MM.YYYY HH24:MI')                                                            AS reportdate
 
@@ -78,7 +78,7 @@ UNION ALL
         t.hutracetype                                                                                           AS HUTraceType,
         p.value || '_' || p.name                                                                                AS Product,
         io.documentno                                                                                           AS InOut,
-        io.movementdate                                                                                         AS MovementDate,
+        io.movementdate                                                                                         AS DocumentDate,
         CASE WHEN dt.isSOTrx = 'Y' THEN -1 ELSE 1 END * (SELECT SUM(uomconvert(p_m_product_id := p.m_product_id,
                                                                                 p_c_uom_from_id := iol.c_uom_id,
                                                                                 p_c_uom_to_id := p.c_uom_id,
@@ -98,8 +98,8 @@ UNION ALL
                                                                            OR (t.lotnumber IS NULL AND huat.value IS NULL)
                                                                            )))                                  AS Qty,
         u.uomsymbol                                                                                             AS UOM,
-        bp.value                                                                                                AS recipient_no,
-        bp.name                                                                                                 AS recipient_name,
+        bp.value                                                                                                AS customer_vendor_no,
+        bp.name                                                                                                 AS customer_vendor,
         io.BPartnerAddress                                                                                      AS BPartnerAddress,
         (SELECT o.documentno FROM C_Order o WHERE o.c_order_id = io.c_order_id)                                AS sales_order_no,
         NULL                                                                                                    AS invoice_no,
@@ -112,7 +112,7 @@ UNION ALL
                                t.lotnumber,
                                t.ad_client_id,
                                t.ad_org_id
-            )                                                                                                   AS current_stock,
+            )                                                                                                   AS prod_stock,
         t.m_hu_trace_id                                                                                         AS traceid,
         to_char(now(), 'DD.MM.YYYY HH24:MI')                                                                    AS reportdate
 
@@ -139,11 +139,11 @@ UNION ALL
         t.hutracetype                                                                                           AS HUTraceType,
         p.value || '_' || p.name                                                                                AS Product,
         io.documentno                                                                                           AS InOut,
-        io.movementdate                                                                                         AS MovementDate,
+        io.movementdate                                                                                         AS DocumentDate,
         CASE WHEN dt.isSOTrx = 'Y' THEN -1 ELSE 1 END * ROUND(t.qty, u.stdprecision)                            AS Qty,
         u.uomsymbol                                                                                             AS UOM,
-        bp.value                                                                                                AS recipient_no,
-        bp.name                                                                                                 AS recipient_name,
+        bp.value                                                                                                AS customer_vendor_no,
+        bp.name                                                                                                 AS customer_vendor,
         io.BPartnerAddress                                                                                      AS BPartnerAddress,
         (SELECT o.documentno FROM C_Order o WHERE o.c_order_id = io.c_order_id)                                AS sales_order_no,
         (SELECT STRING_AGG(DISTINCT inv.documentno, ', ')
@@ -161,7 +161,7 @@ UNION ALL
                                t.lotnumber,
                                t.ad_client_id,
                                t.ad_org_id
-            )                                                                                                   AS current_stock,
+            )                                                                                                   AS prod_stock,
         t.m_hu_trace_id                                                                                         AS traceid,
         to_char(now(), 'DD.MM.YYYY HH24:MI')                                                                    AS reportdate
 
@@ -188,11 +188,11 @@ UNION ALL
         t.hutracetype                                                                                           AS HUTraceType,
         p.value || '_' || p.name                                                                                AS Product,
         i.documentno                                                                                            AS InOut,
-        i.movementdate                                                                                          AS MovementDate,
+        i.movementdate                                                                                          AS DocumentDate,
         CASE WHEN i.C_Doctype_ID = 540948 THEN -1 ELSE 1 END * ROUND(t.qty, u.stdprecision)                     AS Qty,
         u.uomsymbol                                                                                             AS UOM,
-        NULL                                                                                                    AS recipient_no,
-        NULL                                                                                                    AS recipient_name,
+        NULL                                                                                                    AS customer_vendor_no,
+        NULL                                                                                                    AS customer_vendor,
         NULL                                                                                                    AS BPartnerAddress,
         NULL                                                                                                    AS sales_order_no,
         NULL                                                                                                    AS invoice_no,
@@ -205,7 +205,7 @@ UNION ALL
                                t.lotnumber,
                                t.ad_client_id,
                                t.ad_org_id
-            )                                                                                                   AS current_stock,
+            )                                                                                                   AS prod_stock,
         t.m_hu_trace_id                                                                                         AS traceid,
         to_char(now(), 'DD.MM.YYYY HH24:MI')                                                                    AS reportdate
 
@@ -222,7 +222,7 @@ UNION ALL
                WHERE s.AD_PInstance_ID = p_AD_PInstance_ID
                  AND s.T_Selection_ID = t.m_hu_trace_id))
 
-ORDER BY LotNumber, HUTraceType, MovementDate;
+ORDER BY LotNumber, HUTraceType, DocumentDate;
 
 $$;
 
