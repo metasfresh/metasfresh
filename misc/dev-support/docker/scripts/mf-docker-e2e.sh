@@ -259,7 +259,7 @@ cmd_start() {
     fi
     echo "║  • API:       http://localhost:8080                       ║"
     echo "║  • App:       http://localhost:8282                       ║"
-    echo "║  • Database:  localhost:15432 (user: metasfresh)          ║"
+    echo "║  • Database:  localhost:14432 (MCP: postgres-e2e)        ║"
     if [ "$DEV_MODE" == "true" ]; then
     echo "║                                                            ║"
     echo "║  Dev mode: Use 'mf-docker.sh build <component>' to update ║"
