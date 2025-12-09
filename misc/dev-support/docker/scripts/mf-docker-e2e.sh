@@ -25,6 +25,9 @@ VERSION_FILE="$SCRIPT_DIR/.mf-docker-version"
 COMPOSE_DIR="$METASFRESH_ROOT/docker-builds/frontendtest"
 PROJECT_NAME="mfstack"
 
+# User ID/GID for docker run commands (ensures files are owned by current user)
+DOCKER_USER="$(id -u):$(id -g)"
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -132,7 +135,7 @@ extract_artifacts_if_needed() {
     # Extract webapi JAR if not exists
     if [ ! -f "$artifacts_dir/webapi/metasfresh-webui-api.jar" ]; then
         info "Extracting webapi JAR from $registry/metas-api:$tag..."
-        docker run --rm -v "$artifacts_dir/webapi:/out" \
+        docker run --rm --user "$DOCKER_USER" -v "$artifacts_dir/webapi:/out" \
             "$registry/metas-api:$tag" \
             cp /opt/metasfresh-webui-api/metasfresh-webui-api.jar /out/
         success "Extracted webapi JAR"
@@ -143,7 +146,7 @@ extract_artifacts_if_needed() {
     # Extract app JAR if not exists
     if [ ! -f "$artifacts_dir/app/metasfresh_server.jar" ]; then
         info "Extracting app JAR from $registry/metas-app:$tag..."
-        docker run --rm -v "$artifacts_dir/app:/out" \
+        docker run --rm --user "$DOCKER_USER" -v "$artifacts_dir/app:/out" \
             "$registry/metas-app:$tag" \
             cp /opt/metasfresh/metasfresh_server.jar /out/
         success "Extracted app JAR"
@@ -154,7 +157,7 @@ extract_artifacts_if_needed() {
     # Extract reports if not exists (JRXML files for Jasper reports)
     if [ ! -d "$artifacts_dir/reports/jasper" ] || [ -z "$(ls -A "$artifacts_dir/reports" 2>/dev/null)" ]; then
         info "Extracting reports from $registry/metas-app:$tag..."
-        docker run --rm -v "$artifacts_dir/reports:/out" \
+        docker run --rm --user "$DOCKER_USER" -v "$artifacts_dir/reports:/out" \
             "$registry/metas-app:$tag" \
             sh -c "cp -r /opt/metasfresh/reports/* /out/ 2>/dev/null || echo 'No reports directory'"
         success "Extracted reports"
@@ -165,7 +168,7 @@ extract_artifacts_if_needed() {
     # Extract frontend assets if not exists
     if [ ! -f "$artifacts_dir/webui/index.html" ]; then
         info "Extracting frontend assets from $registry/metas-frontend:$tag..."
-        docker run --rm -v "$artifacts_dir/webui:/out" \
+        docker run --rm --user "$DOCKER_USER" -v "$artifacts_dir/webui:/out" \
             "$registry/metas-frontend:$tag" \
             sh -c "cp -r /usr/share/nginx/html/* /out/"
         success "Extracted frontend assets"
