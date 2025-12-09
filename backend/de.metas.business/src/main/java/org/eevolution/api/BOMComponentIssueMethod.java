@@ -65,4 +65,6 @@ public enum BOMComponentIssueMethod implements ReferenceListAwareEnum
 	{
 		return index.ofNullableCode(code);
 	}
+
+	public boolean isIssueOnlyForReceived() {return this == IssueOnlyForReceived;}
 }

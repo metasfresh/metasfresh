@@ -42,6 +42,7 @@ import org.adempiere.service.ClientId;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.TimeUtil;
+import org.eevolution.api.BOMComponentIssueMethod;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.BOMType;
 import org.eevolution.api.BOMUse;
@@ -383,6 +384,13 @@ public class CreateProductCommand
 
 		lineRecord.setComponentType(componentType.getCode());
 		lineRecord.setValidFrom(bomRecord.getValidFrom());
+
+		// Optionally set Issue Method if provided by test data (e.g., IssueOnlyForReceived)
+		final BOMComponentIssueMethod issueMethod = line.getIssueMethod();
+		if (issueMethod != null)
+		{
+			lineRecord.setIssueMethod(issueMethod.getCode());
+		}
 
 		if (line.isPercentage())
 		{

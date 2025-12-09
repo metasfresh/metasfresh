@@ -14,6 +14,7 @@ import de.metas.workflow.rest_api.model.WFActivityStatus;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.eevolution.api.BOMComponentIssueMethod;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -27,6 +28,7 @@ public class RawMaterialsIssueLine
 	@NonNull ITranslatableString productName;
 	@NonNull String productValue;
 	boolean isWeightable;
+	@NonNull BOMComponentIssueMethod issueMethod;
 	@NonNull Quantity qtyToIssue;
 	@Nullable IssuingToleranceSpec issuingToleranceSpec;
 	@NonNull ImmutableList<RawMaterialsIssueStep> steps;
@@ -41,6 +43,7 @@ public class RawMaterialsIssueLine
 			@NonNull final ITranslatableString productName,
 			@NonNull final String productValue,
 			final boolean isWeightable,
+			@Nullable BOMComponentIssueMethod issueMethod,
 			@NonNull final Quantity qtyToIssue,
 			@Nullable final IssuingToleranceSpec issuingToleranceSpec,
 			@NonNull final ImmutableList<RawMaterialsIssueStep> steps,
@@ -50,6 +53,7 @@ public class RawMaterialsIssueLine
 		this.productName = productName;
 		this.productValue = productValue;
 		this.isWeightable = isWeightable;
+		this.issueMethod = issueMethod != null ? issueMethod : BOMComponentIssueMethod.Issue;
 		this.qtyToIssue = qtyToIssue;
 		this.issuingToleranceSpec = issuingToleranceSpec;
 		this.steps = steps;
@@ -141,5 +145,10 @@ public class RawMaterialsIssueLine
 	public Quantity getQtyLeftToIssue()
 	{
 		return qtyToIssue.subtract(qtyIssued);
+	}
+
+	public boolean isAllowManualIssue()
+	{
+		return issueMethod != BOMComponentIssueMethod.IssueOnlyForReceived;
 	}
 }
