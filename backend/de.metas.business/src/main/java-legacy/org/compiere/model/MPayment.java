@@ -239,17 +239,6 @@ public final class MPayment extends X_C_Payment
 	@Override
 	protected boolean beforeSave(final boolean newRecord)
 	{
-		// Document Type/Receipt
-		if (getC_DocType_ID() <= 0)
-		{
-			setC_DocType_ID();
-		}
-		else
-		{
-			final MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
-			setIsReceipt(dt.isSOTrx());
-		}
-
 		// metas: tsa: us025b: begin: If is a cash bank, set TenderType=Cash
 		final BankAccountId orgBankAccountId = BankAccountId.ofRepoIdOrNull(getC_BP_BankAccount_ID());
 		if (orgBankAccountId != null)
@@ -261,9 +250,7 @@ public final class MPayment extends X_C_Payment
 			}
 			else
 			{
-				setTenderType(isReceipt()
-						? TenderType.DirectDebit.getCode()
-						: TenderType.DirectDeposit.getCode());
+				setTenderType(TenderType.DirectDeposit.getCode());
 			}
 		}
 
@@ -313,7 +300,16 @@ public final class MPayment extends X_C_Payment
 			 */
 		}
 
-
+		// Document Type/Receipt
+		if (getC_DocType_ID() <= 0)
+		{
+			setC_DocType_ID();
+		}
+		else
+		{
+			final MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
+			setIsReceipt(dt.isSOTrx());
+		}
 		setDocumentNo();
 		//
 		if (getDateAcct() == null)
