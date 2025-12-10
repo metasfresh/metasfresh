@@ -24,6 +24,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.util.HUTopLevel;
@@ -78,7 +79,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 
 import static de.metas.util.Check.assumeNotNull;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
@@ -97,6 +97,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IHUShipmentAssignmentBL huShipmentAssignmentBL = Services.get(IHUShipmentAssignmentBL.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
@@ -441,14 +442,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		}
 		else
 		{
-			final Set<ProjectId> projectIdsFromShipmentSchedules = candidates.stream()
-					.map(ShipmentScheduleWithHU::getProjectId)
-					.filter(Objects::nonNull)
-					.collect(Collectors.toSet());
-			if (projectIdsFromShipmentSchedules.size() == 1)
-			{
-				shipmentLine.setC_Project_ID(projectIdsFromShipmentSchedules.iterator().next().getRepoId());
-			}
+			final ProjectId projectId = huShipmentScheduleBL.extractSingleProjectIdOrNull(candidates);
+			shipmentLine.setC_Project_ID(ProjectId.toRepoId(projectId));
 		}
 
 		optimisticallySetLineNo(shipmentLine);

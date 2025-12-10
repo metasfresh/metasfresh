@@ -22,28 +22,17 @@ package de.metas.invoicecandidate.modelvalidator;
  * #L%
  */
 
-import de.metas.inout.IInOutBL;
-import de.metas.invoice.interceptor.C_Invoice;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
-import de.metas.logging.LogManager;
-import de.metas.project.ProjectId;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
-import org.slf4j.Logger;
-
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Interceptor(I_M_InOut.class)
 public class M_InOut
 {
-	private static final Logger log = LogManager.getLogger(C_Invoice.class);
 	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
-	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 
 	// Moved here from {@link de.metas.inout.model.validator.M_InOut}
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSECORRECT, //
@@ -55,28 +44,5 @@ public class M_InOut
 	public void invalidateInvoiceCandidatesOnReversal(final I_M_InOut inout)
 	{
 		invoiceCandidateHandlerBL.invalidateCandidatesFor(inout);
-	}
-
-	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
-	public void copyProjectIdFromLinesIfApplicable(final I_M_InOut inout)
-	{
-		final Set<ProjectId> projectIds = inOutBL.getLines(inout)
-				.stream()
-				.map(line -> ProjectId.ofRepoIdOrNull(line.getC_Project_ID()))
-				.filter(Objects::nonNull)
-				.collect(Collectors.toSet());
-		if (projectIds.size() == 1)
-		{
-			inout.setC_Project_ID(projectIds.iterator().next().getRepoId());
-		}
-		else
-		{
-			if (projectIds.size() > 1)
-			{
-				log.debug("InOut {} has multiple projects {}, not setting header project",
-						inout, projectIds);
-			}
-			inout.setC_Project_ID(ProjectId.toRepoId(null));
-		}
 	}
 }
