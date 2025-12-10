@@ -599,7 +599,7 @@ public class C_Order_StepDef
 	public void verifyOrder(final String externalId, final int timeoutSec,
 							@NonNull final DataTable dataTable) throws InterruptedException
 	{
-		final Map<String, String> dataTableRow = dataTable.asMaps().get(0);
+		final DataTableRow row = DataTableRow.singleRow(dataTable);
 
 		final Supplier<Boolean> purchaseOrderQueryExecutor = () -> {
 
@@ -618,17 +618,14 @@ public class C_Order_StepDef
 				.create()
 				.firstOnlyNotNull(I_C_Order.class);
 
-		final String externalPurchaseOrderUrl = DataTableUtil.extractStringForColumnName(dataTableRow, I_C_Order.COLUMNNAME_ExternalPurchaseOrderURL);
-		assertThat(purchaseOrderRecord.getExternalPurchaseOrderURL()).isEqualTo(externalPurchaseOrderUrl);
+		row.getAsOptionalString(I_C_Order.COLUMNNAME_ExternalPurchaseOrderURL)
+				.ifPresent(externalPurchaseOrderUrl -> assertThat(purchaseOrderRecord.getExternalPurchaseOrderURL()).isEqualTo(externalPurchaseOrderUrl));
 
-		final String poReference = DataTableUtil.extractStringForColumnName(dataTableRow, I_C_Order.COLUMNNAME_POReference);
-		assertThat(purchaseOrderRecord.getPOReference()).isEqualTo(poReference);
+		row.getAsOptionalString(I_C_Order.COLUMNNAME_POReference)
+				.ifPresent(poReference -> assertThat(purchaseOrderRecord.getPOReference()).isEqualTo(poReference));
 
-		final String orderIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (EmptyUtil.isNotBlank(orderIdentifier))
-		{
-			orderTable.putOrReplace(orderIdentifier, purchaseOrderRecord);
-		}
+		row.getAsOptionalIdentifier(COLUMNNAME_C_Order_ID)
+				.ifPresent(orderIdentifier -> orderTable.putOrReplace(orderIdentifier, purchaseOrderRecord));
 	}
 
 	@And("validate the created orders")
