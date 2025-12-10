@@ -8,6 +8,7 @@ import { expect } from '@playwright/test';
 import { expectClasses } from '../../expectations';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
 import { DistributionLinePickFromScreen } from './DistributionLinePickFromScreen';
+import { DistributionUtils } from './DistributionUtils';
 
 const NAME = 'DistributionJobScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -18,25 +19,20 @@ export const DistributionJobScreen = {
         await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
+    expectJobId: async ({ distributionJobId }) => await test.step(`${NAME} - Expect jobId=${distributionJobId}`, async () => {
+        await DistributionJobScreen.waitForScreen();
+        await DistributionUtils.expectJobId({ distributionJobId });
+    }),
+
     scanHUToMove: async ({ huQRCode, productScannedCode, expectQuantityDialog = true, expectedQtyToMove, expectNextScreen }) => await test.step(`${NAME} - Scan HU to move`, async () => {
         await BarcodeScannerComponent.type({ scannedCode: huQRCode });
-        await DistributionLinePickFromScreen.waitForScreen();
-        await DistributionLinePickFromScreen.typeProductCode(productScannedCode);
-        
-        if(expectQuantityDialog) {
-            await DistributionLinePickFromScreen.fillQuantityDialog({
-                expectedQtyToMove,
-            });
-        }
-
-        if(!expectNextScreen || expectNextScreen === 'DistributionJobScreen') {
-            await DistributionJobScreen.waitForScreen();
-        }
-        else if(expectNextScreen === 'DistributionJobsListScreen') {
-            await DistributionJobsListScreen.waitForScreen();
-        } else {
-            throw new Error(`Invalid expectNextScreen: ${expectNextScreen}`);
-        }
+        await DistributionLinePickFromScreen.scanHUToMove({
+            // huQRCode: null,
+            productScannedCode,
+            expectQuantityDialog,
+            expectedQtyToMove,
+            expectNextScreen
+        })
     }),
 
     clickLineButton: async ({ index }) => await test.step(`${NAME} - Click line ${index}`, async () => {
