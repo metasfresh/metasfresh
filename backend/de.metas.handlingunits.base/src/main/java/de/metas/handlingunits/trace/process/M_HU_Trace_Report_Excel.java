@@ -23,98 +23,35 @@
 package de.metas.handlingunits.trace.process;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.model.I_M_InOut;
-import de.metas.handlingunits.trace.HUTraceEventQuery;
-import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.handlingunits.trace.HUTraceType;
-import de.metas.impexp.spreadsheet.excel.JdbcExcelExporter;
-import de.metas.impexp.spreadsheet.service.SpreadsheetExporterService;
-import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
-import de.metas.process.Param;
-import de.metas.process.RunOutOfTrx;
-import de.metas.product.ProductId;
-import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.apache.poi.ss.usermodel.Font;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Product;
 
-import java.io.File;
 import java.util.List;
+import java.util.Set;
 
-public class M_HU_Trace_Report_Excel extends JavaProcess
+public class M_HU_Trace_Report_Excel extends M_HU_Trace_Report_Template
 {
-	private final HUTraceRepository huTraceRepository = SpringContextHolder.instance.getBean(HUTraceRepository.class);
-	private final SpreadsheetExporterService spreadsheetExporterService = SpringContextHolder.instance.getBean(SpreadsheetExporterService.class);
-
-	@Param(parameterName = I_M_HU_Trace.COLUMNNAME_M_Product_ID)
-	private ProductId p_M_Product_ID;
-
-	@Param(parameterName = I_M_HU_Trace.COLUMNNAME_LotNumber)
-	private String p_LotNumber;
-
-	@Param(parameterName = I_M_HU_Trace.COLUMNNAME_VHU_ID)
-	private HuId p_VHU_ID;
-
+	@NonNull
 	@Override
-	@RunOutOfTrx
-	protected String doIt()
+	protected Set<HUTraceType> getTraceTypes()
 	{
-		final HUTraceEventQuery.HUTraceEventQueryBuilder huTraceEventQueryBuilder = HUTraceEventQuery.builder();
-
-		if (p_M_Product_ID != null)
-		{
-
-			huTraceEventQueryBuilder.productId(p_M_Product_ID);
-		}
-
-		if (p_LotNumber != null)
-		{
-			huTraceEventQueryBuilder.lotNumber(p_LotNumber);
-		}
-
-		final HUTraceEventQuery huTraceEventQuery = huTraceEventQueryBuilder
-				.types(HUTraceType.typesToReport())
-				.recursionMode(HUTraceEventQuery.RecursionMode.BOTH)
-				.build();
-
-		final PInstanceId pInstanceId = huTraceRepository.queryToSelection(huTraceEventQuery);
-		if (pInstanceId == null)
-		{
-			throw new AdempiereException("@NotFound@: " + huTraceEventQuery);
-		}
-
-		final JdbcExcelExporter jdbcExcelExporter = JdbcExcelExporter.builder()
-				.ctx(getCtx())
-				.columnHeaders(getColumnHeaders())
-				.build();
-
-		jdbcExcelExporter.setFontCharset(Font.ANSI_CHARSET);
-
-		spreadsheetExporterService.processDataFromSQL(getSql(pInstanceId), jdbcExcelExporter);
-
-		final File tempFile = jdbcExcelExporter.getResultFile();
-
-		getResult().setReportData(tempFile);
-
-		return MSG_OK;
+		return HUTraceType.typesToReport();
 	}
 
-	private static String getSql(@NonNull final PInstanceId pinstanceId)
+	@NonNull
+	@Override
+	protected String getSql(@NonNull final PInstanceId pinstanceId)
 	{
-		final StringBuilder sqlBuilder = new StringBuilder().append(" SELECT  * FROM M_HU_Trace_Report(")
-				.append(pinstanceId.getRepoId())
-				.append(")");
-
-		return sqlBuilder.toString();
+		return " SELECT  * FROM M_HU_Trace_Report(" + pinstanceId.getRepoId() + ")";
 	}
 
-	private static List<String> getColumnHeaders()
+	@NonNull
+	@Override
+	protected List<String> getColumnHeaders()
 	{
 		return ImmutableList.of(
 				I_M_HU_Trace.COLUMNNAME_LotNumber,
@@ -143,6 +80,6 @@ public class M_HU_Trace_Report_Excel extends JavaProcess
 				"Prod_Stock",
 				"TraceId",
 				"ReportDate"
-				);
+		);
 	}
 }
