@@ -1,5 +1,6 @@
 package de.metas.banking.service;
 
+import lombok.RequiredArgsConstructor;
 import org.compiere.model.I_C_BankStatement;
 import org.springframework.stereotype.Component;
 
@@ -30,15 +31,10 @@ import lombok.NonNull;
  */
 
 @Component
+@RequiredArgsConstructor
 public class BankStatementDocumentHandlerProvider implements DocumentHandlerProvider
 {
-	private final BankStatementDocumentHandlerRequiredServicesFacade services;
-
-	public BankStatementDocumentHandlerProvider(
-			@NonNull final BankStatementDocumentHandlerRequiredServicesFacade services)
-	{
-		this.services = services;
-	}
+	@NonNull private final BankStatementDocumentHandlerRequiredServicesFacade services;
 
 	@Override
 	public String getHandledTableName()
