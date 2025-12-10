@@ -149,9 +149,10 @@ class DDOrderCandidateProcessCommand
 
 	public void execute()
 	{
+		final AggregationConfig aggregationConfig = readAggregationConfig();
 		for (final DDOrderCandidate ddOrderCandidate : request.getCandidates())
 		{
-			addToAggregates(ddOrderCandidate);
+			addToAggregates(ddOrderCandidate, aggregationConfig);
 		}
 
 		for (final HeaderAggregate headerAggregate : aggregates.values())
@@ -160,11 +161,11 @@ class DDOrderCandidateProcessCommand
 		}
 	}
 
-	private void addToAggregates(@NonNull final DDOrderCandidate ddOrderCandidate)
+	private void addToAggregates(@NonNull final DDOrderCandidate ddOrderCandidate, final AggregationConfig aggregationConfig)
 	{
-		final HeaderAggregationKey headerAggregationKey = HeaderAggregationKey.of(ddOrderCandidate, sysConfigBL.getBooleanValue(SYSCONFIG_DDOrderAggregation_header_bySalesOrderId, true), sysConfigBL.getBooleanValue(SYSCONFIG_DDOrderAggregation_header_byPPOrderRef, true));
+		final HeaderAggregationKey headerAggregationKey = HeaderAggregationKey.of(ddOrderCandidate, aggregationConfig);
 
-		aggregates.computeIfAbsent(headerAggregationKey, aggKey -> new HeaderAggregate(aggKey, sysConfigBL.getBooleanValue(SYSCONFIG_DDOrderAggregation_line_bySalesOrderLineId, true)))
+		aggregates.computeIfAbsent(headerAggregationKey, aggKey -> new HeaderAggregate(aggKey, aggregationConfig))
 				.add(ddOrderCandidate);
 	}
 
@@ -283,7 +284,7 @@ class DDOrderCandidateProcessCommand
 				.build());
 	}
 
-	public void createLine(final LineAggregate lineAggregate, final I_DD_Order header)
+	private void createLine(final LineAggregate lineAggregate, final I_DD_Order header)
 	{
 		final LineAggregationKey key = lineAggregate.getKey();
 
@@ -371,6 +372,28 @@ class DDOrderCandidateProcessCommand
 		return ddOrderLoader.load(ddOrderRecord, ddOrderLineRecords.get(ddOrderId));
 	}
 
+	private AggregationConfig readAggregationConfig()
+	{
+		return AggregationConfig.builder()
+				.aggregateBySalesOrderId(sysConfigBL.getBooleanValue(SYSCONFIG_DDOrderAggregation_header_bySalesOrderId, true))
+				.aggregateByPPOrderRef(sysConfigBL.getBooleanValue(SYSCONFIG_DDOrderAggregation_header_byPPOrderRef, true))
+				.aggregateBySalesOrderLineId(sysConfigBL.getBooleanValue(SYSCONFIG_DDOrderAggregation_line_bySalesOrderLineId, true))
+				.build();
+	}
+
+	//
+	//
+	// ------------------------------------------------------------------------------------------
+	//
+	//
+	@Value
+	@Builder
+	private static class AggregationConfig
+	{
+		boolean aggregateBySalesOrderId;
+		boolean aggregateByPPOrderRef;
+		boolean aggregateBySalesOrderLineId;
+	}
 	//
 	//
 	// ------------------------------------------------------------------------------------------
@@ -401,7 +424,7 @@ class DDOrderCandidateProcessCommand
 
 		@Nullable String traceId;
 
-		public static HeaderAggregationKey of(@NonNull final DDOrderCandidate candidate, final boolean isAggregateBySalesOrderId, final boolean isAggregateByPPOrderRef)
+		public static HeaderAggregationKey of(@NonNull final DDOrderCandidate candidate, @NonNull final AggregationConfig aggregationConfig)
 		{
 			final HeaderAggregationKeyBuilder keyBuilder = builder()
 					.orgId(candidate.getOrgId())
@@ -415,11 +438,11 @@ class DDOrderCandidateProcessCommand
 					.isSimulated(candidate.isSimulated())
 					.productPlanningId(candidate.getProductPlanningId())
 					.traceId(candidate.getTraceId());
-			if (isAggregateBySalesOrderId)
+			if (aggregationConfig.isAggregateBySalesOrderId())
 			{
 				keyBuilder.salesOrderId(candidate.getSalesOrderId());
 			}
-			if (isAggregateByPPOrderRef)
+			if (aggregationConfig.isAggregateByPPOrderRef())
 			{
 				keyBuilder.forwardPPOrderRef(candidate.getForwardPPOrderRef());
 			}
@@ -438,11 +461,11 @@ class DDOrderCandidateProcessCommand
 	{
 		@NonNull @Getter private final HeaderAggregationKey key;
 		@NonNull private final LinkedHashMap<LineAggregationKey, LineAggregate> lineAggregates = new LinkedHashMap<>();
-		@NonNull private final Boolean isAggregateBySalesOrderLineId;
+		@NonNull private final AggregationConfig aggregationConfig;
 
 		public void add(@NonNull final DDOrderCandidate candidate)
 		{
-			lineAggregates.computeIfAbsent(LineAggregationKey.of(candidate, isAggregateBySalesOrderLineId), LineAggregate::new)
+			lineAggregates.computeIfAbsent(LineAggregationKey.of(candidate, aggregationConfig), LineAggregate::new)
 					.add(candidate);
 		}
 
@@ -474,7 +497,7 @@ class DDOrderCandidateProcessCommand
 
 	@Value
 	@Builder
-	static class LineAggregationKey
+	private static class LineAggregationKey
 	{
 		@NonNull ProductId productId;
 		@NonNull HUPIItemProductId hupiItemProductId;
@@ -485,7 +508,7 @@ class DDOrderCandidateProcessCommand
 		boolean isAllowPush;
 		boolean isKeepTargetPlant;
 
-		public static LineAggregationKey of(final DDOrderCandidate candidate, final @NonNull Boolean isAggregateBySalesOrderLineId)
+		public static LineAggregationKey of(final DDOrderCandidate candidate, final @NonNull AggregationConfig aggregationConfig)
 		{
 			final LineAggregationKeyBuilder lineKeyBuilder = builder()
 					.productId(candidate.getProductId())
@@ -495,7 +518,7 @@ class DDOrderCandidateProcessCommand
 					.distributionNetworkAndLineId(candidate.getDistributionNetworkAndLineId())
 					.isAllowPush(candidate.isAllowPush())
 					.isKeepTargetPlant(candidate.isKeepTargetPlant());
-			if (isAggregateBySalesOrderLineId)
+			if (aggregationConfig.isAggregateBySalesOrderLineId())
 			{
 				lineKeyBuilder.salesOrderLineId(candidate.getSalesOrderLineId());
 			}
@@ -530,7 +553,7 @@ class DDOrderCandidateProcessCommand
 
 	@Getter
 	@RequiredArgsConstructor
-	static class LineAggregate
+	private static class LineAggregate
 	{
 		@NonNull private final LineAggregationKey key;
 		@NonNull private Quantity qty;
