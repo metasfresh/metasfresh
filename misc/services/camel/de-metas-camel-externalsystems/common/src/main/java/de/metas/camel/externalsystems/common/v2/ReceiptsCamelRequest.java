@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.swat.base
+ * de-metas-camel-externalsystems-common
  * %%
- * Copyright (C) 2025 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,28 +20,21 @@
  * #L%
  */
 
-package de.metas.inoutcandidate.api;
+package de.metas.camel.externalsystems.common.v2;
 
-import de.metas.material.event.commons.AttributesKey;
-import de.metas.order.OrderLineId;
-import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
-import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.shipping.v2.receipt.JsonCreateReceiptsRequest;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.warehouse.WarehouseId;
-
-import javax.annotation.Nullable;
+import lombok.extern.jackson.Jacksonized;
 
 @Value
 @Builder
-public class ReceiptScheduleQuery
+@Jacksonized
+public class ReceiptsCamelRequest
 {
-	@Nullable OrgId orgId;
-	@Nullable AttributesKey attributesKey;
-	@Nullable ProductId productId;
-	@Nullable WarehouseId warehouseId;
-	@Nullable ExternalHeaderIdWithExternalLineIds externalHeaderIdWithExternalLineIds;
-	@Nullable OrderLineId orderLineId;
-	@Builder.Default boolean onlyNonZeroQty = false;
+	@NonNull
+	@JsonProperty("jsonCreateReceiptsRequest")
+	JsonCreateReceiptsRequest jsonCreateReceiptsRequest;
 }
