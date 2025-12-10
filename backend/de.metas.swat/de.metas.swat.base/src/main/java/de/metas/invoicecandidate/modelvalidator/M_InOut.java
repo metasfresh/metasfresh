@@ -67,12 +67,15 @@ public class M_InOut
 				.collect(Collectors.toSet());
 		if (projectIds.size() == 1)
 		{
-			inout.setC_Project_ID(Objects.requireNonNull(projectIds.iterator().next()).getRepoId());
+			inout.setC_Project_ID(projectIds.iterator().next().getRepoId());
 		}
-		else if (projectIds.size() > 1)
+		else
 		{
-			log.debug("InOut {} has multiple projects {}, not setting header project",
-					inout.getM_InOut_ID(), projectIds);
+			if (projectIds.size() > 1)
+			{
+				log.debug("InOut {} has multiple projects {}, not setting header project",
+						inout.getM_InOut_ID(), projectIds);
+			}
 			inout.setC_Project_ID(ProjectId.toRepoId(null));
 		}
 	}

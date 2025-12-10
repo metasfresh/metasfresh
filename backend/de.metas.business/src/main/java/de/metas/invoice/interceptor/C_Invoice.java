@@ -431,12 +431,15 @@ public class C_Invoice // 03771
 				.collect(Collectors.toSet());
 		if (projectIds.size() == 1)
 		{
-			invoice.setC_Project_ID(Objects.requireNonNull(projectIds.iterator().next()).getRepoId());
+			invoice.setC_Project_ID(projectIds.iterator().next().getRepoId());
 		}
-		else if (projectIds.size() > 1)
+		else
 		{
-			log.debug("Invoice {} has multiple projects {}, not setting header project",
-					invoice.getC_Invoice_ID(), projectIds);
+			if (projectIds.size() > 1)
+			{
+				log.debug("Invoice {} has multiple projects {}, not setting header project",
+						invoice.getC_Invoice_ID(), projectIds);
+			}
 			invoice.setC_Project_ID(ProjectId.toRepoId(null));
 		}
 	}
