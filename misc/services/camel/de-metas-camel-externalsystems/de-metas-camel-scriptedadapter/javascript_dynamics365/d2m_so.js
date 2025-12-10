@@ -119,6 +119,7 @@ function createEnqueueProcessRequest(salesOrder) {
     const body = {
         purchaseCandidates: [
             {
+                externalSystemCode: CONFIG.EXT_SYSTEM_CODE,
                 externalHeaderId: salesOrder.orderNumber,
                 externalLineIds
             }
@@ -141,6 +142,7 @@ function createEnqueueProcessRequest(salesOrder) {
 function buildPurchaseCandidate(salesOrder, line) {
     return {
         orgCode: salesOrder.orgCode ?? null,
+        externalSystemCode: CONFIG.EXT_SYSTEM_CODE,
         externalHeaderId: salesOrder.orderNumber ?? null,
         externalLineId: line.orderLineId ?? null,
         poReference: salesOrder.orderDocumentNo ?? null,

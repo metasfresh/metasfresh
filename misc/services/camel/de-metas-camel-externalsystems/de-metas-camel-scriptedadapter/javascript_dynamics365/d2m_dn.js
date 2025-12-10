@@ -26,6 +26,10 @@ function transform(messageToMetasfresh) {
     }
 }
 
+const CONFIG = {
+    EXT_SYSTEM_CODE: "Dynamics365"
+};
+
 const ROUTES = {
     CREATE_RECEIPTS: "metasfresh.create-receipts-v2.camel.uri"
 };
@@ -146,6 +150,7 @@ function buildReceiptInfo(deliveryNote, line) {
     return {
         // Identification methods (prioritized: orderLineId first)
         orderLineId: hasOrderLineId ? buildMetasfreshId(line.poLineId) : null,
+        externalSystemCode: hasOrderLineId ? null : CONFIG.EXT_SYSTEM_CODE,
         externalHeaderId: hasOrderLineId ? null : (deliveryNote.externalOrderId ?? null),
         externalLineId: hasOrderLineId ? null : (line.externalLineId ?? null),
 
