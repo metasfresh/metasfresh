@@ -22,8 +22,6 @@
 
 package de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf;
 
-import de.metas.camel.externalsystems.scriptedadapter.JavaScriptExecutorService;
-import de.metas.camel.externalsystems.scriptedadapter.JavaScriptRepo;
 import de.metas.camel.externalsystems.scriptedadapter.convertmsg.JavaScriptTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
