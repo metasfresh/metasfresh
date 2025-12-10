@@ -4,18 +4,19 @@
 #
 # This script unifies Docker workflows for:
 # - Running E2E tests against CI-built images
+# - Running E2E tests against custom repo images (e.g., ms205) from GHCR
 # - Incremental builds on top of CI base
 # - IntelliJ dependency synchronization
 #
 # Usage: mf-docker.sh <command> [options]
 #
 # Commands:
-#   pull <branch>       Pull latest CI images for a branch
-#   e2e-stack <action>  Manage E2E test stack (start|stop|status|logs)
-#   incremental-build   Build only changed modules on CI base
-#   sync-deps           Sync Maven dependencies from CI image
-#   info                Show current configuration and image versions
-#   help                Show this help message
+#   pull [options] <branch>   Pull latest CI images for a branch
+#   e2e-stack <action>        Manage E2E test stack (start|stop|status|logs)
+#   incremental-build         Build only changed modules on CI base
+#   sync-deps                 Sync Maven dependencies from CI image
+#   info                      Show current configuration and image versions
+#   help                      Show this help message
 #
 
 set -e
@@ -49,15 +50,26 @@ show_help() {
     echo "Usage: mf-docker.sh <command> [options]"
     echo ""
     echo "Commands:"
-    echo "  pull <branch>         Pull latest CI images for a branch"
+    echo "  pull [options] <branch>"
+    echo "                        Pull latest CI images for a branch"
     echo "                        (defaults to current git branch)"
+    echo ""
+    echo "    Options for pull:"
+    echo "      --repo <name>       Pull from custom repo (e.g., ms205) from GHCR"
+    echo "      --repo-root <path>  Path to custom repo checkout"
+    echo "      --skip-builder      Skip the large maven builder image"
     echo ""
     echo "  e2e-stack <action>    Manage E2E test stack"
     echo "    start               Start the metasfresh stack"
     echo "    start --no-webui    Start without webui (for local frontend dev)"
+    echo "    start --dev-mode    Start with dev-mode for hot reload"
     echo "    stop                Stop all containers"
     echo "    status              Show container status"
     echo "    logs [service]      Tail logs"
+    echo ""
+    echo "    Options for e2e-stack:"
+    echo "      --repo <name>       Use custom repo (overrides .mf-docker-version)"
+    echo "      --repo-root <path>  Path to custom repo checkout"
     echo ""
     echo "  incremental-build [module]"
     echo "                        Build changed modules on CI base"
@@ -69,16 +81,17 @@ show_help() {
     echo "  info                  Show current configuration"
     echo ""
     echo "Examples:"
+    echo ""
+    echo "  # Standard metasfresh workflow (Docker Hub)"
     echo "  mf-docker.sh pull new_dawn_uat"
     echo "  mf-docker.sh e2e-stack start"
-    echo "  mf-docker.sh e2e-stack logs webapi"
+    echo "  cd e2e/frontend-webui && npm test"
     echo "  mf-docker.sh e2e-stack stop"
     echo ""
-    echo "Typical E2E Workflow:"
-    echo "  1. mf-docker.sh pull new_dawn_uat   # Get latest CI images"
-    echo "  2. mf-docker.sh e2e-stack start     # Start the stack"
-    echo "  3. cd e2e/frontend-webui && npm test  # Run tests"
-    echo "  4. mf-docker.sh e2e-stack stop      # Clean up"
+    echo "  # Custom repo workflow (e.g., ms205 from GHCR)"
+    echo "  mf-docker.sh pull --repo ms205 memorable_shiny_uat"
+    echo "  mf-docker.sh e2e-stack start"
+    echo "  # (uses ms205's compose.yml automatically)"
     echo ""
 }
 
@@ -89,8 +102,19 @@ cmd_info() {
     echo ""
 
     if [ -f "$VERSION_FILE" ]; then
-        local tag=$(cat "$VERSION_FILE")
-        info "Current image tag: $tag"
+        # Check if new format
+        if grep -q "^TAG=" "$VERSION_FILE" 2>/dev/null; then
+            source "$VERSION_FILE"
+            info "Current image tag: $TAG"
+            if [ -n "$REPO" ]; then
+                info "Custom repo: $REPO"
+                info "Registry: $REGISTRY"
+                info "Repo root: $REPO_ROOT"
+            fi
+        else
+            local tag=$(cat "$VERSION_FILE")
+            info "Current image tag: $tag"
+        fi
     else
         warn "No image tag set. Run 'mf-docker.sh pull <branch>' first."
     fi
@@ -107,6 +131,17 @@ cmd_info() {
 
         if [ $(docker images "metasfresh/*" --format "{{.Repository}}" 2>/dev/null | wc -l) -gt 10 ]; then
             echo "  ... and more"
+        fi
+
+        # Also show GHCR images if any
+        local ghcr_count=$(docker images "ghcr.io/metasfresh/*" --format "{{.Repository}}" 2>/dev/null | wc -l)
+        if [ "$ghcr_count" -gt 0 ]; then
+            echo ""
+            info "Available GHCR images:"
+            docker images "ghcr.io/metasfresh/*" --format "  {{.Repository}}:{{.Tag}}\t{{.Size}}" 2>/dev/null | head -10
+            if [ "$ghcr_count" -gt 10 ]; then
+                echo "  ... and more"
+            fi
         fi
     else
         error "Docker: Not available"
