@@ -168,7 +168,15 @@ public class ShipmentScheduleRepository
 		}
 		if (!query.getWarehouseIds().isEmpty())
 		{
-			queryBuilder.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID, query.getWarehouseIds());
+			final ICompositeQueryFilter<I_M_ShipmentSchedule> inArrayWithoutOverride = queryBL.createCompositeQueryFilter(I_M_ShipmentSchedule.class)
+					.setJoinAnd()
+					.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID, query.getWarehouseIds())
+					.addIsNull(I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID);
+
+			queryBuilder.addFilter(queryBL.createCompositeQueryFilter(I_M_ShipmentSchedule.class)
+							.setJoinOr()
+							.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID, query.getWarehouseIds())
+							.addFilter(inArrayWithoutOverride));
 		}
 		if (query.getShipperId() != null)
 		{
@@ -270,14 +278,15 @@ public class ShipmentScheduleRepository
 
 		if (query.isFromCompleteOrderOrNullOrder())
 		{
-			final IQuery<I_C_Order> completedOrClosedOdrersQuery = queryBL.createQueryBuilder(I_C_Order.class)
+			final IQuery<I_C_Order> completedOrClosedOrdersQuery = queryBL.createQueryBuilder(I_C_Order.class)
 					.addInArrayFilter(I_C_Order.COLUMN_DocStatus, X_C_Order.DOCSTATUS_Closed, X_C_Order.DOCSTATUS_Completed)
 					.create();
 
-			queryBL.createCompositeQueryFilter(I_M_ShipmentSchedule.class)
+			queryBuilder.addFilter(queryBL.createCompositeQueryFilter(I_M_ShipmentSchedule.class)
 					.setJoinOr()
 					.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_C_Order_ID, null)
-					.addInSubQueryFilter(I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID, I_C_Order.COLUMNNAME_C_Order_ID, completedOrClosedOdrersQuery);
+					.addInSubQueryFilter(I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID, I_C_Order.COLUMNNAME_C_Order_ID, completedOrClosedOrdersQuery)
+			);
 		}
 
 		if (query.getLimit().isLimited())
@@ -323,7 +332,7 @@ public class ShipmentScheduleRepository
 
 				.orderAndLineId(orderAndLineId)
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
-				.warehouseId(WarehouseId.ofRepoId(record.getM_Warehouse_ID()))
+				.warehouseId(shipmentScheduleBL.getWarehouseId(record))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()))
 				.shipperId(ShipperId.ofRepoIdOrNull(record.getM_Shipper_ID()))
 				.quantityToDeliver(shipmentScheduleBL.getQtyToDeliver(record))
