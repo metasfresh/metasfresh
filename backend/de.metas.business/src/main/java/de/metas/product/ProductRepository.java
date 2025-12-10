@@ -117,7 +117,7 @@ public class ProductRepository
 	}
 
 	@NonNull
-	public ImmutableMap<ProductId, Product> getMapByIds(@NonNull final Set<ProductId> ids)
+	public ImmutableMap<ProductId, Product> getByIdsAsMap(@NonNull final Set<ProductId> ids)
 	{
 		return Maps.uniqueIndex(getByIds(ids), Product::getId);
 	}

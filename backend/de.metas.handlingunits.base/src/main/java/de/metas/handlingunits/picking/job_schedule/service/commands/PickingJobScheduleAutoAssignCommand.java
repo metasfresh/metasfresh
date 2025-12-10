@@ -72,6 +72,10 @@ public class PickingJobScheduleAutoAssignCommand
 
 	// Params
 	@NonNull private final PickingJobScheduleAutoAssignRequest request;
+	private List<Workplace> workplaces;
+	private Map<WorkplaceId, Integer> assignedCountPerWorkplace;
+	private ImmutableMap<ProductId, Product> productsById;
+	private ImmutableMap<OrderId, BigDecimal> totalQtyToDeliverByOrderId;
 
 	@Builder
 	private PickingJobScheduleAutoAssignCommand(
@@ -94,20 +98,21 @@ public class PickingJobScheduleAutoAssignCommand
 
 	public void execute()
 	{
-		final ImmutableList<Workplace> workplacesWithCapacity = workplaceRepository.getAllActive()
+		workplaces = workplaceRepository.getAllActive()
 				.stream()
 				.filter(workplace -> workplace.getMaxPickingJobs() > 0)
 				.collect(ImmutableList.toImmutableList());
 
-		if (workplacesWithCapacity.isEmpty())
+		if (workplaces.isEmpty())
 		{
 			return;
 		}
 
-		final ImmutableSet<WarehouseId> warehouseIds = workplacesWithCapacity.stream()
+		final ImmutableSet<WarehouseId> warehouseIds = workplaces.stream()
 				.map(Workplace::getWarehouseId)
 				.collect(ImmutableSet.toImmutableSet());
 
+		final boolean isCarrierProductRequired = sysConfigBL.getBooleanValue(SYSCONFIG_CARRIER_PRODUCT_REQUIRED, false);
 		final ImmutableList<ShipmentSchedule> allEligibleShipmentSchedules = shipmentScheduleRepository.getBy(
 				ShipmentScheduleQuery.builder()
 						.warehouseIds(warehouseIds)
@@ -117,7 +122,7 @@ public class PickingJobScheduleAutoAssignCommand
 						.includeProcessed(false)
 						.build())
 				.stream()
-				.filter(sched -> sysConfigBL.getBooleanValue(SYSCONFIG_CARRIER_PRODUCT_REQUIRED, false) || sched.getCarrierProductId() != null)
+				.filter(sched ->  sched.getCarrierProductId() != null || !isCarrierProductRequired)
 				.collect(ImmutableList.toImmutableList());
 
 		if (allEligibleShipmentSchedules.isEmpty())
@@ -129,7 +134,7 @@ public class PickingJobScheduleAutoAssignCommand
 				.map(ShipmentSchedule::getId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		final ImmutableSet<WorkplaceId> workplaceIds = workplacesWithCapacity.stream()
+		final ImmutableSet<WorkplaceId> workplaceIds = workplaces.stream()
 				.map(Workplace::getId)
 				.collect(ImmutableSet.toImmutableSet());
 
@@ -138,7 +143,7 @@ public class PickingJobScheduleAutoAssignCommand
 				PickingJobScheduleQuery.builder()
 						.onlyShipmentScheduleIds(allEligibleShipmentScheduleIds)
 						.workplaceIds(workplaceIds)
-						.isProcessed(false) //TODO check if we could run into processed, but qtyToDeliver not yet updated
+						.isProcessed(false)
 						.build()
 		).collect(ImmutableList.toImmutableList());
 
@@ -150,7 +155,7 @@ public class PickingJobScheduleAutoAssignCommand
 				.filter(sched -> !alreadyAssignedIds.contains(sched.getId()))
 				.collect(ImmutableList.toImmutableList());
 
-		final Map<WorkplaceId, Integer> assignedCountPerWorkplace = new HashMap<>();
+		assignedCountPerWorkplace = new HashMap<>();
 		existingSchedules.forEach(schedule ->
 				assignedCountPerWorkplace.merge(schedule.getWorkplaceId(), 1, Integer::sum)
 		);
@@ -158,9 +163,9 @@ public class PickingJobScheduleAutoAssignCommand
 		final ImmutableSet<ProductId> productIds = allUnscheduledShipmentScheduleIds.stream()
 				.map(ShipmentSchedule::getProductId)
 				.collect(ImmutableSet.toImmutableSet());
-		final ImmutableMap<ProductId, Product> productsById = productRepository.getMapByIds(productIds);
+		productsById = productRepository.getByIdsAsMap(productIds);
 
-		final ImmutableMap<OrderId, BigDecimal> totalQtyToDeliverByOrderId = allUnscheduledShipmentScheduleIds.stream()
+		totalQtyToDeliverByOrderId = allUnscheduledShipmentScheduleIds.stream()
 				.collect(ImmutableMap.toImmutableMap(
 						ShipmentSchedule::getOrderId,
 						schedule -> schedule.getQuantityToDeliver().toBigDecimal(),
@@ -169,7 +174,7 @@ public class PickingJobScheduleAutoAssignCommand
 
 		for (final ShipmentSchedule schedule : allUnscheduledShipmentScheduleIds)
 		{
-			final Workplace matchingWorkplace = findMatchingWorkplace(schedule, workplacesWithCapacity, assignedCountPerWorkplace, productsById, totalQtyToDeliverByOrderId);
+			final Workplace matchingWorkplace = findMatchingWorkplace(schedule);
 			if (matchingWorkplace == null)
 			{
 				continue;
@@ -192,11 +197,7 @@ public class PickingJobScheduleAutoAssignCommand
 
 	@Nullable
 	private Workplace findMatchingWorkplace(
-			@NonNull final ShipmentSchedule schedule,
-			@NonNull final List<Workplace> workplaces,
-			@NonNull final Map<WorkplaceId, Integer> assignedCountPerWorkplace,
-			@NonNull final ImmutableMap<ProductId, Product> productsById,
-			@NonNull final ImmutableMap<OrderId, BigDecimal> totalQtyToDeliverByOrderId)
+			@NonNull final ShipmentSchedule schedule)
 	{
 		for (final Workplace workplace : workplaces)
 		{
@@ -206,17 +207,17 @@ public class PickingJobScheduleAutoAssignCommand
 				continue;
 			}
 
-			if (!workplace.getWarehouseId().equals(schedule.getWarehouseId()))
+			if (!WarehouseId.equals(workplace.getWarehouseId(), schedule.getWarehouseId()))
 			{
 				continue;
 			}
 
-			if (!isOrderPickingTypeCompatible(workplace.getOrderPickingType(), schedule, totalQtyToDeliverByOrderId))
+			if (!isOrderPickingTypeCompatible(workplace.getOrderPickingType(), schedule))
 			{
 				continue;
 			}
 
-			if (!isProductCompatible(workplace, schedule, productsById))
+			if (!isProductCompatible(workplace, schedule))
 			{
 				continue;
 			}
@@ -244,8 +245,7 @@ public class PickingJobScheduleAutoAssignCommand
 
 	private boolean isOrderPickingTypeCompatible(
 			@Nullable final OrderPickingType orderPickingType,
-			@NonNull final ShipmentSchedule schedule,
-			@NonNull final ImmutableMap<OrderId, BigDecimal> totalQtyToDeliverByOrderId)
+			@NonNull final ShipmentSchedule schedule)
 	{
 		if (orderPickingType == null)
 		{
@@ -268,8 +268,7 @@ public class PickingJobScheduleAutoAssignCommand
 
 	private boolean isProductCompatible(
 			@NonNull final Workplace workplace,
-			@NonNull final ShipmentSchedule schedule,
-			@NonNull final ImmutableMap<ProductId, Product> productsById)
+			@NonNull final ShipmentSchedule schedule)
 	{
 		final ImmutableSet<ProductId> workplaceProducts = workplace.getProductIds();
 		final ImmutableSet<ProductCategoryId> workplaceCategories = workplace.getProductCategoryIds();

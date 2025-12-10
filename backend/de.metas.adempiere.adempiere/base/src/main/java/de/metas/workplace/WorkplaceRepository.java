@@ -22,6 +22,7 @@
 
 package de.metas.workplace;
 
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -55,6 +56,7 @@ import org.compiere.model.I_C_Workplace_ProductCategory;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -103,15 +105,17 @@ public class WorkplaceRepository
 			throw new AdempiereException("PickFromLocatorId and WarehouseId must be from the same warehouse")
 					.setParameter("request", request);
 		}
-		
+
 		final I_C_Workplace record = InterfaceWrapperHelper.newInstance(I_C_Workplace.class);
 		record.setName(request.getName());
 		record.setM_Warehouse_ID(request.getWarehouseId().getRepoId());
 		record.setPickFrom_Locator_ID(LocatorId.toRepoId(request.getPickFromLocatorId()));
 		record.setM_PickingSlot_ID(PickingSlotId.toRepoId(request.getPickingSlotId()));
-		InterfaceWrapperHelper.save(record);
 
-		cache.reset();
+		final Workplace workplace = getAllActive().stream().max(Comparator.comparing(v -> v.getSeqNo().toInt())).orElse(null);
+		final SeqNo seqNo = workplace != null ? workplace.getSeqNo().next() : SeqNo.ofInt(0);
+		record.setSeqNo(seqNo.toInt());
+		InterfaceWrapperHelper.save(record);
 
 		return getById(WorkplaceId.ofRepoId(record.getC_Workplace_ID()));
 	}
@@ -171,7 +175,7 @@ public class WorkplaceRepository
 				.collect(Multimaps.toMultimap(
 						record -> WorkplaceId.ofRepoId(record.getC_Workplace_ID()),
 						record -> ProductId.ofRepoId(record.getM_Product_ID()),
-						com.google.common.collect.HashMultimap::create
+						HashMultimap::create
 				));
 	}
 
@@ -185,7 +189,7 @@ public class WorkplaceRepository
 				.collect(Multimaps.toMultimap(
 						record -> WorkplaceId.ofRepoId(record.getC_Workplace_ID()),
 						record -> ProductCategoryId.ofRepoId(record.getM_Product_Category_ID()),
-						com.google.common.collect.HashMultimap::create
+						HashMultimap::create
 				));
 	}
 
@@ -199,7 +203,7 @@ public class WorkplaceRepository
 				.collect(Multimaps.toMultimap(
 						record -> WorkplaceId.ofRepoId(record.getC_Workplace_ID()),
 						record -> CarrierProductId.ofRepoId(record.getCarrier_Product_ID()),
-						com.google.common.collect.HashMultimap::create
+						HashMultimap::create
 				));
 	}
 
@@ -213,7 +217,7 @@ public class WorkplaceRepository
 				.collect(Multimaps.toMultimap(
 						record -> WorkplaceId.ofRepoId(record.getC_Workplace_ID()),
 						record -> ExternalSystemId.ofRepoId(record.getExternalSystem_ID()),
-						com.google.common.collect.HashMultimap::create
+						HashMultimap::create
 				));
 	}
 
