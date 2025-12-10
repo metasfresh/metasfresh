@@ -444,7 +444,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	BPartnerLocationAndCaptureId getBillLocationId(@NonNull I_C_Invoice_Candidate ic, boolean useDefaultBillLocationAndContactIfNotOverride);
 
 	/**
-	 * Extracts a common projectId from the given invoice candidates. Nulls are considered to match any projectId. So that:
+	 * Extracts a common projectId from the given invoice candidates. Null projectIds are not considered distinct values. So that:
 	 * (G1, null) => G1
 	 * (G1, G2) => null
 	 * (null, null) => null

@@ -144,6 +144,12 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 
 	ShipmentScheduleLoadingCache<de.metas.handlingunits.model.I_M_ShipmentSchedule> newLoadingCache();
 
+	/**
+	 * Extracts a common projectId from the given shipment schedules. Null projectIds are not considered distinct values. So that:
+	 * (G1, null) => G1
+	 * (G1, G2) => null
+	 * (null, null) => null
+	 */
 	@Nullable
 	ProjectId extractSingleProjectIdOrNull(@NonNull List<ShipmentScheduleWithHU> candidates);
 }
