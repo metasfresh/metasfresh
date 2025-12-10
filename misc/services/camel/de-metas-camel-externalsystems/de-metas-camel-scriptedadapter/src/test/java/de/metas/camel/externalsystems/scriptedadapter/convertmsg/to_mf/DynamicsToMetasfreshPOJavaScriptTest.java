@@ -31,13 +31,6 @@ import java.io.IOException;
 /**
  * Tests the JavaScript transformation script (d2m_po.js) that converts purchase order messages
  * into metasfresh sales order line candidates format.
- * Test scenarios covered:
- * <ul>
- *   <li>{@link #givenValidRequest_whenExecuteScript_validateResult()} - Tests successful transformation with
- *       properly formatted purchase order data containing all required fields</li>
- *   <li>{@link #givenInvalidRequest_whenExecuteScript_validateResult()} - Tests error handling when purchase
- *       order data is malformed or lacks required fields</li>
- * </ul>
  */
 class DynamicsToMetasfreshPOJavaScriptTest
 {
@@ -57,12 +50,20 @@ class DynamicsToMetasfreshPOJavaScriptTest
 				.build();
 	}
 
+	/**
+	 * Tests successful transformation with
+	 * properly formatted purchase order data containing all required fields
+	 */
 	@Test
 	void givenValidRequest_whenExecuteScript_validateResult() throws IOException
 	{
 		helper.test(JSON_VALID_REQUEST, JSON_VALID_RESPONSE);
 	}
 
+	/**
+	 * Tests error handling when purchase
+	 * order data is malformed or lacks required fields
+	 */
 	@Test
 	void givenInvalidRequest_whenExecuteScript_validateResult() throws IOException
 	{

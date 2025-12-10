@@ -31,15 +31,6 @@ import java.io.IOException;
 /**
  * Tests the JavaScript transformation script (d2m_dn.js) that converts delivery note messages
  * into metasfresh receipt format.
- * Test scenarios covered:
- * <ul>
- *   <li>{@link #givenValidRequest_whenExecuteScript_validateResult()} - Tests successful transformation with
- *       properly formatted delivery note data containing all required fields</li>
- *   <li>{@link #givenValidRequestWithMultipleIdentificationMethods_whenExecuteScript_validateResult()} - Tests
- *       the prioritization logic when delivery note lines contain both orderLineId and external IDs</li>
- *   <li>{@link #givenInvalidRequest_whenExecuteScript_validateResult()} - Tests error handling when delivery
- *       note lines lack required identification methods or contain invalid data</li>
- * </ul>
  */
 class DynamicsToMetasfreshDNJavaScriptTest
 {
@@ -62,18 +53,30 @@ class DynamicsToMetasfreshDNJavaScriptTest
 				.build();
 	}
 
+	/**
+	 * Tests successful transformation with
+	 * properly formatted delivery note data containing all required fields
+	 */
 	@Test
 	void givenValidRequest_whenExecuteScript_validateResult() throws IOException
 	{
 		helper.test(JSON_VALID_REQUEST, JSON_VALID_RESPONSE);
 	}
 
+	/**
+	 * Tests
+	 * the prioritization logic when delivery note lines contain both orderLineId and external IDs
+	 */
 	@Test
 	void givenValidRequestWithMultipleIdentificationMethods_whenExecuteScript_validateResult() throws IOException
 	{
 		helper.test(JSON_MULTIPLE_IDENTIFICATIONS_REQUEST, JSON_MULTIPLE_IDENTIFICATIONS_RESPONSE);
 	}
 
+	/**
+	 * Tests error handling when delivery
+	 * note lines lack required identification methods or contain invalid data
+	 */
 	@Test
 	void givenInvalidRequest_whenExecuteScript_validateResult() throws IOException
 	{
