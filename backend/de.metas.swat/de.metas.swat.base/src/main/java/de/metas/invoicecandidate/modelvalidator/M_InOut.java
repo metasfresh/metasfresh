@@ -74,7 +74,7 @@ public class M_InOut
 			if (projectIds.size() > 1)
 			{
 				log.debug("InOut {} has multiple projects {}, not setting header project",
-						inout.getM_InOut_ID(), projectIds);
+						inout, projectIds);
 			}
 			inout.setC_Project_ID(ProjectId.toRepoId(null));
 		}

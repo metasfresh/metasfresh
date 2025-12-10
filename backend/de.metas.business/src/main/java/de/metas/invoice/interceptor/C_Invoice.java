@@ -438,7 +438,7 @@ public class C_Invoice // 03771
 			if (projectIds.size() > 1)
 			{
 				log.debug("Invoice {} has multiple projects {}, not setting header project",
-						invoice.getC_Invoice_ID(), projectIds);
+						invoice, projectIds);
 			}
 			invoice.setC_Project_ID(ProjectId.toRepoId(null));
 		}
