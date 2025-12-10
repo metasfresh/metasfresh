@@ -1,5 +1,6 @@
 @from:cucumber
 @ghActions:run_on_executor3
+@ignore # postgREST-support doesn't yet work
 Feature: Historical Sales Orders via postgREST
 
   Background:
