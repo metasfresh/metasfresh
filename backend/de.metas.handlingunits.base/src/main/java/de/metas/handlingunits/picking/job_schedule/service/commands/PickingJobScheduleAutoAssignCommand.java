@@ -43,7 +43,7 @@ import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
 import de.metas.shipping.CarrierProductId;
 import de.metas.util.Check;
-import org.adempiere.service.impl.SysConfigBL;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.workplace.Workplace;
@@ -67,7 +67,7 @@ public class PickingJobScheduleAutoAssignCommand
 	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
 	@NonNull private final PickingJobScheduleRepository pickingJobScheduleRepository;
 	@NonNull private final IHUShipmentScheduleBL shipmentScheduleBL;
-	@NonNull private final SysConfigBL sysConfigBL;
+	@NonNull private final ISysConfigBL sysConfigBL;
 	@NonNull private final ProductRepository productRepository;
 
 	// Params
@@ -79,7 +79,7 @@ public class PickingJobScheduleAutoAssignCommand
 			@NonNull final ShipmentScheduleRepository shipmentScheduleRepository,
 			@NonNull final PickingJobScheduleRepository pickingJobScheduleRepository,
 			@NonNull final IHUShipmentScheduleBL shipmentScheduleBL,
-			@NonNull final SysConfigBL sysConfigBL,
+			@NonNull final ISysConfigBL sysConfigBL,
 			@NonNull final ProductRepository productRepository,
 			@NonNull final PickingJobScheduleAutoAssignRequest request)
 	{

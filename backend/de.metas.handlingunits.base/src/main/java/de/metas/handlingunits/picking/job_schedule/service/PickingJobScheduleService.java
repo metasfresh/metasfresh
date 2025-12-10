@@ -26,7 +26,7 @@ import de.metas.util.Services;
 import de.metas.workplace.WorkplaceRepository;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.service.impl.SysConfigBL;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Service;
@@ -43,7 +43,7 @@ import java.util.stream.Stream;
 public class PickingJobScheduleService
 {
 	@NonNull private final IHUShipmentScheduleBL shipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
-	@NonNull private final SysConfigBL sysConfigBL = Services.get(SysConfigBL.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@NonNull private final PickingJobScheduleRepository pickingJobScheduleRepository;
 	@NonNull private final WorkplaceRepository workplaceRepository;
