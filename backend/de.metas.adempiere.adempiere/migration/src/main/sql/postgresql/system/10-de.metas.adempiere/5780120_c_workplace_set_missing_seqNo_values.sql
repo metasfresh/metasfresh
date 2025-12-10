@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.shipper.gateway.commons
+ * de.metas.adempiere.adempiere.migration-sql
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,27 +20,23 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.commons.model;
-
-import de.metas.shipping.CarrierProductId;
-import de.metas.shipper.gateway.spi.model.ShipperProduct;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
-
-import javax.annotation.Nullable;
-
-@Value
-@Builder
-@Jacksonized
-@RequiredArgsConstructor
-@Getter
-public class CarrierProduct implements ShipperProduct
-{
-	@NonNull CarrierProductId id;
-	@NonNull String code;
-	@NonNull String name;
-}
+WITH current_max AS (
+    SELECT COALESCE(MAX(seqno), -10) AS max_seqno
+    FROM c_workplace
+    WHERE seqno IS NOT NULL
+),
+     numbered_rows AS (
+         SELECT
+             c_workplace_id,
+             (SELECT (FLOOR(cm.max_seqno / 10.0) + 1) * 10 FROM current_max cm)
+                 + (ROW_NUMBER() OVER (ORDER BY c_workplace_id ASC) - 1) * 10 AS new_seqno
+         FROM c_workplace
+         WHERE seqno IS NULL
+     )
+UPDATE c_workplace
+SET seqno = numbered_rows.new_seqno,
+    updated = '2025-12-09 12:00:00.000000',
+    updatedby = 99
+FROM numbered_rows
+WHERE c_workplace.c_workplace_id = numbered_rows.c_workplace_id
+;

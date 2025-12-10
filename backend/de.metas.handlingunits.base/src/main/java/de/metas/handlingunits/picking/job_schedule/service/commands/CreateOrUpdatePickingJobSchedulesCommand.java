@@ -2,7 +2,7 @@ package de.metas.handlingunits.picking.job_schedule.service.commands;
 
 import com.google.common.collect.Sets;
 import de.metas.i18n.AdMessageKey;
-import de.metas.inoutcandidate.CarrierProductId;
+import de.metas.shipping.CarrierProductId;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.inout.ShipmentScheduleId;
@@ -25,7 +25,7 @@ import java.util.Set;
 
 public class CreateOrUpdatePickingJobSchedulesCommand
 {
-	private static final String SYSCONFIG_CARRIER_PRODUCT_REQUIRED = "de.metas.handlingunits.picking.job_schedule.RequireCarrierProductSet";
+	public static final String SYSCONFIG_CARRIER_PRODUCT_REQUIRED = "de.metas.handlingunits.picking.job_schedule.RequireCarrierProductSet";
 	private static final AdMessageKey ERROR_CARRIER_PRODUCT_NOT_SET = AdMessageKey.of("de.metas.handlingunits.picking.job_schedule.CarrierProductNotSet");
 
 	// Services

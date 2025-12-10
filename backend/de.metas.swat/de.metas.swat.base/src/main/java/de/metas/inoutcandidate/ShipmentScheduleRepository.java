@@ -32,6 +32,8 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.externalsystem.ExternalSystemId;
+import de.metas.inout.PriorityRule;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -43,6 +45,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Recompute;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.shipping.CarrierProductId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Check;
@@ -62,6 +65,8 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOutLine;
@@ -100,11 +105,21 @@ import static org.compiere.util.TimeUtil.asTimestamp;
 @RequiredArgsConstructor
 public class ShipmentScheduleRepository
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	@NonNull private final ModelCacheInvalidationService cacheInvalidationService;
-	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
+	@NonNull private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+	@NonNull private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
+
+	public static ShipmentScheduleRepository newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(
+				ShipmentScheduleRepository.class,
+				() -> new ShipmentScheduleRepository(ModelCacheInvalidationService.newInstanceForUnitTesting())
+		);
+	}
 
 	public ImmutableList<ShipmentSchedule> getBy(@NonNull final ShipmentScheduleQuery query)
 	{
@@ -151,9 +166,9 @@ public class ShipmentScheduleRepository
 		{
 			queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID, query.getProductId());
 		}
-		if (query.getWarehouseId() != null)
+		if (!query.getWarehouseIds().isEmpty())
 		{
-			queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID, query.getWarehouseId());
+			queryBuilder.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID, query.getWarehouseIds());
 		}
 		if (query.getShipperId() != null)
 		{
@@ -308,6 +323,7 @@ public class ShipmentScheduleRepository
 
 				.orderAndLineId(orderAndLineId)
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
+				.warehouseId(WarehouseId.ofRepoId(record.getM_Warehouse_ID()))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()))
 				.shipperId(ShipperId.ofRepoIdOrNull(record.getM_Shipper_ID()))
 				.quantityToDeliver(shipmentScheduleBL.getQtyToDeliver(record))
@@ -322,7 +338,9 @@ public class ShipmentScheduleRepository
 				.isActive(record.isActive())
 				.carrierAdvisingStatus(CarrierAdviseStatus.ofCode(record.getCarrier_Advising_Status()))
 				.carrierProductId(CarrierProductId.ofRepoIdOrNull(record.getCarrier_Product_ID()))
-				.carrierGoodsTypeId(CarrierGoodsTypeId.ofRepoIdOrNull(record.getCarrier_Goods_Type_ID()));
+				.carrierGoodsTypeId(CarrierGoodsTypeId.ofRepoIdOrNull(record.getCarrier_Goods_Type_ID()))
+				.priorityRule(PriorityRule.ofNullableCode(record.getPriorityRule()))
+				.externalSystemId(ExternalSystemId.ofRepoIdOrNull(record.getExternalSystem_ID()));
 
 		return shipmentScheduleBuilder.build();
 	}

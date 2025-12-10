@@ -118,7 +118,7 @@ public class ProductsRestControllerTest
 				new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystemRepository(), new ExternalReferenceTypes());
 		final AlbertaProductService albertaProductService = AlbertaProductService.newInstanceForUnitTesting(new ExternalReferenceTypes());
 
-		final JsonServiceFactory jsonServiceFactory = JsonServiceFactory.newInstanceForJUnitTesting(
+		final JsonServiceFactory jsonServiceFactory = JsonServiceFactory.newInstanceForUnitTesting(
 				new MockLogEntriesRepository(),
 				Mockito.mock(AlbertaBPartnerCompositeService.class)
 		);

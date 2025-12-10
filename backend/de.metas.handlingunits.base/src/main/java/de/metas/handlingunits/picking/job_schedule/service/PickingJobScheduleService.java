@@ -4,13 +4,15 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
-import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job_schedule.service.commands.CreateOrUpdatePickingJobSchedulesCommand;
 import de.metas.handlingunits.picking.job_schedule.service.commands.CreateOrUpdatePickingJobSchedulesRequest;
+import de.metas.handlingunits.picking.job_schedule.service.commands.PickingJobScheduleAutoAssignCommand;
+import de.metas.handlingunits.picking.job_schedule.service.commands.PickingJobScheduleAutoAssignRequest;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleAndJobSchedules;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleAndJobSchedulesCollection;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
@@ -18,10 +20,14 @@ import de.metas.picking.job_schedule.model.PickingJobSchedule;
 import de.metas.picking.job_schedule.model.PickingJobScheduleCollection;
 import de.metas.picking.job_schedule.model.PickingJobScheduleQuery;
 import de.metas.picking.job_schedule.repository.PickingJobScheduleRepository;
+import de.metas.product.ProductRepository;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
+import de.metas.workplace.WorkplaceRepository;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.service.impl.SysConfigBL;
+import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -37,14 +43,24 @@ import java.util.stream.Stream;
 public class PickingJobScheduleService
 {
 	@NonNull private final IHUShipmentScheduleBL shipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
+	@NonNull private final SysConfigBL sysConfigBL = Services.get(SysConfigBL.class);
+
 	@NonNull private final PickingJobScheduleRepository pickingJobScheduleRepository;
+	@NonNull private final WorkplaceRepository workplaceRepository;
+	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
+	@NonNull private final ProductRepository productRepository;
 
 	public static PickingJobScheduleService newInstanceForUnitTesting()
 	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
 		return SpringContextHolder.getBeanOrSupply(
 				PickingJobScheduleService.class,
 				() -> new PickingJobScheduleService(
-						new PickingJobScheduleRepository()
+						new PickingJobScheduleRepository(),
+						WorkplaceRepository.newInstanceForUnitTesting(),
+						ShipmentScheduleRepository.newInstanceForUnitTesting(),
+						ProductRepository.newInstanceForUnitTesting()
 				)
 		);
 	}
@@ -143,5 +159,20 @@ public class PickingJobScheduleService
 		final Quantity qtyScheduledForPicking = shipmentScheduleBL.getQtyScheduledForPicking(shipmentSchedule);
 		return qtyToDeliver.subtract(qtyScheduledForPicking);
 		
+	}
+
+	//TODO add to scheduled process
+	public void autoAssign(@NonNull final PickingJobScheduleAutoAssignRequest request)
+	{
+		PickingJobScheduleAutoAssignCommand.builder()
+				.workplaceRepository(workplaceRepository)
+				.shipmentScheduleRepository(shipmentScheduleRepository)
+				.pickingJobScheduleRepository(pickingJobScheduleRepository)
+				.shipmentScheduleBL(shipmentScheduleBL)
+				.sysConfigBL(sysConfigBL)
+				.productRepository(productRepository)
+				.request(request)
+				.build()
+				.execute();
 	}
 }

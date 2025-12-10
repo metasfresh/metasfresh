@@ -63,7 +63,7 @@ public class JsonServiceFactory
 	private final @NonNull AlbertaBPartnerCompositeService albertaBPartnerCompositeService;
 
 	@VisibleForTesting
-	public static JsonServiceFactory newInstanceForJUnitTesting(
+	public static JsonServiceFactory newInstanceForUnitTesting(
 			@NonNull final LogEntriesRepository logEntriesRepository,
 			@NonNull final AlbertaBPartnerCompositeService albertaBPartnerCompositeService)
 	{
@@ -72,7 +72,7 @@ public class JsonServiceFactory
 		return new JsonServiceFactory(
 				new JsonRequestConsolidateService(),
 				new BPartnerQueryService(),
-				BPartnerCompositeRepository.newInstanceForJUnitTesting(logEntriesRepository),
+				BPartnerCompositeRepository.newInstanceForUnitTesting(logEntriesRepository),
 		        bpGroupRepository,
 				new BPGroupService(bpGroupRepository),
 				new GreetingRepository(),
@@ -81,7 +81,7 @@ public class JsonServiceFactory
 				new JobRepository(),
 				new PaymentTermService(),
 				IncotermsRepository.newInstanceForUnitTesting(),
-				ExternalReferenceRestControllerService.newInstanceForJUnitTesting(),
+				ExternalReferenceRestControllerService.newInstanceForUnitTesting(),
 				albertaBPartnerCompositeService
 		);
 	}

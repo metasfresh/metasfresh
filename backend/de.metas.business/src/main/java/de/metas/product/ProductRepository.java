@@ -3,7 +3,9 @@ package de.metas.product;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.BPartnerProduct;
 import de.metas.bpartner_product.BPartnerProductQuery;
@@ -91,19 +93,6 @@ public class ProductRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public void inactivateBpartnerProducts(@NonNull final List<BPartnerId> bPartnerIdList, @NonNull final ProductId productId)
-	{
-
-		queryBL.createQueryBuilder(I_C_BPartner_Product.class)
-				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, productId)
-				.addInArrayFilter(I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID, bPartnerIdList)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.updateDirectly()
-				.addSetColumnValue(I_C_BPartner_Product.COLUMNNAME_IsActive, false)
-				.execute();
-	}
-
 	public Product getById(@NonNull final ProductId id)
 	{
 		final I_M_Product productRecord = loadOutOfTrx(id.getRepoId(), I_M_Product.class);
@@ -127,6 +116,13 @@ public class ProductRepository
 		return productRecord.map(ProductRepository::fromRecord).orElse(null);
 	}
 
+	@NonNull
+	public ImmutableMap<ProductId, Product> getMapByIds(@NonNull final Set<ProductId> ids)
+	{
+		return Maps.uniqueIndex(getByIds(ids), Product::getId);
+	}
+
+	@NonNull
 	public ImmutableList<Product> getByIds(@NonNull final Set<ProductId> ids)
 	{
 		final List<I_M_Product> productRecords = queryBL

@@ -1,0 +1,343 @@
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.handlingunits.picking.job_schedule.service.commands;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.externalsystem.ExternalSystemId;
+import de.metas.inout.PriorityRule;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentSchedule;
+import de.metas.inoutcandidate.ShipmentScheduleQuery;
+import de.metas.inoutcandidate.ShipmentScheduleRepository;
+import de.metas.order.OrderId;
+import de.metas.order.OrderPickingType;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
+import de.metas.picking.job_schedule.model.PickingJobSchedule;
+import de.metas.picking.job_schedule.model.PickingJobScheduleQuery;
+import de.metas.picking.job_schedule.repository.PickingJobScheduleRepository;
+import de.metas.product.Product;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
+import de.metas.product.ProductRepository;
+import de.metas.shipping.CarrierProductId;
+import de.metas.util.Check;
+import org.adempiere.service.impl.SysConfigBL;
+import org.adempiere.warehouse.WarehouseId;
+import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
+import de.metas.workplace.Workplace;
+import de.metas.workplace.WorkplaceId;
+import de.metas.workplace.WorkplaceRepository;
+import lombok.Builder;
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static de.metas.handlingunits.picking.job_schedule.service.commands.CreateOrUpdatePickingJobSchedulesCommand.SYSCONFIG_CARRIER_PRODUCT_REQUIRED;
+
+public class PickingJobScheduleAutoAssignCommand
+{
+	// Services
+	@NonNull private final WorkplaceRepository workplaceRepository;
+	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
+	@NonNull private final PickingJobScheduleRepository pickingJobScheduleRepository;
+	@NonNull private final IHUShipmentScheduleBL shipmentScheduleBL;
+	@NonNull private final SysConfigBL sysConfigBL;
+	@NonNull private final ProductRepository productRepository;
+
+	// Params
+	@NonNull private final PickingJobScheduleAutoAssignRequest request;
+
+	@Builder
+	private PickingJobScheduleAutoAssignCommand(
+			@NonNull final WorkplaceRepository workplaceRepository,
+			@NonNull final ShipmentScheduleRepository shipmentScheduleRepository,
+			@NonNull final PickingJobScheduleRepository pickingJobScheduleRepository,
+			@NonNull final IHUShipmentScheduleBL shipmentScheduleBL,
+			@NonNull final SysConfigBL sysConfigBL,
+			@NonNull final ProductRepository productRepository,
+			@NonNull final PickingJobScheduleAutoAssignRequest request)
+	{
+		this.workplaceRepository = workplaceRepository;
+		this.shipmentScheduleRepository = shipmentScheduleRepository;
+		this.pickingJobScheduleRepository = pickingJobScheduleRepository;
+		this.shipmentScheduleBL = shipmentScheduleBL;
+		this.sysConfigBL = sysConfigBL;
+		this.productRepository = productRepository;
+		this.request = request;
+	}
+
+	public void execute()
+	{
+		final ImmutableList<Workplace> workplacesWithCapacity = workplaceRepository.getAllActive()
+				.stream()
+				.filter(workplace -> workplace.getMaxPickingJobs() > 0)
+				.collect(ImmutableList.toImmutableList());
+
+		if (workplacesWithCapacity.isEmpty())
+		{
+			return;
+		}
+
+		final ImmutableSet<WarehouseId> warehouseIds = workplacesWithCapacity.stream()
+				.map(Workplace::getWarehouseId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final ImmutableList<ShipmentSchedule> allEligibleShipmentSchedules = shipmentScheduleRepository.getBy(
+				ShipmentScheduleQuery.builder()
+						.warehouseIds(warehouseIds)
+						.preparationDate(request.getPreparationDate())
+						.fromCompleteOrderOrNullOrder(true)
+						.includeWithQtyToDeliverZero(false)
+						.includeProcessed(false)
+						.build())
+				.stream()
+				.filter(sched -> sysConfigBL.getBooleanValue(SYSCONFIG_CARRIER_PRODUCT_REQUIRED, false) || sched.getCarrierProductId() != null)
+				.collect(ImmutableList.toImmutableList());
+
+		if (allEligibleShipmentSchedules.isEmpty())
+		{
+			return;
+		}
+
+		final ImmutableSet<ShipmentScheduleId> allEligibleShipmentScheduleIds = allEligibleShipmentSchedules.stream()
+				.map(ShipmentSchedule::getId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final ImmutableSet<WorkplaceId> workplaceIds = workplacesWithCapacity.stream()
+				.map(Workplace::getId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		// TODO think about / clarify what todo if qtyScheduled != qtyToDeliver (currently additional qty would be scheduled after old schedule is processed)
+		final List<PickingJobSchedule> existingSchedules = pickingJobScheduleRepository.stream(
+				PickingJobScheduleQuery.builder()
+						.onlyShipmentScheduleIds(allEligibleShipmentScheduleIds)
+						.workplaceIds(workplaceIds)
+						.isProcessed(false) //TODO check if we could run into processed, but qtyToDeliver not yet updated
+						.build()
+		).collect(ImmutableList.toImmutableList());
+
+		final ImmutableSet<ShipmentScheduleId> alreadyAssignedIds = existingSchedules.stream()
+				.map(PickingJobSchedule::getShipmentScheduleId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final ImmutableList<ShipmentSchedule> allUnscheduledShipmentScheduleIds = allEligibleShipmentSchedules.stream()
+				.filter(sched -> !alreadyAssignedIds.contains(sched.getId()))
+				.collect(ImmutableList.toImmutableList());
+
+		final Map<WorkplaceId, Integer> assignedCountPerWorkplace = new HashMap<>();
+		existingSchedules.forEach(schedule ->
+				assignedCountPerWorkplace.merge(schedule.getWorkplaceId(), 1, Integer::sum)
+		);
+
+		final ImmutableSet<ProductId> productIds = allUnscheduledShipmentScheduleIds.stream()
+				.map(ShipmentSchedule::getProductId)
+				.collect(ImmutableSet.toImmutableSet());
+		final ImmutableMap<ProductId, Product> productsById = productRepository.getMapByIds(productIds);
+
+		final ImmutableMap<OrderId, BigDecimal> totalQtyToDeliverByOrderId = allUnscheduledShipmentScheduleIds.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						ShipmentSchedule::getOrderId,
+						schedule -> schedule.getQuantityToDeliver().toBigDecimal(),
+						BigDecimal::add
+				));
+
+		for (final ShipmentSchedule schedule : allUnscheduledShipmentScheduleIds)
+		{
+			final Workplace matchingWorkplace = findMatchingWorkplace(schedule, workplacesWithCapacity, assignedCountPerWorkplace, productsById, totalQtyToDeliverByOrderId);
+			if (matchingWorkplace == null)
+			{
+				continue;
+			}
+
+			CreateOrUpdatePickingJobSchedulesCommand.builder()
+					.pickingJobScheduleRepository(pickingJobScheduleRepository)
+					.shipmentScheduleBL(shipmentScheduleBL)
+					.request(CreateOrUpdatePickingJobSchedulesRequest.builder()
+							.workplaceId(matchingWorkplace.getId())
+							.shipmentScheduleAndJobScheduleIds(ShipmentScheduleAndJobScheduleIdSet.of(schedule.getId()))
+							.qtyToPickBD(schedule.getQuantityToDeliver().toBigDecimal())
+							.build())
+					.build()
+					.execute();
+
+			assignedCountPerWorkplace.merge(matchingWorkplace.getId(), 1, Integer::sum);
+		}
+	}
+
+	@Nullable
+	private Workplace findMatchingWorkplace(
+			@NonNull final ShipmentSchedule schedule,
+			@NonNull final List<Workplace> workplaces,
+			@NonNull final Map<WorkplaceId, Integer> assignedCountPerWorkplace,
+			@NonNull final ImmutableMap<ProductId, Product> productsById,
+			@NonNull final ImmutableMap<OrderId, BigDecimal> totalQtyToDeliverByOrderId)
+	{
+		for (final Workplace workplace : workplaces)
+		{
+			final int currentAssigned = assignedCountPerWorkplace.getOrDefault(workplace.getId(), 0);
+			if (currentAssigned >= workplace.getMaxPickingJobs())
+			{
+				continue;
+			}
+
+			if (!workplace.getWarehouseId().equals(schedule.getWarehouseId()))
+			{
+				continue;
+			}
+
+			if (!isOrderPickingTypeCompatible(workplace.getOrderPickingType(), schedule, totalQtyToDeliverByOrderId))
+			{
+				continue;
+			}
+
+			if (!isProductCompatible(workplace, schedule, productsById))
+			{
+				continue;
+			}
+
+			if (!isCarrierCompatible(workplace, schedule))
+			{
+				continue;
+			}
+
+			if (!isExternalSystemCompatible(workplace, schedule))
+			{
+				continue;
+			}
+
+			if (!isPriorityCompatible(workplace, schedule))
+			{
+				continue;
+			}
+
+			return workplace;
+		}
+
+		return null;
+	}
+
+	private boolean isOrderPickingTypeCompatible(
+			@Nullable final OrderPickingType orderPickingType,
+			@NonNull final ShipmentSchedule schedule,
+			@NonNull final ImmutableMap<OrderId, BigDecimal> totalQtyToDeliverByOrderId)
+	{
+		if (orderPickingType == null)
+		{
+			return true;
+		}
+
+		final BigDecimal totalQtyToDeliver = schedule.getOrderId() == null ? schedule.getQuantityToDeliver().toBigDecimal()
+				: totalQtyToDeliverByOrderId.get(schedule.getOrderId());
+
+		switch (orderPickingType)
+		{
+			case Single:
+				return totalQtyToDeliver.compareTo(BigDecimal.ONE) == 0;
+			case Multiple:
+				return totalQtyToDeliver.compareTo(BigDecimal.ONE) > 0;
+			default:
+				return true;
+		}
+	}
+
+	private boolean isProductCompatible(
+			@NonNull final Workplace workplace,
+			@NonNull final ShipmentSchedule schedule,
+			@NonNull final ImmutableMap<ProductId, Product> productsById)
+	{
+		final ImmutableSet<ProductId> workplaceProducts = workplace.getProductIds();
+		final ImmutableSet<ProductCategoryId> workplaceCategories = workplace.getProductCategoryIds();
+		if (workplaceProducts.isEmpty() && workplaceCategories.isEmpty())
+		{
+			return true;
+		}
+
+		final ProductId scheduleProductId = schedule.getProductId();
+		if (!workplaceProducts.isEmpty() && workplaceProducts.contains(scheduleProductId))
+		{
+			return true;
+		}
+
+		final ProductCategoryId productCategoryId = productsById.get(scheduleProductId).getProductCategoryId();
+		Check.assumeNotNull(productCategoryId, "ProductCategoryId of {} is not null", scheduleProductId);
+		return !workplaceCategories.isEmpty() && workplaceCategories.contains(productCategoryId);
+	}
+
+	private boolean isCarrierCompatible(
+			@NonNull final Workplace workplace,
+			@NonNull final ShipmentSchedule schedule)
+	{
+		final ImmutableSet<CarrierProductId> workplaceCarrierProducts = workplace.getCarrierProductIds();
+		if (workplaceCarrierProducts.isEmpty())
+		{
+			return true;
+		}
+
+		final CarrierProductId carrierProductId = schedule.getCarrierProductId();
+		if (carrierProductId == null)
+		{
+			return false;
+		}
+
+		return workplaceCarrierProducts.contains(carrierProductId);
+	}
+
+	private boolean isExternalSystemCompatible(
+			@NonNull final Workplace workplace,
+			@NonNull final ShipmentSchedule schedule)
+	{
+		final ImmutableSet<ExternalSystemId> workplaceExternalSystems = workplace.getExternalSystemIds();
+		if (workplaceExternalSystems.isEmpty())
+		{
+			return true;
+		}
+
+		final ExternalSystemId externalSystemId = schedule.getExternalSystemId();
+		if (externalSystemId == null)
+		{
+			return false;
+		}
+
+		return workplaceExternalSystems.contains(externalSystemId);
+	}
+
+	private boolean isPriorityCompatible(
+			@NonNull final Workplace workplace,
+			@NonNull final ShipmentSchedule schedule)
+	{
+		final PriorityRule priorityRule = workplace.getPriorityRule();
+
+		if (priorityRule == null)
+		{
+			return true;
+		}
+
+		return PriorityRule.equals(priorityRule, schedule.getPriorityRule());
+	}
+}
