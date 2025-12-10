@@ -183,8 +183,11 @@ export class SalesOrderPage {
       // Tab ID from window layout: AD_Tab-187 (internalName: C_OrderLine)
       await page.locator('#AD_Tab-187').click();
 
-      // Wait for tab content to load
-      await page.waitForTimeout(1000);
+      // Wait for network to settle after tab switch
+      await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+
+      // Wait for batch entry button to be visible (proves tab is ready)
+      await batchEntryButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
     });
   }
 
@@ -279,7 +282,16 @@ export class SalesOrderPage {
       // Press Enter to add the line (as instructed by the UI: "Press 'Enter' to add")
       await page.keyboard.press('Enter');
 
-      await page.waitForTimeout(1000);
+      // Wait for the line to be added
+      await page.waitForTimeout(500);
+
+      // Close the batch entry modal
+      // Language-independent: Use data-testid from TableFilter.js
+      const closeButton = page.getByTestId('batch-entry-toggle');
+      await closeButton.click();
+
+      // Wait for the modal to close
+      await page.waitForTimeout(500);
     });
   }
 
