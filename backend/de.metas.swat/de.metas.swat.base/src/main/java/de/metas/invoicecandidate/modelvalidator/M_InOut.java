@@ -23,13 +23,16 @@ package de.metas.invoicecandidate.modelvalidator;
  */
 
 import de.metas.inout.IInOutBL;
+import de.metas.invoice.interceptor.C_Invoice;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
+import de.metas.logging.LogManager;
 import de.metas.project.ProjectId;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
+import org.slf4j.Logger;
 
 import java.util.Objects;
 import java.util.Set;
@@ -38,6 +41,7 @@ import java.util.stream.Collectors;
 @Interceptor(I_M_InOut.class)
 public class M_InOut
 {
+	private static final Logger log = LogManager.getLogger(C_Invoice.class);
 	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 
@@ -64,6 +68,12 @@ public class M_InOut
 		if (projectIds.size() == 1)
 		{
 			inout.setC_Project_ID(Objects.requireNonNull(projectIds.iterator().next()).getRepoId());
+		}
+		else if (projectIds.size() > 1)
+		{
+			log.debug("InOut {} has multiple projects {}, not setting header project",
+					inout.getM_InOut_ID(), projectIds);
+			inout.setC_Project_ID(ProjectId.toRepoId(null));
 		}
 	}
 }

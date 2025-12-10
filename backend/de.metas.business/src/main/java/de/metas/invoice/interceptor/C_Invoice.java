@@ -15,6 +15,7 @@ import de.metas.invoice.export.async.C_Invoice_CreateExportData;
 import de.metas.invoice.location.InvoiceLocationsUpdater;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.IOrderBL;
@@ -45,6 +46,7 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -61,6 +63,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class C_Invoice // 03771
 {
+	private static final Logger log = LogManager.getLogger(C_Invoice.class);
 	@NonNull private final PaymentReservationService paymentReservationService;
 	@NonNull private final IDocumentLocationBL documentLocationBL;
 
@@ -424,10 +427,17 @@ public class C_Invoice // 03771
 		final Set<ProjectId> projectIds = invoiceDAO.retrieveLines(invoice)
 				.stream()
 				.map(line -> ProjectId.ofRepoIdOrNull(line.getC_Project_ID()))
+				.filter(Objects::nonNull)
 				.collect(Collectors.toSet());
 		if (projectIds.size() == 1)
 		{
 			invoice.setC_Project_ID(Objects.requireNonNull(projectIds.iterator().next()).getRepoId());
+		}
+		else if (projectIds.size() > 1)
+		{
+			log.debug("Invoice {} has multiple projects {}, not setting header project",
+					invoice.getC_Invoice_ID(), projectIds);
+			invoice.setC_Project_ID(ProjectId.toRepoId(null));
 		}
 	}
 }
