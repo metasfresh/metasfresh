@@ -34,10 +34,10 @@ Feature: create distribution order based on aggregation sysconfig
       | sourceWH       | bpartner_1    | location_1             | false       |
       | targetWH       | bpartner_1    | location_1             | false       |
     And metasfresh contains M_Locator:
-      | M_Locator_ID.Identifier | M_Warehouse_ID.Identifier | Value           |
-      | sourceWHLocator         | sourceWH                  | sourceWH_12345  |
-      | targetWHLocator         | targetWH                  | targetWH_12345  |
-      | inTransitLocator        | inTransit                 | inTransit_12345 |
+      | Identifier       | M_Warehouse_ID | Value           |
+      | sourceWHLocator  | sourceWH       | sourceWH_12345  |
+      | targetWHLocator  | targetWH       | targetWH_12345  |
+      | inTransitLocator | inTransit      | inTransit_12345 |
     And contains M_Shippers
       | Identifier |
       | shipper    |
@@ -55,8 +55,8 @@ Feature: create distribution order based on aggregation sysconfig
       | Identifier | M_Warehouse_ID | MovementDate |
       | i1         | sourceWH       | 2021-04-10   |
     And metasfresh contains M_InventoriesLines:
-      | Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBook |
-      | il_2       | i1                        | p_1                     | PCE          | 200      | 0       |
+      | Identifier | M_Inventory_ID | M_Product_ID | UOM.X12DE355 | QtyCount | QtyBook |
+      | il_2       | i1             | p_1          | PCE          | 200      | 0       |
     And the inventory identified by i1 is completed
     
 
@@ -101,15 +101,15 @@ Feature: create distribution order based on aggregation sysconfig
       | c4                    |
 
     Then metasfresh contains DD_Orders:
-      | Identifier | C_BPartner_ID.Identifier | M_Warehouse_ID.From.Identifier | M_Warehouse_ID.To.Identifier | M_Warehouse_ID.Transit.Identifier | C_DocType_ID.Name    |
-      | ddo1       | bpartner_1               | sourceWH                       | targetWH                     | inTransit                         | Distributionsauftrag |
-      | ddo2       | bpartner_1               | sourceWH                       | targetWH                     | inTransit                         | Distributionsauftrag |
+      | Identifier | C_BPartner_ID | M_Warehouse_ID.From | M_Warehouse_ID.To | M_Warehouse_ID.Transit | C_DocType_ID.Name    |
+      | ddo1       | bpartner_1    | sourceWH            | targetWH          | inTransit              | Distributionsauftrag |
+      | ddo2       | bpartner_1    | sourceWH            | targetWH          | inTransit              | Distributionsauftrag |
     And metasfresh contains DD_OrderLines:
-      | Identifier | M_Product_ID.Identifier | DD_Order_ID.Identifier | QtyEntered | M_Locator_ID.Identifier | M_LocatorTo_ID.Identifier |
-      | ddol1      | p_1                     | ddo1                   | 2          | sourceWHLocator         | targetWHLocator           |
-      | ddol2      | p_1                     | ddo1                   | 3          | sourceWHLocator         | targetWHLocator           |
-      | ddol3      | p_1                     | ddo2                   | 4          | sourceWHLocator         | targetWHLocator           |
-      | ddol4      | p_1                     | ddo2                   | 5          | sourceWHLocator         | targetWHLocator           |
+      | Identifier | M_Product_ID | DD_Order_ID | QtyEntered | M_Locator_ID    | M_LocatorTo_ID  |
+      | ddol1      | p_1          | ddo1        | 2          | sourceWHLocator | targetWHLocator |
+      | ddol2      | p_1          | ddo1        | 3          | sourceWHLocator | targetWHLocator |
+      | ddol3      | p_1          | ddo2        | 4          | sourceWHLocator | targetWHLocator |
+      | ddol4      | p_1          | ddo2        | 5          | sourceWHLocator | targetWHLocator |
 
 
 # ###############################################################################################################################################
@@ -152,13 +152,13 @@ Feature: create distribution order based on aggregation sysconfig
       | c4                    |
 
     Then metasfresh contains DD_Orders:
-      | Identifier | C_BPartner_ID.Identifier | M_Warehouse_ID.From.Identifier | M_Warehouse_ID.To.Identifier | M_Warehouse_ID.Transit.Identifier | C_DocType_ID.Name    |
-      | ddo1       | bpartner_1               | sourceWH                       | targetWH                     | inTransit                         | Distributionsauftrag |
-      | ddo2       | bpartner_1               | sourceWH                       | targetWH                     | inTransit                         | Distributionsauftrag |
+      | Identifier | C_BPartner_ID | M_Warehouse_ID.From | M_Warehouse_ID.To | M_Warehouse_ID.Transit | C_DocType_ID.Name    |
+      | ddo1       | bpartner_1    | sourceWH            | targetWH          | inTransit              | Distributionsauftrag |
+      | ddo2       | bpartner_1    | sourceWH            | targetWH          | inTransit              | Distributionsauftrag |
     And metasfresh contains DD_OrderLines:
-      | Identifier | M_Product_ID.Identifier | DD_Order_ID.Identifier | QtyEntered | M_Locator_ID.Identifier | M_LocatorTo_ID.Identifier |
-      | ddol1      | p_1                     | ddo1                   | 5          | sourceWHLocator         | targetWHLocator           |
-      | ddol3      | p_1                     | ddo2                   | 9          | sourceWHLocator         | targetWHLocator           |
+      | Identifier | M_Product_ID | DD_Order_ID | QtyEntered | M_Locator_ID    | M_LocatorTo_ID  |
+      | ddol1      | p_1          | ddo1        | 5          | sourceWHLocator | targetWHLocator |
+      | ddol3      | p_1          | ddo2        | 9          | sourceWHLocator | targetWHLocator |
 
 
 
@@ -202,14 +202,14 @@ Feature: create distribution order based on aggregation sysconfig
       | c4                    |
 
     Then metasfresh contains DD_Orders:
-      | Identifier | C_BPartner_ID.Identifier | M_Warehouse_ID.From.Identifier | M_Warehouse_ID.To.Identifier | M_Warehouse_ID.Transit.Identifier | C_DocType_ID.Name    |
-      | ddo1       | bpartner_1               | sourceWH                       | targetWH                     | inTransit                         | Distributionsauftrag |
+      | Identifier | C_BPartner_ID | M_Warehouse_ID.From | M_Warehouse_ID.To | M_Warehouse_ID.Transit | C_DocType_ID.Name    |
+      | ddo1       | bpartner_1    | sourceWH            | targetWH          | inTransit              | Distributionsauftrag |
     And metasfresh contains DD_OrderLines:
-      | Identifier | M_Product_ID.Identifier | DD_Order_ID.Identifier | QtyEntered | M_Locator_ID.Identifier | M_LocatorTo_ID.Identifier |
-      | ddol1      | p_1                     | ddo1                   | 2          | sourceWHLocator         | targetWHLocator           |
-      | ddol2      | p_1                     | ddo1                   | 3          | sourceWHLocator         | targetWHLocator           |
-      | ddol3      | p_1                     | ddo1                   | 4          | sourceWHLocator         | targetWHLocator           |
-      | ddol4      | p_1                     | ddo1                   | 5          | sourceWHLocator         | targetWHLocator           |
+      | Identifier | M_Product_ID | DD_Order_ID | QtyEntered | M_Locator_ID    | M_LocatorTo_ID  |
+      | ddol1      | p_1          | ddo1        | 2          | sourceWHLocator | targetWHLocator |
+      | ddol2      | p_1          | ddo1        | 3          | sourceWHLocator | targetWHLocator |
+      | ddol3      | p_1          | ddo1        | 4          | sourceWHLocator | targetWHLocator |
+      | ddol4      | p_1          | ddo1        | 5          | sourceWHLocator | targetWHLocator |
 
 # ###############################################################################################################################################
 # ###############################################################################################################################################
@@ -251,10 +251,10 @@ Feature: create distribution order based on aggregation sysconfig
       | c4                    |
 
     Then metasfresh contains DD_Orders:
-      | Identifier | C_BPartner_ID.Identifier | M_Warehouse_ID.From.Identifier | M_Warehouse_ID.To.Identifier | M_Warehouse_ID.Transit.Identifier | C_DocType_ID.Name    |
-      | ddo1       | bpartner_1               | sourceWH                       | targetWH                     | inTransit                         | Distributionsauftrag |
+      | Identifier | C_BPartner_ID | M_Warehouse_ID.From | M_Warehouse_ID.To | M_Warehouse_ID.Transit | C_DocType_ID.Name    |
+      | ddo1       | bpartner_1    | sourceWH            | targetWH          | inTransit              | Distributionsauftrag |
     And metasfresh contains DD_OrderLines:
-      | Identifier | M_Product_ID.Identifier | DD_Order_ID.Identifier | QtyEntered | M_Locator_ID.Identifier | M_LocatorTo_ID.Identifier |
-      | ddol1      | p_1                     | ddo1                   | 14         | sourceWHLocator         | targetWHLocator           |
+      | Identifier | M_Product_ID | DD_Order_ID | QtyEntered | M_Locator_ID    | M_LocatorTo_ID  |
+      | ddol1      | p_1          | ddo1        | 14         | sourceWHLocator | targetWHLocator |
 
 

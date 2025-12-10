@@ -42,7 +42,6 @@ import de.metas.shipping.ShipperId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
-import de.metas.util.Services;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -52,7 +51,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -76,10 +74,6 @@ import java.util.Objects;
  */
 class DDOrderCandidateProcessCommand
 {
-	public static final String SYSCONFIG_DDOrderAggregation_header_bySalesOrderId = "DDOrderAggregation.header.bySalesOrderId";
-	public static final String SYSCONFIG_DDOrderAggregation_header_byPPOrderRef = "DDOrderAggregation.header.byPPOrderRef";
-	public static final String SYSCONFIG_DDOrderAggregation_line_bySalesOrderLineId = "DDOrderAggregation.line.bySalesOrderLineId";
-
 	//
 	// services
 	@NonNull private final DDOrderLowLevelService ddOrderLowLevelService;
@@ -96,6 +90,7 @@ class DDOrderCandidateProcessCommand
 	@NonNull final IOrderLineBL orderLineBL;
 	@NonNull final DDOrderUserNotificationProducer ddOrderUserNotificationProducer;
 
+
 	//
 	// Params
 	@NonNull private final DDOrderCandidateProcessRequest request;
@@ -105,7 +100,7 @@ class DDOrderCandidateProcessCommand
 	private final LinkedHashMap<HeaderAggregationKey, HeaderAggregate> aggregates = new LinkedHashMap<>();
 	private final LinkedHashMap<DDOrderId, I_DD_Order> ddOrderHeaderRecords = new LinkedHashMap<>();
 	private final ArrayListMultimap<DDOrderId, I_DD_OrderLine> ddOrderLineRecords = ArrayListMultimap.create();
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final AggregationConfig aggregationConfig;
 
 	@Builder
 	private DDOrderCandidateProcessCommand(
@@ -122,6 +117,7 @@ class DDOrderCandidateProcessCommand
 			@NonNull final IWarehouseBL warehouseBL,
 			@NonNull final IUOMConversionBL uomConversionBL,
 			@NonNull final IOrderLineBL orderLineBL,
+			@NonNull final AggregationConfig aggregationConfig,
 			@NonNull final DDOrderCandidateProcessRequest request)
 	{
 		this.ddOrderLowLevelService = ddOrderLowLevelService;
@@ -143,16 +139,15 @@ class DDOrderCandidateProcessCommand
 				.build();
 
 		this.ddOrderUserNotificationProducer = DDOrderUserNotificationProducer.newInstance();
-
+		this.aggregationConfig = aggregationConfig;
 		this.request = request;
 	}
 
 	public void execute()
 	{
-		final AggregationConfig aggregationConfig = readAggregationConfig();
 		for (final DDOrderCandidate ddOrderCandidate : request.getCandidates())
 		{
-			addToAggregates(ddOrderCandidate, aggregationConfig);
+			addToAggregates(ddOrderCandidate);
 		}
 
 		for (final HeaderAggregate headerAggregate : aggregates.values())
@@ -161,7 +156,7 @@ class DDOrderCandidateProcessCommand
 		}
 	}
 
-	private void addToAggregates(@NonNull final DDOrderCandidate ddOrderCandidate, final AggregationConfig aggregationConfig)
+	private void addToAggregates(@NonNull final DDOrderCandidate ddOrderCandidate)
 	{
 		final HeaderAggregationKey headerAggregationKey = HeaderAggregationKey.of(ddOrderCandidate, aggregationConfig);
 
@@ -372,15 +367,6 @@ class DDOrderCandidateProcessCommand
 		return ddOrderLoader.load(ddOrderRecord, ddOrderLineRecords.get(ddOrderId));
 	}
 
-	private AggregationConfig readAggregationConfig()
-	{
-		return AggregationConfig.builder()
-				.aggregateBySalesOrderId(sysConfigBL.getBooleanValue(SYSCONFIG_DDOrderAggregation_header_bySalesOrderId, true))
-				.aggregateByPPOrderRef(sysConfigBL.getBooleanValue(SYSCONFIG_DDOrderAggregation_header_byPPOrderRef, true))
-				.aggregateBySalesOrderLineId(sysConfigBL.getBooleanValue(SYSCONFIG_DDOrderAggregation_line_bySalesOrderLineId, true))
-				.build();
-	}
-
 	//
 	//
 	// ------------------------------------------------------------------------------------------
@@ -388,7 +374,7 @@ class DDOrderCandidateProcessCommand
 	//
 	@Value
 	@Builder
-	private static class AggregationConfig
+	public static class AggregationConfig
 	{
 		boolean aggregateBySalesOrderId;
 		boolean aggregateByPPOrderRef;
