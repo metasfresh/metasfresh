@@ -7,7 +7,6 @@ Feature: Historical Sales Orders via postgREST
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2025-05-01T16:30:17+02:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
-    And documents are accounted immediately
 
     And metasfresh contains M_PricingSystems
       | Identifier    |
