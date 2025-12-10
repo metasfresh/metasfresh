@@ -33,6 +33,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
 import de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg;
 import de.metas.cucumber.stepdefs.aggregation.C_Aggregation_StepDefData;
+import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.discountschema.M_DiscountSchema_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
@@ -114,6 +115,7 @@ public class C_BPartner_StepDef
 	private final M_DiscountSchema_StepDefData discountSchemaTable;
 	private final AD_Org_StepDefData orgTable;
 	private final C_Aggregation_StepDefData aggregationTable;
+	private final @NonNull TestContext restTestContext;
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -340,6 +342,7 @@ public class C_BPartner_StepDef
 
 		row.getAsOptionalIdentifier()
 				.ifPresent(recordIdentifier -> bPartnerTable.putOrReplace(recordIdentifier, bPartnerRecord));
+		restTestContext.setIntVariableFromRow(row, bPartnerRecord::getC_BPartner_ID);
 	}
 
 	private void changeBPartner(@NonNull final DataTableRow row)
