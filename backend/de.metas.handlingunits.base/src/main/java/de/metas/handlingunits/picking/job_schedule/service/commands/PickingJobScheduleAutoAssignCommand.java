@@ -166,6 +166,7 @@ public class PickingJobScheduleAutoAssignCommand
 		productsById = productRepository.getByIdsAsMap(productIds);
 
 		totalQtyToDeliverByOrderId = allUnscheduledShipmentScheduleIds.stream()
+				.filter(sched -> sched.getOrderId() != null)
 				.collect(ImmutableMap.toImmutableMap(
 						ShipmentSchedule::getOrderId,
 						schedule -> schedule.getQuantityToDeliver().toBigDecimal(),
