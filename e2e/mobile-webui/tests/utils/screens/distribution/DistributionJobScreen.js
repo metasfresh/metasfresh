@@ -24,6 +24,13 @@ export const DistributionJobScreen = {
         await DistributionUtils.expectJobId({ distributionJobId });
     }),
 
+    expectHeaderProperty: async ({ caption, value }) => await test.step(`${NAME} - Check header property '${caption}'='${value}'`, async () => {
+        const row = await page.locator(
+            `tr:has(th:has-text("${caption}")):has(td:has-text("${value}"))`
+        );
+        await expect(row).toHaveCount(1)
+    }),
+
     scanHUToMove: async ({ huQRCode, productScannedCode, expectQuantityDialog = true, expectedQtyToMove, expectNextScreen }) => await test.step(`${NAME} - Scan HU to move`, async () => {
         await BarcodeScannerComponent.type({ scannedCode: huQRCode });
         await DistributionLinePickFromScreen.scanHUToMove({
