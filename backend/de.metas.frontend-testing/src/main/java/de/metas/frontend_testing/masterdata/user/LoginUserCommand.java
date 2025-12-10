@@ -75,8 +75,8 @@ public class LoginUserCommand
 		final UserId userId = UserId.ofRepoId(user.getAD_User_ID());
 		context.putIdentifier(identifier, userId);
 
-		// Generate random password for security (avoid predictable credentials)
-		final String password = UUID.randomUUID().toString().replace("-", "");
+		//noinspection UnnecessaryLocalVariable
+		final String password = login; // for convenience, we use the same password as user // UUID.randomUUID().toString().replace("-", "");
 		userBL.changePasswordAndSave(user, password);
 
 		roleDAO.deleteUserRolesByUserId(userId);
