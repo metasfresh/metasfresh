@@ -209,9 +209,10 @@ public class InOutProducer implements IInOutProducer
 			{
 				_currentOrderIds.add(orderId);
 			}
-			if (rs.getC_Project_ID() > 0)
+			final ProjectId projectId = ProjectId.ofRepoIdOrNull(rs.getC_Project_ID());
+			if (projectId != null)
 			{
-				currentProjectIds.add(ProjectId.ofRepoIdOrNull(rs.getC_Project_ID()));
+				currentProjectIds.add(projectId);
 			}
 		}
 		finally
