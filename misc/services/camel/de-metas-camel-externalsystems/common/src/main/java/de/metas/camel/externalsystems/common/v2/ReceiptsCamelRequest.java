@@ -23,32 +23,18 @@
 package de.metas.camel.externalsystems.common.v2;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.common.shipping.v2.receipt.JsonCreateReceiptsRequest;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 @Value
 @Builder
-@JsonDeserialize(builder = ReceiptsCamelRequest.ReceiptsCamelRequestBuilder.class)
+@Jacksonized
 public class ReceiptsCamelRequest
 {
 	@NonNull
 	@JsonProperty("jsonCreateReceiptsRequest")
 	JsonCreateReceiptsRequest jsonCreateReceiptsRequest;
-
-	public String toString()
-	{
-		try
-		{
-			return JsonObjectMapperHolder.sharedJsonObjectMapper().writeValueAsString(this);
-		}
-		catch (final JsonProcessingException e)
-		{
-			throw new RuntimeException("toString() failed for ReceiptsCamelRequest", e);
-		}
-	}
 }

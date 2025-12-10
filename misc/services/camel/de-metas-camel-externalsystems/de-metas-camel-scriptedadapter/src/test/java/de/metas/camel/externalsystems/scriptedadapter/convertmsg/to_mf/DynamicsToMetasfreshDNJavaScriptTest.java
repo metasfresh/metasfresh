@@ -28,6 +28,19 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
+/**
+ * Tests the JavaScript transformation script (d2m_dn.js) that converts delivery note messages
+ * into metasfresh receipt format.
+ * Test scenarios covered:
+ * <ul>
+ *   <li>{@link #givenValidRequest_whenExecuteScript_validateResult()} - Tests successful transformation with
+ *       properly formatted delivery note data containing all required fields</li>
+ *   <li>{@link #givenValidRequestWithMultipleIdentificationMethods_whenExecuteScript_validateResult()} - Tests
+ *       the prioritization logic when delivery note lines contain both orderLineId and external IDs</li>
+ *   <li>{@link #givenInvalidRequest_whenExecuteScript_validateResult()} - Tests error handling when delivery
+ *       note lines lack required identification methods or contain invalid data</li>
+ * </ul>
+ */
 class DynamicsToMetasfreshDNJavaScriptTest
 {
 	private static final String JSON_VALID_REQUEST = "de/metas/camel/externalsystems/scriptedadapter/convertmsg/to_mf/dynamics365/d2m_dn_valid_request.json";

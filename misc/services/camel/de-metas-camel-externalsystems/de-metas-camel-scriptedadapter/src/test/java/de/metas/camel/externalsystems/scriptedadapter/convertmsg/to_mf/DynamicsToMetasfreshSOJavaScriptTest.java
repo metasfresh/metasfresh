@@ -28,6 +28,17 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
+/**
+ * Tests the JavaScript transformation script (d2m_so.js) that converts sales order messages
+ * into metasfresh purchase candidate format.
+ * Test scenarios covered:
+ * <ul>
+ *   <li>{@link #givenValidRequest_whenExecuteScript_validateResult()} - Tests successful transformation with
+ *       properly formatted sales order data containing all required fields (products, quantities, dates)</li>
+ *   <li>{@link #givenInvalidRequest_whenExecuteScript_validateResult()} - Tests error handling when sales
+ *       order data is malformed or lacks required fields</li>
+ * </ul>
+ */
 class DynamicsToMetasfreshSOJavaScriptTest
 {
 	private static final String JSON_VALID_REQUEST = "de/metas/camel/externalsystems/scriptedadapter/convertmsg/to_mf/dynamics365/d2m_so_valid_request.json";
