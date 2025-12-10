@@ -250,14 +250,9 @@ public final class MPayment extends X_C_Payment
 			}
 			else
 			{
-				if (isReceipt())
-				{
-					setTenderType(TenderType.DirectDebit.getCode());
-				}
-				else
-				{
-					setTenderType(TenderType.DirectDeposit.getCode());
-				}
+				setTenderType(isReceipt()
+						? TenderType.DirectDebit.getCode()
+						: TenderType.DirectDeposit.getCode());
 			}
 		}
 
