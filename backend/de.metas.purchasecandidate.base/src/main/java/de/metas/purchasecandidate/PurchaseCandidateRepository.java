@@ -9,6 +9,9 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
+import de.metas.externalsystem.ExternalIds;
+import de.metas.externalsystem.ExternalSystemId;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
@@ -99,7 +102,8 @@ public class PurchaseCandidateRepository
 	@NonNull private final PurchaseItemRepository purchaseItemRepository;
 	@NonNull private final ReferenceGenerator referenceGenerator;
 	@NonNull private final DimensionService dimensionService;
-	
+	@NonNull private final ExternalSystemRepository externalSystemRepository;
+
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final transient IProductDAO productsRepo = Services.get(IProductDAO.class);
 	private final transient IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
@@ -137,14 +141,29 @@ public class PurchaseCandidateRepository
 	}
 
 	@NonNull
-	public Optional<PurchaseCandidateId> getByExternalHeaderAndLineId(
-			@NonNull final String externalHeaderId,
-			@NonNull final String externalLineId)
+	public Optional<PurchaseCandidateId> getIdByQuery(
+			@NonNull final PurchaseCandidateQuery query)
 	{
-		return queryBL.createQueryBuilder(I_C_PurchaseCandidate.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_ExternalHeaderId, externalHeaderId)
-				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_ExternalLineId, externalLineId)
+		final IQueryBuilder<I_C_PurchaseCandidate> queryBuilder = queryBL.createQueryBuilder(I_C_PurchaseCandidate.class)
+				.addOnlyActiveRecordsFilter();
+
+		if (query.getExternalSystemType() != null)
+		{
+			final ExternalSystemId externalSystemId = externalSystemRepository.getIdByType(query.getExternalSystemType());
+			queryBuilder.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_ExternalSystem_ID, externalSystemId);
+		}
+
+		if (query.getExternalHeaderId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_ExternalHeaderId, query.getExternalHeaderId());
+		}
+
+		if (query.getExternalLineId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_ExternalLineId, query.getExternalLineId());
+		}
+
+		return queryBuilder
 				.create()
 				.firstIdOnlyOptional(PurchaseCandidateId::ofRepoIdOrNull);
 	}
@@ -355,6 +374,11 @@ public class PurchaseCandidateRepository
 		record.setIsPrepared(purchaseCandidate.isPrepared());
 		record.setIsRequisitionCreated(purchaseCandidate.isReqCreated());
 		record.setProcessed(purchaseCandidate.isProcessed());
+
+		if (purchaseCandidate.getExternalSystemId() != null)
+		{
+			record.setExternalSystem_ID(purchaseCandidate.getExternalSystemId().getRepoId());
+		}
 		if (purchaseCandidate.getExternalHeaderId() != null)
 		{
 			record.setExternalHeaderId(purchaseCandidate.getExternalHeaderId().getValue());
@@ -422,8 +446,6 @@ public class PurchaseCandidateRepository
 		return record;
 	}
 
-
-
 	private static ZonedDateTime calculateReminderDate(final ZonedDateTime purchaseDateOrdered, final PurchaseCandidate candidate)
 	{
 		final Duration reminderTime = candidate.getReminderTime();
@@ -485,6 +507,7 @@ public class PurchaseCandidateRepository
 				.vendorProductNo(productsRepo.retrieveProductValueByProductId(ProductId.ofRepoId(record.getM_Product_ID())))
 				.externalLineId(ExternalId.ofOrNull(record.getExternalLineId()))
 				.externalHeaderId(ExternalId.ofOrNull(record.getExternalHeaderId()))
+				.externalSystemId(ExternalSystemId.ofRepoIdOrNull(record.getExternalSystem_ID()))
 				.poReference(record.getPOReference())
 
 				.source(PurchaseCandidateSource.ofCodeOrNull(record.getSource()))
@@ -615,7 +638,7 @@ public class PurchaseCandidateRepository
 				.build();
 	}
 
-	public List<PurchaseCandidate> getByExternal(@NonNull final List<ExternalHeaderIdWithExternalLineIds> ids)
+	public List<PurchaseCandidate> getByExternal(@NonNull final List<ExternalIds> ids)
 	{
 		return convertToIQuery(ids)
 				.list()
@@ -624,7 +647,7 @@ public class PurchaseCandidateRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public List<PurchaseCandidateId> getIdsByExternal(@NonNull final List<ExternalHeaderIdWithExternalLineIds> ids)
+	public List<PurchaseCandidateId> getIdsByExternal(@NonNull final List<ExternalIds> ids)
 	{
 		return convertToIQuery(ids)
 				.listIds()
@@ -633,13 +656,14 @@ public class PurchaseCandidateRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private IQuery<I_C_PurchaseCandidate> convertToIQuery(@NonNull final List<ExternalHeaderIdWithExternalLineIds> ids)
+	@NonNull
+	private IQuery<I_C_PurchaseCandidate> convertToIQuery(@NonNull final List<ExternalIds> ids)
 	{
 		final IQueryBuilder<I_C_PurchaseCandidate> queryBuilder = queryBL
 				.createQueryBuilder(I_C_PurchaseCandidate.class)
 				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions, false) /* exploding ORs to unions works only with simple cases, but e.g. currently not if we want to use IQuery.createSelection() down the line */
 				.setJoinOr();
-		for (final ExternalHeaderIdWithExternalLineIds id : ids)
+		for (final ExternalIds id : ids)
 		{
 			queryBuilder.filter(toFilter(id));
 		}
@@ -647,11 +671,13 @@ public class PurchaseCandidateRepository
 		return queryBuilder.create();
 	}
 
-	private ICompositeQueryFilter<I_C_PurchaseCandidate> toFilter(@NonNull final ExternalHeaderIdWithExternalLineIds externalIds)
+	@NonNull
+	private ICompositeQueryFilter<I_C_PurchaseCandidate> toFilter(@NonNull final ExternalIds externalIds)
 	{
-		final String headerIdAsString = externalIds.getExternalHeaderId().getValue();
+		final ExternalHeaderIdWithExternalLineIds externalHeaderIdWithExternalLineIds = externalIds.getExternalHeaderIdWithExternalLineIds();
+		final String headerIdAsString = externalHeaderIdWithExternalLineIds.getExternalHeaderId().getValue();
 
-		final ImmutableList<String> lineIdsAsString = externalIds
+		final ImmutableList<String> lineIdsAsString = externalHeaderIdWithExternalLineIds
 				.getExternalLineIds()
 				.stream()
 				.map(ExternalId::getValue)
@@ -660,6 +686,7 @@ public class PurchaseCandidateRepository
 		return queryBL
 				.createCompositeQueryFilter(I_C_PurchaseCandidate.class)
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_ExternalSystem_ID, externalIds.getExternalSystemId().getRepoId())
 				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_ExternalHeaderId, headerIdAsString)
 				.addInArrayOrAllFilter(I_C_PurchaseCandidate.COLUMN_ExternalLineId, lineIdsAsString);
 	}

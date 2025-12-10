@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.document.engine.IDocument;
+import de.metas.externalsystem.ExternalIds;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
@@ -376,14 +377,16 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 		final IQueryBuilder<I_M_ReceiptSchedule> builder = queryBL.createQueryBuilder(I_M_ReceiptSchedule.class)
 				.addOnlyActiveRecordsFilter();
 
-		if (query.getExternalHeaderIdWithExternalLineIds() != null)
+		final ExternalIds externalIds = query.getExternalIds();
+		if (externalIds != null)
 		{
-			final ExternalHeaderIdWithExternalLineIds externalIds = query.getExternalHeaderIdWithExternalLineIds();
-			builder.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_ExternalHeaderId, externalIds.getExternalHeaderId().getValue());
+			final ExternalHeaderIdWithExternalLineIds externalHeaderIdWithExternalLineIds = externalIds.getExternalHeaderIdWithExternalLineIds();
+			builder.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_ExternalSystem_ID, externalIds.getExternalSystemId().getRepoId());
+			builder.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_ExternalHeaderId, externalHeaderIdWithExternalLineIds.getExternalHeaderId().getValue());
 
-			if (!Check.isEmpty(externalIds.getExternalLineIdsAsString()))
+			if (!Check.isEmpty(externalHeaderIdWithExternalLineIds.getExternalLineIdsAsString()))
 			{
-				builder.addInArrayFilter(I_M_ReceiptSchedule.COLUMNNAME_ExternalLineId, externalIds.getExternalLineIdsAsString());
+				builder.addInArrayFilter(I_M_ReceiptSchedule.COLUMNNAME_ExternalLineId, externalHeaderIdWithExternalLineIds.getExternalLineIdsAsString());
 			}
 		}
 
@@ -391,7 +394,7 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 		{
 			builder.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_C_OrderLine_ID, query.getOrderLineId());
 		}
-		
+
 		if (query.getProductId() != null)
 		{
 			builder.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_M_Product_ID, query.getProductId());

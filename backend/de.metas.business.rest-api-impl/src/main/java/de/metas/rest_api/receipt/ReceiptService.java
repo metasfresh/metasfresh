@@ -26,6 +26,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.shipping.v2.receipt.JsonCreateReceiptInfo;
 import de.metas.common.shipping.v2.receipt.JsonCreateReceiptsRequest;
+import de.metas.externalsystem.ExternalIds;
+import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.externalsystem.ExternalSystemType;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.InOutId;
@@ -72,8 +75,9 @@ public class ReceiptService
 {
 	private static final AdMessageKey ERR_RECEIPT_SCHEDULE_NOT_FOUND = AdMessageKey.of("ERR_RECEIPT_SCHEDULE_NOT_FOUND");
 	private static final AdMessageKey ERR_RECEIPT_SCHEDULE_INVALID_IDENTIFICATION_METHOD = AdMessageKey.of("ERR_RECEIPT_SCHEDULE_INVALID_IDENTIFICATION_METHOD");
-	
+
 	@NonNull private final AttributeSetHelper attributeSetHelper;
+	@NonNull private final ExternalSystemRepository externalSystemRepository;
 
 	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
@@ -210,7 +214,7 @@ public class ReceiptService
 	private ReceiptScheduleId extractReceiptScheduleId(@NonNull final JsonCreateReceiptInfo receiptInfo)
 	{
 		validateOneIdentificationMethod(receiptInfo);
-		
+
 		if (receiptInfo.getReceiptScheduleId() != null)
 		{
 			return ReceiptScheduleId.ofRepoId(receiptInfo.getReceiptScheduleId().getValue());
@@ -220,10 +224,14 @@ public class ReceiptService
 
 		if (Check.isNotBlank(receiptInfo.getExternalHeaderId()) && Check.isNotBlank(receiptInfo.getExternalLineId()))
 		{
-			receiptScheduleQueryBuilder.externalHeaderIdWithExternalLineIds(ExternalHeaderIdWithExternalLineIds.builder()
-					.externalHeaderId(ExternalId.of(receiptInfo.getExternalHeaderId()))
-					.externalLineId(ExternalId.of(receiptInfo.getExternalLineId()))
-					.build());
+			receiptScheduleQueryBuilder.externalIds(
+					ExternalIds.builder()
+							.externalSystemId(externalSystemRepository.getIdByType(ExternalSystemType.ofValue(receiptInfo.getExternalSystemCode())))
+							.externalHeaderIdWithExternalLineIds(ExternalHeaderIdWithExternalLineIds.builder()
+									.externalHeaderId(ExternalId.of(receiptInfo.getExternalHeaderId()))
+									.externalLineId(ExternalId.of(receiptInfo.getExternalLineId()))
+									.build())
+							.build());
 		}
 
 		if (receiptInfo.getOrderLineId() != null)
@@ -272,7 +280,7 @@ public class ReceiptService
 						.attributes(createAttributeInstanceReqList)
 						.externalResourceURL(createReceiptInfo.getExternalResourceURL())
 						.build()
-				);
+		);
 	}
 
 	private void validateOneIdentificationMethod(@NonNull final JsonCreateReceiptInfo createReceiptInfo)

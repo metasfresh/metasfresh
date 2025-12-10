@@ -32,6 +32,7 @@ Feature: create Material Receipt via REST API
             "locationIdentifier":"2205173"
          },
          "warehouseIdentifier":"540008",
+         "externalSystemCode": "Other",
          "externalHeaderId":"externalHeaderId_12082025_1",
          "externalLineId":"externalLineId_12082025_1",
          "poReference":"po_ref_12082025_1",
@@ -56,6 +57,7 @@ Feature: create Material Receipt via REST API
 {
   "purchaseCandidates": [
     {
+      "externalSystemCode": "Other",
       "externalHeaderId": "externalHeaderId_12082025_1",
       "externalLineIds": [
         "externalLineId_12082025_1"
@@ -83,6 +85,7 @@ Feature: create Material Receipt via REST API
 {
   "receiptList": [
     {
+      "externalSystemCode": "Other",
       "externalHeaderId": "externalHeaderId_12082025_1",
       "externalLineId": "externalLineId_12082025_1",
       "movementQuantity": 10
@@ -112,6 +115,7 @@ Feature: create Material Receipt via REST API
             "locationIdentifier":"2205173"
          },
          "warehouseIdentifier":"540008",
+         "externalSystemCode": "Other",
          "externalHeaderId":"externalHeaderId_12082025_2",
          "externalLineId":"externalLineId_12082025_2",
          "poReference":"po_ref_12082025_1",
@@ -136,6 +140,7 @@ Feature: create Material Receipt via REST API
 {
   "purchaseCandidates": [
     {
+      "externalSystemCode": "Other",
       "externalHeaderId": "externalHeaderId_12082025_2",
       "externalLineIds": [
         "externalLineId_12082025_2"
@@ -191,6 +196,7 @@ Feature: create Material Receipt via REST API
             "locationIdentifier":"2205173"
          },
          "warehouseIdentifier":"540008",
+         "externalSystemCode": "Other",
          "externalHeaderId":"externalHeaderId_12082025_3",
          "externalLineId":"externalLineId_12082025_3",
          "poReference":"po_ref_12082025_1",
@@ -215,6 +221,7 @@ Feature: create Material Receipt via REST API
 {
   "purchaseCandidates": [
     {
+      "externalSystemCode": "Other",
       "externalHeaderId": "externalHeaderId_12082025_3",
       "externalLineIds": [
         "externalLineId_12082025_3"

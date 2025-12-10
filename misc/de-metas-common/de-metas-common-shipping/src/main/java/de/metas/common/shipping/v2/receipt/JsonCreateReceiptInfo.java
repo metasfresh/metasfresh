@@ -43,6 +43,9 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class JsonCreateReceiptInfo
 {
+	@JsonProperty("externalSystemCode")
+	String externalSystemCode;
+
 	@JsonProperty("externalHeaderId")
 	String externalHeaderId;
 
@@ -84,7 +87,8 @@ public class JsonCreateReceiptInfo
 		{
 			count++;
 		}
-		if (Check.isNotBlank(externalHeaderId)
+		if (Check.isNotBlank(externalSystemCode)
+				&& Check.isNotBlank(externalHeaderId)
 				&& Check.isNotBlank(externalLineId))
 		{
 			count++;
