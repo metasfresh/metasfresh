@@ -39,6 +39,7 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityTU;
@@ -77,6 +78,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import static de.metas.util.Check.assumeNotNull;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
@@ -179,12 +181,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		}
 
 		// Disallow creating shipment lines with negative or ZERO qty
-		if (qtyEntered.signum() <= 0)
-		{
-			return false;
-		}
-
-		return true;
+		return qtyEntered.signum() > 0;
 	}
 
 	/**
@@ -218,13 +215,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 		// Check: same Order Line
 		// NOTE: this is also EDI requirement
-		if (!OrderAndLineId.equals(orderLineId, candidate.getOrderLineId()))
-		{
-			return false;
-		}
+		return OrderAndLineId.equals(orderLineId, candidate.getOrderLineId());
 
 		// Else, we can allow this candidate to be added here
-		return true;
 	}
 
 	public void add(@NonNull final ShipmentScheduleWithHU candidate)
@@ -445,6 +438,17 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		{
 			shipmentLine.setC_Project_ID(orderLine.getC_Project_ID());
 			shipmentLine.setExternalId(orderLine.getExternalId());
+		}
+		else
+		{
+			final Set<ProjectId> projectIdsFromShipmentSchedules = candidates.stream()
+					.map(ShipmentScheduleWithHU::getProjectId)
+					.filter(Objects::nonNull)
+					.collect(Collectors.toSet());
+			if (projectIdsFromShipmentSchedules.size() == 1)
+			{
+				shipmentLine.setC_Project_ID(projectIdsFromShipmentSchedules.iterator().next().getRepoId());
+			}
 		}
 
 		optimisticallySetLineNo(shipmentLine);

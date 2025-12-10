@@ -31,6 +31,7 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -51,6 +52,9 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Interceptor(I_C_Invoice.class)
 @Component
@@ -411,6 +415,19 @@ public class C_Invoice // 03771
 		if (orderId != null && invoice.getDateInvoiced() != null)
 		{
 			orderBL.syncDateInvoicedFromInvoice(orderId, invoice);
+		}
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
+	public void copyProjectIdFromLinesIfApplicable(final I_C_Invoice invoice)
+	{
+		final Set<ProjectId> projectIds = invoiceDAO.retrieveLines(invoice)
+				.stream()
+				.map(line -> ProjectId.ofRepoIdOrNull(line.getC_Project_ID()))
+				.collect(Collectors.toSet());
+		if (projectIds.size() == 1)
+		{
+			invoice.setC_Project_ID(Objects.requireNonNull(projectIds.iterator().next()).getRepoId());
 		}
 	}
 }

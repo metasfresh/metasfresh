@@ -22,27 +22,48 @@ package de.metas.invoicecandidate.modelvalidator;
  * #L%
  */
 
+import de.metas.inout.IInOutBL;
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
+import de.metas.project.ProjectId;
+import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
 
-import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
-import de.metas.util.Services;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Interceptor(I_M_InOut.class)
 public class M_InOut
 {
-// Moved here from {@link de.metas.inout.model.validator.M_InOut}
+	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
+	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
+
+	// Moved here from {@link de.metas.inout.model.validator.M_InOut}
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSECORRECT, //
 			ModelValidator.TIMING_AFTER_REVERSEACCRUAL, //
 			ModelValidator.TIMING_AFTER_REACTIVATE,
 			ModelValidator.TIMING_AFTER_COMPLETE // needed in case we complete an inout that was previously reactivated
-			})
+	})
 
 	public void invalidateInvoiceCandidatesOnReversal(final I_M_InOut inout)
 	{
-		final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 		invoiceCandidateHandlerBL.invalidateCandidatesFor(inout);
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
+	public void copyProjectIdFromLinesIfApplicable(final I_M_InOut inout)
+	{
+		final Set<ProjectId> projectIds = inOutBL.getLines(inout)
+				.stream()
+				.map(line -> ProjectId.ofRepoIdOrNull(line.getC_Project_ID()))
+				.filter(Objects::nonNull)
+				.collect(Collectors.toSet());
+		if (projectIds.size() == 1)
+		{
+			inout.setC_Project_ID(Objects.requireNonNull(projectIds.iterator().next()).getRepoId());
+		}
 	}
 }
