@@ -23,8 +23,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_User;
 
-import java.util.UUID;
-
 @Builder
 public class LoginUserCommand
 {
@@ -47,7 +45,7 @@ public class LoginUserCommand
 		}
 		final String login = CoalesceUtil.coalesceSuppliersNotNull(
 				() -> customLogin,
-				() -> identifier.toUniqueString());
+				identifier::toUniqueString);
 
 		final String customFirstname = request.getFirstname();
 		if (Check.isNotBlank(customFirstname) && customFirstname.length() > 255)

@@ -29,7 +29,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
-import org.adempiere.ad.dao.QueryLimit;
 
 import javax.annotation.Nullable;
 import java.util.Set;
