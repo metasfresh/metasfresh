@@ -29,6 +29,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+import org.adempiere.ad.dao.QueryLimit;
 
 import javax.annotation.Nullable;
 import java.util.Set;
@@ -43,6 +44,8 @@ public class JsonLaunchersQuery
 	@Nullable String filterByDocumentNo;
 	boolean filterByQtyAvailableAtPickFromLocator;
 	@Nullable Set<WorkflowLaunchersFacetId> facetIds;
+	boolean excludeAlreadyStarted;
+	@Nullable Integer limit;
 
 	boolean countOnly;
 }
