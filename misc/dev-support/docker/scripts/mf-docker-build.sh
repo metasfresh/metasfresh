@@ -229,6 +229,28 @@ build_webui() {
             cp "$config_src" "$artifact_dest/config.js"
             success "Copied config.js to $artifact_dest/"
         fi
+
+        # Copy built files into running container
+        # (compose-dev.yml doesn't mount .dev-artifacts/webui due to config.js conflict)
+        # Note: config.js is mounted as a volume, so we exclude it to avoid "device or resource busy" error
+        local container="${PROJECT_NAME}-webui-1"
+        if docker ps --format '{{.Names}}' | grep -q "^${container}$"; then
+            info "Copying files to container $container..."
+            # Use tar to exclude config.js (which is mounted as a volume and can't be overwritten)
+            if tar -c -C "$artifact_dest" --exclude='config.js' . | docker exec -i "$container" tar -x -C /usr/share/nginx/html/; then
+                success "Files transferred to running container"
+            else
+                error "Failed to copy files to container"
+                echo "  The files are in $artifact_dest/ but weren't transferred."
+                echo "  Try manually: tar -c -C $artifact_dest --exclude='config.js' . | docker exec -i $container tar -x -C /usr/share/nginx/html/"
+                return 1
+            fi
+        else
+            warn "Container $container is not running"
+            echo "  Files built to: $artifact_dest/"
+            echo "  Start the stack with: mf-docker.sh e2e-stack start --dev-mode"
+            echo "  Or copy manually when started: tar -c -C $artifact_dest --exclude='config.js' . | docker exec -i $container tar -x -C /usr/share/nginx/html/"
+        fi
     else
         error "Build failed - dist directory empty or not found"
         exit 1
@@ -389,11 +411,16 @@ main() {
             fi
             ;;
         webui)
+            check_dev_mode
             build_webui
-            success "Frontend built - refresh your browser to see changes"
+            echo ""
+            success "Frontend updated - refresh your browser to see changes"
             echo "  URL: http://localhost:3000"
+            echo ""
+            info "Note: For faster iteration, use: cd frontend && yarn start"
             ;;
         mobile)
+            check_dev_mode
             build_mobile
             success "Mobile built - refresh your browser to see changes"
             echo "  URL: http://localhost:8880"

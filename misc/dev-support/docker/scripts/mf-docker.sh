@@ -13,7 +13,7 @@
 # Commands:
 #   pull [options] <branch>   Pull latest CI images for a branch
 #   e2e-stack <action>        Manage E2E test stack (start|stop|status|logs)
-#   incremental-build         Build only changed modules on CI base
+#   build <component>         Incremental builds for dev-mode (webapi|app|webui|mobile|all)
 #   sync-deps                 Sync Maven dependencies from CI image
 #   info                      Show current configuration and image versions
 #   help                      Show this help message
@@ -71,9 +71,12 @@ show_help() {
     echo "      --repo <name>       Use custom repo (overrides .mf-docker-version)"
     echo "      --repo-root <path>  Path to custom repo checkout"
     echo ""
-    echo "  incremental-build [module]"
-    echo "                        Build changed modules on CI base"
-    echo "                        (coming soon)"
+    echo "  build <component>     Incremental build for dev-mode"
+    echo "    webapi              Build metasfresh-webui-api and restart"
+    echo "    app                 Build metasfresh-dist and restart"
+    echo "    webui               Build frontend (refresh browser)"
+    echo "    mobile              Build mobile UI (refresh browser)"
+    echo "    all                 Build all components"
     echo ""
     echo "  sync-deps             Sync Maven dependencies from CI"
     echo "                        (coming soon)"
@@ -87,6 +90,12 @@ show_help() {
     echo "  mf-docker.sh e2e-stack start"
     echo "  cd e2e/frontend-webui && npm test"
     echo "  mf-docker.sh e2e-stack stop"
+    echo ""
+    echo "  # Dev-mode with incremental builds"
+    echo "  mf-docker.sh pull new_dawn_uat"
+    echo "  mf-docker.sh e2e-stack start --dev-mode"
+    echo "  mf-docker.sh build webapi        # Build and restart webapi"
+    echo "  mf-docker.sh build webui          # Build frontend (refresh browser)"
     echo ""
     echo "  # Custom repo workflow (e.g., ms205 from GHCR)"
     echo "  mf-docker.sh pull --repo ms205 memorable_shiny_uat"
@@ -160,13 +169,7 @@ cmd_e2e_stack() {
 }
 
 cmd_incremental_build() {
-    if [ -f "$SCRIPT_DIR/mf-docker-build.sh" ]; then
-        "$SCRIPT_DIR/mf-docker-build.sh" "$@"
-    else
-        warn "Incremental build is not yet implemented."
-        echo "  This feature will build only changed modules on top of CI base."
-        echo "  For now, use: mvn -f backend/<module>/pom.xml package -DskipTests"
-    fi
+    "$SCRIPT_DIR/mf-docker-build.sh" "$@"
 }
 
 cmd_sync_deps() {
