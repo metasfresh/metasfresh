@@ -161,7 +161,6 @@ public class PickingJobScheduleService
 		
 	}
 
-	//TODO add to scheduled process
 	public void autoAssign(@NonNull final PickingJobScheduleAutoAssignRequest request)
 	{
 		PickingJobScheduleAutoAssignCommand.builder()

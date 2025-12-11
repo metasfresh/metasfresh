@@ -113,16 +113,7 @@ public class WorkplaceRepository
 		record.setM_PickingSlot_ID(PickingSlotId.toRepoId(request.getPickingSlotId()));
 		record.setMaxPickingJobs(request.getMaxPickingJobs());
 
-		final SeqNo seqNo;
-		if(request.getSeqNo() != null)
-		{
-			seqNo = request.getSeqNo();
-		}
-		else
-		{
-			final Workplace workplace = getAllActive().stream().max(Comparator.comparing(v -> v.getSeqNo().toInt())).orElse(null);
-			seqNo = workplace != null ? workplace.getSeqNo().next() : SeqNo.ofInt(0);
-		}
+		final SeqNo seqNo = request.getSeqNo() != null ? request.getSeqNo() : getMap().getNextSeqNo();
 		record.setSeqNo(seqNo.toInt());
 
 		if(request.getOrderPickingType() != null)
@@ -308,6 +299,12 @@ public class WorkplaceRepository
 		public boolean isEmpty()
 		{
 			return byId.isEmpty();
+		}
+
+		public SeqNo getNextSeqNo()
+		{
+			final Workplace workplace = getAllActive().stream().max(Comparator.comparing(v -> v.getSeqNo().toInt())).orElse(null);
+			return workplace != null ? workplace.getSeqNo().next() : SeqNo.ofInt(10);
 		}
 	}
 }

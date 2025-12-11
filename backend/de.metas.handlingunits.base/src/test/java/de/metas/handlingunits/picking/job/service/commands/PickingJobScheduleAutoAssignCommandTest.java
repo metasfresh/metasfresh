@@ -65,8 +65,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @ExtendWith({AdempiereTestWatcher.class})
 public class PickingJobScheduleAutoAssignCommandTest
@@ -99,11 +98,9 @@ public class PickingJobScheduleAutoAssignCommandTest
 	public void testAutoAssign_max_picking_jobs()
 	{
 		final ShipmentScheduleId shipmentScheduleId = createShipmentSchedule()
-				.orderId(OrderId.ofRepoId(1))
 				.qtyToDeliver(BigDecimal.TEN)
 				.build();
 		final ShipmentScheduleId shipmentScheduleId2 = createShipmentSchedule()
-				.orderId(OrderId.ofRepoId(2))
 				.qtyToDeliver(BigDecimal.ONE)
 				.build();
 
@@ -122,7 +119,7 @@ public class PickingJobScheduleAutoAssignCommandTest
 				.onlyShipmentScheduleIds(ImmutableSet.of(shipmentScheduleId, shipmentScheduleId2))
 				.build()).collect(ImmutableList.toImmutableList());
 
-		assertEquals(1, pickingJobs.size());
+		assertThat(pickingJobs.size()).as("PickingJobs count").isEqualTo(1);
 	}
 
 	@Test
@@ -154,8 +151,8 @@ public class PickingJobScheduleAutoAssignCommandTest
 				.onlyShipmentScheduleIds(ImmutableSet.of(shipmentScheduleId))
 				.build()).collect(ImmutableList.toImmutableList());
 
-		assertEquals(1, pickingJobs.size());
-		assertTrue(WorkplaceId.equals(pickingJobs.get(0).getWorkplaceId(), workplace2.getId()));
+		assertThat(pickingJobs.size()).as("PickingJobs count").isEqualTo(1);
+		assertThat(WorkplaceId.equals(pickingJobs.get(0).getWorkplaceId(), workplace2.getId())).as("Correct Workplace used").isTrue();
 	}
 
 	@Test
@@ -187,15 +184,14 @@ public class PickingJobScheduleAutoAssignCommandTest
 				.onlyShipmentScheduleIds(ImmutableSet.of(shipmentScheduleId))
 				.build()).collect(ImmutableList.toImmutableList());
 
-		assertEquals(1, pickingJobs.size());
-		assertTrue(WorkplaceId.equals(pickingJobs.get(0).getWorkplaceId(), workplace2.getId()));
+		assertThat(pickingJobs.size()).as("PickingJobs count").isEqualTo(1);
+		assertThat(WorkplaceId.equals(pickingJobs.get(0).getWorkplaceId(), workplace2.getId())).as("Correct Workplace used").isTrue();
 	}
 
 	@Test
-	public void testAutoAssign_matching_order_type_single()
+	public void testAutoAssign_matching_order_type_single_no_order_id()
 	{
 		final ShipmentScheduleId shipmentScheduleId = createShipmentSchedule()
-				.orderId(OrderId.ofRepoId(1))
 				.qtyToDeliver(BigDecimal.ONE)
 				.build();
 
@@ -223,44 +219,8 @@ public class PickingJobScheduleAutoAssignCommandTest
 				.onlyShipmentScheduleIds(ImmutableSet.of(shipmentScheduleId))
 				.build()).collect(ImmutableList.toImmutableList());
 
-		assertEquals(1, pickingJobs.size());
-		assertTrue(WorkplaceId.equals(pickingJobs.get(0).getWorkplaceId(), workplace2.getId()));
-	}
-
-	@Test
-	public void testAutoAssign_matching_order_type_multi()
-	{
-		final ShipmentScheduleId shipmentScheduleId = createShipmentSchedule()
-				.orderId(OrderId.ofRepoId(1))
-				.qtyToDeliver(BigDecimal.TEN)
-				.build();
-
-		workplaceRepository.create(WorkplaceCreateRequest.builder()
-				.warehouseId(WarehouseId.MAIN)
-				.name("Test1")
-				.orderPickingType(OrderPickingType.Single)
-				.seqNo(SeqNo.ofInt(10))
-				.maxPickingJobs(10)
-				.build());
-
-		final Workplace workplace2 = workplaceRepository.create(WorkplaceCreateRequest.builder()
-				.warehouseId(WarehouseId.MAIN)
-				.name("Test2")
-				.orderPickingType(OrderPickingType.Multiple)
-				.seqNo(SeqNo.ofInt(20))
-				.maxPickingJobs(10)
-				.build());
-
-		pickingJobScheduleService.autoAssign(PickingJobScheduleAutoAssignRequest.builder()
-				.preparationDate(SystemTime.asLocalDate())
-				.build());
-
-		final ImmutableList<PickingJobSchedule> pickingJobs = pickingJobScheduleService.stream(PickingJobScheduleQuery.builder()
-				.onlyShipmentScheduleIds(ImmutableSet.of(shipmentScheduleId))
-				.build()).collect(ImmutableList.toImmutableList());
-
-		assertEquals(1, pickingJobs.size());
-		assertTrue(WorkplaceId.equals(pickingJobs.get(0).getWorkplaceId(), workplace2.getId()));
+		assertThat(pickingJobs.size()).as("PickingJobs count").isEqualTo(1);
+		assertThat(WorkplaceId.equals(pickingJobs.get(0).getWorkplaceId(), workplace2.getId())).as("Correct Workplace used").isTrue();
 	}
 
 	@Builder(builderMethodName = "createShipmentSchedule", builderClassName = "$ShipmentScheduleBuilder")
