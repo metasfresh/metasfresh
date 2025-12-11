@@ -354,7 +354,7 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice
                 UOM                        character varying(10),
                 PriceUOM                   character varying(10),
                 StdPrecision               numeric(10, 1),
-                QtyPattern                 character varying,
+                PriceQtyPattern            text,
                 linenetamt                 numeric,
                 rate                       numeric,
                 isdiscountprinted          character,
@@ -426,7 +426,7 @@ SELECT io.DocType || ': ' || io.DocNo                         AS InOuts,
        END                                                    AS PriceUOM,
 
        puom.StdPrecision,
-       report.getQtyPattern(puom.StdPrecision)                AS QtyPattern,
+       report.getQtyPattern(puom.StdPrecision)                AS PriceQtyPattern,
        il.linenetamt,
        t.rate,
        i.isDiscountPrinted,
@@ -605,6 +605,8 @@ $$
     STABLE
 ;
 
+
+
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Details (IN p_Record_ID   numeric,
                                                                                         IN p_AD_Language Character Varying(6))
 ;
@@ -645,7 +647,8 @@ FROM (SELECT Attributes,
              iol.Description,
              bp_product_no,
              bp_product_name,
-             CAST((ROW_NUMBER() OVER (ORDER BY MAX(iol.line))) * 10 AS numeric) AS line
+             CAST((ROW_NUMBER() OVER (ORDER BY MAX(iol.line))) * 10 AS numeric) AS line,
+             QtyPattern
 
       FROM
           -- Sub select to get all in out lines we need. They are in a subselect so we can neatly group by the attributes
@@ -767,7 +770,8 @@ FROM (SELECT Attributes,
                StdPrecision,
                Description,
                bp_product_no,
-               bp_product_name
+               bp_product_name,
+               QtyPattern
       ORDER BY Name, MIN(M_InOutLine_ID), line) AS result
 ORDER BY line
 
@@ -1002,6 +1006,7 @@ FROM (SELECT COALESCE(io1.DocType, io2.DocType) || ': ' || COALESCE(io1.DocNo, i
                COALESCE(uomt.UOMSymbol, uom.UOMSymbol),
                COALESCE(puomt.UOMSymbol, puom.UOMSymbol),
                puom.StdPrecision,
+               uom.StdPrecision,
                t.rate,
                bpg.IsPrintTax,
                COALESCE(io1.DateFrom, io2.DateFrom),

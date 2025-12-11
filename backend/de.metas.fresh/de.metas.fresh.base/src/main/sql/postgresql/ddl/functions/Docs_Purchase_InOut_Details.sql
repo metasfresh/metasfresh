@@ -38,7 +38,8 @@ FROM (SELECT Attributes,
              iol.Description,
              bp_product_no,
              bp_product_name,
-             CAST((ROW_NUMBER() OVER (ORDER BY MAX(iol.line))) * 10 AS numeric) AS line
+             CAST((ROW_NUMBER() OVER (ORDER BY MAX(iol.line))) * 10 AS numeric) AS line,
+             QtyPattern
 
       FROM
           -- Sub select to get all in out lines we need. They are in a subselect so we can neatly group by the attributes
@@ -160,7 +161,8 @@ FROM (SELECT Attributes,
                StdPrecision,
                Description,
                bp_product_no,
-               bp_product_name
+               bp_product_name,
+               QtyPattern
       ORDER BY Name, MIN(M_InOutLine_ID), line) AS result
 ORDER BY line
 

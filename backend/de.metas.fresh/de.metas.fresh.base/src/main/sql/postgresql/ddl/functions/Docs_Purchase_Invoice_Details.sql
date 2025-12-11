@@ -224,6 +224,7 @@ FROM (SELECT COALESCE(io1.DocType, io2.DocType) || ': ' || COALESCE(io1.DocNo, i
                COALESCE(uomt.UOMSymbol, uom.UOMSymbol),
                COALESCE(puomt.UOMSymbol, puom.UOMSymbol),
                puom.StdPrecision,
+               uom.StdPrecision,
                t.rate,
                bpg.IsPrintTax,
                COALESCE(io1.DateFrom, io2.DateFrom),
@@ -245,4 +246,3 @@ FROM (SELECT COALESCE(io1.DocType, io2.DocType) || ': ' || COALESCE(io1.DocNo, i
 ORDER BY line
 $$
 ;
-
