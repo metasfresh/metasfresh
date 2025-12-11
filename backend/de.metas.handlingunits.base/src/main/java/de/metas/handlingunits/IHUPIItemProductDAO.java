@@ -140,6 +140,8 @@ public interface IHUPIItemProductDAO extends ISingletonService
 
 	List<I_M_HU_PI_Item_Product> retrieveForProducts(Set<ProductId> productIdSet, BPartnerId partnerId);
 
+	List<I_M_HU_PI_Item_Product> retrieveAllForProducts(@NonNull Set<ProductId> productIdSet);
+
 	/**
 	 * Invoke {@link #retrieveTUs(Properties, ProductId, BPartnerId, boolean)} with {@code allowInfiniteCapacity = false}.
 	 */

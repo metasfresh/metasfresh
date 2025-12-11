@@ -28,6 +28,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
 import de.metas.copy_with_details.CopyRecordRequest;
 import de.metas.copy_with_details.CopyRecordService;
+import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
@@ -93,6 +94,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocSubType;
+import static org.compiere.model.I_C_Order.COLUMNNAME_AD_InputDataSource_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_AD_Org_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_Location_ID;
@@ -128,6 +130,7 @@ public class C_Order_StepDef
 	private final M_PricingSystem_StepDefData pricingSystemDataTable;
 	private final M_Warehouse_StepDefData warehouseTable;
 	private final AD_Org_StepDefData orgTable;
+	private final TestContext restTestContext;
 
 	public C_Order_StepDef(
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
@@ -136,7 +139,8 @@ public class C_Order_StepDef
 			@NonNull final AD_User_StepDefData userTable,
 			@NonNull final M_PricingSystem_StepDefData pricingSystemDataTable,
 			@NonNull final M_Warehouse_StepDefData warehouseTable,
-			@NonNull final AD_Org_StepDefData orgTable)
+			@NonNull final AD_Org_StepDefData orgTable,
+			@NonNull final TestContext restTestContext)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.bpartnerLocationTable = bpartnerLocationTable;
@@ -145,6 +149,7 @@ public class C_Order_StepDef
 		this.pricingSystemDataTable = pricingSystemDataTable;
 		this.warehouseTable = warehouseTable;
 		this.orgTable = orgTable;
+		this.restTestContext = restTestContext;
 	}
 
 	@Given("metasfresh contains C_Orders:")
@@ -314,9 +319,14 @@ public class C_Order_StepDef
 						order.setDropShip_BPartner_ID(dropShipLocation.getC_BPartner_ID());
 					}
 
+					tableRow.getAsOptionalInt(COLUMNNAME_AD_InputDataSource_ID)
+							.ifPresent(order::setAD_InputDataSource_ID);
+
+
 					saveRecord(order);
 
 					orderTable.putOrReplace(tableRow.getAsIdentifier(), order);
+					restTestContext.setIntVariableFromRow(tableRow, order::getC_Order_ID);
 				});
 	}
 
