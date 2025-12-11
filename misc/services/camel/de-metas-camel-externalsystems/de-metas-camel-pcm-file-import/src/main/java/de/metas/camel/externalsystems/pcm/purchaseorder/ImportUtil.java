@@ -26,18 +26,18 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.apache.camel.Exchange;
 
+import static de.metas.camel.externalsystems.pcm.purchaseorder.ImportConstants.PROPERTY_EXTERNAL_SYSTEM_CODE;
 import static de.metas.camel.externalsystems.pcm.purchaseorder.ImportConstants.PROPERTY_IMPORT_ORDERS_CONTEXT;
 
 @UtilityClass
 class ImportUtil
 {
-	ImportOrdersRouteContext getOrCreateImportOrdersRouteContext(
-			@NonNull final Exchange exchange,
-			@NonNull final String externalSystemCode)
+	ImportOrdersRouteContext getOrCreateImportOrdersRouteContext(@NonNull final Exchange exchange)
 	{
 		ImportOrdersRouteContext importOrdersRouteContext = exchange.getProperty(PROPERTY_IMPORT_ORDERS_CONTEXT, ImportOrdersRouteContext.class);
 		if (importOrdersRouteContext == null)
 		{
+			final String externalSystemCode	= exchange.getProperty(PROPERTY_EXTERNAL_SYSTEM_CODE, String.class);
 			importOrdersRouteContext = new ImportOrdersRouteContext(externalSystemCode);
 			exchange.setProperty(PROPERTY_IMPORT_ORDERS_CONTEXT, importOrdersRouteContext);
 		}

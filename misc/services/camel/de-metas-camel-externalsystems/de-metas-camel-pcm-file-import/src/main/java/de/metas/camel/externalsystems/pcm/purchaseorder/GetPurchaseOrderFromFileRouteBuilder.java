@@ -138,9 +138,7 @@ public class GetPurchaseOrderFromFileRouteBuilder extends IdAwareRouteBuilder
 
 	private void updateContextAfterSuccess(@NonNull final Exchange exchange)
 	{
-		final ImportOrdersRouteContext importOrdersRouteContext = ImportUtil.getOrCreateImportOrdersRouteContext(
-				exchange,
-				enabledByExternalSystemRequest.getExternalSystemName().getName());
+		final ImportOrdersRouteContext importOrdersRouteContext = ImportUtil.getOrCreateImportOrdersRouteContext(exchange);
 
 		final PurchaseOrderRow purchaseOrderRow = exchange.getProperty(PROPERTY_CURRENT_CSV_ROW, PurchaseOrderRow.class);
 		final JsonExternalId externalHeaderId = JsonExternalId.of(purchaseOrderRow.getExternalHeaderId());
@@ -152,9 +150,7 @@ public class GetPurchaseOrderFromFileRouteBuilder extends IdAwareRouteBuilder
 
 	private void updateContextAfterError(@NonNull final Exchange exchange)
 	{
-		final ImportOrdersRouteContext importOrdersRouteContext = ImportUtil.getOrCreateImportOrdersRouteContext(
-				exchange,
-				enabledByExternalSystemRequest.getExternalSystemName().getName());
+		final ImportOrdersRouteContext importOrdersRouteContext = ImportUtil.getOrCreateImportOrdersRouteContext(exchange);
 
 		final PurchaseOrderRow csvRow = exchange.getProperty(PROPERTY_CURRENT_CSV_ROW, PurchaseOrderRow.class);
 
@@ -175,9 +171,7 @@ public class GetPurchaseOrderFromFileRouteBuilder extends IdAwareRouteBuilder
 
 	private void enqueueCandidatesProcessor(@NonNull final Exchange exchange)
 	{
-		final ImportOrdersRouteContext importOrdersRouteContext = ImportUtil.getOrCreateImportOrdersRouteContext(
-				exchange,
-				enabledByExternalSystemRequest.getExternalSystemName().getName());
+		final ImportOrdersRouteContext importOrdersRouteContext = ImportUtil.getOrCreateImportOrdersRouteContext(exchange);
 
 		if (importOrdersRouteContext.isDoNotProcessAtAll())
 		{

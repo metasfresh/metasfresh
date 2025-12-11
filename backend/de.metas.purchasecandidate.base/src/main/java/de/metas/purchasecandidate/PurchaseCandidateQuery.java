@@ -39,7 +39,7 @@ public class PurchaseCandidateQuery
 	String externalHeaderId;
 
 	/**
-	 * {@link de.metas.externalsystem.model.I_ExternalSystem#COLUMNNAME_Value} of the external system the candidates in question were added with.
+	 * {@link de.metas.externalsystem.model.I_ExternalSystem#COLUMNNAME_Value} of the external system.
 	 */
 	ExternalSystemType externalSystemType;
 

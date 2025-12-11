@@ -133,9 +133,7 @@ public class CreatePurchaseCandidatesService
 
 		final PurchaseCandidateId save = purchaseCandidateRepo.save(purchaseCandidate);
 		return Optional.of(JsonPurchaseCandidate.builder()
-				.externalSystemCode(Optional.ofNullable(purchaseCandidate.getExternalSystemId())
-						.map(poJsonConverters::getExternalSystemTypeById)
-						.orElse(null))
+				.externalSystemCode(poJsonConverters.getExternalSystemTypeById(purchaseCandidate))
 				.metasfreshId(JsonMetasfreshId.of(save.getRepoId()))
 				.externalHeaderId(JsonExternalIds.ofOrNull(purchaseCandidate.getExternalHeaderId()))
 				.externalLineId(JsonExternalIds.ofOrNull((purchaseCandidate.getExternalLineId())))

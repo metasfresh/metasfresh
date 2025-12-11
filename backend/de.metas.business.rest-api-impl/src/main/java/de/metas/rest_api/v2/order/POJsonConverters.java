@@ -28,14 +28,17 @@ import de.metas.externalsystem.ExternalSystemId;
 import de.metas.externalsystem.ExternalSystemIdWithExternalIds;
 import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalsystem.ExternalSystemType;
+import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.rest_api.utils.JsonExternalIds;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -49,10 +52,12 @@ public final class POJsonConverters
 		return externalSystemRepository.getIdByType(ExternalSystemType.ofValue(request.getExternalSystemCode()));
 	}
 
-	@NonNull
-	public String getExternalSystemTypeById(@NonNull final ExternalSystemId externalSystemId)
+	@Nullable
+	public String getExternalSystemTypeById(@NonNull final PurchaseCandidate purchaseCandidate)
 	{
-		return externalSystemRepository.getById(externalSystemId).getType().toJson();
+		return Optional.ofNullable(purchaseCandidate.getExternalSystemId())
+				.map(externalSystemId -> externalSystemRepository.getById(externalSystemId).getType().toJson())
+				.orElse(null);
 	}
 
 	@NonNull

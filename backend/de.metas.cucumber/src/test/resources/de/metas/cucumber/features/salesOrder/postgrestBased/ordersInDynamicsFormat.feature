@@ -26,10 +26,10 @@ Feature: Export Orders in specific format via postgREST
       | vendor1    | N          | vendor_ID    | vendorName   | vendorValue   | Y        | pricingSystem      |
       | dropShip1  | N          | dropShip_ID  | dropShipName | dropShipValue | Y        | pricingSystem      |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier          | C_BPartner_ID | IsShipToDefault | IsBillToDefault | City | Postal | Address1 | Address2 | Address3 | Address4 |
-      | customer_location_1 | customer1     | Y               | Y               |      |        |          |          |          |          |
-      | vendor_location_1   | vendor1       | Y               | Y               |      |        |          |          |          |          |
-      | dropShip_location_1 | dropShip1     | Y               | Y               | City | 5000   | Address1 | Address2 | Address3 | Address4 |
+      | Identifier          | C_BPartner_ID | IsShipToDefault | IsBillToDefault | City       | Postal | Address1       | Address2       | Address3       | Address4       |
+      | customer_location_1 | customer1     | Y               | Y               |            |        |                |                |                |                |
+      | vendor_location_1   | vendor1       | Y               | Y               | VendorCity | 5100   | VendorAddress1 | VendorAddress2 | VendorAddress3 | VendorAddress4 |
+      | dropShip_location_1 | dropShip1     | Y               | Y               | City       | 5000   | Address1       | Address2       | Address3       | Address4       |
 
   @from:cucumber
   Scenario: create a sales order and export it to JSON via C_Order_ID. The used BPartner does not have an external reference for Dynamics365 External System
@@ -201,6 +201,15 @@ Feature: Export Orders in specific format via postgREST
 
     When the order identified by order1 is completed
 
+    And metasfresh contains C_Orders:
+      | Identifier | REST.Context | IsSOTrx | REST.Context.DocumentNo | C_BPartner_ID | DateOrdered | M_PricingSystem_ID | C_BPartner_Location_ID |
+      | order2     | order_ID_2   | false   | documentNo_2            | vendor1       | 2022-06-17  | pricingSystem      | vendor_location_1      |
+    And metasfresh contains C_OrderLines:
+      | Identifier | REST.Context   | C_Order_ID | M_Product_ID | QtyEntered |
+      | orderLine2 | orderLine_ID_2 | order2     | product1     | 10         |
+
+    When the order identified by order2 is completed
+
     And the following API_Audit_Config records are created:
       | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
       | c_1        | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
@@ -221,13 +230,14 @@ Feature: Export Orders in specific format via postgREST
 }
     """
 
-    Then the metasfresh REST-API responds with
+    And the metasfresh REST-API responds with
     """
 {
   "orgCode": "001",
   "orderDocumentNo": "test_11202025_11",
   "orderNumber": @order_ID@,
   "currencyCode": "EUR",
+  "partnerIdentifier": "@vendor_ID@",
   "partnerValue": "vendorValue",
   "partnerName": "vendorName",
   "dropShip": {
@@ -249,6 +259,56 @@ Feature: Export Orders in specific format via postgREST
       "price": 2.0,
       "discount": 0,
       "orderLineId": @orderLine_ID@,
+      "productName": "@postgRESTExportProductName1@",
+      "orderLineNumber": 10,
+      "productIdentifier": "@postgRESTExportProductValue1@",
+      "productDescription": "postgRESTExportProductDescription1"
+    }
+  ]
+}
+    """
+
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/Purchase_Order_Dynamics_JSON/invoke' and fulfills with '200' status code
+    """
+{
+  "processParameters": [
+    {
+      "name": "C_Order_ID",
+      "value": "@order_ID_2@"
+    }
+  ]
+}
+    """
+
+    And the metasfresh REST-API responds with
+    """
+{
+  "orgCode": "001",
+  "orderDocumentNo": "@documentNo_2@",
+  "orderNumber": @order_ID_2@,
+  "currencyCode": "EUR",
+  "partnerIdentifier": "@vendor_ID@",
+  "partnerValue": "vendorValue",
+  "partnerName": "vendorName",
+  "dropShip": {
+    "city": "VendorCity",
+    "postal": "5100",
+    "country": "DE",
+    "address1": "VendorAddress1",
+    "address2": "VendorAddress2",
+    "address3": "VendorAddress3",
+    "address4": "VendorAddress4",
+    "partnerID": @vendor_ID@,
+    "partnerName": "vendorName",
+    "partnerValue": "vendorValue"
+  },
+  "Lines": [
+    {
+      "qty": 10,
+      "uom": "PCE",
+      "price": 2.0,
+      "discount": 0,
+      "orderLineId": @orderLine_ID_2@,
       "productName": "@postgRESTExportProductName1@",
       "orderLineNumber": 10,
       "productIdentifier": "@postgRESTExportProductValue1@",

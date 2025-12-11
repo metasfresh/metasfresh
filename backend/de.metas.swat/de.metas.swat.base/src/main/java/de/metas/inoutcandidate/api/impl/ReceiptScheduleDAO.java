@@ -380,13 +380,14 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 		final ExternalSystemIdWithExternalIds externalSystemIdWithExternalIds = query.getExternalSystemIdWithExternalIds();
 		if (externalSystemIdWithExternalIds != null)
 		{
-			final ExternalHeaderIdWithExternalLineIds externalHeaderIdWithExternalLineIds = externalSystemIdWithExternalIds.getExternalHeaderIdWithExternalLineIds();
 			builder.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_ExternalSystem_ID, externalSystemIdWithExternalIds.getExternalSystemId().getRepoId());
-			builder.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_ExternalHeaderId, externalHeaderIdWithExternalLineIds.getExternalHeaderId().getValue());
 
-			if (!Check.isEmpty(externalHeaderIdWithExternalLineIds.getExternalLineIdsAsString()))
+			final ExternalHeaderIdWithExternalLineIds externalIds = externalSystemIdWithExternalIds.getExternalHeaderIdWithExternalLineIds();
+			builder.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_ExternalHeaderId, externalIds.getExternalHeaderId().getValue());
+
+			if (!Check.isEmpty(externalIds.getExternalLineIdsAsString()))
 			{
-				builder.addInArrayFilter(I_M_ReceiptSchedule.COLUMNNAME_ExternalLineId, externalHeaderIdWithExternalLineIds.getExternalLineIdsAsString());
+				builder.addInArrayFilter(I_M_ReceiptSchedule.COLUMNNAME_ExternalLineId, externalIds.getExternalLineIdsAsString());
 			}
 		}
 

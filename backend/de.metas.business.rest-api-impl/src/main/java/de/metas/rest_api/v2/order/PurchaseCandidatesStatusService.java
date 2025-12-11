@@ -58,7 +58,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -151,9 +150,7 @@ public class PurchaseCandidatesStatusService
 	private JsonPurchaseCandidate.JsonPurchaseCandidateBuilder preparePurchaseCandidateStatus(@NonNull final PurchaseCandidate candidate)
 	{
 		return JsonPurchaseCandidate.builder()
-				.externalSystemCode(Optional.ofNullable(candidate.getExternalSystemId())
-						.map(poJsonConverters::getExternalSystemTypeById)
-						.orElse(null))
+				.externalSystemCode(poJsonConverters.getExternalSystemTypeById(candidate))
 				.externalHeaderId(JsonExternalIds.ofOrNull(candidate.getExternalHeaderId()))
 				.externalLineId(JsonExternalIds.ofOrNull(candidate.getExternalLineId()))
 				.purchaseDateOrdered(candidate.getPurchaseDateOrdered())
