@@ -56,7 +56,7 @@ INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Ind
 ;
 
 -- 2025-12-10T13:55:25.709Z
-CREATE UNIQUE INDEX C_PurchaseCandidate_External_Ids ON C_PurchaseCandidate (ExternalSystem_ID,ExternalHeaderId,ExternalLineId,AD_Org_ID) WHERE IsActive='Y' AND COALESCE(ExternalHeaderId, '') != ''  AND COALESCE(ExternalLineId, '') != '' AND ExternalSystem_ID != NULL
+CREATE UNIQUE INDEX C_PurchaseCandidate_External_Ids ON C_PurchaseCandidate (ExternalSystem_ID,ExternalHeaderId,ExternalLineId,AD_Org_ID) WHERE IsActive='Y' AND COALESCE(ExternalHeaderId, '') != ''  AND COALESCE(ExternalLineId, '') != '' AND ExternalSystem_ID IS NOT NULL
 ;
 
 -- Run mode: SWING_CLIENT
