@@ -151,7 +151,6 @@ CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details(IN p
                 Discount               Numeric,
                 IsDiscountPrinted      Character(1),
                 IsShipmentPricePrinted Character(1),
-                QtyPattern             text,
                 Description            Character Varying,
                 bp_product_no          character varying(30),
                 bp_product_name        character varying(100),
@@ -194,11 +193,6 @@ $$ SELECT iol.line,
           COALESCE(ic.Discount_Override, ic.Discount)                                                     AS Discount,
           bp.isDiscountPrinted,
           bp.IsShipmentPricePrinted,
-          CASE
-              WHEN uom.StdPrecision = 0
-                  THEN '#,##0'
-                  ELSE SUBSTRING('#,##0.000' FROM 0 FOR 7 + uom.StdPrecision :: INTEGER)
-          END                                                                                             AS QtyPattern,
           CASE
               WHEN report.IsHiddenReportElement(io.C_DocType_ID, 'description') = 'N' THEN
                   COALESCE(iol.Description, ol.Description)
