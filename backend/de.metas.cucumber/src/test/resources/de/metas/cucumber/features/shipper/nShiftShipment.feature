@@ -8,8 +8,8 @@ Feature: nShift Shipment
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And load M_Shipper:
-      | Identifier | Name    |
-      | nShift     | nShift  |
+      | Identifier | Name   |
+      | nShift     | nShift |
     And metasfresh contains Carrier_Configs:
       | M_Shipper_ID |
       | nShift       |
@@ -23,11 +23,11 @@ Feature: nShift Shipment
       | Identifier |
       | ps         |
     And metasfresh contains M_PriceLists
-      | Identifier  | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx |
-      | pl          | ps                 | CH           | CHF           | true  |
+      | Identifier | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx |
+      | pl         | ps                 | CH           | CHF           | true  |
     And metasfresh contains M_PriceList_Versions
-      | Identifier   | M_PriceList_ID |
-      | plv          | pl             |
+      | Identifier | M_PriceList_ID |
+      | plv        | pl             |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
       | plv                    | product      | 10.0     | PCE      |
@@ -134,3 +134,29 @@ Feature: nShift Shipment
     And M_ShipmentSchedule has no carrier services assigned
       | M_ShipmentSchedule_ID |
       | ss1                   |
+
+  Scenario: nShift Carrier Automatic Schedule
+    Given set sys config boolean value true for sys config de.metas.handlingunits.picking.job_schedule.RequireCarrierProductSet
+    And the nShift ship advisor service is stubbed to return a successful response based on the request
+      | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | cp2                | cgt2                  |
+    And metasfresh contains C_Workplaces
+      | Identifier | M_Warehouse_ID |
+      | workplace1 | wh             |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
+      | so2        | true    | customer      | 2025-04-01  | wh             | nShift       |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | so2_l1     | so2        | product      | 10         |
+    When the order identified by so2 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | ss2        | so2_l1         | N             | cp2                | cgt2                  |
+    And AD_Scheduler for classname 'de.metas.handlingunits.picking.process.M_ShipmentSchedule_Traffic_Management_assign' is ran once
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOnHand | OPT.Processed | OPT.DeliveryRule | IsScheduledForPicking | QtyScheduledForPicking |
+      | ss2                              | 10               | 0                | 10             | 0             | false         | F                | Y                     | 10                     |
+
+  Scenario: reset settings to default
+    Given set sys config boolean value false for sys config de.metas.handlingunits.picking.job_schedule.RequireCarrierProductSet

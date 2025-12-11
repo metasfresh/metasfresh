@@ -120,6 +120,7 @@ public class PickingJobScheduleAutoAssignCommand
 								.fromCompleteOrderOrNullOrder(true)
 								.includeWithQtyToDeliverZero(false)
 								.includeProcessed(false)
+								.orderByOrderId(true)
 								.build())
 				.stream()
 				.filter(sched -> sched.getCarrierProductId() != null || !isCarrierProductRequired)
