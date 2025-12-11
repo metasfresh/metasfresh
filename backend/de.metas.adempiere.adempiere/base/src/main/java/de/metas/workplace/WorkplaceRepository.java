@@ -111,10 +111,25 @@ public class WorkplaceRepository
 		record.setM_Warehouse_ID(request.getWarehouseId().getRepoId());
 		record.setPickFrom_Locator_ID(LocatorId.toRepoId(request.getPickFromLocatorId()));
 		record.setM_PickingSlot_ID(PickingSlotId.toRepoId(request.getPickingSlotId()));
+		record.setMaxPickingJobs(request.getMaxPickingJobs());
 
-		final Workplace workplace = getAllActive().stream().max(Comparator.comparing(v -> v.getSeqNo().toInt())).orElse(null);
-		final SeqNo seqNo = workplace != null ? workplace.getSeqNo().next() : SeqNo.ofInt(0);
+		final SeqNo seqNo;
+		if(request.getSeqNo() != null)
+		{
+			seqNo = request.getSeqNo();
+		}
+		else
+		{
+			final Workplace workplace = getAllActive().stream().max(Comparator.comparing(v -> v.getSeqNo().toInt())).orElse(null);
+			seqNo = workplace != null ? workplace.getSeqNo().next() : SeqNo.ofInt(0);
+		}
 		record.setSeqNo(seqNo.toInt());
+
+		if(request.getOrderPickingType() != null)
+		{
+			record.setOrderPickingType(request.getOrderPickingType().getCode());
+		}
+
 		InterfaceWrapperHelper.save(record);
 
 		return getById(WorkplaceId.ofRepoId(record.getC_Workplace_ID()));

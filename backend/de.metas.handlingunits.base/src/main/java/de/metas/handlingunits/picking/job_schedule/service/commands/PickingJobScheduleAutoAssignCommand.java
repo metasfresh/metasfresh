@@ -73,7 +73,7 @@ public class PickingJobScheduleAutoAssignCommand
 	// Params
 	@NonNull private final PickingJobScheduleAutoAssignRequest request;
 	private List<Workplace> workplaces;
-	private Map<WorkplaceId, Integer> assignedCountPerWorkplace;
+	private WorkplacesCapacity workplacesCapacity;
 	private ImmutableMap<ProductId, Product> productsById;
 	private ImmutableMap<OrderId, BigDecimal> totalQtyToDeliverByOrderId;
 
@@ -114,15 +114,15 @@ public class PickingJobScheduleAutoAssignCommand
 
 		final boolean isCarrierProductRequired = sysConfigBL.getBooleanValue(SYSCONFIG_CARRIER_PRODUCT_REQUIRED, false);
 		final ImmutableList<ShipmentSchedule> allEligibleShipmentSchedules = shipmentScheduleRepository.getBy(
-				ShipmentScheduleQuery.builder()
-						.warehouseIds(warehouseIds)
-						.preparationDate(request.getPreparationDate())
-						.fromCompleteOrderOrNullOrder(true)
-						.includeWithQtyToDeliverZero(false)
-						.includeProcessed(false)
-						.build())
+						ShipmentScheduleQuery.builder()
+								.warehouseIds(warehouseIds)
+								.preparationDate(request.getPreparationDate())
+								.fromCompleteOrderOrNullOrder(true)
+								.includeWithQtyToDeliverZero(false)
+								.includeProcessed(false)
+								.build())
 				.stream()
-				.filter(sched ->  sched.getCarrierProductId() != null || !isCarrierProductRequired)
+				.filter(sched -> sched.getCarrierProductId() != null || !isCarrierProductRequired)
 				.collect(ImmutableList.toImmutableList());
 
 		if (allEligibleShipmentSchedules.isEmpty())
@@ -138,8 +138,7 @@ public class PickingJobScheduleAutoAssignCommand
 				.map(Workplace::getId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		// TODO think about / clarify what todo if qtyScheduled != qtyToDeliver (currently additional qty would be scheduled after old schedule is processed)
-		final List<PickingJobSchedule> existingSchedules = pickingJobScheduleRepository.stream(
+		final List<PickingJobSchedule> existingPickingJobSchedules = pickingJobScheduleRepository.stream(
 				PickingJobScheduleQuery.builder()
 						.onlyShipmentScheduleIds(allEligibleShipmentScheduleIds)
 						.workplaceIds(workplaceIds)
@@ -147,7 +146,42 @@ public class PickingJobScheduleAutoAssignCommand
 						.build()
 		).collect(ImmutableList.toImmutableList());
 
-		final ImmutableSet<ShipmentScheduleId> alreadyAssignedIds = existingSchedules.stream()
+		// TODO for next iteration, decide how qtyToDeliver changes are handled (This logic can't be used, because if same workplace we update and if different workplace we insert)
+		// final Map<ShipmentScheduleId, BigDecimal> alreadyAssignedQtyByShipmentScheduleId = new HashMap<>();
+		// workplacesCapacity = new WorkplacesCapacity();
+		// existingPickingJobSchedules.forEach(jobSched -> {
+		// 	workplacesCapacity.increase(jobSched.getWorkplaceId());
+		//
+		// 	final ShipmentScheduleId schedId = jobSched.getShipmentScheduleId();
+		// 	final BigDecimal assigned = alreadyAssignedQtyByShipmentScheduleId.getOrDefault(schedId, BigDecimal.ZERO);
+		// 	alreadyAssignedQtyByShipmentScheduleId.put(schedId, assigned.add(jobSched.getQtyToPick().toBigDecimal()));
+		// });
+		//
+		// final ImmutableList<ShipmentSchedule> schedulesWithRemainingQty = allEligibleShipmentSchedules.stream()
+		// 		.filter(sched -> {
+		// 			final BigDecimal qtyToDeliver = sched.getQuantityToDeliver().toBigDecimal();
+		// 			final BigDecimal alreadyAssignedQty = alreadyAssignedQtyByShipmentScheduleId.getOrDefault(sched.getId(), BigDecimal.ZERO);
+		// 			return qtyToDeliver.subtract(alreadyAssignedQty).signum() > 0;
+		// 		})
+		// 		.collect(ImmutableList.toImmutableList());
+		// final ImmutableSet<ProductId> productIds = schedulesWithRemainingQty.stream()
+		// 		.map(ShipmentSchedule::getProductId)
+		// 		.collect(ImmutableSet.toImmutableSet());
+		// productsById = productRepository.getByIdsAsMap(productIds);
+		//
+		// totalQtyToDeliverByOrderId = schedulesWithRemainingQty.stream()
+		// 		.filter(sched -> sched.getOrderId() != null)
+		// 		.collect(ImmutableMap.toImmutableMap(
+		// 				ShipmentSchedule::getOrderId,
+		// 				schedule -> {
+		// 					final BigDecimal qtyToDeliver = schedule.getQuantityToDeliver().toBigDecimal();
+		// 					final BigDecimal alreadyAssignedQty = alreadyAssignedQtyByShipmentScheduleId.getOrDefault(schedule.getId(), BigDecimal.ZERO);
+		// 					return qtyToDeliver.subtract(alreadyAssignedQty);
+		// 				},
+		// 				BigDecimal::add
+		// 		));
+
+		final ImmutableSet<ShipmentScheduleId> alreadyAssignedIds = existingPickingJobSchedules.stream()
 				.map(PickingJobSchedule::getShipmentScheduleId)
 				.collect(ImmutableSet.toImmutableSet());
 
@@ -155,9 +189,9 @@ public class PickingJobScheduleAutoAssignCommand
 				.filter(sched -> !alreadyAssignedIds.contains(sched.getId()))
 				.collect(ImmutableList.toImmutableList());
 
-		assignedCountPerWorkplace = new HashMap<>();
-		existingSchedules.forEach(schedule ->
-				assignedCountPerWorkplace.merge(schedule.getWorkplaceId(), 1, Integer::sum)
+		workplacesCapacity = new WorkplacesCapacity();
+		existingPickingJobSchedules.forEach(jobSched ->
+				workplacesCapacity.increase(jobSched.getWorkplaceId())
 		);
 
 		final ImmutableSet<ProductId> productIds = allUnscheduledShipmentScheduleIds.stream()
@@ -181,18 +215,22 @@ public class PickingJobScheduleAutoAssignCommand
 				continue;
 			}
 
+			// final BigDecimal qtyToDeliver = schedule.getQuantityToDeliver().toBigDecimal();
+			// final BigDecimal alreadyAssignedQty = alreadyAssignedQtyByShipmentScheduleId.getOrDefault(schedule.getId(), BigDecimal.ZERO);
+			// final BigDecimal remainingQtyToPick = qtyToDeliver.subtract(alreadyAssignedQty);
+
 			CreateOrUpdatePickingJobSchedulesCommand.builder()
 					.pickingJobScheduleRepository(pickingJobScheduleRepository)
 					.shipmentScheduleBL(shipmentScheduleBL)
 					.request(CreateOrUpdatePickingJobSchedulesRequest.builder()
 							.workplaceId(matchingWorkplace.getId())
 							.shipmentScheduleAndJobScheduleIds(ShipmentScheduleAndJobScheduleIdSet.of(schedule.getId()))
-							.qtyToPickBD(schedule.getQuantityToDeliver().toBigDecimal())
+							.qtyToPickBD(schedule.getQuantityToDeliver().toBigDecimal()) //.qtyToPickBD(remainingQtyToPick)
 							.build())
 					.build()
 					.execute();
 
-			assignedCountPerWorkplace.merge(matchingWorkplace.getId(), 1, Integer::sum);
+			workplacesCapacity.increase(matchingWorkplace.getId());
 		}
 	}
 
@@ -202,8 +240,7 @@ public class PickingJobScheduleAutoAssignCommand
 	{
 		for (final Workplace workplace : workplaces)
 		{
-			final int currentAssigned = assignedCountPerWorkplace.getOrDefault(workplace.getId(), 0);
-			if (currentAssigned >= workplace.getMaxPickingJobs())
+			if (!workplacesCapacity.hasCapacity(workplace))
 			{
 				continue;
 			}
@@ -339,5 +376,21 @@ public class PickingJobScheduleAutoAssignCommand
 		}
 
 		return PriorityRule.equals(priorityRule, schedule.getPriorityRule());
+	}
+
+	private static class WorkplacesCapacity
+	{
+		private final Map<WorkplaceId, Integer> assignedCountPerWorkplace = new HashMap<>();
+
+		void increase(@NonNull final WorkplaceId workplaceId)
+		{
+			assignedCountPerWorkplace.merge(workplaceId, 1, Integer::sum);
+		}
+
+		boolean hasCapacity(@NonNull final Workplace workplace)
+		{
+			final int currentAssigned = assignedCountPerWorkplace.getOrDefault(workplace.getId(), 0);
+			return currentAssigned < workplace.getMaxPickingJobs();
+		}
 	}
 }

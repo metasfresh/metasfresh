@@ -72,7 +72,6 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Package;
-import org.compiere.model.X_C_Order;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
@@ -276,18 +275,18 @@ public class ShipmentScheduleRepository
 					COLUMNNAME_PreparationDate_Override, COLUMNNAME_PreparationDate);
 		}
 
-		if (query.isFromCompleteOrderOrNullOrder())
-		{
-			final IQuery<I_C_Order> completedOrClosedOrdersQuery = queryBL.createQueryBuilder(I_C_Order.class)
-					.addInArrayFilter(I_C_Order.COLUMN_DocStatus, X_C_Order.DOCSTATUS_Closed, X_C_Order.DOCSTATUS_Completed)
-					.create();
-
-			queryBuilder.addFilter(queryBL.createCompositeQueryFilter(I_M_ShipmentSchedule.class)
-					.setJoinOr()
-					.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_C_Order_ID, null)
-					.addInSubQueryFilter(I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID, I_C_Order.COLUMNNAME_C_Order_ID, completedOrClosedOrdersQuery)
-			);
-		}
+		// if (query.isFromCompleteOrderOrNullOrder())
+		// {
+		// 	final IQuery<I_C_Order> completedOrClosedOrdersQuery = queryBL.createQueryBuilder(I_C_Order.class)
+		// 			.addInArrayFilter(I_C_Order.COLUMN_DocStatus, X_C_Order.DOCSTATUS_Closed, X_C_Order.DOCSTATUS_Completed)
+		// 			.create();
+		//
+		// 	queryBuilder.addFilter(queryBL.createCompositeQueryFilter(I_M_ShipmentSchedule.class)
+		// 			.setJoinOr()
+		// 			.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_C_Order_ID, null)
+		// 			.addInSubQueryFilter(I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID, I_C_Order.COLUMNNAME_C_Order_ID, completedOrClosedOrdersQuery)
+		// 	);
+		// }
 
 		if (query.getLimit().isLimited())
 		{

@@ -301,7 +301,7 @@ public class PickingJobTestHelper
 		return LocatorId.ofRepoId(warehouseId, locator.getM_Locator_ID());
 	}
 
-	public void updateMobileProfile(UnaryOperator<MobileUIPickingUserProfile> updater)
+	public void updateMobileProfile(final UnaryOperator<MobileUIPickingUserProfile> updater)
 	{
 		configService.update(updater);
 	}
@@ -336,7 +336,7 @@ public class PickingJobTestHelper
 			@NonNull final String qtyToDeliver,
 			@Nullable final Instant date,
 			@Nullable final UserId lockedBy,
-			boolean assignToWorkplace)
+			final boolean assignToWorkplace)
 	{
 		final BPartnerLocationId shipToBPLocationIdEffective = shipToBPLocationId != null ? shipToBPLocationId : this.shipToBPLocationId;
 		final BigDecimal qtyToDeliverBD = new BigDecimal(qtyToDeliver);
