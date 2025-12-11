@@ -50,10 +50,17 @@ public class JsonPurchaseCandidateCreateItem
 	@JsonProperty("externalHeaderId")
 	String externalHeaderId;
 
+	@ApiModelProperty(required = true,
+			value = "Identifier of the `ExternalSystem` record that tells where this Purchase Candidate came from.\n"
+					+ "This translates to 'ExternalSystem.value.'")
+	@NonNull
+	@JsonProperty("externalSystemCode")
+	String externalSystemCode;
+
 	@NonNull
 	@JsonProperty("poReference")
 	String poReference;
-	
+
 	@Nullable
 	@JsonProperty("externalPurchaseOrderUrl")
 	String externalPurchaseOrderUrl;
@@ -122,7 +129,8 @@ public class JsonPurchaseCandidateCreateItem
 	private JsonPurchaseCandidateCreateItem(
 			@JsonProperty("orgCode") final @NonNull String orgCode,
 			@JsonProperty("externalHeaderId") final @NonNull String externalHeaderId,
-			@JsonProperty("poReference") final @NonNull String poReference, 
+			@JsonProperty("externalSystemCode") final @NonNull String externalSystemCode,
+			@JsonProperty("poReference") final @NonNull String poReference,
 			@JsonProperty("externalPurchaseOrderUrl") final @Nullable String externalPurchaseOrderUrl,
 			@JsonProperty("externalLineId") final @NonNull String externalLineId,
 			@JsonProperty("isManualPrice") @Nullable final Boolean isManualPrice,
@@ -141,6 +149,7 @@ public class JsonPurchaseCandidateCreateItem
 
 		this.orgCode = orgCode;
 		this.externalHeaderId = externalHeaderId;
+		this.externalSystemCode = externalSystemCode;
 		this.poReference = poReference;
 		this.externalPurchaseOrderUrl = externalPurchaseOrderUrl;
 		this.externalLineId = externalLineId;

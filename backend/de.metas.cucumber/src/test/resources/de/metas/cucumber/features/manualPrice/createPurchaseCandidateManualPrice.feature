@@ -41,6 +41,7 @@ Feature: create Purchase Candidate having manual price set
          },
          "warehouseIdentifier":"540008",
          "externalPurchaseOrderUrl": "www.PurchaseNoProductPrice.com",
+         "externalSystemCode": "Other",
          "externalHeaderId":"externalHeaderId_17052022_1",
          "externalLineId":"externalLineId_17052022_1",
          "poReference":"po_ref_17052022_1",
@@ -65,6 +66,7 @@ Feature: create Purchase Candidate having manual price set
 {
   "purchaseCandidates": [
     {
+      "externalSystemCode": "Other",
       "externalHeaderId": "externalHeaderId_17052022_1",
       "externalLineIds": [
         "externalLineId_17052022_1"

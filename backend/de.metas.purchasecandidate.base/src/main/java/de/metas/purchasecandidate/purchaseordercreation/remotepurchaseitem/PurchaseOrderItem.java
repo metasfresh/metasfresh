@@ -2,6 +2,7 @@ package de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.dimension.Dimension;
+import de.metas.externalsystem.ExternalSystemId;
 import de.metas.mforecast.impl.ForecastLineId;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
@@ -272,6 +273,12 @@ public class PurchaseOrderItem implements PurchaseItem
 		return purchaseCandidate.getExternalHeaderId();
 	}
 
+	@Nullable
+	public ExternalSystemId getExternalSystemId()
+	{
+		return purchaseCandidate.getExternalSystemId();
+	}
+	
 	@Nullable
 	public ExternalId getExternalLineId()
 	{

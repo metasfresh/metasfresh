@@ -104,7 +104,8 @@ import java.util.Set;
 				.dateOrdered(TimeUtil.asLocalDate(orderAggregationKey.getDateOrdered(), timeZone))
 				.poReference(orderAggregationKey.getPoReference())
 				.externalPurchaseOrderUrl(orderAggregationKey.getExternalPurchaseOrderUrl())
-				.externalHeaderId(orderAggregationKey.getExternalId());
+				.externalHeaderId(orderAggregationKey.getExternalId())
+				.externalSystemId(orderAggregationKey.getExternalSystemId());
 
 
 		if (docType != null)

@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.document.engine.IDocument;
+import de.metas.externalsystem.ExternalSystemIdWithExternalIds;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
@@ -376,9 +377,12 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 		final IQueryBuilder<I_M_ReceiptSchedule> builder = queryBL.createQueryBuilder(I_M_ReceiptSchedule.class)
 				.addOnlyActiveRecordsFilter();
 
-		if (query.getExternalHeaderIdWithExternalLineIds() != null)
+		final ExternalSystemIdWithExternalIds externalSystemIdWithExternalIds = query.getExternalSystemIdWithExternalIds();
+		if (externalSystemIdWithExternalIds != null)
 		{
-			final ExternalHeaderIdWithExternalLineIds externalIds = query.getExternalHeaderIdWithExternalLineIds();
+			builder.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_ExternalSystem_ID, externalSystemIdWithExternalIds.getExternalSystemId().getRepoId());
+
+			final ExternalHeaderIdWithExternalLineIds externalIds = externalSystemIdWithExternalIds.getExternalHeaderIdWithExternalLineIds();
 			builder.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_ExternalHeaderId, externalIds.getExternalHeaderId().getValue());
 
 			if (!Check.isEmpty(externalIds.getExternalLineIdsAsString()))
@@ -391,7 +395,7 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 		{
 			builder.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_C_OrderLine_ID, query.getOrderLineId());
 		}
-		
+
 		if (query.getProductId() != null)
 		{
 			builder.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_M_Product_ID, query.getProductId());
