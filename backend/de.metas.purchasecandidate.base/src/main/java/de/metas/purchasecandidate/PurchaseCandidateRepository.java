@@ -144,27 +144,7 @@ public class PurchaseCandidateRepository
 	public Optional<PurchaseCandidateId> getIdByQuery(
 			@NonNull final PurchaseCandidateQuery query)
 	{
-		final IQueryBuilder<I_C_PurchaseCandidate> queryBuilder = queryBL.createQueryBuilder(I_C_PurchaseCandidate.class)
-				.addOnlyActiveRecordsFilter();
-
-		if (query.getExternalSystemType() != null)
-		{
-			final ExternalSystemId externalSystemId = externalSystemRepository.getIdByType(query.getExternalSystemType());
-			queryBuilder.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_ExternalSystem_ID, externalSystemId);
-		}
-
-		if (query.getExternalHeaderId() != null)
-		{
-			queryBuilder.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_ExternalHeaderId, query.getExternalHeaderId());
-		}
-
-		if (query.getExternalLineId() != null)
-		{
-			queryBuilder.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_ExternalLineId, query.getExternalLineId());
-		}
-
-		return queryBuilder
-				.create()
+		return toSqlQuery(query)
 				.firstIdOnlyOptional(PurchaseCandidateId::ofRepoIdOrNull);
 	}
 
@@ -749,5 +729,31 @@ public class PurchaseCandidateRepository
 		deleteQuery
 				.create()
 				.deleteDirectly();
+	}
+
+	@NonNull
+	private IQuery<I_C_PurchaseCandidate> toSqlQuery(@NonNull final PurchaseCandidateQuery query)
+	{
+		final IQueryBuilder<I_C_PurchaseCandidate> queryBuilder = queryBL.createQueryBuilder(I_C_PurchaseCandidate.class)
+				.addOnlyActiveRecordsFilter();
+
+		if (query.getExternalSystemType() != null)
+		{
+			final ExternalSystemId externalSystemId = externalSystemRepository.getIdByType(query.getExternalSystemType());
+			queryBuilder.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_ExternalSystem_ID, externalSystemId);
+		}
+
+		if (query.getExternalHeaderId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_ExternalHeaderId, query.getExternalHeaderId());
+		}
+
+		if (query.getExternalLineId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_ExternalLineId, query.getExternalLineId());
+		}
+
+		return queryBuilder
+				.create();
 	}
 }

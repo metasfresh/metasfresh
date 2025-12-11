@@ -224,14 +224,11 @@ public class CreatePurchaseCandidatesService
 			return Optional.empty();
 		}
 
-		final PurchaseCandidateQuery purchaseCandidateQuery = PurchaseCandidateQuery.builder()
+		return purchaseCandidateRepo.getIdByQuery(PurchaseCandidateQuery.builder()
 				.externalSystemType(ExternalSystemType.ofValue(purchaseCandRequest.getExternalSystemCode()))
 				.externalHeaderId(purchaseCandRequest.getExternalHeaderId())
 				.externalLineId(purchaseCandRequest.getExternalLineId())
-				.build();
-
-		return purchaseCandidateRepo.getIdByQuery(purchaseCandidateQuery);
-
+				.build());
 	}
 
 	private AttributeSetInstanceId getAttributeSetInstanceId(@Nullable final JsonAttributeSetInstance attributeSetInstance)

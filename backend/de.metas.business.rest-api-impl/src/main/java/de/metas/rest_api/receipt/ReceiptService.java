@@ -224,14 +224,7 @@ public class ReceiptService
 
 		if (Check.isNotBlank(receiptInfo.getExternalHeaderId()) && Check.isNotBlank(receiptInfo.getExternalLineId()))
 		{
-			receiptScheduleQueryBuilder.externalSystemIdWithExternalIds(
-					ExternalSystemIdWithExternalIds.builder()
-							.externalSystemId(externalSystemRepository.getIdByType(ExternalSystemType.ofValue(receiptInfo.getExternalSystemCode())))
-							.externalHeaderIdWithExternalLineIds(ExternalHeaderIdWithExternalLineIds.builder()
-									.externalHeaderId(ExternalId.of(receiptInfo.getExternalHeaderId()))
-									.externalLineId(ExternalId.of(receiptInfo.getExternalLineId()))
-									.build())
-							.build());
+			receiptScheduleQueryBuilder.externalSystemIdWithExternalIds(getExternalSystemIdWithExternalIds(receiptInfo));
 		}
 
 		if (receiptInfo.getOrderLineId() != null)
@@ -291,6 +284,18 @@ public class ReceiptService
 					.appendParametersToMessage()
 					.setParameter("jsonCreateReceiptInfo", createReceiptInfo);
 		}
+	}
+
+	@NonNull
+	private ExternalSystemIdWithExternalIds getExternalSystemIdWithExternalIds(@NonNull final JsonCreateReceiptInfo receiptInfo)
+	{
+		return ExternalSystemIdWithExternalIds.builder()
+				.externalSystemId(externalSystemRepository.getIdByType(ExternalSystemType.ofValue(receiptInfo.getExternalSystemCode())))
+				.externalHeaderIdWithExternalLineIds(ExternalHeaderIdWithExternalLineIds.builder()
+						.externalHeaderId(ExternalId.of(receiptInfo.getExternalHeaderId()))
+						.externalLineId(ExternalId.of(receiptInfo.getExternalLineId()))
+						.build())
+				.build();
 	}
 
 	//

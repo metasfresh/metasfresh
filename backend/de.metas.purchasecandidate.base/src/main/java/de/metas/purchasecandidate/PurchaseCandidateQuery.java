@@ -36,14 +36,14 @@ public class PurchaseCandidateQuery
 	/**
 	 * ID (document number), of a source document in a remote system
 	 */
-	String externalHeaderId;
+	@Nullable String externalHeaderId;
 
 	/**
 	 * {@link de.metas.externalsystem.model.I_ExternalSystem#COLUMNNAME_Value} of the external system.
 	 */
-	ExternalSystemType externalSystemType;
+	@Nullable ExternalSystemType externalSystemType;
 
-	String externalLineId;
+	@Nullable String externalLineId;
 
 	@Builder
 	private PurchaseCandidateQuery(

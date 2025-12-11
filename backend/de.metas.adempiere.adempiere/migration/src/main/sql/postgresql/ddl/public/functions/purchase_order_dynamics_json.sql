@@ -39,9 +39,9 @@ FROM c_order porder
          LEFT JOIN LATERAL (
     SELECT externalreference
     FROM s_externalreference
-    WHERE record_id = partner.c_bpartner_id
+    WHERE record_id = porder.c_bpartner_id
       AND type = 'BPartner'
-      AND referenced_record_id = partner.c_bpartner_id
+      AND referenced_record_id = porder.c_bpartner_id
       AND externalsystem_id = (SELECT externalsystem_id FROM dynamics_system)
     LIMIT 1
     ) ext_ref ON TRUE
