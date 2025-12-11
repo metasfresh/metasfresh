@@ -87,6 +87,7 @@ public class UpsertPurchaseCandidateProcessor implements Processor
 
 		final JsonPurchaseCandidateCreateItem requestItem = JsonPurchaseCandidateCreateItem.builder()
 				.orgCode(externalSystemRequest.getOrgCode())
+				.externalSystemCode(externalSystemRequest.getExternalSystemName().getName())
 				.productIdentifier(ExternalId.ofId(purchaseOrderRow.getProductIdentifier()).toExternalIdentifierString())
 				.warehouseIdentifier(ExternalId.ofId(purchaseOrderRow.getWarehouseIdentifier()).toExternalIdentifierString())
 				.vendor(JsonVendor.builder()

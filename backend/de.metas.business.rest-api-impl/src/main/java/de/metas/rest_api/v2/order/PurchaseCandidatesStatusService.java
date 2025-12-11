@@ -31,7 +31,7 @@ import de.metas.common.rest_api.v2.JsonPurchaseCandidate;
 import de.metas.common.rest_api.v2.JsonPurchaseCandidateResponse;
 import de.metas.common.rest_api.v2.JsonPurchaseCandidatesRequest;
 import de.metas.common.rest_api.v2.JsonPurchaseOrder;
-import de.metas.externalsystem.ExternalIds;
+import de.metas.externalsystem.ExternalSystemIdWithExternalIds;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
@@ -79,9 +79,9 @@ public class PurchaseCandidatesStatusService
 		{
 			throw new InvalidEntityException(TranslatableStrings.constant("The request's purchaseCandidates array may not be empty"));
 		}
-		final List<ExternalIds> externalIds = poJsonConverters.fromJson(request.getPurchaseCandidates());
+		final List<ExternalSystemIdWithExternalIds> externalSystemIdWithExternalIds = poJsonConverters.fromJson(request.getPurchaseCandidates());
 
-		final List<PurchaseCandidate> purchaseCandidates = purchaseCandidateRepo.getByExternal(externalIds);
+		final List<PurchaseCandidate> purchaseCandidates = purchaseCandidateRepo.getByExternal(externalSystemIdWithExternalIds);
 
 		final List<JsonPurchaseCandidate> jsonPurchaseCandidates = retrieveStatus(purchaseCandidates);
 

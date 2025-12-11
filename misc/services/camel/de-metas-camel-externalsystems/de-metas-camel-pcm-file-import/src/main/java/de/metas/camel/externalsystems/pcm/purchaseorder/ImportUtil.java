@@ -31,12 +31,14 @@ import static de.metas.camel.externalsystems.pcm.purchaseorder.ImportConstants.P
 @UtilityClass
 class ImportUtil
 {
-	ImportOrdersRouteContext getOrCreateImportOrdersRouteContext(@NonNull final Exchange exchange)
+	ImportOrdersRouteContext getOrCreateImportOrdersRouteContext(
+			@NonNull final Exchange exchange,
+			@NonNull final String externalSystemCode)
 	{
 		ImportOrdersRouteContext importOrdersRouteContext = exchange.getProperty(PROPERTY_IMPORT_ORDERS_CONTEXT, ImportOrdersRouteContext.class);
 		if (importOrdersRouteContext == null)
 		{
-			importOrdersRouteContext = new ImportOrdersRouteContext();
+			importOrdersRouteContext = new ImportOrdersRouteContext(externalSystemCode);
 			exchange.setProperty(PROPERTY_IMPORT_ORDERS_CONTEXT, importOrdersRouteContext);
 		}
 		return importOrdersRouteContext;

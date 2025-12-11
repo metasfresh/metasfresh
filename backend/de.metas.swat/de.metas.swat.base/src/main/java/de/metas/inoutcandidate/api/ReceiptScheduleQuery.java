@@ -22,7 +22,7 @@
 
 package de.metas.inoutcandidate.api;
 
-import de.metas.externalsystem.ExternalIds;
+import de.metas.externalsystem.ExternalSystemIdWithExternalIds;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
@@ -41,7 +41,7 @@ public class ReceiptScheduleQuery
 	@Nullable AttributesKey attributesKey;
 	@Nullable ProductId productId;
 	@Nullable WarehouseId warehouseId;
-	@Nullable ExternalIds externalIds;
+	@Nullable ExternalSystemIdWithExternalIds externalSystemIdWithExternalIds;
 	@Nullable OrderLineId orderLineId;
 	@Builder.Default boolean onlyNonZeroQty = false;
 }

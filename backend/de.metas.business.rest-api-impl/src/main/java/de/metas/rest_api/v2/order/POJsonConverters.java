@@ -24,8 +24,8 @@ package de.metas.rest_api.v2.order;
 
 import de.metas.common.rest_api.v2.JsonPurchaseCandidateCreateItem;
 import de.metas.common.rest_api.v2.JsonPurchaseCandidateReference;
-import de.metas.externalsystem.ExternalIds;
 import de.metas.externalsystem.ExternalSystemId;
+import de.metas.externalsystem.ExternalSystemIdWithExternalIds;
 import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.rest_api.utils.JsonExternalIds;
@@ -56,9 +56,9 @@ public final class POJsonConverters
 	}
 
 	@NonNull
-	public List<ExternalIds> fromJson(@NonNull final List<JsonPurchaseCandidateReference> candidates)
+	public List<ExternalSystemIdWithExternalIds> fromJson(@NonNull final List<JsonPurchaseCandidateReference> candidates)
 	{
-		final List<ExternalIds> externalIds = new ArrayList<>();
+		final List<ExternalSystemIdWithExternalIds> externalSystemIdWithExternalIds = new ArrayList<>();
 		for (final JsonPurchaseCandidateReference cand : candidates)
 		{
 			final ExternalHeaderIdWithExternalLineIds headerAndLineId = ExternalHeaderIdWithExternalLineIds.builder()
@@ -66,12 +66,12 @@ public final class POJsonConverters
 					.externalLineIds(JsonExternalIds.toExternalIds(cand.getExternalLineIds()))
 					.build();
 
-			externalIds.add(ExternalIds.builder()
+			externalSystemIdWithExternalIds.add(ExternalSystemIdWithExternalIds.builder()
 					.externalSystemId(externalSystemRepository.getIdByType(ExternalSystemType.ofValue(cand.getExternalSystemCode())))
 					.externalHeaderIdWithExternalLineIds(headerAndLineId)
 					.build());
 		}
-		return externalIds;
+		return externalSystemIdWithExternalIds;
 	}
 
 }

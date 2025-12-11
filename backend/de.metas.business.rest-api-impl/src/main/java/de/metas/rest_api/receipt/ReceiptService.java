@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.shipping.v2.receipt.JsonCreateReceiptInfo;
 import de.metas.common.shipping.v2.receipt.JsonCreateReceiptsRequest;
-import de.metas.externalsystem.ExternalIds;
+import de.metas.externalsystem.ExternalSystemIdWithExternalIds;
 import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
@@ -224,8 +224,8 @@ public class ReceiptService
 
 		if (Check.isNotBlank(receiptInfo.getExternalHeaderId()) && Check.isNotBlank(receiptInfo.getExternalLineId()))
 		{
-			receiptScheduleQueryBuilder.externalIds(
-					ExternalIds.builder()
+			receiptScheduleQueryBuilder.externalSystemIdWithExternalIds(
+					ExternalSystemIdWithExternalIds.builder()
 							.externalSystemId(externalSystemRepository.getIdByType(ExternalSystemType.ofValue(receiptInfo.getExternalSystemCode())))
 							.externalHeaderIdWithExternalLineIds(ExternalHeaderIdWithExternalLineIds.builder()
 									.externalHeaderId(ExternalId.of(receiptInfo.getExternalHeaderId()))

@@ -23,7 +23,7 @@
 package de.metas.rest_api.v2.order;
 
 import de.metas.common.rest_api.v2.JsonPurchaseCandidatesRequest;
-import de.metas.externalsystem.ExternalIds;
+import de.metas.externalsystem.ExternalSystemIdWithExternalIds;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.async.C_PurchaseCandidates_GeneratePurchaseOrders;
@@ -48,8 +48,8 @@ public class EnqueuePurchaseCandidateService
 			throw new InvalidEntityException(TranslatableStrings.constant("The request's purchaseCandidates array may not be empty"));
 		}
 
-		final List<ExternalIds> externalIds = poJsonConverters.fromJson(request.getPurchaseCandidates());
+		final List<ExternalSystemIdWithExternalIds> externalSystemIdWithExternalIds = poJsonConverters.fromJson(request.getPurchaseCandidates());
 
-		C_PurchaseCandidates_GeneratePurchaseOrders.enqueue(purchaseCandidateRepo.getIdsByExternal(externalIds));
+		C_PurchaseCandidates_GeneratePurchaseOrders.enqueue(purchaseCandidateRepo.getIdsByExternal(externalSystemIdWithExternalIds));
 	}
 }

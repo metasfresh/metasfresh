@@ -9,8 +9,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
-import de.metas.externalsystem.ExternalIds;
 import de.metas.externalsystem.ExternalSystemId;
+import de.metas.externalsystem.ExternalSystemIdWithExternalIds;
 import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockManager;
@@ -638,7 +638,7 @@ public class PurchaseCandidateRepository
 				.build();
 	}
 
-	public List<PurchaseCandidate> getByExternal(@NonNull final List<ExternalIds> ids)
+	public List<PurchaseCandidate> getByExternal(@NonNull final List<ExternalSystemIdWithExternalIds> ids)
 	{
 		return convertToIQuery(ids)
 				.list()
@@ -647,7 +647,7 @@ public class PurchaseCandidateRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public List<PurchaseCandidateId> getIdsByExternal(@NonNull final List<ExternalIds> ids)
+	public List<PurchaseCandidateId> getIdsByExternal(@NonNull final List<ExternalSystemIdWithExternalIds> ids)
 	{
 		return convertToIQuery(ids)
 				.listIds()
@@ -657,13 +657,13 @@ public class PurchaseCandidateRepository
 	}
 
 	@NonNull
-	private IQuery<I_C_PurchaseCandidate> convertToIQuery(@NonNull final List<ExternalIds> ids)
+	private IQuery<I_C_PurchaseCandidate> convertToIQuery(@NonNull final List<ExternalSystemIdWithExternalIds> ids)
 	{
 		final IQueryBuilder<I_C_PurchaseCandidate> queryBuilder = queryBL
 				.createQueryBuilder(I_C_PurchaseCandidate.class)
 				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions, false) /* exploding ORs to unions works only with simple cases, but e.g. currently not if we want to use IQuery.createSelection() down the line */
 				.setJoinOr();
-		for (final ExternalIds id : ids)
+		for (final ExternalSystemIdWithExternalIds id : ids)
 		{
 			queryBuilder.filter(toFilter(id));
 		}
@@ -672,7 +672,7 @@ public class PurchaseCandidateRepository
 	}
 
 	@NonNull
-	private ICompositeQueryFilter<I_C_PurchaseCandidate> toFilter(@NonNull final ExternalIds externalIds)
+	private ICompositeQueryFilter<I_C_PurchaseCandidate> toFilter(@NonNull final ExternalSystemIdWithExternalIds externalIds)
 	{
 		final ExternalHeaderIdWithExternalLineIds externalHeaderIdWithExternalLineIds = externalIds.getExternalHeaderIdWithExternalLineIds();
 		final String headerIdAsString = externalHeaderIdWithExternalLineIds.getExternalHeaderId().getValue();

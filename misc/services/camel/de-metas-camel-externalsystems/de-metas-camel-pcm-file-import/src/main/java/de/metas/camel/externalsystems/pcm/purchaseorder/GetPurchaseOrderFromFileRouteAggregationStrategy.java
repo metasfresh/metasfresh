@@ -45,7 +45,7 @@ public class GetPurchaseOrderFromFileRouteAggregationStrategy implements Aggrega
 		final ImportOrdersRouteContext newImportOrdersRouteContext =
 				ProcessorHelper.getPropertyOrThrowError(newExchange, PROPERTY_IMPORT_ORDERS_CONTEXT, ImportOrdersRouteContext.class);
 
-		final ImportOrdersRouteContext oldImportOrdersRouteContext = ImportUtil.getOrCreateImportOrdersRouteContext(oldExchange);
+		final ImportOrdersRouteContext oldImportOrdersRouteContext = ImportUtil.getOrCreateImportOrdersRouteContext(oldExchange, newImportOrdersRouteContext.getExternalSystemCode());
 		oldImportOrdersRouteContext.addAll(newImportOrdersRouteContext);
 		
 		return oldExchange;

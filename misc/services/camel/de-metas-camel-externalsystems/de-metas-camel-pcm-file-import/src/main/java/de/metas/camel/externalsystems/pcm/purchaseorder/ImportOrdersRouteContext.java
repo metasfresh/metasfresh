@@ -35,6 +35,8 @@ public class ImportOrdersRouteContext
 {
 	boolean errorInUnknownRow = false;
 
+	final String externalSystemCode;
+	
 	/**
 	 * Using Linked hash set to preserve order
 	 */

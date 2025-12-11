@@ -7,7 +7,7 @@ import lombok.Value;
 
 @Value
 @Builder
-public class ExternalIds
+public class ExternalSystemIdWithExternalIds
 {
 	@NonNull ExternalSystemId externalSystemId;
 
