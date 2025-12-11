@@ -95,6 +95,34 @@ public class PickingJobScheduleAutoAssignCommandTest
 	}
 
 	@Test
+	public void testAutoAssign_max_picking_jobs_zero()
+	{
+		final ShipmentScheduleId shipmentScheduleId = createShipmentSchedule()
+				.qtyToDeliver(BigDecimal.TEN)
+				.build();
+		final ShipmentScheduleId shipmentScheduleId2 = createShipmentSchedule()
+				.qtyToDeliver(BigDecimal.ONE)
+				.build();
+
+		workplaceRepository.create(WorkplaceCreateRequest.builder()
+				.warehouseId(WarehouseId.MAIN)
+				.name("Test1")
+				.seqNo(SeqNo.ofInt(10))
+				.maxPickingJobs(0)
+				.build());
+
+		pickingJobScheduleService.autoAssign(PickingJobScheduleAutoAssignRequest.builder()
+				.preparationDate(SystemTime.asLocalDate())
+				.build());
+
+		final ImmutableList<PickingJobSchedule> pickingJobs = pickingJobScheduleService.stream(PickingJobScheduleQuery.builder()
+				.onlyShipmentScheduleIds(ImmutableSet.of(shipmentScheduleId, shipmentScheduleId2))
+				.build()).collect(ImmutableList.toImmutableList());
+
+		assertThat(pickingJobs.size()).as("PickingJobs count").isEqualTo(0);
+	}
+
+	@Test
 	public void testAutoAssign_max_picking_jobs()
 	{
 		final ShipmentScheduleId shipmentScheduleId = createShipmentSchedule()
