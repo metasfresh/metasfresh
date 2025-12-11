@@ -8,6 +8,7 @@ import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleId;
 import de.metas.distribution.mobileui.external_services.sourcedoc.ManufacturingOrderRef;
 import de.metas.distribution.mobileui.external_services.sourcedoc.PlantInfo;
 import de.metas.distribution.mobileui.external_services.sourcedoc.SalesOrderRef;
+import de.metas.distribution.mobileui.external_services.warehouse.LocatorInfo;
 import de.metas.distribution.mobileui.external_services.warehouse.WarehouseInfo;
 import de.metas.product.ProductId;
 import de.metas.quantity.MixedQuantity;
@@ -216,6 +217,14 @@ public class DistributionJob
 				.collect(GuavaCollectors.singleElementOrNull());
 	}
 
+	public Optional<LocatorInfo> getSinglePickFromLocator()
+	{
+		return lines.stream()
+				.map(DistributionJobLine::getPickFromLocator)
+				.distinct()
+				.collect(GuavaCollectors.singleElementOrEmpty());
+	}
+
 	@Nullable
 	public LocatorId getSingleDropToLocatorIdOrNull()
 	{
@@ -223,6 +232,14 @@ public class DistributionJob
 				.map(DistributionJobLine::getDropToLocatorId)
 				.distinct()
 				.collect(GuavaCollectors.singleElementOrNull());
+	}
+
+	public Optional<LocatorInfo> getSingleDropToLocator()
+	{
+		return lines.stream()
+				.map(DistributionJobLine::getDropToLocator)
+				.distinct()
+				.collect(GuavaCollectors.singleElementOrEmpty());
 	}
 
 	@Nullable
