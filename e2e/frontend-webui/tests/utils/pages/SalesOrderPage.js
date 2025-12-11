@@ -183,8 +183,11 @@ export class SalesOrderPage {
       // Tab ID from window layout: AD_Tab-187 (internalName: C_OrderLine)
       await page.locator('#AD_Tab-187').click();
 
-      // Wait for tab content to load
-      await page.waitForTimeout(1000);
+      // Wait for network to settle after tab switch
+      await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+
+      // Wait for batch entry button to be visible (proves tab is ready)
+      await batchEntryButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
     });
   }
 
@@ -279,7 +282,16 @@ export class SalesOrderPage {
       // Press Enter to add the line (as instructed by the UI: "Press 'Enter' to add")
       await page.keyboard.press('Enter');
 
-      await page.waitForTimeout(1000);
+      // Wait for the line to be added
+      await page.waitForTimeout(500);
+
+      // Close the batch entry modal
+      // Language-independent: Use data-testid from TableFilter.js
+      const closeButton = page.getByTestId('batch-entry-toggle');
+      await closeButton.click();
+
+      // Wait for the modal to close
+      await page.waitForTimeout(500);
     });
   }
 
@@ -377,6 +389,48 @@ export class SalesOrderPage {
   }
 
   /**
+   * Open the related Shipment using Alt+6.
+   * @param {number} waitTime - Time to wait for shipment to be created (default: 5000ms)
+   */
+  static async openRelatedShipment(waitTime = 5000) {
+    return await test.step('SalesOrderPage - Open related shipment (Alt+6)', async () => {
+      const page = getPage();
+
+      await page.waitForTimeout(waitTime);
+
+      await page.locator('body').click();
+      await page.waitForTimeout(200);
+
+      await page.keyboard.press('Alt+6');
+      await page.waitForTimeout(1000);
+
+      await page.locator('.rotating, .spinner').waitFor({
+        state: 'detached',
+        timeout: SLOW_ACTION_TIMEOUT,
+      }).catch(() => {});
+
+      // Click on Shipment link using data-cy attribute (language-independent)
+      // AD_RelationType_ID 540159 = "Shipment (Customer)" relation
+      await page.locator('[data-cy="reference-AD_RelationType_ID-540159"]').click();
+
+      await page.waitForURL(/\/window\/169/, {
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+
+      await page.waitForLoadState('networkidle', {
+        timeout: SLOW_ACTION_TIMEOUT,
+      }).catch(() => {});
+
+      await page.locator('.rotating, .panel-spaced-lg').waitFor({
+        state: 'detached',
+        timeout: SLOW_ACTION_TIMEOUT,
+      }).catch(() => {});
+
+      await page.waitForTimeout(500);
+    });
+  }
+
+  /**
    * Open the related Invoice Candidate using Alt+6.
    * @param {number} waitTime - Time to wait for candidates to be created (default: 5000ms)
    */
@@ -398,8 +452,8 @@ export class SalesOrderPage {
       }).catch(() => {});
 
       // Click on Invoice Candidate link using data-cy attribute (language-independent)
-      // This corresponds to the C_Invoice_Candidate reference
-      await page.locator('[data-cy="reference-C_Invoice_Candidate"]').click();
+      // The reference is: reference-C_Invoice_Candidate_Sales (not just C_Invoice_Candidate)
+      await page.locator('[data-cy="reference-C_Invoice_Candidate_Sales"]').click();
 
       // Sales IC window is 540092, not 540983 (purchase)
       await page.waitForURL(/\/window\/540092/, {
@@ -601,6 +655,58 @@ export class SalesOrderPage {
         });
 
       console.log('Print modal closed');
+    });
+  }
+
+  /**
+   * Open the related Invoice using Alt+6.
+   * This navigates to the invoice created from the invoice candidates.
+   * @param {number} waitTime - Time to wait for invoice to be created (default: 5000ms)
+   */
+  static async openRelatedInvoice(waitTime = 5000) {
+    return await test.step('SalesOrderPage - Open related invoice (Alt+6)', async () => {
+      const page = getPage();
+
+      await page.waitForTimeout(waitTime);
+
+      await page.locator('body').click();
+      await page.waitForTimeout(200);
+
+      await page.keyboard.press('Alt+6');
+      await page.waitForTimeout(1000);
+
+      await page.locator('.rotating, .spinner').waitFor({
+        state: 'detached',
+        timeout: SLOW_ACTION_TIMEOUT,
+      }).catch(() => {});
+
+      // Click on Invoice link
+      // CRITICAL: Correct selector discovered through debugging
+      // Pattern: reference-AD_RelationType_ID-{ID} for relation-type-based references
+      // Invoice (Customer) uses AD_RelationType_ID-540160 (not a table-based pattern)
+      const invoiceLink = page.locator('[data-cy="reference-AD_RelationType_ID-540160"]').first();
+
+      await invoiceLink.waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+
+      await invoiceLink.click();
+
+      await page.waitForURL(/\/window\/167/, {
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+
+      await page.waitForLoadState('networkidle', {
+        timeout: SLOW_ACTION_TIMEOUT,
+      }).catch(() => {});
+
+      await page.locator('.rotating, .panel-spaced-lg').waitFor({
+        state: 'detached',
+        timeout: SLOW_ACTION_TIMEOUT,
+      }).catch(() => {});
+
+      await page.waitForTimeout(500);
     });
   }
 }

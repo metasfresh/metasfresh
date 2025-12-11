@@ -75,12 +75,28 @@ export const SALES_ORDER_WINDOW_ID = 143;
 export const SHIPMENT_CANDIDATES_WINDOW_ID = 500221;
 
 /**
+ * Shipment window (Material Delivery / Lieferung)
+ * Table: M_InOut
+ * Window ID: 169
+ * Description: Shipment (Customer) / Material Delivery
+ */
+export const SHIPMENT_WINDOW_ID = 169;
+
+/**
  * Invoice Candidate window - Sales side (Rechnungsdisposition)
  * Table: C_Invoice_Candidate (ad_window_id)
  * Window ID: 540092
  * Description: Rechnungsdisposition (Verkauf)
  */
 export const SALES_INVOICE_CANDIDATE_WINDOW_ID = 540092;
+
+/**
+ * Sales Invoice window (Ausgangsrechnung)
+ * Table: C_Invoice (ad_window_id)
+ * Window ID: 167
+ * Description: Sales Invoice / Customer Invoice
+ */
+export const SALES_INVOICE_WINDOW_ID = 167;
 
 /**
  * Material Receipt Candidates window (Wareneingangsdisposition)
