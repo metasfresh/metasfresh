@@ -137,12 +137,13 @@ Feature: nShift Shipment
 
   Scenario: nShift Carrier Automatic Schedule
     Given set sys config boolean value true for sys config de.metas.handlingunits.picking.job_schedule.RequireCarrierProductSet
+    And deactivate all C_Workplace records
     And the nShift ship advisor service is stubbed to return a successful response based on the request
       | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID | Carrier_Service_ID2 |
       | cp2                | cgt2                  | cs1                | cs2                 |
     And metasfresh contains C_Workplaces
-      | Identifier | M_Warehouse_ID |
-      | workplace1 | wh             |
+      | Identifier | M_Warehouse_ID | MaxPickingJobs |
+      | workplace1 | wh             | 1              |
     When simple completed order with one line
       | C_Order_ID | C_BPartner_ID | DateOrdered | IsSOTrx | M_Warehouse_ID | InvoiceRule | C_OrderLine_ID | M_Product_ID | QtyEntered | M_Shipper_ID |
       | so2        | customer      | 2025-04-01  | true    | wh             | I           | so2_l1         | product      | 10         | nShift       |

@@ -229,7 +229,6 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 		final HashSet<ShipmentScheduleId> shipmentScheduleIdsToClose = new HashSet<>();
 		shipmentScheduleIdsToClose.addAll(schedules.getShipmentScheduleIdsWithoutJobSchedules());
-		// TODO clarify, is this ok? Thinking about qtyToDeliver is less because of stock and increasing after first partial delivery
 		shipmentScheduleIdsToClose.addAll(pickingJobScheduleService.getShipmentScheduleIdsWithAllJobSchedulesProcessedOrMissing(schedules.getShipmentScheduleIdsWithJobSchedules()));
 
 		shipmentScheduleBL.closeShipmentSchedules(shipmentScheduleIdsToClose);
