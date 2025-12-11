@@ -202,8 +202,8 @@ Feature: Export Orders in specific format via postgREST
     When the order identified by order1 is completed
 
     And metasfresh contains C_Orders:
-      | Identifier | REST.Context | IsSOTrx | REST.Context.DocumentNo | C_BPartner_ID | DateOrdered | M_PricingSystem_ID | C_BPartner_Location_ID |
-      | order2     | order_ID_2   | false   | documentNo_2            | vendor1       | 2022-06-17  | pricingSystem      | vendor_location_1      |
+      | Identifier | REST.Context | IsSOTrx | POReference        | C_BPartner_ID | DateOrdered | M_PricingSystem_ID | C_BPartner_Location_ID |
+      | order2     | order_ID_2   | false   | test_11202025_11_2 | vendor1       | 2022-06-17  | pricingSystem      | vendor_location_1      |
     And metasfresh contains C_OrderLines:
       | Identifier | REST.Context   | C_Order_ID | M_Product_ID | QtyEntered |
       | orderLine2 | orderLine_ID_2 | order2     | product1     | 10         |
@@ -284,7 +284,7 @@ Feature: Export Orders in specific format via postgREST
     """
 {
   "orgCode": "001",
-  "orderDocumentNo": "@documentNo_2@",
+  "orderDocumentNo": "test_11202025_11_2",
   "orderNumber": @order_ID_2@,
   "currencyCode": "EUR",
   "partnerIdentifier": "@vendor_ID@",
