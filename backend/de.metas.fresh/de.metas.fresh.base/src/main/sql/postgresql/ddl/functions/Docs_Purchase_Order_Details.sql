@@ -33,6 +33,7 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Orde
                 order_description    character varying(1024),
                 PricePattern         text,
                 AmountPattern        text,
+                QtyPattern           text,
                 week_year            character varying
             )
 AS
@@ -80,6 +81,7 @@ SELECT ol.line,
        o.description                                                           AS order_description,
        report.getPricePatternForJasper(o.m_pricelist_id)                       AS PricePattern,
        report.getAmountPatternForJasper(c.c_currency_id)                       AS AmountPattern,
+       report.getQtyPattern(uom.StdPrecision)                                  AS QtyPattern,
        TO_CHAR(ol.datepromised, 'WW') || '.' || TO_CHAR(ol.datepromised, 'YY') AS week_year
 
 FROM C_OrderLine ol

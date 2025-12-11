@@ -7,40 +7,39 @@ CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details(IN p
                                                                             IN p_AD_Language Character Varying(6))
     RETURNS TABLE
             (
-                Line              Numeric(10, 0),
-                Name              Character Varying,
-                Attributes        Text,
-                HUQty             Numeric,
-                HUName            Text,
-                qtyEntered        Numeric,
-                PriceEntered      Numeric,
-                UOMSymbol         Character Varying(10),
-                StdPrecision      Numeric(10, 0),
-                LineNetAmt        Numeric,
-                Discount          Numeric,
-                IsDiscountPrinted Character(1),
+                Line                   Numeric(10, 0),
+                Name                   Character Varying,
+                Attributes             Text,
+                HUQty                  Numeric,
+                HUName                 Text,
+                qtyEntered             Numeric,
+                PriceEntered           Numeric,
+                UOMSymbol              Character Varying(10),
+                StdPrecision           Numeric(10, 0),
+                LineNetAmt             Numeric,
+                Discount               Numeric,
+                IsDiscountPrinted      Character(1),
                 IsShipmentPricePrinted Character(1),
-                QtyPattern        text,
-                Description       Character Varying,
-                bp_product_no     character varying(30),
-                bp_product_name   character varying(100),
-                best_before_date  text,
-                lotno             character varying,
-                p_value           character varying(30),
-                p_description     character varying(255),
-                inout_description character varying(255),
-                iscampaignprice   character(1),
-                qtyordered        Numeric,
-                orderUOMSymbol    Character Varying(10),
+                QtyPattern             text,
+                Description            Character Varying,
+                bp_product_no          character varying(30),
+                bp_product_name        character varying(100),
+                best_before_date       text,
+                lotno                  character varying,
+                p_value                character varying(30),
+                p_description          character varying(255),
+                inout_description      character varying(255),
+                iscampaignprice        character(1),
+                qtyordered             Numeric,
+                orderUOMSymbol         Character Varying(10),
                 catchweight            Numeric,
                 weight_uom             Character Varying,
-                docstatus              char(2)
+                docstatus              char(2),
+                QtyPattern             text
             )
 AS
-$$
-
-SELECT iol.line,
-       COALESCE(pt.Name, p.name)                                                                       AS Name,
+$$ SELECT iol.line,
+       COALESCE(pt.Name, p.name)                                                                       AS NAME,
        CASE
            WHEN LENGTH(att.Attributes) > 15
                THEN att.Attributes || E'\n'
@@ -67,7 +66,7 @@ SELECT iol.line,
        CASE
            WHEN uom.StdPrecision = 0
                THEN '#,##0'
-               ELSE SUBSTRING('#,##0.000' FROM 0 FOR 7 + uom.StdPrecision :: integer)
+               ELSE SUBSTRING('#,##0.000' FROM 0 FOR 7 + uom.StdPrecision :: INTEGER)
        END                                                                                             AS QtyPattern,
        CASE
            WHEN report.IsHiddenReportElement(io.C_DocType_ID, 'description') = 'N' THEN
@@ -76,7 +75,7 @@ SELECT iol.line,
        -- in case there is no C_BPartner_Product, fallback to the default ones
        COALESCE(NULLIF(bpp.ProductNo, ''), p.value)                                                    AS bp_product_no,
        COALESCE(NULLIF(bpp.ProductName, ''), pt.Name, p.name)                                          AS bp_product_name,
-       TO_CHAR(att.best_before_date :: date, 'dd.MM.YYYY')                                                AS best_before_date,
+       TO_CHAR(att.best_before_date :: DATE, 'dd.MM.YYYY')                                                AS best_before_date,
        att.lotno,
        p.value                                                                                         AS p_value,
        CASE
@@ -89,7 +88,8 @@ SELECT iol.line,
        COALESCE(uomt_ol.UOMSymbol, uom_ol.UOMSymbol)                                                   AS orderUOMSymbol,
        w.catchweight                                                                                   AS catchweight,
        w.weight_uom                                                                                    AS weight_uom,
-       io.docstatus
+       io.docstatus,
+       report.getQtyPattern(uom.StdPrecision)                                  AS QtyPattern
 FROM M_InOutLine iol
          INNER JOIN M_InOut io ON iol.M_InOut_ID = io.M_InOut_ID
          LEFT OUTER JOIN C_BPartner bp ON io.C_BPartner_ID = bp.C_BPartner_ID
@@ -117,12 +117,12 @@ FROM M_InOutLine iol
 
     -- Get Packing instruction
          LEFT OUTER JOIN
-     (SELECT STRING_AGG(DISTINCT name, E'\n'
-                        ORDER BY name) AS Name,
+     (SELECT STRING_AGG(DISTINCT NAME, E'\n'
+                        ORDER BY NAME) AS NAME,
              M_InOutLine_ID
       FROM (SELECT DISTINCT
                 -- 08604 - in IT1 only one PI was shown though 2 were expected. Only the fallback can do this, so we use it first
-                COALESCE(pifb.name, pi.name) AS name,
+                COALESCE(pifb.name, pi.name) AS NAME,
                 iol.M_InOutLine_ID
             FROM M_InOutLine iol
                      -- Get PI directly from InOutLine (1 to 1)
@@ -162,21 +162,21 @@ FROM M_InOutLine iol
          LEFT OUTER JOIN C_UOM uomc ON uomc.C_UOM_ID = iol.catch_uom_id
          LEFT OUTER JOIN C_UOM_Trl uomct ON uomct.c_UOM_ID = uom.C_UOM_ID AND uomct.AD_Language = p_AD_Language
     -- Attributes
-         LEFT OUTER JOIN LATERAL (SELECT STRING_AGG(at.ai_value, ', '
-                                 ORDER BY LENGTH(at.ai_value), at.ai_value)
-                                 FILTER (WHERE at.at_value NOT IN ('HU_BestBeforeDate', 'Lot-Nummer'))
+         LEFT OUTER JOIN LATERAL (SELECT STRING_AGG(AT.ai_value, ', '
+                                 ORDER BY LENGTH(AT.ai_value), AT.ai_value)
+                                 FILTER (WHERE AT.at_value NOT IN ('HU_BestBeforeDate', 'Lot-Nummer'))
                                                                               AS Attributes,
 
-                                 at.M_AttributeSetInstance_ID,
-                                 STRING_AGG(REPLACE(at.ai_value, 'MHD: ', ''), ', ')
-                                 FILTER (WHERE at.at_value LIKE 'HU_BestBeforeDate')
+                                 AT.M_AttributeSetInstance_ID,
+                                 STRING_AGG(REPLACE(AT.ai_value, 'MHD: ', ''), ', ')
+                                 FILTER (WHERE AT.at_value LIKE 'HU_BestBeforeDate')
                                                                               AS best_before_date,
                                  STRING_AGG(ai_value, ', ')
-                                 FILTER (WHERE at.at_value LIKE 'Lot-Nummer') AS lotno
+                                 FILTER (WHERE AT.at_value LIKE 'Lot-Nummer') AS lotno
 
-                          FROM Report.fresh_Attributes(iol.M_AttributeSetInstance_ID) at
-                          WHERE at.IsPrintedInDocument = 'Y'
-                          GROUP BY at.M_AttributeSetInstance_ID) att ON TRUE
+                          FROM Report.fresh_Attributes(iol.M_AttributeSetInstance_ID) AT
+                          WHERE AT.IsPrintedInDocument = 'Y'
+                          GROUP BY AT.M_AttributeSetInstance_ID) att ON TRUE
 
          LEFT OUTER JOIN
      de_metas_endcustomer_fresh_reports.getC_BPartner_Product_Details(p.M_Product_ID, bp.C_BPartner_ID,
