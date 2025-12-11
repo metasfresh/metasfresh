@@ -37,8 +37,8 @@ class ImportUtil
 		ImportOrdersRouteContext importOrdersRouteContext = exchange.getProperty(PROPERTY_IMPORT_ORDERS_CONTEXT, ImportOrdersRouteContext.class);
 		if (importOrdersRouteContext == null)
 		{
-			final String externalSystemCode	= exchange.getProperty(PROPERTY_EXTERNAL_SYSTEM_CODE, String.class);
-			importOrdersRouteContext = new ImportOrdersRouteContext(externalSystemCode);
+			importOrdersRouteContext = new ImportOrdersRouteContext();
+			importOrdersRouteContext.setExternalSystemCode(exchange.getProperty(PROPERTY_EXTERNAL_SYSTEM_CODE, String.class));
 			exchange.setProperty(PROPERTY_IMPORT_ORDERS_CONTEXT, importOrdersRouteContext);
 		}
 		return importOrdersRouteContext;
