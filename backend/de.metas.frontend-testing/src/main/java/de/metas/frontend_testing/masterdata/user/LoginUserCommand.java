@@ -23,8 +23,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_User;
 
-import java.util.UUID;
-
 @Builder
 public class LoginUserCommand
 {
@@ -47,7 +45,7 @@ public class LoginUserCommand
 		}
 		final String login = CoalesceUtil.coalesceSuppliersNotNull(
 				() -> customLogin,
-				() -> identifier.toUniqueString());
+				identifier::toUniqueString);
 
 		final String customFirstname = request.getFirstname();
 		if (Check.isNotBlank(customFirstname) && customFirstname.length() > 255)
@@ -75,8 +73,8 @@ public class LoginUserCommand
 		final UserId userId = UserId.ofRepoId(user.getAD_User_ID());
 		context.putIdentifier(identifier, userId);
 
-		// Generate random password for security (avoid predictable credentials)
-		final String password = UUID.randomUUID().toString().replace("-", "");
+		//noinspection UnnecessaryLocalVariable
+		final String password = login; // for convenience, we use the same password as user // UUID.randomUUID().toString().replace("-", "");
 		userBL.changePasswordAndSave(user, password);
 
 		roleDAO.deleteUserRolesByUserId(userId);

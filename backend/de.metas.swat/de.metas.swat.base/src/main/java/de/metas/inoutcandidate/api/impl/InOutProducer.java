@@ -26,6 +26,7 @@ import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.uom.IUOMConversionBL;
@@ -127,6 +128,7 @@ public class InOutProducer implements IInOutProducer
 	private I_M_ReceiptSchedule currentReceiptSchedule = null;
 	private I_M_ReceiptSchedule previousReceiptSchedule = null;
 	private final Set<Integer> _currentOrderIds = new HashSet<>();
+	private final Set<ProjectId> currentProjectIds = new HashSet<>();
 
 	/**
 	 * Calls {@link #InOutProducer(InOutGenerateResult, boolean, ReceiptMovementDateRule, Map)} with <code> ReceiptMovementDateRule.CURRENT_DATE && externalInfoByScheduleId = null</code>.
@@ -207,6 +209,11 @@ public class InOutProducer implements IInOutProducer
 			{
 				_currentOrderIds.add(orderId);
 			}
+			final ProjectId projectId = ProjectId.ofRepoIdOrNull(rs.getC_Project_ID());
+			if (projectId != null)
+			{
+				currentProjectIds.add(projectId);
+			}
 		}
 		finally
 		{
@@ -255,14 +262,10 @@ public class InOutProducer implements IInOutProducer
 		// Make sure we are talking about same C_Order because this is defenetelly needed in case of a DropShip (08402)
 		// NOTE: the standard HeaderAggregationKeyBuilder is checking for same C_Order_ID but we are doing it here to make it obvious
 		// NOTE2: in future maybe we can enforce this rule only if previous or current receipt schedule is about a DropShip order.
-		if (previousReceiptSchedule.getC_Order_ID() != receiptSchedule.getC_Order_ID())
-		{
-			return true;
-		}
+		return previousReceiptSchedule.getC_Order_ID() != receiptSchedule.getC_Order_ID();
 
 		//
 		// If we reach this point we can safely consider the receipt schedules to be in the same receipt
-		return false;
 	}
 
 	private final void addToCurrentReceiptLines(final List<? extends I_M_InOutLine> lines)
@@ -353,6 +356,10 @@ public class InOutProducer implements IInOutProducer
 			final int orderId = _currentOrderIds.iterator().next();
 			currentReceipt.setC_Order_ID(orderId);
 		}
+		if (currentProjectIds.size() == 1)
+		{
+			currentReceipt.setC_Project_ID(currentProjectIds.iterator().next().getRepoId());
+		}
 
 		//
 		// Save receipt
@@ -374,6 +381,7 @@ public class InOutProducer implements IInOutProducer
 		_currentReceipt = null;
 		_currentReceiptLinesCount = 0;
 		_currentOrderIds.clear();
+		currentProjectIds.clear();
 	}
 
 	@Override

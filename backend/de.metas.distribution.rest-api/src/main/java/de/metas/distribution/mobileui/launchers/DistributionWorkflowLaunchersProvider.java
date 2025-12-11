@@ -56,6 +56,7 @@ public class DistributionWorkflowLaunchersProvider
 				newDDOrderReferenceQuery(query.getUserId())
 						.suggestedLimit(query.getLimit().orElse(config.getMaxLaunchers()))
 						.activeFacetIds(DistributionFacetIdsCollection.ofWorkflowLaunchersFacetIds(query.getFacetIds()))
+						.excludeAlreadyStarted(query.isExcludeAlreadyStarted())
 						.build()
 		);
 		return toWorkflowLaunchersList(jobReferences);
@@ -153,8 +154,11 @@ public class DistributionWorkflowLaunchersProvider
 	{
 		//
 		// Already started jobs
-		ddOrderService.streamDDOrders(DistributionJobQueries.ddOrdersAssignedToUser(query))
-				.forEach(collector::collect);
+		if (!query.isExcludeAlreadyStarted())
+		{
+			ddOrderService.streamDDOrders(DistributionJobQueries.ddOrdersAssignedToUser(query))
+					.forEach(collector::collect);
+		}
 
 		//
 		// New possible jobs

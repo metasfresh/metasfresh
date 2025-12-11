@@ -64,6 +64,8 @@ import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.api.Params;
 import org.compiere.util.Env;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -162,8 +164,26 @@ public class WorkflowRestController
 				.filterByDocumentNo(DocumentNoFilter.ofNullableString(query.getFilterByDocumentNo()))
 				.filterByQtyAvailableAtPickFromLocator(query.isFilterByQtyAvailableAtPickFromLocator())
 				.facetIds(CollectionUtils.toImmutableSetOrNullIfEmpty(query.getFacetIds()))
-				.limit(query.isCountOnly() ? QueryLimit.NO_LIMIT : null)
+				.excludeAlreadyStarted(query.isExcludeAlreadyStarted())
+				.limit(extractLimit(query))
 				.build();
+	}
+
+	@Nullable
+	private static QueryLimit extractLimit(final @NotNull JsonLaunchersQuery query)
+	{
+		if (query.getLimit() != null)
+		{
+			return QueryLimit.ofInt(query.getLimit());
+		}
+		else if (query.isCountOnly())
+		{
+			return QueryLimit.NO_LIMIT;
+		}
+		else
+		{
+			return null; // N/A
+		}
 	}
 
 	@PostMapping("/facets")

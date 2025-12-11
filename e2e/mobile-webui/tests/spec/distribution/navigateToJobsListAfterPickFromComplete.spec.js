@@ -5,6 +5,7 @@ import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScre
 import { DistributionJobsListScreen } from "../../utils/screens/distribution/DistributionJobsListScreen";
 import { DistributionJobScreen } from '../../utils/screens/distribution/DistributionJobScreen';
 import { generateEAN13 } from '../../utils/ean13';
+import { DistributionLinePickFromScreen } from '../../utils/screens/distribution/DistributionLinePickFromScreen';
 
 const createMasterdata = async ({ qtyToMove }) => {
     return await Backend.createMasterdata({
@@ -28,11 +29,22 @@ const createMasterdata = async ({ qtyToMove }) => {
                 "whInTransit": { inTransit: true },
             },
             handlingUnits: {
-                "HU1": { product: 'P1', warehouse: "wh1", qty: qtyToMove },
-                "HU2": { product: 'P2', warehouse: "wh1", qty: qtyToMove },
+                "HU11": { product: 'P1', warehouse: "wh1", qty: qtyToMove },
+                "HU12": { product: 'P2', warehouse: "wh1", qty: qtyToMove },
+                "HU21": { product: 'P1', warehouse: "wh1", qty: qtyToMove },
+                "HU22": { product: 'P2', warehouse: "wh1", qty: qtyToMove },
             },
             distributionOrders: {
                 "DD1": {
+                    seqNo: 10,
+                    warehouseFrom: "wh1", warehouseTo: "wh2", warehouseInTransit: "whInTransit", plant: "plantId",
+                    lines: [
+                        { product: "P1", qtyEntered: qtyToMove },
+                        { product: "P2", qtyEntered: qtyToMove },
+                    ],
+                },
+                "DD2": {
+                    seqNo: 20,
                     warehouseFrom: "wh1", warehouseTo: "wh2", warehouseInTransit: "whInTransit", plant: "plantId",
                     lines: [
                         { product: "P1", qtyEntered: qtyToMove },
@@ -54,26 +66,53 @@ test('Happy case', async ({ page }) => {
 
     await DistributionJobsListScreen.waitForScreen();
     await DistributionJobsListScreen.expectDropAllButton({ visible: false });
-    await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
 
-    await test.step('Pick P1 -> expect navigate to job screen since the job is not fully picked', async () => {
-        await DistributionJobScreen.scanHUToMove({
-            huQRCode: masterdata.handlingUnits.HU1.qrCode,
-            productScannedCode: masterdata.products.P1.gtin,
-            expectedQtyToMove: 100,
-            expectNextScreen: 'DistributionJobScreen'
+    await test.step(`Job 1`, async () => {
+        await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
+        await DistributionJobScreen.expectJobId({ distributionJobId: masterdata.distributionOrders.DD1.jobId })
+
+        await test.step('Pick P1 -> expect navigate to job screen since the job is not fully picked', async () => {
+            await DistributionJobScreen.scanHUToMove({
+                huQRCode: masterdata.handlingUnits.HU11.qrCode,
+                productScannedCode: masterdata.products.P1.gtin,
+                expectedQtyToMove: 100,
+                expectNextScreen: 'DistributionJobScreen'
+            });
+            await DistributionJobScreen.waitForScreen();
         });
-        await DistributionJobScreen.waitForScreen();
+
+        await test.step(`Pick P2 -> expect navigate to next job's pick from screen`, async () => {
+            await DistributionJobScreen.scanHUToMove({
+                huQRCode: masterdata.handlingUnits.HU12.qrCode,
+                productScannedCode: masterdata.products.P2.gtin,
+                expectedQtyToMove: 100,
+                expectNextScreen: 'DistributionLinePickFromScreen'
+            });
+        });
     });
 
-    await test.step('Pick P2 -> expect navigate to jobs list screen', async () => {
-        await DistributionJobScreen.scanHUToMove({
-            huQRCode: masterdata.handlingUnits.HU2.qrCode,
-            productScannedCode: masterdata.products.P2.gtin,
-            expectedQtyToMove: 100,
-            expectNextScreen: 'DistributionJobsListScreen'
+    await test.step(`Job 2`, async () => {
+        await DistributionLinePickFromScreen.expectJobId({ distributionJobId: masterdata.distributionOrders.DD2.jobId })
+
+        await test.step('Pick P1 -> expect navigate to job screen since the job is not fully picked', async () => {
+            await DistributionLinePickFromScreen.scanHUToMove({
+                huQRCode: masterdata.handlingUnits.HU21.qrCode,
+                productScannedCode: masterdata.products.P1.gtin,
+                expectedQtyToMove: 100,
+                expectNextScreen: 'DistributionJobScreen'
+            });
+            await DistributionJobScreen.waitForScreen();
         });
-        await DistributionJobsListScreen.waitForScreen();
+
+        await test.step(`Pick P2 -> expect navigate to jobs list screen because there is no other job to start`, async () => {
+            await DistributionJobScreen.scanHUToMove({
+                huQRCode: masterdata.handlingUnits.HU22.qrCode,
+                productScannedCode: masterdata.products.P2.gtin,
+                expectedQtyToMove: 100,
+                expectNextScreen: 'DistributionJobsListScreen'
+            });
+            await DistributionJobsListScreen.waitForScreen();
+        });
     });
 
     await test.step("Drop everything that was picked to wh2_l1", async () => {
@@ -83,8 +122,10 @@ test('Happy case', async ({ page }) => {
         await Backend.expect({
             title: 'All HUs are in wh2',
             hus: {
-                HU1: { huStatus: 'A', warehouse: 'wh2', storages: { P1: '100 PCE' } },
-                HU2: { huStatus: 'A', warehouse: 'wh2', storages: { P2: '100 PCE' } },
+                HU11: { huStatus: 'A', warehouse: 'wh2', storages: { P1: '100 PCE' } },
+                HU12: { huStatus: 'A', warehouse: 'wh2', storages: { P2: '100 PCE' } },
+                HU21: { huStatus: 'A', warehouse: 'wh2', storages: { P1: '100 PCE' } },
+                HU22: { huStatus: 'A', warehouse: 'wh2', storages: { P2: '100 PCE' } },
             }
         });
     });

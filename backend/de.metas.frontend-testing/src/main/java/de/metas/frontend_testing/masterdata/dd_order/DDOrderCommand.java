@@ -10,8 +10,9 @@ import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.lowlevel.model.DDOrderLineHUPackingAware;
 import de.metas.distribution.mobileui.job.model.DDOrderReference;
-import de.metas.distribution.mobileui.launchers.DDOrderReferenceCollector;
+import de.metas.distribution.mobileui.job.model.DistributionJobId;
 import de.metas.distribution.mobileui.job.service.DistributionJobLoaderSupportingServices;
+import de.metas.distribution.mobileui.launchers.DDOrderReferenceCollector;
 import de.metas.distribution.mobileui.launchers.DistributionLauncherCaptionProvider;
 import de.metas.distribution.mobileui.launchers.facets.DistributionFacetId;
 import de.metas.document.DocBaseType;
@@ -123,6 +124,7 @@ public class DDOrderCommand
 				.warehouseFromFacetId(DistributionFacetId.ofWarehouseFromId(fromWarehouseId).toWorkflowLaunchersFacetId().toJsonString())
 				.warehouseToFacetId(DistributionFacetId.ofWarehouseFromId(toWarehouseId).toWorkflowLaunchersFacetId().toJsonString())
 				.plantFacetId(DistributionFacetId.ofPlantId(plantId).toWorkflowLaunchersFacetId().toJsonString())
+				.jobId(DistributionJobId.ofDDOrderId(ddOrderReference.getDdOrderId()))
 				.build();
 	}
 
