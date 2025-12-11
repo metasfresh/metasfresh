@@ -96,7 +96,7 @@ public class HULabelService
 	@NonNull
 	public HULabelPrintProcessesList getHULabelPrintFormatProcesses()
 	{
-		return printProcessesCache.getOrLoad(0, this::retrieveHULabelPrintFormatProcesses);
+		return printProcessesCache.getOrLoadNonNull(0, this::retrieveHULabelPrintFormatProcesses);
 	}
 
 	private HULabelPrintProcessesList retrieveHULabelPrintFormatProcesses()
