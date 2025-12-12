@@ -119,7 +119,7 @@ public class PickingJobScheduleAutoAssignCommand
 								.includeWithQtyToDeliverZero(false)
 								.includeProcessed(false)
 								.orderByOrderId(true)
-								.build())
+								.build()) //TODO for next iteration: Introduce limit, but without splitting schedules for same order
 				.stream()
 				.filter(sched -> sched.getCarrierProductId() != null || !isCarrierProductRequired)
 				.collect(ImmutableList.toImmutableList());

@@ -201,7 +201,7 @@ public class PickingJobTestHelper
 				new HULabelConfigService(new HULabelConfigRepository()),
 				huQRCodeService
 		);
-		final PickingJobProductService productService = new PickingJobProductService();
+		final PickingJobProductService productService = PickingJobProductService.newInstanceForUnitTesting();
 
 		this.huService = new PickingJobHUService(
 				configService,
@@ -227,7 +227,7 @@ public class PickingJobTestHelper
 				bpartnerService,
 				warehouseService,
 				productService,
-				new PickingJobShipmentScheduleService(),
+				PickingJobShipmentScheduleService.newInstanceForUnitTesting(),
 				pickingJobRepository,
 				pickingJobLockService,
 				pickingJobSlotService,
