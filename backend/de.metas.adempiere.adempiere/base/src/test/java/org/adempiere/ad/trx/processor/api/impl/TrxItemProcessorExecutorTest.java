@@ -37,6 +37,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -60,7 +61,7 @@ public class TrxItemProcessorExecutorTest
 	 */
 	private void assertAllItemsProcessed(final List<Item> items, final Item... excludeItem)
 	{
-		assertAllItemsWhatever(items, i -> i.isProcessed(), "processed", excludeItem);
+		assertAllItemsWhatever(items, Item::isProcessed, "processed", excludeItem);
 	}
 
 	/**
@@ -135,7 +136,7 @@ public class TrxItemProcessorExecutorTest
 	{
 		final Optional<Item> itemOrNull = items
 				.stream()
-				.filter(i -> i != null)
+				.filter(Objects::nonNull)
 				.filter(i -> i.equals(new Item(groupKey, value)))
 				.findFirst();
 

@@ -40,7 +40,7 @@ import javax.annotation.Nullable;
  */
 public final class NullTrxPlaceholder implements ITrx
 {
-	public static final transient NullTrxPlaceholder instance = new NullTrxPlaceholder();
+	public static final NullTrxPlaceholder instance = new NullTrxPlaceholder();
 
 	public static ITrx boxNotNull(@Nullable final ITrx trx)
 	{
