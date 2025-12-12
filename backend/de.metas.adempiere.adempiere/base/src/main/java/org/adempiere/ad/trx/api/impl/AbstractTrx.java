@@ -67,6 +67,7 @@ public abstract class AbstractTrx implements ITrx
 	 */
 	private boolean m_active = false;
 	private boolean isCommitted = false;
+	private boolean isCommittedOK = false;
 	private boolean isRolledBack = false;
 	private boolean isClosed = false;
 	private long m_startTime;
@@ -144,6 +145,7 @@ public abstract class AbstractTrx implements ITrx
 
 		m_active = true;
 		isCommitted = false;
+		isCommittedOK = false;
 		isRolledBack = false;
 		isClosed = false;
 		m_startTime = System.currentTimeMillis();
@@ -200,6 +202,7 @@ public abstract class AbstractTrx implements ITrx
 		{
 			m_active = false;
 			isCommitted = false;
+			isCommittedOK = false;
 			isRolledBack = true;
 			Services.get(IOpenTrxBL.class).onRollback(this); // metas 02367
 
@@ -275,15 +278,19 @@ public abstract class AbstractTrx implements ITrx
 		{
 			m_active = false;
 			isCommitted = true;
+			isCommittedOK = success;
 			isRolledBack = false;
 
 			Services.get(IOpenTrxBL.class).onCommit(this); // metas 02367
 
-			// 04265: If transaction was successfully committed fire listeners
-			if (success)
-			{
-				trxListenerManager.fireAfterCommit(this);
-			}
+			// NOTE: moved to after close to make sure the transaction is already removed there,
+			// so there is no risk of reusing an already committed/closed transaction.
+			// this approach is actually a workaround.
+			// // 04265: If transaction was successfully committed, fire listeners
+			// if (success)
+			// {
+			// 	trxListenerManager.fireAfterCommit(this);
+			// }
 		}
 	}
 
@@ -394,6 +401,18 @@ public abstract class AbstractTrx implements ITrx
 		if (isActive())
 		{
 			commit();
+		}
+
+		// If transaction was successfully committed, fire listeners
+		//
+		// NOTE: moved from commit() to make sure the transaction is already removed there,
+		// so there is no risk of reusing an already committed/closed transaction.
+		// this approach is actually a workaround.
+		// IMPORTANT: needs to be executed after trxManager.remove(this)
+		if (isCommittedOK)
+		{
+			final ITrxListenerManager trxListenerManager = getTrxListenerManager(false);
+			trxListenerManager.fireAfterCommit(this);
 		}
 
 		//

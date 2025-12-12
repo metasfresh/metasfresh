@@ -536,7 +536,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 			// If that one does not exist, we will need to create one.
 			// If exists, we will need to use it.
 			final ITrx inheritedTrx = getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
-			if (inheritedTrx == null || isNull(inheritedTrx) || !inheritedTrx.isNewOrActive())
+			if (inheritedTrx == null || isNull(inheritedTrx))
 			{
 				trxMode = TrxPropagation.REQUIRES_NEW;
 				onRunnableSuccess = OnRunnableSuccess.COMMIT;
@@ -544,6 +544,16 @@ public abstract class AbstractTrxManager implements ITrxManager
 			}
 			else
 			{
+				if (!inheritedTrx.isNewOrActive())
+				{
+					// NOTE: we cannot use logger.warn because that will try to use DB/trx to create an AD_Issue and we might introduce a recursive call
+					logger.info("*** WARNING: Using already closed trx: {}", inheritedTrx.getTrxName(), new Exception("trace"));
+
+					// NOTE: we are not considering trxNameToUse=ITrx.TRXNAME_None as we should,
+					// because that's producing several cucumber tests to fail and more time is needed or an well tested solution.
+					// So for now, we just log it.
+				}
+
 				trxMode = TrxPropagation.NESTED;
 				onRunnableSuccess = OnRunnableSuccess.DONT_COMMIT;
 				trxNameToUse = inheritedTrx.getTrxName();
