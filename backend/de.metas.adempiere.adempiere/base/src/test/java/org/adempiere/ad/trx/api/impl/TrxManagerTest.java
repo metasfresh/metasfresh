@@ -1,32 +1,9 @@
 package org.adempiere.ad.trx.api.impl;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Collections;
-
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
@@ -39,19 +16,29 @@ import org.adempiere.ad.trx.exceptions.IllegalTrxRunStateException;
 import org.adempiere.ad.trx.exceptions.TrxNotFoundException;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.Mutable;
 import org.compiere.util.TrxRunnable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import de.metas.util.Services;
+import javax.annotation.Nullable;
+import java.util.Collections;
+import java.util.Objects;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class TrxManagerTest
 {
-	/** Service under test */
+	/**
+	 * Service under test
+	 */
 	private MockedTrxManager trxManager;
 
-	/** A custom {@link AdempiereException} extension which we are using to test exceptions propagation through transactions management module */
+	/**
+	 * A custom {@link AdempiereException} extension which we are using to test exceptions propagation through transactions management module
+	 */
 	public static final class MyCustomAdempiereException extends AdempiereException
 	{
 		private static final long serialVersionUID = 1L;
@@ -134,7 +121,7 @@ public class TrxManagerTest
 
 	/**
 	 * Test {@link ITrxManager#run(String, boolean, org.compiere.util.TrxRunnable)} for trxName=null, manageTrx=N/A
-	 *
+	 * <p>
 	 * Expectation: create a new trxName (and thus a new local trx) with prefix <code>"TrxRun"</code>
 	 */
 	@Test
@@ -160,7 +147,7 @@ public class TrxManagerTest
 
 	/**
 	 * Test {@link ITrxManager#run(String, boolean, org.compiere.util.TrxRunnable)} for trxName!=null, manageTrx=true
-	 *
+	 * <p>
 	 * Expectation: create a new trxName (and thus a new local trx) with prefix being the given <code>trxName</code>
 	 */
 	@Test
@@ -190,7 +177,7 @@ public class TrxManagerTest
 
 	/**
 	 * Test {@link ITrxManager#run(String, boolean, org.compiere.util.TrxRunnable)} for trxName!=null, manageTrx=false
-	 *
+	 * <p>
 	 * Expectation: use the trx with the the given trxName; create a savepoint and to roll back to in case of problems. don't commit in case of success.
 	 */
 	@Test
@@ -351,7 +338,7 @@ public class TrxManagerTest
 	 * <li>running an {@link TrxRunnable} on following configuration: NESTED transaction, OnSuccess=DONT_COMMIT, OnFail=DONT_ROLLBACK
 	 * <li>the runnable throws a custom exception
 	 * </ul>
-	 *
+	 * <p>
 	 * Expectations:
 	 * <ul>
 	 * <li>our custom exception is propagated
@@ -400,7 +387,7 @@ public class TrxManagerTest
 
 	/**
 	 * Case: we are running with {@link TrxPropagation#NESTED} but we are not providing any transaction.
-	 *
+	 * <p>
 	 * Expection: shall fail
 	 */
 	@Test
@@ -467,9 +454,9 @@ public class TrxManagerTest
 	 * <li>Propagation=NESTED, OnSuccess=DONT_COMMIT, OnFail=DONT_ROLLBACK, trxName= {@link ITrx#TRXNAME_ThreadInherited}
 	 * <li>the thread inerited transaction is set but it does not actually exists
 	 * </ul>
-	 *
+	 * <p>
 	 * Expectations: an exception will be thrown
-	 *
+	 * <p>
 	 * Production code expectations (NOT tested here):
 	 * <ul>
 	 * <li>system will create the transaction using that provided trxName and will execute the runnable
@@ -499,7 +486,7 @@ public class TrxManagerTest
 
 	/**
 	 * Corner (possible invalid) case: propagation=NESTED, onSuccess=COMMIT.
-	 *
+	 * <p>
 	 * Expectation: at least, in JUnit/Developer Mode we expect to fail.
 	 */
 	@Test
@@ -707,5 +694,63 @@ public class TrxManagerTest
 			assertThat(trxRunnable.getLastTrxNameEffective()).isEqualTo("AlreadyRunningTrx");
 		}
 
+		@Test
+		public void intoRunAfterCommit()
+		{
+			final Mutable<TrxSnapshot> trxHolder = new Mutable<>();
+			final Mutable<TrxSnapshot> trxOnAfterCommitHolder = new Mutable<>();
+
+			trxManager.assertThreadInheritedTrxNotExists();
+			trxManager.runInThreadInheritedTrx(() -> {
+				trxManager.assertThreadInheritedTrxExists();
+				trxHolder.setValue(TrxSnapshot.ofThreadInheritedTrx(trxManager));
+
+				trxManager.runAfterCommit(() -> {
+					trxOnAfterCommitHolder.setValue(TrxSnapshot.ofThreadInheritedTrx(trxManager));
+				});
+			});
+
+			final TrxSnapshot trx = Objects.requireNonNull(trxHolder.getValue());
+			assertThat(trx.getTrxName()).as(() -> "In trx: " + trx).isNotNull();
+			assertThat(trx.isActive()).as(() -> "In trx: " + trx).isTrue();
+			assertThat(trx.isNewOrActive()).as(() -> "In trx: " + trx).isTrue();
+
+			final TrxSnapshot trxOnAfterCommit = Objects.requireNonNull(trxOnAfterCommitHolder.getValue());
+			assertThat(trxOnAfterCommit.getTrxName()).as(() -> "Trx after commit: " + trx).isEqualTo(trx.getTrxName());
+			assertThat(trxOnAfterCommit.isActive()).as(() -> "Trx after commit: " + trx).isFalse();
+			assertThat(trxOnAfterCommit.isNewOrActive()).as(() -> "Trx after commit: " + trx).isFalse();
+		}
+	}
+
+	//
+	//
+	//
+	//
+	//
+
+	@Value
+	@Builder
+	private static class TrxSnapshot
+	{
+		public static final TrxSnapshot NONE = TrxSnapshot.builder().build();
+
+		@Nullable String trxName;
+		boolean isActive;
+		boolean isNewOrActive;
+
+		public static TrxSnapshot of(@NonNull final ITrx trx)
+		{
+			return builder()
+					.trxName(trx.getTrxName())
+					.isActive(trx.isActive())
+					.isNewOrActive(trx.isNewOrActive())
+					.build();
+		}
+
+		public static TrxSnapshot ofThreadInheritedTrx(@NonNull final ITrxManager trxManager)
+		{
+			final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
+			return trx != null ? of(trx) : NONE;
+		}
 	}
 }
