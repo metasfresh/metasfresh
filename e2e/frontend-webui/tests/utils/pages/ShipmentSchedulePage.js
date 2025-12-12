@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
 import { test } from '../../../playwright.config';
-import { getPage, SLOW_ACTION_TIMEOUT } from '../common';
+import { getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../common';
 
 /**
  * Page object for Shipment Schedule window (ID: 500221).
@@ -115,6 +115,99 @@ export class ShipmentSchedulePage {
       const actual = normalizeNumber(actualQuantity);
 
       expect(actual).toBe(expected);
+    });
+  }
+
+  /**
+   * Execute M_ShipmentSchedule_EnqueueSelection action to create shipment.
+   * This is a Quick Action on the shipment schedule list view.
+   *
+   * The action opens a modal with configuration options (e.g., QuantityType, Complete Shipment Note).
+   * After clicking "Start" in the modal, the shipment is created asynchronously.
+   */
+  static async createShipment() {
+    return await test.step('ShipmentSchedulePage - Create shipment', async () => {
+      const page = getPage();
+
+      // Step 1: Open the quick actions dropdown
+      const dropdownToggle = page.getByTestId('quick-action-dropdown-toggle');
+      await dropdownToggle.waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+
+      await dropdownToggle.click();
+
+      // Wait for dropdown to appear
+      await page.locator('.quick-actions-dropdown').waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+
+      await page.waitForTimeout(300);
+
+      // Step 2: Click the specific M_ShipmentSchedule_EnqueueSelection action
+      const actionItem = page.getByTestId('quick-action-M_ShipmentSchedule_EnqueueSelection');
+      await actionItem.waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+
+      await actionItem.click();
+
+      // Step 3: Wait for modal to appear
+      await page.locator('.panel-modal, .modal-content').waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+
+      await page.waitForTimeout(500);
+
+      // Step 4: Click the "Start" button in the modal
+      // Try data-testid first, fall back to last button if not found
+      const startButton = page.getByTestId('process-modal-start-button');
+      const startButtonExists = await startButton.count();
+
+      if (startButtonExists === 0) {
+        // Fallback: Click last button in header (should be Start)
+        const lastButton = page.locator('.panel-modal-header button').last();
+        await lastButton.waitFor({
+          state: 'visible',
+          timeout: SLOW_ACTION_TIMEOUT,
+        });
+        await lastButton.click();
+      } else {
+        await startButton.waitFor({
+          state: 'visible',
+          timeout: SLOW_ACTION_TIMEOUT,
+        });
+        await startButton.click();
+      }
+
+      // Step 5: Wait for modal to close (indicates process completed)
+      await page
+        .locator('.panel-modal, .modal-content')
+        .waitFor({
+          state: 'detached',
+          timeout: VERY_SLOW_ACTION_TIMEOUT,
+        })
+        .catch(() => {
+          // Continue if modal doesn't close
+        });
+
+      // Wait for processing indicators to disappear
+      await page
+        .locator('.rotating, .indicator-pending')
+        .waitFor({
+          state: 'detached',
+          timeout: VERY_SLOW_ACTION_TIMEOUT,
+        })
+        .catch(() => {
+          // Continue if no spinner found
+        });
+
+      // Additional wait for backend processing
+      await page.waitForTimeout(3000);
     });
   }
 }
