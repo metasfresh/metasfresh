@@ -6,6 +6,10 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.Carrier_Product_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
+import de.metas.externalsystem.ExternalSystemId;
+import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.model.I_ExternalSystem;
 import de.metas.order.OrderPickingType;
 import de.metas.util.Services;
 import de.metas.util.lang.SeqNo;
@@ -29,6 +33,7 @@ import org.compiere.model.I_C_Workplace_ProductCategory;
 public class C_Workplace_StepDef
 {
 	@NonNull private final WorkplaceService workplaceService = SpringContextHolder.instance.getBean(WorkplaceService.class);
+	@NonNull private final ExternalSystemRepository externalSystemRepository = SpringContextHolder.instance.getBean(ExternalSystemRepository.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull private final M_Warehouse_StepDefData warehouseTable;
@@ -64,6 +69,13 @@ public class C_Workplace_StepDef
 				pc -> builder.productCategoryId((productCategoryTable.getId(pc)))));
 		row.getAsOptionalCommaSeparatedString(I_C_Workplace_Carrier_Product.COLUMNNAME_Carrier_Product_ID).ifPresent(list -> list.forEach(
 				cp -> builder.carrierProductId((carrierProductTable.getId(cp)))));
+		row.getAsOptionalCommaSeparatedString(I_ExternalSystem.Table_Name + "." + I_ExternalSystem.COLUMNNAME_Value)
+				.ifPresent(list -> list.forEach(
+						externalSystemValue -> {
+							final ExternalSystemId externalSystemId = externalSystemRepository.getIdByType(ExternalSystemType.ofValue(externalSystemValue));
+							builder.externalSystemId(externalSystemId);
+						})
+				);
 
 		final Workplace workplace = workplaceService.create(builder.build());
 		row.getAsOptionalIdentifier()

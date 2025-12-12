@@ -12,14 +12,21 @@ Feature: Auto picking job schedule
     # we don't care about the export, and don't want it to interject in any way
     And set sys config int value 999999 for sys config de.metas.inoutcandidate.M_ShipmentSchedule.canBeExportedAfterSeconds
 
+    When metasfresh contains External System
+      | Name                      | Value               |
+      | JobSchedule Test System 1 | JobSchedule_System1 |
+      | JobSchedule Test System 2 | JobSchedule_System2 |
+      | JobSchedule Test System 3 | JobSchedule_System3 |
     And metasfresh contains M_Product_Categories:
       | Identifier |
       | pg         |
       | pg2        |
+      | pg3        |
     And metasfresh contains M_Products:
       | Identifier | M_Product_Category_ID |
       | product    | pg                    |
       | product2   | pg2                   |
+      | product3   | pg3                   |
     And metasfresh contains M_PricingSystems
       | Identifier |
       | ps         |
@@ -82,5 +89,70 @@ Feature: Auto picking job schedule
       | sched2                | workplace1     | 10        |
       | sched3                | workplace2     | 1         |
 
+  Scenario: auto job schedule - Warehouse
+    Given deactivate all C_Workplace records
+    And metasfresh contains C_Workplaces
+      | Identifier | SeqNo | M_Warehouse_ID | MaxPickingJobs |
+      | workplace1 | 10    | wh             | 10             |
+      | workplace2 | 20    | wh2            | 10             |
+    When simple completed order with one line
+      | C_Order_ID | C_BPartner_ID | DateOrdered | IsSOTrx | M_Warehouse_ID | InvoiceRule | C_OrderLine_ID | M_Product_ID | QtyEntered |
+      | so4        | customer      | 2025-04-01  | true    | wh2            | I           | so4_l1         | product      | 10         |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | sched4     | so4_l1         | N             |
+    And AD_Scheduler for classname 'de.metas.handlingunits.picking.process.M_ShipmentSchedule_Traffic_Management_assign' is ran once
+    And after not more than 60s, picking job schedules are found:
+      | M_ShipmentSchedule_ID | C_Workplace_ID | QtyToPick |
+      | sched4                | workplace2     | 10        |
 
+  Scenario: auto job schedule - Product
+    Given deactivate all C_Workplace records
+    And metasfresh contains C_Workplaces
+      | Identifier | SeqNo | M_Warehouse_ID | MaxPickingJobs | M_Product_ID      |
+      | workplace1 | 10    | wh             | 10             | product, product3 |
+      | workplace2 | 20    | wh             | 10             | product2          |
+    When simple completed order with one line
+      | C_Order_ID | C_BPartner_ID | DateOrdered | IsSOTrx | M_Warehouse_ID | InvoiceRule | C_OrderLine_ID | M_Product_ID | QtyEntered |
+      | so5        | customer      | 2025-04-01  | true    | wh             | I           | so5_l1         | product2     | 10         |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | sched5     | so5_l1         | N             |
+    And AD_Scheduler for classname 'de.metas.handlingunits.picking.process.M_ShipmentSchedule_Traffic_Management_assign' is ran once
+    And after not more than 60s, picking job schedules are found:
+      | M_ShipmentSchedule_ID | C_Workplace_ID | QtyToPick |
+      | sched5                | workplace2     | 10        |
 
+  Scenario: auto job schedule - Product Category
+    Given deactivate all C_Workplace records
+    And metasfresh contains C_Workplaces
+      | Identifier | SeqNo | M_Warehouse_ID | MaxPickingJobs | M_Product_Category_ID |
+      | workplace1 | 10    | wh             | 10             | pg, pg3               |
+      | workplace2 | 20    | wh             | 10             | pg2                   |
+    When simple completed order with one line
+      | C_Order_ID | C_BPartner_ID | DateOrdered | IsSOTrx | M_Warehouse_ID | InvoiceRule | C_OrderLine_ID | M_Product_ID | QtyEntered |
+      | so6        | customer      | 2025-04-01  | true    | wh             | I           | so6_l1         | product2     | 10         |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | sched6     | so6_l1         | N             |
+    And AD_Scheduler for classname 'de.metas.handlingunits.picking.process.M_ShipmentSchedule_Traffic_Management_assign' is ran once
+    And after not more than 60s, picking job schedules are found:
+      | M_ShipmentSchedule_ID | C_Workplace_ID | QtyToPick |
+      | sched6                | workplace2     | 10        |
+
+  Scenario: auto job schedule - External System
+    Given deactivate all C_Workplace records
+    And metasfresh contains C_Workplaces
+      | Identifier | SeqNo | M_Warehouse_ID | MaxPickingJobs | ExternalSystem.Value                     |
+      | workplace1 | 10    | wh             | 10             | JobSchedule_System1, JobSchedule_System3 |
+      | workplace2 | 20    | wh             | 10             | JobSchedule_System2                      |
+    When simple completed order with one line
+      | C_Order_ID | C_BPartner_ID | DateOrdered | IsSOTrx | M_Warehouse_ID | InvoiceRule | C_OrderLine_ID | M_Product_ID | QtyEntered | ExternalSystem.Value |
+      | so7        | customer      | 2025-04-01  | true    | wh             | I           | so7_l1         | product      | 10         | JobSchedule_System2  |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | sched7     | so7_l1         | N             |
+    And AD_Scheduler for classname 'de.metas.handlingunits.picking.process.M_ShipmentSchedule_Traffic_Management_assign' is ran once
+    And after not more than 60s, picking job schedules are found:
+      | M_ShipmentSchedule_ID | C_Workplace_ID | QtyToPick |
+      | sched7                | workplace2     | 10        |
