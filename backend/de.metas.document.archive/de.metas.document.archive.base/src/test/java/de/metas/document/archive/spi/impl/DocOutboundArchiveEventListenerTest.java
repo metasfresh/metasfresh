@@ -1,9 +1,6 @@
 package de.metas.document.archive.spi.impl;
 
 import de.metas.async.model.I_C_Async_Batch;
-import de.metas.document.archive.api.impl.DocOutboundService;
-import de.metas.attachments.AttachmentService;
-import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRegistry;
 import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
@@ -24,7 +21,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.Optional;
 import java.util.Properties;
 
 public class DocOutboundArchiveEventListenerTest

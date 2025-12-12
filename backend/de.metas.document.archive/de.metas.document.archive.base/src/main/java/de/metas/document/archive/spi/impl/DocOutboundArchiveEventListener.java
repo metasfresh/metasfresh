@@ -23,7 +23,6 @@ import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.email.EMailAddress;
 import de.metas.email.mailboxes.UserEMailConfig;
-import de.metas.i18n.IMsgBL;
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -46,7 +45,6 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -62,7 +60,6 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 	@NonNull private final DocOutboundService docOutboundService;
 	@NonNull private final IDocOutboundDAO docOutboundDAO = Services.get(IDocOutboundDAO.class);
 	@NonNull private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	
 	public static DocOutboundArchiveEventListener newInstanceForUnitTesting()
 	{
