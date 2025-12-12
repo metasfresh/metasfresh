@@ -128,6 +128,10 @@
 		<property name="com.jaspersoft.studio.field.name" value="qtypattern"/>
 		<property name="com.jaspersoft.studio.field.label" value="qtypattern"/>
 	</field>
+	<field name="priceqtypattern" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="priceqtypattern"/>
+		<property name="com.jaspersoft.studio.field.label" value="priceqtypattern"/>
+	</field>
 	<field name="week_year" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="week_year"/>
 		<property name="com.jaspersoft.studio.field.label" value="week_year"/>
@@ -401,7 +405,7 @@
 					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qtyenteredinpriceuom}]]></textFieldExpression>
-				<patternExpression><![CDATA[$F{qtypattern}]]></patternExpression>
+				<patternExpression><![CDATA[$F{priceqtypattern}]]></patternExpression>
 			</textField>
 			<staticText>
 				<reportElement x="568" y="0" width="9" height="12" uuid="9b84f317-f343-4f19-959a-998625d89b20">
