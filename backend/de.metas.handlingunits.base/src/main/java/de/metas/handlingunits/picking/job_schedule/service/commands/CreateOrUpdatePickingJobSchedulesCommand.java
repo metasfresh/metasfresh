@@ -1,10 +1,10 @@
 package de.metas.handlingunits.picking.job_schedule.service.commands;
 
 import com.google.common.collect.Sets;
+import de.metas.handlingunits.picking.job.service.external.shipmentschedule.PickingJobShipmentScheduleService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.shipping.CarrierProductId;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
-import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.ShipmentScheduleLoadingCache;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
@@ -30,7 +30,7 @@ public class CreateOrUpdatePickingJobSchedulesCommand
 
 	// Services
 	@NonNull private final PickingJobScheduleRepository pickingJobScheduleRepository;
-	@NonNull private final IHUShipmentScheduleBL shipmentScheduleBL;
+	@NonNull private final PickingJobShipmentScheduleService shipmentScheduleBL;
 
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
@@ -43,14 +43,14 @@ public class CreateOrUpdatePickingJobSchedulesCommand
 	@Builder
 	private CreateOrUpdatePickingJobSchedulesCommand(
 			@NonNull final PickingJobScheduleRepository pickingJobScheduleRepository,
-			@NonNull final IHUShipmentScheduleBL shipmentScheduleBL,
+			@NonNull final PickingJobShipmentScheduleService pickingJobShipmentScheduleService,
 			@NonNull final CreateOrUpdatePickingJobSchedulesRequest request)
 	{
 		this.pickingJobScheduleRepository = pickingJobScheduleRepository;
-		this.shipmentScheduleBL = shipmentScheduleBL;
+		this.shipmentScheduleBL = pickingJobShipmentScheduleService;
 		this.request = request;
 
-		this.shipmentSchedules = shipmentScheduleBL.newLoadingCache();
+		this.shipmentSchedules = pickingJobShipmentScheduleService.newHuShipmentLoadingCache();
 	}
 
 	public void execute()

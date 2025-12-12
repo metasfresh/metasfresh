@@ -26,11 +26,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.externalsystem.ExternalSystemId;
+import de.metas.handlingunits.picking.job.service.external.product.PickingJobProductService;
+import de.metas.handlingunits.picking.job.service.external.shipmentschedule.PickingJobShipmentScheduleService;
 import de.metas.inout.PriorityRule;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ShipmentSchedule;
 import de.metas.inoutcandidate.ShipmentScheduleQuery;
-import de.metas.inoutcandidate.ShipmentScheduleRepository;
 import de.metas.order.OrderId;
 import de.metas.order.OrderPickingType;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
@@ -40,12 +41,10 @@ import de.metas.picking.job_schedule.repository.PickingJobScheduleRepository;
 import de.metas.product.Product;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
-import de.metas.product.ProductRepository;
 import de.metas.shipping.CarrierProductId;
 import de.metas.util.Check;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
-import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.workplace.Workplace;
 import de.metas.workplace.WorkplaceId;
 import de.metas.workplace.WorkplaceRepository;
@@ -64,14 +63,15 @@ public class PickingJobScheduleAutoAssignCommand
 {
 	// Services
 	@NonNull private final WorkplaceRepository workplaceRepository;
-	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
 	@NonNull private final PickingJobScheduleRepository pickingJobScheduleRepository;
-	@NonNull private final IHUShipmentScheduleBL shipmentScheduleBL;
+	@NonNull private final PickingJobShipmentScheduleService pickingJobShipmentScheduleService;
 	@NonNull private final ISysConfigBL sysConfigBL;
-	@NonNull private final ProductRepository productRepository;
+	@NonNull private final PickingJobProductService pickingJobProductService;
 
 	// Params
 	@NonNull private final PickingJobScheduleAutoAssignRequest request;
+
+	// State
 	private List<Workplace> workplaces;
 	private WorkplacesCapacity workplacesCapacity;
 	private ImmutableMap<ProductId, Product> productsById;
@@ -80,19 +80,17 @@ public class PickingJobScheduleAutoAssignCommand
 	@Builder
 	private PickingJobScheduleAutoAssignCommand(
 			@NonNull final WorkplaceRepository workplaceRepository,
-			@NonNull final ShipmentScheduleRepository shipmentScheduleRepository,
 			@NonNull final PickingJobScheduleRepository pickingJobScheduleRepository,
-			@NonNull final IHUShipmentScheduleBL shipmentScheduleBL,
+			@NonNull final PickingJobShipmentScheduleService pickingJobShipmentScheduleService,
 			@NonNull final ISysConfigBL sysConfigBL,
-			@NonNull final ProductRepository productRepository,
+			@NonNull final PickingJobProductService pickingJobProductService,
 			@NonNull final PickingJobScheduleAutoAssignRequest request)
 	{
 		this.workplaceRepository = workplaceRepository;
-		this.shipmentScheduleRepository = shipmentScheduleRepository;
 		this.pickingJobScheduleRepository = pickingJobScheduleRepository;
-		this.shipmentScheduleBL = shipmentScheduleBL;
+		this.pickingJobShipmentScheduleService = pickingJobShipmentScheduleService;
 		this.sysConfigBL = sysConfigBL;
-		this.productRepository = productRepository;
+		this.pickingJobProductService = pickingJobProductService;
 		this.request = request;
 	}
 
@@ -113,7 +111,7 @@ public class PickingJobScheduleAutoAssignCommand
 				.collect(ImmutableSet.toImmutableSet());
 
 		final boolean isCarrierProductRequired = sysConfigBL.getBooleanValue(SYSCONFIG_CARRIER_PRODUCT_REQUIRED, false);
-		final ImmutableList<ShipmentSchedule> allEligibleShipmentSchedules = shipmentScheduleRepository.getBy(
+		final ImmutableList<ShipmentSchedule> allEligibleShipmentSchedules = pickingJobShipmentScheduleService.getBy(
 						ShipmentScheduleQuery.builder()
 								.warehouseIds(warehouseIds)
 								.preparationDate(request.getPreparationDate())
@@ -198,7 +196,7 @@ public class PickingJobScheduleAutoAssignCommand
 		final ImmutableSet<ProductId> productIds = allUnscheduledShipmentScheduleIds.stream()
 				.map(ShipmentSchedule::getProductId)
 				.collect(ImmutableSet.toImmutableSet());
-		productsById = productRepository.getByIdsAsMap(productIds);
+		productsById = pickingJobProductService.getByIdsAsMap(productIds);
 
 		totalQtyToDeliverByOrderId = allUnscheduledShipmentScheduleIds.stream()
 				.filter(sched -> sched.getOrderId() != null)
@@ -222,7 +220,7 @@ public class PickingJobScheduleAutoAssignCommand
 
 			CreateOrUpdatePickingJobSchedulesCommand.builder()
 					.pickingJobScheduleRepository(pickingJobScheduleRepository)
-					.shipmentScheduleBL(shipmentScheduleBL)
+					.pickingJobShipmentScheduleService(pickingJobShipmentScheduleService)
 					.request(CreateOrUpdatePickingJobSchedulesRequest.builder()
 							.workplaceId(matchingWorkplace.getId())
 							.shipmentScheduleAndJobScheduleIds(ShipmentScheduleAndJobScheduleIdSet.of(schedule.getId()))
