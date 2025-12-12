@@ -33,6 +33,8 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Orde
                 order_description    character varying(1024),
                 PricePattern         text,
                 AmountPattern        text,
+                QtyPattern           text,
+                PriceQtyPattern      text,
                 week_year            character varying
             )
 AS
@@ -54,7 +56,7 @@ SELECT ol.line,
        piv.name                                                                AS LU_Name,
        ol.QtyEnteredInPriceUOM                                                 AS QtyEnteredInPriceUOM,
        ol.PriceEntered                                                         AS PriceEntered,
-       COALESCE(uomt.UOMSymbol, uom.UOMSymbol)                                 AS UOMSymbol,
+       COALESCE(puomt.UOMSymbol, puom.UOMSymbol)                               AS UOMSymbol,
        uom.StdPrecision,
        ol.linenetamt                                                           AS linenetamt,
        CASE
@@ -80,6 +82,8 @@ SELECT ol.line,
        o.description                                                           AS order_description,
        report.getPricePatternForJasper(o.m_pricelist_id)                       AS PricePattern,
        report.getAmountPatternForJasper(c.c_currency_id)                       AS AmountPattern,
+       report.getQtyPattern(uom.StdPrecision)                                  AS QtyPattern,
+       report.getQtyPattern(puom.StdPrecision)                                 AS PriceQtyPattern,
        TO_CHAR(ol.datepromised, 'WW') || '.' || TO_CHAR(ol.datepromised, 'YY') AS week_year
 
 FROM C_OrderLine ol
@@ -99,9 +103,15 @@ FROM C_OrderLine ol
 
          LEFT OUTER JOIN C_BPartner_Product bpp ON bp.C_BPartner_ID = bpp.C_BPartner_ID
     AND p.M_Product_ID = bpp.M_Product_ID AND bpp.isActive = 'Y' AND bpp.UsedForVendor = 'Y'
+    -- Price Unit of measurement and its translation
+         LEFT OUTER JOIN C_UOM puom ON ol.Price_UOM_ID = puom.C_UOM_ID
+         LEFT OUTER JOIN C_UOM_Trl puomt ON ol.Price_UOM_ID = puomt.C_UOM_ID AND puomt.AD_Language = p_ad_language
+
     -- Unit of measurement and its translation
-         LEFT OUTER JOIN C_UOM uom ON ol.Price_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
+         LEFT OUTER JOIN C_UOM uom ON ol.C_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
          LEFT OUTER JOIN C_UOM_Trl uomt ON ol.Price_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = p_ad_language AND uomt.isActive = 'Y'
+
+    --
     -- Tax
          LEFT OUTER JOIN C_Tax t ON ol.C_Tax_ID = t.C_Tax_ID AND t.isActive = 'Y'
     -- Get Attributes
