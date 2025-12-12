@@ -151,7 +151,7 @@ class BpartnerRestControllerTest
 		bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository(), new BPartnerCreditLimitRepository());
 		currencyRepository = new CurrencyRepository();
 
-		final JsonServiceFactory jsonServiceFactory = JsonServiceFactory.newInstanceForJUnitTesting(
+		final JsonServiceFactory jsonServiceFactory = JsonServiceFactory.newInstanceForUnitTesting(
 				new MockLogEntriesRepository(),
 				Mockito.mock(AlbertaBPartnerCompositeService.class)
 		);

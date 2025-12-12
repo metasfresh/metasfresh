@@ -73,6 +73,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
@@ -473,7 +474,7 @@ class ShipmentCandidateAPIServiceTest
 				shipmentScheduleRecord1_5.getM_ShipmentSchedule_ID());
 
 		final ImmutableList<Integer> exportedShipmentScheduleIDs = exportAuditItems.stream()
-				.map(exportAudit -> exportAudit.getM_ShipmentSchedule_ID())
+				.map(I_M_ShipmentSchedule_ExportAudit_Item::getM_ShipmentSchedule_ID)
 				.collect(ImmutableList.toImmutableList());
 
 		assertThat(exportedShipmentScheduleIDs).containsAll(expectedScheduleIds);
@@ -573,7 +574,7 @@ class ShipmentCandidateAPIServiceTest
 				shipmentScheduleRecord2.getM_ShipmentSchedule_ID());
 
 		final ImmutableList<Integer> exportedShipmentScheduleIDs = exportAuditItems.stream()
-				.map(exportAudit -> exportAudit.getM_ShipmentSchedule_ID())
+				.map(I_M_ShipmentSchedule_ExportAudit_Item::getM_ShipmentSchedule_ID)
 				.collect(ImmutableList.toImmutableList());
 
 		assertThat(exportedShipmentScheduleIDs).containsAll(expectedScheduleIds);
@@ -753,7 +754,7 @@ class ShipmentCandidateAPIServiceTest
 		refresh(shipmentScheduleRecord2);
 		assertThat(shipmentScheduleRecord2.getExportStatus()).isEqualTo(Pending.getCode()); // ..because limit=1, and shipmentScheduleRecord1_* were exported
 
-		assertThat(exportAuditItems).extracting(i -> i.getM_ShipmentSchedule_ID())
+		assertThat(exportAuditItems).extracting(I_M_ShipmentSchedule_ExportAudit_Item::getM_ShipmentSchedule_ID)
 				.containsExactlyInAnyOrder(
 						shipmentScheduleRecord1_1.getM_ShipmentSchedule_ID(),
 						shipmentScheduleRecord1_3.getM_ShipmentSchedule_ID(),
@@ -815,8 +816,8 @@ class ShipmentCandidateAPIServiceTest
 	}
 
 	private I_M_ShipmentSchedule createShipmentScheduleRecord(
-			final I_C_OrderLine orderLineRecord,
-			final Timestamp canBeExportedFrom)
+			@Nullable final I_C_OrderLine orderLineRecord,
+			@Nullable final Timestamp canBeExportedFrom)
 	{
 		final I_M_ShipmentSchedule record = newInstance(I_M_ShipmentSchedule.class);
 
@@ -825,6 +826,7 @@ class ShipmentCandidateAPIServiceTest
 		record.setC_BPartner_Override_ID(bpartnerOverride.getC_BPartner_ID());
 		record.setC_BP_Location_Override_ID(bPartnerLocationOverride.getC_BPartner_Location_ID());
 		record.setM_Product_ID(product.getM_Product_ID());
+		record.setM_Warehouse_ID(1);
 		record.setCanBeExportedFrom(canBeExportedFrom);
 		record.setExportStatus(APIExportStatus.Pending.getCode());
 		record.setQtyOrdered(new BigDecimal("10"));

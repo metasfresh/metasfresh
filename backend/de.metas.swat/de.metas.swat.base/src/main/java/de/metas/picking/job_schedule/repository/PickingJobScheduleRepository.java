@@ -20,6 +20,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
@@ -39,7 +40,9 @@ public class PickingJobScheduleRepository
 	public static PickingJobScheduleRepository newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
-		return new PickingJobScheduleRepository();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(PickingJobScheduleRepository.class ,
+				PickingJobScheduleRepository::new);
 	}
 
 	public List<PickingJobSchedule> getByIds(@NonNull final Set<PickingJobScheduleId> ids)
@@ -207,6 +210,11 @@ public class PickingJobScheduleRepository
 		if (!query.getOnlyShipmentScheduleIds().isEmpty())
 		{
 			queryBuilder.addInArrayFilter(I_M_Picking_Job_Schedule.COLUMNNAME_M_ShipmentSchedule_ID, query.getOnlyShipmentScheduleIds());
+		}
+
+		if (query.getIsProcessed() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Picking_Job_Schedule.COLUMNNAME_Processed, query.getIsProcessed());
 		}
 
 		return queryBuilder.create();
