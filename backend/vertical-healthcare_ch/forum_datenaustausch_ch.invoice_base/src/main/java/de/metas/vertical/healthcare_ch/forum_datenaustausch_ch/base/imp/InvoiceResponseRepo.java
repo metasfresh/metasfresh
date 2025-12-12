@@ -1,8 +1,6 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp;
 
-import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentService;
-import de.metas.attachments.AttachmentTags;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.invoice.InvoiceId;
@@ -142,21 +140,6 @@ public class InvoiceResponseRepo
 	{
 		invoiceRecord.setIsInDispute(ImportedInvoiceResponse.Status.REJECTED.equals(response.getStatus()));
 		saveRecord(invoiceRecord);
-	}
-
-	private void attachFileToInvoiceRecord(
-			@NonNull final ImportedInvoiceResponse response,
-			@NonNull final I_C_Invoice invoiceRecord)
-	{
-		final AttachmentTags attachmentTags = AttachmentTags.builder()
-				.tags(response.getAdditionalTags())
-				.build();
-		final AttachmentEntryCreateRequest attachmentEntryCreateRequest = AttachmentEntryCreateRequest
-				.builderFromByteArray(response.getRequest().getFileName(), response.getRequest().getData())
-				.tags(attachmentTags)
-				.build();
-
-		attachmentService.createNewAttachment(invoiceRecord, attachmentEntryCreateRequest);
 	}
 
 	@SuppressWarnings("WeakerAccess")
