@@ -122,8 +122,64 @@ public class WorkplaceRepository
 		}
 
 		InterfaceWrapperHelper.save(record);
+		
+		if(!request.getProductIds().isEmpty())
+		{
+			request.getProductIds().forEach(productId -> createProducts(productId, record));
+		}
+
+		if(!request.getProductCategoryIds().isEmpty())
+		{
+			request.getProductCategoryIds().forEach(categoryId -> createProductCategory(categoryId, record));
+		}
+
+		if(!request.getCarrierProductIds().isEmpty())
+		{
+			request.getCarrierProductIds().forEach(carrierProductId -> createCarrierProduct(carrierProductId, record));
+		}
+
+		if(!request.getExternalSystemIds().isEmpty())
+		{
+			request.getExternalSystemIds().forEach(externalSystemId -> createExternalSystem(externalSystemId, record));
+		}
 
 		return getById(WorkplaceId.ofRepoId(record.getC_Workplace_ID()));
+	}
+	
+	private void createProducts(@NonNull final ProductId productId, @NonNull final I_C_Workplace workplace)
+	{
+		final I_C_Workplace_Product product = InterfaceWrapperHelper.newInstance(I_C_Workplace_Product.class);
+		product.setM_Product_ID(productId.getRepoId());
+		product.setC_Workplace_ID(workplace.getC_Workplace_ID());
+		product.setAD_Org_ID(workplace.getAD_Org_ID());
+		InterfaceWrapperHelper.save(product);
+	}
+
+	private void createProductCategory(@NonNull final ProductCategoryId productCategoryId, @NonNull final I_C_Workplace workplace)
+	{
+		final I_C_Workplace_ProductCategory record = InterfaceWrapperHelper.newInstance(I_C_Workplace_ProductCategory.class);
+		record.setM_Product_Category_ID(productCategoryId.getRepoId());
+		record.setC_Workplace_ID(workplace.getC_Workplace_ID());
+		record.setAD_Org_ID(workplace.getAD_Org_ID());
+		InterfaceWrapperHelper.save(record);
+	}
+
+	private void createCarrierProduct(@NonNull final CarrierProductId carrierProductId, @NonNull final I_C_Workplace workplace)
+	{
+		final I_C_Workplace_Carrier_Product record = InterfaceWrapperHelper.newInstance(I_C_Workplace_Carrier_Product.class);
+		record.setCarrier_Product_ID(carrierProductId.getRepoId());
+		record.setC_Workplace_ID(workplace.getC_Workplace_ID());
+		record.setAD_Org_ID(workplace.getAD_Org_ID());
+		InterfaceWrapperHelper.save(record);
+	}
+
+	private void createExternalSystem(@NonNull final ExternalSystemId externalSystemId, @NonNull final I_C_Workplace workplace)
+	{
+		final I_C_Workplace_ExternalSystem record = InterfaceWrapperHelper.newInstance(I_C_Workplace_ExternalSystem.class);
+		record.setExternalSystem_ID(externalSystemId.getRepoId());
+		record.setC_Workplace_ID(workplace.getC_Workplace_ID());
+		record.setAD_Org_ID(workplace.getAD_Org_ID());
+		InterfaceWrapperHelper.save(record);
 	}
 
 	@NonNull
@@ -146,18 +202,15 @@ public class WorkplaceRepository
 			return new WorkplacesMap(ImmutableList.of());
 		}
 
-		// Extract workplace IDs for bulk loading
 		final Set<WorkplaceId> workplaceIds = workplaceRecords.stream()
 				.map(record -> WorkplaceId.ofRepoId(record.getC_Workplace_ID()))
 				.collect(ImmutableSet.toImmutableSet());
 
-		// **BULK LOAD** all child tables in single queries (avoids N+1)
 		final Multimap<WorkplaceId, ProductId> productsByWorkplace = loadProducts(workplaceIds);
 		final Multimap<WorkplaceId, ProductCategoryId> categoriesByWorkplace = loadProductCategories(workplaceIds);
 		final Multimap<WorkplaceId, CarrierProductId> carrierProductsByWorkplace = loadCarrierProducts(workplaceIds);
 		final Multimap<WorkplaceId, ExternalSystemId> externalSystemsByWorkplace = loadExternalSystems(workplaceIds);
 
-		// Build Workplace objects with child collections
 		final ImmutableList<Workplace> list = workplaceRecords.stream()
 				.map(record -> fromRecord(
 						record,

@@ -81,6 +81,7 @@ Feature: nShift Shipment
       | Identifier | M_Shipper_ID |
       | cp1        | nShift       |
       | cp2        | nShift       |
+      | cp3        | nShift       |
     And metasfresh contains Carrier_Goods_Types:
       | Identifier | M_Shipper_ID |
       | cgt1       | nShift       |
@@ -135,15 +136,16 @@ Feature: nShift Shipment
       | M_ShipmentSchedule_ID |
       | ss1                   |
 
-  Scenario: nShift Carrier Automatic Schedule
+  Scenario: nShift Carrier Automatic Schedule with RequireCarrierProductSet and CarrierProduct workplace criteria
     Given set sys config boolean value true for sys config de.metas.handlingunits.picking.job_schedule.RequireCarrierProductSet
     And deactivate all C_Workplace records
     And the nShift ship advisor service is stubbed to return a successful response based on the request
       | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID | Carrier_Service_ID2 |
       | cp2                | cgt2                  | cs1                | cs2                 |
     And metasfresh contains C_Workplaces
-      | Identifier | M_Warehouse_ID | MaxPickingJobs |
-      | workplace1 | wh             | 1              |
+      | Identifier | SeqNo | M_Warehouse_ID | MaxPickingJobs | Carrier_Product_ID |
+      | workplace1 | 10    | wh             | 1              | cp1, cp3           |
+      | workplace2 | 20    | wh             | 1              | cp2                |
     When simple completed order with one line
       | C_Order_ID | C_BPartner_ID | DateOrdered | IsSOTrx | M_Warehouse_ID | InvoiceRule | C_OrderLine_ID | M_Product_ID | QtyEntered | M_Shipper_ID |
       | so2        | customer      | 2025-04-01  | true    | wh             | I           | so2_l1         | product      | 10         | nShift       |
@@ -153,7 +155,7 @@ Feature: nShift Shipment
     And AD_Scheduler for classname 'de.metas.handlingunits.picking.process.M_ShipmentSchedule_Traffic_Management_assign' is ran once
     And after not more than 60s, picking job schedules are found:
       | M_ShipmentSchedule_ID | C_Workplace_ID | QtyToPick |
-      | ss2                   | workplace1     | 10        |
+      | ss2                   | workplace2     | 10        |
 
   Scenario: reset settings to default
     Given set sys config boolean value false for sys config de.metas.handlingunits.picking.job_schedule.RequireCarrierProductSet

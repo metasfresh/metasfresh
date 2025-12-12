@@ -2,6 +2,9 @@ package de.metas.cucumber.stepdefs.workplace;
 
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
+import de.metas.cucumber.stepdefs.shipper.Carrier_Product_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.order.OrderPickingType;
 import de.metas.util.Services;
@@ -18,6 +21,9 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Workplace;
+import org.compiere.model.I_C_Workplace_Carrier_Product;
+import org.compiere.model.I_C_Workplace_Product;
+import org.compiere.model.I_C_Workplace_ProductCategory;
 
 @RequiredArgsConstructor
 public class C_Workplace_StepDef
@@ -27,6 +33,9 @@ public class C_Workplace_StepDef
 
 	@NonNull private final M_Warehouse_StepDefData warehouseTable;
 	@NonNull private final C_Workplace_StepDefData workplaceTable;
+	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final M_Product_Category_StepDefData productCategoryTable;
+    @NonNull private final Carrier_Product_StepDefData carrierProductTable;
 
 	@Given("metasfresh contains C_Workplaces")
 	public void createWorkplaces(final DataTable dataTable)
@@ -48,6 +57,13 @@ public class C_Workplace_StepDef
 		row.getAsOptionalInt(I_C_Workplace.COLUMNNAME_MaxPickingJobs).ifPresent(builder::maxPickingJobs);
 		row.getAsOptionalInt(I_C_Workplace.COLUMNNAME_SeqNo).ifPresent(seqNo -> builder.seqNo(SeqNo.ofInt(seqNo)));
 		row.getAsOptionalString(I_C_Workplace.COLUMNNAME_OrderPickingType).ifPresent(type -> builder.orderPickingType(OrderPickingType.ofCode(type)));
+
+		row.getAsOptionalCommaSeparatedString(I_C_Workplace_Product.COLUMNNAME_M_Product_ID).ifPresent(list -> list.forEach(
+				product -> builder.productId(productTable.getId(product))));
+		row.getAsOptionalCommaSeparatedString(I_C_Workplace_ProductCategory.COLUMNNAME_M_Product_Category_ID).ifPresent(list -> list.forEach(
+				pc -> builder.productCategoryId((productCategoryTable.getId(pc)))));
+		row.getAsOptionalCommaSeparatedString(I_C_Workplace_Carrier_Product.COLUMNNAME_Carrier_Product_ID).ifPresent(list -> list.forEach(
+				cp -> builder.carrierProductId((carrierProductTable.getId(cp)))));
 
 		final Workplace workplace = workplaceService.create(builder.build());
 		row.getAsOptionalIdentifier()
