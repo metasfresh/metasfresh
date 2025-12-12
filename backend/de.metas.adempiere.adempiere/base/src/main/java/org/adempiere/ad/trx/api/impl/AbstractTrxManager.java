@@ -93,7 +93,9 @@ public abstract class AbstractTrxManager implements ITrxManager
 
 	private ITrxNameGenerator trxNameGenerator = DefaultTrxNameGenerator.instance;
 
-	/** Name of the trx currently associated with this thread */
+	/**
+	 * Name of the trx currently associated with this thread
+	 */
 	private final ThreadLocal<String> threadLocalTrx = new ThreadLocal<>();
 	private final ThreadLocal<OnRunnableFail> threadLocalOnRunnableFail = new ThreadLocal<>();
 
@@ -101,7 +103,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 	private boolean debugTrxCloseStacktrace = false;
 	/**
 	 * Debugging: closed transactions list.
-	 *
+	 * <p>
 	 * If not null it will collect transactions which were cloased and removed from {@link #getActiveTransactionsList()}.
 	 */
 	private List<ITrx> debugClosedTransactionsList = null;
@@ -115,7 +117,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 
 	/**
 	 * Creates and returns a transaction for given name.
-	 *
+	 * <p>
 	 * NOTE: implementations of this method shall not register or start the transaction. They only need to create the actual {@link ITrx} object.
 	 *
 	 * @param trxName transaction name; please keep in mind: this is the actual trxName that will be used and not a prefix
@@ -125,7 +127,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 
 	/**
 	 * Creates and registers {@link ITrx} for given transaction name.
-	 *
+	 * <p>
 	 * NOTE: this method assumes that {@link #trxName2trxLock} is already locked.
 	 *
 	 * @return created transaction name
@@ -267,7 +269,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 	{
 		final OnTrxMissingPolicy onTrxMissingPolicy = createNew ? OnTrxMissingPolicy.CreateNew
 				: OnTrxMissingPolicy.ReturnTrxNone // backward compatibility
-		;
+				;
 
 		return get(trxName, onTrxMissingPolicy);
 	}
@@ -359,7 +361,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 		{
 			trxName2trxLock.unlock();
 		}
-	}	// get
+	}    // get
 
 	@Override
 	public boolean remove(final ITrx trx)
@@ -430,7 +432,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 		}
 
 		return trxName;
-	}	// createTrxName
+	}    // createTrxName
 
 	/**
 	 * Create unique Transaction Name
@@ -441,7 +443,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 	{
 		final String prefix = null;
 		return createTrxName(prefix);
-	}	// createTrxName
+	}    // createTrxName
 
 	@Override
 	public <T> T callInNewTrx(@NonNull final Callable<T> callable)
@@ -534,7 +536,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 			// If that one does not exist, we will need to create one.
 			// If exists, we will need to use it.
 			final ITrx inheritedTrx = getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
-			if (isNull(inheritedTrx))
+			if (inheritedTrx == null || isNull(inheritedTrx) || !inheritedTrx.isNewOrActive())
 			{
 				trxMode = TrxPropagation.REQUIRES_NEW;
 				onRunnableSuccess = OnRunnableSuccess.COMMIT;
@@ -771,13 +773,13 @@ public abstract class AbstractTrxManager implements ITrxManager
 		catch (final Throwable runException)
 		{
 			final ILoggable loggable = Loggables.withLogger(logger, Level.WARN);
-			if(AdempiereException.isThrowableLoggedInTrxManager(runException))
+			if (AdempiereException.isThrowableLoggedInTrxManager(runException))
 			{
 				loggable.addLog("AbstractTrxManager.call0 - caught {} with message={}",
-								runException.getClass(), runException.getMessage(),
-								runException /* note that some ILoggable implementations can handle this additional parameter; the others can be expected to ignore it */);
+						runException.getClass(), runException.getMessage(),
+						runException /* note that some ILoggable implementations can handle this additional parameter; the others can be expected to ignore it */);
 			}
-			
+
 			// Call custom exception handler to advice us what to do
 			exceptionToThrow = runException;
 			boolean rollback = true;

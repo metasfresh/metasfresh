@@ -432,13 +432,21 @@ import java.sql.Statement;
 		{
 			return (Trx)ITrx.TRX_None;
 		}
-		else
-		{
-			final ITrx trx = trxManager.get(trxName, false); // createNew=false
 
-			// NOTE: we assume trx if of type Trx because we need to invoke getConnection()
-			return (Trx)trx;
+		// NOTE: we assume trx if of type Trx because we need to invoke getConnection()
+		final Trx trx = (Trx)trxManager.get(trxName, false); // createNew=false
+		if (trx == null || trxManager.isNull(trx))
+		{
+			return (Trx)ITrx.TRX_None;
 		}
+
+		// Make sure the transaction was not already committed/rolled back
+		if (!trx.isNewOrActive())
+		{
+			return (Trx)ITrx.TRX_None;
+		}
+
+		return trx;
 	}
 
 	@Override

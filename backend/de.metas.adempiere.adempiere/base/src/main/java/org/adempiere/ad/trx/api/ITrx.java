@@ -72,11 +72,14 @@ public interface ITrx
 	boolean close();
 
 	/**
-	 * Transaction is Active
-	 *
-	 * @return true if transaction active (e.g. not already committed/closed)
+	 * @return true if transaction active (i.e. already started but not already committed/rolled back/closed)
 	 */
 	boolean isActive();
+
+	/**
+	 * @return true if the transaction is new or active (i.e. was not commited/rolled back/closed)
+	 */
+	boolean isNewOrActive();
 
 	/**
 	 * Then this trx obtains a connection, it will check and invoke {@link Connection#setAutoCommit(boolean)} if necessary.
