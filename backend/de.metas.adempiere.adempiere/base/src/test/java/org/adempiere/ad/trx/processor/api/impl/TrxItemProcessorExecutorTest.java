@@ -42,7 +42,7 @@ import java.util.function.Function;
 
 public class TrxItemProcessorExecutorTest
 {
-	private MockedTrxManager trxManager = new MockedTrxManager();
+	private MockedTrxManager trxManager;
 
 	private PredictableTrxNameGenerator trxNameGenerator;
 
