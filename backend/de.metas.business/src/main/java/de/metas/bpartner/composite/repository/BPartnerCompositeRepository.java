@@ -73,7 +73,7 @@ public class BPartnerCompositeRepository
 	private final BPartnerCompositeCacheById bpartnerCompositeCache = new BPartnerCompositeCacheById(Services.get(IUserDAO.class));
 
 	@VisibleForTesting
-	public static BPartnerCompositeRepository newInstanceForJUnitTesting(@NonNull final LogEntriesRepository logEntriesRepository)
+	public static BPartnerCompositeRepository newInstanceForUnitTesting(@NonNull final LogEntriesRepository logEntriesRepository)
 	{
 		return new BPartnerCompositeRepository(
 				new BPartnerBL(new UserRepository()),

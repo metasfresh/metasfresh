@@ -22,22 +22,20 @@
 
 package de.metas.inoutcandidate;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
-import de.metas.cache.CCache;
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_Carrier_Goods_Type;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_Carrier_Service;
 import org.compiere.model.I_M_ShipmentSchedule_Carrier_Service;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Set;
 
@@ -45,12 +43,19 @@ import java.util.Set;
  * Repository that deals with {@link I_Carrier_Service} records assigned via {@link I_M_ShipmentSchedule_Carrier_Service}.
  */
 @Repository
-public class CarrierShipmentScheduleServiceRepository
+public class ShipmentScheduleCarrierServiceRepository
 {
 
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	final CCache<String, CarrierService> carrierServicesByExternalId = CCache.newLRUCache(I_Carrier_Service.Table_Name + "#by#M_Shipper_ID#ExternalId", 100, 0);
+	@VisibleForTesting
+	public static ShipmentScheduleCarrierServiceRepository newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(ShipmentScheduleCarrierServiceRepository.class ,
+				ShipmentScheduleCarrierServiceRepository::new);
+	}
 
 	public ImmutableSet<CarrierServiceId> getAssignedServiceIdsByShipmentScheduleId(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
@@ -115,40 +120,5 @@ public class CarrierShipmentScheduleServiceRepository
 				.collect(ImmutableSet.toImmutableSet());
 
 		InterfaceWrapperHelper.saveAll(assignedCarrierServices);
-	}
-
-	@Nullable
-	private CarrierService getCachedServiceByShipperExternalId(@NonNull final ShipperId shipperId, @Nullable final String externalId)
-	{
-		if (externalId == null)
-		{
-			return null;
-		}
-		return carrierServicesByExternalId.getOrLoad(shipperId + externalId, () ->
-				queryBL.createQueryBuilder(I_Carrier_Service.class)
-						.addEqualsFilter(I_Carrier_Goods_Type.COLUMNNAME_M_Shipper_ID, shipperId)
-						.addEqualsFilter(I_Carrier_Goods_Type.COLUMNNAME_ExternalId, externalId)
-						.firstOptional()
-						.map(CarrierShipmentScheduleServiceRepository::fromRecord)
-						.orElse(null));
-	}
-
-	private static CarrierService fromRecord(@NotNull final I_Carrier_Service service)
-	{
-		return CarrierService.builder()
-				.id(CarrierServiceId.ofRepoId(service.getCarrier_Service_ID()))
-				.externalId(service.getExternalId())
-				.name(service.getName())
-				.build();
-	}
-
-	private CarrierService createShipperService(@NonNull final ShipperId shipperId, @NonNull final CarrierService shipperProduct)
-	{
-		final I_Carrier_Service po = InterfaceWrapperHelper.newInstance(I_Carrier_Service.class);
-		po.setM_Shipper_ID(shipperId.getRepoId());
-		po.setExternalId(shipperProduct.getExternalId());
-		po.setName(shipperProduct.getName());
-		InterfaceWrapperHelper.saveRecord(po);
-		return fromRecord(po);
 	}
 }

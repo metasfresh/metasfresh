@@ -42,7 +42,7 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.CarrierAdviseStatus;
 import de.metas.inoutcandidate.CarrierGoodsType;
 import de.metas.inoutcandidate.CarrierGoodsTypeId;
-import de.metas.inoutcandidate.CarrierProductId;
+import de.metas.shipping.CarrierProductId;
 import de.metas.inoutcandidate.CarrierService;
 import de.metas.inoutcandidate.CarrierServiceId;
 import de.metas.inoutcandidate.ShipmentSchedule;

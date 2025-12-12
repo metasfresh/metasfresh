@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.shipper.gateway.commons
+ * de.metas.handlingunits.base
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,27 +20,17 @@
  * #L%
  */
 
-package de.metas.shipper.gateway.commons.model;
+package de.metas.handlingunits.picking.job_schedule.service.commands;
 
-import de.metas.shipping.CarrierProductId;
-import de.metas.shipper.gateway.spi.model.ShipperProduct;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
 
-import javax.annotation.Nullable;
+import java.time.LocalDate;
 
 @Value
 @Builder
-@Jacksonized
-@RequiredArgsConstructor
-@Getter
-public class CarrierProduct implements ShipperProduct
+public class PickingJobScheduleAutoAssignRequest
 {
-	@NonNull CarrierProductId id;
-	@NonNull String code;
-	@NonNull String name;
+	@NonNull LocalDate preparationDate;
 }
