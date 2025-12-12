@@ -109,7 +109,7 @@ FROM C_OrderLine ol
 
     -- Unit of measurement and its translation
          LEFT OUTER JOIN C_UOM uom ON ol.C_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
-         LEFT OUTER JOIN C_UOM_Trl uomt ON ol.Price_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = p_ad_language AND uomt.isActive = 'Y'
+         LEFT OUTER JOIN C_UOM_Trl uomt ON ol.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = p_ad_language AND uomt.isActive = 'Y'
 
     --
     -- Tax
