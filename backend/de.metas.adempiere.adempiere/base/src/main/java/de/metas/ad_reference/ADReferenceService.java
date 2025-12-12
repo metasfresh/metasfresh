@@ -2,7 +2,6 @@ package de.metas.ad_reference;
 
 import de.metas.adempiere.service.impl.TooltipType;
 import de.metas.cache.CCache;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -220,7 +219,8 @@ public class ADReferenceService
 				// dev-note: custom windows are handled directly in WindowRestController
 				.zoomSO_Window_ID(soWindowId)
 				.zoomPO_Window_ID(poWindowId)
-				.zoomAD_Window_ID_Override(CoalesceUtil.coalesce(soWindowId, poWindowId))
+				.zoomAD_Window_ID_Override(soWindowId != null && poWindowId == null ? soWindowId :
+						soWindowId == null && poWindowId != null ? poWindowId : null)
 				.build();
 	}
 
