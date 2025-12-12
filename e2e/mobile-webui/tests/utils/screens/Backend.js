@@ -15,7 +15,10 @@ export const Backend = {
 
         const backendBaseUrl = await getBackendBaseUrl();
         const response = await page.request.post(`${backendBaseUrl}/frontendTesting`, {
-            data: request,
+            data: {
+                ...request,
+                context: testContext.lastContext
+            },
             headers
         });
 
@@ -25,6 +28,7 @@ export const Backend = {
         console.log(`Created master data (${language}):\n` + JSON.stringify(responseBody, null, 2));
 
         testContext.lastMasterdata = responseBody;
+        testContext.lastContext = responseBody.context;
 
         return responseBody;
     }),
@@ -35,7 +39,7 @@ export const Backend = {
             data: {
                 ...expectations,
                 masterdata: testContext.lastMasterdata,
-                context: testContext.lastExpectContext,
+                context: testContext.lastContext,
             },
             headers: {
                 'Content-Type': 'application/json',
@@ -44,7 +48,7 @@ export const Backend = {
 
         const responseBody = await response.json();
         if (responseBody?.context != null) {
-            testContext.lastExpectContext = responseBody.context;
+            testContext.lastContext = responseBody.context;
         }
 
         assertNoErrors({ responseBody });
@@ -87,6 +91,10 @@ export const getBackendBaseUrl = async () => {
 }
 
 export const loadConfigFromFrontendApp = async () => await test.step(`Fetching from mobile-webui-frontend/public/config.js`, async () => {
+    if (!page) {
+        throw Error("page is not set yet. Make sure you test has page as parameter, even if not used!");
+    }
+    
     const url = await page.url();
     if (!url || url === 'about:blank') {
         await page.goto(FRONTEND_BASE_URL, { waitUntil: 'load' });

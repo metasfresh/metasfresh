@@ -19,7 +19,10 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 @Service
@@ -29,10 +32,28 @@ public class PickingJobShipmentScheduleService
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	@NonNull private final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
 
+	public ShipmentScheduleInfoLoadingCache newLoadingCache()
+	{
+		return new ShipmentScheduleInfoLoadingCache(this);
+	}
+
 	public ShipmentScheduleInfo getById(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = huShipmentScheduleBL.getById(shipmentScheduleId);
 
+		return fromRecord(shipmentSchedule);
+	}
+
+	public Map<ShipmentScheduleId, ShipmentScheduleInfo> getByIds(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		final Map<ShipmentScheduleId, de.metas.handlingunits.model.I_M_ShipmentSchedule> map = huShipmentScheduleBL.getByIds(shipmentScheduleIds);
+		final HashMap<ShipmentScheduleId, ShipmentScheduleInfo> result = new HashMap<>(map.size());
+		map.forEach((shipmentScheduleId, shipmentSchedule) -> result.put(shipmentScheduleId, fromRecord(shipmentSchedule)));
+		return result;
+	}
+
+	private ShipmentScheduleInfo fromRecord(final I_M_ShipmentSchedule shipmentSchedule)
+	{
 		return ShipmentScheduleInfo.builder()
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(shipmentSchedule.getAD_Client_ID(), shipmentSchedule.getAD_Org_ID()))
 				.warehouseId(shipmentScheduleBL.getWarehouseId(shipmentSchedule))

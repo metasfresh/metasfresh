@@ -1,12 +1,10 @@
 package de.metas.location.geocoding.asynchandler;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import de.metas.location.LocationId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 /*
  * #%L
@@ -32,34 +30,13 @@ import lombok.Value;
 
 @Value
 @Builder
-@JsonDeserialize(builder = LocationGeocodeEventRequest.LocationGeocodeEventRequestBuilder.class)
+@Jacksonized
 public class LocationGeocodeEventRequest
 {
-	@NonNull
-	LocationId locationId;
+	@NonNull LocationId locationId;
 
 	public static LocationGeocodeEventRequest of(@NonNull final LocationId locationId)
 	{
 		return new LocationGeocodeEventRequest(locationId);
 	}
-
-	// this is a workaround for
-	@JsonIgnoreProperties(ignoreUnknown = true) // the annotation to ignore properties should be set on the deserializer method (on the builder), and not on the base class
-	@JsonPOJOBuilder(withPrefix = "")
-	static class LocationGeocodeEventRequestBuilder
-	{
-	}
 }
-
-/*
-Note for future me.
-There's a lot wrong with this class, and a lot of workarounds. It's all this magic that jackson is supposed to do, yet doesnt correctly.
-
-1. It would have been nice if jackson would work by simply annotating `of` method with @JsonBuilder
-	This doesn't work (for some unknown reason) as jackson fails to deserialize: not LocationGeocodeEventRequest, but LocationId (WTF?!?!).
-	Because of this bug, I have created the builder, and that seems wo be working... for now.
-
-2. @Value(staticConstructor = "of") and @Builder don't work together
-	`of` method is not created => i created the method manually
-
- */

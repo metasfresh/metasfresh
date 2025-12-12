@@ -73,55 +73,62 @@ test('LU/CU -> top level TU', async ({ page }) => {
     await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode, expectNextScreen: 'PickLineScanScreen', gotoPickingJobScreen: true });
     await PickingJobScreen.setTargetTU({ tu: masterdata.packingInstructions.PI1.tuName });
 
-    await test.step("Pick all 3 lines", async () => {
-        await PickingJobScreen.pickHU({
-            qrCode: masterdata.products.P1.gtin,
-            isScanDirectly: true,
-            expectQtyEntered: 11
-        });
-        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '11 Stk', qtyPicked: '11 Stk', qtyPickedCatchWeight: '' });
-
+    // IMPORTANT: don't pick them in lines order to make sure the line to pick is correctly found
+    await test.step("Pick Line 2", async () => {
         await PickingJobScreen.pickHU({
             qrCode: masterdata.products.P2.gtin,
             isScanDirectly: true,
             expectQtyEntered: 12
         });
         await PickingJobScreen.expectLineButton({ index: 2, qtyToPick: '12 Stk', qtyPicked: '12 Stk', qtyPickedCatchWeight: '' });
+    });
 
+    await test.step("Pick Line 3", async () => {
         await PickingJobScreen.pickHU({
             qrCode: masterdata.products.P3.gtin,
             isScanDirectly: true,
             expectQtyEntered: 13
         });
         await PickingJobScreen.expectLineButton({ index: 3, qtyToPick: '13 Stk', qtyPicked: '13 Stk', qtyPickedCatchWeight: '' });
+    });
 
-        await Backend.expect({
-            pickings: {
-                [pickingJobId]: {
-                    shipmentSchedules: {
-                        P1: {
-                            qtyPicked: [{ qtyPicked: "11 PCE", qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' }]
-                        },
-                        P2: {
-                            qtyPicked: [{ qtyPicked: "12 PCE", qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' }]
-                        },
-                        P3: {
-                            qtyPicked: [{ qtyPicked: "13 PCE", qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' }]
-                        },
-                    }
-                }
-            },
-            hus: {
-                [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '989 PCE' } },
-                [masterdata.handlingUnits.HU2.qrCode]: { huStatus: 'A', storages: { P2: '988 PCE' } },
-                [masterdata.handlingUnits.HU3.qrCode]: { huStatus: 'A', storages: { P3: '987 PCE' } },
-                tu1: { huStatus: 'S', storages: { P1: '11 PCE', P2: '12 PCE', P3: '13 PCE' } },
-            }
+    await test.step("Pick Line 1", async () => {
+        await PickingJobScreen.pickHU({
+            qrCode: masterdata.products.P1.gtin,
+            isScanDirectly: true,
+            expectQtyEntered: 11
         });
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '11 Stk', qtyPicked: '11 Stk', qtyPickedCatchWeight: '' });
+    });
+
+    await Backend.expect({
+        title: "after picking all 3 lines, before complete",
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: [{ qtyPicked: "11 PCE", qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' }]
+                    },
+                    P2: {
+                        qtyPicked: [{ qtyPicked: "12 PCE", qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' }]
+                    },
+                    P3: {
+                        qtyPicked: [{ qtyPicked: "13 PCE", qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' }]
+                    },
+                }
+            }
+        },
+        hus: {
+            [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '989 PCE' } },
+            [masterdata.handlingUnits.HU2.qrCode]: { huStatus: 'A', storages: { P2: '988 PCE' } },
+            [masterdata.handlingUnits.HU3.qrCode]: { huStatus: 'A', storages: { P3: '987 PCE' } },
+            tu1: { huStatus: 'S', storages: { P1: '11 PCE', P2: '12 PCE', P3: '13 PCE' } },
+        }
     });
 
     await PickingJobScreen.complete();
     await Backend.expect({
+        title: "after complete",
         pickings: {
             [pickingJobId]: {
                 shipmentSchedules: {
@@ -353,54 +360,59 @@ test('LU/CU -> top level CUs', async ({ page }) => {
     await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode, expectNextScreen: 'PickLineScanScreen', gotoPickingJobScreen: true });
     // NO target to be set => pick to top level CUs
 
-    await test.step("Pick all 3 lines", async () => {
-        await PickingJobScreen.pickHU({
-            qrCode: masterdata.products.P1.gtin,
-            expectQtyEntered: 11
-        });
-        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '11 Stk', qtyPicked: '11 Stk', qtyPickedCatchWeight: '' });
-
+    // IMPORTANT: don't pick them in lines order to make sure the line to pick is correctly found
+    await test.step("Pick Line 2", async () => {
         await PickingJobScreen.pickHU({
             qrCode: masterdata.products.P2.gtin,
             expectQtyEntered: 12
         });
         await PickingJobScreen.expectLineButton({ index: 2, qtyToPick: '12 Stk', qtyPicked: '12 Stk', qtyPickedCatchWeight: '' });
-
+    });
+    await test.step("Pick Line 3", async () => {
         await PickingJobScreen.pickHU({
             qrCode: masterdata.products.P3.gtin,
             expectQtyEntered: 13
         });
         await PickingJobScreen.expectLineButton({ index: 3, qtyToPick: '13 Stk', qtyPicked: '13 Stk', qtyPickedCatchWeight: '' });
-
-        await Backend.expect({
-            pickings: {
-                [pickingJobId]: {
-                    shipmentSchedules: {
-                        P1: {
-                            qtyPicked: [{ qtyPicked: "11 PCE", qtyTUs: 0, qtyLUs: 0, vhu: 'vhu1', tu: '-', lu: '-', processed: false, shipmentLineId: '-' }]
-                        },
-                        P2: {
-                            qtyPicked: [{ qtyPicked: "12 PCE", qtyTUs: 0, qtyLUs: 0, vhu: 'vhu2', tu: '-', lu: '-', processed: false, shipmentLineId: '-' }]
-                        },
-                        P3: {
-                            qtyPicked: [{ qtyPicked: "13 PCE", qtyTUs: 0, qtyLUs: 0, vhu: 'vhu3', tu: '-', lu: '-', processed: false, shipmentLineId: '-' }]
-                        },
-                    }
-                }
-            },
-            hus: {
-                [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '989 PCE' } },
-                [masterdata.handlingUnits.HU2.qrCode]: { huStatus: 'A', storages: { P2: '988 PCE' } },
-                [masterdata.handlingUnits.HU3.qrCode]: { huStatus: 'A', storages: { P3: '987 PCE' } },
-                vhu1: { huStatus: 'S', storages: { P1: '11 PCE' } },
-                vhu2: { huStatus: 'S', storages: { P2: '12 PCE' } },
-                vhu3: { huStatus: 'S', storages: { P3: '13 PCE' } },
-            }
+    });
+    await test.step("Pick Line 1", async () => {
+        await PickingJobScreen.pickHU({
+            qrCode: masterdata.products.P1.gtin,
+            expectQtyEntered: 11
         });
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '11 Stk', qtyPicked: '11 Stk', qtyPickedCatchWeight: '' });
+    });
+
+    await Backend.expect({
+        title: "after all lines picked, before complete",
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: [{ qtyPicked: "11 PCE", qtyTUs: 0, qtyLUs: 0, vhu: 'vhu1', tu: '-', lu: '-', processed: false, shipmentLineId: '-' }]
+                    },
+                    P2: {
+                        qtyPicked: [{ qtyPicked: "12 PCE", qtyTUs: 0, qtyLUs: 0, vhu: 'vhu2', tu: '-', lu: '-', processed: false, shipmentLineId: '-' }]
+                    },
+                    P3: {
+                        qtyPicked: [{ qtyPicked: "13 PCE", qtyTUs: 0, qtyLUs: 0, vhu: 'vhu3', tu: '-', lu: '-', processed: false, shipmentLineId: '-' }]
+                    },
+                }
+            }
+        },
+        hus: {
+            [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '989 PCE' } },
+            [masterdata.handlingUnits.HU2.qrCode]: { huStatus: 'A', storages: { P2: '988 PCE' } },
+            [masterdata.handlingUnits.HU3.qrCode]: { huStatus: 'A', storages: { P3: '987 PCE' } },
+            vhu1: { huStatus: 'S', storages: { P1: '11 PCE' } },
+            vhu2: { huStatus: 'S', storages: { P2: '12 PCE' } },
+            vhu3: { huStatus: 'S', storages: { P3: '13 PCE' } },
+        }
     });
 
     await PickingJobScreen.complete();
     await Backend.expect({
+        title: "after complete",
         pickings: {
             [pickingJobId]: {
                 shipmentSchedules: {

@@ -23,6 +23,7 @@
 package de.metas.bpartner.effective;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.incoterms.Incoterms;
 import de.metas.lang.SOTrx;
 import de.metas.order.InvoiceRule;
 import de.metas.payment.PaymentRule;
@@ -46,6 +47,8 @@ public class BPartnerEffective
 	@NonNull InvoiceRule poInvoiceRule;
 	@NonNull PaymentRule paymentRule;
 	@NonNull PaymentRule poPaymentRule;
+	@Nullable Incoterms incoterms;
+	@Nullable Incoterms poIncoterms;
 	boolean isAutoInvoice;
 
 	@Nullable
@@ -75,5 +78,11 @@ public class BPartnerEffective
 	public boolean isAutoInvoice(@NonNull final SOTrx soTrx)
 	{
 		return soTrx.isSales() && isAutoInvoice;
+	}
+
+	@Nullable
+	public Incoterms getIncoterms(@NonNull final SOTrx soTrx)
+	{
+		return soTrx.isSales() ? incoterms : poIncoterms;
 	}
 }

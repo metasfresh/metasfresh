@@ -24,7 +24,7 @@ export const useFacets = ({ applicationId }) => {
   return useSelector((state) => getApplicationLaunchersFacets(state, applicationId));
 };
 
-const getApplicationLaunchersFacetIds = (state, applicationId) => {
+export const getApplicationLaunchersFacetIds = (state, applicationId) => {
   const facets = getApplicationLaunchersFacets(state, applicationId);
   return facets?.length > 0 ? extractFacetIdsFromFacetsArray(facets) : EMPTY_ARRAY;
 };
@@ -38,7 +38,7 @@ export const useFilters = ({ applicationId }) => {
   return useSelector((state) => getApplicationLaunchersFilters(state, applicationId));
 };
 
-const getApplicationLaunchersFilters = (state, applicationId) => {
+export const getApplicationLaunchersFilters = (state, applicationId) => {
   const launchers = getApplicationLaunchers(state, applicationId);
   return {
     filterByDocumentNo: launchers.filterByDocumentNo,

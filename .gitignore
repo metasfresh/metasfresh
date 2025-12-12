@@ -72,3 +72,6 @@ misc/services/camel/de-metas-camel-shipping/tmp/
 .mcp.json
 
 .m2-local
+
+# dev-mode artifacts extracted from CI images
+.dev-artifacts/

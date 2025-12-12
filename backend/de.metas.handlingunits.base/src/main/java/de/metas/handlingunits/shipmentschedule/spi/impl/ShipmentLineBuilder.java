@@ -24,6 +24,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.util.HUTopLevel;
@@ -39,6 +40,7 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityTU;
@@ -95,6 +97,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IHUShipmentAssignmentBL huShipmentAssignmentBL = Services.get(IHUShipmentAssignmentBL.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
@@ -179,12 +182,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		}
 
 		// Disallow creating shipment lines with negative or ZERO qty
-		if (qtyEntered.signum() <= 0)
-		{
-			return false;
-		}
-
-		return true;
+		return qtyEntered.signum() > 0;
 	}
 
 	/**
@@ -218,13 +216,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 		// Check: same Order Line
 		// NOTE: this is also EDI requirement
-		if (!OrderAndLineId.equals(orderLineId, candidate.getOrderLineId()))
-		{
-			return false;
-		}
+		return OrderAndLineId.equals(orderLineId, candidate.getOrderLineId());
 
 		// Else, we can allow this candidate to be added here
-		return true;
 	}
 
 	public void add(@NonNull final ShipmentScheduleWithHU candidate)
@@ -445,6 +439,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		{
 			shipmentLine.setC_Project_ID(orderLine.getC_Project_ID());
 			shipmentLine.setExternalId(orderLine.getExternalId());
+		}
+		else
+		{
+			final ProjectId projectId = huShipmentScheduleBL.extractSingleProjectIdOrNull(candidates);
+			shipmentLine.setC_Project_ID(ProjectId.toRepoId(projectId));
 		}
 
 		optimisticallySetLineNo(shipmentLine);

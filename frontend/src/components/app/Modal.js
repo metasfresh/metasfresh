@@ -626,6 +626,7 @@ class Modal extends Component {
                   )
                 }
                 onMouseLeave={this.toggleTooltip}
+                data-testid="process-modal-cancel-button"
               >
                 {modalType === 'process' ||
                 staticModalType === StaticModalType.Printing
@@ -659,6 +660,7 @@ class Modal extends Component {
                   onMouseEnter={() => this.toggleTooltip(keymap.DONE)}
                   onMouseLeave={this.toggleTooltip}
                   disabled={indicator === IndicatorState.ERROR}
+                  data-testid="process-modal-start-button"
                 >
                   {counterpart.translate('modal.actions.start')}
 
@@ -683,6 +685,7 @@ class Modal extends Component {
                   )}
                   onClick={this.handlePrinting}
                   tabIndex={0}
+                  data-testid="print-modal-button"
                 >
                   {printBtnCaption}
                 </button>

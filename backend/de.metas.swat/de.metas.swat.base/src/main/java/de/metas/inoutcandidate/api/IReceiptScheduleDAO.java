@@ -40,6 +40,7 @@ import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -94,5 +95,9 @@ public interface IReceiptScheduleDAO extends ISingletonService
 
 	List<ReceiptScheduleId> retainLUQtySchedules(List<ReceiptScheduleId> receiptSchedules);
 
+	@NonNull
 	List<ReceiptScheduleId> listIdsByQuery(@NonNull ReceiptScheduleQuery query);
+
+	@NonNull
+	Optional<ReceiptScheduleId> getIdByQuery(@NonNull ReceiptScheduleQuery query);
 }

@@ -51,7 +51,7 @@ import de.metas.document.location.DocumentLocation;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
-import de.metas.incoterms.IIncotermsDAO;
+import de.metas.incoterms.Incoterms;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.lang.SOTrx;
@@ -112,7 +112,6 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_Incoterms;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList;
@@ -167,7 +166,8 @@ public class OrderBL implements IOrderBL
 	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
-	private final IIncotermsDAO incotermsDAO = Services.get(IIncotermsDAO.class);
+
+	private final SpringContextHolder.Lazy<BPartnerOrderParamsRepository> bpartnerOrderParamsRepository = SpringContextHolder.lazyBean(BPartnerOrderParamsRepository.class);
 
 	@Override
 	public I_C_Order getById(@NonNull final OrderId orderId)
@@ -536,16 +536,13 @@ public class OrderBL implements IOrderBL
 		}
 
 		final SOTrx soTrx = SOTrx.ofBoolean(orderRecord.isSOTrx());
-
-		final BPartnerOrderParamsRepository bpartnerOrderParamsRepository = SpringContextHolder.instance.getBean(BPartnerOrderParamsRepository.class);
-
 		final BPartnerOrderParamsQuery query = BPartnerOrderParamsQuery.builder()
 				.shipBPartnerId(shipBPartnerId)
 				.billBPartnerId(billBPartnerId)
 				.soTrx(soTrx)
 				.build();
 
-		return Optional.of(bpartnerOrderParamsRepository.getBy(query));
+		return Optional.of(bpartnerOrderParamsRepository.get().getBy(query));
 	}
 
 	@Override
@@ -1300,41 +1297,15 @@ public class OrderBL implements IOrderBL
 	@Override
 	public void setIncoterms(@NonNull final I_C_Order order)
 	{
-		final org.compiere.model.I_C_BPartner bpartner = getBPartner(order);
-		if (bpartner == null)
+		final BPartnerOrderParams bPartnerOrderParams = retrieveBPartnerParams(order).orElse(null);
+		if (bPartnerOrderParams == null || bPartnerOrderParams.getIncoterms() == null)
 		{
 			return;
 		}
 
-		int incotermsRecordId;
-		String incotermLocation;
-
-		if (order.isSOTrx())
-		{
-			incotermsRecordId = bpartner.getC_Incoterms_Customer_ID();
-			incotermLocation = bpartner.getIncotermLocation();
-		}
-		else
-		{
-			incotermsRecordId = bpartner.getC_Incoterms_Vendor_ID();
-			incotermLocation = bpartner.getPO_IncotermLocation();
-		}
-
-		if (incotermsRecordId <= 0)
-		{
-			final I_C_Incoterms defaultIncoterms = incotermsDAO.getDefaultIncoterms(OrgId.ofRepoId(order.getAD_Org_ID()));
-			if (defaultIncoterms != null)
-			{
-				incotermsRecordId = defaultIncoterms.getC_Incoterms_ID();
-				incotermLocation = defaultIncoterms.getDefaultLocation();
-			}
-		}
-
-		if (incotermsRecordId > 0)
-		{
-			order.setC_Incoterms_ID(incotermsRecordId);
-			order.setIncotermLocation(incotermLocation);
-		}
+		final Incoterms incoterms = bPartnerOrderParams.getIncoterms();
+		order.setC_Incoterms_ID(incoterms.getId().getRepoId());
+		order.setIncotermLocation(incoterms.getLocationEffective());
 	}
 
 	@Override

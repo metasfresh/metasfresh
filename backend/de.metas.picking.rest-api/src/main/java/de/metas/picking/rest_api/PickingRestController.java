@@ -36,6 +36,8 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.rest_api.HandlingUnitsService;
 import de.metas.handlingunits.rest_api.JsonGetByQRCodeRequest;
 import de.metas.mobile.application.service.MobileApplicationService;
+import de.metas.picking.rest_api.json.JsonGetNextEligibleLineRequest;
+import de.metas.picking.rest_api.json.JsonGetNextEligibleLineResponse;
 import de.metas.picking.rest_api.json.JsonHUInfo;
 import de.metas.picking.rest_api.json.JsonLUPickingTarget;
 import de.metas.picking.rest_api.json.JsonPickingEventsList;
@@ -271,6 +273,13 @@ public class PickingRestController
 					.setParameter("parsedHUQRCode", parsedHUQRCode)
 					.setParameter("parsedHUQRCode type", parsedHUQRCode.getClass().getSimpleName());
 		}
+	}
+
+	@PostMapping("/nextEligibleLineToPack")
+	public JsonGetNextEligibleLineResponse getNextEligibleLineToPack(@RequestBody @NonNull final JsonGetNextEligibleLineRequest request)
+	{
+		assertApplicationAccess();
+		return pickingMobileApplication.getNextEligibleLineToPack(request, getLoggedUserId());
 	}
 
 	@PostMapping("/job/{wfProcessId}/pickAll")

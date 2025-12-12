@@ -12,6 +12,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.document.archive.DocOutboundUtils;
 import de.metas.document.archive.api.IDocOutboundDAO;
+import de.metas.document.archive.api.impl.DocOutboundService;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipients;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRegistry;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
@@ -28,6 +29,7 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.archive.ArchiveId;
 import org.adempiere.archive.api.ArchiveAction;
 import org.adempiere.archive.api.ArchiveEmailSentStatus;
@@ -37,32 +39,38 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 @Component
+@RequiredArgsConstructor
 public class DocOutboundArchiveEventListener implements IArchiveEventListener
 {
-	private final AttachmentService attachmentService;
-	private final DocOutboundLogMailRecipientRegistry docOutboundLogMailRecipientRegistry;
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final IDocOutboundDAO docOutboundDAO = Services.get(IDocOutboundDAO.class);
-	private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-
-	public DocOutboundArchiveEventListener(
-			@NonNull final AttachmentService attachmentService,
-			@NonNull final DocOutboundLogMailRecipientRegistry docOutboundLogMailRecipientRegistry)
+	@NonNull private final AttachmentService attachmentService;
+	@NonNull private final DocOutboundLogMailRecipientRegistry docOutboundLogMailRecipientRegistry;
+	@NonNull private final DocOutboundService docOutboundService;
+	@NonNull private final IDocOutboundDAO docOutboundDAO = Services.get(IDocOutboundDAO.class);
+	@NonNull private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	
+	public static DocOutboundArchiveEventListener newInstanceForUnitTesting()
 	{
-		this.attachmentService = attachmentService;
-		this.docOutboundLogMailRecipientRegistry = docOutboundLogMailRecipientRegistry;
+		Adempiere.assertUnitTestMode();
+		return new DocOutboundArchiveEventListener(
+				AttachmentService.createInstanceForUnitTesting(),
+				new DocOutboundLogMailRecipientRegistry(Optional.empty()),
+				DocOutboundService.newInstanceForUnitTesting());
 	}
 
 	@Override
@@ -90,6 +98,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		final I_C_Doc_Outbound_Log log = docExchangeLine.getC_Doc_Outbound_Log();
 		log.setDateLastPrint(SystemTime.asTimestamp());
 		save(log);
+		docOutboundService.sendMailAutomaticallyIfActive(log);
 	}
 
 	@Override

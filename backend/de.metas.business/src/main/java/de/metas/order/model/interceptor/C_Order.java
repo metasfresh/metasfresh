@@ -37,6 +37,7 @@ import de.metas.document.location.IDocumentLocationBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.incoterms.IncotermsId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.lang.SOTrx;
@@ -238,6 +239,10 @@ public class C_Order
 		if (bpartner == null)
 		{
 			return; // nothing to do yet
+		}
+		if(order.isSOTrx() && IncotermsId.ofRepoIdOrNull(order.getC_Incoterms_ID()) != null && !InterfaceWrapperHelper.isUIAction(order))
+		{
+			return; // prevent updating value from OLCand
 		}
 
 		orderBL.setIncoterms(order);

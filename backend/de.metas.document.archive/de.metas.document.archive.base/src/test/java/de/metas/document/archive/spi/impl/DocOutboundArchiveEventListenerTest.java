@@ -1,6 +1,7 @@
 package de.metas.document.archive.spi.impl;
 
 import de.metas.async.model.I_C_Async_Batch;
+import de.metas.document.archive.api.impl.DocOutboundService;
 import de.metas.attachments.AttachmentService;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRegistry;
 import de.metas.document.archive.model.I_AD_Archive;
@@ -35,9 +36,7 @@ public class DocOutboundArchiveEventListenerTest
 	{
 		AdempiereTestHelper.get().init();
 
-		archiveBL = new DocOutboundArchiveEventListener(
-				AttachmentService.createInstanceForUnitTesting(),
-				new DocOutboundLogMailRecipientRegistry(Optional.empty()));
+		archiveBL = DocOutboundArchiveEventListener.newInstanceForUnitTesting();
 		Services.get(IArchiveEventManager.class).registerArchiveEventListener(archiveBL);
 	}
 
