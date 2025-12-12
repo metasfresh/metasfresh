@@ -7,14 +7,14 @@ Feature: Delivery rules with and without quantity in stock
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-08-16T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_PricingSystems
-      | Identifier | Name              | Value              | OPT.IsActive |
-      | ps_1       | PricingSystemName | PricingSystemValue | true         |
+      | Identifier |
+      | ps_1       |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name          | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1       | ps_1                          | DE                        | EUR                 | PriceListName | true  | false         | 2              | true         |
+      | Identifier | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
+      | pl_1       | ps_1               | DE                    | EUR                 | true  |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name           | ValidFrom  |
-      | plv_1      | pl_1                      | SalesOrder-PLV | 2022-08-01 |
+      | Identifier | M_PriceList_ID |
+      | plv_1      | pl_1           |
 
   @from:cucumber
   @Id:S0159_A_10
@@ -27,14 +27,14 @@ Feature: Delivery rules with and without quantity in stock
   _And validate that M_InOut could not be generated
 
     And metasfresh contains M_Products:
-      | Identifier          | Name                | IsStocked |
-      | product_A_stocked_1 | Product_A_stocked_1 | true      |
+      | Identifier          | IsStocked |
+      | product_A_stocked_1 | true      |
     And metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_1       | plv_1                             | product_A_stocked_1     | 10.0     | PCE               | Normal                        |
+      | M_PriceList_Version_ID | M_Product_ID        | PriceStd | C_UOM_ID.X12DE355 |
+      | plv_1                  | product_A_stocked_1 | 10.0     | PCE               |
     And metasfresh contains C_BPartners:
-      | Identifier           | Name                 | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.DeliveryRule |
-      | bpartner_A_stocked_1 | BPartner_A_stocked_1 | N            | Y              | ps_1                          | A                |
+      | Identifier           | IsVendor | IsCustomer | M_PricingSystem_ID | DeliveryRule |
+      | bpartner_A_stocked_1 | N        | Y          | ps_1               | A            |
     And metasfresh contains C_Orders:
       | Identifier        | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | order_A_stocked_1 | true    | bpartner_A_stocked_1     | 2022-08-16  |
@@ -67,14 +67,14 @@ Feature: Delivery rules with and without quantity in stock
   _Then validate that hu in stock was not picked
 
     And metasfresh contains M_Products:
-      | Identifier             | Name                   | IsStocked |
-      | product_A_notStocked_1 | Product_A_notStocked_1 | false     |
+      | Identifier             | IsStocked |
+      | product_A_notStocked_1 | false     |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_2       | plv_1                             | product_A_notStocked_1  | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier              | Name                    | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.DeliveryRule |
-      | bpartner_A_notStocked_1 | BPartner_A_notStocked_1 | N            | Y              | ps_1                          | A                |
+      | Identifier              | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.DeliveryRule |
+      | bpartner_A_notStocked_1 | N            | Y              | ps_1                          | A                |
     And metasfresh contains C_Orders:
       | Identifier           | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | order_A_notStocked_1 | true    | bpartner_A_notStocked_1  | 2022-08-16  |
@@ -113,8 +113,8 @@ Feature: Delivery rules with and without quantity in stock
   _Then validate that hu in stock was picked
 
     And metasfresh contains M_Products:
-      | Identifier          | Name                | IsStocked |
-      | product_A_stocked_2 | Product_A_stocked_2 | true      |
+      | Identifier          | IsStocked |
+      | product_A_stocked_2 | true      |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_3       | plv_1                             | product_A_stocked_2     | 10.0     | PCE               | Normal                        |
@@ -170,8 +170,8 @@ Feature: Delivery rules with and without quantity in stock
   _Then validate that hu in stock was not picked
 
     And metasfresh contains M_Products:
-      | Identifier             | Name                   | IsStocked |
-      | product_A_notStocked_2 | Product_A_notStocked_2 | true      |
+      | Identifier             | IsStocked |
+      | product_A_notStocked_2 | true      |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_4       | plv_1                             | product_A_notStocked_2  | 10.0     | PCE               | Normal                        |
@@ -229,14 +229,14 @@ Feature: Delivery rules with and without quantity in stock
   _Then validate that hu in stock was not picked
 
     And metasfresh contains M_Products:
-      | Identifier             | Name                   | IsStocked |
-      | product_F_notStocked_1 | Product_F_notStocked_1 | false     |
+      | Identifier             | IsStocked |
+      | product_F_notStocked_1 | false     |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_5       | plv_1                             | product_F_notStocked_1  | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier              | Name                    | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.DeliveryRule |
-      | bpartner_F_notStocked_1 | BPartner_F_notStocked_1 | N            | Y              | ps_1                          | F                |
+      | Identifier              | IsVendor | IsCustomer | M_PricingSystem_ID | DeliveryRule |
+      | bpartner_F_notStocked_1 | N        | Y          | ps_1               | F            |
     And metasfresh contains C_Orders:
       | Identifier           | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | order_F_notStocked_1 | true    | bpartner_F_notStocked_1  | 2022-08-16  |
@@ -272,14 +272,14 @@ Feature: Delivery rules with and without quantity in stock
   _Then validate that hu in stock was not picked
 
     And metasfresh contains M_Products:
-      | Identifier          | Name                | IsStocked |
-      | product_F_stocked_1 | Product_F_stocked_1 | true      |
+      | Identifier          | IsStocked |
+      | product_F_stocked_1 | true      |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_6       | plv_1                             | product_F_stocked_1     | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier           | Name                 | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.DeliveryRule |
-      | bpartner_F_stocked_1 | BPartner_F_stocked_1 | N            | Y              | ps_1                          | F                |
+      | Identifier           | IsVendor | IsCustomer | M_PricingSystem_ID | DeliveryRule |
+      | bpartner_F_stocked_1 | N        | Y          | ps_1               | F            |
     And metasfresh contains C_Orders:
       | Identifier        | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | order_F_stocked_1 | true    | bpartner_F_stocked_1     | 2022-08-16  |
@@ -316,8 +316,8 @@ Feature: Delivery rules with and without quantity in stock
   _Then validate that hu in stock was not picked
 
     And metasfresh contains M_Products:
-      | Identifier             | Name                   | IsStocked |
-      | product_F_notStocked_2 | Product_F_notStocked_2 | true      |
+      | Identifier             | IsStocked |
+      | product_F_notStocked_2 | true      |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_7       | plv_1                             | product_F_notStocked_2  | 10.0     | PCE               | Normal                        |
@@ -376,8 +376,8 @@ Feature: Delivery rules with and without quantity in stock
   _Then validate that hu in stock was picked
 
     And metasfresh contains M_Products:
-      | Identifier          | Name                | IsStocked |
-      | product_F_stocked_2 | Product_F_stocked_2 | true      |
+      | Identifier          | IsStocked |
+      | product_F_stocked_2 | true      |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_8       | plv_1                             | product_F_stocked_2     | 10.0     | PCE               | Normal                        |
@@ -433,8 +433,8 @@ Feature: Delivery rules with and without quantity in stock
   _Then validate all HUs in stock were picked in FIFO order
 
     And metasfresh contains M_Products:
-      | Identifier     | Name           | IsStocked |
-      | product_FIFO_1 | Product_FIFO_1 | true      |
+      | Identifier     | IsStocked |
+      | product_FIFO_1 | true      |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_9       | plv_1                             | product_FIFO_1          | 10.0     | PCE               | Normal                        |
@@ -505,8 +505,8 @@ Feature: Delivery rules with and without quantity in stock
   _Then validate HUs in stock were picked in FIFO order (first HU picked, second HU was the sourceHU for the actual picked HU)
 
     And metasfresh contains M_Products:
-      | Identifier     | Name           | IsStocked |
-      | product_FIFO_2 | Product_FIFO_2 | true      |
+      | Identifier     | IsStocked |
+      | product_FIFO_2 | true      |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_10      | plv_1                             | product_FIFO_2          | 10.0     | PCE               | Normal                        |
