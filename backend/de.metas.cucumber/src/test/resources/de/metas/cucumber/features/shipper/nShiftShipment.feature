@@ -151,9 +151,9 @@ Feature: nShift Shipment
       | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
       | ss2        | so2_l1         | N             | cp2                | cgt2                  |
     And AD_Scheduler for classname 'de.metas.handlingunits.picking.process.M_ShipmentSchedule_Traffic_Management_assign' is ran once
-    And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID.Identifier | IsScheduledForPicking | QtyScheduledForPicking |
-      | ss2                              | Y                     | 10                     |
+    And after not more than 60s, picking job schedules are found:
+      | M_ShipmentSchedule_ID | C_Workplace_ID | QtyToPick |
+      | ss2                   | workplace1     | 10        |
 
   Scenario: reset settings to default
     Given set sys config boolean value false for sys config de.metas.handlingunits.picking.job_schedule.RequireCarrierProductSet
