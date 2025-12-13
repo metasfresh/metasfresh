@@ -1380,7 +1380,7 @@ jobs:
         working-directory: docker-builds/frontendtest/
         run: |
           # Sanitize branch name for directory structure
-          BRANCH_SANITIZED=$(echo "${{ github.ref_name }}" | tr '/' '-' | tr -c '[:alnum:].-' '-' | tr '[:upper:]' '[:lower:]')
+          BRANCH_SANITIZED=$(echo "${{ github.ref_name }}" | tr '/' '-' | tr -c '[:alnum.]' '-' | tr '[:upper:]' '[:lower:]' | sed 's/^-*//;s/-*$//')
 
           # Save current directory for later
           FRONTENDTEST_DIR=$(pwd)
@@ -1466,7 +1466,7 @@ jobs:
 
       - name: Setup directory structure
         run: |
-          BRANCH_SANITIZED=$(echo "${{ github.ref_name }}" | tr '/' '-' | tr -c '[:alnum:].-' '-' | tr '[:upper:]' '[:lower:]')
+          BRANCH_SANITIZED=$(echo "${{ github.ref_name }}" | tr '/' '-' | tr -c '[:alnum.]' '-' | tr '[:upper:]' '[:lower:]' | sed 's/^-*//;s/-*$//')
           BUILD_DIR="gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}"
 
           cd gh-pages-repo
@@ -1484,7 +1484,7 @@ jobs:
       - name: Copy report to build directory
         if: needs.frontend_webui_test.result == 'success' || needs.frontend_webui_test.result == 'failure'
         run: |
-          BRANCH_SANITIZED=$(echo "${{ github.ref_name }}" | tr '/' '-' | tr -c '[:alnum:].-' '-' | tr '[:upper:]' '[:lower:]')
+          BRANCH_SANITIZED=$(echo "${{ github.ref_name }}" | tr '/' '-' | tr -c '[:alnum.]' '-' | tr '[:upper:]' '[:lower:]' | sed 's/^-*//;s/-*$//')
           cp -r gh-pages-repo/temp-report/* "gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/frontend-webui/"
           rm -rf gh-pages-repo/temp-report
 
@@ -1499,7 +1499,7 @@ jobs:
       - name: Save history for next build
         if: needs.frontend_webui_test.result == 'success' || needs.frontend_webui_test.result == 'failure'
         run: |
-          BRANCH_SANITIZED=$(echo "${{ github.ref_name }}" | tr '/' '-' | tr -c '[:alnum:].-' '-' | tr '[:upper:]' '[:lower:]')
+          BRANCH_SANITIZED=$(echo "${{ github.ref_name }}" | tr '/' '-' | tr -c '[:alnum.]' '-' | tr '[:upper:]' '[:lower:]' | sed 's/^-*//;s/-*$//')
 
           # Save updated history if it exists
           if [ -f "gh-pages-repo/temp-history/allure-history-updated.zip" ]; then
@@ -1511,7 +1511,7 @@ jobs:
 
       - name: Update latest redirect
         run: |
-          BRANCH_SANITIZED=$(echo "${{ github.ref_name }}" | tr '/' '-' | tr -c '[:alnum:].-' '-' | tr '[:upper:]' '[:lower:]')
+          BRANCH_SANITIZED=$(echo "${{ github.ref_name }}" | tr '/' '-' | tr -c '[:alnum.]' '-' | tr '[:upper:]' '[:lower:]' | sed 's/^-*//;s/-*$//')
 
           cat > "gh-pages-repo/branches/${BRANCH_SANITIZED}/latest.html" <<EOF
           <!DOCTYPE html>
@@ -1532,7 +1532,7 @@ jobs:
       - name: Update branches metadata
         run: |
           cd gh-pages-repo
-          BRANCH_SANITIZED=$(echo "${{ github.ref_name }}" | tr '/' '-' | tr -c '[:alnum:].-' '-' | tr '[:upper:]' '[:lower:]')
+          BRANCH_SANITIZED=$(echo "${{ github.ref_name }}" | tr '/' '-' | tr -c '[:alnum.]' '-' | tr '[:upper:]' '[:lower:]' | sed 's/^-*//;s/-*$//')
 
           METADATA_FILE="_data/branches.json"
           if [ ! -f "$METADATA_FILE" ]; then
