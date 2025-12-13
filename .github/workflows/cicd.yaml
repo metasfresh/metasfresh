@@ -1382,6 +1382,9 @@ jobs:
           # Sanitize branch name for directory structure
           BRANCH_SANITIZED=$(echo "${{ github.ref_name }}" | tr '/' '-' | tr -c '[:alnum:].-' '-' | tr '[:upper:]' '[:lower:]')
 
+          # Save current directory for later
+          FRONTENDTEST_DIR=$(pwd)
+
           # Download previous history from gh-pages (if exists)
           mkdir -p allure-history
           curl -f -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
@@ -1400,10 +1403,10 @@ jobs:
           cd ../../e2e/frontend-webui/
           allure generate allure-results/ -o allure-report/ --clean
 
-          # Extract updated history for next build
+          # Extract updated history for next build (use absolute path)
           if [ -d "allure-report/history" ]; then
             cd allure-report/history/
-            zip -r ../../../docker-builds/frontendtest/allure-history-updated.zip .
+            zip -r "${FRONTENDTEST_DIR}/allure-history-updated.zip" .
           fi
 
       - name: Upload Allure report for gh-pages
