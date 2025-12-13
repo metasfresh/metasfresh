@@ -28,7 +28,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import de.metas.inoutcandidate.CarrierGoodsType;
 import de.metas.inoutcandidate.CarrierGoodsTypeId;
-import de.metas.inoutcandidate.CarrierProductId;
+import de.metas.shipping.CarrierProductId;
 import de.metas.inoutcandidate.CarrierService;
 import de.metas.location.CountryCode;
 import de.metas.money.CurrencyId;
