@@ -1,0 +1,14 @@
+name: 'Setup Allure CLI'
+description: 'Install Allure command-line tool for report generation'
+runs:
+  using: 'composite'
+  steps:
+    - name: Install Allure CLI
+      shell: bash
+      run: |
+        echo "Installing Allure CLI v2.25.0..."
+        wget -q https://github.com/allure-framework/allure2/releases/download/2.25.0/allure-2.25.0.tgz -O /tmp/allure.tgz
+        sudo tar -xzf /tmp/allure.tgz -C /opt/
+        sudo ln -sf /opt/allure-2.25.0/bin/allure /usr/local/bin/allure
+        allure --version
+        echo "✓ Allure CLI installed successfully"
