@@ -57,35 +57,41 @@ testCases.forEach(({ language, label }) => {
         test(`Create SO and validate quantity in shipment schedule (${label} UI)`, async ({ page }) => {
             // === ALLURE METADATA ===
             // Feature metadata from google-sheets-sync skill
-            await AllureHelpers.setFeature({
-                id: 'F00100',
-                name: 'Sales Order',
-                epicId: 'E0100',
-                epicName: 'Sales'
-            });
-            await AllureHelpers.setStory('Create SO → View Shipment Schedule');
+            // This test covers the complete order-to-cash cycle
+            await AllureHelpers.setFeatures([
+                { id: 'F00100', name: 'Sales Order', epicId: 'E0100', epicName: 'Sales' },
+                { id: 'F00105', name: 'Sales Order Document', epicId: 'E0100', epicName: 'Sales' },
+                { id: 'F00130', name: 'Shipment Schedule', epicId: 'E0100', epicName: 'Sales' },
+                { id: 'F00150', name: 'Sales Shipment', epicId: 'E0100', epicName: 'Sales' },
+                { id: 'F00200', name: 'Sales Invoice', epicId: 'E0100', epicName: 'Sales' }
+            ]);
+            await AllureHelpers.setStory('Complete Order-to-Cash: SO → Shipment → Invoice');
             await AllureHelpers.setSeverity('critical');
             await AllureHelpers.addParameter('Language', language);
             await AllureHelpers.addParameter('UI Label', label);
-            await AllureHelpers.addTags('sales', 'shipment-schedule', 'pdf', language);
+            await AllureHelpers.addTags('sales', 'shipment-schedule', 'shipment', 'invoice', 'pdf', 'e2e-workflow', language);
 
             await AllureHelpers.setDescription(`
 ## Test Scenario
-This test validates the complete sales order to shipment schedule workflow:
+This test validates the complete order-to-cash workflow:
 
 1. **Create Sales Order** - New SO with customer and product line
 2. **Complete Order** - Mark as completed to trigger downstream processes
 3. **Generate PDF** - Create and validate Sales Order PDF document
 4. **Navigate to Shipment Schedule** - Use Alt+6 to open related shipment schedule
 5. **Verify Quantity** - Confirm ordered quantity appears in schedule
+6. **Create Shipment** - Generate shipment from schedule and validate PDF
+7. **Create Invoice** - Generate invoice from candidates and validate PDF
 
 ## Features Tested
 - **F00100**: Sales Order
 - **F00105**: Sales Order Document (PDF)
 - **F00130**: Shipment Schedule
+- **F00150**: Sales Shipment
+- **F00200**: Sales Invoice
 
 ## Business Value
-Ensures the sales-to-delivery flow works correctly across UI languages.
+Ensures the complete order-to-cash flow works correctly across UI languages.
             `);
 
             // Extend timeout for this comprehensive E2E test (Sales Order → Shipment → Invoice)
