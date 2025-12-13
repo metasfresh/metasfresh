@@ -2,17 +2,23 @@
  * Allure Report Integration Helpers
  *
  * Provides utilities for enriching Playwright test reports with:
- * - Epic/Feature/Story hierarchy (from Google Sheets)
+ * - Epic/Feature/Story hierarchy
  * - Tabular data attachments
  * - PDF and screenshot attachments
- * - Links to Google Sheets, GitHub issues
+ * - Links to GitHub issues
  * - Test parameters and descriptions
  *
  * Usage:
  *   import { AllureHelpers } from '../utils/AllureHelpers';
  *
  *   test('My test', async ({ page }) => {
- *     await AllureHelpers.setFeature('F00100');  // Sets epic + feature from registry
+ *     // Pass inline metadata (looked up from google-sheets-sync skill)
+ *     await AllureHelpers.setFeature({
+ *       id: 'F00100',
+ *       name: 'Sales Order',
+ *       epicId: 'E0100',
+ *       epicName: 'Sales'
+ *     });
  *     await AllureHelpers.setStory('Create sales order');
  *     await AllureHelpers.attachTable('Order Lines', [...], ['Product', 'Qty']);
  *   });
@@ -20,65 +26,80 @@
 
 const allure = require('allure-js-commons');
 const { ContentType } = require('allure-js-commons');
-const { Features, Epics, getFeature } = require('./FeatureRegistry.generated.js');
 
 // PDF content type is not in allure-js-commons ContentType enum
 // Define it as a custom constant
 const PDF_CONTENT_TYPE = 'application/pdf';
 
 /**
- * Google Sheets configuration for linking
- */
-const SPREADSHEET_ID = '1HYDaiNZVseCg4WtIaxJQ-LLclNl7vkHXp6WsMEaKK9A';
-const SHEET_LINK_BASE = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/edit`;
-
-/**
  * Allure integration helpers for metasfresh E2E tests.
  */
 const AllureHelpers = {
   /**
-   * Set feature for the current test using Feature ID from Google Sheets.
-   * Automatically sets the epic as well.
+   * Set feature for the current test with inline metadata.
+   * Automatically sets the epic as well if epicId and epicName are provided.
    *
-   * @param {string} featureId - Feature ID from Google Sheets (e.g., 'F00100')
+   * @param {Object|string} featureOrId - Feature object or ID string
+   * @param {string} featureOrId.id - Feature ID (e.g., 'F00100')
+   * @param {string} featureOrId.name - Feature name (e.g., 'Sales Order')
+   * @param {string} [featureOrId.epicId] - Epic ID (e.g., 'E0100')
+   * @param {string} [featureOrId.epicName] - Epic name (e.g., 'Sales')
    * @example
-   *   await AllureHelpers.setFeature('F00100'); // Sets "Sales Order" + "Sales" epic
+   *   // Recommended: pass full metadata (from google-sheets-sync skill)
+   *   await AllureHelpers.setFeature({
+   *     id: 'F00100',
+   *     name: 'Sales Order',
+   *     epicId: 'E0100',
+   *     epicName: 'Sales'
+   *   });
+   *
+   *   // Minimal: just ID and name
+   *   await AllureHelpers.setFeature({ id: 'F00100', name: 'Sales Order' });
+   *
+   *   // Legacy: string ID (will show warning)
+   *   await AllureHelpers.setFeature('F00100');
    */
-  async setFeature(featureId) {
-    const feature = getFeature(featureId);
-    if (!feature) {
-      console.warn(`Feature '${featureId}' not found in FeatureRegistry`);
-      await allure.feature(`Unknown Feature: ${featureId}`);
+  async setFeature(featureOrId) {
+    // Handle legacy string usage
+    if (typeof featureOrId === 'string') {
+      console.warn(`setFeature('${featureOrId}'): Pass feature object for full metadata`);
+      await allure.feature(featureOrId);
       return;
     }
 
-    // Set epic from the feature's epic
-    const epic = Epics[feature.epicName];
-    if (epic) {
-      await allure.epic(`${epic.id}: ${epic.name}`);
-      await allure.link(epic.link, `Epic: ${epic.name}`, 'epic');
+    const { id, name, epicId, epicName } = featureOrId;
+
+    // Set epic if provided
+    if (epicId && epicName) {
+      await allure.epic(`${epicId}: ${epicName}`);
     }
 
     // Set feature
-    await allure.feature(`${feature.id}: ${feature.name}`);
-    await allure.link(feature.link, `Feature: ${feature.name}`, 'tms');
+    await allure.feature(`${id}: ${name}`);
   },
 
   /**
-   * Set epic manually (usually called automatically via setFeature).
+   * Set epic manually with inline metadata.
    *
-   * @param {string} epicName - Epic name from Google Sheets (e.g., 'Sales')
+   * @param {Object|string} epicOrName - Epic object or name string
+   * @param {string} epicOrName.id - Epic ID (e.g., 'E0100')
+   * @param {string} epicOrName.name - Epic name (e.g., 'Sales')
+   * @example
+   *   // Recommended: pass full metadata
+   *   await AllureHelpers.setEpic({ id: 'E0100', name: 'Sales' });
+   *
+   *   // Legacy: string name
+   *   await AllureHelpers.setEpic('Sales');
    */
-  async setEpic(epicName) {
-    const epic = Epics[epicName];
-    if (!epic) {
-      console.warn(`Epic '${epicName}' not found in FeatureRegistry`);
-      await allure.epic(epicName);
+  async setEpic(epicOrName) {
+    // Handle legacy string usage
+    if (typeof epicOrName === 'string') {
+      await allure.epic(epicOrName);
       return;
     }
 
-    await allure.epic(`${epic.id}: ${epic.name}`);
-    await allure.link(epic.link, `Epic: ${epic.name}`, 'epic');
+    const { id, name } = epicOrName;
+    await allure.epic(`${id}: ${name}`);
   },
 
   /**
