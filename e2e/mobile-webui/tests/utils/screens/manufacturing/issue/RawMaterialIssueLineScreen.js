@@ -22,8 +22,23 @@ export const RawMaterialIssueLineScreen = {
         await page.getByTestId('scanQRCode-button').tap();
         await RawMaterialIssueLineScanScreen.waitForScreen();
         await RawMaterialIssueLineScanScreen.typeQRCode(qrCode);
-        await GetQuantityDialog.fillAndPressDone({expectQtyEntered});
+        await GetQuantityDialog.fillAndPressDone({ expectQtyEntered });
         await RawMaterialIssueLineScreen.waitForScreen();
+    }),
+
+    expectScanButtonVisible: async ({ visible, noIndicators }) => await test.step(`${NAME} - Expect Scan button visible = ${visible}`, async () => {
+        const locator = page.getByTestId('scanQRCode-button');
+        if (visible) {
+            await expect(locator).toBeVisible();
+        } else {
+            // Button shall not be present at all when readOnly
+            await expect(locator).toHaveCount(0);
+        }
+
+        if (noIndicators) {
+            await expect(locator.getByTestId('indicator')).toHaveCount(0);
+            await expect(locator.getByTestId('indicator2')).toHaveCount(0);
+        }
     }),
 
     goBack: async () => await test.step(`${NAME} - Go back`, async () => {

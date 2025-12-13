@@ -10,6 +10,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+import org.eevolution.api.BOMComponentIssueMethod;
 import org.eevolution.api.BOMComponentType;
 
 import javax.annotation.Nullable;
@@ -101,5 +102,6 @@ public class JsonCreateProductRequest
 		boolean percentage;
 		@Nullable X12DE355 uom;
 		@Nullable BOMComponentType componentType;
+		@Nullable BOMComponentIssueMethod issueMethod;
 	}
 }

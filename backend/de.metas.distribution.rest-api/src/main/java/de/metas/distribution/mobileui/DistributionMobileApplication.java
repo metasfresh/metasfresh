@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.mobileui.config.MobileUIDistributionConfig;
+import de.metas.distribution.mobileui.external_services.warehouse.LocatorInfo;
 import de.metas.distribution.mobileui.job.model.DistributionJob;
 import de.metas.distribution.mobileui.job.model.DistributionJobId;
 import de.metas.distribution.mobileui.job.service.DistributionRestService;
@@ -190,8 +191,16 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 						.value(job.getPickFromWarehouse().getCaption())
 						.build())
 				.entry(WFProcessHeaderProperty.builder()
+						.caption(TranslatableStrings.adElementOrMessage("M_LocatorFrom_ID"))
+						.value(job.getSinglePickFromLocator().map(LocatorInfo::getCaption).orElse(null))
+						.build())
+				.entry(WFProcessHeaderProperty.builder()
 						.caption(TranslatableStrings.adElementOrMessage("M_Warehouse_To_ID"))
 						.value(job.getDropToWarehouse().getCaption())
+						.build())
+				.entry(WFProcessHeaderProperty.builder()
+						.caption(TranslatableStrings.adElementOrMessage("M_LocatorTo_ID"))
+						.value(job.getSingleDropToLocator().map(LocatorInfo::getCaption).orElse(null))
 						.build());
 
 		final String salesOrderDocumentNo = job.getSalesOrderRef() != null ? job.getSalesOrderRef().getDocumentNo() : null;

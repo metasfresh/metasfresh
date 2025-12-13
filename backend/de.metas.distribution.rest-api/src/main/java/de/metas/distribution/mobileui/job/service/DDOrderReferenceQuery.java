@@ -20,6 +20,7 @@ public class DDOrderReferenceQuery
 	@NonNull UserId responsibleId;
 	@NonNull @Default QueryLimit suggestedLimit = QueryLimit.NO_LIMIT;
 	@NonNull @Default DistributionFacetIdsCollection activeFacetIds = DistributionFacetIdsCollection.EMPTY;
+	boolean excludeAlreadyStarted;
 	@NonNull @Default DistributionJobSorting sorting = DistributionJobSorting.DEFAULT;
 	@Nullable WarehouseId warehouseToId;
 	@Nullable LocatorId locatorToId;

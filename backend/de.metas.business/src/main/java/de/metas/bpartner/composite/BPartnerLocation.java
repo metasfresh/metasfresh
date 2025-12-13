@@ -340,6 +340,12 @@ public class BPartnerLocation
 		setDistrict(address.getDistrict());
 	}
 
+	@Nullable
+	public LocationId getExistingLocationIdNotNull()
+	{
+		return Check.assumeNotNull(getExistingLocationId(), "existingLocationId not null: {}", this);
+	}
+
 	/**
 	 * Can be used if this instance's ID is known to be not null.
 	 */

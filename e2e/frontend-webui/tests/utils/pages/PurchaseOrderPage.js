@@ -2,6 +2,7 @@ import { expect } from '@playwright/test';
 import { test } from '../../../playwright.config';
 import { FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT, } from '../common';
 import { PURCHASE_ORDER_WINDOW_ID } from '../WindowIds';
+import { waitForRecordSaved, waitForTabAllowsNew } from '../WebAPIValidation';
 
 /**
  * Page object for Purchase Order window (ID: 181).
@@ -93,9 +94,22 @@ export class PurchaseOrderPage {
   }
 
   /**
+   * Get the record ID from the current URL.
+   * @returns {string} Record ID
+   */
+  static getRecordId() {
+    const page = getPage();
+    const url = page.url();
+    const recordId = url.split('/').pop();
+    return recordId;
+  }
+
+  /**
    * Select a business partner using the lookup widget.
+   * This method waits for the record to be saved after business partner selection.
    * Language-independent: Uses database field name C_BPartner_ID
    * @param {string} partnerName - Name of the business partner to search for
+   * @returns {Promise<string>} Record ID
    */
   static async selectBusinessPartner(partnerName) {
     return await test.step(`PurchaseOrderPage - Select business partner: ${partnerName}`, async () => {
@@ -103,7 +117,7 @@ export class PurchaseOrderPage {
 
       // Language-independent selector: use lookup ID based on database column name
       const bpartnerInput = page.locator('#lookup_C_BPartner_ID input.input-field');
-
+      await bpartnerInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       await bpartnerInput.click();
 
       // Wait for initial loading spinner to disappear (vendors list being loaded)
@@ -131,18 +145,42 @@ export class PurchaseOrderPage {
         // Ignore if no spinner exists
       });
 
-      // Wait for dropdown to populate and click the matching option
-      // Note: Dropdown options use data-test-id attributes, not CSS classes
-      // The dropdown displays names doubled (e.g., "Vendor123_Vendor123")
-      // so we use partial match instead of exact match
+      // Wait for dropdown to populate
       await page.waitForTimeout(300);
 
       // Click the option by text - finds element containing the partner name
-      // Use more specific selector to ensure we're clicking dropdown option
       await page.locator('.input-dropdown-list-option').getByText(partnerName).first().click();
 
-      // Wait for the selection to be processed
+      // Wait for dropdown to close
+      await page.locator('.input-dropdown-list').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+
+      // Trigger blur by pressing Tab to move to next field (this triggers the save)
+      await page.keyboard.press('Tab');
+
+      // Wait for save operation to start (spinner appears)
       await page.waitForTimeout(500);
+
+      // Wait for save operations to complete (spinner disappears)
+      await page.locator('.rotating, .indicator-pending').waitFor({
+        state: 'detached',
+        timeout: SLOW_ACTION_TIMEOUT,
+      }).catch(() => {});
+
+      // Additional wait for auto-fill to complete
+      await page.waitForTimeout(3000);
+
+      // Get record ID from URL
+      const recordId = this.getRecordId();
+
+      // Wait for record to be saved (auto-fill completes and all mandatory fields are valid)
+      await waitForRecordSaved(PURCHASE_ORDER_WINDOW_ID, recordId, {
+        maxRetries: 20,
+        retryDelayMs: 1000,
+      });
+
+      console.log(`Purchase Order ${recordId} saved successfully`);
+
+      return recordId;
     });
   }
 
@@ -193,25 +231,48 @@ export class PurchaseOrderPage {
       // Language-independent: Use existing ID or data-testid
       await page.locator('#tab_POLine, [data-testid="tab-po-line"]').click();
 
-      // Wait for tab content to load
-      await page.waitForTimeout(800);
+      // Wait for network to settle after tab switch
+      await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+
+      // Wait for batch entry button to be visible (proves tab is ready)
+      await batchEntryButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
     });
   }
 
   /**
    * Add an order line using batch entry.
+   * IMPORTANT: Parent record must be saved before calling this method.
+   * Use waitForTabAllowsNew() or call selectBusinessPartner() first which waits for save.
+   *
    * Language-independent: Uses database field names M_Product_ID, QtyEntered
    * @param {Object} lineData - Order line data
    * @param {string} lineData.product - Product name to search for
    * @param {number} lineData.quantity - Quantity to order
+   * @param {string} lineData.recordId - Optional record ID (will extract from URL if not provided)
    */
-  static async addOrderLine({ product, quantity }) {
+  static async addOrderLine({ product, quantity, recordId }) {
     return await test.step(`PurchaseOrderPage - Add order line: ${product} x ${quantity}`, async () => {
       const page = getPage();
 
-      // Click the batch entry button
-      // Language-independent: Use data-testid
-      await page.getByTestId('batch-entry-toggle').click();
+      // Get record ID if not provided
+      const effectiveRecordId = recordId || this.getRecordId();
+
+      // Wait for tab to allow creating new records
+      // Tab ID for Purchase Order Lines: AD_Tab-293 (internalName: C_OrderLine)
+      await waitForTabAllowsNew(PURCHASE_ORDER_WINDOW_ID, effectiveRecordId, 'AD_Tab-293', {
+        maxRetries: 15,
+        retryDelayMs: 1000,
+      });
+
+      console.log(`Purchase Order Lines tab ready for record ${effectiveRecordId}`);
+
+      // Scroll to batch entry button (may be below the fold in single-section layout)
+      const batchEntryButton = page.getByTestId('batch-entry-toggle');
+      await batchEntryButton.scrollIntoViewIfNeeded();
+      await batchEntryButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+      // Click batch entry toggle
+      await batchEntryButton.click();
 
       // Wait for batch entry form container to appear
       // The form has class 'quick-input-container' from TableQuickInput.js

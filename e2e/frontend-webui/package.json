@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "axios": "^1.13.2",
-    "pdf-parse": "^1.1.1",
+    "pdf-parse": "^1.1.4",
     "pdfjs-dist": "^3.11.174"
   }
 }

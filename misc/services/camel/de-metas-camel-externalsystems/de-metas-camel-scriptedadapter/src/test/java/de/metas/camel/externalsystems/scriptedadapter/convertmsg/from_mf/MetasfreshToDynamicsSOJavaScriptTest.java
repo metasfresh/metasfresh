@@ -22,59 +22,31 @@
 
 package de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf;
 
-import de.metas.camel.externalsystems.scriptedadapter.JavaScriptExecutorService;
-import de.metas.camel.externalsystems.scriptedadapter.JavaScriptRepo;
+import de.metas.camel.externalsystems.scriptedadapter.convertmsg.JavaScriptTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class MetasfreshToDynamicsSOJavaScriptTest
 {
-	private JavaScriptRepo javaScriptRepo;
-	private JavaScriptExecutorService javaScriptExecutorService;
-
 	private static final String JSON_VALID_REQUEST = "de/metas/camel/externalsystems/scriptedadapter/convertmsg/from_mf/m2d_so_valid_request.json";
 	private static final String JSON_VALID_RESPONSE = "de/metas/camel/externalsystems/scriptedadapter/convertmsg/from_mf/m2d_so_valid_response.json";
 
 	private static final String SCRIPT_IDENTIFIER = "m2d_so_wrapper";
+	private JavaScriptTestHelper helper;
 
 	@BeforeEach
 	void setUp()
 	{
-		final Path projectRoot = Paths.get(System.getProperty("user.dir"));
-		final Path scriptDir = projectRoot.resolve("javascript_dynamics365");
-
-		javaScriptRepo = new JavaScriptRepo(scriptDir.toString());
-		javaScriptExecutorService = new JavaScriptExecutorService();
+		helper = JavaScriptTestHelper.builder()
+				.scriptIdentifier(SCRIPT_IDENTIFIER)
+				.build();
 	}
 
 	@Test
 	void givenValidRequest_whenExecuteScript_validateResult() throws IOException
 	{
-		// given
-		final InputStream jsonJavaScriptRequest = this.getClass().getClassLoader().getResourceAsStream(JSON_VALID_REQUEST);
-		assertThat(jsonJavaScriptRequest).isNotNull();
-		final String jsonJavaScriptRequestAsString = new String(jsonJavaScriptRequest.readAllBytes(), StandardCharsets.UTF_8);
-
-		// when
-		final String retrievedContent = javaScriptRepo.get(SCRIPT_IDENTIFIER);
-		final String javaScriptResult = javaScriptExecutorService.executeScript(
-				SCRIPT_IDENTIFIER,
-				retrievedContent,
-				jsonJavaScriptRequestAsString);
-
-		// then
-		final InputStream jsonJavaScriptResponse = this.getClass().getClassLoader().getResourceAsStream(JSON_VALID_RESPONSE);
-		assertThat(jsonJavaScriptResponse).isNotNull();
-		final String jsonJavaScriptResponseAsString = new String(jsonJavaScriptResponse.readAllBytes(), StandardCharsets.UTF_8);
-		assertThat(jsonJavaScriptResponseAsString)
-				.isEqualTo(javaScriptResult);
+		helper.test(JSON_VALID_REQUEST, JSON_VALID_RESPONSE);
 	}
 }

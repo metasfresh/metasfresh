@@ -147,6 +147,7 @@ const normalizeLines = (lines) => {
       hazardSymbols: line.hazardSymbols ?? [],
       allergens: line.allergens ?? [],
       weightable: line.weightable,
+      readOnly: line.readOnly ?? false,
       qtyToIssue: line.qtyToIssue,
       qtyToIssueMin: line.qtyToIssueMin,
       qtyToIssueMax: line.qtyToIssueMax,

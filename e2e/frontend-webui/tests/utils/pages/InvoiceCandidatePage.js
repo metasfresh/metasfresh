@@ -1,7 +1,7 @@
 import { expect } from '@playwright/test';
 import { test } from '../../../playwright.config';
 import { FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT, } from '../common';
-import { INVOICE_CANDIDATE_WINDOW_ID } from '../WindowIds';
+import { INVOICE_CANDIDATE_WINDOW_ID, SALES_INVOICE_CANDIDATE_WINDOW_ID } from '../WindowIds';
 
 /**
  * Page object for Invoice Candidate window (ID: 540983).
@@ -419,6 +419,134 @@ export class InvoiceCandidatePage {
       await page.waitForTimeout(500).catch(() => {
         // Page might have been closed - this is ok
       });
+    });
+  }
+
+  /**
+   * Verify sales invoice candidate window is visible and loaded.
+   *
+   * IMPORTANT: This method is for SALES invoice candidates accessed via Alt+6 from sales order.
+   * Use this when navigating via SalesOrderPage.openRelatedInvoiceCandidate().
+   * The invoice candidate should be automatically selected.
+   */
+  static async expectVisibleForSalesOrder() {
+    return await test.step('InvoiceCandidatePage - Verify sales invoice candidate window is visible', async () => {
+      const page = getPage();
+
+      // Sales invoice candidate opens as a list view, not a detail window
+      // Wait for document list container
+      await page.locator('.document-list-wrapper, .document-list').waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+
+      // Wait for spinners to disappear
+      await page
+        .locator('.rotating, .spinner')
+        .waitFor({
+          state: 'detached',
+          timeout: SLOW_ACTION_TIMEOUT,
+        })
+        .catch(() => {
+          // Continue if no spinners found
+        });
+
+      await page.waitForTimeout(500);
+    });
+  }
+
+  /**
+   * Execute C_Invoice_Candidate_EnqueueSelectionForInvoicing action to create invoice from sales order.
+   * This is a Quick Action on the sales invoice candidate list view.
+   *
+   * IMPORTANT: Use this method for SALES invoice candidates accessed via Alt+6 from sales order.
+   *
+   * The action opens a modal with configuration options.
+   * After clicking "Start" in the modal, the invoice is created asynchronously.
+   */
+  static async createInvoiceForSalesOrder() {
+    return await test.step('InvoiceCandidatePage - Create invoice for sales order', async () => {
+      const page = getPage();
+
+      // Step 1: Open the quick actions dropdown
+      const dropdownToggle = page.getByTestId('quick-action-dropdown-toggle');
+      await dropdownToggle.waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+
+      await dropdownToggle.click();
+
+      // Wait for dropdown to appear
+      await page.locator('.quick-actions-dropdown').waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+
+      await page.waitForTimeout(300);
+
+      // Step 2: Click the specific C_Invoice_Candidate_EnqueueSelectionForInvoicing action
+      const actionItem = page.getByTestId('quick-action-C_Invoice_Candidate_EnqueueSelectionForInvoicing');
+      await actionItem.waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+
+      await actionItem.click();
+
+      // Step 3: Wait for modal to appear
+      await page.locator('.panel-modal, .modal-content').waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+
+      await page.waitForTimeout(500);
+
+      // Step 4: Click the "Start" button in the modal
+      // Try data-testid first, fall back to last button if not found
+      const startButton = page.getByTestId('process-modal-start-button');
+      const startButtonExists = await startButton.count();
+
+      if (startButtonExists === 0) {
+        // Fallback: Click last button in header (should be Start)
+        const lastButton = page.locator('.panel-modal-header button').last();
+        await lastButton.waitFor({
+          state: 'visible',
+          timeout: SLOW_ACTION_TIMEOUT,
+        });
+        await lastButton.click();
+      } else {
+        await startButton.waitFor({
+          state: 'visible',
+          timeout: SLOW_ACTION_TIMEOUT,
+        });
+        await startButton.click();
+      }
+
+      // Step 5: Wait for modal to close (indicates process completed)
+      await page
+        .locator('.panel-modal, .modal-content')
+        .waitFor({
+          state: 'detached',
+          timeout: VERY_SLOW_ACTION_TIMEOUT,
+        })
+        .catch(() => {
+          // Continue if modal doesn't close
+        });
+
+      // Wait for processing indicators to disappear
+      await page
+        .locator('.rotating, .indicator-pending')
+        .waitFor({
+          state: 'detached',
+          timeout: VERY_SLOW_ACTION_TIMEOUT,
+        })
+        .catch(() => {
+          // Continue if no spinner found
+        });
+
+      // Additional wait for backend processing
+      await page.waitForTimeout(3000);
     });
   }
 }

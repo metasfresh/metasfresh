@@ -61,6 +61,7 @@ Feature: Mediated commission
          },
          "warehouseIdentifier":"540008",
          "externalPurchaseOrderUrl": "www.ExternalReferenceURL.com",
+         "externalSystemCode": "Other",
          "externalHeaderId":"99898",
          "externalLineId":"898978",
          "poReference":"poRef1",
@@ -79,6 +80,7 @@ Feature: Mediated commission
 {
   "purchaseCandidates": [
     {
+      "externalSystemCode": "Other",
       "externalHeaderId": "99898",
       "externalLineIds": [
         "898978"
