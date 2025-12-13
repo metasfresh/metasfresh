@@ -6,9 +6,14 @@ import { DashboardPage } from '../utils/pages/DashboardPage';
 import { PurchaseOrderPage } from '../utils/pages/PurchaseOrderPage';
 import { ReceiptCandidatesPage } from '../utils/pages/ReceiptCandidatesPage';
 import { InvoiceCandidatePage } from '../utils/pages/InvoiceCandidatePage';
+import { AllureHelpers } from '../utils/AllureHelpers';
 
 /**
  * Purchase-to-Invoice E2E test suite.
+ *
+ * Features tested (from Google Sheets):
+ * - F00600: Purchase Order (Epic: Purchasing)
+ * - F65010: Material Receipt Candidates (Epic: Material Receipt)
  *
  * Tests the complete purchase-to-invoice workflow:
  * 1. Create a purchase order
@@ -36,6 +41,37 @@ const testCases = [
 testCases.forEach(({ language, label }) => {
   test.describe(`Purchase-to-Invoice Workflow (${label})`, () => {
     test(`Complete purchase-to-invoice flow: PO → Receipt → Invoice (${label} UI)`, async ({ page }) => {
+      // === ALLURE METADATA ===
+      // This test spans multiple features/epics
+      await AllureHelpers.setFeatures([
+        { id: 'F00600', name: 'Purchase Order', epicId: 'E0140', epicName: 'Purchasing' },
+        { id: 'F65010', name: 'Material Receipt Candidates', epicId: 'E0150', epicName: 'Material Receipt' }
+      ]);
+      await AllureHelpers.setStory('Complete PO → Receipt → Invoice flow');
+      await AllureHelpers.setSeverity('critical');
+      await AllureHelpers.addParameter('Language', language);
+      await AllureHelpers.addParameter('UI Label', label);
+      await AllureHelpers.addTags('purchasing', 'receipt', 'invoice', 'e2e-workflow', language);
+
+      await AllureHelpers.setDescription(`
+## Test Scenario
+This test validates the complete purchase-to-invoice workflow:
+
+1. **Create Purchase Order** - New PO with vendor and product line
+2. **Complete Order** - Mark as completed to trigger downstream processes
+3. **Navigate to Receipt Candidates** - Use Alt+6 to open related receipt candidates
+4. **Create Material Receipt** - Execute quick action to receive goods
+5. **Navigate to Invoice Candidates** - Use Alt+6 to open related invoice candidates
+6. **Generate Invoice** - Execute quick action to create vendor invoice
+
+## Features Tested
+- **F00600**: Purchase Order
+- **F65010**: Material Receipt Candidates
+
+## Business Value
+Ensures the purchase-to-pay flow works correctly across UI languages.
+      `);
+
       // Create test data with specified language
       const masterdata = await Backend.createMasterdata({
         request: {

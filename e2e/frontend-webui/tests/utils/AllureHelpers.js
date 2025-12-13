@@ -12,13 +12,20 @@
  *   import { AllureHelpers } from '../utils/AllureHelpers';
  *
  *   test('My test', async ({ page }) => {
- *     // Pass inline metadata (looked up from google-sheets-sync skill)
+ *     // Single feature (looked up from google-sheets-sync skill)
  *     await AllureHelpers.setFeature({
  *       id: 'F00100',
  *       name: 'Sales Order',
  *       epicId: 'E0100',
  *       epicName: 'Sales'
  *     });
+ *
+ *     // Multiple features (for tests spanning multiple areas)
+ *     await AllureHelpers.setFeatures([
+ *       { id: 'F00600', name: 'Purchase Order', epicId: 'E0140', epicName: 'Purchasing' },
+ *       { id: 'F65010', name: 'Material Receipt Candidates', epicId: 'E0150', epicName: 'Material Receipt' }
+ *     ]);
+ *
  *     await AllureHelpers.setStory('Create sales order');
  *     await AllureHelpers.attachTable('Order Lines', [...], ['Product', 'Qty']);
  *   });
@@ -38,6 +45,7 @@ const AllureHelpers = {
   /**
    * Set feature for the current test with inline metadata.
    * Automatically sets the epic as well if epicId and epicName are provided.
+   * Can be called multiple times to add multiple features.
    *
    * @param {Object|string} featureOrId - Feature object or ID string
    * @param {string} featureOrId.id - Feature ID (e.g., 'F00100')
@@ -76,6 +84,23 @@ const AllureHelpers = {
 
     // Set feature
     await allure.feature(`${id}: ${name}`);
+  },
+
+  /**
+   * Set multiple features for the current test.
+   * Useful for tests that span multiple features/epics.
+   *
+   * @param {Array<Object>} features - Array of feature objects
+   * @example
+   *   await AllureHelpers.setFeatures([
+   *     { id: 'F00600', name: 'Purchase Order', epicId: 'E0140', epicName: 'Purchasing' },
+   *     { id: 'F65010', name: 'Material Receipt Candidates', epicId: 'E0150', epicName: 'Material Receipt' }
+   *   ]);
+   */
+  async setFeatures(features) {
+    for (const feature of features) {
+      await this.setFeature(feature);
+    }
   },
 
   /**
