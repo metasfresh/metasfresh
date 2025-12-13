@@ -85,6 +85,7 @@
 						</goals>
 						<configuration>
 							<args>
+								<arg>-no-header</arg>
 								<arg>-XautoNameResolution</arg>
 							</args>
 							<schemaDirectory>${project.basedir}/src/main/resources/de/metas/vertical/healthcare_ch/forum_datenaustausch_ch/invoice_450/response</schemaDirectory>
