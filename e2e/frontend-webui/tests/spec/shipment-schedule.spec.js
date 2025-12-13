@@ -56,8 +56,13 @@ testCases.forEach(({ language, label }) => {
     test.describe(`Sales Order to Shipment Schedule (${label})`, () => {
         test(`Create SO and validate quantity in shipment schedule (${label} UI)`, async ({ page }) => {
             // === ALLURE METADATA ===
-            // Link to features from Google Sheets
-            await AllureHelpers.setFeature('F00100'); // Sales Order - also sets Epic: Sales
+            // Feature metadata from google-sheets-sync skill
+            await AllureHelpers.setFeature({
+                id: 'F00100',
+                name: 'Sales Order',
+                epicId: 'E0100',
+                epicName: 'Sales'
+            });
             await AllureHelpers.setStory('Create SO → View Shipment Schedule');
             await AllureHelpers.setSeverity('critical');
             await AllureHelpers.addParameter('Language', language);
