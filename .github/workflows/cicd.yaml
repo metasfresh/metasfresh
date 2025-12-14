@@ -18,6 +18,7 @@ jobs:
       build-info-properties: ${{ steps.build-info-properties.outputs.content }}
       git-properties: ${{ steps.git-properties.outputs.content }}
       base-version-matrix: ${{ steps.base-version-matrix.outputs.matrix }}
+      branch-sanitized-gh-pages: ${{ steps.sanitize-branch-gh-pages.outputs.value }}
     steps:
       - uses: actions/checkout@v4
       - uses: testspace-com/setup-testspace@v1
@@ -30,6 +31,13 @@ jobs:
           GIT_REF: ${{ github.ref_name }}
         run: |
           echo "refname=$(echo ""$GIT_REF"" | sed -r 's/([^a-zA-Z0-9.]+)/-/g' | sed -r 's/(^-|-$)//g')" >> $GITHUB_OUTPUT
+      - name: sanitize-branch-for-gh-pages
+        id: sanitize-branch-gh-pages
+        env:
+          GIT_REF: ${{ github.ref_name }}
+        run: |
+          SANITIZED=$(echo "$GIT_REF" | tr '/' '-' | tr '_' '-' | tr -cd 'a-zA-Z0-9.-' | tr '[:upper:]' '[:lower:]' | sed 's/--*/-/g' | sed 's/^-*//' | sed 's/-*$//')
+          echo "value=${SANITIZED}" >> $GITHUB_OUTPUT
       - name: define-build-info-properties
         id: build-info-properties
         env:
@@ -1380,7 +1388,7 @@ jobs:
         working-directory: docker-builds/frontendtest/
         run: |
           # Sanitize branch name for directory structure
-          BRANCH_SANITIZED=$(echo "${{ github.ref_name }}" | tr '/' '-' | tr '_' '-' | tr -cd 'a-zA-Z0-9.-' | tr '[:upper:]' '[:lower:]' | sed 's/--*/-/g' | sed 's/^-*//' | sed 's/-*$//')
+          BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
 
           # Save current directory for later
           FRONTENDTEST_DIR=$(pwd)
@@ -1466,7 +1474,7 @@ jobs:
 
       - name: Setup directory structure
         run: |
-          BRANCH_SANITIZED=$(echo "${{ github.ref_name }}" | tr '/' '-' | tr '_' '-' | tr -cd 'a-zA-Z0-9.-' | tr '[:upper:]' '[:lower:]' | sed 's/--*/-/g' | sed 's/^-*//' | sed 's/-*$//')
+          BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
           BUILD_DIR="gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}"
 
           cd gh-pages-repo
@@ -1484,7 +1492,7 @@ jobs:
       - name: Copy report to build directory
         if: needs.frontend_webui_test.result == 'success' || needs.frontend_webui_test.result == 'failure'
         run: |
-          BRANCH_SANITIZED=$(echo "${{ github.ref_name }}" | tr '/' '-' | tr '_' '-' | tr -cd 'a-zA-Z0-9.-' | tr '[:upper:]' '[:lower:]' | sed 's/--*/-/g' | sed 's/^-*//' | sed 's/-*$//')
+          BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
           cp -r gh-pages-repo/temp-report/* "gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/frontend-webui/"
           rm -rf gh-pages-repo/temp-report
 
@@ -1499,7 +1507,7 @@ jobs:
       - name: Save history for next build
         if: needs.frontend_webui_test.result == 'success' || needs.frontend_webui_test.result == 'failure'
         run: |
-          BRANCH_SANITIZED=$(echo "${{ github.ref_name }}" | tr '/' '-' | tr '_' '-' | tr -cd 'a-zA-Z0-9.-' | tr '[:upper:]' '[:lower:]' | sed 's/--*/-/g' | sed 's/^-*//' | sed 's/-*$//')
+          BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
 
           # Save updated history if it exists
           if [ -f "gh-pages-repo/temp-history/allure-history-updated.zip" ]; then
@@ -1511,7 +1519,7 @@ jobs:
 
       - name: Update latest redirect
         run: |
-          BRANCH_SANITIZED=$(echo "${{ github.ref_name }}" | tr '/' '-' | tr '_' '-' | tr -cd 'a-zA-Z0-9.-' | tr '[:upper:]' '[:lower:]' | sed 's/--*/-/g' | sed 's/^-*//' | sed 's/-*$//')
+          BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
 
           cat > "gh-pages-repo/branches/${BRANCH_SANITIZED}/latest.html" <<EOF
           <!DOCTYPE html>
@@ -1532,7 +1540,7 @@ jobs:
       - name: Update branches metadata
         run: |
           cd gh-pages-repo
-          BRANCH_SANITIZED=$(echo "${{ github.ref_name }}" | tr '/' '-' | tr '_' '-' | tr -cd 'a-zA-Z0-9.-' | tr '[:upper:]' '[:lower:]' | sed 's/--*/-/g' | sed 's/^-*//' | sed 's/-*$//')
+          BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
 
           METADATA_FILE="_data/branches.json"
           if [ ! -f "$METADATA_FILE" ]; then
