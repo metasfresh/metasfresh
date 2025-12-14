@@ -27,7 +27,6 @@ test.describe('Product Window', () => {
     });
     await AllureHelpers.setStory('View product list');
     await AllureHelpers.setSeverity('normal');
-    await AllureHelpers.addTags('masterdata', 'product');
 
     // Create test data: user and products
     const masterdata = await Backend.createMasterdata({
@@ -73,7 +72,6 @@ test.describe('Product Window', () => {
     });
     await AllureHelpers.setStory('Open product detail view');
     await AllureHelpers.setSeverity('normal');
-    await AllureHelpers.addTags('masterdata', 'product', 'detail-view');
 
     // Create test data: user and a product
     const masterdata = await Backend.createMasterdata({

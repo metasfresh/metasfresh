@@ -25,7 +25,7 @@ test.describe('Login/Logout', () => {
       await AllureHelpers.setStory('Login with language selection');
       await AllureHelpers.setSeverity('critical');
       await AllureHelpers.addParameter('Language', language);
-      await AllureHelpers.addTags('login', 'authentication', language);
+      await AllureHelpers.addTags(language);
 
       // Create test user via backend API
       const response = await Backend.createMasterdata({

@@ -69,7 +69,7 @@ testCases.forEach(({ language, label }) => {
             await AllureHelpers.setSeverity('critical');
             await AllureHelpers.addParameter('Language', language);
             await AllureHelpers.addParameter('UI Label', label);
-            await AllureHelpers.addTags('sales', 'shipment-schedule', 'shipment', 'invoice', 'pdf', 'e2e-workflow', language);
+            await AllureHelpers.addTags(language);
 
             await AllureHelpers.setDescription(`
 ## Test Scenario

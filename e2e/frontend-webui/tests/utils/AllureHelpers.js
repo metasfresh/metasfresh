@@ -2,7 +2,8 @@
  * Allure Report Integration Helpers
  *
  * Provides utilities for enriching Playwright test reports with:
- * - Epic/Feature/Story hierarchy
+ * - Epic hierarchy (Epic → Test, features are tags)
+ * - Feature tags for filtering (format: "F00100: Sales Order")
  * - Tabular data attachments
  * - PDF and screenshot attachments
  * - Links to GitHub issues
@@ -13,6 +14,7 @@
  *
  *   test('My test', async ({ page }) => {
  *     // Single feature (looked up from google-sheets-sync skill)
+ *     // Sets epic in hierarchy + adds feature as tag
  *     await AllureHelpers.setFeature({
  *       id: 'F00100',
  *       name: 'Sales Order',
@@ -21,6 +23,7 @@
  *     });
  *
  *     // Multiple features (for tests spanning multiple areas)
+ *     // Sets all unique epics + adds all features as tags
  *     await AllureHelpers.setFeatures([
  *       { id: 'F00600', name: 'Purchase Order', epicId: 'E0140', epicName: 'Purchasing' },
  *       { id: 'F65010', name: 'Material Receipt Candidates', epicId: 'E0150', epicName: 'Material Receipt' }
@@ -44,7 +47,8 @@ const PDF_CONTENT_TYPE = 'application/pdf';
 const AllureHelpers = {
   /**
    * Set feature for the current test with inline metadata.
-   * Automatically sets the epic as well if epicId and epicName are provided.
+   * Automatically sets the epic (in hierarchy) if epicId and epicName are provided.
+   * Adds the feature as a TAG (not in feature hierarchy) for better flexibility.
    * Can be called multiple times to add multiple features.
    *
    * @param {Object|string} featureOrId - Feature object or ID string
@@ -60,18 +64,19 @@ const AllureHelpers = {
    *     epicId: 'E0100',
    *     epicName: 'Sales'
    *   });
+   *   // This sets epic in hierarchy and adds feature as a tag
    *
    *   // Minimal: just ID and name
    *   await AllureHelpers.setFeature({ id: 'F00100', name: 'Sales Order' });
    *
-   *   // Legacy: string ID (will show warning)
+   *   // Legacy: string ID (will show warning and add as tag)
    *   await AllureHelpers.setFeature('F00100');
    */
   async setFeature(featureOrId) {
     // Handle legacy string usage
     if (typeof featureOrId === 'string') {
       console.warn(`setFeature('${featureOrId}'): Pass feature object for full metadata`);
-      await allure.feature(featureOrId);
+      await allure.tags(featureOrId);
       return;
     }
 
@@ -82,13 +87,15 @@ const AllureHelpers = {
       await allure.epic(`${epicId}: ${epicName}`);
     }
 
-    // Set feature
-    await allure.feature(`${id}: ${name}`);
+    // Add feature as tag (instead of hierarchy)
+    await allure.tags(`${id}: ${name}`);
   },
 
   /**
    * Set multiple features for the current test.
    * Useful for tests that span multiple features/epics.
+   * Sets all unique epics in the hierarchy, then adds all features as tags.
+   * This approach avoids duplicate epics and provides clear feature visibility.
    *
    * @param {Array<Object>} features - Array of feature objects
    * @example
@@ -96,10 +103,31 @@ const AllureHelpers = {
    *     { id: 'F00600', name: 'Purchase Order', epicId: 'E0140', epicName: 'Purchasing' },
    *     { id: 'F65010', name: 'Material Receipt Candidates', epicId: 'E0150', epicName: 'Material Receipt' }
    *   ]);
+   *   // This will set 2 epics in hierarchy and add 2 feature tags
    */
   async setFeatures(features) {
+    // Collect unique epics to avoid duplicates
+    const uniqueEpics = new Map();
+
     for (const feature of features) {
-      await this.setFeature(feature);
+      const { epicId, epicName } = feature;
+
+      // Track unique epics
+      if (epicId && epicName) {
+        const epicKey = `${epicId}: ${epicName}`;
+        uniqueEpics.set(epicKey, { epicId, epicName });
+      }
+    }
+
+    // Set all unique epics first
+    for (const [epicKey] of uniqueEpics) {
+      await allure.epic(epicKey);
+    }
+
+    // Add all features as tags
+    for (const feature of features) {
+      const { id, name } = feature;
+      await allure.tags(`${id}: ${name}`);
     }
   },
 

@@ -27,7 +27,6 @@ test.describe('Business Partner Window', () => {
     });
     await AllureHelpers.setStory('View business partner list');
     await AllureHelpers.setSeverity('normal');
-    await AllureHelpers.addTags('masterdata', 'business-partner');
 
     // Create test data: user and business partners
     const masterdata = await Backend.createMasterdata({
@@ -69,7 +68,6 @@ test.describe('Business Partner Window', () => {
     });
     await AllureHelpers.setStory('Open business partner detail view');
     await AllureHelpers.setSeverity('normal');
-    await AllureHelpers.addTags('masterdata', 'business-partner', 'detail-view');
 
     // Create test data: user and a business partner
     const masterdata = await Backend.createMasterdata({
