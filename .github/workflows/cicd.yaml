@@ -1384,31 +1384,9 @@ jobs:
       - name: Setup Allure CLI
         uses: ./.github/actions/setup-allure
 
-      - name: Generate Allure Report with History
+      - name: Generate Allure Report
         working-directory: docker-builds/frontendtest/
         run: |
-          # Sanitize branch name for directory structure
-          BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
-
-          # Save current directory for later
-          FRONTENDTEST_DIR=$(pwd)
-
-          # Download previous history from gh-pages (if exists)
-          mkdir -p allure-history
-          curl -f -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Accept: application/vnd.github.v3.raw" \
-            -o allure-history/history.zip \
-            "https://api.github.com/repos/${{ github.repository }}/contents/branches/${BRANCH_SANITIZED}/history/frontend-webui-history.zip?ref=gh-pages" \
-            2>/dev/null || echo "No previous history (expected for first run)"
-
-          # Try to merge history, but don't fail if we can't due to Docker volume permissions
-          # The allure-results/ directory is created by the container with different user permissions
-          if [ -f allure-history/history.zip ]; then
-            echo "Attempting to merge previous history..."
-            mkdir -p allure-results/history 2>/dev/null || echo "Note: Cannot write to allure-results/history (permission issue, will skip history)"
-            unzip -o allure-history/history.zip -d allure-results/history/ 2>/dev/null || echo "Note: Skipping history merge due to permissions"
-          fi
-
           # Debug: Check if allure-results exists and has content
           echo "=== Checking allure-results directory ==="
           if [ -d "allure-results" ]; then
@@ -1433,15 +1411,9 @@ jobs:
 
           echo "Found $RESULT_COUNT JSON result files, proceeding with report generation"
 
-          # Generate HTML report with history (results are in docker-builds/frontendtest/allure-results/)
+          # Generate HTML report (results are in docker-builds/frontendtest/allure-results/)
           cd ../../e2e/frontend-webui/
           allure generate ../../docker-builds/frontendtest/allure-results/ -o allure-report/ --clean
-
-          # Extract updated history for next build (use absolute path)
-          if [ -d "allure-report/history" ]; then
-            cd allure-report/history/
-            zip -r "${FRONTENDTEST_DIR}/allure-history-updated.zip" .
-          fi
 
       - name: Upload Allure report for gh-pages
         uses: actions/upload-artifact@v4
@@ -1449,14 +1421,6 @@ jobs:
         with:
           name: allure-report-frontend-webui
           path: e2e/frontend-webui/allure-report/
-          retention-days: 1
-
-      - name: Upload Allure history for gh-pages
-        uses: actions/upload-artifact@v4
-        if: success() || failure()
-        with:
-          name: allure-history-frontend-webui
-          path: docker-builds/frontendtest/allure-history-updated.zip
           retention-days: 1
       # ===== END ALLURE REPORT GENERATION =====
 
@@ -1505,13 +1469,11 @@ jobs:
           # Create directory structure with explicit paths
           mkdir -p "gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/frontend-webui"
           mkdir -p "gh-pages-repo/_data"
-          mkdir -p "gh-pages-repo/branches/${BRANCH_SANITIZED}/history"
 
           # Debug: Show created paths (absolute)
           echo "Created directory structure:"
           echo "  - $(pwd)/gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/frontend-webui"
           echo "  - $(pwd)/gh-pages-repo/_data"
-          echo "  - $(pwd)/gh-pages-repo/branches/${BRANCH_SANITIZED}/history"
 
           # Verify directories exist
           ls -la "gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/"
@@ -1529,27 +1491,6 @@ jobs:
           BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
           cp -r gh-pages-repo/temp-report/* "gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/frontend-webui/"
           rm -rf gh-pages-repo/temp-report
-
-      - name: Download and update history
-        if: needs.frontend_webui_test.result == 'success' || needs.frontend_webui_test.result == 'failure'
-        continue-on-error: true
-        uses: actions/download-artifact@v4
-        with:
-          name: allure-history-frontend-webui
-          path: gh-pages-repo/temp-history/
-
-      - name: Save history for next build
-        if: needs.frontend_webui_test.result == 'success' || needs.frontend_webui_test.result == 'failure'
-        run: |
-          BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
-
-          # Save updated history if it exists
-          if [ -f "gh-pages-repo/temp-history/allure-history-updated.zip" ]; then
-            cp "gh-pages-repo/temp-history/allure-history-updated.zip" \
-               "gh-pages-repo/branches/${BRANCH_SANITIZED}/history/frontend-webui-history.zip"
-          fi
-
-          rm -rf gh-pages-repo/temp-history
 
       - name: Update latest redirect
         run: |
