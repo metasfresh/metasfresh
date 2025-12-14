@@ -1403,13 +1403,13 @@ jobs:
 
           # Extract history to allure-results/history/ if exists
           if [ -f allure-history/history.zip ]; then
-            mkdir -p ../../e2e/frontend-webui/allure-results/history
-            unzip -o allure-history/history.zip -d ../../e2e/frontend-webui/allure-results/history/ || true
+            mkdir -p allure-results/history
+            unzip -o allure-history/history.zip -d allure-results/history/ || true
           fi
 
-          # Generate HTML report with history
+          # Generate HTML report with history (results are in docker-builds/frontendtest/allure-results/)
           cd ../../e2e/frontend-webui/
-          allure generate allure-results/ -o allure-report/ --clean
+          allure generate ../../docker-builds/frontendtest/allure-results/ -o allure-report/ --clean
 
           # Extract updated history for next build (use absolute path)
           if [ -d "allure-report/history" ]; then
