@@ -1401,11 +1401,37 @@ jobs:
             "https://api.github.com/repos/${{ github.repository }}/contents/branches/${BRANCH_SANITIZED}/history/frontend-webui-history.zip?ref=gh-pages" \
             2>/dev/null || echo "No previous history (expected for first run)"
 
-          # Extract history to allure-results/history/ if exists
+          # Try to merge history, but don't fail if we can't due to Docker volume permissions
+          # The allure-results/ directory is created by the container with different user permissions
           if [ -f allure-history/history.zip ]; then
-            mkdir -p allure-results/history
-            unzip -o allure-history/history.zip -d allure-results/history/ || true
+            echo "Attempting to merge previous history..."
+            mkdir -p allure-results/history 2>/dev/null || echo "Note: Cannot write to allure-results/history (permission issue, will skip history)"
+            unzip -o allure-history/history.zip -d allure-results/history/ 2>/dev/null || echo "Note: Skipping history merge due to permissions"
           fi
+
+          # Debug: Check if allure-results exists and has content
+          echo "=== Checking allure-results directory ==="
+          if [ -d "allure-results" ]; then
+            echo "Directory exists. Contents:"
+            ls -la allure-results/ || true
+            echo "JSON files count: $(find allure-results -name "*.json" -type f | wc -l)"
+          else
+            echo "ERROR: allure-results directory does not exist!"
+            echo "Contents of current directory:"
+            ls -la
+            exit 1
+          fi
+
+          # Verify allure-results has content before generating report
+          RESULT_COUNT=$(find allure-results -name "*.json" -type f 2>/dev/null | wc -l)
+          if [ "$RESULT_COUNT" -eq 0 ]; then
+            echo "FATAL ERROR: allure-results contains no JSON files!"
+            echo "Directory contents:"
+            ls -la allure-results/
+            exit 1
+          fi
+
+          echo "Found $RESULT_COUNT JSON result files, proceeding with report generation"
 
           # Generate HTML report with history (results are in docker-builds/frontendtest/allure-results/)
           cd ../../e2e/frontend-webui/
