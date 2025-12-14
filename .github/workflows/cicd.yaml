@@ -1475,12 +1475,20 @@ jobs:
       - name: Setup directory structure
         run: |
           BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
-          BUILD_DIR="gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}"
 
-          cd gh-pages-repo
-          mkdir -p "${BUILD_DIR}/frontend-webui"
-          mkdir -p "_data"
-          mkdir -p "branches/${BRANCH_SANITIZED}/history"
+          # Create directory structure with explicit paths
+          mkdir -p "gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/frontend-webui"
+          mkdir -p "gh-pages-repo/_data"
+          mkdir -p "gh-pages-repo/branches/${BRANCH_SANITIZED}/history"
+
+          # Debug: Show created paths (absolute)
+          echo "Created directory structure:"
+          echo "  - $(pwd)/gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/frontend-webui"
+          echo "  - $(pwd)/gh-pages-repo/_data"
+          echo "  - $(pwd)/gh-pages-repo/branches/${BRANCH_SANITIZED}/history"
+
+          # Verify directories exist
+          ls -la "gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/"
 
       - name: Download Allure report artifact
         if: needs.frontend_webui_test.result == 'success' || needs.frontend_webui_test.result == 'failure'
