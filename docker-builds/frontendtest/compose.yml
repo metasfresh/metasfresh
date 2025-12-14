@@ -154,6 +154,7 @@ services:
     volumes:
       - ./playwright-report:/app/playwright-report
       - ./test-results:/app/test-results
+      - ./allure-results:/app/allure-results
     environment:
       - "FRONTEND_BASE_URL=http://webui:80"
       - "WEBAPI_BASE_URL=http://webui:80/rest/api"
