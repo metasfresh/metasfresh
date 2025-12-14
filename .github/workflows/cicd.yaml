@@ -1774,6 +1774,12 @@ jobs:
           </html>
           LANDINGPAGE
 
+      - name: Create .nojekyll file
+        run: |
+          # Disable Jekyll processing to serve _data directory
+          touch gh-pages-repo/.nojekyll
+          echo "Created .nojekyll file to disable Jekyll and serve _data directory"
+
       - name: Deploy to GitHub Pages
         run: |
           cd gh-pages-repo
