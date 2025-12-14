@@ -1555,35 +1555,13 @@ jobs:
             echo '{"branches":[]}' > "$METADATA_FILE"
           fi
 
+          # Use compact jq to avoid shell quoting issues with multi-line scripts
           jq --arg name "${{ github.ref_name }}" \
              --arg sanitized "$BRANCH_SANITIZED" \
              --arg build "${{ needs.init.outputs.tag-fixed }}" \
              --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-             '
-             .branches |= map(
-               if .name == $name then
-                 . + {
-                   "lastUpdate": $timestamp,
-                   "lastBuild": $build,
-                   "buildCount": (.buildCount // 0) + 1,
-                   "branch_status": "active"
-                 }
-               else . end
-             ) |
-             if (.branches | map(.name) | index($name)) == null then
-               .branches += [{
-                 "name": $name,
-                 "sanitized": $sanitized,
-                 "lastUpdate": $timestamp,
-                 "lastBuild": $build,
-                 "reports": {
-                   "frontend-webui": ("branches/" + $sanitized + "/latest.html")
-                 },
-                 "buildCount": 1,
-                 "branch_status": "active"
-               }]
-             else . end
-             ' "$METADATA_FILE" > "${METADATA_FILE}.tmp" && mv "${METADATA_FILE}.tmp" "$METADATA_FILE"
+             '.branches |= map(if .name == $name then . + {"lastUpdate": $timestamp, "lastBuild": $build, "buildCount": ((.buildCount // 0) + 1), "branch_status": "active"} else . end) | if (.branches | map(.name) | index($name)) == null then .branches += [{"name": $name, "sanitized": $sanitized, "lastUpdate": $timestamp, "lastBuild": $build, "reports": {"frontend-webui": ("branches/" + $sanitized + "/latest.html")}, "buildCount": 1, "branch_status": "active"}] else . end' \
+             "$METADATA_FILE" > "${METADATA_FILE}.tmp" && mv "${METADATA_FILE}.tmp" "$METADATA_FILE"
 
       - name: Generate landing page
         run: |
