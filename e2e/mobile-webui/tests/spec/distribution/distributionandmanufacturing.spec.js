@@ -1,5 +1,6 @@
 import { Backend } from '../../utils/screens/Backend';
 import { test } from '../../../playwright.config';
+import { AllureHelpers } from '../../../../common/AllureHelpers';
 import { LoginScreen } from '../../utils/screens/LoginScreen';
 import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScreen';
 import { ManufacturingJobsListScreen } from '../../utils/screens/manufacturing/ManufacturingJobsListScreen';
@@ -83,6 +84,16 @@ const createMasterdata = async ({ comp1_qty, comp2_qty }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Distribution and manufacturing test', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await AllureHelpers.setFeature({
+        id: 'F5114',
+        name: 'MobileUI Distribution',
+        epicId: 'E0370',
+        epicName: 'Intralogistic (HUs)'
+    });
+    await AllureHelpers.setStory('Distribution and manufacturing integration');
+    await AllureHelpers.setSeverity('critical');
+
     const {
         login,
         warehouseFrom1FacetId,

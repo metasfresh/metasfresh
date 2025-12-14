@@ -1,5 +1,6 @@
 import { test } from "../../../playwright.config";
 import { Backend } from "../../utils/screens/Backend";
+import { AllureHelpers } from '../../../../common/AllureHelpers';
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { DistributionJobsListScreen } from "../../utils/screens/distribution/DistributionJobsListScreen";
@@ -53,6 +54,16 @@ const createMasterdata = async ({ workplace, distributionOrders }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Show all jobs when no current workplace', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await AllureHelpers.setFeature({
+        id: 'F5112.1',
+        name: 'MobileUI Distribution Filter',
+        epicId: 'E0370',
+        epicName: 'Intralogistic (HUs)'
+    });
+    await AllureHelpers.setStory('Filter distribution by workplace');
+    await AllureHelpers.setSeverity('normal');
+
     const masterdata = await createMasterdata({
         workplace: null,
         distributionOrders: {
@@ -82,6 +93,16 @@ test('Show all jobs when no current workplace', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Show only jobs suitable for workplace1', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await AllureHelpers.setFeature({
+        id: 'F5112.1',
+        name: 'MobileUI Distribution Filter',
+        epicId: 'E0370',
+        epicName: 'Intralogistic (HUs)'
+    });
+    await AllureHelpers.setStory('Filter distribution by workplace');
+    await AllureHelpers.setSeverity('normal');
+
     const masterdata = await createMasterdata({
         workplace: 'workplace1',
         distributionOrders: {

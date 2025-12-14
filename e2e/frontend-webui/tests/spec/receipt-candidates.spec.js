@@ -6,7 +6,7 @@ import { DashboardPage } from '../utils/pages/DashboardPage';
 import { PurchaseOrderPage } from '../utils/pages/PurchaseOrderPage';
 import { ReceiptCandidatesPage } from '../utils/pages/ReceiptCandidatesPage';
 import { InvoiceCandidatePage } from '../utils/pages/InvoiceCandidatePage';
-import { AllureHelpers } from '../utils/AllureHelpers';
+import { AllureHelpers } from '../../../common/AllureHelpers';
 
 /**
  * Purchase-to-Invoice E2E test suite.

@@ -10,7 +10,7 @@ import { InvoiceCandidatePage } from '../utils/pages/InvoiceCandidatePage';
 import { InvoicePage } from '../utils/pages/InvoicePage';
 import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
-import { AllureHelpers } from '../utils/AllureHelpers';
+import { AllureHelpers } from '../../../common/AllureHelpers';
 
 /**
  * Sales Order to Shipment Schedule to Shipment to Invoice E2E test suite.

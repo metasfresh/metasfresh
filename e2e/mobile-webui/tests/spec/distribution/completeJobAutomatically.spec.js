@@ -5,6 +5,7 @@ import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScre
 import { DistributionJobsListScreen } from "../../utils/screens/distribution/DistributionJobsListScreen";
 import { DistributionJobScreen } from '../../utils/screens/distribution/DistributionJobScreen';
 import { DistributionLineScreen } from '../../utils/screens/distribution/DistributionLineScreen';
+import { AllureHelpers } from '../../../../common/AllureHelpers';
 
 const createMasterdata = async ({ qtyToMove }) => {
     return await Backend.createMasterdata({
@@ -39,6 +40,16 @@ const createMasterdata = async ({ qtyToMove }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Happy case', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await AllureHelpers.setFeature({
+        id: 'F5114',
+        name: 'MobileUI Distribution',
+        epicId: 'E0370',
+        epicName: 'Intralogistic (HUs)'
+    });
+    await AllureHelpers.setStory('Auto-complete distribution job');
+    await AllureHelpers.setSeverity('normal');
+
     const masterdata = await createMasterdata({ qtyToMove: 100 });
 
     await LoginScreen.login(masterdata.login.user);

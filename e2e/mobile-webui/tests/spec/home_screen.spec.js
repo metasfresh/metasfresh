@@ -4,6 +4,7 @@ import { LoginScreen } from "../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../utils/screens/ApplicationsListScreen";
 import { HUManagerScreen } from '../utils/screens/huManager/HUManagerScreen';
 import { WorkplaceManagerScreen } from '../utils/screens/workplaceManager/WorkplaceManagerScreen';
+import { AllureHelpers } from '../../../common/AllureHelpers';
 
 const createMasterdata = async ({ externalBarcode } = {}) => {
     return await Backend.createMasterdata({
@@ -38,18 +39,48 @@ test.describe('Scan HU codes', () => {
 
     // noinspection JSUnusedLocalSymbols
     test('Scan HU QR Code', async ({ page }) => {
+        // === ALLURE METADATA ===
+        await AllureHelpers.setFeature({
+            id: 'F12000',
+            name: 'Frontend MobileUI',
+            epicId: 'E0295',
+            epicName: 'Frontend MobileUI'
+        });
+        await AllureHelpers.setStory('Scan HU codes from home screen');
+        await AllureHelpers.setSeverity('normal');
+
         const masterdata = await createMasterdata();
         await runTest({ masterdata, huBarcode: masterdata.handlingUnits.HU1.qrCode });
     });
 
     // noinspection JSUnusedLocalSymbols
     test('Scan HU ID Code', async ({ page }) => {
+        // === ALLURE METADATA ===
+        await AllureHelpers.setFeature({
+            id: 'F12000',
+            name: 'Frontend MobileUI',
+            epicId: 'E0295',
+            epicName: 'Frontend MobileUI'
+        });
+        await AllureHelpers.setStory('Scan HU codes from home screen');
+        await AllureHelpers.setSeverity('normal');
+
         const masterdata = await createMasterdata();
         await runTest({ masterdata, huBarcode: masterdata.handlingUnits.HU1.huId });
     });
 
     // noinspection JSUnusedLocalSymbols
     test('Scan ExternalBarcode', async ({ page }) => {
+        // === ALLURE METADATA ===
+        await AllureHelpers.setFeature({
+            id: 'F12000',
+            name: 'Frontend MobileUI',
+            epicId: 'E0295',
+            epicName: 'Frontend MobileUI'
+        });
+        await AllureHelpers.setStory('Scan HU codes from home screen');
+        await AllureHelpers.setSeverity('normal');
+
         const externalBarcode = "EXT" + Date.now();
         const masterdata = await createMasterdata({ externalBarcode });
         await runTest({ masterdata, huBarcode: externalBarcode });
@@ -59,6 +90,16 @@ test.describe('Scan HU codes', () => {
 
 // noinspection JSUnusedLocalSymbols
 test('Scan Workplace code', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await AllureHelpers.setFeature({
+        id: 'F12000',
+        name: 'Frontend MobileUI',
+        epicId: 'E0295',
+        epicName: 'Frontend MobileUI'
+    });
+    await AllureHelpers.setStory('Scan workplace codes from home screen');
+    await AllureHelpers.setSeverity('normal');
+
     const masterdata = await createMasterdata();
 
     await LoginScreen.login(masterdata.login.user);

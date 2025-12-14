@@ -8,6 +8,7 @@ import { DistributionLineScreen } from '../../utils/screens/distribution/Distrib
 import { DistributionStepScreen } from '../../utils/screens/distribution/DistributionStepScreen';
 import { expectErrorToast } from '../../utils/common';
 import { expect } from '@playwright/test';
+import { AllureHelpers } from '../../../../common/AllureHelpers';
 
 const createMasterdata = async ({ HU1_warehouse = 'wh1', HU1_product = 'P1', qtyToMove }) => {
     return await Backend.createMasterdata({
@@ -44,6 +45,16 @@ const createMasterdata = async ({ HU1_warehouse = 'wh1', HU1_product = 'P1', qty
 
 // noinspection JSUnusedLocalSymbols
 test('Simple distribution test', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await AllureHelpers.setFeature({
+        id: 'F5114',
+        name: 'MobileUI Distribution',
+        epicId: 'E0370',
+        epicName: 'Intralogistic (HUs)'
+    });
+    await AllureHelpers.setStory('Simple distribution workflow');
+    await AllureHelpers.setSeverity('critical');
+
     const masterdata = await createMasterdata({ qtyToMove: 100 });
 
     await LoginScreen.login(masterdata.login.user);
@@ -64,6 +75,16 @@ test('Simple distribution test', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Try picking an HU from a different locator than pick from locator', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await AllureHelpers.setFeature({
+        id: 'F5114',
+        name: 'MobileUI Distribution',
+        epicId: 'E0370',
+        epicName: 'Intralogistic (HUs)'
+    });
+    await AllureHelpers.setStory('Distribution error handling');
+    await AllureHelpers.setSeverity('normal');
+
     const masterdata = await createMasterdata({ HU1_warehouse: 'wh3', qtyToMove: 100 });
 
     await LoginScreen.login(masterdata.login.user);
@@ -82,6 +103,16 @@ test('Try picking an HU from a different locator than pick from locator', async 
 
 // noinspection JSUnusedLocalSymbols
 test('Try picking an HU containing a different product than expected', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await AllureHelpers.setFeature({
+        id: 'F5114',
+        name: 'MobileUI Distribution',
+        epicId: 'E0370',
+        epicName: 'Intralogistic (HUs)'
+    });
+    await AllureHelpers.setStory('Distribution error handling');
+    await AllureHelpers.setSeverity('normal');
+
     const masterdata = await createMasterdata({ HU1_product: 'P2', qtyToMove: 100 });
 
     await LoginScreen.login(masterdata.login.user);
@@ -108,6 +139,16 @@ test('Try picking an HU containing a different product than expected', async ({ 
 
 // noinspection JSUnusedLocalSymbols
 test('Distribution using 2 steps to pick the needed qty.', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await AllureHelpers.setFeature({
+        id: 'F5114',
+        name: 'MobileUI Distribution',
+        epicId: 'E0370',
+        epicName: 'Intralogistic (HUs)'
+    });
+    await AllureHelpers.setStory('Multi-step distribution');
+    await AllureHelpers.setSeverity('normal');
+
     const masterdata = await createMasterdata({ qtyToMove: 80 });
 
     await LoginScreen.login(masterdata.login.user);
@@ -134,6 +175,16 @@ test('Distribution using 2 steps to pick the needed qty.', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Pick & Unpick in distribution step screen', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await AllureHelpers.setFeature({
+        id: 'F5114',
+        name: 'MobileUI Distribution',
+        epicId: 'E0370',
+        epicName: 'Intralogistic (HUs)'
+    });
+    await AllureHelpers.setStory('Distribution pick and unpick');
+    await AllureHelpers.setSeverity('normal');
+
     const masterdata = await createMasterdata({ qtyToMove: 100 });
 
     await LoginScreen.login(masterdata.login.user);
@@ -152,6 +203,16 @@ test('Pick & Unpick in distribution step screen', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Filter distribution orders by plantId', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await AllureHelpers.setFeature({
+        id: 'F5112.1',
+        name: 'MobileUI Distribution Filter',
+        epicId: 'E0370',
+        epicName: 'Intralogistic (HUs)'
+    });
+    await AllureHelpers.setStory('Filter distribution by plant');
+    await AllureHelpers.setSeverity('normal');
+
     const masterdata = await createMasterdata({ qtyToMove: 100 });
 
     await LoginScreen.login(masterdata.login.user);

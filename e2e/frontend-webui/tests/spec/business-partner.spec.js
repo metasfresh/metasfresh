@@ -4,7 +4,7 @@ import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { MasterWindowPage } from '../utils/pages/MasterWindowPage';
-import { AllureHelpers } from '../utils/AllureHelpers';
+import { AllureHelpers } from '../../../common/AllureHelpers';
 
 // Business Partner window ID in metasfresh
 const BUSINESS_PARTNER_WINDOW_ID = 123;

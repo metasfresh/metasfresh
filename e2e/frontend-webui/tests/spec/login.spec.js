@@ -2,7 +2,7 @@ import { test } from '../../playwright.config';
 import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
-import { AllureHelpers } from '../utils/AllureHelpers';
+import { AllureHelpers } from '../../../common/AllureHelpers';
 
 /**
  * Login/Logout test suite for metasfresh web UI.

@@ -1,4 +1,5 @@
 import { test } from "../../../playwright.config";
+import { AllureHelpers } from '../../../../common/AllureHelpers';
 import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
@@ -55,12 +56,22 @@ const createMasterdataAndScanByExternalBarcode = async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Dispose HU', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await AllureHelpers.setFeature({ id: 'F5120', name: 'MobileUI HU Manager', epicId: 'E0370', epicName: 'Intralogistic (HUs)' });
+    await AllureHelpers.setStory('HU Manager - External Barcode Operations');
+    await AllureHelpers.setSeverity('critical');
+
     await createMasterdataAndScanByExternalBarcode({ page });
     await HUManagerScreen.dispose();
 });
 
 // noinspection JSUnusedLocalSymbols
 test('Move HU using locator code', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await AllureHelpers.setFeature({ id: 'F5120', name: 'MobileUI HU Manager', epicId: 'E0370', epicName: 'Intralogistic (HUs)' });
+    await AllureHelpers.setStory('HU Manager - External Barcode Operations');
+    await AllureHelpers.setSeverity('critical');
+
     const masterdata = await createMasterdataAndScanByExternalBarcode({ page });
 
     await HUManagerScreen.expectValue({ name: 'locator-value', expectedValue: masterdata.warehouses.wh1.locatorCode });
@@ -73,6 +84,11 @@ test('Move HU using locator code', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Change Qty', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await AllureHelpers.setFeature({ id: 'F5120', name: 'MobileUI HU Manager', epicId: 'E0370', epicName: 'Intralogistic (HUs)' });
+    await AllureHelpers.setStory('HU Manager - External Barcode Operations');
+    await AllureHelpers.setSeverity('critical');
+
     const masterdata = await createMasterdataAndScanByExternalBarcode({ page });
 
     await HUManagerScreen.changeQty({ expectQtyEntered: '80', qtyEntered: '100', description: 'test' });
@@ -85,6 +101,11 @@ test('Change Qty', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Change Clearance Status', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await AllureHelpers.setFeature({ id: 'F5120', name: 'MobileUI HU Manager', epicId: 'E0370', epicName: 'Intralogistic (HUs)' });
+    await AllureHelpers.setStory('HU Manager - External Barcode Operations');
+    await AllureHelpers.setSeverity('normal');
+
     await createMasterdataAndScanByExternalBarcode({ page });
 
     await HUManagerScreen.expectValueMissing({ name: 'clearanceStatus-value' });
@@ -96,6 +117,11 @@ test('Change Clearance Status', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Bulk actions - Move', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await AllureHelpers.setFeature({ id: 'F5120', name: 'MobileUI HU Manager', epicId: 'E0370', epicName: 'Intralogistic (HUs)' });
+    await AllureHelpers.setStory('HU Manager - External Barcode Operations');
+    await AllureHelpers.setSeverity('normal');
+
     const masterdata = await createMasterdataAndScanByExternalBarcode({ page });
     await HUManagerScreen.expectValue({ name: 'locator-value', expectedValue: masterdata.warehouses.wh1.locatorCode });
     await HUManagerScreen.bulkActions({ targetLocator: masterdata.warehouses.wh2.locatorQRCode });

@@ -1,5 +1,6 @@
 import { test } from "../../../playwright.config";
 import { Backend } from "../../utils/screens/Backend";
+import { AllureHelpers } from '../../../../common/AllureHelpers';
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { DistributionJobsListScreen } from "../../utils/screens/distribution/DistributionJobsListScreen";
@@ -60,6 +61,16 @@ const createMasterdataAndStartJob = async ({ qtyToMove, externalBarcode }) => {
 test.describe('Scan directly in job screen, expect scanning the product code too', () => {
     // noinspection JSUnusedLocalSymbols
     test('Scan the HU by QRCode', async ({ page }) => {
+        // === ALLURE METADATA ===
+        await AllureHelpers.setFeature({
+            id: 'F5114.3',
+            name: 'MobileUI Distribution: GTIN Scan',
+            epicId: 'E0370',
+            epicName: 'Intralogistic (HUs)'
+        });
+        await AllureHelpers.setStory('Validate GTIN during pick from');
+        await AllureHelpers.setSeverity('normal');
+
         const masterdata = await createMasterdataAndStartJob({ qtyToMove: 100 });
 
         await DistributionJobScreen.expectLineButton({ index: 1, qtyToPick: '100 Stk', qtyPicked: '0 Stk', color: 'red' });
@@ -72,6 +83,16 @@ test.describe('Scan directly in job screen, expect scanning the product code too
 
     // noinspection JSUnusedLocalSymbols
     test('Scan the HU by Value/M_HU_ID', async ({ page }) => {
+        // === ALLURE METADATA ===
+        await AllureHelpers.setFeature({
+            id: 'F5114.3',
+            name: 'MobileUI Distribution: GTIN Scan',
+            epicId: 'E0370',
+            epicName: 'Intralogistic (HUs)'
+        });
+        await AllureHelpers.setStory('Validate GTIN during pick from');
+        await AllureHelpers.setSeverity('normal');
+
         const masterdata = await createMasterdataAndStartJob({ qtyToMove: 100 });
 
         await DistributionJobScreen.expectLineButton({ index: 1, qtyToPick: '100 Stk', qtyPicked: '0 Stk', color: 'red' });
@@ -84,6 +105,16 @@ test.describe('Scan directly in job screen, expect scanning the product code too
 
     // noinspection JSUnusedLocalSymbols
     test('Scan the HU by External Attribute', async ({ page }) => {
+        // === ALLURE METADATA ===
+        await AllureHelpers.setFeature({
+            id: 'F5114.3',
+            name: 'MobileUI Distribution: GTIN Scan',
+            epicId: 'E0370',
+            epicName: 'Intralogistic (HUs)'
+        });
+        await AllureHelpers.setStory('Validate GTIN during pick from');
+        await AllureHelpers.setSeverity('normal');
+
         const externalBarcode = "EXT" + Date.now();
         const masterdata = await createMasterdataAndStartJob({ qtyToMove: 100, externalBarcode });
 
@@ -99,6 +130,16 @@ test.describe('Scan directly in job screen, expect scanning the product code too
 
 // noinspection JSUnusedLocalSymbols
 test('Do not ask for picked qty when it is one', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await AllureHelpers.setFeature({
+        id: 'F5114.3',
+        name: 'MobileUI Distribution: GTIN Scan',
+        epicId: 'E0370',
+        epicName: 'Intralogistic (HUs)'
+    });
+    await AllureHelpers.setStory('Validate GTIN during pick from');
+    await AllureHelpers.setSeverity('normal');
+
     const masterdata = await createMasterdataAndStartJob({ qtyToMove: 1 });
 
     await DistributionJobScreen.expectLineButton({ index: 1, qtyToPick: '1 Stk', qtyPicked: '0 Stk', color: 'red' });

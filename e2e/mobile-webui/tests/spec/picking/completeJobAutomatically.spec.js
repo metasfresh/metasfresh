@@ -1,4 +1,5 @@
 import { test } from "../../../playwright.config";
+import { AllureHelpers } from '../../../../common/AllureHelpers';
 import { Backend } from '../../utils/screens/Backend';
 import { LoginScreen } from '../../utils/screens/LoginScreen';
 import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScreen';
@@ -58,6 +59,16 @@ const createMasterdata = async () => {
 
 // noinspection JSUnusedLocalSymbols
 test('Happy case', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await AllureHelpers.setFeature({
+        id: 'F00250',
+        name: 'MobileUI Picking Auto Completion',
+        epicId: 'E0105',
+        epicName: 'Picking'
+    });
+    await AllureHelpers.setStory('Auto-complete picking job');
+    await AllureHelpers.setSeverity('normal');
+
     const masterdata = await createMasterdata();
 
     await LoginScreen.login(masterdata.login.user);

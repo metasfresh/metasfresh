@@ -1,4 +1,5 @@
 import { test } from "../../../playwright.config";
+import { AllureHelpers } from '../../../../common/AllureHelpers';
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
 import { Backend } from "../../utils/screens/Backend";
@@ -60,6 +61,16 @@ const createMasterdata = async ({ allowQuickPackAll = true } = {}) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Pick using Pick All button', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await AllureHelpers.setFeature({
+        id: 'F00230',
+        name: 'MobileUI Picking',
+        epicId: 'E0105',
+        epicName: 'Picking'
+    });
+    await AllureHelpers.setStory('Pick All button');
+    await AllureHelpers.setSeverity('normal');
+
     const masterdata = await createMasterdata({ allowQuickPackAll: true });
 
     await LoginScreen.login(masterdata.login.user);
@@ -103,6 +114,16 @@ test('Pick using Pick All button', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Expect Pick All button hidden when feature is not active', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await AllureHelpers.setFeature({
+        id: 'F00230',
+        name: 'MobileUI Picking',
+        epicId: 'E0105',
+        epicName: 'Picking'
+    });
+    await AllureHelpers.setStory('Pick All button');
+    await AllureHelpers.setSeverity('normal');
+
     const masterdata = await createMasterdata({ allowQuickPackAll: false });
 
     await LoginScreen.login(masterdata.login.user);

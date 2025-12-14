@@ -1,5 +1,6 @@
 import { test } from "../../../playwright.config";
 import { Backend } from "../../utils/screens/Backend";
+import { AllureHelpers } from '../../../../common/AllureHelpers';
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { DistributionJobsListScreen } from "../../utils/screens/distribution/DistributionJobsListScreen";
@@ -63,6 +64,16 @@ const createDistributionOrders = async (distributionOrders) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Check launchers are refreshed via websockets', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await AllureHelpers.setFeature({
+        id: 'F5114',
+        name: 'MobileUI Distribution',
+        epicId: 'E0370',
+        epicName: 'Intralogistic (HUs)'
+    });
+    await AllureHelpers.setStory('Launcher websocket updates');
+    await AllureHelpers.setSeverity('normal');
+
     const masterdata = await createMasterdata({
         workplace: 'workplace1',
         distributionOrders: {

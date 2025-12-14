@@ -1,5 +1,6 @@
 import { Backend } from '../../utils/screens/Backend';
 import { test } from '../../../playwright.config';
+import { AllureHelpers } from '../../../../common/AllureHelpers';
 import { LoginScreen } from '../../utils/screens/LoginScreen';
 import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScreen';
 import { HUConsolidationJobsListScreen } from '../../utils/screens/huConsolidation/HUConsolidationJobsListScreen';
@@ -128,6 +129,11 @@ const pickHUsToPickingSlot = async ({ masterdata }) => await test.step("Pick", a
 
 // noinspection JSUnusedLocalSymbols
 test('Simple HU consolidate all test', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await AllureHelpers.setFeature({ id: 'F00248', name: 'MobileUI HU Consolidation', epicId: 'E0105', epicName: 'Picking' });
+    await AllureHelpers.setStory('HU Consolidation - Consolidate All');
+    await AllureHelpers.setSeverity('critical');
+
     const masterdata = await createMasterdata();
 
     await LoginScreen.login(masterdata.login.user);
@@ -148,6 +154,11 @@ test('Simple HU consolidate all test', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Simple HU consolidate HUs one by one test', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await AllureHelpers.setFeature({ id: 'F00248', name: 'MobileUI HU Consolidation', epicId: 'E0105', epicName: 'Picking' });
+    await AllureHelpers.setStory('HU Consolidation - One by One');
+    await AllureHelpers.setSeverity('critical');
+
     const masterdata = await createMasterdata();
 
     await LoginScreen.login(masterdata.login.user);
@@ -176,6 +187,11 @@ test('Simple HU consolidate HUs one by one test', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Manual print current target label', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await AllureHelpers.setFeature({ id: 'F00248', name: 'MobileUI HU Consolidation', epicId: 'E0105', epicName: 'Picking' });
+    await AllureHelpers.setStory('HU Consolidation - Print Labels');
+    await AllureHelpers.setSeverity('normal');
+
     const masterdata = await createMasterdata();
 
     await LoginScreen.login(masterdata.login.user);
@@ -200,6 +216,11 @@ test('Manual print current target label', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Consolidate to an existing LU', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await AllureHelpers.setFeature({ id: 'F00248', name: 'MobileUI HU Consolidation', epicId: 'E0105', epicName: 'Picking' });
+    await AllureHelpers.setStory('HU Consolidation - Existing LU');
+    await AllureHelpers.setSeverity('normal');
+
     const masterdata = await createMasterdata({
         products: {
             "P3": { prices: [{ price: 1 }] },

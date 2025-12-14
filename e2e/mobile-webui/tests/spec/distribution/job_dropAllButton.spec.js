@@ -1,5 +1,6 @@
 import { test } from "../../../playwright.config";
 import { Backend } from "../../utils/screens/Backend";
+import { AllureHelpers } from '../../../../common/AllureHelpers';
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { DistributionJobsListScreen } from "../../utils/screens/distribution/DistributionJobsListScreen";
@@ -58,6 +59,16 @@ const createMasterdata = async ({ qtyToMove }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Pick multiple HUs and drop them all together in one step', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await AllureHelpers.setFeature({
+        id: 'F5114.2',
+        name: 'MobileUI Distribution: Drop All',
+        epicId: 'E0370',
+        epicName: 'Intralogistic (HUs)'
+    });
+    await AllureHelpers.setStory('Drop all button in job screen');
+    await AllureHelpers.setSeverity('normal');
+
     const masterdata = await createMasterdata({ qtyToMove: 100 });
 
     await LoginScreen.login(masterdata.login.user);
@@ -183,6 +194,16 @@ test('Pick multiple HUs and drop them all together in one step', async ({ page }
 
 // noinspection JSUnusedLocalSymbols
 test('Pick multiple HUs (by HU code) and drop them all together in one step (using locator code)', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await AllureHelpers.setFeature({
+        id: 'F5114.2',
+        name: 'MobileUI Distribution: Drop All',
+        epicId: 'E0370',
+        epicName: 'Intralogistic (HUs)'
+    });
+    await AllureHelpers.setStory('Drop all button in job screen');
+    await AllureHelpers.setSeverity('normal');
+
     const masterdata = await createMasterdata({ qtyToMove: 100 });
 
     await LoginScreen.login(masterdata.login.user);

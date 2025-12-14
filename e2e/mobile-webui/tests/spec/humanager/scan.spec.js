@@ -1,4 +1,5 @@
 import { test } from "../../../playwright.config";
+import { AllureHelpers } from '../../../../common/AllureHelpers';
 import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
@@ -24,6 +25,11 @@ const createMasterdata = async ({ externalBarcode } = {}) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Scan by HU QR Code', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await AllureHelpers.setFeature({ id: 'F5120', name: 'MobileUI HU Manager', epicId: 'E0370', epicName: 'Intralogistic (HUs)' });
+    await AllureHelpers.setStory('HU Manager - Scan Methods');
+    await AllureHelpers.setSeverity('critical');
+
     const masterdata = await createMasterdata();
 
     await LoginScreen.login(masterdata.login.user);
@@ -36,6 +42,11 @@ test('Scan by HU QR Code', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Scan by M_HU_ID', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await AllureHelpers.setFeature({ id: 'F5120', name: 'MobileUI HU Manager', epicId: 'E0370', epicName: 'Intralogistic (HUs)' });
+    await AllureHelpers.setStory('HU Manager - Scan Methods');
+    await AllureHelpers.setSeverity('normal');
+
     const masterdata = await createMasterdata();
 
     await LoginScreen.login(masterdata.login.user);
@@ -48,6 +59,11 @@ test('Scan by M_HU_ID', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Scan by ExternalBarcode attribute', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await AllureHelpers.setFeature({ id: 'F5120', name: 'MobileUI HU Manager', epicId: 'E0370', epicName: 'Intralogistic (HUs)' });
+    await AllureHelpers.setStory('HU Manager - Scan Methods');
+    await AllureHelpers.setSeverity('normal');
+
     const externalBarcode = "EXT" + Date.now();
     const masterdata = await createMasterdata({ externalBarcode });
 

@@ -4,6 +4,7 @@ import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { DistributionJobsListScreen } from "../../utils/screens/distribution/DistributionJobsListScreen";
 import { generateEAN13 } from '../../utils/ean13';
+import { AllureHelpers } from '../../../../common/AllureHelpers';
 
 const createMasterdata = async ({ captionFormat, qtyEntered, priority }) => {
     return await Backend.createMasterdata({
@@ -38,6 +39,16 @@ const createMasterdata = async ({ captionFormat, qtyEntered, priority }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('LocatorFrom,ProductValueAndName,ProductGTIN,Qty,Priority', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await AllureHelpers.setFeature({
+        id: 'F5114',
+        name: 'MobileUI Distribution',
+        epicId: 'E0370',
+        epicName: 'Intralogistic (HUs)'
+    });
+    await AllureHelpers.setStory('Distribution caption format');
+    await AllureHelpers.setSeverity('normal');
+
     const masterdata = await createMasterdata({
         captionFormat: 'LocatorFrom,ProductValueAndName,ProductGTIN,Qty,Priority',
         qtyEntered: 123,

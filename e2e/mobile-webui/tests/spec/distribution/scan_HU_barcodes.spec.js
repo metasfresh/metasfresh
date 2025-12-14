@@ -1,5 +1,6 @@
 import { test } from "../../../playwright.config";
 import { Backend } from "../../utils/screens/Backend";
+import { AllureHelpers } from '../../../../common/AllureHelpers';
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { DistributionJobsListScreen } from "../../utils/screens/distribution/DistributionJobsListScreen";
@@ -87,18 +88,48 @@ const standardTest = async ({ masterdata, huBarcodeToScan }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Scan by HU QR Code', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await AllureHelpers.setFeature({
+        id: 'F5114',
+        name: 'MobileUI Distribution',
+        epicId: 'E0370',
+        epicName: 'Intralogistic (HUs)'
+    });
+    await AllureHelpers.setStory('Scan HU barcodes');
+    await AllureHelpers.setSeverity('normal');
+
     const masterdata = await createMasterdata();
     await standardTest({ masterdata, huBarcodeToScan: masterdata.handlingUnits.HU1.qrCode });
 });
 
 // noinspection JSUnusedLocalSymbols
 test('Scan by M_HU_ID', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await AllureHelpers.setFeature({
+        id: 'F5114',
+        name: 'MobileUI Distribution',
+        epicId: 'E0370',
+        epicName: 'Intralogistic (HUs)'
+    });
+    await AllureHelpers.setStory('Scan HU barcodes');
+    await AllureHelpers.setSeverity('normal');
+
     const masterdata = await createMasterdata();
     await standardTest({ masterdata, huBarcodeToScan: masterdata.handlingUnits.HU1.huId });
 });
 
 // noinspection JSUnusedLocalSymbols
 test('Scan by ExternalBarcode', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await AllureHelpers.setFeature({
+        id: 'F5114',
+        name: 'MobileUI Distribution',
+        epicId: 'E0370',
+        epicName: 'Intralogistic (HUs)'
+    });
+    await AllureHelpers.setStory('Scan HU barcodes');
+    await AllureHelpers.setSeverity('normal');
+
     const externalBarcode = "EXT" + Date.now();
     const masterdata = await createMasterdata({ externalBarcode });
     await standardTest({ masterdata, huBarcodeToScan: externalBarcode });
