@@ -326,7 +326,7 @@
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-3" x="154" y="109" width="133" height="13" uuid="38b1deac-5268-444a-9670-a7bfe63688ad">
-					<printWhenExpression><![CDATA[new Boolean($F{documentno}!=null)]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean($F{customernoatvendor}!=null)]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
