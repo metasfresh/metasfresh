@@ -7,6 +7,11 @@ ENV TZ=Europe/Berlin
 WORKDIR /app
 
 #
+# Install common module dependencies (AllureHelpers)
+COPY e2e/common/package.json ../common/
+RUN cd ../common && npm install
+
+#
 # Install required packages
 # NOTE: copy the bare minimum config files at this point to favor caching
 COPY e2e/frontend-webui/package.json* .
@@ -18,6 +23,7 @@ RUN npx playwright install --with-deps chromium
 
 #
 # Copy the rest of our source files (i.e. the tests)
+COPY e2e/common/ ../common/
 COPY e2e/frontend-webui/ .
 
 #

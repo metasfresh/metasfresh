@@ -1,0 +1,9 @@
+{
+  "name": "e2e-common",
+  "version": "1.0.0",
+  "description": "Shared utilities for e2e tests",
+  "license": "GPL-3.0",
+  "dependencies": {
+    "allure-js-commons": "^3.4.3"
+  }
+}

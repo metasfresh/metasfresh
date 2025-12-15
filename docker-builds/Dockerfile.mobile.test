@@ -4,7 +4,12 @@ RUN apt-get update && apt-get install -y locales && rm -rf /var/lib/apt/lists/* 
 ENV LANG=de_DE.UTF-8 LANGUAGE=de_DE.UTF-8 LC_MESSAGES=de_DE.UTF-8
 ENV TZ=Europe/Berlin
 
-WORKDIR /app 
+WORKDIR /app
+
+#
+# Install common module dependencies (AllureHelpers)
+COPY e2e/common/package.json ../common/
+RUN cd ../common && npm install
 
 #
 # Install required packages
@@ -16,6 +21,7 @@ RUN yarn playwright install --with-deps
 
 #
 # Copy the rest of our source files (i.e. the tests)
+COPY e2e/common/ ../common/
 COPY e2e/mobile-webui/ .
 
 #
