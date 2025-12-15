@@ -10,9 +10,15 @@ import { InvoiceCandidatePage } from '../utils/pages/InvoiceCandidatePage';
 import { InvoicePage } from '../utils/pages/InvoicePage';
 import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
+import { AllureHelpers } from '../utils/AllureHelpers';
 
 /**
  * Sales Order to Shipment Schedule to Shipment to Invoice E2E test suite.
+ *
+ * Features tested (from Google Sheets):
+ * - F00100: Sales Order
+ * - F00105: Sales Order Document (PDF)
+ * - F00130: Shipment Schedule
  *
  * Tests the complete sales order to shipment to invoice workflow:
  * 1. Create a sales order with customer and product
@@ -49,10 +55,50 @@ const testCases = [
 testCases.forEach(({ language, label }) => {
     test.describe(`Sales Order to Shipment Schedule (${label})`, () => {
         test(`Create SO and validate quantity in shipment schedule (${label} UI)`, async ({ page }) => {
+            // === ALLURE METADATA ===
+            // Feature metadata from google-sheets-sync skill
+            // This test covers the complete order-to-cash cycle
+            await AllureHelpers.setFeatures([
+                { id: 'F00100', name: 'Sales Order', epicId: 'E0100', epicName: 'Sales' },
+                { id: 'F00105', name: 'Sales Order Document', epicId: 'E0100', epicName: 'Sales' },
+                { id: 'F00130', name: 'Shipment Schedule', epicId: 'E0100', epicName: 'Sales' },
+                { id: 'F00150', name: 'Sales Shipment', epicId: 'E0100', epicName: 'Sales' },
+                { id: 'F00200', name: 'Sales Invoice', epicId: 'E0100', epicName: 'Sales' }
+            ]);
+            await AllureHelpers.setStory('Complete Order-to-Cash: SO → Shipment → Invoice');
+            await AllureHelpers.setSeverity('critical');
+            await AllureHelpers.addParameter('Language', language);
+            await AllureHelpers.addParameter('UI Label', label);
+            await AllureHelpers.addTags(language);
+
+            await AllureHelpers.setDescription(`
+## Test Scenario
+This test validates the complete order-to-cash workflow:
+
+1. **Create Sales Order** - New SO with customer and product line
+2. **Complete Order** - Mark as completed to trigger downstream processes
+3. **Generate PDF** - Create and validate Sales Order PDF document
+4. **Navigate to Shipment Schedule** - Use Alt+6 to open related shipment schedule
+5. **Verify Quantity** - Confirm ordered quantity appears in schedule
+6. **Create Shipment** - Generate shipment from schedule and validate PDF
+7. **Create Invoice** - Generate invoice from candidates and validate PDF
+
+## Features Tested
+- **F00100**: Sales Order
+- **F00105**: Sales Order Document (PDF)
+- **F00130**: Shipment Schedule
+- **F00150**: Sales Shipment
+- **F00200**: Sales Invoice
+
+## Business Value
+Ensures the complete order-to-cash flow works correctly across UI languages.
+            `);
+
             // Extend timeout for this comprehensive E2E test (Sales Order → Shipment → Invoice)
             test.setTimeout(120000); // 2 minutes
 
             // Step 1: Create test data with specified language
+            // === TEST DATA CREATION ===
             const masterdata = await Backend.createMasterdata({
                 request: {
                     login: {
@@ -86,17 +132,22 @@ testCases.forEach(({ language, label }) => {
                 },
             });
 
+            // Attach test data summary to Allure report
+            await AllureHelpers.attachTestData(masterdata);
+
             console.log(`[${language}] Master data created:`, {
                 customer: masterdata.bpartners.CUSTOMER1.bpartnerCode,
                 product: masterdata.products.Product1.productName,
             });
 
-            // Step 2: Login with the user (UI will be in specified language)
+            // === TEST EXECUTION ===
+
+            // Step 1: Login
             await LoginPage.goto();
             await LoginPage.login(masterdata.login.user);
             await DashboardPage.expectVisible();
 
-            // Step 3: Create sales order for 10 units
+            // Step 2: Create Sales Order
             await SalesOrderPage.goto();
             await SalesOrderPage.clickNew();
 
@@ -105,12 +156,25 @@ testCases.forEach(({ language, label }) => {
             console.log(`[${language}] Sales Order ${recordId} created and saved`);
 
             // Add order line - this waits for tab to allow new records before proceeding
-            await SalesOrderPage.addOrderLine({
+            const orderLineData = {
                 product: masterdata.products.Product1.productCode,
                 quantity: '10',
                 recordId,
-            });
+            };
+            await SalesOrderPage.addOrderLine(orderLineData);
 
+            // Attach order line details as table
+            await AllureHelpers.attachTable('Order Lines',
+                [{
+                    Product: masterdata.products.Product1.productCode,
+                    Quantity: '10',
+                    'Unit Price': '50.00 EUR',
+                    'Line Total': '500.00 EUR'
+                }],
+                ['Product', 'Quantity', 'Unit Price', 'Line Total']
+            );
+
+            // Step 3: Complete the order
             await SalesOrderPage.complete();
 
             // Get and verify document number
@@ -118,16 +182,28 @@ testCases.forEach(({ language, label }) => {
             expect(soDocumentNo).toBeTruthy();
             expect(soDocumentNo.length).toBeGreaterThan(0);
 
+            // Add document number as parameter for easy identification
+            await AllureHelpers.addParameter('Document No', soDocumentNo);
+
             console.log(`[${language}] Sales Order created: ${soDocumentNo}`);
 
-            // Step 4: Open print modal and generate PDF
+            // Step 4: Generate and validate PDF
             await SalesOrderPage.openPrintModal();
 
-            // Step 4.1: Download PDF
             const download = await SalesOrderPage.downloadPDF();
             console.log(`[${language}] PDF downloaded: ${download.suggestedFilename()}`);
 
-            // Step 4.2: Validate PDF content
+            // Attach PDF to Allure report
+            const pdfPath = await download.path();
+            await AllureHelpers.attachPdf('Sales Order PDF', pdfPath, {
+                documentNo: soDocumentNo,
+                customer: masterdata.bpartners.CUSTOMER1.bpartnerCode,
+                product: masterdata.products.Product1.productCode,
+                quantity: '10',
+                language: language,
+            });
+
+            // Validate PDF content
             await SalesOrderPage.validatePdfContent(download, {
                 documentNo: soDocumentNo,
                 // customerName: masterdata.bpartners.CUSTOMER1.bpartnerCode,  // TODO: PDF text extraction breaks long strings with line breaks
@@ -138,17 +214,16 @@ testCases.forEach(({ language, label }) => {
 
             console.log(`[${language}] PDF content validated successfully`);
 
-            // Step 4.3: Close modal
-            await SalesOrderPage.closePrintModal().catch(() => {
-            });
+            await SalesOrderPage.closePrintModal().catch(() => {});
 
-            // Step 5: Navigate to shipment schedule via Alt+6
+            // Step 5: Navigate to Shipment Schedule
             // This navigates directly to the correct shipment schedule for this SO
             // IMPORTANT: Do NOT navigate to window 500221 directly - it may select wrong schedule!
             await SalesOrderPage.openRelatedShipmentCandidate();
-
-            // Verify shipment schedule is visible
             await ShipmentSchedulePage.expectVisible();
+
+            // Take screenshot of shipment schedule for report
+            await AllureHelpers.attachScreenshot(page, 'Shipment Schedule View');
 
             console.log(`[${language}] Shipment Schedule opened for SO ${soDocumentNo}`);
 
@@ -293,6 +368,19 @@ testCases.forEach(({ language, label }) => {
             // We successfully created a sales order, validated the shipment schedule,
             // created the shipment, validated the shipment PDF,
             // created the invoice, and validated the invoice PDF
+            
+            // Attach validation summary
+            await AllureHelpers.attachTable('Validation Results',
+                [
+                    { Check: 'Sales Order Created', Status: '✓ PASS', Value: soDocumentNo },
+                    { Check: 'PDF Generated', Status: '✓ PASS', Value: download.suggestedFilename() },
+                    { Check: 'Shipment Created', Status: '✓ PASS', Value: 'Yes' },
+                    { Check: 'Shipment-PDF Generated', Status: '✓ PASS', Value: shipmentDownload.suggestedFilename() },
+                    { Check: 'Invoice Created', Status: '✓ PASS', Value: 'Yes' },
+                    { Check: 'Invoice-PDF Generated', Status: '✓ PASS', Value: invoiceDownload.suggestedFilename() }
+                ],
+                ['Check', 'Status', 'Value']
+            );
         });
     });
 });
