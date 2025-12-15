@@ -23,6 +23,9 @@
 -- Function to split M_Inventory documents with too many lines into multiple documents
 -- Moved to support schema
 
+-- Ensure support schema exists
+CREATE SCHEMA IF NOT EXISTS support;
+
 DROP FUNCTION IF EXISTS support.m_inventory_split_by_lines(numeric, integer);
 
 CREATE OR REPLACE FUNCTION support.m_inventory_split_by_lines(

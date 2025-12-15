@@ -23,6 +23,9 @@
 -- 2025-12-15
 -- Move m_inventory_split_by_lines function to support schema
 
+-- Ensure support schema exists
+CREATE SCHEMA IF NOT EXISTS support;
+
 -- Drop old function from public schema
 DROP FUNCTION IF EXISTS public.m_inventory_split_by_lines(numeric, integer);
 DROP FUNCTION IF EXISTS m_inventory_split_by_lines(numeric, integer);
