@@ -543,6 +543,11 @@ public interface IQuery<T>
 	 */
 	<AT> ImmutableList<AT> listDistinct(String columnName, Class<AT> valueType);
 
+	default <AT> ImmutableSet<AT> listDistinctAsImmutableSet(String columnName, Class<AT> valueType)
+	{
+		return ImmutableSet.copyOf(listDistinct(columnName, valueType));
+	}
+
 	/**
 	 * @return <code>columnName</code>'s value on first records; if there are no records, null will be returned.
 	 */
