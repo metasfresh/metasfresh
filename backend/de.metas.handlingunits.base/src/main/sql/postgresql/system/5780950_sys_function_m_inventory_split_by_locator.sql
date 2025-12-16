@@ -116,7 +116,7 @@ BEGIN
         v_new_inventory_id := nextval('m_inventory_seq');
 
         -- Generate new document number (append _02, _03, etc.)
-        v_new_documentno := v_inventory_rec.documentno || '_' || LPAD(v_doc_counter::text, 2, '0');
+        v_new_documentno := v_inventory_rec.documentno || '_' || LPAD(v_doc_counter::text, 3, '0');
 
         -- Insert new inventory record (copy all fields except id and documentno)
         INSERT INTO m_inventory (
