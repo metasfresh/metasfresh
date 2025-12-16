@@ -336,7 +336,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		}
 	}
 
-	private void createLotNumberAI(Properties ctx, I_M_AttributeSetInstance rsASI, Timestamp lotNumberDate, String trxName)
+	private void createLotNumberAI(final Properties ctx, final I_M_AttributeSetInstance rsASI, final Timestamp lotNumberDate, final String trxName)
 	{
 		Check.assume(lotNumberDate != null, "Lot number date attribute not null");
 
@@ -390,7 +390,8 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 	{
 		final org.compiere.model.I_C_OrderLine line = InterfaceWrapperHelper.create(model, org.compiere.model.I_C_OrderLine.class);
 
-		final I_M_ReceiptSchedule receiptSchedule = Services.get(IReceiptScheduleDAO.class).retrieveForRecord(line);
+		final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
+		final I_M_ReceiptSchedule receiptSchedule = receiptScheduleDAO.retrieveForRecord(line);
 		if (receiptSchedule == null)
 		{
 			return;
@@ -399,8 +400,12 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		{
 			return;
 		}
-		receiptSchedule.setIsActive(false);
-		deleteRecord(receiptSchedule);
+
+		if (receiptScheduleDAO.retrieveCompletedReceipts(receiptSchedule).isEmpty())
+		{
+			receiptSchedule.setIsActive(false);
+			deleteRecord(receiptSchedule);
+		}
 	}
 
 	/**
