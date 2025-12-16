@@ -5,13 +5,10 @@ import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
 import { distributionJobsDropAllScreen } from '../../../routes/distribution';
 import { trl } from '../../../utils/translations';
 
-const DistributionJobsListActions = ({ launchers, disabled }) => {
+const DistributionJobsListActions = ({ actions, disabled }) => {
   const history = useMobileNavigation();
-  const isSomeLaunchersInTransit = isInTransit({ launchers });
 
-  if (!isSomeLaunchersInTransit) {
-    return null;
-  }
+  if (!actions?.length) return null;
 
   const onDropAll = () => {
     history.goTo(distributionJobsDropAllScreen());
@@ -19,35 +16,23 @@ const DistributionJobsListActions = ({ launchers, disabled }) => {
 
   return (
     <>
-      <ButtonWithIndicator
-        additionalCssClass="action-button"
-        caption={trl('activities.distribution.scanDropToLocator')}
-        onClick={onDropAll}
-        testId="dropAll-button"
-        disabled={disabled}
-      />
+      {actions.includes('dropAll') && (
+        <ButtonWithIndicator
+          additionalCssClass="action-button"
+          caption={trl('activities.distribution.scanDropToLocator')}
+          onClick={onDropAll}
+          testId="dropAll-button"
+          disabled={disabled}
+        />
+      )}
       <br />
     </>
   );
 };
 
 DistributionJobsListActions.propTypes = {
-  launchers: PropTypes.array,
+  actions: PropTypes.array,
   disabled: PropTypes.bool,
 };
 
 export default DistributionJobsListActions;
-
-//
-//
-// -----------------------------------------------------------------------------
-//
-//
-
-const isInTransit = ({ launchers }) => {
-  if (!launchers.length) {
-    return false;
-  }
-
-  return launchers.some((launcher) => launcher.wfParameters?.isInTransit);
-};

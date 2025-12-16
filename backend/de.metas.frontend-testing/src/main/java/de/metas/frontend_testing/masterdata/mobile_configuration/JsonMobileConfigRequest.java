@@ -85,6 +85,7 @@ public class JsonMobileConfigRequest
 		@Nullable String captionFormat;
 		@Nullable String orderBys;
 
+		@Nullable Boolean requireTrolley;
 		@Nullable Boolean requireScanningProductCode;
 		@Nullable Boolean navigateToJobsListAfterPickFromComplete;
 		@Nullable Boolean completeJobAutomatically;

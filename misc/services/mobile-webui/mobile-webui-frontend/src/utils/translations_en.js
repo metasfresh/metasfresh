@@ -48,6 +48,7 @@ const translations = {
     },
     workplace: 'Workplace',
     workstation: 'Workstation',
+    trolley: 'Trolley',
   },
   login: {
     submitButton: 'Login',
@@ -74,6 +75,7 @@ const translations = {
       scanTextPlaceholder: 'scan...',
       scanWorkplacePlaceholder: 'Scan workplace...',
       scanWorkstationPlaceholder: 'Scan workstation...',
+      scanTrolleyPlaceholder: 'Scan trolley...',
     },
   },
   activities: {

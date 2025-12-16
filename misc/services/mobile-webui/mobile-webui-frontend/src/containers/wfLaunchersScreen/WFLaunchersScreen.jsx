@@ -18,6 +18,7 @@ import { useMobileLocation } from '../../hooks/useMobileLocation';
 import { useLaunchers } from './useLaunchers';
 import { APPLICATION_ID_Distribution } from '../../apps/distribution/constants';
 import DistributionJobsListActions from '../../apps/distribution/containers/DistributionJobsListActions';
+import { useCurrentTrolley } from '../../api/trolley';
 
 const WFLaunchersScreen = () => {
   const { history } = useScreenDefinition({ screenId: 'WFLaunchersScreen', back: '/' });
@@ -31,9 +32,12 @@ const WFLaunchersScreen = () => {
   const { isWorkplaceLoading, isWorkplaceRequired, workplace, setWorkplaceByQRCode } = useCurrentWorkplace({
     applicationId,
   });
+  const { isTrolleyRequired, isTrolleyLoading, trolley, setTrolleyByScannedCode } = useCurrentTrolley({
+    applicationId,
+  });
   const filters = useFilters({ applicationId });
   const facets = useFacets({ applicationId });
-  const { isLaunchersLoading, launchers, filterByQRCode } = useLaunchers({
+  const { isLaunchersLoading, launchers, filterByQRCode, actions } = useLaunchers({
     applicationId,
     showFilterByQRCode,
     filters,
@@ -43,6 +47,7 @@ const WFLaunchersScreen = () => {
 
   const workplaceName = workplace?.name;
   const workstationName = workstation?.name;
+  const trolleyName = trolley?.caption;
   useEffect(() => {
     dispatch(
       updateHeaderEntry({
@@ -58,10 +63,15 @@ const WFLaunchersScreen = () => {
             value: workstationName,
             hidden: !workstationName,
           },
+          {
+            caption: trl('general.trolley'),
+            value: trolleyName,
+            hidden: !trolleyName,
+          },
         ],
       })
     );
-  }, [url, workplaceName, workstationName]);
+  }, [url, workplaceName, workstationName, trolleyName]);
 
   //
   // Get Workstation
@@ -104,6 +114,26 @@ const WFLaunchersScreen = () => {
   }
 
   //
+  // Trolley
+  if (isTrolleyLoading) {
+    return (
+      <div className="container launchers-container">
+        <Spinner />
+      </div>
+    );
+  } else if (isTrolleyRequired && !trolley) {
+    return (
+      <div className="container launchers-container">
+        <BarcodeScannerComponent
+          onResolvedResult={({ scannedBarcode }) => setTrolleyByScannedCode(scannedBarcode)}
+          inputPlaceholderText={trl('components.BarcodeScannerComponent.scanTrolleyPlaceholder')}
+          continuousRunning={true}
+        />
+      </div>
+    );
+  }
+
+  //
   // Launchers
   return (
     <div className="container launchers-container">
@@ -126,7 +156,7 @@ const WFLaunchersScreen = () => {
       )}
       <br />
       {applicationId === APPLICATION_ID_Distribution && (
-        <DistributionJobsListActions launchers={launchers} disabled={isLaunchersLoading} />
+        <DistributionJobsListActions actions={actions} disabled={isLaunchersLoading} />
       )}
       {launchers &&
         launchers.map((launcher, index) => {

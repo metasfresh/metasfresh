@@ -1,6 +1,7 @@
 package de.metas.distribution.mobileui.launchers;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.mobileui.DistributionMobileApplication;
@@ -30,6 +31,8 @@ import de.metas.workplace.Workplace;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -46,6 +49,9 @@ public class DistributionWorkflowLaunchersProvider
 	@NonNull private final DistributionProductService productService;
 	@NonNull private final DistributionSourceDocService sourceDocService;
 
+	private static final String ACTION_DROP_ALL = "dropAll";
+	private static final String ACTION_PRINT_IN_TRASIT_REPORT = "printInTransitReport";
+
 	public WorkflowLaunchersList provideLaunchers(@NonNull WorkflowLaunchersQuery query)
 	{
 		query.assertNoFilterByQRCode();
@@ -59,7 +65,15 @@ public class DistributionWorkflowLaunchersProvider
 						.excludeAlreadyStarted(query.isExcludeAlreadyStarted())
 						.build()
 		);
-		return toWorkflowLaunchersList(jobReferences);
+
+		return WorkflowLaunchersList.builder()
+				.timestamp(SystemTime.asInstant())
+				.launchers(jobReferences.stream().map(this::toWorkflowLauncher).collect(ImmutableList.toImmutableList()))
+				.orderByFields(config.getSorting().toWorkflowLauncherCaptionOrderBys())
+				.actions(query.isComputeActions()
+						? computeActions(jobReferences, query.getUserId())
+						: null)
+				.build();
 	}
 
 	private MobileUIDistributionConfig getConfig()
@@ -90,7 +104,9 @@ public class DistributionWorkflowLaunchersProvider
 				.locatorToId(workplace != null ? workplace.getPickFromLocatorId() : null);
 	}
 
-	private WorkflowLaunchersList toWorkflowLaunchersList(final List<DDOrderReference> jobReferences)
+	private WorkflowLaunchersList toWorkflowLaunchersList(
+			@NonNull final List<DDOrderReference> jobReferences,
+			@NonNull final UserId userId)
 	{
 		final DistributionJobSorting sorting = getConfig().getSorting();
 
@@ -171,4 +187,37 @@ public class DistributionWorkflowLaunchersProvider
 		}
 	}
 
+	@NonNull
+	private ImmutableSet<String> computeActions(
+			@NonNull final List<DDOrderReference> jobReferences,
+			@NonNull final UserId userId)
+	{
+		final ImmutableSet.Builder<String> actions = ImmutableSet.builder();
+
+		if (hasInTransitSchedules(jobReferences, userId))
+		{
+			actions.add(ACTION_DROP_ALL);
+			actions.add(ACTION_PRINT_IN_TRASIT_REPORT);
+		}
+
+		return actions.build();
+	}
+
+	private boolean hasInTransitSchedules(
+			@NonNull final List<DDOrderReference> jobReferences,
+			@NonNull final UserId userId)
+	{
+		final LocatorId inTransitLocatorId = warehouseService.getTrolleyByUserId(userId)
+				.map(LocatorQRCode::getLocatorId)
+				.orElse(null);
+
+		if (inTransitLocatorId != null)
+		{
+			return loadingSupportServices.hasInTransitSchedules(inTransitLocatorId);
+		}
+		else
+		{
+			return jobReferences.stream().anyMatch(DDOrderReference::isInTransit);
+		}
+	}
 }

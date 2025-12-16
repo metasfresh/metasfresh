@@ -23,6 +23,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.warehouse.LocatorId;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -56,8 +57,6 @@ public class DDOrderMoveScheduleService
 	{
 		return ddOrderMoveScheduleRepository.createScheduleToMoveBulk(requests);
 	}
-
-	public ImmutableList<DDOrderMoveSchedule> getByDDOrderId(@NonNull final DDOrderId ddOrderId) {return ddOrderMoveScheduleRepository.getByDDOrderId(ddOrderId);}
 
 	public ImmutableList<DDOrderMoveSchedule> getByDDOrderLineIds(final Set<DDOrderLineId> ddOrderLineIds) {return ddOrderMoveScheduleRepository.getByDDOrderLineIds(ddOrderLineIds);}
 
@@ -174,7 +173,7 @@ public class DDOrderMoveScheduleService
 				.execute();
 	}
 
-	public List<DDOrderMoveSchedule> dropTo(@NonNull final DDOrderDropToRequest request)
+	public ImmutableList<DDOrderMoveSchedule> dropTo(@NonNull final DDOrderDropToRequest request)
 	{
 		return DDOrderDropToCommand.builder()
 				.ppOrderSourceHUService(ppOrderSourceHUService)
@@ -195,4 +194,15 @@ public class DDOrderMoveScheduleService
 				.build()
 				.execute();
 	}
+
+	public Set<DDOrderId> retrieveDDOrderIdsInTransit(@NonNull final LocatorId inTransitLocatorId)
+	{
+		return ddOrderMoveScheduleRepository.retrieveDDOrderIdsInTransit(inTransitLocatorId);
+	}
+
+	public boolean hasInTransitSchedules(@NonNull final LocatorId inTransitLocatorId)
+	{
+		return ddOrderMoveScheduleRepository.queryInTransitSchedules(inTransitLocatorId).anyMatch();
+	}
+
 }

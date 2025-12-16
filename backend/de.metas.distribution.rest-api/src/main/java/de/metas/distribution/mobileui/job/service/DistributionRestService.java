@@ -33,6 +33,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.eevolution.model.I_DD_Order;
 import org.springframework.stereotype.Service;
 
@@ -132,9 +134,11 @@ public class DistributionRestService
 		{
 			return DistributionJobPickFromCommand.builder()
 					.trxManager(trxManager)
+					.warehouseService(warehouseService)
 					.huService(huService)
 					.ddOrderMoveScheduleService(ddOrderMoveScheduleService)
 					.loadingSupportServices(loadingSupportServices)
+					.userId(callerId)
 					.job(job)
 					.lineId(event.getLineId())
 					.stepId(event.getDistributionStepId())
@@ -145,7 +149,6 @@ public class DistributionRestService
 		{
 			return newDropToCommand()
 					.userId(callerId)
-					.onlyJobId(jobId)
 					.onlyJobId(jobId)
 					.onlyStepId(event.getDistributionStepId())
 					.dropToQRCode(event.getDropToNonNull().getQrCode())
@@ -172,8 +175,14 @@ public class DistributionRestService
 
 	public void dropAll(final JsonDropAllRequest request, final UserId callerId)
 	{
+		final MobileUIDistributionConfig config = getConfig();
+		final LocatorId inTransitLocatorId = config.isRequireTrolley()
+				? warehouseService.getTrolleyByUserId(callerId).map(LocatorQRCode::getLocatorId).orElse(null)
+				: null;
+
 		newDropToCommand()
 				.userId(callerId)
+				.inTransitLocatorId(inTransitLocatorId)
 				.dropToQRCode(request.getDropToQRCode())
 				.completeJobsIfFullyMoved(true)
 				.build().execute();

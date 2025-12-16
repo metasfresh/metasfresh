@@ -4,6 +4,8 @@ import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedule;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleCreateRequest;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderPickFromRequest;
+import de.metas.distribution.mobileui.external_services.hu.DistributionHUService;
+import de.metas.distribution.mobileui.external_services.warehouse.DistributionWarehouseService;
 import de.metas.distribution.mobileui.job.model.DistributionJob;
 import de.metas.distribution.mobileui.job.model.DistributionJobLine;
 import de.metas.distribution.mobileui.job.model.DistributionJobLineId;
@@ -12,7 +14,6 @@ import de.metas.distribution.mobileui.job.model.DistributionJobStepId;
 import de.metas.distribution.mobileui.job.service.DistributionJobLoader;
 import de.metas.distribution.mobileui.job.service.DistributionJobLoaderSupportingServices;
 import de.metas.distribution.mobileui.rest_api.json.JsonDistributionEvent;
-import de.metas.distribution.mobileui.external_services.hu.DistributionHUService;
 import de.metas.handlingunits.HUContextHolder;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
@@ -23,14 +24,18 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.scannable_code.ScannedCode;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.qrcode.LocatorQRCode;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 public class DistributionJobPickFromCommand
 {
@@ -38,12 +43,14 @@ public class DistributionJobPickFromCommand
 
 	// Services
 	@NonNull private final ITrxManager trxManager;
+	@NonNull private final DistributionWarehouseService warehouseService;
 	@NonNull private final DistributionHUService huService;
 	@NonNull private final DDOrderMoveScheduleService ddOrderMoveScheduleService;
 	@NonNull private final DistributionJobLoaderSupportingServices loadingSupportServices;
 	@NonNull private final PackToHUsProducer packToHUsProducer;
 
 	// Params
+	@NonNull private final UserId userId;
 	@NonNull private final DistributionJob job;
 	@Nullable private final DistributionJobLineId lineId;
 	@Nullable private final DistributionJobStepId stepId;
@@ -56,20 +63,27 @@ public class DistributionJobPickFromCommand
 	@Builder
 	public DistributionJobPickFromCommand(
 			@NonNull final ITrxManager trxManager,
+			@NonNull final DistributionWarehouseService warehouseService,
 			@NonNull final DistributionHUService huService,
 			@NonNull final DDOrderMoveScheduleService ddOrderMoveScheduleService,
 			@NonNull final DistributionJobLoaderSupportingServices loadingSupportServices,
 			//
+			@NonNull final UserId userId,
 			@NonNull final DistributionJob job,
 			@Nullable final DistributionJobLineId lineId,
 			@Nullable final DistributionJobStepId stepId,
 			@Nullable final JsonDistributionEvent.PickFrom pickFrom)
 	{
+		// services
 		this.trxManager = trxManager;
+		this.warehouseService = warehouseService;
 		this.huService = huService;
 		this.ddOrderMoveScheduleService = ddOrderMoveScheduleService;
 		this.loadingSupportServices = loadingSupportServices;
 		this.packToHUsProducer = huService.newPackToHUsProducer();
+
+		// params
+		this.userId = userId;
 		this.job = job;
 		this.lineId = lineId;
 		this.stepId = stepId;
@@ -99,6 +113,7 @@ public class DistributionJobPickFromCommand
 			final DDOrderMoveSchedule schedule = ddOrderMoveScheduleService.pickFromHU(DDOrderPickFromRequest.builder()
 					.scheduleId(stepId.toScheduleId())
 					.huId(getHuIdToPick(changedJob.getLineByStepId(stepId)))
+					.inTransitLocatorId(getInTransitLocatorId().orElse(null))
 					.build());
 
 			final DistributionJobStep changedStep = DistributionJobLoader.toDistributionJobStep(schedule, loadingSupportServices);
@@ -215,5 +230,10 @@ public class DistributionJobPickFromCommand
 						.build()).getSingleTopLevelTURecord();
 
 		return HuId.ofRepoId(splitHU.getM_HU_ID());
+	}
+
+	private Optional<LocatorId> getInTransitLocatorId()
+	{
+		return warehouseService.getTrolleyByUserId(userId).map(LocatorQRCode::getLocatorId);
 	}
 }

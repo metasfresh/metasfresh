@@ -64,6 +64,7 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 		final MobileUIDistributionConfig config = distributionRestService.getConfig();
 
 		return applicationInfo.toBuilder()
+				.requiresTrolley(config.isRequireTrolley())
 				.showFilters(true)
 				.maxStartedLaunchers(config.getMaxStartedLaunchers())
 				.isAllowStartNextJobOnly(config.isAllowStartNextJobOnly())
