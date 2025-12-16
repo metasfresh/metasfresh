@@ -112,3 +112,48 @@ UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMEST
 INSERT INTO AD_SQLColumn_SourceTableColumn (AD_Client_ID,AD_Column_ID,AD_Org_ID,AD_SQLColumn_SourceTableColumn_ID,AD_Table_ID,Created,CreatedBy,FetchTargetRecordsMethod,IsActive,Link_Column_ID,Source_Column_ID,Source_Table_ID,Updated,UpdatedBy) VALUES (0,591758,0,540186,321,TO_TIMESTAMP('2025-12-16 13:07:18.783000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'L','Y',3564,3564,322,TO_TIMESTAMP('2025-12-16 13:07:18.783000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
+
+
+
+-- UI Element: Inventur(168,D) -> Bestandszählungs Position(256,D) -> main -> 10 -> default.Gezählt
+-- Column: M_InventoryLine.IsCounted
+-- 2025-12-16T13:15:48.897Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=80,Updated=TO_TIMESTAMP('2025-12-16 13:15:48.897000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=552506
+;
+
+-- UI Element: Inventur(168,D) -> Bestandszählungs Position(256,D) -> main -> 10 -> packing.Packvorschrift
+-- Column: M_InventoryLine.M_HU_PI_Item_Product_ID
+-- 2025-12-16T13:15:48.910Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=90,Updated=TO_TIMESTAMP('2025-12-16 13:15:48.910000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=551319
+;
+
+-- UI Element: Inventur(168,D) -> Bestandszählungs Position(256,D) -> main -> 10 -> packing.Packvorschrift (LU)
+-- Column: M_InventoryLine.M_LU_HU_PI_ID
+-- 2025-12-16T13:15:48.915Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=100,Updated=TO_TIMESTAMP('2025-12-16 13:15:48.915000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=637306
+;
+
+-- UI Element: Inventur(168,D) -> Bestandszählungs Position(256,D) -> main -> 10 -> default.Handling Unit
+-- Column: M_InventoryLine.M_HU_ID
+-- 2025-12-16T13:15:48.920Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=110,Updated=TO_TIMESTAMP('2025-12-16 13:15:48.920000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=551318
+;
+
+-- UI Element: Inventur(168,D) -> Bestandszählungs Position(256,D) -> main -> 10 -> default.Beschreibung
+-- Column: M_InventoryLine.Description
+-- 2025-12-16T13:15:48.925Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=120,Updated=TO_TIMESTAMP('2025-12-16 13:15:48.925000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=551254
+;
+
+-- UI Element: Inventur(168,D) -> Bestandszählungs Position(256,D) -> main -> 10 -> default.Inventory Type
+-- Column: M_InventoryLine.InventoryType
+-- 2025-12-16T13:15:48.930Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=130,Updated=TO_TIMESTAMP('2025-12-16 13:15:48.930000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=551255
+;
+
+-- UI Element: Inventur(168,D) -> Bestandszählungs Position(256,D) -> main -> 20 -> org&client.Sektion
+-- Column: M_InventoryLine.AD_Org_ID
+-- 2025-12-16T13:15:48.936Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=140,Updated=TO_TIMESTAMP('2025-12-16 13:15:48.936000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=551246
+;
+
