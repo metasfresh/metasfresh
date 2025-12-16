@@ -1,10 +1,15 @@
-package de.metas.distribution.ddorder.movement.schedule;
+package de.metas.distribution.ddorder.movement.schedule.commands.pick_from;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.movement.generate.DDOrderMovementHelper;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedule;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleId;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedulePickedHU;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedulePickedHUs;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -27,7 +32,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 
-class DDOrderPickFromCommand
+public class DDOrderPickFromCommand
 {
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);

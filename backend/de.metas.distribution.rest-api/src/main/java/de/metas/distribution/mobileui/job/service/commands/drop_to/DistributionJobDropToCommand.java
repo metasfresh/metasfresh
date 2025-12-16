@@ -7,7 +7,7 @@ import com.google.common.collect.Maps;
 import de.metas.dao.ValueRestriction;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderQuery;
-import de.metas.distribution.ddorder.movement.schedule.DDOrderDropToRequest;
+import de.metas.distribution.ddorder.movement.schedule.commands.drop_to.DDOrderDropToRequest;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedule;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleId;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;

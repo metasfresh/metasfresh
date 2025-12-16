@@ -1,5 +1,6 @@
-package de.metas.distribution.ddorder.movement.schedule;
+package de.metas.distribution.ddorder.movement.schedule.commands.pick_from;
 
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleId;
 import de.metas.handlingunits.HuId;
 import lombok.Builder;
 import lombok.NonNull;

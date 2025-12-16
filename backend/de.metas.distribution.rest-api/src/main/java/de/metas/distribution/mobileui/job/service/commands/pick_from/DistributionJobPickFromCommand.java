@@ -3,7 +3,7 @@ package de.metas.distribution.mobileui.job.service.commands.pick_from;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedule;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleCreateRequest;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
-import de.metas.distribution.ddorder.movement.schedule.DDOrderPickFromRequest;
+import de.metas.distribution.ddorder.movement.schedule.commands.pick_from.DDOrderPickFromRequest;
 import de.metas.distribution.mobileui.external_services.hu.DistributionHUService;
 import de.metas.distribution.mobileui.external_services.warehouse.DistributionWarehouseService;
 import de.metas.distribution.mobileui.job.model.DistributionJob;
