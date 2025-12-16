@@ -1,10 +1,8 @@
 package de.metas.distribution.mobileui.job.model;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.distribution.ddorder.DDOrderId;
-import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleId;
 import de.metas.distribution.mobileui.external_services.sourcedoc.ManufacturingOrderRef;
 import de.metas.distribution.mobileui.external_services.sourcedoc.PlantInfo;
 import de.metas.distribution.mobileui.external_services.sourcedoc.SalesOrderRef;
@@ -188,14 +186,6 @@ public class DistributionJob
 	public Stream<DistributionJobStep> streamSteps()
 	{
 		return lines.stream().flatMap(line -> line.getSteps().stream());
-	}
-
-	public ImmutableSet<DDOrderMoveScheduleId> getInTransitScheduleIds()
-	{
-		return streamSteps()
-				.filter(DistributionJobStep::isInTransit)
-				.map(DistributionJobStep::getScheduleId)
-				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	public boolean isFullyMoved()
