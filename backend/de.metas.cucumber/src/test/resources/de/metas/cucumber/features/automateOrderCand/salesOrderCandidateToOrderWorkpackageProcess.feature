@@ -36,7 +36,7 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
       | pp_product_priceChange | plv_scenario_14042022             | product_priceChange_14042022 | 20.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
       | Identifier      | Name                     | OPT.IsCustomer | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.C_BPartner_Location_ID | GLN           | deliveryRule | C_Incoterms_Customer_ID.Value | IncotermLocation        |
-      | olCand_Customer | olCand_Customer_14042022 | Y              | N            | ps_scenario_14042022          | olCand_Customer_location   | 1354423215434 | F            | TB01                          | partnerIncotermLocation |
+      | olCand_Customer | olCand_Customer_14042022 | Y              | N            | ps_scenario_14042022          | olCand_Customer_location   | 1354423215434 | F            | EXW                           | partnerIncotermLocation |
     And metasfresh contains C_BPartner_Locations:
       | Identifier               | GLN           | C_BPartner_ID.Identifier |
       | olCand_Customer_location | 1354423215434 | olCand_Customer          |
