@@ -49,7 +49,7 @@ public class DistributionWorkflowLaunchersProvider
 	@NonNull private final DistributionSourceDocService sourceDocService;
 
 	private static final String ACTION_DROP_ALL = "dropAll";
-	private static final String ACTION_PRINT_IN_TRASIT_REPORT = "printInTransitReport";
+	private static final String ACTION_PRINT_IN_TRANSIT_REPORT = "printMaterialInTransitReport";
 
 	public WorkflowLaunchersList provideLaunchers(@NonNull WorkflowLaunchersQuery query)
 	{
@@ -183,7 +183,7 @@ public class DistributionWorkflowLaunchersProvider
 		if (hasInTransitSchedules(jobReferences, userId))
 		{
 			actions.add(ACTION_DROP_ALL);
-			actions.add(ACTION_PRINT_IN_TRASIT_REPORT);
+			actions.add(ACTION_PRINT_IN_TRANSIT_REPORT);
 		}
 
 		return actions.build();

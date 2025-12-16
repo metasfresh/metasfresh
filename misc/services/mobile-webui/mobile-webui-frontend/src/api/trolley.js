@@ -25,6 +25,9 @@ export const useCurrentTrolley = ({ applicationId }) => {
     setTrolleyByScannedCode: (scannedCode) => {
       return postCurrentTrolley({ scannedCode }).then((data) => setTrolley(data?.trolley ?? null));
     },
+    clearTrolley: () => {
+      setTrolley(null);
+    },
   };
 };
 

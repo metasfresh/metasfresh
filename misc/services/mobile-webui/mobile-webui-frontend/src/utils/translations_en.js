@@ -141,6 +141,7 @@ const translations = {
       qrcode: {
         differentProduct: 'The scanned QR Product does not match',
       },
+      printMaterialInTransitReport: 'In Transit Report',
     },
     confirmButton: {
       default: {

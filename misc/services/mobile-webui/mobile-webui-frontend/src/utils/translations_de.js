@@ -144,6 +144,7 @@ const translations = {
       qrcode: {
         differentProduct: 'Das gescannte QR Produkt stimmt nicht mit dem im Pickauftrag überein',
       },
+      printMaterialInTransitReport: 'Materialbegleitschein',
     },
     confirmButton: {
       default: {

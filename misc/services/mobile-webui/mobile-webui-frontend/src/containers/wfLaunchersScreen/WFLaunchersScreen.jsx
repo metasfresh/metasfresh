@@ -32,7 +32,7 @@ const WFLaunchersScreen = () => {
   const { isWorkplaceLoading, isWorkplaceRequired, workplace, setWorkplaceByQRCode } = useCurrentWorkplace({
     applicationId,
   });
-  const { isTrolleyRequired, isTrolleyLoading, trolley, setTrolleyByScannedCode } = useCurrentTrolley({
+  const { isTrolleyRequired, isTrolleyLoading, trolley, setTrolleyByScannedCode, clearTrolley } = useCurrentTrolley({
     applicationId,
   });
   const filters = useFilters({ applicationId });
@@ -42,12 +42,11 @@ const WFLaunchersScreen = () => {
     showFilterByQRCode,
     filters,
     facets,
-    isEnabled: !isWorkplaceLoading,
+    isEnabled: !isWorkplaceLoading && !isTrolleyLoading,
   });
 
   const workplaceName = workplace?.name;
   const workstationName = workstation?.name;
-  const trolleyName = trolley?.caption;
   useEffect(() => {
     dispatch(
       updateHeaderEntry({
@@ -63,15 +62,10 @@ const WFLaunchersScreen = () => {
             value: workstationName,
             hidden: !workstationName,
           },
-          {
-            caption: trl('general.trolley'),
-            value: trolleyName,
-            hidden: !trolleyName,
-          },
         ],
       })
     );
-  }, [url, workplaceName, workstationName, trolleyName]);
+  }, [url, workplaceName, workstationName]);
 
   //
   // Get Workstation
@@ -143,6 +137,15 @@ const WFLaunchersScreen = () => {
           caption={filterByQRCode ? toQRCodeDisplayable(filterByQRCode) : 'Scan barcode'}
           onClick={() => history.push(appLaunchersBarcodeScannerLocation({ applicationId }))}
           testId="filterByQRCode-button"
+        />
+      )}
+      {isTrolleyRequired && (
+        <ButtonWithIndicator
+          additionalCssClass="action-button"
+          typeFASIconName="fa-solid fa-cart-shopping"
+          caption={trolley?.caption ?? trl('components.BarcodeScannerComponent.scanTrolleyPlaceholder')}
+          onClick={() => clearTrolley()}
+          testId="scanTrolley-button"
         />
       )}
       {showFilters && (

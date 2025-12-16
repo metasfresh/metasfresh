@@ -275,4 +275,14 @@ public class DistributionRestService
 				.build();
 	}
 
+	public void printMaterialInTransitReport(
+			@NonNull final UserId userId,
+			@NonNull final String adLanguage)
+	{
+		@NonNull final LocatorId inTransitLocatorId = warehouseService.getTrolleyByUserId(userId)
+				.map(LocatorQRCode::getLocatorId)
+				.orElseThrow(() -> new AdempiereException("No trolley found for user: " + userId));
+
+		ddOrderMoveScheduleService.printMaterialInTransitReport(inTransitLocatorId, adLanguage);
+	}
 }

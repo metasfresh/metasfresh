@@ -211,4 +211,15 @@ public class DDOrderMoveScheduleService
 		return ddOrderMoveScheduleRepository.queryInTransitSchedules(inTransitLocatorId).anyMatch();
 	}
 
+	public void printMaterialInTransitReport(
+			@NonNull final LocatorId inTransitLocatorId,
+			@NonNull String adLanguage)
+	{
+		MaterialInTransitReportCommand.builder()
+				.adLanguage(adLanguage)
+				.inTransitLocatorId(inTransitLocatorId)
+				.build()
+				.execute();
+	}
+
 }

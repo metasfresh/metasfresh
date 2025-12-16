@@ -260,4 +260,9 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 		final DistributionJob job = distributionRestService.complete(DistributionJobId.ofWFProcessId(wfProcessId), callerId);
 		return toWFProcess(job);
 	}
+
+	public void printMaterialInTransitReport(@NonNull final UserId userId, @NonNull final String adLanguage)
+	{
+		distributionRestService.printMaterialInTransitReport(userId, adLanguage);
+	}
 }
