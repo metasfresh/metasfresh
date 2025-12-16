@@ -107,7 +107,7 @@ FROM c_order porder
                       CASE
                           WHEN porder.IsDropShip = 'Y'
                               THEN COALESCE(porder.dropship_location_id, porder.c_bpartner_location_id)
-                              ELSE porder.c_bpartner_location_id
+                              ELSE (select wh.c_bpartner_location_id from m_warehouse wh where wh.m_warehouse_id = porder.m_warehouse_id)
                       END
 WHERE porder.c_order_id = p_order_id::numeric
   AND porder.issotrx = 'N';
