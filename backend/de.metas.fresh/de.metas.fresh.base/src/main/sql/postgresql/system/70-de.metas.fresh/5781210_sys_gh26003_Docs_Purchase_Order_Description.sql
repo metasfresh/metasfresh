@@ -6,25 +6,26 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Orde
                                                                                               p_language character varying)
     RETURNS TABLE
             (
-                description   character varying,
-                documentno    character varying,
-                reference     text,
-                dateordered   timestamp WITHOUT TIME ZONE,
-                datepromised  timestamp WITH TIME ZONE,
-                deliverto     character varying,
-                bp_value      character varying,
-                eori          character varying,
+                description        character varying,
+                documentno         character varying,
+                reference          text,
+                dateordered        timestamp WITHOUT TIME ZONE,
+                datepromised       timestamp WITH TIME ZONE,
+                deliverto          character varying,
+                bp_value           character varying,
+                eori               character varying,
                 customernoatvendor character varying,
-                cont_name     text,
-                cont_phone    character varying,
-                cont_fax      character varying,
-                cont_email    character varying,
-                sr_name       text,
-                sr_phone      character varying,
-                sr_fax        character varying,
-                sr_email      character varying,
-                printname     character varying,
-                billtoaddress character varying
+                cont_name          text,
+                cont_phone         character varying,
+                cont_fax           character varying,
+                cont_email         character varying,
+                sr_name            text,
+                sr_phone           character varying,
+                sr_fax             character varying,
+                sr_email           character varying,
+                printname          character varying,
+                billtoaddress      character varying,
+                incoterms          character varying
             )
     STABLE
     LANGUAGE sql
@@ -35,12 +36,10 @@ SELECT o.description                         AS description,
        TRIM(o.poreference)                   AS reference,
        o.dateordered                         AS dateordered,
        o.datepromised                        AS datepromised,
-       CASE
-           WHEN inc.value != 'EXW' THEN REPLACE(
-                   REPLACE(o.DeliveryToAddress, E'\r\n', ' | '),
-                   E'\n', ' | '
-                                        )
-       END                                   AS deliverto,
+       REPLACE(
+               REPLACE(o.DeliveryToAddress, E'\r\n', ' | '),
+               E'\n', ' | '
+       )                                     AS deliverto,
        bp.value                              AS bp_value,
        bp.eori                               AS eori,
        bp.customernoatvendor                 AS customernoatvendor,
@@ -64,7 +63,8 @@ SELECT o.description                         AS description,
        REPLACE(
                REPLACE(o.billtoaddress, E'\r\n', ' | '),
                E'\n', ' | '
-       )                                     AS billtoaddress
+       )                                     AS billtoaddress,
+       inc.value                             AS incoterms
 FROM C_Order o
          INNER JOIN C_BPartner bp ON o.C_BPartner_ID = bp.C_BPartner_ID
          LEFT OUTER JOIN AD_User srep ON o.SalesRep_ID = srep.AD_User_ID
@@ -73,6 +73,7 @@ FROM C_Order o
          LEFT OUTER JOIN C_Greeting srgr ON srep.C_Greeting_ID = srgr.C_Greeting_ID
          LEFT OUTER JOIN C_DocType dt ON o.C_DocTypeTarget_ID = dt.C_DocType_ID
          LEFT OUTER JOIN C_DocType_Trl dtt ON o.C_DocTypeTarget_ID = dtt.C_DocType_ID AND dtt.AD_Language = p_language
+         LEFT OUTER JOIN C_Incoterms inc ON o.c_incoterms_id = inc.c_incoterms_id
 
 WHERE o.c_order_id = record_id
 $$
