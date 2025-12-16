@@ -96,7 +96,8 @@ BEGIN
 
     -- Create temporary table to hold line distribution
     -- Assign each line to a document number (0 = original, 1 = _02, 2 = _03, etc.)
-    CREATE TEMP TABLE IF NOT EXISTS temp_line_distribution ON COMMIT DROP AS
+    DROP TABLE IF EXISTS temp_line_distribution;
+    CREATE TEMP TABLE temp_line_distribution ON COMMIT DROP AS
     WITH numbered_lines AS (
         SELECT
             m_inventoryline_id,
