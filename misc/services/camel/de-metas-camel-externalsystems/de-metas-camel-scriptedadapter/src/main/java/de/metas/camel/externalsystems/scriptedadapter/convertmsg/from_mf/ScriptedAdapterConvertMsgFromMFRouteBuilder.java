@@ -215,7 +215,8 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 		exchange.getIn().removeHeaders("CamelHttp*");
 		exchange.getIn().setHeader(AUTHORIZATION, endpointParameters.getToken());
 		exchange.getIn().setHeader(Exchange.HTTP_URI, endpointParameters.getEndpointUrl());
-		exchange.getIn().setHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+		// **temporary** workaround: current user needs text/plain
+		exchange.getIn().setHeader(Exchange.CONTENT_TYPE, MediaType.TEXT_PLAIN);
 		exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.valueOf(endpointParameters.getMethod()));
 		exchange.getIn().setBody(msgFromMfContext.getScriptReturnValue());
 	}
@@ -229,7 +230,7 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 
 		exchange.getIn().removeHeaders("CamelHttp*");
 		exchange.getIn().setHeader(Exchange.HTTP_URI, endpointParameters.getEndpointUrl() + "&sig=" + endpointParameters.getSasSignature());
-		exchange.getIn().setHeader(Exchange.CONTENT_TYPE, MediaType.APPLICATION_JSON);
+		exchange.getIn().setHeader(Exchange.CONTENT_TYPE, MediaType.TEXT_PLAIN);
 		exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.valueOf(endpointParameters.getMethod()));
 		exchange.getIn().setBody(msgFromMfContext.getScriptReturnValue());
 	}
