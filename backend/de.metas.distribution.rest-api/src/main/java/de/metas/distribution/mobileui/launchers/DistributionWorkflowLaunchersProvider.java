@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.mobileui.DistributionMobileApplication;
-import de.metas.distribution.mobileui.config.DistributionJobSorting;
 import de.metas.distribution.mobileui.config.MobileUIDistributionConfig;
 import de.metas.distribution.mobileui.config.MobileUIDistributionConfigRepository;
 import de.metas.distribution.mobileui.external_services.product.DistributionProductService;
@@ -102,19 +101,6 @@ public class DistributionWorkflowLaunchersProvider
 				.responsibleId(userId)
 				.warehouseToId(workplace != null ? workplace.getWarehouseId() : null)
 				.locatorToId(workplace != null ? workplace.getPickFromLocatorId() : null);
-	}
-
-	private WorkflowLaunchersList toWorkflowLaunchersList(
-			@NonNull final List<DDOrderReference> jobReferences,
-			@NonNull final UserId userId)
-	{
-		final DistributionJobSorting sorting = getConfig().getSorting();
-
-		return WorkflowLaunchersList.builder()
-				.launchers(jobReferences.stream().map(this::toWorkflowLauncher).collect(ImmutableList.toImmutableList()))
-				.orderByFields(sorting.toWorkflowLauncherCaptionOrderBys())
-				.timestamp(SystemTime.asInstant())
-				.build();
 	}
 
 	private WorkflowLauncher toWorkflowLauncher(@NonNull final DDOrderReference ddOrderReference)

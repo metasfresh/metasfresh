@@ -22,12 +22,10 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
@@ -160,21 +158,6 @@ public class DistributionJob
 				.filter(line -> line.getStepById(stepId).isPresent())
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("No line found for " + stepId));
-	}
-
-	public DistributionJobStep getStepById(@NonNull final DistributionJobStepId stepId)
-	{
-		return getStepByIdIfExists(stepId)
-				.orElseThrow(() -> new AdempiereException("No step found for " + stepId));
-	}
-
-	@NonNull
-	private Optional<DistributionJobStep> getStepByIdIfExists(final @NotNull DistributionJobStepId stepId)
-	{
-		return lines.stream()
-				.map(line -> line.getStepById(stepId).orElse(null))
-				.filter(Objects::nonNull)
-				.findFirst();
 	}
 
 	@Nullable
