@@ -188,7 +188,6 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	@NonNull private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 	@NonNull private final IBPBankAccountDAO bankAccountDAO = Services.get(IBPBankAccountDAO.class);
-	@NonNull private final ISEPADocumentDAO sepaDocumentDAO = Services.get(ISEPADocumentDAO.class);
 
 	private static final String encoding = "UTF-8";
 
@@ -337,9 +336,9 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			final CreditTransferTransactionInformation10CH cdtTrfTxInf = createCreditTransferTransactionInformation(pmtInf, sepaLine);
 			pmtInf.getCdtTrfTxInf().add(cdtTrfTxInf);
 
-			if (sepaLine.isGroupLine())
+			if (sepaLine.isGroupLine() && sepaLine.getNumberOfReferences() > 0)
 			{
-				pmtInf.setNbOfTxs(String.valueOf(sepaDocumentDAO.getNumberOfReferences(sepaLine)));
+				pmtInf.setNbOfTxs(String.valueOf(sepaLine.getNumberOfReferences()));
 			}
 
 			final BigDecimal transactionAmount = cdtTrfTxInf.getAmt().getInstdAmt().getValue();

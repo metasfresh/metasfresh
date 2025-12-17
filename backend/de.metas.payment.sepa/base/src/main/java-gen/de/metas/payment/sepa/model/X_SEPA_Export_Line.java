@@ -15,7 +15,7 @@ public class X_SEPA_Export_Line extends org.compiere.model.PO implements I_SEPA_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -1640562923L;
+	private static final long serialVersionUID = 1832032358L;
 
     /** Standard Constructor */
     public X_SEPA_Export_Line (Properties ctx, int SEPA_Export_Line_ID, String trxName)
@@ -457,5 +457,17 @@ public class X_SEPA_Export_Line extends org.compiere.model.PO implements I_SEPA_
 	public boolean isGroupLine()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsGroupLine);
+	}
+
+	@Override
+	public void setNumberOfReferences (final int NumberOfReferences)
+	{
+		set_Value (COLUMNNAME_NumberOfReferences, NumberOfReferences);
+	}
+
+	@Override
+	public int getNumberOfReferences()
+	{
+		return get_ValueAsInt(COLUMNNAME_NumberOfReferences);
 	}
 }

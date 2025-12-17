@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.compiere.model.X_C_PaySelection.PAYSELECTIONTRXTYPE_DirectDebit;
 
 public class CreateSEPAExportFromPaySelectionCommandTest
 {
@@ -42,7 +43,7 @@ public class CreateSEPAExportFromPaySelectionCommandTest
 		final SEPATestHelper sepaTestHelper = new SEPATestHelper();
 		sepaTestHelper.createMockData();
 		final I_C_PaySelection paySelection = sepaTestHelper.getPaySelection();
-		paySelection.setPaySelectionTrxType("DD");
+		paySelection.setPaySelectionTrxType(PAYSELECTIONTRXTYPE_DirectDebit);
 		save(paySelection);
 		final CreateSEPAExportFromPaySelectionCommand command = new CreateSEPAExportFromPaySelectionCommand(paySelection, true);
 		sepaTestHelper.assertCommonDebitDirectCases(command.run());
@@ -54,7 +55,7 @@ public class CreateSEPAExportFromPaySelectionCommandTest
 		final SEPATestHelper sepaTestHelper = new SEPATestHelper();
 		sepaTestHelper.createMockData();
 		final I_C_PaySelection paySelection = sepaTestHelper.getPaySelection();
-		paySelection.setPaySelectionTrxType("DD");
+		paySelection.setPaySelectionTrxType(PAYSELECTIONTRXTYPE_DirectDebit);
 		save(paySelection);
 		final CreateSEPAExportFromPaySelectionCommand command = new CreateSEPAExportFromPaySelectionCommand(paySelection, false);
 		sepaTestHelper.assertCommonDebitDirectCases(command.run());

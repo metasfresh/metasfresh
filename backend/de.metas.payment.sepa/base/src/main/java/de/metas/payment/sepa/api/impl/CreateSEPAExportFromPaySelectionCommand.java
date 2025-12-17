@@ -330,7 +330,7 @@ class CreateSEPAExportFromPaySelectionCommand
 		exportLine.setIsGroupLine(true);
 		exportLine.setDescription(refList.getAggregatedDescription(invoiceBL::getByIds));
 		exportLine.setStructuredRemittanceInfo(refList.getAggregatedRemittanceInfo());
-		// TODO exportLine.set number of lines ...
+		exportLine.setNumberOfReferences(refList.size());
 
 		save(exportLine);
 

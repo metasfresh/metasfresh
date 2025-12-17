@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @EqualsAndHashCode
@@ -37,8 +38,7 @@ class AggregatedInvoicePaySelectionLines implements Iterable<I_C_PaySelectionLin
 
 	private AggregatedInvoicePaySelectionLines(@NonNull final Collection<I_C_PaySelectionLine> list)
 	{
-		this.list = list.stream()
-				.collect(ImmutableList.toImmutableList());
+		this.list = ImmutableList.copyOf(list);
 	}
 
 	@Override
@@ -65,8 +65,7 @@ class AggregatedInvoicePaySelectionLines implements Iterable<I_C_PaySelectionLin
 
 		return list.stream()
 				.map(I_C_PaySelectionLine::getPayAmt)
-				.reduce(BigDecimal::add)
-				.orElseThrow(() -> new AdempiereException("No Amt found in " + list));
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 
 	@NonNull
@@ -76,7 +75,7 @@ class AggregatedInvoicePaySelectionLines implements Iterable<I_C_PaySelectionLin
 		{
 			return ImmutableSet.of();
 		}
-		
+
 		return list.stream()
 				.map(line -> {
 					final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(line.getC_Invoice_ID());
@@ -96,19 +95,15 @@ class AggregatedInvoicePaySelectionLines implements Iterable<I_C_PaySelectionLin
 		{
 			return "";
 		}
-		
-		final List<String> descriptions = getInvoicesByInvoiceIds.apply(getInvoiceIds())
+
+		final String aggregatedDescription = getInvoicesByInvoiceIds.apply(getInvoiceIds())
 				.stream()
 				.map(I_C_Invoice::getDescription)
 				.filter(Check::isNotBlank)
-				.collect(ImmutableList.toImmutableList());
+				.distinct()
+				.collect(Collectors.joining(","));
 
-		if (Check.isEmpty(descriptions))
-		{
-			return "";
-		}
-
-		return StringUtils.trunc(String.join(",", descriptions), MAX_DESCRIPTION_LENGTH);
+		return StringUtils.trunc(aggregatedDescription, MAX_DESCRIPTION_LENGTH);
 	}
 
 	@NonNull
@@ -118,18 +113,14 @@ class AggregatedInvoicePaySelectionLines implements Iterable<I_C_PaySelectionLin
 		{
 			return "";
 		}
-		
-		final List<String> remittanceInfos = list.stream()
+
+		final String aggregatedRemittanceInfo = list.stream()
 				.map(I_C_PaySelectionLine::getReference)
 				.filter(Check::isNotBlank)
-				.collect(ImmutableList.toImmutableList());
+				.distinct()
+				.collect(Collectors.joining(","));
 
-		if (Check.isEmpty(remittanceInfos))
-		{
-			return "";
-		}
-
-		return StringUtils.trunc(String.join(",", remittanceInfos), MAX_REMITTANCE_LENGTH);
+		return StringUtils.trunc(aggregatedRemittanceInfo, MAX_REMITTANCE_LENGTH);
 	}
 
 	public boolean isSinglePaySelectionLineGroup() {return list.size() == 1;}
@@ -138,4 +129,6 @@ class AggregatedInvoicePaySelectionLines implements Iterable<I_C_PaySelectionLin
 
 	@NonNull
 	public Stream<I_C_PaySelectionLine> stream() {return list.stream();}
+
+	public int size() {return list.size();}
 }

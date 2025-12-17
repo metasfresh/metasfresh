@@ -579,4 +579,25 @@ public interface I_SEPA_Export_Line
 
 	org.adempiere.model.ModelColumn<I_SEPA_Export_Line, Object> COLUMN_IsGroupLine = new org.adempiere.model.ModelColumn<>(I_SEPA_Export_Line.class, "IsGroupLine", null);
 	String COLUMNNAME_IsGroupLine = "IsGroupLine";
+
+	/**
+	 * Set Number of references.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setNumberOfReferences (int NumberOfReferences);
+
+	/**
+	 * Get Number of references.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getNumberOfReferences();
+
+	org.adempiere.model.ModelColumn<I_SEPA_Export_Line, Object> COLUMN_NumberOfReferences = new org.adempiere.model.ModelColumn<>(I_SEPA_Export_Line.class, "NumberOfReferences", null);
+	String COLUMNNAME_NumberOfReferences = "NumberOfReferences";
 }

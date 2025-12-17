@@ -83,13 +83,6 @@ public class SEPADocumentDAO implements ISEPADocumentDAO
 		// Placeholder for future functionality.
 		return Collections.emptyList();
 	}
-
-	@Override
-	public int getNumberOfReferences(@NonNull final I_SEPA_Export_Line line)
-	{
-		return toLineRefSqlQuery(line)
-				.count();
-	}
 	
 	@NonNull
 	public List<I_SEPA_Export_Line_Ref> retrieveLineReferences(@NonNull final I_SEPA_Export_Line line)
