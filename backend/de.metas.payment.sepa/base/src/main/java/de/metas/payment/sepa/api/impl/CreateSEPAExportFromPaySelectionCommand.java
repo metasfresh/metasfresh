@@ -1,5 +1,6 @@
 package de.metas.payment.sepa.api.impl;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.banking.Bank;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
@@ -9,18 +10,25 @@ import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.PaySelectionLineType;
 import de.metas.banking.payment.PaySelectionTrxType;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
+import de.metas.organization.OrgId;
 import de.metas.payment.sepa.api.SEPAProtocol;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
+import de.metas.payment.sepa.model.I_SEPA_Export_Line_Ref;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -31,6 +39,12 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
@@ -75,26 +89,30 @@ class CreateSEPAExportFromPaySelectionCommand
 	@NonNull private final BankRepository bankRepo = SpringContextHolder.instance.getBean(BankRepository.class);
 
 	private final I_C_PaySelection source;
+	private final boolean isGroupTransactions;
 
-	public CreateSEPAExportFromPaySelectionCommand(@NonNull final org.compiere.model.I_C_PaySelection source)
+	public CreateSEPAExportFromPaySelectionCommand(
+			@NonNull final org.compiere.model.I_C_PaySelection source,
+			final boolean isGroupTransactions)
 	{
 		this.source = InterfaceWrapperHelper.create(source, I_C_PaySelection.class);
+		this.isGroupTransactions = isGroupTransactions;
 	}
 
 	public I_SEPA_Export run()
 	{
 		final I_SEPA_Export header = createExportHeader(source);
+		final PaySelectionTrxType paySelectionTrxType = PaySelectionTrxType.ofNullableCode(source.getPaySelectionTrxType());
+		final List<I_C_PaySelectionLine> paySelectionLines = paySelectionBL.retrievePaySelectionLines(source);
 
-		for (final I_C_PaySelectionLine line : paySelectionBL.retrievePaySelectionLines(source))
+		if (isGroupTransactions && PaySelectionTrxType.CREDIT_TRANSFER.equals(paySelectionTrxType))
 		{
-			if (line.getC_BP_BankAccount_ID() <= 0)
-			{
-				// No Bank account. Nothing to do.
-				continue;
-			}
-			final I_SEPA_Export_Line exportLine = createExportLine(line);
-			exportLine.setSEPA_Export(header);
-			save(exportLine);
+			handleOrderPaySelectionLines(paySelectionLines, header);
+			handleInvoicePaySelectionLines(paySelectionLines, header);
+		}
+		else
+		{
+			handleUngroupedPaySelectionLines(paySelectionLines, header);
 		}
 
 		return header;
@@ -139,14 +157,7 @@ class CreateSEPAExportFromPaySelectionCommand
 		exportLine.setC_BP_BankAccount_ID(bpBankAccount.getId().getRepoId());
 		exportLine.setC_Currency_ID(bpBankAccount.getCurrencyId().getRepoId());
 		exportLine.setC_BPartner_ID(line.getC_BPartner_ID());
-
-		final String IBAN = selectIBANOrNull(bpBankAccount);
-		if (Check.isBlank(IBAN))
-		{
-			throw new AdempiereException(ERR_C_BP_BankAccount_IBANNotSet, bpBankAccount);
-		}
-
-		exportLine.setIBAN(IBAN);
+		exportLine.setIBAN(extractIBAN(bpBankAccount));
 
 		// task 07789: note that for the CASE of ESR accounts, there is a model validator in de.metas.payment.esr which will
 		// set this field
@@ -189,15 +200,9 @@ class CreateSEPAExportFromPaySelectionCommand
 			throw new AdempiereException(ERR_C_BP_BankAccount_BankNotSet, bpBankAccount);
 		}
 
-		final String orgIBAN = selectIBANOrNull(bpBankAccount);
-		if (Check.isBlank(orgIBAN))
-		{
-			throw new AdempiereException(ERR_C_BP_BankAccount_IBANNotSet, bpBankAccount);
-		}
-
 		// Set corresponding data
 		header.setAD_Org_ID(paySelectionHeader.getAD_Org_ID());
-		header.setIBAN(orgIBAN);
+		header.setIBAN(extractIBAN(bpBankAccount));
 		header.setPaymentDate(paySelectionHeader.getPayDate());
 		header.setProcessed(false);
 		header.setSEPA_CreditorName(orgBP.getName());
@@ -231,20 +236,195 @@ class CreateSEPAExportFromPaySelectionCommand
 		return header;
 	}
 
-	private static @Nullable String toNullOrRemoveSpaces(@Nullable final String from)
+	private void handleInvoicePaySelectionLines(
+			@NonNull final List<I_C_PaySelectionLine> paySelectionLines,
+			@NonNull final I_SEPA_Export header)
 	{
-		if (Check.isEmpty(from, true))
-		{
-			return null;
-		}
-		return from.replace(" ", "");
+		final Map<InvoicePaySelectionLinesAggregationKey, AggregatedInvoicePaySelectionLines> keyToAggregatedPaySelectionLines = getInvoiceKeyToGroupedPaySelectionLines(paySelectionLines);
+		final List<I_C_PaySelectionLine> ungroupedPaySelectionLines = getUngroupedPaySelectionLines(keyToAggregatedPaySelectionLines);
+
+		handleUngroupedPaySelectionLines(ungroupedPaySelectionLines, header);
+		handleGroupedPaySelectionLines(keyToAggregatedPaySelectionLines, header);
 	}
 
-	private static @Nullable String selectIBANOrNull(@NonNull final BankAccount bp_bankAccount)
+	private void handleOrderPaySelectionLines(
+			@NonNull final List<I_C_PaySelectionLine> paySelectionLines,
+			@NonNull final I_SEPA_Export header)
 	{
-		return coalesceSuppliers(
-				() -> toNullOrRemoveSpaces(bp_bankAccount.getIBAN()),
-				() -> toNullOrRemoveSpaces(bp_bankAccount.getQR_IBAN())
+		final List<I_C_PaySelectionLine> orderPaySelectionLines = paySelectionLines.stream()
+				.filter(this::isOrderPaySelectionLine)
+				.collect(ImmutableList.toImmutableList());
+
+		handleUngroupedPaySelectionLines(orderPaySelectionLines, header);
+	}
+
+	private void handleUngroupedPaySelectionLines(
+			@NonNull final List<I_C_PaySelectionLine> paySelectionLines,
+			@NonNull final I_SEPA_Export header)
+	{
+		paySelectionLines.stream()
+				// No Bank account. Nothing to do.
+				.filter(this::hasBusinessPartnerBankAccount)
+				.forEach(line -> {
+					final I_SEPA_Export_Line exportLine = createExportLine(line);
+					exportLine.setSEPA_Export(header);
+					save(exportLine);
+				});
+	}
+
+	private void handleGroupedPaySelectionLines(
+			@NonNull final Map<InvoicePaySelectionLinesAggregationKey, AggregatedInvoicePaySelectionLines> sepaExportLineRefs,
+			@NonNull final I_SEPA_Export header)
+	{
+		sepaExportLineRefs
+				.entrySet()
+				.stream()
+				.filter(entry -> entry.getValue().isMultiplePaySelectionLinesGroup())
+				.forEach(entry -> {
+					final InvoicePaySelectionLinesAggregationKey sepaExportGroupLinesKey = entry.getKey();
+					final AggregatedInvoicePaySelectionLines lines = entry.getValue();
+					final I_SEPA_Export_Line exportLine = createAndSaveExportLine(sepaExportGroupLinesKey, lines, header);
+
+					lines.forEach(line -> createAndSaveExportLineRef(line, header, exportLine));
+				});
+	}
+
+	private void createAndSaveExportLineRef(@NonNull final I_C_PaySelectionLine line,
+											@NonNull final I_SEPA_Export header,
+											@NonNull final I_SEPA_Export_Line exportLine)
+	{
+		final I_SEPA_Export_Line_Ref ref = newInstance(I_SEPA_Export_Line_Ref.class);
+
+		final I_C_Invoice sourceInvoice = invoiceBL.getById(InvoiceId.ofRepoId(line.getC_Invoice_ID()));
+		final String description = sourceInvoice.getDescription();
+		final String structuredRemittanceInfo = line.getReference();
+
+		ref.setAD_Org_ID(line.getAD_Org_ID());
+		ref.setAD_Table_ID(getTableId(I_C_PaySelectionLine.class));
+		ref.setRecord_ID(line.getC_PaySelectionLine_ID());
+		ref.setSEPA_Export_ID(header.getSEPA_Export_ID());
+		ref.setSEPA_Export_Line_ID(exportLine.getSEPA_Export_Line_ID());
+		ref.setDescription(description);
+		ref.setStructuredRemittanceInfo(structuredRemittanceInfo);
+		ref.setAmt(line.getPayAmt());
+		ref.setC_Currency_ID(exportLine.getC_Currency_ID());
+
+		save(ref);
+	}
+
+	@NonNull
+	private I_SEPA_Export_Line createAndSaveExportLine(@NonNull final CreateSEPAExportFromPaySelectionCommand.InvoicePaySelectionLinesAggregationKey sepaExportGroupLinesKey,
+													   @NonNull final AggregatedInvoicePaySelectionLines refList,
+													   @NonNull final I_SEPA_Export header)
+	{
+		final I_SEPA_Export_Line exportLine = newInstance(I_SEPA_Export_Line.class);
+
+		exportLine.setAD_Org_ID(sepaExportGroupLinesKey.getOrgId().getRepoId());
+		exportLine.setAmt(refList.getAmt());
+		exportLine.setC_BP_BankAccount_ID(sepaExportGroupLinesKey.getBankAccountId().getRepoId());
+		exportLine.setC_Currency_ID(sepaExportGroupLinesKey.getCurrencyId().getRepoId());
+		exportLine.setC_BPartner_ID(sepaExportGroupLinesKey.getPartnerId().getRepoId());
+		exportLine.setIBAN(sepaExportGroupLinesKey.getIban());
+		exportLine.setSwiftCode(sepaExportGroupLinesKey.getSwiftCode());
+		exportLine.setSEPA_Export_ID(header.getSEPA_Export_ID());
+		exportLine.setIsGroupLine(true);
+		exportLine.setDescription(refList.getAggregatedDescription(invoiceBL::getByIds));
+		exportLine.setStructuredRemittanceInfo(refList.getAggregatedRemittanceInfo());
+		exportLine.setNumberOfReferences(refList.size());
+
+		save(exportLine);
+
+		return exportLine;
+	}
+
+	@NonNull
+	private List<I_C_PaySelectionLine> getUngroupedPaySelectionLines(@NonNull final Map<InvoicePaySelectionLinesAggregationKey, AggregatedInvoicePaySelectionLines> keyToGroupedPaySelectionLines)
+	{
+		return keyToGroupedPaySelectionLines.values()
+				.stream()
+				.filter(AggregatedInvoicePaySelectionLines::isSinglePaySelectionLineGroup)
+				.flatMap(AggregatedInvoicePaySelectionLines::stream)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private Map<InvoicePaySelectionLinesAggregationKey, AggregatedInvoicePaySelectionLines> getInvoiceKeyToGroupedPaySelectionLines(@NonNull final List<I_C_PaySelectionLine> paySelectionLines)
+	{
+		return paySelectionLines.stream()
+				// No Bank account. Nothing to do.
+				.filter(this::hasBusinessPartnerBankAccount)
+				.filter(this::isInvoicePaySelectionLine)
+				.collect(Collectors.groupingBy(this::extractPaySelectionLinesKey, LinkedHashMap::new, AggregatedInvoicePaySelectionLines.collect()));
+	}
+
+	private boolean hasBusinessPartnerBankAccount(@NonNull final I_C_PaySelectionLine line)
+	{
+		return BankAccountId.ofRepoIdOrNull(line.getC_BP_BankAccount_ID()) != null;
+	}
+
+	private boolean isOrderPaySelectionLine(@NonNull final I_C_PaySelectionLine line)
+	{
+		return paySelectionBL.extractType(line) == PaySelectionLineType.Order;
+	}
+
+	private boolean isInvoicePaySelectionLine(@NonNull final I_C_PaySelectionLine line)
+	{
+		return paySelectionBL.extractType(line) == PaySelectionLineType.Invoice;
+	}
+
+	private static @Nullable String toNullOrRemoveSpaces(@Nullable final String from)
+	{
+		final String fromNorm = StringUtils.trimBlankToNull(from);
+		return fromNorm != null ? fromNorm.replace(" ", "") : null;
+	}
+
+	@NonNull
+	private static String extractIBAN(@NonNull final BankAccount bpBankAccount)
+	{
+		final String iban = coalesceSuppliers(
+				() -> toNullOrRemoveSpaces(bpBankAccount.getIBAN()),
+				() -> toNullOrRemoveSpaces(bpBankAccount.getQR_IBAN())
 		);
+		if (Check.isBlank(iban))
+		{
+			throw new AdempiereException(ERR_C_BP_BankAccount_IBANNotSet, bpBankAccount);
+		}
+		return iban;
+	}
+
+	@NonNull
+	private CreateSEPAExportFromPaySelectionCommand.InvoicePaySelectionLinesAggregationKey extractPaySelectionLinesKey(@NonNull final I_C_PaySelectionLine paySelectionLine)
+	{
+		final BankAccountId bankAccountId = BankAccountId.ofRepoId(paySelectionLine.getC_BP_BankAccount_ID());
+		final BankAccount bpBankAccount = bankAccountDAO.getById(bankAccountId);
+
+		return InvoicePaySelectionLinesAggregationKey.builder()
+				.orgId(OrgId.ofRepoId(paySelectionLine.getAD_Org_ID()))
+				.partnerId(BPartnerId.ofRepoId(paySelectionLine.getC_BPartner_ID()))
+				.bankAccountId(bankAccountId)
+				.currencyId(bpBankAccount.getCurrencyId())
+				.iban(extractIBAN(bpBankAccount))
+				.swiftCode(extractSwiftCode(bpBankAccount))
+				.build();
+	}
+
+	private @Nullable String extractSwiftCode(@NonNull final BankAccount bpBankAccount)
+	{
+		return Optional.ofNullable(bpBankAccount.getBankId())
+				.map(bankRepo::getById)
+				.map(bank -> toNullOrRemoveSpaces(bank.getSwiftCode()))
+				.orElse(null);
+	}
+
+	@Value
+	@Builder
+	private static class InvoicePaySelectionLinesAggregationKey
+	{
+		@NonNull OrgId orgId;
+		@NonNull BPartnerId partnerId;
+		@NonNull BankAccountId bankAccountId;
+		@NonNull CurrencyId currencyId;
+		@NonNull String iban;
+		@Nullable String swiftCode;
 	}
 }
