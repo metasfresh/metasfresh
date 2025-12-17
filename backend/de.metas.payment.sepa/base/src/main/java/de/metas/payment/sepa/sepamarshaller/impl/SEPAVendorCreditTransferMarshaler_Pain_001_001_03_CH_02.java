@@ -339,12 +339,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 
 			if (sepaLine.isGroupLine())
 			{
-				final String nbOfTrx = Optional.ofNullable(pmtInf.getNbOfTxs())
-						.map(Integer::parseInt)
-						.map(currentNbOfTrx -> currentNbOfTrx + sepaDocumentDAO.getNumberOfReferences(sepaLine))
-						.map(String::valueOf)
-						.orElseGet(() -> String.valueOf(sepaDocumentDAO.getNumberOfReferences(sepaLine)));
-				pmtInf.setNbOfTxs(nbOfTrx);
+				pmtInf.setNbOfTxs(String.valueOf(sepaDocumentDAO.getNumberOfReferences(sepaLine)));
 			}
 
 			final BigDecimal transactionAmount = cdtTrfTxInf.getAmt().getInstdAmt().getValue();

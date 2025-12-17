@@ -72,6 +72,11 @@ public class AggregatedInvoicePaySelectionLines implements Iterable<I_C_PaySelec
 	@NonNull
 	public ImmutableSet<InvoiceId> getInvoiceIds()
 	{
+		if (list.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+		
 		return list.stream()
 				.map(line -> {
 					final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(line.getC_Invoice_ID());
@@ -87,6 +92,11 @@ public class AggregatedInvoicePaySelectionLines implements Iterable<I_C_PaySelec
 	@NonNull
 	public String getAggregatedDescription(@NonNull final Function<Collection<InvoiceId>, List<I_C_Invoice>> getInvoicesByInvoiceIds)
 	{
+		if (getInvoiceIds().isEmpty())
+		{
+			return "";
+		}
+		
 		final List<String> descriptions = getInvoicesByInvoiceIds.apply(getInvoiceIds())
 				.stream()
 				.map(I_C_Invoice::getDescription)
@@ -104,6 +114,11 @@ public class AggregatedInvoicePaySelectionLines implements Iterable<I_C_PaySelec
 	@NonNull
 	public String getAggregatedRemittanceInfo()
 	{
+		if (list.isEmpty())
+		{
+			return "";
+		}
+		
 		final List<String> remittanceInfos = list.stream()
 				.map(I_C_PaySelectionLine::getReference)
 				.filter(Check::isNotBlank)
