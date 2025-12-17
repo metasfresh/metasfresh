@@ -19,13 +19,13 @@ import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
-import de.metas.payment.sepa.api.AggregatedInvoicePaySelectionLines;
 import de.metas.payment.sepa.api.SEPAProtocol;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line_Ref;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -157,14 +157,7 @@ class CreateSEPAExportFromPaySelectionCommand
 		exportLine.setC_BP_BankAccount_ID(bpBankAccount.getId().getRepoId());
 		exportLine.setC_Currency_ID(bpBankAccount.getCurrencyId().getRepoId());
 		exportLine.setC_BPartner_ID(line.getC_BPartner_ID());
-
-		final String IBAN = selectIBANOrNull(bpBankAccount);
-		if (Check.isBlank(IBAN))
-		{
-			throw new AdempiereException(ERR_C_BP_BankAccount_IBANNotSet, bpBankAccount);
-		}
-
-		exportLine.setIBAN(IBAN);
+		exportLine.setIBAN(extractIBAN(bpBankAccount));
 
 		// task 07789: note that for the CASE of ESR accounts, there is a model validator in de.metas.payment.esr which will
 		// set this field
@@ -207,15 +200,9 @@ class CreateSEPAExportFromPaySelectionCommand
 			throw new AdempiereException(ERR_C_BP_BankAccount_BankNotSet, bpBankAccount);
 		}
 
-		final String orgIBAN = selectIBANOrNull(bpBankAccount);
-		if (Check.isBlank(orgIBAN))
-		{
-			throw new AdempiereException(ERR_C_BP_BankAccount_IBANNotSet, bpBankAccount);
-		}
-
 		// Set corresponding data
 		header.setAD_Org_ID(paySelectionHeader.getAD_Org_ID());
-		header.setIBAN(orgIBAN);
+		header.setIBAN(extractIBAN(bpBankAccount));
 		header.setPaymentDate(paySelectionHeader.getPayDate());
 		header.setProcessed(false);
 		header.setSEPA_CreditorName(orgBP.getName());
@@ -298,8 +285,7 @@ class CreateSEPAExportFromPaySelectionCommand
 					final AggregatedInvoicePaySelectionLines lines = entry.getValue();
 					final I_SEPA_Export_Line exportLine = createAndSaveExportLine(sepaExportGroupLinesKey, lines, header);
 
-					lines.getList()
-							.forEach(line -> createAndSaveExportLineRef(line, header, exportLine));
+					lines.forEach(line -> createAndSaveExportLineRef(line, header, exportLine));
 				});
 	}
 
@@ -344,6 +330,7 @@ class CreateSEPAExportFromPaySelectionCommand
 		exportLine.setIsGroupLine(true);
 		exportLine.setDescription(refList.getAggregatedDescription(invoiceBL::getByIds));
 		exportLine.setStructuredRemittanceInfo(refList.getAggregatedRemittanceInfo());
+		// TODO exportLine.set number of lines ...
 
 		save(exportLine);
 
@@ -387,42 +374,46 @@ class CreateSEPAExportFromPaySelectionCommand
 
 	private static @Nullable String toNullOrRemoveSpaces(@Nullable final String from)
 	{
-		if (Check.isEmpty(from, true))
-		{
-			return null;
-		}
-		return from.replace(" ", "");
+		final String fromNorm = StringUtils.trimBlankToNull(from);
+		return fromNorm != null ? fromNorm.replace(" ", "") : null;
 	}
 
-	private static @Nullable String selectIBANOrNull(@NonNull final BankAccount bp_bankAccount)
+	@NonNull
+	private static String extractIBAN(@NonNull final BankAccount bpBankAccount)
 	{
-		return coalesceSuppliers(
-				() -> toNullOrRemoveSpaces(bp_bankAccount.getIBAN()),
-				() -> toNullOrRemoveSpaces(bp_bankAccount.getQR_IBAN())
+		final String iban = coalesceSuppliers(
+				() -> toNullOrRemoveSpaces(bpBankAccount.getIBAN()),
+				() -> toNullOrRemoveSpaces(bpBankAccount.getQR_IBAN())
 		);
+		if (Check.isBlank(iban))
+		{
+			throw new AdempiereException(ERR_C_BP_BankAccount_IBANNotSet, bpBankAccount);
+		}
+		return iban;
 	}
 
 	@NonNull
 	private CreateSEPAExportFromPaySelectionCommand.InvoicePaySelectionLinesAggregationKey extractPaySelectionLinesKey(@NonNull final I_C_PaySelectionLine paySelectionLine)
 	{
-		final BankAccount bpBankAccount = bankAccountDAO.getById(BankAccountId.ofRepoId(paySelectionLine.getC_BP_BankAccount_ID()));
-		final String IBAN = selectIBANOrNull(bpBankAccount);
-		if (Check.isBlank(IBAN))
-		{
-			throw new AdempiereException(ERR_C_BP_BankAccount_IBANNotSet, bpBankAccount);
-		}
+		final BankAccountId bankAccountId = BankAccountId.ofRepoId(paySelectionLine.getC_BP_BankAccount_ID());
+		final BankAccount bpBankAccount = bankAccountDAO.getById(bankAccountId);
 
 		return InvoicePaySelectionLinesAggregationKey.builder()
 				.orgId(OrgId.ofRepoId(paySelectionLine.getAD_Org_ID()))
 				.partnerId(BPartnerId.ofRepoId(paySelectionLine.getC_BPartner_ID()))
-				.bankAccountId(BankAccountId.ofRepoId(paySelectionLine.getC_BP_BankAccount_ID()))
+				.bankAccountId(bankAccountId)
 				.currencyId(bpBankAccount.getCurrencyId())
-				.iban(IBAN)
-				.swiftCode(Optional.ofNullable(bpBankAccount.getBankId())
-						.map(bankRepo::getById)
-						.map(bank -> toNullOrRemoveSpaces(bank.getSwiftCode()))
-						.orElse(null))
+				.iban(extractIBAN(bpBankAccount))
+				.swiftCode(extractSwiftCode(bpBankAccount))
 				.build();
+	}
+
+	private @Nullable String extractSwiftCode(@NonNull final BankAccount bpBankAccount)
+	{
+		return Optional.ofNullable(bpBankAccount.getBankId())
+				.map(bankRepo::getById)
+				.map(bank -> toNullOrRemoveSpaces(bank.getSwiftCode()))
+				.orElse(null);
 	}
 
 	@Value

@@ -1,4 +1,4 @@
-package de.metas.payment.sepa.api;
+package de.metas.payment.sepa.api.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -24,7 +24,7 @@ import java.util.stream.Stream;
 
 @EqualsAndHashCode
 @ToString
-public class AggregatedInvoicePaySelectionLines implements Iterable<I_C_PaySelectionLine>
+class AggregatedInvoicePaySelectionLines implements Iterable<I_C_PaySelectionLine>
 {
 	private static final int MAX_DESCRIPTION_LENGTH = 256;
 	private static final int MAX_REMITTANCE_LENGTH = 35;
