@@ -1411,9 +1411,3 @@ INSERT INTO t_alter_column values('c_costclassification_category_trl','C_CostCla
 UPDATE AD_Table SET AD_Window_ID=541999,Updated=TO_TIMESTAMP('2025-12-16 20:53:03.577000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Table_ID=542566
 ;
 
--- Tab: Kostenartengruppe Übersetzung(541999,D) -> Kostenartengruppe Übersetzung
--- Table: C_CostClassification_Category_Trl
--- 2025-12-16T20:56:14.607Z
-UPDATE AD_Tab SET IsTranslationTab='Y',Updated=TO_TIMESTAMP('2025-12-16 20:56:14.607000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Tab_ID=548692
-;
-
