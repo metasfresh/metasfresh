@@ -15,7 +15,7 @@ public class X_SEPA_Export_Line extends org.compiere.model.PO implements I_SEPA_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 788115259L;
+	private static final long serialVersionUID = -1640562923L;
 
     /** Standard Constructor */
     public X_SEPA_Export_Line (Properties ctx, int SEPA_Export_Line_ID, String trxName)
@@ -445,5 +445,17 @@ public class X_SEPA_Export_Line extends org.compiere.model.PO implements I_SEPA_
 	public java.lang.String getSwiftCode () 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_SwiftCode);
+	}
+
+	@Override
+	public void setIsGroupLine (final boolean IsGroupLine)
+	{
+		set_Value (COLUMNNAME_IsGroupLine, IsGroupLine);
+	}
+
+	@Override
+	public boolean isGroupLine()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsGroupLine);
 	}
 }
