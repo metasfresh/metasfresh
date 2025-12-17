@@ -32,7 +32,6 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_ProjectType;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -46,16 +45,16 @@ public class C_ProjectType
 	private final ProjectTypeRepository typeRepository;
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_ProjectType.COLUMNNAME_ProjectCategory)
-	public void uniqueSalesPurchaseOrderPerOrg(@NonNull final I_C_Project projectRecord)
+	public void uniqueSalesPurchaseOrderPerOrg(@NonNull final I_C_ProjectType projectType)
 	{
-		final ProjectCategory projectCategory = ProjectCategory.ofNullableCode(projectRecord.getProjectCategory());
+		final ProjectCategory projectCategory = ProjectCategory.ofNullableCode(projectType.getProjectCategory());
 		if (projectCategory == null || !projectCategory.isSalesPurchaseOrder())
 		{
 			return;
 		}
-		final OrgId orgId = OrgId.ofRepoId(projectRecord.getAD_Org_ID());
+		final OrgId orgId = OrgId.ofRepoId(projectType.getAD_Org_ID());
 		final ProjectTypeId currentOrderProjectTypeIdInOrg = typeRepository.getFirstIdByProjectCategoryAndOrg(projectCategory, orgId, true);
-		if (currentOrderProjectTypeIdInOrg != null && currentOrderProjectTypeIdInOrg.getRepoId() != projectRecord.getC_ProjectType_ID())
+		if (currentOrderProjectTypeIdInOrg != null && currentOrderProjectTypeIdInOrg.getRepoId() != projectType.getC_ProjectType_ID())
 		{
 			throw new AdempiereException(MSG_C_PROJECT_TYPE_ONE_SOPO_PER_ORG);
 		}
