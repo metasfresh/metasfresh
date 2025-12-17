@@ -170,7 +170,7 @@ public class SEPATestHelper
 		firstGroupedPaySelectionLine.setC_BP_BankAccount_ID(bp_bankAccount.getC_BP_BankAccount_ID());
 		firstGroupedPaySelectionLine.setPayAmt(BigDecimal.TEN);
 		firstGroupedPaySelectionLine.setC_BPartner_ID(bPartner.getC_BPartner_ID());
-		firstGroupedPaySelectionLine.setReference("firstLineReference");
+		firstGroupedPaySelectionLine.setReference("firstLine");
 		save(firstGroupedPaySelectionLine);
 
 		secondGroupedPaySelectionLine = newInstance(I_C_PaySelectionLine.class);
@@ -180,7 +180,7 @@ public class SEPATestHelper
 		secondGroupedPaySelectionLine.setC_BP_BankAccount_ID(bp_bankAccount.getC_BP_BankAccount_ID());
 		secondGroupedPaySelectionLine.setPayAmt(BigDecimal.ONE);
 		secondGroupedPaySelectionLine.setC_BPartner_ID(bPartner.getC_BPartner_ID());
-		secondGroupedPaySelectionLine.setReference("secondLineReference");
+		secondGroupedPaySelectionLine.setReference("secondLine");
 		save(secondGroupedPaySelectionLine);
 
 		ungroupedPaySelectionLine = newInstance(I_C_PaySelectionLine.class);
@@ -215,7 +215,7 @@ public class SEPATestHelper
 		assertThat(ungroupedLine.getAD_Table_ID()).isEqualTo(InterfaceWrapperHelper.getTableId(I_C_PaySelectionLine.class));
 		assertThat(ungroupedLine.getRecord_ID()).isEqualTo(ungroupedPaySelectionLine.getC_PaySelectionLine_ID());
 
-		assertThat(sepaDocumentDAO.getNoOfReferences(ungroupedLine)).isEqualTo(0);
+		assertThat(sepaDocumentDAO.getNumberOfReferences(ungroupedLine)).isEqualTo(0);
 
 		final I_SEPA_Export_Line aggregatedLine = lines.get(1);
 		assertThat(aggregatedLine.getAD_Org_ID()).isEqualTo(1000000);
@@ -231,7 +231,7 @@ public class SEPATestHelper
 		assertThat(aggregatedLine.getRecord_ID()).isEqualTo(0);
 		assertThat(aggregatedLine.getAD_Table_ID()).isEqualTo(0);
 
-		final int noOfReferences = sepaDocumentDAO.getNoOfReferences(aggregatedLine);
+		final int noOfReferences = sepaDocumentDAO.getNumberOfReferences(aggregatedLine);
 		assertThat(noOfReferences).isEqualTo(2);
 
 		final List<I_SEPA_Export_Line_Ref> lineRefs = sepaDocumentDAO.retrieveLineReferences(aggregatedLine);
@@ -290,7 +290,7 @@ public class SEPATestHelper
 		assertThat(firstLine.getAD_Table_ID()).isEqualTo(InterfaceWrapperHelper.getTableId(I_C_PaySelectionLine.class));
 		assertThat(firstLine.getRecord_ID()).isEqualTo(firstGroupedPaySelectionLine.getC_PaySelectionLine_ID());
 
-		assertThat(sepaDocumentDAO.getNoOfReferences(firstLine)).isEqualTo(0);
+		assertThat(sepaDocumentDAO.getNumberOfReferences(firstLine)).isEqualTo(0);
 
 		final I_SEPA_Export_Line secondLine = lines.get(1);
 		assertThat(secondLine.getAD_Org_ID()).isEqualTo(1000000);
@@ -306,7 +306,7 @@ public class SEPATestHelper
 		assertThat(secondLine.getAD_Table_ID()).isEqualTo(InterfaceWrapperHelper.getTableId(I_C_PaySelectionLine.class));
 		assertThat(secondLine.getRecord_ID()).isEqualTo(secondGroupedPaySelectionLine.getC_PaySelectionLine_ID());
 
-		assertThat(sepaDocumentDAO.getNoOfReferences(secondLine)).isEqualTo(0);
+		assertThat(sepaDocumentDAO.getNumberOfReferences(secondLine)).isEqualTo(0);
 
 		final I_SEPA_Export_Line ungroupedLine = lines.get(2);
 		assertThat(ungroupedLine.getAD_Org_ID()).isEqualTo(1000001);
@@ -322,7 +322,7 @@ public class SEPATestHelper
 		assertThat(ungroupedLine.getAD_Table_ID()).isEqualTo(InterfaceWrapperHelper.getTableId(I_C_PaySelectionLine.class));
 		assertThat(ungroupedLine.getRecord_ID()).isEqualTo(ungroupedPaySelectionLine.getC_PaySelectionLine_ID());
 
-		assertThat(sepaDocumentDAO.getNoOfReferences(ungroupedLine)).isEqualTo(0);
+		assertThat(sepaDocumentDAO.getNumberOfReferences(ungroupedLine)).isEqualTo(0);
 	}
 
 	public void assertCommonDebitDirectCases(@NonNull final I_SEPA_Export sepaExport)
@@ -348,7 +348,7 @@ public class SEPATestHelper
 		assertThat(firstLine.getAD_Table_ID()).isEqualTo(InterfaceWrapperHelper.getTableId(I_C_PaySelectionLine.class));
 		assertThat(firstLine.getRecord_ID()).isEqualTo(firstGroupedPaySelectionLine.getC_PaySelectionLine_ID());
 
-		assertThat(sepaDocumentDAO.getNoOfReferences(firstLine)).isEqualTo(0);
+		assertThat(sepaDocumentDAO.getNumberOfReferences(firstLine)).isEqualTo(0);
 
 		final I_SEPA_Export_Line secondLine = lines.get(1);
 		assertThat(secondLine.getAD_Org_ID()).isEqualTo(1000000);
@@ -364,7 +364,7 @@ public class SEPATestHelper
 		assertThat(secondLine.getAD_Table_ID()).isEqualTo(InterfaceWrapperHelper.getTableId(I_C_PaySelectionLine.class));
 		assertThat(secondLine.getRecord_ID()).isEqualTo(secondGroupedPaySelectionLine.getC_PaySelectionLine_ID());
 
-		assertThat(sepaDocumentDAO.getNoOfReferences(secondLine)).isEqualTo(0);
+		assertThat(sepaDocumentDAO.getNumberOfReferences(secondLine)).isEqualTo(0);
 
 		final I_SEPA_Export_Line ungroupedLine = lines.get(2);
 		assertThat(ungroupedLine.getAD_Org_ID()).isEqualTo(1000001);
@@ -380,6 +380,6 @@ public class SEPATestHelper
 		assertThat(ungroupedLine.getAD_Table_ID()).isEqualTo(InterfaceWrapperHelper.getTableId(I_C_PaySelectionLine.class));
 		assertThat(ungroupedLine.getRecord_ID()).isEqualTo(ungroupedPaySelectionLine.getC_PaySelectionLine_ID());
 
-		assertThat(sepaDocumentDAO.getNoOfReferences(ungroupedLine)).isEqualTo(0);
+		assertThat(sepaDocumentDAO.getNumberOfReferences(ungroupedLine)).isEqualTo(0);
 	}
 }

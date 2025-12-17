@@ -34,7 +34,7 @@ public interface ISEPADocumentDAO extends ISingletonService
 	 */
 	List<I_SEPA_Export_Line> retrieveLinesChangeRule(Properties ctx, String trxName);
 
-	int getNoOfReferences(@NonNull I_SEPA_Export_Line line);
+	int getNumberOfReferences(@NonNull I_SEPA_Export_Line line);
 
 	List<I_SEPA_Export_Line_Ref> retrieveLineReferences(@NonNull I_SEPA_Export_Line line);
 }

@@ -366,3 +366,14 @@ UPDATE AD_Process_Para base SET Description=trl.Description, Name=trl.Name, Upda
 -- 2025-12-16T15:31:04.598Z
 UPDATE AD_Process_Para SET DisplayLogic='@PaySelectionTrxType/X@=''CT''',Updated=TO_TIMESTAMP('2025-12-16 15:31:04.598000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_Para_ID=543086
 ;
+
+-- Run mode: SWING_CLIENT
+
+-- Column: SEPA_Export_Line.IsGroupLine
+-- 2025-12-17T10:48:17.845Z
+UPDATE AD_Column SET DefaultValue='N',Updated=TO_TIMESTAMP('2025-12-17 10:48:17.844000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591759
+;
+
+-- 2025-12-17T10:48:19.396Z
+INSERT INTO t_alter_column values('sepa_export_line','IsGroupLine','CHAR(1)',null,'N')
+;

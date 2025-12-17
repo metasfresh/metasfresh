@@ -85,7 +85,7 @@ public class SEPADocumentDAO implements ISEPADocumentDAO
 	}
 
 	@Override
-	public int getNoOfReferences(@NonNull final I_SEPA_Export_Line line)
+	public int getNumberOfReferences(@NonNull final I_SEPA_Export_Line line)
 	{
 		return toLineRefSqlQuery(line)
 				.count();

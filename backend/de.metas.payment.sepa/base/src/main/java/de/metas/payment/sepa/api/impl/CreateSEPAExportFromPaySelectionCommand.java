@@ -19,7 +19,7 @@ import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
-import de.metas.payment.sepa.api.GroupedPaySelectionLines;
+import de.metas.payment.sepa.api.AggregatedInvoicePaySelectionLines;
 import de.metas.payment.sepa.api.SEPAProtocol;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
@@ -253,11 +253,11 @@ class CreateSEPAExportFromPaySelectionCommand
 			@NonNull final List<I_C_PaySelectionLine> paySelectionLines,
 			@NonNull final I_SEPA_Export header)
 	{
-		final Map<InvoicePaySelectionLinesAggregationKey, GroupedPaySelectionLines> keyToGroupedPaySelectionLines = getInvoiceKeyToGroupedPaySelectionLines(paySelectionLines);
-		final List<I_C_PaySelectionLine> ungroupedPaySelectionLines = getUngroupedPaySelectionLines(keyToGroupedPaySelectionLines);
+		final Map<InvoicePaySelectionLinesAggregationKey, AggregatedInvoicePaySelectionLines> keyToAggregatedPaySelectionLines = getInvoiceKeyToGroupedPaySelectionLines(paySelectionLines);
+		final List<I_C_PaySelectionLine> ungroupedPaySelectionLines = getUngroupedPaySelectionLines(keyToAggregatedPaySelectionLines);
 
 		handleUngroupedPaySelectionLines(ungroupedPaySelectionLines, header);
-		handleGroupedPaySelectionLines(keyToGroupedPaySelectionLines, header);
+		handleGroupedPaySelectionLines(keyToAggregatedPaySelectionLines, header);
 	}
 
 	private void handleOrderPaySelectionLines(
@@ -286,7 +286,7 @@ class CreateSEPAExportFromPaySelectionCommand
 	}
 
 	private void handleGroupedPaySelectionLines(
-			@NonNull final Map<InvoicePaySelectionLinesAggregationKey, GroupedPaySelectionLines> sepaExportLineRefs,
+			@NonNull final Map<InvoicePaySelectionLinesAggregationKey, AggregatedInvoicePaySelectionLines> sepaExportLineRefs,
 			@NonNull final I_SEPA_Export header)
 	{
 		sepaExportLineRefs
@@ -295,7 +295,7 @@ class CreateSEPAExportFromPaySelectionCommand
 				.filter(entry -> entry.getValue().isMultiplePaySelectionLinesGroup())
 				.forEach(entry -> {
 					final InvoicePaySelectionLinesAggregationKey sepaExportGroupLinesKey = entry.getKey();
-					final GroupedPaySelectionLines lines = entry.getValue();
+					final AggregatedInvoicePaySelectionLines lines = entry.getValue();
 					final I_SEPA_Export_Line exportLine = createAndSaveExportLine(sepaExportGroupLinesKey, lines, header);
 
 					lines.getList()
@@ -328,7 +328,7 @@ class CreateSEPAExportFromPaySelectionCommand
 
 	@NonNull
 	private I_SEPA_Export_Line createAndSaveExportLine(@NonNull final CreateSEPAExportFromPaySelectionCommand.InvoicePaySelectionLinesAggregationKey sepaExportGroupLinesKey,
-													   @NonNull final GroupedPaySelectionLines refList,
+													   @NonNull final AggregatedInvoicePaySelectionLines refList,
 													   @NonNull final I_SEPA_Export header)
 	{
 		final I_SEPA_Export_Line exportLine = newInstance(I_SEPA_Export_Line.class);
@@ -342,7 +342,7 @@ class CreateSEPAExportFromPaySelectionCommand
 		exportLine.setSwiftCode(sepaExportGroupLinesKey.getSwiftCode());
 		exportLine.setSEPA_Export_ID(header.getSEPA_Export_ID());
 		exportLine.setIsGroupLine(true);
-		exportLine.setDescription(refList.getAggregatedDescription(invoiceId -> invoiceBL.getById(invoiceId).getDescription()));
+		exportLine.setDescription(refList.getAggregatedDescription(invoiceBL::getByIds));
 		exportLine.setStructuredRemittanceInfo(refList.getAggregatedRemittanceInfo());
 
 		save(exportLine);
@@ -351,23 +351,23 @@ class CreateSEPAExportFromPaySelectionCommand
 	}
 
 	@NonNull
-	private List<I_C_PaySelectionLine> getUngroupedPaySelectionLines(@NonNull final Map<InvoicePaySelectionLinesAggregationKey, GroupedPaySelectionLines> keyToGroupedPaySelectionLines)
+	private List<I_C_PaySelectionLine> getUngroupedPaySelectionLines(@NonNull final Map<InvoicePaySelectionLinesAggregationKey, AggregatedInvoicePaySelectionLines> keyToGroupedPaySelectionLines)
 	{
 		return keyToGroupedPaySelectionLines.values()
 				.stream()
-				.filter(GroupedPaySelectionLines::isSinglePaySelectionLineGroup)
-				.flatMap(GroupedPaySelectionLines::stream)
+				.filter(AggregatedInvoicePaySelectionLines::isSinglePaySelectionLineGroup)
+				.flatMap(AggregatedInvoicePaySelectionLines::stream)
 				.collect(ImmutableList.toImmutableList());
 	}
 
 	@NonNull
-	private Map<InvoicePaySelectionLinesAggregationKey, GroupedPaySelectionLines> getInvoiceKeyToGroupedPaySelectionLines(@NonNull final List<I_C_PaySelectionLine> paySelectionLines)
+	private Map<InvoicePaySelectionLinesAggregationKey, AggregatedInvoicePaySelectionLines> getInvoiceKeyToGroupedPaySelectionLines(@NonNull final List<I_C_PaySelectionLine> paySelectionLines)
 	{
 		return paySelectionLines.stream()
 				// No Bank account. Nothing to do.
 				.filter(this::hasBusinessPartnerBankAccount)
 				.filter(this::isInvoicePaySelectionLine)
-				.collect(Collectors.groupingBy(this::extractPaySelectionLinesKey, LinkedHashMap::new, GroupedPaySelectionLines.collect()));
+				.collect(Collectors.groupingBy(this::extractPaySelectionLinesKey, LinkedHashMap::new, AggregatedInvoicePaySelectionLines.collect()));
 	}
 
 	private boolean hasBusinessPartnerBankAccount(@NonNull final I_C_PaySelectionLine line)

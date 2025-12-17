@@ -297,7 +297,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		assertThat(creditTransferTransactionInformation10CH1.getAmt().getInstdAmt().getValue()).isEqualTo(BigDecimal.valueOf(11));
 		assertThat(creditTransferTransactionInformation10CH1.getAmt().getInstdAmt().getCcy()).isEqualTo("USD");
 		// concatenated references
-		assertThat(creditTransferTransactionInformation10CH1.getRmtInf().getStrd().getCdtrRefInf().getRef()).isEqualTo("firstLineReference,secondLineReference");
+		assertThat(creditTransferTransactionInformation10CH1.getRmtInf().getStrd().getCdtrRefInf().getRef()).isEqualTo("firstLine,secondLine");
 	}
 
 	private I_SEPA_Export createSEPAExport(
