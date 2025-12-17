@@ -22,6 +22,7 @@
 
 package de.metas.project.command;
 
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.money.CurrencyId;
@@ -44,14 +45,13 @@ public class CreateSalesPurchaseOrderProjectCommand
 
 	public ProjectId execute()
 	{
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
 		return projectService.createProject(CreateProjectRequest.builder()
 				.orgId(OrgId.ofRepoId(order.getAD_Org_ID()))
 				.currencyId(CurrencyId.ofRepoId(order.getC_Currency_ID()))
 				.warehouseId(WarehouseId.ofRepoId(order.getM_Warehouse_ID()))
-				.bpartnerAndLocationId(BPartnerLocationId.builder()
-						.bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
-						.repoId(order.getC_BPartner_Location_ID())
-						.build())
+				.bpartnerAndLocationId(BPartnerLocationId.ofRepoId(bpartnerId, order.getC_BPartner_Location_ID()))
+				.contactId(BPartnerContactId.ofRepoIdOrNull(bpartnerId, order.getAD_User_ID()))
 				.projectCategory(ProjectCategory.SalesPurchaseOrder)
 				.build());
 	}

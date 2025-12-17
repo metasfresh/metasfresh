@@ -37,7 +37,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -65,11 +65,11 @@ import java.util.stream.Collectors;
  * Annotations:
  * - {@link Component}: Marks this class as a managed Spring component.
  * - {@link RequiredArgsConstructor}: Generates a constructor accepting final fields as parameters.
- * - {@link Validator}: A secondary validation interface associated with {@link I_C_Order}.
+ * - {@link Interceptor}: A validation interface associated with {@link I_C_Order}.
  */
 @Component
 @RequiredArgsConstructor
-@Validator(I_C_Order.class)
+@Interceptor(I_C_Order.class)
 public class C_Order_Project
 {
 	private final ProjectService projectService;
