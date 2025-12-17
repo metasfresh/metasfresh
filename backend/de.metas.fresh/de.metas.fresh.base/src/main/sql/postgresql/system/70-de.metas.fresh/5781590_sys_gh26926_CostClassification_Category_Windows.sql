@@ -1411,3 +1411,8 @@ INSERT INTO t_alter_column values('c_costclassification_category_trl','C_CostCla
 UPDATE AD_Table SET AD_Window_ID=541999,Updated=TO_TIMESTAMP('2025-12-16 20:53:03.577000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Table_ID=542566
 ;
 
+-- UI Element: Kostenartengruppe Übersetzung(541999,D) -> Kostenartengruppe Übersetzung(548692,D) -> main -> 10 -> default.Kostenartengruppe
+-- Column: C_CostClassification_Category_Trl.C_CostClassification_Category_ID
+-- 2025-12-17T08:23:57.611Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,760933,0,548692,554105,641277,'F',TO_TIMESTAMP('2025-12-17 08:23:57.026000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Gruppiert Kostenarten zu übergeordneten Analyse-Kategorien für ein strukturiertes und aggregiertes Controlling-Reporting.','Y','N','N','Y','N','N','N',0,'Kostenartengruppe',5,0,0,TO_TIMESTAMP('2025-12-17 08:23:57.026000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;

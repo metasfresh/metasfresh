@@ -399,3 +399,26 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 -- 2025-12-16T19:33:53.150Z
 /* DDL */ SELECT public.db_alter_table('C_CostClassification_Category','ALTER TABLE public.C_CostClassification_Category ADD COLUMN Description VARCHAR(255)')
 ;
+
+-- Column: C_CostClassification_Category.Name
+-- 2025-12-17T08:27:44.228Z
+UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2025-12-17 08:27:44.228000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591781
+;
+
+-- 2025-12-17T08:28:01.352Z
+INSERT INTO t_alter_column values('c_costclassification_category','Name','VARCHAR(60)',null,null)
+;
+
+-- 2025-12-17T08:28:01.425Z
+INSERT INTO t_alter_column values('c_costclassification_category','Name',null,'NOT NULL',null)
+;
+
+-- Column: C_CostClassification_Category.Name
+-- 2025-12-17T16:04:41.867Z
+UPDATE AD_Column SET IsTranslated='Y',Updated=TO_TIMESTAMP('2025-12-17 16:04:41.866000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591781
+;
+
+-- Column: C_CostClassification_Category.Description
+-- 2025-12-17T16:05:03.504Z
+UPDATE AD_Column SET IsTranslated='Y',Updated=TO_TIMESTAMP('2025-12-17 16:05:03.504000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591782
+;
