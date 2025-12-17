@@ -5,27 +5,27 @@ CREATE OR REPLACE FUNCTION sepaExportGroupedInvoicesReport(IN p_SEPA_Export_ID n
 
     RETURNS TABLE
             (
-                Vendor        character varying,
-                InvoiceNo     character varying,
-                InvoiceDate   timestamp without time zone,
-                InvoiceAmount numeric,
-                GroupTotal    numeric,
-                IBAN          character varying,
-                Currency      char(3),
-                Warnings      character varying
+                VendorName        character varying,
+                InvoiceDocumentNo character varying,
+                InvoiceDate       timestamp without time zone,
+                PayAmt            numeric,
+                TotalAmt          numeric,
+                IBAN              character varying,
+                Currency          char(3),
+                Warnings          character varying
             )
 AS
 
 $BODY$
 
-SELECT vendor.value         AS Vendor,
-       invoice.documentno   AS InvoiceNo,
-       invoice.dateinvoiced AS InvoiceDate,
-       invoice.openamt      AS InvoiceAmount,
-       line.amt             AS GroupTotal,
-       line.iban            AS IBAN,
-       currency.iso_code    AS Currency,
-       line.errormsg        AS Warnings
+SELECT vendor.name                 AS VendorName,
+       invoice.documentno          AS InvoiceDocumentNo,
+       invoice.dateinvoiced        AS InvoiceDate,
+       COALESCE(ref.amt, line.amt) AS PayAmt,
+       line.amt                    AS TotalAmt,
+       line.iban                   AS IBAN,
+       currency.iso_code           AS Currency,
+       line.errormsg               AS Warnings
 
 FROM sepa_export export
          LEFT JOIN sepa_export_line line ON export.SEPA_Export_ID = line.SEPA_Export_ID

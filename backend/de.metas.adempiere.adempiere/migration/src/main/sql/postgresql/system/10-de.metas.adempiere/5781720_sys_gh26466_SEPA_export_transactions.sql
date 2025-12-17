@@ -440,3 +440,33 @@ UPDATE AD_TreeNodeMM SET Parent_ID=1000015, SeqNo=48, Updated=now(), UpdatedBy=1
 -- 2025-12-17T13:31:04.745Z
 UPDATE AD_TreeNodeMM SET Parent_ID=1000015, SeqNo=49, Updated=now(), UpdatedBy=100 WHERE  Node_ID=542261 AND AD_Tree_ID=10
 ;
+
+-- Element: Warnings
+-- 2025-12-17T14:56:11.086Z
+UPDATE AD_Element_Trl SET Name='Warnungen', PrintName='Warnungen',Updated=TO_TIMESTAMP('2025-12-17 14:56:11.085000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=581084 AND AD_Language='de_CH'
+;
+
+-- 2025-12-17T14:56:11.103Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='de_CH' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-12-17T14:56:11.572Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581084,'de_CH')
+;
+
+-- Element: Warnings
+-- 2025-12-17T14:56:14.977Z
+UPDATE AD_Element_Trl SET Name='Warnungen', PrintName='Warnungen',Updated=TO_TIMESTAMP('2025-12-17 14:56:14.977000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=581084 AND AD_Language='de_DE'
+;
+
+-- 2025-12-17T14:56:14.979Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='de_DE' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-12-17T14:56:16.518Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(581084,'de_DE')
+;
+
+-- 2025-12-17T14:56:16.521Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581084,'de_DE')
+;
