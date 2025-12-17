@@ -22,12 +22,11 @@
 
 package de.metas.ui.web.document.filter.provider.fullTextSearch;
 
-import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.edi.model.I_C_BPartner;
 import de.metas.ui.web.document.filter.sql.FilterSql;
+import de.metas.ui.web.document.filter.sql.FilterSqlRequest;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
-import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.view.descriptor.SqlAndParams;
-import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -52,18 +51,27 @@ public class PostgresFTSDocumentFilterConverter implements SqlDocumentFilterConv
 
 	@Nullable
 	@Override
-	public FilterSql getSql(
-			@NonNull final DocumentFilter filter,
-			@NonNull final SqlOptions sqlOpts,
-			@NonNull final SqlDocumentFilterConverterContext context)
+	public FilterSql getSql(@NonNull final FilterSqlRequest request)
 	{
-		final String searchText = filter.getParameterValueAsString(FTSDocumentFilterDescriptorsProviderFactory.PARAM_SearchText, null);
+		final String searchText = request.getFilterParameterValueAsString(PostgresFTSDocumentFilterDescriptorsProviderFactory.PARAM_SearchText, null);
+		final String tableName = request.getFilterParameterValueAsString(PostgresFTSDocumentFilterDescriptorsProviderFactory.PARAM_TableName, null);
 		if (Check.isBlank(searchText))
 		{
 			return FilterSql.ALLOW_ALL;
 		}
+		else if (I_C_BPartner.Table_Name.equals(tableName))
+		{
+			return getPartnerSql(request, searchText);
+		}
+        else
+		{
+			return FilterSql.ALLOW_ALL;
+		}
+	}
 
-		final String mainTableAlias = sqlOpts.getTableNameOrAlias();
+	private FilterSql getPartnerSql(@NonNull final FilterSqlRequest request, @NonNull final String searchText)
+	{
+		final String mainTableAlias = request.getTableNameOrAlias();
 		final String ftsTableAlias = "fts_bpartner";
 		final String ftsTableName = "C_BPartner_FTS";
 		final String keyColumnName = "C_BPartner_ID";
@@ -102,6 +110,5 @@ public class PostgresFTSDocumentFilterConverter implements SqlDocumentFilterConv
 		whereClause.append(" )");
 
 		return FilterSql.builder().whereClause(whereClause.build()).orderBy(orderByClause.build()).build();
-
 	}
 }

@@ -32,11 +32,9 @@ import javax.annotation.Nullable;
 @Builder
 public class CreateFiltersProviderContext
 {
-	@Nullable
-	final AdTabId adTabId;
+	@Nullable AdTabId adTabId;
 
-	@Nullable
-	final String tableName;
+	@Nullable String tableName;
 
 	@Builder.Default
 	boolean isAutodetectDefaultDateFilter = true;
