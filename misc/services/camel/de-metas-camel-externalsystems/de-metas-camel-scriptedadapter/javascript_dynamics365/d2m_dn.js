@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de-metas-camel-scriptedadapter
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 /**
  * Transforms delivery note messages to metasfresh receipt format
  * @param {string} messageToMetasfresh - JSON string containing delivery note data
@@ -81,12 +103,12 @@ function countIdentificationMethods(deliveryNote, line) {
     let count = 0;
 
     // Method 1: externalHeaderId + externalLineId
-    if (deliveryNote.externalOrderId && line.externalLineId) {
+    if (deliveryNote.externalOrderId && line.externalOrderId.trim() !== '' && line.externalLineId && line.externalLineId.trim() !== '') {
         count++;
     }
 
     // Method 2: orderLineId (mapped from poLineId)
-    if (line.poLineId) {
+    if (line.poLineId && line.poLineId.trim() !== '') {
         count++;
     }
 
@@ -145,7 +167,7 @@ function createReceiptsRequest(deliveryNote) {
  */
 function buildReceiptInfo(deliveryNote, line) {
     // Prioritize orderLineId - if it exists, clear other identification methods
-    const hasOrderLineId = !!line.poLineId;
+    const hasOrderLineId = !!(line.poLineId && line.poLineId.trim() !== '');
 
     return {
         // Identification methods (prioritized: orderLineId first)
