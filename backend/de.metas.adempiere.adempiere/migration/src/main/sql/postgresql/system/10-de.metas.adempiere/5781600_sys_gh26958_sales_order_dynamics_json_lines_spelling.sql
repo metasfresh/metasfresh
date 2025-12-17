@@ -59,10 +59,10 @@ WITH dynamics_system AS (SELECT externalsystem_id
                                                     'productName', product.name,
                                                     'productDescription', product.description,
                                                     'productIdentifier', product.value
-                                                ) ORDER BY ol.line
-                                        ),
+                                            ) ORDER BY ol.line
+                                    ),
                                     '[]'::jsonb
-                                ) AS json_data
+                            ) AS json_data
                      FROM c_orderline ol
                               INNER JOIN m_product product ON product.m_product_id = ol.m_product_id
                               INNER JOIN c_uom ouom ON ouom.c_uom_id = ol.c_uom_id
@@ -75,10 +75,10 @@ WITH dynamics_system AS (SELECT externalsystem_id
                                               JSONB_BUILD_OBJECT(
                                                       'chargeIdentifier', ol.c_orderline_id,
                                                       'price', ol.priceactual
-                                                  ) ORDER BY ol.line
-                                          ),
+                                              ) ORDER BY ol.line
+                                      ),
                                       '[]'::jsonb
-                                  ) AS json_data
+                              ) AS json_data
                        FROM c_orderline ol
                                 INNER JOIN m_product product ON product.m_product_id = ol.m_product_id
                        WHERE product.producttype != 'I'
