@@ -82,7 +82,7 @@ Feature: Export Orders in specific format via postgREST
   "partnerValue": "customerValue",
   "partnerName": "customerName",
   "currency": "EUR",
-  "Lines": [
+  "lines": [
     {
       "qty": 10,
       "uom": "PCE",
@@ -161,7 +161,7 @@ Feature: Export Orders in specific format via postgREST
   "partnerValue": "customerValue",
   "partnerName": "customerName",
   "currency": "EUR",
-  "Lines": [
+  "lines": [
     {
       "qty": 10,
       "uom": "PCE",
@@ -252,7 +252,7 @@ Feature: Export Orders in specific format via postgREST
     "partnerName": "dropShipName",
     "partnerValue": "dropShipValue"
   },
-  "Lines": [
+  "lines": [
     {
       "qty": 10,
       "uom": "PCE",
@@ -302,7 +302,7 @@ Feature: Export Orders in specific format via postgREST
     "partnerName": "vendorName",
     "partnerValue": "vendorValue"
   },
-  "Lines": [
+  "lines": [
     {
       "qty": 10,
       "uom": "PCE",

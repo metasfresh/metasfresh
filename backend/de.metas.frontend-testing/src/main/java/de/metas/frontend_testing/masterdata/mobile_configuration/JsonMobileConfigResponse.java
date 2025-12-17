@@ -63,6 +63,7 @@ public class JsonMobileConfigResponse
 	public static class Distribution
 	{
 		@Nullable Boolean allowPickingAnyHU;
+		@Nullable Boolean requireTrolley;
 		@Nullable Boolean requireScanningProductCode;
 		@Nullable Boolean navigateToJobsListAfterPickFromComplete;
 		@Nullable Boolean completeJobAutomatically;

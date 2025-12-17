@@ -1,10 +1,8 @@
 package de.metas.distribution.mobileui.job.model;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.distribution.ddorder.DDOrderId;
-import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleId;
 import de.metas.distribution.mobileui.external_services.sourcedoc.ManufacturingOrderRef;
 import de.metas.distribution.mobileui.external_services.sourcedoc.PlantInfo;
 import de.metas.distribution.mobileui.external_services.sourcedoc.SalesOrderRef;
@@ -24,12 +22,10 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
@@ -164,21 +160,6 @@ public class DistributionJob
 				.orElseThrow(() -> new AdempiereException("No line found for " + stepId));
 	}
 
-	public DistributionJobStep getStepById(@NonNull final DistributionJobStepId stepId)
-	{
-		return getStepByIdIfExists(stepId)
-				.orElseThrow(() -> new AdempiereException("No step found for " + stepId));
-	}
-
-	@NonNull
-	private Optional<DistributionJobStep> getStepByIdIfExists(final @NotNull DistributionJobStepId stepId)
-	{
-		return lines.stream()
-				.map(line -> line.getStepById(stepId).orElse(null))
-				.filter(Objects::nonNull)
-				.findFirst();
-	}
-
 	@Nullable
 	public String getPlantName()
 	{
@@ -188,14 +169,6 @@ public class DistributionJob
 	public Stream<DistributionJobStep> streamSteps()
 	{
 		return lines.stream().flatMap(line -> line.getSteps().stream());
-	}
-
-	public ImmutableSet<DDOrderMoveScheduleId> getInTransitScheduleIds()
-	{
-		return streamSteps()
-				.filter(DistributionJobStep::isInTransit)
-				.map(DistributionJobStep::getScheduleId)
-				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	public boolean isFullyMoved()

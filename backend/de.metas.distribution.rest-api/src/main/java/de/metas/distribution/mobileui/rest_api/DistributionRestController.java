@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import static org.compiere.util.Env.getADLanguageOrBaseLanguage;
 import static org.compiere.util.Env.getLoggedUserId;
 
 @RequestMapping(MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/distribution")
@@ -83,6 +84,13 @@ public class DistributionRestController
 	{
 		assertApplicationAccess();
 		return distributionMobileApplication.complete(WFProcessId.ofString(wfProcessIdStr), getLoggedUserId());
+	}
+
+	@PostMapping("/print/materialInTransitReport")
+	public void printMaterialInTransitReport()
+	{
+		assertApplicationAccess();
+		distributionMobileApplication.printMaterialInTransitReport(getLoggedUserId(), getADLanguageOrBaseLanguage());
 	}
 
 }

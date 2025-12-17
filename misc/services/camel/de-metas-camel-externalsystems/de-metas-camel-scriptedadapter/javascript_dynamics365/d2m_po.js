@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de-metas-camel-scriptedadapter
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 /**
  * Transforms external purchase order messages to metasfresh sales order line candidates format
  * @param {string} messageToMetasfresh - JSON string containing purchase order data
@@ -62,10 +84,10 @@ function validateInput(purchaseOrders) {
         if (!po.orderNumber) {
             throw new Error(`Purchase order at index ${index} missing orderNumber`);
         }
-        if (!Array.isArray(po.Lines) || po.Lines.length < 0) {
-            throw new Error(`Purchase order at index ${index} missing Lines array`);
+        if (!Array.isArray(po.lines) || po.lines.length < 0) {
+            throw new Error(`Purchase order at index ${index} missing lines array`);
         }
-        if (po.Lines.some(line => isNaN(line.price) || isNaN(line.qty))) {
+        if (po.lines.some(line => isNaN(line.price) || isNaN(line.qty))) {
             throw new Error(`Purchase order at index ${index} has invalid numeric values`);
         }
     });
@@ -90,7 +112,7 @@ function transformPurchaseOrder(po) {
     }
 
     // 2. Create order line candidates for product lines
-    results.push(createOrderLineCandidatesRequest(po.Lines, context));
+    results.push(createOrderLineCandidatesRequest(po.lines, context));
 
     // 3. Create order line candidates for charges
     if (po.charges?.length > 0) {
@@ -109,7 +131,7 @@ function transformPurchaseOrder(po) {
  * @returns {Object} Context object with common fields
  */
 function buildTransformContext(po) {
-    const firstLine = po.Lines[0];
+    const firstLine = po.lines[0];
 
     return {
         orgCode: po.orgCode ?? null,

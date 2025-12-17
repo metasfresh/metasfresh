@@ -16,6 +16,7 @@ import java.util.Map;
 public class JsonHUExpectation
 {
 	@Nullable Identifier warehouse;
+	@Nullable Identifier locator;
 	@Nullable String huStatus;
 	@Nullable Map<String, String> storages;
 	@Nullable Map<String, String> attributes;
