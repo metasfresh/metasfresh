@@ -28,6 +28,7 @@ BEGIN
     DROP TRIGGER IF EXISTS c_bpartner_fts_trigger ON c_bpartner;
     DROP TRIGGER IF EXISTS ad_user_fts_trigger ON ad_user;
     DROP TRIGGER IF EXISTS c_bpartner_location_fts_trigger ON c_bpartner_location;
+    DROP TRIGGER IF EXISTS s_externalreference_fts_trigger ON s_externalreference;
 
     IF (get_sysconfig_value('de.metas.ui.web.document.filter.provider.fullTextSearch.PostgresFTSDocumentFilterDescriptorsProviderFactory.enabled', 'N') <> 'Y') THEN
         RETURN;
@@ -50,6 +51,12 @@ BEGIN
         ON c_bpartner_location
         FOR EACH ROW
     EXECUTE PROCEDURE c_bpartner_location_fts_trigger_function();
+
+    CREATE TRIGGER s_externalreference_fts_trigger
+        AFTER INSERT OR UPDATE OR DELETE
+        ON s_externalreference
+        FOR EACH ROW
+    EXECUTE PROCEDURE s_externalreference_fts_trigger_function();
 
     TRUNCATE TABLE C_BPartner_FTS;
     PERFORM ops.reindex_c_bpartner_fts();
