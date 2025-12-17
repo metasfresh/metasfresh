@@ -1,5 +1,6 @@
-package de.metas.distribution.ddorder.movement.schedule;
+package de.metas.distribution.ddorder.movement.schedule.commands.drop_to;
 
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

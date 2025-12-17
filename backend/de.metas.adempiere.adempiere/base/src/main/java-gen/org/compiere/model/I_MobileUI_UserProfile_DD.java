@@ -209,6 +209,27 @@ public interface I_MobileUI_UserProfile_DD
 	String COLUMNNAME_IsRequireScanningProductCode = "IsRequireScanningProductCode";
 
 	/**
+	 * Set Require Trolley.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsRequireTrolley (boolean IsRequireTrolley);
+
+	/**
+	 * Get Require Trolley.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isRequireTrolley();
+
+	ModelColumn<I_MobileUI_UserProfile_DD, Object> COLUMN_IsRequireTrolley = new ModelColumn<>(I_MobileUI_UserProfile_DD.class, "IsRequireTrolley", null);
+	String COLUMNNAME_IsRequireTrolley = "IsRequireTrolley";
+
+	/**
 	 * Set Maximum Launchers Count.
 	 *
 	 * <br>Type: Integer

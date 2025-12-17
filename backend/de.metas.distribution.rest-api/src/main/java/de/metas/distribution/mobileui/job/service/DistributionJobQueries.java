@@ -2,6 +2,7 @@ package de.metas.distribution.mobileui.job.service;
 
 import de.metas.dao.ValueRestriction;
 import de.metas.distribution.ddorder.DDOrderQuery;
+import de.metas.distribution.ddorder.DDOrderQuery.DDOrderQueryBuilder;
 import de.metas.distribution.mobileui.config.DistributionJobSorting;
 import de.metas.distribution.mobileui.launchers.facets.DistributionFacetIdsCollection;
 import de.metas.document.engine.DocStatus;
@@ -18,23 +19,28 @@ import java.util.Set;
 @UtilityClass
 public class DistributionJobQueries
 {
-	public static DDOrderQuery ddOrdersAssignedToUser(@NonNull final DDOrderReferenceQuery query)
+	public static DDOrderQueryBuilder newDDOrdersQuery()
 	{
-		return ddOrdersAssignedToUser(query.getResponsibleId(), query.getSorting());
+		return DDOrderQuery.builder()
+				.docStatus(DocStatus.Completed)
+				.orderBys(DistributionJobSorting.DEFAULT.toDDOrderQueryOrderBys());
 	}
 
-	public static DDOrderQuery ddOrdersAssignedToUser(@NonNull final UserId responsibleId)
+	public static DDOrderQuery ddOrdersAssignedToUser(@NonNull final DDOrderReferenceQuery query)
+	{
+		return ddOrdersAssignedToUser(query.getResponsibleId(), query.getSorting()).build();
+	}
+
+	public static DDOrderQueryBuilder ddOrdersAssignedToUser(@NonNull final UserId responsibleId)
 	{
 		return ddOrdersAssignedToUser(responsibleId, DistributionJobSorting.DEFAULT);
 	}
 
-	private static DDOrderQuery ddOrdersAssignedToUser(@NonNull final UserId responsibleId, @NonNull DistributionJobSorting sorting)
+	private static DDOrderQueryBuilder ddOrdersAssignedToUser(@NonNull final UserId responsibleId, @NonNull DistributionJobSorting sorting)
 	{
-		return DDOrderQuery.builder()
-				.docStatus(DocStatus.Completed)
-				.responsibleId(ValueRestriction.equalsTo(responsibleId))
+		return newDDOrdersQuery()
 				.orderBys(sorting.toDDOrderQueryOrderBys())
-				.build();
+				.responsibleId(ValueRestriction.equalsTo(responsibleId));
 	}
 
 	public static DDOrderQuery toActiveNotAssignedDDOrderQuery(final @NonNull DDOrderReferenceQuery query)
@@ -43,9 +49,8 @@ public class DistributionJobQueries
 
 		final InSetPredicate<WarehouseId> warehouseToIds = extractWarehouseToIds(query);
 
-		return DDOrderQuery.builder()
+		return newDDOrdersQuery()
 				.orderBys(query.getSorting().toDDOrderQueryOrderBys())
-				.docStatus(DocStatus.Completed)
 				.responsibleId(ValueRestriction.isNull())
 				.warehouseFromIds(activeFacetIds.getWarehouseFromIds())
 				.warehouseToIds(warehouseToIds)

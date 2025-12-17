@@ -6,6 +6,7 @@ import { ApplicationsListScreen } from '../ApplicationsListScreen';
 import { expect } from '@playwright/test';
 import { expectClasses } from '../../expectations';
 import { DistributionJobsDropAllScreen } from './DistributionJobsDropAllScreen';
+import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
 
 const NAME = 'DistributionJobsListScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -25,6 +26,18 @@ export const DistributionJobsListScreen = {
         await DistributionJobsListFiltersScreen.waitForScreen();
         await DistributionJobsListFiltersScreen.filterByFacetId({ facetId, expectHitCount });
         await DistributionJobsListScreen.waitForScreen();
+    }),
+
+    scanTrolley: async ({ scannedCode, expectHeader }) => await test.step(`${NAME} - Scan trolley`, async () => {
+        await BarcodeScannerComponent.type({ scannedCode: scannedCode });
+
+        if (expectHeader !== undefined) {
+            await DistributionJobsListScreen.expectTrolley({ value: expectHeader });
+        }
+    }),
+    expectTrolley: async ({ value }) => await test.step(`${NAME} - Expect trolley button contains "${value}"`, async () => {
+        const trolleyButton = page.getByTestId('scanTrolley-button');
+        await expect(trolleyButton).toContainText(value);
     }),
 
     startJob: async ({ launcherTestId }) => {

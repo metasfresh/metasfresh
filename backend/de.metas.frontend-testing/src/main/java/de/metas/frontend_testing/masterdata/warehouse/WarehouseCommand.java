@@ -57,7 +57,8 @@ public class WarehouseCommand
 		final JsonWarehouseResponse.JsonWarehouseResponseBuilder responseBuilder = JsonWarehouseResponse.builder()
 				.warehouseId(warehouseRecord.getM_Warehouse_ID())
 				.warehouseCode(warehouseRecord.getValue())
-				.warehouseName(warehouseRecord.getName());
+				.warehouseName(warehouseRecord.getName())
+				.inTransit(warehouseRecord.isInTransit());
 
 		final Map<String, JsonWarehouseResponse.Locator> locators = createLocators();
 		responseBuilder.locators(locators);

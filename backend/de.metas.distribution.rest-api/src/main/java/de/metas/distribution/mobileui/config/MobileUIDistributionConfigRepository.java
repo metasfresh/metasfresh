@@ -30,6 +30,7 @@ public class MobileUIDistributionConfigRepository
 
 	private static final MobileUIDistributionConfig DEFAULT_CONFIG = MobileUIDistributionConfig.builder()
 			.allowPickingAnyHU(false)
+			.isRequireTrolley(false)
 			.captionFormat(DistributionJobCaptionFormat.ofNonEmptyList(ImmutableList.of(
 					DistributionJobCaptionFormatItem.builder().field(DistributionJobCaptionField.SourceDoc).build(),
 					DistributionJobCaptionFormatItem.builder().field(DistributionJobCaptionField.WarehouseFrom).build(),
@@ -56,6 +57,7 @@ public class MobileUIDistributionConfigRepository
 				.allowPickingAnyHU(record.isAllowPickingAnyHU())
 				.captionFormat(retrieveCaptionFormat(record.getMobileUI_UserProfile_DD_ID()).orElse(DEFAULT_CONFIG.getCaptionFormat()))
 				.sorting(retrieveSorting(record.getMobileUI_UserProfile_DD_ID()).orElse(DEFAULT_CONFIG.getSorting()))
+				.isRequireTrolley(record.isRequireTrolley())
 				.isRequireScanningProductCode(record.isRequireScanningProductCode())
 				.isNavigateToJobsListAfterPickFromComplete(record.isNavigateToJobsListAfterPickFromComplete())
 				.isCompleteJobAutomatically(record.isCompleteJobAutomatically())
@@ -211,6 +213,7 @@ public class MobileUIDistributionConfigRepository
 	{
 		record.setIsActive(true);
 		record.setIsAllowPickingAnyHU(from.isAllowPickingAnyHU());
+		record.setIsRequireTrolley(from.isRequireTrolley());
 		record.setIsRequireScanningProductCode(from.isRequireScanningProductCode());
 		record.setIsNavigateToJobsListAfterPickFromComplete(from.isNavigateToJobsListAfterPickFromComplete());
 		record.setIsCompleteJobAutomatically(from.isCompleteJobAutomatically());

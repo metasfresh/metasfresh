@@ -51,7 +51,8 @@ public class WorkflowLaunchersQuery
 	boolean filterByQtyAvailableAtPickFromLocator;
 	@Nullable ImmutableSet<WorkflowLaunchersFacetId> facetIds;
 	boolean excludeAlreadyStarted;
-	
+	@Default boolean computeActions = true;
+
 	@Nullable QueryLimit limit;
 	@NonNull @Default @With Duration maxStaleAccepted = Duration.ZERO;
 

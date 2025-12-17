@@ -17,10 +17,12 @@ public class JsonWarehouseResponse
 	int warehouseId;
 	String warehouseCode;
 	String warehouseName;
+	boolean inTransit;
+	
 	int locatorId;
 	String locatorCode;
 	String locatorQRCode;
-
+	
 	@Nullable Map<String, JsonWarehouseResponse.Locator> locators;
 
 	//
