@@ -66,17 +66,23 @@ COMMENT ON FUNCTION ops.reindex_c_bpartner_fts(NUMERIC) IS 'Rebuilds the FTS ind
 ;
 
 
-CREATE OR REPLACE FUNCTION ops.reindex_c_invoice_fts(p_c_bpartner_id NUMERIC DEFAULT NULL)
+CREATE OR REPLACE FUNCTION ops.reindex_c_invoice_fts(p_c_invoice_id NUMERIC DEFAULT NULL)
     RETURNS void
 AS
 $$
 
     -- TODO
+WITH InvoiceText AS (SELECT i.c_invoice_id,
+                            (
+                                i.poreference || ' ' || i.externalid || ' ' || i.documentno
+                                ) AS aggregated_text
+                     FROM C_Invoice i
+                     WHERE (c_invoice_id IS NULL OR i.c_invoice_id = p_c_invoice_id))
 
     -- Perform an "UPSERT" into the FTS table.
 INSERT
 INTO C_Invoice_FTS (c_invoice_id, fts_string, fts_document, updated)
-SELECT InvoiceText.c_bpartner_id,
+SELECT InvoiceText.c_invoice_id,
        InvoiceText.aggregated_text,
        TO_TSVECTOR(get_fts_config(), InvoiceText.aggregated_text),
        NOW()
