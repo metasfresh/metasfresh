@@ -38,3 +38,22 @@ UPDATE AD_Message_Trl SET MsgText='Only one ''Sales/Purchase Order'' project typ
 UPDATE AD_Message base SET MsgText=trl.MsgText, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Message_Trl trl  WHERE trl.AD_Message_ID=base.AD_Message_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
 ;
 
+-- 2025-12-17T20:46:06.794Z
+INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNo,Updated,UpdatedBy) VALUES (1000000,1000000,556577,TO_TIMESTAMP('2025-12-17 20:46:04.137000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,1000000,100,1,'Y','N','N','N','Sales/Purchase Order',1000000,TO_TIMESTAMP('2025-12-17 20:46:04.137000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-12-17T20:46:06.927Z
+UPDATE AD_Sequence SET IsAutoSequence='Y',Updated=TO_TIMESTAMP('2025-12-17 20:46:06.927000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Sequence_ID=556577
+;
+
+-- 2025-12-17T20:46:18.399Z
+UPDATE AD_Sequence SET CurrentNext=1,Updated=TO_TIMESTAMP('2025-12-17 20:46:18.399000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Sequence_ID=556577
+;
+
+-- 2025-12-17T20:46:26.789Z
+UPDATE AD_Sequence SET Prefix='O',Updated=TO_TIMESTAMP('2025-12-17 20:46:26.789000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Sequence_ID=556577
+;
+
+-- 2025-12-17T20:46:54.180Z
+INSERT INTO C_ProjectType (AD_Client_ID,AD_Org_ID,AD_Sequence_ProjectValue_ID,C_ProjectType_ID,Created,CreatedBy,IsActive,Name,ProjectCategory,Updated,UpdatedBy) VALUES (1000000,1000000,556577,540014,TO_TIMESTAMP('2025-12-17 20:46:54.164000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','Sales/Purchase Order','O',TO_TIMESTAMP('2025-12-17 20:46:54.164000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;

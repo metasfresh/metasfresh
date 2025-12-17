@@ -53,7 +53,7 @@ public class C_ProjectType
 			return;
 		}
 		final OrgId orgId = OrgId.ofRepoId(projectType.getAD_Org_ID());
-		final ProjectTypeId currentOrderProjectTypeIdInOrg = typeRepository.getFirstIdByProjectCategoryAndOrg(projectCategory, orgId, true);
+		final ProjectTypeId currentOrderProjectTypeIdInOrg = typeRepository.getFirstIdByProjectCategoryAndOrgOrNull(projectCategory, orgId, true);
 		if (currentOrderProjectTypeIdInOrg != null && currentOrderProjectTypeIdInOrg.getRepoId() != projectType.getC_ProjectType_ID())
 		{
 			throw new AdempiereException(MSG_C_PROJECT_TYPE_ONE_SOPO_PER_ORG);

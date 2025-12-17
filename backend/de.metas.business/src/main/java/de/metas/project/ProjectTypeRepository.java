@@ -34,6 +34,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_ProjectType;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
+
 @Repository
 public class ProjectTypeRepository
 {
@@ -70,7 +72,27 @@ public class ProjectTypeRepository
 		return getFirstIdByProjectCategoryAndOrg(projectCategory, orgId, false);
 	}
 
+	@NonNull
 	public ProjectTypeId getFirstIdByProjectCategoryAndOrg(
+			@NonNull final ProjectCategory projectCategory,
+			@NonNull final OrgId orgId,
+			final boolean onlyCurrentOrg)
+	{
+		final ProjectTypeId projectTypeId = getFirstIdByProjectCategoryAndOrgOrNull(projectCategory, orgId, onlyCurrentOrg);
+
+		if (projectTypeId == null)
+		{
+			throw new AdempiereException("@NotFound@ @C_ProjectType_ID@")
+					.appendParametersToMessage()
+					.setParameter("ProjectCategory", projectCategory)
+					.setParameter("AD_Org_ID", orgId.getRepoId());
+		}
+
+		return projectTypeId;
+	}
+
+	@Nullable
+	public ProjectTypeId getFirstIdByProjectCategoryAndOrgOrNull(
 			@NonNull final ProjectCategory projectCategory,
 			@NonNull final OrgId orgId,
 			final boolean onlyCurrentOrg)
@@ -88,20 +110,9 @@ public class ProjectTypeRepository
 		{
 			builder.addInArrayFilter(I_C_ProjectType.COLUMNNAME_AD_Org_ID, OrgId.ANY, orgId);
 		}
-		final ProjectTypeId projectTypeId = builder
-
+		return builder
 				.create()
 				.firstId(ProjectTypeId::ofRepoIdOrNull);
-
-		if (projectTypeId == null)
-		{
-			throw new AdempiereException("@NotFound@ @C_ProjectType_ID@")
-					.appendParametersToMessage()
-					.setParameter("ProjectCategory", projectCategory)
-					.setParameter("AD_Org_ID", orgId.getRepoId());
-		}
-
-		return projectTypeId;
 	}
 
 }
