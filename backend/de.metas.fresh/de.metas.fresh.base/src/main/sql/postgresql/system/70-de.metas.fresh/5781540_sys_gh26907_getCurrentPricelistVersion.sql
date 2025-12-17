@@ -35,6 +35,8 @@ FROM m_pricelist_version plv
 WHERE plv.isActive = 'Y'
   AND plv.validfrom <= p_Date
   AND plv.m_pricelist_id = p_PriceList_ID
+ORDER BY plv.validfrom DESC
+LIMIT 1
     ;
 $$
 ;
