@@ -35,9 +35,10 @@ export const DistributionJobsListScreen = {
             await DistributionJobsListScreen.expectTrolley({ value: expectHeader });
         }
     }),
-    expectTrolley: async ({ value }) => {
-        await DistributionJobsListScreen.expectHeaderProperty({ caption: 'Trolley', value: value });
-    },
+    expectTrolley: async ({ value }) => await test.step(`${NAME} - Expect trolley button contains "${value}"`, async () => {
+        const trolleyButton = page.getByTestId('scanTrolley-button');
+        await expect(trolleyButton).toContainText(value);
+    }),
 
     startJob: async ({ launcherTestId }) => {
         return await test.step(`${NAME} Start job for testId "${launcherTestId}"`, async () => {
