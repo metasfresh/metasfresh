@@ -43,8 +43,8 @@ FROM (WITH period AS (SELECT startdate, enddate
                  WHEN io.issotrx = 'N' AND dt.docbasetype = 'MMS' THEN 21 -- return
                                                                   ELSE 11 -- standard sales/purchase
              END                                                                    AS typeOfTransaction,
-             cn.value                                                               AS cn8,
-             COALESCE(cn.name, p.name)                                              AS productDescription,
+             ct.value                                                               AS cn8,
+             COALESCE(ct.name, p.name)                                              AS productDescription,
              COALESCE(asi_countryOfOrigin.code, pco.countrycode, bp_co.countrycode) AS OriginCountry,
              bp_co.countrycode                                                      AS partnerCountry,
              r.IntrastatCode                                                        AS regionCode,
@@ -68,8 +68,8 @@ FROM (WITH period AS (SELECT startdate, enddate
                  WHEN io.issotrx = 'Y' THEN COALESCE(bpl.vataxid, bp.vataxid)
                                        ELSE ''
              END                                                                    AS partnervatid
-      FROM M_InOut io,
-           period per
+      FROM M_InOut io
+               CROSS JOIN period per
                JOIN m_warehouse w ON w.m_warehouse_id = io.m_warehouse_id
                JOIN c_location wl ON wl.c_location_id = w.c_location_id -- not audit-proof
                JOIN C_country wlc ON wlc.c_country_id = wl.c_country_id
@@ -78,7 +78,6 @@ FROM (WITH period AS (SELECT startdate, enddate
                LEFT JOIN c_invoiceline il ON il.m_inoutline_id = iol.m_inoutline_id
                LEFT JOIN C_invoice i ON i.C_invoice_id = il.C_invoice_id AND i.DocStatus IN ('CO', 'CL')
                JOIN m_product p ON p.m_product_id = iol.m_product_id
-               LEFT JOIN m_commoditynumber cn ON cn.m_commoditynumber_id = p.m_commoditynumber_id
                LEFT JOIN C_country pco ON pco.c_country_id = p.rawmaterialorigin_id
                JOIN c_bpartner bp ON bp.c_bpartner_id = io.c_bpartner_id
                JOIN c_bpartner_location bpl ON bpl.c_bpartner_location_id = io.c_bpartner_location_id

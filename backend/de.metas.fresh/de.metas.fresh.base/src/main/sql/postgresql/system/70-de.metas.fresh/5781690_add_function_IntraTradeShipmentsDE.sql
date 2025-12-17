@@ -1,4 +1,3 @@
-
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.IntraTradeShipmentsDE(numeric,
                                                                                  numeric)
 ;
@@ -44,8 +43,8 @@ FROM (WITH period AS (SELECT startdate, enddate
                  WHEN io.issotrx = 'N' AND dt.docbasetype = 'MMS' THEN 21 -- return
                                                                   ELSE 11 -- standard sales/purchase
              END                                                                    AS typeOfTransaction,
-             cn.value                                                               AS cn8,
-             COALESCE(cn.name, p.name)                                              AS productDescription,
+             ct.value                                                               AS cn8,
+             COALESCE(ct.name, p.name)                                              AS productDescription,
              COALESCE(asi_countryOfOrigin.code, pco.countrycode, bp_co.countrycode) AS OriginCountry,
              bp_co.countrycode                                                      AS partnerCountry,
              r.IntrastatCode                                                        AS regionCode,
@@ -69,8 +68,8 @@ FROM (WITH period AS (SELECT startdate, enddate
                  WHEN io.issotrx = 'Y' THEN COALESCE(bpl.vataxid, bp.vataxid)
                                        ELSE ''
              END                                                                    AS partnervatid
-      FROM M_InOut io,
-           period per
+      FROM M_InOut io
+               CROSS JOIN period per
                JOIN m_warehouse w ON w.m_warehouse_id = io.m_warehouse_id
                JOIN c_location wl ON wl.c_location_id = w.c_location_id -- not audit-proof
                JOIN C_country wlc ON wlc.c_country_id = wl.c_country_id
@@ -79,7 +78,6 @@ FROM (WITH period AS (SELECT startdate, enddate
                LEFT JOIN c_invoiceline il ON il.m_inoutline_id = iol.m_inoutline_id
                LEFT JOIN C_invoice i ON i.C_invoice_id = il.C_invoice_id AND i.DocStatus IN ('CO', 'CL')
                JOIN m_product p ON p.m_product_id = iol.m_product_id
-               LEFT JOIN m_commoditynumber cn ON cn.m_commoditynumber_id = p.m_commoditynumber_id
                LEFT JOIN C_country pco ON pco.c_country_id = p.rawmaterialorigin_id
                JOIN c_bpartner bp ON bp.c_bpartner_id = io.c_bpartner_id
                JOIN c_bpartner_location bpl ON bpl.c_bpartner_location_id = io.c_bpartner_location_id
@@ -95,25 +93,25 @@ FROM (WITH period AS (SELECT startdate, enddate
                                                                                        LIMIT 1)) -- fallback to KG
                LEFT JOIN M_CustomsTariff ct ON ct.M_CustomsTariff_ID = p.M_CustomsTariff_ID
                LEFT JOIN LATERAL (
-               SELECT STRING_AGG(DISTINCT ai.value, ', ') AS code --aggregation is not allowed, but it should be visible (invoice amounts split is not supported atm)
-               FROM m_attributesetinstance asi
-                        JOIN M_AttributeInstance ai ON ai.M_AttributeSetInstance_ID = asi.M_AttributeSetInstance_ID
-                        JOIN M_Attribute a ON ai.m_attribute_id = a.m_attribute_id AND a.value = '1000001' -- Herkunft
-               WHERE iol.m_attributesetinstance_id = asi.m_attributesetinstance_id
-               ) asi_countryOfOrigin ON TRUE
+          SELECT STRING_AGG(DISTINCT ai.value, ', ') AS code --aggregation is not allowed, but it should be visible (invoice amounts split is not supported atm)
+          FROM m_attributesetinstance asi
+                   JOIN M_AttributeInstance ai ON ai.M_AttributeSetInstance_ID = asi.M_AttributeSetInstance_ID
+                   JOIN M_Attribute a ON ai.m_attribute_id = a.m_attribute_id AND a.value = '1000001' -- Herkunft
+          WHERE iol.m_attributesetinstance_id = asi.m_attributesetinstance_id
+          ) asi_countryOfOrigin ON TRUE
                LEFT JOIN LATERAL (
-               (SELECT C_UOM_ID
-                FROM C_UOM
-                WHERE x12de355 = 'KGM'
-                  AND isactive = 'Y'
-                ORDER BY isdefault DESC
-                LIMIT 1)
-               ) uom_kg ON TRUE
+          (SELECT C_UOM_ID
+           FROM C_UOM
+           WHERE x12de355 = 'KGM'
+             AND isactive = 'Y'
+           ORDER BY isdefault DESC
+           LIMIT 1)
+          ) uom_kg ON TRUE
                LEFT JOIN LATERAL (
-               (SELECT c_currency_id
-                FROM c_currency
-                WHERE iso_code = 'EUR')
-               ) cur_eur ON TRUE
+          (SELECT c_currency_id
+           FROM c_currency
+           WHERE iso_code = 'EUR')
+          ) cur_eur ON TRUE
       WHERE io.movementdate BETWEEN per.startdate AND per.enddate
         AND io.AD_Org_ID = p_AD_Org_ID
         AND io.isactive = 'Y'
