@@ -26,11 +26,11 @@ DROP FUNCTION IF EXISTS getCurrentPricelistVersion(numeric,
 
 CREATE OR REPLACE FUNCTION getCurrentPricelistVersion(IN p_PriceList_ID numeric,
                                                       p_Date            timestamp with time zone)
-    RETURNS setof m_pricelist_version
+    RETURNS numeric
     LANGUAGE sql
 AS
 $$
-SELECT plv.*
+SELECT plv.m_pricelist_version_id
 FROM m_pricelist_version plv
 WHERE plv.isActive = 'Y'
   AND plv.validfrom <= p_Date
