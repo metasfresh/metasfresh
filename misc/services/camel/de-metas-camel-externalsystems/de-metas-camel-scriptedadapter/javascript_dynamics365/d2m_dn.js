@@ -81,7 +81,7 @@ function validateInput(deliveryNotes) {
             if (identificationMethods === 0) {
                 throw new Error(
                     `Delivery note at index ${index}, line ${lineIndex} has no valid identification method. ` +
-                    `Must have either: (externalOrderId + externalLineId) or poLineId`
+                    `Must have either: (orderNumber + externalLineId) or poLineId`
                 );
             }
 
@@ -103,7 +103,7 @@ function countIdentificationMethods(deliveryNote, line) {
     let count = 0;
 
     // Method 1: externalHeaderId + externalLineId
-    if (deliveryNote.externalOrderId && line.externalOrderId.trim() !== '' && line.externalLineId && line.externalLineId.trim() !== '') {
+    if (deliveryNote.orderNumber  && deliveryNote.orderNumber.trim() !== '' && line.externalLineId && line.externalLineId.trim() !== '') {
         count++;
     }
 
@@ -173,7 +173,7 @@ function buildReceiptInfo(deliveryNote, line) {
         // Identification methods (prioritized: orderLineId first)
         orderLineId: hasOrderLineId ? buildMetasfreshId(line.poLineId) : null,
         externalSystemCode: hasOrderLineId ? null : CONFIG.EXT_SYSTEM_CODE,
-        externalHeaderId: hasOrderLineId ? null : (deliveryNote.externalOrderId ?? null),
+        externalHeaderId: hasOrderLineId ? null : (deliveryNote.orderNumber ?? null),
         externalLineId: hasOrderLineId ? null : (line.externalLineId ?? null),
 
         // Quantity

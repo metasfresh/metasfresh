@@ -1,1 +1,1 @@
-{"errors":[{"message":"Delivery note at index 0, line 0 has no valid identification method. Must have either: (externalOrderId + externalLineId) or poLineId","code":"TRANSFORMATION_ERROR","type":"Error"}]}
+{"errors":[{"message":"Delivery note at index 0, line 0 has no valid identification method. Must have either: (orderNumber + externalLineId) or poLineId","code":"TRANSFORMATION_ERROR","type":"Error"}]}
