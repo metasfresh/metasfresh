@@ -377,15 +377,3 @@ UPDATE AD_Column SET DefaultValue='N',Updated=TO_TIMESTAMP('2025-12-17 10:48:17.
 -- 2025-12-17T10:48:19.396Z
 INSERT INTO t_alter_column values('sepa_export_line','IsGroupLine','CHAR(1)',null,'N')
 ;
-
--- 2025-12-17T17:43:31.782Z
-/* DDL */ SELECT public.db_alter_table('SEPA_Export_Line_Ref','ALTER TABLE public.SEPA_Export_Line_Ref ADD COLUMN C_Currency_ID NUMERIC(10) NOT NULL')
-;
-
--- 2025-12-17T17:43:31.815Z
-ALTER TABLE SEPA_Export_Line_Ref ADD CONSTRAINT CCurrency_SEPAExportLineRef FOREIGN KEY (C_Currency_ID) REFERENCES public.C_Currency DEFERRABLE INITIALLY DEFERRED
-;
-
--- 2025-12-17T17:45:30.014Z
-/* DDL */ SELECT public.db_alter_table('SEPA_Export_Line_Ref','ALTER TABLE public.SEPA_Export_Line_Ref ADD COLUMN StructuredRemittanceInfo VARCHAR(35)')
-;
