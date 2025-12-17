@@ -1,6 +1,15 @@
-# docker-compose.yml file
+# Unified E2E Testing Stack
+#
+# This compose file supports both frontend and mobile E2E tests using profiles:
+#   - Frontend tests: docker compose --profile frontend up --abort-on-container-exit --exit-code-from playwright-frontend
+#   - Mobile tests:   docker compose --profile mobile up --abort-on-container-exit --exit-code-from playwright-mobile
+#
+# Shared services (db, rabbitmq, search, app) start for both profiles.
+# Profile-specific services only start when their profile is activated.
 
 services:
+
+  # ===== SHARED INFRASTRUCTURE =====
 
   db:
     image: $mfregistry/metas-db:$mfversion-$dbqualifier
@@ -14,7 +23,7 @@ services:
       retries: 30
     environment:
       # run the database on the initial data
-      # so we can later commit it again to create postfrontendtest images
+      # so we can later commit it again to create post-test images
       # /data directories can't be persisted with docker commit!
       - PGDATA=/var/lib/postgresql/initdata
     deploy:
@@ -60,38 +69,6 @@ services:
       mode: replicated
       replicas: 1
 
-  webapi:
-    image: $mfregistry/metas-api:$mfversion
-    networks:
-      default:
-        aliases:
-          - webapi-test
-    ports:
-      - "8080:8080"
-    volumes:
-      - ./metasfresh.properties:/opt/metasfresh-webui-api/metasfresh.properties:ro
-    healthcheck:
-      test: "curl --fail --silent localhost:8080/health | grep UP || exit 1"
-      interval: 10s
-      timeout: 10s
-      start_period: 60s
-      retries: 30
-    environment:
-      - "JAVA_TOOL_OPTIONS=-Xmx512M -XX:+HeapDumpOnOutOfMemoryError -Dde.metas.adempiere.report.jasper.JRServerServlet=http://app:8282/adempiereJasper/ReportServlet -Dde.metas.adempiere.report.barcode.BarcodeServlet=http://app:8282/adempiereJasper/BarcodeServlet"
-      - "SPRING_RABBITMQ_HOST=rabbitmq"
-      - "SPRING_RABBITMQ_PORT=5672"
-      - "SPRING_RABBITMQ_USERNAME=metasfresh"
-      - "SPRING_RABBITMQ_PASSWORD=metasfresh"
-      - "SPRING_DATA_ELASTICSEARCH_CLIENT_REACTIVE_ENDPOINTS=search:9200"
-    depends_on:
-      db:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
-    deploy:
-      mode: replicated
-      replicas: 1
-
   app:
     image: $mfregistry/metas-app:$mfversion
     networks:
@@ -127,13 +104,49 @@ services:
       mode: replicated
       replicas: 1
 
+  # ===== FRONTEND PROFILE SERVICES =====
+
+  webapi:
+    image: $mfregistry/metas-api:$mfversion
+    profiles: ["frontend"]
+    networks:
+      default:
+        aliases:
+          - webapi-test
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./metasfresh.properties:/opt/metasfresh-webui-api/metasfresh.properties:ro
+    healthcheck:
+      test: "curl --fail --silent localhost:8080/health | grep UP || exit 1"
+      interval: 10s
+      timeout: 10s
+      start_period: 60s
+      retries: 30
+    environment:
+      - "JAVA_TOOL_OPTIONS=-Xmx512M -XX:+HeapDumpOnOutOfMemoryError -Dde.metas.adempiere.report.jasper.JRServerServlet=http://app:8282/adempiereJasper/ReportServlet -Dde.metas.adempiere.report.barcode.BarcodeServlet=http://app:8282/adempiereJasper/BarcodeServlet"
+      - "SPRING_RABBITMQ_HOST=rabbitmq"
+      - "SPRING_RABBITMQ_PORT=5672"
+      - "SPRING_RABBITMQ_USERNAME=metasfresh"
+      - "SPRING_RABBITMQ_PASSWORD=metasfresh"
+      - "SPRING_DATA_ELASTICSEARCH_CLIENT_REACTIVE_ENDPOINTS=search:9200"
+    depends_on:
+      db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    deploy:
+      mode: replicated
+      replicas: 1
+
   webui:
     image: $mfregistry/metas-frontend:$mfversion
+    profiles: ["frontend"]
     ports:
       - "3000:80"
     volumes:
-      - ./web-config.js:/usr/share/nginx/html/config.js:ro
-      - ./default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./configs/frontend/web-config.js:/usr/share/nginx/html/config.js:ro
+      - ./configs/frontend/default.conf:/etc/nginx/conf.d/default.conf:ro
     healthcheck:
       test: "curl --fail --silent http://localhost:80 || exit 1"
       interval: 10s
@@ -149,12 +162,35 @@ services:
       mode: replicated
       replicas: 1
 
+  playwright-frontend:
+    image: $mfregistry/metas-frontend-test:$mfversion
+    profiles: ["frontend"]
+    volumes:
+      - ./playwright-report-frontend:/app/playwright-report
+      - ./test-results-frontend:/app/test-results
+      - ./allure-results:/app/allure-results
+    environment:
+      - "FRONTEND_BASE_URL=http://webui:80"
+      - "WEBAPI_BASE_URL=http://webui:80/rest/api"
+      - "TESTING_API_BASE_URL=http://app-test:8282/api/v2"
+      - "CI=true"
+    depends_on:
+      webui:
+        condition: service_healthy
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  # ===== MOBILE PROFILE SERVICES =====
+
   mobile:
     image: $mfregistry/metas-mobile:$mfversion
+    profiles: ["mobile"]
     ports:
       - "3001:80"
     volumes:
-      - ./mobile-config.js:/usr/share/nginx/html/config.js:ro
+      - ./configs/mobile/mobile-config.js:/usr/share/nginx/html/config.js:ro
+      - ./configs/mobile/default.conf:/etc/nginx/conf.d/default.conf
     healthcheck:
       test: "curl --fail --silent http://localhost:80 || exit 1"
       interval: 10s
@@ -168,19 +204,17 @@ services:
       mode: replicated
       replicas: 1
 
-  playwright:
-    image: $mfregistry/metas-frontend-test:$mfversion
+  playwright-mobile:
+    image: $mfregistry/metas-mobile-test:$mfversion
+    profiles: ["mobile"]
     volumes:
-      - ./playwright-report:/app/playwright-report
-      - ./test-results:/app/test-results
-      - ./allure-results:/app/allure-results
+      - ./playwright-report-mobile:/app/playwright-report
+      - ./test-results-mobile:/app/test-results
     environment:
-      - "FRONTEND_BASE_URL=http://webui:80"
-      - "WEBAPI_BASE_URL=http://webui:80/rest/api"
-      - "TESTING_API_BASE_URL=http://app-test:8282/api/v2"
-      - "CI=true"
+      - "FRONTEND_BASE_URL=http://mobile:80/mobile"
+      - "CHROMIUM_FLAGS=--unsafely-treat-insecure-origin-as-secure=http://app-test:8282 --disable-web-security --ignore-certificate-errors"
     depends_on:
-      webui:
+      mobile:
         condition: service_healthy
     deploy:
       mode: replicated

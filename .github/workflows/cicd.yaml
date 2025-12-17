@@ -1307,21 +1307,23 @@ jobs:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
       - name: run test
-        working-directory: docker-builds/mobiletest/
+        working-directory: docker-builds/e2e-tests/
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
+          mfregistry: metasfresh
+          dbqualifier: preloaded
         run: |
-          docker compose up --abort-on-container-exit --exit-code-from playwright 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
-          docker commit mobiletest-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest
-          docker compose down
+          docker compose --profile mobile up --abort-on-container-exit --exit-code-from playwright-mobile 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
+          docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest
+          docker compose --profile mobile down
       - name: push-results
-        working-directory: docker-builds/mobiletest/
+        working-directory: docker-builds/e2e-tests/
         run: |
           # Move test-results temporarily to avoid Testspace uploading large attachment files
-          mv test-results test-results-temp || true
-          testspace "[mobile/playwright]playwright-report/junit/results.xml"
+          mv test-results-mobile test-results-temp || true
+          testspace "[mobile/playwright]playwright-report-mobile/junit/results.xml"
           # Move back for artifact upload
-          mv test-results-temp test-results || true
+          mv test-results-temp test-results-mobile || true
       - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest
         uses: nick-fields/retry@v3
         with:
@@ -1334,16 +1336,16 @@ jobs:
           echo '#### images' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest' >> $GITHUB_STEP_SUMMARY
       - name: assert success
-        working-directory: docker-builds/mobiletest/
+        working-directory: docker-builds/e2e-tests/
         run: |
           if [ $(cat playwright.exit-code) != 0 ]; then tail -1000 playwright.log && exit 1; fi
       - uses: actions/upload-artifact@v4
         if: success() || failure() # upload the artifact even if is success because that artifact can contain valuable information about how to improve, optimize etc
         with:
-          name: playwright-report
+          name: playwright-mobile-report
           path: |
-            docker-builds/mobiletest/playwright-report/
-            docker-builds/mobiletest/test-results/
+            docker-builds/e2e-tests/playwright-report-mobile/
+            docker-builds/e2e-tests/test-results-mobile/
           retention-days: 30
 
   frontend_webui_test:
@@ -1362,30 +1364,30 @@ jobs:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
       - name: run test
-        working-directory: docker-builds/frontendtest/
+        working-directory: docker-builds/e2e-tests/
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
           mfregistry: metasfresh
           dbqualifier: preloaded
         run: |
-          docker compose up --abort-on-container-exit --exit-code-from playwright 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
-          docker commit frontendtest-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest
-          docker compose down
+          docker compose --profile frontend up --abort-on-container-exit --exit-code-from playwright-frontend 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
+          docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest
+          docker compose --profile frontend down
       - name: push-results
-        working-directory: docker-builds/frontendtest/
+        working-directory: docker-builds/e2e-tests/
         run: |
           # Move test-results temporarily to avoid Testspace uploading large attachment files
-          mv test-results test-results-temp || true
-          testspace "[frontend/playwright]playwright-report/junit/results.xml"
+          mv test-results-frontend test-results-temp || true
+          testspace "[frontend/playwright]playwright-report-frontend/junit/results.xml"
           # Move back for artifact upload
-          mv test-results-temp test-results || true
+          mv test-results-temp test-results-frontend || true
 
       # ===== ALLURE REPORT GENERATION =====
       - name: Setup Allure CLI
         uses: ./.github/actions/setup-allure
 
       - name: Generate Allure Report
-        working-directory: docker-builds/frontendtest/
+        working-directory: docker-builds/e2e-tests/
         run: |
           # Debug: Check if allure-results exists and has content
           echo "=== Checking allure-results directory ==="
@@ -1411,9 +1413,9 @@ jobs:
 
           echo "Found $RESULT_COUNT JSON result files, proceeding with report generation"
 
-          # Generate HTML report (results are in docker-builds/frontendtest/allure-results/)
+          # Generate HTML report (results are in docker-builds/e2e-tests/allure-results/)
           cd ../../e2e/frontend-webui/
-          allure generate ../../docker-builds/frontendtest/allure-results/ -o allure-report/ --clean
+          allure generate ../../docker-builds/e2e-tests/allure-results/ -o allure-report/ --clean
 
       - name: Upload Allure report for gh-pages
         uses: actions/upload-artifact@v4
@@ -1436,7 +1438,7 @@ jobs:
           echo '#### images' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest' >> $GITHUB_STEP_SUMMARY
       - name: assert success
-        working-directory: docker-builds/frontendtest/
+        working-directory: docker-builds/e2e-tests/
         run: |
           if [ $(cat playwright.exit-code) != 0 ]; then tail -1000 playwright.log && exit 1; fi
       - uses: actions/upload-artifact@v4
@@ -1444,8 +1446,8 @@ jobs:
         with:
           name: playwright-frontend-report
           path: |
-            docker-builds/frontendtest/playwright-report/
-            docker-builds/frontendtest/test-results/
+            docker-builds/e2e-tests/playwright-report-frontend/
+            docker-builds/e2e-tests/test-results-frontend/
           retention-days: 30
 
   allure_publish:
