@@ -48,9 +48,9 @@ WITH dynamics_system AS (SELECT externalsystem_id
                                COALESCE(
                                        JSONB_AGG(
                                                JSONB_BUILD_OBJECT('serialNumber', COALESCE(attribute.value, 'NA'))
-                                           ),
+                                       ),
                                        '[]'::jsonb
-                                   ) AS json_data
+                               ) AS json_data
                         FROM m_hu_assignment assignment
                                  INNER JOIN m_hu hu ON assignment.m_hu_id = hu.m_hu_id
                                  INNER JOIN m_hu_attribute attribute ON attribute.m_hu_id = hu.m_hu_id
@@ -71,10 +71,10 @@ WITH dynamics_system AS (SELECT externalsystem_id
                                                        'uom', ouom.x12de355,
                                                        'qty', line.qtyentered,
                                                        'shippingItems', COALESCE(items.json_data, '[ { "serialNumber": "NA"} ]'::jsonb)
-                                                   ) ORDER BY line.line
-                                           ),
+                                               ) ORDER BY line.line
+                                       ),
                                        '[]'::jsonb
-                                   ) AS json_data
+                               ) AS json_data
                         FROM m_inoutline line
                                  INNER JOIN m_product product ON product.m_product_id = line.m_product_id
                                  INNER JOIN c_uom ouom ON ouom.c_uom_id = line.c_uom_id

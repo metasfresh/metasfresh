@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de-metas-camel-scriptedadapter
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 /**
  * Transforms sales order messages to metasfresh purchase candidate format
  * @param {string} messageToMetasfresh - JSON string containing sales order data
@@ -42,6 +64,11 @@ const CONFIG = {
 const ROUTES = {
     CREATE_PURCHASE_CANDIDATE: "metasfresh.create-purchase-candidate-v2.camel.uri",
     ENQUEUE_PURCHASE_CANDIDATE: "To-MF_Enqueue_Purchases_Candidate-Route"
+};
+
+const UOM_MAPPING = {
+    "ea": "PCE"
+    // Add more mappings here as needed
 };
 
 // ============================================================================
@@ -174,7 +201,7 @@ function buildPriceInfo(line, currency) {
     return {
         value: Number(line.price ?? 0),
         currencyCode: currency ?? CONFIG.DEFAULT_CURRENCY,
-        priceUomCode: line.uom ?? null
+        priceUomCode: mapUom(line.uom)
     };
 }
 
@@ -214,13 +241,25 @@ function buildProductIdentifier(productIdentifier) {
 function buildQuantityInfo(line) {
     return {
         qty: Number(line.qty ?? 0),
-        uomCode: line.uom ?? null
+        uomCode: mapUom(line.uom)
     };
 }
 
 // ============================================================================
 // Helper Functions
 // ============================================================================
+
+/**
+ * Maps UOM code according to configured mappings
+ * @param {string} uom - Input UOM code
+ * @returns {string|null} Mapped UOM code or original if no mapping exists
+ */
+function mapUom(uom) {
+    if (!uom) {
+        return null;
+    }
+    return UOM_MAPPING[uom] ?? uom;
+}
 
 /**
  * Creates a service request object
