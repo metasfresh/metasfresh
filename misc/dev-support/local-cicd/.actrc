@@ -1,0 +1,17 @@
+# act configuration for running CI/CD locally
+# See: https://nektosact.com/usage/index.html
+
+# Use larger Ubuntu image with more tools pre-installed
+-P ubuntu-latest=ghcr.io/catthehacker/ubuntu:full-latest
+
+# Local artifact storage
+--artifact-server-path=/tmp/act-artifacts
+
+# Set default run number (GitHub Actions increments this automatically)
+--env GITHUB_RUN_NUMBER=1
+
+# Enable verbose container logs
+--container-options --log-driver=json-file
+
+# Reuse containers for faster subsequent runs
+--reuse
