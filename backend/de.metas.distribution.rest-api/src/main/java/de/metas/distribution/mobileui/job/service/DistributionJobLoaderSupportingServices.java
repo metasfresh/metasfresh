@@ -2,14 +2,14 @@ package de.metas.distribution.mobileui.job.service;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.metas.distribution.mobileui.config.MobileUIDistributionConfig;
-import de.metas.distribution.mobileui.config.MobileUIDistributionConfigRepository;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.DDOrderQuery;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedule;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
+import de.metas.distribution.mobileui.config.MobileUIDistributionConfig;
+import de.metas.distribution.mobileui.config.MobileUIDistributionConfigRepository;
 import de.metas.distribution.mobileui.external_services.hu.DistributionHUService;
 import de.metas.distribution.mobileui.external_services.hu.HUInfo;
 import de.metas.distribution.mobileui.external_services.product.DistributionProductService;
@@ -31,6 +31,7 @@ import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.warehouse.LocatorId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
@@ -98,6 +99,11 @@ public class DistributionJobLoaderSupportingServices
 				.stream()
 				.collect(Collectors.groupingBy(DDOrderMoveSchedule::getDdOrderLineId, Collectors.toList()));
 		return CollectionUtils.fillMissingKeys(map, ddOrderLineIds, ImmutableList.of());
+	}
+
+	public boolean hasInTransitSchedules(@NonNull final LocatorId inTransitLocatorId)
+	{
+		return ddOrderMoveScheduleService.hasInTransitSchedules(inTransitLocatorId);
 	}
 
 	public ZoneId getTimeZone(final OrgId orgId)

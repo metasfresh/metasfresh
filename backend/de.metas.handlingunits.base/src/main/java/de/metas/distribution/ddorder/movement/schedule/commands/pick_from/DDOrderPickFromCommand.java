@@ -1,10 +1,15 @@
-package de.metas.distribution.ddorder.movement.schedule;
+package de.metas.distribution.ddorder.movement.schedule.commands.pick_from;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.movement.generate.DDOrderMovementHelper;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedule;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleId;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedulePickedHU;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedulePickedHUs;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -22,11 +27,12 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.eevolution.model.I_DD_Order;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
 
-class DDOrderPickFromCommand
+public class DDOrderPickFromCommand
 {
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
@@ -38,11 +44,12 @@ class DDOrderPickFromCommand
 	@NonNull private final Instant movementDate = SystemTime.asInstant();
 	@NonNull private final DDOrderMoveScheduleId scheduleId;
 	@NonNull private final HuId huIdToPick;
+	@Nullable private final LocatorId inTransitLocatorId;
 
 	// State
 	private DDOrderMoveSchedule schedule;
 	private I_DD_Order ddOrder;
-	private LocatorId inTransitLocatorId;
+	private LocatorId inTransitLocatorIdEffective;
 
 	@Builder
 	private DDOrderPickFromCommand(
@@ -57,6 +64,7 @@ class DDOrderPickFromCommand
 
 		this.scheduleId = request.getScheduleId();
 		this.huIdToPick = request.getHuId();
+		this.inTransitLocatorId = request.getInTransitLocatorId();
 	}
 
 	public DDOrderMoveSchedule execute()
@@ -72,8 +80,6 @@ class DDOrderPickFromCommand
 		// Load
 		schedule = ddOrderMoveScheduleRepository.getById(scheduleId);
 		ddOrder = ddOrderLowLevelDAO.getById(schedule.getDdOrderId());
-		final WarehouseId warehouseInTransitId = WarehouseId.ofRepoId(ddOrder.getM_Warehouse_ID());
-		inTransitLocatorId = warehouseBL.getOrCreateDefaultLocatorId(warehouseInTransitId);
 
 		//
 		if (schedule.isPickedFrom())
@@ -94,7 +100,7 @@ class DDOrderPickFromCommand
 						.actualHUIdPicked(HuId.ofRepoId(actualPickedHU.getM_HU_ID()))
 						.qtyPicked(getStorageQty(actualPickedHU))
 						.pickFromMovementId(pickFromMovementId)
-						.inTransitLocatorId(inTransitLocatorId)
+						.inTransitLocatorId(getInTransitLocatorId())
 						.dropToLocatorId(schedule.getDropToLocatorId())
 						.build())
 				.collect(DDOrderMoveSchedulePickedHUs.collect());
@@ -139,7 +145,7 @@ class DDOrderPickFromCommand
 		final HUMovementGenerateRequest request = DDOrderMovementHelper.prepareMovementGenerateRequest(ddOrder, schedule.getDdOrderLineId())
 				.movementDate(movementDate)
 				.fromLocatorId(schedule.getPickFromLocatorId())
-				.toLocatorId(inTransitLocatorId)
+				.toLocatorId(getInTransitLocatorId())
 				.huIdsToMove(huIdsToMove)
 				.build();
 
@@ -147,5 +153,25 @@ class DDOrderPickFromCommand
 				.createMovement()
 				.getSingleMovementLineId()
 				.getMovementId();
+	}
+
+	private LocatorId getInTransitLocatorId()
+	{
+		if (inTransitLocatorIdEffective == null)
+		{
+			inTransitLocatorIdEffective = computeInTransitLocatorId();
+		}
+		return inTransitLocatorIdEffective;
+	}
+
+	private LocatorId computeInTransitLocatorId()
+	{
+		if (inTransitLocatorId != null)
+		{
+			return inTransitLocatorId;
+		}
+
+		final WarehouseId warehouseInTransitId = WarehouseId.ofRepoId(ddOrder.getM_Warehouse_ID());
+		return warehouseBL.getOrCreateDefaultLocatorId(warehouseInTransitId);
 	}
 }

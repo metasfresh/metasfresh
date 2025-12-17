@@ -36,7 +36,7 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
       | pp_product_priceChange | plv_scenario_14042022             | product_priceChange_14042022 | 20.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
       | Identifier      | Name                     | OPT.IsCustomer | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.C_BPartner_Location_ID | GLN           | deliveryRule | C_Incoterms_Customer_ID.Value | IncotermLocation        |
-      | olCand_Customer | olCand_Customer_14042022 | Y              | N            | ps_scenario_14042022          | olCand_Customer_location   | 1354423215434 | F            | TB01                          | partnerIncotermLocation |
+      | olCand_Customer | olCand_Customer_14042022 | Y              | N            | ps_scenario_14042022          | olCand_Customer_location   | 1354423215434 | F            | EXW                           | partnerIncotermLocation |
     And metasfresh contains C_BPartner_Locations:
       | Identifier               | GLN           | C_BPartner_ID.Identifier |
       | olCand_Customer_location | 1354423215434 | olCand_Customer          |
@@ -69,7 +69,7 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
             "discount": 0,
             "poReference": "14042022",
             "deliveryViaRule": "S",
-            "incotermsValue": "TB09",
+            "incotermsValue": "DAP",
             "incotermsLocation": "incotermLocation"
         },
         {
@@ -92,7 +92,7 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
             "discount": 0,
             "poReference": "14042022",
             "deliveryViaRule": "S",
-            "incotermsValue": "TB09",
+            "incotermsValue": "DAP",
             "incotermsLocation": "incotermLocation"
         },
         {
@@ -173,7 +173,7 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
 
     And validate the created orders
       | C_Order_ID.Identifier | externalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference | processed | DocStatus | C_Incoterms_Customer_ID.Value | IncotermLocation |
-      | order_1               | 14042022   | olCand_Customer          | olCand_Customer_location          | 2021-11-20  | SOO         | EUR          | F            | S               | 14042022    | true      | CO        | TB09                          | incotermLocation |
+      | order_1               | 14042022   | olCand_Customer          | olCand_Customer_location          | 2021-11-20  | SOO         | EUR          | F            | S               | 14042022    | true      | CO        | DAP                          | incotermLocation |
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | orderLine_1_1             | order_1               | 2021-11-20  | product_14042022        | 0            | 2          | 0           | 10    | 0        | EUR          | true      |

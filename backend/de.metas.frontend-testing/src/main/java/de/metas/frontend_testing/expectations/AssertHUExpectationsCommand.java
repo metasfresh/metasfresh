@@ -75,12 +75,21 @@ class AssertHUExpectationsCommand
 
 	private void assertHU(@NonNull final HuId huId, final @NotNull JsonHUExpectation expectation)
 	{
-		if (expectation.getWarehouse() != null)
+		if (expectation.getWarehouse() != null || expectation.getLocator() != null)
 		{
 			final I_M_HU hu = getHUById(huId);
 			final LocatorId actualLocatorId = IHandlingUnitsBL.extractLocatorId(hu);
-			final WarehouseId expectedWarehouseId = context.getId(expectation.getWarehouse(), WarehouseId.class);
-			assertThat(actualLocatorId.getWarehouseId()).as("Warehouse").isEqualTo(expectedWarehouseId);
+
+			if (expectation.getWarehouse() != null)
+			{
+				final WarehouseId expectedWarehouseId = context.getId(expectation.getWarehouse(), WarehouseId.class);
+				assertThat(actualLocatorId.getWarehouseId()).as("Warehouse").isEqualTo(expectedWarehouseId);
+			}
+			if (expectation.getLocator() != null)
+			{
+				final LocatorId expectedLocatorId = context.getId(expectation.getLocator(), LocatorId.class);
+				assertThat(actualLocatorId).as("Locator").isEqualTo(expectedLocatorId);
+			}
 		}
 
 		if (expectation.getHuStatus() != null)

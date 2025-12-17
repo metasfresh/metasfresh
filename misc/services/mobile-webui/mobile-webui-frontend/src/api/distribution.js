@@ -69,3 +69,9 @@ export const getNextEligiblePickFromLine = ({ wfProcessId, lineId, huQRCode, pro
     })
     .then((response) => unboxAxiosResponse(response));
 };
+
+export const postPrintMaterialInTransitReport = () => {
+  return axios
+    .post(`${apiBasePath}/distribution/print/materialInTransitReport`)
+    .then((response) => unboxAxiosResponse(response));
+};

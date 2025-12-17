@@ -44,6 +44,7 @@ public final class DistributionJobStepId
 		return String.valueOf(scheduleId.getRepoId());
 	}
 
+	@NonNull
 	public DDOrderMoveScheduleId toScheduleId() {return scheduleId;}
 
 	public static boolean equals(@Nullable DistributionJobStepId id1, @Nullable DistributionJobStepId id2) {return Objects.equals(id1, id2);}

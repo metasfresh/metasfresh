@@ -13,6 +13,7 @@ public class MobileUIDistributionConfig
 	boolean allowPickingAnyHU;
 	@NonNull DistributionJobCaptionFormat captionFormat;
 	@NonNull DistributionJobSorting sorting;
+	boolean isRequireTrolley;
 	boolean isRequireScanningProductCode;
 	boolean isNavigateToJobsListAfterPickFromComplete;
 	boolean isCompleteJobAutomatically;

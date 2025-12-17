@@ -1,8 +1,12 @@
-package de.metas.distribution.ddorder.movement.schedule;
+package de.metas.distribution.ddorder.movement.schedule.commands.drop_to;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.movement.generate.DDOrderMovementHelper;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedule;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleId;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
 import de.metas.handlingunits.movement.generate.HUMovementGenerateRequest;
 import de.metas.handlingunits.movement.generate.HUMovementGenerator;
 import de.metas.handlingunits.movement.generate.HUMovementGeneratorResult;
@@ -18,11 +22,9 @@ import org.eevolution.model.I_DD_Order;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
-import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
-class DDOrderDropToCommand
+public class DDOrderDropToCommand
 {
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final DDOrderLowLevelDAO ddOrderLowLevelDAO;
@@ -50,12 +52,12 @@ class DDOrderDropToCommand
 		this.dropToLocatorId = request.getDropToLocatorId();
 	}
 
-	public List<DDOrderMoveSchedule> execute()
+	public ImmutableList<DDOrderMoveSchedule> execute()
 	{
 		return trxManager.callInThreadInheritedTrx(this::executeInTrx);
 	}
 
-	private List<DDOrderMoveSchedule> executeInTrx()
+	private ImmutableList<DDOrderMoveSchedule> executeInTrx()
 	{
 		return ddOrderMoveScheduleRepository.updateByIds(scheduleIds, this::processSchedule);
 	}
@@ -76,22 +78,19 @@ class DDOrderDropToCommand
 
 	private MovementId createDropToMovement(@NonNull final DDOrderMoveSchedule schedule, @NonNull final LocatorId dropToLocatorId)
 	{
-		final DDOrderMoveSchedulePickedHUs pickedHUs = Objects.requireNonNull(schedule.getPickedHUs());
-
 		final I_DD_Order ddOrder = ddOrderLowLevelDAO.getById(schedule.getDdOrderId());
-
 		final HUMovementGenerateRequest request = DDOrderMovementHelper.prepareMovementGenerateRequest(ddOrder, schedule.getDdOrderLineId())
 				.movementDate(movementDate)
-				.fromLocatorId(pickedHUs.getInTransitLocatorId())
+				.fromLocatorId(schedule.getInTransitLocatorId().orElseThrow())
 				.toLocatorId(dropToLocatorId)
-				.huIdsToMove(pickedHUs.getActualHUIdsPicked())
+				.huIdsToMove(schedule.getPickedHUIds())
 				.build();
-
 		final HUMovementGeneratorResult result = new HUMovementGenerator(request).createMovement();
 
-		if (ddOrder.getForward_PP_Order_ID() > 0)
+		final PPOrderId forwardPPOrderId = PPOrderId.ofRepoIdOrNull(ddOrder.getForward_PP_Order_ID());
+		if (forwardPPOrderId != null)
 		{
-			reserveHUsForManufacturing(PPOrderId.ofRepoId(ddOrder.getForward_PP_Order_ID()), result);
+			reserveHUsForManufacturing(forwardPPOrderId, result);
 		}
 
 		return result.getSingleMovementLineId().getMovementId();
