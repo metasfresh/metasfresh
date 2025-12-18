@@ -154,6 +154,8 @@ public class ReceiveGoodsCommand
 	{
 		job = job.withChangedReceiveLine(finishedGoodsReceiveLineId, this::receiveLine);
 		save();
+		
+		autoIssueForWhatWasReceived();
 	}
 
 	@NonNull
@@ -179,7 +181,6 @@ public class ReceiveGoodsCommand
 
 		saveReceivingTargetForLaterUse(receivingTarget);
 		setCatchWeightForReceivedHUs();
-		autoIssueForWhatWasReceived();
 
 		return line.withQtyReceived(getTotalQtyReceived())
 				.withReceivingTarget(receivingTarget);
