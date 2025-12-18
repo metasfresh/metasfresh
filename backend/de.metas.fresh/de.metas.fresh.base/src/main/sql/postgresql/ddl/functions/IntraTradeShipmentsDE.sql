@@ -101,7 +101,8 @@ FROM (SELECT CASE
                                    FROM M_MatchInv mi
                                             JOIN C_InvoiceLine il ON il.C_InvoiceLine_ID = mi.C_InvoiceLine_ID AND il.IsActive = 'Y'
                                             JOIN C_Invoice i ON i.C_Invoice_ID = il.C_Invoice_ID AND i.DocStatus IN ('CO', 'CL') AND i.IsActive = 'Y'
-                                   WHERE mi.IsActive = 'Y' AND mi.Type = 'M'
+                                   WHERE mi.IsActive = 'Y'
+                                     AND mi.Type = 'M'
                                      AND mi.M_InOutLine_ID = iol.M_InOutLine_ID
                ) il_sum ON TRUE
       WHERE io.movementdate BETWEEN per.startdate AND per.enddate
