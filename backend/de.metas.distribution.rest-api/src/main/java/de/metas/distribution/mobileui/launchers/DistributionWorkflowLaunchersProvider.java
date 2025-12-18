@@ -183,7 +183,11 @@ public class DistributionWorkflowLaunchersProvider
 		if (hasInTransitSchedules(jobReferences, userId))
 		{
 			actions.add(ACTION_DROP_ALL);
-			actions.add(ACTION_PRINT_IN_TRANSIT_REPORT);
+
+			if (warehouseService.getTrolleyByUserId(userId).isPresent())
+			{
+				actions.add(ACTION_PRINT_IN_TRANSIT_REPORT);
+			}
 		}
 
 		return actions.build();
