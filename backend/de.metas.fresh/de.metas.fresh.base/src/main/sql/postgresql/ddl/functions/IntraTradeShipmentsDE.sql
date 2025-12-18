@@ -20,6 +20,9 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.IntraTradeShipment
             )
 AS
 $$
+WITH period AS (SELECT startdate, enddate FROM C_Period p WHERE p.C_Period_ID = p_C_Period_ID),
+     uom_kg AS (SELECT C_UOM_ID FROM C_UOM WHERE x12de355 = 'KGM' AND isactive = 'Y' ORDER BY isdefault DESC LIMIT 1),
+     cur_eur AS (SELECT c_currency_id FROM c_currency WHERE iso_code = 'EUR')
 SELECT flow,
        typeOfTransaction,
        cn8,
@@ -31,45 +34,34 @@ SELECT flow,
        SUM(invoicenetamt),
        SUM(invoicenetamt),
        partnervatid
-FROM (WITH period AS (SELECT startdate, enddate
-                      FROM C_Period p
-                      WHERE p.C_Period_ID = p_C_Period_ID)
-      SELECT CASE
+FROM (SELECT CASE
                  WHEN io.issotrx = 'Y' THEN 'V' -- Versand/Dispatch
                                        ELSE 'E' -- Eingang/Arrival
-             END                                                                    AS flow,
+             END                                                                                                                       AS flow,
              CASE
                  WHEN io.issotrx = 'Y' AND dt.docbasetype = 'MMR' THEN 21 -- return
                  WHEN io.issotrx = 'N' AND dt.docbasetype = 'MMS' THEN 21 -- return
                                                                   ELSE 11 -- standard sales/purchase
-             END                                                                    AS typeOfTransaction,
-             ct.value                                                               AS cn8,
-             COALESCE(ct.name, p.name)                                              AS productDescription,
-             COALESCE(asi_countryOfOrigin.code, pco.countrycode, bp_co.countrycode) AS OriginCountry,
-             bp_co.countrycode                                                      AS partnerCountry,
-             r.IntrastatCode                                                        AS regionCode,
-             COALESCE((COALESCE(uomConvert(iol.M_Product_ID,
-                                           iol.catch_uom_id,
-                                           uom_kg.c_uom_id,
-                                           iol.qtydeliveredcatch),
-                                uomConvert(iol.M_Product_ID,
-                                           iol.C_UOM_ID,
-                                           uom_kg.c_uom_id,
-                                           iol.movementqty))),
-                      iol.qtyentered * p.weight)                                    AS weightInKg, --p.weight currently is always KG
-             currencyconvert(il.linenetamt,
-                             i.c_currency_id,
-                             cur_eur.c_currency_id,
-                             i.dateinvoiced,
-                             NULL,
-                             i.ad_client_id,
-                             i.ad_org_id)                                           AS invoicenetamt,
+             END                                                                                                                       AS typeOfTransaction,
+             ct.value                                                                                                                  AS cn8,
+             COALESCE(ct.name, p.name)                                                                                                 AS productDescription,
+             COALESCE(asi_countryOfOrigin.code, pco.countrycode, bp_co.countrycode)                                                    AS OriginCountry,
+             bp_co.countrycode                                                                                                         AS partnerCountry,
+             r.IntrastatCode                                                                                                           AS regionCode,
+             COALESCE(
+                     uomConvert(iol.M_Product_ID, iol.catch_uom_id, uom_kg.c_uom_id, iol.qtydeliveredcatch),
+                     uomConvert(iol.M_Product_ID, iol.C_UOM_ID, uom_kg.c_uom_id, iol.movementqty),
+                     iol.qtyentered * p.weight
+             )                                                                                                                         AS weightInKg, --p.weight currently is always KG
+             currencyconvert(il.linenetamt, i.c_currency_id, cur_eur.c_currency_id, i.dateinvoiced, NULL, i.ad_client_id, i.ad_org_id) AS invoicenetamt,
              CASE
                  WHEN io.issotrx = 'Y' THEN COALESCE(bpl.vataxid, bp.vataxid)
                                        ELSE ''
-             END                                                                    AS partnervatid
-      FROM M_InOut io
-               CROSS JOIN period per
+             END                                                                                                                       AS partnervatid
+      FROM period per,
+           uom_kg,
+           cur_eur,
+           M_InOut io
                JOIN m_warehouse w ON w.m_warehouse_id = io.m_warehouse_id
                JOIN c_location wl ON wl.c_location_id = w.c_location_id -- not audit-proof
                JOIN C_country wlc ON wlc.c_country_id = wl.c_country_id
@@ -85,33 +77,14 @@ FROM (WITH period AS (SELECT startdate, enddate
                LEFT JOIN c_region r ON r.c_region_id = l.c_region_id
                JOIN C_country bp_co ON bp_co.c_country_id = l.c_country_id
                JOIN c_currency c ON i.c_currency_id = c.C_Currency_id
-               LEFT OUTER JOIN C_UOM uom ON uom.C_UOM_ID = COALESCE(iol.catch_uom_id, (SELECT C_UOM_ID
-                                                                                       FROM C_UOM
-                                                                                       WHERE x12de355 = 'KGM'
-                                                                                         AND isactive = 'Y'
-                                                                                       ORDER BY isdefault DESC
-                                                                                       LIMIT 1)) -- fallback to KG
+               LEFT OUTER JOIN C_UOM uom ON uom.C_UOM_ID = COALESCE(iol.catch_uom_id, uom_kg.C_UOM_ID)
                LEFT JOIN M_CustomsTariff ct ON ct.M_CustomsTariff_ID = p.M_CustomsTariff_ID
-               LEFT JOIN LATERAL (
-               SELECT STRING_AGG(DISTINCT ai.value, ', ') AS code --aggregation is not allowed, but it should be visible (invoice amounts split is not supported atm)
-               FROM m_attributesetinstance asi
-                        JOIN M_AttributeInstance ai ON ai.M_AttributeSetInstance_ID = asi.M_AttributeSetInstance_ID
-                        JOIN M_Attribute a ON ai.m_attribute_id = a.m_attribute_id AND a.value = '1000001' -- Herkunft
-               WHERE iol.m_attributesetinstance_id = asi.m_attributesetinstance_id
+               LEFT JOIN LATERAL (SELECT STRING_AGG(DISTINCT ai.value, ', ') AS code --aggregation is not allowed, but it should be visible (invoice amounts split is not supported atm)
+                                  FROM m_attributesetinstance asi
+                                           JOIN M_AttributeInstance ai ON ai.M_AttributeSetInstance_ID = asi.M_AttributeSetInstance_ID
+                                           JOIN M_Attribute a ON ai.m_attribute_id = a.m_attribute_id AND a.value = '1000001' -- Herkunft
+                                  WHERE iol.m_attributesetinstance_id = asi.m_attributesetinstance_id
                ) asi_countryOfOrigin ON TRUE
-               LEFT JOIN LATERAL (
-               (SELECT C_UOM_ID
-                FROM C_UOM
-                WHERE x12de355 = 'KGM'
-                  AND isactive = 'Y'
-                ORDER BY isdefault DESC
-                LIMIT 1)
-               ) uom_kg ON TRUE
-               LEFT JOIN LATERAL (
-               (SELECT c_currency_id
-                FROM c_currency
-                WHERE iso_code = 'EUR')
-               ) cur_eur ON TRUE
       WHERE io.movementdate BETWEEN per.startdate AND per.enddate
         AND io.AD_Org_ID = p_AD_Org_ID
         AND io.isactive = 'Y'
