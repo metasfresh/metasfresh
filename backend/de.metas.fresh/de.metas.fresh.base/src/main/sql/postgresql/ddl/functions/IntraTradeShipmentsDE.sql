@@ -81,34 +81,28 @@ FROM (SELECT CASE
                                            JOIN M_Attribute a ON ai.m_attribute_id = a.m_attribute_id AND a.value = '1000001' -- Herkunft
                                   WHERE iol.m_attributesetinstance_id = asi.m_attributesetinstance_id
                ) asi_countryOfOrigin ON TRUE
-               LEFT JOIN LATERAL (
-               SELECT ROUND(
-                              SUM(
-                                      currencyconvert(
-                                              CASE
-                                                  WHEN il.QtyInvoiced <> 0
-                                                      THEN il.LineNetAmt * (mi.Qty / il.QtyInvoiced)
-                                                      ELSE 0
-                                              END,
-                                              i.c_currency_id,
-                                              cur_eur.c_currency_id,
-                                              i.dateinvoiced,
-                                              NULL,
-                                              i.ad_client_id,
-                                              i.ad_org_id
-                                      )),
-                              cur_eur.stdprecision
-                      ) AS invoicenetamt
-               FROM M_MatchInv mi
-                        JOIN C_InvoiceLine il
-                             ON il.C_InvoiceLine_ID = mi.C_InvoiceLine_ID
-                                 AND il.IsActive = 'Y'
-                        JOIN C_Invoice i
-                             ON i.C_Invoice_ID = il.C_Invoice_ID
-                                 AND i.DocStatus IN ('CO', 'CL')
-                                 AND i.IsActive = 'Y'
-               WHERE mi.IsActive = 'Y'
-                 AND mi.M_InOutLine_ID = iol.M_InOutLine_ID
+               LEFT JOIN LATERAL ( SELECT ROUND(
+                                                  SUM(
+                                                          currencyconvert(
+                                                                  CASE
+                                                                      WHEN il.QtyInvoiced <> 0
+                                                                          THEN il.LineNetAmt * (mi.Qty / il.QtyInvoiced)
+                                                                          ELSE 0
+                                                                  END,
+                                                                  i.c_currency_id,
+                                                                  cur_eur.c_currency_id,
+                                                                  i.dateinvoiced,
+                                                                  NULL,
+                                                                  i.ad_client_id,
+                                                                  i.ad_org_id
+                                                          )),
+                                                  cur_eur.stdprecision
+                                          ) AS invoicenetamt
+                                   FROM M_MatchInv mi
+                                            JOIN C_InvoiceLine il ON il.C_InvoiceLine_ID = mi.C_InvoiceLine_ID AND il.IsActive = 'Y'
+                                            JOIN C_Invoice i ON i.C_Invoice_ID = il.C_Invoice_ID AND i.DocStatus IN ('CO', 'CL') AND i.IsActive = 'Y'
+                                   WHERE mi.IsActive = 'Y' AND mi.Type = 'M'
+                                     AND mi.M_InOutLine_ID = iol.M_InOutLine_ID
                ) il_sum ON TRUE
       WHERE io.movementdate BETWEEN per.startdate AND per.enddate
         AND io.AD_Org_ID = p_AD_Org_ID
