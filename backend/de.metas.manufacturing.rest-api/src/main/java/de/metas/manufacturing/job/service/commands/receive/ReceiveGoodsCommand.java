@@ -1,4 +1,4 @@
-package de.metas.manufacturing.job.service.commands;
+package de.metas.manufacturing.job.service.commands.receive;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HUPIItemProductId;
@@ -19,22 +19,28 @@ import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.i18n.AdMessageKey;
+import de.metas.manufacturing.job.model.FinishedGoodsReceiveLine;
+import de.metas.manufacturing.job.model.FinishedGoodsReceiveLineId;
+import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ReceivingTarget;
 import de.metas.manufacturing.job.service.ManufacturingJobLoaderAndSaver;
 import de.metas.manufacturing.job.service.ManufacturingJobLoaderAndSaverSupportingServices;
+import de.metas.manufacturing.job.service.ManufacturingJobService;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonHUQRCodeTarget;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonNewLUTarget;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonNewTUTarget;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.RawMaterialsIssueStrategy;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
-import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
 import org.eevolution.api.PPOrderBOMLineId;
@@ -59,17 +65,19 @@ public class ReceiveGoodsCommand
 
 	//
 	// Services
-	private final IHandlingUnitsBL handlingUnitsBL;
-	private final IUOMConversionBL uomConversionBL;
-	private final IHUPPOrderBL ppOrderBL;
-	private final IPPOrderBOMBL ppOrderBOMBL;
-	private final ManufacturingJobLoaderAndSaverSupportingServices loadingAndSavingSupportServices;
-	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+	@NonNull private final ITrxManager trxManager;
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL;
+	@NonNull private final IHUStatusBL huStatusBL;
+	@NonNull private final IUOMConversionBL uomConversionBL;
+	@NonNull private final IHUPPOrderBL ppOrderBL;
+	@NonNull private final IPPOrderBOMBL ppOrderBOMBL;
+	@NonNull private final ManufacturingJobService jobService;
+	@NonNull private final ManufacturingJobLoaderAndSaverSupportingServices loadingAndSavingSupportServices;
 
 	//
 	// Parameters
-	@NonNull private final PPOrderId ppOrderId;
-	@Nullable private final PPOrderBOMLineId coProductBOMLineId;
+	//@NonNull private final ManufacturingJob jobInitial;
+	@NonNull private final FinishedGoodsReceiveLineId finishedGoodsReceiveLineId;
 	@NonNull private final SelectedReceivingTarget receivingTarget;
 	@NonNull private final BigDecimal qtyToReceiveBD;
 	@NonNull private final ZonedDateTime date;
@@ -77,44 +85,79 @@ public class ReceiveGoodsCommand
 	@Nullable private final LocalDate productionDate;
 	@Nullable private final String lotNo;
 	@Nullable private final Quantity catchWeight;
-	@Nullable private final String barcode;
+	@Nullable private final ScannedCode barcode;
 
 	//
 	// State
-	private I_PP_Order _ppOrder; // lazy
-	private I_PP_Order_BOMLine _coProductLine; // lazy
-	private final ArrayList<I_M_HU> receivedHUs = new ArrayList<>();
+	@NonNull private final PPOrderId ppOrderId;
+	@Nullable private final PPOrderBOMLineId coProductBOMLineId;
+	@NonNull private ManufacturingJob job;
+	@Nullable private I_PP_Order _ppOrder; // lazy
+	@Nullable private I_PP_Order_BOMLine _coProductLine; // lazy
+	@NonNull private final ArrayList<I_M_HU> receivedHUs = new ArrayList<>();
 
 	@Builder
 	private ReceiveGoodsCommand(
+			@NonNull final ITrxManager trxManager,
 			@NonNull final IHandlingUnitsBL handlingUnitsBL,
+			@NonNull final IHUStatusBL huStatusBL,
 			@NonNull final IUOMConversionBL uomConversionBL,
 			@NonNull final IHUPPOrderBL ppOrderBL,
 			@NonNull final IPPOrderBOMBL ppOrderBOMBL,
+			@NonNull final ManufacturingJobService jobService,
 			@NonNull final ManufacturingJobLoaderAndSaverSupportingServices loadingAndSavingSupportServices,
 			//
-			@NonNull final ReceiveGoodsRequest request)
+			@NonNull final ManufacturingJob job,
+			@NonNull final FinishedGoodsReceiveLineId finishedGoodsReceiveLineId,
+			@NonNull final SelectedReceivingTarget receivingTarget,
+			@NonNull final BigDecimal qtyToReceiveBD,
+			@NonNull final ZonedDateTime date,
+			@Nullable final LocalDate bestBeforeDate,
+			@Nullable final LocalDate productionDate,
+			@Nullable final String lotNo,
+			@Nullable final Quantity catchWeight,
+			@Nullable final ScannedCode barcode)
 	{
+		this.trxManager = trxManager;
 		this.handlingUnitsBL = handlingUnitsBL;
+		this.huStatusBL = huStatusBL;
 		this.uomConversionBL = uomConversionBL;
 		this.ppOrderBL = ppOrderBL;
 		this.ppOrderBOMBL = ppOrderBOMBL;
+		this.jobService = jobService;
 		this.loadingAndSavingSupportServices = loadingAndSavingSupportServices;
 
-		this.ppOrderId = request.getPpOrderId();
-		this.coProductBOMLineId = request.getCoProductBOMLineId();
-		this.receivingTarget = request.getReceivingTarget();
-		this.qtyToReceiveBD = request.getQtyToReceiveBD();
-		this.date = request.getDate();
-		this.bestBeforeDate = request.getBestBeforeDate();
-		this.productionDate = request.getProductionDate();
-		this.lotNo = StringUtils.trimBlankToNull(request.getLotNo());
-		this.catchWeight = request.getCatchWeight();
-		this.barcode = StringUtils.trimBlankToNull(request.getBarcode());
+		this.finishedGoodsReceiveLineId = finishedGoodsReceiveLineId;
+		this.receivingTarget = receivingTarget;
+		this.qtyToReceiveBD = qtyToReceiveBD;
+		this.date = date;
+		this.bestBeforeDate = bestBeforeDate;
+		this.productionDate = productionDate;
+		this.lotNo = StringUtils.trimBlankToNull(lotNo);
+		this.catchWeight = catchWeight;
+		this.barcode = barcode;
+
+		// state
+		this.job = job;
+		this.ppOrderId = job.getPpOrderId();
+		this.coProductBOMLineId = job.getFinishedGoodsReceiveLineById(finishedGoodsReceiveLineId).getCoProductBOMLineId();
 	}
 
-	@Nullable
-	public ReceiveGoodsResult execute()
+	@NonNull
+	public ManufacturingJob execute()
+	{
+		trxManager.runInThreadInheritedTrx(this::execute0);
+		return job;
+	}
+
+	private void execute0()
+	{
+		job = job.withChangedReceiveLine(finishedGoodsReceiveLineId, this::receiveLine);
+		save();
+	}
+
+	@NonNull
+	private FinishedGoodsReceiveLine receiveLine(FinishedGoodsReceiveLine line)
 	{
 		@Nullable final ReceivingTarget receivingTarget;
 		if (this.receivingTarget.getReceiveToNewLU() != null)
@@ -136,11 +179,10 @@ public class ReceiveGoodsCommand
 
 		saveReceivingTargetForLaterUse(receivingTarget);
 		setCatchWeightForReceivedHUs();
+		autoIssueForWhatWasReceived();
 
-		return ReceiveGoodsResult.builder()
-				.totalQtyReceived(getTotalQtyReceived())
-				.receivingTarget(receivingTarget)
-				.build();
+		return line.withQtyReceived(getTotalQtyReceived())
+				.withReceivingTarget(receivingTarget);
 	}
 
 	@Nullable
@@ -499,6 +541,20 @@ public class ReceiveGoodsCommand
 		if (!huAttributes.hasAttribute(HUAttributeConstants.ATTR_QRCode)) {return;}
 
 		huAttributes.setSaveOnChange(true);
-		huAttributes.setValue(HUAttributeConstants.ATTR_QRCode, barcode);
+		huAttributes.setValue(HUAttributeConstants.ATTR_QRCode, barcode.getAsString());
 	}
+
+	private void save()
+	{
+		newSaver().saveActivityStatuses(job);
+	}
+
+	@NonNull
+	private ManufacturingJobLoaderAndSaver newSaver() {return new ManufacturingJobLoaderAndSaver(loadingAndSavingSupportServices);}
+
+	private void autoIssueForWhatWasReceived()
+	{
+		job = jobService.autoIssueWhatWasReceived(job, RawMaterialsIssueStrategy.DEFAULT);
+	}
+
 }

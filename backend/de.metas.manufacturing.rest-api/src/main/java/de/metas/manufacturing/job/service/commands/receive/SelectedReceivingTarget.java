@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.manufacturing.job.service.commands;
+package de.metas.manufacturing.job.service.commands.receive;
 
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonHUQRCodeTarget;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonLUReceivingTarget;

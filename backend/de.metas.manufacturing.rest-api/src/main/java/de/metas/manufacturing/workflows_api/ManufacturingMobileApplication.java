@@ -53,7 +53,7 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 {
 	@VisibleForTesting
 	public static final MobileApplicationId APPLICATION_ID = MobileApplicationId.ofString("mfg");
-	
+
 	private final MobileUIManufacturingConfigRepository userProfileRepository;
 	private final ManufacturingRestService manufacturingRestService;
 	private final ManufacturingWorkflowLaunchersProvider wfLaunchersProvider;

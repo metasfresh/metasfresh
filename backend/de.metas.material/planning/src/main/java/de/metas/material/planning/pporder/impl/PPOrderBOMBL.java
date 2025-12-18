@@ -101,7 +101,13 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	}
 
 	@Override
-	public <T extends I_PP_Order_BOMLine> List<T> retrieveOrderBOMLines(final PPOrderId orderId, final Class<T> orderBOMLineClass)
+	public List<I_PP_Order_BOMLine> getOrderBOMLines(final PPOrderId orderId)
+	{
+		return getOrderBOMLines(orderId, I_PP_Order_BOMLine.class);
+	}
+
+	@Override
+	public <T extends I_PP_Order_BOMLine> List<T> getOrderBOMLines(final PPOrderId orderId, final Class<T> orderBOMLineClass)
 	{
 		return orderBOMsRepo.retrieveOrderBOMLines(orderId, orderBOMLineClass);
 	}
@@ -717,7 +723,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	@Override
 	public Set<ProductId> getProductIdsToIssue(final PPOrderId ppOrderId)
 	{
-		return retrieveOrderBOMLines(ppOrderId, I_PP_Order_BOMLine.class)
+		return getOrderBOMLines(ppOrderId, I_PP_Order_BOMLine.class)
 				.stream()
 				.filter(bomLine -> BOMComponentType.ofNullableCodeOrComponent(bomLine.getComponentType()).isIssue())
 				.map(bomLine -> ProductId.ofRepoId(bomLine.getM_Product_ID()))
@@ -728,6 +734,12 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	public ImmutableSet<WarehouseId> getIssueFromWarehouseIds(@NonNull final I_PP_Order ppOrder)
 	{
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(ppOrder.getM_Warehouse_ID());
-		return warehouseDAO.getWarehouseIdsOfSameGroup(warehouseId, WarehouseGroupAssignmentType.MANUFACTURING);
+		return getIssueFromWarehouseIds(warehouseId);
+	}
+
+	@Override
+	public ImmutableSet<WarehouseId> getIssueFromWarehouseIds(final WarehouseId ppOrderWarehouseId)
+	{
+		return warehouseDAO.getWarehouseIdsOfSameGroup(ppOrderWarehouseId, WarehouseGroupAssignmentType.MANUFACTURING);
 	}
 }
