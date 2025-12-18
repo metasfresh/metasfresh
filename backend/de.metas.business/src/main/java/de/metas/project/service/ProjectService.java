@@ -129,7 +129,8 @@ public class ProjectService
 		// Project Type (and related)
 		final ProjectTypeId projectTypeId = projectTypeRepository.getFirstIdByProjectCategoryAndOrg(
 				request.getProjectCategory(),
-				request.getOrgId());
+				request.getOrgId(),
+				false);
 		project.setC_ProjectType_ID(projectTypeId.getRepoId());
 		updateFromProjectType(project);
 

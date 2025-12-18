@@ -70,13 +70,6 @@ public class ProjectTypeRepository
 				.build();
 	}
 
-	public ProjectTypeId getFirstIdByProjectCategoryAndOrg(
-			@NonNull final ProjectCategory projectCategory,
-			@NonNull final OrgId orgId)
-	{
-		return getFirstIdByProjectCategoryAndOrg(projectCategory, orgId, false);
-	}
-
 	@NonNull
 	public ProjectTypeId getFirstIdByProjectCategoryAndOrg(
 			@NonNull final ProjectCategory projectCategory,

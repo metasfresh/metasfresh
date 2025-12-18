@@ -100,7 +100,7 @@ public class C_Order_Project
 			//can't identify a single project for this order's lines.
 			return;
 		}
-		final ProjectTypeId projectTypeId = projectTypeRepository.getFirstIdByProjectCategoryAndOrg(ProjectCategory.SalesPurchaseOrder, OrgId.ofRepoId(order.getAD_Org_ID()));
+		final ProjectTypeId projectTypeId = projectTypeRepository.getFirstIdByProjectCategoryAndOrgOrNull(ProjectCategory.SalesPurchaseOrder, OrgId.ofRepoId(order.getAD_Org_ID()), false);
 		if (projectTypeId == null)
 		{
 			//no project type for `Sales/Purchase Order` defined, can't create a new project for this order
