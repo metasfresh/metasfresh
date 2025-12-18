@@ -185,7 +185,7 @@ function createDropShipBPartnerRequest(dropShip, context) {
                                         address4: dropShip.address4,
                                         postal: dropShip.postal,
                                         city: dropShip.city,
-                                        countryCode: dropShip.country
+                                        countryCode: mapCountryCode(dropShip.country)
                                     }
                                 }
                             ]
@@ -267,6 +267,25 @@ function createProcessCandidatesRequest(context) {
 // ============================================================================
 // Helper Functions
 // ============================================================================
+
+/**
+ * Maps 3-digit ISO country code to 2-digit code
+ * @param {string} countryCode3 - 3-digit country code
+ * @returns {string} 2-digit country code or original if no mapping found
+ */
+function mapCountryCode(countryCode3) {
+    const mapping = {
+        'AUT': 'AT', 'BEL': 'BE', 'BGR': 'BG', 'HRV': 'HR',
+        'CYP': 'CY', 'CZE': 'CZ', 'DNK': 'DK', 'EST': 'EE',
+        'FIN': 'FI', 'FRA': 'FR', 'DEU': 'DE', 'GRC': 'GR',
+        'HUN': 'HU', 'IRL': 'IE', 'ITA': 'IT', 'LVA': 'LV',
+        'LTU': 'LT', 'LUX': 'LU', 'MLT': 'MT', 'NLD': 'NL',
+        'POL': 'PL', 'PRT': 'PT', 'ROU': 'RO', 'SVK': 'SK',
+        'SVN': 'SI', 'ESP': 'ES', 'SWE': 'SE'
+    };
+
+    return mapping[countryCode3] || countryCode3;
+}
 
 /**
  * Builds business partner reference object
