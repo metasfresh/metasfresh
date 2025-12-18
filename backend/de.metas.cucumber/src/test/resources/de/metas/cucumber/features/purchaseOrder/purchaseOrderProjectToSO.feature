@@ -1,5 +1,5 @@
 @from:cucumber
-@ghActions:run_on_executor6
+@ghActions:run_on_executor1
 Feature: Purchase order project is automatically created when PO is completed
 
   Background:
@@ -10,7 +10,7 @@ Feature: Purchase order project is automatically created when PO is completed
     And AD_Scheduler for classname 'de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs' is disabled
 
   @from:cucumber
-  Scenario:
+  Scenario: SO with purchased product. Project auto-populated on resulting PO & lines and pushed to SO lines.
     Given metasfresh contains M_Products:
       | Identifier | IsSold | IsPurchased |
       | p_1        | Y      | Y           |
