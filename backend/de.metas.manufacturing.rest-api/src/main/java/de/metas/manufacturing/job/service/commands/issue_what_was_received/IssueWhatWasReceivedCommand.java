@@ -70,13 +70,12 @@ public class IssueWhatWasReceivedCommand
 	// Params
 	@NonNull private final PPOrderId ppOrderId;
 	@NonNull private final RawMaterialsIssueStrategy issueStrategy;
-	private final boolean failINothingReceived;
 
 	//
 	// State
 	@Nullable private ManufacturingJob _job; // lazy
 	@Nullable private ImmutableMap<PPOrderBOMLineId, I_PP_Order_BOMLine> _bomLineRecordsById; // lazy
-	@Nullable private DraftPPOrderQuantities _ppOrderQuantities; // lazy
+	@Nullable private DraftPPOrderQuantities _draftPPOrderQuantities; // lazy
 	@Nullable private SourceHUsCollectionProvider _sourceHUsCollectionProvider; // lazy
 
 	@Builder
@@ -88,15 +87,13 @@ public class IssueWhatWasReceivedCommand
 			//
 			@Nullable final RawMaterialsIssueStrategy issueStrategy,
 			@Nullable final PPOrderId ppOrderId,
-			@Nullable final ManufacturingJob job,
-			final boolean failINothingReceived)
+			@Nullable final ManufacturingJob job)
 	{
 		this.issueScheduleService = issueScheduleService;
 		this.jobService = jobService;
 		this.ppOrderSourceHUService = ppOrderSourceHUService;
 		this.sourceHUsService = sourceHUsService;
 		this.issueStrategy = issueStrategy != null ? issueStrategy : RawMaterialsIssueStrategy.DEFAULT;
-		this.failINothingReceived = failINothingReceived;
 
 		if (job != null)
 		{
@@ -125,18 +122,6 @@ public class IssueWhatWasReceivedCommand
 	private ManufacturingJob execute0()
 	{
 		final ManufacturingJob job = getJob();
-		final DraftPPOrderQuantities ppOrderQuantities = getPPOrderQuantities();
-		if (!ppOrderQuantities.isSomethingReceived())
-		{
-			if (failINothingReceived)
-			{
-				throw new AdempiereException(NOTHING_WAS_RECEIVED_YET);
-			}
-			else
-			{
-				return job;
-			}
-		}
 
 		final ImmutableList<RawMaterialsIssueLine> lines = job.streamRawMaterialsIssueLines()
 				.filter(RawMaterialsIssueLine::isIssueOnlyForReceived)
@@ -180,13 +165,13 @@ public class IssueWhatWasReceivedCommand
 		return _job;
 	}
 
-	private DraftPPOrderQuantities getPPOrderQuantities()
+	private DraftPPOrderQuantities getDraftPPOrderQuantities()
 	{
-		if (_ppOrderQuantities == null)
+		if (_draftPPOrderQuantities == null)
 		{
-			_ppOrderQuantities = huPPOrderQtyBL.getPPOrderQuantities(ppOrderId, true);
+			_draftPPOrderQuantities = huPPOrderQtyBL.getPPOrderQuantities(ppOrderId, false);
 		}
-		return _ppOrderQuantities;
+		return _draftPPOrderQuantities;
 	}
 
 	private void issueForWhatWasReceived(@NonNull final RawMaterialsIssueLine rawMaterialsIssueLine)
@@ -197,11 +182,7 @@ public class IssueWhatWasReceivedCommand
 			return;
 		}
 
-		final Quantity quantityToIssueForWhatWasReceived = ppOrderBOMBL.computeQtyToIssueBasedOnFinishedGoodReceipt(
-				getBomLine(rawMaterialsIssueLine),
-				rawMaterialsIssueLine.getQtyToIssue().getUOM(),
-				getPPOrderQuantities()
-		);
+		final Quantity quantityToIssueForWhatWasReceived = computeQtyToIssueBasedOnFinishedGoodReceipt(rawMaterialsIssueLine);
 		final Quantity qtyToIssue = rawMaterialsIssueLine.getQtyToIssue().min(quantityToIssueForWhatWasReceived);
 		if (qtyToIssue.signum() <= 0)
 		{
@@ -221,6 +202,15 @@ public class IssueWhatWasReceivedCommand
 				.processCandidates(ProcessIssueCandidatesPolicy.ALWAYS)
 				.createIssues(extractedCUs)
 				.forEach(this::createIssueSchedule);
+	}
+
+	private Quantity computeQtyToIssueBasedOnFinishedGoodReceipt(@NonNull final RawMaterialsIssueLine rawMaterialsIssueLine)
+	{
+		return ppOrderBOMBL.computeQtyToIssueBasedOnFinishedGoodReceipt(
+				getBomLine(rawMaterialsIssueLine),
+				rawMaterialsIssueLine.getQtyToIssue().getUOM(),
+				getDraftPPOrderQuantities()
+		);
 	}
 
 	@NonNull

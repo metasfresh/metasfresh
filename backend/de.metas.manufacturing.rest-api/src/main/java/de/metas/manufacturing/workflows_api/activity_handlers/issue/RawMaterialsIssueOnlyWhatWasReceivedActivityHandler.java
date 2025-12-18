@@ -66,11 +66,10 @@ public class RawMaterialsIssueOnlyWhatWasReceivedActivityHandler implements WFAc
 	@NonNull
 	private ManufacturingJob issueForWhatWasReceived(@NonNull final UserConfirmationRequest request)
 	{
-		return jobService.newIssueWhatWasReceivedCommand()
-				.job(extractManufacturingJob(request))
-				.issueStrategy(extractIssueStrategy(request))
-				.failINothingReceived(true)
-				.build().execute();
+		return jobService.autoIssueWhatWasReceived(
+				extractManufacturingJob(request),
+				extractIssueStrategy(request)
+		);
 	}
 
 	@NonNull
