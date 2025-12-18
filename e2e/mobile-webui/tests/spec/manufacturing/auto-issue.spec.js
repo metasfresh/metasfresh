@@ -66,20 +66,21 @@ test('Auto-issue first line hides Scan button; manual second line shows it', asy
     const { jobId } = await ManufacturingJobsListScreen.startJob({ documentNo: masterdata.manufacturingOrders.PP1.documentNo });
 
     await test.step('Check Issue Line 1: Auto-issue line => Scan button hidden and no indicators', async () => {
-        await ManufacturingJobScreen.expectIssueButton({ index: 1, noIndicators: true })
+        await ManufacturingJobScreen.expectIssueButton({ index: 1, qtyToIssue: '100 Stk', qtyIssued: '0 Stk', noIndicators: true });
         await ManufacturingJobScreen.clickIssueButton({ index: 1 });
         await RawMaterialIssueLineScreen.expectScanButtonVisible({ visible: false });
         await RawMaterialIssueLineScreen.goBack();
     });
 
     await test.step('Check Issue Line 2: Manual line (created second) => Scan button visible', async () => {
-        await ManufacturingJobScreen.expectIssueButton({ index: 2 })
+        await ManufacturingJobScreen.expectIssueButton({ index: 2, qtyToIssue: '100 Stk', qtyIssued: '0 Stk' });
         await ManufacturingJobScreen.clickIssueButton({ index: 2 });
         await RawMaterialIssueLineScreen.expectScanButtonVisible({ visible: true });
         await RawMaterialIssueLineScreen.goBack();
     });
 
     await test.step('Receive finished good', async () => {
+        await ManufacturingJobScreen.expectReceiveButton({ index: 1, qtyToReceive: '100 Stk', qtyReceived: '0 Stk' });
         await ManufacturingJobScreen.clickReceiveButton({ index: 1 });
         await MaterialReceiptLineScreen.selectNewLUTarget({ luPIItemTestId: masterdata.packingInstructions.PI.luPIItemTestId })
         await MaterialReceiptLineScreen.receiveQty({
@@ -87,6 +88,8 @@ test('Auto-issue first line hides Scan button; manual second line shows it', asy
             qtyEntered: '1',
         });
         await ManufacturingJobScreen.waitForScreen();
+        await ManufacturingJobScreen.expectReceiveButton({ index: 1, qtyToReceive: '100 Stk', qtyReceived: '1 Stk' });
+        await ManufacturingJobScreen.expectIssueButton({ index: 1, qtyToIssue: '100 Stk', qtyIssued: '1 Stk', noIndicators: true }); // AUTO_COMP
 
         await Backend.expect({
             manufacturings: {
@@ -112,6 +115,8 @@ test('Auto-issue first line hides Scan button; manual second line shows it', asy
             qtyEntered: '9',
         });
         await ManufacturingJobScreen.waitForScreen();
+        await ManufacturingJobScreen.expectReceiveButton({ index: 1, qtyToReceive: '100 Stk', qtyReceived: '10 Stk' });
+        await ManufacturingJobScreen.expectIssueButton({ index: 1, qtyToIssue: '100 Stk', qtyIssued: '10 Stk', noIndicators: true }); // AUTO_COMP
 
         await Backend.expect({
             manufacturings: {
