@@ -22,12 +22,13 @@ describe('TableHeader', () => {
     const html = wrapperTableCMenu.html();
 
     expect(html).not.toContain(`<th class="indent"></th>`);
-    expect(html).toContain(`<th class="td-sm">Request</th>`);
-    expect(html).toContain(`<th class="td-lg">Request Type</th>`);
-    expect(html).toContain(`<th class="td-md">Created</th>`);
-    expect(html).toContain(`<th class="td-lg">Created By</th>`);
-    expect(html).toContain(`<th class="td-lg">Summary</th>`);
-    expect(html).toContain(`<th class="td-md">Organisation</th>`);
+    // Updated expectations to include data-testid attributes
+    expect(html).toContain(`<th class="td-sm" data-testid="column-R_Request_ID">Request</th>`);
+    expect(html).toContain(`<th class="td-lg" data-testid="column-R_RequestType_ID">Request Type</th>`);
+    expect(html).toContain(`<th class="td-md" data-testid="column-Created">Created</th>`);
+    expect(html).toContain(`<th class="td-lg" data-testid="column-CreatedBy">Created By</th>`);
+    expect(html).toContain(`<th class="td-lg" data-testid="column-Summary">Summary</th>`);
+    expect(html).toContain(`<th class="td-md" data-testid="column-AD_Org_ID">Organisation</th>`);
   });
 
   it('should have indent present', () => {

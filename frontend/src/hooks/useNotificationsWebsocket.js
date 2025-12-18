@@ -11,8 +11,10 @@ import {
   readNotification,
   removeNotification,
 } from '../actions/AppActions';
+import { useIsLoggedIn } from './useIsLoggedIn';
 
-export const useNotificationsWebsocket = ({ isLoggedIn }) => {
+export const useNotificationsWebsocket = () => {
+  const isLoggedIn = useIsLoggedIn();
   const dispatch = useDispatch();
   const [topic, setTopic] = useState(null);
 

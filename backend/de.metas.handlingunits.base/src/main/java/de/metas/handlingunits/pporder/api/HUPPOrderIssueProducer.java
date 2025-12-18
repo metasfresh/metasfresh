@@ -3,7 +3,6 @@ package de.metas.handlingunits.pporder.api;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
@@ -14,6 +13,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.eevolution.api.BOMComponentIssueMethod;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.PPOrderBOMLineId;
@@ -45,7 +45,6 @@ public class HUPPOrderIssueProducer
 	// Services
 	private final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
 	private final IPPOrderBOMDAO ppOrderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	//
 	// Parameters
@@ -58,6 +57,7 @@ public class HUPPOrderIssueProducer
 	private ProcessIssueCandidatesPolicy processCandidatesPolicy = ProcessIssueCandidatesPolicy.IF_ORDER_PLANNING_STATUS_IS_COMPLETE;
 	private boolean changeHUStatusToIssued = true;
 	private IssueCandidateGeneratedBy generatedBy;
+	private boolean failIfIssueOnlyForReceived = false;
 
 	public HUPPOrderIssueProducer(@NonNull final PPOrderId ppOrderId)
 	{
@@ -97,7 +97,7 @@ public class HUPPOrderIssueProducer
 
 	/**
 	 * Issue given <code>HUs</code> to configured {@link I_PP_Order_BOMLine}s.
-	 * 
+	 * <p>
 	 * If order's planning status is {@link PPOrderPlanningStatus#COMPLETE}
 	 * then the candidates will be processed (so cost collectors will be generated).
 	 *
@@ -106,6 +106,8 @@ public class HUPPOrderIssueProducer
 	public List<I_PP_Order_Qty> createIssues(@NonNull final Collection<I_M_HU> hus)
 	{
 		final List<I_PP_Order_BOMLine> targetOrderBOMLines = getTargetOrderBOMLines();
+
+		assertTargetOrderBOMLinesEligible(targetOrderBOMLines);
 
 		final List<I_PP_Order_Qty> candidates = CreateDraftIssuesCommand.builder()
 				.targetOrderBOMLines(targetOrderBOMLines)
@@ -126,6 +128,30 @@ public class HUPPOrderIssueProducer
 		}
 
 		return candidates;
+	}
+
+	private void assertTargetOrderBOMLinesEligible(final List<I_PP_Order_BOMLine> targetOrderBOMLines)
+	{
+		// Guard: if requested, ensure none of the targeted BOM lines are IssueOnlyForReceived
+		if (failIfIssueOnlyForReceived)
+		{
+			final List<I_PP_Order_BOMLine> forbidden = targetOrderBOMLines.stream()
+					.filter(bomLine -> extractIssueMethod(bomLine).isIssueOnlyForReceived())
+					.collect(ImmutableList.toImmutableList());
+			if (!forbidden.isEmpty())
+			{
+				throw new AdempiereException("Cannot manually issue a BOM line configured as IssueOnlyForReceived")
+						.markAsUserValidationError()
+						.setParameter("ppOrderId", ppOrderId)
+						.setParameter("bomLines", forbidden);
+			}
+		}
+	}
+
+	private static BOMComponentIssueMethod extractIssueMethod(final I_PP_Order_BOMLine bomLine)
+	{
+		final BOMComponentIssueMethod issueMethod = BOMComponentIssueMethod.ofNullableCode(bomLine.getIssueMethod());
+		return issueMethod != null ? issueMethod : BOMComponentIssueMethod.Issue;
 	}
 
 	private static PPOrderId extractSinglePPOrderId(@NonNull final List<I_PP_Order_BOMLine> lines)
@@ -188,7 +214,7 @@ public class HUPPOrderIssueProducer
 	{
 		return ppOrderBOMsRepo.retrieveOrderBOMLines(orderId)
 				.stream()
-				.filter(line -> BOMComponentType.ofCode(line.getComponentType()).isIssue())
+				.filter(line -> BOMComponentType.ofNullableCodeOrComponent(line.getComponentType()).isIssue())
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -204,7 +230,7 @@ public class HUPPOrderIssueProducer
 		//
 		// Make sure we have only issue BOM lines
 		final List<I_PP_Order_BOMLine> notIssueBOMLines = targetOrderBOMLines.stream()
-				.filter(bomLine -> !BOMComponentType.ofCode(bomLine.getComponentType()).isIssue())
+				.filter(bomLine -> !BOMComponentType.ofNullableCodeOrComponent(bomLine.getComponentType()).isIssue())
 				.collect(ImmutableList.toImmutableList());
 		if (!notIssueBOMLines.isEmpty())
 		{
@@ -288,6 +314,12 @@ public class HUPPOrderIssueProducer
 	public HUPPOrderIssueProducer generatedBy(final IssueCandidateGeneratedBy generatedBy)
 	{
 		this.generatedBy = generatedBy;
+		return this;
+	}
+
+	public HUPPOrderIssueProducer failIfIssueOnlyForReceived(final boolean fail)
+	{
+		this.failIfIssueOnlyForReceived = fail;
 		return this;
 	}
 }

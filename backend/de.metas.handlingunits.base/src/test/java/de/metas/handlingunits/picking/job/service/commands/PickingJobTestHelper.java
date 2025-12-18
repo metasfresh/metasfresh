@@ -201,10 +201,12 @@ public class PickingJobTestHelper
 				new HULabelConfigService(new HULabelConfigRepository()),
 				huQRCodeService
 		);
+		final PickingJobProductService productService = PickingJobProductService.newInstanceForUnitTesting();
 
 		this.huService = new PickingJobHUService(
 				configService,
 				warehouseService,
+				productService,
 				huQRCodeService,
 				huLabelService,
 				huReservationService,
@@ -215,7 +217,7 @@ public class PickingJobTestHelper
 				new PickingJobSalesOrderService(),
 				warehouseService,
 				bpartnerService,
-				new PickingJobProductService(),
+				productService,
 				pickingJobSlotService,
 				pickingJobLockService,
 				huService
@@ -224,8 +226,8 @@ public class PickingJobTestHelper
 		pickingJobService = new PickingJobService(
 				bpartnerService,
 				warehouseService,
-				new PickingJobProductService(),
-				new PickingJobShipmentScheduleService(),
+				productService,
+				PickingJobShipmentScheduleService.newInstanceForUnitTesting(),
 				pickingJobRepository,
 				pickingJobLockService,
 				pickingJobSlotService,
@@ -299,7 +301,7 @@ public class PickingJobTestHelper
 		return LocatorId.ofRepoId(warehouseId, locator.getM_Locator_ID());
 	}
 
-	public void updateMobileProfile(UnaryOperator<MobileUIPickingUserProfile> updater)
+	public void updateMobileProfile(final UnaryOperator<MobileUIPickingUserProfile> updater)
 	{
 		configService.update(updater);
 	}
@@ -334,7 +336,7 @@ public class PickingJobTestHelper
 			@NonNull final String qtyToDeliver,
 			@Nullable final Instant date,
 			@Nullable final UserId lockedBy,
-			boolean assignToWorkplace)
+			final boolean assignToWorkplace)
 	{
 		final BPartnerLocationId shipToBPLocationIdEffective = shipToBPLocationId != null ? shipToBPLocationId : this.shipToBPLocationId;
 		final BigDecimal qtyToDeliverBD = new BigDecimal(qtyToDeliver);

@@ -58,6 +58,7 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.uom.UomId;
@@ -91,6 +92,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 import static java.math.BigDecimal.ONE;
@@ -868,4 +870,18 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		return shipmentScheduleBL.newLoadingCache(I_M_ShipmentSchedule.class);
 	}
 
+	@Nullable
+	@Override
+	public ProjectId extractSingleProjectIdOrNull(@NonNull final List<ShipmentScheduleWithHU> candidates)
+	{
+		final Set<ProjectId> projectIdsFromShipmentSchedules = candidates.stream()
+				.map(ShipmentScheduleWithHU::getProjectId)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toSet());
+		if (projectIdsFromShipmentSchedules.size() == 1)
+		{
+			return projectIdsFromShipmentSchedules.iterator().next();
+		}
+		return null;
+	}
 }

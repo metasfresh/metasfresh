@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="2.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\uat.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\dev.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -126,6 +126,14 @@
 	<field name="amountpattern" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="amountpattern"/>
 		<property name="com.jaspersoft.studio.field.label" value="amountpattern"/>
+	</field>
+	<field name="qtypattern" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="qtypattern"/>
+		<property name="com.jaspersoft.studio.field.label" value="qtypattern"/>
+	</field>
+	<field name="priceqtypattern" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="priceqtypattern"/>
+		<property name="com.jaspersoft.studio.field.label" value="priceqtypattern"/>
 	</field>
 	<field name="week_year" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="week_year"/>
@@ -428,7 +436,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{rate}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-33" mode="Transparent" x="353" y="0" width="38" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="5bac5007-54a5-4a01-af57-967f8490e6c3">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
@@ -443,6 +451,7 @@
 					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qtyenteredinpriceuom}]]></textFieldExpression>
+				<patternExpression><![CDATA[$F{priceqtypattern}]]></patternExpression>
 			</textField>
 			<staticText>
 				<reportElement x="574" y="0" width="5" height="12" uuid="9b7ff4d0-6d37-437e-ba53-49fce04c2cd5">
@@ -509,7 +518,7 @@
 		<band height="12">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<printWhenExpression><![CDATA[new Boolean($F{attributes} != null) 
-  ||  ( new Boolean($P{displayhu}.equals( "Y" ) && $F{lu_name} != null && !$F{lu_name}.isEmpty() ) )  ]]></printWhenExpression>
+  ||  ( new Boolean($P{displayhu}.equals( "Y" ) && $F{lu_name} != null && !$F{lu_name}.isEmpty() ) )]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-13" mode="Transparent" x="97" y="0" width="142" height="12" forecolor="#000000" uuid="78d9f5a7-25c1-4106-ace7-c1af5c85fb3b">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>

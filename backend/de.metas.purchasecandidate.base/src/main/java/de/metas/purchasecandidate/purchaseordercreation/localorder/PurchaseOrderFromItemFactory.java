@@ -104,7 +104,8 @@ import java.util.Set;
 				.dateOrdered(TimeUtil.asLocalDate(orderAggregationKey.getDateOrdered(), timeZone))
 				.poReference(orderAggregationKey.getPoReference())
 				.externalPurchaseOrderUrl(orderAggregationKey.getExternalPurchaseOrderUrl())
-				.externalHeaderId(orderAggregationKey.getExternalId());
+				.externalHeaderId(orderAggregationKey.getExternalId())
+				.externalSystemId(orderAggregationKey.getExternalSystemId());
 
 
 		if (docType != null)
@@ -133,6 +134,7 @@ import java.util.Set;
 		}
 		orderLineBuilder.manualPrice(purchaseOrderItem.getPrice());
 		orderLineBuilder.priceUomId(purchaseOrderItem.getPriceUomId());
+		orderLineBuilder.externalId(purchaseOrderItem.getExternalLineId());
 
 		purchaseItem2OrderLine.put(purchaseOrderItem, orderLineBuilder);
 	}

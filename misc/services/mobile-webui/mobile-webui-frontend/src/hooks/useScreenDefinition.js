@@ -6,6 +6,11 @@ import { useMobileNavigation } from './useMobileNavigation';
 import { useMobileLocation } from './useMobileLocation';
 
 export const useScreenDefinition = ({ screenId, captionKey, values, isHomeStop, back } = {}) => {
+  useEffect(() => {
+    console.log('------------------------------------------------------------');
+    console.log('screenId: ', screenId);
+    console.log('------------------------------------------------------------');
+  }, []);
   const dispatch = useDispatch();
   const { url, applicationId, wfProcessId, activityId, lineId, stepId, altStepId, id, ...otherParams } =
     useMobileLocation();

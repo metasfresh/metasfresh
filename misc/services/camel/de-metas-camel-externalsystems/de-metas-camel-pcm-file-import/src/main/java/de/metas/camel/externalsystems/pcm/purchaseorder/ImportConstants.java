@@ -38,4 +38,5 @@ public interface ImportConstants
 
 	String PROPERTY_CURRENT_CSV_ROW = "CurrentCsvRow";
 	String PROPERTY_IMPORT_ORDERS_CONTEXT = "ImportOrdersContext";
+	String PROPERTY_EXTERNAL_SYSTEM_CODE = "ExternalSystemCode";
 }

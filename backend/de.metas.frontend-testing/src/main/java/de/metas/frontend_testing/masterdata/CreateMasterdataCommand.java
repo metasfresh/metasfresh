@@ -60,14 +60,13 @@ import java.util.function.BiFunction;
 public class CreateMasterdataCommand
 {
 	@NonNull private final CreateMasterdataCommandSupportingServices services;
-
 	@NonNull private final JsonCreateMasterdataRequest request;
 
-	private MasterdataContext context;
+	private final MasterdataContext context = new MasterdataContext();
 
 	public JsonCreateMasterdataResponse execute()
 	{
-		this.context = new MasterdataContext();
+		this.context.putFromJson(request.getContext());
 
 		// IMPORTANT: the order is very important
 		final ImmutableMap<String, JsonLoginUserResponse> login = createLoginUsers();
@@ -89,6 +88,7 @@ public class CreateMasterdataCommand
 		createCustomQRCodeFormats();
 
 		return JsonCreateMasterdataResponse.builder()
+				.context(context.toJson())
 				.mobileConfig(mobileConfig)
 				.login(login)
 				.bpartners(bpartners)

@@ -58,6 +58,7 @@ import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.project.ProjectId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -513,6 +514,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 		{
 			packingMaterialLinesBuilder.collectPackingMaterialsAndUpdateShipmentLines();
 		}
+		currentShipment.setC_Project_ID(ProjectId.toRepoId(huShipmentScheduleBL.extractSingleProjectIdOrNull(currentCandidates)));
 
 		//
 		// Process current shipment
@@ -653,12 +655,8 @@ public class InOutProducerFromShipmentScheduleWithHU
 			return true;
 		}
 
-		else if (isCandidateSoonerThanMovementDate)
-		{
-			return true;
-		}
-
-		return false;
+		else
+			return isCandidateSoonerThanMovementDate;
 	}
 
 	private void createUpdateShipmentLine(@NonNull final ShipmentScheduleWithHU candidate)

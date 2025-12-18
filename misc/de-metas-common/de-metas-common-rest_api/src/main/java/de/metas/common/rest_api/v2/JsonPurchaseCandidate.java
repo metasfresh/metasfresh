@@ -46,6 +46,9 @@ import java.util.List;
 @Value
 public class JsonPurchaseCandidate
 {
+	@JsonProperty("externalSystemCode")
+	String externalSystemCode;
+	
 	@JsonProperty("externalHeaderId")
 	JsonExternalId externalHeaderId;
 
@@ -80,8 +83,9 @@ public class JsonPurchaseCandidate
 	@Builder
 	@JsonCreator
 	private JsonPurchaseCandidate(
-			@JsonProperty("externalHeaderId") @NonNull final JsonExternalId externalHeaderId,
-			@JsonProperty("externalLineId") @NonNull final JsonExternalId externalLineId,
+			@JsonProperty("externalSystemCode") @Nullable final String externalSystemCode,
+			@JsonProperty("externalHeaderId") @Nullable final JsonExternalId externalHeaderId,
+			@JsonProperty("externalLineId") @Nullable final JsonExternalId externalLineId,
 			@JsonProperty("purchaseDatePromised") @Nullable final ZonedDateTime purchaseDatePromised,
 			@JsonProperty("purchaseDateOrdered") @Nullable final ZonedDateTime purchaseDateOrdered,
 			@JsonProperty("externalPurchaseOrderUrl") @Nullable final String externalPurchaseOrderUrl,
@@ -90,6 +94,7 @@ public class JsonPurchaseCandidate
 			@JsonProperty("purchaseOrders") @Nullable @Singular final List<JsonPurchaseOrder> purchaseOrders,
 			@JsonProperty("workPackages") @Nullable @Singular final List<JsonWorkPackageStatus> workPackages)
 	{
+		this.externalSystemCode = externalSystemCode;
 		this.externalHeaderId = externalHeaderId;
 		this.externalLineId = externalLineId;
 		this.purchaseDatePromised = purchaseDatePromised;

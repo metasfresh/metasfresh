@@ -76,7 +76,7 @@ public class FrontendTestingRestController
 		}
 	}
 
-	private <T> T callInContext(Supplier<T> callable)
+	private <T> T callInContext(@NonNull final Supplier<T> callable)
 	{
 		assertEnabled();
 

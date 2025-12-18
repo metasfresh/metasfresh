@@ -33,6 +33,11 @@
 			<version>10.0.0</version>
 		</dependency>
 		<dependency>
+			<groupId>de.metas.handlingunits</groupId>
+			<artifactId>de.metas.handlingunits.mobileui</artifactId>
+			<version>10.0.0</version>
+		</dependency>
+		<dependency>
 			<groupId>de.metas.inventory</groupId>
 			<artifactId>de.metas.inventory.mobileui</artifactId>
 			<version>10.0.0</version>
@@ -61,5 +66,19 @@
             <version>10.0.0</version>
             <scope>compile</scope>
         </dependency>
+
+        <dependency>
+            <groupId>de.metas.adempiere.adempiere</groupId>
+            <artifactId>de.metas.adempiere.adempiere.base</artifactId>
+            <version>10.0.0</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        
     </dependencies>
 </project>
