@@ -29,8 +29,12 @@ import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -61,7 +65,36 @@ public class PostgresFTSDocumentFilterConverter implements SqlDocumentFilterConv
 		}
 		else if (I_C_BPartner.Table_Name.equals(tableName))
 		{
-			return getPartnerSql(request, searchText);
+			return getSql(PostgresFTSFilterRequest.builder()
+					.request(request)
+					.searchText(searchText)
+					.ftsTableAlias("fts_bpartner")
+					.ftsTableName("C_BPartner_FTS")
+					.keyColumnName(I_C_BPartner.COLUMNNAME_C_BPartner_ID)
+					.build()
+			);
+		}
+		else if (I_M_Product.Table_Name.equals(tableName))
+		{
+			return getSql(PostgresFTSFilterRequest.builder()
+					.request(request)
+					.searchText(searchText)
+					.ftsTableAlias("fts_product")
+					.ftsTableName("M_Product_FTS")
+					.keyColumnName(I_M_Product.COLUMNNAME_M_Product_ID)
+					.build()
+			);
+		}
+		else if (I_C_Invoice.Table_Name.equals(tableName))
+		{
+			return getInvoiceSql(PostgresFTSFilterRequest.builder()
+					.request(request)
+					.searchText(searchText)
+					.ftsTableAlias("fts_invoice")
+					.ftsTableName("C_Invoice_FTS")
+					.keyColumnName(I_C_Invoice.COLUMNNAME_C_Invoice_ID)
+					.build()
+			);
 		}
         else
 		{
@@ -69,13 +102,13 @@ public class PostgresFTSDocumentFilterConverter implements SqlDocumentFilterConv
 		}
 	}
 
-	private FilterSql getPartnerSql(@NonNull final FilterSqlRequest request, @NonNull final String searchText)
+	private FilterSql getSql(@NonNull final PostgresFTSFilterRequest request)
 	{
-		final String mainTableAlias = request.getTableNameOrAlias();
-		final String ftsTableAlias = "fts_bpartner";
-		final String ftsTableName = "C_BPartner_FTS";
-		final String keyColumnName = "C_BPartner_ID";
-		final String mainTableKeyColumn = mainTableAlias + "." + keyColumnName;
+		final String searchText = request.getSearchText();
+		final String ftsTableAlias = request.getFtsTableAlias();
+		final String ftsTableName = request.getFtsTableName();
+		final String keyColumnName = request.getKeyColumnName();
+		final String mainTableKeyColumn = request.getMainTableKeyColumn();
 
 		// https://www.postgresql.org/docs/current/textsearch.html
 		final SqlAndParams.Builder whereClause = SqlAndParams.builder()
@@ -110,5 +143,49 @@ public class PostgresFTSDocumentFilterConverter implements SqlDocumentFilterConv
 		whereClause.append(" )");
 
 		return FilterSql.builder().whereClause(whereClause.build()).orderBy(orderByClause.build()).build();
+	}
+
+	private FilterSql getInvoiceSql(@NonNull final PostgresFTSFilterRequest request)
+	{
+		final String searchText = request.getSearchText();
+		final String ftsTableName = request.getFtsTableName();
+		final String keyColumnName = request.getKeyColumnName();
+		final String mainTableAlias = request.getMainTableAlias();
+		final String mainTableKeyColumn = request.getMainTableKeyColumn();
+
+		// https://www.postgresql.org/docs/current/textsearch.html
+		final SqlAndParams.Builder whereClause = SqlAndParams.builder()
+				.append(mainTableKeyColumn).append(" IN (")
+				.append("SELECT ").append(keyColumnName).append(" FROM ").append(ftsTableName)
+				.append(" WHERE fts_document @@ websearch_to_tsquery(get_fts_config(), ?)", searchText);
+
+		final SqlAndParams.Builder orderByClause = SqlAndParams.builder()
+				.append(mainTableAlias).append(".").append(I_C_Invoice.COLUMNNAME_DateInvoiced)
+				.append(" DESC ");
+
+		whereClause.append(" )");
+
+		return FilterSql.builder().whereClause(whereClause.build()).orderBy(orderByClause.build()).build();
+	}
+
+	@Builder
+	@Value
+	private static class PostgresFTSFilterRequest
+	{
+		@NonNull FilterSqlRequest request;
+		@NonNull String searchText;
+		@NonNull String ftsTableAlias;
+		@NonNull String ftsTableName;
+		@NonNull String keyColumnName;
+
+		public String getMainTableAlias()
+		{
+			return request.getTableNameOrAlias();
+		}
+
+		public String getMainTableKeyColumn()
+		{
+			return  getMainTableAlias() + "." + keyColumnName;
+		}
 	}
 }
