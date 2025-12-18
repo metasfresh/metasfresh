@@ -1,8 +1,8 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details_Footer (IN record_id  numeric,
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details_Footer (IN p_Order_ID  numeric,
                                                                                                IN p_language Character Varying(6))
 ;
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details_Footer(IN record_id  numeric,
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details_Footer(IN p_Order_ID  numeric,
                                                                                                  IN p_language Character Varying(6))
     RETURNS TABLE
             (
@@ -18,7 +18,8 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Orde
                 descriptionbottom character varying,
                 deliveryrule      character varying,
                 deliveryviarule   character varying,
-                additionaltext    text
+                additionaltext    text,
+                taxnote           text
             )
 AS
 $$
@@ -46,7 +47,8 @@ SELECT COALESCE(reft.name, ref.name)                                          AS
        o.descriptionbottom,
        COALESCE(o_dr_trl.name, o_dr.name)                                     AS deliveryrule,
        COALESCE(o_dvr_trl.name, o_dvr.name)                                   AS deliveryviarule,
-       report.getBPartner_CustomDocumentText(o.C_DocTypeTarget_ID, o.c_bpartner_id)       AS AdditionalText
+       report.getBPartner_CustomDocumentText(o.C_DocTypeTarget_ID, o.c_bpartner_id)       AS AdditionalText,
+       report.TaxNote(p_Order_ID, NULL, p_Language)                                                 AS taxnote
 
 FROM C_Order o
 
@@ -64,7 +66,7 @@ FROM C_Order o
          LEFT OUTER JOIN AD_Ref_List o_dvr ON o_dvr.AD_Reference_ID = 152 AND o_dvr.value = o.deliveryviarule
          LEFT OUTER JOIN AD_Ref_List_Trl o_dvr_trl ON o_dvr.ad_ref_list_id = o_dvr_trl.ad_ref_list_id AND o_dvr_trl.ad_language = p_Language
 
-WHERE o.C_Order_ID = record_id
+WHERE o.C_Order_ID = p_Order_ID
 
 $$
     LANGUAGE sql STABLE
