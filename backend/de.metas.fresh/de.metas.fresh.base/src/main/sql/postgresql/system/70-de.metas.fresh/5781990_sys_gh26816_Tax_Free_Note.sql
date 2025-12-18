@@ -27,3 +27,6 @@ UPDATE AD_BoilerPlate_Trl SET TextSnippet='tax-free intra-Community supply',Upda
 UPDATE AD_BoilerPlate base SET TextSnippet=trl.TextSnippet, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_BoilerPlate_Trl trl  WHERE trl.AD_BoilerPlate_ID=base.AD_BoilerPlate_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
 ;
 
+-- 2025-12-18T13:05:57.691Z
+UPDATE AD_BoilerPlate_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2025-12-18 13:05:57.691000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_BoilerPlate_ID=540034 AND AD_Language='en_US'
+;
