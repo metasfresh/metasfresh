@@ -10,8 +10,6 @@ import de.metas.manufacturing.config.MobileUIManufacturingConfig;
 import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLine;
 import de.metas.manufacturing.job.model.ManufacturingJob;
-import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonHUQRCodeTarget;
-import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonHUQRCodeTargetConverters;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonFinishGoodsReceiveQRCodesGenerateRequest;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonFinishGoodsReceiveQRCodesGenerateResponse;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
@@ -214,12 +212,6 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 					return manufacturingRestService.processEvent(job, event);
 				}
 		);
-	}
-
-	@Nullable
-	private JsonHUQRCodeTarget extractHUQRCodeTarget(final FinishedGoodsReceiveLine receiveLine)
-	{
-		return JsonHUQRCodeTargetConverters.fromNullable(receiveLine.getReceivingTarget(), huQRCodesService);
 	}
 
 	public JsonFinishGoodsReceiveQRCodesGenerateResponse generateFinishGoodsReceiveQRCodes(@NonNull final JsonFinishGoodsReceiveQRCodesGenerateRequest request)
