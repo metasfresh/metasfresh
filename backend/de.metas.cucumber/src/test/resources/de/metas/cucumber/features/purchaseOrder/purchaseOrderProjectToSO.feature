@@ -9,16 +9,6 @@ Feature: Purchase order project is automatically created when PO is completed
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And AD_Scheduler for classname 'de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs' is disabled
 
-    And load M_AttributeSet:
-      | M_AttributeSet_ID              | Name               |
-      | attributeSet_convenienceSalate | Convenience Salate |
-    And load M_Product_Category:
-      | M_Product_Category_ID | Name     | Value    |
-      | standard_category     | Standard | Standard |
-    And update M_Product_Category:
-      | M_Product_Category_ID | M_AttributeSet_ID              |
-      | standard_category     | attributeSet_convenienceSalate |
-
   @from:cucumber
   Scenario:
     Given metasfresh contains M_Products:
@@ -41,8 +31,8 @@ Feature: Purchase order project is automatically created when PO is completed
       | plv_2                  | p_1          | 10.0     | PCE      |
     ##Needed because de.metas.purchasecandidate.VendorProductInfoService#getVendorProductInfos does not take into consideration vendors without discount schemas
     And metasfresh contains M_DiscountSchemas:
-      | Identifier | Name              | DiscountType | ValidFrom  |
-      | ds_1       | discount_schema_1 | F            | 2021-04-01 |
+      | Identifier | Name               | DiscountType | ValidFrom  |
+      | ds_1       | My_discount_schema | F            | 2021-04-01 |
     And metasfresh contains M_DiscountSchemaBreaks:
       | Identifier | M_DiscountSchema_ID | M_Product_ID | Base_PricingSystem_ID | SeqNo | IsBPartnerFlatDiscount | PriceBase | BreakValue | BreakDiscount |
       | dsb_1      | ds_1                | p_1          | ps_1                  | 10    | Y                      | P         | 10         | 0             |
@@ -51,28 +41,28 @@ Feature: Purchase order project is automatically created when PO is completed
       | Identifier | M_Product_ID | IsCreatePlan | IsPurchased |
       | ppln_1     | p_1          | true         | Y           |
     And metasfresh contains C_BPartners without locations:
-      | Identifier    | IsVendor | IsCustomer | M_PricingSystem_ID | PO_DiscountSchema_ID |
-      | endcustomer_1 | N        | Y          | ps_1               |                      |
-      | endvendor_1   | Y        | N          | ps_1               | ds_1                 |
+      | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID | PO_DiscountSchema_ID |
+      | customer_1 | N        | Y          | ps_1               |                      |
+      | vendor_1   | Y        | N          | ps_1               | ds_1                 |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier             | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
-      | endvendor_location_1   | endvendor_1   | Y               | Y               |
-      | endcustomer_location_1 | endcustomer_1 | Y               | Y               |
+      | Identifier          | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
+      | vendor_location_1   | vendor_1      | Y               | Y               |
+      | customer_location_1 | customer_1    | Y               | Y               |
     And metasfresh contains C_BPartner_Product
       | C_BPartner_ID | M_Product_ID |
-      | endvendor_1   | p_1          |
+      | vendor_1      | p_1          |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      |
-      | o_1        | true    | endcustomer_1 | 2021-04-17  | 2021-04-16T21:00:00Z |
+      | so_1       | true    | customer_1    | 2021-04-17  | 2021-04-16T21:00:00Z |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
-      | ol_1       | o_1        | p_1          | 10         |
-    When the order identified by o_1 is completed
+      | sol_1      | so_1       | p_1          | 10         |
+    When the order identified by so_1 is completed
 
     And after not more than 60s, C_PurchaseCandidates are found
       | Identifier | C_OrderSO_ID | C_OrderLineSO_ID | M_Product_ID |
-      | pc_1       | o_1          | ol_1             | p_1          |
+      | pc_1       | so_1         | sol_1            | p_1          |
     And C_PurchaseCandidates are validated
       | C_PurchaseCandidate_ID | QtyToPurchase |
       | pc_1                   | 10            |
@@ -98,7 +88,7 @@ Feature: Purchase order project is automatically created when PO is completed
 ## PO header and lines
     Then validate the created orders
       | C_Order_ID | C_BPartner_ID | C_BPartner_Location_ID | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | processed | DocStatus | C_Project_ID |
-      | po_1       | endvendor_1   | endvendor_location_1   | 2021-04-16  | POO         | EUR          | F            | P               | true      | CO        | proj1        |
+      | po_1       | vendor_1      | vendor_location_1      | 2021-04-16  | POO         | EUR          | F            | P               | true      | CO        | proj1        |
 
     And validate C_OrderLine:
       | C_OrderLine_ID | C_Order_ID | DateOrdered | M_Product_ID | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | C_Project_ID |
@@ -107,4 +97,4 @@ Feature: Purchase order project is automatically created when PO is completed
 ## SO lines populated
     And validate C_OrderLine:
       | C_OrderLine_ID | C_Project_ID |
-      | ol_1           | proj1        |
+      | sol_1          | proj1        |
