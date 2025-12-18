@@ -54,6 +54,8 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.IOrderLineBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
+import de.metas.project.service.ProjectRepository;
 import de.metas.tax.api.TaxId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -79,6 +81,7 @@ import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -104,7 +107,6 @@ import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.DataTableUtil.NULL_STRING;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -123,6 +125,7 @@ public class C_OrderLine_StepDef
 	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	@NonNull private final ProjectRepository projectsRepo = SpringContextHolder.instance.getBean(ProjectRepository.class);
 
 	@NonNull private final M_Product_StepDefData productTable;
 	@NonNull private final C_BPartner_StepDefData partnerTable;
@@ -439,24 +442,19 @@ public class C_OrderLine_StepDef
 	@And("load C_Order from C_OrderLine")
 	public void loadC_Order(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> table = dataTable.asMaps();
-		for (final Map<String, String> row : table)
-		{
-			loadC_Order(row);
-		}
+		DataTableRows.of(dataTable)
+						.forEach(this::loadC_Order);
+
 	}
 
-	private void loadC_Order(@NonNull final Map<String, String> row)
+	private void loadC_Order(@NonNull final DataTableRow row)
 	{
-		final String olIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_C_OrderLine orderLine = orderLineTable.get(olIdentifier);
-		assertThat(orderLine).isNotNull();
+		final I_C_OrderLine orderLine = row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID).lookupNotNullIn(orderLineTable);
 
 		final I_C_Order orderRecord = InterfaceWrapperHelper.load(orderLine.getC_Order_ID(), I_C_Order.class);
 		assertThat(orderRecord).isNotNull();
 
-		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OrderLine.COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
-		orderTable.putOrReplace(orderIdentifier, orderRecord);
+		orderTable.putOrReplace(row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_Order_ID), orderRecord);
 	}
 
 	@Given("metasfresh contains C_OrderLine expecting error:")
@@ -679,7 +677,7 @@ public class C_OrderLine_StepDef
 			}
 			else if (orderLine.getC_Project_ID() > 0)
 			{
-				project = load(orderLine.getC_Project_ID(), I_C_Project.class);
+				project = projectsRepo.getById(ProjectId.ofRepoId(orderLine.getC_Project_ID()));
 				projectTable.put(projectIdentifier, project);
 			}
 		}

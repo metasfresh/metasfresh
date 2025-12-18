@@ -712,16 +712,16 @@ public class PurchaseCandidateRepository
 	}
 
 	@NonNull
-	public Set<PurchaseCandidate> getAllByPurchaseOrderLineIds(@NonNull final Collection<OrderAndLineId> purchaseOrderLineIds)
+	public List<PurchaseCandidate> getAllByPurchaseOrderLineIds(@NonNull final Collection<OrderAndLineId> purchaseOrderLineIds)
 	{
-		return queryBL.createQueryBuilder(I_C_PurchaseCandidate_Alloc.class)
+		final Set<PurchaseCandidateId> purchaseCandidateIds = queryBL.createQueryBuilder(I_C_PurchaseCandidate_Alloc.class)
 				.addInArrayFilter(I_C_PurchaseCandidate_Alloc.COLUMNNAME_C_OrderLinePO_ID, OrderAndLineId.getOrderLineRepoIds(purchaseOrderLineIds))
 				.create()
 				.stream()
 				.map(I_C_PurchaseCandidate_Alloc::getC_PurchaseCandidate_ID)
 				.map(PurchaseCandidateId::ofRepoId)
-				.map(this::getById)
 				.collect(ImmutableSet.toImmutableSet());
+		return getAllByIds(purchaseCandidateIds);
 	}
 
 	public void deletePurchaseCandidates(@NonNull final DeletePurchaseCandidateQuery deletePurchaseCandidateQuery)

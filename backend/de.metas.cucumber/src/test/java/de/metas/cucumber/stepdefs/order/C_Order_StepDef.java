@@ -77,6 +77,8 @@ import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessInfo;
+import de.metas.project.ProjectId;
+import de.metas.project.service.ProjectRepository;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
@@ -180,6 +182,7 @@ public class C_Order_StepDef
 	@NonNull private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	@NonNull private final ExternalSystemRepository externalSystemRepository = SpringContextHolder.instance.getBean(ExternalSystemRepository.class);
 	@NonNull private final IncotermsRepository incotermsRepository = SpringContextHolder.instance.getBean(IncotermsRepository.class);
+	@NonNull private final ProjectRepository projectsRepo = SpringContextHolder.instance.getBean(ProjectRepository.class);
 
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
 	@NonNull private final C_Order_StepDefData orderTable;
@@ -850,7 +853,7 @@ public class C_Order_StepDef
 			}
 			else if (order.getC_Project_ID() > 0)
 			{
-				project = load(order.getC_Project_ID(), I_C_Project.class);
+				project = projectsRepo.getById(ProjectId.ofRepoId(order.getC_Project_ID()));
 				projectTable.put(projectIdentifier, project);
 			}
 		}

@@ -107,19 +107,19 @@ public class C_Order_Project
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
-	public void po_populateProjectIfNeeded(@NonNull final I_C_Order order)
+	public void beforeComplete(@NonNull final I_C_Order order)
 	{
 		populateProjectIfNeeded(order);
 	}
 
-	private void populateProjectIfNeeded(final @NonNull I_C_Order order)
+	private void populateProjectIfNeeded(final @NonNull I_C_Order purchaseOrder)
 	{
-		final ProjectId projectId = ProjectId.ofRepoIdOrNull(order.getC_Project_ID());
-		if (order.isSOTrx() || projectId != null)
+		final ProjectId projectId = ProjectId.ofRepoIdOrNull(purchaseOrder.getC_Project_ID());
+		if (purchaseOrder.isSOTrx() || projectId != null)
 		{
 			return;
 		}
-		final List<I_C_OrderLine> lines = orderBL.getLinesByOrderIds(Collections.singleton(OrderId.ofRepoId(order.getC_Order_ID())));
+		final List<I_C_OrderLine> lines = orderBL.getLinesByOrderIds(Collections.singleton(OrderId.ofRepoId(purchaseOrder.getC_Order_ID())));
 		final Set<ProjectId> orderLineProjectIds = lines.stream()
 				.map(ol -> ProjectId.ofRepoIdOrNull(ol.getC_Project_ID()))
 				.collect(Collectors.toCollection(HashSet::new));
@@ -128,7 +128,7 @@ public class C_Order_Project
 		{
 			//promote the only project found on the lines to the order
 			final ProjectId olProjectId = orderLineProjectIds.iterator().next();
-			order.setC_Project_ID(olProjectId.getRepoId());
+			purchaseOrder.setC_Project_ID(olProjectId.getRepoId());
 			setProjectIdToOrderLines(olProjectId, lines);
 			return;
 		}
@@ -137,27 +137,27 @@ public class C_Order_Project
 			//can't identify a single project for this order's lines.
 			return;
 		}
-		final ProjectTypeId projectTypeId = projectTypeRepository.getFirstIdByProjectCategoryAndOrgOrNull(ProjectCategory.SalesPurchaseOrder, OrgId.ofRepoId(order.getAD_Org_ID()), false);
+		final ProjectTypeId projectTypeId = projectTypeRepository.getFirstIdByProjectCategoryAndOrgOrNull(ProjectCategory.SalesPurchaseOrder, OrgId.ofRepoId(purchaseOrder.getAD_Org_ID()), false);
 		if (projectTypeId == null)
 		{
 			//no project type for `Sales/Purchase Order` defined, can't create a new project for this order
 			return;
 		}
 
-		final ProjectId newProjectId = createNewSalesPurchaseOrderProject(order);
+		final ProjectId newProjectId = createNewSalesPurchaseOrderProject(purchaseOrder);
 		setProjectIdToOrderLines(newProjectId, lines);
 	}
 
-	private ProjectId createNewSalesPurchaseOrderProject(final @NonNull I_C_Order order)
+	private ProjectId createNewSalesPurchaseOrderProject(final @NonNull I_C_Order purchaseOrder)
 	{
-		final BPartnerId bpartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(purchaseOrder.getC_BPartner_ID());
 		return projectService.createProject(CreateProjectRequest.builder()
 				.projectCategory(ProjectCategory.SalesPurchaseOrder)
-				.orgId(OrgId.ofRepoId(order.getAD_Org_ID()))
-				.currencyId(CurrencyId.ofRepoId(order.getC_Currency_ID()))
-				.warehouseId(WarehouseId.ofRepoId(order.getM_Warehouse_ID()))
-				.bpartnerAndLocationId(BPartnerLocationId.ofRepoId(bpartnerId, order.getC_BPartner_Location_ID()))
-				.contactId(BPartnerContactId.ofRepoIdOrNull(bpartnerId, order.getAD_User_ID()))
+				.orgId(OrgId.ofRepoId(purchaseOrder.getAD_Org_ID()))
+				.currencyId(CurrencyId.ofRepoId(purchaseOrder.getC_Currency_ID()))
+				.warehouseId(WarehouseId.ofRepoId(purchaseOrder.getM_Warehouse_ID()))
+				.bpartnerAndLocationId(BPartnerLocationId.ofRepoId(bpartnerId, purchaseOrder.getC_BPartner_Location_ID()))
+				.contactId(BPartnerContactId.ofRepoIdOrNull(bpartnerId, purchaseOrder.getAD_User_ID()))
 				.build());
 	}
 
