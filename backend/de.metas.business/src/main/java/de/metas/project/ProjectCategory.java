@@ -36,7 +36,8 @@ public enum ProjectCategory implements ReferenceListAwareEnum
 	AssertProject(X_C_ProjectType.PROJECTCATEGORY_AssetProject),
 	WorkOrderJob(X_C_ProjectType.PROJECTCATEGORY_WorkOrderJob),
 	ServiceChargeProject(X_C_ProjectType.PROJECTCATEGORY_ServiceChargeProject),
-	ServiceOrRepair(X_C_ProjectType.PROJECTCATEGORY_ServiceOrRepair);
+	ServiceOrRepair(X_C_ProjectType.PROJECTCATEGORY_ServiceOrRepair),
+	SalesPurchaseOrder(X_C_ProjectType.PROJECTCATEGORY_SalesPurchaseOrder);
 
 	private static final ReferenceListAwareEnums.ValuesIndex<ProjectCategory> index = ReferenceListAwareEnums.index(values());
 
@@ -59,8 +60,16 @@ public enum ProjectCategory implements ReferenceListAwareEnum
 		return type != null ? type : ProjectCategory.General;
 	}
 
+	@Nullable
+	public static ProjectCategory ofNullableCode(@Nullable final String code)
+	{
+		return index.ofNullableCode(code);
+	}
+
 	public boolean isServiceOrRepair()
 	{
 		return ServiceOrRepair.equals(this);
 	}
+
+	public boolean isSalesPurchaseOrder() {return SalesPurchaseOrder.equals(this);}
 }
