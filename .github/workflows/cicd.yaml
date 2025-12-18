@@ -1456,11 +1456,14 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Checkout gh-pages branch
+      - name: Checkout testreports gh-pages branch
         uses: actions/checkout@v4
         with:
+          repository: metasfresh/metasfresh-testreports
           ref: gh-pages
           path: gh-pages-repo
+          ssh-key: ${{ secrets.TESTREPORTS_DEPLOY_KEY }}
+          persist-credentials: true
 
       - name: Setup directory structure
         run: |
