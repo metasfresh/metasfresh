@@ -45,6 +45,11 @@ public class ProjectTypeRepository
 			.tableName(I_C_ProjectType.Table_Name)
 			.build();
 
+	public static ProjectTypeRepository newInstanceForUnitTesting()
+	{
+		return new ProjectTypeRepository();
+	}
+
 	public ProjectType getById(@NonNull final ProjectTypeId id)
 	{
 		return projectTypes.getOrLoad(id, this::retrieveById);
