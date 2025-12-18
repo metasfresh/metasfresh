@@ -63,7 +63,7 @@ FROM M_HU hu
          INNER JOIN C_UOM_Trl uomt ON ddol.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = p_AD_Language
 
     -- Warehouse information
-         INNER JOIN m_warehouse w ON ddo.m_warehouse_to_id = w.m_warehouse_id
+         INNER JOIN m_warehouse w ON loc.m_warehouse_id = w.m_warehouse_id
 
     -- Locator To information
          INNER JOIN m_locator loc_to ON ddol.m_locatorto_id = loc_to.m_locator_id
@@ -77,7 +77,7 @@ FROM M_HU hu
          LEFT JOIN pp_order pp ON ddo.forward_pp_order_id = pp.pp_order_id
 
     -- Move Schedule information
-         LEFT JOIN DD_Order_MoveSchedule ddom ON ddom.DD_OrderLine_id = ddol.DD_OrderLine_ID AND ddom.status = 'CO'
+         LEFT JOIN DD_Order_MoveSchedule ddom ON ddom.DD_OrderLine_id = ddol.DD_OrderLine_ID AND ddom.status = 'IP'
 
     -- QR Code information
          LEFT JOIN m_hu_qrcode_assignment qr_assign ON qr_assign.m_hu_id = hu.m_hu_id
