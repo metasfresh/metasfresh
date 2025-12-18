@@ -43,3 +43,28 @@ CREATE INDEX IF NOT EXISTS c_invoice_fts_string_trgm_gist_idx
     ON c_invoice_fts
         USING GIST (fts_string gist_trgm_ops)
 ;
+
+
+CREATE TABLE public.M_Product_FTS
+(
+    M_Product_ID  NUMERIC(10)              NOT NULL,
+    FTS_document  tsvector                 NOT NULL,
+    FTS_string    TEXT                     NOT NULL,
+    Updated       TIMESTAMP WITH TIME ZONE NOT NULL,
+    CONSTRAINT M_Product_FTS_Key PRIMARY KEY (M_Product_ID),
+    CONSTRAINT MProduct_MProductFTS FOREIGN KEY (M_Product_ID) REFERENCES public.M_Product ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
+)
+;
+
+CREATE INDEX IF NOT EXISTS m_product_fts_document_idx
+    ON m_product_fts
+        USING GIN (fts_document)
+;
+
+CREATE EXTENSION IF NOT EXISTS pg_trgm
+;
+
+CREATE INDEX IF NOT EXISTS m_product_fts_string_trgm_gist_idx
+    ON m_product_fts
+        USING GIST (fts_string gist_trgm_ops)
+;
