@@ -680,7 +680,7 @@ public class ManufacturingJobService
 				.build().execute();
 	}
 
-	private IssueWhatWasReceivedCommandBuilder newIssueWhatWasReceivedCommand()
+	public IssueWhatWasReceivedCommandBuilder newIssueWhatWasReceivedCommand()
 	{
 		return IssueWhatWasReceivedCommand.builder()
 				.issueScheduleService(ppOrderIssueScheduleService)

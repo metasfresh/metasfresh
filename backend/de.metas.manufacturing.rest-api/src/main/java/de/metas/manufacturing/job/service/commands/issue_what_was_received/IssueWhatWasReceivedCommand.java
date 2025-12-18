@@ -70,6 +70,7 @@ public class IssueWhatWasReceivedCommand
 	// Params
 	@NonNull private final PPOrderId ppOrderId;
 	@NonNull private final RawMaterialsIssueStrategy issueStrategy;
+	private final boolean failINothingReceived;
 
 	//
 	// State
@@ -87,13 +88,15 @@ public class IssueWhatWasReceivedCommand
 			//
 			@Nullable final RawMaterialsIssueStrategy issueStrategy,
 			@Nullable final PPOrderId ppOrderId,
-			@Nullable final ManufacturingJob job)
+			@Nullable final ManufacturingJob job,
+			final boolean failINothingReceived)
 	{
 		this.issueScheduleService = issueScheduleService;
 		this.jobService = jobService;
 		this.ppOrderSourceHUService = ppOrderSourceHUService;
 		this.sourceHUsService = sourceHUsService;
 		this.issueStrategy = issueStrategy != null ? issueStrategy : RawMaterialsIssueStrategy.DEFAULT;
+		this.failINothingReceived = failINothingReceived;
 
 		if (job != null)
 		{
@@ -121,13 +124,20 @@ public class IssueWhatWasReceivedCommand
 	@NonNull
 	private ManufacturingJob execute0()
 	{
+		final ManufacturingJob job = getJob();
 		final DraftPPOrderQuantities ppOrderQuantities = getPPOrderQuantities();
 		if (!ppOrderQuantities.isSomethingReceived())
 		{
-			throw new AdempiereException(NOTHING_WAS_RECEIVED_YET);
+			if (failINothingReceived)
+			{
+				throw new AdempiereException(NOTHING_WAS_RECEIVED_YET);
+			}
+			else
+			{
+				return job;
+			}
 		}
 
-		final ManufacturingJob job = getJob();
 		final ImmutableList<RawMaterialsIssueLine> lines = job.streamRawMaterialsIssueLines()
 				.filter(RawMaterialsIssueLine::isIssueOnlyForReceived)
 				.collect(ImmutableList.toImmutableList());
