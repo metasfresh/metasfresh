@@ -8,7 +8,7 @@
       "partnerIdentifier": "partnerIdentifier1",
       "partnerValue": "11111",
       "partnerName": "partnerName1",
-      "externalOrderId": "externalOrderId",
+      "orderNumber": "externalOrderId",
       "lines": [
         {
           "externalLineId": "externalLineId1",

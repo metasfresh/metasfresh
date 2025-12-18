@@ -34,7 +34,7 @@ CREATE FUNCTION purchase_order_dynamics_json(p_order_id text)
                 "partnerValue"      text,
                 "partnerName"       text,
                 "dropShip"          jsonb,
-                "Lines"             jsonb
+                "lines"             jsonb
             )
     STABLE
     LANGUAGE sql
@@ -76,11 +76,13 @@ FROM c_order porder
                                             'discount', ol.discount,
                                             'productName', product.name,
                                             'productDescription', product.description,
-                                            'productIdentifier', product.value
+                                            'productIdentifier', product.value,
+                                            'dateRequested', COALESCE(ol.datepromised, p_order_inner.datepromised)::date
                                     ) ORDER BY ol.line) AS json_data
                     FROM c_orderline ol
                              INNER JOIN m_product product ON product.m_product_id = ol.m_product_id
                              INNER JOIN c_uom ouom ON ouom.c_uom_id = ol.c_uom_id
+                             INNER JOIN c_order p_order_inner ON ol.c_order_id = p_order_inner.c_order_id
                     GROUP BY ol.c_order_id) lines ON lines.c_order_id = porder.C_Order_ID
          LEFT JOIN (SELECT dropShipBPartner.c_bpartner_id,
                            dropShipBPartnerLocation.c_bpartner_location_id,
@@ -94,7 +96,7 @@ FROM c_order porder
                                    'address4', dropShipLocation.address4,
                                    'postal', dropShipLocation.postal,
                                    'city', dropShipLocation.city,
-                                   'country', country.countrycode
+                                   'country', country.countrycode_3digit
                            ) AS json_data
                     FROM c_bpartner dropShipBPartner
                              INNER JOIN c_bpartner_location dropShipBPartnerLocation
@@ -107,7 +109,7 @@ FROM c_order porder
                       CASE
                           WHEN porder.IsDropShip = 'Y'
                               THEN COALESCE(porder.dropship_location_id, porder.c_bpartner_location_id)
-                              ELSE (select wh.c_bpartner_location_id from m_warehouse wh where wh.m_warehouse_id = porder.m_warehouse_id)
+                              ELSE (SELECT wh.c_bpartner_location_id FROM m_warehouse wh WHERE wh.m_warehouse_id = porder.m_warehouse_id)
                       END
 WHERE porder.c_order_id = p_order_id::numeric
   AND porder.issotrx = 'N';

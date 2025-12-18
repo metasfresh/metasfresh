@@ -37,6 +37,11 @@ public class ProjectRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+	public static ProjectRepository newInstanceForUnitTesting()
+	{
+		return new ProjectRepository();
+	}
+
 	public I_C_Project getById(@NonNull final ProjectId id)
 	{
 		return InterfaceWrapperHelper.load(id, I_C_Project.class);

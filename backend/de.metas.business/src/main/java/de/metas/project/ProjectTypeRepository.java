@@ -28,10 +28,13 @@ import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_ProjectType;
 import org.springframework.stereotype.Repository;
+
+import javax.annotation.Nullable;
 
 @Repository
 public class ProjectTypeRepository
@@ -41,6 +44,11 @@ public class ProjectTypeRepository
 	private final CCache<ProjectTypeId, ProjectType> projectTypes = CCache.<ProjectTypeId, ProjectType>builder()
 			.tableName(I_C_ProjectType.Table_Name)
 			.build();
+
+	public static ProjectTypeRepository newInstanceForUnitTesting()
+	{
+		return new ProjectTypeRepository();
+	}
 
 	public ProjectType getById(@NonNull final ProjectTypeId id)
 	{
@@ -62,17 +70,13 @@ public class ProjectTypeRepository
 				.build();
 	}
 
+	@NonNull
 	public ProjectTypeId getFirstIdByProjectCategoryAndOrg(
 			@NonNull final ProjectCategory projectCategory,
-			@NonNull final OrgId orgId)
+			@NonNull final OrgId orgId,
+			final boolean onlyCurrentOrg)
 	{
-		final ProjectTypeId projectTypeId = queryBL.createQueryBuilderOutOfTrx(I_C_ProjectType.class)
-				.addEqualsFilter(I_C_ProjectType.COLUMNNAME_ProjectCategory, projectCategory.getCode())
-				.addInArrayFilter(I_C_ProjectType.COLUMNNAME_AD_Org_ID, OrgId.ANY, orgId)
-				.orderByDescending(I_C_ProjectType.COLUMNNAME_AD_Org_ID)
-				.orderBy(I_C_ProjectType.COLUMNNAME_C_ProjectType_ID)
-				.create()
-				.firstId(ProjectTypeId::ofRepoIdOrNull);
+		final ProjectTypeId projectTypeId = getFirstIdByProjectCategoryAndOrgOrNull(projectCategory, orgId, onlyCurrentOrg);
 
 		if (projectTypeId == null)
 		{
@@ -83,6 +87,30 @@ public class ProjectTypeRepository
 		}
 
 		return projectTypeId;
+	}
+
+	@Nullable
+	public ProjectTypeId getFirstIdByProjectCategoryAndOrgOrNull(
+			@NonNull final ProjectCategory projectCategory,
+			@NonNull final OrgId orgId,
+			final boolean onlyCurrentOrg)
+	{
+		final IQueryBuilder<I_C_ProjectType> builder = queryBL.createQueryBuilderOutOfTrx(I_C_ProjectType.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_ProjectType.COLUMNNAME_ProjectCategory, projectCategory.getCode())
+				.orderByDescending(I_C_ProjectType.COLUMNNAME_AD_Org_ID)
+				.orderBy(I_C_ProjectType.COLUMNNAME_C_ProjectType_ID);
+		if (onlyCurrentOrg)
+		{
+			builder.addInArrayFilter(I_C_ProjectType.COLUMNNAME_AD_Org_ID, orgId);
+		}
+		else
+		{
+			builder.addInArrayFilter(I_C_ProjectType.COLUMNNAME_AD_Org_ID, OrgId.ANY, orgId);
+		}
+		return builder
+				.create()
+				.firstId(ProjectTypeId::ofRepoIdOrNull);
 	}
 
 }
