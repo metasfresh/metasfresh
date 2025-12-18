@@ -14,6 +14,11 @@ const createMasterdata = async ({ externalBarcode } = {}) => {
             login: {
                 user: { language: "en_US" },
             },
+            mobileConfig: {
+                distribution: {
+                    // mobileConfig->distribution entry is important to make sure we get the default distribution config
+                }
+            },
             resources: {
                 "plantId": { type: "PT" },
             },

@@ -268,6 +268,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			if (!allCands.isEmpty())
 			{
 				invoiceCandListeners.onBeforeInvoiceComplete(invoice, allCands);
+				invoiceCandBL.extractCommonProjectId(allCands)
+						.ifPresent(projectId -> invoice.setC_Project_ID(projectId.getRepoId()));
 			}
 
 			if (getInvoicingParams().isCompleteInvoices())

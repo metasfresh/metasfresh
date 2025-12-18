@@ -22,19 +22,20 @@ package de.metas.document.archive.api.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.document.archive.DocOutboundLogId;
 import de.metas.document.archive.api.IDocOutboundDAO;
-import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.engine.DocStatus;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
@@ -42,21 +43,19 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.archive.ArchiveId;
 import org.adempiere.archive.api.ArchiveAction;
 import org.adempiere.archive.api.IArchiveDAO;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.comparator.FixedOrderByKeyComparator;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Archive;
-import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
+import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class DocOutboundDAO implements IDocOutboundDAO
@@ -64,36 +63,6 @@ public class DocOutboundDAO implements IDocOutboundDAO
 
 	private final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-	// note that this method doesn't directly access the DB. Therefore, a unit test DAO implementation can extend this
-	// class without problems.
-	@Override
-	public final I_C_Doc_Outbound_Config retrieveConfig(final Properties ctx, final int tableId)
-	{
-		Check.assume(tableId > 0, "tableId > 0");
-
-		final int adClientId = Env.getAD_Client_ID(ctx);
-
-		I_C_Doc_Outbound_Config configSys = null;
-		I_C_Doc_Outbound_Config config = null;
-		for (final I_C_Doc_Outbound_Config currentConfig : retrieveAllConfigs())
-		{
-			if (currentConfig.getAD_Table_ID() == tableId)
-			{
-				if (currentConfig.getAD_Client_ID() == adClientId)
-				{
-					throwExceptionIfNotNull(config, tableId, adClientId, currentConfig);
-					config = currentConfig;
-				}
-				else if (currentConfig.getAD_Client_ID() == 0) // system
-				{
-					throwExceptionIfNotNull(configSys, tableId, adClientId, currentConfig);
-					configSys = currentConfig;
-				}
-			}
-		}
-		return coalesce(config, configSys);
-	}
 
 	@Override
 	public Stream<I_C_Doc_Outbound_Log> streamByIdsInOrder(@NonNull final List<DocOutboundLogId> ids)
@@ -113,33 +82,6 @@ public class DocOutboundDAO implements IDocOutboundDAO
 	private static DocOutboundLogId extractId(final I_C_Doc_Outbound_Log record)
 	{
 		return DocOutboundLogId.ofRepoId(record.getC_Doc_Outbound_Log_ID());
-	}
-
-	private void throwExceptionIfNotNull(
-			@Nullable final I_C_Doc_Outbound_Config alreadyFoundConfig,
-			final int tableId,
-			final int adClientId,
-			@NonNull final I_C_Doc_Outbound_Config currentConfig)
-	{
-		if (alreadyFoundConfig == null)
-		{
-			return;
-		}
-		final String msg = StringUtils.formatMessage(
-				"Only one configuration shall exist for tableId '{}' on client '{}' but we found: {}, {}",
-				tableId, adClientId, alreadyFoundConfig, currentConfig);
-
-		throw new AdempiereException(msg)
-				.markAsUserValidationError(); // this error message is not exactly nice, but we still need to inform the user
-	}
-
-	@Override
-	public final I_C_Doc_Outbound_Config retrieveConfigForModel(@NonNull final Object model)
-	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(model);
-		final int adTableId = InterfaceWrapperHelper.getModelTableId(model);
-
-		return retrieveConfig(ctx, adTableId);
 	}
 
 	@Override
@@ -183,7 +125,7 @@ public class DocOutboundDAO implements IDocOutboundDAO
 	}
 
 	@Override
-	public I_C_Doc_Outbound_Log retrieveLog(final IContextAware contextProvider, int bpartnerId, int AD_Table_ID)
+	public I_C_Doc_Outbound_Log retrieveLog(final IContextAware contextProvider, final int bpartnerId, final int AD_Table_ID)
 	{
 		final IQueryBuilder<I_C_Doc_Outbound_Log> queryBuilder = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class, contextProvider)
 				.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMNNAME_C_BPartner_ID, bpartnerId)
@@ -230,14 +172,17 @@ public class DocOutboundDAO implements IDocOutboundDAO
 	}
 
 	@Override
-	@Cached(cacheName = I_C_Doc_Outbound_Config.Table_Name + "#All")
-	public List<I_C_Doc_Outbound_Config> retrieveAllConfigs()
+	@NonNull
+	public ImmutableList<I_C_Doc_Outbound_Log> retrieveLogs(@NonNull final IQueryFilter<I_C_Doc_Outbound_Log> filter, final boolean isFilterCurrentMailSet)
 	{
-		return queryBL
-				.createQueryBuilderOutOfTrx(I_C_Doc_Outbound_Config.class)
+		final IQueryBuilder<I_C_Doc_Outbound_Log> builder = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class)
 				.addOnlyActiveRecordsFilter()
-				.create()
-				.list();
+				.filter(filter);
+		if(isFilterCurrentMailSet)
+		{
+			builder.addNotNull(I_C_Doc_Outbound_Log.COLUMNNAME_CurrentEMailAddress);
+		}
+		return builder.create().listImmutable(I_C_Doc_Outbound_Log.class);
 	}
 
 	@Override
@@ -286,5 +231,33 @@ public class DocOutboundDAO implements IDocOutboundDAO
 				.addEqualsFilter(I_C_Doc_Outbound_Log_Line.COLUMN_Record_ID, tableRecordReference.getRecord_ID())
 				.create()
 				.update(queryUpdaterLogLine);
+	}
+
+	@Override
+	@NonNull
+	public ImmutableList<LogWithLines> retrieveLogsWithLines(@NonNull final ImmutableList<I_C_Doc_Outbound_Log> logs)
+	{
+		if (logs.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final ImmutableSet<DocOutboundLogId> ids = logs.stream()
+				.map(log -> DocOutboundLogId.ofRepoId(log.getC_Doc_Outbound_Log_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+
+		final Map<Integer, List<I_C_Doc_Outbound_Log_Line>> linesByLogId = queryBL.createQueryBuilder(I_C_Doc_Outbound_Log_Line.class)
+				.addInArrayFilter(I_C_Doc_Outbound_Log_Line.COLUMNNAME_C_Doc_Outbound_Log_ID, ids)
+				.create()
+				.list()
+				.stream()
+				.collect(Collectors.groupingBy(I_C_Doc_Outbound_Log_Line::getC_Doc_Outbound_Log_ID));
+
+		return logs.stream()
+				.map(log -> LogWithLines.builder()
+						.log(log)
+						.lines(linesByLogId.getOrDefault(log.getC_Doc_Outbound_Log_ID(), Collections.emptyList()))
+						.build())
+				.collect(ImmutableList.toImmutableList());
 	}
 }

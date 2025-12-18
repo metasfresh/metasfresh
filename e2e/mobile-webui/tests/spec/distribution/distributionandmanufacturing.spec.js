@@ -17,10 +17,8 @@ const createMasterdata = async ({ comp1_qty, comp2_qty }) => {
     const response = await Backend.createMasterdata({
         language: "en_US",
         request: {
-            login: {
-                user: { language: "en_US" },
-            },
-
+            login: { user: { language: "en_US" } },
+            mobileConfig: { distribution: {} },
             warehouses: {
                 "whSource": {},
                 "whTarget": {},

@@ -6,6 +6,9 @@ import { DistributionJobsListScreen } from './DistributionJobsListScreen';
 import { DistributionDropAllToScreen } from './DistributionDropAllToScreen';
 import { expect } from '@playwright/test';
 import { expectClasses } from '../../expectations';
+import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
+import { DistributionLinePickFromScreen } from './DistributionLinePickFromScreen';
+import { DistributionUtils } from './DistributionUtils';
 
 const NAME = 'DistributionJobScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -14,6 +17,29 @@ const containerElement = () => page.locator('#WFProcessScreen');
 export const DistributionJobScreen = {
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
         await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    expectJobId: async ({ distributionJobId }) => await test.step(`${NAME} - Expect jobId=${distributionJobId}`, async () => {
+        await DistributionJobScreen.waitForScreen();
+        await DistributionUtils.expectJobId({ distributionJobId });
+    }),
+
+    expectHeaderProperty: async ({ caption, value }) => await test.step(`${NAME} - Check header property '${caption}'='${value}'`, async () => {
+        const row = await page.locator(
+            `tr:has(th:has-text("${caption}")):has(td:has-text("${value}"))`
+        );
+        await expect(row).toHaveCount(1)
+    }),
+
+    scanHUToMove: async ({ huQRCode, productScannedCode, expectQuantityDialog = true, expectedQtyToMove, expectNextScreen }) => await test.step(`${NAME} - Scan HU to move`, async () => {
+        await BarcodeScannerComponent.type({ scannedCode: huQRCode });
+        await DistributionLinePickFromScreen.scanHUToMove({
+            // huQRCode: null,
+            productScannedCode,
+            expectQuantityDialog,
+            expectedQtyToMove,
+            expectNextScreen
+        })
     }),
 
     clickLineButton: async ({ index }) => await test.step(`${NAME} - Click line ${index}`, async () => {
@@ -57,13 +83,20 @@ export const DistributionJobScreen = {
         }
     }),
 
-    dropAllTo: async ({ dropToLocatorQRCode }) => await test.step(`${NAME} - Drop All To ${dropToLocatorQRCode}`, async () => {
+    dropAllTo: async ({ dropToLocatorQRCode, expectNextScreen }) => await test.step(`${NAME} - Drop All To ${dropToLocatorQRCode}`, async () => {
         const dropAllButton = dropAllButtonLocator();
         await expect(dropAllButton).toBeEnabled({ timeout: VERY_FAST_ACTION_TIMEOUT });
         await dropAllButton.tap();
         await DistributionDropAllToScreen.waitForScreen();
         await DistributionDropAllToScreen.typeQRCode(dropToLocatorQRCode);
-        await DistributionJobScreen.waitForScreen();
+
+        if (!expectNextScreen || expectNextScreen === 'DistributionJobScreen') {
+            await DistributionJobScreen.waitForScreen();
+        } else if (expectNextScreen === 'DistributionJobsListScreen') {
+            await DistributionJobsListScreen.waitForScreen();
+        } else {
+            throw new Error(`Invalid expectNextScreen: ${expectNextScreen}`);
+        }
     }),
 
     abort: async () => await step(`${NAME} - Abort`, async () => {

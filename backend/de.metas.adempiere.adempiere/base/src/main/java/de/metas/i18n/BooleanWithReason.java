@@ -8,6 +8,7 @@ import lombok.experimental.FieldDefaults;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /*
@@ -78,6 +79,11 @@ public final class BooleanWithReason
 	public static BooleanWithReason falseBecause(@NonNull final Exception exception)
 	{
 		return falseBecause(AdempiereException.extractMessageTrl(exception));
+	}
+
+	public static BooleanWithReason falseIf(final boolean condition, @NonNull final String falseReason)
+	{
+		return condition ? falseBecause(falseReason) : TRUE;
 	}
 
 	private static ITranslatableString toTrl(@Nullable final String reasonStr)
@@ -152,6 +158,14 @@ public final class BooleanWithReason
 		return isFalse()
 				? this
 				: Check.assumeNotNull(otherSupplier.get(), "otherSupplier shall not return null");
+	}
+
+	public void ifTrue(@NonNull final Consumer<String> consumer)
+	{
+		if (isTrue())
+		{
+			consumer.accept(getReasonAsString());
+		}
 	}
 
 }

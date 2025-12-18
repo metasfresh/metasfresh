@@ -41,4 +41,10 @@ public class C_BPartner_Location_StepDefData extends StepDefData<I_C_BPartner_Lo
 	{
 		return BPartnerLocationId.ofRepoId(record.getC_BPartner_ID(), record.getC_BPartner_Location_ID());
 	}
+
+	@Override
+	public BPartnerLocationId parseId(final StepDefDataIdentifier identifier)
+	{
+		return identifier.getAsId(BPartnerLocationId.class);
+	}
 }

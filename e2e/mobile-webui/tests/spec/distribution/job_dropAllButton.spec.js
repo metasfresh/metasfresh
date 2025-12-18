@@ -13,6 +13,9 @@ const createMasterdata = async ({ qtyToMove }) => {
             login: {
                 user: { language: "en_US" },
             },
+            mobileConfig: {
+                distribution: {}
+            },
             resources: {
                 "plantId": { type: "PT" },
             },

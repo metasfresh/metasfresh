@@ -35,6 +35,7 @@ import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.i18n.AdMessageKey;
+import de.metas.incoterms.IncotermsId;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
@@ -324,6 +325,7 @@ public class OLCandBL implements IOLCandBL
 				orderDefaultsDocTypeId);
 	}
 
+	@Nullable
 	@Override
 	public I_C_OLCand invokeOLCandCreator(final PO po, final IOLCandCreator olCandCreator)
 	{
@@ -453,6 +455,7 @@ public class OLCandBL implements IOLCandBL
 		return pricingResult;
 	}
 
+	@NonNull
 	@Override
 	public BPartnerOrderParams getBPartnerOrderParams(@NonNull final I_C_OLCand olCandRecord)
 	{

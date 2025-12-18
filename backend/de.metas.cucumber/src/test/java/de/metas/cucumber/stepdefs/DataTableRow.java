@@ -91,7 +91,7 @@ public class DataTableRow
 	@SuppressWarnings("unused")
 	public static class DataTableRowBuilder
 	{
-		public DataTableRowBuilder value(final String name, final String value)
+		public DataTableRowBuilder value(final String name, @Nullable final String value)
 		{
 			return _value(name, value);
 		}
@@ -153,6 +153,17 @@ public class DataTableRow
 					.setParameter("row", this);
 		}
 		return string;
+	}
+
+	@NonNull
+	public Optional<List<String>> getAsOptionalCommaSeparatedString(@NonNull final String columnName)
+	{
+		final String columnNameEffective = findEffectiveColumnName(columnName);
+		if (columnNameEffective == null)
+		{
+			return Optional.empty();
+		}
+		return Optional.of(getAsCommaSeparatedString(columnName));
 	}
 
 	@NonNull

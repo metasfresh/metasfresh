@@ -329,6 +329,8 @@ public class C_OrderLine_StepDef
 
 					validateOrderLine(orderLineRecord, row);
 
+					restTestContext.setIntVariableFromRow(row, orderLineRecord::getC_OrderLine_ID);
+
 					row.getAsOptionalIdentifier()
 							.ifPresent(identifier -> orderLineTable.putOrReplaceIfSameId(identifier, orderLineRecord));
 				});
@@ -657,6 +659,9 @@ public class C_OrderLine_StepDef
 			softly.assertThat(orderLine.getC_Tax_ID()).isEqualTo(taxId.getRepoId());
 		}
 
+		row.getAsOptionalString(I_C_OrderLine.COLUMNNAME_ExternalId)
+				.ifPresent(externalId -> softly.assertThat(orderLine.getExternalId()).isEqualTo(externalId));
+		
 		softly.assertAll();
 	}
 

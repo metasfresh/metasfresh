@@ -23,7 +23,7 @@
 package de.metas.shipper.gateway.commons.model;
 
 import de.metas.cache.CCache;
-import de.metas.inoutcandidate.CarrierProductId;
+import de.metas.shipping.CarrierProductId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
 import lombok.NonNull;
