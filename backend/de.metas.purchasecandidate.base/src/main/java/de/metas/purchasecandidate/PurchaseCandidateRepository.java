@@ -111,6 +111,7 @@ public class PurchaseCandidateRepository
 	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
+	@Nullable
 	public PurchaseCandidateId getIdByPurchaseOrderLineIdOrNull(
 			@Nullable final OrderLineId purchaseOrderLineId)
 	{
@@ -426,7 +427,8 @@ public class PurchaseCandidateRepository
 		return record;
 	}
 
-	private static ZonedDateTime calculateReminderDate(final ZonedDateTime purchaseDateOrdered, final PurchaseCandidate candidate)
+	@Nullable
+	private static ZonedDateTime calculateReminderDate(@Nullable final ZonedDateTime purchaseDateOrdered, @NonNull final PurchaseCandidate candidate)
 	{
 		final Duration reminderTime = candidate.getReminderTime();
 		if (reminderTime == null || purchaseDateOrdered == null)
@@ -523,6 +525,7 @@ public class PurchaseCandidateRepository
 		return purchaseCandidate;
 	}
 
+	@Nullable
 	private PurchaseProfitInfo toPurchaseProfitInfo(final I_C_PurchaseCandidate purchaseCandidateRecord)
 	{
 		final int currencyRepoId = purchaseCandidateRecord.getC_Currency_ID();
@@ -596,6 +599,7 @@ public class PurchaseCandidateRepository
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	@Nullable
 	public static PurchaseCandidateReminder toPurchaseCandidateReminderOrNull(@NonNull final I_C_PurchaseCandidate record)
 	{
 		final BPartnerId vendorBPartnerId = BPartnerId.ofRepoIdOrNull(record.getVendor_ID());
@@ -705,6 +709,19 @@ public class PurchaseCandidateRepository
 				.map(PurchaseCandidateId::ofRepoId)
 				.map(this::getById)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public Set<PurchaseCandidate> getAllByPurchaseOrderLineIds(@NonNull final Collection<OrderAndLineId> purchaseOrderLineIds)
+	{
+		return queryBL.createQueryBuilder(I_C_PurchaseCandidate_Alloc.class)
+				.addInArrayFilter(I_C_PurchaseCandidate_Alloc.COLUMNNAME_C_OrderLinePO_ID, OrderAndLineId.getOrderLineRepoIds(purchaseOrderLineIds))
+				.create()
+				.stream()
+				.map(I_C_PurchaseCandidate_Alloc::getC_PurchaseCandidate_ID)
+				.map(PurchaseCandidateId::ofRepoId)
+				.map(this::getById)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	public void deletePurchaseCandidates(@NonNull final DeletePurchaseCandidateQuery deletePurchaseCandidateQuery)

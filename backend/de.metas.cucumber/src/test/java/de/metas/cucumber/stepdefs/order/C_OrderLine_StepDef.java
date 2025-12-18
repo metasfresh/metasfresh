@@ -42,6 +42,7 @@ import de.metas.cucumber.stepdefs.contract.C_Flatrate_Conditions_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.C_TaxCategory_StepDefData;
+import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.util.IdentifiersEvaluatee;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.currency.Currency;
@@ -81,6 +82,7 @@ import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeInstance;
@@ -102,9 +104,11 @@ import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.DataTableUtil.NULL_STRING;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.compiere.model.I_C_Order.COLUMNNAME_C_Project_ID;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_C_TaxCategory_ID;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_DateOrdered;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID;
@@ -134,6 +138,7 @@ public class C_OrderLine_StepDef
 	@NonNull private final M_Warehouse_StepDefData warehouseTable;
 	@NonNull private final IdentifierIds_StepDefData identifierIdsTable;
 	@NonNull private final TestContext restTestContext;
+	@NonNull private final C_Project_StepDefData projectTable;
 
 	@Given("metasfresh contains C_OrderLines:")
 	public void metasfresh_contains_c_order_lines(@NonNull final DataTable dataTable)
@@ -479,6 +484,7 @@ public class C_OrderLine_StepDef
 
 	private void validateOrderLine(@NonNull final I_C_OrderLine orderLine, @NonNull final DataTableRow row)
 	{
+		final String identifierStr = row.getAsIdentifier().getAsString();
 		final SoftAssertions softly = new SoftAssertions();
 
 		final String uomBPartner355Code = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_C_UOM_BPartner_ID + "." + X12DE355.class.getSimpleName());
@@ -661,7 +667,23 @@ public class C_OrderLine_StepDef
 
 		row.getAsOptionalString(I_C_OrderLine.COLUMNNAME_ExternalId)
 				.ifPresent(externalId -> softly.assertThat(orderLine.getExternalId()).isEqualTo(externalId));
-		
+
+		final StepDefDataIdentifier projectIdentifier = row.getAsIdentifierOrNull(COLUMNNAME_C_Project_ID);
+		if (projectIdentifier != null)
+		{
+			final I_C_Project project;
+			if (projectTable.getIdentifiers().contains(projectIdentifier))
+			{
+				project = projectTable.get(projectIdentifier);
+				softly.assertThat(orderLine.getC_Project_ID()).as("C_Project_ID for Identifier=%s", identifierStr).isEqualTo(project.getC_Project_ID());
+			}
+			else if (orderLine.getC_Project_ID() > 0)
+			{
+				project = load(orderLine.getC_Project_ID(), I_C_Project.class);
+				projectTable.put(projectIdentifier, project);
+			}
+		}
+
 		softly.assertAll();
 	}
 

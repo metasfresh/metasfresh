@@ -22,8 +22,14 @@
 
 package de.metas.order.model.interceptor;
 
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
+import de.metas.order.IPOLineProjectPropagator;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.model.I_C_Order;
 import de.metas.organization.OrgId;
@@ -31,14 +37,16 @@ import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectTypeId;
 import de.metas.project.ProjectTypeRepository;
-import de.metas.project.command.CreateSalesPurchaseOrderProjectCommand;
+import de.metas.project.service.CreateProjectRequest;
 import de.metas.project.service.ProjectService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -50,34 +58,61 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Intercepts and validates operations on {@link I_C_Order} entities.
- * This class is responsible for ensuring that project associations for orders are properly managed
- * and internally consistent, particularly during the {@link ModelValidator.TIMING_BEFORE_COMPLETE}
- * lifecycle timing of an order.
+ * This class acts as an interceptor for the {@link I_C_Order} model. Its primary purpose is
+ * to handle project-related logic for purchase and sales orders.
  * <p>
  * Responsibilities:
- * - Ensures proper project assignment for orders when certain conditions are met.
- * - Analyzes associated order lines to determine whether a single, identifiable project can
- * be linked to the order.
- * - Creates new projects for orders when no identifiable or existing project is determined.
- * - Propagates the newly assigned project to all related order lines with null project references.
+ * - Automatically associates a project with a purchase or sales order if certain conditions are met.
+ * - Promotes a project from order lines to the order when applicable.
+ * - Creates a new project and associates it with an order and its lines if no appropriate project exists.
+ * - Propagates the project association from the order to its lines.
  * <p>
- * Annotations:
- * - {@link Component}: Marks this class as a managed Spring component.
- * - {@link RequiredArgsConstructor}: Generates a constructor accepting final fields as parameters.
- * - {@link Interceptor}: A validation interface associated with {@link I_C_Order}.
+ * Dependency injection is used to provide services and repositories required for its operations.
+ * <p>
+ * Interceptor Details:
+ * - This interceptor is registered for the {@link I_C_Order} model and intervenes
+ * during the validation timing {@code TIMING_BEFORE_COMPLETE}.
+ * <p>
+ * Methods:
+ * <p>
+ * 1. {@code po_populateProjectIfNeeded(I_C_Order order)}:
+ * - A public method annotated with {@link @DocValidate}.
+ * - Triggered during the {@code TIMING_BEFORE_COMPLETE} lifecycle event.
+ * - Schedules the method to populate project information after the current transaction commits.
+ * <p>
+ * 2. {@code populateProjectIfNeeded(I_C_Order order)}:
+ * - A private method that performs the core logic of validating and associating a project with the order.
+ * - Checks if an order already has a project association.
+ * - Retrieves order lines and examines their associated projects.
+ * - Promotes projects from order lines to the order if only one unique project exists.
+ * - Creates a new project if no project exists and associates it with the order and its lines.
+ * <p>
+ * 3. {@code createNewSalesPurchaseOrderProject(I_C_Order order)}:
+ * - A private helper method responsible for creating a new project of type "Sales/Purchase Order."
+ * - Uses the provided order details to configure the project.
+ * <p>
+ * 4. {@code setProjectIdToOrderLines(ProjectId newProjectId, List<I_C_OrderLine> lines)}:
+ * - A private helper method that assigns a specific project ID to all applicable order lines.
+ * - Propagates the project ID changes to the persistent layer and related entities.
  */
 @Component
 @RequiredArgsConstructor
 @Interceptor(I_C_Order.class)
 public class C_Order_Project
 {
-	private final ProjectService projectService;
-	private final ProjectTypeRepository projectTypeRepository;
+	@NonNull private final ProjectService projectService;
+	@NonNull private final ProjectTypeRepository projectTypeRepository;
+	@NonNull private final IPOLineProjectPropagator poLineProjectPropagator;
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
 	public void po_populateProjectIfNeeded(@NonNull final I_C_Order order)
+	{
+		populateProjectIfNeeded(order);
+	}
+
+	private void populateProjectIfNeeded(final @NonNull I_C_Order order)
 	{
 		final ProjectId projectId = ProjectId.ofRepoIdOrNull(order.getC_Project_ID());
 		if (order.isSOTrx() || projectId != null)
@@ -92,7 +127,9 @@ public class C_Order_Project
 		if (!isNullProjectIdsOnLines && orderLineProjectIds.size() == 1)
 		{
 			//promote the only project found on the lines to the order
-			setProjectIdToOrderAndLines(orderLineProjectIds.iterator().next(), order, lines);
+			final ProjectId olProjectId = orderLineProjectIds.iterator().next();
+			order.setC_Project_ID(olProjectId.getRepoId());
+			setProjectIdToOrderLines(olProjectId, lines);
 			return;
 		}
 		else if (orderLineProjectIds.size() > 1)
@@ -107,21 +144,35 @@ public class C_Order_Project
 			return;
 		}
 
-		final ProjectId newProjectId = CreateSalesPurchaseOrderProjectCommand.builder()
-				.projectService(projectService)
-				.order(order)
-				.build()
-				.execute();
-		setProjectIdToOrderAndLines(newProjectId, order, lines);
+		final ProjectId newProjectId = createNewSalesPurchaseOrderProject(order);
+		setProjectIdToOrderLines(newProjectId, lines);
 	}
 
-	private static void setProjectIdToOrderAndLines(@NonNull final ProjectId newProjectId, final @NonNull I_C_Order order, @NonNull final List<I_C_OrderLine> lines)
+	private ProjectId createNewSalesPurchaseOrderProject(final @NonNull I_C_Order order)
 	{
-		order.setC_Project_ID(newProjectId.getRepoId());
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
+		return projectService.createProject(CreateProjectRequest.builder()
+				.projectCategory(ProjectCategory.SalesPurchaseOrder)
+				.orgId(OrgId.ofRepoId(order.getAD_Org_ID()))
+				.currencyId(CurrencyId.ofRepoId(order.getC_Currency_ID()))
+				.warehouseId(WarehouseId.ofRepoId(order.getM_Warehouse_ID()))
+				.bpartnerAndLocationId(BPartnerLocationId.ofRepoId(bpartnerId, order.getC_BPartner_Location_ID()))
+				.contactId(BPartnerContactId.ofRepoIdOrNull(bpartnerId, order.getAD_User_ID()))
+				.build());
+	}
+
+	private void setProjectIdToOrderLines(@NonNull final ProjectId newProjectId, @NonNull final List<I_C_OrderLine> lines)
+	{
+		final HashSet<OrderAndLineId> updatedOrderLines = new HashSet<>();
+
 		lines.stream()
 				.filter(ol -> ProjectId.ofRepoIdOrNull(ol.getC_Project_ID()) == null)
-				.forEach(ol -> ol.setC_Project_ID(newProjectId.getRepoId()));
+				.forEach(ol -> {
+					ol.setC_Project_ID(newProjectId.getRepoId());
+					updatedOrderLines.add(OrderAndLineId.ofRepoIds(ol.getC_Order_ID(), ol.getC_OrderLine_ID()));
+				});
 		InterfaceWrapperHelper.saveAll(lines);
-		//TODO propagate project to any sales order that's generated this PO
+		//This is needed because the C_PurchaseCandidate_Alloc records are not yet created
+		trxManager.runAfterCommit(() -> poLineProjectPropagator.propagateProjectId(newProjectId, updatedOrderLines));
 	}
 }

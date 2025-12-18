@@ -126,6 +126,11 @@ public class OrderAndLineId
 		return orderAndLineIds.stream().map(OrderAndLineId::getOrderLineRepoId).collect(ImmutableSet.toImmutableSet());
 	}
 
+	public static Set<OrderId> getOrderIds(final Collection<OrderAndLineId> orderAndLineIds)
+	{
+		return orderAndLineIds.stream().map(OrderAndLineId::getOrderId).collect(ImmutableSet.toImmutableSet());
+	}
+
 	public static Set<OrderLineId> getOrderLineIds(final Collection<OrderAndLineId> orderAndLineIds)
 	{
 		return orderAndLineIds.stream().map(OrderAndLineId::getOrderLineId).collect(ImmutableSet.toImmutableSet());
