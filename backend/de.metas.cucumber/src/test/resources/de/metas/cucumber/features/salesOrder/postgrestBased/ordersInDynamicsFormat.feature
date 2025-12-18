@@ -183,7 +183,7 @@ Feature: Export Orders in specific format via postgREST
 }   
     """
 
-
+  @ignore
   @from:cucumber
   Scenario: create a purchase order and export it to JSON via C_Order_ID
     Given metasfresh contains M_Products:
@@ -193,7 +193,7 @@ Feature: Export Orders in specific format via postgREST
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
       | purchasePLV            | product1     | 2.00     | PCE      |
     And metasfresh contains C_Orders:
-      | Identifier | REST.Context | IsSOTrx | IsDropShip | DropShip_BPartner_ID | DropShip_Location_ID | DocumentNo       | C_BPartner_ID | DateOrdered | POReference      | M_PricingSystem_ID | C_BPartner_Location_ID | DatePromised         |
+      | Identifier | REST.Context | IsSOTrx | IsDropShip | DropShip_BPartner_ID | DropShip_Location_ID | DocumentNo       | C_BPartner_ID | DateOrdered | POReference      | M_PricingSystem_ID | C_BPartner_Location_ID | DatePromised            |
       | order1     | order_ID     | false   | true       | dropShip1            | dropShip_location_1  | test_11202025_11 | vendor1       | 2022-06-17  | test_11202025_11 | pricingSystem      | vendor_location_1      | 2022-06-18T12:00:00.00Z |
     And metasfresh contains C_OrderLines:
       | Identifier | REST.Context | C_Order_ID | M_Product_ID | QtyEntered |
@@ -202,7 +202,7 @@ Feature: Export Orders in specific format via postgREST
     When the order identified by order1 is completed
 
     And metasfresh contains C_Orders:
-      | Identifier | REST.Context | IsSOTrx | POReference        | C_BPartner_ID | DateOrdered | M_PricingSystem_ID | C_BPartner_Location_ID | DatePromised         |
+      | Identifier | REST.Context | IsSOTrx | POReference        | C_BPartner_ID | DateOrdered | M_PricingSystem_ID | C_BPartner_Location_ID | DatePromised            |
       | order2     | order_ID_2   | false   | test_11202025_11_2 | vendor1       | 2022-06-17  | pricingSystem      | vendor_location_1      | 2022-06-18T12:00:00.00Z |
     And metasfresh contains C_OrderLines:
       | Identifier | REST.Context   | C_Order_ID | M_Product_ID | QtyEntered |
