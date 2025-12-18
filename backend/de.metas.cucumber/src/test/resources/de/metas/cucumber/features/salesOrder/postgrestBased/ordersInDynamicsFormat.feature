@@ -230,6 +230,7 @@ Feature: Export Orders in specific format via postgREST
 }
     """
 
+    # the dropship-partner is our Org-BPartner ("partnerID": 2155894)
     And the metasfresh REST-API responds with
     """
 {
@@ -248,7 +249,7 @@ Feature: Export Orders in specific format via postgREST
     "address2": "Address2",
     "address3": "Address3",
     "address4": "Address4",
-    "partnerID": @dropShip_ID@,
+    "partnerID": 2155894,
     "partnerName": "dropShipName",
     "partnerValue": "dropShipValue"
   },
@@ -281,6 +282,7 @@ Feature: Export Orders in specific format via postgREST
 }
     """
 
+  # the dropship-partner is our Org-BPartner ("partnerID": 2155894)
     And the metasfresh REST-API responds with
     """
 {
@@ -299,7 +301,7 @@ Feature: Export Orders in specific format via postgREST
     "address2": null,
     "address3": null,
     "address4": null,
-    "partnerID": @vendor_ID@,
+    "partnerID": 2155894,
     "partnerName": "metasfresh AG",
     "partnerValue": "metasfresh"
   },
