@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.manufacturing.job.service.commands;
+package de.metas.manufacturing.job.service.commands.receive;
 
 import de.metas.manufacturing.job.model.ReceivingTarget;
 import de.metas.quantity.Quantity;

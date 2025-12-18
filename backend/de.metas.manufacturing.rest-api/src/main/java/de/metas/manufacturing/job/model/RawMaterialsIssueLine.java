@@ -15,6 +15,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.eevolution.api.BOMComponentIssueMethod;
+import org.eevolution.api.PPOrderBOMLineId;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -24,6 +25,7 @@ import java.util.function.UnaryOperator;
 @Value
 public class RawMaterialsIssueLine
 {
+	@NonNull PPOrderBOMLineId orderBOMLineId;
 	@NonNull ProductId productId;
 	@NonNull ITranslatableString productName;
 	@NonNull String productValue;
@@ -39,6 +41,7 @@ public class RawMaterialsIssueLine
 
 	@Builder(toBuilder = true)
 	private RawMaterialsIssueLine(
+			@NonNull final PPOrderBOMLineId orderBOMLineId,
 			@NonNull final ProductId productId,
 			@NonNull final ITranslatableString productName,
 			@NonNull final String productValue,
@@ -49,6 +52,7 @@ public class RawMaterialsIssueLine
 			@NonNull final ImmutableList<RawMaterialsIssueStep> steps,
 			final int seqNo)
 	{
+		this.orderBOMLineId = orderBOMLineId;
 		this.productId = productId;
 		this.productName = productName;
 		this.productValue = productValue;
@@ -149,6 +153,9 @@ public class RawMaterialsIssueLine
 
 	public boolean isAllowManualIssue()
 	{
-		return issueMethod != BOMComponentIssueMethod.IssueOnlyForReceived;
+		return !issueMethod.isIssueOnlyForReceived();
 	}
+
+	public boolean isIssueOnlyForReceived() {return issueMethod.isIssueOnlyForReceived();}
+
 }

@@ -142,16 +142,16 @@ public class ManufacturingRestService
 		if (event.getIssueTo() != null)
 		{
 			final JsonManufacturingOrderEvent.IssueTo issueTo = event.getIssueTo();
-   return manufacturingJobService.issueRawMaterials(job, PPOrderIssueScheduleProcessRequest.builder()
-                    .activityId(PPOrderRoutingActivityId.ofRepoId(job.getPpOrderId(), event.getWfActivityId()))
-                    .issueScheduleId(PPOrderIssueScheduleId.ofString(issueTo.getIssueStepId()))
-                    .huWeightGrossBeforeIssue(issueTo.getHuWeightGrossBeforeIssue())
-                    .qtyIssued(issueTo.getQtyIssued())
-                    .qtyRejected(issueTo.getQtyRejected())
-                    .qtyRejectedReasonCode(QtyRejectedReasonCode.ofNullableCode(issueTo.getQtyRejectedReasonCode()).orElse(null))
-                    // Manual issues from mobile UI shall fail for IssueOnlyForReceived lines
-                    .failIfIssueOnlyForReceived(true)
-                    .build());
+			return manufacturingJobService.issueRawMaterials(job, PPOrderIssueScheduleProcessRequest.builder()
+					.activityId(PPOrderRoutingActivityId.ofRepoId(job.getPpOrderId(), event.getWfActivityId()))
+					.issueScheduleId(PPOrderIssueScheduleId.ofString(issueTo.getIssueStepId()))
+					.huWeightGrossBeforeIssue(issueTo.getHuWeightGrossBeforeIssue())
+					.qtyIssued(issueTo.getQtyIssued())
+					.qtyRejected(issueTo.getQtyRejected())
+					.qtyRejectedReasonCode(QtyRejectedReasonCode.ofNullableCode(issueTo.getQtyRejectedReasonCode()).orElse(null))
+					// Manual issues from mobile UI shall fail for IssueOnlyForReceived lines
+					.failIfIssueOnlyForReceived(true)
+					.build());
 		}
 		else if (event.getReceiveFrom() != null)
 		{
