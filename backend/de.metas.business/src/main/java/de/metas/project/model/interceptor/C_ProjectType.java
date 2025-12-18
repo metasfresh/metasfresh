@@ -27,24 +27,34 @@ import de.metas.organization.OrgId;
 import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectTypeId;
 import de.metas.project.ProjectTypeRepository;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_ProjectType;
-import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
+
 @Component
-@Interceptor(I_C_ProjectType.class)
+@Callout(I_C_ProjectType.class)
 @RequiredArgsConstructor
 public class C_ProjectType
 {
+
 	private static final AdMessageKey MSG_C_PROJECT_TYPE_ONE_SOPO_PER_ORG = AdMessageKey.of("C_ProjectType_One_SOPO_Per_Org");
 	private final ProjectTypeRepository typeRepository;
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_ProjectType.COLUMNNAME_ProjectCategory)
+	@PostConstruct
+	public void postConstruct()
+	{
+		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
+	}
+
+	@CalloutMethod(columnNames = I_C_ProjectType.COLUMNNAME_ProjectCategory)
 	public void uniqueSalesPurchaseOrderPerOrg(@NonNull final I_C_ProjectType projectType)
 	{
 		final ProjectCategory projectCategory = ProjectCategory.ofNullableCode(projectType.getProjectCategory());
