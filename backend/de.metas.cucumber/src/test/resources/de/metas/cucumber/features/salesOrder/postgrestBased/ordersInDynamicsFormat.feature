@@ -292,16 +292,16 @@ Feature: Export Orders in specific format via postgREST
   "partnerValue": "vendorValue",
   "partnerName": "vendorName",
   "dropShip": {
-    "city": "VendorCity",
-    "postal": "5100",
+    "city": "Bonn",
+    "postal": "53179",
     "country": "DEU",
-    "address1": "VendorAddress1",
-    "address2": "VendorAddress2",
-    "address3": "VendorAddress3",
-    "address4": "VendorAddress4",
+    "address1": "Am Nossbacher Weg 2",
+    "address2": null,
+    "address3": null,
+    "address4": null,
     "partnerID": @vendor_ID@,
-    "partnerName": "vendorName",
-    "partnerValue": "vendorValue"
+    "partnerName": "metasfresh AG",
+    "partnerValue": "metasfresh"
   },
   "lines": [
     {
