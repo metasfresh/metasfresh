@@ -83,6 +83,7 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.time.ZoneId;
@@ -91,6 +92,7 @@ import java.util.Optional;
 
 @Interceptor(I_C_Order.class)
 @Callout(I_C_Order.class)
+@Component
 public class C_Order
 {
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
