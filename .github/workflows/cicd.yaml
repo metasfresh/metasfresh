@@ -1324,6 +1324,16 @@ jobs:
           testspace "[mobile/playwright]playwright-report-mobile/junit/results.xml"
           # Move back for artifact upload
           mv test-results-temp test-results-mobile || true
+
+      # ===== ALLURE REPORT GENERATION =====
+      - name: Generate Allure Report for Mobile
+        uses: ./.github/actions/generate-allure-report
+        with:
+          results-dir: docker-builds/e2e-tests/allure-results-mobile
+          output-dir: e2e/mobile-webui/allure-report
+          artifact-name: allure-report-mobile-webui
+      # ===== END ALLURE REPORT GENERATION =====
+
       - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest
         uses: nick-fields/retry@v3
         with:
@@ -1383,47 +1393,12 @@ jobs:
           mv test-results-temp test-results-frontend || true
 
       # ===== ALLURE REPORT GENERATION =====
-      - name: Setup Allure CLI
-        uses: ./.github/actions/setup-allure
-
-      - name: Generate Allure Report
-        working-directory: docker-builds/e2e-tests/
-        run: |
-          # Debug: Check if allure-results exists and has content
-          echo "=== Checking allure-results directory ==="
-          if [ -d "allure-results" ]; then
-            echo "Directory exists. Contents:"
-            ls -la allure-results/ || true
-            echo "JSON files count: $(find allure-results -name "*.json" -type f | wc -l)"
-          else
-            echo "ERROR: allure-results directory does not exist!"
-            echo "Contents of current directory:"
-            ls -la
-            exit 1
-          fi
-
-          # Verify allure-results has content before generating report
-          RESULT_COUNT=$(find allure-results -name "*.json" -type f 2>/dev/null | wc -l)
-          if [ "$RESULT_COUNT" -eq 0 ]; then
-            echo "FATAL ERROR: allure-results contains no JSON files!"
-            echo "Directory contents:"
-            ls -la allure-results/
-            exit 1
-          fi
-
-          echo "Found $RESULT_COUNT JSON result files, proceeding with report generation"
-
-          # Generate HTML report (results are in docker-builds/e2e-tests/allure-results/)
-          cd ../../e2e/frontend-webui/
-          allure generate ../../docker-builds/e2e-tests/allure-results/ -o allure-report/ --clean
-
-      - name: Upload Allure report for gh-pages
-        uses: actions/upload-artifact@v4
-        if: success() || failure()
+      - name: Generate Allure Report for Frontend
+        uses: ./.github/actions/generate-allure-report
         with:
-          name: allure-report-frontend-webui
-          path: e2e/frontend-webui/allure-report/
-          retention-days: 1
+          results-dir: docker-builds/e2e-tests/allure-results
+          output-dir: e2e/frontend-webui/allure-report
+          artifact-name: allure-report-frontend-webui
       # ===== END ALLURE REPORT GENERATION =====
 
       - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest
@@ -1453,7 +1428,7 @@ jobs:
   allure_publish:
     name: Publish Allure Reports to GitHub Pages
     runs-on: ubuntu-latest
-    needs: [ init, frontend_webui_test ]
+    needs: [ init, frontend_webui_test, mobile_test ]
     if: always()  # Run even if tests failed
     permissions:
       contents: write
@@ -1470,11 +1445,13 @@ jobs:
 
           # Create directory structure with explicit paths
           mkdir -p "gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/frontend-webui"
+          mkdir -p "gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/mobile-webui"
           mkdir -p "gh-pages-repo/_data"
 
           # Debug: Show created paths (absolute)
           echo "Created directory structure:"
           echo "  - $(pwd)/gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/frontend-webui"
+          echo "  - $(pwd)/gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/mobile-webui"
           echo "  - $(pwd)/gh-pages-repo/_data"
 
           # Verify directories exist
@@ -1493,6 +1470,20 @@ jobs:
           BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
           cp -r gh-pages-repo/temp-report/* "gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/frontend-webui/"
           rm -rf gh-pages-repo/temp-report
+
+      - name: Download Mobile Allure report artifact
+        if: needs.mobile_test.result == 'success' || needs.mobile_test.result == 'failure'
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-report-mobile-webui
+          path: gh-pages-repo/temp-report-mobile/
+
+      - name: Copy mobile report to build directory
+        if: needs.mobile_test.result == 'success' || needs.mobile_test.result == 'failure'
+        run: |
+          BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
+          cp -r gh-pages-repo/temp-report-mobile/* "gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/mobile-webui/"
+          rm -rf gh-pages-repo/temp-report-mobile
 
       - name: Update latest redirect
         run: |
@@ -1525,11 +1516,12 @@ jobs:
           fi
 
           # Use compact jq to avoid shell quoting issues with multi-line scripts
+          # Updates reports to include both frontend-webui and mobile-webui with direct build paths
           jq --arg name "${{ github.ref_name }}" \
              --arg sanitized "$BRANCH_SANITIZED" \
              --arg build "${{ needs.init.outputs.tag-fixed }}" \
              --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-             '.branches |= map(if .name == $name then . + {"lastUpdate": $timestamp, "lastBuild": $build, "buildCount": ((.buildCount // 0) + 1), "branch_status": "active"} else . end) | if (.branches | map(.name) | index($name)) == null then .branches += [{"name": $name, "sanitized": $sanitized, "lastUpdate": $timestamp, "lastBuild": $build, "reports": {"frontend-webui": ("branches/" + $sanitized + "/latest.html")}, "buildCount": 1, "branch_status": "active"}] else . end' \
+             '.branches |= map(if .name == $name then . + {"lastUpdate": $timestamp, "lastBuild": $build, "buildCount": ((.buildCount // 0) + 1), "branch_status": "active", "reports": {"frontend-webui": ("branches/" + $sanitized + "/builds/" + $build + "/frontend-webui/"), "mobile-webui": ("branches/" + $sanitized + "/builds/" + $build + "/mobile-webui/")}} else . end) | if (.branches | map(.name) | index($name)) == null then .branches += [{"name": $name, "sanitized": $sanitized, "lastUpdate": $timestamp, "lastBuild": $build, "reports": {"frontend-webui": ("branches/" + $sanitized + "/builds/" + $build + "/frontend-webui/"), "mobile-webui": ("branches/" + $sanitized + "/builds/" + $build + "/mobile-webui/")}, "buildCount": 1, "branch_status": "active"}] else . end' \
              "$METADATA_FILE" > "${METADATA_FILE}.tmp" && mv "${METADATA_FILE}.tmp" "$METADATA_FILE"
 
       - name: Generate landing page

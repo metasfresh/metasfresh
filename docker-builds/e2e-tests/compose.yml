@@ -210,6 +210,7 @@ services:
     volumes:
       - ./playwright-report-mobile:/app/playwright-report
       - ./test-results-mobile:/app/test-results
+      - ./allure-results-mobile:/app/allure-results
     environment:
       - "FRONTEND_BASE_URL=http://mobile:80/mobile"
       - "CHROMIUM_FLAGS=--unsafely-treat-insecure-origin-as-secure=http://app-test:8282 --disable-web-security --ignore-certificate-errors"
