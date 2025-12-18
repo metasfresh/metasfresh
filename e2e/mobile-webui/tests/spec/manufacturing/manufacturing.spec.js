@@ -85,10 +85,9 @@ test('Simple manufacturing test', async ({ page }) => {
             }
         },
         hus: {
-            'lu1': {
-                huStatus: 'A',
-                storages: { 'BOM': '1 PCE' },
-            },
+            'lu1': { huStatus: 'A', storages: { 'BOM': '1 PCE' } },
+            'HU_COMP1': { huStatus: 'A', storages: { 'COMP1': '95 PCE' } },
+            'HU_COMP2': { huStatus: 'A', storages: { 'COMP2': '90 PCE' } },
         }
     });
 });
