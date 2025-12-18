@@ -36,16 +36,16 @@ Feature: Purchase order project is automatically created when PO is completed
       | plv_1      | pl_1           |
       | plv_2      | pl_2           |
     And metasfresh contains M_ProductPrices
-      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 |
-      | plv_1                  | p_1          | 10.0     | PCE               |
-      | plv_2                  | p_1          | 10.0     | PCE               |
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | plv_1                  | p_1          | 10.0     | PCE      |
+      | plv_2                  | p_1          | 10.0     | PCE      |
     ##Needed because de.metas.purchasecandidate.VendorProductInfoService#getVendorProductInfos does not take into consideration vendors without discount schemas
     And metasfresh contains M_DiscountSchemas:
       | Identifier | Name              | DiscountType | ValidFrom  |
       | ds_1       | discount_schema_1 | F            | 2021-04-01 |
     And metasfresh contains M_DiscountSchemaBreaks:
       | Identifier | M_DiscountSchema_ID | M_Product_ID | Base_PricingSystem_ID | SeqNo | IsBPartnerFlatDiscount | PriceBase | BreakValue | BreakDiscount |
-      | dsb_1      | ds_1                | p_1          | ps_1                  | 10    | Y                          | P             | 10             | 0                 |
+      | dsb_1      | ds_1                | p_1          | ps_1                  | 10    | Y                      | P         | 10         | 0             |
 
     And metasfresh contains PP_Product_Plannings
       | Identifier | M_Product_ID | IsCreatePlan | IsPurchased |
