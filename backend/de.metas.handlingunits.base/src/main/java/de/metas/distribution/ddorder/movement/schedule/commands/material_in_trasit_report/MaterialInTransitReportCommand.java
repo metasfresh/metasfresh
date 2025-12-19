@@ -1,5 +1,6 @@
 package de.metas.distribution.ddorder.movement.schedule.commands.material_in_trasit_report;
 
+import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.process.ProcessInfo;
 import lombok.Builder;
 import lombok.NonNull;
@@ -20,6 +21,7 @@ public class MaterialInTransitReportCommand
 				.setAD_ProcessByValue(AD_PROCESS_VALUE)
 				.setReportLanguage(adLanguage)
 				.setPrintPreview(false)
+				.setRecord(I_M_Locator.Table_Name, inTransitLocatorId) // IMPORTANT, else printing will fail
 				.addParameter(PARAM_M_Locator_ID, inTransitLocatorId)
 				.buildAndPrepareExecution()
 				.onErrorThrowException(true)
