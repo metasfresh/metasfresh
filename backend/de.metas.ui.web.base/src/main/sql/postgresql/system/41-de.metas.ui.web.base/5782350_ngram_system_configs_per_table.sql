@@ -25,7 +25,7 @@ INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLe
  - **The Challenge:** Because a user''s search term (e.g., "John Smith") is much shorter than the full indexed text it''s compared against, the distance for even a perfect match will naturally be very high (e.g. `0.96`).
  - **Recommendation:** You must set this threshold to a similarly **high value** to allow these matches to be found.
      - A threshold of `0.7` will find only very close matches.
-     - A threshold of `0.96` is more lenient and will find matches with more significant typos or variations.','D','Y','de.metas.ui.web.document.filter.provider.fullTextSearch.PostgresFTSDocumentFilterConverter.Distance.invoice',TO_TIMESTAMP('2025-12-19 07:56:16.573000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'0.96')
+     - A threshold of `0.96` is more lenient and will find matches with more significant typos or variations.','D','Y','de.metas.ui.web.document.filter.provider.fullTextSearch.PostgresFTSDocumentFilterConverter.Distance.invoice',TO_TIMESTAMP('2025-12-19 07:56:16.573000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'0.99')
 ;
 
 -- SysConfig Name: de.metas.ui.web.document.filter.provider.fullTextSearch.PostgresFTSDocumentFilterConverter.NgramLimit.partner
