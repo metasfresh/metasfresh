@@ -74,6 +74,7 @@ public class UpdateSalesOrderFromPurchaseOrderProjectListener implements Purchas
 		//persist the ProjectId on all related order lines
 		final Set<I_C_OrderLine> updatedOrderLines = orderLines.stream()
 				.filter(orderLine -> salesOrderLineIds.contains(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID())))
+				.filter(orderLine -> ProjectId.ofRepoIdOrNull(orderLine.getC_Project_ID()) == null)
 				.peek(orderLine -> orderLine.setC_Project_ID(projectId.getRepoId()))
 				.collect(Collectors.toSet());
 		InterfaceWrapperHelper.saveAll(updatedOrderLines);
