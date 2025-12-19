@@ -110,7 +110,7 @@ WITH InvoiceText AS (
              JOIN C_BPartner bp ON i.c_bpartner_id = bp.c_bpartner_id
              JOIN c_location l ON i.c_bpartner_location_value_id = l.c_location_id
              JOIN c_country c ON l.c_country_id = c.c_country_id
-             JOIN AD_User u ON i.ad_user_id = u.ad_user_id
+             LEFT JOIN AD_User u ON i.ad_user_id = u.ad_user_id
              JOIN c_doctype dt ON i.c_doctypetarget_id = dt.c_doctype_id
              LEFT JOIN m_warehouse wh ON i.m_warehouse_id = wh.m_warehouse_id
              LEFT JOIN c_calendar cal ON i.c_harvesting_calendar_id = cal.c_calendar_id
