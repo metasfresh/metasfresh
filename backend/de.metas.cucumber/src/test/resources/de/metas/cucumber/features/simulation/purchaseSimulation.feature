@@ -109,10 +109,16 @@ Feature: create purchase simulation
       | C_OrderLine_ID | C_Order_ID | DateOrdered | M_Product_ID | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
       | pol_1          | po_1       | 2021-04-04  | p_1          | 100        | 0            | 0           | 10    | 0        | EUR          | true      |
 
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | s_s_1      | ol_1                      | N             |
+
     Then after not more than 30s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise |
       | c_1        | DEMAND            | SHIPMENT                  | p_1          | 2021-04-04T00:00:00Z | 100 | -100                   |
       | c_2        | SUPPLY            | PURCHASE                  | p_1          | 2021-04-04T00:00:00Z | 100 | 0                      |
+
+    And validate that there are no M_ShipmentSchedule_Recompute records after no more than 60 seconds for order 'o_1'
 
     And the order identified by o_1 is reactivated
 
@@ -133,7 +139,9 @@ Feature: create purchase simulation
 
     And the order identified by o_1 is completed
 
-    And after not more than 60s, the MD_Candidate table has only the following records
+    And validate that there are no M_ShipmentSchedule_Recompute records after no more than 60 seconds for order 'o_1'
+
+    And after not more than 30s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise |
       | c_1        | DEMAND            | SHIPMENT                  | p_1          | 2021-04-04T00:00:00Z | 30  | -30                    |
       | c_2        | SUPPLY            | PURCHASE                  | p_1          | 2021-04-04T00:00:00Z | 100 | 70                     |
