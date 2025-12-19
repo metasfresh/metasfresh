@@ -24,10 +24,10 @@ package de.metas.purchasecandidate;
 
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
-import de.metas.order.IPOLineProjectPropagator;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.order.PurchaseOrderProjectListener;
 import de.metas.project.ProjectId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -49,14 +49,17 @@ import java.util.stream.Collectors;
  */
 @Component
 @RequiredArgsConstructor
-public class POLineProjectPropagator implements IPOLineProjectPropagator
+public class UpdateSalesOrderFromPurchaseOrderProjectListener implements PurchaseOrderProjectListener
 {
 	@NonNull private final PurchaseCandidateRepository purchaseCandidateRepo;
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	@Override
-	public void propagateProjectId(@NonNull final ProjectId projectId, @NonNull final Collection<OrderAndLineId> purchaseOrderLineIds)
+	public void onCreated(@NonNull final ProjectCreatedEvent event)
 	{
+		@NonNull final ProjectId projectId = event.getProjectId();
+		@NonNull final Collection<OrderAndLineId> purchaseOrderLineIds = event.getPurchaseOrderLineIds();
+
 		final Set<OrderAndLineId> salesOrderAndLineIds = purchaseCandidateRepo.getAllByPurchaseOrderLineIds(purchaseOrderLineIds)
 				.stream()
 				.map(PurchaseCandidate::getSalesOrderAndLineIdOrNull)

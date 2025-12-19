@@ -28,9 +28,10 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
-import de.metas.order.IPOLineProjectPropagator;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
+import de.metas.order.PurchaseOrderProjectListener.ProjectCreatedEvent;
+import de.metas.order.PurchaseOrderProjectListenerDispatcher;
 import de.metas.order.model.I_C_Order;
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectCategory;
@@ -51,6 +52,7 @@ import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -96,15 +98,15 @@ import java.util.stream.Collectors;
  * - Propagates the project ID changes to the persistent layer and related entities.
  */
 @Component
-@RequiredArgsConstructor
 @Interceptor(I_C_Order.class)
+@RequiredArgsConstructor
 public class C_Order_Project
 {
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final ProjectService projectService;
 	@NonNull private final ProjectTypeRepository projectTypeRepository;
-	@NonNull private final IPOLineProjectPropagator poLineProjectPropagator;
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final PurchaseOrderProjectListenerDispatcher eventDispatcher;
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
 	public void beforeComplete(@NonNull final I_C_Order order)
@@ -161,18 +163,31 @@ public class C_Order_Project
 				.build());
 	}
 
-	private void setProjectIdToOrderLines(@NonNull final ProjectId newProjectId, @NonNull final List<I_C_OrderLine> lines)
+	private void setProjectIdToOrderLines(@NonNull final ProjectId newProjectId, @NonNull final List<I_C_OrderLine> poLines)
 	{
-		final HashSet<OrderAndLineId> updatedOrderLines = new HashSet<>();
+		final HashMap<OrderAndLineId, I_C_OrderLine> poLinesUpdated = new HashMap<>();
 
-		lines.stream()
+		poLines.stream()
 				.filter(ol -> ProjectId.ofRepoIdOrNull(ol.getC_Project_ID()) == null)
 				.forEach(ol -> {
 					ol.setC_Project_ID(newProjectId.getRepoId());
-					updatedOrderLines.add(OrderAndLineId.ofRepoIds(ol.getC_Order_ID(), ol.getC_OrderLine_ID()));
+					poLinesUpdated.put(OrderAndLineId.ofRepoIds(ol.getC_Order_ID(), ol.getC_OrderLine_ID()), ol);
 				});
-		InterfaceWrapperHelper.saveAll(lines);
-		//This is needed because the C_PurchaseCandidate_Alloc records are not yet created
-		trxManager.runAfterCommit(() -> poLineProjectPropagator.propagateProjectId(newProjectId, updatedOrderLines));
+		if (poLinesUpdated.isEmpty())
+		{
+			return;
+		}
+
+		InterfaceWrapperHelper.saveAll(poLinesUpdated.values());
+
+		eventDispatcher.fireProjectCreatedEvent(ProjectCreatedEvent.builder()
+				.projectId(newProjectId)
+				.purchaseOrderLineIds(poLinesUpdated.keySet())
+				.build());
 	}
+
+	//
+	//
+	//
+
 }

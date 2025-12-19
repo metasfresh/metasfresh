@@ -23,7 +23,9 @@
 package de.metas.order;
 
 import de.metas.project.ProjectId;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 
 import java.util.Collection;
 
@@ -33,7 +35,19 @@ import java.util.Collection;
  * Its main usage is to ensure a project set to a purchase order line is propagated to any corresponding sales order line (via purchase candidate).
  */
 @FunctionalInterface
-public interface IPOLineProjectPropagator
+public interface PurchaseOrderProjectListener
 {
-	void propagateProjectId(@NonNull ProjectId projectId, @NonNull Collection<OrderAndLineId> purchaseOrderLineIds);
+	void onCreated(@NonNull ProjectCreatedEvent event);
+
+	//
+	//
+	//
+
+	@Value
+	@Builder
+	class ProjectCreatedEvent
+	{
+		@NonNull ProjectId projectId;
+		@NonNull Collection<OrderAndLineId> purchaseOrderLineIds;
+	}
 }
