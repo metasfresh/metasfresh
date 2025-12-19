@@ -31,9 +31,9 @@ import lombok.extern.jackson.Jacksonized;
 import java.util.Set;
 
 /**
- * Represents a functional interface for performing necessary propagation of a project ID to a collection of order line IDs.
+ * Represents a functional interface for performing necessary propagation of a project ID from a collection of purchase order line IDs.
  * <p>
- * Its main usage is to ensure a project set to a purchase order line is propagated to any corresponding sales order line (via purchase candidate).
+ * Its main usage is to ensure a project that is set to a purchase order line is propagated to any corresponding records.
  */
 @FunctionalInterface
 public interface PurchaseOrderProjectListener
