@@ -148,6 +148,7 @@ public class C_Order_Project
 		}
 
 		final ProjectId newProjectId = createNewSalesPurchaseOrderProject(purchaseOrder);
+		purchaseOrder.setC_Project_ID(newProjectId.getRepoId());
 		setProjectIdToOrderLines(newProjectId, lines);
 	}
 

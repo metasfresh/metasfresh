@@ -85,6 +85,8 @@ Feature: Purchase order project is automatically created when PO is completed
       | C_Order_ID | C_OrderLine_ID |
       | po_1       | pol_1          |
 
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
 ## PO header and lines
     Then validate the created orders
       | C_Order_ID | C_BPartner_ID | C_BPartner_Location_ID | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | processed | DocStatus | C_Project_ID |
