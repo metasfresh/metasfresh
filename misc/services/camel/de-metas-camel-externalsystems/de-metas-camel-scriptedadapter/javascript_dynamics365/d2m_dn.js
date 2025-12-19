@@ -103,7 +103,8 @@ function countIdentificationMethods(deliveryNote, line) {
     let count = 0;
 
     // Method 1: externalHeaderId + externalLineId
-    if (deliveryNote.orderNumber  && deliveryNote.orderNumber.trim() !== '' && line.externalLineId && line.externalLineId.trim() !== '') {
+    if (deliveryNote.orderNumber && deliveryNote.orderNumber.trim() !== ''
+            && line.externalLineId && line.externalLineId.trim() !== '') {
         count++;
     }
 

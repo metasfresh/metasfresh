@@ -26,15 +26,15 @@ SELECT db_drop_functions('*.shipment_dynamics_json')
 CREATE OR REPLACE FUNCTION shipment_dynamics_json(p_m_inout_id text)
     RETURNS TABLE
             (
-                "orgCode"            text,
+                "orgCode" text,
                 "deliveryNoteNumber" text,
-                "poReference"        text,
-                "orderNumber"        text,
-                "dateShip"           date,
-                "partnerIdentifier"  text,
-                "partnerValue"       text,
-                "partnerName"        text,
-                "lines"              jsonb
+                "poReference" text,
+                "orderNumber" text,
+                "dateShip" date,
+                "partnerIdentifier" text,
+                "partnerValue" text,
+                "partnerName" text,
+                "lines" jsonb
             )
     LANGUAGE sql
     STABLE
