@@ -10,7 +10,7 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.docs_sales_customs
                 uom               character varying,
                 QtyPattern        text,
                 bruttoTotalWeight numeric,
-                Note              text
+                country           character varying
             )
     LANGUAGE 'sql'
 AS
@@ -20,10 +20,7 @@ SELECT SUM(catchweight) AS nettoTotalWeight,
        UOM,
        QtyPattern,
        SUM(bruttweight) AS bruttoTotalWeight,
-       CASE
-           WHEN p_ad_language = 'de_DE' THEN 'Hiermit bestätige ich, dass die oben genannten Angaben der Wahrheit entsprechen und die Waren Ursprung ' || country || ' haben.'
-                                        ELSE 'I hereby certify that the above information is true and that the goods originate in ' || country
-       END              AS Note
+       country
 FROM (SELECT (CASE
                   WHEN il.c_uom_id = 540017 -- harcoded kg
                       THEN il.InvoicedQty

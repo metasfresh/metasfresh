@@ -30,7 +30,7 @@
        UOM,
        QtyPattern,
        bruttoTotalWeight,
-       Note
+       Country
 FROM de_metas_endcustomer_fresh_reports.docs_sales_customs_invoice_footer($P{C_Customs_Invoice_Id}, $P{ad_language});]]>
 	</queryString>
 	<field name="nettototalweight" class="java.math.BigDecimal">
@@ -49,9 +49,9 @@ FROM de_metas_endcustomer_fresh_reports.docs_sales_customs_invoice_footer($P{C_C
 		<property name="com.jaspersoft.studio.field.name" value="bruttototalweight"/>
 		<property name="com.jaspersoft.studio.field.label" value="bruttototalweight"/>
 	</field>
-	<field name="note" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="note"/>
-		<property name="com.jaspersoft.studio.field.label" value="note"/>
+	<field name="country" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="country"/>
+		<property name="com.jaspersoft.studio.field.label" value="country"/>
 	</field>
 	<title>
 		<band height="57">
@@ -104,7 +104,7 @@ FROM de_metas_endcustomer_fresh_reports.docs_sales_customs_invoice_footer($P{C_C
 				<textElement textAlignment="Left">
 					<font fontName="Arial" size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{note}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Note1}+$F{country}+" "+$R{Note2}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
