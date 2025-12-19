@@ -64,6 +64,7 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 		final MobileUIDistributionConfig config = distributionRestService.getConfig();
 
 		return applicationInfo.toBuilder()
+				.requiresTrolley(config.isRequireTrolley())
 				.showFilters(true)
 				.maxStartedLaunchers(config.getMaxStartedLaunchers())
 				.isAllowStartNextJobOnly(config.isAllowStartNextJobOnly())
@@ -258,5 +259,10 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 	{
 		final DistributionJob job = distributionRestService.complete(DistributionJobId.ofWFProcessId(wfProcessId), callerId);
 		return toWFProcess(job);
+	}
+
+	public void printMaterialInTransitReport(@NonNull final UserId userId, @NonNull final String adLanguage)
+	{
+		distributionRestService.printMaterialInTransitReport(userId, adLanguage);
 	}
 }

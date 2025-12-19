@@ -3,6 +3,7 @@ package de.metas.distribution.mobileui.external_services.warehouse;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import de.metas.workflow.rest_api.service.TrolleyService;
 import de.metas.workplace.Workplace;
 import de.metas.workplace.WorkplaceService;
 import lombok.NonNull;
@@ -24,6 +25,7 @@ public class DistributionWarehouseService
 {
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	@NonNull private final WorkplaceService workplaceService;
+	@NonNull private final TrolleyService trolleyService;
 	@NonNull private final LocatorScannedCodeResolverService locatorScannedCodeResolver;
 
 	public String getWarehouseName(@NonNull final WarehouseId warehouseId)
@@ -65,5 +67,10 @@ public class DistributionWarehouseService
 	public LocatorScannedCodeResolverResult resolveLocator(@NonNull final ScannedCode scannedCode)
 	{
 		return locatorScannedCodeResolver.resolve(scannedCode);
+	}
+
+	public Optional<LocatorQRCode> getTrolleyByUserId(@NonNull final UserId userId)
+	{
+		return trolleyService.getCurrent(userId);
 	}
 }

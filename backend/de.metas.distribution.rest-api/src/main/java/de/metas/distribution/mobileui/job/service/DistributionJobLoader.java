@@ -3,18 +3,19 @@ package de.metas.distribution.mobileui.job.service;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
-import de.metas.distribution.mobileui.config.MobileUIDistributionConfig;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.DDOrderQuery;
+import de.metas.distribution.ddorder.DDOrderQuery.DDOrderQueryBuilder;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedule;
+import de.metas.distribution.mobileui.config.MobileUIDistributionConfig;
+import de.metas.distribution.mobileui.external_services.sourcedoc.PlantInfo;
 import de.metas.distribution.mobileui.job.model.DistributionJob;
 import de.metas.distribution.mobileui.job.model.DistributionJobId;
 import de.metas.distribution.mobileui.job.model.DistributionJobLine;
 import de.metas.distribution.mobileui.job.model.DistributionJobLineId;
 import de.metas.distribution.mobileui.job.model.DistributionJobStep;
 import de.metas.distribution.mobileui.job.model.DistributionJobStepId;
-import de.metas.distribution.mobileui.external_services.sourcedoc.PlantInfo;
 import de.metas.document.engine.DocStatus;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.product.ProductId;
@@ -61,6 +62,11 @@ public class DistributionJobLoader
 	{
 		warmUpById(ddOrderId);
 		return loadByRecord0(getDDOrder(ddOrderId));
+	}
+
+	public List<DistributionJob> loadByQuery(@NonNull final DDOrderQueryBuilder queryBuilder)
+	{
+		return loadByQuery(queryBuilder.build());
 	}
 
 	public List<DistributionJob> loadByQuery(@NonNull final DDOrderQuery query)
@@ -165,6 +171,7 @@ public class DistributionJobLoader
 				.qtyPicked(schedule.getQtyPicked())
 				.qtyNotPickedReasonCode(schedule.getQtyNotPickedReason())
 				.isPickedFromLocator(schedule.isPickedFrom())
+				.inTransitLocatorId(schedule.getInTransitLocatorId().orElse(null))
 				//
 				// Drop To
 				.isDroppedToLocator(schedule.isDropTo())

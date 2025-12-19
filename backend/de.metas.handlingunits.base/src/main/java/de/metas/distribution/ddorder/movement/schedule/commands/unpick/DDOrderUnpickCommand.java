@@ -1,6 +1,9 @@
-package de.metas.distribution.ddorder.movement.schedule;
+package de.metas.distribution.ddorder.movement.schedule.commands.unpick;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedule;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleId;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
 import de.metas.handlingunits.movement.HUIdAndQRCode;
 import de.metas.handlingunits.movement.MoveHUCommand;
 import de.metas.handlingunits.movement.MoveHURequestItem;
@@ -16,22 +19,16 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 
 import javax.annotation.Nullable;
 
-class DDOrderUnpickCommand
+public class DDOrderUnpickCommand
 {
-	@NonNull
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	@NonNull
-	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	@NonNull
-	private final DDOrderMoveScheduleRepository ddOrderMoveScheduleRepository;
-	@NonNull
-	private final HUQRCodesService huqrCodesService;
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	@NonNull private final DDOrderMoveScheduleRepository ddOrderMoveScheduleRepository;
+	@NonNull private final HUQRCodesService huqrCodesService;
 
 	// Params
-	@NonNull
-	private final DDOrderMoveScheduleId scheduleId;
-	@Nullable
-	private final HUQRCode unpickToTargetQRCode;
+	@NonNull private final DDOrderMoveScheduleId scheduleId;
+	@Nullable private final HUQRCode unpickToTargetQRCode;
 
 	// State
 	private DDOrderMoveSchedule schedule;

@@ -23,11 +23,14 @@ jobs:
     name: Cleanup Stale Reports
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout gh-pages branch
+      - name: Checkout testreports gh-pages branch
         uses: actions/checkout@v4
         with:
+          repository: metasfresh/metasfresh-testreports
           ref: gh-pages
           fetch-depth: 0
+          ssh-key: ${{ secrets.TESTREPORTS_DEPLOY_KEY }}
+          persist-credentials: true
 
       - name: Get active branches from repository
         id: active

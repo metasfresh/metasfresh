@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.manufacturing.rest-api
+ * de.metas.fresh.base
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,20 +20,8 @@
  * #L%
  */
 
-package de.metas.manufacturing.job.service.commands;
-
-import de.metas.manufacturing.job.model.ReceivingTarget;
-import de.metas.quantity.Quantity;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
-import javax.annotation.Nullable;
-
-@Value
-@Builder
-public class ReceiveGoodsResult
-{
-	@Nullable ReceivingTarget receivingTarget;
-	@NonNull Quantity totalQtyReceived;
-}
+-- Value: Report for Intratrade DE Excel
+-- Classname: de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess
+-- 2025-12-17T12:06:28.915Z
+UPDATE AD_Process SET SQLStatement='select * from de_metas_endcustomer_fresh_reports.IntraTradeShipmentsDE(@C_Period_ID@, @AD_Org_ID@)',Updated=TO_TIMESTAMP('2025-12-17 12:06:28.912000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_ID=584748
+;

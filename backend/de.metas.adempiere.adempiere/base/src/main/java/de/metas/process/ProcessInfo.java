@@ -1730,6 +1730,12 @@ public final class ProcessInfo implements Serializable
 			return this;
 		}
 
+		public ProcessInfoBuilder addParameter(final String parameterName, @Nullable final RepoIdAware parameterValue)
+		{
+			addParameter(ProcessInfoParameter.of(parameterName, parameterValue));
+			return this;
+		}
+
 		public ProcessInfoBuilder addParameter(final String parameterName, final String parameterValue)
 		{
 			addParameter(ProcessInfoParameter.of(parameterName, parameterValue));

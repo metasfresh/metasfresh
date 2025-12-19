@@ -1417,19 +1417,28 @@ public class HUTransformService
 		}
 	}
 
+	@Value
+	@Builder
+	public static class HUsToNewCUsResponse
+	{
+		@NonNull ImmutableList<I_M_HU> newCUs;
+		@NonNull Quantity qtyCUsLeft;
+
+		public I_M_HU singleCU() {return CollectionUtils.singleElement(newCUs);}
+	}
+
 	public I_M_HU huToNewSingleCU(@NonNull final HUsToNewCUsRequest newCURequest)
 	{
 		Check.assume(newCURequest.getSourceHUs().size() == 1, "Only one source HU expected: {}", newCURequest);
-		final List<I_M_HU> splitCUs = husToNewCUs(newCURequest);
-		return CollectionUtils.singleElement(splitCUs);
+		return husToNewCUs(newCURequest).singleCU();
 	}
 
 	/**
 	 * Creates new CUs (vhus) according to the given request
 	 */
-	public List<I_M_HU> husToNewCUs(@NonNull final HUsToNewCUsRequest newCUsRequest)
+	public HUsToNewCUsResponse husToNewCUs(@NonNull final HUsToNewCUsRequest newCUsRequest)
 	{
-		Quantity qtyCuLeft = newCUsRequest.getQtyCU();
+		@NonNull Quantity qtyCuLeft = newCUsRequest.getQtyCU();
 
 		final ImmutableList.Builder<I_M_HU> result = ImmutableList.builder();
 		for (final I_M_HU sourceHU : newCUsRequest.getSourceHUs())
@@ -1450,7 +1459,11 @@ public class HUTransformService
 				break;
 			}
 		}
-		return result.build();
+
+		return HUsToNewCUsResponse.builder()
+				.newCUs(result.build())
+				.qtyCUsLeft(qtyCuLeft)
+				.build();
 	}
 
 	/**

@@ -41,6 +41,7 @@ import org.compiere.model.I_C_PO_OrderLine_Alloc;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.ZoneId;
@@ -72,6 +73,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Interceptor(I_C_OrderLine.class)
 @Callout(I_C_OrderLine.class)
+@Component
 public class C_OrderLine
 {
 	public static final AdMessageKey ERR_NEGATIVE_QTY_RESERVED = AdMessageKey.of("MSG_NegativeQtyReserved");
