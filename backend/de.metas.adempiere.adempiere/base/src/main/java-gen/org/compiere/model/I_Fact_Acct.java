@@ -1815,4 +1815,16 @@ public interface I_Fact_Acct
 
 	ModelColumn<I_Fact_Acct, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_Fact_Acct.class, "UserElementString7", null);
 	String COLUMNNAME_UserElementString7 = "UserElementString7";
+
+
+	default void setC_CostClassification_ID(int C_CostClassification_ID)
+	{
+		throw new UnsupportedOperationException(); // TODO 
+	}
+
+	default void setC_CostClassification_Category_ID(int C_CostClassification_Category_ID)
+	{
+		throw new UnsupportedOperationException(); // TODO 
+	}
+
 }

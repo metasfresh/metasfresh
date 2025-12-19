@@ -757,4 +757,8 @@ public interface I_C_ElementValue
 
 	ModelColumn<I_C_ElementValue, Object> COLUMN_Value = new ModelColumn<>(I_C_ElementValue.class, "Value", null);
 	String COLUMNNAME_Value = "Value";
+	
+	default int getC_CostClassification_ID() {
+		// TODO
+	}
 }
