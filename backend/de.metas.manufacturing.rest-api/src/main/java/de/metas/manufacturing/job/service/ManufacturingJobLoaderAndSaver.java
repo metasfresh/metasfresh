@@ -225,6 +225,7 @@ public class ManufacturingJobLoaderAndSaver
 		final boolean isWeightable = !orderBOMLine.isManualQtyInput() && qtyToIssue.isWeightable();
 
 		return RawMaterialsIssueLine.builder()
+				.orderBOMLineId(ppOrderBOMLineId)
 				.productId(productId)
 				.productName(supportingServices.getProductName(productId))
 				.productValue(supportingServices.getProductValue(productId))

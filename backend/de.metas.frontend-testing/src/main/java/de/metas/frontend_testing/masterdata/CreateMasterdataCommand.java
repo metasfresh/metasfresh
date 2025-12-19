@@ -283,6 +283,7 @@ public class CreateMasterdataCommand
 		return CreateHUCommand.builder()
 				.inventoryService(services.inventoryService)
 				.huQRCodesService(services.huQRCodesService)
+				.sourceHUsService(services.sourceHUsService)
 				.context(context)
 				.request(request)
 				.identifier(identifier)
