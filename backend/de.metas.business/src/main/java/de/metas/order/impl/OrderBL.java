@@ -1032,6 +1032,12 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+	public boolean isSalesOrder(@NonNull final OrderId orderId)
+	{
+		return isSalesOrder(getById(orderId));
+	}
+	
+	@Override
 	public boolean isRequisition(@NonNull final I_C_Order order)
 	{
 		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());

@@ -80,6 +80,8 @@ public interface IReceiptScheduleDAO extends ISingletonService
 	 */
 	List<I_M_ReceiptSchedule> retrieveRsForInOutLine(I_M_InOutLine iol);
 
+	boolean hasCompletedReceipts(I_M_ReceiptSchedule receiptSchedule);
+
 	/**
 	 * Retrieve all the receipt schedules that are linked with the given invoice candidate
 	 */
