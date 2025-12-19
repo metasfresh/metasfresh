@@ -56,7 +56,7 @@ WITH UserText AS (
      BPartnerText AS (SELECT bp.c_bpartner_id,
                              (
                                  bp.name || ' ' || COALESCE(bp.name2, '') || ' ' || bp.value || ' ' ||
-                                 bp.firstname || ' ' || bp.lastname || ' ' ||
+                                 COALESCE(bp.firstname, '') || ' ' || COALESCE(bp.lastname, '') || ' ' ||
                                  COALESCE(bp.debtorid::TEXT, '') || ' ' || COALESCE(bp.creditorid::TEXT, '') || ' ' ||
                                  COALESCE(ut.text, '') || ' ' ||
                                  COALESCE(lt.text, '') || ' ' ||

@@ -41,8 +41,12 @@ import java.math.BigDecimal;
 
 public class PostgresFTSDocumentFilterConverter implements SqlDocumentFilterConverter
 {
-	@NonNull private final static String SYSCONFIG_DISTANCE = "de.metas.ui.web.document.filter.provider.fullTextSearch.PostgresFTSDocumentFilterConverter.Distance";
-	@NonNull private final static String SYSCONFIG_NGRAM_LIMIT = "de.metas.ui.web.document.filter.provider.fullTextSearch.PostgresFTSDocumentFilterConverter.NgramLimit";
+	@NonNull private final static String SYSCONFIG_DISTANCE_PARTNER = "de.metas.ui.web.document.filter.provider.fullTextSearch.PostgresFTSDocumentFilterConverter.Distance.partner";
+	@NonNull private final static String SYSCONFIG_NGRAM_LIMIT_PARTNER = "de.metas.ui.web.document.filter.provider.fullTextSearch.PostgresFTSDocumentFilterConverter.NgramLimit.partner";
+	@NonNull private final static String SYSCONFIG_DISTANCE_PRODUCT = "de.metas.ui.web.document.filter.provider.fullTextSearch.PostgresFTSDocumentFilterConverter.Distance.product";
+	@NonNull private final static String SYSCONFIG_NGRAM_LIMIT_PRODUCT = "de.metas.ui.web.document.filter.provider.fullTextSearch.PostgresFTSDocumentFilterConverter.NgramLimit.product";
+	@NonNull private final static String SYSCONFIG_DISTANCE_INVOICE = "de.metas.ui.web.document.filter.provider.fullTextSearch.PostgresFTSDocumentFilterConverter.Distance.invoice";
+	@NonNull private final static String SYSCONFIG_NGRAM_LIMIT_INVOICE = "de.metas.ui.web.document.filter.provider.fullTextSearch.PostgresFTSDocumentFilterConverter.NgramLimit.invoice";
 	@NonNull public static final PostgresFTSDocumentFilterConverter instance = new PostgresFTSDocumentFilterConverter();
 
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -71,6 +75,8 @@ public class PostgresFTSDocumentFilterConverter implements SqlDocumentFilterConv
 					.ftsTableAlias("fts_bpartner")
 					.ftsTableName("C_BPartner_FTS")
 					.keyColumnName(I_C_BPartner.COLUMNNAME_C_BPartner_ID)
+					.distance(sysConfigBL.getBigDecimalValue(SYSCONFIG_DISTANCE_PARTNER, BigDecimal.ONE))
+					.fuzzySearchLimit(sysConfigBL.getIntValue(SYSCONFIG_NGRAM_LIMIT_PARTNER, 1000))
 					.build()
 			);
 		}
@@ -82,6 +88,8 @@ public class PostgresFTSDocumentFilterConverter implements SqlDocumentFilterConv
 					.ftsTableAlias("fts_product")
 					.ftsTableName("M_Product_FTS")
 					.keyColumnName(I_M_Product.COLUMNNAME_M_Product_ID)
+					.distance(sysConfigBL.getBigDecimalValue(SYSCONFIG_DISTANCE_PRODUCT, BigDecimal.ONE))
+					.fuzzySearchLimit(sysConfigBL.getIntValue(SYSCONFIG_NGRAM_LIMIT_PRODUCT, 1000))
 					.build()
 			);
 		}
@@ -93,6 +101,8 @@ public class PostgresFTSDocumentFilterConverter implements SqlDocumentFilterConv
 					.ftsTableAlias("fts_invoice")
 					.ftsTableName("C_Invoice_FTS")
 					.keyColumnName(I_C_Invoice.COLUMNNAME_C_Invoice_ID)
+					.distance(sysConfigBL.getBigDecimalValue(SYSCONFIG_DISTANCE_INVOICE, BigDecimal.ONE))
+					.fuzzySearchLimit(sysConfigBL.getIntValue(SYSCONFIG_NGRAM_LIMIT_INVOICE, 1000))
 					.build()
 			);
 		}
@@ -122,11 +132,11 @@ public class PostgresFTSDocumentFilterConverter implements SqlDocumentFilterConv
 				.append(" WHERE ").append(ftsTableAlias).append(".").append(keyColumnName).append(" = ").append(mainTableKeyColumn)
 				.append(") DESC NULLS LAST");
 
-		final BigDecimal distance = sysConfigBL.getBigDecimalValue(SYSCONFIG_DISTANCE, BigDecimal.ONE);
+		final BigDecimal distance = request.getDistance();
 		if (distance.compareTo(BigDecimal.ZERO) > 0 && BigDecimal.ONE.compareTo(distance) > 0)
 		{
 			// https://www.postgresql.org/docs/current/pgtrgm.html (ngram search)
-			final int fuzzySearchLimit = sysConfigBL.getIntValue(SYSCONFIG_NGRAM_LIMIT, 1000);
+			final int fuzzySearchLimit = request.getFuzzySearchLimit();
 			whereClause.append(" UNION ")
 					.append("(SELECT ").append(keyColumnName).append(" FROM ").append(ftsTableName)
 					.append(" WHERE fts_string <-> ? < ?", searchText, distance)
@@ -148,6 +158,7 @@ public class PostgresFTSDocumentFilterConverter implements SqlDocumentFilterConv
 	private FilterSql getInvoiceSql(@NonNull final PostgresFTSFilterRequest request)
 	{
 		final String searchText = request.getSearchText();
+		final String ftsTableAlias = request.getFtsTableAlias();
 		final String ftsTableName = request.getFtsTableName();
 		final String keyColumnName = request.getKeyColumnName();
 		final String mainTableAlias = request.getMainTableAlias();
@@ -160,8 +171,36 @@ public class PostgresFTSDocumentFilterConverter implements SqlDocumentFilterConv
 				.append(" WHERE fts_document @@ websearch_to_tsquery(get_fts_config(), ?)", searchText);
 
 		final SqlAndParams.Builder orderByClause = SqlAndParams.builder()
-				.append(mainTableAlias).append(".").append(I_C_Invoice.COLUMNNAME_DateInvoiced)
-				.append(" DESC ");
+				// 1) FTS rows first (0), then n-gram (1)
+				.append("(CASE WHEN EXISTS ("
+						+ "SELECT 1 FROM ").append(ftsTableName).append(" ").append(ftsTableAlias)
+				.append(" WHERE ").append(ftsTableAlias).append(".").append(keyColumnName)
+				.append(" = ").append(mainTableKeyColumn)
+				.append(" AND ").append(ftsTableAlias).append(".fts_document @@ websearch_to_tsquery(get_fts_config(), ?)")
+				.append(") THEN 0 ELSE 1 END)", searchText)
+				.append(" ASC, ")
+				// 2) Then order by invoice date, newest first
+				.append(mainTableAlias).append(".").append(I_C_Invoice.COLUMNNAME_DateInvoiced).append(" DESC");
+
+
+		final BigDecimal distance = request.getDistance();
+		if (distance.compareTo(BigDecimal.ZERO) > 0 && BigDecimal.ONE.compareTo(distance) > 0)
+		{
+			// https://www.postgresql.org/docs/current/pgtrgm.html (ngram search)
+			final int fuzzySearchLimit = request.getFuzzySearchLimit();
+			whereClause.append(" UNION ")
+					.append("(SELECT ").append(keyColumnName).append(" FROM ").append(ftsTableName)
+					.append(" WHERE fts_string <-> ? < ?", searchText, distance)
+					.append(" ORDER BY fts_string <-> ? ASC", searchText)
+					.append(" LIMIT ?)", fuzzySearchLimit);
+
+			orderByClause.append(", ")
+					.append("(SELECT ").append(ftsTableAlias).append(".fts_string <-> ?", searchText)
+					.append(" FROM ").append(ftsTableName).append(" ").append(ftsTableAlias)
+					.append(" WHERE ").append(ftsTableAlias).append(".").append(keyColumnName)
+					.append(" = ").append(mainTableKeyColumn)
+					.append(") ASC NULLS LAST");
+		}
 
 		whereClause.append(" )");
 
@@ -177,6 +216,8 @@ public class PostgresFTSDocumentFilterConverter implements SqlDocumentFilterConv
 		@NonNull String ftsTableAlias;
 		@NonNull String ftsTableName;
 		@NonNull String keyColumnName;
+		@NonNull BigDecimal distance;
+		int fuzzySearchLimit;
 
 		public String getMainTableAlias()
 		{
