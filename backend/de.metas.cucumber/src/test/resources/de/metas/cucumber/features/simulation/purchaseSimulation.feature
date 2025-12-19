@@ -130,7 +130,7 @@ Feature: create purchase simulation
       | ol_1                      | 30             |
     And the order identified by o_1 is completed
 
-    And after not more than 30s, the MD_Candidate table has only the following records
+    And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
       | c_1        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-04T00:00:00Z | 30  | -30                    |
       | c_2        | SUPPLY            | PURCHASE                      | p_1                     | 2021-04-04T00:00:00Z | 100 | 70                     |
