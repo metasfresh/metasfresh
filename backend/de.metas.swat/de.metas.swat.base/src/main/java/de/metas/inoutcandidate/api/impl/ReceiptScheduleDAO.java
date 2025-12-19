@@ -209,12 +209,22 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 	@Override
 	public List<I_M_InOut> retrieveCompletedReceipts(final I_M_ReceiptSchedule receiptSchedule)
 	{
+		return queryCompletedReceipts(receiptSchedule).list();
+	}
+
+	@Override
+	public boolean hasCompletedReceipts(final I_M_ReceiptSchedule receiptSchedule)
+	{
+		return queryCompletedReceipts(receiptSchedule).anyMatch();
+	}
+
+	private IQuery<I_M_InOut> queryCompletedReceipts(final I_M_ReceiptSchedule receiptSchedule)
+	{
 		return createRsaForRsQueryBuilder(receiptSchedule, I_M_ReceiptSchedule_Alloc.class)
 				.andCollect(I_M_ReceiptSchedule_Alloc.COLUMN_M_InOutLine_ID)
 				.andCollect(I_M_InOutLine.COLUMN_M_InOut_ID)
 				.addInArrayOrAllFilter(I_M_InOut.COLUMNNAME_DocStatus, IDocument.STATUS_Completed)
-				.create()
-				.list();
+				.create();
 	}
 
 	@Override

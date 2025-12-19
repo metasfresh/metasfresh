@@ -76,6 +76,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 {
 
 	private final static OnMaterialReceiptWithDestWarehouse DEFAULT_OnMaterialReceiptWithDestWarehouse = OnMaterialReceiptWithDestWarehouse.CREATE_MOVEMENT;
+	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
 
 	@Override
 	public List<I_M_ReceiptSchedule> createOrUpdateReceiptSchedules(final Object model, final List<I_M_ReceiptSchedule> previousSchedules)
@@ -104,7 +105,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 
 		//
 		// Create/update Receipt Schedule
-		I_M_ReceiptSchedule receiptSchedule = Services.get(IReceiptScheduleDAO.class).retrieveForRecord(line);
+		I_M_ReceiptSchedule receiptSchedule = receiptScheduleDAO.retrieveForRecord(line);
 
 		final boolean isNewReceiptSchedule = (receiptSchedule == null);
 		if (isNewReceiptSchedule)
@@ -390,7 +391,6 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 	{
 		final org.compiere.model.I_C_OrderLine line = InterfaceWrapperHelper.create(model, org.compiere.model.I_C_OrderLine.class);
 
-		final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
 		final I_M_ReceiptSchedule receiptSchedule = receiptScheduleDAO.retrieveForRecord(line);
 		if (receiptSchedule == null)
 		{
@@ -401,7 +401,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 			return;
 		}
 
-		if (receiptScheduleDAO.retrieveCompletedReceipts(receiptSchedule).isEmpty())
+		if (!receiptScheduleDAO.hasCompletedReceipts(receiptSchedule))
 		{
 			receiptSchedule.setIsActive(false);
 			deleteRecord(receiptSchedule);
