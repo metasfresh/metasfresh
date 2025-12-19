@@ -13,17 +13,17 @@ Feature: create purchase simulation
       | Identifier |
       | ps_1       |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | Name              | Description | SOTrx |
-      | pl_1       | ps_1               | DE           | EUR           | price_list_name_1 | null        | true  |
-      | pl_2       | ps_1               | DE           | EUR           | price_list_name_2 | null        | false |
+      | Identifier | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx |
+      | pl_1       | ps_1               | DE           | EUR           | true  |
+      | pl_2       | ps_1               | DE           | EUR           | false |
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID |
       | plv_1      | pl_1           |
       | plv_2      | pl_2           |
     And metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
-      | pp_1       | plv_1                  | p_1          | 10.0     | PCE      |
-      | pp_2       | plv_2                  | p_1          | 10.0     | PCE      |
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | plv_1                  | p_1          | 10.0     | PCE      |
+      | plv_2                  | p_1          | 10.0     | PCE      |
     And metasfresh contains M_DiscountSchema
       | M_DiscountSchema_ID.Identifier | Name               | BreakValueType | DiscountType | ValidFrom  |
       | discountSchema_1               | DiscountSchemaName | Q              | P            | 2021-04-01 |
@@ -32,9 +32,9 @@ Feature: create purchase simulation
       | customer_1 | N        | Y          | ps_1               |                      |
       | vendor_1   | Y        | N          | ps_1               | discountSchema_1     |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier          | GLN           | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
-      | vendor_location_1   | 2311203300000 | vendor_1      | Y               | Y               |
-      | customer_location_1 | 2311203300001 | customer_1    | Y               | Y               |
+      | Identifier          | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
+      | vendor_location_1   | vendor_1      | Y               | Y               |
+      | customer_location_1 | customer_1    | Y               | Y               |
     And metasfresh contains C_BPartner_Product
       | C_BPartner_ID | M_Product_ID |
       | vendor_1      | p_1          |
