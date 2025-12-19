@@ -26,6 +26,7 @@ import de.metas.project.ProjectId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 import java.util.Collection;
 
@@ -45,6 +46,7 @@ public interface PurchaseOrderProjectListener
 
 	@Value
 	@Builder
+	@Jacksonized
 	class ProjectCreatedEvent
 	{
 		@NonNull ProjectId projectId;

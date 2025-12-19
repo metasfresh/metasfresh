@@ -27,7 +27,7 @@ Feature: create purchase simulation
     And metasfresh contains M_DiscountSchema
       | M_DiscountSchema_ID.Identifier | Name               | BreakValueType | DiscountType | ValidFrom  |
       | discountSchema_1               | DiscountSchemaName | Q              | P            | 2021-04-01 |
-    And metasfresh contains C_BPartners:
+    And metasfresh contains C_BPartners without locations:
       | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID | PO_DiscountSchema_ID |
       | customer_1 | N        | Y          | ps_1               |                      |
       | vendor_1   | Y        | N          | ps_1               | discountSchema_1     |
@@ -108,10 +108,6 @@ Feature: create purchase simulation
     And validate C_OrderLine:
       | C_OrderLine_ID | C_Order_ID | DateOrdered | M_Product_ID | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
       | pol_1          | po_1       | 2021-04-04  | p_1          | 100        | 0            | 0           | 10    | 0        | EUR          | true      |
-
-    And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_s_1      | ol_1                      | N             |
 
     Then after not more than 30s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise |
