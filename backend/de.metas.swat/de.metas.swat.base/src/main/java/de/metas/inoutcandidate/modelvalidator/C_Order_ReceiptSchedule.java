@@ -53,7 +53,8 @@ public class C_Order_ReceiptSchedule
 	public static final String SYSCONFIG_PO_ALLOW_REACTIVATION_IF_RECEIPTS_CREATED = "PO_AllowReactivationIfReceiptsCreated";
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-	public static boolean isEligibleForReceiptSchedule(final I_C_Order order)
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
+	static boolean isEligibleForReceiptSchedule(final I_C_Order order)
 	{
 		final IOrderBL orderBL = Services.get(IOrderBL.class);
 
@@ -98,7 +99,7 @@ public class C_Order_ReceiptSchedule
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REACTIVATE,
 			ModelValidator.TIMING_AFTER_VOID })
-	public void inactivateRecepitSchedules(final I_C_Order order)
+	public void inactivateReceiptSchedules(final I_C_Order order)
 	{
 		if (!isEligibleForReceiptSchedule(order))
 		{
@@ -123,16 +124,16 @@ public class C_Order_ReceiptSchedule
 			return;
 		}
 
-		final boolean hasReceipts = hasReceipts(order);
-
-		final boolean isAllowReactivationIfReceiptsCreated = sysConfigBL.getBooleanValue(SYSCONFIG_PO_ALLOW_REACTIVATION_IF_RECEIPTS_CREATED, false);
-
-		// Throw exception if at least one (even partial) receipt is linked to this order
-		if (hasReceipts && !isAllowReactivationIfReceiptsCreated)
+		// Throw an exception if at least one (even partial) receipt is linked to this order
+		if (!isAllowReactivationIfReceiptsCreated() && hasReceipts(order))
 		{
 			throw new DocumentActionException(ERR_NoReactivationIfReceiptsCreated);
 		}
+	}
 
+	private boolean isAllowReactivationIfReceiptsCreated()
+	{
+		return sysConfigBL.getBooleanValue(SYSCONFIG_PO_ALLOW_REACTIVATION_IF_RECEIPTS_CREATED, false);
 	}
 
 	private boolean hasReceipts(final I_C_Order order)
@@ -153,7 +154,7 @@ public class C_Order_ReceiptSchedule
 			return;
 		}
 
-		final boolean isAllowReactivationIfReceiptsCreated = sysConfigBL.getBooleanValue(SYSCONFIG_PO_ALLOW_REACTIVATION_IF_RECEIPTS_CREATED, false);
+		final boolean isAllowReactivationIfReceiptsCreated = isAllowReactivationIfReceiptsCreated();
 		if (!isAllowReactivationIfReceiptsCreated && hasProcessedReceiptSchedules(order))
 		{
 			throw new DocumentActionException(ERR_NoReactivationIfProcessedReceiptSchedules);
