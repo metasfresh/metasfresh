@@ -101,3 +101,6 @@ Feature: Purchase order project is automatically created when PO is completed
     And validate C_OrderLine:
       | C_OrderLine_ID | C_Project_ID |
       | sol_1          | proj1        |
+
+## cleanup
+    And set project type Sales/Purchase Order to inactive
