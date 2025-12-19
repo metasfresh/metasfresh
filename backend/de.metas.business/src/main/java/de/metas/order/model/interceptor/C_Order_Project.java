@@ -189,9 +189,4 @@ public class C_Order_Project
 				.purchaseOrderLineIds(ImmutableSet.copyOf(poLinesUpdated.keySet()))
 				.build());
 	}
-
-	//
-	//
-	//
-
 }
