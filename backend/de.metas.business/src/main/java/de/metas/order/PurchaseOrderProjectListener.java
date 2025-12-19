@@ -26,8 +26,9 @@ import de.metas.project.ProjectId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
-import java.util.Collection;
+import java.util.Set;
 
 /**
  * Represents a functional interface for performing necessary propagation of a project ID to a collection of order line IDs.
@@ -45,9 +46,10 @@ public interface PurchaseOrderProjectListener
 
 	@Value
 	@Builder
+	@Jacksonized
 	class ProjectCreatedEvent
 	{
 		@NonNull ProjectId projectId;
-		@NonNull Collection<OrderAndLineId> purchaseOrderLineIds;
+		@NonNull Set<OrderAndLineId> purchaseOrderLineIds;
 	}
 }

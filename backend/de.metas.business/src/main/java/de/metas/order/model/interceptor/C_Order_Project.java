@@ -22,6 +22,7 @@
 
 package de.metas.order.model.interceptor;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -182,7 +183,7 @@ public class C_Order_Project
 
 		eventDispatcher.fireProjectCreatedEvent(ProjectCreatedEvent.builder()
 				.projectId(newProjectId)
-				.purchaseOrderLineIds(poLinesUpdated.keySet())
+				.purchaseOrderLineIds(ImmutableSet.copyOf(poLinesUpdated.keySet()))
 				.build());
 	}
 
