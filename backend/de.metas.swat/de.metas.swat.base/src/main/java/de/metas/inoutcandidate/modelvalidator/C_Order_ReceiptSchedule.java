@@ -50,7 +50,7 @@ public class C_Order_ReceiptSchedule
 	private static final AdMessageKey ERR_NoReactivationIfReceiptsCreated = AdMessageKey.of("ERR_NoReactivationIfReceiptsCreated");
 	private static final AdMessageKey ERR_NoReactivationIfProcessedReceiptSchedules = AdMessageKey.of("ERR_NoReactivationIfProcessedReceiptSchedules");
 	private static final AdMessageKey ERR_NoVoidIfProcessedReceiptSchedules = AdMessageKey.of("ERR_NoVoidIfProcessedReceiptSchedules");
-	public static final String SYSCONFIG_PO_ALLOW_REACTIVATION_IF_RECEIPTS_CREATED = "PO_AllowReactivationIfReceiptsCreated";
+	private static final String SYSCONFIG_PO_ALLOW_REACTIVATION_IF_RECEIPTS_CREATED = "PO_AllowReactivationIfReceiptsCreated";
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	public static boolean isEligibleForReceiptSchedule(final I_C_Order order)
@@ -127,7 +127,7 @@ public class C_Order_ReceiptSchedule
 
 		final boolean isAllowReactivationIfReceiptsCreated = sysConfigBL.getBooleanValue(SYSCONFIG_PO_ALLOW_REACTIVATION_IF_RECEIPTS_CREATED, false);
 
-		// Throw exception if at least one (even partial) receipt is linked to this order
+		// Throw an exception if at least one (even partial) receipt is linked to this order
 		if (hasReceipts && !isAllowReactivationIfReceiptsCreated)
 		{
 			throw new DocumentActionException(ERR_NoReactivationIfReceiptsCreated);
