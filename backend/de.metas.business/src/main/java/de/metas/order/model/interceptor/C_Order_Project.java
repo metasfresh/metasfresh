@@ -135,21 +135,23 @@ public class C_Order_Project
 			setProjectIdToOrderLines(olProjectId, lines);
 			return;
 		}
-		else if (orderLineProjectIds.size() > 1)
-		{
-			//can't identify a single project for this order's lines.
-			return;
-		}
-		final ProjectTypeId projectTypeId = projectTypeRepository.getFirstIdByProjectCategoryAndOrgOrNull(ProjectCategory.SalesPurchaseOrder, OrgId.ofRepoId(purchaseOrder.getAD_Org_ID()), false);
-		if (projectTypeId == null)
-		{
-			//no project type for `Sales/Purchase Order` defined, can't create a new project for this order
-			return;
-		}
 
-		final ProjectId newProjectId = createNewSalesPurchaseOrderProject(purchaseOrder);
-		purchaseOrder.setC_Project_ID(newProjectId.getRepoId());
-		setProjectIdToOrderLines(newProjectId, lines);
+		if (isNullProjectIdsOnLines)
+		{
+			final ProjectTypeId projectTypeId = projectTypeRepository.getFirstIdByProjectCategoryAndOrgOrNull(ProjectCategory.SalesPurchaseOrder, OrgId.ofRepoId(purchaseOrder.getAD_Org_ID()), false);
+			if (projectTypeId == null)
+			{
+				//no project type for `Sales/Purchase Order` defined, can't create a new project for this order
+				return;
+			}
+
+			final ProjectId newProjectId = createNewSalesPurchaseOrderProject(purchaseOrder);
+			if (orderLineProjectIds.size() <= 1)
+			{
+				purchaseOrder.setC_Project_ID(newProjectId.getRepoId());
+			}
+			setProjectIdToOrderLines(newProjectId, lines);
+		}
 	}
 
 	private ProjectId createNewSalesPurchaseOrderProject(final @NonNull I_C_Order purchaseOrder)
