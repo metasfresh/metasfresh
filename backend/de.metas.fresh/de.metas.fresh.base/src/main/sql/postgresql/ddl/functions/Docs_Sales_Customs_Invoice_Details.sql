@@ -63,7 +63,7 @@ FROM (SELECT il.lineno,
           -- Get Unit of measurement and its translation
                LEFT OUTER JOIN C_UOM uom ON uom.C_UOM_ID = il.c_uom_id
                LEFT OUTER JOIN C_UOM_Trl uomt
-                               ON uom.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = p_AD_Language AND uomt.isActive = 'Y'
+                               ON uom.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = p_AD_Language
 
                LEFT OUTER JOIN C_Currency c ON i.C_Currency_ID = c.C_Currency_ID
       WHERE il.C_Customs_Invoice_ID = p_C_Customs_Invoice_ID
