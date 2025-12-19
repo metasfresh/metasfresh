@@ -50,6 +50,7 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.request.RequestConfidentialType;
 import de.metas.request.RequestTypeId;
 import de.metas.request.api.IRequestDAO;
 import de.metas.request.api.IRequestTypeDAO;
@@ -79,7 +80,6 @@ import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.X_M_InOut;
-import org.compiere.model.X_R_Request;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
@@ -376,17 +376,9 @@ public class InOutBL implements IInOutBL
 
 		Check.assume(recordId != recordReversalId, "record id({}) and reversal record id({}) shall not be the same", recordId, recordReversalId);
 
-		if (recordId < recordReversalId)
-		{
-			// this document was created before the linked reversal
-			// so this is the orginal document and the other one is the actual reversal
-			return false;
-		}
-
-		// At this point we have: inOutId > reversalInOutId
-		// So our document is the actual reversal
-		// and the linked reversal is the original document
-		return true;
+		// if this document was created before the linked reversal this is the original document and the other one is the actual reversal
+		// otherwise we have: inOutId > reversalInOutId So our document is the actual reversal and the linked reversal is the original document
+		return recordId >= recordReversalId;
 	}
 
 	@Override
@@ -652,7 +644,7 @@ public class InOutBL implements IInOutBL
 
 		final RequestCandidate requestCandidate = RequestCandidate.builder()
 				.summary(inOut.getDescription() != null ? inOut.getDescription() : " ")
-				.confidentialType(X_R_Request.CONFIDENTIALTYPE_Internal)
+				.confidentialType(RequestConfidentialType.Internal)
 				.orgId(OrgId.ofRepoId(inOut.getAD_Org_ID()))
 				.recordRef(TableRecordReference.of(inOut))
 				.requestTypeId(requestType.orElseGet(() -> getRequestTypeId(SOTrx.ofBoolean(inOut.isSOTrx()))))
@@ -713,8 +705,7 @@ public class InOutBL implements IInOutBL
 			return;
 		}
 
-		@Nullable
-		final CopyDescriptionAndDocumentNote copyDescriptionAndDocumentNote = CopyDescriptionAndDocumentNote.ofNullableCode(docType.getCopyDescriptionAndDocumentNote());
+		@Nullable final CopyDescriptionAndDocumentNote copyDescriptionAndDocumentNote = CopyDescriptionAndDocumentNote.ofNullableCode(docType.getCopyDescriptionAndDocumentNote());
 
 		if (copyDescriptionAndDocumentNote == null)
 		{
@@ -767,7 +758,7 @@ public class InOutBL implements IInOutBL
 	@Override
 	public CurrencyConversionContext getCurrencyConversionContext(@NonNull final I_M_InOut inout)
 	{
-		CurrencyConversionContext conversionCtx = currencyBL.createCurrencyConversionContext(
+		final CurrencyConversionContext conversionCtx = currencyBL.createCurrencyConversionContext(
 				inout.getDateAcct().toInstant(),
 				(CurrencyConversionTypeId)null,
 				ClientId.ofRepoId(inout.getAD_Client_ID()),
@@ -806,7 +797,6 @@ public class InOutBL implements IInOutBL
 		return inOutDAO.retrieveByQuery(query).collect(ImmutableSet.toImmutableSet());
 	}
 
-
 	@Override
 	public void setShipperId(@NonNull final I_M_InOut inout)
 	{
@@ -824,7 +814,6 @@ public class InOutBL implements IInOutBL
 				return deliveryAddressShipperId.get(); // we are done
 			}
 		}
-
 
 		return bpartnerDAO.getShipperId(CoalesceUtil.coalesceSuppliersNotNull(
 				() -> BPartnerId.ofRepoIdOrNull(inout.getDropShip_BPartner_ID()),

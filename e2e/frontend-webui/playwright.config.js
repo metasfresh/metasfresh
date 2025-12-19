@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
+import * as os from 'node:os';
 
 export default defineConfig({
   testDir: './tests',
@@ -6,12 +7,67 @@ export default defineConfig({
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  timeout: 120000, // 2 minutes per test
+  timeout: 60000, // 1 minute per test (reduced for faster validation)
 
   reporter: [
     ['list'],
     ['html', { outputFolder: 'playwright-report/html', open: 'never' }],
     ['junit', { outputFile: 'playwright-report/junit/results.xml' }],
+    // Allure reporter for rich, stakeholder-friendly reports
+    [
+      'allure-playwright',
+      {
+        resultsDir: 'allure-results',
+        detail: true,
+        suiteTitle: true,
+        // Link templates for clickable references in reports
+        links: {
+          issue: {
+            nameTemplate: 'GitHub Issue #%s',
+            urlTemplate: 'https://github.com/metasfresh/metasfresh/issues/%s',
+          },
+          tms: {
+            nameTemplate: 'Feature %s',
+            urlTemplate: 'https://docs.google.com/spreadsheets/d/1HYDaiNZVseCg4WtIaxJQ-LLclNl7vkHXp6WsMEaKK9A/edit#gid=1284833774&range=A%s',
+          },
+          epic: {
+            nameTemplate: 'Epic %s',
+            urlTemplate: 'https://docs.google.com/spreadsheets/d/1HYDaiNZVseCg4WtIaxJQ-LLclNl7vkHXp6WsMEaKK9A/edit#gid=0&range=A%s',
+          },
+        },
+        // Categorize failures for easier analysis
+        categories: [
+          {
+            name: 'Language-specific failures',
+            messageRegex: '.*language.*|.*translation.*|.*locale.*',
+            matchedStatuses: ['failed', 'broken'],
+          },
+          {
+            name: 'Timing/Timeout issues',
+            messageRegex: '.*timeout.*|.*timed out.*|.*waiting.*',
+            matchedStatuses: ['failed', 'broken'],
+          },
+          {
+            name: 'Backend API errors',
+            messageRegex: '.*Backend API error.*|.*500.*|.*503.*|.*ECONNREFUSED.*',
+            matchedStatuses: ['failed', 'broken'],
+          },
+          {
+            name: 'PDF validation failures',
+            messageRegex: '.*PDF.*|.*pdf.*',
+            matchedStatuses: ['failed'],
+          },
+        ],
+        // Environment info displayed in report
+        environmentInfo: {
+          os_platform: os.platform(),
+          os_release: os.release(),
+          node_version: process.version,
+          test_environment: process.env.CI ? 'CI' : 'Local',
+          frontend_url: process.env.FRONTEND_BASE_URL || 'http://localhost:3000',
+        },
+      },
+    ],
   ],
 
   use: {

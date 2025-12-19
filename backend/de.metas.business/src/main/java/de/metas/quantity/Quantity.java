@@ -749,10 +749,13 @@ public final class Quantity implements Comparable<Quantity>
 		return diff.signum();
 	}
 
-	public boolean isGreaterThan(@NonNull final Quantity other)
-	{
-		return this.compareTo(other) > 0;
-	}
+	public boolean isGreaterThan(@NonNull final Quantity other) {return this.compareTo(other) > 0;}
+
+	public boolean isGreaterThanOrEqualTo(@NonNull final Quantity other) {return this.compareTo(other) >= 0;}
+
+	public boolean isLessThan(@NonNull final Quantity other) {return this.compareTo(other) < 0;}
+
+	public boolean isLessThanOrEqualTo(@NonNull final Quantity other) {return this.compareTo(other) <= 0;}
 
 	public Quantity divide(@NonNull final BigDecimal divisor)
 	{

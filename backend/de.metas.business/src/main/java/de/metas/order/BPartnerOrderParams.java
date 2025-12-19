@@ -23,6 +23,7 @@
 package de.metas.order;
 
 import de.metas.freighcost.FreightCostRule;
+import de.metas.incoterms.Incoterms;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
@@ -50,6 +51,7 @@ public class BPartnerOrderParams
 	@Nullable PaymentTermId paymentTermId;
 	@Nullable PricingSystemId pricingSystemId;
 	@NonNull Optional<ShipperId> shipperId;
+	@Nullable Incoterms incoterms;
 
 	boolean isAutoInvoice;
 }

@@ -82,6 +82,12 @@ public final class NullTrxPlaceholder implements ITrx
 	}
 
 	@Override
+	public boolean isCommittedOK()
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
 	public boolean isAutoCommit()
 	{
 		throw new UnsupportedOperationException();

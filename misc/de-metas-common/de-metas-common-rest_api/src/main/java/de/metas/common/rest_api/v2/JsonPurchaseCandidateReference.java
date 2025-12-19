@@ -39,11 +39,16 @@ import java.util.List;
 @Value
 public class JsonPurchaseCandidateReference
 {
-	@ApiModelProperty(position = 10, allowEmptyValue = false, dataType = "java.lang.String", example = "ExternalHeaderId_1",//
+	@ApiModelProperty(position = 10, required = true,
+			value = "Identifier of the `ExternalSystem` record that tells where this Purchase Candidate came from.\n"
+					+ "This translates to 'ExternalSystem.value.'")
+	String externalSystemCode;
+
+	@ApiModelProperty(position = 20, dataType = "java.lang.String", example = "ExternalHeaderId_1",//
 			value = "Used to select which invoice candidates should be enqueued.")
 	JsonExternalId externalHeaderId;
 
-	@ApiModelProperty(position = 20, allowEmptyValue = true, dataType = "java.lang.String", example = "[\"ExternalLineId_2\", \"ExternalLineId_3\"]", //
+	@ApiModelProperty(position = 30, allowEmptyValue = true, dataType = "java.lang.String", example = "[\"ExternalLineId_2\", \"ExternalLineId_3\"]", //
 			value = "Optional, used to select which invoice candidates which have these `C_PurchaseCandidate.ExternalLineId`s should be enqueued.\n"
 					+ "Inherited from order line candidates.\n"
 					+ "If not specified, then all purchase candidate with the specified `externalHeaderId` are matched")
@@ -53,9 +58,11 @@ public class JsonPurchaseCandidateReference
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private JsonPurchaseCandidateReference(
+			final @JsonProperty("externalSystemCode") @NonNull String externalSystemCode,
 			final @JsonProperty("externalHeaderId") @NonNull JsonExternalId externalHeaderId,
 			final @JsonProperty("externalLineIds") @Nullable @Singular List<JsonExternalId> externalLineIds)
 	{
+		this.externalSystemCode = externalSystemCode;
 		this.externalHeaderId = externalHeaderId;
 		this.externalLineIds = externalLineIds == null ? ImmutableList.of() : ImmutableList.copyOf(externalLineIds);
 	}

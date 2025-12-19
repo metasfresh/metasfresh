@@ -4,6 +4,7 @@ import { toUrl, unboxAxiosResponse } from '../utils';
 import { QTY_REJECTED_REASON_TO_IGNORE_KEY } from '../reducers/wfProcesses';
 import { useQuery } from '../hooks/useQuery';
 import { PickingTargetType } from '../constants/PickingTargetType';
+import { toQRCodeString } from '../utils/qrCode/hu';
 
 export const useAvailablePickingTargets = ({ wfProcessId, lineId, type }) => {
   const isTU = type === PickingTargetType.TU;
@@ -154,6 +155,16 @@ export const getClosedLUs = ({ wfProcessId, lineId }) => {
 export const getScannedHUQRCodeInfo = ({ qrCode }) => {
   return axios
     .get(toUrl(`${apiBasePath}/picking/hu/byScannedCode`, { scannedCode: qrCode }))
+    .then((response) => unboxAxiosResponse(response));
+};
+
+export const getNextEligibleLineToPack = ({ wfProcessId, huScannedCode, excludeLineId }) => {
+  return axios
+    .post(`${apiBasePath}/picking/nextEligibleLineToPack`, {
+      wfProcessId,
+      huScannedCode: toQRCodeString(huScannedCode),
+      excludeLineId,
+    })
     .then((response) => unboxAxiosResponse(response));
 };
 

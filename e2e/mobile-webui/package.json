@@ -1,5 +1,5 @@
 {
-  "name": "@metasfresh/e2e-mobile-webui",
+  "name": "mobile-webui-frontend-testing",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",

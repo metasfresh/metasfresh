@@ -10,6 +10,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+import org.eevolution.api.BOMComponentIssueMethod;
 import org.eevolution.api.BOMComponentType;
 
 import javax.annotation.Nullable;
@@ -21,6 +22,10 @@ import java.util.List;
 @Jacksonized
 public class JsonCreateProductRequest
 {
+	// Allow exact value/name (if both null, use valuePrefix or timestamp)
+	@Nullable String value;
+	@Nullable String name;
+
 	@Nullable String valuePrefix;
 	@Nullable RandomValueSpec randomValue;
 	@Nullable GTIN gtin;
@@ -97,5 +102,6 @@ public class JsonCreateProductRequest
 		boolean percentage;
 		@Nullable X12DE355 uom;
 		@Nullable BOMComponentType componentType;
+		@Nullable BOMComponentIssueMethod issueMethod;
 	}
 }

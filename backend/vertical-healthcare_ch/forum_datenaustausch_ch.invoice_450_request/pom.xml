@@ -85,6 +85,7 @@
 						</goals>
 						<configuration>
 							<args>
+								<arg>-no-header</arg>
 								<!-- needed to avoid java class name collisions, since the 3 xsds have some equal names -->
 								<arg>-XautoNameResolution</arg>
 

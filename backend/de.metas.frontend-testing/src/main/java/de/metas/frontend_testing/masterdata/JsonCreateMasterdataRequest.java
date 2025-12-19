@@ -30,6 +30,8 @@ import java.util.Map;
 @Jacksonized
 public class JsonCreateMasterdataRequest
 {
+	@Nullable Map<String, Object> context;
+	
 	@Nullable JsonMobileConfigRequest mobileConfig;
 	@Nullable Map<String, JsonLoginUserRequest> login;
 	@Nullable Map<String, JsonCreateBPartnerRequest> bpartners;

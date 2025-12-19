@@ -5,25 +5,27 @@ CREATE OR REPLACE VIEW QtyDemand_QtySupply_V AS
 
 SELECT t.ad_client_id,
        t.ad_org_id,
-       p.name                                                                                                                  AS ProductName,
-       p.value                                                                                                                 AS ProductValue,
+       p.name                                                                                           AS ProductName,
+       p.value                                                                                          AS ProductValue,
        p.m_product_id,
        p.m_product_category_id,
        p.c_uom_id,
        t.attributesKey,
        t.m_warehouse_id,
-       SUM(qtyReserved)                                                                                                        AS qtyReserved,
-       SUM(qtyToMove)                                                                                                          AS qtyToMove,
-       SUM(qtyToProduce)                                                                                                       AS qtyToProduce,
-       SUM(qtyForecasted)                                                                                                      AS qtyForecasted,
-       SUM(qtyStock)                                                                                                           AS qtyStock,
-       abs((('x' || substr(md5(concat_ws('#',
-                                      t.ad_client_id::text,
-                                      t.ad_org_id::text,
-                                      p.m_product_id::text,
-                                      p.c_uom_id::text,
-                                      coalesce(t.attributesKey, '')::text,
-                                      coalesce(t.m_warehouse_id, 0)::text)), 1, 8))::bit(32)::int)) AS QtyDemand_QtySupply_V_ID
+       SUM(qtyReserved)                                                                                 AS qtyReserved,
+       SUM(qtyToMove)                                                                                   AS qtyToMove,
+       SUM(qtyToProduce)                                                                                AS qtyToProduce,
+       SUM(qtyForecasted)                                                                               AS qtyForecasted,
+       SUM(qtyStock)                                                                                    AS qtyStock,
+       SUM(qtyConfirmedBySupplier)                                                                      AS qtyConfirmedBySupplier,
+       SUM(qtyUnconfirmedBySupplier)                                                                    AS qtyUnconfirmedBySupplier,
+       ABS((('x' || SUBSTR(MD5(CONCAT_WS('#',
+                                         t.ad_client_id::text,
+                                         t.ad_org_id::text,
+                                         p.m_product_id::text,
+                                         p.c_uom_id::text,
+                                         COALESCE(t.attributesKey, '')::text,
+                                         COALESCE(t.m_warehouse_id, 0)::text)), 1, 10))::bit(32)::int)) AS QtyDemand_QtySupply_V_ID
 FROM m_product p
          INNER JOIN
      (
@@ -37,7 +39,9 @@ FROM m_product p
                 0::numeric                                                    AS qtyToMove,
                 0::numeric                                                    AS qtyToProduce,
                 0::numeric                                                    AS qtyForecasted,
-                0::numeric                                                    AS qtyStock
+                0::numeric                                                    AS qtyStock,
+                0::numeric                                                    AS qtyConfirmedBySupplier,
+                0::numeric                                                    AS qtyUnconfirmedBySupplier
          FROM m_shipmentschedule ss
                   INNER JOIN m_product p ON ss.m_product_id = p.m_product_id
          WHERE COALESCE(ss.qtyReserved, 0) <> 0
@@ -50,16 +54,18 @@ FROM m_product p
                 rs.ad_org_id,
                 rs.m_warehouse_id,
                 rs.m_product_id,
-                generateasistorageattributeskey(rs.m_attributesetinstance_id)           AS attributesKey,
-                0::numeric                                                              AS qtyReserved,
-                SUM(uomconvert(rs.m_product_id, rs.c_uom_id, p.c_uom_id, rs.qtyToMove)) AS qtyToMove,
-                0::numeric                                                              AS qtyToProduce,
-                0::numeric                                                              AS qtyForecasted,
-                0::numeric                                                              AS qtyStock
+                generateasistorageattributeskey(rs.m_attributesetinstance_id)                                                                   AS attributesKey,
+                0::numeric                                                                                                                      AS qtyReserved,
+                SUM(uomconvert(rs.m_product_id, rs.c_uom_id, p.c_uom_id, rs.qtyToMove))                                                         AS qtyToMove,
+                0::numeric                                                                                                                      AS qtyToProduce,
+                0::numeric                                                                                                                      AS qtyForecasted,
+                0::numeric                                                                                                                      AS qtyStock,
+                CASE WHEN rs.IsConfirmedBySupplier = 'Y' THEN SUM(uomconvert(rs.m_product_id, rs.c_uom_id, p.c_uom_id, rs.qtyToMove)) ELSE 0 END AS qtyConfirmedBySupplier,
+                CASE WHEN rs.IsConfirmedBySupplier = 'N' THEN SUM(uomconvert(rs.m_product_id, rs.c_uom_id, p.c_uom_id, rs.qtyToMove)) ELSE 0 END AS qtyUnconfirmedBySupplier
          FROM m_receiptschedule rs
                   INNER JOIN m_product p ON rs.m_product_id = p.m_product_id
          WHERE COALESCE(rs.qtyToMove, 0) <> 0
-         GROUP BY rs.ad_client_id, rs.ad_org_id, rs.m_warehouse_id, rs.m_product_id, p.c_uom_id, attributesKey
+         GROUP BY rs.ad_client_id, rs.ad_org_id, rs.m_warehouse_id, rs.m_product_id, p.c_uom_id, attributesKey, rs.IsConfirmedBySupplier
 
          UNION ALL
 
@@ -73,7 +79,9 @@ FROM m_product p
                 0::numeric                                                                    AS qtyToMove,
                 SUM(uomconvert(poc.m_product_id, poc.c_uom_id, p.c_uom_id, poc.qtyToProcess)) AS qtyToProduce,
                 0::numeric                                                                    AS qtyForecasted,
-                0::numeric                                                                    AS qtyStock
+                0::numeric                                                                    AS qtyStock,
+                0::numeric                                                                    AS qtyConfirmedBySupplier,
+                0::numeric                                                                    AS qtyUnconfirmedBySupplier
          FROM pp_order_candidate poc
                   INNER JOIN m_product p ON poc.m_product_id = p.m_product_id
          WHERE COALESCE(poc.qtyToProcess, 0) <> 0
@@ -91,7 +99,9 @@ FROM m_product p
                 0::numeric                                                        AS qtyToMove,
                 0::numeric                                                        AS qtyToProduce,
                 SUM(uomconvert(fl.m_product_id, fl.c_uom_id, p.c_uom_id, fl.qty)) AS qtyForecasted,
-                0::numeric                                                        AS qtyStock
+                0::numeric                                                        AS qtyStock,
+                0::numeric                                                        AS qtyConfirmedBySupplier,
+                0::numeric                                                        AS qtyUnconfirmedBySupplier
          FROM m_forecastline fl
                   INNER JOIN m_forecast f ON f.m_forecast_id = fl.m_forecast_id
                   INNER JOIN m_product p ON fl.m_product_id = p.m_product_id
@@ -110,7 +120,9 @@ FROM m_product p
                 0::numeric       AS qtyToMove,
                 0::numeric       AS qtyToProduce,
                 0::numeric       AS qtyForecasted,
-                SUM(s.qtyOnHand) AS qtyStock --already in product UOM
+                SUM(s.qtyOnHand) AS qtyStock, --already in product UOM
+                0::numeric       AS qtyConfirmedBySupplier,
+                0::numeric       AS qtyUnconfirmedBySupplier
          FROM md_stock s
                   INNER JOIN m_product p ON s.m_product_id = p.m_product_id
          WHERE s.IsActive = 'Y'
@@ -123,5 +135,4 @@ GROUP BY t.ad_client_id, t.ad_org_id, p.m_product_id, p.m_product_category_id, p
 
 -- default grouping by t.ad_client_id, t.ad_org_id, p.m_product_id, p.m_product_category_id, p.name, p.value, t.c_uom_id, t.attributesKey, t.m_warehouse_id
 -- grouping can be adjusted as needed
-
 
