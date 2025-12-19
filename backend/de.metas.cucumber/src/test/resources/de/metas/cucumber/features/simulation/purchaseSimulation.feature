@@ -1,5 +1,5 @@
 @from:cucumber
-@ghActions:run_on_executor7
+@ghActions:run_on_executor1
 Feature: create purchase simulation
 
   Background:
