@@ -3,7 +3,7 @@ package de.metas.shipper.gateway.spi;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.inoutcandidate.CarrierGoodsTypeId;
-import de.metas.inoutcandidate.CarrierProductId;
+import de.metas.shipping.CarrierProductId;
 import de.metas.inoutcandidate.CarrierServiceId;
 import de.metas.product.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;

@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_BPartner_Location
  *  @author metasfresh (generated) 
@@ -482,6 +481,29 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_IsCommissionToDefault = "IsCommissionToDefault";
 
 	/**
+	 * Set Default Visitor Address.
+	 * Indicates whether this address is the default visitor address.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDefaultVisitorAddress(boolean IsDefaultVisitorAddress);
+
+	/**
+	 * Get Default Visitor Address.
+	 * Indicates whether this address is the default visitor address.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDefaultVisitorAddress();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_IsDefaultVisitorAddress = new ModelColumn<>(I_C_BPartner_Location.class, "IsDefaultVisitorAddress", null);
+	String COLUMNNAME_IsDefaultVisitorAddress = "IsDefaultVisitorAddress";
+
+	/**
 	 * Set ISDN.
 	 * ISDN or modem line
 	 *
@@ -708,7 +730,7 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_IsShipToDefault = "IsShipToDefault";
 
 	/**
-	 * Set Abo Adresse.
+	 * Set isSubscriptionTo.
 	 * An diese Adresse werden Abos geschickt
 	 *
 	 * <br>Type: YesNo
@@ -718,7 +740,7 @@ public interface I_C_BPartner_Location
 	void setIsSubscriptionTo (boolean IsSubscriptionTo);
 
 	/**
-	 * Get Abo Adresse.
+	 * Get isSubscriptionTo.
 	 * An diese Adresse werden Abos geschickt
 	 *
 	 * <br>Type: YesNo

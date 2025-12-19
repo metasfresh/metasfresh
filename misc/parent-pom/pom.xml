@@ -320,6 +320,13 @@
                         <encoding>UTF-8</encoding>
                         <source>${metasfresh.java.version}</source>
                         <target>${metasfresh.java.version}</target>
+                        <useIncrementalCompilation>true</useIncrementalCompilation>
+                        <!-- Force javac to generate .class files for package-info.java even if they only contain Javadoc.
+                             Without this, javac produces no .class file for Javadoc-only package-info.java, causing Maven
+                             to repeatedly mark them as "stale" and trigger full module recompilation (JDK-6960424). -->
+                        <compilerArgs>
+                            <arg>-Xpkginfo:always</arg>
+                        </compilerArgs>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -335,6 +342,12 @@
                     <groupId>org.jvnet.jaxb2.maven2</groupId>
                     <artifactId>maven-jaxb2-plugin</artifactId>
                     <version>0.14.0</version>
+                    <configuration>
+                        <!-- Suppress timestamp in generated file headers to avoid unnecessary git changes -->
+                        <args>
+                            <arg>-no-header</arg>
+                        </args>
+                    </configuration>
                 </plugin>
 
                 <plugin>

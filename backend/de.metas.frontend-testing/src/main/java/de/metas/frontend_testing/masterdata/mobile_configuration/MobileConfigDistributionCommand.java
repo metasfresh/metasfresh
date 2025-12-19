@@ -1,14 +1,14 @@
 package de.metas.frontend_testing.masterdata.mobile_configuration;
 
 import com.google.common.base.Splitter;
-import de.metas.distribution.config.DistributionJobCaptionField;
-import de.metas.distribution.config.DistributionJobCaptionFormat;
-import de.metas.distribution.config.DistributionJobCaptionFormatItem;
-import de.metas.distribution.config.DistributionJobSorting;
-import de.metas.distribution.config.DistributionJobSortingField;
-import de.metas.distribution.config.DistributionJobSortingItem;
-import de.metas.distribution.config.MobileUIDistributionConfig;
-import de.metas.distribution.config.MobileUIDistributionConfigRepository;
+import de.metas.distribution.mobileui.config.DistributionJobCaptionField;
+import de.metas.distribution.mobileui.config.DistributionJobCaptionFormat;
+import de.metas.distribution.mobileui.config.DistributionJobCaptionFormatItem;
+import de.metas.distribution.mobileui.config.DistributionJobSorting;
+import de.metas.distribution.mobileui.config.DistributionJobSortingField;
+import de.metas.distribution.mobileui.config.DistributionJobSortingItem;
+import de.metas.distribution.mobileui.config.MobileUIDistributionConfig;
+import de.metas.distribution.mobileui.config.MobileUIDistributionConfigRepository;
 import de.metas.util.StringUtils;
 import de.metas.workflow.rest_api.service.Constants;
 import lombok.Builder;
@@ -28,7 +28,15 @@ class MobileConfigDistributionCommand
 
 	public JsonMobileConfigResponse.Distribution execute()
 	{
+		updateConfigAndSave();
+		return createResponse();
+	}
+
+	private void updateConfigAndSave()
+	{
 		final MobileUIDistributionConfig.MobileUIDistributionConfigBuilder newConfigBuilder = mobileDistributionConfigRepository.getConfig().toBuilder();
+		newConfigBuilder.isRequireScanningProductCode(request.getRequireScanningProductCode() != null && request.getRequireScanningProductCode());
+		newConfigBuilder.isNavigateToJobsListAfterPickFromComplete(request.getNavigateToJobsListAfterPickFromComplete() != null && request.getNavigateToJobsListAfterPickFromComplete());
 		newConfigBuilder.isCompleteJobAutomatically(request.getCompleteJobAutomatically() != null && request.getCompleteJobAutomatically());
 		if (request.getAllowPickingAnyHU() != null)
 		{
@@ -49,10 +57,17 @@ class MobileConfigDistributionCommand
 
 		final MobileUIDistributionConfig newConfig = newConfigBuilder.build();
 		mobileDistributionConfigRepository.save(newConfig);
+	}
+
+	private JsonMobileConfigResponse.Distribution createResponse()
+	{
+		final MobileUIDistributionConfig config = mobileDistributionConfigRepository.getConfig();
 
 		return JsonMobileConfigResponse.Distribution.builder()
-				.allowPickingAnyHU(newConfig.isAllowPickingAnyHU())
-				.completeJobAutomatically(newConfig.isCompleteJobAutomatically())
+				.allowPickingAnyHU(config.isAllowPickingAnyHU())
+				.requireScanningProductCode(config.isRequireScanningProductCode())
+				.navigateToJobsListAfterPickFromComplete(config.isNavigateToJobsListAfterPickFromComplete())
+				.completeJobAutomatically(config.isCompleteJobAutomatically())
 				.build();
 	}
 

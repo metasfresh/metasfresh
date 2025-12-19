@@ -1,10 +1,10 @@
 package de.metas.frontend_testing.masterdata;
 
 import de.metas.currency.CurrencyRepository;
-import de.metas.distribution.config.MobileUIDistributionConfigRepository;
+import de.metas.distribution.mobileui.config.MobileUIDistributionConfigRepository;
 import de.metas.distribution.ddorder.DDOrderService;
-import de.metas.distribution.workflows_api.DistributionJobLoaderSupportingServices;
-import de.metas.distribution.workflows_api.DistributionLauncherCaptionProvider;
+import de.metas.distribution.mobileui.job.service.DistributionJobLoaderSupportingServices;
+import de.metas.distribution.mobileui.launchers.DistributionLauncherCaptionProvider;
 import de.metas.frontend_testing.expectations.AssertExpectationsCommandServices;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;

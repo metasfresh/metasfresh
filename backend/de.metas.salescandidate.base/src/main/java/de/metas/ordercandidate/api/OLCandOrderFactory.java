@@ -324,6 +324,12 @@ class OLCandOrderFactory
 		order.setEMail(candidateOfGroup.getEmail());
 		order.setPhone(candidateOfGroup.getPhone());
 
+		if (candidateOfGroup.getIncotermsId() != null)
+		{
+			order.setC_Incoterms_ID(candidateOfGroup.getIncotermsId().getRepoId());
+			order.setIncotermLocation(candidateOfGroup.getIncotermLocation());
+		}
+
 		save(order);
 		return order;
 	}

@@ -303,4 +303,9 @@ public class PickingJobLine implements PickingJobHeaderOrLine
 	}
 
 	public boolean isFullyPicked() {return qtyRemainingToPick.signum() <= 0;}
+
+	public boolean isFullyPickedExcludingRejectedQty()
+	{
+		return qtyToPick.subtract(qtyPicked).signum() <= 0;
+	}
 }

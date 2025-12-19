@@ -230,11 +230,23 @@ test('Test picking line complete status - draft | in progress | complete', async
 
     await PickingJobScreen.expectLineButton({ index: 1, color: 'red', qtyToPick: '3 TU', qtyPicked: '0 TU', qtyPickedCatchWeight: '' });
 
-    await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, qtyEntered: '2', expectQtyEntered: '3', qtyNotFoundReason: QTY_NOT_FOUND_REASON_NOT_FOUND });
-    await PickingJobScreen.expectLineButton({ index: 1, color: 'yellow', qtyToPick: '3 TU', qtyPicked: '2 TU', qtyPickedCatchWeight: '' });
-
-    await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, qtyEntered: '1', expectQtyEntered: '0' });
-    await PickingJobScreen.expectLineButton({ index: 1, color: 'green', qtyToPick: '3 TU', qtyPicked: '3 TU', qtyPickedCatchWeight: '' });
+    await test.step('Partially pick the line', async () => {
+        await PickingJobScreen.pickHU({
+            qrCode: masterdata.handlingUnits.HU1.qrCode,
+            expectQtyEntered: '3',
+            qtyEntered: '2',
+            qtyNotFoundReason: QTY_NOT_FOUND_REASON_NOT_FOUND
+        });
+        await PickingJobScreen.expectLineButton({ index: 1, color: 'yellow', qtyToPick: '3 TU', qtyPicked: '2 TU', qtyPickedCatchWeight: '' });
+    });
+    await test.step('Partially pick the line again, expect line completely picked', async () => {
+        await PickingJobScreen.pickHU({
+            qrCode: masterdata.handlingUnits.HU1.qrCode,
+            expectQtyEntered: '0',
+            qtyEntered: '1',
+        });
+        await PickingJobScreen.expectLineButton({ index: 1, color: 'green', qtyToPick: '3 TU', qtyPicked: '3 TU', qtyPickedCatchWeight: '' });
+    });
 
     await PickingJobScreen.complete();
 });

@@ -586,6 +586,14 @@
             <type>zip</type>
         </dependency>
 
+        <dependency>
+            <groupId>de.metas.handlingunits</groupId>
+            <artifactId>de.metas.handlingunits.mobileui</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
+
 
 
         <!-- Elasticsearch -->

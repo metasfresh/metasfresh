@@ -52,8 +52,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nullable;
 
-import static de.metas.common.product.v2.request.constants.SwaggerDocConstants.ORG_CODE_PARAMETER_DOC;
 import static de.metas.common.rest_api.v2.APIConstants.ENDPOINT_MATERIAL;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.ORG_CODE_PARAMETER_DOC;
 
 @RequestMapping(value = { MetasfreshRestAPIConstants.ENDPOINT_API_V2 + ENDPOINT_MATERIAL + "/warehouses" })
 @RestController

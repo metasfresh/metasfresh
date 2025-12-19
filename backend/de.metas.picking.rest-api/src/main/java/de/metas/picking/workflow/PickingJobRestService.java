@@ -48,6 +48,8 @@ import de.metas.handlingunits.picking.job.model.facets.CollectingParameters;
 import de.metas.handlingunits.picking.job.model.facets.PickingJobFacets;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
+import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackRequest;
+import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackResponse;
 import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -145,7 +147,7 @@ public class PickingJobRestService
 	{
 		return pickingJobService.openLine(pickingJob, pickingLineId);
 	}
-	
+
 	public PickingJob complete(@NonNull final PickingJobId pickingJobId, @NonNull final UserId callerId)
 	{
 		return pickingJobService.complete(pickingJobId, callerId);
@@ -267,5 +269,10 @@ public class PickingJobRestService
 	public PickingJobQtyAvailable getQtyAvailable(@NonNull final PickingJobId pickingJobId, final @NonNull UserId callerId)
 	{
 		return pickingJobService.getQtyAvailable(pickingJobId, callerId);
+	}
+
+	public GetNextEligibleLineToPackResponse getNextEligibleLineToPack(final @NonNull GetNextEligibleLineToPackRequest request)
+	{
+		return pickingJobService.getNextEligibleLineToPack(request);
 	}
 }
