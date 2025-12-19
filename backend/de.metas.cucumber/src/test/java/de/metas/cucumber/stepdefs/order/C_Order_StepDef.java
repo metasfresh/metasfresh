@@ -845,16 +845,23 @@ public class C_Order_StepDef
 		final StepDefDataIdentifier projectIdentifier = row.getAsIdentifierOrNull(COLUMNNAME_C_Project_ID);
 		if (projectIdentifier != null)
 		{
-			final I_C_Project project;
-			if (projectTable.getIdentifiers().contains(projectIdentifier))
+			if (projectIdentifier.isNullPlaceholder())
 			{
-				project = projectTable.get(projectIdentifier);
+				softly.assertThat(order.getC_Project_ID()).as("C_Project_ID for Identifier=%s", identifierStr).isLessThanOrEqualTo(0);
+			}
+			else if (projectTable.isPresent(projectIdentifier))
+			{
+				final I_C_Project project = projectTable.get(projectIdentifier);
 				softly.assertThat(order.getC_Project_ID()).as("C_Project_ID for Identifier=%s", identifierStr).isEqualTo(project.getC_Project_ID());
 			}
 			else if (order.getC_Project_ID() > 0)
 			{
-				project = projectsRepo.getById(ProjectId.ofRepoId(order.getC_Project_ID()));
+				final I_C_Project project = projectsRepo.getById(ProjectId.ofRepoId(order.getC_Project_ID()));
 				projectTable.put(projectIdentifier, project);
+			}
+			else
+			{
+				softly.fail("Expected C_Order.C_Project_ID to be set for C_Order_ID=%s", order.getC_Order_ID());
 			}
 		}
 
