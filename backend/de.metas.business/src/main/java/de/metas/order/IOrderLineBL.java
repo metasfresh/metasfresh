@@ -64,6 +64,8 @@ public interface IOrderLineBL extends ISingletonService
 
 	Quantity getQtyToDeliver(OrderAndLineId orderAndLineId);
 
+	Quantity getQtyDelivered(OrderAndLineId orderAndLineId);
+
 	/**
 	 * Creates a new order line using the given {@code order} as header.
 	 */

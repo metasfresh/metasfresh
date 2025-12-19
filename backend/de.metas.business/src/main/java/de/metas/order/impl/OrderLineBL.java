@@ -221,6 +221,16 @@ public class OrderLineBL implements IOrderLineBL
 		return getQtyToDeliver(orderLine);
 	}
 
+	@Override
+	public Quantity getQtyDelivered(@NonNull final OrderAndLineId orderAndLineId)
+	{
+		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderAndLineId);
+		final BigDecimal qtyDelivered = orderLine.getQtyDelivered();
+		final I_C_UOM uom = getStockingUOM(orderLine);
+
+		return Quantity.of(qtyDelivered, uom);
+	}
+
 	private Quantity getQtyToDeliver(@NonNull final I_C_OrderLine orderLine)
 	{
 		final BigDecimal qtyOrdered = orderLine.getQtyOrdered();
