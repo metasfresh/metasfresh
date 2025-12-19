@@ -55,6 +55,11 @@ public class ProjectTypeRepository
 		return projectTypes.getOrLoad(id, this::retrieveById);
 	}
 
+	public void save(@NonNull final I_C_ProjectType projectType)
+	{
+		InterfaceWrapperHelper.saveRecord(projectType);
+	}
+
 	private ProjectType retrieveById(@NonNull final ProjectTypeId id)
 	{
 		final I_C_ProjectType record = InterfaceWrapperHelper.loadOutOfTrx(id, I_C_ProjectType.class);
@@ -113,4 +118,11 @@ public class ProjectTypeRepository
 				.firstId(ProjectTypeId::ofRepoIdOrNull);
 	}
 
+	public I_C_ProjectType getByName(final @NonNull String projectTypeValue)
+	{
+		return queryBL.createQueryBuilderOutOfTrx(I_C_ProjectType.class)
+				.addEqualsFilter(I_C_ProjectType.COLUMNNAME_Name, projectTypeValue)
+				.create()
+				.firstOnlyNotNull(I_C_ProjectType.class);
+	}
 }

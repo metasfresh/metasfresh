@@ -44,6 +44,7 @@ import de.metas.cucumber.stepdefs.datasource.AD_InputDataSource_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_StepDef;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
+import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.currency.CurrencyRepository;
@@ -76,6 +77,8 @@ import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessInfo;
+import de.metas.project.ProjectId;
+import de.metas.project.service.ProjectRepository;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
@@ -100,6 +103,7 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_PaymentTerm;
+import org.compiere.model.I_C_Project;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
@@ -136,6 +140,7 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_User_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_Location_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_Order_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_C_Project_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_DateOrdered;
 import static org.compiere.model.I_C_Order.COLUMNNAME_DeliveryRule;
 import static org.compiere.model.I_C_Order.COLUMNNAME_DeliveryViaRule;
@@ -177,6 +182,7 @@ public class C_Order_StepDef
 	@NonNull private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	@NonNull private final ExternalSystemRepository externalSystemRepository = SpringContextHolder.instance.getBean(ExternalSystemRepository.class);
 	@NonNull private final IncotermsRepository incotermsRepository = SpringContextHolder.instance.getBean(IncotermsRepository.class);
+	@NonNull private final ProjectRepository projectsRepo = SpringContextHolder.instance.getBean(ProjectRepository.class);
 
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
 	@NonNull private final C_Order_StepDefData orderTable;
@@ -190,6 +196,7 @@ public class C_Order_StepDef
 	@NonNull private final TestContext restTestContext;
 	@NonNull private final C_PaymentTerm_StepDef paymentTermStepDef;
 	@NonNull private final M_Shipper_StepDefData shipperTable;
+	@NonNull private final C_Project_StepDefData projectTable;
 
 	@Given("simple completed order with one line")
 	public void createAndCompleteSimpleOrders(@NonNull final DataTable dataTable)
@@ -834,6 +841,29 @@ public class C_Order_StepDef
 				.ifPresent(incotermValue -> softly.assertThat(IncotermsId.equals(incotermsRepository.getByValue(incotermValue, orgId).getId(), IncotermsId.ofRepoIdOrNull(order.getC_Incoterms_ID())))
 						.as("C_Incoterms_ID for value %s", incotermValue).isTrue());
 		row.getAsOptionalString(COLUMNNAME_IncotermLocation).ifPresent(incotermLocation -> softly.assertThat(order.getIncotermLocation()).as(COLUMNNAME_IncotermLocation).isEqualTo(incotermLocation));
+
+		final StepDefDataIdentifier projectIdentifier = row.getAsIdentifierOrNull(COLUMNNAME_C_Project_ID);
+		if (projectIdentifier != null)
+		{
+			if (projectIdentifier.isNullPlaceholder())
+			{
+				softly.assertThat(order.getC_Project_ID()).as("C_Project_ID for Identifier=%s", identifierStr).isLessThanOrEqualTo(0);
+			}
+			else if (projectTable.isPresent(projectIdentifier))
+			{
+				final I_C_Project project = projectTable.get(projectIdentifier);
+				softly.assertThat(order.getC_Project_ID()).as("C_Project_ID for Identifier=%s", identifierStr).isEqualTo(project.getC_Project_ID());
+			}
+			else if (order.getC_Project_ID() > 0)
+			{
+				final I_C_Project project = projectsRepo.getById(ProjectId.ofRepoId(order.getC_Project_ID()));
+				projectTable.put(projectIdentifier, project);
+			}
+			else
+			{
+				softly.fail("Expected C_Order.C_Project_ID to be set for C_Order_ID=%s", order.getC_Order_ID());
+			}
+		}
 
 		softly.assertAll();
 	}

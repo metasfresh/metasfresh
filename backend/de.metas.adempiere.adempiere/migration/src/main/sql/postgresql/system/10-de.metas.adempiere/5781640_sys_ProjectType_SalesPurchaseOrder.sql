@@ -57,3 +57,6 @@ UPDATE AD_Sequence SET Prefix='O',Updated=TO_TIMESTAMP('2025-12-17 20:46:26.7890
 -- 2025-12-17T20:46:54.180Z
 INSERT INTO C_ProjectType (AD_Client_ID,AD_Org_ID,AD_Sequence_ProjectValue_ID,C_ProjectType_ID,Created,CreatedBy,IsActive,Name,ProjectCategory,Updated,UpdatedBy) VALUES (1000000,1000000,556577,540014,TO_TIMESTAMP('2025-12-17 20:46:54.164000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','Sales/Purchase Order','O',TO_TIMESTAMP('2025-12-17 20:46:54.164000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
+
+UPDATE C_ProjectType SET IsActive='N' WHERE C_ProjectType_ID = 540014
+;

@@ -324,6 +324,13 @@ public class DataTableRow
 						.setParameter("row", map));
 	}
 
+	@Nullable
+	public StepDefDataIdentifier getAsIdentifierOrNull(@NonNull final String columnName)
+	{
+		return getAsOptionalIdentifier(columnName)
+				.orElse(null);
+	}
+
 	@NonNull
 	public Optional<StepDefDataIdentifier> getAsOptionalIdentifier(@NonNull final String columnName)
 	{
