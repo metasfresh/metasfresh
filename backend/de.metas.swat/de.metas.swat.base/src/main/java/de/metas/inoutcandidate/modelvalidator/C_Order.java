@@ -97,6 +97,7 @@ public class C_Order
 					I_C_Order.COLUMNNAME_IsApproved,
 					I_C_Order.COLUMNNAME_QtyOrdered,
 					I_C_Order.COLUMNNAME_QtyInvoiced,
+					I_C_Order.COLUMNNAME_InvoiceDate,
 					I_C_Order.COLUMNNAME_QtyMoved,
 					I_C_Order.COLUMNNAME_GrandTotal,
 					I_C_Order.COLUMNNAME_TotalLines,

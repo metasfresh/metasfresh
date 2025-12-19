@@ -116,7 +116,10 @@ public class C_OrderLine
 					I_C_OrderLine.COLUMNNAME_DatePromised,
 					I_C_OrderLine.COLUMNNAME_QtyOrderedOverUnder,
 					I_C_OrderLine.COLUMNNAME_DateDelivered,
+					I_C_OrderLine.COLUMNNAME_QtyInvoiced,
+					I_C_OrderLine.COLUMNNAME_DateInvoiced,
 					I_C_OrderLine.COLUMNNAME_QtyEnteredInPriceUOM,
+					I_C_OrderLine.COLUMNNAME_IsDeliveryClosed,
 					I_C_OrderLine.COLUMNNAME_PackDescription })
 	public void assertChangeAllowed(@NonNull final I_C_OrderLine orderLine)
 	{
