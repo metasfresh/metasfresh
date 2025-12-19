@@ -2,7 +2,7 @@
  * #%L
  * de.metas.ui.web.base
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,22 +20,19 @@
  * #L%
  */
 
-package de.metas.ui.web.window.descriptor;
+CREATE OR REPLACE FUNCTION ops.update_all_fts_if_active()
+    RETURNS void
+AS
+$$
+BEGIN
+    PERFORM ops.update_c_bpartner_fts_if_active();
+    PERFORM ops.update_c_invoice_fts_if_active();
+    PERFORM ops.update_m_product_fts_if_active();
+END;
+$$
+    LANGUAGE plpgsql
+;
 
-import lombok.Builder;
-import lombok.Value;
-import org.adempiere.ad.element.api.AdTabId;
+COMMENT ON FUNCTION ops.update_all_fts_if_active() IS 'Rebuilds the entire FTS index for all FTS records and enables the triggers. This is a maintenance operation and not intended for frequent use.'
+;
 
-import javax.annotation.Nullable;
-
-@Value
-@Builder
-public class CreateFiltersProviderContext
-{
-	@Nullable AdTabId adTabId;
-
-	@Nullable String tableName;
-
-	@Builder.Default
-	boolean isAutodetectDefaultDateFilter = true;
-}

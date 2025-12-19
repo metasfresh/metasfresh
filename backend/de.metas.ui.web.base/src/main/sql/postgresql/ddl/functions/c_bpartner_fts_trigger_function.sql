@@ -2,7 +2,7 @@
  * #%L
  * de.metas.ui.web.base
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,22 +20,22 @@
  * #L%
  */
 
-package de.metas.ui.web.window.descriptor;
 
-import lombok.Builder;
-import lombok.Value;
-import org.adempiere.ad.element.api.AdTabId;
+CREATE OR REPLACE FUNCTION c_bpartner_fts_trigger_function()
+    RETURNS trigger
+AS
+$$
+BEGIN
+    IF (TG_OP = 'INSERT' OR TG_OP = 'UPDATE') THEN
+        PERFORM ops.reindex_c_bpartner_fts(NEW.c_bpartner_id);
+    END IF;
+    -- The DELETE case is handled automatically by the "ON DELETE CASCADE" constraint.
+    -- CONSTRAINT CBPartner_CBPartnerFTS FOREIGN KEY (C_BPartner_ID) REFERENCES public.C_BPartner ON DELETE CASCADE DEFERRABLE INITIALLY DEFERRED
+    RETURN NULL;
+END;
+$$
+    LANGUAGE plpgsql
+;
 
-import javax.annotation.Nullable;
-
-@Value
-@Builder
-public class CreateFiltersProviderContext
-{
-	@Nullable AdTabId adTabId;
-
-	@Nullable String tableName;
-
-	@Builder.Default
-	boolean isAutodetectDefaultDateFilter = true;
-}
+COMMENT ON FUNCTION c_bpartner_fts_trigger_function() IS 'Refresh the C_BPartner_FTS table when a C_BPartner record is inserted or updated'
+;

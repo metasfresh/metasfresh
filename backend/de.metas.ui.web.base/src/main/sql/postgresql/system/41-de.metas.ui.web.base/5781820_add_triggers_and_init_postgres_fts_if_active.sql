@@ -2,7 +2,7 @@
  * #%L
  * de.metas.ui.web.base
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,22 +20,5 @@
  * #L%
  */
 
-package de.metas.ui.web.window.descriptor;
-
-import lombok.Builder;
-import lombok.Value;
-import org.adempiere.ad.element.api.AdTabId;
-
-import javax.annotation.Nullable;
-
-@Value
-@Builder
-public class CreateFiltersProviderContext
-{
-	@Nullable AdTabId adTabId;
-
-	@Nullable String tableName;
-
-	@Builder.Default
-	boolean isAutodetectDefaultDateFilter = true;
-}
+SELECT ops.update_all_fts_if_active()
+;
