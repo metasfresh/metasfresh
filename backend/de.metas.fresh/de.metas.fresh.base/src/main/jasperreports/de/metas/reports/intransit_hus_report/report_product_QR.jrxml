@@ -16,7 +16,7 @@
 	</parameter>
 	<parameter name="M_Locator_ID" class="java.lang.Integer" evaluationTime="Early"/>
 	<queryString>
-		<![CDATA[ SELECT * 
+		<![CDATA[SELECT * 
     FROM report.InTransit_HUs_report(p_M_Locator_ID=>$P{M_Locator_ID}, p_AD_Language=>$P{ad_language})
 order by order_docno, production_order_no, documentno]]>
 	</queryString>
