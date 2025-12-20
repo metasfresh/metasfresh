@@ -1128,8 +1128,32 @@ jobs:
       - name: push-results
         run: |
           testspace "[cucumber/${{ matrix.profile }}]cucumber/**/*.xml"
-          testspace "[cucumber/${{ matrix.profile }}]cucumber/*.html"                                                                                                                                                       
+          testspace "[cucumber/${{ matrix.profile }}]cucumber/*.html"
           testspace "[cucumber/${{ matrix.profile }}]cucumber.log{$(awk '{ sum += $1 } END { print sum }' cucumber.exit-code cucumber.mvn.exit-code):cucumber tests}"
+      - name: Extract Cucumber Allure results
+        if: always()
+        run: |
+          # Allure results are generated in target/allure-results inside the cucumber container
+          # The compose.yml mounts ./cucumber:/opt/metasfresh/target, so results should be in ./cucumber/allure-results
+          mkdir -p cucumber-allure-results
+          if [ -d "cucumber/allure-results" ]; then
+            cp -r cucumber/allure-results/. cucumber-allure-results/
+            # Create environment.properties to tag this profile
+            echo "executor.profile=${{ matrix.profile }}" >> cucumber-allure-results/environment.properties
+            echo "branch=${{ github.ref_name }}" >> cucumber-allure-results/environment.properties
+            echo "build=${{ needs.init.outputs.tag-fixed }}" >> cucumber-allure-results/environment.properties
+            echo "Allure results extracted from cucumber/allure-results ($(ls cucumber-allure-results | wc -l) files)"
+          else
+            echo "No Allure results found in cucumber/allure-results - this is expected for first run without Allure plugin"
+          fi
+      - name: Upload Cucumber Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cucumber-allure-results-${{ matrix.profile }}
+          path: cucumber-allure-results/
+          if-no-files-found: ignore
+          retention-days: 7
       - name: push-database-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}
         uses: nick-fields/retry@v3
         with:
@@ -1196,6 +1220,52 @@ jobs:
         with:
           name: cucumber-logs-${{ matrix.profile }}
           path: cucumber.log
+          retention-days: 30
+
+  cucumber-allure-report:
+    name: Generate Cucumber Allure Report
+    runs-on: ubuntu-latest
+    needs: [ init, cucumber-run ]
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all Cucumber Allure results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: cucumber-allure-results-*
+          path: all-cucumber-results/
+          merge-multiple: true
+
+      - name: Check if results exist
+        id: check_results
+        run: |
+          if [ -d "all-cucumber-results" ] && [ "$(ls -A all-cucumber-results 2>/dev/null)" ]; then
+            echo "has_results=true" >> $GITHUB_OUTPUT
+            echo "Found Allure results:"
+            ls -la all-cucumber-results/
+          else
+            echo "has_results=false" >> $GITHUB_OUTPUT
+            echo "No Allure results found - skipping report generation"
+          fi
+
+      - name: Setup Allure
+        if: steps.check_results.outputs.has_results == 'true'
+        uses: ./.github/actions/setup-allure
+
+      - name: Generate combined Allure report
+        if: steps.check_results.outputs.has_results == 'true'
+        uses: ./.github/actions/generate-allure-report
+        with:
+          results-dir: all-cucumber-results
+          output-dir: cucumber-allure-report
+
+      - name: Upload combined Cucumber Allure report
+        if: steps.check_results.outputs.has_results == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report-cucumber
+          path: cucumber-allure-report/
           retention-days: 30
 
   health_check:
@@ -1428,7 +1498,7 @@ jobs:
   allure_publish:
     name: Publish Allure Reports to GitHub Pages
     runs-on: ubuntu-latest
-    needs: [ init, frontend_webui_test, mobile_test ]
+    needs: [ init, frontend_webui_test, mobile_test, cucumber-allure-report ]
     if: always()  # Run even if tests failed
     permissions:
       contents: write
@@ -1449,12 +1519,14 @@ jobs:
           # Create directory structure with explicit paths
           mkdir -p "gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/frontend-webui"
           mkdir -p "gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/mobile-webui"
+          mkdir -p "gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/cucumber"
           mkdir -p "gh-pages-repo/_data"
 
           # Debug: Show created paths (absolute)
           echo "Created directory structure:"
           echo "  - $(pwd)/gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/frontend-webui"
           echo "  - $(pwd)/gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/mobile-webui"
+          echo "  - $(pwd)/gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/cucumber"
           echo "  - $(pwd)/gh-pages-repo/_data"
 
           # Verify directories exist
@@ -1488,6 +1560,26 @@ jobs:
           cp -r gh-pages-repo/temp-report-mobile/* "gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/mobile-webui/"
           rm -rf gh-pages-repo/temp-report-mobile
 
+      - name: Download Cucumber Allure report artifact
+        if: needs.cucumber-allure-report.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-report-cucumber
+          path: gh-pages-repo/temp-report-cucumber/
+        continue-on-error: true
+
+      - name: Copy cucumber report to build directory
+        if: needs.cucumber-allure-report.result == 'success'
+        run: |
+          BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
+          if [ -d "gh-pages-repo/temp-report-cucumber" ]; then
+            cp -r gh-pages-repo/temp-report-cucumber/* "gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/cucumber/"
+            rm -rf gh-pages-repo/temp-report-cucumber
+            echo "Cucumber Allure report copied successfully"
+          else
+            echo "No Cucumber Allure report found - skipping"
+          fi
+
       - name: Update latest redirect
         run: |
           BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
@@ -1519,12 +1611,12 @@ jobs:
           fi
 
           # Use compact jq to avoid shell quoting issues with multi-line scripts
-          # Updates reports to include both frontend-webui and mobile-webui with direct build paths
+          # Updates reports to include frontend-webui, mobile-webui, and cucumber with direct build paths
           jq --arg name "${{ github.ref_name }}" \
              --arg sanitized "$BRANCH_SANITIZED" \
              --arg build "${{ needs.init.outputs.tag-fixed }}" \
              --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-             '.branches |= map(if .name == $name then . + {"lastUpdate": $timestamp, "lastBuild": $build, "buildCount": ((.buildCount // 0) + 1), "branch_status": "active", "reports": {"frontend-webui": ("branches/" + $sanitized + "/builds/" + $build + "/frontend-webui/"), "mobile-webui": ("branches/" + $sanitized + "/builds/" + $build + "/mobile-webui/")}} else . end) | if (.branches | map(.name) | index($name)) == null then .branches += [{"name": $name, "sanitized": $sanitized, "lastUpdate": $timestamp, "lastBuild": $build, "reports": {"frontend-webui": ("branches/" + $sanitized + "/builds/" + $build + "/frontend-webui/"), "mobile-webui": ("branches/" + $sanitized + "/builds/" + $build + "/mobile-webui/")}, "buildCount": 1, "branch_status": "active"}] else . end' \
+             '.branches |= map(if .name == $name then . + {"lastUpdate": $timestamp, "lastBuild": $build, "buildCount": ((.buildCount // 0) + 1), "branch_status": "active", "reports": {"frontend-webui": ("branches/" + $sanitized + "/builds/" + $build + "/frontend-webui/"), "mobile-webui": ("branches/" + $sanitized + "/builds/" + $build + "/mobile-webui/"), "cucumber": ("branches/" + $sanitized + "/builds/" + $build + "/cucumber/")}} else . end) | if (.branches | map(.name) | index($name)) == null then .branches += [{"name": $name, "sanitized": $sanitized, "lastUpdate": $timestamp, "lastBuild": $build, "reports": {"frontend-webui": ("branches/" + $sanitized + "/builds/" + $build + "/frontend-webui/"), "mobile-webui": ("branches/" + $sanitized + "/builds/" + $build + "/mobile-webui/"), "cucumber": ("branches/" + $sanitized + "/builds/" + $build + "/cucumber/")}, "buildCount": 1, "branch_status": "active"}] else . end' \
              "$METADATA_FILE" > "${METADATA_FILE}.tmp" && mv "${METADATA_FILE}.tmp" "$METADATA_FILE"
 
       - name: Generate landing page
