@@ -1852,6 +1852,22 @@ jobs:
             sleep 10
           done
 
+      - name: produce-summary
+        run: |
+          BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
+          VERSION="${{ needs.init.outputs.tag-fixed }}"
+          BASE_URL="https://metasfresh.github.io/metasfresh-testreports/branches/${BRANCH_SANITIZED}/builds/${VERSION}"
+
+          echo '#### 📊 Allure Test Reports' >> $GITHUB_STEP_SUMMARY
+          echo '' >> $GITHUB_STEP_SUMMARY
+          echo "| Report | Link |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend WebUI | [${BASE_URL}/frontend-webui/](${BASE_URL}/frontend-webui/) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Mobile WebUI | [${BASE_URL}/mobile-webui/](${BASE_URL}/mobile-webui/) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Cucumber | [${BASE_URL}/cucumber/](${BASE_URL}/cucumber/) |" >> $GITHUB_STEP_SUMMARY
+          echo '' >> $GITHUB_STEP_SUMMARY
+          echo "📁 [All branches](https://metasfresh.github.io/metasfresh-testreports/)" >> $GITHUB_STEP_SUMMARY
+
   cicd-dispatch:
     if: contains(fromJson(vars.CICD_BRANCH_MAP), github.ref_name) == true
     runs-on: ubuntu-latest
