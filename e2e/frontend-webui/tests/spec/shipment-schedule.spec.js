@@ -1,5 +1,7 @@
 import { expect } from '@playwright/test';
 import { test } from '../../playwright.config';
+import { allure } from 'allure-playwright';
+import * as fs from 'fs';
 import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
@@ -10,7 +12,6 @@ import { InvoiceCandidatePage } from '../utils/pages/InvoiceCandidatePage';
 import { InvoicePage } from '../utils/pages/InvoicePage';
 import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
-import { AllureHelpers } from '../../../common/AllureHelpers';
 
 /**
  * Sales Order to Shipment Schedule to Shipment to Invoice E2E test suite.
@@ -58,20 +59,19 @@ testCases.forEach(({ language, label }) => {
             // === ALLURE METADATA ===
             // Feature metadata from google-sheets-sync skill
             // This test covers the complete order-to-cash cycle
-            await AllureHelpers.setFeatures([
-                { id: 'F00100', name: 'Sales Order', epicId: 'E0100', epicName: 'Sales' },
-                { id: 'F00105', name: 'Sales Order Document', epicId: 'E0100', epicName: 'Sales' },
-                { id: 'F00130', name: 'Shipment Schedule', epicId: 'E0100', epicName: 'Sales' },
-                { id: 'F00150', name: 'Sales Shipment', epicId: 'E0100', epicName: 'Sales' },
-                { id: 'F00200', name: 'Sales Invoice', epicId: 'E0100', epicName: 'Sales' }
-            ]);
-            await AllureHelpers.setStory('Complete Order-to-Cash: SO → Shipment → Invoice');
-            await AllureHelpers.setSeverity('critical');
-            await AllureHelpers.addParameter('Language', language);
-            await AllureHelpers.addParameter('UI Label', label);
-            await AllureHelpers.addTags(language);
+            await allure.epic('E0100: Sales');
+            await allure.tag('F00100: Sales Order');
+            await allure.tag('F00105: Sales Order Document');
+            await allure.tag('F00130: Shipment Schedule');
+            await allure.tag('F00150: Sales Shipment');
+            await allure.tag('F00200: Sales Invoice');
+            await allure.story('Complete Order-to-Cash: SO → Shipment → Invoice');
+            await allure.severity('critical');
+            await allure.parameter('Language', language);
+            await allure.parameter('UI Label', label);
+            await allure.tag(language);
 
-            await AllureHelpers.setDescription(`
+            await allure.description(`
 ## Test Scenario
 This test validates the complete order-to-cash workflow:
 
@@ -133,7 +133,7 @@ Ensures the complete order-to-cash flow works correctly across UI languages.
             });
 
             // Attach test data summary to Allure report
-            await AllureHelpers.attachTestData(masterdata);
+            await allure.attachment('Test Data', JSON.stringify(masterdata, null, 2), 'application/json');
 
             console.log(`[${language}] Master data created:`, {
                 customer: masterdata.bpartners.CUSTOMER1.bpartnerCode,
@@ -164,15 +164,8 @@ Ensures the complete order-to-cash flow works correctly across UI languages.
             await SalesOrderPage.addOrderLine(orderLineData);
 
             // Attach order line details as table
-            await AllureHelpers.attachTable('Order Lines',
-                [{
-                    Product: masterdata.products.Product1.productCode,
-                    Quantity: '10',
-                    'Unit Price': '50.00 EUR',
-                    'Line Total': '500.00 EUR'
-                }],
-                ['Product', 'Quantity', 'Unit Price', 'Line Total']
-            );
+            const orderLinesHtml = `<table border="1"><tr><th>Product</th><th>Quantity</th><th>Unit Price</th><th>Line Total</th></tr><tr><td>${masterdata.products.Product1.productCode}</td><td>10</td><td>50.00 EUR</td><td>500.00 EUR</td></tr></table>`;
+            await allure.attachment('Order Lines', orderLinesHtml, 'text/html');
 
             // Step 3: Complete the order
             await SalesOrderPage.complete();
@@ -183,7 +176,7 @@ Ensures the complete order-to-cash flow works correctly across UI languages.
             expect(soDocumentNo.length).toBeGreaterThan(0);
 
             // Add document number as parameter for easy identification
-            await AllureHelpers.addParameter('Document No', soDocumentNo);
+            await allure.parameter('Document No', soDocumentNo);
 
             console.log(`[${language}] Sales Order created: ${soDocumentNo}`);
 
@@ -195,13 +188,8 @@ Ensures the complete order-to-cash flow works correctly across UI languages.
 
             // Attach PDF to Allure report
             const pdfPath = await download.path();
-            await AllureHelpers.attachPdf('Sales Order PDF', pdfPath, {
-                documentNo: soDocumentNo,
-                customer: masterdata.bpartners.CUSTOMER1.bpartnerCode,
-                product: masterdata.products.Product1.productCode,
-                quantity: '10',
-                language: language,
-            });
+            const pdfContent = fs.readFileSync(pdfPath);
+            await allure.attachment('Sales Order PDF', pdfContent, 'application/pdf');
 
             // Validate PDF content
             await SalesOrderPage.validatePdfContent(download, {
@@ -223,7 +211,8 @@ Ensures the complete order-to-cash flow works correctly across UI languages.
             await ShipmentSchedulePage.expectVisible();
 
             // Take screenshot of shipment schedule for report
-            await AllureHelpers.attachScreenshot(page, 'Shipment Schedule View');
+            const screenshotBuffer = await page.screenshot();
+            await allure.attachment('Shipment Schedule View', screenshotBuffer, 'image/png');
 
             console.log(`[${language}] Shipment Schedule opened for SO ${soDocumentNo}`);
 
@@ -370,17 +359,16 @@ Ensures the complete order-to-cash flow works correctly across UI languages.
             // created the invoice, and validated the invoice PDF
             
             // Attach validation summary
-            await AllureHelpers.attachTable('Validation Results',
-                [
-                    { Check: 'Sales Order Created', Status: '✓ PASS', Value: soDocumentNo },
-                    { Check: 'PDF Generated', Status: '✓ PASS', Value: download.suggestedFilename() },
-                    { Check: 'Shipment Created', Status: '✓ PASS', Value: 'Yes' },
-                    { Check: 'Shipment-PDF Generated', Status: '✓ PASS', Value: shipmentDownload.suggestedFilename() },
-                    { Check: 'Invoice Created', Status: '✓ PASS', Value: 'Yes' },
-                    { Check: 'Invoice-PDF Generated', Status: '✓ PASS', Value: invoiceDownload.suggestedFilename() }
-                ],
-                ['Check', 'Status', 'Value']
-            );
+            const validationHtml = `<table border="1">
+                <tr><th>Check</th><th>Status</th><th>Value</th></tr>
+                <tr><td>Sales Order Created</td><td>✓ PASS</td><td>${soDocumentNo}</td></tr>
+                <tr><td>PDF Generated</td><td>✓ PASS</td><td>${download.suggestedFilename()}</td></tr>
+                <tr><td>Shipment Created</td><td>✓ PASS</td><td>Yes</td></tr>
+                <tr><td>Shipment-PDF Generated</td><td>✓ PASS</td><td>${shipmentDownload.suggestedFilename()}</td></tr>
+                <tr><td>Invoice Created</td><td>✓ PASS</td><td>Yes</td></tr>
+                <tr><td>Invoice-PDF Generated</td><td>✓ PASS</td><td>${invoiceDownload.suggestedFilename()}</td></tr>
+            </table>`;
+            await allure.attachment('Validation Results', validationHtml, 'text/html');
         });
     });
 });

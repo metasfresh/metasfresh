@@ -1,8 +1,8 @@
 import { test } from '../../playwright.config';
+import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
-import { AllureHelpers } from '../../../common/AllureHelpers';
 
 /**
  * Login/Logout test suite for metasfresh web UI.
@@ -16,16 +16,12 @@ test.describe('Login/Logout', () => {
   ['en_US', 'de_DE'].forEach((language) => {
     test(`Login with ${language} language`, async ({ page }) => {
       // === ALLURE METADATA ===
-      await AllureHelpers.setFeature({
-        id: 'F14000',
-        name: 'Username and Password Auth',
-        epicId: 'E0193',
-        epicName: 'System Authentication'
-      });
-      await AllureHelpers.setStory('Login with language selection');
-      await AllureHelpers.setSeverity('critical');
-      await AllureHelpers.addParameter('Language', language);
-      await AllureHelpers.addTags(language);
+      await allure.epic('E0193: System Authentication');
+      await allure.tag('F14000: Username and Password Auth');
+      await allure.story('Login with language selection');
+      await allure.severity('critical');
+      await allure.parameter('Language', language);
+      await allure.tag(language);
 
       // Create test user via backend API
       const response = await Backend.createMasterdata({

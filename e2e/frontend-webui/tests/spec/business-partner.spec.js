@@ -1,10 +1,10 @@
 import { expect } from '@playwright/test';
 import { test } from '../../playwright.config';
+import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { MasterWindowPage } from '../utils/pages/MasterWindowPage';
-import { AllureHelpers } from '../../../common/AllureHelpers';
 
 // Business Partner window ID in metasfresh
 const BUSINESS_PARTNER_WINDOW_ID = 123;
@@ -19,14 +19,10 @@ const BUSINESS_PARTNER_WINDOW_ID = 123;
 test.describe('Business Partner Window', () => {
   test('View Business Partner window', async ({ page }) => {
     // === ALLURE METADATA ===
-    await AllureHelpers.setFeature({
-      id: 'F00900',
-      name: 'Business Partner',
-      epicId: 'E0390',
-      epicName: 'Masterdata Partner'
-    });
-    await AllureHelpers.setStory('View business partner list');
-    await AllureHelpers.setSeverity('normal');
+    await allure.epic('E0390: Masterdata Partner');
+    await allure.tag('F00900: Business Partner');
+    await allure.story('View business partner list');
+    await allure.severity('normal');
 
     // Create test data: user and business partners
     const masterdata = await Backend.createMasterdata({
@@ -60,14 +56,10 @@ test.describe('Business Partner Window', () => {
 
   test('Open Business Partner detail view', async ({ page }) => {
     // === ALLURE METADATA ===
-    await AllureHelpers.setFeature({
-      id: 'F00900',
-      name: 'Business Partner',
-      epicId: 'E0390',
-      epicName: 'Masterdata Partner'
-    });
-    await AllureHelpers.setStory('Open business partner detail view');
-    await AllureHelpers.setSeverity('normal');
+    await allure.epic('E0390: Masterdata Partner');
+    await allure.tag('F00900: Business Partner');
+    await allure.story('Open business partner detail view');
+    await allure.severity('normal');
 
     // Create test data: user and a business partner
     const masterdata = await Backend.createMasterdata({
