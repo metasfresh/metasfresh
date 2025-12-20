@@ -79,3 +79,4 @@ misc/services/camel/de-metas-camel-shipping/tmp/
 
 # dev-mode artifacts extracted from CI images
 .dev-artifacts/
+/mcp-scripts/**/*

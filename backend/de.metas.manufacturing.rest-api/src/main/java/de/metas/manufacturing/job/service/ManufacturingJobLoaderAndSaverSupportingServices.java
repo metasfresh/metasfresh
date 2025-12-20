@@ -26,14 +26,16 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
-import lombok.Builder;
+import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.qrcode.LocatorQRCode;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPOrderBOMLineId;
@@ -41,32 +43,47 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRouting;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
+import org.springframework.stereotype.Service;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
-@Builder
+@Service
+@RequiredArgsConstructor
 public class ManufacturingJobLoaderAndSaverSupportingServices
 {
-	@NonNull IOrgDAO orgDAO;
-	@NonNull IWarehouseBL warehouseBL;
-	@NonNull IProductBL productBL;
-	@NonNull IAttributeSetInstanceBL asiBL;
-	@NonNull IHUPPOrderBL ppOrderBL;
-	@NonNull IPPOrderBOMBL ppOrderBOMBL;
-	@NonNull final IHandlingUnitsBL handlingUnitsBL;
-	@NonNull IPPOrderRoutingRepository ppOrderRoutingRepository;
-	@NonNull PPOrderIssueScheduleService ppOrderIssueScheduleService;
-	@NonNull HUQRCodesService huQRCodeService;
-	@NonNull PPOrderSourceHUService sourceHUService;
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
+	@NonNull private final IHUPPOrderBL ppOrderBL = Services.get(IHUPPOrderBL.class);
+	@NonNull private final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IPPOrderRoutingRepository ppOrderRoutingRepository = Services.get(IPPOrderRoutingRepository.class);
+	@NonNull private final PPOrderIssueScheduleService ppOrderIssueScheduleService;
+	@NonNull private final HUQRCodesService huQRCodeService;
+	@NonNull private final PPOrderSourceHUService sourceHUService;
+
+	public static ManufacturingJobLoaderAndSaverSupportingServices newInstanceForUnitTesting()
+	{
+		SpringContextHolder.assertUnitTestMode();
+		return SpringContextHolder.getBeanOrSupply(
+				ManufacturingJobLoaderAndSaverSupportingServices.class,
+				() -> new ManufacturingJobLoaderAndSaverSupportingServices(
+						PPOrderIssueScheduleService.newInstanceForUnitTesting(),
+						HUQRCodesService.newInstanceForUnitTesting(),
+						PPOrderSourceHUService.newInstanceForUnitTesting()
+				)
+		);
+	}
 
 	public ZoneId getTimeZone(final OrgId orgId) {return orgDAO.getTimeZone(orgId);}
 
 	public String getLocatorName(@NonNull final LocatorId locatorId) {return warehouseBL.getLocatorNameById(locatorId);}
 
 	public ITranslatableString getProductName(@NonNull final ProductId productId) {return productBL.getProductNameTrl(productId);}
-	
+
 	@NonNull
 	public String getProductValue(@NonNull final ProductId productId) {return productBL.getProductValue(productId);}
 
@@ -76,7 +93,7 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 
 	public void saveOrderRouting(@NonNull final PPOrderRouting routing) {ppOrderRoutingRepository.save(routing);}
 
-	public ImmutableList<I_PP_Order_BOMLine> getOrderBOMLines(@NonNull final PPOrderId ppOrderId) {return ImmutableList.copyOf(ppOrderBOMBL.retrieveOrderBOMLines(ppOrderId, I_PP_Order_BOMLine.class));}
+	public ImmutableList<I_PP_Order_BOMLine> getOrderBOMLines(@NonNull final PPOrderId ppOrderId) {return ImmutableList.copyOf(ppOrderBOMBL.getOrderBOMLines(ppOrderId));}
 
 	@NonNull
 	public ZonedDateTime getDateStartSchedule(@NonNull final I_PP_Order ppOrder)
@@ -96,11 +113,6 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 	public ImmutableAttributeSet getImmutableAttributeSet(final AttributeSetInstanceId asiId)
 	{
 		return asiBL.getImmutableAttributeSetById(asiId);
-	}
-
-	public HUQRCode getQRCodeByHuId(@NonNull final HuId huId)
-	{
-		return huQRCodeService.getQRCodeByHuId(huId);
 	}
 
 	public Optional<HuId> getHuIdByQRCodeIfExists(@NonNull final HUQRCode qrCode)
@@ -143,9 +155,9 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 							.id(locatorId)
 							.caption(caption)
 							.qrCode(LocatorQRCode.builder()
-											.locatorId(locatorId)
-											.caption(caption)
-											.build())
+									.locatorId(locatorId)
+									.caption(caption)
+									.build())
 							.build();
 				})
 				.collect(ImmutableList.toImmutableList());

@@ -29,7 +29,7 @@ CREATE OR REPLACE FUNCTION shipment_dynamics_json(p_m_inout_id text)
                 "orgCode"            text,
                 "deliveryNoteNumber" text,
                 "poReference"        text,
-
+                "orderNumber"        text,
                 "dateShip"           date,
                 "partnerIdentifier"  text,
                 "partnerValue"       text,
@@ -48,9 +48,9 @@ WITH dynamics_system AS (SELECT externalsystem_id
                                COALESCE(
                                        JSONB_AGG(
                                                JSONB_BUILD_OBJECT('serialNumber', COALESCE(attribute.value, 'NA'))
-                                           ),
+                                       ),
                                        '[]'::jsonb
-                                   ) AS json_data
+                               ) AS json_data
                         FROM m_hu_assignment assignment
                                  INNER JOIN m_hu hu ON assignment.m_hu_id = hu.m_hu_id
                                  INNER JOIN m_hu_attribute attribute ON attribute.m_hu_id = hu.m_hu_id
@@ -66,15 +66,20 @@ WITH dynamics_system AS (SELECT externalsystem_id
                                COALESCE(
                                        JSONB_AGG(
                                                JSONB_BUILD_OBJECT(
+                                                       'externalLineId', line.externalid,
                                                        'poLineId', COALESCE(line.c_orderline_id, line.m_inoutline_id),
                                                        'productIdentifier', product.value,
                                                        'uom', ouom.x12de355,
                                                        'qty', line.qtyentered,
-                                                       'shippingItems', COALESCE(items.json_data, '[ { "serialNumber": "NA"} ]'::jsonb)
-                                                   ) ORDER BY line.line
-                                           ),
+                                                       'shippingItems', COALESCE(items.json_data, '[
+                                                 {
+                                                   "serialNumber": "NA"
+                                                 }
+                                               ]'::jsonb)
+                                               ) ORDER BY line.line
+                                       ),
                                        '[]'::jsonb
-                                   ) AS json_data
+                               ) AS json_data
                         FROM m_inoutline line
                                  INNER JOIN m_product product ON product.m_product_id = line.m_product_id
                                  INNER JOIN c_uom ouom ON ouom.c_uom_id = line.c_uom_id
@@ -84,6 +89,7 @@ WITH dynamics_system AS (SELECT externalsystem_id
 SELECT org.value,
        shipment.documentno,
        shipment.poreference,
+       shipment.externalid,
        shipment.movementdate::date,
        COALESCE(ext_ref.externalreference, partner.c_bpartner_id::text),
        partner.value,

@@ -127,13 +127,14 @@ public class HUReservationService
 		//
 		// Separate the VHUs that we are going to reserve
 		final List<I_M_HU> newCUs = huTransformServiceSupplier.get().husToNewCUs(
-				HUsToNewCUsRequest.builder()
-						.sourceHUs(handlingUnitsBL.getByIds(reservationRequest.getHuIds()))
-						.qtyCU(reservationRequest.getQtyToReserve())
-						.reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
-						.keepNewCUsUnderSameParent(true)
-						.productId(reservationRequest.getProductId())
-						.build());
+						HUsToNewCUsRequest.builder()
+								.sourceHUs(handlingUnitsBL.getByIds(reservationRequest.getHuIds()))
+								.qtyCU(reservationRequest.getQtyToReserve())
+								.reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
+								.keepNewCUsUnderSameParent(true)
+								.productId(reservationRequest.getProductId())
+								.build())
+				.getNewCUs();
 		if (newCUs.isEmpty())
 		{
 			return Optional.empty();
@@ -168,7 +169,7 @@ public class HUReservationService
 						.setParameter("request", reservationRequest));
 		if (reservationRequest.getQtyToReserve().compareTo(qtyReserved) != 0)
 		{
-			throw new AdempiereException(RESERVED_ERROR_MSG) 
+			throw new AdempiereException(RESERVED_ERROR_MSG)
 					.appendParametersToMessage()
 					.setParameter("reservationRequest", reservationRequest)
 					.setParameter("reservations", repoRequests);

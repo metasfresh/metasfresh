@@ -144,7 +144,7 @@ public class PurchaseCandidateAdvisedEventCreator implements SupplyRequiredAdvis
 		{
 			return null;
 		}
-		return PurchaseCandidateId.ofRepoId(purchaseDetail.getPurchaseCandidateRepoId());
+		return PurchaseCandidateId.ofRepoIdOrNull(purchaseDetail.getPurchaseCandidateRepoId());
 	}
 
 	private Quantity doDecreaseQty(final PurchaseCandidate candidate, final Quantity remainingQtyToDistribute)

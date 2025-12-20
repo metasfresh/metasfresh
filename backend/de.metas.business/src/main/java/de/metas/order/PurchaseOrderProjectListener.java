@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.manufacturing.rest-api
+ * de.metas.business
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,20 +20,36 @@
  * #L%
  */
 
-package de.metas.manufacturing.job.service.commands;
+package de.metas.order;
 
-import de.metas.manufacturing.job.model.ReceivingTarget;
-import de.metas.quantity.Quantity;
+import de.metas.project.ProjectId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
-import javax.annotation.Nullable;
+import java.util.Set;
 
-@Value
-@Builder
-public class ReceiveGoodsResult
+/**
+ * Represents a functional interface for performing necessary propagation of a project ID from a collection of purchase order line IDs.
+ * <p>
+ * Its main usage is to ensure a project that is set to a purchase order line is propagated to any corresponding records.
+ */
+@FunctionalInterface
+public interface PurchaseOrderProjectListener
 {
-	@Nullable ReceivingTarget receivingTarget;
-	@NonNull Quantity totalQtyReceived;
+	void onCreated(@NonNull ProjectCreatedEvent event);
+
+	//
+	//
+	//
+
+	@Value
+	@Builder
+	@Jacksonized
+	class ProjectCreatedEvent
+	{
+		@NonNull ProjectId projectId;
+		@NonNull Set<OrderAndLineId> purchaseOrderLineIds;
+	}
 }

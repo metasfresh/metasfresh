@@ -20,32 +20,20 @@
  * #L%
  */
 
-package de.metas.manufacturing.job.service.commands;
+package de.metas.manufacturing.job.service.commands.receive;
 
+import de.metas.manufacturing.job.model.ReceivingTarget;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.eevolution.api.PPOrderBOMLineId;
-import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
 
 @Value
 @Builder
-public class ReceiveGoodsRequest
+public class ReceiveGoodsResult
 {
-	@NonNull PPOrderId ppOrderId;
-	@NonNull SelectedReceivingTarget receivingTarget;
-	@NonNull BigDecimal qtyToReceiveBD;
-	@NonNull ZonedDateTime date;
-	@Nullable LocalDate bestBeforeDate;
-	@Nullable LocalDate productionDate;
-	@Nullable String lotNo;
-	@Nullable Quantity catchWeight;
-	@Nullable String barcode;
-	@Nullable PPOrderBOMLineId coProductBOMLineId;
+	@Nullable ReceivingTarget receivingTarget;
+	@NonNull Quantity totalQtyReceived;
 }
