@@ -270,6 +270,8 @@ public final class Document
 				}
 				setDynAttributeNoCheck("IsApproved", false); // cover the case for FieldName=IsApproved, DefaultValue=@IsApproved@
 			}
+
+			setDynAttributesNoCheck(builder.dynAttributes);
 		}
 
 		//
@@ -1746,6 +1748,20 @@ public final class Document
 		return valueOld;
 	}
 
+	private void setDynAttributesNoCheck(@Nullable final HashMap<String, Object> dynAttributes)
+	{
+		if (dynAttributes == null || dynAttributes.isEmpty())
+		{
+			return;
+		}
+
+		if (_dynAttributes == null)
+		{
+			_dynAttributes = new HashMap<>();
+		}
+		_dynAttributes.putAll(dynAttributes);
+	}
+
 	/**
 	 * Get Dynamic Attribute
 	 *
@@ -2265,6 +2281,7 @@ public final class Document
 		private Integer _windowNo;
 		private static final AtomicInteger _nextWindowNo = new AtomicInteger(1);
 		private IDocumentEvaluatee shadowParentDocumentEvaluatee;
+		@Nullable private HashMap<String, Object> dynAttributes = null; // lazy
 
 		private IDocumentChangesCollector changesCollector = NullDocumentChangesCollector.instance;
 
@@ -2283,8 +2300,7 @@ public final class Document
 			}
 
 			final DocumentEntityDescriptor entityDescriptor = getEntityDescriptor();
-			final ITabCallout documentCallout = entityDescriptor.createAndInitializeDocumentCallout(document.asCalloutRecord());
-			document.documentCallout = documentCallout;
+			document.documentCallout = entityDescriptor.createAndInitializeDocumentCallout(document.asCalloutRecord());
 
 			//
 			// Initialize document fields
@@ -2337,6 +2353,19 @@ public final class Document
 		public Builder setShadowParentDocumentEvaluatee(@Nullable final IDocumentEvaluatee shadowParentDocumentEvaluatee)
 		{
 			this.shadowParentDocumentEvaluatee = shadowParentDocumentEvaluatee;
+			return this;
+		}
+
+		public Builder dynAttribute(@NonNull final String name, @Nullable final Object value)
+		{
+			Check.assumeNotEmpty(name, "name not empty");
+
+			if (dynAttributes == null)
+			{
+				dynAttributes = new HashMap<>();
+			}
+			dynAttributes.put(name, value);
+
 			return this;
 		}
 
