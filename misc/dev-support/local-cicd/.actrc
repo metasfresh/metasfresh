@@ -1,5 +1,8 @@
 # act configuration for running CI/CD locally
 # See: https://nektosact.com/usage/index.html
+#
+# Note: On Windows, run-cicd.ps1 overrides artifact-server-path to %TEMP%\act-artifacts
+#       This file is primarily used by Linux/macOS users running act directly
 
 # Use larger Ubuntu image with more tools pre-installed
 -P ubuntu-latest=ghcr.io/catthehacker/ubuntu:full-latest
