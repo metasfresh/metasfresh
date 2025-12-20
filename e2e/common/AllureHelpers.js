@@ -41,6 +41,38 @@ const { ContentType } = require('allure-js-commons');
 // Define it as a custom constant
 const PDF_CONTENT_TYPE = 'application/pdf';
 
+// Track whether runtime has been initialized
+let runtimeInitialized = false;
+
+/**
+ * Ensure the Allure runtime is initialized for Playwright integration.
+ * This must be called from within a test context where test.info() is available.
+ * The function is idempotent - it only initializes once per test session.
+ */
+const ensureRuntimeInitialized = () => {
+  if (runtimeInitialized) {
+    return;
+  }
+
+  try {
+    // Import Playwright test to check if we're in a test context
+    const { test } = require('@playwright/test');
+    const testInfo = test.info();
+
+    if (testInfo) {
+      // We're inside a test - set up the Allure runtime
+      const { setGlobalTestRuntime } = require('allure-js-commons/sdk/runtime');
+      const { AllurePlaywrightTestRuntime } = require('allure-playwright/dist/cjs/runtime');
+
+      setGlobalTestRuntime(new AllurePlaywrightTestRuntime());
+      runtimeInitialized = true;
+    }
+  } catch (e) {
+    // Not in test context or missing dependencies - ignore
+    console.warn('AllureHelpers: Could not initialize Allure runtime:', e.message);
+  }
+};
+
 /**
  * Allure integration helpers for metasfresh E2E tests.
  */
@@ -73,6 +105,8 @@ const AllureHelpers = {
    *   await AllureHelpers.setFeature('F00100');
    */
   async setFeature(featureOrId) {
+    ensureRuntimeInitialized();
+
     // Handle legacy string usage
     if (typeof featureOrId === 'string') {
       console.warn(`setFeature('${featureOrId}'): Pass feature object for full metadata`);
@@ -82,13 +116,15 @@ const AllureHelpers = {
 
     const { id, name, epicId, epicName } = featureOrId;
 
-    // Set epic if provided
+    // Set epic if provided (in Allure hierarchy)
     if (epicId && epicName) {
       await allure.epic(`${epicId}: ${epicName}`);
     }
 
-    // Add feature as tag (instead of hierarchy)
-    await allure.tags(`${id}: ${name}`);
+    // Set feature in Allure hierarchy (not just as tag)
+    if (id && name) {
+      await allure.feature(`${id}: ${name}`);
+    }
   },
 
   /**
@@ -106,6 +142,8 @@ const AllureHelpers = {
    *   // This will set 2 epics in hierarchy and add 2 feature tags
    */
   async setFeatures(features) {
+    ensureRuntimeInitialized();
+
     // Collect unique epics to avoid duplicates
     const uniqueEpics = new Map();
 
@@ -124,10 +162,10 @@ const AllureHelpers = {
       await allure.epic(epicKey);
     }
 
-    // Add all features as tags
+    // Add all features in hierarchy
     for (const feature of features) {
       const { id, name } = feature;
-      await allure.tags(`${id}: ${name}`);
+      await allure.feature(`${id}: ${name}`);
     }
   },
 
@@ -145,6 +183,8 @@ const AllureHelpers = {
    *   await AllureHelpers.setEpic('Sales');
    */
   async setEpic(epicOrName) {
+    ensureRuntimeInitialized();
+
     // Handle legacy string usage
     if (typeof epicOrName === 'string') {
       await allure.epic(epicOrName);
@@ -163,6 +203,7 @@ const AllureHelpers = {
    *   await AllureHelpers.setStory('Create sales order with batch entry');
    */
   async setStory(storyName) {
+    ensureRuntimeInitialized();
     await allure.story(storyName);
   },
 
@@ -175,6 +216,7 @@ const AllureHelpers = {
    *   await AllureHelpers.linkIssue('1234', 'Batch entry timing issue');
    */
   async linkIssue(issueNumber, description = '') {
+    ensureRuntimeInitialized();
     const url = `https://github.com/metasfresh/metasfresh/issues/${issueNumber}`;
     await allure.issue(url, description || `Issue #${issueNumber}`);
   },
@@ -192,6 +234,7 @@ const AllureHelpers = {
    *   );
    */
   async attachTable(name, data, columns) {
+    ensureRuntimeInitialized();
     const html = this._generateTableHtml(data, columns);
     await allure.attachment(name, html, ContentType.HTML);
   },
@@ -207,6 +250,8 @@ const AllureHelpers = {
    *   await AllureHelpers.attachPdf('Sales Order PDF', pdfBuffer, { documentNo: 'SO-001' });
    */
   async attachPdf(name, content, metadata = {}) {
+    ensureRuntimeInitialized();
+
     // If content is a path, read the file
     let pdfBuffer = content;
     if (typeof content === 'string') {
@@ -235,6 +280,7 @@ const AllureHelpers = {
    *   await AllureHelpers.attachScreenshot(page, 'Shipment Schedule View');
    */
   async attachScreenshot(page, name) {
+    ensureRuntimeInitialized();
     const screenshot = await page.screenshot();
     await allure.attachment(name, screenshot, ContentType.PNG);
   },
@@ -249,6 +295,7 @@ const AllureHelpers = {
    *   await AllureHelpers.addParameter('Document No', 'SO-001');
    */
   async addParameter(name, value) {
+    ensureRuntimeInitialized();
     await allure.parameter(name, String(value));
   },
 
@@ -260,6 +307,7 @@ const AllureHelpers = {
    *   await AllureHelpers.setSeverity('critical');
    */
   async setSeverity(severity) {
+    ensureRuntimeInitialized();
     await allure.severity(severity);
   },
 
@@ -274,6 +322,7 @@ const AllureHelpers = {
    *   `);
    */
   async setDescription(description) {
+    ensureRuntimeInitialized();
     await allure.description(description);
   },
 
@@ -283,6 +332,7 @@ const AllureHelpers = {
    * @param {string} html - HTML description
    */
   async setDescriptionHtml(html) {
+    ensureRuntimeInitialized();
     await allure.descriptionHtml(html);
   },
 
@@ -293,6 +343,7 @@ const AllureHelpers = {
    * @param {string} value - Label value
    */
   async addLabel(name, value) {
+    ensureRuntimeInitialized();
     await allure.label(name, value);
   },
 
@@ -304,6 +355,7 @@ const AllureHelpers = {
    *   await AllureHelpers.addTags('smoke', 'sales', 'pdf');
    */
   async addTags(...tags) {
+    ensureRuntimeInitialized();
     await allure.tags(...tags);
   },
 
@@ -316,6 +368,7 @@ const AllureHelpers = {
    *   await AllureHelpers.attachTestData(masterdata);
    */
   async attachTestData(masterdata) {
+    ensureRuntimeInitialized();
     const summary = [];
 
     // User info
