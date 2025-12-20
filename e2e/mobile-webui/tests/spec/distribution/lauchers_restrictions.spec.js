@@ -1,6 +1,6 @@
 import { test } from "../../../playwright.config";
 import { Backend } from "../../utils/screens/Backend";
-import { AllureHelpers } from '../../../../common/AllureHelpers';
+import { allure } from 'allure-playwright';
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { DistributionJobsListScreen } from "../../utils/screens/distribution/DistributionJobsListScreen";
@@ -47,14 +47,10 @@ const createMasterdata = async ({ maxLaunchers, maxStartedLaunchers, allowStartN
 // noinspection JSUnusedLocalSymbols
 test('No restrictions', async ({ page }) => {
     // === ALLURE METADATA ===
-    await AllureHelpers.setFeature({
-        id: 'F5114',
-        name: 'MobileUI Distribution',
-        epicId: 'E0370',
-        epicName: 'Intralogistic (HUs)'
-    });
-    await AllureHelpers.setStory('Launcher restrictions');
-    await AllureHelpers.setSeverity('normal');
+    await allure.epic('E0370: Intralogistic (HUs)');
+    await allure.tag('F5114: MobileUI Distribution');
+    await allure.story('Launcher restrictions');
+    await allure.severity('normal');
 
     const masterdata = await createMasterdata({
         maxLaunchers: 20,
@@ -81,14 +77,10 @@ test('No restrictions', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Allow starting next job only', async ({ page }) => {
     // === ALLURE METADATA ===
-    await AllureHelpers.setFeature({
-        id: 'F5114',
-        name: 'MobileUI Distribution',
-        epicId: 'E0370',
-        epicName: 'Intralogistic (HUs)'
-    });
-    await AllureHelpers.setStory('Launcher restrictions');
-    await AllureHelpers.setSeverity('normal');
+    await allure.epic('E0370: Intralogistic (HUs)');
+    await allure.tag('F5114: MobileUI Distribution');
+    await allure.story('Launcher restrictions');
+    await allure.severity('normal');
 
     const masterdata = await createMasterdata({
         maxLaunchers: 20,

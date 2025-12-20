@@ -1,5 +1,5 @@
 import { test } from "../../../playwright.config";
-import { AllureHelpers } from '../../../../common/AllureHelpers';
+import { allure } from 'allure-playwright';
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
 import { PickingJobLineScreen } from "../../utils/screens/picking/PickingJobLineScreen";
@@ -63,14 +63,10 @@ const createMasterdata = async ({
 // noinspection JSUnusedLocalSymbols
 test('Simple picking test', async ({ page }) => {
     // === ALLURE METADATA ===
-    await AllureHelpers.setFeature({
-        id: 'F00230',
-        name: 'MobileUI Picking',
-        epicId: 'E0105',
-        epicName: 'Picking'
-    });
-    await AllureHelpers.setStory('Simple picking workflow');
-    await AllureHelpers.setSeverity('critical');
+    await allure.epic('E0105: Picking');
+    await allure.tag('F00230: MobileUI Picking');
+    await allure.story('Simple picking workflow');
+    await allure.severity('critical');
 
     const masterdata = await createMasterdata();
 
@@ -140,14 +136,10 @@ test('Simple picking test', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Pick - unpick', async ({ page }) => {
     // === ALLURE METADATA ===
-    await AllureHelpers.setFeature({
-        id: 'F00230',
-        name: 'MobileUI Picking',
-        epicId: 'E0105',
-        epicName: 'Picking'
-    });
-    await AllureHelpers.setStory('Picking pick and unpick');
-    await AllureHelpers.setSeverity('normal');
+    await allure.epic('E0105: Picking');
+    await allure.tag('F00230: MobileUI Picking');
+    await allure.story('Picking pick and unpick');
+    await allure.severity('normal');
 
     const masterdata = await createMasterdata();
 
@@ -223,14 +215,10 @@ test('Pick - unpick', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Scan invalid picking slot QR code', async ({ page }) => {
     // === ALLURE METADATA ===
-    await AllureHelpers.setFeature({
-        id: 'F00230',
-        name: 'MobileUI Picking',
-        epicId: 'E0105',
-        epicName: 'Picking'
-    });
-    await AllureHelpers.setStory('Picking error handling');
-    await AllureHelpers.setSeverity('normal');
+    await allure.epic('E0105: Picking');
+    await allure.tag('F00230: MobileUI Picking');
+    await allure.story('Picking error handling');
+    await allure.severity('normal');
 
     const masterdata = await createMasterdata();
 
@@ -249,14 +237,10 @@ test('Scan invalid picking slot QR code', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Test picking line complete status - draft | in progress | complete', async ({ page }) => {
     // === ALLURE METADATA ===
-    await AllureHelpers.setFeature({
-        id: 'F00230',
-        name: 'MobileUI Picking',
-        epicId: 'E0105',
-        epicName: 'Picking'
-    });
-    await AllureHelpers.setStory('Picking line status tracking');
-    await AllureHelpers.setSeverity('normal');
+    await allure.epic('E0105: Picking');
+    await allure.tag('F00230: MobileUI Picking');
+    await allure.story('Picking line status tracking');
+    await allure.severity('normal');
 
     const masterdata = await createMasterdata();
 
@@ -297,14 +281,10 @@ test.describe('Picking Job Completion', () => {
     // noinspection JSUnusedLocalSymbols
     test("Should fail when partial picking and allowCompletingPartialPickingJob = N", async ({ page }) => {
         // === ALLURE METADATA ===
-        await AllureHelpers.setFeature({
-            id: 'F00230',
-            name: 'MobileUI Picking',
-            epicId: 'E0105',
-            epicName: 'Picking'
-        });
-        await AllureHelpers.setStory('Picking job completion');
-        await AllureHelpers.setSeverity('normal');
+        await allure.epic('E0105: Picking');
+        await allure.tag('F00230: MobileUI Picking');
+        await allure.story('Picking job completion');
+        await allure.severity('normal');
 
         const masterdata = await createMasterdata({ allowCompletingPartialPickingJob: false });
 
@@ -342,14 +322,10 @@ test.describe('Picking Job Completion', () => {
     // noinspection JSUnusedLocalSymbols
     test("Should succeed when partial picking and allowCompletingPartialPickingJob = Y", async ({ page }) => {
         // === ALLURE METADATA ===
-        await AllureHelpers.setFeature({
-            id: 'F00230',
-            name: 'MobileUI Picking',
-            epicId: 'E0105',
-            epicName: 'Picking'
-        });
-        await AllureHelpers.setStory('Picking job completion');
-        await AllureHelpers.setSeverity('normal');
+        await allure.epic('E0105: Picking');
+        await allure.tag('F00230: MobileUI Picking');
+        await allure.story('Picking job completion');
+        await allure.severity('normal');
 
         const masterdata = await createMasterdata({ allowCompletingPartialPickingJob: true });
 
@@ -375,14 +351,10 @@ test.describe('Picking Job Completion', () => {
 // noinspection JSUnusedLocalSymbols
 test('Ship on close LU', async ({ page }) => {
     // === ALLURE METADATA ===
-    await AllureHelpers.setFeature({
-        id: 'F00230',
-        name: 'MobileUI Picking',
-        epicId: 'E0105',
-        epicName: 'Picking'
-    });
-    await AllureHelpers.setStory('Ship on close LU');
-    await AllureHelpers.setSeverity('normal');
+    await allure.epic('E0105: Picking');
+    await allure.tag('F00230: MobileUI Picking');
+    await allure.story('Ship on close LU');
+    await allure.severity('normal');
 
     const masterdata = await createMasterdata({ shipOnCloseLU: true });
 
@@ -440,14 +412,10 @@ test('Ship on close LU', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Close LU / Reopen LU', async ({ page }) => {
     // === ALLURE METADATA ===
-    await AllureHelpers.setFeature({
-        id: 'F00230',
-        name: 'MobileUI Picking',
-        epicId: 'E0105',
-        epicName: 'Picking'
-    });
-    await AllureHelpers.setStory('Close and reopen LU');
-    await AllureHelpers.setSeverity('normal');
+    await allure.epic('E0105: Picking');
+    await allure.tag('F00230: MobileUI Picking');
+    await allure.story('Close and reopen LU');
+    await allure.severity('normal');
 
     const masterdata = await createMasterdata({ language: 'de_DE' });
 
@@ -470,14 +438,10 @@ test('Close LU / Reopen LU', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Check launcher already started indicator', async ({ page }) => {
     // === ALLURE METADATA ===
-    await AllureHelpers.setFeature({
-        id: 'F00230',
-        name: 'MobileUI Picking',
-        epicId: 'E0105',
-        epicName: 'Picking'
-    });
-    await AllureHelpers.setStory('Launcher started indicator');
-    await AllureHelpers.setSeverity('normal');
+    await allure.epic('E0105: Picking');
+    await allure.tag('F00230: MobileUI Picking');
+    await allure.story('Launcher started indicator');
+    await allure.severity('normal');
 
     const masterdata = await createMasterdata();
 

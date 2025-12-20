@@ -1,6 +1,6 @@
 import { test } from "../../../playwright.config";
 import { Backend } from "../../utils/screens/Backend";
-import { AllureHelpers } from '../../../../common/AllureHelpers';
+import { allure } from 'allure-playwright';
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { DistributionJobsListScreen } from "../../utils/screens/distribution/DistributionJobsListScreen";
@@ -62,14 +62,10 @@ test.describe('Scan directly in job screen, expect scanning the product code too
     // noinspection JSUnusedLocalSymbols
     test('Scan the HU by QRCode', async ({ page }) => {
         // === ALLURE METADATA ===
-        await AllureHelpers.setFeature({
-            id: 'F5114.3',
-            name: 'MobileUI Distribution: GTIN Scan',
-            epicId: 'E0370',
-            epicName: 'Intralogistic (HUs)'
-        });
-        await AllureHelpers.setStory('Validate GTIN during pick from');
-        await AllureHelpers.setSeverity('normal');
+        await allure.epic('E0370: Intralogistic (HUs)');
+        await allure.tag('F5114.3: MobileUI Distribution: GTIN Scan');
+        await allure.story('Validate GTIN during pick from');
+        await allure.severity('normal');
 
         const masterdata = await createMasterdataAndStartJob({ qtyToMove: 100 });
 
@@ -84,14 +80,10 @@ test.describe('Scan directly in job screen, expect scanning the product code too
     // noinspection JSUnusedLocalSymbols
     test('Scan the HU by Value/M_HU_ID', async ({ page }) => {
         // === ALLURE METADATA ===
-        await AllureHelpers.setFeature({
-            id: 'F5114.3',
-            name: 'MobileUI Distribution: GTIN Scan',
-            epicId: 'E0370',
-            epicName: 'Intralogistic (HUs)'
-        });
-        await AllureHelpers.setStory('Validate GTIN during pick from');
-        await AllureHelpers.setSeverity('normal');
+        await allure.epic('E0370: Intralogistic (HUs)');
+        await allure.tag('F5114.3: MobileUI Distribution: GTIN Scan');
+        await allure.story('Validate GTIN during pick from');
+        await allure.severity('normal');
 
         const masterdata = await createMasterdataAndStartJob({ qtyToMove: 100 });
 
@@ -106,14 +98,10 @@ test.describe('Scan directly in job screen, expect scanning the product code too
     // noinspection JSUnusedLocalSymbols
     test('Scan the HU by External Attribute', async ({ page }) => {
         // === ALLURE METADATA ===
-        await AllureHelpers.setFeature({
-            id: 'F5114.3',
-            name: 'MobileUI Distribution: GTIN Scan',
-            epicId: 'E0370',
-            epicName: 'Intralogistic (HUs)'
-        });
-        await AllureHelpers.setStory('Validate GTIN during pick from');
-        await AllureHelpers.setSeverity('normal');
+        await allure.epic('E0370: Intralogistic (HUs)');
+        await allure.tag('F5114.3: MobileUI Distribution: GTIN Scan');
+        await allure.story('Validate GTIN during pick from');
+        await allure.severity('normal');
 
         const externalBarcode = "EXT" + Date.now();
         const masterdata = await createMasterdataAndStartJob({ qtyToMove: 100, externalBarcode });

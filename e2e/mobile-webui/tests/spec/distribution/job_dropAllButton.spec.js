@@ -1,6 +1,6 @@
 import { test } from "../../../playwright.config";
 import { Backend } from "../../utils/screens/Backend";
-import { AllureHelpers } from '../../../../common/AllureHelpers';
+import { allure } from 'allure-playwright';
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { DistributionJobsListScreen } from "../../utils/screens/distribution/DistributionJobsListScreen";
@@ -60,14 +60,10 @@ const createMasterdata = async ({ qtyToMove }) => {
 // noinspection JSUnusedLocalSymbols
 test('Pick multiple HUs and drop them all together in one step', async ({ page }) => {
     // === ALLURE METADATA ===
-    await AllureHelpers.setFeature({
-        id: 'F5114.2',
-        name: 'MobileUI Distribution: Drop All',
-        epicId: 'E0370',
-        epicName: 'Intralogistic (HUs)'
-    });
-    await AllureHelpers.setStory('Drop all button in job screen');
-    await AllureHelpers.setSeverity('normal');
+    await allure.epic('E0370: Intralogistic (HUs)');
+    await allure.tag('F5114.2: MobileUI Distribution: Drop All');
+    await allure.story('Drop all button in job screen');
+    await allure.severity('normal');
 
     const masterdata = await createMasterdata({ qtyToMove: 100 });
 
@@ -195,14 +191,10 @@ test('Pick multiple HUs and drop them all together in one step', async ({ page }
 // noinspection JSUnusedLocalSymbols
 test('Pick multiple HUs (by HU code) and drop them all together in one step (using locator code)', async ({ page }) => {
     // === ALLURE METADATA ===
-    await AllureHelpers.setFeature({
-        id: 'F5114.2',
-        name: 'MobileUI Distribution: Drop All',
-        epicId: 'E0370',
-        epicName: 'Intralogistic (HUs)'
-    });
-    await AllureHelpers.setStory('Drop all button in job screen');
-    await AllureHelpers.setSeverity('normal');
+    await allure.epic('E0370: Intralogistic (HUs)');
+    await allure.tag('F5114.2: MobileUI Distribution: Drop All');
+    await allure.story('Drop all button in job screen');
+    await allure.severity('normal');
 
     const masterdata = await createMasterdata({ qtyToMove: 100 });
 

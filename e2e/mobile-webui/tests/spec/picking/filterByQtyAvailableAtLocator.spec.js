@@ -1,5 +1,5 @@
 import { test } from "../../../playwright.config";
-import { AllureHelpers } from '../../../../common/AllureHelpers';
+import { allure } from 'allure-playwright';
 import { Backend } from '../../utils/screens/Backend';
 import { LoginScreen } from '../../utils/screens/LoginScreen';
 import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScreen';
@@ -73,6 +73,12 @@ const createMasterdata = async ({ qtyOnHand }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Filter by Qty Available flag', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await allure.epic('E0105: Picking');
+    await allure.tag('F00230: MobileUI Picking');
+    await allure.story('Filter by Qty Available at Locator');
+    await allure.severity('normal');
+
     const masterdata = await createMasterdata({ qtyOnHand: 130 });
 
     await LoginScreen.login(masterdata.login.user);

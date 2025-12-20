@@ -1,6 +1,6 @@
 import { test } from "../../../playwright.config";
 import { Backend } from "../../utils/screens/Backend";
-import { AllureHelpers } from '../../../../common/AllureHelpers';
+import { allure } from 'allure-playwright';
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { DistributionJobsListScreen } from "../../utils/screens/distribution/DistributionJobsListScreen";
@@ -60,14 +60,10 @@ const createMasterdata = async ({ qtyToMove }) => {
 // noinspection JSUnusedLocalSymbols
 test('Happy case', async ({ page }) => {
     // === ALLURE METADATA ===
-    await AllureHelpers.setFeature({
-        id: 'F5114',
-        name: 'MobileUI Distribution',
-        epicId: 'E0370',
-        epicName: 'Intralogistic (HUs)'
-    });
-    await AllureHelpers.setStory('Navigate to jobs list after pick from complete');
-    await AllureHelpers.setSeverity('normal');
+    await allure.epic('E0370: Intralogistic (HUs)');
+    await allure.tag('F5114: MobileUI Distribution');
+    await allure.story('Navigate to jobs list after pick from complete');
+    await allure.severity('normal');
 
     const masterdata = await createMasterdata({ qtyToMove: 100 });
 

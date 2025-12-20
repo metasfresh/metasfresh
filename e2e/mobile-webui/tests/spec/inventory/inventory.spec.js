@@ -1,5 +1,5 @@
 import { test } from "../../../playwright.config";
-import { AllureHelpers } from '../../../../common/AllureHelpers';
+import { allure } from 'allure-playwright';
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
@@ -30,9 +30,10 @@ const createMasterdata = async () => {
 // noinspection JSUnusedLocalSymbols
 test('Simple inventory test', async ({ page }) => {
     // === ALLURE METADATA ===
-    await AllureHelpers.setFeature({ id: 'F5310', name: 'Mobile UI Inventory', epicId: 'E0370', epicName: 'Intralogistic (HUs)' });
-    await AllureHelpers.setStory('Inventory - Basic Count');
-    await AllureHelpers.setSeverity('critical');
+    await allure.epic('E0370: Intralogistic (HUs)');
+    await allure.tag('F5310: Mobile UI Inventory');
+    await allure.story('Inventory - Basic Count');
+    await allure.severity('critical');
 
     const masterdata = await createMasterdata();
 

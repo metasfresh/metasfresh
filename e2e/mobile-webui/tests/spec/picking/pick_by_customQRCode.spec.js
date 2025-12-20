@@ -1,5 +1,5 @@
 import { test } from "../../../playwright.config";
-import { AllureHelpers } from '../../../../common/AllureHelpers';
+import { allure } from 'allure-playwright';
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
@@ -126,6 +126,12 @@ const manufactureBOMs = async ({ catchWeightQRCode, count }) => await test.step(
 
 // noinspection JSUnusedLocalSymbols
 test('Pick using custom QR code', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await allure.epic('E0105: Picking');
+    await allure.tag('F00230: MobileUI Picking');
+    await allure.story('Pick using custom QR code');
+    await allure.severity('normal');
+
     masterdata = await createMasterdata();
 
     await LoginScreen.login(masterdata.login.user);

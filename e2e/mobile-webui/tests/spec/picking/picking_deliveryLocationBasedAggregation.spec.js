@@ -1,5 +1,5 @@
 import { test } from "../../../playwright.config";
-import { AllureHelpers } from '../../../../common/AllureHelpers';
+import { allure } from 'allure-playwright';
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
 import { Backend } from "../../utils/screens/Backend";
@@ -99,6 +99,12 @@ const createMasterdata = async () => {
 
 // noinspection JSUnusedLocalSymbols
 test('Delivery Location based aggregation', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await allure.epic('E0105: Picking');
+    await allure.tag('F00230: MobileUI Picking');
+    await allure.story('Delivery location based aggregation');
+    await allure.severity('normal');
+
     const masterdata = await createMasterdata();
 
     await LoginScreen.login(masterdata.login.user);

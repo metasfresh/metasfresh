@@ -1,5 +1,5 @@
 import { test } from "../../../../playwright.config";
-import { AllureHelpers } from '../../../../../common/AllureHelpers';
+import { allure } from 'allure-playwright';
 import { ApplicationsListScreen } from "../../../utils/screens/ApplicationsListScreen";
 import { PickingJobsListScreen } from "../../../utils/screens/picking/PickingJobsListScreen";
 import { Backend } from "../../../utils/screens/Backend";
@@ -84,6 +84,12 @@ const createMasterdata = async ({ externalBarcode }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Scan the pick from HU by ExternalBarcode', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await allure.epic('E0105: Picking');
+    await allure.tag('F00230: MobileUI Picking');
+    await allure.story('Product based picking - External barcode');
+    await allure.severity('normal');
+
     const externalBarcode = "EXT" + Date.now();
     const masterdata = await createMasterdata({ externalBarcode });
 

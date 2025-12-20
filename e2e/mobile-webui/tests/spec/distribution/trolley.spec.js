@@ -5,6 +5,7 @@ import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScre
 import { DistributionJobsListScreen } from "../../utils/screens/distribution/DistributionJobsListScreen";
 import { DistributionJobScreen } from '../../utils/screens/distribution/DistributionJobScreen';
 import { generateEAN13 } from '../../utils/ean13';
+import { allure } from 'allure-playwright';
 
 const createMasterdata = async ({ qtyToMove }) => {
     return await Backend.createMasterdata({
@@ -97,6 +98,12 @@ const createMasterdata = async ({ qtyToMove }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Pick multiple HUs (by HU code) to trolley and drop them all together in one step (using locator code)', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await allure.epic('E0370: Intralogistic (HUs)');
+    await allure.tag('F5114: MobileUI Distribution');
+    await allure.story('Trolley: Pick and drop multiple HUs');
+    await allure.severity('critical');
+
     const masterdata = await createMasterdata({ qtyToMove: 100 });
 
     await test.step('As user1, pick P1 to whInTransit_l1', async () => {

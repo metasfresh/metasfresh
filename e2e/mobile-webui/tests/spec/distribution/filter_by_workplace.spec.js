@@ -1,6 +1,6 @@
 import { test } from "../../../playwright.config";
 import { Backend } from "../../utils/screens/Backend";
-import { AllureHelpers } from '../../../../common/AllureHelpers';
+import { allure } from 'allure-playwright';
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { DistributionJobsListScreen } from "../../utils/screens/distribution/DistributionJobsListScreen";
@@ -55,14 +55,10 @@ const createMasterdata = async ({ workplace, distributionOrders }) => {
 // noinspection JSUnusedLocalSymbols
 test('Show all jobs when no current workplace', async ({ page }) => {
     // === ALLURE METADATA ===
-    await AllureHelpers.setFeature({
-        id: 'F5112.1',
-        name: 'MobileUI Distribution Filter',
-        epicId: 'E0370',
-        epicName: 'Intralogistic (HUs)'
-    });
-    await AllureHelpers.setStory('Filter distribution by workplace');
-    await AllureHelpers.setSeverity('normal');
+    await allure.epic('E0370: Intralogistic (HUs)');
+    await allure.tag('F5112.1: MobileUI Distribution Filter');
+    await allure.story('Filter distribution by workplace');
+    await allure.severity('normal');
 
     const masterdata = await createMasterdata({
         workplace: null,
@@ -94,14 +90,10 @@ test('Show all jobs when no current workplace', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Show only jobs suitable for workplace1', async ({ page }) => {
     // === ALLURE METADATA ===
-    await AllureHelpers.setFeature({
-        id: 'F5112.1',
-        name: 'MobileUI Distribution Filter',
-        epicId: 'E0370',
-        epicName: 'Intralogistic (HUs)'
-    });
-    await AllureHelpers.setStory('Filter distribution by workplace');
-    await AllureHelpers.setSeverity('normal');
+    await allure.epic('E0370: Intralogistic (HUs)');
+    await allure.tag('F5112.1: MobileUI Distribution Filter');
+    await allure.story('Filter distribution by workplace');
+    await allure.severity('normal');
 
     const masterdata = await createMasterdata({
         workplace: 'workplace1',

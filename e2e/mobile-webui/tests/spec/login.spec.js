@@ -3,7 +3,7 @@ import { AVAILABLE_AUTH_METHODS, LoginScreen } from "../utils/screens/LoginScree
 import {ApplicationsListScreen} from "../utils/screens/ApplicationsListScreen";
 import {Backend} from "../utils/screens/Backend";
 import {expect} from "@playwright/test";
-import { AllureHelpers } from '../../../common/AllureHelpers';
+import { allure } from 'allure-playwright';
 
 test.describe('Login/Logout', () => {
     // noinspection JSUnusedLocalSymbols
@@ -12,16 +12,12 @@ test.describe('Login/Logout', () => {
             // noinspection JSUnusedLocalSymbols
             test(`By user/pass, using ${language} language, ${authMethod} as default auth method`, async ({ page }) => {
                 // === ALLURE METADATA ===
-                await AllureHelpers.setFeature({
-                    id: 'F12000',
-                    name: 'Frontend MobileUI',
-                    epicId: 'E0295',
-                    epicName: 'Frontend MobileUI'
-                });
-                await AllureHelpers.setStory('Login with language selection');
-                await AllureHelpers.setSeverity('critical');
-                await AllureHelpers.addParameter('Language', language);
-                await AllureHelpers.addParameter('Auth Method', authMethod);
+                await allure.epic('E0295: Frontend MobileUI');
+                await allure.tag('F12000: Frontend MobileUI');
+                await allure.story('Login with language selection');
+                await allure.severity('critical');
+                await allure.parameter('Language', language);
+                await allure.parameter('Auth Method', authMethod);
 
                 const response = await Backend.createMasterdata({
                     request: {

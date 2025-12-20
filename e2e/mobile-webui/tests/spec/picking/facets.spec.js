@@ -1,5 +1,5 @@
 import { test } from "../../../playwright.config";
-import { AllureHelpers } from '../../../../common/AllureHelpers';
+import { allure } from 'allure-playwright';
 import { Backend } from '../../utils/screens/Backend';
 import { LoginScreen } from '../../utils/screens/LoginScreen';
 import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScreen';
@@ -68,14 +68,10 @@ const createMasterdata = async ({ salesOrders }) => {
 // noinspection JSUnusedLocalSymbols
 test('Check facets when only scheduled for workplace is enabled', async ({ page }) => {
     // === ALLURE METADATA ===
-    await AllureHelpers.setFeature({
-        id: 'F00230.3',
-        name: 'MobileUI Picking Filter',
-        epicId: 'E0105',
-        epicName: 'Picking'
-    });
-    await AllureHelpers.setStory('Picking facets');
-    await AllureHelpers.setSeverity('normal');
+    await allure.epic('E0105: Picking');
+    await allure.tag('F00230.3: MobileUI Picking Filter');
+    await allure.story('Picking facets');
+    await allure.severity('normal');
 
     const masterdata = await createMasterdata({
         salesOrders: {

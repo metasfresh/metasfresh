@@ -1,5 +1,5 @@
 import { test } from "../../../playwright.config";
-import { AllureHelpers } from '../../../../common/AllureHelpers';
+import { allure } from 'allure-playwright';
 import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
@@ -26,9 +26,10 @@ const createMasterdata = async ({ externalBarcode } = {}) => {
 // noinspection JSUnusedLocalSymbols
 test('Scan by HU QR Code', async ({ page }) => {
     // === ALLURE METADATA ===
-    await AllureHelpers.setFeature({ id: 'F5120', name: 'MobileUI HU Manager', epicId: 'E0370', epicName: 'Intralogistic (HUs)' });
-    await AllureHelpers.setStory('HU Manager - Scan Methods');
-    await AllureHelpers.setSeverity('critical');
+    await allure.epic('E0370: Intralogistic (HUs)');
+    await allure.tag('F5120: MobileUI HU Manager');
+    await allure.story('HU Manager - Scan Methods');
+    await allure.severity('critical');
 
     const masterdata = await createMasterdata();
 
@@ -43,9 +44,10 @@ test('Scan by HU QR Code', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Scan by M_HU_ID', async ({ page }) => {
     // === ALLURE METADATA ===
-    await AllureHelpers.setFeature({ id: 'F5120', name: 'MobileUI HU Manager', epicId: 'E0370', epicName: 'Intralogistic (HUs)' });
-    await AllureHelpers.setStory('HU Manager - Scan Methods');
-    await AllureHelpers.setSeverity('normal');
+    await allure.epic('E0370: Intralogistic (HUs)');
+    await allure.tag('F5120: MobileUI HU Manager');
+    await allure.story('HU Manager - Scan Methods');
+    await allure.severity('normal');
 
     const masterdata = await createMasterdata();
 
@@ -60,9 +62,10 @@ test('Scan by M_HU_ID', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Scan by ExternalBarcode attribute', async ({ page }) => {
     // === ALLURE METADATA ===
-    await AllureHelpers.setFeature({ id: 'F5120', name: 'MobileUI HU Manager', epicId: 'E0370', epicName: 'Intralogistic (HUs)' });
-    await AllureHelpers.setStory('HU Manager - Scan Methods');
-    await AllureHelpers.setSeverity('normal');
+    await allure.epic('E0370: Intralogistic (HUs)');
+    await allure.tag('F5120: MobileUI HU Manager');
+    await allure.story('HU Manager - Scan Methods');
+    await allure.severity('normal');
 
     const externalBarcode = "EXT" + Date.now();
     const masterdata = await createMasterdata({ externalBarcode });

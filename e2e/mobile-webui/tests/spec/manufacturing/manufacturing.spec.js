@@ -1,6 +1,6 @@
 import { Backend } from '../../utils/screens/Backend';
 import { test } from '../../../playwright.config';
-import { AllureHelpers } from '../../../../common/AllureHelpers';
+import { allure } from 'allure-playwright';
 import { LoginScreen } from '../../utils/screens/LoginScreen';
 import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScreen';
 import { ManufacturingJobsListScreen } from '../../utils/screens/manufacturing/ManufacturingJobsListScreen';
@@ -53,14 +53,10 @@ const createMasterdata = async () => {
 // noinspection JSUnusedLocalSymbols
 test('Simple manufacturing test', async ({ page }) => {
     // === ALLURE METADATA ===
-    await AllureHelpers.setFeature({
-        id: 'F8030',
-        name: 'MobileUI Manufacturing',
-        epicId: 'E0160',
-        epicName: 'Manufacturing Execution'
-    });
-    await AllureHelpers.setStory('Simple manufacturing workflow');
-    await AllureHelpers.setSeverity('critical');
+    await allure.epic('E0160: Manufacturing Execution');
+    await allure.tag('F8030: MobileUI Manufacturing');
+    await allure.story('Simple manufacturing workflow');
+    await allure.severity('critical');
 
     const masterdata = await createMasterdata();
 

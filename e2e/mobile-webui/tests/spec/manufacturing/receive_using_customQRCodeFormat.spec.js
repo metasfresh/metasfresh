@@ -1,6 +1,6 @@
 import { Backend } from '../../utils/screens/Backend';
 import { test } from '../../../playwright.config';
-import { AllureHelpers } from '../../../../common/AllureHelpers';
+import { allure } from 'allure-playwright';
 import { LoginScreen } from '../../utils/screens/LoginScreen';
 import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScreen';
 import { ManufacturingJobsListScreen } from '../../utils/screens/manufacturing/ManufacturingJobsListScreen';
@@ -77,6 +77,12 @@ const createMasterdata = async () => {
 
 // noinspection JSUnusedLocalSymbols
 test('Receive using custom QR Code format', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await allure.epic('E0160: Manufacturing Execution');
+    await allure.tag('F8030: MobileUI Manufacturing');
+    await allure.story('Receive using custom QR code format');
+    await allure.severity('normal');
+
     const masterdata = await createMasterdata();
 
     await LoginScreen.login(masterdata.login.user);

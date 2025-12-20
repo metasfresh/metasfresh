@@ -1,6 +1,6 @@
 import { test } from "../../../playwright.config";
 import { Backend } from "../../utils/screens/Backend";
-import { AllureHelpers } from '../../../../common/AllureHelpers';
+import { allure } from 'allure-playwright';
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { DistributionJobsListScreen } from "../../utils/screens/distribution/DistributionJobsListScreen";
@@ -89,14 +89,10 @@ const standardTest = async ({ masterdata, huBarcodeToScan }) => {
 // noinspection JSUnusedLocalSymbols
 test('Scan by HU QR Code', async ({ page }) => {
     // === ALLURE METADATA ===
-    await AllureHelpers.setFeature({
-        id: 'F5114',
-        name: 'MobileUI Distribution',
-        epicId: 'E0370',
-        epicName: 'Intralogistic (HUs)'
-    });
-    await AllureHelpers.setStory('Scan HU barcodes');
-    await AllureHelpers.setSeverity('normal');
+    await allure.epic('E0370: Intralogistic (HUs)');
+    await allure.tag('F5114: MobileUI Distribution');
+    await allure.story('Scan HU barcodes');
+    await allure.severity('normal');
 
     const masterdata = await createMasterdata();
     await standardTest({ masterdata, huBarcodeToScan: masterdata.handlingUnits.HU1.qrCode });
@@ -105,14 +101,10 @@ test('Scan by HU QR Code', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Scan by M_HU_ID', async ({ page }) => {
     // === ALLURE METADATA ===
-    await AllureHelpers.setFeature({
-        id: 'F5114',
-        name: 'MobileUI Distribution',
-        epicId: 'E0370',
-        epicName: 'Intralogistic (HUs)'
-    });
-    await AllureHelpers.setStory('Scan HU barcodes');
-    await AllureHelpers.setSeverity('normal');
+    await allure.epic('E0370: Intralogistic (HUs)');
+    await allure.tag('F5114: MobileUI Distribution');
+    await allure.story('Scan HU barcodes');
+    await allure.severity('normal');
 
     const masterdata = await createMasterdata();
     await standardTest({ masterdata, huBarcodeToScan: masterdata.handlingUnits.HU1.huId });
@@ -121,14 +113,10 @@ test('Scan by M_HU_ID', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Scan by ExternalBarcode', async ({ page }) => {
     // === ALLURE METADATA ===
-    await AllureHelpers.setFeature({
-        id: 'F5114',
-        name: 'MobileUI Distribution',
-        epicId: 'E0370',
-        epicName: 'Intralogistic (HUs)'
-    });
-    await AllureHelpers.setStory('Scan HU barcodes');
-    await AllureHelpers.setSeverity('normal');
+    await allure.epic('E0370: Intralogistic (HUs)');
+    await allure.tag('F5114: MobileUI Distribution');
+    await allure.story('Scan HU barcodes');
+    await allure.severity('normal');
 
     const externalBarcode = "EXT" + Date.now();
     const masterdata = await createMasterdata({ externalBarcode });
