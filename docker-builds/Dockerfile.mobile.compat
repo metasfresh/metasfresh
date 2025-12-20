@@ -1,8 +1,8 @@
-FROM node:14 as build
+FROM node:14 AS build
 
 RUN npm install -g webpack webpack-cli
 
-WORKDIR /app 
+WORKDIR /app
 COPY misc/services/mobile-webui/mobile-webui-frontend/package.json .
 COPY misc/services/mobile-webui/mobile-webui-frontend/yarn.lock* .
 
@@ -16,7 +16,7 @@ RUN yarn lint
 RUN yarn build
 
 
-FROM nginx:1.21.6 as runtime
+FROM nginx:1.21.6 AS runtime
 
 COPY docker-builds/nginx/default.conf /etc/nginx/conf.d
 
