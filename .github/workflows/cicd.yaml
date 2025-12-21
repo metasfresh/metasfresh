@@ -1830,6 +1830,47 @@ jobs:
           touch gh-pages-repo/.nojekyll
           echo "Created .nojekyll file to disable Jekyll and serve _data directory"
 
+      - name: Verify reports exist
+        id: verify_reports
+        run: |
+          BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
+          BUILD_DIR="gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}"
+
+          REPORTS_FOUND=0
+
+          # Check for frontend-webui report (index.html is the main Allure file)
+          if [ -f "${BUILD_DIR}/frontend-webui/index.html" ]; then
+            echo "✓ Frontend WebUI report found"
+            REPORTS_FOUND=$((REPORTS_FOUND + 1))
+          else
+            echo "✗ Frontend WebUI report NOT found"
+          fi
+
+          # Check for mobile-webui report
+          if [ -f "${BUILD_DIR}/mobile-webui/index.html" ]; then
+            echo "✓ Mobile WebUI report found"
+            REPORTS_FOUND=$((REPORTS_FOUND + 1))
+          else
+            echo "✗ Mobile WebUI report NOT found"
+          fi
+
+          # Check for cucumber report
+          if [ -f "${BUILD_DIR}/cucumber/index.html" ]; then
+            echo "✓ Cucumber report found"
+            REPORTS_FOUND=$((REPORTS_FOUND + 1))
+          else
+            echo "✗ Cucumber report NOT found"
+          fi
+
+          echo "reports_found=${REPORTS_FOUND}" >> $GITHUB_OUTPUT
+
+          if [ "$REPORTS_FOUND" -eq 0 ]; then
+            echo "::error::No Allure reports found to publish!"
+            exit 1
+          fi
+
+          echo "Found ${REPORTS_FOUND} report(s) to publish"
+
       - name: Deploy to GitHub Pages
         run: |
           cd gh-pages-repo
@@ -1838,13 +1879,30 @@ jobs:
 
           git add .
 
+          # Check if there are changes to commit
+          if git diff --staged --quiet; then
+            echo "::error::No changes to commit - reports may not have been copied correctly"
+            exit 1
+          fi
+
           # Retry logic for concurrent deployments
+          PUSH_SUCCESS=false
           for i in {1..5}; do
             git pull --rebase origin gh-pages || true
-            git commit -m "Update reports: ${{ github.ref_name }} (build ${{ needs.init.outputs.tag-fixed }})" || echo "No changes"
-            git push origin gh-pages && break || echo "Push failed, retrying in 10s..."
+            git commit -m "Update reports: ${{ github.ref_name }} (build ${{ needs.init.outputs.tag-fixed }})" || true
+            if git push origin gh-pages; then
+              PUSH_SUCCESS=true
+              echo "Push succeeded on attempt $i"
+              break
+            fi
+            echo "Push failed on attempt $i, retrying in 10s..."
             sleep 10
           done
+
+          if [ "$PUSH_SUCCESS" != "true" ]; then
+            echo "::error::Failed to push to gh-pages after 5 attempts"
+            exit 1
+          fi
 
       - name: produce-summary
         run: |
