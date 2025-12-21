@@ -1259,13 +1259,7 @@ jobs:
         with:
           results-dir: all-cucumber-results
           output-dir: cucumber-allure-report
-
-      - name: Upload combined Cucumber Allure report
-        if: steps.check_results.outputs.has_results == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-report-cucumber
-          path: cucumber-allure-report/
+          artifact-name: allure-report-cucumber
           retention-days: 30
 
   health_check:
