@@ -1904,21 +1904,50 @@ jobs:
             exit 1
           fi
 
+      # ===== CLOUDFLARE R2 UPLOAD =====
+      - name: Configure AWS CLI for R2
+        run: |
+          # Install AWS CLI if not already available
+          if ! command -v aws &> /dev/null; then
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip -q awscliv2.zip
+            sudo ./aws/install
+          fi
+
+          # Configure AWS CLI to use R2
+          aws configure set aws_access_key_id ${{ secrets.R2_ACCESS_KEY_ID }}
+          aws configure set aws_secret_access_key ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          aws configure set region auto
+
+      - name: Sync reports to Cloudflare R2
+        run: |
+          BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
+
+          echo "Syncing reports to R2..."
+          aws s3 sync gh-pages-repo/ s3://${{ vars.R2_BUCKET_NAME }}/ \
+            --endpoint-url ${{ vars.R2_ENDPOINT_URL }} \
+            --delete \
+            --no-progress
+
+          echo "✓ Reports synced to R2"
+          echo "Total size: $(du -sh gh-pages-repo | cut -f1)"
+
       - name: produce-summary
         run: |
           BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
           VERSION="${{ needs.init.outputs.tag-fixed }}"
           BASE_URL="https://metasfresh.github.io/metasfresh-testreports/branches/${BRANCH_SANITIZED}/builds/${VERSION}"
+          R2_BASE_URL="https://pub-c55eb97d86224a4e951c219dfc2057b8.r2.dev/branches/${BRANCH_SANITIZED}/builds/${VERSION}"
 
           echo '#### 📊 Allure Test Reports' >> $GITHUB_STEP_SUMMARY
           echo '' >> $GITHUB_STEP_SUMMARY
-          echo "| Report | Link |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------|------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Frontend WebUI | [${BASE_URL}/frontend-webui/](${BASE_URL}/frontend-webui/) |" >> $GITHUB_STEP_SUMMARY
-          echo "| Mobile WebUI | [${BASE_URL}/mobile-webui/](${BASE_URL}/mobile-webui/) |" >> $GITHUB_STEP_SUMMARY
-          echo "| Cucumber | [${BASE_URL}/cucumber/](${BASE_URL}/cucumber/) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Report | GitHub Pages | Cloudflare R2 |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|--------------|---------------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend WebUI | [View](${BASE_URL}/frontend-webui/) | [View](${R2_BASE_URL}/frontend-webui/) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Mobile WebUI | [View](${BASE_URL}/mobile-webui/) | [View](${R2_BASE_URL}/mobile-webui/) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Cucumber | [View](${BASE_URL}/cucumber/) | [View](${R2_BASE_URL}/cucumber/) |" >> $GITHUB_STEP_SUMMARY
           echo '' >> $GITHUB_STEP_SUMMARY
-          echo "📁 [All branches](https://metasfresh.github.io/metasfresh-testreports/)" >> $GITHUB_STEP_SUMMARY
+          echo "📁 All branches: [GitHub Pages](https://metasfresh.github.io/metasfresh-testreports/) | [R2](https://pub-c55eb97d86224a4e951c219dfc2057b8.r2.dev/)" >> $GITHUB_STEP_SUMMARY
 
   cicd-dispatch:
     if: contains(fromJson(vars.CICD_BRANCH_MAP), github.ref_name) == true
