@@ -19,9 +19,21 @@ jobs:
       git-properties: ${{ steps.git-properties.outputs.content }}
       base-version-matrix: ${{ steps.base-version-matrix.outputs.matrix }}
       branch-sanitized-gh-pages: ${{ steps.sanitize-branch-gh-pages.outputs.value }}
+      is-local: ${{ steps.detect-local.outputs.is-local }}
     steps:
+      - name: Detect local execution
+        id: detect-local
+        run: |
+          if [ "$ACT" = "true" ]; then
+            echo "is-local=true" >> $GITHUB_OUTPUT
+            echo "Running locally with act"
+          else
+            echo "is-local=false" >> $GITHUB_OUTPUT
+            echo "Running on GitHub Actions"
+          fi
       - uses: actions/checkout@v4
       - uses: testspace-com/setup-testspace@v1
+        if: env.ACT != 'true'  # Skip when running locally with act
         with:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
@@ -83,6 +95,7 @@ jobs:
           echo '* BASE_VERSION for instances **without** customisations will be `${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}-compat`' >> $GITHUB_STEP_SUMMARY
           echo '* test results can be found after completion at https://metasfresh.testspace.com/projects/metasfresh:metasfresh/spaces/${{ github.ref_name }}' >> $GITHUB_STEP_SUMMARY
       - name: testspace push build infos
+        if: env.ACT != 'true'  # Skip when running locally with act
         run: |
           touch github_run.txt
           echo ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} >> github_run.txt
@@ -379,6 +392,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: testspace-com/setup-testspace@v1
+        if: env.ACT != 'true'  # Skip when running locally with act
         with:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
@@ -390,10 +404,13 @@ jobs:
           --target test \
           --tag metas-frontend:test \
           .
-      - name: publish results
+      - name: extract results
         run: |
           docker run --rm --volume "$(pwd)/jest:/reports" metas-frontend:test                                       # extracting test results from docker image
-          find jest -type d -links 2 -exec testspace [{}]{}/*.xml \;                                                # upload all jest xml's to testspace 
+      - name: publish results to testspace
+        if: env.ACT != 'true'  # Skip when running locally with act
+        run: |
+          find jest -type d -links 2 -exec testspace [{}]{}/*.xml \;                                                # upload all jest xml's to testspace
           testspace "[jest/frontend]jest/frontend/jest.log{$(cat jest/frontend/jest.exit-code):webui jest tests}"   # upload webui log with exit code
       - name: assert success
         run: |
@@ -962,6 +979,7 @@ jobs:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
       - uses: testspace-com/setup-testspace@v1
+        if: env.ACT != 'true'  # Skip when running locally with act
         with:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
@@ -1004,14 +1022,17 @@ jobs:
           command: |
             docker push --quiet metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}
             docker push --quiet metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14
-      - name: push-results
+      - name: extract-results
         run: |
           docker run --rm --volume "$(pwd)/junit:/reports" metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}           # extracting java8 test results from docker image
           docker run --rm --volume "$(pwd)/junit:/reports" metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}-j14       # extracting java14 test results from docker image
-          find junit -type d -links 2 -exec testspace [{}]{}/*.xml \;                                                           # upload all junit xml's to testspace 
-          testspace "[junit/commons]junit/commons/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/commons/junit.exit-code junit/commons/junit.mvn.exit-code):java 8 commons junit tests}"     # upload commons log with combined exit code  
-          testspace "[junit/backend]junit/backend/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/backend/junit.exit-code junit/backend/junit.mvn.exit-code):java 8 backend junit tests}"     # upload backend log with combined exit code 
-          testspace "[junit/camel]junit/camel/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/camel/junit.exit-code junit/camel/junit.mvn.exit-code):java 14 camel junit tests}"              # upload camel log with combined exit code       
+      - name: push-results to testspace
+        if: env.ACT != 'true'  # Skip when running locally with act
+        run: |
+          find junit -type d -links 2 -exec testspace [{}]{}/*.xml \;                                                           # upload all junit xml's to testspace
+          testspace "[junit/commons]junit/commons/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/commons/junit.exit-code junit/commons/junit.mvn.exit-code):java 8 commons junit tests}"     # upload commons log with combined exit code
+          testspace "[junit/backend]junit/backend/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/backend/junit.exit-code junit/backend/junit.mvn.exit-code):java 8 backend junit tests}"     # upload backend log with combined exit code
+          testspace "[junit/camel]junit/camel/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/camel/junit.exit-code junit/camel/junit.mvn.exit-code):java 14 camel junit tests}"              # upload camel log with combined exit code
       - name: assert success
         run: |
           if [ $(cat junit/commons/junit.exit-code) != 0 ] || [ $(cat junit/commons/junit.mvn.exit-code) != 0 ]; then tail -1000 junit/commons/junit.log && exit 1; fi      # print commons log and exit if commons failed
@@ -1105,6 +1126,7 @@ jobs:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
       - uses: testspace-com/setup-testspace@v1
+        if: env.ACT != 'true'  # Skip when running locally with act
         with:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
@@ -1125,10 +1147,11 @@ jobs:
           docker commit metasfresh-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}
           docker compose down
           cat cucumber.log | grep -q "BUILD SUCCESS" && echo "$?" > cucumber.mvn.exit-code || echo "$?" > cucumber.mvn.exit-code
-      - name: push-results
+      - name: push-results to testspace
+        if: env.ACT != 'true'  # Skip when running locally with act
         run: |
           testspace "[cucumber/${{ matrix.profile }}]cucumber/**/*.xml"
-          testspace "[cucumber/${{ matrix.profile }}]cucumber/*.html"                                                                                                                                                       
+          testspace "[cucumber/${{ matrix.profile }}]cucumber/*.html"
           testspace "[cucumber/${{ matrix.profile }}]cucumber.log{$(awk '{ sum += $1 } END { print sum }' cucumber.exit-code cucumber.mvn.exit-code):cucumber tests}"
       - name: push-database-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}
         uses: nick-fields/retry@v3
@@ -1303,6 +1326,7 @@ jobs:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
       - uses: testspace-com/setup-testspace@v1
+        if: env.ACT != 'true'  # Skip when running locally with act
         with:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
@@ -1314,7 +1338,8 @@ jobs:
           docker compose up --abort-on-container-exit --exit-code-from playwright 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
           docker commit mobiletest-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest
           docker compose down
-      - name: push-results
+      - name: push-results to testspace
+        if: env.ACT != 'true'  # Skip when running locally with act
         working-directory: docker-builds/mobiletest/
         run: |
           # Move test-results temporarily to avoid Testspace uploading large attachment files
@@ -1358,6 +1383,7 @@ jobs:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
       - uses: testspace-com/setup-testspace@v1
+        if: env.ACT != 'true'  # Skip when running locally with act
         with:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
@@ -1371,7 +1397,8 @@ jobs:
           docker compose up --abort-on-container-exit --exit-code-from playwright 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
           docker commit frontendtest-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest
           docker compose down
-      - name: push-results
+      - name: push-results to testspace
+        if: env.ACT != 'true'  # Skip when running locally with act
         working-directory: docker-builds/frontendtest/
         run: |
           # Move test-results temporarily to avoid Testspace uploading large attachment files
@@ -1452,7 +1479,7 @@ jobs:
     name: Publish Allure Reports to GitHub Pages
     runs-on: ubuntu-latest
     needs: [ init, frontend_webui_test ]
-    if: always()  # Run even if tests failed
+    if: always() && needs.init.outputs.is-local != 'true'  # Run even if tests failed, but skip when running locally with act
     permissions:
       contents: write
     steps:
