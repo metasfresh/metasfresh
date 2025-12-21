@@ -119,14 +119,10 @@ test.describe('Scan directly in job screen, expect scanning the product code too
 // noinspection JSUnusedLocalSymbols
 test('Do not ask for picked qty when it is one', async ({ page }) => {
     // === ALLURE METADATA ===
-    await AllureHelpers.setFeature({
-        id: 'F5114.3',
-        name: 'MobileUI Distribution: GTIN Scan',
-        epicId: 'E0370',
-        epicName: 'Intralogistic (HUs)'
-    });
-    await AllureHelpers.setStory('Validate GTIN during pick from');
-    await AllureHelpers.setSeverity('normal');
+    await allure.epic('E0370: Intralogistic (HUs)');
+    await allure.tag('F5114.3: MobileUI Distribution: GTIN Scan');
+    await allure.story('Validate GTIN during pick from');
+    await allure.severity('normal');
 
     const masterdata = await createMasterdataAndStartJob({ qtyToMove: 1 });
 
