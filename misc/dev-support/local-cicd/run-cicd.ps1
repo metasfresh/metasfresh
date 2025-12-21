@@ -162,10 +162,12 @@ function Invoke-Act {
     )
 
     # Common act arguments
+    # Note: Using 'act-latest' image instead of 'full-latest' for proper Docker socket permissions
+    # See: https://github.com/nektos/act/issues/2616
     $actArgs = @(
         "--secret-file", (Join-Path $ScriptDir ".secrets"),
         "-C", $RepoRoot,
-        "-P", "ubuntu-latest=ghcr.io/catthehacker/ubuntu:full-latest",
+        "-P", "ubuntu-latest=ghcr.io/catthehacker/ubuntu:act-latest",
         "--artifact-server-path=$ArtifactPath",
         "--env", "GITHUB_RUN_NUMBER=1"
     )

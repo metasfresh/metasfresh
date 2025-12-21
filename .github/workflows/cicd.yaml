@@ -114,6 +114,10 @@ jobs:
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
+      - name: install-envsubst
+        if: env.ACT == 'true'
+        run: |
+          apt-get update && apt-get install -y gettext-base
       - name: prepare-settings
         env:
           METASFRESH_PACKAGES_READ_TOKEN: ${{ secrets.METASFRESH_PACKAGES_READ_TOKEN }}
@@ -661,6 +665,10 @@ jobs:
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
+      - name: install-envsubst
+        if: env.ACT == 'true'
+        run: |
+          apt-get update && apt-get install -y gettext-base
       - name: prepare-settings
         env:
           METASFRESH_PACKAGES_READ_TOKEN: ${{ secrets.METASFRESH_PACKAGES_READ_TOKEN }}
@@ -983,6 +991,10 @@ jobs:
         with:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
+      - name: install-envsubst
+        if: env.ACT == 'true'
+        run: |
+          apt-get update && apt-get install -y gettext-base
       - name: prepare-settings
         env:
           METASFRESH_PACKAGES_READ_TOKEN: ${{ secrets.METASFRESH_PACKAGES_READ_TOKEN }}
@@ -1054,6 +1066,10 @@ jobs:
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
+      - name: install-envsubst
+        if: env.ACT == 'true'
+        run: |
+          apt-get update && apt-get install -y gettext-base
       - name: prepare-settings
         env:
           METASFRESH_PACKAGES_READ_TOKEN: ${{ secrets.METASFRESH_PACKAGES_READ_TOKEN }}

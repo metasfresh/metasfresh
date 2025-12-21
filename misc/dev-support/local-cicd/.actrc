@@ -4,8 +4,10 @@
 # Note: On Windows, run-cicd.ps1 overrides artifact-server-path to %TEMP%\act-artifacts
 #       This file is primarily used by Linux/macOS users running act directly
 
-# Use larger Ubuntu image with more tools pre-installed
--P ubuntu-latest=ghcr.io/catthehacker/ubuntu:full-latest
+# Use act-latest image for proper Docker socket permissions
+# Note: full-latest has Docker socket permission issues
+# See: https://github.com/nektos/act/issues/2616
+-P ubuntu-latest=ghcr.io/catthehacker/ubuntu:act-latest
 
 # Local artifact storage
 --artifact-server-path=/tmp/act-artifacts
