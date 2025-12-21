@@ -54,12 +54,18 @@ check_prerequisites() {
 }
 
 # Common act arguments
+# Note: Using 'act-latest' image instead of 'full-latest' for proper Docker socket permissions
+# See: https://github.com/nektos/act/issues/2616
 ACT_ARGS=(
     --secret-file "$SCRIPT_DIR/.secrets"
     -C "$REPO_ROOT"
-    -P ubuntu-latest=ghcr.io/catthehacker/ubuntu:full-latest
+    -P ubuntu-latest=ghcr.io/catthehacker/ubuntu:act-latest
     --artifact-server-path=/tmp/act-artifacts
     --env GITHUB_RUN_NUMBER=1
+    --var RETRY_ATTEMPTS=3
+    --var RETRY_DELAY=5
+    --var RETRY_TIMEOUT=10
+    --var ACT_LOCAL=true
 )
 
 show_help() {

@@ -169,7 +169,11 @@ function Invoke-Act {
         "-C", $RepoRoot,
         "-P", "ubuntu-latest=ghcr.io/catthehacker/ubuntu:act-latest",
         "--artifact-server-path=$ArtifactPath",
-        "--env", "GITHUB_RUN_NUMBER=1"
+        "--env", "GITHUB_RUN_NUMBER=1",
+        "--var", "RETRY_ATTEMPTS=3",
+        "--var", "RETRY_DELAY=5",
+        "--var", "RETRY_TIMEOUT=10",
+        "--var", "ACT_LOCAL=true"
     )
 
     # Add verbose flag if requested
