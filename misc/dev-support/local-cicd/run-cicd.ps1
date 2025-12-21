@@ -53,6 +53,10 @@ $RepoRoot = Resolve-Path (Join-Path $ScriptDir "..\..\..") | Select-Object -Expa
 # Windows artifact path (use temp directory)
 $ArtifactPath = Join-Path $env:TEMP "act-artifacts"
 
+# Log file path (in repo root for easy access)
+$Timestamp = Get-Date -Format "yyyy_MM_dd_HHmmss"
+$LogFile = Join-Path $RepoRoot "act_output_$Timestamp.txt"
+
 # Colors for output (PowerShell 5.1+ compatible)
 function Write-Info { param([string]$Message) Write-Host "[INFO] $Message" -ForegroundColor Green }
 function Write-Warn { param([string]$Message) Write-Host "[WARN] $Message" -ForegroundColor Yellow }
@@ -143,6 +147,10 @@ Examples:
   .\run-cicd.ps1 cucumber -Verbose       # Run Cucumber with verbose output
   .\run-cicd.ps1 java -DryRun            # See what Java build would do
 
+Output:
+  - Console output is also saved to: <repo>/act_output_<timestamp>.txt
+  - Artifacts are saved to: %TEMP%\act-artifacts
+
 Environment:
   DOCKER_BUILDKIT=1          Enable BuildKit (set automatically)
 "@
@@ -179,12 +187,54 @@ function Invoke-Act {
     $env:DOCKER_BUILDKIT = "1"
 
     Write-Verbose "Running: act $($actArgs -join ' ')"
+    Write-Info "Output will be logged to: $LogFile"
 
-    & act @actArgs
+    # Set UTF-8 encoding for proper emoji display
+    $originalOutputEncoding = [Console]::OutputEncoding
+    $originalPSOutputEncoding = $OutputEncoding
+    [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+    $OutputEncoding = [System.Text.Encoding]::UTF8
 
-    if ($LASTEXITCODE -ne 0) {
-        Write-Err "act command failed with exit code $LASTEXITCODE"
-        exit $LASTEXITCODE
+    # Also set console code page to UTF-8
+    $null = & chcp 65001
+
+    # Build act arguments string for cmd.exe
+    $actArgsString = ($actArgs | ForEach-Object {
+        if ($_ -match '\s') { "`"$_`"" } else { $_ }
+    }) -join ' '
+
+    # Write command to log file
+    "=== act run started at $(Get-Date) ===" | Out-File -FilePath $LogFile -Encoding utf8
+    "Command: act $actArgsString" | Out-File -FilePath $LogFile -Append -Encoding utf8
+    "Working directory: $RepoRoot" | Out-File -FilePath $LogFile -Append -Encoding utf8
+    "=" * 60 | Out-File -FilePath $LogFile -Append -Encoding utf8
+    "" | Out-File -FilePath $LogFile -Append -Encoding utf8
+
+    # Run act with output to both console and file
+    # Use cmd.exe with UTF-8 codepage for proper emoji display
+    $oldErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = 'SilentlyContinue'
+    & cmd /c "chcp 65001 >nul & act $actArgsString" 2>&1 | ForEach-Object {
+        $line = $_.ToString()
+        Write-Host $line
+        $line | Out-File -FilePath $LogFile -Append -Encoding utf8
+    }
+    $exitCode = $LASTEXITCODE
+    $ErrorActionPreference = $oldErrorActionPreference
+
+    # Restore original encoding
+    [Console]::OutputEncoding = $originalOutputEncoding
+    $OutputEncoding = $originalPSOutputEncoding
+
+    # Append summary to log
+    "" | Out-File -FilePath $LogFile -Append -Encoding utf8
+    "=" * 60 | Out-File -FilePath $LogFile -Append -Encoding utf8
+    "=== act run finished at $(Get-Date) with exit code $exitCode ===" | Out-File -FilePath $LogFile -Append -Encoding utf8
+
+    if ($exitCode -ne 0) {
+        Write-Err "act command failed with exit code $exitCode"
+        Write-Info "Full output saved to: $LogFile"
+        exit $exitCode
     }
 }
 
@@ -273,3 +323,4 @@ switch ($Command.ToLower()) {
 
 Write-Info "Done!"
 Write-Info "Artifacts available at: $ArtifactPath"
+Write-Info "Full output saved to: $LogFile"
