@@ -62,10 +62,10 @@ const createMasterdata = async ({ allowQuickPackAll = true } = {}) => {
 // noinspection JSUnusedLocalSymbols
 test('Pick using Pick All button', async ({ page }) => {
     // === ALLURE METADATA ===
-    await allure.epic('E0105: Picking');
-    await allure.tag('F00230: MobileUI Picking');
-    await allure.story('Pick All button');
-    await allure.severity('normal');
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.story('Pick All button');
+    allure.severity('normal');
 
     const masterdata = await createMasterdata({ allowQuickPackAll: true });
 
@@ -111,10 +111,10 @@ test('Pick using Pick All button', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Expect Pick All button hidden when feature is not active', async ({ page }) => {
     // === ALLURE METADATA ===
-    await allure.epic('E0105: Picking');
-    await allure.tag('F00230: MobileUI Picking');
-    await allure.story('Pick All button');
-    await allure.severity('normal');
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.story('Pick All button');
+    allure.severity('normal');
 
     const masterdata = await createMasterdata({ allowQuickPackAll: false });
 

@@ -100,10 +100,10 @@ const createMasterdata = async () => {
 // noinspection JSUnusedLocalSymbols
 test('Delivery Location based aggregation', async ({ page }) => {
     // === ALLURE METADATA ===
-    await allure.epic('E0105: Picking');
-    await allure.tag('F00230: MobileUI Picking');
-    await allure.story('Delivery location based aggregation');
-    await allure.severity('normal');
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.story('Delivery location based aggregation');
+    allure.severity('normal');
 
     const masterdata = await createMasterdata();
 

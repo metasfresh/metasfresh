@@ -60,10 +60,10 @@ const createMasterdata = async () => {
 // noinspection JSUnusedLocalSymbols
 test('Happy case', async ({ page }) => {
     // === ALLURE METADATA ===
-    await allure.epic('E0105: Picking');
-    await allure.tag('F00250: MobileUI Picking Auto Completion');
-    await allure.story('Auto-complete picking job');
-    await allure.severity('normal');
+    allure.epic('E0105: Picking');
+    allure.tag('F00250: MobileUI Picking Auto Completion');
+    allure.story('Auto-complete picking job');
+    allure.severity('normal');
 
     const masterdata = await createMasterdata();
 

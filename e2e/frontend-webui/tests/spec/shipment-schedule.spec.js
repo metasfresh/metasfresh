@@ -59,19 +59,19 @@ testCases.forEach(({ language, label }) => {
             // === ALLURE METADATA ===
             // Feature metadata from google-sheets-sync skill
             // This test covers the complete order-to-cash cycle
-            await allure.epic('E0100: Sales');
-            await allure.tag('F00100: Sales Order');
-            await allure.tag('F00105: Sales Order Document');
-            await allure.tag('F00130: Shipment Schedule');
-            await allure.tag('F00150: Sales Shipment');
-            await allure.tag('F00200: Sales Invoice');
-            await allure.story('Complete Order-to-Cash: SO → Shipment → Invoice');
-            await allure.severity('critical');
-            await allure.parameter('Language', language);
-            await allure.parameter('UI Label', label);
-            await allure.tag(language);
+            allure.epic('E0100: Sales');
+            allure.tag('F00100: Sales Order');
+            allure.tag('F00105: Sales Order Document');
+            allure.tag('F00130: Shipment Schedule');
+            allure.tag('F00150: Sales Shipment');
+            allure.tag('F00200: Sales Invoice');
+            allure.story('Complete Order-to-Cash: SO → Shipment → Invoice');
+            allure.severity('critical');
+            allure.parameter('Language', language);
+            allure.parameter('UI Label', label);
+            allure.tag(language);
 
-            await allure.description(`
+            allure.description(`
 ## Test Scenario
 This test validates the complete order-to-cash workflow:
 
@@ -133,7 +133,7 @@ Ensures the complete order-to-cash flow works correctly across UI languages.
             });
 
             // Attach test data summary to Allure report
-            await allure.attachment('Test Data', JSON.stringify(masterdata, null, 2), 'application/json');
+            allure.attachment('Test Data', JSON.stringify(masterdata, null, 2), 'application/json');
 
             console.log(`[${language}] Master data created:`, {
                 customer: masterdata.bpartners.CUSTOMER1.bpartnerCode,
@@ -165,7 +165,7 @@ Ensures the complete order-to-cash flow works correctly across UI languages.
 
             // Attach order line details as table
             const orderLinesHtml = `<table border="1"><tr><th>Product</th><th>Quantity</th><th>Unit Price</th><th>Line Total</th></tr><tr><td>${masterdata.products.Product1.productCode}</td><td>10</td><td>50.00 EUR</td><td>500.00 EUR</td></tr></table>`;
-            await allure.attachment('Order Lines', orderLinesHtml, 'text/html');
+            allure.attachment('Order Lines', orderLinesHtml, 'text/html');
 
             // Step 3: Complete the order
             await SalesOrderPage.complete();
@@ -176,7 +176,7 @@ Ensures the complete order-to-cash flow works correctly across UI languages.
             expect(soDocumentNo.length).toBeGreaterThan(0);
 
             // Add document number as parameter for easy identification
-            await allure.parameter('Document No', soDocumentNo);
+            allure.parameter('Document No', soDocumentNo);
 
             console.log(`[${language}] Sales Order created: ${soDocumentNo}`);
 
@@ -189,7 +189,7 @@ Ensures the complete order-to-cash flow works correctly across UI languages.
             // Attach PDF to Allure report
             const pdfPath = await download.path();
             const pdfContent = fs.readFileSync(pdfPath);
-            await allure.attachment('Sales Order PDF', pdfContent, 'application/pdf');
+            allure.attachment('Sales Order PDF', pdfContent, 'application/pdf');
 
             // Validate PDF content
             await SalesOrderPage.validatePdfContent(download, {
@@ -212,7 +212,7 @@ Ensures the complete order-to-cash flow works correctly across UI languages.
 
             // Take screenshot of shipment schedule for report
             const screenshotBuffer = await page.screenshot();
-            await allure.attachment('Shipment Schedule View', screenshotBuffer, 'image/png');
+            allure.attachment('Shipment Schedule View', screenshotBuffer, 'image/png');
 
             console.log(`[${language}] Shipment Schedule opened for SO ${soDocumentNo}`);
 
@@ -368,7 +368,7 @@ Ensures the complete order-to-cash flow works correctly across UI languages.
                 <tr><td>Invoice Created</td><td>✓ PASS</td><td>Yes</td></tr>
                 <tr><td>Invoice-PDF Generated</td><td>✓ PASS</td><td>${invoiceDownload.suggestedFilename()}</td></tr>
             </table>`;
-            await allure.attachment('Validation Results', validationHtml, 'text/html');
+            allure.attachment('Validation Results', validationHtml, 'text/html');
         });
     });
 });

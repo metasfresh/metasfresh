@@ -40,10 +40,10 @@ const createMasterdata = async ({ captionFormat, qtyEntered, priority }) => {
 // noinspection JSUnusedLocalSymbols
 test('LocatorFrom,ProductValueAndName,ProductGTIN,Qty,Priority', async ({ page }) => {
     // === ALLURE METADATA ===
-    await allure.epic('E0370: Intralogistic (HUs)');
-    await allure.tag('F5114: MobileUI Distribution');
-    await allure.story('Distribution caption format');
-    await allure.severity('normal');
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5114: MobileUI Distribution');
+    allure.story('Distribution caption format');
+    allure.severity('normal');
 
     const masterdata = await createMasterdata({
         captionFormat: 'LocatorFrom,ProductValueAndName,ProductGTIN,Qty,Priority',

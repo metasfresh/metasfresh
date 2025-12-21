@@ -89,10 +89,10 @@ const standardTest = async ({ masterdata, huBarcodeToScan }) => {
 // noinspection JSUnusedLocalSymbols
 test('Scan by HU QR Code', async ({ page }) => {
     // === ALLURE METADATA ===
-    await allure.epic('E0370: Intralogistic (HUs)');
-    await allure.tag('F5114: MobileUI Distribution');
-    await allure.story('Scan HU barcodes');
-    await allure.severity('normal');
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5114: MobileUI Distribution');
+    allure.story('Scan HU barcodes');
+    allure.severity('normal');
 
     const masterdata = await createMasterdata();
     await standardTest({ masterdata, huBarcodeToScan: masterdata.handlingUnits.HU1.qrCode });
@@ -101,10 +101,10 @@ test('Scan by HU QR Code', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Scan by M_HU_ID', async ({ page }) => {
     // === ALLURE METADATA ===
-    await allure.epic('E0370: Intralogistic (HUs)');
-    await allure.tag('F5114: MobileUI Distribution');
-    await allure.story('Scan HU barcodes');
-    await allure.severity('normal');
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5114: MobileUI Distribution');
+    allure.story('Scan HU barcodes');
+    allure.severity('normal');
 
     const masterdata = await createMasterdata();
     await standardTest({ masterdata, huBarcodeToScan: masterdata.handlingUnits.HU1.huId });
@@ -113,10 +113,10 @@ test('Scan by M_HU_ID', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Scan by ExternalBarcode', async ({ page }) => {
     // === ALLURE METADATA ===
-    await allure.epic('E0370: Intralogistic (HUs)');
-    await allure.tag('F5114: MobileUI Distribution');
-    await allure.story('Scan HU barcodes');
-    await allure.severity('normal');
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5114: MobileUI Distribution');
+    allure.story('Scan HU barcodes');
+    allure.severity('normal');
 
     const externalBarcode = "EXT" + Date.now();
     const masterdata = await createMasterdata({ externalBarcode });

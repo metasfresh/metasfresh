@@ -81,10 +81,10 @@ const createMasterdata = async () => {
 // noinspection JSUnusedLocalSymbols
 test('Pick one sales order to different workplaces', async ({ page }) => {
     // === ALLURE METADATA ===
-    await allure.epic('E0105: Picking');
-    await allure.tag('F00230: MobileUI Picking');
-    await allure.story('Pick scheduled to workplace');
-    await allure.severity('normal');
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.story('Pick scheduled to workplace');
+    allure.severity('normal');
 
     const masterdata = await createMasterdata();
 

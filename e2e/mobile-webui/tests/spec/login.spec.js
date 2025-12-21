@@ -12,12 +12,12 @@ test.describe('Login/Logout', () => {
             // noinspection JSUnusedLocalSymbols
             test(`By user/pass, using ${language} language, ${authMethod} as default auth method`, async ({ page }) => {
                 // === ALLURE METADATA ===
-                await allure.epic('E0295: Frontend MobileUI');
-                await allure.tag('F12000: Frontend MobileUI');
-                await allure.story('Login with language selection');
-                await allure.severity('critical');
-                await allure.parameter('Language', language);
-                await allure.parameter('Auth Method', authMethod);
+                allure.epic('E0295: Frontend MobileUI');
+                allure.tag('F12000: Frontend MobileUI');
+                allure.story('Login with language selection');
+                allure.severity('critical');
+                allure.parameter('Language', language);
+                allure.parameter('Auth Method', authMethod);
 
                 const response = await Backend.createMasterdata({
                     request: {

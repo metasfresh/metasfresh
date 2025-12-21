@@ -56,12 +56,12 @@ test.describe('Test isAllowIssuingAnyHU', () => {
         // noinspection JSUnusedLocalSymbols
         test(`isAllowIssuingAnyHU=${isAllowIssuingAnyHU}, isCreateRawMaterialsStock=${isCreateRawMaterialsStock} => expect ${expectError ? 'ERROR' : 'OK'}`, async ({ page }) => {
             // === ALLURE METADATA ===
-            await allure.epic('E0160: Manufacturing Execution');
-            await allure.tag('F8030: MobileUI Manufacturing');
-            await allure.story('isAllowIssuingAnyHU configuration');
-            await allure.severity('normal');
-            await allure.parameter('isAllowIssuingAnyHU', String(isAllowIssuingAnyHU));
-            await allure.parameter('isCreateRawMaterialsStock', String(isCreateRawMaterialsStock));
+            allure.epic('E0160: Manufacturing Execution');
+            allure.tag('F8030: MobileUI Manufacturing');
+            allure.story('isAllowIssuingAnyHU configuration');
+            allure.severity('normal');
+            allure.parameter('isAllowIssuingAnyHU', String(isAllowIssuingAnyHU));
+            allure.parameter('isCreateRawMaterialsStock', String(isCreateRawMaterialsStock));
 
             const masterdata = await createMasterdata({
                 isCreateRawMaterialsStock,

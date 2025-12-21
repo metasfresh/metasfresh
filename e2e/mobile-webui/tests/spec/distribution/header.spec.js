@@ -45,10 +45,10 @@ const createMasterdata = async ({ qtyToMove }) => {
 // noinspection JSUnusedLocalSymbols
 test('Happy case', async ({ page }) => {
     // === ALLURE METADATA ===
-    await allure.epic('E0370: Intralogistic (HUs)');
-    await allure.tag('F5114: MobileUI Distribution');
-    await allure.story('Distribution header display');
-    await allure.severity('normal');
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5114: MobileUI Distribution');
+    allure.story('Distribution header display');
+    allure.severity('normal');
 
     const masterdata = await createMasterdata({ qtyToMove: 100 });
 

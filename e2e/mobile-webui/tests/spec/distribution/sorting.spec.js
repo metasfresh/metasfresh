@@ -45,10 +45,10 @@ const createMasterdata = async ({ orderBys, distributionOrders }) => {
 // noinspection JSUnusedLocalSymbols
 test('Sort by SeqNo', async ({ page }) => {
     // === ALLURE METADATA ===
-    await allure.epic('E0370: Intralogistic (HUs)');
-    await allure.tag('F5114: MobileUI Distribution');
-    await allure.story('Distribution sorting');
-    await allure.severity('normal');
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5114: MobileUI Distribution');
+    allure.story('Distribution sorting');
+    allure.severity('normal');
 
     const masterdata = await createMasterdata({
         orderBys: 'SeqNo,Priority,DatePromised',

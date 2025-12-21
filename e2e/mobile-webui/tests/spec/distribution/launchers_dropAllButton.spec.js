@@ -78,10 +78,10 @@ const createMasterdata = async ({ qtyToMove }) => {
 // noinspection JSUnusedLocalSymbols
 test('Pick multiple HUs (by HU code) and drop them all together in one step (using locator code)', async ({ page }) => {
     // === ALLURE METADATA ===
-    await allure.epic('E0370: Intralogistic (HUs)');
-    await allure.tag('F5114.2: MobileUI Distribution: Drop All');
-    await allure.story('Drop all button from launchers');
-    await allure.severity('normal');
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5114.2: MobileUI Distribution: Drop All');
+    allure.story('Drop all button from launchers');
+    allure.severity('normal');
 
     const masterdata = await createMasterdata({ qtyToMove: 100 });
 

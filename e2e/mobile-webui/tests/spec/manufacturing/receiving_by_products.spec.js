@@ -65,10 +65,10 @@ const createMasterdata = async () => {
 // noinspection JSUnusedLocalSymbols
 test('Receive By-Products from 2 manufacturing orders into same HU', async ({ page }) => {
     // === ALLURE METADATA ===
-    await allure.epic('E0160: Manufacturing Execution');
-    await allure.tag('F8030: MobileUI Manufacturing');
-    await allure.story('Receive by-products into same HU');
-    await allure.severity('normal');
+    allure.epic('E0160: Manufacturing Execution');
+    allure.tag('F8030: MobileUI Manufacturing');
+    allure.story('Receive by-products into same HU');
+    allure.severity('normal');
 
     const masterdata = await createMasterdata();
 

@@ -40,10 +40,10 @@ test.describe('Scan HU codes', () => {
     // noinspection JSUnusedLocalSymbols
     test('Scan HU QR Code', async ({ page }) => {
         // === ALLURE METADATA ===
-        await allure.epic('E0295: Frontend MobileUI');
-        await allure.tag('F12000: Frontend MobileUI');
-        await allure.story('Scan HU codes from home screen');
-        await allure.severity('normal');
+        allure.epic('E0295: Frontend MobileUI');
+        allure.tag('F12000: Frontend MobileUI');
+        allure.story('Scan HU codes from home screen');
+        allure.severity('normal');
 
         const masterdata = await createMasterdata();
         await runTest({ masterdata, huBarcode: masterdata.handlingUnits.HU1.qrCode });
@@ -52,10 +52,10 @@ test.describe('Scan HU codes', () => {
     // noinspection JSUnusedLocalSymbols
     test('Scan HU ID Code', async ({ page }) => {
         // === ALLURE METADATA ===
-        await allure.epic('E0295: Frontend MobileUI');
-        await allure.tag('F12000: Frontend MobileUI');
-        await allure.story('Scan HU codes from home screen');
-        await allure.severity('normal');
+        allure.epic('E0295: Frontend MobileUI');
+        allure.tag('F12000: Frontend MobileUI');
+        allure.story('Scan HU codes from home screen');
+        allure.severity('normal');
 
         const masterdata = await createMasterdata();
         await runTest({ masterdata, huBarcode: masterdata.handlingUnits.HU1.huId });
@@ -64,10 +64,10 @@ test.describe('Scan HU codes', () => {
     // noinspection JSUnusedLocalSymbols
     test('Scan ExternalBarcode', async ({ page }) => {
         // === ALLURE METADATA ===
-        await allure.epic('E0295: Frontend MobileUI');
-        await allure.tag('F12000: Frontend MobileUI');
-        await allure.story('Scan HU codes from home screen');
-        await allure.severity('normal');
+        allure.epic('E0295: Frontend MobileUI');
+        allure.tag('F12000: Frontend MobileUI');
+        allure.story('Scan HU codes from home screen');
+        allure.severity('normal');
 
         const externalBarcode = "EXT" + Date.now();
         const masterdata = await createMasterdata({ externalBarcode });
@@ -79,10 +79,10 @@ test.describe('Scan HU codes', () => {
 // noinspection JSUnusedLocalSymbols
 test('Scan Workplace code', async ({ page }) => {
     // === ALLURE METADATA ===
-    await allure.epic('E0295: Frontend MobileUI');
-    await allure.tag('F12000: Frontend MobileUI');
-    await allure.story('Scan workplace codes from home screen');
-    await allure.severity('normal');
+    allure.epic('E0295: Frontend MobileUI');
+    allure.tag('F12000: Frontend MobileUI');
+    allure.story('Scan workplace codes from home screen');
+    allure.severity('normal');
 
     const masterdata = await createMasterdata();
 

@@ -102,10 +102,10 @@ const createMasterdata = async ({ displayPickingSlotSuggestions } = {}) => {
 // noinspection JSUnusedLocalSymbols
 test('Test NO picking slot suggestions', async ({ page }) => {
     // === ALLURE METADATA ===
-    await allure.epic('E0105: Picking');
-    await allure.tag('F00230: MobileUI Picking');
-    await allure.story('Picking slot suggestions');
-    await allure.severity('normal');
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.story('Picking slot suggestions');
+    allure.severity('normal');
 
     const masterdata = await createMasterdata({ displayPickingSlotSuggestions: false });
 
@@ -122,10 +122,10 @@ test('Test NO picking slot suggestions', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Test picking slot suggestions', async ({ page }) => {
     // === ALLURE METADATA ===
-    await allure.epic('E0105: Picking');
-    await allure.tag('F00230: MobileUI Picking');
-    await allure.story('Picking slot suggestions');
-    await allure.severity('normal');
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.story('Picking slot suggestions');
+    allure.severity('normal');
 
     const masterdata = await createMasterdata({ displayPickingSlotSuggestions: true });
 

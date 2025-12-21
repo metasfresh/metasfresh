@@ -127,10 +127,10 @@ const manufactureBOMs = async ({ catchWeightQRCode, count }) => await test.step(
 // noinspection JSUnusedLocalSymbols
 test('Pick using custom QR code', async ({ page }) => {
     // === ALLURE METADATA ===
-    await allure.epic('E0105: Picking');
-    await allure.tag('F00230: MobileUI Picking');
-    await allure.story('Pick using custom QR code');
-    await allure.severity('normal');
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.story('Pick using custom QR code');
+    allure.severity('normal');
 
     masterdata = await createMasterdata();
 

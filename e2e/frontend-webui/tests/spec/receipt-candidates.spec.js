@@ -43,16 +43,16 @@ testCases.forEach(({ language, label }) => {
     test(`Complete purchase-to-invoice flow: PO → Receipt → Invoice (${label} UI)`, async ({ page }) => {
       // === ALLURE METADATA ===
       // This test spans multiple features/epics
-      await allure.epic('E0140: Purchasing');
-      await allure.tag('F00600: Purchase Order');
-      await allure.tag('F65010: Material Receipt Candidates');
-      await allure.story('Complete PO → Receipt → Invoice flow');
-      await allure.severity('critical');
-      await allure.parameter('Language', language);
-      await allure.parameter('UI Label', label);
-      await allure.tag(language);
+      allure.epic('E0140: Purchasing');
+      allure.tag('F00600: Purchase Order');
+      allure.tag('F65010: Material Receipt Candidates');
+      allure.story('Complete PO → Receipt → Invoice flow');
+      allure.severity('critical');
+      allure.parameter('Language', language);
+      allure.parameter('UI Label', label);
+      allure.tag(language);
 
-      await allure.description(`
+      allure.description(`
 ## Test Scenario
 This test validates the complete purchase-to-invoice workflow:
 

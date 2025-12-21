@@ -16,12 +16,12 @@ test.describe('Login/Logout', () => {
   ['en_US', 'de_DE'].forEach((language) => {
     test(`Login with ${language} language`, async ({ page }) => {
       // === ALLURE METADATA ===
-      await allure.epic('E0193: System Authentication');
-      await allure.tag('F14000: Username and Password Auth');
-      await allure.story('Login with language selection');
-      await allure.severity('critical');
-      await allure.parameter('Language', language);
-      await allure.tag(language);
+      allure.epic('E0193: System Authentication');
+      allure.tag('F14000: Username and Password Auth');
+      allure.story('Login with language selection');
+      allure.severity('critical');
+      allure.parameter('Language', language);
+      allure.tag(language);
 
       // Create test user via backend API
       const response = await Backend.createMasterdata({

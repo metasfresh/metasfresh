@@ -49,10 +49,10 @@ const createMasterdataAndScanByHUQRCode = async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Check action buttons order', async ({ page }) => {
     // === ALLURE METADATA ===
-    await allure.epic('E0370: Intralogistic (HUs)');
-    await allure.tag('F5120: MobileUI HU Manager');
-    await allure.story('HU Manager - UI Layout');
-    await allure.severity('normal');
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5120: MobileUI HU Manager');
+    allure.story('HU Manager - UI Layout');
+    allure.severity('normal');
 
     const masterdata = await createMasterdata();
 
@@ -76,10 +76,10 @@ test('Check action buttons order', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Dispose HU', async ({ page }) => {
     // === ALLURE METADATA ===
-    await allure.epic('E0370: Intralogistic (HUs)');
-    await allure.tag('F5120: MobileUI HU Manager');
-    await allure.story('HU Manager - Dispose');
-    await allure.severity('critical');
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5120: MobileUI HU Manager');
+    allure.story('HU Manager - Dispose');
+    allure.severity('critical');
 
     await createMasterdataAndScanByHUQRCode({ page });
     await HUManagerScreen.dispose();
@@ -88,10 +88,10 @@ test('Dispose HU', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Move HU using locator code', async ({ page }) => {
     // === ALLURE METADATA ===
-    await allure.epic('E0370: Intralogistic (HUs)');
-    await allure.tag('F5120: MobileUI HU Manager');
-    await allure.story('HU Manager - Move');
-    await allure.severity('critical');
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5120: MobileUI HU Manager');
+    allure.story('HU Manager - Move');
+    allure.severity('critical');
 
     const masterdata = await createMasterdataAndScanByHUQRCode({ page });
 
@@ -105,10 +105,10 @@ test('Move HU using locator code', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Change Qty', async ({ page }) => {
     // === ALLURE METADATA ===
-    await allure.epic('E0370: Intralogistic (HUs)');
-    await allure.tag('F5120: MobileUI HU Manager');
-    await allure.story('HU Manager - Change Quantity');
-    await allure.severity('critical');
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5120: MobileUI HU Manager');
+    allure.story('HU Manager - Change Quantity');
+    allure.severity('critical');
 
     const masterdata = await createMasterdataAndScanByHUQRCode({ page });
 
@@ -122,10 +122,10 @@ test('Change Qty', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Change Clearance Status', async ({ page }) => {
     // === ALLURE METADATA ===
-    await allure.epic('E0370: Intralogistic (HUs)');
-    await allure.tag('F5120: MobileUI HU Manager');
-    await allure.story('HU Manager - Clearance Status');
-    await allure.severity('normal');
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5120: MobileUI HU Manager');
+    allure.story('HU Manager - Clearance Status');
+    allure.severity('normal');
 
     await createMasterdataAndScanByHUQRCode({ page });
 
@@ -153,10 +153,10 @@ test('Change Locator of a generated HU QR Code', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Bulk actions - Move', async ({ page }) => {
     // === ALLURE METADATA ===
-    await allure.epic('E0370: Intralogistic (HUs)');
-    await allure.tag('F5120: MobileUI HU Manager');
-    await allure.story('HU Manager - Bulk Actions');
-    await allure.severity('normal');
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5120: MobileUI HU Manager');
+    allure.story('HU Manager - Bulk Actions');
+    allure.severity('normal');
 
     const masterdata = await createMasterdataAndScanByHUQRCode({ page });
 
