@@ -1490,376 +1490,65 @@ jobs:
           retention-days: 30
 
   allure_publish:
-    name: Publish Allure Reports to GitHub Pages
+    name: Publish Allure Reports to R2
     runs-on: ubuntu-latest
     needs: [ init, frontend_webui_test, mobile_test, cucumber-allure-report ]
     if: always()  # Run even if tests failed
-    permissions:
-      contents: write
     steps:
-      - name: Checkout testreports gh-pages branch
-        uses: actions/checkout@v4
-        with:
-          repository: metasfresh/metasfresh-testreports
-          ref: gh-pages
-          path: gh-pages-repo
-          ssh-key: ${{ secrets.TESTREPORTS_DEPLOY_KEY }}
-          persist-credentials: true
-
       - name: Setup directory structure
         run: |
           BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
 
-          # Create directory structure with explicit paths
-          mkdir -p "gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/frontend-webui"
-          mkdir -p "gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/mobile-webui"
-          mkdir -p "gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/cucumber"
-          mkdir -p "gh-pages-repo/_data"
+          # Create directory structure for reports
+          mkdir -p "reports/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/frontend-webui"
+          mkdir -p "reports/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/mobile-webui"
+          mkdir -p "reports/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/cucumber"
 
-          # Debug: Show created paths (absolute)
-          echo "Created directory structure:"
-          echo "  - $(pwd)/gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/frontend-webui"
-          echo "  - $(pwd)/gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/mobile-webui"
-          echo "  - $(pwd)/gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/cucumber"
-          echo "  - $(pwd)/gh-pages-repo/_data"
-
-          # Verify directories exist
-          ls -la "gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/"
+          echo "Created directory structure for branch: ${BRANCH_SANITIZED}, build: ${{ needs.init.outputs.tag-fixed }}"
 
       - name: Download Allure report artifact
         if: needs.frontend_webui_test.result == 'success' || needs.frontend_webui_test.result == 'failure'
         uses: actions/download-artifact@v4
         with:
           name: allure-report-frontend-webui
-          path: gh-pages-repo/temp-report/
-
-      - name: Copy report to build directory
-        if: needs.frontend_webui_test.result == 'success' || needs.frontend_webui_test.result == 'failure'
-        run: |
-          BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
-          cp -r gh-pages-repo/temp-report/* "gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/frontend-webui/"
-          rm -rf gh-pages-repo/temp-report
+          path: reports/branches/${{ needs.init.outputs.branch-sanitized-gh-pages }}/builds/${{ needs.init.outputs.tag-fixed }}/frontend-webui/
 
       - name: Download Mobile Allure report artifact
         if: needs.mobile_test.result == 'success' || needs.mobile_test.result == 'failure'
         uses: actions/download-artifact@v4
         with:
           name: allure-report-mobile-webui
-          path: gh-pages-repo/temp-report-mobile/
-
-      - name: Copy mobile report to build directory
-        if: needs.mobile_test.result == 'success' || needs.mobile_test.result == 'failure'
-        run: |
-          BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
-          cp -r gh-pages-repo/temp-report-mobile/* "gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/mobile-webui/"
-          rm -rf gh-pages-repo/temp-report-mobile
+          path: reports/branches/${{ needs.init.outputs.branch-sanitized-gh-pages }}/builds/${{ needs.init.outputs.tag-fixed }}/mobile-webui/
 
       - name: Download Cucumber Allure report artifact
         if: needs.cucumber-allure-report.result == 'success'
         uses: actions/download-artifact@v4
         with:
           name: allure-report-cucumber
-          path: gh-pages-repo/temp-report-cucumber/
+          path: reports/branches/${{ needs.init.outputs.branch-sanitized-gh-pages }}/builds/${{ needs.init.outputs.tag-fixed }}/cucumber/
         continue-on-error: true
-
-      - name: Copy cucumber report to build directory
-        if: needs.cucumber-allure-report.result == 'success'
-        run: |
-          BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
-          if [ -d "gh-pages-repo/temp-report-cucumber" ]; then
-            cp -r gh-pages-repo/temp-report-cucumber/* "gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/cucumber/"
-            rm -rf gh-pages-repo/temp-report-cucumber
-            echo "Cucumber Allure report copied successfully"
-          else
-            echo "No Cucumber Allure report found - skipping"
-          fi
-
-      - name: Update latest redirect
-        run: |
-          BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
-
-          cat > "gh-pages-repo/branches/${BRANCH_SANITIZED}/latest.html" <<EOF
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <meta charset="utf-8">
-            <title>Redirecting to Latest Report...</title>
-            <meta http-equiv="refresh" content="0; url=builds/${{ needs.init.outputs.tag-fixed }}/frontend-webui/">
-            <script>window.location.href = 'builds/${{ needs.init.outputs.tag-fixed }}/frontend-webui/';</script>
-          </head>
-          <body>
-            <p>Redirecting to latest report...</p>
-            <p>If not redirected, <a href="builds/${{ needs.init.outputs.tag-fixed }}/frontend-webui/">click here</a>.</p>
-          </body>
-          </html>
-          EOF
-
-      - name: Update branches metadata
-        run: |
-          cd gh-pages-repo
-          BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
-
-          METADATA_FILE="_data/branches.json"
-          if [ ! -f "$METADATA_FILE" ]; then
-            echo '{"branches":[]}' > "$METADATA_FILE"
-          fi
-
-          # Use compact jq to avoid shell quoting issues with multi-line scripts
-          # Updates reports to include frontend-webui, mobile-webui, and cucumber with direct build paths
-          jq --arg name "${{ github.ref_name }}" \
-             --arg sanitized "$BRANCH_SANITIZED" \
-             --arg build "${{ needs.init.outputs.tag-fixed }}" \
-             --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-             '.branches |= map(if .name == $name then . + {"lastUpdate": $timestamp, "lastBuild": $build, "buildCount": ((.buildCount // 0) + 1), "branch_status": "active", "reports": {"frontend-webui": ("branches/" + $sanitized + "/builds/" + $build + "/frontend-webui/"), "mobile-webui": ("branches/" + $sanitized + "/builds/" + $build + "/mobile-webui/"), "cucumber": ("branches/" + $sanitized + "/builds/" + $build + "/cucumber/")}} else . end) | if (.branches | map(.name) | index($name)) == null then .branches += [{"name": $name, "sanitized": $sanitized, "lastUpdate": $timestamp, "lastBuild": $build, "reports": {"frontend-webui": ("branches/" + $sanitized + "/builds/" + $build + "/frontend-webui/"), "mobile-webui": ("branches/" + $sanitized + "/builds/" + $build + "/mobile-webui/"), "cucumber": ("branches/" + $sanitized + "/builds/" + $build + "/cucumber/")}, "buildCount": 1, "branch_status": "active"}] else . end' \
-             "$METADATA_FILE" > "${METADATA_FILE}.tmp" && mv "${METADATA_FILE}.tmp" "$METADATA_FILE"
-
-      - name: Generate landing page
-        run: |
-          cd gh-pages-repo
-
-          cat > index.html <<'LANDINGPAGE'
-          <!DOCTYPE html>
-          <html lang="en">
-          <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>metasfresh Test Reports</title>
-            <style>
-              * { margin: 0; padding: 0; box-sizing: border-box; }
-              body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                min-height: 100vh;
-                padding: 2rem;
-              }
-              .container {
-                max-width: 1200px;
-                margin: 0 auto;
-                background: white;
-                border-radius: 12px;
-                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-                overflow: hidden;
-              }
-              header {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                padding: 2rem;
-                text-align: center;
-              }
-              header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
-              header p { opacity: 0.9; font-size: 1.1rem; }
-              .filters {
-                padding: 1.5rem 2rem;
-                background: #f7f9fc;
-                border-bottom: 1px solid #e1e8ed;
-                display: flex;
-                gap: 1rem;
-              }
-              .filters input, .filters select {
-                flex: 1;
-                padding: 0.75rem 1rem;
-                border: 1px solid #d1d9e0;
-                border-radius: 6px;
-                font-size: 1rem;
-              }
-              .branch-list { padding: 2rem; }
-              .branch-card {
-                background: #f7f9fc;
-                border-radius: 8px;
-                padding: 1.5rem;
-                margin-bottom: 1rem;
-                border: 1px solid #e1e8ed;
-                transition: all 0.2s;
-              }
-              .branch-card:hover {
-                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-                transform: translateY(-2px);
-              }
-              .branch-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 1rem;
-              }
-              .branch-name { font-size: 1.3rem; font-weight: 600; color: #2d3748; }
-              .branch-meta { font-size: 0.85rem; color: #718096; margin-top: 0.25rem; }
-              .reports-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                gap: 1rem;
-                margin-top: 1rem;
-              }
-              .report-link {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                padding: 1rem;
-                background: white;
-                border-radius: 6px;
-                text-decoration: none;
-                color: #667eea;
-                font-weight: 500;
-                border: 2px solid #e1e8ed;
-                transition: all 0.2s;
-              }
-              .report-link:hover {
-                border-color: #667eea;
-                background: #f0f4ff;
-              }
-              .badge {
-                padding: 0.25rem 0.75rem;
-                border-radius: 12px;
-                font-size: 0.75rem;
-                font-weight: 600;
-                text-transform: uppercase;
-              }
-              .badge-active { background: #48bb78; color: white; }
-              .badge-stale { background: #ed8936; color: white; }
-              footer {
-                text-align: center;
-                padding: 1.5rem;
-                color: #718096;
-                border-top: 1px solid #e1e8ed;
-              }
-            </style>
-          </head>
-          <body>
-            <div class="container">
-              <header>
-                <h1>🧪 metasfresh Test Reports</h1>
-                <p>Allure test reports for all branches</p>
-              </header>
-
-              <div class="filters">
-                <input type="text" id="searchInput" placeholder="Search branches..." />
-                <select id="statusFilter">
-                  <option value="all">All Branches</option>
-                  <option value="active">Active Only</option>
-                  <option value="stale">Stale Only</option>
-                </select>
-              </div>
-
-              <div class="branch-list" id="branchList">
-                <p style="text-align:center; color: #718096; padding: 2rem;">Loading...</p>
-              </div>
-
-              <footer>
-                <p>Generated by GitHub Actions | Last updated: <span id="lastUpdate"></span></p>
-              </footer>
-            </div>
-
-            <script>
-              async function loadBranches() {
-                try {
-                  const response = await fetch('_data/branches.json');
-                  const data = await response.json();
-                  renderBranches(data.branches);
-                  document.getElementById('lastUpdate').textContent = new Date().toLocaleString();
-                } catch (error) {
-                  document.getElementById('branchList').innerHTML =
-                    '<p style="text-align:center; color: #e53e3e;">Error loading branches</p>';
-                }
-              }
-
-              function renderBranches(branches) {
-                const container = document.getElementById('branchList');
-                container.innerHTML = '';
-
-                if (!branches.length) {
-                  container.innerHTML = '<p style="text-align:center; color: #718096;">No branches</p>';
-                  return;
-                }
-
-                branches
-                  .sort((a, b) => new Date(b.lastUpdate) - new Date(a.lastUpdate))
-                  .forEach(branch => {
-                    const card = document.createElement('div');
-                    card.className = 'branch-card';
-                    card.dataset.name = branch.name.toLowerCase();
-                    card.dataset.status = branch.branch_status;
-
-                    const reports = Object.entries(branch.reports || {})
-                      .map(([type, url]) => `
-                        <a href="${url}" class="report-link">
-                          <span>📊 ${type.replace('-', ' ').toUpperCase()}</span>
-                          <span>→</span>
-                        </a>
-                      `).join('');
-
-                    card.innerHTML = `
-                      <div class="branch-header">
-                        <div>
-                          <div class="branch-name">${branch.name}</div>
-                          <div class="branch-meta">
-                            Updated: ${new Date(branch.lastUpdate).toLocaleString()} |
-                            Builds: ${branch.buildCount} | Latest: ${branch.lastBuild}
-                          </div>
-                        </div>
-                        <span class="badge badge-${branch.branch_status}">${branch.branch_status}</span>
-                      </div>
-                      <div class="reports-grid">${reports}</div>
-                    `;
-
-                    container.appendChild(card);
-                  });
-              }
-
-              document.getElementById('searchInput').addEventListener('input', filterBranches);
-              document.getElementById('statusFilter').addEventListener('change', filterBranches);
-
-              function filterBranches() {
-                const search = document.getElementById('searchInput').value.toLowerCase();
-                const status = document.getElementById('statusFilter').value;
-
-                document.querySelectorAll('.branch-card').forEach(card => {
-                  const matchesSearch = card.dataset.name.includes(search);
-                  const matchesStatus = status === 'all' || card.dataset.status === status;
-                  card.style.display = (matchesSearch && matchesStatus) ? 'block' : 'none';
-                });
-              }
-
-              loadBranches();
-            </script>
-          </body>
-          </html>
-          LANDINGPAGE
-
-      - name: Create .nojekyll file
-        run: |
-          # Disable Jekyll processing to serve _data directory
-          touch gh-pages-repo/.nojekyll
-          echo "Created .nojekyll file to disable Jekyll and serve _data directory"
 
       - name: Verify reports exist
         id: verify_reports
         run: |
           BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
-          BUILD_DIR="gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}"
+          BUILD_DIR="reports/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}"
 
           REPORTS_FOUND=0
 
-          # Check for frontend-webui report (index.html is the main Allure file)
           if [ -f "${BUILD_DIR}/frontend-webui/index.html" ]; then
             echo "✓ Frontend WebUI report found"
             REPORTS_FOUND=$((REPORTS_FOUND + 1))
-          else
-            echo "✗ Frontend WebUI report NOT found"
           fi
 
-          # Check for mobile-webui report
           if [ -f "${BUILD_DIR}/mobile-webui/index.html" ]; then
             echo "✓ Mobile WebUI report found"
             REPORTS_FOUND=$((REPORTS_FOUND + 1))
-          else
-            echo "✗ Mobile WebUI report NOT found"
           fi
 
-          # Check for cucumber report
           if [ -f "${BUILD_DIR}/cucumber/index.html" ]; then
             echo "✓ Cucumber report found"
             REPORTS_FOUND=$((REPORTS_FOUND + 1))
-          else
-            echo "✗ Cucumber report NOT found"
           fi
 
           echo "reports_found=${REPORTS_FOUND}" >> $GITHUB_OUTPUT
@@ -1870,39 +1559,6 @@ jobs:
           fi
 
           echo "Found ${REPORTS_FOUND} report(s) to publish"
-
-      - name: Deploy to GitHub Pages
-        run: |
-          cd gh-pages-repo
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          git add .
-
-          # Check if there are changes to commit
-          if git diff --staged --quiet; then
-            echo "::error::No changes to commit - reports may not have been copied correctly"
-            exit 1
-          fi
-
-          # Retry logic for concurrent deployments
-          PUSH_SUCCESS=false
-          for i in {1..5}; do
-            git pull --rebase origin gh-pages || true
-            git commit -m "Update reports: ${{ github.ref_name }} (build ${{ needs.init.outputs.tag-fixed }})" || true
-            if git push origin gh-pages; then
-              PUSH_SUCCESS=true
-              echo "Push succeeded on attempt $i"
-              break
-            fi
-            echo "Push failed on attempt $i, retrying in 10s..."
-            sleep 10
-          done
-
-          if [ "$PUSH_SUCCESS" != "true" ]; then
-            echo "::error::Failed to push to gh-pages after 5 attempts"
-            exit 1
-          fi
 
       # ===== CLOUDFLARE R2 UPLOAD =====
       - name: Configure AWS CLI for R2
@@ -1924,30 +1580,68 @@ jobs:
           BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
 
           echo "Syncing reports to R2..."
-          aws s3 sync gh-pages-repo/ s3://${{ vars.R2_BUCKET_NAME }}/ \
+          aws s3 sync reports/ s3://${{ vars.R2_BUCKET_NAME }}/ \
             --endpoint-url ${{ vars.R2_ENDPOINT_URL }} \
-            --delete \
             --no-progress
 
           echo "✓ Reports synced to R2"
-          echo "Total size: $(du -sh gh-pages-repo | cut -f1)"
+          echo "Total size: $(du -sh reports | cut -f1)"
+
+      - name: Cleanup old builds from R2
+        run: |
+          BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
+          MAX_BUILDS_PER_BRANCH=10
+
+          echo "Cleaning up old builds for branch: ${BRANCH_SANITIZED}"
+          echo "Keeping only the ${MAX_BUILDS_PER_BRANCH} most recent builds"
+
+          # List all builds for this branch, sorted by modification time (newest first)
+          aws s3api list-objects-v2 \
+            --endpoint-url ${{ vars.R2_ENDPOINT_URL }} \
+            --bucket ${{ vars.R2_BUCKET_NAME }} \
+            --prefix "branches/${BRANCH_SANITIZED}/builds/" \
+            --delimiter "/" \
+            --query 'CommonPrefixes[].Prefix' \
+            --output text | tr '\t' '\n' | sort -r > all_builds.txt
+
+          # Count builds
+          BUILD_COUNT=$(wc -l < all_builds.txt)
+          echo "Found ${BUILD_COUNT} builds"
+
+          if [ "$BUILD_COUNT" -gt "$MAX_BUILDS_PER_BRANCH" ]; then
+            # Keep the newest builds, delete the rest
+            BUILDS_TO_DELETE=$((BUILD_COUNT - MAX_BUILDS_PER_BRANCH))
+            echo "Deleting ${BUILDS_TO_DELETE} old build(s)"
+
+            tail -n "$BUILDS_TO_DELETE" all_builds.txt | while read -r build_prefix; do
+              echo "Deleting: ${build_prefix}"
+              aws s3 rm "s3://${{ vars.R2_BUCKET_NAME }}/${build_prefix}" \
+                --endpoint-url ${{ vars.R2_ENDPOINT_URL }} \
+                --recursive
+            done
+
+            echo "✓ Cleanup completed"
+          else
+            echo "No cleanup needed (${BUILD_COUNT} <= ${MAX_BUILDS_PER_BRANCH})"
+          fi
 
       - name: produce-summary
         run: |
           BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
           VERSION="${{ needs.init.outputs.tag-fixed }}"
-          BASE_URL="https://metasfresh.github.io/metasfresh-testreports/branches/${BRANCH_SANITIZED}/builds/${VERSION}"
           R2_BASE_URL="https://pub-c55eb97d86224a4e951c219dfc2057b8.r2.dev/branches/${BRANCH_SANITIZED}/builds/${VERSION}"
 
           echo '#### 📊 Allure Test Reports' >> $GITHUB_STEP_SUMMARY
           echo '' >> $GITHUB_STEP_SUMMARY
-          echo "| Report | GitHub Pages | Cloudflare R2 |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------|--------------|---------------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Frontend WebUI | [View](${BASE_URL}/frontend-webui/) | [View](${R2_BASE_URL}/frontend-webui/) |" >> $GITHUB_STEP_SUMMARY
-          echo "| Mobile WebUI | [View](${BASE_URL}/mobile-webui/) | [View](${R2_BASE_URL}/mobile-webui/) |" >> $GITHUB_STEP_SUMMARY
-          echo "| Cucumber | [View](${BASE_URL}/cucumber/) | [View](${R2_BASE_URL}/cucumber/) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Report | Link |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend WebUI | [View](${R2_BASE_URL}/frontend-webui/) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Mobile WebUI | [View](${R2_BASE_URL}/mobile-webui/) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Cucumber | [View](${R2_BASE_URL}/cucumber/) |" >> $GITHUB_STEP_SUMMARY
           echo '' >> $GITHUB_STEP_SUMMARY
-          echo "📁 All branches: [GitHub Pages](https://metasfresh.github.io/metasfresh-testreports/) | [R2](https://pub-c55eb97d86224a4e951c219dfc2057b8.r2.dev/)" >> $GITHUB_STEP_SUMMARY
+          echo "📁 [All branches](https://pub-c55eb97d86224a4e951c219dfc2057b8.r2.dev/)" >> $GITHUB_STEP_SUMMARY
+          echo '' >> $GITHUB_STEP_SUMMARY
+          echo "🧹 Keeping last 10 builds per branch (automatic cleanup enabled)" >> $GITHUB_STEP_SUMMARY
 
   cicd-dispatch:
     if: contains(fromJson(vars.CICD_BRANCH_MAP), github.ref_name) == true
