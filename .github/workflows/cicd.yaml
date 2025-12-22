@@ -1635,11 +1635,11 @@ jobs:
           echo '' >> $GITHUB_STEP_SUMMARY
           echo "| Report | Link |" >> $GITHUB_STEP_SUMMARY
           echo "|--------|------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Frontend WebUI | [View](${R2_BASE_URL}/frontend-webui/) |" >> $GITHUB_STEP_SUMMARY
-          echo "| Mobile WebUI | [View](${R2_BASE_URL}/mobile-webui/) |" >> $GITHUB_STEP_SUMMARY
-          echo "| Cucumber | [View](${R2_BASE_URL}/cucumber/) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend WebUI | [View](${R2_BASE_URL}/frontend-webui/index.html) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Mobile WebUI | [View](${R2_BASE_URL}/mobile-webui/index.html) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Cucumber | [View](${R2_BASE_URL}/cucumber/index.html) |" >> $GITHUB_STEP_SUMMARY
           echo '' >> $GITHUB_STEP_SUMMARY
-          echo "📁 [All branches](https://pub-c55eb97d86224a4e951c219dfc2057b8.r2.dev/)" >> $GITHUB_STEP_SUMMARY
+          echo "📁 [All branches](https://pub-c55eb97d86224a4e951c219dfc2057b8.r2.dev/index.html)" >> $GITHUB_STEP_SUMMARY
           echo '' >> $GITHUB_STEP_SUMMARY
           echo "🧹 Keeping last 10 builds per branch (automatic cleanup enabled)" >> $GITHUB_STEP_SUMMARY
 
