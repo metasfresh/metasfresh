@@ -403,6 +403,14 @@ jobs:
         with:
           name: jest-logs
           path: jest/**/jest.log
+      - name: Upload Jest JUnit results for R2
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: junit-results-jest
+          path: jest/frontend/*.xml
+          if-no-files-found: ignore
+          retention-days: 1
 
   backend:
     runs-on: ubuntu-latest
@@ -1022,6 +1030,24 @@ jobs:
         with:
           name: junit-logs
           path: junit/**/junit.log
+      - name: Upload Backend JUnit results for R2
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: junit-results-backend
+          path: |
+            junit/commons/*.xml
+            junit/backend/*.xml
+          if-no-files-found: ignore
+          retention-days: 1
+      - name: Upload Camel JUnit results for R2
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: junit-results-camel
+          path: junit/camel/*.xml
+          if-no-files-found: ignore
+          retention-days: 1
 
   cucumber-build:
     name: build (cucumber)
@@ -1221,6 +1247,14 @@ jobs:
           name: cucumber-logs-${{ matrix.profile }}
           path: cucumber.log
           retention-days: 30
+      - name: Upload Cucumber JUnit results for R2
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: junit-results-cucumber-${{ matrix.profile }}
+          path: cucumber/cucumber-junit.xml
+          if-no-files-found: ignore
+          retention-days: 1
 
   cucumber-allure-report:
     name: Generate Cucumber Allure Report
@@ -1423,6 +1457,14 @@ jobs:
             docker-builds/e2e-tests/playwright-report-mobile/
             docker-builds/e2e-tests/test-results-mobile/
           retention-days: 30
+      - name: Upload Playwright Mobile JUnit results for R2
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: junit-results-playwright-mobile
+          path: docker-builds/e2e-tests/playwright-report-mobile/junit/results.xml
+          if-no-files-found: ignore
+          retention-days: 1
 
   frontend_webui_test:
     name: frontend webui test
@@ -1490,45 +1532,165 @@ jobs:
             docker-builds/e2e-tests/playwright-report-frontend/
             docker-builds/e2e-tests/test-results-frontend/
           retention-days: 30
+      - name: Upload Playwright Frontend JUnit results for R2
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: junit-results-playwright-frontend
+          path: docker-builds/e2e-tests/playwright-report-frontend/junit/results.xml
+          if-no-files-found: ignore
+          retention-days: 1
 
-  allure_publish:
-    name: Publish Allure Reports to R2
+  test_reports_publish:
+    name: Publish Test Reports to R2
     runs-on: ubuntu-latest
-    needs: [ init, frontend_webui_test, mobile_test, cucumber-allure-report ]
+    needs: [ init, test-frontend, junit, frontend_webui_test, mobile_test, cucumber-run, cucumber-allure-report ]
     if: always()  # Run even if tests failed
     permissions: {}
     steps:
+      - uses: actions/checkout@v4
+
       - name: Setup directory structure
         run: |
           BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
+          BUILD_DIR="reports/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}"
 
-          # Create directory structure for reports
-          mkdir -p "reports/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/frontend-webui"
-          mkdir -p "reports/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/mobile-webui"
-          mkdir -p "reports/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/cucumber"
+          # Create directory structure for Allure reports
+          mkdir -p "${BUILD_DIR}/allure/frontend-webui"
+          mkdir -p "${BUILD_DIR}/allure/mobile-webui"
+          mkdir -p "${BUILD_DIR}/allure/cucumber"
+
+          # Create directory structure for JUnit HTML reports
+          mkdir -p "${BUILD_DIR}/junit/jest"
+          mkdir -p "${BUILD_DIR}/junit/backend"
+          mkdir -p "${BUILD_DIR}/junit/camel"
+          mkdir -p "${BUILD_DIR}/junit/cucumber"
+          mkdir -p "${BUILD_DIR}/junit/playwright-frontend"
+          mkdir -p "${BUILD_DIR}/junit/playwright-mobile"
 
           echo "Created directory structure for branch: ${BRANCH_SANITIZED}, build: ${{ needs.init.outputs.tag-fixed }}"
 
-      - name: Download Allure report artifact
+      # ===== DOWNLOAD ALLURE REPORTS =====
+      - name: Download Frontend Allure report
         if: needs.frontend_webui_test.result == 'success' || needs.frontend_webui_test.result == 'failure'
         uses: actions/download-artifact@v4
         with:
           name: allure-report-frontend-webui
-          path: reports/branches/${{ needs.init.outputs.branch-sanitized-gh-pages }}/builds/${{ needs.init.outputs.tag-fixed }}/frontend-webui/
+          path: reports/branches/${{ needs.init.outputs.branch-sanitized-gh-pages }}/builds/${{ needs.init.outputs.tag-fixed }}/allure/frontend-webui/
+        continue-on-error: true
 
-      - name: Download Mobile Allure report artifact
+      - name: Download Mobile Allure report
         if: needs.mobile_test.result == 'success' || needs.mobile_test.result == 'failure'
         uses: actions/download-artifact@v4
         with:
           name: allure-report-mobile-webui
-          path: reports/branches/${{ needs.init.outputs.branch-sanitized-gh-pages }}/builds/${{ needs.init.outputs.tag-fixed }}/mobile-webui/
+          path: reports/branches/${{ needs.init.outputs.branch-sanitized-gh-pages }}/builds/${{ needs.init.outputs.tag-fixed }}/allure/mobile-webui/
+        continue-on-error: true
 
-      - name: Download Cucumber Allure report artifact
+      - name: Download Cucumber Allure report
         if: needs.cucumber-allure-report.result == 'success'
         uses: actions/download-artifact@v4
         with:
           name: allure-report-cucumber
-          path: reports/branches/${{ needs.init.outputs.branch-sanitized-gh-pages }}/builds/${{ needs.init.outputs.tag-fixed }}/cucumber/
+          path: reports/branches/${{ needs.init.outputs.branch-sanitized-gh-pages }}/builds/${{ needs.init.outputs.tag-fixed }}/allure/cucumber/
+        continue-on-error: true
+
+      # ===== DOWNLOAD JUNIT XML RESULTS =====
+      - name: Download Jest JUnit results
+        if: needs.test-frontend.result == 'success' || needs.test-frontend.result == 'failure'
+        uses: actions/download-artifact@v4
+        with:
+          name: junit-results-jest
+          path: junit-raw/jest/
+        continue-on-error: true
+
+      - name: Download Backend JUnit results
+        if: needs.junit.result == 'success' || needs.junit.result == 'failure'
+        uses: actions/download-artifact@v4
+        with:
+          name: junit-results-backend
+          path: junit-raw/backend/
+        continue-on-error: true
+
+      - name: Download Camel JUnit results
+        if: needs.junit.result == 'success' || needs.junit.result == 'failure'
+        uses: actions/download-artifact@v4
+        with:
+          name: junit-results-camel
+          path: junit-raw/camel/
+        continue-on-error: true
+
+      - name: Download Cucumber JUnit results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: junit-results-cucumber-*
+          path: junit-raw/cucumber/
+          merge-multiple: true
+        continue-on-error: true
+
+      - name: Download Playwright Frontend JUnit results
+        if: needs.frontend_webui_test.result == 'success' || needs.frontend_webui_test.result == 'failure'
+        uses: actions/download-artifact@v4
+        with:
+          name: junit-results-playwright-frontend
+          path: junit-raw/playwright-frontend/
+        continue-on-error: true
+
+      - name: Download Playwright Mobile JUnit results
+        if: needs.mobile_test.result == 'success' || needs.mobile_test.result == 'failure'
+        uses: actions/download-artifact@v4
+        with:
+          name: junit-results-playwright-mobile
+          path: junit-raw/playwright-mobile/
+        continue-on-error: true
+
+      # ===== GENERATE JUNIT HTML REPORTS =====
+      - name: Generate Jest HTML report
+        uses: ./.github/actions/generate-junit-html
+        with:
+          xml-path: junit-raw/jest/*.xml
+          output-dir: reports/branches/${{ needs.init.outputs.branch-sanitized-gh-pages }}/builds/${{ needs.init.outputs.tag-fixed }}/junit/jest
+          report-title: 'Jest Frontend Tests'
+        continue-on-error: true
+
+      - name: Generate Backend JUnit HTML report
+        uses: ./.github/actions/generate-junit-html
+        with:
+          xml-path: junit-raw/backend/**/*.xml
+          output-dir: reports/branches/${{ needs.init.outputs.branch-sanitized-gh-pages }}/builds/${{ needs.init.outputs.tag-fixed }}/junit/backend
+          report-title: 'Java Backend Tests'
+        continue-on-error: true
+
+      - name: Generate Camel JUnit HTML report
+        uses: ./.github/actions/generate-junit-html
+        with:
+          xml-path: junit-raw/camel/*.xml
+          output-dir: reports/branches/${{ needs.init.outputs.branch-sanitized-gh-pages }}/builds/${{ needs.init.outputs.tag-fixed }}/junit/camel
+          report-title: 'Camel Integration Tests'
+        continue-on-error: true
+
+      - name: Generate Cucumber JUnit HTML report
+        uses: ./.github/actions/generate-junit-html
+        with:
+          xml-path: junit-raw/cucumber/*.xml
+          output-dir: reports/branches/${{ needs.init.outputs.branch-sanitized-gh-pages }}/builds/${{ needs.init.outputs.tag-fixed }}/junit/cucumber
+          report-title: 'Cucumber Integration Tests'
+        continue-on-error: true
+
+      - name: Generate Playwright Frontend JUnit HTML report
+        uses: ./.github/actions/generate-junit-html
+        with:
+          xml-path: junit-raw/playwright-frontend/*.xml
+          output-dir: reports/branches/${{ needs.init.outputs.branch-sanitized-gh-pages }}/builds/${{ needs.init.outputs.tag-fixed }}/junit/playwright-frontend
+          report-title: 'Playwright Frontend Tests'
+        continue-on-error: true
+
+      - name: Generate Playwright Mobile JUnit HTML report
+        uses: ./.github/actions/generate-junit-html
+        with:
+          xml-path: junit-raw/playwright-mobile/*.xml
+          output-dir: reports/branches/${{ needs.init.outputs.branch-sanitized-gh-pages }}/builds/${{ needs.init.outputs.tag-fixed }}/junit/playwright-mobile
+          report-title: 'Playwright Mobile Tests'
         continue-on-error: true
 
       - name: Verify reports exist
@@ -1537,31 +1699,34 @@ jobs:
           BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
           BUILD_DIR="reports/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}"
 
-          REPORTS_FOUND=0
+          ALLURE_FOUND=0
+          JUNIT_FOUND=0
 
-          if [ -f "${BUILD_DIR}/frontend-webui/index.html" ]; then
-            echo "✓ Frontend WebUI report found"
-            REPORTS_FOUND=$((REPORTS_FOUND + 1))
+          # Check Allure reports
+          for report in frontend-webui mobile-webui cucumber; do
+            if [ -f "${BUILD_DIR}/allure/${report}/index.html" ]; then
+              echo "✓ Allure ${report} report found"
+              ALLURE_FOUND=$((ALLURE_FOUND + 1))
+            fi
+          done
+
+          # Check JUnit reports
+          for report in jest backend camel cucumber playwright-frontend playwright-mobile; do
+            if [ -f "${BUILD_DIR}/junit/${report}/index.html" ]; then
+              echo "✓ JUnit ${report} report found"
+              JUNIT_FOUND=$((JUNIT_FOUND + 1))
+            fi
+          done
+
+          echo "allure_found=${ALLURE_FOUND}" >> $GITHUB_OUTPUT
+          echo "junit_found=${JUNIT_FOUND}" >> $GITHUB_OUTPUT
+
+          TOTAL=$((ALLURE_FOUND + JUNIT_FOUND))
+          if [ "$TOTAL" -eq 0 ]; then
+            echo "::warning::No reports found to publish - this may be expected if all tests were skipped"
+          else
+            echo "Found ${ALLURE_FOUND} Allure and ${JUNIT_FOUND} JUnit report(s) to publish"
           fi
-
-          if [ -f "${BUILD_DIR}/mobile-webui/index.html" ]; then
-            echo "✓ Mobile WebUI report found"
-            REPORTS_FOUND=$((REPORTS_FOUND + 1))
-          fi
-
-          if [ -f "${BUILD_DIR}/cucumber/index.html" ]; then
-            echo "✓ Cucumber report found"
-            REPORTS_FOUND=$((REPORTS_FOUND + 1))
-          fi
-
-          echo "reports_found=${REPORTS_FOUND}" >> $GITHUB_OUTPUT
-
-          if [ "$REPORTS_FOUND" -eq 0 ]; then
-            echo "::error::No Allure reports found to publish!"
-            exit 1
-          fi
-
-          echo "Found ${REPORTS_FOUND} report(s) to publish"
 
       # ===== CLOUDFLARE R2 UPLOAD =====
       - name: Validate R2 configuration
@@ -1581,7 +1746,6 @@ jobs:
 
       - name: Configure AWS CLI for R2
         run: |
-          # Install AWS CLI if not already available
           if ! command -v aws &> /dev/null; then
             curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
             unzip -q awscliv2.zip
@@ -1594,8 +1758,6 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: auto
         run: |
-          BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
-
           echo "Syncing reports to R2..."
           aws s3 sync reports/ s3://${{ vars.R2_BUCKET_NAME }}/ \
             --endpoint-url ${{ vars.R2_ENDPOINT_URL }} \
@@ -1603,6 +1765,29 @@ jobs:
 
           echo "✓ Reports synced to R2"
           echo "Total size: $(du -sh reports | cut -f1)"
+
+      # ===== GENERATE AND UPLOAD LANDING PAGE =====
+      - name: Generate landing page
+        uses: ./.github/actions/generate-r2-landing-page
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+        with:
+          r2-endpoint: ${{ vars.R2_ENDPOINT_URL }}
+          r2-bucket: ${{ vars.R2_BUCKET_NAME }}
+          r2-public-url: ${{ vars.R2_PUBLIC_URL }}
+
+      - name: Upload landing page to R2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+        run: |
+          aws s3 sync landing-page/ s3://${{ vars.R2_BUCKET_NAME }}/ \
+            --endpoint-url ${{ vars.R2_ENDPOINT_URL }} \
+            --no-progress
+          echo "✓ Landing page uploaded"
 
       - name: Cleanup old builds from R2
         env:
@@ -1616,8 +1801,6 @@ jobs:
           echo "Cleaning up old builds for branch: ${BRANCH_SANITIZED}"
           echo "Keeping only the ${MAX_BUILDS_PER_BRANCH} most recent builds"
 
-          # Get all builds with their modification times for proper sorting
-          # For each build folder, get the most recent object modification time
           > builds_with_time.txt
 
           aws s3api list-objects-v2 \
@@ -1630,7 +1813,6 @@ jobs:
 
           while read -r prefix; do
             [ -z "$prefix" ] && continue
-            # Get the most recent modification time for any object in this build folder
             LAST_MODIFIED=$(aws s3api list-objects-v2 \
               --endpoint-url ${{ vars.R2_ENDPOINT_URL }} \
               --bucket ${{ vars.R2_BUCKET_NAME }} \
@@ -1641,45 +1823,23 @@ jobs:
             echo "${LAST_MODIFIED} ${prefix}" >> builds_with_time.txt
           done < all_prefixes.txt
 
-          # Sort by modification time (newest first) and extract just the prefix
           sort -r builds_with_time.txt | awk '{print $2}' > all_builds.txt
 
-          # Count builds
           BUILD_COUNT=$(wc -l < all_builds.txt | tr -d ' ')
           echo "Found ${BUILD_COUNT} builds"
 
-          DELETED_COUNT=0
-          FAILED_COUNT=0
-
           if [ "$BUILD_COUNT" -gt "$MAX_BUILDS_PER_BRANCH" ]; then
-            # Keep the newest builds, delete the rest
             BUILDS_TO_DELETE=$((BUILD_COUNT - MAX_BUILDS_PER_BRANCH))
             echo "Deleting ${BUILDS_TO_DELETE} old build(s)"
 
             tail -n "$BUILDS_TO_DELETE" all_builds.txt | while read -r build_prefix; do
               [ -z "$build_prefix" ] && continue
               echo "Deleting: ${build_prefix}"
-              if aws s3 rm "s3://${{ vars.R2_BUCKET_NAME }}/${build_prefix}" \
+              aws s3 rm "s3://${{ vars.R2_BUCKET_NAME }}/${build_prefix}" \
                 --endpoint-url ${{ vars.R2_ENDPOINT_URL }} \
-                --recursive 2>/dev/null; then
-                echo "  ✓ Deleted ${build_prefix}"
-                echo "deleted" >> /tmp/cleanup_results.txt
-              else
-                echo "  ✗ Failed to delete ${build_prefix}"
-                echo "failed" >> /tmp/cleanup_results.txt
-              fi
+                --recursive 2>/dev/null || true
             done
-
-            DELETED_COUNT=$(grep -c "deleted" /tmp/cleanup_results.txt 2>/dev/null || echo "0")
-            FAILED_COUNT=$(grep -c "failed" /tmp/cleanup_results.txt 2>/dev/null || echo "0")
-
-            if [ "$FAILED_COUNT" -gt 0 ]; then
-              echo "::warning::Cleanup completed with errors: ${DELETED_COUNT} deleted, ${FAILED_COUNT} failed"
-              echo "CLEANUP_INFO=🧹 Deleted ${DELETED_COUNT} old build(s), ${FAILED_COUNT} failed, keeping ${MAX_BUILDS_PER_BRANCH} most recent" >> $GITHUB_ENV
-            else
-              echo "✓ Cleanup completed successfully"
-              echo "CLEANUP_INFO=🧹 Deleted ${DELETED_COUNT} old build(s), keeping ${MAX_BUILDS_PER_BRANCH} most recent" >> $GITHUB_ENV
-            fi
+            echo "CLEANUP_INFO=🧹 Deleted ${BUILDS_TO_DELETE} old build(s), keeping ${MAX_BUILDS_PER_BRANCH} most recent" >> $GITHUB_ENV
           else
             echo "No cleanup needed (${BUILD_COUNT} <= ${MAX_BUILDS_PER_BRANCH})"
             echo "CLEANUP_INFO=🧹 No cleanup needed (${BUILD_COUNT}/${MAX_BUILDS_PER_BRANCH} builds)" >> $GITHUB_ENV
@@ -1690,14 +1850,28 @@ jobs:
           BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
           VERSION="${{ needs.init.outputs.tag-fixed }}"
           R2_BASE_URL="${{ vars.R2_PUBLIC_URL }}/branches/${BRANCH_SANITIZED}/builds/${VERSION}"
+          LANDING_URL="${{ vars.R2_PUBLIC_URL }}/index.html"
 
-          echo '#### 📊 Allure Test Reports' >> $GITHUB_STEP_SUMMARY
+          echo '#### 📊 Test Reports' >> $GITHUB_STEP_SUMMARY
           echo '' >> $GITHUB_STEP_SUMMARY
+          echo "**[Browse All Reports](${LANDING_URL})**" >> $GITHUB_STEP_SUMMARY
+          echo '' >> $GITHUB_STEP_SUMMARY
+          echo '##### Allure Reports' >> $GITHUB_STEP_SUMMARY
           echo "| Report | Link |" >> $GITHUB_STEP_SUMMARY
           echo "|--------|------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Frontend WebUI | [View](${R2_BASE_URL}/frontend-webui/index.html) |" >> $GITHUB_STEP_SUMMARY
-          echo "| Mobile WebUI | [View](${R2_BASE_URL}/mobile-webui/index.html) |" >> $GITHUB_STEP_SUMMARY
-          echo "| Cucumber | [View](${R2_BASE_URL}/cucumber/index.html) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend WebUI | [View](${R2_BASE_URL}/allure/frontend-webui/) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Mobile WebUI | [View](${R2_BASE_URL}/allure/mobile-webui/) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Cucumber | [View](${R2_BASE_URL}/allure/cucumber/) |" >> $GITHUB_STEP_SUMMARY
+          echo '' >> $GITHUB_STEP_SUMMARY
+          echo '##### JUnit Reports' >> $GITHUB_STEP_SUMMARY
+          echo "| Report | Link |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Jest (Frontend) | [View](${R2_BASE_URL}/junit/jest/) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Backend | [View](${R2_BASE_URL}/junit/backend/) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Camel | [View](${R2_BASE_URL}/junit/camel/) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Cucumber | [View](${R2_BASE_URL}/junit/cucumber/) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Playwright Frontend | [View](${R2_BASE_URL}/junit/playwright-frontend/) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Playwright Mobile | [View](${R2_BASE_URL}/junit/playwright-mobile/) |" >> $GITHUB_STEP_SUMMARY
           echo '' >> $GITHUB_STEP_SUMMARY
           echo "$CLEANUP_INFO" >> $GITHUB_STEP_SUMMARY
 

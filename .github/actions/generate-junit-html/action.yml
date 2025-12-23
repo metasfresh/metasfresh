@@ -1,0 +1,68 @@
+name: 'Generate JUnit HTML Report'
+description: 'Convert JUnit XML to browsable HTML using junit2html'
+
+inputs:
+  xml-path:
+    description: 'Path to JUnit XML file(s) - supports glob patterns'
+    required: true
+  output-dir:
+    description: 'Output directory for HTML report'
+    required: true
+  report-title:
+    description: 'Title for the HTML report'
+    required: false
+    default: 'JUnit Test Report'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Install junit2html
+      shell: bash
+      run: |
+        pip install junit2html --quiet
+
+    - name: Generate HTML from JUnit XML
+      shell: bash
+      env:
+        XML_PATH: ${{ inputs.xml-path }}
+        OUTPUT_DIR: ${{ inputs.output-dir }}
+        REPORT_TITLE: ${{ inputs.report-title }}
+      run: |
+        mkdir -p "$OUTPUT_DIR"
+
+        # Find XML files matching the pattern
+        XML_FILES=$(find $(dirname "$XML_PATH") -name "$(basename "$XML_PATH")" -type f 2>/dev/null || true)
+
+        if [ -z "$XML_FILES" ]; then
+          echo "::warning::No JUnit XML files found matching: $XML_PATH"
+          # Create a placeholder index.html
+          cat > "$OUTPUT_DIR/index.html" << 'EOF'
+        <!DOCTYPE html>
+        <html><head><title>No Test Results</title></head>
+        <body><h1>No Test Results Available</h1><p>No JUnit XML files were found for this test run.</p></body>
+        </html>
+        EOF
+          exit 0
+        fi
+
+        echo "Found XML files:"
+        echo "$XML_FILES"
+
+        # Count files
+        FILE_COUNT=$(echo "$XML_FILES" | wc -l)
+
+        if [ "$FILE_COUNT" -eq 1 ]; then
+          # Single file - convert directly
+          junit2html "$XML_FILES" "$OUTPUT_DIR/index.html"
+        else
+          # Multiple files - merge them
+          junit2html --merge $(echo "$XML_FILES" | tr '\n' ' ') "$OUTPUT_DIR/index.html"
+        fi
+
+        # Copy original XML files for reference
+        for xml in $XML_FILES; do
+          cp "$xml" "$OUTPUT_DIR/" 2>/dev/null || true
+        done
+
+        echo "Generated HTML report at: $OUTPUT_DIR/index.html"
+        echo "Report title: $REPORT_TITLE"

@@ -1,18 +1,19 @@
 # =============================================================================
-# R2 Cleanup - Stale Allure Reports
+# R2 Cleanup - Stale Test Reports
 # =============================================================================
 #
 # PURPOSE:
-#   Cleans up old/orphaned Allure test reports from Cloudflare R2 storage to
+#   Cleans up old/orphaned test reports from Cloudflare R2 storage to
 #   manage storage costs and keep the report index clean.
 #
 # WHAT IT CLEANS:
 #   1. STALE reports: Branch folders with no updates for N days (default: 60)
 #   2. ORPHAN reports: Branch folders for branches deleted from GitHub
 #
-# PROTECTION:
-#   Reports containing a `.keep-forever` marker file are never deleted.
-#   Use this to preserve important reports (releases, milestones, etc.)
+# WHAT IT PRESERVES:
+#   - Root index.html (landing page)
+#   - _metadata/ directory (branch index for landing page)
+#   - Reports containing a `.keep-forever` marker file
 #
 # SCHEDULE:
 #   Runs automatically every Sunday at 3 AM UTC in DRY RUN mode.
@@ -31,16 +32,30 @@
 #   - R2_BUCKET_NAME: Name of the R2 bucket containing reports
 #
 # R2 STRUCTURE:
-#   branches/
-#     {sanitized-branch-name}/
-#       {run-id}/
-#         index.html
-#         ...
-#         .keep-forever  (optional - prevents deletion)
+#   /
+#   ├── index.html                     (preserved - landing page)
+#   ├── _metadata/                     (preserved - branch index)
+#   │   └── branches.json
+#   └── branches/                      (cleaned by this workflow)
+#       └── {sanitized-branch-name}/
+#           └── builds/
+#               └── {version}/
+#                   ├── allure/        (Allure HTML reports)
+#                   │   ├── frontend-webui/
+#                   │   ├── mobile-webui/
+#                   │   └── cucumber/
+#                   ├── junit/         (JUnit HTML reports)
+#                   │   ├── jest/
+#                   │   ├── backend/
+#                   │   ├── camel/
+#                   │   ├── cucumber/
+#                   │   ├── playwright-frontend/
+#                   │   └── playwright-mobile/
+#                   └── .keep-forever  (optional - prevents deletion)
 #
 # =============================================================================
 
-name: R2 Cleanup - Stale Allure Reports
+name: R2 Cleanup - Stale Test Reports
 
 on:
   schedule:
