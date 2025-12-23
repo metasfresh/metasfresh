@@ -176,9 +176,9 @@ public final class FactLineBuilder
 		final AcctDocRequiredServicesFacade services = doc.getServices();
 		final ElementValue elementValue = services.getElementValueById(elementValueId);
 		final CostClassificationId costClassificationId = elementValue.getCostClassificationId();
-		final CostClassificationCategoryId costClassificationCategoryId = costClassificationId != null
-				? services.getCostClassificationCategoryId(costClassificationId)
-				: null;
+		final CostClassificationCategoryId costClassificationCategoryId = Optional.ofNullable(costClassificationId)
+				.map(services::getCostClassificationCategoryId)
+				.orElse(null);
 
 		final FactLine line = FactLine.builder()
 				.services(services)
