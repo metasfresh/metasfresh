@@ -2,8 +2,6 @@
 
 This document provides detailed documentation of all `*_Access` tables in metasfresh that control role-based access to various parts of the system.
 
-**See also:** [CLAUDE.md](CLAUDE.md) for security system overview and Java implementation details.
-
 ---
 
 ## Quick Reference
@@ -490,5 +488,4 @@ These functions examine:
 
 ## See Also
 
-- [CLAUDE.md](CLAUDE.md) - Security system overview and Java implementation
 - [AD_Role Window](https://docs.metasfresh.org/webui_collection/EN/NewUserRole.html) - WebUI documentation
