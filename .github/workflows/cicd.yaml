@@ -119,6 +119,14 @@ jobs:
           METASFRESH_PACKAGES_READ_TOKEN: ${{ secrets.METASFRESH_PACKAGES_READ_TOKEN }}
         run: |
           envsubst < docker-builds/mvn/settings.xml > docker-builds/mvn/local-settings.xml
+      - name: prepare-metadata
+        env:
+          GIT_PROPS: ${{ needs.init.outputs.git-properties }}
+        run: |
+          mkdir -p docker-builds/metadata
+          echo -e "$GIT_PROPS" > docker-builds/metadata/git.properties
+          echo "Created git.properties:"
+          cat docker-builds/metadata/git.properties
       - name: build-migration-cli
         run: |
           docker buildx build \
