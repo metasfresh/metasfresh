@@ -19,6 +19,9 @@ export const HUBulkActionsScreen = {
 
     move: async ({ targetLocator }) => await test.step(`${NAME} - Move HU`, async () => {
         await page.getByTestId('toggle-target-scanner-button').tap();
+        // Wait for button text to change to "Close scanner" - ensures React re-render complete
+        // and useKeyboardBarcodeReader hook has attached its event listener
+        await page.getByTestId('toggle-target-scanner-button').getByText('Close scanner').waitFor();
         await BarcodeScannerComponent.type(targetLocator);
 
         await ApplicationsListScreen.waitForScreen();
