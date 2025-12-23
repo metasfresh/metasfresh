@@ -86,4 +86,3 @@ SELECT fact.fact_acct_id,
        fact.OI_OpenAmountSource
 FROM fact_acct fact
 ;
-
