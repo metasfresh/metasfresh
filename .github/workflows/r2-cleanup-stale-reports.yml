@@ -65,6 +65,8 @@ jobs:
   cleanup:
     name: Clean up stale R2 Allure reports
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

@@ -1227,6 +1227,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [ init, cucumber-run ]
     if: always()
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
@@ -1494,6 +1496,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [ init, frontend_webui_test, mobile_test, cucumber-allure-report ]
     if: always()  # Run even if tests failed
+    permissions: {}
     steps:
       - name: Setup directory structure
         run: |
