@@ -22,8 +22,9 @@ RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml \
     cd /workspace/backend && mvn install -N -DskipTests -q
 
 # Build migration CLI (includes base module via reactor)
+# Skip git plugin since .git is not present in the build context
 RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml \
-    cd /workspace/backend/de.metas.migration && mvn install -DskipTests -q
+    cd /workspace/backend/de.metas.migration && mvn install -DskipTests -Dmaven.gitcommitid.skip=true -q
 
 # Output stage - extract just the shaded JAR
 FROM scratch AS export
