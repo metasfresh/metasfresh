@@ -145,6 +145,7 @@ FROM
 				-- Get last period of previous year
 				LEFT OUTER JOIN C_Period period_LastYearEnd ON (period_LastYearEnd.C_Period_ID = report.Get_Predecessor_Period_Recursive (p.C_Period_ID, p.PeriodNo::int)) AND period_LastYearEnd.isActive = 'Y'
 			--
+		   , C_AcctSchema acs
 			, C_Element_Levels lvl
 				INNER JOIN (
 					SELECT ev.C_ElementValue_ID
@@ -162,10 +163,11 @@ FROM
 				    -- make sure we show the standard accounts from metasfresh (org 0)
 					AND (case when lvl.lvl1_value != 'ZZ' then (ev.ad_org_id = p_ad_org_id) else (ev.ad_org_id = 0) end )
 				LEFT OUTER JOIN AD_ClientInfo ci ON (ci.AD_Client_ID=ev.AD_Client_ID) AND ci.isActive = 'Y'
-				LEFT OUTER JOIN C_AcctSchema acs ON (acs.C_AcctSchema_ID=ci.C_AcctSchema1_ID) AND acs.isActive = 'Y'
 				LEFT OUTER JOIN C_Currency c ON acs.C_Currency_ID=c.C_Currency_ID AND c.isActive = 'Y'
 		--
 		WHERE true
+		  -- make sure we get accounting schema for org 0 in any case
+          AND (acs.ad_org_id = p_ad_org_id OR acs.ad_org_id = 0) AND acs.isActive = 'Y'
 			-- Period: determine it by DateAcct
 			AND p.C_Period_ID = report.Get_Period( ci.C_Calendar_ID, p_Date )
 			-- Shall we Show default accounts?
