@@ -1624,8 +1624,10 @@ jobs:
             done
 
             echo "✓ Cleanup completed"
+            echo "CLEANUP_INFO=🧹 Deleted ${BUILDS_TO_DELETE} old build(s), keeping ${MAX_BUILDS_PER_BRANCH} most recent" >> $GITHUB_ENV
           else
             echo "No cleanup needed (${BUILD_COUNT} <= ${MAX_BUILDS_PER_BRANCH})"
+            echo "CLEANUP_INFO=🧹 No cleanup needed (${BUILD_COUNT}/${MAX_BUILDS_PER_BRANCH} builds)" >> $GITHUB_ENV
           fi
 
       - name: produce-summary
@@ -1642,7 +1644,7 @@ jobs:
           echo "| Mobile WebUI | [View](${R2_BASE_URL}/mobile-webui/index.html) |" >> $GITHUB_STEP_SUMMARY
           echo "| Cucumber | [View](${R2_BASE_URL}/cucumber/index.html) |" >> $GITHUB_STEP_SUMMARY
           echo '' >> $GITHUB_STEP_SUMMARY
-          echo "🧹 Keeping last 10 builds per branch (automatic cleanup enabled)" >> $GITHUB_STEP_SUMMARY
+          echo "$CLEANUP_INFO" >> $GITHUB_STEP_SUMMARY
 
   cicd-dispatch:
     if: contains(fromJson(vars.CICD_BRANCH_MAP), github.ref_name) == true
