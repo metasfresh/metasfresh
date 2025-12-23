@@ -1,0 +1,319 @@
+# =============================================================================
+# R2 Cleanup - Stale Allure Reports
+# =============================================================================
+#
+# PURPOSE:
+#   Cleans up old/orphaned Allure test reports from Cloudflare R2 storage to
+#   manage storage costs and keep the report index clean.
+#
+# WHAT IT CLEANS:
+#   1. STALE reports: Branch folders with no updates for N days (default: 60)
+#   2. ORPHAN reports: Branch folders for branches deleted from GitHub
+#
+# PROTECTION:
+#   Reports containing a `.keep-forever` marker file are never deleted.
+#   Use this to preserve important reports (releases, milestones, etc.)
+#
+# SCHEDULE:
+#   Runs automatically every Sunday at 3 AM UTC in DRY RUN mode.
+#   Scheduled runs only preview what would be deleted - no actual deletions.
+#
+# MANUAL EXECUTION:
+#   To actually delete reports, trigger manually with dry_run=false:
+#     gh workflow run r2-cleanup-stale-reports.yml -f dry_run=false
+#
+# REQUIRED SECRETS:
+#   - R2_ACCESS_KEY_ID: Cloudflare R2 access key
+#   - R2_SECRET_ACCESS_KEY: Cloudflare R2 secret key
+#
+# REQUIRED VARIABLES:
+#   - R2_ENDPOINT_URL: R2 S3-compatible endpoint URL
+#   - R2_BUCKET_NAME: Name of the R2 bucket containing reports
+#
+# R2 STRUCTURE:
+#   branches/
+#     {sanitized-branch-name}/
+#       {run-id}/
+#         index.html
+#         ...
+#         .keep-forever  (optional - prevents deletion)
+#
+# =============================================================================
+
+name: R2 Cleanup - Stale Allure Reports
+
+on:
+  schedule:
+    - cron: '0 3 * * 0'  # Every Sunday at 3 AM UTC
+  workflow_dispatch:
+    inputs:
+      days_threshold:
+        description: 'Days since last update to consider stale'
+        required: false
+        default: '60'
+        type: number
+      dry_run:
+        description: 'Dry run (preview deletions without executing)'
+        required: false
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+jobs:
+  cleanup:
+    name: Clean up stale R2 Allure reports
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure AWS CLI for R2
+        run: |
+          if ! command -v aws &> /dev/null; then
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip -q awscliv2.zip
+            sudo ./aws/install
+          fi
+
+          aws configure set aws_access_key_id ${{ secrets.R2_ACCESS_KEY_ID }}
+          aws configure set aws_secret_access_key ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          aws configure set region auto
+
+      - name: Get active branches from GitHub
+        id: active
+        run: |
+          echo "Fetching all branches from GitHub..."
+          git branch -r | grep -v '\->' | sed 's/origin\///' | sed 's/^[[:space:]]*//' > github_branches.txt
+
+          BRANCH_COUNT=$(wc -l < github_branches.txt)
+          echo "Found ${BRANCH_COUNT} branches in GitHub"
+          echo "branch_count=${BRANCH_COUNT}" >> $GITHUB_OUTPUT
+
+      - name: Get branch metadata from R2
+        id: get_r2_metadata
+        run: |
+          DAYS=${{ github.event.inputs.days_threshold || '60' }}
+          CUTOFF_DATE=$(date -u -d "${DAYS} days ago" +%Y-%m-%dT%H:%M:%SZ)
+
+          echo "Cutoff date: ${CUTOFF_DATE}"
+          echo "Days threshold: ${DAYS}"
+
+          # List all branch folders from R2
+          aws s3api list-objects-v2 \
+            --endpoint-url ${{ vars.R2_ENDPOINT_URL }} \
+            --bucket ${{ vars.R2_BUCKET_NAME }} \
+            --prefix "branches/" \
+            --delimiter "/" \
+            --query 'CommonPrefixes[].Prefix' \
+            --output text | tr '\t' '\n' | sed 's|branches/||' | sed 's|/$||' > r2_branches.txt
+
+          R2_BRANCH_COUNT=$(wc -l < r2_branches.txt)
+          echo "Found ${R2_BRANCH_COUNT} branch folders in R2"
+          echo "r2_branch_count=${R2_BRANCH_COUNT}" >> $GITHUB_OUTPUT
+
+          # For each branch folder, get the most recent object modification time
+          echo "Analyzing branch folder ages..."
+          > stale_branches.txt
+
+          while read -r branch; do
+            [ -z "$branch" ] && continue
+
+            # Get the most recent modification time for any object in this branch
+            LAST_MODIFIED=$(aws s3api list-objects-v2 \
+              --endpoint-url ${{ vars.R2_ENDPOINT_URL }} \
+              --bucket ${{ vars.R2_BUCKET_NAME }} \
+              --prefix "branches/${branch}/" \
+              --query 'sort_by(Contents, &LastModified)[-1].LastModified' \
+              --output text 2>/dev/null)
+
+            if [ "$LAST_MODIFIED" == "None" ] || [ -z "$LAST_MODIFIED" ]; then
+              echo "  ${branch}: No objects found, marking as stale"
+              echo "${branch}" >> stale_branches.txt
+              continue
+            fi
+
+            # Check if branch still exists in GitHub
+            BRANCH_EXISTS=$(grep -Fx "${branch}" github_branches.txt || true)
+
+            # Compare dates
+            if [[ "$LAST_MODIFIED" < "$CUTOFF_DATE" ]]; then
+              echo "  ${branch}: Last modified ${LAST_MODIFIED} (STALE)"
+              echo "${branch}" >> stale_branches.txt
+            elif [ -z "$BRANCH_EXISTS" ]; then
+              echo "  ${branch}: Branch deleted from GitHub (ORPHAN)"
+              echo "${branch}" >> stale_branches.txt
+            else
+              echo "  ${branch}: Last modified ${LAST_MODIFIED} (active)"
+            fi
+          done < r2_branches.txt
+
+          STALE_COUNT=$(wc -l < stale_branches.txt | tr -d ' ')
+          echo "stale_count=${STALE_COUNT}" >> $GITHUB_OUTPUT
+          echo ""
+          echo "Found ${STALE_COUNT} stale/orphan branch folder(s)"
+
+      - name: Check for protected reports
+        if: steps.get_r2_metadata.outputs.stale_count > 0
+        id: check_protected
+        run: |
+          echo "Checking for protected reports (.keep-forever markers)..."
+          > branches_to_delete.txt
+
+          while read -r branch; do
+            [ -z "$branch" ] && continue
+
+            # Check if .keep-forever marker exists in any report
+            PROTECTED=$(aws s3api list-objects-v2 \
+              --endpoint-url ${{ vars.R2_ENDPOINT_URL }} \
+              --bucket ${{ vars.R2_BUCKET_NAME }} \
+              --prefix "branches/${branch}/" \
+              --query "Contents[?contains(Key, '.keep-forever')]" \
+              --output text 2>/dev/null)
+
+            if [ -n "$PROTECTED" ] && [ "$PROTECTED" != "None" ]; then
+              echo "  PROTECTED: ${branch} (has .keep-forever marker)"
+            else
+              echo "  ${branch}: eligible for deletion"
+              echo "${branch}" >> branches_to_delete.txt
+            fi
+          done < stale_branches.txt
+
+          DELETE_COUNT=$(wc -l < branches_to_delete.txt | tr -d ' ')
+          echo "delete_count=${DELETE_COUNT}" >> $GITHUB_OUTPUT
+          echo ""
+          echo "${DELETE_COUNT} branch folder(s) eligible for deletion"
+
+      - name: Calculate storage to be freed
+        if: steps.check_protected.outputs.delete_count > 0
+        id: calculate_size
+        run: |
+          echo "Calculating storage size of branches to delete..."
+
+          TOTAL_SIZE=0
+          while read -r branch; do
+            [ -z "$branch" ] && continue
+
+            SIZE=$(aws s3api list-objects-v2 \
+              --endpoint-url ${{ vars.R2_ENDPOINT_URL }} \
+              --bucket ${{ vars.R2_BUCKET_NAME }} \
+              --prefix "branches/${branch}/" \
+              --query 'sum(Contents[].Size)' \
+              --output text 2>/dev/null)
+
+            if [ "$SIZE" != "None" ] && [ -n "$SIZE" ]; then
+              TOTAL_SIZE=$((TOTAL_SIZE + SIZE))
+              SIZE_MB=$((SIZE / 1024 / 1024))
+              echo "  ${branch}: ${SIZE_MB} MB"
+            fi
+          done < branches_to_delete.txt
+
+          TOTAL_SIZE_MB=$((TOTAL_SIZE / 1024 / 1024))
+          TOTAL_SIZE_GB=$((TOTAL_SIZE / 1024 / 1024 / 1024))
+
+          echo "total_size_mb=${TOTAL_SIZE_MB}" >> $GITHUB_OUTPUT
+          echo "total_size_gb=${TOTAL_SIZE_GB}" >> $GITHUB_OUTPUT
+          echo ""
+          echo "Total storage to be freed: ${TOTAL_SIZE_MB} MB (${TOTAL_SIZE_GB} GB)"
+
+      - name: Delete stale reports (DRY RUN)
+        if: |
+          steps.check_protected.outputs.delete_count > 0 &&
+          (github.event_name == 'schedule' || github.event.inputs.dry_run == 'true')
+        run: |
+          echo "DRY RUN MODE - No actual deletions will be performed"
+          echo ""
+          echo "The following branch folders would be deleted from R2:"
+          echo "======================================================="
+
+          while read -r branch; do
+            [ -z "$branch" ] && continue
+
+            OBJECT_COUNT=$(aws s3api list-objects-v2 \
+              --endpoint-url ${{ vars.R2_ENDPOINT_URL }} \
+              --bucket ${{ vars.R2_BUCKET_NAME }} \
+              --prefix "branches/${branch}/" \
+              --query 'length(Contents)' \
+              --output text 2>/dev/null)
+
+            echo "  branches/${branch}/ (${OBJECT_COUNT} objects)"
+          done < branches_to_delete.txt
+
+          echo ""
+          echo "To execute deletions, run this workflow manually with dry_run=false"
+
+      - name: Delete stale reports (EXECUTE)
+        if: |
+          steps.check_protected.outputs.delete_count > 0 &&
+          github.event_name == 'workflow_dispatch' &&
+          github.event.inputs.dry_run == 'false'
+        run: |
+          echo "EXECUTING DELETIONS"
+          echo ""
+
+          DELETED_COUNT=0
+          while read -r branch; do
+            [ -z "$branch" ] && continue
+
+            echo "Deleting branches/${branch}/..."
+
+            aws s3 rm "s3://${{ vars.R2_BUCKET_NAME }}/branches/${branch}/" \
+              --endpoint-url ${{ vars.R2_ENDPOINT_URL }} \
+              --recursive
+
+            if [ $? -eq 0 ]; then
+              echo "  Deleted branches/${branch}/"
+              DELETED_COUNT=$((DELETED_COUNT + 1))
+            else
+              echo "  Failed to delete branches/${branch}/"
+            fi
+          done < branches_to_delete.txt
+
+          echo ""
+          echo "Successfully deleted ${DELETED_COUNT} branch folder(s)"
+
+      - name: Generate summary
+        if: always()
+        run: |
+          DAYS=${{ github.event.inputs.days_threshold || '60' }}
+
+          echo '## R2 Stale Reports Cleanup' >> $GITHUB_STEP_SUMMARY
+          echo '' >> $GITHUB_STEP_SUMMARY
+
+          echo '### Configuration' >> $GITHUB_STEP_SUMMARY
+          echo "- **Stale threshold**: ${DAYS} days" >> $GITHUB_STEP_SUMMARY
+          echo "- **Mode**: $([ '${{ github.event.inputs.dry_run }}' = 'false' ] && echo 'EXECUTE' || echo 'DRY RUN')" >> $GITHUB_STEP_SUMMARY
+          echo '' >> $GITHUB_STEP_SUMMARY
+
+          echo '### Statistics' >> $GITHUB_STEP_SUMMARY
+          echo '| Metric | Count |' >> $GITHUB_STEP_SUMMARY
+          echo '|--------|-------|' >> $GITHUB_STEP_SUMMARY
+          echo "| Active GitHub branches | ${{ steps.active.outputs.branch_count }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| R2 branch folders | ${{ steps.get_r2_metadata.outputs.r2_branch_count }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Stale/orphan folders | ${{ steps.get_r2_metadata.outputs.stale_count }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Eligible for deletion | ${{ steps.check_protected.outputs.delete_count || '0' }} |" >> $GITHUB_STEP_SUMMARY
+          echo '' >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.check_protected.outputs.delete_count }}" -gt 0 ]; then
+            echo '### Storage Impact' >> $GITHUB_STEP_SUMMARY
+            echo "- **Size to free**: ${{ steps.calculate_size.outputs.total_size_mb }} MB (${{ steps.calculate_size.outputs.total_size_gb }} GB)" >> $GITHUB_STEP_SUMMARY
+            echo '' >> $GITHUB_STEP_SUMMARY
+
+            echo '### Branches to Clean Up' >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            cat branches_to_delete.txt >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo '' >> $GITHUB_STEP_SUMMARY
+
+            if [ "${{ github.event_name }}" == "schedule" ] || [ "${{ github.event.inputs.dry_run }}" == "true" ]; then
+              echo '> **DRY RUN**: No deletions performed. Run manually with `dry_run=false` to execute.' >> $GITHUB_STEP_SUMMARY
+            else
+              echo '> **EXECUTED**: Deletions have been performed.' >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo '### Result' >> $GITHUB_STEP_SUMMARY
+            echo 'No stale reports found or all stale reports are protected.' >> $GITHUB_STEP_SUMMARY
+          fi
