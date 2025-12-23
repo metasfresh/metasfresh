@@ -81,10 +81,6 @@ jobs:
             sudo ./aws/install
           fi
 
-          aws configure set aws_access_key_id ${{ secrets.R2_ACCESS_KEY_ID }}
-          aws configure set aws_secret_access_key ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          aws configure set region auto
-
       - name: Get active branches from GitHub
         id: active
         run: |
@@ -97,6 +93,10 @@ jobs:
 
       - name: Get branch metadata from R2
         id: get_r2_metadata
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
         run: |
           DAYS=${{ github.event.inputs.days_threshold || '60' }}
           CUTOFF_DATE=$(date -u -d "${DAYS} days ago" +%Y-%m-%dT%H:%M:%SZ)
@@ -161,6 +161,10 @@ jobs:
       - name: Check for protected reports
         if: steps.get_r2_metadata.outputs.stale_count > 0
         id: check_protected
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
         run: |
           echo "Checking for protected reports (.keep-forever markers)..."
           > branches_to_delete.txt
@@ -192,6 +196,10 @@ jobs:
       - name: Calculate storage to be freed
         if: steps.check_protected.outputs.delete_count > 0
         id: calculate_size
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
         run: |
           echo "Calculating storage size of branches to delete..."
 
@@ -225,6 +233,10 @@ jobs:
         if: |
           steps.check_protected.outputs.delete_count > 0 &&
           (github.event_name == 'schedule' || github.event.inputs.dry_run == 'true')
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
         run: |
           echo "DRY RUN MODE - No actual deletions will be performed"
           echo ""
@@ -252,6 +264,10 @@ jobs:
           steps.check_protected.outputs.delete_count > 0 &&
           github.event_name == 'workflow_dispatch' &&
           github.event.inputs.dry_run == 'false'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
         run: |
           echo "EXECUTING DELETIONS"
           echo ""

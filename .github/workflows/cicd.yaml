@@ -1564,6 +1564,21 @@ jobs:
           echo "Found ${REPORTS_FOUND} report(s) to publish"
 
       # ===== CLOUDFLARE R2 UPLOAD =====
+      - name: Validate R2 configuration
+        run: |
+          MISSING=""
+          if [ -z "${{ secrets.R2_ACCESS_KEY_ID }}" ]; then MISSING="${MISSING} R2_ACCESS_KEY_ID"; fi
+          if [ -z "${{ secrets.R2_SECRET_ACCESS_KEY }}" ]; then MISSING="${MISSING} R2_SECRET_ACCESS_KEY"; fi
+          if [ -z "${{ vars.R2_ENDPOINT_URL }}" ]; then MISSING="${MISSING} R2_ENDPOINT_URL"; fi
+          if [ -z "${{ vars.R2_BUCKET_NAME }}" ]; then MISSING="${MISSING} R2_BUCKET_NAME"; fi
+          if [ -z "${{ vars.R2_PUBLIC_URL }}" ]; then MISSING="${MISSING} R2_PUBLIC_URL"; fi
+
+          if [ -n "$MISSING" ]; then
+            echo "::error::Missing required R2 configuration:${MISSING}"
+            exit 1
+          fi
+          echo "✓ R2 configuration validated"
+
       - name: Configure AWS CLI for R2
         run: |
           # Install AWS CLI if not already available
@@ -1573,12 +1588,11 @@ jobs:
             sudo ./aws/install
           fi
 
-          # Configure AWS CLI to use R2
-          aws configure set aws_access_key_id ${{ secrets.R2_ACCESS_KEY_ID }}
-          aws configure set aws_secret_access_key ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          aws configure set region auto
-
       - name: Sync reports to Cloudflare R2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
         run: |
           BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
 
@@ -1591,6 +1605,10 @@ jobs:
           echo "Total size: $(du -sh reports | cut -f1)"
 
       - name: Cleanup old builds from R2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
         run: |
           BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
           MAX_BUILDS_PER_BRANCH=10
@@ -1598,18 +1616,40 @@ jobs:
           echo "Cleaning up old builds for branch: ${BRANCH_SANITIZED}"
           echo "Keeping only the ${MAX_BUILDS_PER_BRANCH} most recent builds"
 
-          # List all builds for this branch, sorted by modification time (newest first)
+          # Get all builds with their modification times for proper sorting
+          # For each build folder, get the most recent object modification time
+          > builds_with_time.txt
+
           aws s3api list-objects-v2 \
             --endpoint-url ${{ vars.R2_ENDPOINT_URL }} \
             --bucket ${{ vars.R2_BUCKET_NAME }} \
             --prefix "branches/${BRANCH_SANITIZED}/builds/" \
             --delimiter "/" \
             --query 'CommonPrefixes[].Prefix' \
-            --output text | tr '\t' '\n' | sort -r > all_builds.txt
+            --output text | tr '\t' '\n' > all_prefixes.txt
+
+          while read -r prefix; do
+            [ -z "$prefix" ] && continue
+            # Get the most recent modification time for any object in this build folder
+            LAST_MODIFIED=$(aws s3api list-objects-v2 \
+              --endpoint-url ${{ vars.R2_ENDPOINT_URL }} \
+              --bucket ${{ vars.R2_BUCKET_NAME }} \
+              --prefix "${prefix}" \
+              --query 'sort_by(Contents, &LastModified)[-1].LastModified' \
+              --output text 2>/dev/null || echo "1970-01-01T00:00:00Z")
+            [ "$LAST_MODIFIED" == "None" ] && LAST_MODIFIED="1970-01-01T00:00:00Z"
+            echo "${LAST_MODIFIED} ${prefix}" >> builds_with_time.txt
+          done < all_prefixes.txt
+
+          # Sort by modification time (newest first) and extract just the prefix
+          sort -r builds_with_time.txt | awk '{print $2}' > all_builds.txt
 
           # Count builds
-          BUILD_COUNT=$(wc -l < all_builds.txt)
+          BUILD_COUNT=$(wc -l < all_builds.txt | tr -d ' ')
           echo "Found ${BUILD_COUNT} builds"
+
+          DELETED_COUNT=0
+          FAILED_COUNT=0
 
           if [ "$BUILD_COUNT" -gt "$MAX_BUILDS_PER_BRANCH" ]; then
             # Keep the newest builds, delete the rest
@@ -1617,14 +1657,29 @@ jobs:
             echo "Deleting ${BUILDS_TO_DELETE} old build(s)"
 
             tail -n "$BUILDS_TO_DELETE" all_builds.txt | while read -r build_prefix; do
+              [ -z "$build_prefix" ] && continue
               echo "Deleting: ${build_prefix}"
-              aws s3 rm "s3://${{ vars.R2_BUCKET_NAME }}/${build_prefix}" \
+              if aws s3 rm "s3://${{ vars.R2_BUCKET_NAME }}/${build_prefix}" \
                 --endpoint-url ${{ vars.R2_ENDPOINT_URL }} \
-                --recursive
+                --recursive 2>/dev/null; then
+                echo "  ✓ Deleted ${build_prefix}"
+                echo "deleted" >> /tmp/cleanup_results.txt
+              else
+                echo "  ✗ Failed to delete ${build_prefix}"
+                echo "failed" >> /tmp/cleanup_results.txt
+              fi
             done
 
-            echo "✓ Cleanup completed"
-            echo "CLEANUP_INFO=🧹 Deleted ${BUILDS_TO_DELETE} old build(s), keeping ${MAX_BUILDS_PER_BRANCH} most recent" >> $GITHUB_ENV
+            DELETED_COUNT=$(grep -c "deleted" /tmp/cleanup_results.txt 2>/dev/null || echo "0")
+            FAILED_COUNT=$(grep -c "failed" /tmp/cleanup_results.txt 2>/dev/null || echo "0")
+
+            if [ "$FAILED_COUNT" -gt 0 ]; then
+              echo "::warning::Cleanup completed with errors: ${DELETED_COUNT} deleted, ${FAILED_COUNT} failed"
+              echo "CLEANUP_INFO=🧹 Deleted ${DELETED_COUNT} old build(s), ${FAILED_COUNT} failed, keeping ${MAX_BUILDS_PER_BRANCH} most recent" >> $GITHUB_ENV
+            else
+              echo "✓ Cleanup completed successfully"
+              echo "CLEANUP_INFO=🧹 Deleted ${DELETED_COUNT} old build(s), keeping ${MAX_BUILDS_PER_BRANCH} most recent" >> $GITHUB_ENV
+            fi
           else
             echo "No cleanup needed (${BUILD_COUNT} <= ${MAX_BUILDS_PER_BRANCH})"
             echo "CLEANUP_INFO=🧹 No cleanup needed (${BUILD_COUNT}/${MAX_BUILDS_PER_BRANCH} builds)" >> $GITHUB_ENV
@@ -1634,7 +1689,7 @@ jobs:
         run: |
           BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
           VERSION="${{ needs.init.outputs.tag-fixed }}"
-          R2_BASE_URL="https://pub-c55eb97d86224a4e951c219dfc2057b8.r2.dev/branches/${BRANCH_SANITIZED}/builds/${VERSION}"
+          R2_BASE_URL="${{ vars.R2_PUBLIC_URL }}/branches/${BRANCH_SANITIZED}/builds/${VERSION}"
 
           echo '#### 📊 Allure Test Reports' >> $GITHUB_STEP_SUMMARY
           echo '' >> $GITHUB_STEP_SUMMARY
