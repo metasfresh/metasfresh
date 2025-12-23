@@ -1,0 +1,30 @@
+# Fast build of just migration CLI for db-tools parallelization
+# This builds in ~2-3 minutes instead of waiting for full backend (~12-15 min)
+# Dependencies: only external libs (commons-lang3, postgresql, guava, slf4j) - no backend modules
+
+FROM maven:3.8.4-jdk-8
+
+WORKDIR /workspace
+
+# Copy parent POMs (required for dependency management)
+COPY misc/parent-pom /workspace/misc/parent-pom
+COPY backend/pom.xml /workspace/backend/pom.xml
+
+# Copy only migration module (self-contained - no other backend module dependencies)
+COPY backend/de.metas.migration /workspace/backend/de.metas.migration
+
+# Install parent-pom (non-recursive - just the pom itself)
+RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml \
+    cd /workspace/misc/parent-pom && mvn install -N -DskipTests -q
+
+# Install backend parent pom (non-recursive - just the pom itself)
+RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml \
+    cd /workspace/backend && mvn install -N -DskipTests -q
+
+# Build migration CLI (includes base module via reactor)
+RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml \
+    cd /workspace/backend/de.metas.migration && mvn install -DskipTests -q
+
+# Output stage - extract just the shaded JAR
+FROM scratch AS export
+COPY --from=0 /workspace/backend/de.metas.migration/de.metas.migration.cli/target/de.metas.migration.cli-10.0.0-shaded.jar /migration-cli.jar

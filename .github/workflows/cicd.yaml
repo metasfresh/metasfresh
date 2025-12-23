@@ -103,6 +103,40 @@ jobs:
           echo ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }} >> github_run.txt
           testspace github_run.txt
 
+  # Fast migration CLI build - runs in parallel with java job
+  # This enables db-tools to start ~10 minutes earlier
+  migration-cli:
+    runs-on: ubuntu-latest
+    needs: [ init ]
+    steps:
+      - uses: actions/checkout@v4
+      - name: install-envsubst
+        if: env.ACT == 'true'
+        run: |
+          apt-get update && apt-get install -y gettext-base
+      - name: prepare-settings
+        env:
+          METASFRESH_PACKAGES_READ_TOKEN: ${{ secrets.METASFRESH_PACKAGES_READ_TOKEN }}
+        run: |
+          envsubst < docker-builds/mvn/settings.xml > docker-builds/mvn/local-settings.xml
+      - name: build-migration-cli
+        run: |
+          docker buildx build \
+            --progress=plain \
+            --file docker-builds/Dockerfile.migration-cli \
+            --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
+            --output type=local,dest=./artifacts \
+            .
+      - name: verify-output
+        run: |
+          ls -la artifacts/
+          file artifacts/migration-cli.jar
+      - uses: actions/upload-artifact@v4
+        with:
+          name: migration-cli-jar
+          path: artifacts/migration-cli.jar
+          retention-days: 1
+
   java:
     runs-on: ubuntu-latest
     needs: init
@@ -579,10 +613,10 @@ jobs:
           echo '* metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
 
   # db-tools: Build database images independently from backend
-  # This allows preloaded-db to start ~8-10 minutes earlier (parallel with backend)
+  # Now runs in parallel with java job (depends on fast migration-cli job instead)
   db-tools:
     runs-on: ubuntu-latest
-    needs: [ init, java ]
+    needs: [ init, migration-cli ]
     steps:
       - uses: actions/checkout@v4
       - uses: docker/login-action@v3
@@ -596,14 +630,15 @@ jobs:
         run: |
           echo -e "$INIT_BUILD_PROPS" > docker-builds/metadata/build-info.properties
           echo -e "$INIT_GIT_PROPS" > docker-builds/metadata/git.properties
-      - name: extract-migration-cli-jar
+      - name: download-migration-cli-jar
+        uses: actions/download-artifact@v4
+        with:
+          name: migration-cli-jar
+          path: .
+      - name: verify-migration-cli-jar
         run: |
-          # Extract the migration CLI JAR from the metas-mvn-backend image
-          docker pull metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-fixed }}
-          CONTAINER_ID=$(docker create metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-fixed }})
-          docker cp "$CONTAINER_ID":/backend/de.metas.migration/de.metas.migration.cli/target/de.metas.migration.cli-10.0.0-shaded.jar ./migration-cli.jar
-          docker rm "$CONTAINER_ID"
           ls -la migration-cli.jar
+          file migration-cli.jar
       - name: aggregate-sql-from-source
         run: |
           # Aggregate SQL files directly from source code (no Maven dependency)
