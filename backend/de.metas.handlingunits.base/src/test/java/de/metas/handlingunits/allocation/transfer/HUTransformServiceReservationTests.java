@@ -127,7 +127,7 @@ public class HUTransformServiceReservationTests
 				.qtyCU(Quantity.of(ONE, data.helper.uomKg))
 				.build();
 
-		final List<I_M_HU> newCUs = huTransformService.husToNewCUs(husToNewCUsRequest);
+		final List<I_M_HU> newCUs = huTransformService.husToNewCUs(husToNewCUsRequest).getNewCUs();
 		// data.helper.commitAndDumpHU(topLevelParent);
 
 		final Node existingTUXML = HUXmlConverter.toXml(topLevelParent);
@@ -159,7 +159,7 @@ public class HUTransformServiceReservationTests
 				.keepNewCUsUnderSameParent(true)
 				.build();
 
-		final List<I_M_HU> newCUs = huTransformService.husToNewCUs(husToNewCUsRequest);
+		final List<I_M_HU> newCUs = huTransformService.husToNewCUs(husToNewCUsRequest).getNewCUs();
 		// data.helper.commitAndDumpHU(topLevelParent);
 
 		final Node existingLUXML = HUXmlConverter.toXml(topLevelParent);
@@ -194,7 +194,7 @@ public class HUTransformServiceReservationTests
 				.keepNewCUsUnderSameParent(true)
 				.build();
 
-		final List<I_M_HU> newCUs = huTransformService.husToNewCUs(husToNewCUsRequest);
+		final List<I_M_HU> newCUs = huTransformService.husToNewCUs(husToNewCUsRequest).getNewCUs();
 		// data.helper.commitAndDumpHU(topLevelParent);
 		new HUTracerInstance().dump("topLevelParent - after husToNewCUs", topLevelParent);
 		new HUTracerInstance().dump("newCUs", newCUs);
@@ -231,7 +231,7 @@ public class HUTransformServiceReservationTests
 				.keepNewCUsUnderSameParent(true)
 				.build();
 
-		final List<I_M_HU> newCUs = huTransformService.husToNewCUs(husToNewCUsRequest);
+		final List<I_M_HU> newCUs = huTransformService.husToNewCUs(husToNewCUsRequest).getNewCUs();
 		// data.helper.commitAndDumpHU(topLevelParent);
 		// data.helper.commitAndDumpHUs(newCUs);
 
@@ -268,7 +268,7 @@ public class HUTransformServiceReservationTests
 				.keepNewCUsUnderSameParent(true)
 				.build();
 
-		final List<I_M_HU> newCUs = huTransformService.husToNewCUs(husToNewCUsRequest);
+		final List<I_M_HU> newCUs = huTransformService.husToNewCUs(husToNewCUsRequest).getNewCUs();
 
 		final Node tuXML = HUXmlConverter.toXml(topLevelParent);
 		XmlAssert.assertThat(tuXML).valueByXPath("HU-TU_IFCO/Storage[@M_Product_Value='Tomato' and @C_UOM_Name='Kg']/@Qty").isEqualTo("40.000");
@@ -306,7 +306,7 @@ public class HUTransformServiceReservationTests
 				.build();
 
 		// invoke the method under test
-		final List<I_M_HU> newCUs = huTransformService.husToNewCUs(husToNewCUsRequest);
+		final List<I_M_HU> newCUs = huTransformService.husToNewCUs(husToNewCUsRequest).getNewCUs();
 
 		assertThat(newCUs).hasSize(1);
 		final I_M_HU newSaladCU = newCUs.get(0);
@@ -340,7 +340,7 @@ public class HUTransformServiceReservationTests
 				.build();
 
 		// invoke the method under test
-		final List<I_M_HU> newCUs = huTransformService.husToNewCUs(husToNewCUsRequest);
+		final List<I_M_HU> newCUs = huTransformService.husToNewCUs(husToNewCUsRequest).getNewCUs();
 
 		assertThat(newCUs).isEmpty(); // nothing was extracted, because lu does not contain any salad.
 	}

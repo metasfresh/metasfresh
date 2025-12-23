@@ -23,6 +23,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -52,6 +53,7 @@ public class CreateHUCommand
 	@NonNull private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final HUQRCodesService huQRCodesService;
+	@NonNull private final SourceHUsService sourceHUsService;
 
 	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonCreateHURequest request;
@@ -64,12 +66,15 @@ public class CreateHUCommand
 	private CreateHUCommand(
 			@NonNull final InventoryService inventoryService,
 			@NonNull final HUQRCodesService huQRCodesService,
+			@NonNull final SourceHUsService sourceHUsService,
 			@NonNull final MasterdataContext context,
 			@NonNull final JsonCreateHURequest request,
 			@Nullable final String identifier)
 	{
 		this.inventoryService = inventoryService;
 		this.huQRCodesService = huQRCodesService;
+		this.sourceHUsService = sourceHUsService;
+		
 		this.context = context;
 		this.request = request;
 
@@ -94,6 +99,11 @@ public class CreateHUCommand
 		else
 		{
 			huQRCodeStr = null;
+		}
+
+		if (request.isSourceHU())
+		{
+			sourceHUsService.addSourceHuMarker(huId);
 		}
 
 		return JsonCreateHUResponse.builder()

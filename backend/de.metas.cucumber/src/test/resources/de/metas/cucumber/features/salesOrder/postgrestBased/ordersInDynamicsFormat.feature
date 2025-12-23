@@ -21,15 +21,18 @@ Feature: Export Orders in specific format via postgREST
       | salesPLV    | salesPriceList    |
       | purchasePLV | purchasePriceList |
     And metasfresh contains C_BPartners without locations:
-      | Identifier | IsCustomer | REST.Context | Name         | Value         | IsVendor | M_PricingSystem_ID |
-      | customer1  | Y          | customer_ID  | customerName | customerValue | N        | pricingSystem      |
-      | vendor1    | N          | vendor_ID    | vendorName   | vendorValue   | Y        | pricingSystem      |
-      | dropShip1  | N          | dropShip_ID  | dropShipName | dropShipValue | Y        | pricingSystem      |
+      | Identifier | IsCustomer | REST.Context        | Name         | Value         | IsVendor | M_PricingSystem_ID |
+      | customer1  | Y          | customer_ID         | customerName | customerValue | N        | pricingSystem      |
+      | vendor1    | N          | vendor_ID           | vendorName   | vendorValue   | Y        | pricingSystem      |
+      | dropShip1  | N          | dropShipBPartner_ID | dropShipName | dropShipValue | Y        | pricingSystem      |
     And metasfresh contains C_BPartner_Locations:
       | Identifier          | C_BPartner_ID | IsShipToDefault | IsBillToDefault | City       | Postal | Address1       | Address2       | Address3       | Address4       |
       | customer_location_1 | customer1     | Y               | Y               |            |        |                |                |                |                |
       | vendor_location_1   | vendor1       | Y               | Y               | VendorCity | 5100   | VendorAddress1 | VendorAddress2 | VendorAddress3 | VendorAddress4 |
       | dropShip_location_1 | dropShip1     | Y               | Y               | City       | 5000   | Address1       | Address2       | Address3       | Address4       |
+    And load C_BPartner:
+      | C_BPartner_ID.Identifier | OPT.Value  | REST.Context   |
+      | orgBP                    | metasfresh | orgBPartner_ID |
 
   @from:cucumber
   Scenario: create a sales order and export it to JSON via C_Order_ID. The used BPartner does not have an external reference for Dynamics365 External System
@@ -183,7 +186,6 @@ Feature: Export Orders in specific format via postgREST
 }   
     """
 
-  @ignore
   @from:cucumber
   Scenario: create a purchase order and export it to JSON via C_Order_ID
     Given metasfresh contains M_Products:
@@ -249,7 +251,7 @@ Feature: Export Orders in specific format via postgREST
     "address2": "Address2",
     "address3": "Address3",
     "address4": "Address4",
-    "partnerID": 2155894,
+    "partnerID": @dropShipBPartner_ID@,
     "partnerName": "dropShipName",
     "partnerValue": "dropShipValue"
   },

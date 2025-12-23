@@ -83,3 +83,5 @@ misc/services/camel/de-metas-camel-shipping/tmp/
 # Local CI/CD output logs
 act_output_*.txt
 nul
+
+/mcp-scripts/**/*

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.manufacturing.rest-api
+ * de.metas.business
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,32 +20,36 @@
  * #L%
  */
 
-package de.metas.manufacturing.job.service.commands;
+package de.metas.order;
 
-import de.metas.quantity.Quantity;
+import de.metas.project.ProjectId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.eevolution.api.PPOrderBOMLineId;
-import org.eevolution.api.PPOrderId;
+import lombok.extern.jackson.Jacksonized;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
+import java.util.Set;
 
-@Value
-@Builder
-public class ReceiveGoodsRequest
+/**
+ * Represents a functional interface for performing necessary propagation of a project ID from a collection of purchase order line IDs.
+ * <p>
+ * Its main usage is to ensure a project that is set to a purchase order line is propagated to any corresponding records.
+ */
+@FunctionalInterface
+public interface PurchaseOrderProjectListener
 {
-	@NonNull PPOrderId ppOrderId;
-	@NonNull SelectedReceivingTarget receivingTarget;
-	@NonNull BigDecimal qtyToReceiveBD;
-	@NonNull ZonedDateTime date;
-	@Nullable LocalDate bestBeforeDate;
-	@Nullable LocalDate productionDate;
-	@Nullable String lotNo;
-	@Nullable Quantity catchWeight;
-	@Nullable String barcode;
-	@Nullable PPOrderBOMLineId coProductBOMLineId;
+	void onCreated(@NonNull ProjectCreatedEvent event);
+
+	//
+	//
+	//
+
+	@Value
+	@Builder
+	@Jacksonized
+	class ProjectCreatedEvent
+	{
+		@NonNull ProjectId projectId;
+		@NonNull Set<OrderAndLineId> purchaseOrderLineIds;
+	}
 }

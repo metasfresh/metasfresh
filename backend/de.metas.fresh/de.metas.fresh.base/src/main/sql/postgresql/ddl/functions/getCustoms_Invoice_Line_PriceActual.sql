@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.manufacturing.rest-api
+ * de.metas.fresh.base
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,20 +20,20 @@
  * #L%
  */
 
-package de.metas.manufacturing.job.service.commands;
+DROP FUNCTION IF EXISTS getCustoms_Invoice_Line_PriceActual (IN p_c_customs_invoice_line_id numeric)
+;
 
-import de.metas.manufacturing.job.model.ReceivingTarget;
-import de.metas.quantity.Quantity;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
-import javax.annotation.Nullable;
-
-@Value
-@Builder
-public class ReceiveGoodsResult
-{
-	@Nullable ReceivingTarget receivingTarget;
-	@NonNull Quantity totalQtyReceived;
-}
+CREATE OR REPLACE FUNCTION getCustoms_Invoice_Line_PriceActual(p_c_customs_invoice_line_id NUMERIC)
+    RETURNS NUMERIC
+    LANGUAGE sql
+    STABLE
+AS
+$$
+SELECT ol.priceactual
+FROM M_InOutLine_To_C_Customs_Invoice_Line io_to_ci
+         INNER JOIN m_inoutline il ON il.m_inoutline_id = io_to_ci.m_inoutline_id
+         INNER JOIN c_orderline ol ON ol.c_orderline_id = il.c_orderline_id
+WHERE c_customs_invoice_line_id = p_c_customs_invoice_line_id
+    ;
+$$
+;

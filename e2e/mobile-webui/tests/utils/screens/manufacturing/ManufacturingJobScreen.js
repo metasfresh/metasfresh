@@ -56,9 +56,15 @@ export const ManufacturingJobScreen = {
         await RawMaterialIssueLineScreen.waitForScreen();
     }),
 
-    expectIssueButton: async ({ index, noIndicators }) => await step(`${NAME} - Expect line button at index ${index}`, async () => {
+    expectIssueButton: async ({ index, qtyToIssue, qtyIssued, noIndicators }) => await step(`${NAME} - Expect line button at index ${index}`, async () => {
         const lineButton = locateIssueButton({ index });
-        
+
+        if (qtyToIssue !== undefined) {
+            await expectButtonAttribute({ lineButton, attribute: 'data-qtytarget', value: qtyToIssue });
+        }
+        if (qtyIssued !== undefined) {
+            await expectButtonAttribute({ lineButton, attribute: 'data-qtycurrent', value: qtyIssued });
+        }
         if (noIndicators) {
             await expect(lineButton.getByTestId('indicator')).toHaveCount(0);
             await expect(lineButton.getByTestId('indicator2')).toHaveCount(0);

@@ -422,8 +422,11 @@ public class C_BPartner_StepDef
 
 	private void load_bpartner(@NonNull final Map<String, String> row)
 	{
+		// I don't dare to open the can of worms of overhauling this entirely,
+		// because we have "C_BPartner_ID.Identifier" and "OPT.C_BPartner_ID"
+		final DataTableRow tableRow = DataTableRow.singleRow(row); 
+		
 		final String identifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_ID + ".Identifier");
-
 		final Integer id = DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT." + COLUMNNAME_C_BPartner_ID);
 
 		if (id != null)
@@ -432,17 +435,23 @@ public class C_BPartner_StepDef
 			assertThat(bPartnerRecord).isNotNull();
 
 			bPartnerTable.putOrReplace(identifier, bPartnerRecord);
+
+			tableRow.getAsOptionalIdentifier("REST.Context")
+					.ifPresent(ident -> restTestContext.setVariable(ident.getAsString(), bPartnerRecord.getC_BPartner_ID()));
 		}
 
 		final String value = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_Value);
-
 		if (Check.isNotBlank(value))
 		{
 			final I_C_BPartner bPartnerRecord = bpartnerDAO.retrieveBPartnerByValue(Env.getCtx(), value);
 			assertThat(bPartnerRecord).isNotNull();
 
 			bPartnerTable.putOrReplace(identifier, bPartnerRecord);
+
+			tableRow.getAsOptionalIdentifier("REST.Context")
+					.ifPresent(ident -> restTestContext.setVariable(ident.getAsString(), bPartnerRecord.getC_BPartner_ID()));
 		}
+
 	}
 
 	private void updateBPartner(@NonNull final Map<String, String> tableRow)

@@ -22,27 +22,38 @@
 
 package de.metas.order.model.interceptor;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.money.CurrencyId;
 import de.metas.order.IOrderBL;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
+import de.metas.order.PurchaseOrderProjectListener.ProjectCreatedEvent;
+import de.metas.order.PurchaseOrderProjectListenerDispatcher;
 import de.metas.order.model.I_C_Order;
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectTypeId;
 import de.metas.project.ProjectTypeRepository;
-import de.metas.project.command.CreateSalesPurchaseOrderProjectCommand;
+import de.metas.project.service.CreateProjectRequest;
 import de.metas.project.service.ProjectService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -50,41 +61,68 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Intercepts and validates operations on {@link I_C_Order} entities.
- * This class is responsible for ensuring that project associations for orders are properly managed
- * and internally consistent, particularly during the {@link ModelValidator.TIMING_BEFORE_COMPLETE}
- * lifecycle timing of an order.
+ * This class acts as an interceptor for the {@link I_C_Order} model. Its primary purpose is
+ * to handle project-related logic for purchase and sales orders.
  * <p>
  * Responsibilities:
- * - Ensures proper project assignment for orders when certain conditions are met.
- * - Analyzes associated order lines to determine whether a single, identifiable project can
- * be linked to the order.
- * - Creates new projects for orders when no identifiable or existing project is determined.
- * - Propagates the newly assigned project to all related order lines with null project references.
+ * - Automatically associates a project with a purchase or sales order if certain conditions are met.
+ * - Promotes a project from order lines to the order when applicable.
+ * - Creates a new project and associates it with an order and its lines if no appropriate project exists.
+ * - Propagates the project association from the order to its lines.
  * <p>
- * Annotations:
- * - {@link Component}: Marks this class as a managed Spring component.
- * - {@link RequiredArgsConstructor}: Generates a constructor accepting final fields as parameters.
- * - {@link Interceptor}: A validation interface associated with {@link I_C_Order}.
+ * Dependency injection is used to provide services and repositories required for its operations.
+ * <p>
+ * Interceptor Details:
+ * - This interceptor is registered for the {@link I_C_Order} model and intervenes
+ * during the validation timing {@code TIMING_BEFORE_COMPLETE}.
+ * <p>
+ * Methods:
+ * <p>
+ * 1. {@code po_populateProjectIfNeeded(I_C_Order order)}:
+ * - A public method annotated with {@link @DocValidate}.
+ * - Triggered during the {@code TIMING_BEFORE_COMPLETE} lifecycle event.
+ * - Schedules the method to populate project information after the current transaction commits.
+ * <p>
+ * 2. {@code populateProjectIfNeeded(I_C_Order order)}:
+ * - A private method that performs the core logic of validating and associating a project with the order.
+ * - Checks if an order already has a project association.
+ * - Retrieves order lines and examines their associated projects.
+ * - Promotes projects from order lines to the order if only one unique project exists.
+ * - Creates a new project if no project exists and associates it with the order and its lines.
+ * <p>
+ * 3. {@code createNewSalesPurchaseOrderProject(I_C_Order order)}:
+ * - A private helper method responsible for creating a new project of type "Sales/Purchase Order."
+ * - Uses the provided order details to configure the project.
+ * <p>
+ * 4. {@code setProjectIdToOrderLines(ProjectId newProjectId, List<I_C_OrderLine> lines)}:
+ * - A private helper method that assigns a specific project ID to all applicable order lines.
+ * - Propagates the project ID changes to the persistent layer and related entities.
  */
 @Component
-@RequiredArgsConstructor
 @Interceptor(I_C_Order.class)
+@RequiredArgsConstructor
 public class C_Order_Project
 {
-	private final ProjectService projectService;
-	private final ProjectTypeRepository projectTypeRepository;
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final ProjectService projectService;
+	@NonNull private final ProjectTypeRepository projectTypeRepository;
+	@NonNull private final PurchaseOrderProjectListenerDispatcher eventDispatcher;
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
-	public void po_populateProjectIfNeeded(@NonNull final I_C_Order order)
+	public void beforeComplete(@NonNull final I_C_Order order)
 	{
-		final ProjectId projectId = ProjectId.ofRepoIdOrNull(order.getC_Project_ID());
-		if (order.isSOTrx() || projectId != null)
+		populateProjectIfNeeded(order);
+	}
+
+	private void populateProjectIfNeeded(final @NonNull I_C_Order purchaseOrder)
+	{
+		final ProjectId projectId = ProjectId.ofRepoIdOrNull(purchaseOrder.getC_Project_ID());
+		if (purchaseOrder.isSOTrx() || projectId != null)
 		{
 			return;
 		}
-		final List<I_C_OrderLine> lines = orderBL.getLinesByOrderIds(Collections.singleton(OrderId.ofRepoId(order.getC_Order_ID())));
+		final List<I_C_OrderLine> lines = orderBL.getLinesByOrderIds(Collections.singleton(OrderId.ofRepoId(purchaseOrder.getC_Order_ID())));
 		final Set<ProjectId> orderLineProjectIds = lines.stream()
 				.map(ol -> ProjectId.ofRepoIdOrNull(ol.getC_Project_ID()))
 				.collect(Collectors.toCollection(HashSet::new));
@@ -92,36 +130,63 @@ public class C_Order_Project
 		if (!isNullProjectIdsOnLines && orderLineProjectIds.size() == 1)
 		{
 			//promote the only project found on the lines to the order
-			setProjectIdToOrderAndLines(orderLineProjectIds.iterator().next(), order, lines);
-			return;
-		}
-		else if (orderLineProjectIds.size() > 1)
-		{
-			//can't identify a single project for this order's lines.
-			return;
-		}
-		final ProjectTypeId projectTypeId = projectTypeRepository.getFirstIdByProjectCategoryAndOrgOrNull(ProjectCategory.SalesPurchaseOrder, OrgId.ofRepoId(order.getAD_Org_ID()), false);
-		if (projectTypeId == null)
-		{
-			//no project type for `Sales/Purchase Order` defined, can't create a new project for this order
+			final ProjectId olProjectId = orderLineProjectIds.iterator().next();
+			purchaseOrder.setC_Project_ID(olProjectId.getRepoId());
+			setProjectIdToOrderLines(olProjectId, lines);
 			return;
 		}
 
-		final ProjectId newProjectId = CreateSalesPurchaseOrderProjectCommand.builder()
-				.projectService(projectService)
-				.order(order)
-				.build()
-				.execute();
-		setProjectIdToOrderAndLines(newProjectId, order, lines);
+		if (isNullProjectIdsOnLines)
+		{
+			final ProjectTypeId projectTypeId = projectTypeRepository.getFirstIdByProjectCategoryAndOrgOrNull(ProjectCategory.SalesPurchaseOrder, OrgId.ofRepoId(purchaseOrder.getAD_Org_ID()), false);
+			if (projectTypeId == null)
+			{
+				//no project type for `Sales/Purchase Order` defined, can't create a new project for this order
+				return;
+			}
+
+			final ProjectId newProjectId = createNewSalesPurchaseOrderProject(purchaseOrder);
+			if (orderLineProjectIds.size() <= 1)
+			{
+				purchaseOrder.setC_Project_ID(newProjectId.getRepoId());
+			}
+			setProjectIdToOrderLines(newProjectId, lines);
+		}
 	}
 
-	private static void setProjectIdToOrderAndLines(@NonNull final ProjectId newProjectId, final @NonNull I_C_Order order, @NonNull final List<I_C_OrderLine> lines)
+	private ProjectId createNewSalesPurchaseOrderProject(final @NonNull I_C_Order purchaseOrder)
 	{
-		order.setC_Project_ID(newProjectId.getRepoId());
-		lines.stream()
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(purchaseOrder.getC_BPartner_ID());
+		return projectService.createProject(CreateProjectRequest.builder()
+				.projectCategory(ProjectCategory.SalesPurchaseOrder)
+				.orgId(OrgId.ofRepoId(purchaseOrder.getAD_Org_ID()))
+				.currencyId(CurrencyId.ofRepoId(purchaseOrder.getC_Currency_ID()))
+				.warehouseId(WarehouseId.ofRepoId(purchaseOrder.getM_Warehouse_ID()))
+				.bpartnerAndLocationId(BPartnerLocationId.ofRepoId(bpartnerId, purchaseOrder.getC_BPartner_Location_ID()))
+				.contactId(BPartnerContactId.ofRepoIdOrNull(bpartnerId, purchaseOrder.getAD_User_ID()))
+				.build());
+	}
+
+	private void setProjectIdToOrderLines(@NonNull final ProjectId newProjectId, @NonNull final List<I_C_OrderLine> poLines)
+	{
+		final HashMap<OrderAndLineId, I_C_OrderLine> poLinesUpdated = new HashMap<>();
+
+		poLines.stream()
 				.filter(ol -> ProjectId.ofRepoIdOrNull(ol.getC_Project_ID()) == null)
-				.forEach(ol -> ol.setC_Project_ID(newProjectId.getRepoId()));
-		InterfaceWrapperHelper.saveAll(lines);
-		//TODO propagate project to any sales order that's generated this PO
+				.forEach(ol -> {
+					ol.setC_Project_ID(newProjectId.getRepoId());
+					poLinesUpdated.put(OrderAndLineId.ofRepoIds(ol.getC_Order_ID(), ol.getC_OrderLine_ID()), ol);
+				});
+		if (poLinesUpdated.isEmpty())
+		{
+			return;
+		}
+
+		InterfaceWrapperHelper.saveAll(poLinesUpdated.values());
+
+		eventDispatcher.fireProjectCreatedEvent(ProjectCreatedEvent.builder()
+				.projectId(newProjectId)
+				.purchaseOrderLineIds(ImmutableSet.copyOf(poLinesUpdated.keySet()))
+				.build());
 	}
 }

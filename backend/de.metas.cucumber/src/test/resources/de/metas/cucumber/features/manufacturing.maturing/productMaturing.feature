@@ -139,6 +139,8 @@ Feature: Maturing scenarios
       | M_HU_Storage_ID.Identifier | M_HU_ID.Identifier | M_Product_ID.Identifier | Qty |
       | rawgood_hus_20             | rawgood_hu_20      | rawGood                 | 20  |
 
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
     And AD_Scheduler for classname 'org.eevolution.productioncandidate.process.PP_Order_Candidate_CreateMaturingCandidates' is ran once
 
     And after not more than 60s, PP_Order_Candidates are found

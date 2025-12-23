@@ -49,7 +49,9 @@ public interface IPPOrderBOMBL extends ISingletonService
 {
 	I_PP_Order_BOMLine getOrderBOMLineById(PPOrderBOMLineId orderBOMLineId);
 
-	<T extends I_PP_Order_BOMLine> List<T> retrieveOrderBOMLines(PPOrderId orderId, Class<T> orderBOMLineClass);
+	List<I_PP_Order_BOMLine> getOrderBOMLines(PPOrderId orderId);
+
+	<T extends I_PP_Order_BOMLine> List<T> getOrderBOMLines(PPOrderId orderId, Class<T> orderBOMLineClass);
 
 	PPOrderQuantities getQuantities(
 			@NonNull I_PP_Order ppOrder,
@@ -152,4 +154,6 @@ public interface IPPOrderBOMBL extends ISingletonService
 	Set<ProductId> getProductIdsToIssue(PPOrderId ppOrderId);
 
 	ImmutableSet<WarehouseId> getIssueFromWarehouseIds(@NonNull final I_PP_Order ppOrder);
+
+	ImmutableSet<WarehouseId> getIssueFromWarehouseIds(WarehouseId ppOrderWarehouseId);
 }
