@@ -1313,7 +1313,7 @@ jobs:
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
           mfregistry: metasfresh
-          dbqualifier: -preloaded
+          dbqualifier: preloaded
         run: |
           docker compose up -d
       - name: Make the script files executable
@@ -1390,7 +1390,7 @@ jobs:
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
           mfregistry: metasfresh
-          dbqualifier: -preloaded
+          dbqualifier: preloaded
         if: success() || failure()
         run: |
           docker compose down
