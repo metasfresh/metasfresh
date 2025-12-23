@@ -340,3 +340,115 @@ Feature: Purchase order
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.IsDeliveryClosed |
       | invoiceCand_PO_S0156_500          | order_PO_S0156_500        | orderLine_PO_S0156_500        | 30           | 26             | 30               | false                |
+
+  @from:cucumber
+  Scenario: Create purchase order, create material receipt for it, reactivate, add a new order line to it and recomplete the order
+    Given set sys config boolean value true for sys config PO_AllowReactivationIfReceiptsCreated
+    And metasfresh contains C_Orders:
+      | Identifier        | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.M_PricingSystem_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.DeliveryRule | OPT.DeliveryViaRule |
+      | order_PO_12192025 | N       | supplier_PO              | 2022-06-10  | POO             | ps_PO                             | supplierLocation_PO                   | F                | S                   |
+    And metasfresh contains C_OrderLines:
+      | Identifier            | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | orderLine_PO_12192025 | order_PO_12192025     | product_PO_17062022     | 10         |
+
+    And the order identified by order_PO_12192025 is completed
+
+    And validate C_OrderLine:
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
+      | orderLine_PO_12192025     | order_PO_12192025     | product_PO_17062022     | 10         | 0            | 0           | 10    | 0        | EUR          | true      | 10              |
+    And after not more than 30s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved | OPT.Processed |
+      | receiptSchedule_PO_12192025     | order_PO_12192025     | orderLine_PO_12192025     | supplier_PO              | supplierLocation_PO               | product_PO_17062022     | 10         | warehouseStd              | 0            | false         |
+    And after not more than 30s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | invoiceCand_PO_12192025           | orderLine_PO_12192025     | 0            |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.IsDeliveryClosed |
+      | invoiceCand_PO_12192025           | order_PO_12192025         | orderLine_PO_12192025         | 0            | 10             | 0                | false                |
+
+    And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig_PO_12192025              | hu_PO_12192025     | receiptSchedule_PO_12192025     | N               | 1     | N               | 1     | N               | 10          | huPiItemProduct_17062022           | huPackingTauschpalette       |
+
+    And create material receipt
+      | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | hu_PO_12192025     | receiptSchedule_PO_12192025     | inOut_PO_12192025     |
+    And validate C_OrderLine:
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
+      | orderLine_PO_12192025     | order_PO_12192025     | product_PO_17062022     | 10         | 10           | 0           | 10    | 0        | EUR          | true      | 0               |
+    And after not more than 30s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved | OPT.Processed |
+      | receiptSchedule_PO_12192025     | order_PO_12192025     | orderLine_PO_12192025     | supplier_PO              | supplierLocation_PO               | product_PO_17062022     | 10         | warehouseStd              | 10           | false         |
+    And after not more than 30s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | invoiceCand_PO_12192025           | orderLine_PO_12192025     | 10           |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.IsDeliveryClosed |
+      | invoiceCand_PO_12192025           | order_PO_12192025         | orderLine_PO_12192025         | 10           | 10             | 10               | false                |
+
+    When the order identified by order_PO_12192025 is reactivated
+    Then metasfresh contains C_OrderLines:
+      | Identifier              | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | orderLine_PO_12192025_2 | order_PO_12192025     | product_PO_17062022     | 50         |
+
+    And the order identified by order_PO_12192025 is completed
+    And validate C_OrderLine:
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
+      | orderLine_PO_12192025_2   | order_PO_12192025     | product_PO_17062022     | 50         | 0            | 0           | 10    | 0        | EUR          | true      | 50              |
+    And set sys config boolean value false for sys config PO_AllowReactivationIfReceiptsCreated
+    
+  @from:cucumber
+  Scenario: Create purchase order with 1 line for 100 pieces, create material receipt for 10 pieces, reactivate, decrease qty to 50, recomplete the order.
+    Given set sys config boolean value true for sys config PO_AllowReactivationIfReceiptsCreated
+    And metasfresh contains C_Orders:
+      | Identifier        | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.M_PricingSystem_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.DeliveryRule | OPT.DeliveryViaRule |
+      | order_PO_12192025 | N       | supplier_PO              | 2022-06-10  | POO             | ps_PO                             | supplierLocation_PO                   | F                | S                   |
+    And metasfresh contains C_OrderLines:
+      | Identifier            | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | orderLine_PO_12192025 | order_PO_12192025     | product_PO_17062022     | 100        |
+
+    And the order identified by order_PO_12192025 is completed
+
+    And validate C_OrderLine:
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
+      | orderLine_PO_12192025     | order_PO_12192025     | product_PO_17062022     | 100        | 0            | 0           | 10    | 0        | EUR          | true      | 100             |
+    And after not more than 30s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved | OPT.Processed |
+      | receiptSchedule_PO_12192025     | order_PO_12192025     | orderLine_PO_12192025     | supplier_PO              | supplierLocation_PO               | product_PO_17062022     | 100        | warehouseStd              | 0            | false         |
+    And after not more than 30s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | invoiceCand_PO_12192025           | orderLine_PO_12192025     | 0            |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.IsDeliveryClosed |
+      | invoiceCand_PO_12192025           | order_PO_12192025         | orderLine_PO_12192025         | 0            | 100            | 0                | false                |
+
+    And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig_PO_12192025              | hu_PO_12192025     | receiptSchedule_PO_12192025     | N               | 1     | N               | 1     | N               | 10          | huPiItemProduct_17062022           | huPackingTauschpalette       |
+
+    And create material receipt
+      | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | hu_PO_12192025     | receiptSchedule_PO_12192025     | inOut_PO_12192025     |
+    And validate C_OrderLine:
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
+      | orderLine_PO_12192025     | order_PO_12192025     | product_PO_17062022     | 100        | 10           | 0           | 10    | 0        | EUR          | true      | 90              |
+    And after not more than 30s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyMoved | OPT.Processed |
+      | receiptSchedule_PO_12192025     | order_PO_12192025     | orderLine_PO_12192025     | supplier_PO              | supplierLocation_PO               | product_PO_17062022     | 100        | warehouseStd              | 10           | false         |
+    And after not more than 30s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | invoiceCand_PO_12192025           | orderLine_PO_12192025     | 10           |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.IsDeliveryClosed |
+      | invoiceCand_PO_12192025           | order_PO_12192025         | orderLine_PO_12192025         | 10           | 100            | 10               | false                |
+
+    When the order identified by order_PO_12192025 is reactivated
+    Then update C_OrderLine:
+      | C_OrderLine_ID.Identifier | OPT.QtyEntered |
+      | orderLine_PO_12192025     | 50             |
+
+    And the order identified by order_PO_12192025 is completed
+    And validate C_OrderLine:
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
+      | orderLine_PO_12192025     | order_PO_12192025     | product_PO_17062022     | 50         | 10           | 0           | 10    | 0        | EUR          | true      | 40              |
+    And set sys config boolean value false for sys config PO_AllowReactivationIfReceiptsCreated
