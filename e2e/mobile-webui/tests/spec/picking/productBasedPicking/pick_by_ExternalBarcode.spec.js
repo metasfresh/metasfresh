@@ -85,10 +85,10 @@ const createMasterdata = async ({ externalBarcode }) => {
 // noinspection JSUnusedLocalSymbols
 test('Scan the pick from HU by ExternalBarcode', async ({ page }) => {
     // === ALLURE METADATA ===
-    await allure.epic('E0105: Picking');
-    await allure.tag('F00230: MobileUI Picking');
-    await allure.story('Product based picking - External barcode');
-    await allure.severity('normal');
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.story('Product based picking - External barcode');
+    allure.severity('normal');
 
     const externalBarcode = "EXT" + Date.now();
     const masterdata = await createMasterdata({ externalBarcode });

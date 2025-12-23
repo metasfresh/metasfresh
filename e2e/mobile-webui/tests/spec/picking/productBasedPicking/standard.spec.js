@@ -104,10 +104,10 @@ const createMasterdata = async ({
 // noinspection JSUnusedLocalSymbols
 test('Product based aggregation', async ({ page }) => {
     // === ALLURE METADATA ===
-    await allure.epic('E0105: Picking');
-    await allure.tag('F00230: MobileUI Picking');
-    await allure.story('Product based aggregation');
-    await allure.severity('normal');
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.story('Product based aggregation');
+    allure.severity('normal');
 
     const masterdata = await createMasterdata();
 
@@ -257,10 +257,10 @@ test('Product based aggregation', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Filter by EAN13', async ({ page }) => {
     // === ALLURE METADATA ===
-    await allure.epic('E0105: Picking');
-    await allure.tag('F00230: MobileUI Picking');
-    await allure.story('Product based picking - Filter by EAN13');
-    await allure.severity('normal');
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.story('Product based picking - Filter by EAN13');
+    allure.severity('normal');
 
     const P1_EAN13 = generateEAN13();
     const P1_TU_EAN13 = generateEAN13();
@@ -314,10 +314,10 @@ test('Filter by EAN13', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Anonymous pick HUs on the fly', async ({ page }) => {
     // === ALLURE METADATA ===
-    await allure.epic('E0105: Picking');
-    await allure.tag('F00230: MobileUI Picking');
-    await allure.story('Product based picking - Anonymous pick on the fly');
-    await allure.severity('normal');
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.story('Product based picking - Anonymous pick on the fly');
+    allure.severity('normal');
 
     const masterdata = await createMasterdata({ anonymousPickHUsOnTheFly: true });
 
