@@ -1,182 +1,217 @@
 --
 -- this overwrites a view in de.metas.fresh !
 --
-DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN Date, IN defaultAcc character varying);
-DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN Date, IN defaultAcc character varying, IN showCurrencyExchange character varying);
-DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN Date, IN defaultAcc character varying, IN showCurrencyExchange character varying,  IN p_IncludePostingTypeStatistical char(1));
+DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN            Date,
+                                                   IN defaultAcc character varying)
+;
 
-DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN Date, IN defaultAcc character varying, IN showCurrencyExchange character varying, IN p_IncludePostingTypeStatistical char(1),  IN ad_org_id numeric(10,0));
-DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN Date, IN defaultAcc character varying, IN showCurrencyExchange character varying, IN ad_org_id numeric(10,0), IN p_IncludePostingTypeStatistical char(1));
-DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN Date, IN defaultAcc character varying, IN showCurrencyExchange character varying, IN ad_org_id numeric(10,0), IN p_IncludePostingTypeStatistical char(1), IN p_ExcludePostingTypeYearEnd char(1));
+DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN                      Date,
+                                                   IN defaultAcc           character varying,
+                                                   IN showCurrencyExchange character varying)
+;
 
-DROP TABLE IF EXISTS report.saldobilanz_Report;
+DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN                                 Date,
+                                                   IN defaultAcc                      character varying,
+                                                   IN showCurrencyExchange            character varying,
+                                                   IN p_IncludePostingTypeStatistical char(1))
+;
+
+DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN                                 Date,
+                                                   IN defaultAcc                      character varying,
+                                                   IN showCurrencyExchange            character varying,
+                                                   IN p_IncludePostingTypeStatistical char(1),
+                                                   IN ad_org_id                       numeric(10, 0))
+;
+
+DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN                                 Date,
+                                                   IN defaultAcc                      character varying,
+                                                   IN showCurrencyExchange            character varying,
+                                                   IN ad_org_id                       numeric(10, 0),
+                                                   IN p_IncludePostingTypeStatistical char(1))
+;
+
+DROP FUNCTION IF EXISTS report.saldobilanz_Report (IN                                 Date,
+                                                   IN defaultAcc                      character varying,
+                                                   IN showCurrencyExchange            character varying,
+                                                   IN ad_org_id                       numeric(10, 0),
+                                                   IN p_IncludePostingTypeStatistical char(1),
+                                                   IN p_ExcludePostingTypeYearEnd     char(1))
+;
+
+DROP TABLE IF EXISTS report.saldobilanz_Report
+;
 
 
 
 CREATE TABLE report.saldobilanz_Report
 (
-    orgValue character varying(60),
-    orgName character varying(60),
-    parentname1 character varying(60),
-    parentvalue1 character varying(60),
-    parentname2 character varying(60),
-    parentvalue2 character varying(60),
-    parentname3 character varying(60),
-    parentvalue3 character varying(60),
-    parentname4 character varying(60),
-    parentvalue4 character varying(60),
-    name character varying(60),
-    namevalue character varying(60),
-    AccountType char(1),
+    orgValue          character varying(60),
+    orgName           character varying(60),
+    parentname1       character varying(60),
+    parentvalue1      character varying(60),
+    parentname2       character varying(60),
+    parentvalue2      character varying(60),
+    parentname3       character varying(60),
+    parentvalue3      character varying(60),
+    parentname4       character varying(60),
+    parentvalue4      character varying(60),
+    name              character varying(60),
+    namevalue         character varying(60),
+    AccountType       char(1),
 
-    sameyearsum numeric,
-    lastyearsum numeric,
-    euroSaldo numeric,
-    L4_sameyearsum numeric,
-    L4_lastyearsum numeric,
-    L3_sameyearsum numeric,
-    L3_lastyearsum numeric,
-    L2_sameyearsum numeric,
-    L2_lastyearsum numeric,
-    L1_sameyearsum numeric,
-    L1_lastyearsum numeric,
+    sameyearsum       numeric,
+    lastyearsum       numeric,
+    euroSaldo         numeric,
+    L4_sameyearsum    numeric,
+    L4_lastyearsum    numeric,
+    L3_sameyearsum    numeric,
+    L3_lastyearsum    numeric,
+    L2_sameyearsum    numeric,
+    L2_lastyearsum    numeric,
+    L1_sameyearsum    numeric,
+    L1_lastyearsum    numeric,
 
     -- More info
-    C_Calendar_ID numeric,
+    C_Calendar_ID     numeric,
     C_ElementValue_ID numeric,
 
-    ad_org_id numeric,
-    currency character(3)
+    ad_org_id         numeric,
+    currency          character(3)
 )
     WITH (
-        OIDS=FALSE
-    );
+        OIDS= FALSE
+    )
+;
 
-CREATE FUNCTION report.saldobilanz_Report(IN p_Date Date, IN p_defaultAcc character varying, IN p_showCurrencyExchange character varying, IN p_ad_org_id numeric(10,0), IN p_IncludePostingTypeStatistical char(1) = 'N',  p_ExcludePostingTypeYearEnd char(1) = 'N') RETURNS SETOF report.saldobilanz_Report AS
+CREATE FUNCTION report.saldobilanz_Report(IN p_Date                          Date,
+                                          IN p_defaultAcc                    character varying,
+                                          IN p_showCurrencyExchange          character varying,
+                                          IN p_ad_org_id                     numeric(10, 0),
+                                          IN p_IncludePostingTypeStatistical char(1) = 'N',
+                                          p_ExcludePostingTypeYearEnd        char(1) = 'N') RETURNS SETOF report.saldobilanz_Report
+AS
 $BODY$
-SELECT
-    o.value as orgValue,
-    o.name as orgName,
-    parentname1,
-    parentvalue1,
-    parentname2,
-    parentvalue2,
-    parentname3,
-    parentvalue3,
-    parentname4,
-    parentvalue4,
-    a.name,
-    a.value,
-    AccountType,
+SELECT o.value                                                                                                  AS orgValue,
+       o.name                                                                                                   AS orgName,
+       parentname1,
+       parentvalue1,
+       parentname2,
+       parentvalue2,
+       parentname3,
+       parentvalue3,
+       parentname4,
+       parentvalue4,
+       a.name,
+       a.value,
+       AccountType,
 
-    SameYearSum,
-    LastYearSum,
-    (case when IsConvertToEUR
-              then currencyConvert(a.SameYearSum
-            , a.C_Currency_ID -- p_curfrom_id
-            , (SELECT C_Currency_ID FROM C_Currency WHERE ISO_Code = 'EUR' AND isActive = 'Y') -- p_curto_id
-            , p_Date -- p_convdate
-            , (SELECT C_ConversionType_ID FROM C_ConversionType where Value='P' AND isActive = 'Y') -- p_conversiontype_id
-            , a.AD_Client_ID
-            , p_ad_org_id --ad_org_id
-                   )
-              else null
-     end) as L4_euroSaldo,
-    --
-    SUM(CASE WHEN ParentValue4 IS NOT NULL THEN SameYearSum ELSE NULL END) OVER ( PARTITION BY ParentValue4) AS L4_SameYearSum,
-    SUM(CASE WHEN ParentValue4 IS NOT NULL THEN LastYearSum ELSE NULL END) OVER ( PARTITION BY ParentValue4) AS L4_LastYearSum,
-    SUM(CASE WHEN ParentValue3 IS NOT NULL THEN SameYearSum ELSE NULL END) OVER ( PARTITION BY ParentValue3) AS L3_SameYearSum,
-    SUM(CASE WHEN ParentValue3 IS NOT NULL THEN LastYearSum ELSE NULL END) OVER ( PARTITION BY ParentValue3) AS L3_LastYearSum,
-    SUM(CASE WHEN ParentValue2 IS NOT NULL THEN SameYearSum ELSE NULL END) OVER ( PARTITION BY ParentValue2) AS L2_SameYearSum,
-    SUM(CASE WHEN ParentValue2 IS NOT NULL THEN LastYearSum ELSE NULL END) OVER ( PARTITION BY ParentValue2) AS L2_LastYearSum,
-    SUM(CASE WHEN ParentValue1 IS NOT NULL THEN SameYearSum ELSE NULL END) OVER ( PARTITION BY ParentValue1) AS L1_SameYearSum,
-    SUM(CASE WHEN ParentValue1 IS NOT NULL THEN LastYearSum ELSE NULL END) OVER ( PARTITION BY ParentValue1) AS L1_LastYearSum,
+       SameYearSum,
+       LastYearSum,
+       (CASE
+            WHEN IsConvertToEUR
+                THEN currencyConvert(a.SameYearSum
+                , a.C_Currency_ID -- p_curfrom_id
+                , (SELECT C_Currency_ID FROM C_Currency WHERE ISO_Code = 'EUR' AND isActive = 'Y') -- p_curto_id
+                , p_Date -- p_convdate
+                , (SELECT C_ConversionType_ID FROM C_ConversionType WHERE Value = 'P' AND isActive = 'Y') -- p_conversiontype_id
+                , a.AD_Client_ID
+                , p_ad_org_id --ad_org_id
+                     )
+                ELSE NULL
+        END)                                                                                                    AS L4_euroSaldo,
+       --
+       SUM(CASE WHEN ParentValue4 IS NOT NULL THEN SameYearSum ELSE NULL END) OVER ( PARTITION BY ParentValue4) AS L4_SameYearSum,
+       SUM(CASE WHEN ParentValue4 IS NOT NULL THEN LastYearSum ELSE NULL END) OVER ( PARTITION BY ParentValue4) AS L4_LastYearSum,
+       SUM(CASE WHEN ParentValue3 IS NOT NULL THEN SameYearSum ELSE NULL END) OVER ( PARTITION BY ParentValue3) AS L3_SameYearSum,
+       SUM(CASE WHEN ParentValue3 IS NOT NULL THEN LastYearSum ELSE NULL END) OVER ( PARTITION BY ParentValue3) AS L3_LastYearSum,
+       SUM(CASE WHEN ParentValue2 IS NOT NULL THEN SameYearSum ELSE NULL END) OVER ( PARTITION BY ParentValue2) AS L2_SameYearSum,
+       SUM(CASE WHEN ParentValue2 IS NOT NULL THEN LastYearSum ELSE NULL END) OVER ( PARTITION BY ParentValue2) AS L2_LastYearSum,
+       SUM(CASE WHEN ParentValue1 IS NOT NULL THEN SameYearSum ELSE NULL END) OVER ( PARTITION BY ParentValue1) AS L1_SameYearSum,
+       SUM(CASE WHEN ParentValue1 IS NOT NULL THEN LastYearSum ELSE NULL END) OVER ( PARTITION BY ParentValue1) AS L1_LastYearSum,
 
-    -- More info:
-    C_Calendar_ID
-        , C_ElementValue_ID,
+       -- More info:
+       C_Calendar_ID
+        ,
+       C_ElementValue_ID,
 
-    p_ad_org_id as ad_org_id,
-    a.iso_code
-FROM
-    (
-        SELECT
-            lvl.Lvl1_name as ParentName1
-             , lvl.Lvl1_value as ParentValue1
-             , lvl.Lvl2_name as ParentName2
-             , lvl.Lvl2_value as ParentValue2
-             , lvl.Lvl3_name as ParentName3
-             , lvl.Lvl3_value as ParentValue3
-             , lvl.Lvl4_name as ParentName4
-             , lvl.Lvl4_value as ParentValue4
-             , lvl.Name as Name
-             , lvl.Value as Value
-             , ev.AccountType
+       p_ad_org_id                                                                                              AS ad_org_id,
+       a.iso_code
+FROM (SELECT lvl.Lvl1_name                                                                                                                                                                                                        AS ParentName1
+           , lvl.Lvl1_value                                                                                                                                                                                                       AS ParentValue1
+           , lvl.Lvl2_name                                                                                                                                                                                                        AS ParentName2
+           , lvl.Lvl2_value                                                                                                                                                                                                       AS ParentValue2
+           , lvl.Lvl3_name                                                                                                                                                                                                        AS ParentName3
+           , lvl.Lvl3_value                                                                                                                                                                                                       AS ParentValue3
+           , lvl.Lvl4_name                                                                                                                                                                                                        AS ParentName4
+           , lvl.Lvl4_value                                                                                                                                                                                                       AS ParentValue4
+           , lvl.Name                                                                                                                                                                                                             AS Name
+           , lvl.Value                                                                                                                                                                                                            AS Value
+           , ev.AccountType
 
-             , (de_metas_acct.acctBalanceToDate(ev.C_ElementValue_ID, acs.C_AcctSchema_ID, p_Date::date, p_ad_org_id, p_IncludePostingTypeStatistical, p_ExcludePostingTypeYearEnd )).Balance * ev.Multiplicator as SameYearSum
-             , (de_metas_acct.acctBalanceToDate(ev.C_ElementValue_ID, acs.C_AcctSchema_ID, period_LastYearEnd.EndDate::date, p_ad_org_id, p_IncludePostingTypeStatistical, p_ExcludePostingTypeYearEnd)).Balance * ev.Multiplicator as LastYearSum
+           , (de_metas_acct.acctBalanceToDate(ev.C_ElementValue_ID, acs.C_AcctSchema_ID, p_Date::date, p_ad_org_id, p_IncludePostingTypeStatistical, p_ExcludePostingTypeYearEnd)).Balance * ev.Multiplicator                     AS SameYearSum
+           , (de_metas_acct.acctBalanceToDate(ev.C_ElementValue_ID, acs.C_AcctSchema_ID, period_LastYearEnd.EndDate::date, p_ad_org_id, p_IncludePostingTypeStatistical, p_ExcludePostingTypeYearEnd)).Balance * ev.Multiplicator AS LastYearSum
 
-             -- Hardcoding replaced
+           -- Hardcoding replaced
 
-             --show euro saldo only on 1021 and 2001 accounts
-             --lvl.Value IN('1021','2001') AND $3='Y'
-             -- AS IsConvertToEUR
+           --show euro saldo only on 1021 and 2001 accounts
+           --lvl.Value IN('1021','2001') AND $3='Y'
+           -- AS IsConvertToEUR
 
 
-             , CASE WHEN p_showCurrencyExchange='N' -- we don't need to check if the elementValue has a foreign currency
-                        THEN false
-                        ELSE -- check if the element value is set to show the Internation currency and if this currency is EURO. Convert to EURO in this case
-                        (
-                            exists
-                                (select 1 from C_ElementValue elv where lvl.C_ElementValue_ID = elv.C_ElementValue_ID and elv.ShowIntCurrency = 'Y' and elv.Foreign_Currency_ID = (SELECT C_Currency_ID FROM C_Currency WHERE ISO_Code = 'EUR' AND isActive = 'Y') and elv.isActive = 'Y')
-                            )
-               END
-            AS IsConvertToEUR
+           , CASE
+                 WHEN p_showCurrencyExchange = 'N' -- we don't need to check if the elementValue has a foreign currency
+                     THEN FALSE
+                     ELSE -- check if the element value is set to show the Internation currency and if this currency is EURO. Convert to EURO in this case
+                     (
+                         EXISTS
+                             (SELECT 1 FROM C_ElementValue elv WHERE lvl.C_ElementValue_ID = elv.C_ElementValue_ID AND elv.ShowIntCurrency = 'Y' AND elv.Foreign_Currency_ID = (SELECT C_Currency_ID FROM C_Currency WHERE ISO_Code = 'EUR' AND isActive = 'Y') AND elv.isActive = 'Y')
+                         )
+             END
+                                                                                                                                                                                                                                  AS IsConvertToEUR
 
-             --
-             , acs.C_Currency_ID -- Accounting currency
-             , acs.AD_Client_ID
-
-             , ci.C_Calendar_ID
-             , lvl.C_ElementValue_ID
-             , c.iso_code
-        FROM
-            C_Period p
-                -- Get last period of previous year
-                LEFT OUTER JOIN C_Period period_LastYearEnd ON (period_LastYearEnd.C_Period_ID = report.Get_Predecessor_Period_Recursive (p.C_Period_ID, p.PeriodNo::int)) AND period_LastYearEnd.isActive = 'Y'
            --
-           , C_AcctSchema acs
-           , C_Element_Levels lvl
-                 INNER JOIN (
-            SELECT ev.C_ElementValue_ID
-                 -- NOTE: by customer requirement, we are not considering the account sign but always DR - CR
-                 , 1 as Multiplicator
-                 -- , acctBalance(C_ElementValue_ID, 1, 0) AS Multiplicator
-                 , ev.ad_client_id
-                 , ev.AccountType
-                 , ev.AD_Org_ID
-            FROM C_ElementValue ev
-                     JOIN C_Element e on e.C_Element_id = ev.C_Element_ID and e.IsActive='Y'
+           , acs.C_Currency_ID -- Accounting currency
+           , acs.AD_Client_ID
 
-            WHERE ev.isActive = 'Y' and e.IsNaturalAccount='Y'
-        ) ev ON (lvl.C_ElementValue_ID = ev.C_ElementValue_ID)
-            -- make sure we show the standard accounts from metasfresh (org 0)
-            AND (case when lvl.lvl1_value != 'ZZ' then (ev.ad_org_id = p_ad_org_id) else (ev.ad_org_id = 0) end )
-                 LEFT OUTER JOIN AD_ClientInfo ci ON (ci.AD_Client_ID=ev.AD_Client_ID) AND ci.isActive = 'Y'
-                 LEFT OUTER JOIN C_Currency c ON acs.C_Currency_ID=c.C_Currency_ID AND c.isActive = 'Y'
-        --
-        WHERE true
-          -- make sure we get accounting schema for org 0 in any case
-          AND (acs.ad_org_id = p_ad_org_id OR acs.ad_org_id = 0) AND acs.isActive = 'Y'
-          -- Period: determine it by DateAcct
-          AND p.C_Period_ID = report.Get_Period( ci.C_Calendar_ID, p_Date )
-          -- Shall we Show default accounts?
-          AND (CASE WHEN p_defaultAcc ='Y' THEN true ELSE lvl1_value != 'ZZ' END)
-          AND p.isActive = 'Y'
+           , ci.C_Calendar_ID
+           , lvl.C_ElementValue_ID
+           , c.iso_code
+      FROM C_Period p
+               CROSS JOIN C_AcctSchema acs
+          -- Get last period of previous year
+               LEFT OUTER JOIN C_Period period_LastYearEnd ON (period_LastYearEnd.C_Period_ID = report.Get_Predecessor_Period_Recursive(p.C_Period_ID, p.PeriodNo::int)) AND period_LastYearEnd.isActive = 'Y'
+          --
+               CROSS JOIN C_Element_Levels lvl
+               INNER JOIN (SELECT ev.C_ElementValue_ID
+                                -- NOTE: by customer requirement, we are not considering the account sign but always DR - CR
+                                , 1 AS Multiplicator
+                                -- , acctBalance(C_ElementValue_ID, 1, 0) AS Multiplicator
+                                , ev.ad_client_id
+                                , ev.AccountType
+                                , ev.AD_Org_ID
+                           FROM C_ElementValue ev
+                                    JOIN C_Element e ON e.C_Element_id = ev.C_Element_ID AND e.IsActive = 'Y'
 
-    ) a, ad_org o
-where o.ad_org_id = p_ad_org_id
-ORDER BY
-    parentValue1, parentValue2, parentValue3, parentValue4, value
+                           WHERE ev.isActive = 'Y'
+                             AND e.IsNaturalAccount = 'Y') ev ON (lvl.C_ElementValue_ID = ev.C_ElementValue_ID)
+          -- make sure we show the standard accounts from metasfresh (org 0)
+          AND (CASE WHEN lvl.lvl1_value != 'ZZ' THEN (ev.ad_org_id = p_ad_org_id) ELSE (ev.ad_org_id = 0) END)
+               LEFT OUTER JOIN AD_ClientInfo ci ON (ci.AD_Client_ID = ev.AD_Client_ID) AND ci.isActive = 'Y'
+               LEFT OUTER JOIN C_Currency c ON acs.C_Currency_ID = c.C_Currency_ID AND c.isActive = 'Y'
+      --
+      WHERE TRUE
+        -- make sure we get accounting schema for org 0 in any case
+        AND (acs.ad_org_id = p_ad_org_id OR acs.ad_org_id = 0)
+        AND acs.isActive = 'Y'
+        -- Period: determine it by DateAcct
+        AND p.C_Period_ID = report.Get_Period(ci.C_Calendar_ID, p_Date)
+        -- Shall we Show default accounts?
+        AND (CASE WHEN p_defaultAcc = 'Y' THEN TRUE ELSE lvl1_value != 'ZZ' END)
+        AND p.isActive = 'Y') a,
+     ad_org o
+WHERE o.ad_org_id = p_ad_org_id
+ORDER BY parentValue1, parentValue2, parentValue3, parentValue4, value
 $BODY$
-    LANGUAGE sql STABLE;
+    LANGUAGE sql STABLE
+;
+
