@@ -35,7 +35,6 @@
 
 	<description>SEPA Payments - schema - pain_001_01_03_ch_02 (Direct Credit)</description>
 	<properties>
-		<migration-sql-basedir/>
 	</properties>
 
 <dependencies>

@@ -16,7 +16,6 @@
 	<description>PayPal Payments</description>
 
 	<properties>
-		<migration-sql-basedir></migration-sql-basedir>
 	</properties>
 
 	<dependencies>

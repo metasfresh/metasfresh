@@ -16,7 +16,6 @@
 	<packaging>jar</packaging>
 
 	<properties>
-		<migration-sql-basedir>45-de.metas.datev</migration-sql-basedir>
 	</properties>
 
 	<dependencies>

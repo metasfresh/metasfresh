@@ -12,7 +12,6 @@
     <artifactId>de.metas.handlingunits.base</artifactId>
 
     <properties>
-        <migration-sql-basedir>70-de.metas.handlingunits</migration-sql-basedir>
     </properties>
 
     <dependencies>

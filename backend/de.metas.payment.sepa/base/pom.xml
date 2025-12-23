@@ -15,7 +15,6 @@
 	<description>SEPA Payments - Core</description>
 
 	<properties>
-		<migration-sql-basedir/>
 	</properties>
 
 	<dependencies>

@@ -19,7 +19,13 @@ RUN mkdir heapdump
 COPY --from=app /opt/metasfresh .
 
 COPY --from=backend /backend/metasfresh-dist/dist/target/dist/install dist/install/
-COPY --from=backend /backend/metasfresh-dist/dist/target/dist/sql dist/sql/
+
+# Aggregate SQL migration scripts from source (no longer from Maven artifacts)
+COPY --from=backend /backend /tmp/backend-src
+RUN mkdir -p dist/sql && \
+    find /tmp/backend-src -path "*/src/main/sql/postgresql/system/*/*.sql" -type f -exec cp {} dist/sql/ \; && \
+    rm -rf /tmp/backend-src && \
+    echo "Aggregated $(ls -1 dist/sql/*.sql 2>/dev/null | wc -l) SQL files"
 
 RUN touch local_settings.properties \
     && ln -s /opt/metasfresh/local_settings.properties /root/local_settings.properties \
