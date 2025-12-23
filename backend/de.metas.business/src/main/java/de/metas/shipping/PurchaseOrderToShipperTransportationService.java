@@ -23,15 +23,19 @@
 package de.metas.shipping;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.adempiere.model.I_C_Order;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.engine.DocStatus;
-import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
+import de.metas.handlingunits.ILUQtyProvider;
+import de.metas.handlingunits.impl.ShipperTransportationQuery;
+import de.metas.i18n.AdMessageKey;
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
@@ -50,44 +54,58 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_Order;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class PurchaseOrderToShipperTransportationService
 {
+	private static final AdMessageKey MSG_RECEIPT_SCHEDULE_ASSIGNED_TO_PROCESSED_TRANSPORTATION_ORDER = AdMessageKey.of("ReceiptScheduleAssignedToProcessedTransportationOrder");
 	@NonNull private final PurchaseOrderToShipperTransportationRepository repo;
 
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
 	private final ISSCC18CodeBL sscc18CodeBL = Services.get(ISSCC18CodeBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ILUQtyProvider qtyProvider;
 
 	public static PurchaseOrderToShipperTransportationService newInstanceForUnitTesting()
 	{
-		return new PurchaseOrderToShipperTransportationService(new PurchaseOrderToShipperTransportationRepository());
+		final ILUQtyProvider luQtyProvider = (o, ol) -> 1;
+		return new PurchaseOrderToShipperTransportationService(PurchaseOrderToShipperTransportationRepository.newInstanceForUnitTesting(), luQtyProvider);
 	}
 
 	private static final String AD_PROCESS_VALUE_C_Order_SSCC_Print_Jasper = "C_Order_SSCC_Print_Jasper";
 
-	public void addPurchaseOrdersToShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId, @NonNull final IQueryFilter<I_C_Order> queryFilter)
+	public void addPurchaseOrdersToShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId, @NonNull final Collection<OrderId> orderIds)
 	{
-		final ImmutableList<OrderId> validPurchaseOrdersIds = Services.get(IQueryBL.class)
+		final ImmutableSet<OrderId> availableOrderIds = queryBL
 				.createQueryBuilder(I_C_Order.class)
 				.addInArrayFilter(I_C_Order.COLUMNNAME_DocStatus, DocStatus.Completed, DocStatus.Closed)
-				.filter(queryFilter)
+				.addInArrayFilter(I_C_Order.COLUMNNAME_C_Order_ID, orderIds)
 				.create()
-				.idsAsSet(OrderId::ofRepoId)
+				.idsAsSet(OrderId::ofRepoId);
+		final Set<OrderId> alreadyAssignedOrderIds = repo.getBy(ShippingPackageQuery.builder()
+						.orderIds(availableOrderIds)
+						.build())
 				.stream()
-				.filter(repo::purchaseOrderNotInShipperTransportation)
+				.map(sp -> OrderId.ofRepoId(sp.getC_Order_ID()))
+				.collect(Collectors.toSet());
+		final ImmutableList<OrderId> validPurchaseOrdersIds = availableOrderIds
+				.stream()
+				.filter(orderId -> !alreadyAssignedOrderIds.contains(orderId))
 				.collect(ImmutableList.toImmutableList());
 
 		if (validPurchaseOrdersIds.isEmpty())
@@ -102,73 +120,43 @@ public class PurchaseOrderToShipperTransportationService
 		}
 	}
 
-	public void addPurchaseOrderToCurrentShipperTransportation(final @NonNull I_C_Order purchaseOrder)
+	public void addOrderLinesToShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId, @NonNull final Collection<OrderAndLineId> orderAndLineIds)
 	{
-		final ShipperId shipperId = ShipperId.ofRepoIdOrNull(purchaseOrder.getM_Shipper_ID());
-		if (shipperId == null)
-		{
-			Loggables.addLog("Skipping purchase order with ID: {}, because no Shipper is set on it",
-					purchaseOrder.getC_Order_ID());
-			return;
-		}
-		final ShipperTransportationId shipperTransportationId = shipperTransportationDAO.getOrCreate(CreateShipperTransportationRequest.builder()
-				.shipperId(shipperId)
-				.orgId(OrgId.ofRepoId(purchaseOrder.getAD_Org_ID()))
-				.assignAnonymouslyPickedHUs(true)
-				.isSOTrx(SOTrx.PURCHASE)
-				.shipDate(TimeUtil.asLocalDate(purchaseOrder.getDatePromised()))
-				.shipperBPartnerAndLocationId(BPartnerLocationId.ofRepoId(BPartnerId.ofRepoId(purchaseOrder.getC_BPartner_ID()), purchaseOrder.getC_BPartner_Location_ID()))
-				.build());
-		addPurchaseOrderToShipperTransportation(purchaseOrder, shipperTransportationId);
+		final ImmutableListMultimap<I_C_Order, I_C_OrderLine> orderToLinesMap = orderDAO.getOrderToLinesMap(orderAndLineIds);
+
+		orderToLinesMap.keySet()
+				.forEach(order -> addPurchaseOrderLines(shipperTransportationDAO.getById(shipperTransportationId), order, orderToLinesMap.get(order)));
 	}
 
-	public void addPurchaseOrderToShipperTransportation(final @NonNull OrderId purchaseOrderId, final @Nullable ShipperTransportationId shipperTransportationId)
+	public void addPurchaseOrderToShipperTransportation(final @NonNull OrderId purchaseOrderId, final @NonNull ShipperTransportationId shipperTransportationId)
 	{
 		addPurchaseOrderToShipperTransportation(orderDAO.getById(purchaseOrderId), shipperTransportationId);
 	}
 
 	private void addPurchaseOrderToShipperTransportation(@NonNull final org.compiere.model.I_C_Order order,
-														 @Nullable final ShipperTransportationId shipperTransportationId)
+														 @NonNull final ShipperTransportationId shipperTransportationId)
 	{
-		final ShipperId shipperId;
-		if (shipperTransportationId != null)
-		{
-			final I_M_ShipperTransportation shipperTransportationRecord = shipperTransportationDAO.getById(shipperTransportationId);
-			shipperId = ShipperId.ofRepoId(shipperTransportationRecord.getM_Shipper_ID());
-		}
-		else
-		{
-			shipperId = ShipperId.ofRepoIdOrNull(order.getM_Shipper_ID());
-		}
-		if (shipperId == null)
-		{
-			Loggables.addLog("Skipping purchase order with ID: {}, because no Shipper is set on it", order.getC_Order_ID());
-			return;
-		}
+		final I_M_ShipperTransportation shipperTransportationRecord = shipperTransportationDAO.getById(shipperTransportationId);
+		final ShipperId shipperId = ShipperId.ofRepoId(shipperTransportationRecord.getM_Shipper_ID());
+
 		if (order.getM_Shipper_ID() > 0 && shipperId.getRepoId() != order.getM_Shipper_ID())
 		{
 			Loggables.addLog("Ignoring C_Order.M_Shipper_ID={} of C_Order_ID={}, because M_ShipperTransportation_ID={} takes precedence", order.getM_Shipper_ID(), order.getM_Shipper_ID(), ShipperTransportationId.toRepoId(shipperTransportationId));
 		}
 
-		final ShipperTransportationId shipperTransportationIdToUse = shipperTransportationId != null
-				? shipperTransportationId
-				: shipperTransportationDAO.getOrCreate(CreateShipperTransportationRequest.builder()
-				.shipperId(shipperId)
-				.orgId(OrgId.ofRepoId(order.getAD_Org_ID()))
-				.shipDate(TimeUtil.asLocalDate(order.getDatePromised()))
-				.assignAnonymouslyPickedHUs(true)
-				.isSOTrx(SOTrx.PURCHASE)
-				.shipperBPartnerAndLocationId(BPartnerLocationId.ofRepoId(BPartnerId.ofRepoId(order.getC_BPartner_ID()), order.getC_BPartner_Location_ID()))
-				.build());
-
 		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order);
+		addPurchaseOrderLines(shipperTransportationRecord, order, orderLines);
+	}
+
+	private void addPurchaseOrderLines(final @NonNull I_M_ShipperTransportation shipperTransportation, final org.compiere.model.@NonNull I_C_Order order, @NonNull final List<I_C_OrderLine> orderLines)
+	{
 		final List<I_C_OrderLine> orderLinesWithLUQty = orderLines.stream()
 				.filter(orderBL::isLUQtySet)
 				.collect(Collectors.toList());
-		final boolean isOrderLinesWithoutLUQtyExist = orderLines.stream()
-				.anyMatch(ol -> !orderLinesWithLUQty.contains(ol) && !ol.isPackagingMaterial());
 
-		final I_M_ShipperTransportation shipperTransportation = shipperTransportationDAO.getById(shipperTransportationIdToUse);
+		final List<I_C_OrderLine> orderLinesWithoutLUQty = getUnassignedOrderLines(orderLines.stream()
+				.filter(ol -> !orderLinesWithLUQty.contains(ol) && !ol.isPackagingMaterial())
+				.collect(Collectors.toList()));
 
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
 		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(bPartnerId, order.getC_BPartner_Location_ID());
@@ -177,17 +165,21 @@ public class PurchaseOrderToShipperTransportationService
 		final PurchaseShippingPackageCreateRequest.PurchaseShippingPackageCreateRequestBuilder requestTemplate = PurchaseShippingPackageCreateRequest.builder()
 				.orderId(orderId)
 				.datePromised(order.getDatePromised().toInstant())
-				.shipperTransportationId(shipperTransportationIdToUse)
+				.shipperTransportationId(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()))
 				.shiperId(ShipperId.ofRepoId(shipperTransportation.getM_Shipper_ID()))
 				.bPartnerLocationId(bPartnerLocationId)
 				.orgId(orgId);
 
-		if (isOrderLinesWithoutLUQtyExist && !repo.isShippingPackageExistsForPurchaseOrderWithNoOrderLine(orderId))
+		for (final I_C_OrderLine ol : orderLinesWithoutLUQty)
 		{
-			//create a generic package for all order lines without LUQty set on them
-			repo.addPurchaseOrderToShipperTransportation(requestTemplate
-					// .sscc(sscc18CodeBL.generate(orgId)) //No requirements currently ask for this
-					.build());
+			final int requiredLUCount = qtyProvider.getRequiredLUCount(order, ol);
+			for (int i = 0; i < requiredLUCount; i++)
+			{
+				repo.addPurchaseOrderToShipperTransportation(requestTemplate
+						.orderLineId(OrderLineId.ofRepoId(ol.getC_OrderLine_ID()))
+						.sscc(sscc18CodeBL.generate(orgId))
+						.build());
+			}
 		}
 		for (final I_C_OrderLine ol : orderLinesWithLUQty)
 		{
@@ -195,10 +187,33 @@ public class PurchaseOrderToShipperTransportationService
 		}
 	}
 
+	private List<I_C_OrderLine> getUnassignedOrderLines(final List<I_C_OrderLine> orderLines)
+	{
+		final ImmutableMap<OrderAndLineId, I_C_OrderLine> orderAndLineIdToPoMap = orderLines.stream()
+				.collect(ImmutableMap.toImmutableMap(ol -> OrderAndLineId.ofRepoIds(ol.getC_Order_ID(), ol.getC_OrderLine_ID()), Function.identity()));
+
+		final Set<OrderLineId> orderLineIds = orderAndLineIdToPoMap.keySet()
+				.stream()
+				.map(OrderAndLineId::getOrderLineId)
+				.collect(Collectors.toSet());
+
+		final Collection<OrderAndLineId> assignedOrderAndLineIds = repo.getBy(ShippingPackageQuery.builder().orderLineIds(orderLineIds).build())
+				.stream()
+				.map(sp -> OrderAndLineId.ofRepoIdsOrNull(sp.getC_Order_ID(), sp.getC_OrderLine_ID()))
+				.filter(Objects::nonNull)
+				.collect(Collectors.toSet());
+		
+		return orderAndLineIdToPoMap.keySet()
+				.stream()
+				.filter(olId -> !assignedOrderAndLineIds.contains(olId))
+				.map(orderAndLineIdToPoMap::get)
+				.collect(Collectors.toList());
+	}
+
 	private void addPurchaseOrderLineToShipperTransportationId(@NonNull final PurchaseShippingPackageCreateRequest.PurchaseShippingPackageCreateRequestBuilder requestTemplate, @NonNull final I_C_OrderLine ol)
 	{
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(ol.getC_OrderLine_ID());
-		final ImmutableList<Package> existingPackages = repo.getPackagesByOrderLineIds(Collections.singleton(orderLineId));
+		final ImmutableList<Package> existingPackages = repo.getPackagesBy(ShippingPackageQuery.builder().orderLineId(orderLineId).build());
 		final int qtyLUs = ol.getQtyLU().intValueExact();
 
 		final int existingPackagesCount = existingPackages.size();
@@ -208,7 +223,7 @@ public class PurchaseOrderToShipperTransportationService
 					.stream()
 					.map(Package::getId)
 					.collect(ImmutableList.toImmutableList());
-			repo.removeFromShipperTransportation(packageIdsToRemove);
+			repo.deleteFromShipperTransportation(packageIdsToRemove);
 		}
 		else if (existingPackagesCount < qtyLUs)
 		{
@@ -224,9 +239,9 @@ public class PurchaseOrderToShipperTransportationService
 		}
 	}
 
-	public boolean hasPackageIdsByOrderId(@NonNull final OrderId orderId)
+	public boolean anyMatch(@NonNull final ShippingPackageQuery query)
 	{
-		return repo.hasPackageIdsByOrderId(orderId);
+		return repo.anyMatch(query);
 	}
 
 	@Nullable
@@ -252,4 +267,33 @@ public class PurchaseOrderToShipperTransportationService
 		return result.getReportData();
 	}
 
+	public boolean deleteShippingPackagesForOrderIfPossible(@NonNull final OrderId orderId)
+	{
+		final boolean isDeletePossible = !shipperTransportationDAO.anyMatch(ShipperTransportationQuery.builder()
+				.orderId(orderId)
+				.processed(true)
+				.build());
+		if (isDeletePossible)
+		{
+			repo.deleteBy(ShippingPackageQuery.builder().orderId(orderId).build());
+		}
+
+		return isDeletePossible;
+	}
+
+	public void deleteShippingPackagesForOrderLines(@NonNull final Collection<OrderLineId> orderLineIds)
+	{
+		final boolean isDeletePossible = !shipperTransportationDAO.anyMatch(ShipperTransportationQuery.builder()
+				.orderLineIds(orderLineIds)
+				.processed(true)
+				.build());
+		if (isDeletePossible)
+		{
+			repo.deleteBy(ShippingPackageQuery.builder().orderLineIds(orderLineIds).build());
+		}
+		else
+		{
+			throw new AdempiereException(MSG_RECEIPT_SCHEDULE_ASSIGNED_TO_PROCESSED_TRANSPORTATION_ORDER);
+		}
+	}
 }

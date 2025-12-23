@@ -3,11 +3,12 @@ package de.metas.shipper.gateway.commons;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.inoutcandidate.CarrierGoodsTypeId;
-import de.metas.inoutcandidate.CarrierProductId;
+import de.metas.shipping.CarrierProductId;
 import de.metas.inoutcandidate.CarrierServiceId;
-import de.metas.inoutcandidate.CarrierShipmentScheduleServiceRepository;
+import de.metas.inoutcandidate.ShipmentScheduleCarrierServiceRepository;
 import de.metas.inoutcandidate.ShipmentSchedule;
 import de.metas.inoutcandidate.ShipmentScheduleRepository;
+import de.metas.product.PackageDimensions;
 import de.metas.shipper.gateway.commons.async.DeliveryOrderWorkpackageProcessor;
 import de.metas.shipper.gateway.spi.DeliveryOrderService;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
@@ -75,7 +76,7 @@ public class ShipperGatewayFacade
 	@NonNull private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final ShipperGatewayServicesRegistry shipperRegistry;
-	@NonNull private final CarrierShipmentScheduleServiceRepository carrierServiceRepository;
+	@NonNull private final ShipmentScheduleCarrierServiceRepository carrierServiceRepository;
 	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
 
 	private final UOMPrecision kgPrecision = uomDAO.getStandardPrecision(uomDAO.getUomIdByX12DE355(X12DE355.KILOGRAM));
@@ -207,6 +208,7 @@ public class ShipperGatewayFacade
 						.poReference(mpackage.getPOReference())
 						.description(StringUtils.trimBlankToNull(mpackage.getDescription()))
 						.weightInKg(extractWeightInKg(mpackage).orElse(null))
+						.packageDimension(extractPackageDimensions(mpackage))
 						.build())
 				.collect(ImmutableSet.toImmutableSet());
 
@@ -221,6 +223,15 @@ public class ShipperGatewayFacade
 
 		deliveryOrder = deliveryOrderRepository.save(deliveryOrder);
 		DeliveryOrderWorkpackageProcessor.enqueueOnTrxCommit(deliveryOrder.getId(), shipperGatewayId, deliveryOrderKey.getAsyncBatchId());
+	}
+
+	private static PackageDimensions extractPackageDimensions(@NonNull final I_M_Package mpackage)
+	{
+		return PackageDimensions.builder()
+				.lengthInCM(mpackage.getLengthInCm())
+				.widthInCM(mpackage.getWidthInCm())
+				.heightInCM(mpackage.getHeightInCm())
+				.build();
 	}
 
 	private ShipperGatewayId getShipperGatewayId(final ShipperId shipperId)

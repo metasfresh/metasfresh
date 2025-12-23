@@ -29,23 +29,32 @@
 		<![CDATA[SELECT nettoTotalWeight,
        UOM,
        QtyPattern,
-       bruttoTotalWeight
+       bruttoTotalWeight,
+       Country
 FROM de_metas_endcustomer_fresh_reports.docs_sales_customs_invoice_footer($P{C_Customs_Invoice_Id}, $P{ad_language});]]>
 	</queryString>
 	<field name="nettototalweight" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="nettototalweight"/>
 		<property name="com.jaspersoft.studio.field.label" value="nettototalweight"/>
 	</field>
 	<field name="uom" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="uom"/>
 		<property name="com.jaspersoft.studio.field.label" value="uom"/>
 	</field>
 	<field name="qtypattern" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="qtypattern"/>
 		<property name="com.jaspersoft.studio.field.label" value="qtypattern"/>
 	</field>
 	<field name="bruttototalweight" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="bruttototalweight"/>
 		<property name="com.jaspersoft.studio.field.label" value="bruttototalweight"/>
 	</field>
+	<field name="country" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="country"/>
+		<property name="com.jaspersoft.studio.field.label" value="country"/>
+	</field>
 	<title>
-		<band height="37">
+		<band height="57">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="136" y="7" width="54" height="12" uuid="361f1953-65b9-44cd-a4ca-f88639ed3d52"/>
 				<textElement textAlignment="Right">
@@ -89,6 +98,13 @@ FROM de_metas_endcustomer_fresh_reports.docs_sales_customs_invoice_footer($P{C_C
 					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{bruttoweight}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="74" y="40" width="426" height="12" uuid="98583d75-5a66-4fb2-8a5d-e2c92452f9e2"/>
+				<textElement textAlignment="Left">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Note1}+$F{country}+" "+$R{Note2}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>

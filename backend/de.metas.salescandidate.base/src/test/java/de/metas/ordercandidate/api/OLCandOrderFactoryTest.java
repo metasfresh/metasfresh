@@ -2,7 +2,7 @@
  * #%L
  * de.metas.salescandidate.base
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -98,7 +98,7 @@ class OLCandOrderFactoryTest
 				IOLCandBL.class,
 				new OLCandBL(
 						bpartnerBL,
-						new BPartnerOrderParamsRepository()
+						BPartnerOrderParamsRepository.newInstanceForUnitTesting()
 				)
 		);
 
@@ -167,11 +167,14 @@ class OLCandOrderFactoryTest
 	{
 		final I_C_BP_Group bpGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
 		bpGroup.setName("bpGroup");
+		bpGroup.setValue("bpGroupValue");
 		InterfaceWrapperHelper.saveRecord(bpGroup);
 
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
 		bpartner.setInvoiceRule(X_C_BPartner.INVOICERULE_AfterDelivery);
+		bpartner.setPO_InvoiceRule(X_C_BPartner.INVOICERULE_AfterDelivery);
 		bpartner.setPaymentRule(X_C_BPartner.PAYMENTRULE_Cash);
+		bpartner.setPaymentRulePO(X_C_BPartner.PAYMENTRULE_Cash);
 		bpartner.setC_BP_Group_ID(bpGroup.getC_BP_Group_ID());
 		InterfaceWrapperHelper.saveRecord(bpartner);
 

@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.dimension.Dimension;
 import de.metas.error.AdIssueId;
+import de.metas.externalsystem.ExternalSystemId;
 import de.metas.mforecast.impl.ForecastLineId;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderAndLineId;
@@ -137,6 +138,7 @@ public class PurchaseCandidate
 	private PurchaseCandidate(
 			final PurchaseCandidateId id,
 
+			@Nullable final ExternalSystemId externalSystemId,
 			@Nullable final ExternalId externalHeaderId,
 			@Nullable final ExternalId externalLineId,
 			@Nullable final String poReference,
@@ -202,6 +204,7 @@ public class PurchaseCandidate
 				.aggregatePOs(aggregatePOs)
 				.forecastLineId(forecastLineId)
 				.dimension(dimension)
+				.externalSystemId(externalSystemId)
 				.externalHeaderId(externalHeaderId)
 				.externalLineId(externalLineId)
 				.poReference(poReference)
@@ -407,6 +410,12 @@ public class PurchaseCandidate
 		return getImmutableFields().getExternalHeaderId();
 	}
 
+	public @Nullable
+	ExternalSystemId getExternalSystemId()
+	{
+		return getImmutableFields().getExternalSystemId();
+	}
+	
 	public @Nullable
 	String getPOReference()
 	{

@@ -1,6 +1,7 @@
 package de.metas.order.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
@@ -28,6 +29,7 @@ import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -49,6 +51,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -155,6 +158,22 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 		return loadByIds(OrderAndLineId.getOrderLineRepoIds(orderAndLineIds), I_C_OrderLine.class)
 				.stream()
 				.collect(GuavaCollectors.toImmutableMapByKey(orderLineRecord -> OrderAndLineId.ofRepoIds(orderLineRecord.getC_Order_ID(), orderLineRecord.getC_OrderLine_ID())));
+	}
+
+	@Override
+	public ImmutableListMultimap<I_C_Order, I_C_OrderLine> getOrderToLinesMap(final Collection<OrderAndLineId> orderAndLineIds)
+	{
+		if (orderAndLineIds.isEmpty())
+		{
+			return ImmutableListMultimap.of();
+		}
+		final ImmutableMap<OrderId, I_C_Order> orderIdToOrderMap = getByIds(orderAndLineIds.stream().map(OrderAndLineId::getOrderId).collect(Collectors.toSet()), I_C_Order.class)
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(o -> OrderId.ofRepoId(o.getC_Order_ID()), Function.identity()));
+
+		return loadByIds(OrderAndLineId.getOrderLineRepoIds(orderAndLineIds), I_C_OrderLine.class)
+				.stream()
+				.collect(ImmutableListMultimap.toImmutableListMultimap(orderLineRecord -> orderIdToOrderMap.get(OrderId.ofRepoId(orderLineRecord.getC_Order_ID())), Function.identity()));
 	}
 
 	@Override
@@ -510,8 +529,8 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 		{
 			queryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_AD_InputDataSource_ID, dataSourceId);
 		}
-		
-		final ExternalSystemId externalSystemId = orderQuery.getExternalSystemId(); 
+
+		final ExternalSystemId externalSystemId = orderQuery.getExternalSystemId();
 		if (externalSystemId != null)
 		{
 			queryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_ExternalSystem_ID, externalSystemId);
@@ -520,5 +539,13 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 		return queryBuilder
 				.create()
 				.firstOnlyOptional();
+	}
+
+	public List<I_C_Order> getByQueryFilter(final IQueryFilter<I_C_Order> queryFilter)
+	{
+		return queryBL.createQueryBuilder(I_C_Order.class)
+				.filter(queryFilter)
+				.create()
+				.list();
 	}
 }

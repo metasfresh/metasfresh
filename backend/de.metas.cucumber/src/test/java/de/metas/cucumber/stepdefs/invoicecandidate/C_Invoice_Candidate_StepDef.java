@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,7 +25,6 @@ package de.metas.cucumber.stepdefs.invoicecandidate;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
@@ -109,7 +108,6 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
-import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_InvoiceCandidate_Processing;
 import static de.metas.cucumber.stepdefs.ItemProvider.ProviderResult.resultWasFound;
 import static de.metas.cucumber.stepdefs.ItemProvider.ProviderResult.resultWasNotFound;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -613,8 +611,7 @@ public class C_Invoice_Candidate_StepDef
 		Check.assumeNotEmpty(invoiceCandidateIds, "invoiceCandidateIds is not empty");
 
 		waitUntilValid(invoiceCandidateIds, 120);
-		final AsyncBatchId asyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_InvoiceCandidate_Processing);
-		invoiceService.generateInvoicesFromInvoiceCandidateIds(invoiceCandidateIds, asyncBatchId);
+		invoiceService.generateInvoicesFromInvoiceCandidateIds(invoiceCandidateIds);
 	}
 
 	@And("invoice candidates are not billable")
@@ -632,8 +629,7 @@ public class C_Invoice_Candidate_StepDef
 			ImmutableSet<InvoiceId> invoiceIds = ImmutableSet.of();
 			try
 			{
-				final AsyncBatchId asyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_InvoiceCandidate_Processing);
-				invoiceIds = invoiceService.generateInvoicesFromInvoiceCandidateIds(ImmutableSet.of(invoiceCandidateId), asyncBatchId);
+				invoiceIds = invoiceService.generateInvoicesFromInvoiceCandidateIds(ImmutableSet.of(invoiceCandidateId));
 			}
 			catch (final AdempiereException adempiereException)
 			{
@@ -725,7 +721,6 @@ public class C_Invoice_Candidate_StepDef
 
 					final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
 					invoicingParams.setIgnoreInvoiceSchedule(false);
-					invoicingParams.setSupplementMissingPaymentTermIds(true);
 					invoicingParams.setUpdateLocationAndContactForInvoice(isUpdateLocationAndContactForInvoice);
 
 					final boolean completeInvoices = row.getAsOptionalBoolean(PARA_IsCompleteInvoices).orElse(true);

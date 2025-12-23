@@ -25,6 +25,7 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.springframework.stereotype.Service;
 
@@ -37,6 +38,10 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class DDOrderCandidateService
 {
+	public static final String SYSCONFIG_DDOrderAggregation_header_bySalesOrderId = "DDOrderAggregation.header.bySalesOrderId";
+	public static final String SYSCONFIG_DDOrderAggregation_header_byPPOrderRef = "DDOrderAggregation.header.byPPOrderRef";
+	public static final String SYSCONFIG_DDOrderAggregation_line_bySalesOrderLineId = "DDOrderAggregation.line.bySalesOrderLineId";
+
 	@NonNull private final DDOrderCandidateRepository ddOrderCandidateRepository;
 	@NonNull private final DDOrderCandidateAllocRepository ddOrderCandidateAllocRepository;
 	@NonNull private final DDOrderCandidateEnqueueService ddOrderCandidateEnqueueService;
@@ -50,8 +55,9 @@ public class DDOrderCandidateService
 	@NonNull private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 	@NonNull private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	@NonNull final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	@NonNull final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	public static DDOrderCandidateService newInstanceForUnitTesting()
 	{
@@ -122,7 +128,17 @@ public class DDOrderCandidateService
 				.bpartnerOrgBL(bpartnerOrgBL)
 				.warehouseBL(warehouseBL)
 				.uomConversionBL(uomConversionBL)
-				.orderLineBL(orderLineBL);
+				.orderLineBL(orderLineBL)
+				.aggregationConfig(readAggregationConfig());
+	}
+
+	private DDOrderCandidateProcessCommand.AggregationConfig readAggregationConfig()
+	{
+		return DDOrderCandidateProcessCommand.AggregationConfig.builder()
+				.aggregateBySalesOrderId(sysConfigBL.getBooleanValue(SYSCONFIG_DDOrderAggregation_header_bySalesOrderId, true))
+				.aggregateByPPOrderRef(sysConfigBL.getBooleanValue(SYSCONFIG_DDOrderAggregation_header_byPPOrderRef, true))
+				.aggregateBySalesOrderLineId(sysConfigBL.getBooleanValue(SYSCONFIG_DDOrderAggregation_line_bySalesOrderLineId, true))
+				.build();
 	}
 
 	public void saveAndUpdateCandidates(@NonNull final DDOrderCandidateAllocList list)

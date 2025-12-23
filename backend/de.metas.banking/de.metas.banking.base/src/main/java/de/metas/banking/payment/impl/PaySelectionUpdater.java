@@ -207,8 +207,8 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		}
 
 		return buildInvoiceSql(sqlParams, C_CurrencyTo_ID, payDate, paySelection)
-				+ " UNION "
-				+ buildOrderSql(sqlParams, C_CurrencyTo_ID, paySelection);
+				+ "\nUNION\n"
+				+ buildOrderSql(sqlParams, C_CurrencyTo_ID, payDate, paySelection);
 	}
 
 	private @NonNull String buildInvoiceSql(final List<Object> sqlParams, final CurrencyId C_CurrencyTo_ID, final Timestamp payDate, final I_C_PaySelection paySelection)
@@ -383,7 +383,11 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		}
 	}
 
-	private @NonNull String buildOrderSql(final List<Object> sqlParams, final CurrencyId C_CurrencyTo_ID, final I_C_PaySelection paySelection)
+	private @NonNull String buildOrderSql(
+			@NonNull final List<Object> sqlParams,
+			@NonNull final CurrencyId C_CurrencyTo_ID,
+			@NonNull final Timestamp payDate,
+			@NonNull final I_C_PaySelection paySelection)
 	{
 		String sql = "SELECT "
 				+ " -1 as C_Invoice_ID," // 1
@@ -432,20 +436,20 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		}
 
 		//
-		// Exclude orders from existing pay selections if we were not explicitelly asked to just update a couple of pay selection lines
+		// Exclude orders from existing pay selections if we were not explicitly asked to just update a couple of pay selection lines
 		// or, Include only the pay selection lines that we were advised to include.
 		if (paySelectionLineIdsToUpdate.isEmpty())
 		{
-			sql += " AND NOT EXISTS (" //
-					+ "         SELECT 1 FROM C_PaySelectionLine psl " //
-					+ "         WHERE psl.C_Order_ID=o.C_Order_ID AND psl.IsActive='Y' " //
+			sql += " AND NOT EXISTS ("
+					+ " SELECT 1 FROM C_PaySelectionLine psl "
+					+ " WHERE psl.C_Order_ID=o.C_Order_ID AND psl.C_OrderPaySchedule_ID = ops.C_OrderPaySchedule_ID AND psl.IsActive='Y' "
 					+ " )";
 		}
 		else
 		{
-			sql += " AND EXISTS (" //
+			sql += " AND EXISTS ("
 					+ " SELECT 1 FROM C_PaySelectionLine psl "
-					+ " WHERE psl.C_Order_ID=o.C_Order_ID AND psl.IsActive='Y' "
+					+ " WHERE psl.C_Order_ID=o.C_Order_ID AND psl.C_OrderPaySchedule_ID = ops.C_OrderPaySchedule_ID and psl.IsActive='Y' "
 					+ " AND " + DB.buildSqlList("psl.C_PaySelectionLine_ID", paySelectionLineIdsToUpdate, sqlParams)
 					+ " )";
 		}
@@ -465,10 +469,10 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		}
 
 		// DateTrx
-		if (getPayDate() != null)
+		if (isOnlyDue())
 		{
-			sql += " AND o.DateAcct=?";
-			sqlParams.add(getPayDate());
+			sql += " AND ops.DueDate <= ?";
+			sqlParams.add(payDate);
 		}
 
 		// Match Requirement

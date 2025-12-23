@@ -32,6 +32,7 @@ import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
+import de.metas.product.PackageDimensions;
 import de.metas.shipper.gateway.dhl.json.JSONDhlCreateOrderRequest;
 import de.metas.shipper.gateway.dhl.json.JSONDhlCreateOrderResponse;
 import de.metas.shipper.gateway.dhl.json.JsonDHLItem;
@@ -59,7 +60,6 @@ import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderParcel;
 import de.metas.shipper.gateway.spi.model.OrderId;
-import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.shipping.ShipperGatewayId;
@@ -417,6 +417,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 		final DhlShipperProduct codeToUse = isDomesticShipping ? DhlShipperProduct.Dhl_Paket : DhlShipperProduct.Dhl_PaketInternational;
 
 		return JsonDeliveryAdvisorResponse.builder()
+				.requestId(request.getId())
 				.shipperProduct(JsonShipperProduct.builder()
 						.code(codeToUse.getCode())
 						.build())

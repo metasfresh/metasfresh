@@ -133,7 +133,7 @@ public class OrderPayScheduleLoaderAndSaver
 				.orderId(OrderId.ofRepoId(record.getC_Order_ID()))
 				.paymentTermBreakId(PaymentTermBreakId.ofRepoId(record.getC_PaymentTerm_ID(), record.getC_PaymentTerm_Break_ID()))
 				.dueAmount(Money.of(record.getDueAmt(), CurrencyId.ofRepoId(record.getC_Currency_ID())))
-				.dueDate(record.getDueDate().toInstant())
+				.dueDate(TimeUtil.asLocalDate(record.getDueDate()))
 				.percent(Percent.of(record.getPercent()))
 				.offsetDays(record.getOffsetDays())
 				.seqNo(SeqNo.ofInt(record.getSeqNo()))

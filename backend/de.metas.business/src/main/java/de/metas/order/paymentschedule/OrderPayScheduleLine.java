@@ -36,7 +36,7 @@ import lombok.Setter;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 
-import java.time.Instant;
+import java.time.LocalDate;
 
 @EqualsAndHashCode
 @ToString
@@ -54,7 +54,7 @@ public class OrderPayScheduleLine
 	final int offsetDays;
 
 	@Setter @NonNull OrderPayScheduleStatus status;
-	@Setter @NonNull Instant dueDate;
+	@Setter @NonNull LocalDate dueDate;
 	final @NonNull Money dueAmount;
 
 	public OrderAndPayScheduleId getOrderAndPayScheduleId() {return OrderAndPayScheduleId.of(orderId, id);}

@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.shipper.gateway.nshift
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.shipper.gateway.nshift;
 
 import com.google.common.collect.ImmutableList;
@@ -7,8 +29,6 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
-import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.location.ILocationDAO;
@@ -25,19 +45,16 @@ import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.commons.model.CarrierGoodsTypeRepository;
 import de.metas.shipper.gateway.commons.model.CarrierProductRepository;
 import de.metas.shipper.gateway.commons.model.CarrierShipmentOrderServiceRepository;
-import de.metas.shipper.gateway.commons.model.ShipmentOrderRepository;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderItem;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderParcel;
-import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipping.PurchaseOrderToShipperTransportationRepository;
 import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
-import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipping.mpackage.PackageItem;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
@@ -45,7 +62,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
@@ -64,7 +80,6 @@ import static de.metas.shipper.gateway.commons.DeliveryOrderUtil.getPOReferences
 @RequiredArgsConstructor
 public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 {
-	private final @NonNull ShipmentOrderRepository shipmentOrderRepository;
 	private final @NonNull CarrierProductRepository carrierProductRepository;
 	private final @NonNull CarrierGoodsTypeRepository carrierGoodsTypeRepository;
 	private final @NonNull CarrierShipmentOrderServiceRepository carrierServiceRepository;
@@ -79,8 +94,6 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final PurchaseOrderToShipperTransportationRepository purchaseOrderToShipperTransportationRepository;
 
-	//TODO inject this from a separate configuration table, like we do for DHL
-	private final static UomId HARDCODE_CM_UOM_ID = UomId.ofRepoId(540047);//CM
 	private static final BigDecimal DEFAULT_PackageWeightInKg = BigDecimal.ONE;
 
 	@Override
@@ -169,7 +182,7 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 							.map(this::createDeliveryOrderItems)
 							.collect(ImmutableList.toImmutableList());
 					return DeliveryOrderParcel.builder()
-							.packageDimensions(getPackageDimensions(packageInfo.getPackageId(), HARDCODE_CM_UOM_ID))
+							.packageDimensions(packageInfo.getPackageDimension())
 							.packageId(packageInfo.getPackageId())
 							.grossWeightKg(packageInfo.getWeightInKgOr(DEFAULT_PackageWeightInKg))
 							.content(packageInfo.getDescription())
@@ -212,17 +225,4 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 				.map(Quantity::getAsBigDecimal);
 	}
 
-	@NonNull
-	public static PackageDimensions getPackageDimensions(@NonNull final PackageId packageId, @NonNull final UomId toUomId)
-	{
-		final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
-		final I_M_HU_PackingMaterial packingMaterial = packingMaterialDAO.retrievePackingMaterialOrNull(packageId);
-
-		if (packingMaterial == null)
-		{
-			throw new AdempiereException("There is no packing material for M_Package_HU_ID=" + packageId.getRepoId() + ". Please create a packing material and set its correct dimensions.");
-		}
-
-		return packingMaterialDAO.retrievePackageDimensions(packingMaterial, toUomId);
-	}
 }

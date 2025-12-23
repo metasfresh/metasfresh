@@ -76,6 +76,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 {
 
 	private final static OnMaterialReceiptWithDestWarehouse DEFAULT_OnMaterialReceiptWithDestWarehouse = OnMaterialReceiptWithDestWarehouse.CREATE_MOVEMENT;
+	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
 
 	@Override
 	public List<I_M_ReceiptSchedule> createOrUpdateReceiptSchedules(final Object model, final List<I_M_ReceiptSchedule> previousSchedules)
@@ -104,7 +105,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 
 		//
 		// Create/update Receipt Schedule
-		I_M_ReceiptSchedule receiptSchedule = Services.get(IReceiptScheduleDAO.class).retrieveForRecord(line);
+		I_M_ReceiptSchedule receiptSchedule = receiptScheduleDAO.retrieveForRecord(line);
 
 		final boolean isNewReceiptSchedule = (receiptSchedule == null);
 		if (isNewReceiptSchedule)
@@ -130,6 +131,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 			receiptSchedule.setRecord_ID(line.getC_OrderLine_ID());
 			receiptSchedule.setC_Order_ID(line.getC_Order_ID());
 			receiptSchedule.setC_OrderLine_ID(line.getC_OrderLine_ID());
+			receiptSchedule.setExternalLineId(line.getExternalId());
 
 			// #388
 			// set isPackagingMaterial according to the order line
@@ -161,6 +163,8 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		final I_C_Order order = line.getC_Order();
 		receiptSchedule.setAD_User_ID(order.getAD_User_ID());
 		receiptSchedule.setPOReference(order.getPOReference());
+		receiptSchedule.setExternalHeaderId(order.getExternalId());
+		receiptSchedule.setExternalSystem_ID(order.getExternalSystem_ID());
 		//
 		// Delivery rule, Priority rule
 		{
@@ -333,7 +337,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		}
 	}
 
-	private void createLotNumberAI(Properties ctx, I_M_AttributeSetInstance rsASI, Timestamp lotNumberDate, String trxName)
+	private void createLotNumberAI(final Properties ctx, final I_M_AttributeSetInstance rsASI, final Timestamp lotNumberDate, final String trxName)
 	{
 		Check.assume(lotNumberDate != null, "Lot number date attribute not null");
 
@@ -387,7 +391,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 	{
 		final org.compiere.model.I_C_OrderLine line = InterfaceWrapperHelper.create(model, org.compiere.model.I_C_OrderLine.class);
 
-		final I_M_ReceiptSchedule receiptSchedule = Services.get(IReceiptScheduleDAO.class).retrieveForRecord(line);
+		final I_M_ReceiptSchedule receiptSchedule = receiptScheduleDAO.retrieveForRecord(line);
 		if (receiptSchedule == null)
 		{
 			return;
@@ -396,8 +400,12 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		{
 			return;
 		}
-		receiptSchedule.setIsActive(false);
-		deleteRecord(receiptSchedule);
+
+		if (!receiptScheduleDAO.hasCompletedReceipts(receiptSchedule))
+		{
+			receiptSchedule.setIsActive(false);
+			deleteRecord(receiptSchedule);
+		}
 	}
 
 	/**

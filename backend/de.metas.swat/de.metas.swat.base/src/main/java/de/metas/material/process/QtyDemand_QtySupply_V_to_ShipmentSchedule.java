@@ -22,6 +22,7 @@
 
 package de.metas.material.process;
 
+import de.metas.inoutcandidate.ShipmentScheduleQuery;
 import de.metas.inoutcandidate.ShipmentScheduleRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.cockpit.QtyDemandQtySupply;
@@ -57,15 +58,15 @@ public class QtyDemand_QtySupply_V_to_ShipmentSchedule extends JavaProcess imple
 	protected String doIt() throws Exception
 	{
 		final QtyDemandQtySupply currentRow = demandSupplyRepository.getById(QtyDemandQtySupplyId.ofRepoId(getRecord_ID()));
-		final ShipmentScheduleRepository.ShipmentScheduleQuery shipmentScheduleQuery = ShipmentScheduleRepository.ShipmentScheduleQuery.builder()
+		final ShipmentScheduleQuery shipmentScheduleQuery = ShipmentScheduleQuery.builder()
 				.warehouseId(currentRow.getWarehouseId())
 				.orgId(currentRow.getOrgId())
 				.productId(currentRow.getProductId())
 				.attributesKey(currentRow.getAttributesKey())
-				.onlyNonZeroQty(true)
+				.onlyNonZeroReservedQty(true)
 				.build();
 
-		final List<TableRecordReference> recordReferences = shipmentScheduleRepository.listIdsByQuery(shipmentScheduleQuery)
+		final List<TableRecordReference> recordReferences = shipmentScheduleRepository.getIdsByQuery(shipmentScheduleQuery)
 				.stream()
 				.map(id -> TableRecordReference.of(I_M_ShipmentSchedule.Table_Name, id))
 				.collect(Collectors.toList());

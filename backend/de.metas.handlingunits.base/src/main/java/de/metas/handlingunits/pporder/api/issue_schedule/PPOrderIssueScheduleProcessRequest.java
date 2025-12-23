@@ -14,12 +14,13 @@ import java.math.BigDecimal;
 @Builder
 public class PPOrderIssueScheduleProcessRequest
 {
-	@NonNull PPOrderRoutingActivityId activityId;
-	@NonNull PPOrderIssueScheduleId issueScheduleId;
-	@Nullable BigDecimal huWeightGrossBeforeIssue;
-	@NonNull BigDecimal qtyIssued;
-	@Nullable BigDecimal qtyRejected;
-	@Nullable QtyRejectedReasonCode qtyRejectedReasonCode;
+    @NonNull PPOrderRoutingActivityId activityId;
+    @NonNull PPOrderIssueScheduleId issueScheduleId;
+    @Nullable BigDecimal huWeightGrossBeforeIssue;
+    @NonNull BigDecimal qtyIssued;
+    @Nullable BigDecimal qtyRejected;
+    @Nullable QtyRejectedReasonCode qtyRejectedReasonCode;
+    boolean failIfIssueOnlyForReceived;
 
-	public PPOrderId getPpOrderId() {return getActivityId().getOrderId();}
+    public PPOrderId getPpOrderId() {return getActivityId().getOrderId();}
 }

@@ -379,6 +379,31 @@ Feature: available for sales
     }
 ]
     """
+    And a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/Available_For_Sales_JSON/invoke' and fulfills with '200' status code
+    """
+{
+  "processParameters": [
+    {
+      "name": "ProductValue",
+      "value": "@productValue_1@"
+    }
+  ]
+}
+    """
+    Then the metasfresh REST-API responds with
+    """
+[
+    {
+    "ProductExternalReference": "availableForSales_09102025_1",
+    "Product_ID": @productId_1@,
+    "ProductValue": "@productValue_1@",
+    "QtyOnHandStock": 10,
+    "QtyToBeShipped": 8,
+    "StorageAttributesKey": "-1002",
+    "ExternalSystem": "GRSSignum"
+    }
+]
+    """
 
   @from:cucumber
   Scenario: sync MD_Available_For_Sales with multiple warehouses
@@ -579,6 +604,38 @@ Feature: available for sales
     "StorageAttributesKey": "-1002",
     "ExternalSystem": "GRSSignum",
     "WarehouseCode": "@warehouseValue@"
+  }
+  ]
+  """
+
+    And a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/Available_For_Sales_JSON/invoke' and fulfills with '200' status code
+    """
+    {
+  "processParameters": [
+    {
+      "name": "ExternalSystem",
+      "value": "GRSSignum"
+    },
+    {
+      "name": "ProductExternalReference",
+      "value": "availableForSales_09292025_1"
+    }
+  ]
+}
+    """
+
+    And the metasfresh REST-API responds with
+    """
+  [
+  {
+    "ProductExternalReference": "availableForSales_09292025_1",
+    "Product_ID": @productId_1@,
+    "ProductValue": "@productValue_1@",
+    "QtyOnHandStock": 10,
+    "QtyToBeShipped": 8,
+    "StorageAttributesKey": "-1002",
+    "ExternalSystem": "GRSSignum",
+    "WarehouseCode": "StdWarehouse"
   }
   ]
   """

@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for Carrier_Config
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_Carrier_Config extends org.compiere.model.PO implements I_Carrier_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1305250872L;
+	private static final long serialVersionUID = -725373864L;
 
     /** Standard Constructor */
     public X_Carrier_Config (final Properties ctx, final int Carrier_Config_ID, @Nullable final String trxName)
@@ -122,6 +122,18 @@ public class X_Carrier_Config extends org.compiere.model.PO implements I_Carrier
 	public java.lang.String getPassword() 
 	{
 		return get_ValueAsString(COLUMNNAME_Password);
+	}
+
+	@Override
+	public void setServiceLevel (final @Nullable java.lang.String ServiceLevel)
+	{
+		set_Value (COLUMNNAME_ServiceLevel, ServiceLevel);
+	}
+
+	@Override
+	public java.lang.String getServiceLevel() 
+	{
+		return get_ValueAsString(COLUMNNAME_ServiceLevel);
 	}
 
 	@Override

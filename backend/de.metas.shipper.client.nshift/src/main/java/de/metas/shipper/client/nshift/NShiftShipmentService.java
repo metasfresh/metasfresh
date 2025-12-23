@@ -296,7 +296,7 @@ public class NShiftShipmentService
 							return JsonDeliveryResponseItem.builder()
 									.lineId(requestParcel.getId())
 									.awb(pkg.getPkgNo())
-									.trackingUrl(responseLine.getReferences().stream()
+									.trackingUrl(pkg.getReferences().stream()
 											.filter(ref -> ref.getKind() == LINE_REFERENCE_KIND_TRACKING_URL)
 											.map(JsonReference::getValue)
 											.findFirst()

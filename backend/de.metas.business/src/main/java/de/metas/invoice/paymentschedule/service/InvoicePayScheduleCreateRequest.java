@@ -12,7 +12,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 
 @Value
@@ -40,10 +40,10 @@ public class InvoicePayScheduleCreateRequest
 	{
 		@Builder.Default boolean valid = true;
 
-		@NonNull Instant dueDate;
+		@NonNull LocalDate dueDate;
 		@NonNull Money dueAmount;
 
-		@Nullable Instant discountDate;
+		@Nullable LocalDate discountDate;
 		@Nullable Money discountAmount;
 
 		@Nullable OrderAndPayScheduleId orderAndPayScheduleId;

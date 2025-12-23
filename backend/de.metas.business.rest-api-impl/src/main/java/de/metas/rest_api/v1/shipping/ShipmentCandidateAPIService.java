@@ -64,7 +64,7 @@ import de.metas.error.IssueCreateRequest;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ShipmentSchedule;
 import de.metas.inoutcandidate.ShipmentScheduleRepository;
-import de.metas.inoutcandidate.ShipmentScheduleRepository.ShipmentScheduleQuery;
+import de.metas.inoutcandidate.ShipmentScheduleQuery;
 import de.metas.inoutcandidate.exportaudit.APIExportAudit;
 import de.metas.inoutcandidate.exportaudit.APIExportAudit.APIExportAuditBuilder;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
@@ -680,6 +680,7 @@ class ShipmentCandidateAPIService
 				.canBeExportedFrom(SystemTime.asInstant())
 				.onlyIfAllFromOrderExportable(true)
 				.exportStatus(APIExportStatus.Pending)
+				.includeInvalid(false)
 				.includeWithQtyToDeliverZero(true)
 				.fromCompleteOrderOrNullOrder(true)
 				.orderByOrderId(true)

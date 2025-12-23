@@ -8,7 +8,6 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.handlingunits.HUPIItemProductId;
-import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
 import de.metas.handlingunits.picking.job_schedule.service.commands.CreateOrUpdatePickingJobSchedulesRequest;
 import de.metas.inout.ShipmentScheduleId;
@@ -18,9 +17,11 @@ import de.metas.logging.LogManager;
 import de.metas.order.OrderFactory;
 import de.metas.order.OrderLineBuilder;
 import de.metas.order.OrderLineId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.workplace.WorkplaceId;
 import lombok.Builder;
@@ -193,11 +194,31 @@ public class SalesOrderCreateCommand
 	@Value(staticConstructor = "of")
 	private static class LineCreateRequestAndBuilder
 	{
-		@NonNull JsonSalesOrderCreateRequest.Line lineCreateRequest;
-		@NonNull OrderLineBuilder lineBuilder;
+		@NonNull JsonSalesOrderCreateRequest.Line request;
+		@NonNull OrderLineBuilder builder;
 
-		public OrderLineId getOrderLineId() {return lineBuilder.getCreatedOrderAndLineId().getOrderLineId();}
+		public OrderLineId getOrderLineId() {return builder.getCreatedOrderAndLineId().getOrderLineId();}
 
-		public List<JsonSalesOrderCreateRequest.Schedule> getScheduleRequests() {return lineCreateRequest.getSchedules() != null ? lineCreateRequest.getSchedules() : ImmutableList.of();}
+		public List<JsonSalesOrderCreateRequest.Schedule> getScheduleRequests()
+		{
+			if (request.getSchedules() != null)
+			{
+				Check.assumeNull(request.getWorkplace(), "Workplace and schedules can't be set at the same time: {}", request.getSchedules());
+				return request.getSchedules();
+			}
+			else if (request.getWorkplace() != null)
+			{
+				return ImmutableList.of(
+						JsonSalesOrderCreateRequest.Schedule.builder()
+								.workplace(request.getWorkplace())
+								.qty(request.getQty())
+								.build()
+				);
+			}
+			else
+			{
+				return ImmutableList.of();
+			}
+		}
 	}
 }

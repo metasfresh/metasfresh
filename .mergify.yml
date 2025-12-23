@@ -2,10 +2,8 @@ merge_protections:
   - name: default
     if:
       - check-success=testspace-analytics
-      - check-success=continuous-integration/jenkins/branch
     success_conditions:
       - check-success=testspace-analytics
-      - check-success=continuous-integration/jenkins/branch
 
 pull_request_rules:
 
@@ -57,6 +55,7 @@ pull_request_rules:
               - base=yoyo_uat
           - or: &PROJECT_BRANCHES_HOTFIX
               # HOTFIX BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
+              - base=mighty_pegasus_hotfix
               - base=temporary_test20251106_hotfix
               - base=task_force_hotfix
               - base=keen_hawk_hotfix
@@ -79,6 +78,7 @@ pull_request_rules:
               - base=yoyo_hotfix
           - or: &PROJECT_BRANCHES_RELEASE
               # RELEASE BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
+              - base=mighty_pegasus_release
               - base=temporary_test20251106_release
               - base=task_force_release
               - base=keen_hawk_release
@@ -99,7 +99,6 @@ pull_request_rules:
   - name: Automatic squash-merge successful PRs into the respective base-branch
     conditions:
       - check-success=testspace-analytics
-      - check-success=continuous-integration/jenkins/branch
       - label=ops:auto_squash_merge
       - or:
           - or: *ALL_BASE_BRANCHES
@@ -108,12 +107,11 @@ pull_request_rules:
           - label=ops:without_review_approval
     actions:
       merge:
-        method: merge
+        method: squash
 
   - name: Automatic merge commit (not squash) successful PRs
     conditions:
       - check-success=testspace-analytics
-      - check-success=continuous-integration/jenkins/branch
       - label=ops:auto_merge_commit
       - or:
           - or: *ALL_BASE_BRANCHES
@@ -122,5 +120,5 @@ pull_request_rules:
           - label=ops:without_review_approval
     actions:
       merge:
-        method: squash
+        method: merge
 

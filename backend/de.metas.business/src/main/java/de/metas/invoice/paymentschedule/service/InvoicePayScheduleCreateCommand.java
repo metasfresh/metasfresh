@@ -21,7 +21,7 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.I_C_Invoice;
 
-import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Optional;
 
@@ -108,7 +108,7 @@ class InvoicePayScheduleCreateCommand
 
 		final Money grandTotal = invoiceBL.extractGrandTotal(invoiceRecord).toMoney();
 		final CurrencyPrecision currencyPrecision = currencyDAO.getStdPrecision(grandTotal.getCurrencyId());
-		final Instant dateInvoiced = invoiceRecord.getDateInvoiced().toInstant();
+		final LocalDate dateInvoiced = invoiceRecord.getDateInvoiced().toLocalDateTime().toLocalDate();
 
 		final ArrayList<InvoicePayScheduleCreateRequest.Line> lines = new ArrayList<>();
 		Money dueAmtRemaining = grandTotal;

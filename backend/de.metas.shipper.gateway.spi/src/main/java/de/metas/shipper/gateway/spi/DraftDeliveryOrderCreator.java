@@ -3,8 +3,9 @@ package de.metas.shipper.gateway.spi;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.inoutcandidate.CarrierGoodsTypeId;
-import de.metas.inoutcandidate.CarrierProductId;
+import de.metas.shipping.CarrierProductId;
 import de.metas.inoutcandidate.CarrierServiceId;
+import de.metas.product.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
@@ -93,6 +94,7 @@ public interface DraftDeliveryOrderCreator
 			@Nullable String poReference;
 			@Nullable String description;
 			@Nullable BigDecimal weightInKg;
+			@NonNull PackageDimensions packageDimension;
 
 			public BigDecimal getWeightInKgOr(final BigDecimal minValue) {return weightInKg != null ? weightInKg.max(minValue) : minValue;}
 		}

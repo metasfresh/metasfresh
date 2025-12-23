@@ -38,7 +38,7 @@ Feature: Purchase order to transportation order
       | supplier   | Y            | N              | ps_PO                         |
 
   @from:cucumber
-  Scenario: Create a new purchase order, M_ShippingPackage/M_Package are created and added to transportation order. When the PO is reactivated and completed no new M_ShippingPackage/M_Package are created
+  Scenario: Create a new purchase order, no M_ShippingPackage/M_Package are created. They are created only by manually invoking process. Once transportation order is completed, the order cannot be reactivated.
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference  | OPT.DocBaseType | OPT.M_PricingSystem_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.DeliveryRule | OPT.DeliveryViaRule | M_Shipper_ID |
       | order_PO   | N       | supplier                 | 2022-06-11  | po_ref_S0156_100 | POO             | ps_PO                             | supplier                              | A                | S                   | shipper_DHL  |
@@ -46,25 +46,27 @@ Feature: Purchase order to transportation order
       | Identifier   | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | orderLine_PO | order_PO              | purchasedProduct        | 10         |
 
+    And metasfresh contains Transport Order
+      | Identifier          | M_Shipper_ID | Shipper_BPartner_ID | Shipper_Location_ID |
+      | transportationOrder | shipper_DHL  | supplier            | supplier            |
+
     And the order identified by order_PO is completed
 
     And validate C_OrderLine:
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.QtyReserved |
       | orderLine_PO              | order_PO              | purchasedProduct        | 10         | 0            | 0           | 10    | 0        | EUR          | true      | 10              |
 
-    And metasfresh contains Transport Order
-      | Identifier          | M_Shipper_ID | Shipper_BPartner_ID | Shipper_Location_ID |
-      | transportationOrder | shipper_DHL  | supplier            | supplier            |
-    And metasfresh contains M_Package
-      | Identifier | M_Shipper_ID |
-      | package    | shipper_DHL  |
-    And metasfresh contains M_ShippingPackage
-      | Identifier      | C_Order_ID | M_ShipperTransportation_ID | M_Package_ID | C_BPartner_Location_ID |
-      | shippingPackage | order_PO   | transportationOrder        | package      | supplier               |
-
-    And metasfresh contains exactly 1 M_ShippingPackages for transportation order: transportationOrder
+    And metasfresh contains exactly 0 M_ShippingPackages for transportation order: transportationOrder
 
     When the order identified by order_PO is reactivated
     And the order identified by order_PO is completed
 
-    Then metasfresh contains exactly 1 M_ShippingPackages for transportation order: transportationOrder
+    Then metasfresh contains exactly 0 M_ShippingPackages for transportation order: transportationOrder
+
+    And C_Order_AddTo_M_ShipperTransportation is invoked for order order_PO and transportation order: transportationOrder
+
+    And metasfresh contains exactly 1 M_ShippingPackages for transportation order: transportationOrder
+
+    And the transport order identified by transportationOrder is completed
+
+    And the order identified by order_PO cannot be reactivated

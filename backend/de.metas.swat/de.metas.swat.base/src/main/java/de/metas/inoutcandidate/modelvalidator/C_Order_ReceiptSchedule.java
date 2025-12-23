@@ -10,12 +10,12 @@ package de.metas.inoutcandidate.modelvalidator;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,6 +36,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
@@ -49,22 +50,20 @@ public class C_Order_ReceiptSchedule
 	private static final AdMessageKey ERR_NoReactivationIfReceiptsCreated = AdMessageKey.of("ERR_NoReactivationIfReceiptsCreated");
 	private static final AdMessageKey ERR_NoReactivationIfProcessedReceiptSchedules = AdMessageKey.of("ERR_NoReactivationIfProcessedReceiptSchedules");
 	private static final AdMessageKey ERR_NoVoidIfProcessedReceiptSchedules = AdMessageKey.of("ERR_NoVoidIfProcessedReceiptSchedules");
+	private static final String SYSCONFIG_PO_ALLOW_REACTIVATION_IF_RECEIPTS_CREATED = "PO_AllowReactivationIfReceiptsCreated";
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-	public static boolean isEligibleForReceiptSchedule(final I_C_Order order)
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
+	static boolean isEligibleForReceiptSchedule(final I_C_Order order)
 	{
 		final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 		Check.assumeNotNull(order, "order not null");
 
 		// Only Purchase Orders are handled
-		if (order.isSOTrx()
-				|| orderBL.isRequisition(order)
-				|| orderBL.isMediated(order))
-		{
-			return false;
-		}
-
-		return true;
+		return !order.isSOTrx()
+				&& !orderBL.isRequisition(order)
+				&& !orderBL.isMediated(order);
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
@@ -100,7 +99,7 @@ public class C_Order_ReceiptSchedule
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REACTIVATE,
 			ModelValidator.TIMING_AFTER_VOID })
-	public void inactivateRecepitSchedules(final I_C_Order order)
+	public void inactivateReceiptSchedules(final I_C_Order order)
 	{
 		if (!isEligibleForReceiptSchedule(order))
 		{
@@ -125,26 +124,23 @@ public class C_Order_ReceiptSchedule
 			return;
 		}
 
-		final boolean hasReceipts = hasReceipts(order);
-
-		// Throw exception if at least one (even partial) receipt is linked to this order
-		if (hasReceipts)
+		// Throw an exception if at least one (even partial) receipt is linked to this order
+		if (!isAllowReactivationIfReceiptsCreated() && hasReceipts(order))
 		{
 			throw new DocumentActionException(ERR_NoReactivationIfReceiptsCreated);
 		}
+	}
 
+	private boolean isAllowReactivationIfReceiptsCreated()
+	{
+		return sysConfigBL.getBooleanValue(SYSCONFIG_PO_ALLOW_REACTIVATION_IF_RECEIPTS_CREATED, false);
 	}
 
 	private boolean hasReceipts(final I_C_Order order)
 	{
 		final List<I_M_InOut> inouts = Services.get(IOrderDAO.class).retrieveInOutsForMatchingOrderLines(order);
 
-		if (inouts.isEmpty())
-		{
-			return false;
-		}
-
-		return true;
+		return !inouts.isEmpty();
 	}
 
 	/**
@@ -158,10 +154,10 @@ public class C_Order_ReceiptSchedule
 			return;
 		}
 
-		if (hasProcessedReceiptSchedules(order))
+		final boolean isAllowReactivationIfReceiptsCreated = isAllowReactivationIfReceiptsCreated();
+		if (!isAllowReactivationIfReceiptsCreated && hasProcessedReceiptSchedules(order))
 		{
 			throw new DocumentActionException(ERR_NoReactivationIfProcessedReceiptSchedules);
-
 		}
 	}
 
@@ -187,7 +183,7 @@ public class C_Order_ReceiptSchedule
 		final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
 
 		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order);
-		for (I_C_OrderLine orderLine : orderLines)
+		for (final I_C_OrderLine orderLine : orderLines)
 		{
 			final I_M_ReceiptSchedule receiptSchedule = receiptScheduleDAO.retrieveForRecord(orderLine);
 

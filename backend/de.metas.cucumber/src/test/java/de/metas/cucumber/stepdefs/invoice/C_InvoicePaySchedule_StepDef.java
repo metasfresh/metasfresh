@@ -51,7 +51,7 @@ public class C_InvoicePaySchedule_StepDef
 
 		row.getAsOptionalBoolean(I_C_InvoicePaySchedule.COLUMNNAME_IsValid)
 				.ifPresent(expected -> softly.assertThat(payScheduleLine.isValid()).as("IsValid").isEqualTo(expected));
-		row.getAsOptionalLocalDateInstant(I_C_InvoicePaySchedule.COLUMNNAME_DueDate)
+		row.getAsOptionalLocalDate(I_C_InvoicePaySchedule.COLUMNNAME_DueDate)
 				.ifPresent(expected -> softly.assertThat(payScheduleLine.getDueDate()).as("DueDate").isEqualTo(expected));
 		row.getAsOptionalMoney(I_C_InvoicePaySchedule.COLUMNNAME_DueAmt, moneyService::getCurrencyIdByCurrencyCode)
 				.ifPresent(expected -> softly.assertThat(payScheduleLine.getDueAmount()).as("DueAmount").isEqualTo(expected));

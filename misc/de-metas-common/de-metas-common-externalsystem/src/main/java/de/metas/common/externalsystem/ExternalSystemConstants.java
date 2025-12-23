@@ -197,6 +197,7 @@ public class ExternalSystemConstants
 
 	public static final String PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT = "messageFromMetasfresh";
 	public static final String PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER = "scriptIdentifier";
+	public static final String PARAM_SCRIPTEDADAPTER_OUTBOUND_ENDPOINT_PARAMETERS = "outboundEndpointData";
 	public static final String PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_EP = "outboundHttpEP";
 	public static final String PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_TOKEN = "outboundHttpToken";
 	public static final String PARAM_SCRIPTEDADAPTER_FROM_MF_HTTP_METHOD = "outboundHttpMethod";

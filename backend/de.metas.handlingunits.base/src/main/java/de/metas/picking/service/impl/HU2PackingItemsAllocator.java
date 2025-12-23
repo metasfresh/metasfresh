@@ -21,8 +21,8 @@ import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.picking.OnOverDelivery;
-import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.AddQtyPickedRequest;
+import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.handlingunits.util.CatchWeightHelper;
@@ -41,7 +41,6 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -265,8 +264,7 @@ public class HU2PackingItemsAllocator
 			return qtyToPack.toZero();
 		}
 
-		@SuppressWarnings("UnnecessaryLocalVariable")
-		final Quantity qtyToPackActual = _qtyToPackRemaining.min(qtyToPack);
+		@SuppressWarnings("UnnecessaryLocalVariable") final Quantity qtyToPackActual = _qtyToPackRemaining.min(qtyToPack);
 		return qtyToPackActual;
 	}
 
@@ -366,7 +364,7 @@ public class HU2PackingItemsAllocator
 		else
 		{
 			throw new AdempiereException("@NotSupported@ @HU_UnitType@: " + handlingUnitsBL.getHU_UnitType(pickFromHU)
-												 + "\n @M_HU_ID@: " + pickFromHU);
+					+ "\n @M_HU_ID@: " + pickFromHU);
 		}
 
 		//
@@ -400,7 +398,7 @@ public class HU2PackingItemsAllocator
 		else
 		{
 			throw new AdempiereException("@NotSupported@ @HU_UnitType@: " + handlingUnitsBL.getHU_UnitType(tuHU)
-												 + "\n @M_HU_ID@: " + tuHU);
+					+ "\n @M_HU_ID@: " + tuHU);
 		}
 
 	}
@@ -574,13 +572,14 @@ public class HU2PackingItemsAllocator
 		final Quantity qtyCU = shipmentSchedulesSupplier.getProjectedQtyToDeliver(packedPart.getShipmentScheduleId());
 
 		final ProductId productId = packedPart.getProductId();
-		final I_M_HU huReceived = CollectionUtils.singleElement(HUTransformService.newInstance()
-																		.husToNewCUs(HUTransformService.HUsToNewCUsRequest.builder()
-																							 .sourceHU(pickFromVHU)
-																							 .productId(productId)
-																							 .qtyCU(qtyCU)
-																							 .reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
-																							 .build()));
+		final I_M_HU huReceived = HUTransformService.newInstance()
+				.husToNewCUs(HUTransformService.HUsToNewCUsRequest.builder()
+						.sourceHU(pickFromVHU)
+						.productId(productId)
+						.qtyCU(qtyCU)
+						.reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
+						.build())
+				.singleCU();
 
 		// "Back" allocate the qtyPicked from VHU to given shipment schedule
 		huShipmentScheduleBL.addQtyPickedAndUpdateHU(AddQtyPickedRequest.builder()

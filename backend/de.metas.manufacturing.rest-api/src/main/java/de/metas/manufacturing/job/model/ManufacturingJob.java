@@ -21,6 +21,7 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 
 @Value
 public class ManufacturingJob
@@ -152,7 +153,6 @@ public class ManufacturingJob
 				: this;
 	}
 
-
 	@NonNull
 	public LocalDate getDateStartScheduleAsLocalDate()
 	{
@@ -168,5 +168,14 @@ public class ManufacturingJob
 				.collect(ImmutableList.toImmutableList());
 
 		return withActivities(updatedActivities);
+	}
+
+	public Stream<RawMaterialsIssueLine> streamRawMaterialsIssueLines()
+	{
+		return activities.stream()
+				.filter(ManufacturingJobActivity::isRawMaterialsIssue)
+				.map(ManufacturingJobActivity::getRawMaterialsIssue)
+				.filter(Objects::nonNull)
+				.flatMap(rawMaterialsIssue -> rawMaterialsIssue.getLines().stream());
 	}
 }

@@ -48,6 +48,7 @@ import de.metas.util.Check;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import de.metas.util.lang.RepoIdAware;
 import de.metas.workflow.WorkflowId;
 import lombok.Getter;
 import lombok.NonNull;
@@ -86,6 +87,7 @@ import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -121,7 +123,7 @@ public final class ProcessInfo implements Serializable
 	{
 		this.ctx = ctx;
 		this.processCalledFrom = builder.getProcessCalledFrom();
-				
+
 		adProcessId = builder.getAD_Process_ID();
 		pinstanceId = builder.getPInstanceId();
 
@@ -187,7 +189,7 @@ public final class ProcessInfo implements Serializable
 	@NonNull
 	@Getter
 	private final ProcessCalledFrom processCalledFrom;
-	
+
 	private Properties ctx;
 	@Getter private final String title;
 	@Getter private final AdProcessId adProcessId;
@@ -761,7 +763,7 @@ public final class ProcessInfo implements Serializable
 		@NonNull
 		@Getter
 		private ProcessCalledFrom processCalledFrom = ProcessCalledFrom.Unknown;
-		
+
 		@Nullable private PInstanceId pInstanceId;
 		@Nullable private transient I_AD_PInstance _adPInstance;
 		@Nullable private AdProcessId adProcessId;
@@ -1062,9 +1064,9 @@ public final class ProcessInfo implements Serializable
 		public ProcessInfoBuilder setProcessCalledFrom(@NonNull final ProcessCalledFrom processCalledFrom)
 		{
 			this.processCalledFrom = processCalledFrom;
-			return this; 
+			return this;
 		}
-		
+
 		@Nullable
 		private I_AD_PInstance getAD_PInstanceOrNull()
 		{
@@ -1317,6 +1319,13 @@ public final class ProcessInfo implements Serializable
 		{
 			this.adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
 			this.recordId = recordId;
+			return this;
+		}
+
+		public ProcessInfoBuilder setRecord(@Nullable final String tableName, @NonNull final RepoIdAware recordId)
+		{
+			this.adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
+			this.recordId = recordId.getRepoId();
 			return this;
 		}
 
@@ -1646,18 +1655,18 @@ public final class ProcessInfo implements Serializable
 			if (logWarning == null)
 			{
 
-					final I_AD_Process processRecord = getAD_ProcessOrNull();
-					if (processRecord != null)
-					{
-						this.logWarning = processRecord.isLogWarning();
-						logger.debug("logWarning=false; -> set logWarning={} from AD_Process_ID={}", logWarning, processRecord.getAD_Process_ID());
-					}
-					else
-					{
-						logger.debug("logWarning=false and AD_Process=null; -> set logWarning=false");
-						this.logWarning = false;
-					}
+				final I_AD_Process processRecord = getAD_ProcessOrNull();
+				if (processRecord != null)
+				{
+					this.logWarning = processRecord.isLogWarning();
+					logger.debug("logWarning=false; -> set logWarning={} from AD_Process_ID={}", logWarning, processRecord.getAD_Process_ID());
 				}
+				else
+				{
+					logger.debug("logWarning=false and AD_Process=null; -> set logWarning=false");
+					this.logWarning = false;
+				}
+			}
 
 			return logWarning;
 		}
@@ -1721,6 +1730,12 @@ public final class ProcessInfo implements Serializable
 			return this;
 		}
 
+		public ProcessInfoBuilder addParameter(final String parameterName, @Nullable final RepoIdAware parameterValue)
+		{
+			addParameter(ProcessInfoParameter.of(parameterName, parameterValue));
+			return this;
+		}
+
 		public ProcessInfoBuilder addParameter(final String parameterName, final String parameterValue)
 		{
 			addParameter(ProcessInfoParameter.of(parameterName, parameterValue));
@@ -1728,6 +1743,12 @@ public final class ProcessInfo implements Serializable
 		}
 
 		public ProcessInfoBuilder addParameter(final String parameterName, final java.util.Date parameterValue)
+		{
+			addParameter(ProcessInfoParameter.of(parameterName, parameterValue));
+			return this;
+		}
+
+		public ProcessInfoBuilder addParameter(final String parameterName, final LocalDate parameterValue)
 		{
 			addParameter(ProcessInfoParameter.of(parameterName, parameterValue));
 			return this;

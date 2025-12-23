@@ -1,10 +1,8 @@
-package de.metas.util;
-
 /*
  * #%L
  * de.metas.util
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package de.metas.util;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.util;
 
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
@@ -53,6 +53,7 @@ public final class NumberUtils
 	 *
 	 * @return <code>bd</code> without trailing zeros after separator; if argument is NULL then NULL will be returned
 	 */
+	@Nullable
 	public static BigDecimal stripTrailingDecimalZeros(final BigDecimal bd)
 	{
 		if (bd == null)

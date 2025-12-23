@@ -562,7 +562,7 @@ public class ShipmentScheduleWithHUService
 				.qtyCU(quantityToSplit)
 				.sourceHU(sourceHURecord)
 				.build();
-		final List<I_M_HU> newCURecords = huTransformService.husToNewCUs(cuRequest);
+		final List<I_M_HU> newCURecords = huTransformService.husToNewCUs(cuRequest).getNewCUs();
 
 		final List<I_M_HU> newHURecords;
 		if (pickAccordingToPackingInstruction)

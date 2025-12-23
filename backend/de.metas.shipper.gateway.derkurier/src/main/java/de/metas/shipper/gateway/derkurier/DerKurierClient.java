@@ -250,6 +250,7 @@ public class DerKurierClient implements ShipperGatewayClient
 	public @NonNull JsonDeliveryAdvisorResponse adviseShipment(final @NonNull JsonDeliveryAdvisorRequest request)
 	{
 		return JsonDeliveryAdvisorResponse.builder()
+				.requestId(request.getId())
 				.shipperProduct(JsonShipperProduct.builder()
 						.code(OVERNIGHT.getCode())
 						.build())

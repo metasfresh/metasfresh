@@ -9,6 +9,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.location.DocumentLocation;
+import de.metas.externalsystem.ExternalSystemId;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.lang.SOTrx;
 import de.metas.logging.TableRecordMDC;
@@ -220,6 +221,13 @@ public class OrderFactory
 		order.setExternalId(externalId != null ? externalId.getValue() : null);
 
 		assertNotBuilt();
+		return this;
+	}
+
+	public OrderFactory externalSystemId(@Nullable final ExternalSystemId externalSystemId)
+	{
+		assertNotBuilt();
+		order.setExternalSystem_ID(ExternalSystemId.toRepoId(externalSystemId));
 		return this;
 	}
 

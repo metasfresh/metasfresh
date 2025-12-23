@@ -37,7 +37,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import javax.annotation.Nullable;
-import java.time.Instant;
+import java.time.LocalDate;
 
 @EqualsAndHashCode
 @ToString
@@ -50,10 +50,10 @@ public class InvoicePayScheduleLine
 
 	@Setter private boolean isValid;
 
-	@NonNull @Setter private Instant dueDate;
+	@NonNull @Setter private LocalDate dueDate;
 	@NonNull private final Money dueAmount;
 
-	@Nullable private final Instant discountDate;
+	@Nullable private final LocalDate discountDate;
 	@Nullable private final Money discountAmount;
 
 	@Nullable private final OrderAndPayScheduleId orderAndPayScheduleId;

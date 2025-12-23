@@ -90,14 +90,33 @@
     }
 
     .right-btn-side {
-      //border: 1px dotted blue;
-
       flex: 0;
-      height: 100%;
 
       display: flex;
-      align-items: center;
-      justify-content: right;
+      flex-direction: column;
+      padding-top: 0.2em;
+      padding-bottom: 0.2em;
+
+      .indicator-box {
+        flex: 0;
+
+        display: block;
+        width: 0.7em;
+        height: 0.7em;
+        padding: 0.1em;
+      }
+
+      .indicator-color-red {
+        color: $indicator-red;
+      }
+
+      .indicator-color-yellow {
+        color: $indicator-yellow;
+      }
+
+      .indicator-color-green {
+        color: $indicator-green;
+      }
     }
   }
 }
@@ -106,33 +125,6 @@
   height: 4em !important;
 }
 
-
-.indicator-red, .indicator-yellow, .indicator-green {
-  display: inline-block;
-  width: 7px;
-  height: 7px;
-  border: 1px solid #000;
-  border-radius: 100%;
-  margin: 4px;
-}
-
-.indicator-red {
-  background-color: $indicator-red;
-  border-color: $indicator-red-border;
-  box-shadow: 0 0 4px 1px $indicator-red;
-}
-
-.indicator-green {
-  background-color: $indicator-green;
-  border-color: $indicator-green-border;
-  box-shadow: 0 0 4px 1px $indicator-green;
-}
-
-.indicator-yellow {
-  background-color: $indicator-yellow;
-  border-color: $indicator-yellow-border;
-  box-shadow: 0 0 4px 1px $indicator-yellow;
-}
 
 .warning-sign {
   color: $indicator-yellow;

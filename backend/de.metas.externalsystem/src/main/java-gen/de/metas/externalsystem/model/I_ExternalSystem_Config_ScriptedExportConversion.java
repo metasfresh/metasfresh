@@ -1,25 +1,3 @@
-/*
- * #%L
- * de.metas.externalsystem
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package de.metas.externalsystem.model;
 
 import org.adempiere.model.ModelColumn;
@@ -230,6 +208,27 @@ public interface I_ExternalSystem_Config_ScriptedExportConversion
 	String COLUMNNAME_ExternalSystem_Config_ScriptedExportConversion_ID = "ExternalSystem_Config_ScriptedExportConversion_ID";
 
 	/**
+	 * Set Externer System-Ausgangsendpunkt.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystem_Outbound_Endpoint_ID (int ExternalSystem_Outbound_Endpoint_ID);
+
+	/**
+	 * Get Externer System-Ausgangsendpunkt.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getExternalSystem_Outbound_Endpoint_ID();
+
+	ModelColumn<I_ExternalSystem_Config_ScriptedExportConversion, I_ExternalSystem_Outbound_Endpoint> COLUMN_ExternalSystem_Outbound_Endpoint_ID = new ModelColumn<>(I_ExternalSystem_Config_ScriptedExportConversion.class, "ExternalSystem_Outbound_Endpoint_ID", I_ExternalSystem_Outbound_Endpoint.class);
+	String COLUMNNAME_ExternalSystem_Outbound_Endpoint_ID = "ExternalSystem_Outbound_Endpoint_ID";
+
+	/**
 	 * Set Value.
 	 *
 	 * <br>Type: String
@@ -272,75 +271,6 @@ public interface I_ExternalSystem_Config_ScriptedExportConversion
 
 	ModelColumn<I_ExternalSystem_Config_ScriptedExportConversion, Object> COLUMN_IsActive = new ModelColumn<>(I_ExternalSystem_Config_ScriptedExportConversion.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
-
-	/**
-	 * Set Outbound HTTP Endpoint.
-	 * URL to which the data will be sent
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setOutboundHttpEP (@Nullable String OutboundHttpEP);
-
-	/**
-	 * Get Outbound HTTP Endpoint.
-	 * URL to which the data will be sent
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable String getOutboundHttpEP();
-
-	ModelColumn<I_ExternalSystem_Config_ScriptedExportConversion, Object> COLUMN_OutboundHttpEP = new ModelColumn<>(I_ExternalSystem_Config_ScriptedExportConversion.class, "OutboundHttpEP", null);
-	String COLUMNNAME_OutboundHttpEP = "OutboundHttpEP";
-
-	/**
-	 * Set Ausgehende HTTP-Methode.
-	 * HTTP method to use when sending data (e.g. POST, PUT)
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setOutboundHttpMethod (@Nullable String OutboundHttpMethod);
-
-	/**
-	 * Get Ausgehende HTTP-Methode.
-	 * HTTP method to use when sending data (e.g. POST, PUT)
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable String getOutboundHttpMethod();
-
-	ModelColumn<I_ExternalSystem_Config_ScriptedExportConversion, Object> COLUMN_OutboundHttpMethod = new ModelColumn<>(I_ExternalSystem_Config_ScriptedExportConversion.class, "OutboundHttpMethod", null);
-	String COLUMNNAME_OutboundHttpMethod = "OutboundHttpMethod";
-
-	/**
-	 * Set Outbound HTTP Token.
-	 * Authentication token used for the outbound HTTP request
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setOutboundHttpToken (@Nullable String OutboundHttpToken);
-
-	/**
-	 * Get Outbound HTTP Token.
-	 * Authentication token used for the outbound HTTP request
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable String getOutboundHttpToken();
-
-	ModelColumn<I_ExternalSystem_Config_ScriptedExportConversion, Object> COLUMN_OutboundHttpToken = new ModelColumn<>(I_ExternalSystem_Config_ScriptedExportConversion.class, "OutboundHttpToken", null);
-	String COLUMNNAME_OutboundHttpToken = "OutboundHttpToken";
 
 	/**
 	 * Set Script Identifier.

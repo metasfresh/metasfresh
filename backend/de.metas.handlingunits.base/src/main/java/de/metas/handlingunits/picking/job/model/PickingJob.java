@@ -34,12 +34,12 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
-import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
-import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
@@ -158,6 +158,7 @@ public final class PickingJob implements PickingJobHeaderOrLine
 	@JsonIgnore
 	public boolean isAnonymousPickHUsOnTheFly() {return header.isAnonymousPickHUsOnTheFly();}
 
+	@Nullable
 	public UserId getLockedBy() {return header.getLockedBy();}
 
 	public PickingJob withLockedBy(@Nullable final UserId lockedBy)
@@ -178,6 +179,15 @@ public final class PickingJob implements PickingJobHeaderOrLine
 		if (isProcessed())
 		{
 			throw new AdempiereException(PICKING_JOB_PROCESSED_ERROR_MSG);
+		}
+	}
+
+	public void assertCanBeEditedBy(final UserId userId)
+	{
+		assertNotProcessed();
+		if (!Objects.equals(userId, getLockedBy()))
+		{
+			throw new AdempiereException("Can be edited only by the user who locked the job");
 		}
 	}
 
@@ -491,7 +501,7 @@ public final class PickingJob implements PickingJobHeaderOrLine
 	}
 
 	@Nullable
-	public static <T> Quantity extractQtyToPickOrNull(
+	private static <T> Quantity extractQtyToPickOrNull(
 			@NonNull final Collection<T> lines,
 			@NonNull final Function<T, ProductId> extractProductId,
 			@NonNull final Function<T, Quantity> extractQtyToPick)
@@ -554,5 +564,4 @@ public final class PickingJob implements PickingJobHeaderOrLine
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 	}
-
 }

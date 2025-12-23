@@ -73,6 +73,10 @@
 		<property name="com.jaspersoft.studio.field.name" value="additionaltext"/>
 		<property name="com.jaspersoft.studio.field.label" value="additionaltext"/>
 	</field>
+	<field name="taxnote" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="taxnote"/>
+		<property name="com.jaspersoft.studio.field.label" value="taxnote"/>
+	</field>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -174,7 +178,7 @@
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<printWhenExpression><![CDATA[new Boolean($F{descriptionbottom} != null && !$F{descriptionbottom}.isEmpty())]]></printWhenExpression>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
-				<reportElement key="textField-82" style="Test" x="38" y="0" width="480" height="12" isPrintWhenDetailOverflows="true" uuid="c731b46e-b9d5-4958-a9e0-331dc7a09642"/>
+				<reportElement key="textField-82" style="Test" x="37" y="0" width="481" height="12" isPrintWhenDetailOverflows="true" uuid="c731b46e-b9d5-4958-a9e0-331dc7a09642"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -187,11 +191,27 @@
 				<textFieldExpression><![CDATA[$F{descriptionbottom}]]></textFieldExpression>
 			</textField>
 		</band>
-		<band height="12">
+		<band height="27">
+			<printWhenExpression><![CDATA[$F{taxnote} != null]]></printWhenExpression>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement key="textField-82" style="Test" x="37" y="12" width="483" height="12" isPrintWhenDetailOverflows="true" uuid="160adfff-5e3e-4047-9307-7736dd9418e1"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement markup="html">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{taxnote}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="21">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<printWhenExpression><![CDATA[new Boolean($F{additionaltext} != null && !$F{additionaltext}.isEmpty())]]></printWhenExpression>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
-				<reportElement key="textField-1" style="Test" x="37" y="0" width="480" height="12" isPrintWhenDetailOverflows="true" uuid="7e648ca8-5460-41ce-8b80-b633aea3f03f"/>
+				<reportElement key="textField-1" style="Test" x="37" y="9" width="481" height="12" isPrintWhenDetailOverflows="true" uuid="7e648ca8-5460-41ce-8b80-b633aea3f03f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -199,7 +219,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" markup="none">
-					<font fontName="Arial" size="9"/>
+					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{additionaltext}]]></textFieldExpression>
 			</textField>

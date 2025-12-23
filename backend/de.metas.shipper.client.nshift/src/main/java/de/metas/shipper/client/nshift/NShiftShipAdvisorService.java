@@ -22,6 +22,7 @@
 
 package de.metas.shipper.client.nshift;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.delivery.v1.json.request.JsonCarrierService;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
@@ -34,6 +35,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.shipper.client.nshift.json.JsonAddress;
 import de.metas.shipper.client.nshift.json.JsonAddressKind;
 import de.metas.shipper.client.nshift.json.JsonLine;
+import de.metas.shipper.client.nshift.json.JsonReference;
 import de.metas.shipper.client.nshift.json.JsonShipmentData;
 import de.metas.shipper.client.nshift.json.JsonShipmentOptions;
 import de.metas.shipper.client.nshift.json.request.JsonShipAdvisorRequest;
@@ -67,7 +69,7 @@ public class NShiftShipAdvisorService
 			final JsonShipAdvisorResponse response = restClient.post(SHIP_ADVISES_ENDPOINT, requestBody, deliveryAdvisorRequest.getShipperConfig(), JsonShipAdvisorResponse.class);
 
 			logger.debug("Successfully received nShift response: {}", response);
-			return buildJsonDeliveryResponse(response, deliveryAdvisorRequest.getId());
+			return buildJsonDeliveryAdvisorResponse(response, deliveryAdvisorRequest.getId());
 		}
 		catch (final Throwable throwable)
 		{
@@ -79,13 +81,15 @@ public class NShiftShipAdvisorService
 		}
 	}
 
-	private static JsonShipAdvisorRequest buildRequest(@NonNull final JsonDeliveryAdvisorRequest deliveryAdvisorRequest)
+	@VisibleForTesting
+	public static JsonShipAdvisorRequest buildRequest(@NonNull final JsonDeliveryAdvisorRequest deliveryAdvisorRequest)
 	{
 		final JsonShipmentOptions options = JsonShipmentOptions.builder()
 				.serviceLevel(deliveryAdvisorRequest.getShipperConfig().getAdditionalPropertyNotNull(NShiftConstants.SERVICE_LEVEL))
 				.build();
 
-		final JsonShipmentData.JsonShipmentDataBuilder dataBuilder = JsonShipmentData.builder();
+		final JsonShipmentData.JsonShipmentDataBuilder dataBuilder = JsonShipmentData.builder()
+				.orderNo(deliveryAdvisorRequest.getId()); //TODO figure out what would make sense here (Mandatory for gls germany already on advise, question is why it's mandatory here). We currently use carrier_shipment_order_id on ship later
 
 		// Add Addresses
 		dataBuilder.address(NShiftUtil.buildNShiftAddressBuilder(deliveryAdvisorRequest.getPickupAddress(), JsonAddressKind.SENDER)
@@ -114,6 +118,24 @@ public class NShiftShipAdvisorService
 
 		dataBuilder.line(buildNShiftLine(deliveryAdvisorRequest.getItem()));
 
+		//Add incoterms, if exists so carrier services can be provided via shipment rules based on it
+		if (deliveryAdvisorRequest.getIncotermsValue() != null)
+		{
+			dataBuilder.reference(JsonReference.builder()
+					.kind(63) // eSrkCustomField1 https://helpcenter.nshift.com/hc/en-us/articles/360003165473-Objects-and-Fields#ReferenceKind
+					.value(deliveryAdvisorRequest.getIncotermsValue())
+					.build()
+			);
+		}
+		if (deliveryAdvisorRequest.getExternalSystemValue() != null)
+		{
+			dataBuilder.reference(JsonReference.builder()
+					.kind(64) // eSrkCustomField2 https://helpcenter.nshift.com/hc/en-us/articles/360003165473-Objects-and-Fields#ReferenceKind
+					.value(deliveryAdvisorRequest.getExternalSystemValue())
+					.build()
+			);
+		}
+
 		return JsonShipAdvisorRequest.builder()
 				.options(options)
 				.data(dataBuilder.build())
@@ -131,7 +153,7 @@ public class NShiftShipAdvisorService
 			final int lengthMM = item.getPackageDimensions().getLengthInCM() * 10;
 			final int widthMM = item.getPackageDimensions().getWidthInCM() * 10;
 			final int heightMM = item.getPackageDimensions().getHeightInCM() * 10;
-			lineBuilder.number(item.getNumberOfItems());
+			lineBuilder.number(1); // on advice, it's always 1, as we combine the dimensions via @link de.metas.product.PackageDimensions.ofProductDimensionsAndQty()
 			lineBuilder.length(lengthMM);
 			lineBuilder.width(widthMM);
 			lineBuilder.height(heightMM);
@@ -140,7 +162,7 @@ public class NShiftShipAdvisorService
 		return lineBuilder.build();
 	}
 
-	private static JsonDeliveryAdvisorResponse buildJsonDeliveryResponse(@NonNull final JsonShipAdvisorResponse response, @NonNull final String requestId)
+	private static JsonDeliveryAdvisorResponse buildJsonDeliveryAdvisorResponse(@NonNull final JsonShipAdvisorResponse response, @NonNull final String requestId)
 	{
 		Check.assumeEquals(response.getProducts().size(), 1, "response should only contain 1 shipperProduct, pls check defined shipment rules");
 		final JsonShipAdvisorResponseProduct product = response.getProducts().get(0);
@@ -151,14 +173,11 @@ public class NShiftShipAdvisorService
 						.code(String.valueOf(product.getProdConceptID()))
 						.build());
 
-		final JsonShipAdvisorResponseGoodsType productGoodsType = product.getProductGoodsType();
-		if (productGoodsType != null)
-		{
-			responseBuilder.goodsType(JsonGoodsType.builder()
-					.id(String.valueOf(productGoodsType.getGoodsTypeId()))
-					.name(productGoodsType.getGoodsTypeName())
-					.build());
-		}
+		final JsonShipAdvisorResponseGoodsType productGoodsType = Check.assumeNotNull(product.getProductGoodsType(), "response should contain a GoodsType, pls check defined shipment rules");
+		responseBuilder.goodsType(JsonGoodsType.builder()
+				.id(String.valueOf(productGoodsType.getGoodsTypeId()))
+				.name(productGoodsType.getGoodsTypeName())
+				.build());
 
 		responseBuilder.shipperProductServices(product.getServices()
 				.stream()

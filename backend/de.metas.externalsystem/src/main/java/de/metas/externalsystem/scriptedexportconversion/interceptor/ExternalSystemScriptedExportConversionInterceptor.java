@@ -35,6 +35,7 @@ import lombok.NonNull;
 import org.adempiere.ad.table.api.AdTableAndClientId;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.compiere.model.I_AD_Client;
@@ -64,6 +65,7 @@ import static org.compiere.util.Env.getCtx;
 
 	private final ModelValidationEngine modelValidationEngine;
 	private final ExternalSystemScriptedExportConversionService externalSystemScriptedExportConversionService;
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private int m_AD_Client_ID;
 	private final AdTableId adTableId;
 	private final String tableName;
@@ -172,17 +174,20 @@ import static org.compiere.util.Env.getCtx;
 			@NonNull final ExternalSystemScriptedExportConversionConfig config,
 			final int recordId)
 	{
+		final int configTableId = tableDAO.retrieveTableId(I_ExternalSystem_Config_ScriptedExportConversion.Table_Name);
 		try
 		{
-			ProcessInfo.builder()
-					.setCtx(getCtx())
-					.setRecord(tableDAO.retrieveTableId(I_ExternalSystem_Config_ScriptedExportConversion.Table_Name), config.getId().getRepoId())
-					.setAD_ProcessByClassname(InvokeScriptedExportConversionAction.class.getName())
-					.addParameter(PARAM_EXTERNAL_REQUEST, COMMAND_CONVERT_MESSAGE_FROM_METASFRESH)
-					.addParameter(PARAM_CHILD_CONFIG_ID, config.getId().getRepoId())
-					.addParameter(PARAM_Record_ID, recordId)
-					.buildAndPrepareExecution()
-					.executeSync();
+			trxManager.runAfterCommit(() -> {
+				ProcessInfo.builder()
+						.setCtx(getCtx())
+						.setRecord(configTableId, config.getId().getRepoId())
+						.setAD_ProcessByClassname(InvokeScriptedExportConversionAction.class.getName())
+						.addParameter(PARAM_EXTERNAL_REQUEST, COMMAND_CONVERT_MESSAGE_FROM_METASFRESH)
+						.addParameter(PARAM_CHILD_CONFIG_ID, config.getId().getRepoId())
+						.addParameter(PARAM_Record_ID, recordId)
+						.buildAndPrepareExecution()
+						.executeSync();
+			});
 		}
 		catch (final Exception e)
 		{

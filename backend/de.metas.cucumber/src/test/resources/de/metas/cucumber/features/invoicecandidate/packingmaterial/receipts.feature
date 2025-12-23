@@ -1,5 +1,4 @@
 @from:cucumber
-@ghActions:run_on_executor1
 Feature: Packing material invoice candidates: receipts
 
   Background:
@@ -59,6 +58,7 @@ Feature: Packing material invoice candidates: receipts
       | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID    | Qty |
       | huPiItemPurchaseProduct | huPiItemTU      | purchaseProduct | 10  |
 
+  @ghActions:run_on_executor4
   @Id:S0160_100
   @from:cucumber
   Scenario: Order 10 TU, receive what was ordered, receipt automatically completed
@@ -111,6 +111,7 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 10               |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 1                |
 
+  @ghActions:run_on_executor5
   @Id:S0160_110
   @from:cucumber
   Scenario: Order 10 TU, receive more than was ordered, receipt automatically completed
@@ -163,6 +164,7 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 20               |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 2                |
 
+  @ghActions:run_on_executor6
   @Id:S0160_120
   @from:cucumber
   Scenario: Order 10 TU, receive less than was ordered, receipt automatically completed
@@ -215,6 +217,7 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 5                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 1                |
 
+  @ghActions:run_on_executor7
   @Id:S0160_130
   @from:cucumber
   Scenario: Order 10 TU, receive without LU, receipt automatically completed
@@ -269,6 +272,7 @@ Feature: Packing material invoice candidates: receipts
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 10               |
 
+  @ghActions:run_on_executor1
   @Id:S0160_140
   @from:cucumber
   Scenario: Order 10 TU, receive with no packing item, receipt automatically completed
@@ -332,6 +336,7 @@ Feature: Packing material invoice candidates: receipts
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 1                |
 
+  @ghActions:run_on_executor2
   @Id:S0160_150
   @from:cucumber
   Scenario: Order 10 TU, receive with other packing instructions
@@ -403,6 +408,7 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 10               |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 1                |
 
+  @ghActions:run_on_executor3
   @Id:S0160_160
   @from:cucumber
   Scenario: Order 1000 Tus, so it doesn’t fit 1 LU, receive what was ordered, receipt automatically completed
@@ -462,6 +468,7 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 1064             |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 14               |
 
+  @ghActions:run_on_executor4
   @Id:S0160_170
   @from:cucumber
   Scenario: Reactivate receipt similar with case 100
@@ -529,6 +536,7 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 0                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 0                |
 
+  @ghActions:run_on_executor5
   @Id:S0160_180
   @from:cucumber
   Scenario: Reactivate receipt similar with case 110
@@ -595,6 +603,7 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 0                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 0                |
 
+  @ghActions:run_on_executor6
   @Id:S0160_190
   @from:cucumber
   Scenario: Reactivate receipt similar with case 120
@@ -661,6 +670,7 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 0                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 0                |
 
+  @ghActions:run_on_executor7
   @Id:S0160_200
   @from:cucumber
   Scenario: Reactivate receipt similar with case 130
@@ -742,6 +752,7 @@ Feature: Packing material invoice candidates: receipts
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 0                |
 
+  @ghActions:run_on_executor1
   @Id:S0160_210
   @from:cucumber
   Scenario: Reactivate receipt similar with case 140
@@ -818,6 +829,7 @@ Feature: Packing material invoice candidates: receipts
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 0                |
 
+  @ghActions:run_on_executor2
   @Id:S0160_220
   @from:cucumber
   Scenario: Reactivate receipt similar with case 150
@@ -978,6 +990,7 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 0                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 0                |
 
+  @ghActions:run_on_executor3
   @Id:S0160_240
   @from:cucumber
   Scenario: Complete receipt similar with case 170
@@ -1053,6 +1066,7 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 10               |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 1                |
 
+  @ghActions:run_on_executor4
   @Id:S0160_241
   @from:cucumber
   Scenario: Reactivate receipt similar with case 100, increase qtys, complete again
@@ -1134,6 +1148,7 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 20               |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 20               |
 
+  @ghActions:run_on_executor5
   @Id:S0160_242
   @from:cucumber
   Scenario: Reactivate receipt similar with case 100, decrease qtys, complete again
@@ -1215,6 +1230,7 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 5                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 5                |
 
+  @ghActions:run_on_executor6
   @Id:S0160_250
   @from:cucumber
   Scenario: Complete receipt similar with case 180
@@ -1300,6 +1316,7 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 20               |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 2                |
 
+  @ghActions:run_on_executor7
   @Id:S0160_260
   @from:cucumber
   Scenario: Complete receipt similar with case 190
@@ -1484,6 +1501,7 @@ Feature: Packing material invoice candidates: receipts
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 10               |
 
+  @ghActions:run_on_executor1
   @Id:S0160_280
   @from:cucumber
   Scenario: Complete receipt similar with case 210
@@ -1577,6 +1595,7 @@ Feature: Packing material invoice candidates: receipts
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 1                |
 
+  @ghActions:run_on_executor2
   @Id:S0160_290
   @from:cucumber
   Scenario: Complete receipt similar with case 220
@@ -1682,6 +1701,7 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 10               |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 1                |
 
+  @ghActions:run_on_executor3
   @Id:S0160_300
   @from:cucumber
   Scenario: Complete receipt similar with case 230
@@ -1774,6 +1794,7 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 1064             |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 14               |
 
+  @ghActions:run_on_executor4
   @Id:S0160_310
   @from:cucumber
   Scenario: Close receipt similar with case 240
@@ -1840,6 +1861,7 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 10               |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 1                |
 
+  @ghActions:run_on_executor5
   @Id:S0160_320
   @from:cucumber
   Scenario: Close receipt similar with case 250
@@ -1906,6 +1928,7 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 20               |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 2                |
 
+  @ghActions:run_on_executor6
   @Id:S0160_330
   @from:cucumber
   Scenario: Close receipt similar with case 260
@@ -1972,6 +1995,7 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 5                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 1                |
 
+  @ghActions:run_on_executor7
   @Id:S0160_340
   @from:cucumber
   Scenario: Close receipt similar with case 270
@@ -2053,6 +2077,7 @@ Feature: Packing material invoice candidates: receipts
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 10               |
 
+  @ghActions:run_on_executor1
   @Id:S0160_350
   @from:cucumber
   Scenario: Close receipt similar with case 280
@@ -2129,6 +2154,7 @@ Feature: Packing material invoice candidates: receipts
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 1                |
 
+  @ghActions:run_on_executor2
   @Id:S0160_360
   @from:cucumber
   Scenario: Close receipt similar with case 290
@@ -2215,6 +2241,7 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 10               |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 1                |
 
+  @ghActions:run_on_executor3
   @Id:S0160_370
   @from:cucumber
   Scenario: Close receipt similar with case 300
@@ -2288,6 +2315,7 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 1064             |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 14               |
 
+  @ghActions:run_on_executor4
   @Id:S0160_380
   @from:cucumber
   Scenario: Revert receipt similar with case 100
@@ -2354,6 +2382,7 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 0                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 0                |
 
+  @ghActions:run_on_executor5
   @Id:S0160_390
   @from:cucumber
   Scenario: Revert receipt similar with case 110
@@ -2420,6 +2449,7 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 0                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 0                |
 
+  @ghActions:run_on_executor6
   @Id:S0160_400
   @from:cucumber
   Scenario: Revert receipt similar with case 120
@@ -2486,6 +2516,7 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 0                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 0                |
 
+  @ghActions:run_on_executor7
   @Id:S0160_410
   @from:cucumber
   Scenario: Revert receipt similar with case 130
@@ -2567,6 +2598,7 @@ Feature: Packing material invoice candidates: receipts
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 0                |
 
+  @ghActions:run_on_executor1
   @Id:S0160_420
   @from:cucumber
   Scenario: Revert receipt similar with case 140
@@ -2643,6 +2675,7 @@ Feature: Packing material invoice candidates: receipts
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 0                |
 
+  @ghActions:run_on_executor2
   @Id:S0160_430
   @from:cucumber
   Scenario: Revert receipt similar with case 150
@@ -2729,6 +2762,7 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 0                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 0                |
 
+  @ghActions:run_on_executor3
   @Id:S0160_440
   @from:cucumber
   Scenario: Revert receipt similar with case 160
@@ -2802,6 +2836,7 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 0                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 0                |
 
+  @ghActions:run_on_executor4
   @Id:S0160_450
   @from:cucumber
   Scenario: Void receipt similar with case 100
@@ -2871,6 +2906,7 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 0                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 0                |
 
+  @ghActions:run_on_executor5
   @Id:S0160_460
   @from:cucumber
   Scenario: Void receipt similar with case 110
@@ -2940,6 +2976,7 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 0                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 0                |
 
+  @ghActions:run_on_executor6
   @Id:S0160_470
   @from:cucumber
   Scenario: Void receipt similar with case 120
@@ -3009,6 +3046,7 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 0                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 0                |
 
+  @ghActions:run_on_executor7
   @Id:S0160_480
   @from:cucumber
   Scenario: Void receipt similar with case 130
@@ -3093,6 +3131,7 @@ Feature: Packing material invoice candidates: receipts
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 0                |
 
+  @ghActions:run_on_executor1
   @Id:S0160_490
   @from:cucumber
   Scenario: Void receipt similar with case 140
@@ -3172,6 +3211,7 @@ Feature: Packing material invoice candidates: receipts
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 0                |
 
+  @ghActions:run_on_executor1
   @Id:S0160_500
   @from:cucumber
   Scenario: Void receipt similar with case 150
@@ -3260,6 +3300,7 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 0                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 0                |
 
+  @ghActions:run_on_executor1
   @Id:S0160_510
   @from:cucumber
   Scenario: Void receipt similar with case 160

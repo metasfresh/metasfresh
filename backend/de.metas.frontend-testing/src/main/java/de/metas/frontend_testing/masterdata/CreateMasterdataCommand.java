@@ -60,14 +60,13 @@ import java.util.function.BiFunction;
 public class CreateMasterdataCommand
 {
 	@NonNull private final CreateMasterdataCommandSupportingServices services;
-
 	@NonNull private final JsonCreateMasterdataRequest request;
 
-	private MasterdataContext context;
+	private final MasterdataContext context = new MasterdataContext();
 
 	public JsonCreateMasterdataResponse execute()
 	{
-		this.context = new MasterdataContext();
+		this.context.putFromJson(request.getContext());
 
 		// IMPORTANT: the order is very important
 		final ImmutableMap<String, JsonLoginUserResponse> login = createLoginUsers();
@@ -75,10 +74,10 @@ public class CreateMasterdataCommand
 		final ImmutableMap<String, JsonCreateProductResponse> products = createProducts();
 		final ImmutableMap<String, JsonCreateResourceResponse> resources = createResources();
 		final ImmutableMap<String, JsonWarehouseResponse> warehouses = createWarehouses();
+		final ImmutableMap<String, JsonPickingSlotCreateResponse> pickingSlots = createPickingSlots();
 		final ImmutableMap<String, JsonWorkplaceResponse> workplaces = createWorkplaces();
 		final ImmutableMap<String, JsonCreateProductPlanningResponse> productPlannings = createProductPlannings();
 		final Map<String, JsonPackingInstructionsResponse> packingInstructions = createPackingInstructions();
-		final ImmutableMap<String, JsonPickingSlotCreateResponse> pickingSlots = createPickingSlots();
 		final JsonMobileConfigResponse mobileConfig = createMobileConfiguration();
 		final ImmutableMap<String, JsonCreateHUResponse> hus = createHUs();
 		final ImmutableMap<String, JsonGenerateHUQRCodeResponse> generatedHUQRCodes = generateHUQRCodes();
@@ -89,6 +88,7 @@ public class CreateMasterdataCommand
 		createCustomQRCodeFormats();
 
 		return JsonCreateMasterdataResponse.builder()
+				.context(context.toJson())
 				.mobileConfig(mobileConfig)
 				.login(login)
 				.bpartners(bpartners)
@@ -263,7 +263,7 @@ public class CreateMasterdataCommand
 
 		return MobileConfigCommand.builder()
 				.mobileConfigService(services.mobileConfigService)
-				.mobilePickingConfigRepository(services.mobilePickingConfigRepository)
+				.mobilePickingConfigService(services.mobilePickingConfigService)
 				.mobileDistributionConfigRepository(services.mobileDistributionConfigRepository)
 				.mobileManufacturingConfigRepository(services.mobileManufacturingConfigRepository)
 				//
@@ -283,6 +283,7 @@ public class CreateMasterdataCommand
 		return CreateHUCommand.builder()
 				.inventoryService(services.inventoryService)
 				.huQRCodesService(services.huQRCodesService)
+				.sourceHUsService(services.sourceHUsService)
 				.context(context)
 				.request(request)
 				.identifier(identifier)
@@ -330,6 +331,8 @@ public class CreateMasterdataCommand
 	{
 		return DDOrderCommand.builder()
 				.ddOrderService(services.ddOrderService)
+				.distributionJobLoaderSupportingServices(services.distributionJobLoaderSupportingServices)
+				.captionProvider(services.distributionLauncherCaptionProvider)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString(identifier))

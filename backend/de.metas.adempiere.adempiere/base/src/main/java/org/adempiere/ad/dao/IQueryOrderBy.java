@@ -27,7 +27,15 @@ import java.util.Comparator;
 public interface IQueryOrderBy
 {
 	enum Direction
-	{Ascending, Descending}
+	{
+		Ascending,
+		Descending,
+		;
+
+		public static Direction ofIsAscendingFlag(final boolean isAscending) {return isAscending ? Ascending : Descending;}
+
+		public boolean isAscending() {return this.equals(Ascending);}
+	}
 
 	enum Nulls
 	{First, Last}

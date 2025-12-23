@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.handlingunits.shipmentschedule.api;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -52,28 +74,6 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
-
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 /**
  * Facade which is able to generate shipping documents (generate shipment, add to shipper transportation, generate invoice).
@@ -240,7 +240,6 @@ public class HUShippingFacade
 
 		final boolean adhereToInvoiceSchedule = invoiceMode == BillAssociatedInvoiceCandidates.IF_INVOICE_SCHEDULE_PERMITS;
 		invoicingParams.setIgnoreInvoiceSchedule(!adhereToInvoiceSchedule);
-		invoicingParams.setSupplementMissingPaymentTermIds(true); // e.g. "packaging" ICs from shipments might lack the order's payment term, but we still want them to be in the same invoice, unless they explicitly have a different payment term.
 
 		final IInvoiceCandidateEnqueueResult enqueueResult = invoiceCandBL.enqueueForInvoicing()
 				.setFailOnChanges(false)
@@ -307,7 +306,9 @@ public class HUShippingFacade
 
 	private LocalDate getPickupDate(@NonNull final I_M_ShipperTransportation shipperTransportation)
 	{
-		return CoalesceUtil.coalesce(TimeUtil.asLocalDate(shipperTransportation.getDateToBeFetched()), TimeUtil.asLocalDate(shipperTransportation.getDateDoc()));
+		return CoalesceUtil.coalesceNotNull(
+				TimeUtil.asLocalDate(shipperTransportation.getDateToBeFetched()), 
+				TimeUtil.asLocalDate(shipperTransportation.getDateDoc()));
 	}
 
 	private void loadGeneratedShipments(@NonNull final Set<InOutId> shipmentIds)

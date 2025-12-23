@@ -1,6 +1,7 @@
 package de.metas.frontend_testing.masterdata.dd_order;
 
 import de.metas.frontend_testing.masterdata.Identifier;
+import de.metas.util.lang.SeqNo;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -19,6 +20,8 @@ public class JsonDDOrderRequest
 	@NonNull Identifier warehouseTo;
 	@NonNull Identifier warehouseInTransit;
 	@Nullable Identifier plant;
+	@Nullable String priority;
+	@Nullable SeqNo seqNo;
 	@NonNull List<Line> lines;
 
 	//
@@ -30,6 +33,8 @@ public class JsonDDOrderRequest
 	@Jacksonized
 	public static class Line
 	{
+		@Nullable Identifier locatorFrom;
+		@Nullable Identifier locatorTo;
 		@NonNull Identifier product;
 		@NonNull BigDecimal qtyEntered;
 	}
