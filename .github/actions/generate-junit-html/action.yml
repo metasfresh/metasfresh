@@ -45,12 +45,7 @@ runs:
 
         if [ "$FILE_COUNT" -eq 0 ] || [ ! -s /tmp/xml_files.txt ]; then
           echo "::warning::No JUnit XML files found matching: $XML_PATH"
-          cat > "$OUTPUT_DIR/index.html" << 'EOF'
-<!DOCTYPE html>
-<html><head><title>No Test Results</title></head>
-<body><h1>No Test Results Available</h1><p>No JUnit XML files were found for this test run.</p></body>
-</html>
-EOF
+          echo '<!DOCTYPE html><html><head><title>No Test Results</title></head><body><h1>No Test Results Available</h1><p>No JUnit XML files were found for this test run.</p></body></html>' > "$OUTPUT_DIR/index.html"
           exit 0
         fi
 
@@ -60,49 +55,37 @@ EOF
         if [ "$FILE_COUNT" -gt 100 ]; then
           echo "Using summary page for $FILE_COUNT files (too many for junit2html --merge)..."
 
-          cat > "$OUTPUT_DIR/index.html" << HTMLEOF
-<!DOCTYPE html>
-<html>
-<head>
-  <title>${REPORT_TITLE}</title>
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 20px; background: #f5f7fa; }
-    h1 { color: #1a73e8; }
-    .summary { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .stat { display: inline-block; margin-right: 30px; }
-    .stat-value { font-size: 2em; font-weight: bold; color: #1a73e8; }
-    .stat-label { color: #666; }
-  </style>
-</head>
-<body>
-  <h1>${REPORT_TITLE}</h1>
-  <div class="summary">
-    <div class="stat">
-      <div class="stat-value">${FILE_COUNT}</div>
-      <div class="stat-label">Test Files</div>
-    </div>
-  </div>
-  <p>Test results from ${FILE_COUNT} JUnit XML files.</p>
-  <p>Individual XML files are available in this directory for detailed analysis.</p>
-</body>
-</html>
-HTMLEOF
+          echo "<!DOCTYPE html>
+        <html>
+        <head>
+          <title>${REPORT_TITLE}</title>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 20px; background: #f5f7fa; }
+            h1 { color: #1a73e8; }
+            .summary { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+            .stat { display: inline-block; margin-right: 30px; }
+            .stat-value { font-size: 2em; font-weight: bold; color: #1a73e8; }
+            .stat-label { color: #666; }
+          </style>
+        </head>
+        <body>
+          <h1>${REPORT_TITLE}</h1>
+          <div class=\"summary\">
+            <div class=\"stat\">
+              <div class=\"stat-value\">${FILE_COUNT}</div>
+              <div class=\"stat-label\">Test Files</div>
+            </div>
+          </div>
+          <p>Test results from ${FILE_COUNT} JUnit XML files.</p>
+          <p>Individual XML files are available in this directory for detailed analysis.</p>
+        </body>
+        </html>" > "$OUTPUT_DIR/index.html"
         else
           # For smaller file counts, use junit2html with xargs
           echo "Processing $FILE_COUNT files with junit2html..."
           cat /tmp/xml_files.txt | xargs junit2html --merge "$OUTPUT_DIR/index.html" || {
             echo "::warning::junit2html failed, creating fallback report"
-            cat > "$OUTPUT_DIR/index.html" << HTMLEOF
-<!DOCTYPE html>
-<html>
-<head><title>${REPORT_TITLE}</title></head>
-<body>
-  <h1>${REPORT_TITLE}</h1>
-  <p>Test results from ${FILE_COUNT} JUnit XML files.</p>
-  <p>Individual XML files are available in this directory.</p>
-</body>
-</html>
-HTMLEOF
+            echo "<!DOCTYPE html><html><head><title>${REPORT_TITLE}</title></head><body><h1>${REPORT_TITLE}</h1><p>Test results from ${FILE_COUNT} JUnit XML files.</p><p>Individual XML files are available in this directory.</p></body></html>" > "$OUTPUT_DIR/index.html"
           }
         fi
 
