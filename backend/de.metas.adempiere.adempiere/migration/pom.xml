@@ -14,8 +14,4 @@
 	<artifactId>de.metas.adempiere.adempiere.migration-sql</artifactId>
 	<packaging>jar</packaging>
 
-	<properties>
-		<!-- empty property because the sql migration dir already contains a list of base directories -->
-	</properties>
-
 </project>

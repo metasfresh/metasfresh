@@ -15,10 +15,6 @@
 
 	<description>Material Storage Engine</description>
 
-	<properties>
-		<!-- empty property because the sql migration dir already contains a list of base directories -->
-	</properties>
-
 	<dependencies>
 		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
