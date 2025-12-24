@@ -65,8 +65,9 @@ ACT_ARGS=(
     --var RETRY_ATTEMPTS=3
     --var RETRY_DELAY=5
     --var RETRY_TIMEOUT=10
-    --var ACT_LOCAL=true
 )
+# Note: ACT environment variable is automatically set by 'act' when running locally
+# The workflow uses 'env.ACT != true' to skip Docker pushes when running locally
 
 show_help() {
     cat << EOF

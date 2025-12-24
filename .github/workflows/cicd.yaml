@@ -6,6 +6,11 @@ on:
     paths-ignore:
       - '**/README.md'
   workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: read
+
 env:
   PIPELINE_VERSION: '0.4.1'
 jobs:
@@ -240,7 +245,7 @@ jobs:
           --tag metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: push-image metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-fixed }}
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -248,7 +253,7 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-fixed }}
       - name: push-image metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }}
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -256,7 +261,7 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }}
       - name: push-image metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-fixed }}
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -264,7 +269,7 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-fixed }}
       - name: push-image metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-floating }}
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -272,7 +277,7 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-floating }}
       - name: push-image metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-fixed }}
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -280,7 +285,7 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-fixed }}
       - name: push-image metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-floating }}
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -288,7 +293,7 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-floating }}
       - name: push-image metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-fixed }}
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -296,7 +301,7 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-fixed }}
       - name: push-image metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-floating }}
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -304,7 +309,7 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-floating }}
       - name: push-image metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }}
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -312,7 +317,7 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }}
       - name: push-image metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-floating }}
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -378,7 +383,7 @@ jobs:
           --tag metasfresh/metas-frontend-test:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: push-image metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -386,7 +391,7 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}
       - name: push-image metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -394,7 +399,7 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}
       - name: push-image metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -402,7 +407,7 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}
       - name: push-image metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -410,7 +415,7 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}
       - name: push-image metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-fixed }}
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -418,7 +423,7 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-fixed }}
       - name: push-image metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-floating }}
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -426,7 +431,7 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-floating }}
       - name: push-image metasfresh/metas-frontend-test:${{ needs.init.outputs.tag-fixed }}
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -434,7 +439,7 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-frontend-test:${{ needs.init.outputs.tag-fixed }}
       - name: push-image metasfresh/metas-frontend-test:${{ needs.init.outputs.tag-floating }}
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -547,7 +552,7 @@ jobs:
           .
       # NOTE: metas-db and metas-db-migration-tool are now built by db-images job
       - name: push-image metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -555,15 +560,15 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}
       - name: push-image metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}
-      - name: push-image push metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}
-        if: vars.ACT_LOCAL != 'true'
+      - name: push-image metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -571,7 +576,7 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}
       - name: push-image metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -579,7 +584,7 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}
       - name: push-image metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }}
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -587,7 +592,7 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }}
       - name: push-image metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-floating }}
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -596,7 +601,7 @@ jobs:
           command: docker push --quiet metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-floating }}
       # NOTE: metas-db and metas-db-migration-tool push steps moved to db-images job
       - name: push-image metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }}
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -604,7 +609,7 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }}
       - name: push-image metasfresh/metas-edi:${{ needs.init.outputs.tag-floating }}
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -648,6 +653,7 @@ jobs:
           ls -la migration-cli.jar
           file migration-cli.jar
       - name: aggregate-sql-from-source
+        shell: bash
         run: |
           # Aggregate SQL files directly from source code (no Maven dependency)
           # Preserve intermediate folder structure (e.g., 10-de.metas.adempiere/, 20-de.metas.aggregation/)
@@ -684,7 +690,7 @@ jobs:
           --tag metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -692,7 +698,7 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}
       - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -700,7 +706,7 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}
       - name: push-image metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }}
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -708,7 +714,7 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }}
       - name: push-image metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-floating }}
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -754,16 +760,16 @@ jobs:
         working-directory: docker-builds/db/init-preloaded
         run: |
           if [ $(cat migration.exit-code) != 0 ]; then tail -1000 migration.log && exit 1; fi
-      - name: push image docker push --quiet metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded
-        if: vars.ACT_LOCAL != 'true'
+      - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded
-      - name: push image metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded
-        if: vars.ACT_LOCAL != 'true'
+      - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -837,7 +843,7 @@ jobs:
           --tag metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: push-image metasfresh/metas-procurement-backend:${{ needs.init.outputs.tag-fixed }}
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -845,15 +851,15 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-procurement-backend:${{ needs.init.outputs.tag-fixed }}
       - name: push-image metasfresh/metas-procurement-backend:${{ needs.init.outputs.tag-floating }}
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-procurement-backend:${{ needs.init.outputs.tag-floating }}
-      - name: push-image push metasfresh/metas-procurement-nginx:${{ needs.init.outputs.tag-fixed }}
-        if: vars.ACT_LOCAL != 'true'
+      - name: push-image metasfresh/metas-procurement-nginx:${{ needs.init.outputs.tag-fixed }}
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -861,7 +867,7 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-procurement-nginx:${{ needs.init.outputs.tag-fixed }}
       - name: push-image metasfresh/metas-procurement-nginx:${{ needs.init.outputs.tag-floating }}
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -869,7 +875,7 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-procurement-nginx:${{ needs.init.outputs.tag-floating }}
       - name: push-image metasfresh/metas-procurement-rabbitmq:${{ needs.init.outputs.tag-fixed }}
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -877,7 +883,7 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-procurement-rabbitmq:${{ needs.init.outputs.tag-fixed }}
       - name: push-image metasfresh/metas-procurement-rabbitmq:${{ needs.init.outputs.tag-floating }}
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -885,7 +891,7 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-procurement-rabbitmq:${{ needs.init.outputs.tag-floating }}
       - name: push-image metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-fixed }}
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -893,7 +899,7 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-fixed }}
       - name: push-image metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-floating }}
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -984,7 +990,7 @@ jobs:
           docker tag metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }} metasfresh/metasfresh-externalsystems:${{ needs.init.outputs.tag-fixed }}-compat
 
       - name: push-image metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}-compat
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -992,7 +998,7 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}-compat
       - name: push-image metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}-compat
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -1000,15 +1006,15 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}-compat
       - name: push-image metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat
-      - name: push-image push metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat
-        if: vars.ACT_LOCAL != 'true'
+      - name: push-image metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -1016,7 +1022,7 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat
       - name: push-image metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -1024,7 +1030,7 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat
       - name: push-image metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}-compat
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -1032,7 +1038,7 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}-compat
       - name: push-image metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -1040,7 +1046,7 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat
       - name: push-image metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -1048,7 +1054,7 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat
       - name: push-image metasfresh/metasfresh-webapi:${{ needs.init.outputs.tag-fixed }}-compat
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -1056,7 +1062,7 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metasfresh-webapi:${{ needs.init.outputs.tag-fixed }}-compat
       - name: push-image metasfresh/metasfresh-app:${{ needs.init.outputs.tag-fixed }}-compat
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -1064,15 +1070,15 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metasfresh-app:${{ needs.init.outputs.tag-fixed }}-compat
       - name: push-image metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat
-      - name: push-image push metasfresh/metasfresh-db:${{ needs.init.outputs.tag-fixed }}-compat
-        if: vars.ACT_LOCAL != 'true'
+      - name: push-image metasfresh/metasfresh-db:${{ needs.init.outputs.tag-fixed }}-compat
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -1080,7 +1086,7 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metasfresh-db:${{ needs.init.outputs.tag-fixed }}-compat
       - name: push-image metasfresh/metasfresh-db-migration-tool:${{ needs.init.outputs.tag-fixed }}-compat
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -1088,7 +1094,7 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metasfresh-db-migration-tool:${{ needs.init.outputs.tag-fixed }}-compat
       - name: push-image metasfresh/metasfresh-edi:${{ needs.init.outputs.tag-fixed }}-compat
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -1096,7 +1102,7 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metasfresh-edi:${{ needs.init.outputs.tag-fixed }}-compat
       - name: push-image metasfresh/metasfresh-externalsystems:${{ needs.init.outputs.tag-fixed }}-compat
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -1167,7 +1173,7 @@ jobs:
           --tag metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}-j14 \
           .
       - name: push-result-image
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -1228,7 +1234,7 @@ jobs:
           --tag metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: push-image metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }}
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -1236,7 +1242,7 @@ jobs:
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }}
       - name: push-image metasfresh/metas-cucumber:${{ needs.init.outputs.tag-floating }}
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -1314,7 +1320,7 @@ jobs:
           testspace "[cucumber/${{ matrix.profile }}]cucumber/*.html"
           testspace "[cucumber/${{ matrix.profile }}]cucumber.log{$(awk '{ sum += $1 } END { print sum }' cucumber.exit-code cucumber.mvn.exit-code):cucumber tests}"
       - name: push-database-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -1509,7 +1515,7 @@ jobs:
           # Move back for artifact upload
           mv test-results-temp test-results || true
       - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -1614,7 +1620,7 @@ jobs:
       # ===== END ALLURE REPORT GENERATION =====
 
       - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest
-        if: vars.ACT_LOCAL != 'true'
+        if: env.ACT != 'true'
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
