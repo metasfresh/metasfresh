@@ -1863,19 +1863,19 @@ jobs:
           echo '##### Allure Reports' >> $GITHUB_STEP_SUMMARY
           echo "| Report | Link |" >> $GITHUB_STEP_SUMMARY
           echo "|--------|------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Frontend WebUI | [View](${R2_BASE_URL}/allure/frontend-webui/) |" >> $GITHUB_STEP_SUMMARY
-          echo "| Mobile WebUI | [View](${R2_BASE_URL}/allure/mobile-webui/) |" >> $GITHUB_STEP_SUMMARY
-          echo "| Cucumber | [View](${R2_BASE_URL}/allure/cucumber/) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend WebUI | [View](${R2_BASE_URL}/allure/frontend-webui/index.html) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Mobile WebUI | [View](${R2_BASE_URL}/allure/mobile-webui/index.html) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Cucumber | [View](${R2_BASE_URL}/allure/cucumber/index.html) |" >> $GITHUB_STEP_SUMMARY
           echo '' >> $GITHUB_STEP_SUMMARY
           echo '##### JUnit Reports' >> $GITHUB_STEP_SUMMARY
           echo "| Report | Link |" >> $GITHUB_STEP_SUMMARY
           echo "|--------|------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Jest (Frontend) | [View](${R2_BASE_URL}/junit/jest/) |" >> $GITHUB_STEP_SUMMARY
-          echo "| Backend | [View](${R2_BASE_URL}/junit/backend/) |" >> $GITHUB_STEP_SUMMARY
-          echo "| Camel | [View](${R2_BASE_URL}/junit/camel/) |" >> $GITHUB_STEP_SUMMARY
-          echo "| Cucumber | [View](${R2_BASE_URL}/junit/cucumber/) |" >> $GITHUB_STEP_SUMMARY
-          echo "| Playwright Frontend | [View](${R2_BASE_URL}/junit/playwright-frontend/) |" >> $GITHUB_STEP_SUMMARY
-          echo "| Playwright Mobile | [View](${R2_BASE_URL}/junit/playwright-mobile/) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Jest (Frontend) | [View](${R2_BASE_URL}/junit/jest/index.html) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Backend | [View](${R2_BASE_URL}/junit/backend/index.html) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Camel | [View](${R2_BASE_URL}/junit/camel/index.html) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Cucumber | [View](${R2_BASE_URL}/junit/cucumber/index.html) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Playwright Frontend | [View](${R2_BASE_URL}/junit/playwright-frontend/index.html) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Playwright Mobile | [View](${R2_BASE_URL}/junit/playwright-mobile/index.html) |" >> $GITHUB_STEP_SUMMARY
           echo '' >> $GITHUB_STEP_SUMMARY
           echo "$CLEANUP_INFO" >> $GITHUB_STEP_SUMMARY
 
