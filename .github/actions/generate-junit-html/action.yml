@@ -1,5 +1,5 @@
 name: 'Generate JUnit HTML Report'
-description: 'Convert JUnit XML to browsable HTML using xunit-viewer'
+description: 'Convert JUnit XML to browsable HTML using Allure Report'
 
 inputs:
   xml-path:
@@ -9,27 +9,23 @@ inputs:
     description: 'Output directory for HTML report'
     required: true
   report-title:
-    description: 'Title for the HTML report'
+    description: 'Title for the HTML report (used in environment name)'
     required: false
     default: 'JUnit Test Report'
 
 runs:
   using: 'composite'
   steps:
-    - name: Install xunit-viewer
-      shell: bash
-      run: |
-        npm install -g xunit-viewer --silent
+    - name: Setup Allure CLI
+      uses: ./.github/actions/setup-allure
 
-    - name: Generate HTML from JUnit XML
+    - name: Generate Allure Report from JUnit XML
       shell: bash
       env:
         XML_PATH: ${{ inputs.xml-path }}
         OUTPUT_DIR: ${{ inputs.output-dir }}
         REPORT_TITLE: ${{ inputs.report-title }}
       run: |
-        mkdir -p "$OUTPUT_DIR"
-
         # Extract directory from xml-path pattern
         XML_DIR=$(echo "$XML_PATH" | sed 's|\*\*/\*\.xml$||' | sed 's|\*\.xml$||' | sed 's|/$||')
 
@@ -42,26 +38,27 @@ runs:
 
         if [ "$FILE_COUNT" -eq 0 ]; then
           echo "::warning::No JUnit XML files found matching: $XML_PATH"
+          mkdir -p "$OUTPUT_DIR"
           echo '<!DOCTYPE html><html><head><title>No Test Results</title></head><body><h1>No Test Results Available</h1><p>No JUnit XML files were found for this test run.</p></body></html>' > "$OUTPUT_DIR/index.html"
           exit 0
         fi
 
         echo "Found $FILE_COUNT XML files in $XML_DIR"
 
-        # Use xunit-viewer to generate HTML report
-        # -r: results directory (processes all XML files recursively)
-        # -o: output file
-        # -t: title
-        echo "Generating HTML report with xunit-viewer..."
-        xunit-viewer -r "$XML_DIR" -o "$OUTPUT_DIR/index.html" -t "$REPORT_TITLE" || {
-          echo "::warning::xunit-viewer failed, creating fallback report"
+        # Use Allure to generate HTML report from JUnit XML
+        # Allure's JunitXmlPlugin automatically processes *.xml files
+        echo "Generating Allure report from JUnit XML..."
+        allure generate "$XML_DIR" -o "$OUTPUT_DIR" --clean || {
+          echo "::warning::Allure failed, creating fallback report"
+          mkdir -p "$OUTPUT_DIR"
           echo "<!DOCTYPE html><html><head><title>${REPORT_TITLE}</title></head><body><h1>${REPORT_TITLE}</h1><p>Failed to generate report from ${FILE_COUNT} JUnit XML files.</p></body></html>" > "$OUTPUT_DIR/index.html"
         }
 
         # Verify index.html was created
         if [ -f "$OUTPUT_DIR/index.html" ]; then
-          echo "Generated HTML report at: $OUTPUT_DIR/index.html"
+          echo "Generated Allure report at: $OUTPUT_DIR/index.html"
           echo "Report title: $REPORT_TITLE"
+          echo "Files processed: $FILE_COUNT"
         else
           echo "::error::Failed to generate index.html at $OUTPUT_DIR/index.html"
           exit 1
