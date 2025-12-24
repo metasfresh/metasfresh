@@ -651,9 +651,10 @@ jobs:
         run: |
           # Aggregate SQL files directly from source code (no Maven dependency)
           # Preserve intermediate folder structure (e.g., 10-de.metas.adempiere/, 20-de.metas.aggregation/)
+          # Use -print0/read -d '' to handle filenames with spaces
           mkdir -p migration-sql
-          for sql_file in $(find backend -path "*/src/main/sql/postgresql/system/*/*.sql"); do
-            intermediate_folder=$(basename $(dirname "$sql_file"))
+          find backend -path "*/src/main/sql/postgresql/system/*/*.sql" -print0 | while IFS= read -r -d '' sql_file; do
+            intermediate_folder=$(basename "$(dirname "$sql_file")")
             mkdir -p "migration-sql/$intermediate_folder"
             cp "$sql_file" "migration-sql/$intermediate_folder/"
           done
