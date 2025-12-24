@@ -45,14 +45,23 @@ runs:
 
         echo "Found $FILE_COUNT XML files in $XML_DIR"
 
+        # Allure doesn't recursively read subdirectories, so copy all XML files to a flat temp directory
+        ALLURE_INPUT_DIR=$(mktemp -d)
+        echo "Copying XML files to flat directory: $ALLURE_INPUT_DIR"
+        find "$XML_DIR" -name "*.xml" -type f -exec cp {} "$ALLURE_INPUT_DIR/" \;
+        COPIED_COUNT=$(ls -1 "$ALLURE_INPUT_DIR"/*.xml 2>/dev/null | wc -l)
+        echo "Copied $COPIED_COUNT XML files to Allure input directory"
+
         # Use Allure to generate HTML report from JUnit XML
-        # Allure's JunitXmlPlugin automatically processes *.xml files
         echo "Generating Allure report from JUnit XML..."
-        allure generate "$XML_DIR" -o "$OUTPUT_DIR" --clean || {
+        allure generate "$ALLURE_INPUT_DIR" -o "$OUTPUT_DIR" --clean || {
           echo "::warning::Allure failed, creating fallback report"
           mkdir -p "$OUTPUT_DIR"
           echo "<!DOCTYPE html><html><head><title>${REPORT_TITLE}</title></head><body><h1>${REPORT_TITLE}</h1><p>Failed to generate report from ${FILE_COUNT} JUnit XML files.</p></body></html>" > "$OUTPUT_DIR/index.html"
         }
+
+        # Clean up temp directory
+        rm -rf "$ALLURE_INPUT_DIR"
 
         # Verify index.html was created
         if [ -f "$OUTPUT_DIR/index.html" ]; then
