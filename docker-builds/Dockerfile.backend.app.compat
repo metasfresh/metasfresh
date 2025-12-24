@@ -21,11 +21,17 @@ COPY --from=app /opt/metasfresh .
 COPY --from=backend /backend/metasfresh-dist/dist/target/dist/install dist/install/
 
 # Aggregate SQL migration scripts from source (no longer from Maven artifacts)
+# Preserve intermediate folder structure (e.g., 10-de.metas.adempiere/, 20-de.metas.aggregation/)
 COPY --from=backend /backend /tmp/backend-src
 RUN mkdir -p dist/sql && \
-    find /tmp/backend-src -path "*/src/main/sql/postgresql/system/*/*.sql" -type f -exec cp {} dist/sql/ \; && \
+    find /tmp/backend-src -path "*/src/main/sql/postgresql/system/*/*.sql" -type f -print0 | \
+    while IFS= read -r -d '' sql_file; do \
+        intermediate_folder=$(basename "$(dirname "$sql_file")"); \
+        mkdir -p "dist/sql/$intermediate_folder"; \
+        cp "$sql_file" "dist/sql/$intermediate_folder/"; \
+    done && \
     rm -rf /tmp/backend-src && \
-    echo "Aggregated $(ls -1 dist/sql/*.sql 2>/dev/null | wc -l) SQL files"
+    echo "Aggregated $(find dist/sql -name '*.sql' | wc -l) SQL files in $(find dist/sql -mindepth 1 -maxdepth 1 -type d | wc -l) folders"
 
 RUN touch local_settings.properties \
     && ln -s /opt/metasfresh/local_settings.properties /root/local_settings.properties \
