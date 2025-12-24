@@ -1569,8 +1569,6 @@ jobs:
           mkdir -p "${BUILD_DIR}/junit/backend"
           mkdir -p "${BUILD_DIR}/junit/camel"
           mkdir -p "${BUILD_DIR}/junit/cucumber"
-          mkdir -p "${BUILD_DIR}/junit/playwright-frontend"
-          mkdir -p "${BUILD_DIR}/junit/playwright-mobile"
 
           echo "Created directory structure for branch: ${BRANCH_SANITIZED}, build: ${{ needs.init.outputs.tag-fixed }}"
 
@@ -1632,23 +1630,8 @@ jobs:
           merge-multiple: true
         continue-on-error: true
 
-      - name: Download Playwright Frontend JUnit results
-        if: needs.frontend_webui_test.result == 'success' || needs.frontend_webui_test.result == 'failure'
-        uses: actions/download-artifact@v4
-        with:
-          name: junit-results-playwright-frontend
-          path: junit-raw/playwright-frontend/
-        continue-on-error: true
-
-      - name: Download Playwright Mobile JUnit results
-        if: needs.mobile_test.result == 'success' || needs.mobile_test.result == 'failure'
-        uses: actions/download-artifact@v4
-        with:
-          name: junit-results-playwright-mobile
-          path: junit-raw/playwright-mobile/
-        continue-on-error: true
-
       # ===== GENERATE JUNIT HTML REPORTS =====
+      # Note: Playwright tests use Allure reports (richer visualization) instead of JUnit HTML
       - name: Generate Jest HTML report
         uses: ./.github/actions/generate-junit-html
         with:
@@ -1681,22 +1664,6 @@ jobs:
           report-title: 'Cucumber Integration Tests'
         continue-on-error: true
 
-      - name: Generate Playwright Frontend JUnit HTML report
-        uses: ./.github/actions/generate-junit-html
-        with:
-          xml-path: junit-raw/playwright-frontend/*.xml
-          output-dir: reports/branches/${{ needs.init.outputs.branch-sanitized-gh-pages }}/builds/${{ needs.init.outputs.tag-fixed }}/junit/playwright-frontend
-          report-title: 'Playwright Frontend Tests'
-        continue-on-error: true
-
-      - name: Generate Playwright Mobile JUnit HTML report
-        uses: ./.github/actions/generate-junit-html
-        with:
-          xml-path: junit-raw/playwright-mobile/*.xml
-          output-dir: reports/branches/${{ needs.init.outputs.branch-sanitized-gh-pages }}/builds/${{ needs.init.outputs.tag-fixed }}/junit/playwright-mobile
-          report-title: 'Playwright Mobile Tests'
-        continue-on-error: true
-
       - name: Verify reports exist
         id: verify_reports
         run: |
@@ -1714,8 +1681,8 @@ jobs:
             fi
           done
 
-          # Check JUnit reports
-          for report in jest backend camel cucumber playwright-frontend playwright-mobile; do
+          # Check JUnit reports (Playwright uses Allure instead)
+          for report in jest backend camel cucumber; do
             if [ -f "${BUILD_DIR}/junit/${report}/index.html" ]; then
               echo "✓ JUnit ${report} report found"
               JUNIT_FOUND=$((JUNIT_FOUND + 1))
@@ -1874,8 +1841,6 @@ jobs:
           echo "| Backend | [View](${R2_BASE_URL}/junit/backend/index.html) |" >> $GITHUB_STEP_SUMMARY
           echo "| Camel | [View](${R2_BASE_URL}/junit/camel/index.html) |" >> $GITHUB_STEP_SUMMARY
           echo "| Cucumber | [View](${R2_BASE_URL}/junit/cucumber/index.html) |" >> $GITHUB_STEP_SUMMARY
-          echo "| Playwright Frontend | [View](${R2_BASE_URL}/junit/playwright-frontend/index.html) |" >> $GITHUB_STEP_SUMMARY
-          echo "| Playwright Mobile | [View](${R2_BASE_URL}/junit/playwright-mobile/index.html) |" >> $GITHUB_STEP_SUMMARY
           echo '' >> $GITHUB_STEP_SUMMARY
           echo "$CLEANUP_INFO" >> $GITHUB_STEP_SUMMARY
 

@@ -1,5 +1,5 @@
 name: 'Generate JUnit HTML Report'
-description: 'Convert JUnit XML to browsable HTML using junit2html'
+description: 'Convert JUnit XML to browsable HTML using xunit-viewer'
 
 inputs:
   xml-path:
@@ -16,10 +16,10 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Install junit2html
+    - name: Install xunit-viewer
       shell: bash
       run: |
-        pip install junit2html --quiet
+        npm install -g xunit-viewer --silent
 
     - name: Generate HTML from JUnit XML
       shell: bash
@@ -30,20 +30,17 @@ runs:
       run: |
         mkdir -p "$OUTPUT_DIR"
 
-        # Find XML files matching the pattern and save to a file
-        # Use the directory from xml-path for recursive search
+        # Extract directory from xml-path pattern
         XML_DIR=$(echo "$XML_PATH" | sed 's|\*\*/\*\.xml$||' | sed 's|\*\.xml$||' | sed 's|/$||')
 
+        # Check if directory exists and has XML files
         if [ -d "$XML_DIR" ]; then
-          find "$XML_DIR" -name "*.xml" -type f > /tmp/xml_files.txt 2>/dev/null || true
+          FILE_COUNT=$(find "$XML_DIR" -name "*.xml" -type f 2>/dev/null | wc -l)
         else
-          # Fallback for non-directory patterns
-          find $(dirname "$XML_PATH") -name "$(basename "$XML_PATH")" -type f > /tmp/xml_files.txt 2>/dev/null || true
+          FILE_COUNT=0
         fi
 
-        FILE_COUNT=$(wc -l < /tmp/xml_files.txt 2>/dev/null || echo 0)
-
-        if [ "$FILE_COUNT" -eq 0 ] || [ ! -s /tmp/xml_files.txt ]; then
+        if [ "$FILE_COUNT" -eq 0 ]; then
           echo "::warning::No JUnit XML files found matching: $XML_PATH"
           echo '<!DOCTYPE html><html><head><title>No Test Results</title></head><body><h1>No Test Results Available</h1><p>No JUnit XML files were found for this test run.</p></body></html>' > "$OUTPUT_DIR/index.html"
           exit 0
@@ -51,51 +48,15 @@ runs:
 
         echo "Found $FILE_COUNT XML files in $XML_DIR"
 
-        # For large file counts, create a summary page (junit2html --merge may fail with thousands of files)
-        if [ "$FILE_COUNT" -gt 100 ]; then
-          echo "Using summary page for $FILE_COUNT files (too many for junit2html --merge)..."
-
-          echo "<!DOCTYPE html>
-        <html>
-        <head>
-          <title>${REPORT_TITLE}</title>
-          <style>
-            body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 20px; background: #f5f7fa; }
-            h1 { color: #1a73e8; }
-            .summary { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-            .stat { display: inline-block; margin-right: 30px; }
-            .stat-value { font-size: 2em; font-weight: bold; color: #1a73e8; }
-            .stat-label { color: #666; }
-          </style>
-        </head>
-        <body>
-          <h1>${REPORT_TITLE}</h1>
-          <div class=\"summary\">
-            <div class=\"stat\">
-              <div class=\"stat-value\">${FILE_COUNT}</div>
-              <div class=\"stat-label\">Test Files</div>
-            </div>
-          </div>
-          <p>Test results from ${FILE_COUNT} JUnit XML files.</p>
-          <p>Individual XML files are available in this directory for detailed analysis.</p>
-        </body>
-        </html>" > "$OUTPUT_DIR/index.html"
-        else
-          # For smaller file counts, use junit2html with xargs
-          echo "Processing $FILE_COUNT files with junit2html..."
-          cat /tmp/xml_files.txt | xargs junit2html --merge "$OUTPUT_DIR/index.html" || {
-            echo "::warning::junit2html failed, creating fallback report"
-            echo "<!DOCTYPE html><html><head><title>${REPORT_TITLE}</title></head><body><h1>${REPORT_TITLE}</h1><p>Test results from ${FILE_COUNT} JUnit XML files.</p><p>Individual XML files are available in this directory.</p></body></html>" > "$OUTPUT_DIR/index.html"
-          }
-        fi
-
-        # Copy original XML files for reference (use while loop to handle large numbers)
-        echo "Copying XML files to output directory..."
-        while read xml; do
-          cp "$xml" "$OUTPUT_DIR/" 2>/dev/null || true
-        done < /tmp/xml_files.txt
-
-        rm -f /tmp/xml_files.txt
+        # Use xunit-viewer to generate HTML report
+        # -r: results directory (processes all XML files recursively)
+        # -o: output file
+        # -t: title
+        echo "Generating HTML report with xunit-viewer..."
+        xunit-viewer -r "$XML_DIR" -o "$OUTPUT_DIR/index.html" -t "$REPORT_TITLE" || {
+          echo "::warning::xunit-viewer failed, creating fallback report"
+          echo "<!DOCTYPE html><html><head><title>${REPORT_TITLE}</title></head><body><h1>${REPORT_TITLE}</h1><p>Failed to generate report from ${FILE_COUNT} JUnit XML files.</p></body></html>" > "$OUTPUT_DIR/index.html"
+        }
 
         # Verify index.html was created
         if [ -f "$OUTPUT_DIR/index.html" ]; then

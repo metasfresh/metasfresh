@@ -349,8 +349,6 @@ runs:
                             <a class="report-link junit" href="${build.url}junit/backend/index.html" target="_blank">Backend</a>
                             <a class="report-link junit" href="${build.url}junit/camel/index.html" target="_blank">Camel</a>
                             <a class="report-link junit" href="${build.url}junit/cucumber/index.html" target="_blank">Cucumber</a>
-                            <a class="report-link junit" href="${build.url}junit/playwright-frontend/index.html" target="_blank">Playwright Frontend</a>
-                            <a class="report-link junit" href="${build.url}junit/playwright-mobile/index.html" target="_blank">Playwright Mobile</a>
                           </div>
                         </div>
                       </div>
