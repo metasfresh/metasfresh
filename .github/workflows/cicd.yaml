@@ -1036,8 +1036,8 @@ jobs:
         with:
           name: junit-results-backend
           path: |
-            junit/commons/*.xml
-            junit/backend/*.xml
+            junit/commons/**/*.xml
+            junit/backend/**/*.xml
           if-no-files-found: ignore
           retention-days: 1
       - name: Upload Camel JUnit results for R2
@@ -1045,7 +1045,7 @@ jobs:
         if: always()
         with:
           name: junit-results-camel
-          path: junit/camel/*.xml
+          path: junit/camel/**/*.xml
           if-no-files-found: ignore
           retention-days: 1
 
@@ -1668,7 +1668,7 @@ jobs:
       - name: Generate Camel JUnit HTML report
         uses: ./.github/actions/generate-junit-html
         with:
-          xml-path: junit-raw/camel/*.xml
+          xml-path: junit-raw/camel/**/*.xml
           output-dir: reports/branches/${{ needs.init.outputs.branch-sanitized-gh-pages }}/builds/${{ needs.init.outputs.tag-fixed }}/junit/camel
           report-title: 'Camel Integration Tests'
         continue-on-error: true
