@@ -15,9 +15,6 @@
 
 	<description>PayPal Payments</description>
 
-	<properties>
-	</properties>
-
 	<dependencies>
 		<dependency>
 			<groupId>com.paypal.sdk</groupId>

@@ -13,9 +13,6 @@
 
     <description>Print Processing (Mass &amp; Single)</description>
 
-    <properties>
-    </properties>
-
     <dependencies>
 
         <dependency>

@@ -134,7 +134,7 @@
             <version>${metasfresh.version}</version>
             <classifier>jasper</classifier>
         </dependency>
-        <!-- Elasticsearch -->
+        
         <!-- Thx for the two fonts to http://ansuz.sooke.bc.ca/page/fonts ^^ -->
         <dependency>
             <groupId>jp.osdn.ocra</groupId>

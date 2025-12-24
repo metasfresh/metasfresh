@@ -14,9 +14,6 @@
 
     <description>ESR Payments</description>
 
-    <properties>
-    </properties>
-
     <dependencies>
 
         <dependency>

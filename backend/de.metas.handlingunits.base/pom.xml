@@ -11,9 +11,6 @@
     <groupId>de.metas.handlingunits</groupId>
     <artifactId>de.metas.handlingunits.base</artifactId>
 
-    <properties>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>de.metas.util</groupId>
