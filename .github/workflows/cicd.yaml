@@ -753,7 +753,7 @@ jobs:
         working-directory: docker-builds/db/init-preloaded
         run: |
           docker compose up --abort-on-container-exit --exit-code-from migration 2>&1 | tee migration.log && echo "${PIPESTATUS[0]}" > migration.exit-code
-          docker commit init-db-apply-migrations-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded
+          docker commit init-preloaded-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded
           docker tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded
           docker compose down
       - name: assert success
