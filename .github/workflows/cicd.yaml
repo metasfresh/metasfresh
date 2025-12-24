@@ -104,7 +104,7 @@ jobs:
           testspace github_run.txt
 
   # Fast migration CLI build - runs in parallel with java job
-  # This enables db-tools to start ~10 minutes earlier
+  # This enables db-images to start ~10 minutes earlier
   migration-cli:
     runs-on: ubuntu-latest
     needs: [ init ]
@@ -545,7 +545,7 @@ jobs:
           --tag metasfresh/metas-edi:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }} \
           .
-      # NOTE: metas-db and metas-db-migration-tool are now built by db-tools job
+      # NOTE: metas-db and metas-db-migration-tool are now built by db-images job
       - name: push-image metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}
         if: vars.ACT_LOCAL != 'true'
         uses: nick-fields/retry@v3
@@ -594,7 +594,7 @@ jobs:
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-floating }}
-      # NOTE: metas-db and metas-db-migration-tool push steps moved to db-tools job
+      # NOTE: metas-db and metas-db-migration-tool push steps moved to db-images job
       - name: push-image metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }}
         if: vars.ACT_LOCAL != 'true'
         uses: nick-fields/retry@v3
@@ -620,9 +620,9 @@ jobs:
           echo '* metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
 
-  # db-tools: Build database images independently from backend
+  # db-images: Build database images independently from backend
   # Now runs in parallel with java job (depends on fast migration-cli job instead)
-  db-tools:
+  db-images:
     runs-on: ubuntu-latest
     needs: [ init, migration-cli ]
     steps:
@@ -717,13 +717,13 @@ jobs:
           command: docker push --quiet metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-floating }}
       - name: produce-summary
         run: |
-          echo '#### db-tools images' >> $GITHUB_STEP_SUMMARY
+          echo '#### db-images' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
 
-  preloaded-db:
+  db-apply-migrations:
     runs-on: ubuntu-latest
-    needs: [ init, db-tools ]
+    needs: [ init, db-images ]
     env:
       mfversion: ${{ needs.init.outputs.tag-fixed }}
     steps:
@@ -747,7 +747,7 @@ jobs:
         working-directory: docker-builds/db/init-preloaded
         run: |
           docker compose up --abort-on-container-exit --exit-code-from migration 2>&1 | tee migration.log && echo "${PIPESTATUS[0]}" > migration.exit-code
-          docker commit init-preloaded-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded
+          docker commit init-db-apply-migrations-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded
           docker tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded
           docker compose down
       - name: assert success
@@ -911,7 +911,7 @@ jobs:
 
   compatibility-images:
     runs-on: ubuntu-latest
-    needs: [ init, frontend, backend, preloaded-db ]
+    needs: [ init, frontend, backend, db-apply-migrations ]
     steps:
       - uses: actions/checkout@v4
       - uses: docker/login-action@v3
@@ -1252,7 +1252,7 @@ jobs:
   cucumber-run:
     name: test (cucumber)
     runs-on: ubuntu-latest
-    needs: [ init, backend, frontend, cucumber-build, preloaded-db ]
+    needs: [ init, backend, frontend, cucumber-build, db-apply-migrations ]
     strategy:
       max-parallel: 10
       fail-fast: false
@@ -1385,7 +1385,7 @@ jobs:
   health_check:
     name: health check
     runs-on: ubuntu-latest
-    needs: [ init, backend, frontend, preloaded-db ]
+    needs: [ init, backend, frontend, db-apply-migrations ]
     steps:
       - uses: actions/checkout@v4
       - uses: docker/login-action@v3
@@ -1479,7 +1479,7 @@ jobs:
     name: mobile test
     timeout-minutes: 60
     runs-on: ubuntu-latest
-    needs: [ init, backend, frontend, preloaded-db ]
+    needs: [ init, backend, frontend, db-apply-migrations ]
     steps:
       - uses: actions/checkout@v4
       - uses: docker/login-action@v3
@@ -1537,7 +1537,7 @@ jobs:
     name: frontend webui test
     timeout-minutes: 60
     runs-on: ubuntu-latest
-    needs: [ init, backend, frontend, preloaded-db ]
+    needs: [ init, backend, frontend, db-apply-migrations ]
     steps:
       - uses: actions/checkout@v4
       - uses: docker/login-action@v3
