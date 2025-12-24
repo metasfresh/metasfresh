@@ -650,10 +650,17 @@ jobs:
       - name: aggregate-sql-from-source
         run: |
           # Aggregate SQL files directly from source code (no Maven dependency)
+          # Preserve intermediate folder structure (e.g., 10-de.metas.adempiere/, 20-de.metas.aggregation/)
           mkdir -p migration-sql
-          find backend -path "*/src/main/sql/postgresql/system/*/*.sql" -exec cp {} migration-sql/ \;
-          SQL_COUNT=$(ls -1 migration-sql/*.sql 2>/dev/null | wc -l)
-          echo "Aggregated $SQL_COUNT SQL migration files from source"
+          for sql_file in $(find backend -path "*/src/main/sql/postgresql/system/*/*.sql"); do
+            intermediate_folder=$(basename $(dirname "$sql_file"))
+            mkdir -p "migration-sql/$intermediate_folder"
+            cp "$sql_file" "migration-sql/$intermediate_folder/"
+          done
+          SQL_COUNT=$(find migration-sql -name "*.sql" | wc -l)
+          FOLDER_COUNT=$(find migration-sql -mindepth 1 -maxdepth 1 -type d | wc -l)
+          echo "Aggregated $SQL_COUNT SQL migration files in $FOLDER_COUNT intermediate folders"
+          ls -la migration-sql/
       - name: build-db-init
         run: |
           docker buildx build \
