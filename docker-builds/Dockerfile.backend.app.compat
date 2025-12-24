@@ -1,6 +1,20 @@
 ARG REFNAME=local
 ARG REGISTRY=
 FROM ${REGISTRY}metasfresh/metas-mvn-backend:$REFNAME AS backend
+
+# Aggregate SQL files in a separate stage to avoid copying entire backend to runtime
+# This stage runs on the backend image and only exports the small aggregated SQL
+FROM backend AS sql-aggregator
+WORKDIR /sql-aggregate
+RUN mkdir -p sql && \
+    find /backend -path "*/src/main/sql/postgresql/system/*/*.sql" -type f -print0 | \
+    while IFS= read -r -d '' sql_file; do \
+        intermediate_folder=$(basename "$(dirname "$sql_file")"); \
+        mkdir -p "sql/$intermediate_folder"; \
+        cp "$sql_file" "sql/$intermediate_folder/"; \
+    done && \
+    echo "Aggregated $(find sql -name '*.sql' | wc -l) SQL files in $(find sql -mindepth 1 -maxdepth 1 -type d | wc -l) folders"
+
 FROM ${REGISTRY}metasfresh/metas-app:$REFNAME AS app
 
 # instead of: FROM ubuntu:16.04 & apt get install openjdk-8-jdk-headless
@@ -20,18 +34,8 @@ COPY --from=app /opt/metasfresh .
 
 COPY --from=backend /backend/metasfresh-dist/dist/target/dist/install dist/install/
 
-# Aggregate SQL migration scripts from source (no longer from Maven artifacts)
-# Preserve intermediate folder structure (e.g., 10-de.metas.adempiere/, 20-de.metas.aggregation/)
-COPY --from=backend /backend /tmp/backend-src
-RUN mkdir -p dist/sql && \
-    find /tmp/backend-src -path "*/src/main/sql/postgresql/system/*/*.sql" -type f -print0 | \
-    while IFS= read -r -d '' sql_file; do \
-        intermediate_folder=$(basename "$(dirname "$sql_file")"); \
-        mkdir -p "dist/sql/$intermediate_folder"; \
-        cp "$sql_file" "dist/sql/$intermediate_folder/"; \
-    done && \
-    rm -rf /tmp/backend-src && \
-    echo "Aggregated $(find dist/sql -name '*.sql' | wc -l) SQL files in $(find dist/sql -mindepth 1 -maxdepth 1 -type d | wc -l) folders"
+# Copy only the aggregated SQL from sql-aggregator stage (not the entire backend)
+COPY --from=sql-aggregator /sql-aggregate/sql dist/sql/
 
 RUN touch local_settings.properties \
     && ln -s /opt/metasfresh/local_settings.properties /root/local_settings.properties \
