@@ -30,39 +30,95 @@ runs:
       run: |
         mkdir -p "$OUTPUT_DIR"
 
-        # Find XML files matching the pattern
-        XML_FILES=$(find $(dirname "$XML_PATH") -name "$(basename "$XML_PATH")" -type f 2>/dev/null || true)
+        # Find XML files matching the pattern and save to a file
+        # Use the directory from xml-path for recursive search
+        XML_DIR=$(echo "$XML_PATH" | sed 's|\*\*/\*\.xml$||' | sed 's|\*\.xml$||' | sed 's|/$||')
 
-        if [ -z "$XML_FILES" ]; then
+        if [ -d "$XML_DIR" ]; then
+          find "$XML_DIR" -name "*.xml" -type f > /tmp/xml_files.txt 2>/dev/null || true
+        else
+          # Fallback for non-directory patterns
+          find $(dirname "$XML_PATH") -name "$(basename "$XML_PATH")" -type f > /tmp/xml_files.txt 2>/dev/null || true
+        fi
+
+        FILE_COUNT=$(wc -l < /tmp/xml_files.txt 2>/dev/null || echo 0)
+
+        if [ "$FILE_COUNT" -eq 0 ] || [ ! -s /tmp/xml_files.txt ]; then
           echo "::warning::No JUnit XML files found matching: $XML_PATH"
-          # Create a placeholder index.html
           cat > "$OUTPUT_DIR/index.html" << 'EOF'
-        <!DOCTYPE html>
-        <html><head><title>No Test Results</title></head>
-        <body><h1>No Test Results Available</h1><p>No JUnit XML files were found for this test run.</p></body>
-        </html>
-        EOF
+<!DOCTYPE html>
+<html><head><title>No Test Results</title></head>
+<body><h1>No Test Results Available</h1><p>No JUnit XML files were found for this test run.</p></body>
+</html>
+EOF
           exit 0
         fi
 
-        echo "Found XML files:"
-        echo "$XML_FILES"
+        echo "Found $FILE_COUNT XML files in $XML_DIR"
 
-        # Count files
-        FILE_COUNT=$(echo "$XML_FILES" | wc -l)
+        # For large file counts, create a summary page (junit2html --merge may fail with thousands of files)
+        if [ "$FILE_COUNT" -gt 100 ]; then
+          echo "Using summary page for $FILE_COUNT files (too many for junit2html --merge)..."
 
-        if [ "$FILE_COUNT" -eq 1 ]; then
-          # Single file - convert directly
-          junit2html "$XML_FILES" "$OUTPUT_DIR/index.html"
+          cat > "$OUTPUT_DIR/index.html" << HTMLEOF
+<!DOCTYPE html>
+<html>
+<head>
+  <title>${REPORT_TITLE}</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 20px; background: #f5f7fa; }
+    h1 { color: #1a73e8; }
+    .summary { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .stat { display: inline-block; margin-right: 30px; }
+    .stat-value { font-size: 2em; font-weight: bold; color: #1a73e8; }
+    .stat-label { color: #666; }
+  </style>
+</head>
+<body>
+  <h1>${REPORT_TITLE}</h1>
+  <div class="summary">
+    <div class="stat">
+      <div class="stat-value">${FILE_COUNT}</div>
+      <div class="stat-label">Test Files</div>
+    </div>
+  </div>
+  <p>Test results from ${FILE_COUNT} JUnit XML files.</p>
+  <p>Individual XML files are available in this directory for detailed analysis.</p>
+</body>
+</html>
+HTMLEOF
         else
-          # Multiple files - merge them
-          junit2html --merge $(echo "$XML_FILES" | tr '\n' ' ') "$OUTPUT_DIR/index.html"
+          # For smaller file counts, use junit2html with xargs
+          echo "Processing $FILE_COUNT files with junit2html..."
+          cat /tmp/xml_files.txt | xargs junit2html --merge "$OUTPUT_DIR/index.html" || {
+            echo "::warning::junit2html failed, creating fallback report"
+            cat > "$OUTPUT_DIR/index.html" << HTMLEOF
+<!DOCTYPE html>
+<html>
+<head><title>${REPORT_TITLE}</title></head>
+<body>
+  <h1>${REPORT_TITLE}</h1>
+  <p>Test results from ${FILE_COUNT} JUnit XML files.</p>
+  <p>Individual XML files are available in this directory.</p>
+</body>
+</html>
+HTMLEOF
+          }
         fi
 
-        # Copy original XML files for reference
-        for xml in $XML_FILES; do
+        # Copy original XML files for reference (use while loop to handle large numbers)
+        echo "Copying XML files to output directory..."
+        while read xml; do
           cp "$xml" "$OUTPUT_DIR/" 2>/dev/null || true
-        done
+        done < /tmp/xml_files.txt
 
-        echo "Generated HTML report at: $OUTPUT_DIR/index.html"
-        echo "Report title: $REPORT_TITLE"
+        rm -f /tmp/xml_files.txt
+
+        # Verify index.html was created
+        if [ -f "$OUTPUT_DIR/index.html" ]; then
+          echo "Generated HTML report at: $OUTPUT_DIR/index.html"
+          echo "Report title: $REPORT_TITLE"
+        else
+          echo "::error::Failed to generate index.html at $OUTPUT_DIR/index.html"
+          exit 1
+        fi
