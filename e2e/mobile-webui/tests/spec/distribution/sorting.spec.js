@@ -1,5 +1,6 @@
 import { test } from "../../../playwright.config";
 import { Backend } from "../../utils/screens/Backend";
+import { allure } from 'allure-playwright';
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { DistributionJobsListScreen } from "../../utils/screens/distribution/DistributionJobsListScreen";
@@ -43,6 +44,12 @@ const createMasterdata = async ({ orderBys, distributionOrders }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Sort by SeqNo', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5114: MobileUI Distribution');
+    allure.story('Distribution sorting');
+    allure.severity('normal');
+
     const masterdata = await createMasterdata({
         orderBys: 'SeqNo,Priority,DatePromised',
         distributionOrders: {

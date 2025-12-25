@@ -4,6 +4,7 @@ import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { DistributionJobsListScreen } from "../../utils/screens/distribution/DistributionJobsListScreen";
 import { generateEAN13 } from '../../utils/ean13';
+import { allure } from 'allure-playwright';
 
 const createMasterdata = async ({ captionFormat, qtyEntered, priority }) => {
     return await Backend.createMasterdata({
@@ -38,6 +39,12 @@ const createMasterdata = async ({ captionFormat, qtyEntered, priority }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('LocatorFrom,ProductValueAndName,ProductGTIN,Qty,Priority', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5114: MobileUI Distribution');
+    allure.story('Distribution caption format');
+    allure.severity('normal');
+
     const masterdata = await createMasterdata({
         captionFormat: 'LocatorFrom,ProductValueAndName,ProductGTIN,Qty,Priority',
         qtyEntered: 123,
