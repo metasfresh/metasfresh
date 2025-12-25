@@ -1319,6 +1319,30 @@ jobs:
           testspace "[cucumber/${{ matrix.profile }}]cucumber/**/*.xml"
           testspace "[cucumber/${{ matrix.profile }}]cucumber/*.html"
           testspace "[cucumber/${{ matrix.profile }}]cucumber.log{$(awk '{ sum += $1 } END { print sum }' cucumber.exit-code cucumber.mvn.exit-code):cucumber tests}"
+      - name: Extract Cucumber Allure results
+        if: always()
+        run: |
+          # Allure results are generated in target/allure-results inside the cucumber container
+          # The compose.yml mounts ./cucumber:/opt/metasfresh/target, so results should be in ./cucumber/allure-results
+          mkdir -p cucumber-allure-results
+          if [ -d "cucumber/allure-results" ]; then
+            cp -r cucumber/allure-results/. cucumber-allure-results/
+            # Create environment.properties to tag this profile
+            echo "executor.profile=${{ matrix.profile }}" >> cucumber-allure-results/environment.properties
+            echo "branch=${{ github.ref_name }}" >> cucumber-allure-results/environment.properties
+            echo "build=${{ needs.init.outputs.tag-fixed }}" >> cucumber-allure-results/environment.properties
+            echo "Allure results extracted from cucumber/allure-results ($(ls cucumber-allure-results | wc -l) files)"
+          else
+            echo "No Allure results found in cucumber/allure-results - this is expected for first run without Allure plugin"
+          fi
+      - name: Upload Cucumber Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cucumber-allure-results-${{ matrix.profile }}
+          path: cucumber-allure-results/
+          if-no-files-found: ignore
+          retention-days: 7
       - name: push-database-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v3
@@ -1387,6 +1411,17 @@ jobs:
           name: cucumber-logs-${{ matrix.profile }}
           path: cucumber.log
           retention-days: 30
+      - name: Rename Cucumber JUnit for unique merge
+        if: always()
+        run: mv cucumber/cucumber-junit.xml cucumber/cucumber-junit-${{ matrix.profile }}.xml || true
+      - name: Upload Cucumber JUnit results for R2
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: junit-results-cucumber-${{ matrix.profile }}
+          path: cucumber/cucumber-junit-${{ matrix.profile }}.xml
+          if-no-files-found: ignore
+          retention-days: 1
 
   cucumber-allure-report:
     name: Generate Cucumber Allure Report
