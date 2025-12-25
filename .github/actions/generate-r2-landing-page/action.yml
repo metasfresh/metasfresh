@@ -348,7 +348,6 @@ runs:
                             <a class="report-link junit" href="${build.url}junit/jest/index.html" target="_blank">Jest</a>
                             <a class="report-link junit" href="${build.url}junit/backend/index.html" target="_blank">Backend</a>
                             <a class="report-link junit" href="${build.url}junit/camel/index.html" target="_blank">Camel</a>
-                            <a class="report-link junit" href="${build.url}junit/cucumber/index.html" target="_blank">Cucumber</a>
                           </div>
                         </div>
                       </div>
