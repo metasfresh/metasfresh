@@ -37,9 +37,10 @@ SELECT (SELECT (((COALESCE(org_bp.name, ''::character varying)::text || ', '::te
        NULL::CHARACTER VARYING                               AS lotcode,
        sscc18_extract_serialnumber(package.ipa_sscc18::TEXT) AS paletno,
        CASE
-           WHEN o.isdropship = 'Y' AND inc.value != 'EXW' THEN (COALESCE(o.poreference || ' - ', ''::CHARACTER VARYING)::TEXT || (COALESCE(dbp.name, ''::CHARACTER VARYING)::TEXT || ' '::TEXT) || COALESCE(dbpl.address, ''::CHARACTER VARYING)::TEXT) || ''::TEXT
-                                                          ELSE
-                                                              (COALESCE(o.poreference || ' - ', ''::CHARACTER VARYING)::TEXT || (COALESCE(bp.name, ''::CHARACTER VARYING)::TEXT || ' '::TEXT) || COALESCE(hol.address, bpl.address, ''::CHARACTER VARYING)::TEXT) || ''::TEXT
+           WHEN inc.value = 'EXW'  THEN NULL::CHARACTER VARYING
+           WHEN o.isdropship = 'Y' THEN (COALESCE(o.poreference || ' - ', ''::CHARACTER VARYING)::TEXT || (COALESCE(dbp.name, ''::CHARACTER VARYING)::TEXT || ' '::TEXT) || COALESCE(dbpl.address, ''::CHARACTER VARYING)::TEXT) || ''::TEXT
+                                   ELSE
+               (COALESCE(o.poreference || ' - ', ''::CHARACTER VARYING)::TEXT || (COALESCE(bp.name, ''::CHARACTER VARYING)::TEXT || ' '::TEXT) || COALESCE(hol.address, bpl.address, ''::CHARACTER VARYING)::TEXT) || ''::TEXT
        END                                                   AS customer,
        bp.ad_language,
        NULL::NUMERIC                                         AS m_hu_id,
