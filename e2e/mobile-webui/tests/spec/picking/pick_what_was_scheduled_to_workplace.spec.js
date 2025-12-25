@@ -1,4 +1,5 @@
 import { test } from "../../../playwright.config";
+import { allure } from 'allure-playwright';
 import { Backend } from '../../utils/screens/Backend';
 import { LoginScreen } from '../../utils/screens/LoginScreen';
 import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScreen';
@@ -79,6 +80,12 @@ const createMasterdata = async () => {
 
 // noinspection JSUnusedLocalSymbols
 test('Pick one sales order to different workplaces', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.story('Pick scheduled to workplace');
+    allure.severity('normal');
+
     const masterdata = await createMasterdata();
 
     await test.step("Picking from workplace1", async () => {

@@ -1,7 +1,7 @@
 # Docker Compose overlay for development mode
 #
 # This file extends the base compose.yml with volume mounts for hot-reload development.
-# Use with: docker compose -f compose.yml -f compose-dev.yml up
+# Use with: docker compose -f compose.yml -f compose-dev.yml --profile <frontend|mobile> up
 #
 # Prerequisites:
 #   - Set METASFRESH_ROOT in .env to the metasfresh repository root path

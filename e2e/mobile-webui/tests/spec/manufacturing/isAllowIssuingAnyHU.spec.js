@@ -1,5 +1,6 @@
 import { Backend } from '../../utils/screens/Backend';
 import { test } from '../../../playwright.config';
+import { allure } from 'allure-playwright';
 import { LoginScreen } from '../../utils/screens/LoginScreen';
 import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScreen';
 import { ManufacturingJobsListScreen } from '../../utils/screens/manufacturing/ManufacturingJobsListScreen';
@@ -54,6 +55,14 @@ test.describe('Test isAllowIssuingAnyHU', () => {
     const runScenario = ({ isCreateRawMaterialsStock, isAllowIssuingAnyHU, expectError }) => {
         // noinspection JSUnusedLocalSymbols
         test(`isAllowIssuingAnyHU=${isAllowIssuingAnyHU}, isCreateRawMaterialsStock=${isCreateRawMaterialsStock} => expect ${expectError ? 'ERROR' : 'OK'}`, async ({ page }) => {
+            // === ALLURE METADATA ===
+            allure.epic('E0160: Manufacturing Execution');
+            allure.tag('F8030: MobileUI Manufacturing');
+            allure.story('isAllowIssuingAnyHU configuration');
+            allure.severity('normal');
+            allure.parameter('isAllowIssuingAnyHU', String(isAllowIssuingAnyHU));
+            allure.parameter('isCreateRawMaterialsStock', String(isCreateRawMaterialsStock));
+
             const masterdata = await createMasterdata({
                 isCreateRawMaterialsStock,
                 manufacturing: {

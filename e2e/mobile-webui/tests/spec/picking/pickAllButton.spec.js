@@ -1,4 +1,5 @@
 import { test } from "../../../playwright.config";
+import { allure } from 'allure-playwright';
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
 import { Backend } from "../../utils/screens/Backend";
@@ -60,6 +61,12 @@ const createMasterdata = async ({ allowQuickPackAll = true } = {}) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Pick using Pick All button', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.story('Pick All button');
+    allure.severity('normal');
+
     const masterdata = await createMasterdata({ allowQuickPackAll: true });
 
     await LoginScreen.login(masterdata.login.user);
@@ -103,6 +110,12 @@ test('Pick using Pick All button', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Expect Pick All button hidden when feature is not active', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.story('Pick All button');
+    allure.severity('normal');
+
     const masterdata = await createMasterdata({ allowQuickPackAll: false });
 
     await LoginScreen.login(masterdata.login.user);

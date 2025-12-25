@@ -1,5 +1,6 @@
 import { Backend } from '../../utils/screens/Backend';
 import { test } from "../../../playwright.config";
+import { allure } from 'allure-playwright';
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
@@ -100,6 +101,12 @@ const createMasterdata = async ({ displayPickingSlotSuggestions } = {}) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Test NO picking slot suggestions', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.story('Picking slot suggestions');
+    allure.severity('normal');
+
     const masterdata = await createMasterdata({ displayPickingSlotSuggestions: false });
 
     await LoginScreen.login(masterdata.login.user);
@@ -114,6 +121,12 @@ test('Test NO picking slot suggestions', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Test picking slot suggestions', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.story('Picking slot suggestions');
+    allure.severity('normal');
+
     const masterdata = await createMasterdata({ displayPickingSlotSuggestions: true });
 
     await LoginScreen.login(masterdata.login.user);

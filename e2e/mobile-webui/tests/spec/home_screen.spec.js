@@ -4,6 +4,7 @@ import { LoginScreen } from "../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../utils/screens/ApplicationsListScreen";
 import { HUManagerScreen } from '../utils/screens/huManager/HUManagerScreen';
 import { WorkplaceManagerScreen } from '../utils/screens/workplaceManager/WorkplaceManagerScreen';
+import { allure } from 'allure-playwright';
 
 const createMasterdata = async ({ externalBarcode } = {}) => {
     return await Backend.createMasterdata({
@@ -38,18 +39,36 @@ test.describe('Scan HU codes', () => {
 
     // noinspection JSUnusedLocalSymbols
     test('Scan HU QR Code', async ({ page }) => {
+        // === ALLURE METADATA ===
+        allure.epic('E0295: Frontend MobileUI');
+        allure.tag('F12000: Frontend MobileUI');
+        allure.story('Scan HU codes from home screen');
+        allure.severity('normal');
+
         const masterdata = await createMasterdata();
         await runTest({ masterdata, huBarcode: masterdata.handlingUnits.HU1.qrCode });
     });
 
     // noinspection JSUnusedLocalSymbols
     test('Scan HU ID Code', async ({ page }) => {
+        // === ALLURE METADATA ===
+        allure.epic('E0295: Frontend MobileUI');
+        allure.tag('F12000: Frontend MobileUI');
+        allure.story('Scan HU codes from home screen');
+        allure.severity('normal');
+
         const masterdata = await createMasterdata();
         await runTest({ masterdata, huBarcode: masterdata.handlingUnits.HU1.huId });
     });
 
     // noinspection JSUnusedLocalSymbols
     test('Scan ExternalBarcode', async ({ page }) => {
+        // === ALLURE METADATA ===
+        allure.epic('E0295: Frontend MobileUI');
+        allure.tag('F12000: Frontend MobileUI');
+        allure.story('Scan HU codes from home screen');
+        allure.severity('normal');
+
         const externalBarcode = "EXT" + Date.now();
         const masterdata = await createMasterdata({ externalBarcode });
         await runTest({ masterdata, huBarcode: externalBarcode });
@@ -59,6 +78,12 @@ test.describe('Scan HU codes', () => {
 
 // noinspection JSUnusedLocalSymbols
 test('Scan Workplace code', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0295: Frontend MobileUI');
+    allure.tag('F12000: Frontend MobileUI');
+    allure.story('Scan workplace codes from home screen');
+    allure.severity('normal');
+
     const masterdata = await createMasterdata();
 
     await LoginScreen.login(masterdata.login.user);

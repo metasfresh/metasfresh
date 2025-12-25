@@ -1,0 +1,378 @@
+name: 'Generate R2 Landing Page'
+description: 'Generate landing page and branch index for R2 test reports'
+
+inputs:
+  r2-endpoint:
+    description: 'R2 S3-compatible endpoint URL'
+    required: true
+  r2-bucket:
+    description: 'R2 bucket name'
+    required: true
+  r2-public-url:
+    description: 'Public URL for R2 bucket'
+    required: true
+  output-dir:
+    description: 'Local output directory'
+    required: false
+    default: 'landing-page'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Fetch branch metadata from R2 and generate landing page
+      shell: bash
+      env:
+        R2_ENDPOINT: ${{ inputs.r2-endpoint }}
+        R2_BUCKET: ${{ inputs.r2-bucket }}
+        R2_PUBLIC_URL: ${{ inputs.r2-public-url }}
+        OUTPUT_DIR: ${{ inputs.output-dir }}
+      run: |
+        mkdir -p "$OUTPUT_DIR/_metadata"
+
+        # List all branch folders from R2
+        echo "Fetching branch list from R2..."
+        aws s3api list-objects-v2 \
+          --endpoint-url "$R2_ENDPOINT" \
+          --bucket "$R2_BUCKET" \
+          --prefix "branches/" \
+          --delimiter "/" \
+          --query 'CommonPrefixes[].Prefix' \
+          --output json 2>/dev/null > branches_raw.json || echo '[]' > branches_raw.json
+
+        # Generate branches.json with build info using Python
+        python3 << 'PYEOF'
+        import json
+        import subprocess
+        import os
+        from datetime import datetime
+
+        endpoint = os.environ['R2_ENDPOINT']
+        bucket = os.environ['R2_BUCKET']
+        public_url = os.environ['R2_PUBLIC_URL']
+        output_dir = os.environ['OUTPUT_DIR']
+
+        # Load branch prefixes
+        try:
+            with open('branches_raw.json') as f:
+                prefixes = json.load(f) or []
+        except:
+            prefixes = []
+
+        branches = []
+        for prefix in prefixes:
+            if not prefix:
+                continue
+            branch_path = prefix.replace('branches/', '').rstrip('/')
+            if not branch_path:
+                continue
+
+            print(f"Processing branch: {branch_path}")
+
+            # Get builds for this branch
+            try:
+                result = subprocess.run([
+                    'aws', 's3api', 'list-objects-v2',
+                    '--endpoint-url', endpoint,
+                    '--bucket', bucket,
+                    '--prefix', f'branches/{branch_path}/builds/',
+                    '--delimiter', '/',
+                    '--query', 'CommonPrefixes[].Prefix',
+                    '--output', 'json'
+                ], capture_output=True, text=True, timeout=30)
+
+                build_prefixes = json.loads(result.stdout) if result.stdout and result.stdout.strip() != 'null' else []
+            except Exception as e:
+                print(f"  Error fetching builds: {e}")
+                build_prefixes = []
+
+            builds = []
+            for bp in (build_prefixes or []):
+                if not bp:
+                    continue
+                build_name = bp.rstrip('/').split('/')[-1]
+                builds.append({
+                    'version': build_name,
+                    'url': f'{public_url}/branches/{branch_path}/builds/{build_name}/'
+                })
+
+            # Sort builds by version (newest first) - versions are like "5.175-branch.123"
+            builds.sort(key=lambda x: x['version'], reverse=True)
+
+            branches.append({
+                'name': branch_path,
+                'builds': builds[:10],  # Keep only 10 most recent
+                'totalBuilds': len(builds)
+            })
+
+        # Sort branches alphabetically
+        branches.sort(key=lambda x: x['name'])
+
+        # Write branches.json
+        metadata = {
+            'branches': branches,
+            'updated': datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),
+            'totalBranches': len(branches)
+        }
+
+        with open(f'{output_dir}/_metadata/branches.json', 'w') as f:
+            json.dump(metadata, f, indent=2)
+
+        print(f"Generated branches.json with {len(branches)} branches")
+        PYEOF
+
+        echo "Metadata generated successfully"
+
+    - name: Generate index.html
+      shell: bash
+      env:
+        OUTPUT_DIR: ${{ inputs.output-dir }}
+        R2_PUBLIC_URL: ${{ inputs.r2-public-url }}
+      run: |
+        cat > "$OUTPUT_DIR/index.html" << 'HTMLEOF'
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>metasfresh Test Reports</title>
+          <style>
+            * { box-sizing: border-box; margin: 0; padding: 0; }
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+              background: #f5f7fa;
+              color: #333;
+              line-height: 1.6;
+            }
+            .header {
+              background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+              color: white;
+              padding: 40px 20px;
+              text-align: center;
+            }
+            .header h1 { font-size: 2.2rem; margin-bottom: 8px; }
+            .header p { opacity: 0.9; font-size: 1.1rem; }
+            .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+            .stats {
+              display: flex;
+              gap: 20px;
+              margin: -30px 0 20px;
+              justify-content: center;
+            }
+            .stat-card {
+              background: white;
+              padding: 20px 30px;
+              border-radius: 8px;
+              box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+              text-align: center;
+            }
+            .stat-value { font-size: 2rem; font-weight: 700; color: #1a73e8; }
+            .stat-label { font-size: 0.9rem; color: #666; }
+            .search {
+              margin-bottom: 20px;
+            }
+            .search input {
+              width: 100%;
+              padding: 14px 18px;
+              font-size: 16px;
+              border: 2px solid #e0e0e0;
+              border-radius: 8px;
+              transition: border-color 0.2s;
+            }
+            .search input:focus { outline: none; border-color: #1a73e8; }
+            .branch {
+              background: white;
+              border-radius: 8px;
+              margin-bottom: 12px;
+              box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+              overflow: hidden;
+            }
+            .branch-header {
+              padding: 16px 20px;
+              cursor: pointer;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              transition: background 0.2s;
+            }
+            .branch-header:hover { background: #f8f9fa; }
+            .branch-name {
+              font-weight: 600;
+              font-size: 1.1rem;
+              color: #1a73e8;
+              display: flex;
+              align-items: center;
+              gap: 8px;
+            }
+            .branch-name .arrow {
+              transition: transform 0.2s;
+              font-size: 0.8rem;
+            }
+            .branch.open .branch-name .arrow { transform: rotate(90deg); }
+            .build-count { color: #666; font-size: 0.9rem; }
+            .builds { display: none; padding: 0 20px 16px; }
+            .branch.open .builds { display: block; }
+            .build {
+              padding: 14px;
+              margin-bottom: 10px;
+              background: #f8f9fa;
+              border-radius: 6px;
+              border-left: 3px solid #1a73e8;
+            }
+            .build-version {
+              font-weight: 600;
+              margin-bottom: 10px;
+              font-size: 0.95rem;
+            }
+            .report-section {
+              margin-bottom: 8px;
+            }
+            .report-section-title {
+              font-size: 0.75rem;
+              text-transform: uppercase;
+              color: #666;
+              margin-bottom: 6px;
+              font-weight: 600;
+            }
+            .report-links { display: flex; flex-wrap: wrap; gap: 6px; }
+            .report-link {
+              display: inline-block;
+              padding: 5px 12px;
+              text-decoration: none;
+              border-radius: 4px;
+              font-size: 0.85rem;
+              font-weight: 500;
+              transition: all 0.2s;
+            }
+            .report-link.allure {
+              background: #e6f4ea;
+              color: #137333;
+            }
+            .report-link.allure:hover { background: #ceead6; }
+            .report-link.junit {
+              background: #fef7e0;
+              color: #b06000;
+            }
+            .report-link.junit:hover { background: #feefc3; }
+            .updated {
+              text-align: center;
+              color: #666;
+              font-size: 0.85rem;
+              margin-top: 30px;
+              padding-bottom: 20px;
+            }
+            .loading {
+              text-align: center;
+              padding: 40px;
+              color: #666;
+            }
+            .error {
+              text-align: center;
+              padding: 40px;
+              color: #d32f2f;
+            }
+            @media (max-width: 600px) {
+              .stats { flex-direction: column; align-items: center; }
+              .report-links { flex-direction: column; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>metasfresh Test Reports</h1>
+            <p>Browse Allure and JUnit test results across branches and builds</p>
+          </div>
+          <div class="container">
+            <div class="stats">
+              <div class="stat-card">
+                <div class="stat-value" id="branchCount">-</div>
+                <div class="stat-label">Branches</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value" id="buildCount">-</div>
+                <div class="stat-label">Total Builds</div>
+              </div>
+            </div>
+            <div class="search">
+              <input type="text" id="search" placeholder="Search branches..." autocomplete="off">
+            </div>
+            <div id="branches">
+              <div class="loading">Loading branches...</div>
+            </div>
+            <p class="updated" id="updated"></p>
+          </div>
+          <script>
+            const BASE_URL = '__R2_PUBLIC_URL__';
+            let data = null;
+
+            async function loadData() {
+              try {
+                const res = await fetch(BASE_URL + '/_metadata/branches.json');
+                if (!res.ok) throw new Error('Failed to load metadata');
+                data = await res.json();
+                document.getElementById('branchCount').textContent = data.totalBranches || data.branches.length;
+                document.getElementById('buildCount').textContent = data.branches.reduce((sum, b) => sum + (b.totalBuilds || b.builds.length), 0);
+                render(data.branches);
+                document.getElementById('updated').textContent = 'Last updated: ' + new Date(data.updated).toLocaleString();
+              } catch (err) {
+                document.getElementById('branches').innerHTML = '<div class="error">Error loading branches: ' + err.message + '</div>';
+              }
+            }
+
+            function render(branches) {
+              const container = document.getElementById('branches');
+              if (!branches.length) {
+                container.innerHTML = '<div class="loading">No branches found</div>';
+                return;
+              }
+              container.innerHTML = branches.map(b => `
+                <div class="branch" data-branch="${b.name}">
+                  <div class="branch-header" onclick="toggle(this.parentElement)">
+                    <span class="branch-name"><span class="arrow">&#9654;</span> ${b.name}</span>
+                    <span class="build-count">${b.builds.length} build(s)</span>
+                  </div>
+                  <div class="builds">
+                    ${b.builds.map(build => `
+                      <div class="build">
+                        <div class="build-version">${build.version}</div>
+                        <div class="report-section">
+                          <div class="report-section-title">Allure Reports</div>
+                          <div class="report-links">
+                            <a class="report-link allure" href="${build.url}allure/frontend-webui/index.html" target="_blank">Frontend WebUI</a>
+                            <a class="report-link allure" href="${build.url}allure/mobile-webui/index.html" target="_blank">Mobile WebUI</a>
+                            <a class="report-link allure" href="${build.url}allure/cucumber/index.html" target="_blank">Cucumber</a>
+                          </div>
+                        </div>
+                        <div class="report-section">
+                          <div class="report-section-title">JUnit Reports</div>
+                          <div class="report-links">
+                            <a class="report-link junit" href="${build.url}junit/jest/index.html" target="_blank">Jest</a>
+                            <a class="report-link junit" href="${build.url}junit/backend/index.html" target="_blank">Backend</a>
+                            <a class="report-link junit" href="${build.url}junit/camel/index.html" target="_blank">Camel</a>
+                          </div>
+                        </div>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              `).join('');
+            }
+
+            function toggle(el) {
+              el.classList.toggle('open');
+            }
+
+            document.getElementById('search').addEventListener('input', e => {
+              const q = e.target.value.toLowerCase();
+              render(data.branches.filter(b => b.name.toLowerCase().includes(q)));
+            });
+
+            loadData();
+          </script>
+        </body>
+        </html>
+        HTMLEOF
+
+        # Replace placeholder with actual URL
+        sed -i "s|__R2_PUBLIC_URL__|${R2_PUBLIC_URL}|g" "$OUTPUT_DIR/index.html"
+
+        echo "Generated landing page at: $OUTPUT_DIR/index.html"

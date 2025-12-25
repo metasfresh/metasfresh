@@ -1,4 +1,5 @@
 import { test } from "../../../playwright.config";
+import { allure } from 'allure-playwright';
 import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
@@ -55,12 +56,24 @@ const createMasterdataAndScanByExternalBarcode = async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Dispose HU', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5120: MobileUI HU Manager');
+    allure.story('HU Manager - External Barcode Operations');
+    allure.severity('critical');
+
     await createMasterdataAndScanByExternalBarcode({ page });
     await HUManagerScreen.dispose();
 });
 
 // noinspection JSUnusedLocalSymbols
 test('Move HU using locator code', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5120: MobileUI HU Manager');
+    allure.story('HU Manager - External Barcode Operations');
+    allure.severity('critical');
+
     const masterdata = await createMasterdataAndScanByExternalBarcode({ page });
 
     await HUManagerScreen.expectValue({ name: 'locator-value', expectedValue: masterdata.warehouses.wh1.locatorCode });
@@ -73,6 +86,12 @@ test('Move HU using locator code', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Change Qty', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5120: MobileUI HU Manager');
+    allure.story('HU Manager - External Barcode Operations');
+    allure.severity('critical');
+
     const masterdata = await createMasterdataAndScanByExternalBarcode({ page });
 
     await HUManagerScreen.changeQty({ expectQtyEntered: '80', qtyEntered: '100', description: 'test' });
@@ -85,6 +104,12 @@ test('Change Qty', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Change Clearance Status', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5120: MobileUI HU Manager');
+    allure.story('HU Manager - External Barcode Operations');
+    allure.severity('normal');
+
     await createMasterdataAndScanByExternalBarcode({ page });
 
     await HUManagerScreen.expectValueMissing({ name: 'clearanceStatus-value' });
@@ -96,6 +121,12 @@ test('Change Clearance Status', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Bulk actions - Move', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5120: MobileUI HU Manager');
+    allure.story('HU Manager - External Barcode Operations');
+    allure.severity('normal');
+
     const masterdata = await createMasterdataAndScanByExternalBarcode({ page });
     await HUManagerScreen.expectValue({ name: 'locator-value', expectedValue: masterdata.warehouses.wh1.locatorCode });
     await HUManagerScreen.bulkActions({ targetLocator: masterdata.warehouses.wh2.locatorQRCode });

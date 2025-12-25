@@ -1498,22 +1498,34 @@ jobs:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
       - name: run test
-        working-directory: docker-builds/mobiletest/
+        working-directory: docker-builds/e2e-tests/
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
+          mfregistry: metasfresh
+          dbqualifier: preloaded
         run: |
-          docker compose up --abort-on-container-exit --exit-code-from playwright 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
-          docker commit mobiletest-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest
-          docker compose down
+          docker compose --profile mobile up --abort-on-container-exit --exit-code-from playwright-mobile 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
+          docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest
+          docker compose --profile mobile down
       - name: push-results to testspace
         if: env.ACT != 'true'  # Skip when running locally with act
-        working-directory: docker-builds/mobiletest/
+        working-directory: docker-builds/e2e-tests/
         run: |
           # Move test-results temporarily to avoid Testspace uploading large attachment files
-          mv test-results test-results-temp || true
-          testspace "[mobile/playwright]playwright-report/junit/results.xml"
+          mv test-results-mobile test-results-temp || true
+          testspace "[mobile/playwright]playwright-report-mobile/junit/results.xml"
           # Move back for artifact upload
-          mv test-results-temp test-results || true
+          mv test-results-temp test-results-mobile || true
+
+      # ===== ALLURE REPORT GENERATION =====
+      - name: Generate Allure Report for Mobile
+        uses: ./.github/actions/generate-allure-report
+        with:
+          results-dir: docker-builds/e2e-tests/allure-results-mobile
+          output-dir: e2e/mobile-webui/allure-report
+          artifact-name: allure-report-mobile-webui
+      # ===== END ALLURE REPORT GENERATION =====
+
       - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest
         if: env.ACT != 'true'
         uses: nick-fields/retry@v3
@@ -1527,17 +1539,25 @@ jobs:
           echo '#### images' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest' >> $GITHUB_STEP_SUMMARY
       - name: assert success
-        working-directory: docker-builds/mobiletest/
+        working-directory: docker-builds/e2e-tests/
         run: |
           if [ $(cat playwright.exit-code) != 0 ]; then tail -1000 playwright.log && exit 1; fi
       - uses: actions/upload-artifact@v4
         if: success() || failure() # upload the artifact even if is success because that artifact can contain valuable information about how to improve, optimize etc
         with:
-          name: playwright-report
+          name: playwright-mobile-report
           path: |
-            docker-builds/mobiletest/playwright-report/
-            docker-builds/mobiletest/test-results/
+            docker-builds/e2e-tests/playwright-report-mobile/
+            docker-builds/e2e-tests/test-results-mobile/
           retention-days: 30
+      - name: Upload Playwright Mobile JUnit results for R2
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: junit-results-playwright-mobile
+          path: docker-builds/e2e-tests/playwright-report-mobile/junit/results.xml
+          if-no-files-found: ignore
+          retention-days: 1
 
   frontend_webui_test:
     name: frontend webui test
@@ -1556,67 +1576,32 @@ jobs:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
       - name: run test
-        working-directory: docker-builds/frontendtest/
+        working-directory: docker-builds/e2e-tests/
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
           mfregistry: metasfresh
           dbqualifier: preloaded
         run: |
-          docker compose up --abort-on-container-exit --exit-code-from playwright 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
-          docker commit frontendtest-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest
-          docker compose down
+          docker compose --profile frontend up --abort-on-container-exit --exit-code-from playwright-frontend 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
+          docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest
+          docker compose --profile frontend down
       - name: push-results to testspace
         if: env.ACT != 'true'  # Skip when running locally with act
-        working-directory: docker-builds/frontendtest/
+        working-directory: docker-builds/e2e-tests/
         run: |
           # Move test-results temporarily to avoid Testspace uploading large attachment files
-          mv test-results test-results-temp || true
-          testspace "[frontend/playwright]playwright-report/junit/results.xml"
+          mv test-results-frontend test-results-temp || true
+          testspace "[frontend/playwright]playwright-report-frontend/junit/results.xml"
           # Move back for artifact upload
-          mv test-results-temp test-results || true
+          mv test-results-temp test-results-frontend || true
 
       # ===== ALLURE REPORT GENERATION =====
-      - name: Setup Allure CLI
-        uses: ./.github/actions/setup-allure
-
-      - name: Generate Allure Report
-        working-directory: docker-builds/frontendtest/
-        run: |
-          # Debug: Check if allure-results exists and has content
-          echo "=== Checking allure-results directory ==="
-          if [ -d "allure-results" ]; then
-            echo "Directory exists. Contents:"
-            ls -la allure-results/ || true
-            echo "JSON files count: $(find allure-results -name "*.json" -type f | wc -l)"
-          else
-            echo "ERROR: allure-results directory does not exist!"
-            echo "Contents of current directory:"
-            ls -la
-            exit 1
-          fi
-
-          # Verify allure-results has content before generating report
-          RESULT_COUNT=$(find allure-results -name "*.json" -type f 2>/dev/null | wc -l)
-          if [ "$RESULT_COUNT" -eq 0 ]; then
-            echo "FATAL ERROR: allure-results contains no JSON files!"
-            echo "Directory contents:"
-            ls -la allure-results/
-            exit 1
-          fi
-
-          echo "Found $RESULT_COUNT JSON result files, proceeding with report generation"
-
-          # Generate HTML report (results are in docker-builds/frontendtest/allure-results/)
-          cd ../../e2e/frontend-webui/
-          allure generate ../../docker-builds/frontendtest/allure-results/ -o allure-report/ --clean
-
-      - name: Upload Allure report for gh-pages
-        uses: actions/upload-artifact@v4
-        if: success() || failure()
+      - name: Generate Allure Report for Frontend
+        uses: ./.github/actions/generate-allure-report
         with:
-          name: allure-report-frontend-webui
-          path: e2e/frontend-webui/allure-report/
-          retention-days: 1
+          results-dir: docker-builds/e2e-tests/allure-results
+          output-dir: e2e/frontend-webui/allure-report
+          artifact-name: allure-report-frontend-webui
       # ===== END ALLURE REPORT GENERATION =====
 
       - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest
@@ -1632,7 +1617,7 @@ jobs:
           echo '#### images' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest' >> $GITHUB_STEP_SUMMARY
       - name: assert success
-        working-directory: docker-builds/frontendtest/
+        working-directory: docker-builds/e2e-tests/
         run: |
           if [ $(cat playwright.exit-code) != 0 ]; then tail -1000 playwright.log && exit 1; fi
       - uses: actions/upload-artifact@v4
@@ -1640,327 +1625,303 @@ jobs:
         with:
           name: playwright-frontend-report
           path: |
-            docker-builds/frontendtest/playwright-report/
-            docker-builds/frontendtest/test-results/
+            docker-builds/e2e-tests/playwright-report-frontend/
+            docker-builds/e2e-tests/test-results-frontend/
           retention-days: 30
-
-  allure_publish:
-    name: Publish Allure Reports to GitHub Pages
-    runs-on: ubuntu-latest
-    needs: [ init, frontend_webui_test ]
-    if: always() && needs.init.outputs.is-local != 'true'  # Run even if tests failed, but skip when running locally with act
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout testreports gh-pages branch
-        uses: actions/checkout@v4
+      - name: Upload Playwright Frontend JUnit results for R2
+        uses: actions/upload-artifact@v4
+        if: always()
         with:
-          repository: metasfresh/metasfresh-testreports
-          ref: gh-pages
-          path: gh-pages-repo
-          ssh-key: ${{ secrets.TESTREPORTS_DEPLOY_KEY }}
-          persist-credentials: true
+          name: junit-results-playwright-frontend
+          path: docker-builds/e2e-tests/playwright-report-frontend/junit/results.xml
+          if-no-files-found: ignore
+          retention-days: 1
+
+  test_reports_publish:
+    name: Publish Test Reports to R2
+    runs-on: ubuntu-latest
+    needs: [ init, test-frontend, junit, frontend_webui_test, mobile_test, cucumber-run, cucumber-allure-report ]
+    if: always()  # Run even if tests failed
+    permissions: {}
+    steps:
+      - uses: actions/checkout@v4
 
       - name: Setup directory structure
         run: |
           BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
+          BUILD_DIR="reports/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}"
 
-          # Create directory structure with explicit paths
-          mkdir -p "gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/frontend-webui"
-          mkdir -p "gh-pages-repo/_data"
+          # Create directory structure for Allure reports
+          mkdir -p "${BUILD_DIR}/allure/frontend-webui"
+          mkdir -p "${BUILD_DIR}/allure/mobile-webui"
+          mkdir -p "${BUILD_DIR}/allure/cucumber"
 
-          # Debug: Show created paths (absolute)
-          echo "Created directory structure:"
-          echo "  - $(pwd)/gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/frontend-webui"
-          echo "  - $(pwd)/gh-pages-repo/_data"
+          # Create directory structure for JUnit HTML reports
+          mkdir -p "${BUILD_DIR}/junit/jest"
+          mkdir -p "${BUILD_DIR}/junit/backend"
+          mkdir -p "${BUILD_DIR}/junit/camel"
+          mkdir -p "${BUILD_DIR}/junit/cucumber"
 
-          # Verify directories exist
-          ls -la "gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/"
+          echo "Created directory structure for branch: ${BRANCH_SANITIZED}, build: ${{ needs.init.outputs.tag-fixed }}"
 
-      - name: Download Allure report artifact
+      # ===== DOWNLOAD ALLURE REPORTS =====
+      - name: Download Frontend Allure report
         if: needs.frontend_webui_test.result == 'success' || needs.frontend_webui_test.result == 'failure'
         uses: actions/download-artifact@v4
         with:
           name: allure-report-frontend-webui
-          path: gh-pages-repo/temp-report/
+          path: reports/branches/${{ needs.init.outputs.branch-sanitized-gh-pages }}/builds/${{ needs.init.outputs.tag-fixed }}/allure/frontend-webui/
+        continue-on-error: true
 
-      - name: Copy report to build directory
-        if: needs.frontend_webui_test.result == 'success' || needs.frontend_webui_test.result == 'failure'
+      - name: Download Mobile Allure report
+        if: needs.mobile_test.result == 'success' || needs.mobile_test.result == 'failure'
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-report-mobile-webui
+          path: reports/branches/${{ needs.init.outputs.branch-sanitized-gh-pages }}/builds/${{ needs.init.outputs.tag-fixed }}/allure/mobile-webui/
+        continue-on-error: true
+
+      - name: Download Cucumber Allure report
+        if: needs.cucumber-allure-report.result == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-report-cucumber
+          path: reports/branches/${{ needs.init.outputs.branch-sanitized-gh-pages }}/builds/${{ needs.init.outputs.tag-fixed }}/allure/cucumber/
+        continue-on-error: true
+
+      # ===== DOWNLOAD JUNIT XML RESULTS =====
+      - name: Download Jest JUnit results
+        if: needs.test-frontend.result == 'success' || needs.test-frontend.result == 'failure'
+        uses: actions/download-artifact@v4
+        with:
+          name: junit-results-jest
+          path: junit-raw/jest/
+        continue-on-error: true
+
+      - name: Download Backend JUnit results
+        if: needs.junit.result == 'success' || needs.junit.result == 'failure'
+        uses: actions/download-artifact@v4
+        with:
+          name: junit-results-backend
+          path: junit-raw/backend/
+        continue-on-error: true
+
+      - name: Download Camel JUnit results
+        if: needs.junit.result == 'success' || needs.junit.result == 'failure'
+        uses: actions/download-artifact@v4
+        with:
+          name: junit-results-camel
+          path: junit-raw/camel/
+        continue-on-error: true
+
+      # ===== GENERATE JUNIT HTML REPORTS =====
+      # Note: Playwright tests use Allure reports (richer visualization) instead of JUnit HTML
+      - name: Generate Jest HTML report
+        uses: ./.github/actions/generate-junit-html
+        with:
+          xml-path: junit-raw/jest/*.xml
+          output-dir: reports/branches/${{ needs.init.outputs.branch-sanitized-gh-pages }}/builds/${{ needs.init.outputs.tag-fixed }}/junit/jest
+          report-title: 'Jest Frontend Tests'
+        continue-on-error: true
+
+      - name: Generate Backend JUnit HTML report
+        uses: ./.github/actions/generate-junit-html
+        with:
+          xml-path: junit-raw/backend/**/*.xml
+          output-dir: reports/branches/${{ needs.init.outputs.branch-sanitized-gh-pages }}/builds/${{ needs.init.outputs.tag-fixed }}/junit/backend
+          report-title: 'Java Backend Tests'
+        continue-on-error: true
+
+      - name: Generate Camel JUnit HTML report
+        uses: ./.github/actions/generate-junit-html
+        with:
+          xml-path: junit-raw/camel/**/*.xml
+          output-dir: reports/branches/${{ needs.init.outputs.branch-sanitized-gh-pages }}/builds/${{ needs.init.outputs.tag-fixed }}/junit/camel
+          report-title: 'Camel Integration Tests'
+        continue-on-error: true
+
+      - name: Verify reports exist
+        id: verify_reports
         run: |
           BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
-          cp -r gh-pages-repo/temp-report/* "gh-pages-repo/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}/frontend-webui/"
-          rm -rf gh-pages-repo/temp-report
+          BUILD_DIR="reports/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}"
 
-      - name: Update latest redirect
-        run: |
-          BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
+          ALLURE_FOUND=0
+          JUNIT_FOUND=0
 
-          cat > "gh-pages-repo/branches/${BRANCH_SANITIZED}/latest.html" <<EOF
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <meta charset="utf-8">
-            <title>Redirecting to Latest Report...</title>
-            <meta http-equiv="refresh" content="0; url=builds/${{ needs.init.outputs.tag-fixed }}/frontend-webui/">
-            <script>window.location.href = 'builds/${{ needs.init.outputs.tag-fixed }}/frontend-webui/';</script>
-          </head>
-          <body>
-            <p>Redirecting to latest report...</p>
-            <p>If not redirected, <a href="builds/${{ needs.init.outputs.tag-fixed }}/frontend-webui/">click here</a>.</p>
-          </body>
-          </html>
-          EOF
+          # Check Allure reports
+          for report in frontend-webui mobile-webui cucumber; do
+            if [ -f "${BUILD_DIR}/allure/${report}/index.html" ]; then
+              echo "✓ Allure ${report} report found"
+              ALLURE_FOUND=$((ALLURE_FOUND + 1))
+            fi
+          done
 
-      - name: Update branches metadata
-        run: |
-          cd gh-pages-repo
-          BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
+          # Check JUnit reports (Playwright uses Allure instead)
+          for report in jest backend camel cucumber; do
+            if [ -f "${BUILD_DIR}/junit/${report}/index.html" ]; then
+              echo "✓ JUnit ${report} report found"
+              JUNIT_FOUND=$((JUNIT_FOUND + 1))
+            fi
+          done
 
-          METADATA_FILE="_data/branches.json"
-          if [ ! -f "$METADATA_FILE" ]; then
-            echo '{"branches":[]}' > "$METADATA_FILE"
+          echo "allure_found=${ALLURE_FOUND}" >> $GITHUB_OUTPUT
+          echo "junit_found=${JUNIT_FOUND}" >> $GITHUB_OUTPUT
+
+          TOTAL=$((ALLURE_FOUND + JUNIT_FOUND))
+          if [ "$TOTAL" -eq 0 ]; then
+            echo "::warning::No reports found to publish - this may be expected if all tests were skipped"
+          else
+            echo "Found ${ALLURE_FOUND} Allure and ${JUNIT_FOUND} JUnit report(s) to publish"
           fi
 
-          # Use compact jq to avoid shell quoting issues with multi-line scripts
-          jq --arg name "${{ github.ref_name }}" \
-             --arg sanitized "$BRANCH_SANITIZED" \
-             --arg build "${{ needs.init.outputs.tag-fixed }}" \
-             --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-             '.branches |= map(if .name == $name then . + {"lastUpdate": $timestamp, "lastBuild": $build, "buildCount": ((.buildCount // 0) + 1), "branch_status": "active"} else . end) | if (.branches | map(.name) | index($name)) == null then .branches += [{"name": $name, "sanitized": $sanitized, "lastUpdate": $timestamp, "lastBuild": $build, "reports": {"frontend-webui": ("branches/" + $sanitized + "/latest.html")}, "buildCount": 1, "branch_status": "active"}] else . end' \
-             "$METADATA_FILE" > "${METADATA_FILE}.tmp" && mv "${METADATA_FILE}.tmp" "$METADATA_FILE"
+      # ===== CLOUDFLARE R2 UPLOAD =====
+      - name: Validate R2 configuration
+        run: |
+          MISSING=""
+          if [ -z "${{ secrets.R2_ACCESS_KEY_ID }}" ]; then MISSING="${MISSING} R2_ACCESS_KEY_ID"; fi
+          if [ -z "${{ secrets.R2_SECRET_ACCESS_KEY }}" ]; then MISSING="${MISSING} R2_SECRET_ACCESS_KEY"; fi
+          if [ -z "${{ vars.R2_ENDPOINT_URL }}" ]; then MISSING="${MISSING} R2_ENDPOINT_URL"; fi
+          if [ -z "${{ vars.R2_BUCKET_NAME }}" ]; then MISSING="${MISSING} R2_BUCKET_NAME"; fi
+          if [ -z "${{ vars.R2_PUBLIC_URL }}" ]; then MISSING="${MISSING} R2_PUBLIC_URL"; fi
 
+          if [ -n "$MISSING" ]; then
+            echo "::error::Missing required R2 configuration:${MISSING}"
+            exit 1
+          fi
+          echo "✓ R2 configuration validated"
+
+      - name: Configure AWS CLI for R2
+        run: |
+          if ! command -v aws &> /dev/null; then
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip -q awscliv2.zip
+            sudo ./aws/install
+          fi
+
+      - name: Sync reports to Cloudflare R2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+        run: |
+          # Configure AWS CLI for 50 concurrent uploads (default is 10)
+          aws configure set default.s3.max_concurrent_requests 50
+
+          echo "Syncing reports to R2 (50 concurrent uploads)..."
+          aws s3 sync reports/ s3://${{ vars.R2_BUCKET_NAME }}/ \
+            --endpoint-url ${{ vars.R2_ENDPOINT_URL }} \
+            --no-progress
+
+          echo "✓ Reports synced to R2"
+          echo "Total size: $(du -sh reports | cut -f1)"
+
+      # ===== GENERATE AND UPLOAD LANDING PAGE =====
       - name: Generate landing page
+        uses: ./.github/actions/generate-r2-landing-page
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+        with:
+          r2-endpoint: ${{ vars.R2_ENDPOINT_URL }}
+          r2-bucket: ${{ vars.R2_BUCKET_NAME }}
+          r2-public-url: ${{ vars.R2_PUBLIC_URL }}
+
+      - name: Upload landing page to R2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
         run: |
-          cd gh-pages-repo
+          aws s3 sync landing-page/ s3://${{ vars.R2_BUCKET_NAME }}/ \
+            --endpoint-url ${{ vars.R2_ENDPOINT_URL }} \
+            --no-progress
+          echo "✓ Landing page uploaded"
 
-          cat > index.html <<'LANDINGPAGE'
-          <!DOCTYPE html>
-          <html lang="en">
-          <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>metasfresh Test Reports</title>
-            <style>
-              * { margin: 0; padding: 0; box-sizing: border-box; }
-              body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                min-height: 100vh;
-                padding: 2rem;
-              }
-              .container {
-                max-width: 1200px;
-                margin: 0 auto;
-                background: white;
-                border-radius: 12px;
-                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-                overflow: hidden;
-              }
-              header {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                padding: 2rem;
-                text-align: center;
-              }
-              header h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
-              header p { opacity: 0.9; font-size: 1.1rem; }
-              .filters {
-                padding: 1.5rem 2rem;
-                background: #f7f9fc;
-                border-bottom: 1px solid #e1e8ed;
-                display: flex;
-                gap: 1rem;
-              }
-              .filters input, .filters select {
-                flex: 1;
-                padding: 0.75rem 1rem;
-                border: 1px solid #d1d9e0;
-                border-radius: 6px;
-                font-size: 1rem;
-              }
-              .branch-list { padding: 2rem; }
-              .branch-card {
-                background: #f7f9fc;
-                border-radius: 8px;
-                padding: 1.5rem;
-                margin-bottom: 1rem;
-                border: 1px solid #e1e8ed;
-                transition: all 0.2s;
-              }
-              .branch-card:hover {
-                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-                transform: translateY(-2px);
-              }
-              .branch-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 1rem;
-              }
-              .branch-name { font-size: 1.3rem; font-weight: 600; color: #2d3748; }
-              .branch-meta { font-size: 0.85rem; color: #718096; margin-top: 0.25rem; }
-              .reports-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                gap: 1rem;
-                margin-top: 1rem;
-              }
-              .report-link {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                padding: 1rem;
-                background: white;
-                border-radius: 6px;
-                text-decoration: none;
-                color: #667eea;
-                font-weight: 500;
-                border: 2px solid #e1e8ed;
-                transition: all 0.2s;
-              }
-              .report-link:hover {
-                border-color: #667eea;
-                background: #f0f4ff;
-              }
-              .badge {
-                padding: 0.25rem 0.75rem;
-                border-radius: 12px;
-                font-size: 0.75rem;
-                font-weight: 600;
-                text-transform: uppercase;
-              }
-              .badge-active { background: #48bb78; color: white; }
-              .badge-stale { background: #ed8936; color: white; }
-              footer {
-                text-align: center;
-                padding: 1.5rem;
-                color: #718096;
-                border-top: 1px solid #e1e8ed;
-              }
-            </style>
-          </head>
-          <body>
-            <div class="container">
-              <header>
-                <h1>🧪 metasfresh Test Reports</h1>
-                <p>Allure test reports for all branches</p>
-              </header>
-
-              <div class="filters">
-                <input type="text" id="searchInput" placeholder="Search branches..." />
-                <select id="statusFilter">
-                  <option value="all">All Branches</option>
-                  <option value="active">Active Only</option>
-                  <option value="stale">Stale Only</option>
-                </select>
-              </div>
-
-              <div class="branch-list" id="branchList">
-                <p style="text-align:center; color: #718096; padding: 2rem;">Loading...</p>
-              </div>
-
-              <footer>
-                <p>Generated by GitHub Actions | Last updated: <span id="lastUpdate"></span></p>
-              </footer>
-            </div>
-
-            <script>
-              async function loadBranches() {
-                try {
-                  const response = await fetch('_data/branches.json');
-                  const data = await response.json();
-                  renderBranches(data.branches);
-                  document.getElementById('lastUpdate').textContent = new Date().toLocaleString();
-                } catch (error) {
-                  document.getElementById('branchList').innerHTML =
-                    '<p style="text-align:center; color: #e53e3e;">Error loading branches</p>';
-                }
-              }
-
-              function renderBranches(branches) {
-                const container = document.getElementById('branchList');
-                container.innerHTML = '';
-
-                if (!branches.length) {
-                  container.innerHTML = '<p style="text-align:center; color: #718096;">No branches</p>';
-                  return;
-                }
-
-                branches
-                  .sort((a, b) => new Date(b.lastUpdate) - new Date(a.lastUpdate))
-                  .forEach(branch => {
-                    const card = document.createElement('div');
-                    card.className = 'branch-card';
-                    card.dataset.name = branch.name.toLowerCase();
-                    card.dataset.status = branch.branch_status;
-
-                    const reports = Object.entries(branch.reports || {})
-                      .map(([type, url]) => `
-                        <a href="${url}" class="report-link">
-                          <span>📊 ${type.replace('-', ' ').toUpperCase()}</span>
-                          <span>→</span>
-                        </a>
-                      `).join('');
-
-                    card.innerHTML = `
-                      <div class="branch-header">
-                        <div>
-                          <div class="branch-name">${branch.name}</div>
-                          <div class="branch-meta">
-                            Updated: ${new Date(branch.lastUpdate).toLocaleString()} |
-                            Builds: ${branch.buildCount} | Latest: ${branch.lastBuild}
-                          </div>
-                        </div>
-                        <span class="badge badge-${branch.branch_status}">${branch.branch_status}</span>
-                      </div>
-                      <div class="reports-grid">${reports}</div>
-                    `;
-
-                    container.appendChild(card);
-                  });
-              }
-
-              document.getElementById('searchInput').addEventListener('input', filterBranches);
-              document.getElementById('statusFilter').addEventListener('change', filterBranches);
-
-              function filterBranches() {
-                const search = document.getElementById('searchInput').value.toLowerCase();
-                const status = document.getElementById('statusFilter').value;
-
-                document.querySelectorAll('.branch-card').forEach(card => {
-                  const matchesSearch = card.dataset.name.includes(search);
-                  const matchesStatus = status === 'all' || card.dataset.status === status;
-                  card.style.display = (matchesSearch && matchesStatus) ? 'block' : 'none';
-                });
-              }
-
-              loadBranches();
-            </script>
-          </body>
-          </html>
-          LANDINGPAGE
-
-      - name: Create .nojekyll file
+      - name: Cleanup old builds from R2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
         run: |
-          # Disable Jekyll processing to serve _data directory
-          touch gh-pages-repo/.nojekyll
-          echo "Created .nojekyll file to disable Jekyll and serve _data directory"
+          BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
+          MAX_BUILDS_PER_BRANCH=10
 
-      - name: Deploy to GitHub Pages
+          echo "Cleaning up old builds for branch: ${BRANCH_SANITIZED}"
+          echo "Keeping only the ${MAX_BUILDS_PER_BRANCH} most recent builds"
+
+          > builds_with_time.txt
+
+          aws s3api list-objects-v2 \
+            --endpoint-url ${{ vars.R2_ENDPOINT_URL }} \
+            --bucket ${{ vars.R2_BUCKET_NAME }} \
+            --prefix "branches/${BRANCH_SANITIZED}/builds/" \
+            --delimiter "/" \
+            --query 'CommonPrefixes[].Prefix' \
+            --output text | tr '\t' '\n' > all_prefixes.txt
+
+          while read -r prefix; do
+            [ -z "$prefix" ] && continue
+            LAST_MODIFIED=$(aws s3api list-objects-v2 \
+              --endpoint-url ${{ vars.R2_ENDPOINT_URL }} \
+              --bucket ${{ vars.R2_BUCKET_NAME }} \
+              --prefix "${prefix}" \
+              --query 'sort_by(Contents, &LastModified)[-1].LastModified' \
+              --output text 2>/dev/null || echo "1970-01-01T00:00:00Z")
+            [ "$LAST_MODIFIED" == "None" ] && LAST_MODIFIED="1970-01-01T00:00:00Z"
+            echo "${LAST_MODIFIED} ${prefix}" >> builds_with_time.txt
+          done < all_prefixes.txt
+
+          sort -r builds_with_time.txt | awk '{print $2}' > all_builds.txt
+
+          BUILD_COUNT=$(wc -l < all_builds.txt | tr -d ' ')
+          echo "Found ${BUILD_COUNT} builds"
+
+          if [ "$BUILD_COUNT" -gt "$MAX_BUILDS_PER_BRANCH" ]; then
+            BUILDS_TO_DELETE=$((BUILD_COUNT - MAX_BUILDS_PER_BRANCH))
+            echo "Deleting ${BUILDS_TO_DELETE} old build(s)"
+
+            tail -n "$BUILDS_TO_DELETE" all_builds.txt | while read -r build_prefix; do
+              [ -z "$build_prefix" ] && continue
+              echo "Deleting: ${build_prefix}"
+              aws s3 rm "s3://${{ vars.R2_BUCKET_NAME }}/${build_prefix}" \
+                --endpoint-url ${{ vars.R2_ENDPOINT_URL }} \
+                --recursive 2>/dev/null || true
+            done
+            echo "CLEANUP_INFO=🧹 Deleted ${BUILDS_TO_DELETE} old build(s), keeping ${MAX_BUILDS_PER_BRANCH} most recent" >> $GITHUB_ENV
+          else
+            echo "No cleanup needed (${BUILD_COUNT} <= ${MAX_BUILDS_PER_BRANCH})"
+            echo "CLEANUP_INFO=🧹 No cleanup needed (${BUILD_COUNT}/${MAX_BUILDS_PER_BRANCH} builds)" >> $GITHUB_ENV
+          fi
+
+      - name: produce-summary
         run: |
-          cd gh-pages-repo
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
+          VERSION="${{ needs.init.outputs.tag-fixed }}"
+          R2_BASE_URL="${{ vars.R2_PUBLIC_URL }}/branches/${BRANCH_SANITIZED}/builds/${VERSION}"
+          LANDING_URL="${{ vars.R2_PUBLIC_URL }}/index.html"
 
-          git add .
+          echo '#### 📊 Test Reports' >> $GITHUB_STEP_SUMMARY
+          echo '' >> $GITHUB_STEP_SUMMARY
+          echo "**[Browse All Reports](${LANDING_URL})**" >> $GITHUB_STEP_SUMMARY
+          echo '' >> $GITHUB_STEP_SUMMARY
+          echo '##### Allure Reports' >> $GITHUB_STEP_SUMMARY
+          echo "| Report | Link |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend WebUI | [View](${R2_BASE_URL}/allure/frontend-webui/index.html) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Mobile WebUI | [View](${R2_BASE_URL}/allure/mobile-webui/index.html) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Cucumber | [View](${R2_BASE_URL}/allure/cucumber/index.html) |" >> $GITHUB_STEP_SUMMARY
+          echo '' >> $GITHUB_STEP_SUMMARY
+          echo '##### JUnit Reports' >> $GITHUB_STEP_SUMMARY
+          echo "| Report | Link |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Jest (Frontend) | [View](${R2_BASE_URL}/junit/jest/index.html) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Backend | [View](${R2_BASE_URL}/junit/backend/index.html) |" >> $GITHUB_STEP_SUMMARY
+          echo "| Camel | [View](${R2_BASE_URL}/junit/camel/index.html) |" >> $GITHUB_STEP_SUMMARY
+          echo '' >> $GITHUB_STEP_SUMMARY
+          echo "$CLEANUP_INFO" >> $GITHUB_STEP_SUMMARY
 
-          # Retry logic for concurrent deployments
-          for i in {1..5}; do
-            git pull --rebase origin gh-pages || true
-            git commit -m "Update reports: ${{ github.ref_name }} (build ${{ needs.init.outputs.tag-fixed }})" || echo "No changes"
-            git push origin gh-pages && break || echo "Push failed, retrying in 10s..."
-            sleep 10
-          done
 
   cicd-dispatch:
     if: contains(fromJson(vars.CICD_BRANCH_MAP), github.ref_name) == true
