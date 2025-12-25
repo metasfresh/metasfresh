@@ -1247,12 +1247,15 @@ jobs:
           name: cucumber-logs-${{ matrix.profile }}
           path: cucumber.log
           retention-days: 30
+      - name: Rename Cucumber JUnit for unique merge
+        if: always()
+        run: mv cucumber/cucumber-junit.xml cucumber/cucumber-junit-${{ matrix.profile }}.xml || true
       - name: Upload Cucumber JUnit results for R2
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: junit-results-cucumber-${{ matrix.profile }}
-          path: cucumber/cucumber-junit.xml
+          path: cucumber/cucumber-junit-${{ matrix.profile }}.xml
           if-no-files-found: ignore
           retention-days: 1
 
@@ -1729,7 +1732,10 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: auto
         run: |
-          echo "Syncing reports to R2..."
+          # Configure AWS CLI for 50 concurrent uploads (default is 10)
+          aws configure set default.s3.max_concurrent_requests 50
+
+          echo "Syncing reports to R2 (50 concurrent uploads)..."
           aws s3 sync reports/ s3://${{ vars.R2_BUCKET_NAME }}/ \
             --endpoint-url ${{ vars.R2_ENDPOINT_URL }} \
             --no-progress
