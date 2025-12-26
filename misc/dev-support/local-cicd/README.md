@@ -13,38 +13,75 @@ Run the metasfresh CI/CD pipeline locally using [act](https://github.com/nektos/
 
 ### 1. Install `act`
 
+#### Windows 11 (Recommended Methods)
+
+**Option A - Chocolatey (recommended):**
+```powershell
+choco install act-cli
+```
+
+**Option B - Scoop:**
+```powershell
+scoop install act
+```
+
+**Option C - WinGet:**
+```powershell
+winget install nektos.act
+```
+
+**Option D - Manual download:**
+1. Download from [act releases](https://github.com/nektos/act/releases)
+2. Extract `act_Windows_x86_64.zip`
+3. Add the extracted folder to your PATH
+
+#### Linux/macOS
+
 ```bash
 # Linux
 curl -sfL https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash -s -- -b /usr/local/bin
 
 # macOS
 brew install act
-
-# Windows (via Chocolatey)
-choco install act-cli
 ```
 
-Verify installation:
-```bash
+**Verify installation:**
+```powershell
+# Windows
+act --version
+
+# Linux/macOS
 act --version
 ```
 
 ### 2. Docker Requirements
 
-- Docker Engine 20.10+ or Docker Desktop
+- **Docker Desktop 4.x+** (Windows/macOS) or Docker Engine 20.10+ (Linux)
 - At least **8GB RAM** allocated to Docker
 - At least **50GB free disk space** for images
-- Docker BuildKit enabled (set automatically by the script)
+- Docker BuildKit enabled (set automatically by the scripts)
 
-**Configuring Docker Desktop RAM:**
+#### Windows 11 Docker Desktop Configuration
 
-| Platform | Path |
-|----------|------|
-| **Windows** | Settings → Resources → Advanced → Memory slider |
-| **macOS** | Settings → Resources → Advanced → Memory slider |
-| **Linux** | Settings → Resources → Advanced → Memory slider (or edit `~/.docker/daemon.json`) |
+1. Open Docker Desktop
+2. Click the gear icon (⚙️) → **Settings**
+3. Navigate to **Resources** → **Advanced**
+4. Set **Memory** to 8GB or higher
+5. Set **Disk image size** to at least 50GB
+6. Click **Apply & Restart**
 
-In Docker Desktop: Click the gear icon (⚙️) → Resources → Advanced → Set Memory to 8GB or higher → Apply & Restart
+**Important Windows Settings:**
+
+| Setting | Recommended Value |
+|---------|-------------------|
+| Memory | 8GB+ |
+| CPUs | 4+ |
+| Disk image size | 50GB+ |
+| WSL 2 backend | Enabled (default) |
+
+#### Linux Docker Configuration
+
+Edit `/etc/docker/daemon.json` or use Docker Desktop settings if available.
 
 ### 3. Required Credentials
 
@@ -57,13 +94,28 @@ You need two tokens:
 
 ## Quick Setup
 
+### Windows 11 (PowerShell)
+
+```powershell
+# 1. Copy the secrets template
+Copy-Item .secrets.template .secrets
+
+# 2. Edit .secrets and add your tokens (use your preferred editor)
+notepad .secrets
+# Or: code .secrets (VS Code)
+
+# 3. Test the setup
+.\run-cicd.ps1 list
+```
+
+### Linux/macOS (Bash)
+
 ```bash
 # 1. Copy the secrets template
 cp .secrets.template .secrets
 
 # 2. Edit .secrets and add your tokens
-# DOCKERHUB_METASFRESH_RW_TOKEN=your_dockerhub_token
-# METASFRESH_PACKAGES_READ_TOKEN=ghp_your_github_pat
+nano .secrets  # or vim, etc.
 
 # 3. Test the setup
 ./run-cicd.sh list
@@ -71,13 +123,69 @@ cp .secrets.template .secrets
 
 ## Usage
 
-### List Available Jobs
+### Windows 11 (PowerShell)
+
+#### List Available Jobs
+
+```powershell
+.\run-cicd.ps1 list
+```
+
+#### Run Specific Jobs
+
+```powershell
+# Build Java/Maven artifacts (20-30 min, 5-10 with cache)
+.\run-cicd.ps1 java
+
+# Build frontend images
+.\run-cicd.ps1 frontend
+
+# Run JUnit tests (20-30 min)
+.\run-cicd.ps1 junit
+
+# Run Cucumber integration tests (30-45 min per profile)
+.\run-cicd.ps1 cucumber
+
+# Run health checks
+.\run-cicd.ps1 health_check
+
+# Run Playwright mobile tests
+.\run-cicd.ps1 mobile_test
+
+# Run Playwright frontend tests
+.\run-cicd.ps1 frontend_test
+```
+
+#### Run Full Pipeline
+
+```powershell
+.\run-cicd.ps1 full
+```
+
+**Warning**: Full pipeline takes 1.5-2+ hours depending on caching.
+
+#### Advanced Options
+
+```powershell
+# Verbose output (see container logs)
+.\run-cicd.ps1 junit -Verbose
+
+# Dry run (see what would execute)
+.\run-cicd.ps1 java -DryRun
+
+# Run any job by name
+.\run-cicd.ps1 cucumber-build
+```
+
+### Linux/macOS (Bash)
+
+#### List Available Jobs
 
 ```bash
 ./run-cicd.sh list
 ```
 
-### Run Specific Jobs
+#### Run Specific Jobs
 
 ```bash
 # Build Java/Maven artifacts (20-30 min, 5-10 with cache)
@@ -102,15 +210,13 @@ cp .secrets.template .secrets
 ./run-cicd.sh frontend_test
 ```
 
-### Run Full Pipeline
+#### Run Full Pipeline
 
 ```bash
 ./run-cicd.sh full
 ```
 
-**Warning**: Full pipeline takes 1.5-2+ hours depending on caching.
-
-### Advanced Options
+#### Advanced Options
 
 ```bash
 # Verbose output (see container logs)
@@ -127,17 +233,30 @@ cp .secrets.template .secrets
 
 ### 1. Check Artifacts
 
-Test results and logs are saved to `/tmp/act-artifacts/`:
+Test results and logs are saved to:
 
-```bash
+| Platform | Path |
+|----------|------|
+| **Windows** | `%TEMP%\act-artifacts\` |
+| **Linux/macOS** | `/tmp/act-artifacts/` |
+
+```powershell
+# Windows
+Get-ChildItem $env:TEMP\act-artifacts
+
+# Linux/macOS
 ls -la /tmp/act-artifacts/
 ```
 
 ### 2. Verbose Mode
 
-Run with `-v` for detailed container output:
+Run with verbose flag for detailed container output:
 
-```bash
+```powershell
+# Windows
+.\run-cicd.ps1 junit -Verbose
+
+# Linux/macOS
 ./run-cicd.sh junit -v
 ```
 
@@ -145,31 +264,36 @@ Run with `-v` for detailed container output:
 
 The CI/CD workflow creates database snapshots after tests (`docker commit`). You can inspect the test state:
 
-```bash
+```powershell
 # List available database snapshots
-docker images | grep metas-db
+docker images | Select-String "metas-db"
 
 # Start a post-test database
-docker run -d -p 15432:5432 \
-    -e PGDATA=/var/lib/postgresql/initdata \
-    --name debug-db \
+docker run -d -p 15432:5432 `
+    -e PGDATA=/var/lib/postgresql/initdata `
+    --name debug-db `
     metasfresh/metas-db:5.175-your_branch-postcucumber-profile1
 
-# Connect with psql
+# Connect with psql (if installed)
 psql -h localhost -p 15432 -U metasfresh -d metasfresh
 
+# Or use Docker exec
+docker exec -it debug-db psql -U metasfresh -d metasfresh
+
 # Cleanup when done
-docker stop debug-db && docker rm debug-db
+docker stop debug-db; docker rm debug-db
 ```
 
-### 4. Run Single Cucumber Test
+### 4. Run Single Cucumber Profile
 
-To run a specific Cucumber scenario, you'll need to modify the workflow temporarily or use the matrix parameter:
+To run a specific Cucumber profile:
 
-```bash
-# Run specific Cucumber profile
-act -j cucumber-run --matrix profile:profile1 \
-    --secret-file .secrets
+```powershell
+# Windows
+act -j cucumber-run --matrix profile:profile1 --secret-file .secrets -C (Resolve-Path ..\..\..| Select-Object -ExpandProperty Path)
+
+# Linux/macOS
+act -j cucumber-run --matrix profile:profile1 --secret-file .secrets
 ```
 
 ## Estimated Run Times
@@ -186,44 +310,94 @@ act -j cucumber-run --matrix profile:profile1 \
 
 ## Troubleshooting
 
-### "act is not installed"
+### Windows-Specific Issues
 
-Follow the installation instructions above.
+#### "act is not recognized"
 
-### "Docker daemon is not running"
+PowerShell doesn't find `act`:
+```powershell
+# Check if act is in PATH
+Get-Command act
+
+# If not, add it to PATH or reinstall via Chocolatey
+choco install act-cli --force
+```
+
+#### Execution Policy Error
+
+If PowerShell blocks the script:
+```powershell
+# Option 1: Allow for current session
+Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
+
+# Option 2: Run with bypass
+powershell -ExecutionPolicy Bypass -File .\run-cicd.ps1 list
+```
+
+#### Long Path Issues
+
+Windows has a 260-character path limit by default. Enable long paths:
+```powershell
+# Run as Administrator
+Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\FileSystem" -Name "LongPathsEnabled" -Value 1
+```
+
+Then restart Docker Desktop.
+
+#### WSL 2 Integration Issues
+
+If Docker can't communicate with WSL:
+1. Open Docker Desktop Settings
+2. Navigate to **Resources** → **WSL Integration**
+3. Enable integration with your distro
+4. Restart Docker Desktop
+
+### General Issues
+
+#### "act is not installed"
+
+Follow the installation instructions above for your platform.
+
+#### "Docker daemon is not running"
 
 Start Docker:
-```bash
+```powershell
+# Windows: Start Docker Desktop from Start menu
+# Or via PowerShell (if Docker is in PATH):
+Start-Process "Docker Desktop"
+
 # Linux
 sudo systemctl start docker
-
-# macOS/Windows
-# Start Docker Desktop
 ```
 
-### "Secrets file not found"
+#### "Secrets file not found"
 
-```bash
+```powershell
+# Windows
+Copy-Item .secrets.template .secrets
+notepad .secrets
+
+# Linux/macOS
 cp .secrets.template .secrets
-# Edit .secrets with your credentials
+nano .secrets
 ```
 
-### Out of disk space
+#### Out of disk space
 
-```bash
+```powershell
 # Clean up Docker resources
 docker system prune -a --volumes
 ```
 
-### Build cache issues
+#### Build cache issues
 
-```bash
+```powershell
 # Force clean build (no cache)
 docker builder prune -a
-./run-cicd.sh java
+.\run-cicd.ps1 java  # or ./run-cicd.sh java
 ```
 
-### Permission denied on secrets
+#### Permission denied on secrets (Linux/macOS)
 
 ```bash
 chmod 600 .secrets
@@ -236,11 +410,23 @@ chmod 600 .secrets
 | `.actrc` | act configuration (runner image, artifact path, etc.) |
 | `.secrets.template` | Template for credentials (copy to `.secrets`) |
 | `.secrets` | Your credentials (gitignored, never commit!) |
-| `run-cicd.sh` | Wrapper script for common commands |
+| `run-cicd.ps1` | **Windows** PowerShell wrapper script |
+| `run-cicd.sh` | **Linux/macOS** Bash wrapper script |
 | `README.md` | This documentation |
+
+## Platform Comparison
+
+| Feature | Windows (PowerShell) | Linux/macOS (Bash) |
+|---------|---------------------|-------------------|
+| Script | `.\run-cicd.ps1` | `./run-cicd.sh` |
+| Verbose flag | `-Verbose` | `-v` |
+| Dry-run flag | `-DryRun` | `--dry-run` |
+| Artifact path | `%TEMP%\act-artifacts` | `/tmp/act-artifacts` |
+| Docker backend | Docker Desktop (WSL 2) | Docker Engine |
 
 ## Resources
 
 - [act documentation](https://nektosact.com/)
 - [act GitHub repository](https://github.com/nektos/act)
 - [GitHub Actions workflow syntax](https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions)
+- [Docker Desktop for Windows](https://docs.docker.com/desktop/install/windows-install/)
