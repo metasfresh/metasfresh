@@ -481,6 +481,14 @@ jobs:
         run: |
           find jest -type d -links 2 -exec testspace [{}]{}/*.xml \;                                                # upload all jest xml's to testspace
           testspace "[jest/frontend]jest/frontend/jest.log{$(cat jest/frontend/jest.exit-code):webui jest tests}"   # upload webui log with exit code
+      - name: upload jest junit results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: junit-results-jest
+          path: jest/frontend/*.xml
+          retention-days: 1
+          if-no-files-found: warn
       - name: assert success
         run: |
           if [ $(cat jest/frontend/jest.exit-code) != 0 ]; then tail -1000 jest/frontend/jest.log && exit 1; fi     # print frontend log and exit if frontend failed
@@ -1193,6 +1201,24 @@ jobs:
           testspace "[junit/commons]junit/commons/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/commons/junit.exit-code junit/commons/junit.mvn.exit-code):java 8 commons junit tests}"     # upload commons log with combined exit code
           testspace "[junit/backend]junit/backend/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/backend/junit.exit-code junit/backend/junit.mvn.exit-code):java 8 backend junit tests}"     # upload backend log with combined exit code
           testspace "[junit/camel]junit/camel/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/camel/junit.exit-code junit/camel/junit.mvn.exit-code):java 14 camel junit tests}"              # upload camel log with combined exit code
+      - name: upload backend junit results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: junit-results-backend
+          path: |
+            junit/commons/**/*.xml
+            junit/backend/**/*.xml
+          retention-days: 1
+          if-no-files-found: warn
+      - name: upload camel junit results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: junit-results-camel
+          path: junit/camel/**/*.xml
+          retention-days: 1
+          if-no-files-found: warn
       - name: assert success
         run: |
           if [ $(cat junit/commons/junit.exit-code) != 0 ] || [ $(cat junit/commons/junit.mvn.exit-code) != 0 ]; then tail -1000 junit/commons/junit.log && exit 1; fi      # print commons log and exit if commons failed
@@ -1795,10 +1821,14 @@ jobs:
 
       # ===== GENERATE JUNIT HTML REPORTS =====
       # Note: Playwright tests use Allure reports (richer visualization) instead of JUnit HTML
+      # Paths account for directory structure preserved by upload-artifact:
+      #   - jest/frontend/*.xml downloaded to junit-raw/jest/ → junit-raw/jest/jest/frontend/*.xml
+      #   - junit/{commons,backend}/**/*.xml downloaded to junit-raw/backend/ → junit-raw/backend/junit/{commons,backend}/**/*.xml
+      #   - junit/camel/**/*.xml downloaded to junit-raw/camel/ → junit-raw/camel/junit/camel/**/*.xml
       - name: Generate Jest HTML report
         uses: ./.github/actions/generate-junit-html
         with:
-          xml-path: junit-raw/jest/*.xml
+          xml-path: junit-raw/jest/**/*.xml
           output-dir: reports/branches/${{ needs.init.outputs.branch-sanitized-gh-pages }}/builds/${{ needs.init.outputs.tag-fixed }}/junit/jest
           report-title: 'Jest Frontend Tests'
         continue-on-error: true
