@@ -20,22 +20,22 @@ SELECT (SELECT (((COALESCE(org_bp.name, ''::character varying)::text || ', '::te
                  JOIN c_bpartner_location org_bpl ON org_info.orgbp_location_id = org_bpl.c_bpartner_location_id
                  JOIN c_location org_l ON org_bpl.c_location_id = org_l.c_location_id
                  JOIN c_bpartner org_bp ON org_bpl.c_bpartner_id = org_bp.c_bpartner_id
-        WHERE org.ad_org_id = o.ad_org_id)                                                                                                      AS org_address,
+        WHERE org.ad_org_id = o.ad_org_id)                   AS org_address,
 
 
-       package.ipa_sscc18                                                                                                                       AS sscc,
-       bp_product.productno                                                                                                                     AS p_customervalue,
-       NULL::numeric                                                                                                                            AS priceactual,
-       COALESCE(pt.name, p.name)                                                                                                                AS p_name,
+       package.ipa_sscc18                                    AS sscc,
+       bp_product.productno                                  AS p_customervalue,
+       NULL::numeric                                         AS priceactual,
+       COALESCE(pt.name, p.name)                             AS p_name,
 
-       piip.qty                                                                                                                                 AS cu_per_tu,
-       ol.qtyenteredtu                                                                                                                          AS tu_per_lu,
+       piip.qty                                              AS cu_per_tu,
+       ol.qtyenteredtu                                       AS tu_per_lu,
        ol.qtyentered * p.weight                              AS net_weight,
        package.packageweight                                 AS gross_weight,
-       o.documentno                                                                                                                             AS order_docno,
-       p.value                                                                                                                                  AS p_value,
-       NULL::CHARACTER VARYING                                                                                                                  AS lotcode,
-       sscc18_extract_serialnumber(package.ipa_sscc18::TEXT)                                                                                    AS paletno,
+       o.documentno                                          AS order_docno,
+       p.value                                               AS p_value,
+       NULL::CHARACTER VARYING                               AS lotcode,
+       sscc18_extract_serialnumber(package.ipa_sscc18::TEXT) AS paletno,
        CASE
            WHEN inc.value = 'EXW'  THEN NULL::CHARACTER VARYING
            WHEN o.isdropship = 'Y' THEN (COALESCE(o.poreference || ' - ', ''::CHARACTER VARYING)::TEXT || (COALESCE(dbp.name, ''::CHARACTER VARYING)::TEXT || ' '::TEXT) || COALESCE(dbpl.address, ''::CHARACTER VARYING)::TEXT) || ''::TEXT
@@ -43,7 +43,7 @@ SELECT (SELECT (((COALESCE(org_bp.name, ''::character varying)::text || ', '::te
                (COALESCE(o.poreference || ' - ', ''::CHARACTER VARYING)::TEXT || (COALESCE(bp.name, ''::CHARACTER VARYING)::TEXT || ' '::TEXT) || COALESCE(hol.address, bpl.address, ''::CHARACTER VARYING)::TEXT) || ''::TEXT
        END                                                   AS customer,
        bp.ad_language,
-       NULL::NUMERIC                                                                                                                            AS m_hu_id,
+       NULL::NUMERIC                                         AS m_hu_id,
        package.m_package_id,
        att.ai_value                                          AS lotnumberdate,
        o.c_order_id
