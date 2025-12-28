@@ -58,8 +58,8 @@ const createMasterdata = async () => {
 // noinspection JSUnusedLocalSymbols
 test('Auto-issue first line hides Scan button; manual second line shows it', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0160: Manufacturing Execution');
-    allure.tag('F8030: MobileUI Manufacturing');
+    allure.epic('E0160');
+    allure.tag('F8030');
     allure.story('Auto-issue BOM component behavior');
     allure.severity('normal');
 

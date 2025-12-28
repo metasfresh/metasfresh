@@ -60,8 +60,8 @@ const createMasterdata = async ({ qtyToMove }) => {
 // noinspection JSUnusedLocalSymbols
 test('Pick multiple HUs and drop them all together in one step', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0370: Intralogistic (HUs)');
-    allure.tag('F5114.2: MobileUI Distribution: Drop All');
+    allure.epic('E0370');
+    allure.tag('F5114.2');
     allure.story('Drop all button in job screen');
     allure.severity('normal');
 
@@ -191,8 +191,8 @@ test('Pick multiple HUs and drop them all together in one step', async ({ page }
 // noinspection JSUnusedLocalSymbols
 test('Pick multiple HUs (by HU code) and drop them all together in one step (using locator code)', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0370: Intralogistic (HUs)');
-    allure.tag('F5114.2: MobileUI Distribution: Drop All');
+    allure.epic('E0370');
+    allure.tag('F5114.2');
     allure.story('Drop all button in job screen');
     allure.severity('normal');
 

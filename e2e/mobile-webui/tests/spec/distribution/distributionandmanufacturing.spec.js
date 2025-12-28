@@ -85,8 +85,8 @@ const createMasterdata = async ({ comp1_qty, comp2_qty }) => {
 // noinspection JSUnusedLocalSymbols
 test('Distribution and manufacturing test', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0370: Intralogistic (HUs)');
-    allure.tag('F5114: MobileUI Distribution');
+    allure.epic('E0370');
+    allure.tag('F5114');
     allure.story('Distribution and manufacturing integration');
     allure.severity('critical');
 

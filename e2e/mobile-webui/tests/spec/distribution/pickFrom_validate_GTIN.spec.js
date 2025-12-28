@@ -62,8 +62,8 @@ test.describe('Scan directly in job screen, expect scanning the product code too
     // noinspection JSUnusedLocalSymbols
     test('Scan the HU by QRCode', async ({ page }) => {
         // === ALLURE METADATA ===
-        allure.epic('E0370: Intralogistic (HUs)');
-        allure.tag('F5114.3: MobileUI Distribution: GTIN Scan');
+        allure.epic('E0370');
+        allure.tag('F5114.3');
         allure.story('Validate GTIN during pick from');
         allure.severity('normal');
 
@@ -80,8 +80,8 @@ test.describe('Scan directly in job screen, expect scanning the product code too
     // noinspection JSUnusedLocalSymbols
     test('Scan the HU by Value/M_HU_ID', async ({ page }) => {
         // === ALLURE METADATA ===
-        allure.epic('E0370: Intralogistic (HUs)');
-        allure.tag('F5114.3: MobileUI Distribution: GTIN Scan');
+        allure.epic('E0370');
+        allure.tag('F5114.3');
         allure.story('Validate GTIN during pick from');
         allure.severity('normal');
 
@@ -98,8 +98,8 @@ test.describe('Scan directly in job screen, expect scanning the product code too
     // noinspection JSUnusedLocalSymbols
     test('Scan the HU by External Attribute', async ({ page }) => {
         // === ALLURE METADATA ===
-        allure.epic('E0370: Intralogistic (HUs)');
-        allure.tag('F5114.3: MobileUI Distribution: GTIN Scan');
+        allure.epic('E0370');
+        allure.tag('F5114.3');
         allure.story('Validate GTIN during pick from');
         allure.severity('normal');
 
@@ -119,8 +119,8 @@ test.describe('Scan directly in job screen, expect scanning the product code too
 // noinspection JSUnusedLocalSymbols
 test('Do not ask for picked qty when it is one', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0370: Intralogistic (HUs)');
-    allure.tag('F5114.3: MobileUI Distribution: GTIN Scan');
+    allure.epic('E0370');
+    allure.tag('F5114.3');
     allure.story('Validate GTIN during pick from');
     allure.severity('normal');
 

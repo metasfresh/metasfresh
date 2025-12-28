@@ -55,8 +55,8 @@ const createMasterdata = async ({ workplace, distributionOrders }) => {
 // noinspection JSUnusedLocalSymbols
 test('Show all jobs when no current workplace', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0370: Intralogistic (HUs)');
-    allure.tag('F5112.1: MobileUI Distribution Filter');
+    allure.epic('E0370');
+    allure.tag('F5112.1');
     allure.story('Filter distribution by workplace');
     allure.severity('normal');
 
@@ -90,8 +90,8 @@ test('Show all jobs when no current workplace', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Show only jobs suitable for workplace1', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0370: Intralogistic (HUs)');
-    allure.tag('F5112.1: MobileUI Distribution Filter');
+    allure.epic('E0370');
+    allure.tag('F5112.1');
     allure.story('Filter distribution by workplace');
     allure.severity('normal');
 

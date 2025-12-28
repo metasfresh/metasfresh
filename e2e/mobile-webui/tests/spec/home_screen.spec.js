@@ -40,8 +40,8 @@ test.describe('Scan HU codes', () => {
     // noinspection JSUnusedLocalSymbols
     test('Scan HU QR Code', async ({ page }) => {
         // === ALLURE METADATA ===
-        allure.epic('E0295: Frontend MobileUI');
-        allure.tag('F12000: Frontend MobileUI');
+        allure.epic('E0295');
+        allure.tag('F12000');
         allure.story('Scan HU codes from home screen');
         allure.severity('normal');
 
@@ -52,8 +52,8 @@ test.describe('Scan HU codes', () => {
     // noinspection JSUnusedLocalSymbols
     test('Scan HU ID Code', async ({ page }) => {
         // === ALLURE METADATA ===
-        allure.epic('E0295: Frontend MobileUI');
-        allure.tag('F12000: Frontend MobileUI');
+        allure.epic('E0295');
+        allure.tag('F12000');
         allure.story('Scan HU codes from home screen');
         allure.severity('normal');
 
@@ -64,8 +64,8 @@ test.describe('Scan HU codes', () => {
     // noinspection JSUnusedLocalSymbols
     test('Scan ExternalBarcode', async ({ page }) => {
         // === ALLURE METADATA ===
-        allure.epic('E0295: Frontend MobileUI');
-        allure.tag('F12000: Frontend MobileUI');
+        allure.epic('E0295');
+        allure.tag('F12000');
         allure.story('Scan HU codes from home screen');
         allure.severity('normal');
 
@@ -79,8 +79,8 @@ test.describe('Scan HU codes', () => {
 // noinspection JSUnusedLocalSymbols
 test('Scan Workplace code', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0295: Frontend MobileUI');
-    allure.tag('F12000: Frontend MobileUI');
+    allure.epic('E0295');
+    allure.tag('F12000');
     allure.story('Scan workplace codes from home screen');
     allure.severity('normal');
 

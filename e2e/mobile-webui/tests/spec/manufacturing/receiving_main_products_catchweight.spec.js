@@ -60,8 +60,8 @@ const createMasterdata = async ({ finishedProductUOMConfigs = {} } = {}) => {
 // noinspection JSUnusedLocalSymbols
 test('To a new TU, manual input', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0160: Manufacturing Execution');
-    allure.tag('F8030: MobileUI Manufacturing');
+    allure.epic('E0160');
+    allure.tag('F8030');
     allure.story('Receive main products with catch weight');
     allure.severity('normal');
 
@@ -121,8 +121,8 @@ test('To a new TU, manual input', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('To a new TU, scanning L+M QR codes', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0160: Manufacturing Execution');
-    allure.tag('F8030: MobileUI Manufacturing');
+    allure.epic('E0160');
+    allure.tag('F8030');
     allure.story('Receive main products with catch weight');
     allure.severity('normal');
 
@@ -175,8 +175,8 @@ test('To a new TU, scanning L+M QR codes', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('To a new TU, scanning L+M QR codes from 2 manufacturing orders', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0160: Manufacturing Execution');
-    allure.tag('F8030: MobileUI Manufacturing');
+    allure.epic('E0160');
+    allure.tag('F8030');
     allure.story('Receive main products with catch weight');
     allure.severity('normal');
 
@@ -252,8 +252,8 @@ test('To a new TU, scanning L+M QR codes from 2 manufacturing orders', async ({ 
 // noinspection JSUnusedLocalSymbols
 test('TO a new LU, scanning 2 x GTIN codes', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0160: Manufacturing Execution');
-    allure.tag('F8030: MobileUI Manufacturing');
+    allure.epic('E0160');
+    allure.tag('F8030');
     allure.story('Receive main products with catch weight');
     allure.severity('normal');
 

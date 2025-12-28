@@ -52,8 +52,8 @@ const createMasterdata = async () => {
 // noinspection JSUnusedLocalSymbols
 test('Receive 1 full LU, 1 half LU', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0160: Manufacturing Execution');
-    allure.tag('F8030: MobileUI Manufacturing');
+    allure.epic('E0160');
+    allure.tag('F8030');
     allure.story('Receive main products to LUs');
     allure.severity('normal');
 

@@ -65,8 +65,8 @@ const createDistributionOrders = async (distributionOrders) => {
 // noinspection JSUnusedLocalSymbols
 test('Check launchers are refreshed via websockets', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0370: Intralogistic (HUs)');
-    allure.tag('F5114: MobileUI Distribution');
+    allure.epic('E0370');
+    allure.tag('F5114');
     allure.story('Launcher websocket updates');
     allure.severity('normal');
 
