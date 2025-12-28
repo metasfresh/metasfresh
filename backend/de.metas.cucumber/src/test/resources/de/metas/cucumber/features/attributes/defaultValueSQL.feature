@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E2300
+@allure.label.feature:F00820
 @ghActions:run_on_executor6
 Feature: Test M_Attribute.DefaultValueSQL feature
+## F00820: Attributes
 
   Background:
     Given infrastructure and metasfresh are running
@@ -50,6 +53,8 @@ Feature: Test M_Attribute.DefaultValueSQL feature
 
 
   @from:cucumber
+@allure.label.epic:E2300
+@allure.label.feature:F00820
   Scenario: Test M_Attribute.DefaultValueSQL feature
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |

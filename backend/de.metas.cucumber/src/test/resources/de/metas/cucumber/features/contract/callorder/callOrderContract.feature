@@ -1,5 +1,6 @@
 @ghActions:run_on_executor5
 Feature: Call order contract
+## F00971: Call Order Contract
 
   Background:
     Given infrastructure and metasfresh are running
@@ -13,6 +14,8 @@ Feature: Call order contract
       | callOrderPricingSystem |
 
   @from:cucumber
+@allure.label.epic:E0170
+@allure.label.feature:F00971
   Scenario: Happy flow for call order contract and call order summary - sales order
     Given metasfresh contains M_PriceLists
       | Identifier         | M_PricingSystem_ID     | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | PricePrecision |
@@ -272,6 +275,8 @@ Feature: Call order contract
 
 
   @from:cucumber
+@allure.label.epic:E0170
+@allure.label.feature:F00971
   Scenario: Happy flow for call order contract and call order summary - purchase order
     Given metasfresh contains M_Products:
       | Identifier            |

@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0260
+@allure.label.feature:F32000
 @ghActions:run_on_executor6
 Feature: Product price validation (S0144_1)
+## F32000: Pricing
 
   Background:
 #  Prerequisite:
@@ -174,6 +177,8 @@ Feature: Product price validation (S0144_1)
 
 
   @from:cucumber
+@allure.label.epic:E0260
+@allure.label.feature:F32000
   @Id:S0144.1_110
   Scenario: Product price `IsAttributeDependant = true` and has ASI set, then on order line price is matched with `ppASI_S0144.1_110`
     Given metasfresh contains C_Orders:
@@ -202,6 +207,8 @@ Feature: Product price validation (S0144_1)
 
 
   @from:cucumber
+@allure.label.epic:E0260
+@allure.label.feature:F32000
   @Id:S0144.1_120
   Scenario: Product price `IsAttributeDependant = true` and has ASI set, then on order line price is matched with `ppASI_S0144.1_120`
     And metasfresh contains C_Orders:
@@ -230,6 +237,8 @@ Feature: Product price validation (S0144_1)
 
 
   @from:cucumber
+@allure.label.epic:E0260
+@allure.label.feature:F32000
   @Id:S0144.1_130
   Scenario: Product price `IsAttributeDependant = true`, has ASI and packingMaterial set, then on order line price is matched with ASI `ppASI_S0144.1_130` and packing material `huProductTU_X`
     Given metasfresh contains C_Orders:
@@ -257,6 +266,8 @@ Feature: Product price validation (S0144_1)
       | ol_S0144.1_130            | order_S0144.1_130     | 2022-06-01      | product_02062022        | 2          | 0            | 0           | 130   | 0        | EUR          | false     | ppASI_S0144.1_130                        | huProductTU_X                          |
 
   @from:cucumber
+@allure.label.epic:E0260
+@allure.label.feature:F32000
   @Id:S0144.1_140
   Scenario: Product price `IsAttributeDependant = true`, has ASI and packingMaterial set, then on order line price is matched with ASI `ppASI_S0144.1_140` and packing material `huProductTU_Y`
     Given metasfresh contains C_Orders:
@@ -284,6 +295,8 @@ Feature: Product price validation (S0144_1)
       | ol_S0144.1_140            | order_S0144.1_140     | 2022-06-01      | product_02062022        | 3          | 0            | 0           | 140   | 0        | EUR          | false     | ppASI_S0144.1_140                        | huProductTU_Y                          |
 
   @from:cucumber
+@allure.label.epic:E0260
+@allure.label.feature:F32000
   @Id:S0144.1_150
   Scenario: Product price `IsAttributeDependant = true`, has ASI and packingMaterial set, then on order line price is matched with ASI `ppASI_S0144.1_150` and packing material `huProductTU_X`
     Given metasfresh contains C_Orders:
@@ -312,6 +325,8 @@ Feature: Product price validation (S0144_1)
 
 
   @from:cucumber
+@allure.label.epic:E0260
+@allure.label.feature:F32000
   @Id:S0144.1_160
   Scenario: Product price `IsAttributeDependant = true`, has ASI and packingMaterial set, then on order line price is matched with ASI `ppASI_S0144.1_160` and packing material `huProductTU_X`
     Given metasfresh contains C_Orders:
@@ -344,6 +359,8 @@ Feature: Product price validation (S0144_1)
 
 
   @from:cucumber
+@allure.label.epic:E0260
+@allure.label.feature:F32000
   @Id:S0144.1_170
   Scenario: Product price `IsAttributeDependant = false` and packingMaterial set, then on order line price is matched with packing material `huProductTU_Y`
     Given metasfresh contains C_Orders:

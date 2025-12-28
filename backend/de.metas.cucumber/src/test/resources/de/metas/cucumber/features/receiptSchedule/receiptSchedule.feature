@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0150
+@allure.label.feature:F65010
 @ghActions:run_on_executor6
 Feature: create Material Receipt via REST API
+## F65010: Receipt Schedule
 
   Background:
     Given infrastructure and metasfresh are running
@@ -19,6 +22,8 @@ Feature: create Material Receipt via REST API
       | bpartnerLocation_1                | 2205173                | bpartner_1               |
 
   @from:cucumber
+@allure.label.epic:E0150
+@allure.label.feature:F65010
   Scenario:  The material receipt is created via REST API, receipt schedule being identified by external ids
     Given a 'POST' request with the below payload is sent to the metasfresh REST-API '/api/v2/order/purchase/createCandidates' and fulfills with '200' status code
   """
@@ -102,6 +107,8 @@ Feature: create Material Receipt via REST API
       | receipt_1  | externalLineId_12082025_1 | 2005577      |
 
   @from:cucumber
+@allure.label.epic:E0150
+@allure.label.feature:F65010
   Scenario:  The material receipt is created via REST API, receipt schedule being identified by orderLineId
     Given a 'POST' request with the below payload is sent to the metasfresh REST-API '/api/v2/order/purchase/createCandidates' and fulfills with '200' status code
   """
@@ -183,6 +190,8 @@ Feature: create Material Receipt via REST API
       | receipt_1  | externalLineId_12082025_2 | 2005577      |
 
   @from:cucumber
+@allure.label.epic:E0150
+@allure.label.feature:F65010
   Scenario:  The material receipt is created via REST API, receipt schedule being identified by receiptScheduleId
     Given a 'POST' request with the below payload is sent to the metasfresh REST-API '/api/v2/order/purchase/createCandidates' and fulfills with '200' status code
   """

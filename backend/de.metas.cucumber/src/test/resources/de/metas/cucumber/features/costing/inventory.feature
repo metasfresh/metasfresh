@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0226
+@allure.label.feature:F1500
 @ghActions:run_on_executor7
 Feature: Inventory Costing
+## F1500: Costing
 
   Background:
     Given infrastructure and metasfresh are running
@@ -43,6 +46,8 @@ Feature: Inventory Costing
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
+@allure.label.epic:E0226
+@allure.label.feature:F1500
   Scenario: Outbound transaction is using provided fixed cost price
     When update C_AcctSchema:
       | C_AcctSchema_ID | CostingMethod |

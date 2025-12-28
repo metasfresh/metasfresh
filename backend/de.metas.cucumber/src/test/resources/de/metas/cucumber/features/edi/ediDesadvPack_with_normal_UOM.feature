@@ -1,5 +1,9 @@
 @ghActions:run_on_executor5
+@allure.label.epic:E0292
+@allure.label.feature:F00350
 Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal UOM like PCE
+## F00350: EDI
+## F00350: EDI
 
   Background:
     Given infrastructure and metasfresh are running

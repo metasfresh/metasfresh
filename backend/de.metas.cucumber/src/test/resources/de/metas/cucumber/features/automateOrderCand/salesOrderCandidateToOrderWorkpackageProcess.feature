@@ -1,7 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0100
+@allure.label.feature:F00101
 @topic:orderCandidate
 @ghActions:run_on_executor3
 Feature: Enqueue order candidate in multiple workpackages for processing to order
+## F00101: Order Candidates
   As a user
   I create multiple order candidates and when processing, multiple workpackages are enqueued for each order to be generated
 
@@ -12,6 +15,8 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
   @from:cucumber
+@allure.label.epic:E0100
+@allure.label.feature:F00101
   @topic:orderCandidate
   Scenario: Process C_OLCand in batches:
   - create 4 olcands - they would end of in 3 C_Orders
@@ -221,6 +226,8 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
       | queueElement_olCand_2         | wp_order_1                        | C_OLCand              | olCand_2             |
 
   @from:cucumber
+@allure.label.epic:E0100
+@allure.label.feature:F00101
   @topic:orderCandidate
   Scenario: Create OLCand with different currency than what the pricelist allows -> an error is thrown when trying to create an order from it
     Given metasfresh contains M_PricingSystems

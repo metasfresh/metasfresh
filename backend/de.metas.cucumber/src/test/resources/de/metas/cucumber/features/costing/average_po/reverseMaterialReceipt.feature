@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0226
+@allure.label.feature:F1500
 @ghActions:run_on_executor6
 Feature: Average PO - Check costing when reversing a material receipt
+## F1500: Costing
 
   Background:
     Given infrastructure and metasfresh are running
@@ -68,6 +71,8 @@ Feature: Average PO - Check costing when reversing a material receipt
 # ######################################################################################################################
 # ######################################################################################################################
   @from:cucumber
+@allure.label.epic:E0226
+@allure.label.feature:F1500
   Scenario: No initial stock
     #
     # Create material receipt 
@@ -152,6 +157,8 @@ Feature: Average PO - Check costing when reversing a material receipt
 # ######################################################################################################################
 # ######################################################################################################################
   @from:cucumber
+@allure.label.epic:E0226
+@allure.label.feature:F1500
   Scenario: With initial stock
     #
     # Create the initial inventory 

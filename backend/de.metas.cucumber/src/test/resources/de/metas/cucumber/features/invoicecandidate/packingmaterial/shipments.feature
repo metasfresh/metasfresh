@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00701
 @ghActions:run_on_executor3
 Feature: Packing material invoice candidates: shipments
+## F00701: Invoice Candidates
 
   Background:
     Given infrastructure and metasfresh are running
@@ -47,6 +50,8 @@ Feature: Packing material invoice candidates: shipments
 
 
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00701
   @Id:S0160.2_100
   Scenario: order product w/ packing material then create and complete shipment
     Given metasfresh contains C_Orders:
@@ -98,6 +103,8 @@ Feature: Packing material invoice candidates: shipments
       | invoiceCandShipmentLine_2                  | invoiceCand_2                         | shipmentLine_2                | 10               |
 
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00701
   @Id:S0160.2_110
   Scenario: order product w/ packing material, decrease qty for shipment then complete it
     Given metasfresh contains C_Orders:
@@ -155,6 +162,8 @@ Feature: Packing material invoice candidates: shipments
       | invoiceCandShipmentLine_2                  | invoiceCand_2                         | shipmentLine_2                | 9                |
 
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00701
   @Id:S0160.2_120
   Scenario: order product w/ packing material, increase qty for shipment then complete it
     Given metasfresh contains C_Orders:
@@ -211,6 +220,8 @@ Feature: Packing material invoice candidates: shipments
 
 
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00701
   @Id:S0160.2_130
   Scenario: order product w/ packing material, create and complete shipment then reactivate it
     Given metasfresh contains C_Orders:
@@ -279,6 +290,8 @@ Feature: Packing material invoice candidates: shipments
 
 
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00701
   @Id:S0160.2_140
   Scenario: order product w/ packing material, decrease qty for shipment, complete it then reactivate shipment
     Given metasfresh contains C_Orders:
@@ -350,6 +363,8 @@ Feature: Packing material invoice candidates: shipments
 
 
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00701
   @Id:S0160.2_150
   Scenario: order product w/ packing material, increase qty for shipment, complete it then reactivate shipment
     Given metasfresh contains C_Orders:
@@ -421,6 +436,8 @@ Feature: Packing material invoice candidates: shipments
 
 
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00701
   @Id:S0160.2_160
   Scenario: order product w/ packing material, create and complete shipment, reactivate it then complete it again
     Given metasfresh contains C_Orders:
@@ -504,6 +521,8 @@ Feature: Packing material invoice candidates: shipments
 
 
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00701
   @Id:S0160.2_170
   Scenario: order product w/ packing material, decrease qty for shipment, complete it then reactivate it and complete shipment again
     Given metasfresh contains C_Orders:
@@ -590,6 +609,8 @@ Feature: Packing material invoice candidates: shipments
 
 
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00701
   @Id:S0160.2_180
   Scenario: order product w/ packing material, increase qty for shipment, complete it then reactivate it and complete shipment again
     Given metasfresh contains C_Orders:
@@ -677,6 +698,8 @@ Feature: Packing material invoice candidates: shipments
 
 
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00701
   @Id:S0160.2_190
   Scenario: order product w/ packing material, create and complete and reactivate shipment, reset packingLines then complete it again
     Given metasfresh contains C_Orders:
@@ -771,6 +794,8 @@ Feature: Packing material invoice candidates: shipments
 
 
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00701
   @Id:S0160.2_191
   Scenario: order product w/ packing material, create and complete shipment, reactivate it, increase qty then complete it again
     Given metasfresh contains C_Orders:
@@ -857,6 +882,8 @@ Feature: Packing material invoice candidates: shipments
 
 
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00701
   @Id:S0160.2_192
   Scenario: order product w/ packing material, create and complete shipment, reactivate it, decrease qty then complete it again
     Given metasfresh contains C_Orders:
@@ -943,6 +970,8 @@ Feature: Packing material invoice candidates: shipments
 
 
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00701
   @Id:S0160.2_200
   Scenario: order product w/ packing material, create and complete shipment then reactivate and void it
     Given metasfresh contains C_Orders:
@@ -1025,6 +1054,8 @@ Feature: Packing material invoice candidates: shipments
 
 
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00701
   @Id:S0160.2_210
   Scenario: order product w/ packing material, decrease qty for shipment, complete it then reactivate and void shipment
     Given metasfresh contains C_Orders:
@@ -1111,6 +1142,8 @@ Feature: Packing material invoice candidates: shipments
 
 
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00701
   @Id:S0160.2_220
   Scenario: order product w/ packing material, increase qty for shipment, complete it then reactivate and void shipment
     Given metasfresh contains C_Orders:
@@ -1197,6 +1230,8 @@ Feature: Packing material invoice candidates: shipments
 
 
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00701
   @Id:S0160.2_230
   Scenario: order product w/ packing material, create and complete shipment then revert it
     Given metasfresh contains C_Orders:
@@ -1265,6 +1300,8 @@ Feature: Packing material invoice candidates: shipments
 
 
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00701
   @Id:S0160.2_240
   Scenario: order product w/ packing material, decrease qty for shipment, complete it then revert shipment
     Given metasfresh contains C_Orders:
@@ -1336,6 +1373,8 @@ Feature: Packing material invoice candidates: shipments
 
 
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00701
   @Id:S0160.2_250
   Scenario: order product w/ packing material, increase qty for shipment, complete it then revert shipment
     Given metasfresh contains C_Orders:
@@ -1406,6 +1445,8 @@ Feature: Packing material invoice candidates: shipments
 
 
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00701
   @Id:S0160.2_260
   Scenario: order product w/ packing material, create and complete shipment then close it
     Given metasfresh contains C_Orders:
@@ -1474,6 +1515,8 @@ Feature: Packing material invoice candidates: shipments
 
 
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00701
   @Id:S0160.2_270
   Scenario: order product w/ packing material, decrease qty for shipment, complete it then close shipment
     Given metasfresh contains C_Orders:
@@ -1545,6 +1588,8 @@ Feature: Packing material invoice candidates: shipments
 
 
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00701
   @Id:S0160.2_280
   Scenario: order product w/ packing material, increase qty for shipment, complete it then close shipment
     Given metasfresh contains C_Orders:

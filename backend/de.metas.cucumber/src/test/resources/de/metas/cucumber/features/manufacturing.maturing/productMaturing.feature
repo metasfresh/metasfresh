@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0160
+@allure.label.feature:F8031
 @ghActions:run_on_executor6
 Feature: Maturing scenarios
+## F8031: Maturing
 
   Background:
     Given infrastructure and metasfresh are running
@@ -39,6 +42,8 @@ Feature: Maturing scenarios
       | prodPlanning | maturedGood  | false        | maturingWarehouse | true      | maturingConfig              | maturingConfigLine               | bomVersions_1             |
 
   @from:cucumber
+@allure.label.epic:E0160
+@allure.label.feature:F8031
   @Id:S0382_100
   @flaky
   Scenario: Happy flow, raw good product HU created via inventory, maturing candidate created and processed
@@ -108,6 +113,8 @@ Feature: Maturing scenarios
 
 
   @from:cucumber
+@allure.label.epic:E0160
+@allure.label.feature:F8031
   @Id:S0382_200
   @flaky
   Scenario: Maturing candidate created, then HU qty is adjusted. Maturing candidate is updated
@@ -160,6 +167,8 @@ Feature: Maturing scenarios
 
   @flaky
   @from:cucumber
+@allure.label.epic:E0160
+@allure.label.feature:F8031
   @Id:S0382_300
   Scenario: Maturing candidate created, then HU is disposed. Maturing candidate is deleted.
     When metasfresh contains M_Inventories:

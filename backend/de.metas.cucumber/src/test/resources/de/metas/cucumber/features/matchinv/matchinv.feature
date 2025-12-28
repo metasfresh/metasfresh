@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00750
 @ghActions:run_on_executor4
 Feature: Match Invoice
+## F00750: Match Invoice
 
   Background:
     Given infrastructure and metasfresh are running
@@ -78,6 +81,8 @@ Feature: Match Invoice
     # ##################################################################################################################################################
   @Id:S0160_100
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00750
   Scenario: Receipt, Invoice => MatchInv
     #
     # Create the sales order

@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0100
+@allure.label.feature:F00105
 @ghActions:run_on_executor4
 Feature: Auto picking job schedule
+## F00105: Shipment Schedule
 
   Background:
     Given infrastructure and metasfresh are running

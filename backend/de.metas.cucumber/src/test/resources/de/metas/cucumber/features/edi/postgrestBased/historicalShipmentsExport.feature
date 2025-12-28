@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0292
+@allure.label.feature:F00350
 @ghActions:run_on_executor5
 Feature: Shipments export via postgREST
+## F00350: EDI
 
   Background:
     Given infrastructure and metasfresh are running
@@ -29,6 +32,8 @@ Feature: Shipments export via postgREST
 
   @Id:S0475_010
   @from:cucumber
+@allure.label.epic:E0292
+@allure.label.feature:F00350
   Scenario: create a shipment and export it to JSON via UpdatedGE and InputDataSource
 
     Given metasfresh contains M_Products:
@@ -170,6 +175,8 @@ Feature: Shipments export via postgREST
 
   @Id:S0475_020
   @from:cucumber
+@allure.label.epic:E0292
+@allure.label.feature:F00350
   Scenario: create a shipment and export it to JSON via externalId
 
     Given metasfresh contains M_Products:
@@ -307,6 +314,8 @@ Feature: Shipments export via postgREST
 
   @Id:S0475_030
   @from:cucumber
+@allure.label.epic:E0292
+@allure.label.feature:F00350
   Scenario: create a shipment and export it to JSON via Order_ID
 
     Given metasfresh contains M_Products:
@@ -444,6 +453,8 @@ Feature: Shipments export via postgREST
 
   @Id:S0475_040
   @from:cucumber
+@allure.label.epic:E0292
+@allure.label.feature:F00350
   Scenario: create a shipment and export it to JSON via BPartnerValue
 
     Given metasfresh contains M_Products:
@@ -581,6 +592,8 @@ Feature: Shipments export via postgREST
 
   @Id:S0475_050
   @from:cucumber
+@allure.label.epic:E0292
+@allure.label.feature:F00350
   Scenario: create two shipments and export them to JSON via Order_ID and limit it to 1
 
     Given metasfresh contains M_Products:
@@ -834,6 +847,8 @@ Feature: Shipments export via postgREST
 
   @Id:S0475_060
   @from:cucumber
+@allure.label.epic:E0292
+@allure.label.feature:F00350
   Scenario: create a shipment and export it to JSON via ShipmentDateGE
 
     Given metasfresh has date and time 2025-05-16T16:30:17+02:00[Europe/Berlin]
@@ -976,6 +991,8 @@ Feature: Shipments export via postgREST
 
   @Id:S0475_070
   @from:cucumber
+@allure.label.epic:E0292
+@allure.label.feature:F00350
   Scenario: create a shipment and export it to JSON via BPartnerExternalSystemValue and BPartnerExternalReference
 
     Given metasfresh contains External System
@@ -1121,6 +1138,8 @@ Feature: Shipments export via postgREST
 
   @Id:S0475_080
   @from:cucumber
+@allure.label.epic:E0292
+@allure.label.feature:F00350
   Scenario: create a shipment and export it to JSON via DocType_Base
 
     And metasfresh contains M_Products:

@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0160
+@allure.label.feature:F8033
 @ghActions:run_on_executor6
 Feature: create multiple production candidates
+## F8033: Production
   As a user
   I want to create multiple production candidates for the same Sales Order
 
@@ -80,6 +83,8 @@ Feature: create multiple production candidates
   @Id:S0129.1_140
   @Id:S0212.100
   @from:cucumber
+@allure.label.epic:E0160
+@allure.label.feature:F8033
   @flaky
   Scenario:  The manufacturing candidate is created for a sales order line,
   then the sales order is re-opened and the ordered quantity is increased,
@@ -188,6 +193,8 @@ Feature: create multiple production candidates
 # ########################################################################################################################################################################
 # ########################################################################################################################################################################
   @from:cucumber
+@allure.label.epic:E0160
+@allure.label.feature:F8033
   @Id:S0212.200
   Scenario:  The manufacturing candidate is created for a sales order line and `Generate PP_Order` process is invoked resulting multiple manufacturing orders
   and the candidate remains open as it still has unprocessed quantity and `autoProcessCandidates` parameter is not set.
@@ -249,6 +256,8 @@ Feature: create multiple production candidates
 # ########################################################################################################################################################################
   @flaky
   @from:cucumber
+@allure.label.epic:E0160
+@allure.label.feature:F8033
   @Id:S0212.300
   Scenario: The manufacturing candidate is created for a sales order line and then the sales order is re-opened and the ordered quantity is increased,
   resulting in a second manufacturing candidate to supply the additional demand
@@ -343,6 +352,8 @@ Feature: create multiple production candidates
 # ########################################################################################################################################################################
 # ########################################################################################################################################################################
   @from:cucumber
+@allure.label.epic:E0160
+@allure.label.feature:F8033
   @Id:S0212.400
   Scenario: Production candidates will be manufactured taking into account the SeqNo.
   _Given two PP_Product_Plannings for different products (P1&P2)

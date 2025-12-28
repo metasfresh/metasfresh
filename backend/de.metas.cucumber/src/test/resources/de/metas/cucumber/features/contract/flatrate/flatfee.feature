@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0170
+@allure.label.feature:F00970
 @topic:flatfeeContracts
 Feature: Flatfee contract with Flatfee-Type "Reported-Qty"
+## F00970: Flatrate Contract
 
   Background:
     Given infrastructure and metasfresh are running
@@ -9,6 +12,8 @@ Feature: Flatfee contract with Flatfee-Type "Reported-Qty"
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
   @from:cucumber
+@allure.label.epic:E0170
+@allure.label.feature:F00970
   @topic:flatFeeContractsWithReporterdQty
   @Id:S0433_1
   Scenario: Create Flatfee contract with reported quantities and make sure, a normal sales order is identified with the contract.

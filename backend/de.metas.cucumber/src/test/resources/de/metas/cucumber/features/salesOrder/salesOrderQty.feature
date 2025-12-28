@@ -1,5 +1,8 @@
 @from:cucumber
+@allure.label.epic:E0100
+@allure.label.feature:F00100
 Feature: Sales order
+## F00100: Sales Order
 
   Background:
     Given infrastructure and metasfresh are running
@@ -32,6 +35,8 @@ Feature: Sales order
 
 
   @from:cucumber
+@allure.label.epic:E0100
+@allure.label.feature:F00100
   @Id:S0156_600
   Scenario: Create a new sales order, make a partial shipment and close the shipment schedule. Validate that `QtyOrdered` from order is not overridden and there is no qty allocated for the order in question
     Given metasfresh contains C_Orders:
@@ -88,6 +93,8 @@ Feature: Sales order
 
 
   @from:cucumber
+@allure.label.epic:E0100
+@allure.label.feature:F00100
   @Id:S0156_700
   Scenario: Create a new sales order, make a partial shipment, close the shipment schedule and the reactivate it. Validate that `QtyOrdered` from order is not overridden and the unshipped qty is allocated for the order in question
     Given metasfresh contains C_Orders:
@@ -178,6 +185,8 @@ Feature: Sales order
 
 
   @from:cucumber
+@allure.label.epic:E0100
+@allure.label.feature:F00100
   @Id:S0156_800
   Scenario: Create a new sales order and ship all the ordered quantity. Validate that `QtyOrdered` is propagated accordingly
     Given metasfresh contains C_Orders:
@@ -229,6 +238,8 @@ Feature: Sales order
 
 
   @from:cucumber
+@allure.label.epic:E0100
+@allure.label.feature:F00100
   @Id:S0156_900
   Scenario: Create a new sales order and ship the ordered quantity is two shipments. Validate that `QtyOrdered` is propagated accordingly and there is no qty allocated for the order in question
     Given metasfresh contains C_Orders:
@@ -311,6 +322,8 @@ Feature: Sales order
 
 
   @from:cucumber
+@allure.label.epic:E0100
+@allure.label.feature:F00100
   @Id:S0156_1000
   Scenario: Create a new sales order and ship more than the ordered quantity. Validate that `QtyOrdered` is propagated accordingly
     Given metasfresh contains C_Orders:

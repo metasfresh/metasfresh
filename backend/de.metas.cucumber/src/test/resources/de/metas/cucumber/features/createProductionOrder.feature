@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0160
+@allure.label.feature:F8030
 @ghActions:run_on_executor4
 Feature: create production order
+## F8030: Manufacturing Order
   As a user
   I want to create a Production order record
 
@@ -51,6 +54,8 @@ Feature: create production order
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
+@allure.label.epic:E0160
+@allure.label.feature:F8030
   @Id:S0129.1_100
   @Id:S0129.2_100
   Scenario:  The manufacturing order is created from a manufacturing order candidate, then voided. Then we void the candidate.
@@ -221,6 +226,8 @@ Feature: create production order
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
+@allure.label.epic:E0160
+@allure.label.feature:F8030
   @Id:S0129.2_130
   @Id:S0129.2_150
   @Id:S0129.2_170
@@ -389,6 +396,8 @@ Feature: create production order
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
+@allure.label.epic:E0160
+@allure.label.feature:F8030
   Scenario:  The manufacturing order is created from a manufacturing order candidate and other md_candidates already exist
     Given metasfresh contains M_Products:
       | Identifier |
@@ -475,6 +484,8 @@ Feature: create production order
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
+@allure.label.epic:E0160
+@allure.label.feature:F8030
   @Id:S0129.2_200
   @Id:S0196_700
   Scenario:  The manufacturing order is created from a manufacturing order candidate and the date of the manufacturing order candidate is changed in the past (S0129.2_200)
@@ -615,6 +626,8 @@ Feature: create production order
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
+@allure.label.epic:E0160
+@allure.label.feature:F8030
   Scenario:  The manufacturing order is created from a manufacturing order candidate, other md_candidates already exist and the date is changed in the future
     Given metasfresh contains M_Products:
       | Identifier |
@@ -714,6 +727,8 @@ Feature: create production order
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
+@allure.label.epic:E0160
+@allure.label.feature:F8030
   Scenario: BOM bom_1 is created with two components. Manufacturing order candidate is generated,
   then another BOM (newer than the previous one in terms of validFrom) is created from the API,
   Manufacturing order candidate and Material schedules are updated accordingly,

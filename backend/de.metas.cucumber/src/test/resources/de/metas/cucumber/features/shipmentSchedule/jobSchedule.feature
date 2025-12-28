@@ -1,5 +1,8 @@
 @from:cucumber
+@allure.label.epic:E0100
+@allure.label.feature:F00105
 Feature: Picking job schedule
+## F00105: Shipment Schedule
 
   Background:
     Given infrastructure and metasfresh are running

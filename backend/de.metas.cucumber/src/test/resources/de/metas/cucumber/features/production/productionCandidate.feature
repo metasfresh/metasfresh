@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0160
+@allure.label.feature:F8033
 @ghActions:run_on_executor3
 Feature: Production dispo scenarios
+## F8033: Production
 
   Background:
     Given infrastructure and metasfresh are running
@@ -25,6 +28,8 @@ Feature: Production dispo scenarios
 
   @Id:S0129.2_140
   @from:cucumber
+@allure.label.epic:E0160
+@allure.label.feature:F8033
   Scenario: Try to re-open production candidate after it has been closed (S0129.2_140)
     When metasfresh contains PP_Product_Plannings
       | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
@@ -43,6 +48,8 @@ Feature: Production dispo scenarios
 
   @Id:S0129.2_160
   @from:cucumber
+@allure.label.epic:E0160
+@allure.label.feature:F8033
   Scenario: Production candidate's QtyToProcess is greater than Qty-QtyProcessed (S0129.2_160)
     When metasfresh contains PP_Product_Plannings
       | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
@@ -58,6 +65,8 @@ Feature: Production dispo scenarios
 
   @Id:S0129.2_180
   @from:cucumber
+@allure.label.epic:E0160
+@allure.label.feature:F8033
   Scenario: Production candidate's QtyToProcess is greater than Qty-QtyProcessed after the production candidate has been previously processed (S0129.2_180)
     When metasfresh contains PP_Product_Plannings
       | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
@@ -85,6 +94,8 @@ Feature: Production dispo scenarios
 
   @Id:S0129.2_190
   @from:cucumber
+@allure.label.epic:E0160
+@allure.label.feature:F8033
   Scenario: Production candidate's QtyEntered is lower than QtyProcessed after the production candidate has been previously processed (S0129.2_190)
     When metasfresh contains PP_Product_Plannings
       | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
@@ -113,6 +124,8 @@ Feature: Production dispo scenarios
   @flaky
   @Id:S0129.2_190
   @from:cucumber
+@allure.label.epic:E0160
+@allure.label.feature:F8033
   Scenario: Reactivate and reduce QTY for order with negative ATP and PreparationDate in the past. Ensure correct qty is used on new PP_Order_Candidate.
     When metasfresh has date and time 2025-02-25T07:00:00+01:00[Europe/Berlin]
     And metasfresh contains M_PricingSystems

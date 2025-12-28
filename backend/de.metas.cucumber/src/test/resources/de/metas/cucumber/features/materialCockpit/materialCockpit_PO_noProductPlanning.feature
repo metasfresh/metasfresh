@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0155
+@allure.label.feature:F5110
 @ghActions:run_on_executor6
 Feature: purchase order interaction with material cockpit - no product planning
+## F5110: Material Cockpit
 
   Background: Initial Data
     Given infrastructure and metasfresh are running
@@ -9,6 +12,8 @@ Feature: purchase order interaction with material cockpit - no product planning
 
   @Id:S0189_1200
   @from:cucumber
+@allure.label.epic:E0155
+@allure.label.feature:F5110
   Scenario: PO with qty = 10, no ASI
     Given metasfresh contains M_Products:
       | Identifier | Name                       |
@@ -45,6 +50,8 @@ Feature: purchase order interaction with material cockpit - no product planning
 
   @Id:S0189_1300
   @from:cucumber
+@allure.label.epic:E0155
+@allure.label.feature:F5110
   Scenario: PO with qty = 10, no ASI, reactivated, changed the qty to 20
     Given metasfresh contains M_Products:
       | Identifier | Name                       |
@@ -103,6 +110,8 @@ Feature: purchase order interaction with material cockpit - no product planning
 
   @Id:S0189_1400
   @from:cucumber
+@allure.label.epic:E0155
+@allure.label.feature:F5110
   Scenario: 2 POs, each with qty = 10, no ASI, same product
     Given metasfresh contains M_Products:
       | Identifier | Name                       |
@@ -154,6 +163,8 @@ Feature: purchase order interaction with material cockpit - no product planning
 
   @Id:S0189_1500
   @from:cucumber
+@allure.label.epic:E0155
+@allure.label.feature:F5110
   Scenario: 2 POs, each with qty = 10, no ASI, different product
     Given metasfresh contains M_Products:
       | Identifier | Name                       |
@@ -209,6 +220,8 @@ Feature: purchase order interaction with material cockpit - no product planning
 
   @Id:S0189_1600
   @from:cucumber
+@allure.label.epic:E0155
+@allure.label.feature:F5110
   Scenario: PO with qty = 10 and ASI
     Given metasfresh contains M_Products:
       | Identifier | Name                       |
@@ -256,6 +269,8 @@ Feature: purchase order interaction with material cockpit - no product planning
 
   @Id:S0189_1700
   @from:cucumber
+@allure.label.epic:E0155
+@allure.label.feature:F5110
   Scenario: 2 POs with qty = 10 and different ASI
     Given metasfresh contains M_Products:
       | Identifier | Name                       |
@@ -331,6 +346,8 @@ Feature: purchase order interaction with material cockpit - no product planning
 
   @Id:S0189_1800
   @from:cucumber
+@allure.label.epic:E0155
+@allure.label.feature:F5110
   Scenario: PO with 2 lines (qty=10, same product) and different ASIs, reactivated, changed ASI to the same one
     Given metasfresh contains M_Products:
       | Identifier | Name                       |
@@ -406,6 +423,8 @@ Feature: purchase order interaction with material cockpit - no product planning
 
   @Id:S0189_1900
   @from:cucumber
+@allure.label.epic:E0155
+@allure.label.feature:F5110
   Scenario: 2 POs with qty = 10 and same ASI
     Given metasfresh contains M_Products:
       | Identifier | Name                       |
@@ -468,6 +487,8 @@ Feature: purchase order interaction with material cockpit - no product planning
 
   @Id:S0189_2000
   @from:cucumber
+@allure.label.epic:E0155
+@allure.label.feature:F5110
   Scenario: PO with 1 line (qty=10) and ASI, reactivated, changed ASI and qty=12
     Given metasfresh contains M_Products:
       | Identifier | Name                        |
@@ -541,6 +562,8 @@ Feature: purchase order interaction with material cockpit - no product planning
   @ignore
   @Id:S0189_2100
   @from:cucumber
+@allure.label.epic:E0155
+@allure.label.feature:F5110
   Scenario: PO with qty = 10, no ASI, reactivated, changed the date promised
     Given metasfresh contains M_Products:
       | Identifier | Name                        |
@@ -590,6 +613,8 @@ Feature: purchase order interaction with material cockpit - no product planning
 
   @Id:S0189_2200
   @from:cucumber
+@allure.label.epic:E0155
+@allure.label.feature:F5110
   Scenario: PO with 1 lines (qty=10) and ASI, reactivated, changed ASI and qty=12
     Given metasfresh contains M_Products:
       | Identifier | Name                        |

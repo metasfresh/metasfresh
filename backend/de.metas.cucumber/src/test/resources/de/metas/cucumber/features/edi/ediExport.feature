@@ -1,5 +1,9 @@
 @ghActions:run_on_executor5
+@allure.label.epic:E0292
+@allure.label.feature:F00350
 Feature: EDI_cctop_invoic_v export format
+## F00350: EDI
+## F00350: EDI
 
   Background:
     Given infrastructure and metasfresh are running

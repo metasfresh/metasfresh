@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00700
 @ghActions:run_on_executor5
 Feature: invoice payment allocation
+## F00700: Invoice
 
   Background:
     Given infrastructure and metasfresh are running
@@ -56,6 +59,8 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0465_100
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00700
   Scenario: sales invoice - inbound payment (full amount)
     Given metasfresh contains M_Products:
       | Identifier  |
@@ -119,6 +124,8 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0465_100_010
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00700
   Scenario: sales invoice - inbound payment - discount (full amount)
     Given metasfresh contains M_Products:
       | Identifier |
@@ -197,6 +204,8 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0465_110
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00700
   Scenario: multiple sales invoices - inbound payment (partial)
     Given metasfresh contains M_Products:
       | Identifier  |
@@ -283,6 +292,8 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0465_120
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00700
   Scenario: multiple sales invoices - inbound payment (partial) - then apply write off
 
     Given metasfresh contains M_Products:
@@ -384,6 +395,8 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0465_130
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00700
   Scenario: multiple sales invoices - inbound payment (partial) - then apply Discount
 
     Given metasfresh contains M_Products:
@@ -480,6 +493,8 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0465_140
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00700
   Scenario:multiple sales invoices in CHF - inbound payment in EUR (partial alloc)
 
     Given metasfresh contains M_Products:
@@ -561,6 +576,8 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0465_150
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00700
   Scenario: sales invoice - purchase invoice
     Given metasfresh contains M_Products:
       | Identifier |
@@ -640,6 +657,8 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0465_160
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00700
   Scenario: sales invoice (with allocated sales credit memo) - inbound payment
     Given metasfresh contains M_Products:
       | Identifier  |
@@ -720,6 +739,8 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0465_170
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00700
   Scenario: sales invoice - outbound payment => expect cannot be allocated
     Given metasfresh contains M_Products:
       | Identifier  |
@@ -785,6 +806,8 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0465_180
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00700
   Scenario: purchase invoice - outbound payment
     Given metasfresh contains M_Products:
       | Identifier  |
@@ -861,6 +884,8 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0465_180_010
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00700
   Scenario: purchase invoice - outbound payment - discount (full amount)
     Given metasfresh contains M_Products:
       | Identifier |
@@ -943,6 +968,8 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0465_190
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00700
   Scenario: multiple purchase invoices - outbound payment (partial)
 
     Given metasfresh contains M_Products:
@@ -1026,6 +1053,8 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0465_200
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00700
   Scenario: multiple purchase invoices - outbound payment (partial) - apply write off
     Given metasfresh contains M_Products:
       | Identifier  |
@@ -1122,6 +1151,8 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0465_210
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00700
   Scenario: multiple purchase invoices - outbound payment (partial) - apply discount
     Given metasfresh contains M_Products:
       | Identifier  |
@@ -1221,6 +1252,8 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0465_220
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00700
   Scenario: purchase invoice (with allocated purchase credit memo) - outbound payment
     Given metasfresh contains M_Products:
       | Identifier  |
@@ -1308,6 +1341,8 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0465_230
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00700
   Scenario: purchase invoice - inbound payment => expect cannot be allocated
 
     Given metasfresh contains M_Products:
@@ -1383,6 +1418,8 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0465_240
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00700
   Scenario: inbound payment - outbound payment
     When metasfresh contains C_Payment
       | Identifier      | C_BPartner_ID | PayAmt   | IsReceipt | C_BP_BankAccount_ID |
@@ -1529,6 +1566,8 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0465_320
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00700
   Scenario: sales invoice - purchase credit memo => expect cannot be allocated
     Given metasfresh contains M_Products:
       | Identifier |
@@ -1581,6 +1620,8 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0465_330
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00700
   Scenario: sales credit memo - outbound payment (partial)
     Given metasfresh contains M_Products:
       | Identifier |
@@ -1642,6 +1683,8 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0465_330
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00700
   Scenario: sales credit memo - outbound payment - discount (full amount)
     Given metasfresh contains M_Products:
       | Identifier |
@@ -1716,6 +1759,8 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0465_340
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00700
   Scenario: sales credit memo - inbound payment => no allocations
 
     Given metasfresh contains M_Products:
@@ -1775,6 +1820,8 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0465_350
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00700
   Scenario: purchase credit memo - inbound payment (partial)
 
     Given metasfresh contains M_Products:
@@ -1854,6 +1901,8 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0465_350_010
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00700
   Scenario: purchase credit memo - inbound payment - discount (full amount)
 
     Given metasfresh contains M_Products:
@@ -1933,6 +1982,8 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0132_250
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00700
   Scenario: (Sales) check the paymentTerm discount is applied only once per invoice (i.e. when the invoice is fully paid) allocate 2 payments to a sales invoice
   - allocate 1st payment to sales invoice for partial amount, paymentTerm discount is not applied
   - allocate 2nd payment to sales invoice for remaining amount, paymentTerm discount is applied
@@ -2047,6 +2098,8 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0132_260
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00700
   Scenario: (Purchase) check the paymentTerm discount is applied only once per invoice (i.e. when the invoice is fully paid) allocate 2 payments to a purchase invoice
   - allocate 1st payment to purchase invoice for partial amount, paymentTerm discount is not applied
   - allocate 2nd payment to purchase invoice for remaining amount, paymentTerm discount is applied
@@ -2161,6 +2214,8 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0132_270
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00700
   Scenario: (Sales) check the paymentTerm discount is applied only once per invoice (i.e. when the invoice is fully paid) allocate 2 payments to a sales invoice (allocation happens only once)
   - allocate 1st payment to sales invoice for partial amount, paymentTerm discount is not applied
   - allocate 2nd payment to sales invoice for remaining amount, paymentTerm discount is applied
@@ -2265,6 +2320,8 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0132_280
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00700
   Scenario: (Sales) check the paymentTerm discount is applied only once per invoice (i.e. when the invoice is fully paid) allocate 2 credit memos to a sales invoice
   - allocate 1st credit memo to sales invoice for partial amount, invoice's paymentTerm discount is not applied, credit memo's paymentTerm discount is applied
   - allocate 2nd credit memo to sales invoice for remaining amount, paymentTerm discount is applied for both invoice, but not for credit memo (because it is not fully allocated)
@@ -2387,6 +2444,8 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0132_290
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00700
   Scenario: (Purchase) check the paymentTerm discount is applied only once per invoice (i.e. when the invoice is fully paid) allocate 2 credit memos to a purchase invoice
   - allocate 1st credit memo to purchase invoice for partial amount, invoice's paymentTerm discount is not applied, credit memo's paymentTerm discount is applied
   - allocate 2nd credit memo to purchase invoice for remaining amount, paymentTerm discount is applied for invoice, but not for credit memo (because it is not fully allocated)
@@ -2509,6 +2568,8 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0132_300
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00700
   Scenario: Two purchase invoices allocated to a sales invoice
   - allocate 1st purchase invoice to sales invoice for partial amount, sales invoice's paymentTerm discount is not applied, purchase invoice's paymentTerm discount is applied
   - allocate 2nd purchase invoice to sales invoice for remaining amount, paymentTerm discount is applied for sales invoice, but not for purchase invoice (because it is not fully allocated)
@@ -2636,6 +2697,8 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0132_310
   @from:cucumber
+@allure.label.epic:E0340
+@allure.label.feature:F00700
   Scenario: allocate payment to purchase invoice with overpayment and negative discount
 
     Given metasfresh contains M_Products:

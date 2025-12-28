@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0280
+@allure.label.feature:F00280
 @topic:orderDocOutbound
 Feature: Validate order doc outbound log creation
+## F00280: Doc Outbound
   Especially tracing "C_Doc_Outbound_Log.CurrentEMailAddress"
 
   Background:

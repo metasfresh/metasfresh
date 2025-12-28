@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0270
+@allure.label.feature:F00271
 @ghActions:run_on_executor5
 Feature: R_Request upsert and retrieval via API
+## F00271: Request
 
   Background:
     Given infrastructure and metasfresh are running
@@ -36,6 +39,8 @@ Feature: R_Request upsert and retrieval via API
       | someUser   | 12345      | someUser |
 
   @from:cucumber
+@allure.label.epic:E0270
+@allure.label.feature:F00271
   Scenario: R_Request upsert
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      | REST.Context |

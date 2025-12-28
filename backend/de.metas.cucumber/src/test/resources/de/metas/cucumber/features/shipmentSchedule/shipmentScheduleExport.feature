@@ -1,7 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0100
+@allure.label.feature:F00105
 @topic:shipmentScheduleExport
 @ghActions:run_on_executor7
 Feature: Shipment schedule export rest-api
+## F00105: Shipment Schedule
   Mostly covering the "shipBPartner"."contact" info differences when exporting oxid vs non-oxid (shopware) shipment candidates.
 
   Background:

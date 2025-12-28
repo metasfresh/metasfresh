@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0370
+@allure.label.feature:F5000
 @ghActions:run_on_executor5
 Feature: Handling unit rest controller
+## F5000: Handling Unit
 
   Background:
     Given infrastructure and metasfresh are running

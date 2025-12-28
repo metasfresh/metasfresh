@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0292
+@allure.label.feature:F00350
 @ghActions:run_on_executor3
 Feature: Invoice export via postgREST
+## F00350: EDI
 
   Background:
     Given infrastructure and metasfresh are running
@@ -28,6 +31,8 @@ Feature: Invoice export via postgREST
 
   @Id:S0474_010
   @from:cucumber
+@allure.label.epic:E0292
+@allure.label.feature:F00350
   Scenario: create an invoice and export it to JSON via UpdatedGE and InputDataSource
     Given metasfresh contains M_Products:
       | Identifier        | REST.Context.Value                    | REST.Context.Name                    | Description                                 |
@@ -198,6 +203,8 @@ Feature: Invoice export via postgREST
 
   @Id:S0474_020
   @from:cucumber
+@allure.label.epic:E0292
+@allure.label.feature:F00350
   Scenario: create an invoice and export it to JSON via externalId
     Given metasfresh contains M_Products:
       | Identifier        | REST.Context.Value                    | REST.Context.Name                    | Description                                 |
@@ -358,6 +365,8 @@ Feature: Invoice export via postgREST
 
   @Id:S0474_030
   @from:cucumber
+@allure.label.epic:E0292
+@allure.label.feature:F00350
   Scenario: create an invoice and export it to JSON via BPartnerValue
     Given metasfresh contains M_Products:
       | Identifier        | REST.Context.Value                    | REST.Context.Name                    | Description                                 |
@@ -518,6 +527,8 @@ Feature: Invoice export via postgREST
 
   @Id:S0474_040
   @from:cucumber
+@allure.label.epic:E0292
+@allure.label.feature:F00350
   Scenario: create an invoice and export it to JSON via DateInvoicedGE and limit it to 1
     Given metasfresh contains M_Products:
       | Identifier        | REST.Context.Value                    | REST.Context.Name                    | Description                                 |
@@ -689,6 +700,8 @@ Feature: Invoice export via postgREST
 
   @Id:S0474_050
   @from:cucumber
+@allure.label.epic:E0292
+@allure.label.feature:F00350
   Scenario: create an invoice and export it to JSON via BPartnerExternalSystemValue and BPartnerExternalReference
     Given metasfresh contains External System
       | Name           | Value          |
@@ -852,6 +865,8 @@ Feature: Invoice export via postgREST
 
   @Id:S0474_060
   @from:cucumber
+@allure.label.epic:E0292
+@allure.label.feature:F00350
   Scenario: create an invoice and export it to JSON via Order_ID
     And metasfresh contains M_Products:
       | Identifier        | REST.Context.Value                    | REST.Context.Name                    | Description                                 |
@@ -1029,6 +1044,8 @@ Feature: Invoice export via postgREST
 
   @Id:S0474_070
   @from:cucumber
+@allure.label.epic:E0292
+@allure.label.feature:F00350
   Scenario: create an invoice and export it to JSON via DocType_Base
     Given metasfresh contains External System
       | Name             | Value            |
