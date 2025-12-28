@@ -19,10 +19,17 @@ const PRODUCT_WINDOW_ID = 140;
 test.describe('Product Window', () => {
   test('View Product window', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0380: Masterdata Products');
-    allure.tag('F6000: Maintain Product Data');
+    allure.epic('E0380');
+    allure.tag('F6000');
     allure.story('View product list');
     allure.severity('normal');
+    allure.description(`
+## E0380: Masterdata Products
+## F6000: Maintain Product Data
+
+### Test Scenario
+View product list in master data window.
+    `);
 
     // Create test data: user and products
     const masterdata = await Backend.createMasterdata({

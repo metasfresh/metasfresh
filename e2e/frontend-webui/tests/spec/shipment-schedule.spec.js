@@ -57,14 +57,13 @@ testCases.forEach(({ language, label }) => {
     test.describe(`Sales Order to Shipment Schedule (${label})`, () => {
         test(`Create SO and validate quantity in shipment schedule (${label} UI)`, async ({ page }) => {
             // === ALLURE METADATA ===
-            // Feature metadata from google-sheets-sync skill
-            // This test covers the complete order-to-cash cycle
-            allure.epic('E0100: Sales');
-            allure.tag('F00100: Sales Order');
-            allure.tag('F00105: Sales Order Document');
-            allure.tag('F00130: Shipment Schedule');
-            allure.tag('F00150: Sales Shipment');
-            allure.tag('F00200: Sales Invoice');
+            // Feature metadata - IDs for filtering, full names in description
+            allure.epic('E0100');
+            allure.tag('F00100');
+            allure.tag('F00105');
+            allure.tag('F00130');
+            allure.tag('F00150');
+            allure.tag('F00200');
             allure.story('Complete Order-to-Cash: SO → Shipment → Invoice');
             allure.severity('critical');
             allure.parameter('Language', language);
@@ -72,7 +71,15 @@ testCases.forEach(({ language, label }) => {
             allure.tag(language);
 
             allure.description(`
-## Test Scenario
+## E0100: Sales
+
+## F00100: Sales Order
+## F00105: Sales Order Document
+## F00130: Shipment Schedule
+## F00150: Sales Shipment
+## F00200: Sales Invoice
+
+### Test Scenario
 This test validates the complete order-to-cash workflow:
 
 1. **Create Sales Order** - New SO with customer and product line
@@ -83,14 +90,7 @@ This test validates the complete order-to-cash workflow:
 6. **Create Shipment** - Generate shipment from schedule and validate PDF
 7. **Create Invoice** - Generate invoice from candidates and validate PDF
 
-## Features Tested
-- **F00100**: Sales Order
-- **F00105**: Sales Order Document (PDF)
-- **F00130**: Shipment Schedule
-- **F00150**: Sales Shipment
-- **F00200**: Sales Invoice
-
-## Business Value
+### Business Value
 Ensures the complete order-to-cash flow works correctly across UI languages.
             `);
 

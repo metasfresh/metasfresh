@@ -1,6 +1,10 @@
 @from:cucumber
 @ghActions:run_on_executor6
+@allure.label.epic:E0160
+@allure.label.feature:F8030
 Feature: Manufacturing order rest controller
+
+  ## F8030: MobileUI Manufacturing
 
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'

@@ -1,5 +1,5 @@
 name: 'Generate Allure Report'
-description: 'Validate allure results, generate HTML report, and upload as artifact'
+description: 'Validate allure results, generate HTML report with history support, and upload as artifact'
 
 inputs:
   results-dir:
@@ -15,12 +15,25 @@ inputs:
     description: 'Number of days to retain the artifact'
     required: false
     default: '1'
+  history-artifact-name:
+    description: 'Name of artifact containing previous history for trends (optional). If provided, enables trend charts.'
+    required: false
+    default: ''
 
 runs:
   using: 'composite'
   steps:
     - name: Setup Allure CLI
       uses: ./.github/actions/setup-allure
+
+    # Download previous history if history artifact name is provided
+    - name: Download previous Allure history
+      if: inputs.history-artifact-name != ''
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ inputs.history-artifact-name }}
+        path: ${{ inputs.results-dir }}/history
+      continue-on-error: true
 
     - name: Validate and Generate Allure Report
       shell: bash
@@ -50,10 +63,18 @@ runs:
 
         echo "Found $RESULT_COUNT JSON result files, proceeding with report generation"
 
+        # Check for history (enables trend charts)
+        if [ -d "$RESULTS_DIR/history" ]; then
+          HISTORY_COUNT=$(ls "$RESULTS_DIR/history" 2>/dev/null | wc -l)
+          echo "Found history directory with $HISTORY_COUNT files - trends will be available"
+        else
+          echo "No history directory found - trends will not be available (first run)"
+        fi
+
         # Ensure output directory parent exists
         mkdir -p "$(dirname "$OUTPUT_DIR")"
 
-        # Generate HTML report
+        # Generate HTML report (Allure automatically uses history/ if present)
         allure generate "$RESULTS_DIR" -o "$OUTPUT_DIR" --clean
         echo "Allure report generated at: $OUTPUT_DIR"
 
@@ -64,3 +85,13 @@ runs:
         name: ${{ inputs.artifact-name }}
         path: ${{ inputs.output-dir }}
         retention-days: ${{ inputs.retention-days }}
+
+    # Upload history for next build (enables trends over time)
+    - name: Upload Allure history for trends
+      if: inputs.history-artifact-name != '' && (success() || failure())
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.history-artifact-name }}
+        path: ${{ inputs.output-dir }}/history
+        retention-days: 30
+        overwrite: true

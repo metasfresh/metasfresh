@@ -16,12 +16,19 @@ test.describe('Login/Logout', () => {
   ['en_US', 'de_DE'].forEach((language) => {
     test(`Login with ${language} language`, async ({ page }) => {
       // === ALLURE METADATA ===
-      allure.epic('E0193: System Authentication');
-      allure.tag('F14000: Username and Password Auth');
+      allure.epic('E0193');
+      allure.tag('F14000');
       allure.story('Login with language selection');
       allure.severity('critical');
       allure.parameter('Language', language);
       allure.tag(language);
+      allure.description(`
+## E0193: System Authentication
+## F14000: Username and Password Auth
+
+### Test Scenario
+Login with language selection and verify dashboard is visible.
+      `);
 
       // Create test user via backend API
       const response = await Backend.createMasterdata({

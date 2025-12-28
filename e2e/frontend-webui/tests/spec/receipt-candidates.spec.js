@@ -42,10 +42,10 @@ testCases.forEach(({ language, label }) => {
   test.describe(`Purchase-to-Invoice Workflow (${label})`, () => {
     test(`Complete purchase-to-invoice flow: PO → Receipt → Invoice (${label} UI)`, async ({ page }) => {
       // === ALLURE METADATA ===
-      // This test spans multiple features/epics
-      allure.epic('E0140: Purchasing');
-      allure.tag('F00600: Purchase Order');
-      allure.tag('F65010: Material Receipt Candidates');
+      // Feature metadata - IDs for filtering, full names in description
+      allure.epic('E0140');
+      allure.tag('F00600');
+      allure.tag('F65010');
       allure.story('Complete PO → Receipt → Invoice flow');
       allure.severity('critical');
       allure.parameter('Language', language);
@@ -53,7 +53,12 @@ testCases.forEach(({ language, label }) => {
       allure.tag(language);
 
       allure.description(`
-## Test Scenario
+## E0140: Purchasing
+
+## F00600: Purchase Order
+## F65010: Material Receipt Candidates
+
+### Test Scenario
 This test validates the complete purchase-to-invoice workflow:
 
 1. **Create Purchase Order** - New PO with vendor and product line

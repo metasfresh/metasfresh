@@ -19,10 +19,17 @@ const BUSINESS_PARTNER_WINDOW_ID = 123;
 test.describe('Business Partner Window', () => {
   test('View Business Partner window', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0390: Masterdata Partner');
-    allure.tag('F00900: Business Partner');
+    allure.epic('E0390');
+    allure.tag('F00900');
     allure.story('View business partner list');
     allure.severity('normal');
+    allure.description(`
+## E0390: Masterdata Partner
+## F00900: Business Partner
+
+### Test Scenario
+View business partner list in master data window.
+    `);
 
     // Create test data: user and business partners
     const masterdata = await Backend.createMasterdata({
@@ -56,10 +63,17 @@ test.describe('Business Partner Window', () => {
 
   test('Open Business Partner detail view', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0390: Masterdata Partner');
-    allure.tag('F00900: Business Partner');
+    allure.epic('E0390');
+    allure.tag('F00900');
     allure.story('Open business partner detail view');
     allure.severity('normal');
+    allure.description(`
+## E0390: Masterdata Partner
+## F00900: Business Partner
+
+### Test Scenario
+Open business partner detail view from list.
+    `);
 
     // Create test data: user and a business partner
     const masterdata = await Backend.createMasterdata({

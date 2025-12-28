@@ -1,5 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0100
+@allure.label.feature:F00100
 Feature: Sales order API
+
+  ## F00100: Sales Order
 
   Background:
     Given infrastructure and metasfresh are running

@@ -1,6 +1,10 @@
 @from:cucumber
 @ghActions:run_on_executor7
+@allure.label.epic:E0160
+@allure.label.feature:F8030
 Feature: mobileUI Picking - Pick mixed lines
+
+  ## F8030: MobileUI Manufacturing
 
   Background:
     Given infrastructure and metasfresh are running

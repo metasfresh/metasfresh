@@ -1,6 +1,10 @@
 @from:cucumber
 @ghActions:run_on_executor4
+@allure.label.epic:E0200
+@allure.label.feature:F00200
 Feature: Enqueue order candidate and auto invoice after shipped
+
+  ## F00200: Sales Invoice
 
   Background:
     Given infrastructure and metasfresh are running
