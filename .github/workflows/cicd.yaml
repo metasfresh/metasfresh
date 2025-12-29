@@ -1533,6 +1533,7 @@ jobs:
           artifact-name: allure-report-cucumber
           retention-days: 30
           history-artifact-name: allure-history-cucumber
+          report-title: 'Cucumber BDD'
 
   health_check:
     name: health check
@@ -1673,6 +1674,7 @@ jobs:
           output-dir: e2e/mobile-webui/allure-report
           artifact-name: allure-report-mobile-webui
           history-artifact-name: allure-history-mobile-webui
+          report-title: 'Playwright (Mobile WebUI)'
       # ===== END ALLURE REPORT GENERATION =====
 
       - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest
@@ -1752,6 +1754,7 @@ jobs:
           output-dir: e2e/frontend-webui/allure-report
           artifact-name: allure-report-frontend-webui
           history-artifact-name: allure-history-frontend-webui
+          report-title: 'Playwright (Frontend WebUI)'
       # ===== END ALLURE REPORT GENERATION =====
 
       - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest
@@ -1875,7 +1878,7 @@ jobs:
         with:
           xml-path: junit-raw/jest/**/*.xml
           output-dir: reports/branches/${{ needs.init.outputs.branch-sanitized-gh-pages }}/builds/${{ needs.init.outputs.tag-fixed }}/junit/jest
-          report-title: 'Jest Frontend Tests'
+          report-title: 'Jest (Frontend Unit Tests)'
         continue-on-error: true
 
       - name: Generate Backend JUnit HTML report
@@ -1883,7 +1886,7 @@ jobs:
         with:
           xml-path: junit-raw/backend/**/*.xml
           output-dir: reports/branches/${{ needs.init.outputs.branch-sanitized-gh-pages }}/builds/${{ needs.init.outputs.tag-fixed }}/junit/backend
-          report-title: 'Java Backend Tests'
+          report-title: 'Backend Unit Tests'
         continue-on-error: true
 
       - name: Generate Camel JUnit HTML report
@@ -1891,7 +1894,7 @@ jobs:
         with:
           xml-path: junit-raw/camel/**/*.xml
           output-dir: reports/branches/${{ needs.init.outputs.branch-sanitized-gh-pages }}/builds/${{ needs.init.outputs.tag-fixed }}/junit/camel
-          report-title: 'Camel Integration Tests'
+          report-title: 'Camel Init and Integration Tests'
         continue-on-error: true
 
       - name: Verify reports exist

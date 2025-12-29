@@ -335,17 +335,22 @@ runs:
                       <div class="build">
                         <div class="build-version">${build.version}</div>
                         <div class="report-section">
-                          <div class="report-section-title">Allure Reports</div>
+                          <div class="report-section-title">E2E Tests (Playwright)</div>
                           <div class="report-links">
                             <a class="report-link allure" href="${build.url}allure/frontend-webui/index.html" target="_blank">Frontend WebUI</a>
                             <a class="report-link allure" href="${build.url}allure/mobile-webui/index.html" target="_blank">Mobile WebUI</a>
-                            <a class="report-link allure" href="${build.url}allure/cucumber/index.html" target="_blank">Cucumber</a>
                           </div>
                         </div>
                         <div class="report-section">
-                          <div class="report-section-title">JUnit Reports</div>
+                          <div class="report-section-title">Integration Tests (Cucumber)</div>
                           <div class="report-links">
-                            <a class="report-link junit" href="${build.url}junit/jest/index.html" target="_blank">Jest</a>
+                            <a class="report-link allure" href="${build.url}allure/cucumber/index.html" target="_blank">Cucumber BDD</a>
+                          </div>
+                        </div>
+                        <div class="report-section">
+                          <div class="report-section-title">Unit Tests</div>
+                          <div class="report-links">
+                            <a class="report-link junit" href="${build.url}junit/jest/index.html" target="_blank">Jest (Frontend)</a>
                             <a class="report-link junit" href="${build.url}junit/backend/index.html" target="_blank">Backend</a>
                             <a class="report-link junit" href="${build.url}junit/camel/index.html" target="_blank">Camel</a>
                           </div>

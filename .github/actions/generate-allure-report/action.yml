@@ -19,6 +19,10 @@ inputs:
     description: 'Name of artifact containing previous history for trends (optional). If provided, enables trend charts.'
     required: false
     default: ''
+  report-title:
+    description: 'Title for the report (shown in Allure environment section)'
+    required: false
+    default: 'Test Report'
 
 runs:
   using: 'composite'
@@ -40,6 +44,7 @@ runs:
       env:
         RESULTS_DIR: ${{ inputs.results-dir }}
         OUTPUT_DIR: ${{ inputs.output-dir }}
+        REPORT_TITLE: ${{ inputs.report-title }}
       run: |
         echo "=== Checking $RESULTS_DIR directory ==="
         if [ -d "$RESULTS_DIR" ]; then
@@ -70,6 +75,14 @@ runs:
         else
           echo "No history directory found - trends will not be available (first run)"
         fi
+
+        # Create environment.properties for Allure report metadata
+        cat > "$RESULTS_DIR/environment.properties" <<EOF
+        Report.Name=$REPORT_TITLE
+        EOF
+        # Remove leading whitespace from properties file (heredoc preserves indentation)
+        sed -i 's/^[[:space:]]*//' "$RESULTS_DIR/environment.properties"
+        echo "Created environment.properties with Report.Name=$REPORT_TITLE"
 
         # Ensure output directory parent exists
         mkdir -p "$(dirname "$OUTPUT_DIR")"
