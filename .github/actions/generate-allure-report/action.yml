@@ -76,13 +76,16 @@ runs:
           echo "No history directory found - trends will not be available (first run)"
         fi
 
-        # Create environment.properties for Allure report metadata
-        cat > "$RESULTS_DIR/environment.properties" <<EOF
-        Report.Name=$REPORT_TITLE
-        EOF
-        # Remove leading whitespace from properties file (heredoc preserves indentation)
-        sed -i 's/^[[:space:]]*//' "$RESULTS_DIR/environment.properties"
-        echo "Created environment.properties with Report.Name=$REPORT_TITLE"
+        # Create/update environment.properties for Allure report metadata
+        # Use sudo in case directory was created by Docker with root permissions
+        if [ -f "$RESULTS_DIR/environment.properties" ]; then
+          # Append to existing file (tests may have created it)
+          echo "Report.Name=$REPORT_TITLE" | sudo tee -a "$RESULTS_DIR/environment.properties" > /dev/null
+          echo "Appended Report.Name to existing environment.properties"
+        else
+          echo "Report.Name=$REPORT_TITLE" | sudo tee "$RESULTS_DIR/environment.properties" > /dev/null
+          echo "Created environment.properties with Report.Name=$REPORT_TITLE"
+        fi
 
         # Ensure output directory parent exists
         mkdir -p "$(dirname "$OUTPUT_DIR")"

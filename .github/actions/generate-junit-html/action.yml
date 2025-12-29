@@ -53,12 +53,7 @@ runs:
         echo "Copied $COPIED_COUNT XML files to Allure input directory"
 
         # Create environment.properties for Allure report metadata
-        cat > "$ALLURE_INPUT_DIR/environment.properties" <<EOF
-        Report.Name=$REPORT_TITLE
-        Test.Type=JUnit
-        EOF
-        # Remove leading whitespace from properties file (heredoc preserves indentation)
-        sed -i 's/^[[:space:]]*//' "$ALLURE_INPUT_DIR/environment.properties"
+        printf "Report.Name=%s\nTest.Type=JUnit\n" "$REPORT_TITLE" > "$ALLURE_INPUT_DIR/environment.properties"
         echo "Created environment.properties with Report.Name=$REPORT_TITLE"
 
         # Use Allure to generate HTML report from JUnit XML
