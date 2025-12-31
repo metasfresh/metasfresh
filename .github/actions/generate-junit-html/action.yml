@@ -49,6 +49,10 @@ runs:
         OUTPUT_DIR: ${{ inputs.output-dir }}
         REPORT_TITLE: ${{ inputs.report-title }}
         HISTORY_ARTIFACT: ${{ inputs.history-artifact-name }}
+        GH_SERVER_URL: ${{ github.server_url }}
+        GH_REPOSITORY: ${{ github.repository }}
+        GH_RUN_ID: ${{ github.run_id }}
+        GH_RUN_NUMBER: ${{ github.run_number }}
       run: |
         # Extract directory from xml-path pattern
         XML_DIR=$(echo "$XML_PATH" | sed 's|\*\*/\*\.xml$||' | sed 's|\*\.xml$||' | sed 's|/$||')
@@ -79,6 +83,20 @@ runs:
         # Create environment.properties for Allure report metadata
         printf "Report.Name=%s\nTest.Type=JUnit\n" "$REPORT_TITLE" > "$ALLURE_INPUT_DIR/environment.properties"
         echo "Created environment.properties with Report.Name=$REPORT_TITLE"
+
+        # Create executor.json for CI build info and report title in heading
+        BUILD_URL="${GH_SERVER_URL}/${GH_REPOSITORY}/actions/runs/${GH_RUN_ID}"
+        cat << EOF > "$ALLURE_INPUT_DIR/executor.json"
+        {
+          "name": "GitHub Actions",
+          "type": "github",
+          "buildName": "#${GH_RUN_NUMBER}",
+          "buildUrl": "${BUILD_URL}",
+          "reportName": "${REPORT_TITLE}"
+        }
+        EOF
+        sed -i 's/^[[:space:]]*//' "$ALLURE_INPUT_DIR/executor.json"
+        echo "Created executor.json with build #${GH_RUN_NUMBER} and reportName=${REPORT_TITLE}"
 
         # Copy history if available (enables trend charts)
         if [ -n "$HISTORY_ARTIFACT" ] && [ -d "junit-history-temp" ]; then
