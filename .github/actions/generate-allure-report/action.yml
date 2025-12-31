@@ -30,14 +30,17 @@ runs:
     - name: Setup Allure CLI
       uses: ./.github/actions/setup-allure
 
-    # Download previous history if history artifact name is provided
+    # Download previous history from last successful run on same branch
     - name: Download previous Allure history
       if: inputs.history-artifact-name != ''
-      uses: actions/download-artifact@v4
+      uses: dawidd6/action-download-artifact@v6
       with:
         name: ${{ inputs.history-artifact-name }}
         path: ${{ inputs.results-dir }}/history
-      continue-on-error: true
+        workflow_conclusion: ''
+        branch: ${{ github.ref_name }}
+        if_no_artifact_found: ignore
+        search_artifacts: true
 
     - name: Validate and Generate Allure Report
       shell: bash
