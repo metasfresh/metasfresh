@@ -156,7 +156,61 @@ curl -s "$BASE/allure/cucumber/widgets/environment.json" | jq '.[] | select(.nam
 
 ---
 
-## 5. Landing Page Structure
+## 5. Feature Tags (Playwright & Cucumber Only)
+
+**Applies to:** Frontend WebUI, Mobile WebUI, Cucumber
+
+Tests must include feature metadata for traceability. Feature IDs follow the format `FXXXXX` (e.g., F00100).
+
+### 5.1 Playwright Reports (Frontend WebUI, Mobile WebUI)
+
+Click on any test in the report and verify:
+
+| Location | Expected Content | Check |
+|----------|------------------|-------|
+| **Tags section** | Feature IDs like `F00100 F00200 F00130` | [ ] |
+| **Description section** | Feature headers like `F00100: Sales Order` | [ ] |
+
+**Visual verification steps:**
+1. Open report → Navigate to Behaviors → Expand an Epic (e.g., E0100)
+2. Click on a test to see its details
+3. Verify **Tags** section shows feature IDs (e.g., `F00100 F00200`)
+4. Verify **Description** section shows feature headers with format `FXXXXX: Feature Name`
+
+**Example of correct Playwright test details:**
+```
+Tags: F00200 F00100 F00130 en_US F00150 F00105
+Severity: critical
+Duration: 1m 36s
+
+Description:
+## E0100: Sales
+## F00100: Sales Order
+## F00105: Sales Order Document
+## F00130: Shipment Schedule
+...
+```
+
+### 5.2 Cucumber Report
+
+Click on any test in the Cucumber report and verify:
+
+| Location | Expected Content | Check |
+|----------|------------------|-------|
+| **Behaviors tree** | Feature IDs visible under Epics (e.g., E0100 → F00100) | [ ] |
+| **Tags section** | Should include feature ID (e.g., `F00100`) | [ ] |
+| **Description section** | Feature header like `F00100: Sales Order` | [ ] |
+
+**Current Status (as of build 28580):**
+- ✅ Behaviors tree shows feature IDs under epics
+- ❌ Individual test Tags section does NOT show feature IDs (only shows `from:cucumber Id:XXXX`)
+- ❌ Individual test has no Description section with feature ID and name
+
+**TODO:** Cucumber tests need enhancement to include feature ID and description in individual test details (similar to Playwright).
+
+---
+
+## 6. Landing Page Structure
 
 Check: `https://pub-c55eb97d86224a4e951c219dfc2057b8.r2.dev/index.html`
 
