@@ -1,6 +1,6 @@
 # Allure Reports - Definition of Done
 
-> Last verified: Build #28572 (2025-12-31)
+> Last verified: Build #28576 (2025-12-31)
 
 ## How to Verify
 After each CI build completes, check R2 reports at:
