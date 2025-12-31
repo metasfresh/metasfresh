@@ -145,14 +145,30 @@ gh run view {RUN_ID} --json jobs --jq '.jobs[] | select(.name | contains("Allure
 
 ---
 
-## 8. CI Job Success
+## 8. CI Job Success (CRITICAL)
 
-All these jobs must pass:
-- [ ] `frontend webui test`
-- [ ] `mobile test`
-- [ ] `test (cucumber) (profile1-7, flaky, catchall, report)`
+**ALL test jobs must pass.** If any test job fails, the Allure report for that job may not be generated or published to R2.
+
+### Required Jobs - ALL Must Pass:
+- [ ] `frontend webui test` - generates `allure/frontend-webui/`
+- [ ] `mobile test` - generates `allure/mobile-webui/`
+- [ ] `test (cucumber) (profile1-7, flaky, catchall, report)` - generates `allure/cucumber/`
 - [ ] `Generate Cucumber Allure Report`
 - [ ] `Publish Test Reports to R2`
+
+### Verify No Failures:
+```bash
+gh run view {RUN_ID} --json conclusion,jobs --jq '{
+  conclusion,
+  failed: [.jobs[] | select(.conclusion == "failure") | .name],
+  skipped: [.jobs[] | select(.conclusion == "skipped") | .name]
+}'
+```
+
+**If any test job fails:**
+1. Check if failure is related to Allure changes (check logs for permission errors, missing files, etc.)
+2. If related, fix and re-push
+3. If unrelated (flaky test), the DoD cannot be fully verified until a clean build passes
 
 ---
 
@@ -207,10 +223,16 @@ Commit: {SHA}
 - [ ] Features nested under correct Epics
 - [ ] Sample: report_InventoryValue.feature → E0225/F01000
 
-### 5. CI Jobs
+### 5. CI Jobs (ALL MUST PASS)
 - [ ] frontend webui test: passed
 - [ ] mobile test: passed
-- [ ] All cucumber profiles: passed
+- [ ] All cucumber profiles (1-7, flaky, catchall, report): passed
 - [ ] Generate Cucumber Allure Report: passed
 - [ ] Publish Test Reports to R2: passed
+- [ ] **Overall build conclusion: success** (not failure/cancelled)
+
+### 6. Executor Info (in Allure reports)
+- [ ] widgets/executors.json shows GitHub Actions
+- [ ] Build number matches CI run number
+- [ ] Build URL links to correct GitHub Actions run
 ```
