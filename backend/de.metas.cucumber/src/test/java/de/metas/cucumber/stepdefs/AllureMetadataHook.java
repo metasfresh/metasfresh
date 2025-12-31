@@ -65,7 +65,7 @@ public class AllureMetadataHook
 		// Add feature IDs as individual Allure tags
 		for (final String featureId : featureIds)
 		{
-			Allure.tag(featureId);
+			Allure.label("tag", featureId);
 		}
 
 		// Build and set description with feature headers
