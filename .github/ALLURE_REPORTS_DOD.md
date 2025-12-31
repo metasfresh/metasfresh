@@ -201,12 +201,15 @@ Click on any test in the Cucumber report and verify:
 | **Tags section** | Should include feature ID (e.g., `F00100`) | [ ] |
 | **Description section** | Feature header like `F00100: Sales Order` | [ ] |
 
-**Current Status (as of build 28580):**
-- ✅ Behaviors tree shows feature IDs under epics
-- ❌ Individual test Tags section does NOT show feature IDs (only shows `from:cucumber Id:XXXX`)
-- ❌ Individual test has no Description section with feature ID and name
+**Implementation Status:**
+- ✅ `AllureMetadataHook.java` added in build 28581+ extracts `@allure.label.feature:FXXXXX` tags
+- ✅ Feature IDs added as individual Allure tags (visible in Tags section)
+- ✅ Description generated with Epic/Feature headers (visible in Description section)
 
-**TODO:** Cucumber tests need enhancement to include feature ID and description in individual test details (similar to Playwright).
+**Expected Result (build 28581+):**
+- Behaviors tree shows feature IDs under epics
+- Individual test Tags section shows feature IDs (e.g., `F00100`, `F01000`)
+- Individual test Description section shows headers like `## F00100`
 
 ---
 
