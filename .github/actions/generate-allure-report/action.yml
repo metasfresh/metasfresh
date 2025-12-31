@@ -79,11 +79,11 @@ runs:
         # Create/update environment.properties for Allure report metadata
         # Use sudo in case directory was created by Docker with root permissions
         if [ -f "$RESULTS_DIR/environment.properties" ]; then
-          # Append to existing file (tests may have created it)
-          echo "Report.Name=$REPORT_TITLE" | sudo tee -a "$RESULTS_DIR/environment.properties" > /dev/null
+          # Append to existing file with newline (tests may have created it)
+          printf "\nReport.Name=%s\n" "$REPORT_TITLE" | sudo tee -a "$RESULTS_DIR/environment.properties" > /dev/null
           echo "Appended Report.Name to existing environment.properties"
         else
-          echo "Report.Name=$REPORT_TITLE" | sudo tee "$RESULTS_DIR/environment.properties" > /dev/null
+          printf "Report.Name=%s\n" "$REPORT_TITLE" | sudo tee "$RESULTS_DIR/environment.properties" > /dev/null
           echo "Created environment.properties with Report.Name=$REPORT_TITLE"
         fi
 
