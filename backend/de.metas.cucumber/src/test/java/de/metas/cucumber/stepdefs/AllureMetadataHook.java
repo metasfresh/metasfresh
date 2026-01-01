@@ -22,120 +22,18 @@
 
 package de.metas.cucumber.stepdefs;
 
-import io.cucumber.java.After;
-import io.cucumber.java.Scenario;
-import io.qameta.allure.Allure;
-import io.qameta.allure.AllureLifecycle;
-import io.qameta.allure.model.Label;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 /**
- * Cucumber hook that enhances Allure reports with feature metadata.
+ * Placeholder for Cucumber Allure metadata enhancement.
  * <p>
- * This hook extracts feature IDs (e.g., F00100) from {@code @allure.label.feature:FXXXXX} tags
- * and adds them to the individual test's Allure metadata:
- * <ul>
- *   <li>Feature IDs are added as individual tags (visible in Tags section)</li>
- *   <li>A description is generated with feature headers (visible in Description section)</li>
- * </ul>
+ * Note: Feature tags (F00100, etc.) are added to individual test results
+ * via post-processing in CI. See: .github/scripts/add-feature-tags-to-allure.sh
  * <p>
- * This ensures Cucumber tests have the same feature visibility as Playwright tests
- * in the Allure report.
- * <p>
- * Note: Uses @After hook instead of @Before because the Allure test context must be
- * fully initialized by AllureCucumber7Jvm before we can modify it.
+ * The AllureCucumber7Jvm plugin handles @allure.label.feature:FXXXXX tags
+ * for the Behaviors tree hierarchy. The CI script copies these "feature"
+ * labels to "tag" labels so they appear in the individual test Tags section.
  */
 public class AllureMetadataHook
 {
-	private static final Pattern FEATURE_TAG_PATTERN = Pattern.compile("@allure\\.label\\.feature:(F\\d+)");
-	private static final Pattern EPIC_TAG_PATTERN = Pattern.compile("@allure\\.label\\.epic:(E\\d+)");
-
-	/**
-	 * After hook that runs after each scenario.
-	 * Uses AllureLifecycle.updateTestCase() to directly modify the test result,
-	 * which works reliably with the Cucumber-Allure integration.
-	 */
-	@After(order = Integer.MAX_VALUE) // Run last, after all other hooks
-	public void addAllureMetadata(final Scenario scenario)
-	{
-		final Collection<String> tags = scenario.getSourceTagNames();
-
-		final List<String> featureIds = extractMatchingValues(tags, FEATURE_TAG_PATTERN);
-		final List<String> epicIds = extractMatchingValues(tags, EPIC_TAG_PATTERN);
-
-		if (featureIds.isEmpty() && epicIds.isEmpty())
-		{
-			return;
-		}
-
-		final AllureLifecycle lifecycle = Allure.getLifecycle();
-
-		// Use updateTestCase to directly modify the Allure test result
-		lifecycle.updateTestCase(testResult -> {
-			// Add feature IDs as individual tags
-			for (final String featureId : featureIds)
-			{
-				testResult.getLabels().add(new Label().setName("tag").setValue(featureId));
-			}
-
-			// Set description with epic and feature headers
-			final String description = buildDescription(epicIds, featureIds, scenario.getName());
-			testResult.setDescription(description);
-		});
-	}
-
-	/**
-	 * Extracts matching values from tags using the given pattern.
-	 */
-	private List<String> extractMatchingValues(final Collection<String> tags, final Pattern pattern)
-	{
-		final List<String> values = new ArrayList<>();
-		for (final String tag : tags)
-		{
-			final Matcher matcher = pattern.matcher(tag);
-			if (matcher.matches())
-			{
-				values.add(matcher.group(1));
-			}
-		}
-		return values;
-	}
-
-	/**
-	 * Builds a Markdown description with epic and feature headers.
-	 * Format matches Playwright test descriptions for consistency.
-	 */
-	private String buildDescription(
-			final List<String> epicIds,
-			final List<String> featureIds,
-			final String scenarioName)
-	{
-		final StringBuilder sb = new StringBuilder();
-
-		// Add epic headers
-		for (final String epicId : epicIds)
-		{
-			sb.append("## ").append(epicId).append("\n");
-		}
-
-		// Add feature headers
-		for (final String featureId : featureIds)
-		{
-			sb.append("## ").append(featureId).append("\n");
-		}
-
-		// Add scenario name as context
-		if (scenarioName != null && !scenarioName.isEmpty())
-		{
-			sb.append("\n### Scenario\n");
-			sb.append(scenarioName).append("\n");
-		}
-
-		return sb.toString();
-	}
+	// Feature tags are added via CI post-processing, not runtime hooks.
+	// See: .github/scripts/add-feature-tags-to-allure.sh
 }

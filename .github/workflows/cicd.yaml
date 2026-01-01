@@ -1523,6 +1523,12 @@ jobs:
         if: steps.check_results.outputs.has_results == 'true'
         uses: ./.github/actions/setup-allure
 
+      - name: Add feature tags to Allure results
+        if: steps.check_results.outputs.has_results == 'true'
+        run: |
+          chmod +x .github/scripts/add-feature-tags-to-allure.sh
+          .github/scripts/add-feature-tags-to-allure.sh all-cucumber-results
+
       - name: Generate combined Allure report
         if: steps.check_results.outputs.has_results == 'true'
         uses: ./.github/actions/generate-allure-report
