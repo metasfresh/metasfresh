@@ -22,9 +22,11 @@
 
 package de.metas.cucumber.stepdefs;
 
-import io.cucumber.java.Before;
+import io.cucumber.java.After;
 import io.cucumber.java.Scenario;
 import io.qameta.allure.Allure;
+import io.qameta.allure.AllureLifecycle;
+import io.qameta.allure.model.Label;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -44,6 +46,9 @@ import java.util.regex.Pattern;
  * <p>
  * This ensures Cucumber tests have the same feature visibility as Playwright tests
  * in the Allure report.
+ * <p>
+ * Note: Uses @After hook instead of @Before because the Allure test context must be
+ * fully initialized by AllureCucumber7Jvm before we can modify it.
  */
 public class AllureMetadataHook
 {
@@ -51,10 +56,11 @@ public class AllureMetadataHook
 	private static final Pattern EPIC_TAG_PATTERN = Pattern.compile("@allure\\.label\\.epic:(E\\d+)");
 
 	/**
-	 * Before hook that runs before each scenario.
-	 * Extracts feature and epic tags and adds them to Allure metadata.
+	 * After hook that runs after each scenario.
+	 * Uses AllureLifecycle.updateTestCase() to directly modify the test result,
+	 * which works reliably with the Cucumber-Allure integration.
 	 */
-	@Before(order = 1) // Run early, but after other setup hooks
+	@After(order = Integer.MAX_VALUE) // Run last, after all other hooks
 	public void addAllureMetadata(final Scenario scenario)
 	{
 		final Collection<String> tags = scenario.getSourceTagNames();
@@ -62,18 +68,25 @@ public class AllureMetadataHook
 		final List<String> featureIds = extractMatchingValues(tags, FEATURE_TAG_PATTERN);
 		final List<String> epicIds = extractMatchingValues(tags, EPIC_TAG_PATTERN);
 
-		// Add feature IDs as individual Allure tags
-		for (final String featureId : featureIds)
+		if (featureIds.isEmpty() && epicIds.isEmpty())
 		{
-			Allure.label("tag", featureId);
+			return;
 		}
 
-		// Build and set description with feature headers
-		if (!featureIds.isEmpty() || !epicIds.isEmpty())
-		{
+		final AllureLifecycle lifecycle = Allure.getLifecycle();
+
+		// Use updateTestCase to directly modify the Allure test result
+		lifecycle.updateTestCase(testResult -> {
+			// Add feature IDs as individual tags
+			for (final String featureId : featureIds)
+			{
+				testResult.getLabels().add(new Label().setName("tag").setValue(featureId));
+			}
+
+			// Set description with epic and feature headers
 			final String description = buildDescription(epicIds, featureIds, scenario.getName());
-			Allure.description(description);
-		}
+			testResult.setDescription(description);
+		});
 	}
 
 	/**
