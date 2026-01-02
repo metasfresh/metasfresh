@@ -12,8 +12,9 @@ test.describe('Login/Logout', () => {
             // noinspection JSUnusedLocalSymbols
             test(`By user/pass, using ${language} language, ${authMethod} as default auth method`, async ({ page }) => {
                 // === ALLURE METADATA ===
-                allure.epic('E0295');
-                allure.tag('F12000');
+                allure.epic('E0295: Frontend MobileUI');
+                allure.tag('F12000: Frontend MobileUI');
+        allure.tag('F12000');  // Standalone tag for Tags section;
                 allure.story('Login with language selection');
                 allure.severity('critical');
                 allure.parameter('Language', language);

@@ -68,7 +68,7 @@ const createMasterdata = async ({ salesOrders }) => {
 // noinspection JSUnusedLocalSymbols
 test('Check facets when only scheduled for workplace is enabled', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0105');
+    allure.epic('E0105: Picking');
     allure.tag('F00230.3');
     allure.story('Picking facets');
     allure.severity('normal');

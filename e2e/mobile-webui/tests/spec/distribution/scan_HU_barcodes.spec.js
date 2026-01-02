@@ -89,8 +89,9 @@ const standardTest = async ({ masterdata, huBarcodeToScan }) => {
 // noinspection JSUnusedLocalSymbols
 test('Scan by HU QR Code', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0370');
-    allure.tag('F5114');
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5114: MobileUI Distribution');
+        allure.tag('F5114');  // Standalone tag for Tags section;
     allure.story('Scan HU barcodes');
     allure.severity('normal');
 
@@ -101,8 +102,9 @@ test('Scan by HU QR Code', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Scan by M_HU_ID', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0370');
-    allure.tag('F5114');
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5114: MobileUI Distribution');
+        allure.tag('F5114');  // Standalone tag for Tags section;
     allure.story('Scan HU barcodes');
     allure.severity('normal');
 
@@ -113,8 +115,9 @@ test('Scan by M_HU_ID', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Scan by ExternalBarcode', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0370');
-    allure.tag('F5114');
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5114: MobileUI Distribution');
+        allure.tag('F5114');  // Standalone tag for Tags section;
     allure.story('Scan HU barcodes');
     allure.severity('normal');
 

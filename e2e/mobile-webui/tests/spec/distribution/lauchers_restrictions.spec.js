@@ -47,8 +47,9 @@ const createMasterdata = async ({ maxLaunchers, maxStartedLaunchers, allowStartN
 // noinspection JSUnusedLocalSymbols
 test('No restrictions', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0370');
-    allure.tag('F5114');
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5114: MobileUI Distribution');
+        allure.tag('F5114');  // Standalone tag for Tags section;
     allure.story('Launcher restrictions');
     allure.severity('normal');
 
@@ -77,8 +78,9 @@ test('No restrictions', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Allow starting next job only', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0370');
-    allure.tag('F5114');
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5114: MobileUI Distribution');
+        allure.tag('F5114');  // Standalone tag for Tags section;
     allure.story('Launcher restrictions');
     allure.severity('normal');
 

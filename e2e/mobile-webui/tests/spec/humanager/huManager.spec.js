@@ -49,7 +49,7 @@ const createMasterdataAndScanByHUQRCode = async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Check action buttons order', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0370');
+    allure.epic('E0370: Intralogistic (HUs)');
     allure.tag('F5120');
     allure.story('HU Manager - UI Layout');
     allure.severity('normal');
@@ -76,7 +76,7 @@ test('Check action buttons order', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Dispose HU', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0370');
+    allure.epic('E0370: Intralogistic (HUs)');
     allure.tag('F5120');
     allure.story('HU Manager - Dispose');
     allure.severity('critical');
@@ -88,7 +88,7 @@ test('Dispose HU', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Move HU using locator code', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0370');
+    allure.epic('E0370: Intralogistic (HUs)');
     allure.tag('F5120');
     allure.story('HU Manager - Move');
     allure.severity('critical');
@@ -105,7 +105,7 @@ test('Move HU using locator code', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Change Qty', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0370');
+    allure.epic('E0370: Intralogistic (HUs)');
     allure.tag('F5120');
     allure.story('HU Manager - Change Quantity');
     allure.severity('critical');
@@ -122,7 +122,7 @@ test('Change Qty', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Change Clearance Status', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0370');
+    allure.epic('E0370: Intralogistic (HUs)');
     allure.tag('F5120');
     allure.story('HU Manager - Clearance Status');
     allure.severity('normal');
@@ -153,7 +153,7 @@ test('Change Locator of a generated HU QR Code', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Bulk actions - Move', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0370');
+    allure.epic('E0370: Intralogistic (HUs)');
     allure.tag('F5120');
     allure.story('HU Manager - Bulk Actions');
     allure.severity('normal');

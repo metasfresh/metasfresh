@@ -30,7 +30,7 @@ const createMasterdata = async () => {
 // noinspection JSUnusedLocalSymbols
 test('Simple inventory test', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0370');
+    allure.epic('E0370: Intralogistic (HUs)');
     allure.tag('F5310');
     allure.story('Inventory - Basic Count');
     allure.severity('critical');

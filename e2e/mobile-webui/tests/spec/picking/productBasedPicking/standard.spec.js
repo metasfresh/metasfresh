@@ -104,8 +104,9 @@ const createMasterdata = async ({
 // noinspection JSUnusedLocalSymbols
 test('Product based aggregation', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0105');
-    allure.tag('F00230');
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');  // Standalone tag for Tags section;
     allure.story('Product based aggregation');
     allure.severity('normal');
 
@@ -257,8 +258,9 @@ test('Product based aggregation', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Filter by EAN13', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0105');
-    allure.tag('F00230');
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');  // Standalone tag for Tags section;
     allure.story('Product based picking - Filter by EAN13');
     allure.severity('normal');
 
@@ -314,8 +316,9 @@ test('Filter by EAN13', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Anonymous pick HUs on the fly', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0105');
-    allure.tag('F00230');
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');  // Standalone tag for Tags section;
     allure.story('Product based picking - Anonymous pick on the fly');
     allure.severity('normal');
 

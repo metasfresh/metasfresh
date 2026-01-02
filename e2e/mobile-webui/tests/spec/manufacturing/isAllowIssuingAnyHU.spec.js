@@ -56,8 +56,9 @@ test.describe('Test isAllowIssuingAnyHU', () => {
         // noinspection JSUnusedLocalSymbols
         test(`isAllowIssuingAnyHU=${isAllowIssuingAnyHU}, isCreateRawMaterialsStock=${isCreateRawMaterialsStock} => expect ${expectError ? 'ERROR' : 'OK'}`, async ({ page }) => {
             // === ALLURE METADATA ===
-            allure.epic('E0160');
-            allure.tag('F8030');
+            allure.epic('E0160: Manufacturing Execution');
+            allure.tag('F8030: MobileUI Manufacturing');
+        allure.tag('F8030');  // Standalone tag for Tags section;
             allure.story('isAllowIssuingAnyHU configuration');
             allure.severity('normal');
             allure.parameter('isAllowIssuingAnyHU', String(isAllowIssuingAnyHU));

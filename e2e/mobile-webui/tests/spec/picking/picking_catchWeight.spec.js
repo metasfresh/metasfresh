@@ -75,8 +75,9 @@ const createMasterdata = async ({
 // noinspection JSUnusedLocalSymbols
 test('Manual', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0105');
-    allure.tag('F00230');
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');  // Standalone tag for Tags section;
     allure.story('Catch weight picking - Manual input');
     allure.severity('normal');
 
@@ -142,8 +143,9 @@ test('Manual', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Leich+Mehl', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0105');
-    allure.tag('F00230');
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');  // Standalone tag for Tags section;
     allure.story('Catch weight picking - Leich+Mehl QR codes');
     allure.severity('normal');
 
@@ -230,8 +232,9 @@ test('Leich+Mehl', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Leich+Mehl - invalid code', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0105');
-    allure.tag('F00230');
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');  // Standalone tag for Tags section;
     allure.story('Catch weight picking - Invalid QR codes');
     allure.severity('normal');
 
@@ -267,8 +270,9 @@ test('Leich+Mehl - invalid code', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('GS1', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0105');
-    allure.tag('F00230');
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');  // Standalone tag for Tags section;
     allure.story('Catch weight picking - GS1 codes');
     allure.severity('normal');
 
@@ -316,8 +320,9 @@ test('GS1', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('EAN13 with prefix 28', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0105');
-    allure.tag('F00230');
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');  // Standalone tag for Tags section;
     allure.story('Catch weight picking - EAN13 prefix 28');
     allure.severity('normal');
 
@@ -365,8 +370,9 @@ test('EAN13 with prefix 28', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('EAN13 with prefix 28 and not matching product', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0105');
-    allure.tag('F00230');
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');  // Standalone tag for Tags section;
     allure.story('Catch weight picking - EAN13 prefix 28 mismatch');
     allure.severity('normal');
 
@@ -395,8 +401,9 @@ test('EAN13 with prefix 28 and not matching product', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('EAN13 with prefix 29', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0105');
-    allure.tag('F00230');
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');  // Standalone tag for Tags section;
     allure.story('Catch weight picking - EAN13 prefix 29');
     allure.severity('normal');
 
@@ -444,8 +451,9 @@ test('EAN13 with prefix 29', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('EAN13 with prefix 29 and not matching product', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0105');
-    allure.tag('F00230');
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');  // Standalone tag for Tags section;
     allure.story('Catch weight picking - EAN13 prefix 29 mismatch');
     allure.severity('normal');
 
@@ -474,8 +482,9 @@ test('EAN13 with prefix 29 and not matching product', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Custom QR code format', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0105');
-    allure.tag('F00230');
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');  // Standalone tag for Tags section;
     allure.story('Catch weight picking - Custom QR code format');
     allure.severity('normal');
 
@@ -540,8 +549,9 @@ test('Custom QR code format', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Check Last BestBeforeDate is displayed when MobileUIPickingProfile.ShowLastPickedBestBeforeDateForLines = Y', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0105');
-    allure.tag('F00230');
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');  // Standalone tag for Tags section;
     allure.story('Catch weight picking - Best Before Date display');
     allure.severity('normal');
 

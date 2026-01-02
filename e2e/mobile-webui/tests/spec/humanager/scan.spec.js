@@ -26,7 +26,7 @@ const createMasterdata = async ({ externalBarcode } = {}) => {
 // noinspection JSUnusedLocalSymbols
 test('Scan by HU QR Code', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0370');
+    allure.epic('E0370: Intralogistic (HUs)');
     allure.tag('F5120');
     allure.story('HU Manager - Scan Methods');
     allure.severity('critical');
@@ -44,7 +44,7 @@ test('Scan by HU QR Code', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Scan by M_HU_ID', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0370');
+    allure.epic('E0370: Intralogistic (HUs)');
     allure.tag('F5120');
     allure.story('HU Manager - Scan Methods');
     allure.severity('normal');
@@ -62,7 +62,7 @@ test('Scan by M_HU_ID', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Scan by ExternalBarcode attribute', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0370');
+    allure.epic('E0370: Intralogistic (HUs)');
     allure.tag('F5120');
     allure.story('HU Manager - Scan Methods');
     allure.severity('normal');

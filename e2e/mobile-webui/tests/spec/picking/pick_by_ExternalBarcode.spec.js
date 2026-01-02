@@ -49,8 +49,9 @@ const createMasterdata = async ({ externalBarcode } = {}) => {
 // noinspection JSUnusedLocalSymbols
 test('Pick by scanning ExternalBarcode attribute', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0105');
-    allure.tag('F00230');
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');  // Standalone tag for Tags section;
     allure.story('Pick by external barcode attribute');
     allure.severity('normal');
 

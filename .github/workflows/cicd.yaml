@@ -1905,7 +1905,7 @@ jobs:
           output-dir: reports/branches/${{ needs.init.outputs.branch-sanitized-gh-pages }}/builds/${{ needs.init.outputs.tag-fixed }}/junit/camel
           artifact-name: junit-report-camel
           history-artifact-name: junit-history-camel
-          report-title: 'Camel Init and Integration Tests'
+          report-title: 'Camel Unit and Integration Tests'
         continue-on-error: true
 
       - name: Verify reports exist

@@ -46,8 +46,9 @@ const createMasterdata = async ({ readAttributes, qty }) => {
 // noinspection JSUnusedLocalSymbols
 test('Expect picking directly without dialog', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0105');
-    allure.tag('F00230');
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');  // Standalone tag for Tags section;
     allure.story('Pick attributes behavior');
     allure.severity('normal');
 

@@ -130,7 +130,7 @@ const pickHUsToPickingSlot = async ({ masterdata }) => await test.step("Pick", a
 // noinspection JSUnusedLocalSymbols
 test('Simple HU consolidate all test', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0105');
+    allure.epic('E0105: Picking');
     allure.tag('F00248');
     allure.story('HU Consolidation - Consolidate All');
     allure.severity('critical');
@@ -156,7 +156,7 @@ test('Simple HU consolidate all test', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Simple HU consolidate HUs one by one test', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0105');
+    allure.epic('E0105: Picking');
     allure.tag('F00248');
     allure.story('HU Consolidation - One by One');
     allure.severity('critical');
@@ -190,7 +190,7 @@ test('Simple HU consolidate HUs one by one test', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Manual print current target label', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0105');
+    allure.epic('E0105: Picking');
     allure.tag('F00248');
     allure.story('HU Consolidation - Print Labels');
     allure.severity('normal');
@@ -220,7 +220,7 @@ test('Manual print current target label', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Consolidate to an existing LU', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0105');
+    allure.epic('E0105: Picking');
     allure.tag('F00248');
     allure.story('HU Consolidation - Existing LU');
     allure.severity('normal');

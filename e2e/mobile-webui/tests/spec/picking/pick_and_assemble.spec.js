@@ -69,8 +69,9 @@ const createMasterdata = async () => {
 // noinspection JSUnusedLocalSymbols
 test('Assemble/Manufacture while picking test', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0105');
-    allure.tag('F00230');
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');  // Standalone tag for Tags section;
     allure.story('Pick and assemble workflow');
     allure.severity('normal');
 

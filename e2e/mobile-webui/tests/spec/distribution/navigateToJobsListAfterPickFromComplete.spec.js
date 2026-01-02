@@ -60,8 +60,9 @@ const createMasterdata = async ({ qtyToMove }) => {
 // noinspection JSUnusedLocalSymbols
 test('Happy case', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0370');
-    allure.tag('F5114');
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5114: MobileUI Distribution');
+        allure.tag('F5114');  // Standalone tag for Tags section;
     allure.story('Navigate to jobs list after pick from complete');
     allure.severity('normal');
 

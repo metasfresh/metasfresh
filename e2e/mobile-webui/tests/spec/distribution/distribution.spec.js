@@ -46,8 +46,9 @@ const createMasterdata = async ({ HU1_warehouse = 'wh1', HU1_product = 'P1', qty
 // noinspection JSUnusedLocalSymbols
 test('Simple distribution test', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0370');
-    allure.tag('F5114');
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5114: MobileUI Distribution');
+        allure.tag('F5114');  // Standalone tag for Tags section;
     allure.story('Simple distribution workflow');
     allure.severity('critical');
 
@@ -72,8 +73,9 @@ test('Simple distribution test', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Try picking an HU from a different locator than pick from locator', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0370');
-    allure.tag('F5114');
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5114: MobileUI Distribution');
+        allure.tag('F5114');  // Standalone tag for Tags section;
     allure.story('Distribution error handling');
     allure.severity('normal');
 
@@ -96,8 +98,9 @@ test('Try picking an HU from a different locator than pick from locator', async 
 // noinspection JSUnusedLocalSymbols
 test('Try picking an HU containing a different product than expected', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0370');
-    allure.tag('F5114');
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5114: MobileUI Distribution');
+        allure.tag('F5114');  // Standalone tag for Tags section;
     allure.story('Distribution error handling');
     allure.severity('normal');
 
@@ -128,8 +131,9 @@ test('Try picking an HU containing a different product than expected', async ({ 
 // noinspection JSUnusedLocalSymbols
 test('Distribution using 2 steps to pick the needed qty.', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0370');
-    allure.tag('F5114');
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5114: MobileUI Distribution');
+        allure.tag('F5114');  // Standalone tag for Tags section;
     allure.story('Multi-step distribution');
     allure.severity('normal');
 
@@ -160,8 +164,9 @@ test('Distribution using 2 steps to pick the needed qty.', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Pick & Unpick in distribution step screen', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0370');
-    allure.tag('F5114');
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5114: MobileUI Distribution');
+        allure.tag('F5114');  // Standalone tag for Tags section;
     allure.story('Distribution pick and unpick');
     allure.severity('normal');
 
@@ -184,8 +189,9 @@ test('Pick & Unpick in distribution step screen', async ({ page }) => {
 // noinspection JSUnusedLocalSymbols
 test('Filter distribution orders by plantId', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0370');
-    allure.tag('F5112.1');
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5112.1: One QR for many HUs');
+        allure.tag('F5112.1');  // Standalone tag for Tags section;
     allure.story('Filter distribution by plant');
     allure.severity('normal');
 

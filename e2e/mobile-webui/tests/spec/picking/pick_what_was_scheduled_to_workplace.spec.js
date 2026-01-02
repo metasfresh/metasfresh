@@ -81,8 +81,9 @@ const createMasterdata = async () => {
 // noinspection JSUnusedLocalSymbols
 test('Pick one sales order to different workplaces', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0105');
-    allure.tag('F00230');
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');  // Standalone tag for Tags section;
     allure.story('Pick scheduled to workplace');
     allure.severity('normal');
 
