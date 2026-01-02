@@ -31,7 +31,7 @@ const createMasterdata = async () => {
 test('Simple inventory test', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0370: Intralogistic (HUs)');
-    allure.tag('F5310: Mobile UI Inventory');
+    allure.tag('F5310');
     allure.story('Inventory - Basic Count');
     allure.severity('critical');
 

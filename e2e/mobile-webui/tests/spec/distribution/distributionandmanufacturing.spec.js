@@ -87,6 +87,7 @@ test('Distribution and manufacturing test', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0370: Intralogistic (HUs)');
     allure.tag('F5114: MobileUI Distribution');
+        allure.tag('F5114');  // Standalone tag for Tags section;
     allure.story('Distribution and manufacturing integration');
     allure.severity('critical');
 

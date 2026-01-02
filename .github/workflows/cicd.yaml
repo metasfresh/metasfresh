@@ -1348,18 +1348,42 @@ jobs:
       - name: Extract Cucumber Allure results
         if: always()
         run: |
-          # Allure results are generated in target/allure-results inside the cucumber container
-          # The compose.yml mounts ./cucumber:/opt/metasfresh/target, so results should be in ./cucumber/allure-results
+          echo "=== Searching for Allure results ==="
           mkdir -p cucumber-allure-results
+          FOUND_RESULTS=false
+
+          # Check primary location: cucumber/allure-results
           if [ -d "cucumber/allure-results" ]; then
+            echo "Found results in cucumber/allure-results"
             cp -r cucumber/allure-results/. cucumber-allure-results/
-            # Create environment.properties to tag this profile
-            echo "executor.profile=${{ matrix.profile }}" >> cucumber-allure-results/environment.properties
+            FOUND_RESULTS=true
+          # Check alternative location: cucumber/target/allure-results
+          elif [ -d "cucumber/target/allure-results" ]; then
+            echo "Found results in cucumber/target/allure-results"
+            cp -r cucumber/target/allure-results/. cucumber-allure-results/
+            FOUND_RESULTS=true
+          else
+            echo "Searching for allure-results directory..."
+            ALLURE_DIR=$(find cucumber -name "allure-results" -type d 2>/dev/null | head -1)
+            if [ -n "$ALLURE_DIR" ]; then
+              echo "Found results in $ALLURE_DIR"
+              cp -r "$ALLURE_DIR"/. cucumber-allure-results/
+              FOUND_RESULTS=true
+            fi
+          fi
+
+          if [ "$FOUND_RESULTS" = true ]; then
+            # Add build metadata (branch/build only - executor.profile removed as confusing)
             echo "branch=${{ github.ref_name }}" >> cucumber-allure-results/environment.properties
             echo "build=${{ needs.init.outputs.tag-fixed }}" >> cucumber-allure-results/environment.properties
-            echo "Allure results extracted from cucumber/allure-results ($(ls cucumber-allure-results | wc -l) files)"
+
+            # Report findings
+            JSON_COUNT=$(find cucumber-allure-results -name '*.json' -type f | wc -l)
+            echo "Allure results extracted: $JSON_COUNT JSON files for profile ${{ matrix.profile }}"
           else
-            echo "No Allure results found in cucumber/allure-results - this is expected for first run without Allure plugin"
+            echo "No Allure results found for profile ${{ matrix.profile }}"
+            echo "Available directories in cucumber/:"
+            ls -la cucumber/ 2>/dev/null || echo "cucumber/ does not exist"
           fi
       - name: Upload Cucumber Allure results
         if: always()
@@ -1469,13 +1493,30 @@ jobs:
       - name: Check if results exist
         id: check_results
         run: |
+          echo "=== Allure Results Diagnostics ==="
           if [ -d "all-cucumber-results" ] && [ "$(ls -A all-cucumber-results 2>/dev/null)" ]; then
             echo "has_results=true" >> $GITHUB_OUTPUT
-            echo "Found Allure results:"
-            ls -la all-cucumber-results/
+            echo "Directory exists. File counts:"
+            echo "  Total files: $(find all-cucumber-results -type f | wc -l)"
+            echo "  JSON result files: $(find all-cucumber-results -name '*-result.json' -type f | wc -l)"
+            echo "  Container files: $(find all-cucumber-results -name '*-container.json' -type f | wc -l)"
+            echo ""
+            echo "=== Files by type ==="
+            find all-cucumber-results -type f | sed 's/.*\.//' | sort | uniq -c | sort -rn | head -10
+            echo ""
+            echo "=== Environment files ==="
+            for env_file in $(find all-cucumber-results -name "environment.properties" 2>/dev/null); do
+              echo "--- $env_file ---"
+              cat "$env_file"
+            done
+            echo ""
+            echo "=== Sample JSON files (first 5) ==="
+            find all-cucumber-results -name '*.json' -type f | head -5
           else
             echo "has_results=false" >> $GITHUB_OUTPUT
             echo "No Allure results found - skipping report generation"
+            echo "Current directory contents:"
+            ls -la
           fi
 
       - name: Setup Allure
@@ -1490,6 +1531,8 @@ jobs:
           output-dir: cucumber-allure-report
           artifact-name: allure-report-cucumber
           retention-days: 30
+          history-artifact-name: allure-history-cucumber
+          report-title: 'Cucumber BDD'
 
   health_check:
     name: health check
@@ -1629,6 +1672,8 @@ jobs:
           results-dir: docker-builds/e2e-tests/allure-results-mobile
           output-dir: e2e/mobile-webui/allure-report
           artifact-name: allure-report-mobile-webui
+          history-artifact-name: allure-history-mobile-webui
+          report-title: 'Playwright (Mobile WebUI)'
       # ===== END ALLURE REPORT GENERATION =====
 
       - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest
@@ -1707,6 +1752,8 @@ jobs:
           results-dir: docker-builds/e2e-tests/allure-results
           output-dir: e2e/frontend-webui/allure-report
           artifact-name: allure-report-frontend-webui
+          history-artifact-name: allure-history-frontend-webui
+          report-title: 'Playwright (Frontend WebUI)'
       # ===== END ALLURE REPORT GENERATION =====
 
       - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest
@@ -1830,7 +1877,9 @@ jobs:
         with:
           xml-path: junit-raw/jest/**/*.xml
           output-dir: reports/branches/${{ needs.init.outputs.branch-sanitized-gh-pages }}/builds/${{ needs.init.outputs.tag-fixed }}/junit/jest
-          report-title: 'Jest Frontend Tests'
+          artifact-name: junit-report-jest
+          history-artifact-name: junit-history-jest
+          report-title: 'Jest (Frontend Unit Tests)'
         continue-on-error: true
 
       - name: Generate Backend JUnit HTML report
@@ -1838,7 +1887,9 @@ jobs:
         with:
           xml-path: junit-raw/backend/**/*.xml
           output-dir: reports/branches/${{ needs.init.outputs.branch-sanitized-gh-pages }}/builds/${{ needs.init.outputs.tag-fixed }}/junit/backend
-          report-title: 'Java Backend Tests'
+          artifact-name: junit-report-backend
+          history-artifact-name: junit-history-backend
+          report-title: 'Backend Unit Tests'
         continue-on-error: true
 
       - name: Generate Camel JUnit HTML report
@@ -1846,7 +1897,9 @@ jobs:
         with:
           xml-path: junit-raw/camel/**/*.xml
           output-dir: reports/branches/${{ needs.init.outputs.branch-sanitized-gh-pages }}/builds/${{ needs.init.outputs.tag-fixed }}/junit/camel
-          report-title: 'Camel Integration Tests'
+          artifact-name: junit-report-camel
+          history-artifact-name: junit-history-camel
+          report-title: 'Camel Unit and Integration Tests'
         continue-on-error: true
 
       - name: Verify reports exist

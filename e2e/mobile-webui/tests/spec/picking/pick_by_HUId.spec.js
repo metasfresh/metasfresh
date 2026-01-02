@@ -64,6 +64,7 @@ test('LU/CU -> LU/CU', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');  // Standalone tag for Tags section;
     allure.story('Pick by HU ID - LU/CU to LU/CU');
     allure.severity('normal');
 

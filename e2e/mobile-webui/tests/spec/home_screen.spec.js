@@ -42,6 +42,7 @@ test.describe('Scan HU codes', () => {
         // === ALLURE METADATA ===
         allure.epic('E0295: Frontend MobileUI');
         allure.tag('F12000: Frontend MobileUI');
+        allure.tag('F12000');  // Standalone tag for Tags section;
         allure.story('Scan HU codes from home screen');
         allure.severity('normal');
 
@@ -54,6 +55,7 @@ test.describe('Scan HU codes', () => {
         // === ALLURE METADATA ===
         allure.epic('E0295: Frontend MobileUI');
         allure.tag('F12000: Frontend MobileUI');
+        allure.tag('F12000');  // Standalone tag for Tags section;
         allure.story('Scan HU codes from home screen');
         allure.severity('normal');
 
@@ -66,6 +68,7 @@ test.describe('Scan HU codes', () => {
         // === ALLURE METADATA ===
         allure.epic('E0295: Frontend MobileUI');
         allure.tag('F12000: Frontend MobileUI');
+        allure.tag('F12000');  // Standalone tag for Tags section;
         allure.story('Scan HU codes from home screen');
         allure.severity('normal');
 
@@ -81,6 +84,7 @@ test('Scan Workplace code', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0295: Frontend MobileUI');
     allure.tag('F12000: Frontend MobileUI');
+        allure.tag('F12000');  // Standalone tag for Tags section;
     allure.story('Scan workplace codes from home screen');
     allure.severity('normal');
 

@@ -61,6 +61,7 @@ test('Pick less than a LU because ordered qty is less than an LU', async ({ page
     // === ALLURE METADATA ===
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');  // Standalone tag for Tags section;
     allure.story('Pick from LUs - Partial LU');
     allure.severity('normal');
 
@@ -124,6 +125,7 @@ test('Pick entire LU which is exactly the qty that was ordered', async ({ page }
     // === ALLURE METADATA ===
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');  // Standalone tag for Tags section;
     allure.story('Pick from LUs - Exact LU qty');
     allure.severity('normal');
 
@@ -185,6 +187,7 @@ test('Pick entire LU but less then ordered', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');  // Standalone tag for Tags section;
     allure.story('Pick from LUs - Less than ordered');
     allure.severity('normal');
 

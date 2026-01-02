@@ -67,6 +67,7 @@ test('Receive By-Products from 2 manufacturing orders into same HU', async ({ pa
     // === ALLURE METADATA ===
     allure.epic('E0160: Manufacturing Execution');
     allure.tag('F8030: MobileUI Manufacturing');
+        allure.tag('F8030');  // Standalone tag for Tags section;
     allure.story('Receive by-products into same HU');
     allure.severity('normal');
 

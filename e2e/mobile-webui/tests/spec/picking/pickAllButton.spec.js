@@ -64,6 +64,7 @@ test('Pick using Pick All button', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');  // Standalone tag for Tags section;
     allure.story('Pick All button');
     allure.severity('normal');
 
@@ -113,6 +114,7 @@ test('Expect Pick All button hidden when feature is not active', async ({ page }
     // === ALLURE METADATA ===
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');  // Standalone tag for Tags section;
     allure.story('Pick All button');
     allure.severity('normal');
 

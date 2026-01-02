@@ -65,6 +65,7 @@ test('Receive several by-products using manual input to a new TU', async ({ page
     // === ALLURE METADATA ===
     allure.epic('E0160: Manufacturing Execution');
     allure.tag('F8030: MobileUI Manufacturing');
+        allure.tag('F8030');  // Standalone tag for Tags section;
     allure.story('Receive by-products with catch weight');
     allure.severity('normal');
 

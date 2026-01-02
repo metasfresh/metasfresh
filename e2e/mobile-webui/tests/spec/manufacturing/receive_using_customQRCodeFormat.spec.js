@@ -80,6 +80,7 @@ test('Receive using custom QR Code format', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0160: Manufacturing Execution');
     allure.tag('F8030: MobileUI Manufacturing');
+        allure.tag('F8030');  // Standalone tag for Tags section;
     allure.story('Receive using custom QR code format');
     allure.severity('normal');
 

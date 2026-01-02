@@ -58,7 +58,7 @@ const createMasterdataAndScanByExternalBarcode = async ({ page }) => {
 test('Dispose HU', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0370: Intralogistic (HUs)');
-    allure.tag('F5120: MobileUI HU Manager');
+    allure.tag('F5120');
     allure.story('HU Manager - External Barcode Operations');
     allure.severity('critical');
 
@@ -70,7 +70,7 @@ test('Dispose HU', async ({ page }) => {
 test('Move HU using locator code', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0370: Intralogistic (HUs)');
-    allure.tag('F5120: MobileUI HU Manager');
+    allure.tag('F5120');
     allure.story('HU Manager - External Barcode Operations');
     allure.severity('critical');
 
@@ -88,7 +88,7 @@ test('Move HU using locator code', async ({ page }) => {
 test('Change Qty', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0370: Intralogistic (HUs)');
-    allure.tag('F5120: MobileUI HU Manager');
+    allure.tag('F5120');
     allure.story('HU Manager - External Barcode Operations');
     allure.severity('critical');
 
@@ -106,7 +106,7 @@ test('Change Qty', async ({ page }) => {
 test('Change Clearance Status', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0370: Intralogistic (HUs)');
-    allure.tag('F5120: MobileUI HU Manager');
+    allure.tag('F5120');
     allure.story('HU Manager - External Barcode Operations');
     allure.severity('normal');
 
@@ -123,7 +123,7 @@ test('Change Clearance Status', async ({ page }) => {
 test('Bulk actions - Move', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0370: Intralogistic (HUs)');
-    allure.tag('F5120: MobileUI HU Manager');
+    allure.tag('F5120');
     allure.story('HU Manager - External Barcode Operations');
     allure.severity('normal');
 

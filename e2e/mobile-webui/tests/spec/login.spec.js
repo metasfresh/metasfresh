@@ -14,6 +14,7 @@ test.describe('Login/Logout', () => {
                 // === ALLURE METADATA ===
                 allure.epic('E0295: Frontend MobileUI');
                 allure.tag('F12000: Frontend MobileUI');
+        allure.tag('F12000');  // Standalone tag for Tags section;
                 allure.story('Login with language selection');
                 allure.severity('critical');
                 allure.parameter('Language', language);
