@@ -19,8 +19,9 @@ const PRODUCT_WINDOW_ID = 140;
 test.describe('Product Window', () => {
   test('View Product window', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0380');
-    allure.tag('F6000');
+    allure.epic('E0380: Masterdata Products');
+    allure.tag('F6000: Maintain Product Data');
+    allure.tag('F6000');  // Standalone tag for Tags section
     allure.story('View product list');
     allure.severity('normal');
     allure.description(`
@@ -69,6 +70,7 @@ View product list in master data window.
     // === ALLURE METADATA ===
     allure.epic('E0380: Masterdata Products');
     allure.tag('F6000: Maintain Product Data');
+    allure.tag('F6000');  // Standalone tag for Tags section
     allure.story('Open product detail view');
     allure.severity('normal');
 

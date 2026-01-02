@@ -16,8 +16,9 @@ test.describe('Login/Logout', () => {
   ['en_US', 'de_DE'].forEach((language) => {
     test(`Login with ${language} language`, async ({ page }) => {
       // === ALLURE METADATA ===
-      allure.epic('E0193');
-      allure.tag('F14000');
+      allure.epic('E0193: System Authentication');
+      allure.tag('F14000: Username and Password Auth');
+      allure.tag('F14000');  // Standalone tag for Tags section
       allure.story('Login with language selection');
       allure.severity('critical');
       allure.parameter('Language', language);

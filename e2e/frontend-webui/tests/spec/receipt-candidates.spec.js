@@ -43,9 +43,11 @@ testCases.forEach(({ language, label }) => {
     test(`Complete purchase-to-invoice flow: PO → Receipt → Invoice (${label} UI)`, async ({ page }) => {
       // === ALLURE METADATA ===
       // Feature metadata - IDs for filtering, full names in description
-      allure.epic('E0140');
-      allure.tag('F00600');
-      allure.tag('F65010');
+      allure.epic('E0140: Purchasing');
+      allure.tag('F00600: Purchase Order');
+      allure.tag('F00600');  // Standalone tag for Tags section
+      allure.tag('F65010: Material Receipt Candidates');
+      allure.tag('F65010');  // Standalone tag for Tags section
       allure.story('Complete PO → Receipt → Invoice flow');
       allure.severity('critical');
       allure.parameter('Language', language);

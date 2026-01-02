@@ -58,12 +58,17 @@ testCases.forEach(({ language, label }) => {
         test(`Create SO and validate quantity in shipment schedule (${label} UI)`, async ({ page }) => {
             // === ALLURE METADATA ===
             // Feature metadata - IDs for filtering, full names in description
-            allure.epic('E0100');
-            allure.tag('F00100');
-            allure.tag('F00105');
-            allure.tag('F00130');
-            allure.tag('F00150');
-            allure.tag('F00200');
+            allure.epic('E0100: Sales');
+            allure.tag('F00100: Sales Order');
+            allure.tag('F00100');  // Standalone tag for Tags section
+            allure.tag('F00105: Sales Order Document');
+            allure.tag('F00105');  // Standalone tag for Tags section
+            allure.tag('F00130: Shipment Schedule');
+            allure.tag('F00130');  // Standalone tag for Tags section
+            allure.tag('F00150: Sales Shipment');
+            allure.tag('F00150');  // Standalone tag for Tags section
+            allure.tag('F00200: Sales Invoice');
+            allure.tag('F00200');  // Standalone tag for Tags section
             allure.story('Complete Order-to-Cash: SO → Shipment → Invoice');
             allure.severity('critical');
             allure.parameter('Language', language);

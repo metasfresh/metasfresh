@@ -19,8 +19,9 @@ const BUSINESS_PARTNER_WINDOW_ID = 123;
 test.describe('Business Partner Window', () => {
   test('View Business Partner window', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0390');
-    allure.tag('F00900');
+    allure.epic('E0390: Masterdata Partner');
+    allure.tag('F00900: Business Partner');
+    allure.tag('F00900');  // Standalone tag for Tags section
     allure.story('View business partner list');
     allure.severity('normal');
     allure.description(`
@@ -63,8 +64,9 @@ View business partner list in master data window.
 
   test('Open Business Partner detail view', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E0390');
-    allure.tag('F00900');
+    allure.epic('E0390: Masterdata Partner');
+    allure.tag('F00900: Business Partner');
+    allure.tag('F00900');  // Standalone tag for Tags section
     allure.story('Open business partner detail view');
     allure.severity('normal');
     allure.description(`
