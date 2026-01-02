@@ -1,6 +1,7 @@
 @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00700
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
 @ghActions:run_on_executor2
 Feature: invoice with aggregation attributes
 ## F00700: Invoice
@@ -12,8 +13,9 @@ Feature: invoice with aggregation attributes
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
 
   @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00700
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   Scenario: we can invoice a sales order with:
   - different product price UOM and product UOM
   - Aggregation Item Attribute = Per each shipment/receipt

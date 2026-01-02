@@ -1,6 +1,7 @@
 @from:cucumber
-@allure.label.epic:E0110
-@allure.label.feature:F17050
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
 @ghActions:run_on_executor7
 Feature: Empties returns
 ## F17050: Shipment
@@ -70,8 +71,9 @@ Feature: Empties returns
 
 
   @from:cucumber
-@allure.label.epic:E0110
-@allure.label.feature:F17050
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_220
   Scenario: Create and complete empties return InOut: TU
   _Given TU packing material
@@ -152,8 +154,9 @@ Feature: Empties returns
       | P_Asset_Acct             | TU_Product   | -10         | -10 CHF       | -10 PCE |
 
   @from:cucumber
-@allure.label.epic:E0110
-@allure.label.feature:F17050
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_230
   Scenario: Create and complete empties return InOut: LU
   _Given LU packing material
@@ -191,8 +194,9 @@ Feature: Empties returns
 
 
   @from:cucumber
-@allure.label.epic:E0110
-@allure.label.feature:F17050
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_240
   Scenario: Create and complete empties return InOut: TU - then reactivate it
   _Given TU packing material
@@ -244,8 +248,9 @@ Feature: Empties returns
 
 
   @from:cucumber
-@allure.label.epic:E0110
-@allure.label.feature:F17050
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_250
   Scenario: Create and complete empties return InOut: LU - then reactivate it
   _Given LU packing material
@@ -297,8 +302,9 @@ Feature: Empties returns
 
 
   @from:cucumber
-@allure.label.epic:E0110
-@allure.label.feature:F17050
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_260
   Scenario: Create and complete empties return InOut: TU - reactivate and complete it again
   _Given TU packing material
@@ -365,8 +371,9 @@ Feature: Empties returns
 
 
   @from:cucumber
-@allure.label.epic:E0110
-@allure.label.feature:F17050
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_261
   Scenario: Create and complete empties return InOut: TU - reactivate, increase qty and complete it again
   _Given TU packing material
@@ -436,8 +443,9 @@ Feature: Empties returns
 
 
   @from:cucumber
-@allure.label.epic:E0110
-@allure.label.feature:F17050
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_262
   Scenario: Create and complete empties return InOut: TU - reactivate, decrease qty and complete it again
   _Given TU packing material
@@ -506,8 +514,9 @@ Feature: Empties returns
       | invoiceCandShipmentLine_1                  | invoiceCand_1                         | inOutLine                     | 5                |
 
   @from:cucumber
-@allure.label.epic:E0110
-@allure.label.feature:F17050
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_270
   Scenario: Create and complete empties return InOut: LU - reactivate and complete it again
   _Given LU packing material
@@ -573,8 +582,9 @@ Feature: Empties returns
 
 
   @from:cucumber
-@allure.label.epic:E0110
-@allure.label.feature:F17050
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_271
   Scenario: Create and complete empties return InOut: LU - reactivate, increase qty and complete it again
   _Given LU packing material
@@ -644,8 +654,9 @@ Feature: Empties returns
 
 
   @from:cucumber
-@allure.label.epic:E0110
-@allure.label.feature:F17050
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_272
   Scenario: Create and complete empties return InOut: LU - reactivate, decrease qty and complete it again
   _Given LU packing material
@@ -715,8 +726,9 @@ Feature: Empties returns
 
 
   @from:cucumber
-@allure.label.epic:E0110
-@allure.label.feature:F17050
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_280
   Scenario: Create and complete empties return InOut: TU - then close it
   _Given TU packing material
@@ -768,8 +780,9 @@ Feature: Empties returns
 
 
   @from:cucumber
-@allure.label.epic:E0110
-@allure.label.feature:F17050
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_290
   Scenario: Create and complete empties return InOut: LU - then close it
   _Given LU packing material
@@ -821,8 +834,9 @@ Feature: Empties returns
 
 
   @from:cucumber
-@allure.label.epic:E0110
-@allure.label.feature:F17050
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_300
   Scenario: Create and complete empties return InOut: TU - then revert it
   _Given TU packing material
@@ -874,8 +888,9 @@ Feature: Empties returns
 
 
   @from:cucumber
-@allure.label.epic:E0110
-@allure.label.feature:F17050
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_310
   Scenario: Create and complete empties return InOut: LU - then revert it
   _Given LU packing material
@@ -927,8 +942,9 @@ Feature: Empties returns
 
 
   @from:cucumber
-@allure.label.epic:E0110
-@allure.label.feature:F17050
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_320
   Scenario: Create and complete empties return InOut: TU - then reactivate and void it
   _Given TU packing material
@@ -994,8 +1010,9 @@ Feature: Empties returns
 
 
   @from:cucumber
-@allure.label.epic:E0110
-@allure.label.feature:F17050
+@allure.label.epic:E0110_Shipping
+@allure.label.feature:F17050_Shipment
+@F17050
   @Id:S0160.4_330
   Scenario: Create and complete empties return InOut: LU - then reactivate and void it
   _Given LU packing material

@@ -1,6 +1,7 @@
 @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00750
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00750_eInvoicing_Postfinance
+@F00750
 @ghActions:run_on_executor4
 Feature: Match Invoice
 ## F00750: Match Invoice
@@ -81,8 +82,9 @@ Feature: Match Invoice
     # ##################################################################################################################################################
   @Id:S0160_100
   @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00750
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00750_eInvoicing_Postfinance
+@F00750
   Scenario: Receipt, Invoice => MatchInv
     #
     # Create the sales order

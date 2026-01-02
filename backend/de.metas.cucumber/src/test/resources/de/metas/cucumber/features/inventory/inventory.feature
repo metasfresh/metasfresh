@@ -1,5 +1,5 @@
 @from:cucumber
-@allure.label.epic:E0350
+@allure.label.epic:E0350_Warehouse_Managment
 @allure.label.feature:F5010
 @ghActions:run_on_executor6
 Feature: Physical inventory tests
@@ -37,7 +37,7 @@ Feature: Physical inventory tests
       | CUx200                  | 101             | product      | 200 PCE |
 
   @from:cucumber
-@allure.label.epic:E0350
+@allure.label.epic:E0350_Warehouse_Managment
 @allure.label.feature:F5010
   Scenario: Inventory+ to CU
     Given metasfresh contains single line completed inventories
@@ -48,7 +48,7 @@ Feature: Physical inventory tests
       | hu1     | 101        | A        | -           | product      | 1000 PCE |
 
   @from:cucumber
-@allure.label.epic:E0350
+@allure.label.epic:E0350_Warehouse_Managment
 @allure.label.feature:F5010
   Scenario: Inventory+ to 2 x LU/CU
     Given metasfresh contains single line completed inventories
@@ -62,7 +62,7 @@ Feature: Physical inventory tests
       | lu2         | vhu     | 101        | A        | product      | 200 PCE |
 
   @from:cucumber
-@allure.label.epic:E0350
+@allure.label.epic:E0350_Warehouse_Managment
 @allure.label.feature:F5010
   Scenario: Inventory+ to 2 x LU/TU/CU
     Given metasfresh contains single line completed inventories
@@ -74,7 +74,7 @@ Feature: Physical inventory tests
       | lu1         | tu_agg1 | TU         | A        | product      | 400 PCE | 40     | Y           |
 
   @from:cucumber
-@allure.label.epic:E0350
+@allure.label.epic:E0350_Warehouse_Managment
 @allure.label.feature:F5010
   Scenario: Inventory+ to 2 x TUs
     Given metasfresh contains single line completed inventories

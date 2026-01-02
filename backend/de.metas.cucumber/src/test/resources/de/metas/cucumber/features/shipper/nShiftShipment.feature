@@ -1,5 +1,5 @@
 @from:cucumber
-@allure.label.epic:E0355
+@allure.label.epic:E0355_Transport_Planning_Extralogistik
 @allure.label.feature:F00355
 @ghActions:run_on_executor7
 Feature: nShift Shipment
@@ -97,7 +97,7 @@ Feature: nShift Shipment
       | cs4        | nShift       |
 
   @from:cucumber
-@allure.label.epic:E0355
+@allure.label.epic:E0355_Transport_Planning_Extralogistik
 @allure.label.feature:F00355
   Scenario: nShift Carrier Advise
     Given the nShift ship advisor service is stubbed to return a successful response based on the request

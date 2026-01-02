@@ -9,8 +9,9 @@ Feature: attachment creation using metasfresh api
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
   @from:cucumber
-@allure.label.epic:E0280
-@allure.label.feature:F00850
+@allure.label.epic:E0280_Document_and_Email_Management
+@allure.label.feature:F00850_Sending_Mails
+@F00850
   Scenario: Attachment entry and attachment multiRef given base64 data
 
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/attachment' and fulfills with '200' status code
@@ -43,8 +44,9 @@ Feature: attachment creation using metasfresh api
 
 
   @from:cucumber
-@allure.label.epic:E0280
-@allure.label.feature:F00850
+@allure.label.epic:E0280_Document_and_Email_Management
+@allure.label.feature:F00850_Sending_Mails
+@F00850
   Scenario:  Attachment entry and attachment multiRef given URL
 
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/attachment' and fulfills with '200' status code
@@ -76,8 +78,9 @@ Feature: attachment creation using metasfresh api
 
 
   @from:cucumber
-@allure.label.epic:E0280
-@allure.label.feature:F00850
+@allure.label.epic:E0280_Document_and_Email_Management
+@allure.label.feature:F00850_Sending_Mails
+@F00850
   Scenario:  Attachment entry and attachment multiRef given LocalFileURL
 
     Given an existing local file
@@ -101,8 +104,9 @@ Feature: attachment creation using metasfresh api
       | attachmentEntry_1                | 2156425   | C_BPartner |
 
   @from:cucumber
-@allure.label.epic:E0280
-@allure.label.feature:F00850
+@allure.label.epic:E0280_Document_and_Email_Management
+@allure.label.feature:F00850_Sending_Mails
+@F00850
   Scenario:  Add a 'LocalFileURL' type attachment to multiple targets
     Given an existing local file
       | File.Identifier | FileName |
@@ -125,8 +129,9 @@ Feature: attachment creation using metasfresh api
       | attachmentEntry_1                | 2005577   | M_Product  |
 
   @from:cucumber
-@allure.label.epic:E0280
-@allure.label.feature:F00850
+@allure.label.epic:E0280_Document_and_Email_Management
+@allure.label.feature:F00850_Sending_Mails
+@F00850
   Scenario:  Attachment entry with JsonTableRecordReference and attachment at a given LocalFileURL
     Given an existing local file
       | File.Identifier | FileName |
@@ -150,8 +155,9 @@ Feature: attachment creation using metasfresh api
 
 
   @from:cucumber
-@allure.label.epic:E0280
-@allure.label.feature:F00850
+@allure.label.epic:E0280_Document_and_Email_Management
+@allure.label.feature:F00850_Sending_Mails
+@F00850
   Scenario:  Attachment entry with JsonTableRecordReference and JsonExternalReferenceTarget with base64 payload
     Given store JsonAttachmentRequest in context
       | orgCode | AD_AttachmentEntry.Type | OPT.FileName | OPT.BinaryData | OPT.references                                   | OPT.targets                                                                                                                                                  |

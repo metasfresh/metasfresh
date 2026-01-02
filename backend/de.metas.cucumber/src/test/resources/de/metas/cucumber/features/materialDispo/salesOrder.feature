@@ -1,5 +1,5 @@
 @from:cucumber
-@allure.label.epic:E0155
+@allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
 @ghActions:run_on_executor6
 Feature: material dispo reacts to order docactions
@@ -20,7 +20,7 @@ Feature: material dispo reacts to order docactions
 
   @Id:S0461_10
   @from:cucumber
-@allure.label.epic:E0155
+@allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   Scenario:  If a sales-order is voided, its shipment-schedule's MD_Canddiate's qty is set to zero
 

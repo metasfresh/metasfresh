@@ -1,5 +1,5 @@
 @from:cucumber
-@allure.label.epic:E0100
+@allure.label.epic:E0100_Sales
 @allure.label.feature:F00101
 @topic:orderCandidate
 @ghActions:run_on_executor3
@@ -15,7 +15,7 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
   @from:cucumber
-@allure.label.epic:E0100
+@allure.label.epic:E0100_Sales
 @allure.label.feature:F00101
   @topic:orderCandidate
   Scenario: Process C_OLCand in batches:
@@ -226,7 +226,7 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
       | queueElement_olCand_2         | wp_order_1                        | C_OLCand              | olCand_2             |
 
   @from:cucumber
-@allure.label.epic:E0100
+@allure.label.epic:E0100_Sales
 @allure.label.feature:F00101
   @topic:orderCandidate
   Scenario: Create OLCand with different currency than what the pricelist allows -> an error is thrown when trying to create an order from it

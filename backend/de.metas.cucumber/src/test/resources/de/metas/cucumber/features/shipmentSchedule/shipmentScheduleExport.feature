@@ -1,6 +1,7 @@
 @from:cucumber
-@allure.label.epic:E0100
-@allure.label.feature:F00105
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00105_Sales_Order_Document
+@F00105
 @topic:shipmentScheduleExport
 @ghActions:run_on_executor7
 Feature: Shipment schedule export rest-api

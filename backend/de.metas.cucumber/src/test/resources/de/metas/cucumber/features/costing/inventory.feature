@@ -1,6 +1,7 @@
 @from:cucumber
-@allure.label.epic:E0226
-@allure.label.feature:F1500
+@allure.label.epic:E0226_Costing
+@allure.label.feature:F1500_Costing
+@F1500
 @ghActions:run_on_executor7
 Feature: Inventory Costing
 ## F1500: Costing
@@ -46,8 +47,9 @@ Feature: Inventory Costing
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
-@allure.label.epic:E0226
-@allure.label.feature:F1500
+@allure.label.epic:E0226_Costing
+@allure.label.feature:F1500_Costing
+@F1500
   Scenario: Outbound transaction is using provided fixed cost price
     When update C_AcctSchema:
       | C_AcctSchema_ID | CostingMethod |

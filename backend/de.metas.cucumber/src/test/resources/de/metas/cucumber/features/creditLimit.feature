@@ -1,5 +1,5 @@
 @from:cucumber
-@allure.label.epic:E0100
+@allure.label.epic:E0100_Sales
 @allure.label.feature:F00103
 @ghActions:run_on_executor5
 Feature: credit limit
@@ -12,7 +12,7 @@ Feature: credit limit
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
   @from:cucumber
-@allure.label.epic:E0100
+@allure.label.epic:E0100_Sales
 @allure.label.feature:F00103
   Scenario: validate the error thrown by the credit limit set on business partner when generating the shipments,
   then remove the credit limit, generate shipments and validate them

@@ -1,6 +1,7 @@
 @from:cucumber
-@allure.label.epic:E0160
-@allure.label.feature:F8032
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8032_Manufacturing_Workflow_Activity_Raw_Materials_Issue
+@F8032
 @ghActions:run_on_executor6
 Feature: Export PP_Order to LeichMehl config
 ## F8032: PP Order

@@ -1,6 +1,7 @@
 @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00700
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
 @ghActions:run_on_executor4
 Feature: Invoices with pay schedules created from order pay schedules
 ## F00700: Invoice
@@ -60,8 +61,9 @@ Feature: Invoices with pay schedules created from order pay schedules
 
 
   @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00700
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   Scenario: TEST
     When simple completed order with one line
       | C_Order_ID | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | C_PaymentTerm_ID | InvoiceRule | C_OrderLine_ID | M_Product_ID | QtyEntered |

@@ -1,5 +1,5 @@
 @from:cucumber
-@allure.label.epic:E0291
+@allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
 @ghActions:run_on_executor6
 Feature:bpartner get using metasfresh api
@@ -17,7 +17,7 @@ Feature:bpartner get using metasfresh api
 
 
   @from:cucumber
-@allure.label.epic:E0291
+@allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
   Scenario: get Partner request by org as a REST-API invoker
   I want to be able to get partners updated since a timestamp for a certain org
@@ -130,7 +130,7 @@ Feature:bpartner get using metasfresh api
 
     # the bpartner from the first test should not occur here, because he isn't referenced from the externalSystem
   @from:cucumber
-@allure.label.epic:E0291
+@allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
   Scenario: get Partner request by external system as a REST-API invoker
   I want to be able to get partners updated since a timestamp for a external system

@@ -1,6 +1,7 @@
 @from:cucumber
-@allure.label.epic:E0105
-@allure.label.feature:F00230
+@allure.label.epic:E0105_Picking
+@allure.label.feature:F00230_MobileUI_Picking
+@F00230
 @ghActions:run_on_executor7
 Feature: mobileUI Picking - Pick TUs from LU
 ## F00230: MobileUI Picking
@@ -89,8 +90,9 @@ Feature: mobileUI Picking - Pick TUs from LU
 # ######################################################################################################################
 # ######################################################################################################################
   @from:cucumber
-@allure.label.epic:E0105
-@allure.label.feature:F00230
+@allure.label.epic:E0105_Picking
+@allure.label.feature:F00230_MobileUI_Picking
+@F00230
   Scenario: Pick TUs from LU with aggregated TUs
     When transform CU to new LU
       | sourceCU   | newLU                | TU_PI_ID | QtyCUsPerTU | QtyTUsPerLU |
@@ -174,8 +176,9 @@ Feature: mobileUI Picking - Pick TUs from LU
 # ######################################################################################################################
 # ######################################################################################################################
   @from:cucumber
-@allure.label.epic:E0105
-@allure.label.feature:F00230
+@allure.label.epic:E0105_Picking
+@allure.label.feature:F00230_MobileUI_Picking
+@F00230
   Scenario: Pick TUs from LU with aggregated TUs - into a new LU
     When transform CU to new LU
       | sourceCU   | newLU                | TU_PI_ID | QtyCUsPerTU | QtyTUsPerLU |
@@ -264,8 +267,9 @@ Feature: mobileUI Picking - Pick TUs from LU
 # ######################################################################################################################
 # ######################################################################################################################
   @from:cucumber
-@allure.label.epic:E0105
-@allure.label.feature:F00230
+@allure.label.epic:E0105_Picking
+@allure.label.feature:F00230_MobileUI_Picking
+@F00230
   Scenario: Pick TUs from LU with TUs (not-aggregated)
     When transform CU to new TUs
       | sourceCU   | cuQty | M_HU_PI_Item_Product_ID | OPT.resultedNewTUs                                              |

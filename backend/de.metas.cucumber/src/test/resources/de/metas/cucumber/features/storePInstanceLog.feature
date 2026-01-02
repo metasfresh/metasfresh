@@ -1,5 +1,5 @@
 @from:cucumber
-@allure.label.epic:E0180
+@allure.label.epic:E0180_System_Administration
 @allure.label.feature:F00185
 @ghActions:run_on_executor7
 Feature: pInstanceLog store using metasfresh api
@@ -14,7 +14,7 @@ Feature: pInstanceLog store using metasfresh api
     And I_AD_PInstance with id 321321 is created
     
   @from:cucumber
-@allure.label.epic:E0180
+@allure.label.epic:E0180_System_Administration
 @allure.label.feature:F00185
   Scenario: The request is good and the pInstanceLog is stored
     When the metasfresh REST-API endpoint path 'api/externalsystem/321321/externalstatus/message' receives a 'POST' request with the payload

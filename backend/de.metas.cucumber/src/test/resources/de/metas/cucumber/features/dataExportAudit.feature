@@ -1,5 +1,5 @@
 @ghActions:run_on_executor5
-@allure.label.epic:E0180
+@allure.label.epic:E0180_System_Administration
 @allure.label.feature:F00181
 Feature: data export audit using bpartner metasfresh api
 ## F00181: Data Export Audit

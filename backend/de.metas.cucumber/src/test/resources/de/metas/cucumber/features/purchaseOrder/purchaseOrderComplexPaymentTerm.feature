@@ -1,6 +1,7 @@
 @from:cucumber
-@allure.label.epic:E0140
-@allure.label.feature:F00600
+@allure.label.epic:E0140_Purchasing
+@allure.label.feature:F00600_Purchase_Order
+@F00600
 @ghActions:run_on_executor4
 Feature: Purchase order with complex payment term
 ## F00600: Purchase Order
@@ -50,8 +51,9 @@ Feature: Purchase order with complex payment term
 
 
   @from:cucumber
-@allure.label.epic:E0140
-@allure.label.feature:F00600
+@allure.label.epic:E0140_Purchasing
+@allure.label.feature:F00600_Purchase_Order
+@F00600
   Scenario: Purchase Order with complex Payment Term has order pay schedules after completion
     When metasfresh contains C_PaymentTerm
       | Identifier |
@@ -79,8 +81,9 @@ Feature: Purchase order with complex payment term
 
 
   @from:cucumber
-@allure.label.epic:E0140
-@allure.label.feature:F00600
+@allure.label.epic:E0140_Purchasing
+@allure.label.feature:F00600_Purchase_Order
+@F00600
   Scenario: Purchase Order with complex Payment Term has order pay schedules after completion (due date after day light saving change)
     When metasfresh contains C_PaymentTerm
       | Identifier |
@@ -108,8 +111,9 @@ Feature: Purchase order with complex payment term
 
 
   @from:cucumber
-@allure.label.epic:E0140
-@allure.label.feature:F00600
+@allure.label.epic:E0140_Purchasing
+@allure.label.feature:F00600_Purchase_Order
+@F00600
   Scenario: Order pay schedules are updated when LC date, BL date, ETA date are changed
     When metasfresh contains C_PaymentTerm
       | Identifier |
@@ -218,8 +222,9 @@ Feature: Purchase order with complex payment term
       | invoice_1    | 102.30 CHF | N      | Y               | 25.58   |
 
   @from:cucumber
-@allure.label.epic:E0140
-@allure.label.feature:F00600
+@allure.label.epic:E0140_Purchasing
+@allure.label.feature:F00600_Purchase_Order
+@F00600
   Scenario: Order pay schedules are updated when Invoice Date is changed
     When metasfresh contains C_PaymentTerm
       | Identifier |

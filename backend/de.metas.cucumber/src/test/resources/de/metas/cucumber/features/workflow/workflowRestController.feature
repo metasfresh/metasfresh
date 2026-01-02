@@ -1,5 +1,5 @@
 @from:cucumber
-@allure.label.epic:E0180
+@allure.label.epic:E0180_System_Administration
 @allure.label.feature:F00183
 @ignore
 @ghActions:run_on_executor7
@@ -38,7 +38,7 @@ Feature: workflow rest controller tests
 
   @Id:S0179_100
   @from:cucumber
-@allure.label.epic:E0180
+@allure.label.epic:E0180_System_Administration
 @allure.label.feature:F00183
   Scenario: create and start picking workflow
 
@@ -111,7 +111,7 @@ Feature: workflow rest controller tests
 
   @Id:S0179_110
   @from:cucumber
-@allure.label.epic:E0180
+@allure.label.epic:E0180_System_Administration
 @allure.label.feature:F00183
   Scenario: create and start distribution workflow
 
@@ -185,7 +185,7 @@ Feature: workflow rest controller tests
 
   @Id:S0179_120
   @from:cucumber
-@allure.label.epic:E0180
+@allure.label.epic:E0180_System_Administration
 @allure.label.feature:F00183
   Scenario: create and start manufacturing workflow
 

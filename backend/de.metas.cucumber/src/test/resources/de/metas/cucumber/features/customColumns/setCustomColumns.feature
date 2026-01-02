@@ -1,5 +1,5 @@
 @from:cucumber
-@allure.label.epic:E0180
+@allure.label.epic:E0180_System_Administration
 @allure.label.feature:F00180
 @flaky
 @ghActions:run_on_executor5

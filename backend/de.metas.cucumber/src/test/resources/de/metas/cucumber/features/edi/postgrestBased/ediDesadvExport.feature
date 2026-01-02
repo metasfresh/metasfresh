@@ -1,6 +1,7 @@
 @from:cucumber
-@allure.label.epic:E0292
-@allure.label.feature:F00350
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00350_EDI
+@F00350
 @ghActions:run_on_executor5
 Feature: EDI DESADV export via postgREST
 ## F00350: EDI
@@ -35,8 +36,9 @@ Feature: EDI DESADV export via postgREST
 
   @Id:S0468_010
   @from:cucumber
-@allure.label.epic:E0292
-@allure.label.feature:F00350
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00350_EDI
+@F00350
   Scenario: create a shipment and export it to JSON
 
     Given metasfresh contains M_Products:

@@ -1,5 +1,5 @@
 @from:cucumber
-@allure.label.epic:E0291
+@allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
 @ghActions:run_on_executor3
 Feature: API Audit POST http method
@@ -11,7 +11,7 @@ Feature: API Audit POST http method
     And all the API audit data is reset
 
   @from:cucumber
-@allure.label.epic:E0291
+@allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
   @Id:S0478_070
   Scenario: Testcase 100, normal POST and caller waits for result
@@ -51,7 +51,7 @@ Feature: API Audit POST http method
 """
     
   @from:cucumber
-@allure.label.epic:E0291
+@allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
   @Id:S0478_080
   Scenario: Testcase 110, normal POST and caller does not wait for result
@@ -95,7 +95,7 @@ Feature: API Audit POST http method
 """
     
   @from:cucumber
-@allure.label.epic:E0291
+@allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
   @Id:S0490_050
   Scenario: Testcase 120, failing POST and caller waits for result
@@ -135,7 +135,7 @@ Feature: API Audit POST http method
 """
     
   @from:cucumber
-@allure.label.epic:E0291
+@allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
   @Id:S0490_060
   Scenario: Testcase 130, failing POST and caller does not wait for result
@@ -180,7 +180,7 @@ Feature: API Audit POST http method
 """
     
   @from:cucumber
-@allure.label.epic:E0291
+@allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
   @Id:S0478_090
   Scenario: Testcase 140, failing POST and replay
@@ -230,7 +230,7 @@ Feature: API Audit POST http method
 """
     
   @from:cucumber
-@allure.label.epic:E0291
+@allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
   Scenario: Testcase 150, normal POST with IsForceProcessedAsync = Y, IsSynchronousAuditLoggingEnabled = Y and IsWrapApiResponse = N
     And the following API_Audit_Config records are created:
@@ -255,7 +255,7 @@ Feature: API Audit POST http method
 
 
   @from:cucumber
-@allure.label.epic:E0291
+@allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
   @Id:S0478_100
   Scenario: Testcase 160, normal POST, caller waits for result, IsSynchronousAuditLoggingEnabled is true and IsWrapApiResponse is false
@@ -295,7 +295,7 @@ Feature: API Audit POST http method
 """
     
   @from:cucumber
-@allure.label.epic:E0291
+@allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
   @Id:S0478_110
   Scenario: Testcase 170, normal POST, caller waits for result, IsSynchronousAuditLoggingEnabled is true, IsWrapApiResponse is false and X-Api-Async header is true
@@ -335,7 +335,7 @@ Feature: API Audit POST http method
 """
     
   @from:cucumber
-@allure.label.epic:E0291
+@allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
   Scenario: Testcase 175, normal POST with IsSynchronousAuditLoggingEnabled is false, IsWrapApiResponse is false and response body is missing
     And the following API_Audit_Config records are created:
@@ -361,7 +361,7 @@ Feature: API Audit POST http method
       | 200      |      |
 
   @from:cucumber
-@allure.label.epic:E0291
+@allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
   Scenario: Testcase 180, normal POST, caller waits for result, IsSynchronousAuditLoggingEnabled is true, IsWrapApiResponse is false and response body is missing
     And the following API_Audit_Config records are created:
@@ -385,7 +385,7 @@ Feature: API Audit POST http method
       | 200      |      |
 
   @from:cucumber
-@allure.label.epic:E0291
+@allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
   Scenario: Testcase 185, failing POST, caller waits for result, IsSynchronousAuditLoggingEnabled is true, IsWrapApiResponse is false and exception thrown in metasfresh api
     And the following API_Audit_Config records are created:
@@ -407,7 +407,7 @@ Feature: API Audit POST http method
       | 422      | Exception thrown |
 
   @from:cucumber
-@allure.label.epic:E0291
+@allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
   Scenario: Testcase 190, failing POST with IsSynchronousAuditLoggingEnabled is false, IsWrapApiResponse is false and exception thrown in metasfresh api
     And the following API_Audit_Config records are created:
@@ -431,7 +431,7 @@ Feature: API Audit POST http method
       | 422      | Exception thrown |
 
   @from:cucumber
-@allure.label.epic:E0291
+@allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
   Scenario: Testcase 195, normal POST, caller waits for result, IsSynchronousAuditLoggingEnabled is true and IsWrapApiResponse is false and response cannot be deserialized
     And the following API_Audit_Config records are created:
@@ -451,7 +451,7 @@ Feature: API Audit POST http method
     And there are no records in API_Response_Audit for the API_Request_Audit from context
 
   @from:cucumber
-@allure.label.epic:E0291
+@allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
   Scenario: Testcase 200, normal POST with IsSynchronousAuditLoggingEnabled is false and IsWrapApiResponse is false and response cannot be deserialized
     And the following API_Audit_Config records are created:
@@ -470,7 +470,7 @@ test-endpoint was called
     And there are no records in API_Response_Audit
 
   @from:cucumber
-@allure.label.epic:E0291
+@allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
   Scenario: Testcase 210, reset to initial default data
     And all the API audit data is reset

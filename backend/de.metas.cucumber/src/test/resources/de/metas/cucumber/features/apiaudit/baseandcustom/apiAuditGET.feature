@@ -1,5 +1,5 @@
 @from:cucumber
-@allure.label.epic:E0291
+@allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
 @ghActions:run_on_executor3
 Feature: API Audit GET http method
@@ -11,7 +11,7 @@ Feature: API Audit GET http method
     And all the API audit data is reset
 
   @from:cucumber
-@allure.label.epic:E0291
+@allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
   @Id:S0478_040
   Scenario: Testcase 100, normal GET and caller waits for result
@@ -51,7 +51,7 @@ Feature: API Audit GET http method
 """
  
   @from:cucumber
-@allure.label.epic:E0291
+@allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
   @Id:S0478_050
   Scenario: Testcase 110, normal GET and caller does not wait for result
@@ -95,7 +95,7 @@ Feature: API Audit GET http method
 """
     
   @from:cucumber
-@allure.label.epic:E0291
+@allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
   @Id:S0490_030
   Scenario: Testcase 120, failing GET and caller waits for result
@@ -135,7 +135,7 @@ Feature: API Audit GET http method
 """
     
   @from:cucumber
-@allure.label.epic:E0291
+@allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
   @Id:S0490_040
   Scenario: Testcase 130, failing GET and caller does not wait for result
@@ -180,7 +180,7 @@ Feature: API Audit GET http method
 """
     
   @from:cucumber
-@allure.label.epic:E0291
+@allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
   @Id:S0478_060
   Scenario: Testcase 140, failing GET and replay
@@ -230,7 +230,7 @@ Feature: API Audit GET http method
 """
     
   @from:cucumber
-@allure.label.epic:E0291
+@allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
   Scenario: Testcase 200, reset to initial default data
     And all the API audit data is reset

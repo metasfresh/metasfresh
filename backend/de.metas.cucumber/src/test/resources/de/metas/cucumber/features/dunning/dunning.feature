@@ -1,6 +1,7 @@
 @from:cucumber
-@allure.label.epic:E0125
-@allure.label.feature:F00125
+@allure.label.epic:E0125_Dunning
+@allure.label.feature:F00125_Call_Management
+@F00125
 @ghActions:run_on_executor4
 Feature: Invoice Dunning Test
 ## F00125: Dunning
@@ -33,8 +34,9 @@ Feature: Invoice Dunning Test
       | customerLocation | customer      | CH           | Y               | Y               |
 
   @from:cucumber
-@allure.label.epic:E0125
-@allure.label.feature:F00125
+@allure.label.epic:E0125_Dunning
+@allure.label.feature:F00125_Call_Management
+@F00125
   Scenario: Invoice Dunning Test
     And metasfresh contains C_Dunning:
       | Identifier        |

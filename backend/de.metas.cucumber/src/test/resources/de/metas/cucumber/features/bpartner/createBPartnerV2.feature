@@ -1,7 +1,8 @@
 @from:cucumber
 @ghActions:run_on_executor3
-@allure.label.epic:E0390
-@allure.label.feature:F00900
+@allure.label.epic:E0390_Masterdata_Partner
+@allure.label.feature:F00900_Business_Partner
+@F00900
 Feature: create or update BPartner v2
 
   ## F00900: Business Partner

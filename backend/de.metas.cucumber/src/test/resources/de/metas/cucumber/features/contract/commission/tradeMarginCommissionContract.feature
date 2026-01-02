@@ -1,5 +1,5 @@
 @from:cucumber
-@allure.label.epic:E0900
+@allure.label.epic:E0900_Commission
 @allure.label.feature:F09000
 @topic:commissionContracts
 @ghActions:run_on_executor3
@@ -15,7 +15,7 @@ Feature: Trade margin commission contract
     And metasfresh has date and time 2021-12-02T13:30:13+01:00[Europe/Berlin]
 
   @from:cucumber
-@allure.label.epic:E0900
+@allure.label.epic:E0900_Commission
 @allure.label.feature:F09000
   @topic:commissionContracts
   @Id:S0150_190

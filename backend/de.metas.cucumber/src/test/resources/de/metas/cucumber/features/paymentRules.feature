@@ -1,6 +1,7 @@
 @from:cucumber
-@allure.label.epic:E0130
-@allure.label.feature:F00982
+@allure.label.epic:E0130_Payment
+@allure.label.feature:F00982_Payment
+@F00982
 @ghActions:run_on_executor6
 Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
 ## F00982: Payment
@@ -32,8 +33,9 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
       | productPrices_PO | priceListVersion_PO               | product_1               | 10.0     | PCE               | Normal                        |
 
   @from:cucumber
-@allure.label.epic:E0130
-@allure.label.feature:F00982
+@allure.label.epic:E0130_Payment
+@allure.label.feature:F00982_Payment
+@F00982
   Scenario: C_BPartner.PaymentRule = 'DirectDebit' correctly propagates to C_Invoice, when created from C_Order; IsSOTrx = 'Y'
     Given metasfresh contains C_BPartners:
       | Identifier | Name                         | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule | OPT.InvoiceRule |
@@ -74,8 +76,9 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
 
 
   @from:cucumber
-@allure.label.epic:E0130
-@allure.label.feature:F00982
+@allure.label.epic:E0130_Payment
+@allure.label.feature:F00982_Payment
+@F00982
   Scenario: C_BPartner.PaymentRule = 'OnCredit' correctly propagates to C_Invoice, when created from C_Order; IsSOTrx = 'Y'
     Given metasfresh contains C_BPartners:
       | Identifier | Name                         | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule | OPT.InvoiceRule |
@@ -118,8 +121,9 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
 
 
   @from:cucumber
-@allure.label.epic:E0130
-@allure.label.feature:F00982
+@allure.label.epic:E0130_Payment
+@allure.label.feature:F00982_Payment
+@F00982
   Scenario: C_BPartner.PaymentRule = 'Cash' correctly propagates to C_Invoice, when created from C_Order; IsSOTrx = 'Y'
     Given metasfresh contains C_BPartners:
       | Identifier | Name                         | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule | OPT.InvoiceRule |
@@ -160,8 +164,9 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
 
 
   @from:cucumber
-@allure.label.epic:E0130
-@allure.label.feature:F00982
+@allure.label.epic:E0130_Payment
+@allure.label.feature:F00982_Payment
+@F00982
   Scenario: C_BPartner.PaymentRule = 'DirectDebit' correctly propagates to C_Invoice, when created from C_Order; IsSOTrx = 'N'
     Given metasfresh contains C_BPartners:
       | Identifier | Name                        | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRulePO | OPT.PO_InvoiceRule |
@@ -202,8 +207,9 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
 
 
   @from:cucumber
-@allure.label.epic:E0130
-@allure.label.feature:F00982
+@allure.label.epic:E0130_Payment
+@allure.label.feature:F00982_Payment
+@F00982
   Scenario: C_BPartner.PaymentRule = 'OnCredit' correctly propagates to C_Invoice, when created from C_Order; IsSOTrx = 'N'
     Given metasfresh contains C_BPartners:
       | Identifier | Name                        | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRulePO | OPT.PO_InvoiceRule |
@@ -244,8 +250,9 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
 
 
   @from:cucumber
-@allure.label.epic:E0130
-@allure.label.feature:F00982
+@allure.label.epic:E0130_Payment
+@allure.label.feature:F00982_Payment
+@F00982
   Scenario: Payment rule 'DirectDebit' correctly propagates when SO is cloned
     Given metasfresh contains C_BPartners:
       | Identifier | Name                               | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRule |
@@ -277,8 +284,9 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
 
 
   @from:cucumber
-@allure.label.epic:E0130
-@allure.label.feature:F00982
+@allure.label.epic:E0130_Payment
+@allure.label.feature:F00982_Payment
+@F00982
   Scenario: Payment rule 'DirectDebit' correctly propagates when PO is cloned
     Given metasfresh contains C_BPartners:
       | Identifier | Name                               | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRulePO |
@@ -310,8 +318,9 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
 
 
   @from:cucumber
-@allure.label.epic:E0130
-@allure.label.feature:F00982
+@allure.label.epic:E0130_Payment
+@allure.label.feature:F00982_Payment
+@F00982
   @Id:S0150_230
   Scenario: PaymentRule = `DirectDebit` from order disposition is correctly propagated to C_Order
     Given metasfresh contains C_BPartners:
@@ -369,8 +378,9 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
       | order_1               | 1188           | bpartner_1               | location_1                        | 2022-03-22  | SOO         | EUR          | F            | S               | po_ref_mock     | true      | CO        | D               | Shopware                               |
 
   @from:cucumber
-@allure.label.epic:E0130
-@allure.label.feature:F00982
+@allure.label.epic:E0130_Payment
+@allure.label.feature:F00982_Payment
+@F00982
   @Id:S0150_240
   Scenario: PaymentRule = `OnCredit` from order disposition is correctly propagated to C_Order
     Given metasfresh contains C_BPartners:

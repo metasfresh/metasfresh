@@ -1,5 +1,5 @@
 @from:cucumber
-@allure.label.epic:E0180
+@allure.label.epic:E0180_System_Administration
 @allure.label.feature:F00183
 Feature: workflow tests
 ## F00183: Workflow
@@ -12,7 +12,7 @@ Feature: workflow tests
 
 
   @from:cucumber
-@allure.label.epic:E0180
+@allure.label.epic:E0180_System_Administration
 @allure.label.feature:F00183
   @Id:S0302_100
   Scenario: create and clone manufacturing workflow

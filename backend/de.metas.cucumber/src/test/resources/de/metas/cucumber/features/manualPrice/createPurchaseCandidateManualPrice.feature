@@ -1,6 +1,7 @@
 @from:cucumber
-@allure.label.epic:E0260
-@allure.label.feature:F32000
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
 @ghActions:run_on_executor6
 Feature: create Purchase Candidate having manual price set
 ## F32000: Pricing
@@ -14,8 +15,9 @@ Feature: create Purchase Candidate having manual price set
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
   @from:cucumber
-@allure.label.epic:E0260
-@allure.label.feature:F32000
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
   Scenario:  The purchase candidate is created with manual price, on a product which does not have a product price
     Given load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value        |

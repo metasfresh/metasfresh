@@ -1,5 +1,5 @@
 @from:cucumber
-@allure.label.epic:E0155
+@allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
 @ghActions:run_on_executor3
 Feature: create distribution order based on aggregation sysconfig
@@ -71,7 +71,7 @@ Feature: create distribution order based on aggregation sysconfig
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
-@allure.label.epic:E0155
+@allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   Scenario: Aggregate by both orderId and orderLineId
     When set sys config boolean value true for sys config DDOrderAggregation.header.bySalesOrderId
@@ -124,7 +124,7 @@ Feature: create distribution order based on aggregation sysconfig
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
-@allure.label.epic:E0155
+@allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   Scenario: Aggregate by orderId
     When set sys config boolean value true for sys config DDOrderAggregation.header.bySalesOrderId
@@ -176,7 +176,7 @@ Feature: create distribution order based on aggregation sysconfig
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
-@allure.label.epic:E0155
+@allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   Scenario: Aggregate by orderLineId
     When set sys config boolean value false for sys config DDOrderAggregation.header.bySalesOrderId
@@ -227,7 +227,7 @@ Feature: create distribution order based on aggregation sysconfig
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
-@allure.label.epic:E0155
+@allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   Scenario: No aggregation by SalesOrderId or SalesOrderLineId
     When set sys config boolean value false for sys config DDOrderAggregation.header.bySalesOrderId

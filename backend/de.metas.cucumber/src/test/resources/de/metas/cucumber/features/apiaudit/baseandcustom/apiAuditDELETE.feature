@@ -1,5 +1,5 @@
 @from:cucumber
-@allure.label.epic:E0291
+@allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
 @ghActions:run_on_executor3
 Feature: API Audit DELETE http method
@@ -11,7 +11,7 @@ Feature: API Audit DELETE http method
     And all the API audit data is reset
 
   @from:cucumber
-@allure.label.epic:E0291
+@allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
   @Id:S0478_010
   Scenario: Testcase 100, normal DELETE and caller waits for result
@@ -51,7 +51,7 @@ Feature: API Audit DELETE http method
 """
 
   @from:cucumber
-@allure.label.epic:E0291
+@allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
   @Id:S0478_020
   Scenario: Testcase 110, normal DELETE and caller does not wait for result
@@ -95,7 +95,7 @@ Feature: API Audit DELETE http method
 """
 
   @from:cucumber
-@allure.label.epic:E0291
+@allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
   @Id:S0490_010
   Scenario: Testcase 120, failing DELETE and caller waits for result
@@ -135,7 +135,7 @@ Feature: API Audit DELETE http method
 """
 
   @from:cucumber
-@allure.label.epic:E0291
+@allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
   @Id:S0490_020
   Scenario: Testcase 130, failing DELETE and caller does not wait for result
@@ -180,7 +180,7 @@ Feature: API Audit DELETE http method
 """
 
   @from:cucumber
-@allure.label.epic:E0291
+@allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
   @Id:S0478_030
   Scenario: Testcase 140, failing DELETE and replay
@@ -230,7 +230,7 @@ Feature: API Audit DELETE http method
 """
 
   @from:cucumber
-@allure.label.epic:E0291
+@allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
   Scenario: Testcase 200, reset to initial default data
     And all the API audit data is reset

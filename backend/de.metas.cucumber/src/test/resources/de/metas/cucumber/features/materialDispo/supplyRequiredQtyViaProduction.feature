@@ -1,5 +1,5 @@
 @from:cucumber
-@allure.label.epic:E0155
+@allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
 @ghActions:run_on_executor6
 Feature: Disposal is correctly considered in Material Dispo. Stock shortage solved via production
@@ -27,7 +27,7 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
 
   @Id:S0264_100
   @from:cucumber
-@allure.label.epic:E0155
+@allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   @Id:S0129.1_110
   Scenario: Partial stock available at demand time, supplied via production
@@ -113,7 +113,7 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
 
   @Id:S0264_200
   @from:cucumber
-@allure.label.epic:E0155
+@allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   @Id:S0124_140
   Scenario: Disposal is correctly considered in Material Dispo when the product is Manufactured
@@ -194,7 +194,7 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
 
   @Id:S0264_300
   @from:cucumber
-@allure.label.epic:E0155
+@allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   @Id:S0124_140
   Scenario: Disposal is correctly considered in Material Dispo when the product is Manufactured
@@ -280,7 +280,7 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
 
   @Id:S0264_400
   @from:cucumber
-@allure.label.epic:E0155
+@allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   @Id:S0124_140
   Scenario: Disposal is correctly considered in Material Dispo when the product is Manufactured
@@ -346,7 +346,7 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
   @Id:S0264_500
   @Id:S0196_300
   @from:cucumber
-@allure.label.epic:E0155
+@allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   Scenario: Production candidate is created in the past
     Given metasfresh contains M_Products:

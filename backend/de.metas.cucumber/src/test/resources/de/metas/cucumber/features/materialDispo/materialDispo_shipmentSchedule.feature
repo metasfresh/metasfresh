@@ -1,5 +1,5 @@
 @from:cucumber
-@allure.label.epic:E0155
+@allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
 @topic:materialdispo
 @ghActions:run_on_executor6
@@ -26,7 +26,7 @@ Feature: material-dispo updates on shipment-schedule events
       | endcustomer_1 | md_ss_290922 | N            | Y              | ps_1                          |
 
   @from:cucumber
-@allure.label.epic:E0155
+@allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   @topic:materialdispo
   Scenario: shipment-schedule with no quantity in stock
@@ -51,7 +51,7 @@ Feature: material-dispo updates on shipment-schedule events
       | cdd_1      | c_1                        | ol_1                      | 10         |
 
   @from:cucumber
-@allure.label.epic:E0155
+@allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   @topic:materialdispo
   Scenario: shipment-schedule with quantity in stock

@@ -1,5 +1,5 @@
 @from:cucumber
-@allure.label.epic:E0155
+@allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
 @ghActions:run_on_executor6
 Feature: Reversal of material receipt
@@ -42,7 +42,7 @@ Feature: Reversal of material receipt
 # ######################################################################################################################
 # ######################################################################################################################
   @from:cucumber
-@allure.label.epic:E0155
+@allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   Scenario: Check Material Dispo
     When metasfresh contains C_Orders:

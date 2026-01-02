@@ -1,5 +1,5 @@
 @from:cucumber
-@allure.label.epic:E0192
+@allure.label.epic:E0192_System_Mail_Handling
 @allure.label.feature:F00192
 @ghActions:run_on_executor4
 Feature: Test sending an outbound mail
@@ -11,7 +11,7 @@ Feature: Test sending an outbound mail
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
   @from:cucumber
-@allure.label.epic:E0192
+@allure.label.epic:E0192_System_Mail_Handling
 @allure.label.feature:F00192
   Scenario: SMTP
     Given email successfully sent

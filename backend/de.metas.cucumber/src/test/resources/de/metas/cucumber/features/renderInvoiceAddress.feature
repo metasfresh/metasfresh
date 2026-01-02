@@ -1,5 +1,5 @@
 @from:cucumber
-@allure.label.epic:E0340
+@allure.label.epic:E0340_Invoicing
 @allure.label.feature:F00702
 @topic:invoiceAddress
 @ghActions:run_on_executor7

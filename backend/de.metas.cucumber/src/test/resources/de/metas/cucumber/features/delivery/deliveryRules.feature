@@ -1,5 +1,5 @@
 @from:cucumber
-@allure.label.epic:E0100
+@allure.label.epic:E0100_Sales
 @allure.label.feature:F00104
 @ghActions:run_on_executor5
 Feature: Delivery rules with and without quantity in stock
@@ -20,7 +20,7 @@ Feature: Delivery rules with and without quantity in stock
       | plv_1      | pl_1                      | SalesOrder-PLV | 2022-08-01 |
 
   @from:cucumber
-@allure.label.epic:E0100
+@allure.label.epic:E0100_Sales
 @allure.label.feature:F00104
   @Id:S0159_A_10
   Scenario: C_BPartner.DeliveryRule = `Availability`, product is marked as `Stocked` but has no available stock
@@ -61,7 +61,7 @@ Feature: Delivery rules with and without quantity in stock
 
 
   @from:cucumber
-@allure.label.epic:E0100
+@allure.label.epic:E0100_Sales
 @allure.label.feature:F00104
   @Id:S0159_A_20
   Scenario: C_BPartner.DeliveryRule = `Availability`, product is not marked as `Stocked` and has no available stock
@@ -108,7 +108,7 @@ Feature: Delivery rules with and without quantity in stock
 
 
   @from:cucumber
-@allure.label.epic:E0100
+@allure.label.epic:E0100_Sales
 @allure.label.feature:F00104
   @Id:S0159_A_30
   Scenario: C_BPartner.DeliveryRule = `Availability`, product is marked as `Stocked` and has available stock
@@ -167,7 +167,7 @@ Feature: Delivery rules with and without quantity in stock
 
 
   @from:cucumber
-@allure.label.epic:E0100
+@allure.label.epic:E0100_Sales
 @allure.label.feature:F00104
   @Id:S0159_A_40
   Scenario: C_BPartner.DeliveryRule = `Availability`, product is not marked as `Stocked` but has available stock
@@ -229,7 +229,7 @@ Feature: Delivery rules with and without quantity in stock
 
 
   @from:cucumber
-@allure.label.epic:E0100
+@allure.label.epic:E0100_Sales
 @allure.label.feature:F00104
   @Id:S0159_A_50
   Scenario: C_BPartner.DeliveryRule = `Force`, product is not marked as `Stocked` and has no available stock
@@ -274,7 +274,7 @@ Feature: Delivery rules with and without quantity in stock
 
 
   @from:cucumber
-@allure.label.epic:E0100
+@allure.label.epic:E0100_Sales
 @allure.label.feature:F00104
   @Id:S0159_A_60
   Scenario: C_BPartner.DeliveryRule = `Force`, product is marked as `Stocked` but has no available stock
@@ -319,7 +319,7 @@ Feature: Delivery rules with and without quantity in stock
 
 
   @from:cucumber
-@allure.label.epic:E0100
+@allure.label.epic:E0100_Sales
 @allure.label.feature:F00104
   @Id:S0159_A_70
   Scenario: C_BPartner.DeliveryRule = `Force`, product is not marked as `Stocked` but has available stock
@@ -381,7 +381,7 @@ Feature: Delivery rules with and without quantity in stock
 
 
   @from:cucumber
-@allure.label.epic:E0100
+@allure.label.epic:E0100_Sales
 @allure.label.feature:F00104
   @Id:S0159_A_80
   Scenario: C_BPartner.DeliveryRule = `Force`, product is marked as `Stocked` and has available stock
@@ -440,7 +440,7 @@ Feature: Delivery rules with and without quantity in stock
 
 
   @from:cucumber
-@allure.label.epic:E0100
+@allure.label.epic:E0100_Sales
 @allure.label.feature:F00104
   @Id:S0159_B_10
   Scenario: C_BPartner.DeliveryRule = `Availability` - FIFO
@@ -514,7 +514,7 @@ Feature: Delivery rules with and without quantity in stock
 
   @flaky
   @from:cucumber
-@allure.label.epic:E0100
+@allure.label.epic:E0100_Sales
 @allure.label.feature:F00104
   @Id:S0159_B_20
   Scenario: C_BPartner.DeliveryRule = `Availability` - FIFO

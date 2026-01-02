@@ -1,7 +1,8 @@
 @from:cucumber
 @ghActions:run_on_executor6
-@allure.label.epic:E0160
-@allure.label.feature:F8030
+@allure.label.epic:E0160_Manufacturing_Execution
+@allure.label.feature:F8030_MobileUI_Manufacturing
+@F8030
 Feature: Manufacturing order rest controller
 
   ## F8030: MobileUI Manufacturing

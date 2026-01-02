@@ -1,6 +1,7 @@
 @from:cucumber
-@allure.label.epic:E0225
-@allure.label.feature:F01000
+@allure.label.epic:E0225_Accounting
+@allure.label.feature:F01000_Accounting
+@F01000
 @ghActions:run_on_executor7
 Feature: Inventory Value report / Lagerwert
 ## F01000: Accounting
@@ -49,8 +50,9 @@ Feature: Inventory Value report / Lagerwert
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
-@allure.label.epic:E0225
-@allure.label.feature:F01000
+@allure.label.epic:E0225_Accounting
+@allure.label.feature:F01000_Accounting
+@F01000
   @Id:S0171.300
   Scenario: Happy flow
     When metasfresh contains single line completed inventories

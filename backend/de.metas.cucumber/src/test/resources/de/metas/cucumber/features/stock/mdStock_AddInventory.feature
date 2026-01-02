@@ -1,5 +1,5 @@
 @from:cucumber
-@allure.label.epic:E0350
+@allure.label.epic:E0350_Warehouse_Managment
 @allure.label.feature:F5020
 @topic:stock
 @ghActions:run_on_executor7

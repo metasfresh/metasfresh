@@ -1,6 +1,7 @@
 @from:cucumber
-@allure.label.epic:E0140
-@allure.label.feature:F00600
+@allure.label.epic:E0140_Purchasing
+@allure.label.feature:F00600_Purchase_Order
+@F00600
 @ghActions:run_on_executor7
 Feature: Purchase order
 ## F00600: Purchase Order
@@ -54,8 +55,9 @@ Feature: Purchase order
 
 
   @from:cucumber
-@allure.label.epic:E0140
-@allure.label.feature:F00600
+@allure.label.epic:E0140_Purchasing
+@allure.label.feature:F00600_Purchase_Order
+@F00600
   @Id:S0156_100
   Scenario: Create a new purchase order, receive partial quantity and then close receipt schedule. Validate that `QtyOrdered` from order is not overridden and there is no qty allocated for the order in question
     Given metasfresh contains C_Orders:
@@ -116,8 +118,9 @@ Feature: Purchase order
 
 
   @from:cucumber
-@allure.label.epic:E0140
-@allure.label.feature:F00600
+@allure.label.epic:E0140_Purchasing
+@allure.label.feature:F00600_Purchase_Order
+@F00600
   @Id:S0156_200
   Scenario: Create a new purchase order, receive partial quantity, close the receipt schedule and then reactivate it. Validate that `QtyOrdered` from order is not overridden and the unreceived qty is still allocated for the order in question
     Given metasfresh contains C_Orders:
@@ -192,8 +195,9 @@ Feature: Purchase order
 
 
   @from:cucumber
-@allure.label.epic:E0140
-@allure.label.feature:F00600
+@allure.label.epic:E0140_Purchasing
+@allure.label.feature:F00600_Purchase_Order
+@F00600
   @Id:S0156_300
   Scenario: Create a new purchase order and receive all the ordered quantity. Validate that `QtyOrdered` is propagated accordingly
     Given metasfresh contains C_Orders:
@@ -240,8 +244,9 @@ Feature: Purchase order
 
 
   @from:cucumber
-@allure.label.epic:E0140
-@allure.label.feature:F00600
+@allure.label.epic:E0140_Purchasing
+@allure.label.feature:F00600_Purchase_Order
+@F00600
   @Id:S0156_400
   Scenario: Create new purchase order and receive the ordered quantity in two shipments. Validate that `QtyOrdered` is propagated accordingly and there is no qty allocated for the order in question
     Given metasfresh contains C_Orders:
@@ -308,8 +313,9 @@ Feature: Purchase order
 
 
   @from:cucumber
-@allure.label.epic:E0140
-@allure.label.feature:F00600
+@allure.label.epic:E0140_Purchasing
+@allure.label.feature:F00600_Purchase_Order
+@F00600
   @Id:S0156_500
   Scenario: Create new purchase order and receive more than the ordered quantity. Validate that `QtyOrdered` is propagated accordingly
     Given metasfresh contains C_Orders:
@@ -355,8 +361,9 @@ Feature: Purchase order
       | invoiceCand_PO_S0156_500          | order_PO_S0156_500        | orderLine_PO_S0156_500        | 30           | 26             | 30               | false                |
 
   @from:cucumber
-@allure.label.epic:E0140
-@allure.label.feature:F00600
+@allure.label.epic:E0140_Purchasing
+@allure.label.feature:F00600_Purchase_Order
+@F00600
   Scenario: Create purchase order, create material receipt for it, reactivate, add a new order line to it and recomplete the order
     Given set sys config boolean value true for sys config PO_AllowReactivationIfReceiptsCreated
     And metasfresh contains C_Orders:
@@ -413,8 +420,9 @@ Feature: Purchase order
     And set sys config boolean value false for sys config PO_AllowReactivationIfReceiptsCreated
     
   @from:cucumber
-@allure.label.epic:E0140
-@allure.label.feature:F00600
+@allure.label.epic:E0140_Purchasing
+@allure.label.feature:F00600_Purchase_Order
+@F00600
   Scenario: Create purchase order with 1 line for 100 pieces, create material receipt for 10 pieces, reactivate, decrease qty to 50, recomplete the order.
     Given set sys config boolean value true for sys config PO_AllowReactivationIfReceiptsCreated
     And metasfresh contains C_Orders:

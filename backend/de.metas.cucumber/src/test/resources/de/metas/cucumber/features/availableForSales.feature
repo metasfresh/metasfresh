@@ -1,5 +1,5 @@
 @from:cucumber
-@allure.label.epic:E0100
+@allure.label.epic:E0100_Sales
 @allure.label.feature:F00107
 @ghActions:run_on_executor4
 Feature: available for sales
@@ -17,7 +17,7 @@ Feature: available for sales
       | warehouseStd              | StdWarehouse |
 
   @from:cucumber
-@allure.label.epic:E0100
+@allure.label.epic:E0100_Sales
 @allure.label.feature:F00107
   Scenario: sync MD_Available_For_Sales when C_OrderLine's qtyOrdered changes
     Given metasfresh contains M_Products:
@@ -55,7 +55,7 @@ Feature: available for sales
       | p_1                     | 0              | 20             | -1002                           | warehouseStd   |
 
   @from:cucumber
-@allure.label.epic:E0100
+@allure.label.epic:E0100_Sales
 @allure.label.feature:F00107
   Scenario: sync MD_Available_For_Sales when C_OrderLine's M_AttributeSetInstance_ID changes
     Given metasfresh contains M_Products:
@@ -112,7 +112,7 @@ Feature: available for sales
       | p_1                     | 0              | 10             | -1002                           | warehouseStd   |
 
   @from:cucumber
-@allure.label.epic:E0100
+@allure.label.epic:E0100_Sales
 @allure.label.feature:F00107
   Scenario: sync MD_Available_For_Sales when MD_Stock is created and then move qtyToBeShipped in the future
     Given metasfresh contains M_Products:
@@ -163,7 +163,7 @@ Feature: available for sales
       | p_1                     | 10             | 0              | -1002                           | warehouseStd   |
 
   @from:cucumber
-@allure.label.epic:E0100
+@allure.label.epic:E0100_Sales
 @allure.label.feature:F00107
   Scenario: sync MD_Available_For_Sales when M_ShipmentSchedule's preparationDate_Override is changed
     Given metasfresh contains M_Products:
@@ -203,7 +203,7 @@ Feature: available for sales
     Then after not more than 30s, MD_Available_For_Sales table is empty for product: p_1
 
   @from:cucumber
-@allure.label.epic:E0100
+@allure.label.epic:E0100_Sales
 @allure.label.feature:F00107
   Scenario: sync MD_Available_For_Sales when M_ShipmentSchedule is processed
     Given metasfresh contains M_Products:
@@ -247,7 +247,7 @@ Feature: available for sales
     Then after not more than 30s, MD_Available_For_Sales table is empty for product: p_1
 
   @from:cucumber
-@allure.label.epic:E0100
+@allure.label.epic:E0100_Sales
 @allure.label.feature:F00107
   Scenario: sync MD_Available_For_Sales
     Given metasfresh contains M_Products:
@@ -288,7 +288,7 @@ Feature: available for sales
       | p_1                     | 10             | 8              | -1002                           | warehouseStd   |
 
   @from:cucumber
-@allure.label.epic:E0100
+@allure.label.epic:E0100_Sales
 @allure.label.feature:F00107
   Scenario: sync MD_Available_For_Sales and export it via API
     Given metasfresh contains M_Products:
@@ -423,7 +423,7 @@ Feature: available for sales
     """
 
   @from:cucumber
-@allure.label.epic:E0100
+@allure.label.epic:E0100_Sales
 @allure.label.feature:F00107
   Scenario: sync MD_Available_For_Sales with multiple warehouses
     Given metasfresh contains M_Products:
@@ -486,7 +486,7 @@ Feature: available for sales
       | p_1                     | 12             | 10             | -1002                           | wh             |
 
   @from:cucumber
-@allure.label.epic:E0100
+@allure.label.epic:E0100_Sales
 @allure.label.feature:F00107
   Scenario: sync MD_Available_For_Sales with multiple warehouses and export it via API
     Given metasfresh contains M_Warehouse:

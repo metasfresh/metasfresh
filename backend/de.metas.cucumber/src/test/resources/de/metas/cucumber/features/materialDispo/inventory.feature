@@ -1,5 +1,5 @@
 @from:cucumber
-@allure.label.epic:E0155
+@allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
 @ghActions:run_on_executor6
 Feature: Physical inventory and disposal are correctly considered in Material Dispo
@@ -23,7 +23,7 @@ Feature: Physical inventory and disposal are correctly considered in Material Di
       | standard_category                | attributeSet_convenienceSalate   |
 
   @from:cucumber
-@allure.label.epic:E0155
+@allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   Scenario: Physical inventory is correctly considered in Material Dispo when the product is both Sold and Purchased
     Given metasfresh contains M_Products:
@@ -46,7 +46,7 @@ Feature: Physical inventory and disposal are correctly considered in Material Di
 
 
   @from:cucumber
-@allure.label.epic:E0155
+@allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   Scenario: Physical inventory is correctly considered in Material Dispo when the product is Manufactured
     Given metasfresh contains M_Products:
@@ -80,7 +80,7 @@ Feature: Physical inventory and disposal are correctly considered in Material Di
 
 
   @from:cucumber
-@allure.label.epic:E0155
+@allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   Scenario: Physical inventory is correctly considered in Material Dispo when the product is a component in a BOM
     Given metasfresh contains M_Products:

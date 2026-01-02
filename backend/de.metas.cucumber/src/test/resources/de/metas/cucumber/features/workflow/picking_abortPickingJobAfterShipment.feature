@@ -1,5 +1,5 @@
 @from:cucumber
-@allure.label.epic:E0180
+@allure.label.epic:E0180_System_Administration
 @allure.label.feature:F00183
 @ghActions:run_on_executor7
 Feature: Picking workflow - abort not started picking jobs after shipment
@@ -51,7 +51,7 @@ Feature: Picking workflow - abort not started picking jobs after shipment
 
 
   @from:cucumber
-@allure.label.epic:E0180
+@allure.label.epic:E0180_System_Administration
 @allure.label.feature:F00183
   Scenario: Abort not started picking jobs after shipment
     Given start picking job for sales order identified by salesOrder_17813

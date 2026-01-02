@@ -1,6 +1,7 @@
 @from:cucumber
-@allure.label.epic:E0292
-@allure.label.feature:F00350
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00350_EDI
+@F00350
 @ghActions:run_on_executor5
 Feature: desadv and invoic
 ## F00350: EDI
@@ -13,8 +14,9 @@ Feature: desadv and invoic
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
   @from:cucumber
-@allure.label.epic:E0292
-@allure.label.feature:F00350
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00350_EDI
+@F00350
   Scenario: 1
 
   in:
@@ -186,8 +188,9 @@ Feature: desadv and invoic
 
 
   @from:cucumber
-@allure.label.epic:E0292
-@allure.label.feature:F00350
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00350_EDI
+@F00350
   Scenario: 2
 
   in:
@@ -355,8 +358,9 @@ Feature: desadv and invoic
 
 
   @from:cucumber
-@allure.label.epic:E0292
-@allure.label.feature:F00350
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00350_EDI
+@F00350
   Scenario: 3
   in:
 
@@ -520,8 +524,9 @@ Feature: desadv and invoic
       | edi_l_1    | edi_1                    | PCE               | 1    | p_1                     | 10         | 5                 | 10         | PCE                       | 5                        | 10              | PCE                        | 5                       | 5                        | 5                         |
 
   @from:cucumber
-@allure.label.epic:E0292
-@allure.label.feature:F00350
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00350_EDI
+@F00350
   Scenario: 4
 
   in:
@@ -688,8 +693,9 @@ Feature: desadv and invoic
       | edi_l_1    | edi_1                    | PCE               | 1    | p_1                     | 10         | 5                 | 10         | KGM                       | 1.25                     | 5               | PCE                        | 5                       | 5                        | 5                         |
 
   @from:cucumber
-@allure.label.epic:E0292
-@allure.label.feature:F00350
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00350_EDI
+@F00350
   Scenario: 5
 
   in:
@@ -862,8 +868,9 @@ Feature: desadv and invoic
       | edi_l_1    | edi_1                    | KGM               | 1    | p_1                     | 10         | 5                 | 40         | PCE                       | 20                       | 10              | KGM                        | 5                       | 5                        | 20                        |
 
   @from:cucumber
-@allure.label.epic:E0292
-@allure.label.feature:F00350
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00350_EDI
+@F00350
   Scenario: 6
 
   in:

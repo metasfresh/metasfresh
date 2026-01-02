@@ -1,6 +1,7 @@
 @from:cucumber
-@allure.label.epic:E0226
-@allure.label.feature:F1500
+@allure.label.epic:E0226_Costing
+@allure.label.feature:F1500_Costing
+@F1500
 @ghActions:run_on_executor6
 Feature: Moving Average Invoice - receive and ship
 ## F1500: Costing
@@ -89,8 +90,9 @@ Feature: Moving Average Invoice - receive and ship
 # ######################################################################################################################
 # ######################################################################################################################
   @from:cucumber
-@allure.label.epic:E0226
-@allure.label.feature:F1500
+@allure.label.epic:E0226_Costing
+@allure.label.feature:F1500_Costing
+@F1500
   Scenario: No initial stock, no invoice price variance
     When for costing, create completed invoice with one line
       | C_OrderLine_ID | M_MatchInv_ID |
@@ -121,8 +123,9 @@ Feature: Moving Average Invoice - receive and ship
 # ######################################################################################################################
 # ######################################################################################################################
   @from:cucumber
-@allure.label.epic:E0226
-@allure.label.feature:F1500
+@allure.label.epic:E0226_Costing
+@allure.label.feature:F1500_Costing
+@F1500
   Scenario: No initial stock, invoice price variance
     When for costing, create completed invoice with one line
       | C_OrderLine_ID | PriceEntered_Override | M_MatchInv_ID |
@@ -151,8 +154,9 @@ Feature: Moving Average Invoice - receive and ship
 # ######################################################################################################################
 # ######################################################################################################################
   @from:cucumber
-@allure.label.epic:E0226
-@allure.label.feature:F1500
+@allure.label.epic:E0226_Costing
+@allure.label.feature:F1500_Costing
+@F1500
   Scenario: No initial stock, receive, ship, get vendor invoice with price variance, ship again
     #
     # Ship 7 items

@@ -1,6 +1,7 @@
 @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00700
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
 @ghActions:run_on_executor2
 Feature: Checking the effect of override fields on invoice candidate
 ## F00700: Invoice
@@ -13,8 +14,9 @@ Feature: Checking the effect of override fields on invoice candidate
     And metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
 
   @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00700
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   Scenario: we can invoice less than received without discount lines; soTrx=N (100)
     And load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value        |
@@ -97,8 +99,9 @@ Feature: Checking the effect of override fields on invoice candidate
       | invoiceLine1_1              | p_1                     | 8           | true      | 10               | 10              | 80             | 0            |
 
   @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00700
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   Scenario: we can invoice more than received; soTrx=N (110)
     And load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value        |
@@ -181,8 +184,9 @@ Feature: Checking the effect of override fields on invoice candidate
       | invoiceLine1_1              | invoice_1               | p_1                     | 12          | true      | 10               | 10              | 120            | 0            |
 
   @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00700
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   Scenario: we can override the quality discount percent at invoice candidate stage; soTrx=N (120)
     And load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value        |
@@ -269,8 +273,9 @@ Feature: Checking the effect of override fields on invoice candidate
       | invoiceLine1_2              | p_1                     | -1          | true      | 10               | 10              | -10            | 0            |
 
   @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00700
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   Scenario: we can receive and invoice more than ordered; soTrx=N (130)
     And load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value        |
@@ -350,8 +355,9 @@ Feature: Checking the effect of override fields on invoice candidate
       | invoiceLine1_1              | p_1                     | 12          | true      | 10               | 10              | 120            | 0            |
 
   @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00700
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   Scenario: we can receive and invoice less than ordered; soTrx=N (140)
     And load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value        |
@@ -431,8 +437,9 @@ Feature: Checking the effect of override fields on invoice candidate
       | invoiceLine1_1              | p_1                     | 8           | true      | 10               | 10              | 80             | 0            |
 
   @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00700
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   Scenario: we can override the actual price at invoice candidate stage; soTrx=N (150)
     And load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value        |
@@ -515,8 +522,9 @@ Feature: Checking the effect of override fields on invoice candidate
       | invoiceLine1_1              | p_1                     | 10          | true      | 20               | 20              | 200            | 0            |
 
   @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00700
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   Scenario: we can override the discount at invoice candidate stage; soTrx=N (160)
     And load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value        |
@@ -599,8 +607,9 @@ Feature: Checking the effect of override fields on invoice candidate
       | invoiceLine1_1              | p_1                     | 10          | true      | 10               | 9               | 90             | 10           |
 
   @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00700
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   Scenario: we can override the DateToInvoice to be in the future at invoice candidate stage, making the record non billable; soTrx=N (170)
 
     And load M_Warehouse:
@@ -672,8 +681,9 @@ Feature: Checking the effect of override fields on invoice candidate
       | invoice_candidate_1               |
 
   @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00700
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   Scenario: we can receive less than ordered and override the invoice rule to 'Order completely delivered' at invoice candidate stage,
   making the record non billable; soTrx=N (180)
 
@@ -746,8 +756,9 @@ Feature: Checking the effect of override fields on invoice candidate
       | invoice_candidate_1               |
 
   @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00700
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   Scenario: we can override the tax at invoice candidate stage; soTrx=N (190)
 
     And load M_Warehouse:
@@ -831,8 +842,9 @@ Feature: Checking the effect of override fields on invoice candidate
       | invoiceLine1_1              | p_1                     | 10          | true      | 10               | 10              | 100            | 0            | t_22032022_1            |
 
   @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00700
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   Scenario: we can invoice less than received and change invoice doc type at invoice candidate stage; soTrx=N (200)
     And load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value        |
@@ -915,8 +927,9 @@ Feature: Checking the effect of override fields on invoice candidate
       | invoiceLine1_1              | p_1                     | 8           | true      | 10               | 10              | 80             | 0            |
 
   @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00700
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   Scenario: we can invoice less than delivered; soTrx=Y (210)
     Given metasfresh contains M_Products:
       | Identifier | Name                     |
@@ -984,8 +997,9 @@ Feature: Checking the effect of override fields on invoice candidate
       | invoiceLine1_1              | p_1                     | 8           | true      | 10               | 10              | 80             | 0            |
 
   @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00700
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   Scenario: we can invoice more than delivered; soTrx=Y (220)
     Given metasfresh contains M_Products:
       | Identifier | Name                     |
@@ -1053,8 +1067,9 @@ Feature: Checking the effect of override fields on invoice candidate
       | invoiceLine1_1              | p_1                     | 12          | true      | 10               | 10              | 120            | 0            |
 
   @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00700
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   Scenario: we can deliver and invoice more than ordered; soTrx=Y (230)
     Given metasfresh contains M_Products:
       | Identifier | Name                     |
@@ -1125,8 +1140,9 @@ Feature: Checking the effect of override fields on invoice candidate
       | invoiceLine1_1              | p_1                     | 12          | true      | 10               | 10              | 120            | 0            |
 
   @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00700
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   Scenario: we can deliver and invoice less than ordered; soTrx=Y (240)
     Given metasfresh contains M_Products:
       | Identifier | Name                     |
@@ -1197,8 +1213,9 @@ Feature: Checking the effect of override fields on invoice candidate
       | invoiceLine1_1              | p_1                     | 8           | true      | 10               | 10              | 80             | 0            |
 
   @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00700
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   Scenario: we can override the price at invoice candidate stage; sOTrx=Y (250)
     Given metasfresh contains M_Products:
       | Identifier | Name                     |
@@ -1266,8 +1283,9 @@ Feature: Checking the effect of override fields on invoice candidate
       | invoiceLine1_1              | p_1                     | 10          | true      | 20               | 20              | 200            | 0            |
 
   @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00700
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   Scenario: we can override the discount at invoice candidate stage; soTrx=Y (260)
     Given metasfresh contains M_Products:
       | Identifier | Name                     |
@@ -1335,8 +1353,9 @@ Feature: Checking the effect of override fields on invoice candidate
       | invoiceLine1_1              | p_1                     | 10          | true      | 10               | 9               | 90             | 10           |
 
   @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00700
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   Scenario: we can override the DateToInvoice to be in the future at invoice candidate stage, making the record non billable; soTrx=Y (270)
     Given metasfresh contains M_Products:
       | Identifier | Name                     |
@@ -1392,8 +1411,9 @@ Feature: Checking the effect of override fields on invoice candidate
       | invoice_candidate_1               |
 
   @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00700
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   Scenario: we can receive less than ordered and override the invoice rule to 'Order completely delivered' at invoice candidate stage,
   making the record non billable; soTrx=Y (280)
 
@@ -1457,8 +1477,9 @@ Feature: Checking the effect of override fields on invoice candidate
       | invoice_candidate_1               |
 
   @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00700
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   Scenario: we can override the tax at invoice candidate stage; soTrx=Y (290)
     Given metasfresh contains M_Products:
       | Identifier | Name                     |
@@ -1529,8 +1550,9 @@ Feature: Checking the effect of override fields on invoice candidate
       | invoiceLine1_1              | p_1                     | 10          | true      | 10               | 10              | 100            | 0            | t_18032022_1            |
 
   @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00700
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   Scenario: we can override Qty to deliver catch on shipment schedule and then override qty to invoice on invoice candidate and it is reflected on C_InvoiceLine (300)
     Given metasfresh contains M_Products:
       | Identifier | Name                     |
@@ -1607,8 +1629,9 @@ Feature: Checking the effect of override fields on invoice candidate
       | invoiceLine1_1              | p_1                     | 8           | true      | 10               | 10              | 40.00          | 0            |
 
   @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00700
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   Scenario: we can invoice a service product, less than ordered, without shipping (310)
     Given metasfresh contains M_Products:
       | Identifier | Name                     | ProductType |

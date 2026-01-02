@@ -1,7 +1,8 @@
 @from:cucumber
 @ghActions:run_on_executor4
-@allure.label.epic:E0200
-@allure.label.feature:F00200
+@allure.label.epic:E0200_System_Translations
+@allure.label.feature:F00200_Automatic_Picking_Pick_HU_on_the_fly
+@F00200
 Feature: Enqueue order candidate and auto invoice after shipped
 
   ## F00200: Sales Invoice

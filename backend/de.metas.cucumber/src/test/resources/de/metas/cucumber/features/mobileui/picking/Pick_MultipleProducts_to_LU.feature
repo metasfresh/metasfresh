@@ -1,6 +1,7 @@
 @from:cucumber
-@allure.label.epic:E0105
-@allure.label.feature:F00230
+@allure.label.epic:E0105_Picking
+@allure.label.feature:F00230_MobileUI_Picking
+@F00230
 @ghActions:run_on_executor7
 Feature: mobileUI Picking - Pick multiple products to LU
 ## F00230: MobileUI Picking
@@ -87,8 +88,9 @@ Feature: mobileUI Picking - Pick multiple products to LU
 # ######################################################################################################################
 # ######################################################################################################################
   @from:cucumber
-@allure.label.epic:E0105
-@allure.label.feature:F00230
+@allure.label.epic:E0105_Picking
+@allure.label.feature:F00230_MobileUI_Picking
+@F00230
   Scenario: Pick TUs from LU with aggregated TUs - into a new LU
     When transform CU to new LU
       | sourceCU    | newLU                 | TU_PI_ID | QtyCUsPerTU | QtyTUsPerLU |
@@ -186,8 +188,9 @@ Feature: mobileUI Picking - Pick multiple products to LU
 # ######################################################################################################################
 # ######################################################################################################################
   @from:cucumber
-@allure.label.epic:E0105
-@allure.label.feature:F00230
+@allure.label.epic:E0105_Picking
+@allure.label.feature:F00230_MobileUI_Picking
+@F00230
   Scenario: Pick from CUs into a new LU
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |

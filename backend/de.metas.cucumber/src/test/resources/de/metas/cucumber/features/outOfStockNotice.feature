@@ -1,5 +1,5 @@
 @ghActions:run_on_executor6
-@allure.label.epic:E0100
+@allure.label.epic:E0100_Sales
 @allure.label.feature:F00108
 Feature: warehouse out of stock notice
 ## F00108: Out of Stock Notice

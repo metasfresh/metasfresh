@@ -1,5 +1,5 @@
 @from:cucumber
-@allure.label.epic:E0100
+@allure.label.epic:E0100_Sales
 @allure.label.feature:F00106
 @ghActions:run_on_executor1
 Feature: create purchase simulation
@@ -46,7 +46,7 @@ Feature: create purchase simulation
       | ppln_1     | p_1          | true         | true        |
 
   @from:cucumber
-@allure.label.epic:E0100
+@allure.label.epic:E0100_Sales
 @allure.label.feature:F00106
   @Id:S0171.200
   Scenario: create purchase simulation, delete order line and validate there is no purchase candidate for deleted line
@@ -70,7 +70,7 @@ Feature: create purchase simulation
     And no C_PurchaseCandidate found for orderLine ol_1
 
   @from:cucumber
-@allure.label.epic:E0100
+@allure.label.epic:E0100_Sales
 @allure.label.feature:F00106
   Scenario: Create Sales Order. Create C_PurchaseCandidate. Create C_Order for it. Reactivate and reduce qty. C_PurchaseCandidate is not adjusted.
     When update existing PP_Product_Plannings

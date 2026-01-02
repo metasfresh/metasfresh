@@ -1,6 +1,7 @@
 @from:cucumber
-@allure.label.epic:E0140
-@allure.label.feature:F00600
+@allure.label.epic:E0140_Purchasing
+@allure.label.feature:F00600_Purchase_Order
+@F00600
 @ghActions:run_on_executor1
 Feature: Purchase order project is automatically created when PO is completed
 ## F00600: Purchase Order
@@ -14,8 +15,9 @@ Feature: Purchase order project is automatically created when PO is completed
     And set project type Sales/Purchase Order to active
 
   @from:cucumber
-@allure.label.epic:E0140
-@allure.label.feature:F00600
+@allure.label.epic:E0140_Purchasing
+@allure.label.feature:F00600_Purchase_Order
+@F00600
   Scenario: SO with purchased product. Project auto-populated on resulting PO & lines and pushed to SO lines.
     Given metasfresh contains M_Products:
       | Identifier | IsSold | IsPurchased |

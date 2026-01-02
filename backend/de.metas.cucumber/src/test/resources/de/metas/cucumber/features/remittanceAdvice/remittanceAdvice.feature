@@ -1,5 +1,5 @@
 @from:cucumber
-@allure.label.epic:E0220
+@allure.label.epic:E0220_Financial
 @allure.label.feature:F01200
 @ghActions:run_on_executor5
 Feature: invoice payment allocation
@@ -82,7 +82,7 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0466_10
   @from:cucumber
-@allure.label.epic:E0220
+@allure.label.epic:E0220_Financial
 @allure.label.feature:F01200
   Scenario: Process Remittance-Advice
     # NOTE: this kind of allocation cannot be manually done by user (because REMADV code is doing it), but the purpose of this test

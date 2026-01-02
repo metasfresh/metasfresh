@@ -1,5 +1,5 @@
 @from:cucumber
-@allure.label.epic:E0900
+@allure.label.epic:E0900_Commission
 @allure.label.feature:F09000
 @topic:commissionContracts
 @ghActions:run_on_executor3
@@ -14,7 +14,7 @@ Feature: Mediated commission
 
   @ignore # https://github.com/metasfresh/metasfresh/issues/19699
   @from:cucumber
-@allure.label.epic:E0900
+@allure.label.epic:E0900_Commission
 @allure.label.feature:F09000
   @topic:commissionContracts
   Scenario: Happy flow for mediated commission contract

@@ -1,6 +1,7 @@
 @from:cucumber
-@allure.label.epic:E0140
-@allure.label.feature:F00600
+@allure.label.epic:E0140_Purchasing
+@allure.label.feature:F00600_Purchase_Order
+@F00600
 @ghActions:run_on_executor7
 Feature: Purchase order to transportation order
 ## F00600: Purchase Order
@@ -41,8 +42,9 @@ Feature: Purchase order to transportation order
       | supplier   | Y            | N              | ps_PO                         |
 
   @from:cucumber
-@allure.label.epic:E0140
-@allure.label.feature:F00600
+@allure.label.epic:E0140_Purchasing
+@allure.label.feature:F00600_Purchase_Order
+@F00600
   Scenario: Create a new purchase order, no M_ShippingPackage/M_Package are created. They are created only by manually invoking process. Once transportation order is completed, the order cannot be reactivated.
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference  | OPT.DocBaseType | OPT.M_PricingSystem_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.DeliveryRule | OPT.DeliveryViaRule | M_Shipper_ID |

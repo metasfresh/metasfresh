@@ -1,5 +1,5 @@
 @from:cucumber
-@allure.label.epic:E0155
+@allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
 @ghActions:run_on_executor6
 Feature: material dispo reacts to forecast docactions
@@ -26,7 +26,7 @@ Feature: material dispo reacts to forecast docactions
       | 540075         | 0        |
 
   @from:cucumber
-@allure.label.epic:E0155
+@allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   Scenario: Forecast is correctly considered in Material Dispo when the product is Manufactured
     Given metasfresh contains M_Products:

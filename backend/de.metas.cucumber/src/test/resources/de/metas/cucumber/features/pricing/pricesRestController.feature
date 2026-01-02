@@ -1,6 +1,7 @@
 @from:cucumber
-@allure.label.epic:E0260
-@allure.label.feature:F32000
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
 @ghActions:run_on_executor6
 Feature: Prices rest controller
 ## F32000: Pricing

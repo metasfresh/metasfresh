@@ -1,6 +1,7 @@
 @from:cucumber
-@allure.label.epic:E0100
-@allure.label.feature:F00100
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00100_Sales_Order
+@F00100
 @ghActions:run_on_executor3
 Feature: Historical Sales Orders via postgREST
 ## F00100: Sales Order
@@ -30,8 +31,9 @@ Feature: Historical Sales Orders via postgREST
       | bpartner_location_1 | customer1     | Y               | Y               |
 
   @from:cucumber
-@allure.label.epic:E0100
-@allure.label.feature:F00100
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00100_Sales_Order
+@F00100
   Scenario: create a sales order and export it to JSON via ExternalId and DataSource
     Given metasfresh contains M_Products:
       | Identifier | Value                       | REST.Context | Name                       | Description                       |
@@ -124,8 +126,9 @@ Feature: Historical Sales Orders via postgREST
     """
 
   @from:cucumber
-@allure.label.epic:E0100
-@allure.label.feature:F00100
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00100_Sales_Order
+@F00100
   Scenario: create a sales order and export it to JSON via C_Order_ID
     Given metasfresh contains M_Products:
       | Identifier | Value                         | REST.Context | Name                         | Description                         |

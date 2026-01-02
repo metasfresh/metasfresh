@@ -1,6 +1,7 @@
 @from:cucumber
-@allure.label.epic:E0105
-@allure.label.feature:F00230
+@allure.label.epic:E0105_Picking
+@allure.label.feature:F00230_MobileUI_Picking
+@F00230
 @ghActions:run_on_executor7
 Feature: mobileUI Picking - Pick TUs from CU
 ## F00230: MobileUI Picking
@@ -96,8 +97,9 @@ Feature: mobileUI Picking - Pick TUs from CU
 # ######################################################################################################################
 # ######################################################################################################################
   @from:cucumber
-@allure.label.epic:E0105
-@allure.label.feature:F00230
+@allure.label.epic:E0105_Picking
+@allure.label.feature:F00230_MobileUI_Picking
+@F00230
   Scenario: Pick TUs from CU standard case
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |

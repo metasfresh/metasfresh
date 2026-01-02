@@ -1,6 +1,7 @@
 @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00701
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
 @ghActions:run_on_executor6
 Feature: Product items invoice candidates: shipments
 ## F00701: Invoice Candidates
@@ -39,8 +40,9 @@ Feature: Product items invoice candidates: shipments
 
   @Id:03082022-SIC.100
   @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00701
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Ship 100, complete shipment
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
@@ -92,8 +94,9 @@ Feature: Product items invoice candidates: shipments
 
   @Id:03082022-SIC.110
   @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00701
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Ship 100, complete shipment then reactivate it
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
@@ -151,8 +154,9 @@ Feature: Product items invoice candidates: shipments
 
   @Id:03082022-SIC.120
   @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00701
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Ship 100, complete shipment, reactivate it, complete it again
 
     And metasfresh contains C_Orders:
@@ -213,8 +217,9 @@ Feature: Product items invoice candidates: shipments
 
   @Id:03082022-SIC.121
   @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00701
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Ship 100, complete shipment, reactivate it, increase qty, complete it again
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
@@ -278,8 +283,9 @@ Feature: Product items invoice candidates: shipments
 
   @Id:03082022-SIC.122
   @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00701
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Ship 100, complete shipment, reactivate it, decrease qty, complete it again
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
@@ -343,8 +349,9 @@ Feature: Product items invoice candidates: shipments
 
   @Id:03082022-SIC.130
   @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00701
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Ship 100, complete shipment then void it
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
@@ -404,8 +411,9 @@ Feature: Product items invoice candidates: shipments
 
   @Id:03082022-SIC.140
   @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00701
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Ship 100, complete shipment then revert it
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
@@ -463,8 +471,9 @@ Feature: Product items invoice candidates: shipments
 
   @Id:03082022-SIC.150
   @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00701
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Ship 100, complete shipment then close it
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |

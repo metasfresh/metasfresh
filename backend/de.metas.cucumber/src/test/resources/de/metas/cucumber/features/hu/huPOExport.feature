@@ -1,6 +1,7 @@
 @from:cucumber
-@allure.label.epic:E0370
-@allure.label.feature:F5000
+@allure.label.epic:E0370_Intralogistic_HUs
+@allure.label.feature:F5000_Handling_Unit
+@F5000
 @ignore
 @ghActions:run_on_executor5
 Feature: Handling unit export from purchase order

@@ -1,7 +1,8 @@
 @from:cucumber
 @ghActions:run_on_executor7
-@allure.label.epic:E0105
-@allure.label.feature:F00230
+@allure.label.epic:E0105_Picking
+@allure.label.feature:F00230_MobileUI_Picking
+@F00230
 Feature: mobileUI Picking - Pick catch weight products
 
   ## F00230: MobileUI Picking

@@ -1,5 +1,5 @@
 @from:cucumber
-@allure.label.epic:E0100
+@allure.label.epic:E0100_Sales
 @allure.label.feature:F00102
 @ghActions:run_on_executor3
 Feature: Allow order discount via API (compensation group)
@@ -13,7 +13,7 @@ Feature: Allow order discount via API (compensation group)
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
   @from:cucumber
-@allure.label.epic:E0100
+@allure.label.epic:E0100_Sales
 @allure.label.feature:F00102
   Scenario: we can allow order discount via api (compensation group)
     Given metasfresh contains M_Products:

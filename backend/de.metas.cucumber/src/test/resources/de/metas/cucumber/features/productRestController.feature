@@ -1,5 +1,5 @@
 @from:cucumber
-@allure.label.epic:E0291
+@allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
 @ghActions:run_on_executor6
 Feature:product get/create/update using metasfresh api
@@ -19,7 +19,7 @@ Feature:product get/create/update using metasfresh api
     And no product with value 'code345' exists
 
   @from:cucumber
-@allure.label.epic:E0291
+@allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
   Scenario: create Product request, as a REST-API invoker
   I want to be able to upsert products
@@ -170,7 +170,7 @@ Feature:product get/create/update using metasfresh api
       | p_1                     | PCE               | GRM                  | 0.00025      |
 
   @from:cucumber
-@allure.label.epic:E0291
+@allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
   Scenario: get Product, as a REST-API invoker
   I want to be able to retrieve products
@@ -279,7 +279,7 @@ Feature:product get/create/update using metasfresh api
 
 
   @from:cucumber
-@allure.label.epic:E0291
+@allure.label.epic:E0291_REST_API
 @allure.label.feature:F00800
   Scenario: Retrieve product by external identifier
 

@@ -1,5 +1,5 @@
 @from:cucumber
-@allure.label.epic:E0155
+@allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
 @ghActions:run_on_executor6
 Feature: Disposal is correctly considered in Material Dispo; Stock shortage solved via purchase
@@ -23,7 +23,7 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | standard_category                | attributeSet_convenienceSalate   |
 
   @from:cucumber
-@allure.label.epic:E0155
+@allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   @Id:S0124_130
   @Id:S0222_100
@@ -173,7 +173,7 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
 
 
   @from:cucumber
-@allure.label.epic:E0155
+@allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   @Id:S0124_130
   @Id:S0222_200
@@ -329,7 +329,7 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
   @Id:S0222_300
   @Id:S0264_1600
   @from:cucumber
-@allure.label.epic:E0155
+@allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   @Id:S0124_130
   Scenario: Disposal is correctly considered in Material Dispo when the product is both Sold and Purchased

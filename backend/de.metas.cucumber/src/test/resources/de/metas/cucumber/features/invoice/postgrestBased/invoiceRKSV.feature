@@ -1,6 +1,7 @@
 @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00700
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
 @ghActions:run_on_executor2
 Feature: Invoice to comply with RKSV export via postgREST
 ## F00700: Invoice
@@ -30,8 +31,9 @@ Feature: Invoice to comply with RKSV export via postgREST
       | bpartner_location_1 | customer1     | Y               | Y               | Bonn | 53175  |
 
   @from:cucumber
-@allure.label.epic:E0340
-@allure.label.feature:F00700
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   Scenario: create an invoice and export it
     Given metasfresh contains M_Products:
       | Identifier           | REST.Context.Value                       | REST.Context.Name                       | Description                                    |

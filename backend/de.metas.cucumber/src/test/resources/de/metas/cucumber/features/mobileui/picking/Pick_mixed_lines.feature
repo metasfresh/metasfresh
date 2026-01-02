@@ -1,6 +1,7 @@
 @from:cucumber
-@allure.label.epic:E0105
-@allure.label.feature:F00230
+@allure.label.epic:E0105_Picking
+@allure.label.feature:F00230_MobileUI_Picking
+@F00230
 @ghActions:run_on_executor7
 Feature: mobileUI Picking - Pick mixed lines
 ## F00230: MobileUI Picking
@@ -101,8 +102,9 @@ Feature: mobileUI Picking - Pick mixed lines
 # ######################################################################################################################
 # ######################################################################################################################
   @from:cucumber
-@allure.label.epic:E0105
-@allure.label.feature:F00230
+@allure.label.epic:E0105_Picking
+@allure.label.feature:F00230_MobileUI_Picking
+@F00230
   Scenario: Pick multiple catch weight items and regular items
     When set sys config boolean value false for sys config PickingJobPickCommand.PickCUsFromCUs
     And metasfresh contains C_Orders:

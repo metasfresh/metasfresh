@@ -1,5 +1,5 @@
 @from:cucumber
-@allure.label.epic:E0155
+@allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
 @ghActions:run_on_executor7
 Feature: create distribution to balance demand
@@ -63,7 +63,7 @@ Feature: create distribution to balance demand
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
-@allure.label.epic:E0155
+@allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   @Id:S0171.300
   Scenario: One distribution candidate is created to balance the full demand of the sales order
@@ -95,7 +95,7 @@ Feature: create distribution to balance demand
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
-@allure.label.epic:E0155
+@allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   Scenario: DD_Order_Candidate + DD_Order is created to balance the full demand of the sales order
     When update existing PP_Product_Plannings
@@ -138,7 +138,7 @@ Feature: create distribution to balance demand
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
-@allure.label.epic:E0155
+@allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   @Id:S0171.300
   Scenario: One distribution candidate is created to partially balance the demand of the sales order. The other part is covered by inventory
@@ -176,7 +176,7 @@ Feature: create distribution to balance demand
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
-@allure.label.epic:E0155
+@allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   Scenario: targetWH <- sourceWH <- sourceWH2 <- sourceWH3 (with partial stock)
     Given metasfresh contains M_Warehouse:
@@ -243,7 +243,7 @@ Feature: create distribution to balance demand
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
-@allure.label.epic:E0155
+@allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   Scenario: detect infinite loop: targetWH <- sourceWH <- targetWH
     Given metasfresh contains DD_NetworkDistributionLine
@@ -277,7 +277,7 @@ Feature: create distribution to balance demand
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
-@allure.label.epic:E0155
+@allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   Scenario: detect infinite loop: targetWH <- sourceWH <- sourceWH2 <- sourceWH3 <- targetWH
     Given metasfresh contains M_Warehouse:
@@ -326,7 +326,7 @@ Feature: create distribution to balance demand
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
-@allure.label.epic:E0155
+@allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   @Id:S0171.300
   Scenario: One distribution candidate is created to balance the full demand of the sales order. Order is reactivated and qty is decreased. Distribution candidate is adjusted.
@@ -384,7 +384,7 @@ Feature: create distribution to balance demand
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
-@allure.label.epic:E0155
+@allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   Scenario: DD_Order_Candidate + DD_Order is created to balance the full demand of the sales order. Sales order is reactivated and qty is decreased. The qty on the PP_Order_Candidate is not changed.
     When update existing PP_Product_Plannings

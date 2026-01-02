@@ -1,6 +1,7 @@
 @from:cucumber
-@allure.label.epic:E0100
-@allure.label.feature:F00100
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00100_Sales_Order
+@F00100
 @ghActions:run_on_executor3
 Feature: Export Shipments in specific format via postgREST
 ## F00100: Sales Order
@@ -51,8 +52,9 @@ Feature: Export Shipments in specific format via postgREST
       | line2              | createdCU_2 |
 
   @from:cucumber
-@allure.label.epic:E0100
-@allure.label.feature:F00100
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00100_Sales_Order
+@F00100
   Scenario: create a shipment and export it to JSON via M_InOut_ID. The used BPartner does not have an external reference for Dynamics365 External System
     Given M_HU_Attribute is changed
       | M_HU_ID.Identifier | M_Attribute_ID.Value | Value          |
@@ -159,8 +161,9 @@ Feature: Export Shipments in specific format via postgREST
     """
 
   @from:cucumber
-@allure.label.epic:E0100
-@allure.label.feature:F00100
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00100_Sales_Order
+@F00100
   Scenario: create a shipment and export it to JSON via M_InOut_ID. The used BPartner has an external reference for Dynamics365 External System
     Given M_HU_Attribute is changed
       | M_HU_ID.Identifier | M_Attribute_ID.Value | Value          |

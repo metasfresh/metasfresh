@@ -1,5 +1,5 @@
 @from:cucumber
-@allure.label.epic:E0155
+@allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
 @ghActions:run_on_executor6
 Feature: Shipping HUs interaction with material schedule
@@ -13,7 +13,7 @@ Feature: Shipping HUs interaction with material schedule
     And AD_Scheduler for classname 'de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs' is disabled
 
   @from:cucumber
-@allure.label.epic:E0155
+@allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
   Scenario: Validate the way shipping HUs interacts with material schedule (complete, reactivate, reverse shipment)
     Given metasfresh contains M_Products:
