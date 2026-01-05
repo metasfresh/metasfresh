@@ -89,11 +89,3 @@ BEGIN
 
     RAISE NOTICE 'Finished creating years and periods';
 END $$;
-
--- Open ALL existing periods that aren't already open
-UPDATE c_periodcontrol
-SET periodstatus = 'O',
-    periodaction = 'N',
-    updated = now(),
-    updatedby = 100
-WHERE periodstatus <> 'O';
