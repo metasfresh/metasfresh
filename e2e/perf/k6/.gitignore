@@ -11,6 +11,9 @@ audit-replay/audit-replay.env
 audit-replay/test-data/extracted-api-audit.json
 audit-replay/test-data/*-requests.json
 
+# Run History (timestamped run folders)
+audit-replay/runs/
+
 # Results
 results/
 *.json.gz

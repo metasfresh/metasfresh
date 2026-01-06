@@ -29,10 +29,11 @@ import de.metas.mobile.application.MobileApplication;
 import de.metas.mobile.application.MobileApplicationId;
 import de.metas.mobile.application.MobileApplicationInfo;
 import de.metas.mobile.application.service.MobileApplicationService;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupList;
+import de.metas.rest_workflows.facets.WorkflowLaunchersFacetQuery;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.mobile_application.MobileApplicationPermissions;
 import de.metas.user.UserId;
-import de.metas.util.Services;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.GetScannedBarcodeSuggestionsRequest;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.JsonScannedBarcodeSuggestions;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScannedBarcodeRequest;
@@ -49,13 +50,9 @@ import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
-import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupList;
-import de.metas.rest_workflows.facets.WorkflowLaunchersFacetQuery;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -70,12 +67,7 @@ public class WorkflowRestAPIService
 {
 	private final static AdMessageKey NOT_WORKFLOW_APP_ERROR_MSG = AdMessageKey.of("de.metas.workflow.rest_api.service.NOT_WORKFLOW_APP_ERROR_MSG");
 
-	private static final Logger logger = LogManager.getLogger(WorkflowRestAPIService.class);
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-
-	private static final String SYSCONFIG_LaunchersLimit = "WorkflowRestAPIService.LaunchersLimit";
-	private static final QueryLimit DEFAULT_LaunchersLimit = QueryLimit.ofInt(20);
-
+	@NonNull private static final Logger logger = LogManager.getLogger(WorkflowRestAPIService.class);
 	@NonNull private final MobileApplicationService mobileApplicationService;
 	@NonNull private final WFActivityHandlersRegistry wfActivityHandlersRegistry;
 
@@ -92,7 +84,7 @@ public class WorkflowRestAPIService
 	public WorkflowLaunchersList getLaunchers(@NonNull final WorkflowLaunchersQuery query)
 	{
 		return getWorkflowBasedMobileApplication(query.getApplicationId())
-				.provideLaunchers(query.withLimitIfNotSet(this::getLaunchersLimit));
+				.provideLaunchers(query);
 	}
 
 	public WorkflowLaunchersFacetGroupList getFacets(@NonNull WorkflowLaunchersFacetQuery query)
@@ -116,14 +108,6 @@ public class WorkflowRestAPIService
 	private Stream<WorkflowBasedMobileApplication> streamWorkflowBasedMobileApplications(@NonNull UserId userId, @NonNull final MobileApplicationPermissions permissions)
 	{
 		return mobileApplicationService.streamMobileApplicationsOfType(WorkflowBasedMobileApplication.class, userId, permissions);
-	}
-
-	private QueryLimit getLaunchersLimit()
-	{
-		final int limitInt = sysConfigBL.getIntValue(SYSCONFIG_LaunchersLimit, -100);
-		return limitInt == -100
-				? DEFAULT_LaunchersLimit
-				: QueryLimit.ofInt(limitInt);
 	}
 
 	public void logout(@NonNull final IUserRolePermissions permissions)

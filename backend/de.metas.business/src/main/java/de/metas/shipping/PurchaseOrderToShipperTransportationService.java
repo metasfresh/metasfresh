@@ -31,6 +31,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.ILUQtyProvider;
 import de.metas.handlingunits.impl.ShipperTransportationQuery;
+import de.metas.i18n.AdMessageKey;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
@@ -53,6 +54,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
@@ -60,6 +62,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -68,6 +71,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PurchaseOrderToShipperTransportationService
 {
+	private static final AdMessageKey MSG_RECEIPT_SCHEDULE_ASSIGNED_TO_PROCESSED_TRANSPORTATION_ORDER = AdMessageKey.of("ReceiptScheduleAssignedToProcessedTransportationOrder");
 	@NonNull private final PurchaseOrderToShipperTransportationRepository repo;
 
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
@@ -116,11 +120,6 @@ public class PurchaseOrderToShipperTransportationService
 		}
 	}
 
-	private boolean isOrderNotOnShipperTransportation(@NonNull final OrderId orderId)
-	{
-		return !repo.anyMatch(ShippingPackageQuery.builder().orderId(orderId).build());
-	}
-
 	public void addOrderLinesToShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId, @NonNull final Collection<OrderAndLineId> orderAndLineIds)
 	{
 		final ImmutableListMultimap<I_C_Order, I_C_OrderLine> orderToLinesMap = orderDAO.getOrderToLinesMap(orderAndLineIds);
@@ -158,7 +157,6 @@ public class PurchaseOrderToShipperTransportationService
 		final List<I_C_OrderLine> orderLinesWithoutLUQty = getUnassignedOrderLines(orderLines.stream()
 				.filter(ol -> !orderLinesWithLUQty.contains(ol) && !ol.isPackagingMaterial())
 				.collect(Collectors.toList()));
-		getUnassignedOrderLines(orderLinesWithoutLUQty);
 
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
 		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(bPartnerId, order.getC_BPartner_Location_ID());
@@ -201,8 +199,10 @@ public class PurchaseOrderToShipperTransportationService
 
 		final Collection<OrderAndLineId> assignedOrderAndLineIds = repo.getBy(ShippingPackageQuery.builder().orderLineIds(orderLineIds).build())
 				.stream()
-				.map(sp -> OrderAndLineId.ofRepoIds(sp.getC_Order_ID(), sp.getC_OrderLine_ID()))
+				.map(sp -> OrderAndLineId.ofRepoIdsOrNull(sp.getC_Order_ID(), sp.getC_OrderLine_ID()))
+				.filter(Objects::nonNull)
 				.collect(Collectors.toSet());
+		
 		return orderAndLineIdToPoMap.keySet()
 				.stream()
 				.filter(olId -> !assignedOrderAndLineIds.contains(olId))
@@ -281,7 +281,7 @@ public class PurchaseOrderToShipperTransportationService
 		return isDeletePossible;
 	}
 
-	public boolean deleteShippingPackagesForOrderLinesIfPossible(@NonNull final Collection<OrderLineId> orderLineIds)
+	public void deleteShippingPackagesForOrderLines(@NonNull final Collection<OrderLineId> orderLineIds)
 	{
 		final boolean isDeletePossible = !shipperTransportationDAO.anyMatch(ShipperTransportationQuery.builder()
 				.orderLineIds(orderLineIds)
@@ -291,6 +291,9 @@ public class PurchaseOrderToShipperTransportationService
 		{
 			repo.deleteBy(ShippingPackageQuery.builder().orderLineIds(orderLineIds).build());
 		}
-		return isDeletePossible;
+		else
+		{
+			throw new AdempiereException(MSG_RECEIPT_SCHEDULE_ASSIGNED_TO_PROCESSED_TRANSPORTATION_ORDER);
+		}
 	}
 }

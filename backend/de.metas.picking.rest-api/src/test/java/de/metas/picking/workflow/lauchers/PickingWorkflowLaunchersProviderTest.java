@@ -48,11 +48,12 @@ class PickingWorkflowLaunchersProviderTest
 	private void setupServices()
 	{
 		this.launchersProvider = new PickingWorkflowLaunchersProvider(
-				new PickingJobRestService(helper.pickingJobService, helper.mobileProfileRepository),
-				helper.mobileProfileRepository,
-				helper.workplaceService,
-				new DisplayValueProviderService(helper.documentLocationBL),
-				helper.documentLocationBL,
+				helper.configService,
+				helper.bpartnerService,
+				new PickingJobRestService(helper.pickingJobService, helper.configService),
+				helper.warehouseService,
+				helper.huService,
+				new DisplayValueProviderService(helper.bpartnerService),
 				new ScannedProductCodeResolver(new EDIProductLookupService())
 		);
 
@@ -60,7 +61,7 @@ class PickingWorkflowLaunchersProviderTest
 
 	// TODO improve or delete!
 	@Nested
-	class considerOnlyIfQtyAvailableAtPickingLocator
+	class considerOnlyIfQtyAvailableAtPickingTrolley
 	{
 		private final AtomicInteger nextPackageableIndex = new AtomicInteger(1);
 		private UserId userId;

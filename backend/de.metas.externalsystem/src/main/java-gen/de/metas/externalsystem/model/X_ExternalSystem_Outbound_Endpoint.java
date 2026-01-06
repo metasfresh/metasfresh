@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ExternalSystem_Outbound_Endpoint extends org.compiere.model.PO implements I_ExternalSystem_Outbound_Endpoint, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 539214733L;
+	private static final long serialVersionUID = -1515673395L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Outbound_Endpoint (final Properties ctx, final int ExternalSystem_Outbound_Endpoint_ID, @Nullable final String trxName)
@@ -57,6 +57,8 @@ public class X_ExternalSystem_Outbound_Endpoint extends org.compiere.model.PO im
 	public static final String AUTHTYPE_Basic = "Basic";
 	/** OAuth = OAuth */
 	public static final String AUTHTYPE_OAuth = "OAuth";
+	/** SAS = SAS */
+	public static final String AUTHTYPE_SAS = "SAS";
 	@Override
 	public void setAuthType (final String AuthType)
 	{
@@ -166,6 +168,18 @@ public class X_ExternalSystem_Outbound_Endpoint extends org.compiere.model.PO im
 	public String getPassword() 
 	{
 		return get_ValueAsString(COLUMNNAME_Password);
+	}
+
+	@Override
+	public void setSasSignature (final @Nullable String SasSignature)
+	{
+		set_Value (COLUMNNAME_SasSignature, SasSignature);
+	}
+
+	@Override
+	public String getSasSignature() 
+	{
+		return get_ValueAsString(COLUMNNAME_SasSignature);
 	}
 
 	/** 

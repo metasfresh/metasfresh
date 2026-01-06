@@ -158,6 +158,7 @@ public final class PickingJob implements PickingJobHeaderOrLine
 	@JsonIgnore
 	public boolean isAnonymousPickHUsOnTheFly() {return header.isAnonymousPickHUsOnTheFly();}
 
+	@Nullable
 	public UserId getLockedBy() {return header.getLockedBy();}
 
 	public PickingJob withLockedBy(@Nullable final UserId lockedBy)
@@ -178,6 +179,15 @@ public final class PickingJob implements PickingJobHeaderOrLine
 		if (isProcessed())
 		{
 			throw new AdempiereException(PICKING_JOB_PROCESSED_ERROR_MSG);
+		}
+	}
+
+	public void assertCanBeEditedBy(final UserId userId)
+	{
+		assertNotProcessed();
+		if (!Objects.equals(userId, getLockedBy()))
+		{
+			throw new AdempiereException("Can be edited only by the user who locked the job");
 		}
 	}
 
@@ -554,5 +564,4 @@ public final class PickingJob implements PickingJobHeaderOrLine
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 	}
-
 }

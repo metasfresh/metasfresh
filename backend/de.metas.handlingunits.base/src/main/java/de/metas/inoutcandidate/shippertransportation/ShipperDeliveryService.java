@@ -53,6 +53,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
+import org.compiere.model.I_M_Shipper;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -99,11 +100,15 @@ public class ShipperDeliveryService
 			return;
 		}
 
+		final I_M_Shipper shipper = shipperDAO.getById(shipperId);
+
 		final BPartnerLocationAndCaptureId shipFromBPWarehouseLocation = warehouseDAO.getWarehouseLocationById(WarehouseId.ofRepoId(shipment.getM_Warehouse_ID()));
 
 		final CreateShipperTransportationRequest createShipperTransportationRequest = CreateShipperTransportationRequest
 				.builder()
 				.shipperId(shipperId)
+				.pickupTimeFrom(TimeUtil.asLocalTime(shipper.getPickupTimeFrom()))
+				.pickupTimeTo(TimeUtil.asLocalTime(shipper.getPickupTimeTo()))
 				.shipperBPartnerAndLocationId(shipFromBPWarehouseLocation.getBpartnerLocationId())
 				.orgId(OrgId.ofRepoId(shipment.getAD_Org_ID()))
 				.shipDate(inOutBL.retrieveMovementDate(shipment))

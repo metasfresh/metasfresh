@@ -35,6 +35,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.order.OrderId;
 import de.metas.shipping.PurchaseOrderToShipperTransportationService;
+import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
@@ -78,6 +79,7 @@ public class M_ShipperTransportation_StepDef
 
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
+	@NonNull private final IShipperTransportationBL shipperTransportationBL = Services.get(IShipperTransportationBL.class);
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	@NonNull private final PurchaseOrderToShipperTransportationService purchaseOrderToShipperTransportationService = SpringContextHolder.instance.getBean(PurchaseOrderToShipperTransportationService.class);
 
@@ -153,7 +155,7 @@ public class M_ShipperTransportation_StepDef
 
 		row.getAsOptionalIdentifier(I_M_ShipperTransportation.COLUMNNAME_M_Shipper_ID)
 				.map(shipperTable::getId)
-				.ifPresent(id -> shipperTransportationRecord.setM_Shipper_ID(id.getRepoId()));
+				.ifPresent(id -> shipperTransportationBL.setShipper(shipperTransportationRecord,id));
 
 		row.getAsOptionalIdentifier(I_M_ShipperTransportation.COLUMNNAME_Shipper_BPartner_ID)
 				.map(bPartnerTable::getId)

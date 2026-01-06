@@ -1306,6 +1306,7 @@ public class ADWindowDAO implements IADWindowDAO
 	{
 		return queryBL.createQueryBuilder(I_AD_Window.class)
 				.addOnlyActiveRecordsFilter()
+				.orderBy(I_AD_Window.COLUMNNAME_AD_Window_ID)
 				.create()
 				.idsAsSet(AdWindowId::ofRepoId);
 	}

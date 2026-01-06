@@ -26,6 +26,11 @@ set -e
 
 # ==================== Configuration ====================
 
+# Create timestamped run folder
+RUN_TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S)
+RUN_DIR="./runs/${RUN_TIMESTAMP}"
+mkdir -p "$RUN_DIR"
+
 # Load configuration from file if it exists
 CONFIG_FILE="${CONFIG_FILE:-./audit-replay.env}"
 if [ -f "$CONFIG_FILE" ]; then
@@ -33,6 +38,10 @@ if [ -f "$CONFIG_FILE" ]; then
   set -a
   source "$CONFIG_FILE"
   set +a
+
+  # Copy the config file to the run directory for reference
+  cp "$CONFIG_FILE" "$RUN_DIR/audit-replay.env"
+  echo "✓ Configuration saved to: $RUN_DIR/audit-replay.env"
 else
   echo "No configuration file found at $CONFIG_FILE"
   echo "Using environment variables or defaults"
@@ -56,8 +65,17 @@ MAX_REQUESTS="${MAX_REQUESTS:-10000}"
 EXCLUDE_HEADERS="${EXCLUDE_HEADERS:-Host,Connection,Content-Length,User-Agent}"
 INCLUDE_RESPONSES="${INCLUDE_RESPONSES:-true}"
 
-# Output
-EXTRACTED_DATA_FILE="${EXTRACTED_DATA_FILE:-./test-data/extracted-api-audit.json}"
+# Output - Override old default paths to use run directory
+# If user has custom paths, keep them; otherwise use run-specific paths
+if [ -z "$EXTRACTED_DATA_FILE" ] || [ "$EXTRACTED_DATA_FILE" = "./test-data/extracted-api-audit.json" ]; then
+  EXTRACTED_DATA_FILE="$RUN_DIR/extracted-api-audit.json"
+fi
+if [ -z "$RESULTS_FILE" ] || [ "$RESULTS_FILE" = "./results/audit-replay-results.json" ]; then
+  RESULTS_FILE="$RUN_DIR/audit-replay-results.json"
+fi
+if [ -z "$HTML_REPORT" ] || [ "$HTML_REPORT" = "./results/audit-replay-report.html" ]; then
+  HTML_REPORT="$RUN_DIR/audit-replay-report.html"
+fi
 
 # Target Instance Configuration
 TARGET_BASE_URL="${TARGET_BASE_URL:-http://localhost:8282/api/v2}"
@@ -71,10 +89,6 @@ THINK_TIME="${THINK_TIME:-1}"
 REPLAY_MODE="${REPLAY_MODE:-sequential}"
 COMPARE_RESPONSES="${COMPARE_RESPONSES:-false}"
 REPLACE_AUTH_TOKEN="${REPLACE_AUTH_TOKEN:-true}"
-
-# Output Configuration
-RESULTS_FILE="${RESULTS_FILE:-./results/audit-replay-results.json}"
-HTML_REPORT="${HTML_REPORT:-./results/audit-replay-report.html}"
 
 # Operational Flags
 SKIP_EXTRACTION="${SKIP_EXTRACTION:-false}"
@@ -96,6 +110,8 @@ print_banner() {
 
 print_config() {
   print_banner "Configuration"
+  echo "Run Directory: ${RUN_DIR}"
+  echo ""
   echo "Source Database:"
   echo "  Host: ${SOURCE_DB_HOST}:${SOURCE_DB_PORT}"
   echo "  Database: ${SOURCE_DB_NAME}"
@@ -275,6 +291,8 @@ print_summary() {
 
   echo "Audit replay load test complete!"
   echo ""
+  echo "Run directory: ${RUN_DIR}"
+  echo ""
   echo "Files generated:"
   if [ -f "$EXTRACTED_DATA_FILE" ]; then
     echo "  ✓ Extracted data: $EXTRACTED_DATA_FILE"
@@ -282,6 +300,22 @@ print_summary() {
   if [ -f "$RESULTS_FILE" ]; then
     echo "  ✓ Results (JSON): $RESULTS_FILE"
   fi
+  if [ -f "$RUN_DIR/audit-replay.env" ]; then
+    echo "  ✓ Configuration: $RUN_DIR/audit-replay.env"
+  fi
+  echo ""
+
+  # Create "latest" symlink to this run
+  LATEST_LINK="./runs/latest"
+  if [ -L "$LATEST_LINK" ]; then
+    rm "$LATEST_LINK"
+  fi
+  ln -s "$RUN_TIMESTAMP" "$LATEST_LINK" 2>/dev/null || echo "Note: Could not create 'latest' symlink (may not be supported on this system)"
+
+  echo "Quick access:"
+  echo "  Latest run: ./runs/latest"
+  echo "  View results: ./view-results.sh $RESULTS_FILE"
+  echo "  All runs: ls -la ./runs/"
   echo ""
 }
 

@@ -22,89 +22,28 @@
 
 import { SharedArray } from 'k6/data';
 import { randomItem } from 'https://jslib.k6.io/k6-utils/1.4.0/index.js';
-import { generateBPartnerUpsert } from './data-generators.js';
 
+/**
+ * DataManager for API Audit Replay
+ * Loads and manages audit request data from extracted JSON files
+ */
 export class DataManager {
-  constructor({ bpartnerFiles = [], auditDataFile = null } = {}) {
-    this.existingBPartnerUpserts = [];
-    for (const filePath of bpartnerFiles) {
-      const arr = new SharedArray(`bp-${filePath}`, () => {
-        try {
-          const data = JSON.parse(open(filePath));
-          return Array.isArray(data) ? data : [];
-        } catch (e) {
-          return [];
-        }
-      });
-      this.existingBPartnerUpserts.push(...arr);
+  constructor({ auditDataFile }) {
+    if (!auditDataFile) {
+      throw new Error('auditDataFile is required');
     }
 
-    // Load audit data if provided
-    this.auditRequests = [];
-    if (auditDataFile) {
-      this.auditRequests = new SharedArray('audit-requests', () => {
-        try {
-          const data = JSON.parse(open(auditDataFile));
-          return data.requests || [];
-        } catch (e) {
-          console.error(`Failed to load audit data from ${auditDataFile}: ${e.message}`);
-          return [];
-        }
-      });
-    }
-    this.auditIndex = 0;
-  }
-
-  getBPartnerUpsert(strategy = 'mixed', existingRatio = 0.7) {
-    const useExisting =
-      strategy === 'existing' || (strategy === 'mixed' && Math.random() < existingRatio);
-
-    const base =
-      useExisting && this.existingBPartnerUpserts.length > 0
-        ? deepClone(randomItem(this.existingBPartnerUpserts))
-        : generateBPartnerUpsert();
-
-    return this._makeUniqueIdentifiers(base);
-  }
-
-  extractBPartnerIdentifier(upsertPayload) {
-    try {
-      return upsertPayload.requestItems?.[0]?.bpartnerIdentifier || null;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  _makeUniqueIdentifiers(payload) {
-    const uniqueSuffix = `vu${__VU}-it${__ITER}-${Date.now()}`;
-    const result = deepClone(payload);
-
-    if (Array.isArray(result.requestItems)) {
-      for (const item of result.requestItems) {
-        if (item.bpartnerIdentifier) {
-          item.bpartnerIdentifier = ensureSuffix(item.bpartnerIdentifier, uniqueSuffix);
-        }
-        if (Array.isArray(item.locations)) {
-          for (const loc of item.locations) {
-            if (loc.locationIdentifier) {
-              loc.locationIdentifier = ensureSuffix(loc.locationIdentifier, uniqueSuffix);
-            }
-          }
-        }
-        if (Array.isArray(item.contacts)) {
-          for (const ct of item.contacts) {
-            if (ct.contactIdentifier) {
-              ct.contactIdentifier = ensureSuffix(ct.contactIdentifier, uniqueSuffix);
-            }
-            if (ct.email) {
-              const [name, domain] = String(ct.email).split('@');
-              ct.email = `${name}+${uniqueSuffix}@${domain || 'example.com'}`;
-            }
-          }
-        }
+    // Load audit data
+    this.auditRequests = new SharedArray('audit-requests', () => {
+      try {
+        const data = JSON.parse(open(auditDataFile));
+        return data.requests || [];
+      } catch (e) {
+        console.error(`Failed to load audit data from ${auditDataFile}: ${e.message}`);
+        return [];
       }
-    }
-    return result;
+    });
+    this.auditIndex = 0;
   }
 
   /**
@@ -159,10 +98,4 @@ export class DataManager {
 
 function deepClone(obj) {
   return JSON.parse(JSON.stringify(obj));
-}
-
-function ensureSuffix(value, suffix) {
-  if (!value) return value;
-  // Avoid doubling the same suffix if the source data already had one
-  return `${String(value).replace(/-vu\d+-it\d+-\d+$/, '')}-${suffix}`;
 }

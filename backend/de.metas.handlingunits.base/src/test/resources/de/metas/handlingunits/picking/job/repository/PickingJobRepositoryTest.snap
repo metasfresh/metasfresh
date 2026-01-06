@@ -56,10 +56,7 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
         "qtyRejected": "0 Ea",
         "qtyRemainingToPick": "100 Ea",
         "qtyToPick": "100 Ea",
-        "salesOrderAndLineId": {
-          "orderId": 2,
-          "orderLineId": 8
-        },
+        "salesOrderAndLineId": "2_8",
         "salesOrderDocumentNo": "docno-2",
         "scheduleId": "7",
         "steps": [
@@ -126,10 +123,7 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
             "productName": "productName-6",
             "progress": "NOT_STARTED",
             "qtyToPick": "100 Ea",
-            "salesOrderAndLineId": {
-              "orderId": 2,
-              "orderLineId": 8
-            },
+            "salesOrderAndLineId": "2_8",
             "scheduleId": "7"
           }
         ]

@@ -26,11 +26,30 @@
 # View k6 NDJSON results in a human-readable format
 #
 
-RESULTS_FILE="${1:-./results/audit-replay-results.json}"
+# Default to latest run if no argument provided
+if [ -z "$1" ]; then
+  if [ -L "./runs/latest" ]; then
+    RESULTS_FILE="./runs/latest/audit-replay-results.json"
+  elif [ -f "./results/audit-replay-results.json" ]; then
+    RESULTS_FILE="./results/audit-replay-results.json"
+  else
+    echo "ERROR: No results file found."
+    echo "Usage: $0 [results-file.json]"
+    echo ""
+    echo "Available runs:"
+    ls -1d ./runs/*/ 2>/dev/null | head -10 || echo "  No runs found"
+    exit 1
+  fi
+else
+  RESULTS_FILE="$1"
+fi
 
 if [ ! -f "$RESULTS_FILE" ]; then
   echo "ERROR: Results file not found: $RESULTS_FILE"
   echo "Usage: $0 [results-file.json]"
+  echo ""
+  echo "Available runs:"
+  ls -1d ./runs/*/ 2>/dev/null | head -10 || echo "  No runs found"
   exit 1
 fi
 

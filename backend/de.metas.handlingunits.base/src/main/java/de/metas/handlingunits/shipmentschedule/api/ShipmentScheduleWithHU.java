@@ -42,7 +42,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU_Item;
-import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
@@ -54,7 +53,9 @@ import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
@@ -592,5 +593,11 @@ public class ShipmentScheduleWithHU
 	public ShipperId getShipperId()
 	{
 		return ShipperId.ofRepoIdOrNull(shipmentSchedule.getM_Shipper_ID());
+	}
+
+	@Nullable
+	public ProjectId getProjectId()
+	{
+		return ProjectId.ofRepoIdOrNull(shipmentSchedule.getC_Project_ID());
 	}
 }

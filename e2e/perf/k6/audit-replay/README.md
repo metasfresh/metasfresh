@@ -262,6 +262,53 @@ Results are saved in JSON format (e.g., `results/audit-replay-results.json`) and
 - Per-request timings
 - Errors and failures
 
+### Run History Management
+
+Each time you run `./run-audit-replay.sh`, all output files are stored in a timestamped directory under `./runs/`:
+
+```
+./runs/
+├── 2025-11-18_14-30-45/
+│   ├── extracted-api-audit.json
+│   ├── audit-replay-results.json
+│   └── audit-replay.env
+├── 2025-11-18_15-15-22/
+│   ├── extracted-api-audit.json
+│   ├── audit-replay-results.json
+│   └── audit-replay.env
+└── latest -> 2025-11-18_15-15-22  (symlink)
+```
+
+This means:
+- **Previous results are never lost** - Each run creates a new directory
+- **Easy comparison** - Compare results from different runs
+- **Reproducibility** - The exact configuration used is saved in each run folder
+- **Quick access** - `./runs/latest` always points to the most recent run
+
+To view results from the latest run:
+```bash
+./view-results.sh
+# Or explicitly:
+./view-results.sh ./runs/latest/audit-replay-results.json
+```
+
+To view results from a specific run:
+```bash
+./view-results.sh ./runs/2025-11-18_14-30-45/audit-replay-results.json
+```
+
+To clean up old runs:
+```bash
+# Remove all runs except the latest 5
+ls -1dt ./runs/*/ | tail -n +6 | xargs rm -rf
+
+# Remove all runs older than 7 days
+find ./runs -type d -mtime +7 -exec rm -rf {} +
+
+# Remove specific run
+rm -rf ./runs/2025-11-18_14-30-45
+```
+
 ## Extracted Data Format
 
 The extraction produces a JSON file with this structure:

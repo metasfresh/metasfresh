@@ -1,19 +1,24 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
- * For the text or an alternative of this public license, you may reach us *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
- * or via info@compiere.org or http://www.compiere.org/license.html *
- *****************************************************************************/
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 package org.compiere.model;
 
 import de.metas.bpartner.BPGroupId;
@@ -22,13 +27,13 @@ import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.logging.LogManager;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -531,8 +536,8 @@ public class MBPartner extends X_C_BPartner
 		final BPGroupId bpGroupId = BPGroupId.ofRepoIdOrNull(getC_BP_Group_ID());
 		if (bpGroupId == null)
 		{
-			final ClientId clientId = ClientId.ofRepoId(getAD_Client_ID());
-			m_group = bpGroupsRepo.getDefaultByClientId(clientId);
+			final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(getAD_Client_ID(), getAD_Org_ID());
+			m_group = bpGroupsRepo.getDefaultByClientOrgId(clientAndOrgId);
 		}
 		else
 		{
@@ -585,16 +590,6 @@ public class MBPartner extends X_C_BPartner
 		if (m_group.getPO_PaymentTerm_ID() > 0)
 		{
 			setPO_PaymentTerm_ID(m_group.getPO_PaymentTerm_ID());
-		}
-		if (m_group.getC_Incoterms_ID() > 0)
-		{
-			setC_Incoterms_Customer_ID(m_group.getC_Incoterms_ID());
-			setIncotermLocation(m_group.getIncotermLocation());
-		}
-		if (m_group.getPO_Incoterms_ID() > 0)
-		{
-			setC_Incoterms_Vendor_ID(m_group.getPO_Incoterms_ID());
-			setPO_IncotermLocation(m_group.getPO_IncotermLocation());
 		}
 	} // setBPGroup
 

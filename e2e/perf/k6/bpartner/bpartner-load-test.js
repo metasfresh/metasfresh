@@ -22,18 +22,12 @@
 
 import { check } from 'k6';
 import { Counter, Rate, Trend } from 'k6/metrics';
-import { DataManager } from '../framework/data-manager.js';
-import { createHttpClient } from '../framework/http-client.js';
+import { generateBPartnerUpsert } from './data-generators.js';
+import { createHttpClient } from './http-client.js';
 
 const BASE_URL = __ENV.BASE_URL || 'http://localhost:8080/rest-api/v2';
 const AUTH_TOKEN = __ENV.AUTH_TOKEN || '';
-const DATA_STRATEGY = __ENV.DATA_STRATEGY || 'mixed'; // 'existing' | 'generated' | 'mixed'
-const EXISTING_RATIO = Number(__ENV.EXISTING_RATIO || 0.7); // used when DATA_STRATEGY === 'mixed'
 const ORG_CODE = __ENV.ORG_CODE || ''; // optional org, not required for /bpartner PUT
-const BP_BODY_FILES_ENV = (__ENV.BP_BODY_FILES || '../test-data/extracted-bpartner-requests.json')
-  .split(',')
-  .map((s) => s.trim())
-  .filter(Boolean);
 
 function buildOptions() {
   const VUS = __ENV.VUS ? Number(__ENV.VUS) : undefined;
@@ -96,13 +90,23 @@ const upsertCount = new Counter('bpartner_upsert_count');
 const getCount = new Counter('bpartner_get_count');
 const errorRate = new Rate('errors');
 
-// Init-stage singletons
-const dataManager = new DataManager({ bpartnerFiles: BP_BODY_FILES_ENV });
+// Init-stage singleton
 const httpClient = createHttpClient({ baseUrl: BASE_URL, authToken: AUTH_TOKEN });
 
+/**
+ * Extract bpartnerIdentifier from the upsert payload for GET request
+ */
+function extractBPartnerIdentifier(payload) {
+  const items = payload?.requestItems;
+  if (items && items.length > 0) {
+    return items[0].bpartnerIdentifier;
+  }
+  return null;
+}
+
 export default function() {
-  // 1) Build payload: generated, existing, or mixed
-  const upsertPayload = dataManager.getBPartnerUpsert(DATA_STRATEGY, EXISTING_RATIO);
+  // 1) Generate payload
+  const upsertPayload = generateBPartnerUpsert();
 
   // 2) PUT /bpartner (create or update)
   const putPath = ORG_CODE ? `/bpartner/${ORG_CODE}` : '/bpartner';
@@ -120,13 +124,11 @@ export default function() {
 
   if (!putOk) {
     errorRate.add(1);
-    // Short think time and bail to avoid cascading errors
-    //sleep(0.5);
     return;
   }
 
   // 3) GET /bpartner/{bpartnerIdentifier}
-  const identifier = dataManager.extractBPartnerIdentifier(upsertPayload);
+  const identifier = extractBPartnerIdentifier(upsertPayload);
   if (identifier) {
     const getPath = `/bpartner/${identifier}`;
     const getStart = Date.now();
@@ -142,7 +144,4 @@ export default function() {
       errorRate.add(1);
     }
   }
-
-  // 4) Small think time to simulate user pacing
-  //sleep(1);
 }

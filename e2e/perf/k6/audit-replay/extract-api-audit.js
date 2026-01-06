@@ -468,10 +468,14 @@ async function extractAuditData() {
     console.log('        Path column contains original full URL for reference');
 
     if (argv.includeResponses) {
-      const avgResponseTime = requests
-        .filter(r => r.actualResponseTime)
-        .reduce((sum, r) => sum + r.actualResponseTime, 0) / requests.length;
-      console.log(`\n  Average response time: ${avgResponseTime.toFixed(2)}ms`);
+      const requestsWithResponseTime = requests.filter(r => r.actualResponseTime != null && typeof r.actualResponseTime === 'number');
+      if (requestsWithResponseTime.length > 0) {
+        const avgResponseTime = requestsWithResponseTime
+          .reduce((sum, r) => sum + r.actualResponseTime, 0) / requestsWithResponseTime.length;
+        console.log(`\n  Average response time: ${avgResponseTime.toFixed(2)}ms (${requestsWithResponseTime.length} requests with response data)`);
+      } else {
+        console.log(`\n  Average response time: N/A (no response time data available)`);
+      }
     }
 
   } catch (error) {

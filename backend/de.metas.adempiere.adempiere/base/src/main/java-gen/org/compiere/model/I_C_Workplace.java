@@ -143,6 +143,29 @@ public interface I_C_Workplace
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Max. Picking Jobs.
+	 * Specifies the maximum number of picking jobs allowed for this workplace.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setMaxPickingJobs (int MaxPickingJobs);
+
+	/**
+	 * Get Max. Picking Jobs.
+	 * Specifies the maximum number of picking jobs allowed for this workplace.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getMaxPickingJobs();
+
+	ModelColumn<I_C_Workplace, Object> COLUMN_MaxPickingJobs = new ModelColumn<>(I_C_Workplace.class, "MaxPickingJobs", null);
+	String COLUMNNAME_MaxPickingJobs = "MaxPickingJobs";
+
+	/**
 	 * Set Picking Slot.
 	 *
 	 * <br>Type: Search
@@ -207,6 +230,29 @@ public interface I_C_Workplace
 	String COLUMNNAME_Name = "Name";
 
 	/**
+	 * Set Order Picking Type.
+	 * Defines the method used to pick items for an order.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOrderPickingType (@Nullable java.lang.String OrderPickingType);
+
+	/**
+	 * Get Order Picking Type.
+	 * Defines the method used to pick items for an order.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getOrderPickingType();
+
+	ModelColumn<I_C_Workplace, Object> COLUMN_OrderPickingType = new ModelColumn<>(I_C_Workplace.class, "OrderPickingType", null);
+	String COLUMNNAME_OrderPickingType = "OrderPickingType";
+
+	/**
 	 * Set Pick From Locator.
 	 *
 	 * <br>Type: Search
@@ -225,6 +271,54 @@ public interface I_C_Workplace
 	int getPickFrom_Locator_ID();
 
 	String COLUMNNAME_PickFrom_Locator_ID = "PickFrom_Locator_ID";
+
+	/**
+	 * Set Priority.
+	 * Priority of a document
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPriorityRule (@Nullable java.lang.String PriorityRule);
+
+	/**
+	 * Get Priority.
+	 * Priority of a document
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPriorityRule();
+
+	ModelColumn<I_C_Workplace, Object> COLUMN_PriorityRule = new ModelColumn<>(I_C_Workplace.class, "PriorityRule", null);
+	String COLUMNNAME_PriorityRule = "PriorityRule";
+
+	/**
+	 * Set SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setSeqNo (int SeqNo);
+
+	/**
+	 * Get SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getSeqNo();
+
+	ModelColumn<I_C_Workplace, Object> COLUMN_SeqNo = new ModelColumn<>(I_C_Workplace.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
 	 * Get Updated.

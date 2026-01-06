@@ -23,7 +23,7 @@
 package de.metas.cucumber.stepdefs.picking;
 
 import de.metas.cucumber.stepdefs.DataTableRow;
-import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions.PickingJobOptionsBuilder;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.logging.LogManager;
@@ -37,14 +37,14 @@ import org.slf4j.Logger;
 public class MobileUIPickingUserProfile_StepDef
 {
 	private static final Logger logger = LogManager.getLogger(MobileUIPickingUserProfile_StepDef.class);
-	private final MobileUIPickingUserProfileRepository repo = SpringContextHolder.instance.getBean(MobileUIPickingUserProfileRepository.class);
+	private final MobileUIPickingUserProfileService profileService = SpringContextHolder.instance.getBean(MobileUIPickingUserProfileService.class);
 
 	@And("set mobile UI picking profile")
 	public void updateProfile(@NonNull final DataTable dataTable)
 	{
 		final DataTableRow row = DataTableRow.singleRow(dataTable);
 
-		repo.update((profile) -> {
+		profileService.update((profile) -> {
 			final PickingJobOptionsBuilder defaultPickingJobOptionsBuilder = profile.getDefaultPickingJobOptions().toBuilder();
 			row.getAsOptionalBoolean("IsAllowPickingAnyHU").ifPresent(defaultPickingJobOptionsBuilder::isAllowPickingAnyHU);
 			row.getAsOptionalString("CreateShipmentPolicy").map(CreateShipmentPolicy::ofCodeOrName).ifPresent(defaultPickingJobOptionsBuilder::createShipmentPolicy);
@@ -55,7 +55,7 @@ public class MobileUIPickingUserProfile_StepDef
 					.defaultPickingJobOptions(defaultPickingJobOptionsBuilder.build())
 					.build();
 		});
-		
-		logger.info("Profile updated: {}", repo.getProfile());
+
+		logger.info("Profile updated: {}", profileService.getProfile());
 	}
 }

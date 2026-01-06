@@ -28,6 +28,7 @@ import de.metas.lang.SOTrx;
 import de.metas.lock.api.LockOwner;
 import de.metas.organization.OrgId;
 import de.metas.product.PackageDimensions;
+import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.shipping.api.IShipperTransportationDAO;
@@ -46,6 +47,7 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
+import org.compiere.model.I_M_Shipper;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
@@ -90,6 +92,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 	private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	private final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
 	private final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
+	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 
 	@VisibleForTesting
 	public static final String SYSCONFIG_WeightSourceTypes = "de.metas.shipping.WeightSourceTypes";
@@ -364,6 +367,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 		final I_M_InOut shipment = inOutDAO.getById(req.getInOutId());
 
 		final BPartnerLocationAndCaptureId shipFromBPLocation = getShipFromBPartnerAndLocation(shipment);
+		final I_M_Shipper shipper = shipperDAO.getById(req.getShipperId());
 
 		final CreateShipperTransportationRequest createShipperTransportationRequest = CreateShipperTransportationRequest
 				.builder()
@@ -371,6 +375,8 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 				.shipperBPartnerAndLocationId(shipFromBPLocation.getBpartnerLocationId())
 				.orgId(OrgId.ofRepoId(shipment.getAD_Org_ID()))
 				.shipDate(TimeUtil.asLocalDate(shipment.getMovementDate()))
+				.pickupTimeFrom(TimeUtil.asLocalTime(shipper.getPickupTimeFrom()))
+				.pickupTimeTo(TimeUtil.asLocalTime(shipper.getPickupTimeTo()))
 				.isSOTrx(SOTrx.SALES)
 				.build();
 

@@ -59,6 +59,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -90,7 +91,7 @@ public class DataTableRow
 	@SuppressWarnings("unused")
 	public static class DataTableRowBuilder
 	{
-		public DataTableRowBuilder value(final String name, final String value)
+		public DataTableRowBuilder value(final String name, @Nullable final String value)
 		{
 			return _value(name, value);
 		}
@@ -152,6 +153,17 @@ public class DataTableRow
 					.setParameter("row", this);
 		}
 		return string;
+	}
+
+	@NonNull
+	public Optional<List<String>> getAsOptionalCommaSeparatedString(@NonNull final String columnName)
+	{
+		final String columnNameEffective = findEffectiveColumnName(columnName);
+		if (columnNameEffective == null)
+		{
+			return Optional.empty();
+		}
+		return Optional.of(getAsCommaSeparatedString(columnName));
 	}
 
 	@NonNull
@@ -310,6 +322,13 @@ public class DataTableRow
 				.orElseThrow(() -> new AdempiereException("Missing value for columnName=" + columnName)
 						.appendParametersToMessage()
 						.setParameter("row", map));
+	}
+
+	@Nullable
+	public StepDefDataIdentifier getAsIdentifierOrNull(@NonNull final String columnName)
+	{
+		return getAsOptionalIdentifier(columnName)
+				.orElse(null);
 	}
 
 	@NonNull
@@ -763,6 +782,23 @@ public class DataTableRow
 	public Optional<LocalDateTime> getAsOptionalLocalDateTime(@NonNull final String columnName)
 	{
 		return getAsOptionalString(columnName).map(valueStr -> parseLocalDateTime(valueStr, columnName));
+	}
+
+	public Optional<LocalTime> getAsOptionalLocalTime(@NonNull final String columnName)
+	{
+		return getAsOptionalString(columnName).map(valueStr -> parseLocalTime(valueStr, columnName));
+	}
+
+	private LocalTime parseLocalTime(@NonNull final String valueStr, final @NonNull String columnName)
+	{
+		try
+		{
+			return LocalTime.parse(valueStr);
+		}
+		catch (final Exception ex)
+		{
+			throw new AdempiereException("Column `" + columnName + "` has invalid LocalTime `" + valueStr + "`");
+		}
 	}
 
 	@NonNull

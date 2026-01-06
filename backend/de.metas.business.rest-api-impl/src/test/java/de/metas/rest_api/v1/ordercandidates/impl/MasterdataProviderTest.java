@@ -25,6 +25,7 @@ package de.metas.rest_api.v1.ordercandidates.impl;
 import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.BPGroupService;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
@@ -108,11 +109,12 @@ public class MasterdataProviderTest
 		final I_C_BP_Group groupRecord = newInstance(I_C_BP_Group.class);
 		groupRecord.setIsDefault(true);
 		groupRecord.setName("DefaultGroup");
+		groupRecord.setValue("DefaultGroupValue");
 		InterfaceWrapperHelper.setValue(groupRecord, I_C_BP_Group.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId());
 		saveRecord(groupRecord);
 
 		// bpartnerRestController
-		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository());
+		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository(), new BPartnerCreditLimitRepository());
 		final CurrencyRepository currencyRepository = new CurrencyRepository();
 		final BPGroupRepository bpGroupRepository = new BPGroupRepository();
 		
@@ -195,6 +197,7 @@ public class MasterdataProviderTest
 
 		final I_C_BP_Group bpGroupRecord = newInstance(I_C_BP_Group.class);
 		bpGroupRecord.setName("bpGroup");
+		bpGroupRecord.setValue("bpGroupValue");
 		saveRecord(bpGroupRecord);
 
 		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);

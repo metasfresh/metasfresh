@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
-import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.util.CoalesceUtil;
@@ -28,17 +27,21 @@ import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
-import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.repository.DefaultPickingJobLoaderSupportingServicesFactory;
 import de.metas.handlingunits.picking.job.repository.MockedPickingJobLoaderSupportingServices;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
-import de.metas.handlingunits.picking.job.service.PickingJobHUReservationService;
 import de.metas.handlingunits.picking.job.service.PickingJobLockService;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
+import de.metas.handlingunits.picking.job.service.external.bpartner.PickingJobBPartnerService;
+import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
+import de.metas.handlingunits.picking.job.service.external.product.PickingJobProductService;
+import de.metas.handlingunits.picking.job.service.external.salesorder.PickingJobSalesOrderService;
+import de.metas.handlingunits.picking.job.service.external.shipmentschedule.PickingJobShipmentScheduleService;
+import de.metas.handlingunits.picking.job.service.external.warehouse.PickingJobWarehouseService;
 import de.metas.handlingunits.picking.job.shipment.PickingShipmentService;
 import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
 import de.metas.handlingunits.picking.job_schedule.service.commands.CreateOrUpdatePickingJobSchedulesRequest;
@@ -124,18 +127,20 @@ public class PickingJobTestHelper
 
 	//
 	// Services
-	private final IBPartnerBL bpartnerBL;
-	private final IOrderBL orderBL;
-	private final PackagingDAO packagingDAO;
-	public final WorkplaceService workplaceService;
-	private final HUTestHelper huTestHelper;
-	private final HUQRCodesRepository huQRCodesRepository;
-	private final IProductBL productBL;
-	public final MobileUIPickingUserProfileRepository mobileProfileRepository;
+	public final PickingJobWarehouseService warehouseService;
+	public final MobileUIPickingUserProfileService configService;
 	public final PickingJobService pickingJobService;
 	public final HUTracerInstance huTracer;
-	public final DummyDocumentLocationBL documentLocationBL;
 	public final PickingJobScheduleService pickingJobScheduleService;
+	public final PickingJobBPartnerService bpartnerService;
+	public final PickingJobHUService huService;
+	//
+	private final IProductBL productBL;
+	private final IOrderBL orderBL;
+	private final PackagingDAO packagingDAO;
+	private final WorkplaceService workplaceService;
+	private final HUTestHelper huTestHelper;
+	private final HUQRCodesRepository huQRCodesRepository;
 
 	//
 	// Master data
@@ -157,7 +162,6 @@ public class PickingJobTestHelper
 		// because most of the tests are using snapshot testing.
 		POJOLookupMap.setNextIdSupplier(POJONextIdSuppliers.newPerTableSequence());
 
-		bpartnerBL = Services.get(IBPartnerBL.class);
 		orderBL = Services.get(IOrderBL.class);
 		packagingDAO = (PackagingDAO)Services.get(IPackagingDAO.class);
 
@@ -169,11 +173,15 @@ public class PickingJobTestHelper
 		SpringContextHolder.registerJUnitBean(pickingCandidateRepository); // needed for HUPickingSlotBL
 
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
+		this.bpartnerService = new PickingJobBPartnerService(
+				bpartnerBL,
+				DummyDocumentLocationBL.newInstanceForUnitTesting()
+		);
+
 		final PickingJobRepository pickingJobRepository = new PickingJobRepository();
 		final HUQRCodesService huQRCodeService = HUQRCodesService.newInstanceForUnitTesting();
-		this.workplaceService = new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository());
 		final InventoryService inventoryService = InventoryService.newInstanceForUnitTesting();
-		this.mobileProfileRepository = new MobileUIPickingUserProfileRepository();
+		this.configService = MobileUIPickingUserProfileService.newInstanceForUnitTesting();
 		final PickingCandidateService pickingCandidateService = new PickingCandidateService(
 				new PickingConfigRepository(),
 				pickingCandidateRepository,
@@ -186,34 +194,49 @@ public class PickingJobTestHelper
 				PickingSlotService.newInstanceForUnitTesting(),
 				pickingJobRepository);
 		final PickingJobLockService pickingJobLockService = new PickingJobLockService(new InMemoryShipmentScheduleLockRepository());
-		documentLocationBL = DummyDocumentLocationBL.newInstanceForUnitTesting();
 		pickingJobScheduleService = PickingJobScheduleService.newInstanceForUnitTesting();
+		this.workplaceService = new WorkplaceService(new WorkplaceRepository(), new WorkplaceUserAssignRepository());
+		this.warehouseService = new PickingJobWarehouseService(workplaceService);
+		final HULabelService huLabelService = new HULabelService(
+				new HULabelConfigService(new HULabelConfigRepository()),
+				huQRCodeService
+		);
+		final PickingJobProductService productService = PickingJobProductService.newInstanceForUnitTesting();
+
+		this.huService = new PickingJobHUService(
+				configService,
+				warehouseService,
+				productService,
+				huQRCodeService,
+				huLabelService,
+				huReservationService,
+				inventoryService);
+
+		final DefaultPickingJobLoaderSupportingServicesFactory defaultPickingJobLoaderSupportingServicesFactory = new DefaultPickingJobLoaderSupportingServicesFactory(
+				configService,
+				new PickingJobSalesOrderService(),
+				warehouseService,
+				bpartnerService,
+				productService,
+				pickingJobSlotService,
+				pickingJobLockService,
+				huService
+		);
+
 		pickingJobService = new PickingJobService(
+				bpartnerService,
+				warehouseService,
+				productService,
+				PickingJobShipmentScheduleService.newInstanceForUnitTesting(),
 				pickingJobRepository,
 				pickingJobLockService,
 				pickingJobSlotService,
 				pickingCandidateService,
-				new PickingJobHUReservationService(huReservationService),
-				new DefaultPickingJobLoaderSupportingServicesFactory(
-						pickingJobSlotService,
-						bpartnerBL,
-						huQRCodeService,
-						mobileProfileRepository,
-						pickingJobLockService
-				),
-				new PickingConfigRepositoryV2(),
+				defaultPickingJobLoaderSupportingServicesFactory,
 				PickingShipmentService.newInstanceForUnitTesting(),
-				huQRCodeService,
-				new HULabelService(
-						new HULabelConfigService(new HULabelConfigRepository()),
-						huQRCodeService
-				),
-				inventoryService,
-				huReservationService,
-				workplaceService,
-				mobileProfileRepository,
-				documentLocationBL,
-				pickingJobScheduleService
+				configService,
+				pickingJobScheduleService,
+				huService
 		);
 
 		huTracer = new HUTracerInstance()
@@ -278,9 +301,9 @@ public class PickingJobTestHelper
 		return LocatorId.ofRepoId(warehouseId, locator.getM_Locator_ID());
 	}
 
-	public void updateMobileProfile(UnaryOperator<MobileUIPickingUserProfile> updater)
+	public void updateMobileProfile(final UnaryOperator<MobileUIPickingUserProfile> updater)
 	{
-		mobileProfileRepository.update(updater);
+		configService.update(updater);
 	}
 
 	public OrderAndLineId createOrderAndLineId(final String documentNo)
@@ -313,7 +336,7 @@ public class PickingJobTestHelper
 			@NonNull final String qtyToDeliver,
 			@Nullable final Instant date,
 			@Nullable final UserId lockedBy,
-			boolean assignToWorkplace)
+			final boolean assignToWorkplace)
 	{
 		final BPartnerLocationId shipToBPLocationIdEffective = shipToBPLocationId != null ? shipToBPLocationId : this.shipToBPLocationId;
 		final BigDecimal qtyToDeliverBD = new BigDecimal(qtyToDeliver);
@@ -353,7 +376,7 @@ public class PickingJobTestHelper
 		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(sched.getC_Order_ID()));
 
 		final BPartnerLocationId shipToBPLocationId = BPartnerLocationId.ofRepoId(sched.getC_BPartner_ID(), sched.getC_BPartner_Location_ID());
-		final String bpName = bpartnerBL.getBPartnerName(shipToBPLocationId.getBpartnerId());
+		final String bpName = bpartnerService.getBPartnerName(shipToBPLocationId.getBpartnerId());
 
 		final ProductId productId = ProductId.ofRepoId(sched.getM_Product_ID());
 		final UomId uomId = productBL.getStockUOMId(productId);

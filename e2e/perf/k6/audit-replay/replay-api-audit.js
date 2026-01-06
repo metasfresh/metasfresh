@@ -23,7 +23,7 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 import { Counter, Gauge, Rate, Trend } from 'k6/metrics';
-import { DataManager } from './../framework/data-manager.js';
+import { DataManager } from './framework/data-manager.js';
 
 // ==================== Configuration ====================
 
@@ -230,7 +230,7 @@ function executeAuditRequest(auditRequest) {
   }
 
   // Compare response times if original data available
-  if (auditRequest.actualResponseTime) {
+  if (auditRequest.actualResponseTime != null && typeof auditRequest.actualResponseTime === 'number') {
     const diff = duration - auditRequest.actualResponseTime;
     auditResponseTimeDiff.add(diff);
 

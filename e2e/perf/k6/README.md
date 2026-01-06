@@ -31,21 +31,21 @@ k6/
 
 ### 1. BPartner Load Test
 
-**Location:** `./` (root of k6 directory)
+**Location:** `./bpartner/` (subdirectory)
 
-**Purpose:** Simple load test for BPartner API endpoints
+**Purpose:** Simple load test for BPartner API endpoints using generated data
 
 **Features:**
-- Generate synthetic BPartner data
-- Replay extracted BPartner requests
-- Mix both strategies
+- Generates synthetic BPartner data (upsert + get)
+- Flexible execution modes (VUs + duration, iterations, or ramping)
+- Custom metrics for PUT and GET operations
 
 **Quick start:**
 ```bash
 ./run.sh
 ```
 
-**Use when:** You want to quickly test BPartner endpoints with synthetic or pre-recorded data.
+**Use when:** You want to quickly load-test BPartner endpoints with synthetic data.
 
 ---
 
@@ -88,13 +88,12 @@ cd audit-replay
 
 | Scenario | Tool |
 |----------|------|
-| Quick BPartner load test | BPartner Load Test (`./run.sh`) |
-| Test with synthetic data | BPartner Load Test |
+| Quick BPartner load test with synthetic data | BPartner Load Test (`./run.sh`) |
 | Replay real production traffic | **API Audit Replay** (`cd audit-replay`) |
-| Test any API endpoint | **API Audit Replay** |
+| Test any API endpoint (not just BPartner) | **API Audit Replay** |
 | Compare environments | **API Audit Replay** |
-| Debug specific requests | **API Audit Replay** |
-| Replay by ID range | **API Audit Replay** |
+| Debug specific request sequences | **API Audit Replay** |
+| Replay by ID range or time range | **API Audit Replay** |
 
 ## Getting Started
 

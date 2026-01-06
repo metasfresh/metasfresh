@@ -10,7 +10,6 @@ import de.metas.util.OptionalBoolean;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
-import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.Iterator;
@@ -82,46 +81,7 @@ public class PickingJobCandidateProducts implements Iterable<PickingJobCandidate
 
 	private Optional<QtyAvailableStatus> computeQtyAvailableStatus()
 	{
-		if (byProductId.isEmpty())
-		{
-			return Optional.empty();
-		}
-
-		boolean hasNotAvailableProducts = false;
-		boolean hasFullyAvailableProducts = false;
-
-		for (final PickingJobCandidateProduct product : byProductId.values())
-		{
-			final QtyAvailableStatus productStatus = product.getQtyAvailableStatus().orElse(null);
-			if (productStatus == null)
-			{
-				return Optional.empty();
-			}
-
-			switch (productStatus)
-			{
-				case NOT_AVAILABLE:
-					hasNotAvailableProducts = true;
-					break;
-				case PARTIALLY_AVAILABLE:
-					return Optional.of(QtyAvailableStatus.PARTIALLY_AVAILABLE);
-				case FULLY_AVAILABLE:
-					hasFullyAvailableProducts = true;
-					break;
-				default:
-					throw new AdempiereException("Unknown QtyAvailableStatus: " + productStatus);
-			}
-		}
-
-		if (hasFullyAvailableProducts)
-		{
-			return hasNotAvailableProducts ? Optional.of(QtyAvailableStatus.PARTIALLY_AVAILABLE) : Optional.of(QtyAvailableStatus.FULLY_AVAILABLE);
-		}
-		else
-		{
-			return Optional.of(QtyAvailableStatus.NOT_AVAILABLE);
-		}
-
+		return QtyAvailableStatus.computeOfLines(byProductId.values(), product -> product.getQtyAvailableStatus().orElse(null));
 	}
 
 	public PickingJobCandidateProducts updatingEachProduct(@NonNull UnaryOperator<PickingJobCandidateProduct> updater)

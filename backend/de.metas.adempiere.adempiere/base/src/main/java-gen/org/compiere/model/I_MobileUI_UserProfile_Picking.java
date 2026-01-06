@@ -135,6 +135,27 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_AllowPickToStructure_TU = "AllowPickToStructure_TU";
 
 	/**
+	 * Set Best before date.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setBestBeforeDate (boolean BestBeforeDate);
+
+	/**
+	 * Get Best before date.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isBestBeforeDate();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_BestBeforeDate = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "BestBeforeDate", null);
+	String COLUMNNAME_BestBeforeDate = "BestBeforeDate";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -292,6 +313,27 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsAllowPickingAnyHU = "IsAllowPickingAnyHU";
 
 	/**
+	 * Set Allow Quick Pack All.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowQuickPackAll (boolean IsAllowQuickPackAll);
+
+	/**
+	 * Get Allow Quick Pack All.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowQuickPackAll();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsAllowQuickPackAll = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsAllowQuickPackAll", null);
+	String COLUMNNAME_IsAllowQuickPackAll = "IsAllowQuickPackAll";
+
+	/**
 	 * Set Allow picking with no rejected qty reason.
 	 * If activated, a smaller quantity may be picked. An additional option then appears in the picking dialog.
 	 *
@@ -380,6 +422,29 @@ public interface I_MobileUI_UserProfile_Picking
 
 	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsCatchWeightTUPickingEnabled = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsCatchWeightTUPickingEnabled", null);
 	String COLUMNNAME_IsCatchWeightTUPickingEnabled = "IsCatchWeightTUPickingEnabled";
+
+	/**
+	 * Set Complete job automatically.
+	 * Automatically completes the job when all lines are fulfilled.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsCompleteJobAutomatically (boolean IsCompleteJobAutomatically);
+
+	/**
+	 * Get Complete job automatically.
+	 * Automatically completes the job when all lines are fulfilled.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isCompleteJobAutomatically();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsCompleteJobAutomatically = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsCompleteJobAutomatically", null);
+	String COLUMNNAME_IsCompleteJobAutomatically = "IsCompleteJobAutomatically";
 
 	/**
 	 * Set Consider only scheduled jobs.
@@ -531,6 +596,27 @@ public interface I_MobileUI_UserProfile_Picking
 
 	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsShowLastPickedBestBeforeDateForLines = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsShowLastPickedBestBeforeDateForLines", null);
 	String COLUMNNAME_IsShowLastPickedBestBeforeDateForLines = "IsShowLastPickedBestBeforeDateForLines";
+
+	/**
+	 * Set Lot number.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setLotNumber (boolean LotNumber);
+
+	/**
+	 * Get Lot number.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isLotNumber();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_LotNumber = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "LotNumber", null);
+	String COLUMNNAME_LotNumber = "LotNumber";
 
 	/**
 	 * Set Mobile UI Picking Profile.

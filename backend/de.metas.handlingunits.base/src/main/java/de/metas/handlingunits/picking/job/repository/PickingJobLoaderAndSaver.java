@@ -82,6 +82,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 class PickingJobLoaderAndSaver extends PickingJobSaver
@@ -134,6 +135,21 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				.map(pickingJobs::get)
 				.map(this::loadJob)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	public PickingJob updateById(@NonNull PickingJobId pickingJobId, @NonNull UnaryOperator<PickingJob> updater)
+	{
+		final PickingJob pickingJob = loadById(pickingJobId);
+		final PickingJob pickingJobChanged = updater.apply(pickingJob);
+		if (!Objects.equals(pickingJob, pickingJobChanged))
+		{
+			save(pickingJobChanged);
+			return pickingJobChanged;
+		}
+		else
+		{
+			return pickingJob;
+		}
 	}
 
 	public void addAlreadyLoadedFromDB(final I_M_Picking_Job record)

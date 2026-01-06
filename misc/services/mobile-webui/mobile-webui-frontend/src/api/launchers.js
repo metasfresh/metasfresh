@@ -8,15 +8,32 @@ import { toQRCodeString } from '../utils/qrCode/hu';
 /**
  * @summary Get the list of available launchers
  */
-export const getLaunchers = ({ applicationId, filterByQRCodeString, filters, facets, countOnly = false }) => {
-  const facetIds = facets ? facets.map((facet) => facet.facetId) : null;
+export const getLaunchers = ({
+  applicationId,
+  filterByQRCodeString,
+  filters,
+  facetIds: facetIdsParam,
+  facets: facetsParam,
+  excludeAlreadyStarted,
+  countOnly = false,
+  limit,
+}) => {
+  let facetIds = null;
+  if (facetIdsParam) {
+    facetIds = facetIdsParam;
+  } else if (facetsParam) {
+    facetIds = facetsParam ? facetsParam.map((facet) => facet.facetId) : null;
+  }
+
   return axios
     .post(`${apiBasePath}/userWorkflows/launchers/query`, {
       ...filters,
       applicationId,
       filterByQRCode: filterByQRCodeString,
       facetIds,
+      excludeAlreadyStarted,
       countOnly,
+      limit,
     })
     .then((response) => unboxAxiosResponse(response));
 };
@@ -93,7 +110,7 @@ export const useLaunchersWebsocket = ({
         facetIds,
       })}`;
 
-      console.debug(`WS connecting to ${topic}`, { applicationId, filterByQRCodeString, filters, facetIds });
+      // console.debug(`WS connecting to ${topic}`, { applicationId, filterByQRCodeString, filters, facetIds });
       client = ws.connectAndSubscribe({
         topic,
         debug: !!window?.debug_ws,
@@ -108,8 +125,8 @@ export const useLaunchersWebsocket = ({
       if (client) {
         ws.disconnectClient(client);
         client = null;
-        console.debug('WS disconnected', { applicationId, filterByQRCode, filters });
+        // console.debug('WS disconnected', { applicationId, filterByQRCode, filters });
       }
     };
-  }, [enabled, userToken, applicationId, filterByQRCodeString, filters, facetIds]);
+  }, [enabled, userToken, applicationId, filterByQRCodeString, JSON.stringify(filters), facetIds]);
 };

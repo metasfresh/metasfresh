@@ -180,15 +180,6 @@ public class CalloutOrder extends CalloutEngine
 		// }
 		// }
 
-		// Payment Rule - POS Order
-		if (MOrder.DocSubType_POS.equals(docSubType))
-		{
-			order.setPaymentRule(PaymentRule.Cash.getCode());
-		}
-		else
-		{
-			order.setPaymentRule(PaymentRule.OnCredit.getCode());
-		}
 
 		// Set Context:
 		calloutField.putContext(I_C_DocType.COLUMNNAME_HasCharges, documentNoInfo.isHasChanges());
@@ -200,9 +191,12 @@ public class CalloutOrder extends CalloutEngine
 		}
 
 		order.setInvoiceRule(getDefaultInvoiceRule());
+
+		// Invoice Rule, Payment Rule - POS Order
 		if (MOrder.DocSubType_POS.equals(docSubType))
 		{
 			order.setInvoiceRule(X_C_Order.INVOICERULE_Immediate);
+			order.setPaymentRule(PaymentRule.Cash.getCode());
 		}
 		else
 		{

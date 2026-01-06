@@ -1,11 +1,10 @@
 import React from 'react';
 import { useDispatch } from 'react-redux';
-import { postDistributionDropTo } from '../../../api/distribution';
 
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
-import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { distributionJobScreenLocation } from '../../../routes/distribution';
+import { postDistributionDropToThunk } from '../../../apps/distribution/redux/postDistributionDropToThunk';
 
 const DistributionDropAllToScreen = () => {
   const { history, wfProcessId, activityId } = useScreenDefinition({
@@ -16,14 +15,14 @@ const DistributionDropAllToScreen = () => {
   const dispatch = useDispatch();
 
   const onResult = ({ scannedBarcode }) => {
-    return postDistributionDropTo({
-      wfProcessId,
-      activityId,
-      dropToLocatorQRCode: scannedBarcode,
-    }).then((wfProcess) => {
-      dispatch(updateWFProcess({ wfProcess }));
-      history.goBack();
-    });
+    return dispatch(
+      postDistributionDropToThunk({
+        history,
+        wfProcessId,
+        activityId,
+        dropToLocatorQRCode: scannedBarcode,
+      })
+    ).then(({ isDistributionJobCompleted }) => !isDistributionJobCompleted && history.goBack());
   };
 
   return (

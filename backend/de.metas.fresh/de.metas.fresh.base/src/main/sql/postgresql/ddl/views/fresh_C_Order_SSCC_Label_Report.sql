@@ -30,21 +30,22 @@ SELECT (SELECT (((COALESCE(org_bp.name, ''::character varying)::text || ', '::te
 
        piip.qty                                                                                                                                 AS cu_per_tu,
        ol.qtyenteredtu                                                                                                                          AS tu_per_lu,
-       NULL::NUMERIC                                                                                                                            AS net_weight,
-       NULL::NUMERIC                                                                                                                            AS gross_weight,
+       ol.qtyentered * p.weight                              AS net_weight,
+       package.packageweight                                 AS gross_weight,
        o.documentno                                                                                                                             AS order_docno,
        p.value                                                                                                                                  AS p_value,
        NULL::CHARACTER VARYING                                                                                                                  AS lotcode,
        sscc18_extract_serialnumber(package.ipa_sscc18::TEXT)                                                                                    AS paletno,
        CASE
-           WHEN o.isdropship = 'Y' THEN ((COALESCE(dbp.name, ''::CHARACTER VARYING)::TEXT || ' '::TEXT) || COALESCE(dbpl.name, ''::CHARACTER VARYING)::TEXT) || ''::TEXT
+           WHEN inc.value = 'EXW'  THEN NULL::CHARACTER VARYING
+           WHEN o.isdropship = 'Y' THEN (COALESCE(o.poreference || ' - ', ''::CHARACTER VARYING)::TEXT || (COALESCE(dbp.name, ''::CHARACTER VARYING)::TEXT || ' '::TEXT) || COALESCE(dbpl.address, ''::CHARACTER VARYING)::TEXT) || ''::TEXT
                                    ELSE
-                                       ((COALESCE(bp.name, ''::CHARACTER VARYING)::TEXT || ' '::TEXT) || COALESCE(hol.name, bpl.name, ''::CHARACTER VARYING)::TEXT) || ''::TEXT
-       END AS customer,
+               (COALESCE(o.poreference || ' - ', ''::CHARACTER VARYING)::TEXT || (COALESCE(bp.name, ''::CHARACTER VARYING)::TEXT || ' '::TEXT) || COALESCE(hol.address, bpl.address, ''::CHARACTER VARYING)::TEXT) || ''::TEXT
+       END                                                   AS customer,
        bp.ad_language,
        NULL::NUMERIC                                                                                                                            AS m_hu_id,
        package.m_package_id,
-       ''::TEXT                                                                                                                                 AS lotnumberdate,
+       att.ai_value                                          AS lotnumberdate,
        o.c_order_id
 FROM C_Order o
          JOIN C_OrderLine ol ON o.c_order_id = ol.c_order_id
@@ -59,4 +60,9 @@ FROM C_Order o
          LEFT JOIN c_bpartner_location dbpl ON dbpl.c_bpartner_location_id = o.dropship_location_id
          LEFT JOIN C_BPartner_Product bp_product ON bp_product.c_bpartner_id = bp.c_bpartner_id AND bp_product.m_product_id = p.m_product_id
          LEFT JOIN m_product_trl pt ON p.m_product_id = pt.m_product_id AND bp.ad_language::TEXT = pt.ad_language::TEXT
+         LEFT JOIN C_Incoterms inc ON o.c_incoterms_id = inc.c_incoterms_id
+         LEFT JOIN Report.fresh_Attributes att ON (att.M_AttributeSetInstance_ID = ol.M_AttributeSetInstance_ID
+    AND att.IsPrintedInDocument = 'Y'
+    AND att.at_value = 'Lot-Nummer')
+
 ;

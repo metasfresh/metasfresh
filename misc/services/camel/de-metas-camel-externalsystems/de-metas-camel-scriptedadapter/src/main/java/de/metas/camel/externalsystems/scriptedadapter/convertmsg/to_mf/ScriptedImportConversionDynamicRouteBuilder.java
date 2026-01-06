@@ -32,6 +32,7 @@ import de.metas.camel.externalsystems.scriptedadapter.JavaScriptRepo;
 import de.metas.camel.externalsystems.scriptedadapter.convertmsg.to_mf.model.CamelServiceRouteIdWithRequestType;
 import de.metas.camel.externalsystems.scriptedadapter.convertmsg.to_mf.model.ScriptedImportedConversionToMfRequest;
 import de.metas.camel.externalsystems.scriptedadapter.convertmsg.to_mf.processor.ScriptedImportConversionProcessor;
+import de.metas.common.util.Check;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.camel.AggregationStrategy;
@@ -40,6 +41,7 @@ import org.apache.camel.LoggingLevel;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.http.base.HttpOperationFailedException;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -50,6 +52,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
+import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.EXCEPTION_PREFIX;
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.FIELD_ERROR_MESSAGE;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
@@ -107,10 +110,24 @@ public class ScriptedImportConversionDynamicRouteBuilder extends RouteBuilder
 		catch (final Exception e)
 		{
 			logger.log(Level.WARNING, "Exception caught when handling request: " + request, e);
-			exchange.getMessage().setBody(e.getMessage());
+			exchange.getMessage().setBody(getErrorMessage(e));
 		}
 	}
 
+	@NonNull
+	private String getErrorMessage(@NonNull final Exception e)
+	{
+		return Optional.ofNullable(e.getCause())
+				.map(root -> {
+					if (root instanceof HttpOperationFailedException httpOperationFailedException)
+					{
+						return httpOperationFailedException.getResponseBody();
+					}
+					return EXCEPTION_PREFIX + root.getMessage();
+				})
+				.orElse(EXCEPTION_PREFIX + e.getMessage());
+	}
+	
 	@NonNull
 	private String resolveCamelEndpointUri(@NonNull final CamelServiceRouteIdWithRequestType camelRouteIdWithRequestType)
 	{
@@ -147,31 +164,41 @@ public class ScriptedImportConversionDynamicRouteBuilder extends RouteBuilder
 			if (oldExchange == null)
 			{
 				final List<Object> list = new ArrayList<>();
-				list.add(getJsonObject(newExchange));
+				getJsonObject(newExchange).ifPresent(list::add);
 				newExchange.getMessage().setBody(list);
 				return newExchange;
 			}
 			else
 			{
 				@SuppressWarnings("unchecked") final List<Object> list = oldExchange.getIn().getBody(List.class);
-				list.add(getJsonObject(newExchange));
+				getJsonObject(newExchange).ifPresent(list::add);
 				oldExchange.getMessage().setBody(list);
 				return oldExchange;
 			}
 		}
 
 		@NonNull
-		private Object getJsonObject(@NonNull final Exchange newExchange)
+		private Optional<Object> getJsonObject(@NonNull final Exchange newExchange)
 		{
 			final String responseStr = newExchange.getIn().getBody(String.class);
 
+			if (Check.isEmpty(responseStr))
+			{
+				return Optional.empty();
+			}
+
+			if (responseStr.startsWith(EXCEPTION_PREFIX))
+			{
+				return Optional.of(responseStr);
+			}
+
 			try
 			{
-				return mapper.readValue(responseStr, Object.class);
+				return Optional.of(mapper.readValue(responseStr, Object.class));
 			}
 			catch (final JsonProcessingException e)
 			{
-				return Map.of(FIELD_ERROR_MESSAGE, responseStr);
+				return Optional.of(Map.of(FIELD_ERROR_MESSAGE, e.getMessage()));
 			}
 		}
 	}

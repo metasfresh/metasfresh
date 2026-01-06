@@ -50,6 +50,8 @@ import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.impexp.InputDataSourceId;
+import de.metas.incoterms.Incoterms;
+import de.metas.incoterms.IncotermsId;
 import de.metas.money.CurrencyId;
 import de.metas.order.InvoiceRule;
 import de.metas.order.OrderLineGroup;
@@ -214,6 +216,10 @@ public class JsonConverters
 		final boolean isAutoInvoice = billBPartnerInfo != null ? masterdataProvider.isAutoInvoice(request, billBPartnerInfo.getBpartnerId())
 				: masterdataProvider.isAutoInvoice(request, bPartnerInfo.getBpartnerId());
 
+		final Incoterms incoterms = masterdataProvider.getIncoterms(request, orgId, bPartnerInfo.getBpartnerId());
+		final IncotermsId incotermsId = incoterms != null ? incoterms.getId() : null;
+		final String incotermsLocation = incoterms != null ? incoterms.getLocationEffective() : null;
+
 		return OLCandCreateRequest.builder()
 				//
 				.orgId(orgId)
@@ -260,6 +266,10 @@ public class JsonConverters
 				.warehouseId(warehouseId)
 
 				.shipperId(shipperId)
+				.deliveryRule(deliveryRule)
+				.deliveryViaRule(request.getDeliveryViaRule())
+				.incotermsId(incotermsId)
+				.incotermsLocation(incotermsLocation)
 
 				.isAutoInvoice(isAutoInvoice)
 				.invoiceRule(InvoiceRule.ofNullableCode(request.getInvoiceRule()))
@@ -275,8 +285,6 @@ public class JsonConverters
 				.line(request.getLine())
 				.isManualPrice(request.getIsManualPrice())
 				.importWarningMessage(request.getImportWarningMessage())
-				.deliveryRule(deliveryRule)
-				.deliveryViaRule(request.getDeliveryViaRule())
 				.qtyShipped(request.getQtyShipped())
 
 				//

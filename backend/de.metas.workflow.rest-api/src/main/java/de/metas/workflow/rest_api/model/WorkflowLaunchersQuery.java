@@ -29,6 +29,7 @@ import de.metas.rest_workflows.facets.WorkflowLaunchersFacetId;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.user.UserId;
 import lombok.Builder;
+import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.With;
@@ -38,7 +39,6 @@ import org.adempiere.exceptions.AdempiereException;
 import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 @Value
 @Builder(toBuilder = true)
@@ -50,16 +50,13 @@ public class WorkflowLaunchersQuery
 	@Nullable DocumentNoFilter filterByDocumentNo;
 	boolean filterByQtyAvailableAtPickFromLocator;
 	@Nullable ImmutableSet<WorkflowLaunchersFacetId> facetIds;
+	boolean excludeAlreadyStarted;
+	@Default boolean computeActions = true;
 
-	@Nullable @With QueryLimit limit;
-	@NonNull @Builder.Default @With Duration maxStaleAccepted = Duration.ZERO;
+	@Nullable QueryLimit limit;
+	@NonNull @Default @With Duration maxStaleAccepted = Duration.ZERO;
 
 	public Optional<QueryLimit> getLimit() {return Optional.ofNullable(limit);}
-
-	public WorkflowLaunchersQuery withLimitIfNotSet(@NonNull final Supplier<QueryLimit> supplier)
-	{
-		return limit != null ? this : withLimit(supplier.get());
-	}
 
 	public void assertNoFilterByDocumentNo()
 	{

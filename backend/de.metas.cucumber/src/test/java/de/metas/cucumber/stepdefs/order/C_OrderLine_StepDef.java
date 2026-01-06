@@ -37,10 +37,12 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.attribute.M_Attribute_StepDefData;
+import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Conditions_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.C_TaxCategory_StepDefData;
+import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.util.IdentifiersEvaluatee;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.currency.Currency;
@@ -52,6 +54,8 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.IOrderLineBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
+import de.metas.project.service.ProjectRepository;
 import de.metas.tax.api.TaxId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -77,9 +81,11 @@ import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeInstance;
@@ -104,6 +110,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.compiere.model.I_C_Order.COLUMNNAME_C_Project_ID;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_C_TaxCategory_ID;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_DateOrdered;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID;
@@ -118,6 +125,7 @@ public class C_OrderLine_StepDef
 	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	@NonNull private final ProjectRepository projectsRepo = SpringContextHolder.instance.getBean(ProjectRepository.class);
 
 	@NonNull private final M_Product_StepDefData productTable;
 	@NonNull private final C_BPartner_StepDefData partnerTable;
@@ -132,6 +140,8 @@ public class C_OrderLine_StepDef
 	@NonNull private final C_Tax_StepDefData taxTable;
 	@NonNull private final M_Warehouse_StepDefData warehouseTable;
 	@NonNull private final IdentifierIds_StepDefData identifierIdsTable;
+	@NonNull private final TestContext restTestContext;
+	@NonNull private final C_Project_StepDefData projectTable;
 
 	@Given("metasfresh contains C_OrderLines:")
 	public void metasfresh_contains_c_order_lines(@NonNull final DataTable dataTable)
@@ -237,6 +247,8 @@ public class C_OrderLine_StepDef
 
 		tableRow.getAsOptionalIdentifier()
 				.ifPresent(identifier -> orderLineTable.putOrReplace(identifier, orderLine));
+
+		restTestContext.setIntVariableFromRow(tableRow, orderLine::getC_OrderLine_ID);
 	}
 
 	@Then("the purchase order with document subtype {string} linked to order {string} has lines:")
@@ -324,6 +336,8 @@ public class C_OrderLine_StepDef
 							.firstOnlyNotNull(I_C_OrderLine.class);
 
 					validateOrderLine(orderLineRecord, row);
+
+					restTestContext.setIntVariableFromRow(row, orderLineRecord::getC_OrderLine_ID);
 
 					row.getAsOptionalIdentifier()
 							.ifPresent(identifier -> orderLineTable.putOrReplaceIfSameId(identifier, orderLineRecord));
@@ -428,24 +442,19 @@ public class C_OrderLine_StepDef
 	@And("load C_Order from C_OrderLine")
 	public void loadC_Order(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> table = dataTable.asMaps();
-		for (final Map<String, String> row : table)
-		{
-			loadC_Order(row);
-		}
+		DataTableRows.of(dataTable)
+						.forEach(this::loadC_Order);
+
 	}
 
-	private void loadC_Order(@NonNull final Map<String, String> row)
+	private void loadC_Order(@NonNull final DataTableRow row)
 	{
-		final String olIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_C_OrderLine orderLine = orderLineTable.get(olIdentifier);
-		assertThat(orderLine).isNotNull();
+		final I_C_OrderLine orderLine = row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID).lookupNotNullIn(orderLineTable);
 
 		final I_C_Order orderRecord = InterfaceWrapperHelper.load(orderLine.getC_Order_ID(), I_C_Order.class);
 		assertThat(orderRecord).isNotNull();
 
-		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OrderLine.COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
-		orderTable.putOrReplace(orderIdentifier, orderRecord);
+		orderTable.putOrReplace(row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_Order_ID), orderRecord);
 	}
 
 	@Given("metasfresh contains C_OrderLine expecting error:")
@@ -473,6 +482,7 @@ public class C_OrderLine_StepDef
 
 	private void validateOrderLine(@NonNull final I_C_OrderLine orderLine, @NonNull final DataTableRow row)
 	{
+		final String identifierStr = row.getAsIdentifier().getAsString();
 		final SoftAssertions softly = new SoftAssertions();
 
 		final String uomBPartner355Code = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_C_UOM_BPartner_ID + "." + X12DE355.class.getSimpleName());
@@ -651,6 +661,32 @@ public class C_OrderLine_StepDef
 		{
 			final TaxId taxId = taxTable.getId(taxIdentifier);
 			softly.assertThat(orderLine.getC_Tax_ID()).isEqualTo(taxId.getRepoId());
+		}
+
+		row.getAsOptionalString(I_C_OrderLine.COLUMNNAME_ExternalId)
+				.ifPresent(externalId -> softly.assertThat(orderLine.getExternalId()).isEqualTo(externalId));
+
+		final StepDefDataIdentifier projectIdentifier = row.getAsIdentifierOrNull(COLUMNNAME_C_Project_ID);
+		if (projectIdentifier != null)
+		{
+			if (projectIdentifier.isNullPlaceholder())
+			{
+				softly.assertThat(orderLine.getC_Project_ID()).as("C_Project_ID for Identifier=%s", identifierStr).isLessThanOrEqualTo(0);
+			}
+			else if (projectTable.isPresent(projectIdentifier))
+			{
+				final I_C_Project project = projectTable.get(projectIdentifier);
+				softly.assertThat(orderLine.getC_Project_ID()).as("C_Project_ID for Identifier=%s", identifierStr).isEqualTo(project.getC_Project_ID());
+			}
+			else if (orderLine.getC_Project_ID() > 0)
+			{
+				final I_C_Project project = projectsRepo.getById(ProjectId.ofRepoId(orderLine.getC_Project_ID()));
+				projectTable.put(projectIdentifier, project);
+			}
+			else
+			{
+				softly.fail("Expected C_Order.C_Project_ID to be set for C_Order_ID=%s", orderLine.getC_Order_ID());
+			}
 		}
 
 		softly.assertAll();

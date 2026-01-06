@@ -13,4 +13,6 @@ import javax.annotation.Nullable;
 public class JsonWorkplaceRequest
 {
 	@Nullable Identifier warehouse;
+	@Nullable Identifier pickingSlot;
+	@Nullable Identifier pickFromLocator;
 }
