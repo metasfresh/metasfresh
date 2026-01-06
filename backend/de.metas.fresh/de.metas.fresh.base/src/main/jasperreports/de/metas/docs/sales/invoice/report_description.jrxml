@@ -134,7 +134,7 @@
 	<title>
 		<band height="206" splitType="Stretch">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-11" x="37" y="100" width="163" height="13" uuid="c2adc14d-beb1-41b9-9ad8-62e8b8eecd02">
+				<reportElement key="textField-11" x="37" y="87" width="163" height="13" uuid="c2adc14d-beb1-41b9-9ad8-62e8b8eecd02">
 					<printWhenExpression><![CDATA[new Boolean($F{bp_value}!=null)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -175,7 +175,7 @@
 				<textFieldExpression><![CDATA[$R{Date}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-10" x="200" y="100" width="144" height="13" uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75">
+				<reportElement key="textField-10" x="200" y="87" width="144" height="13" uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75">
 					<printWhenExpression><![CDATA[new Boolean($F{bp_value}!=null)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -216,7 +216,7 @@
 				<textFieldExpression><![CDATA[$F{documentno}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-11" x="37" y="87" width="163" height="13" uuid="99d4bc84-19da-409a-8ff6-79c763b7427b">
+				<reportElement key="textField-11" x="37" y="100" width="163" height="13" isRemoveLineWhenBlank="true" uuid="99d4bc84-19da-409a-8ff6-79c763b7427b">
 					<printWhenExpression><![CDATA[new Boolean($F{reference}!=null)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Left" markup="none">
@@ -225,7 +225,7 @@
 				<textFieldExpression><![CDATA[$R{Reference}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-10" x="200" y="87" width="155" height="13" uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75">
+				<reportElement key="textField-10" x="200" y="100" width="155" height="13" isRemoveLineWhenBlank="true" uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75">
 					<printWhenExpression><![CDATA[new Boolean($F{bp_value}!=null)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -277,7 +277,9 @@
 				<textFieldExpression><![CDATA[$F{eori}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-5" x="37" y="113" width="163" height="13" uuid="261be2af-8ff8-423b-9e86-6602c51df867"/>
+				<reportElement key="textField-5" x="37" y="113" width="163" height="13" uuid="261be2af-8ff8-423b-9e86-6602c51df867">
+					<printWhenExpression><![CDATA[new Boolean($F{customernoatvendor}!=null)]]></printWhenExpression>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -305,7 +307,9 @@
 				<textFieldExpression><![CDATA[$F{customernoatvendor}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-5" x="355" y="74" width="102" height="13" uuid="28b2a717-1dc7-4bbc-803f-a6cd3f583363"/>
+				<reportElement key="textField-5" x="355" y="74" width="102" height="13" uuid="28b2a717-1dc7-4bbc-803f-a6cd3f583363">
+					<printWhenExpression><![CDATA[new Boolean($F{sr_name}!=null)]]></printWhenExpression>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -344,7 +348,9 @@
 				<textFieldExpression><![CDATA[$F{sr_email}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-5" x="355" y="87" width="102" height="13" uuid="e71fac69-6748-474a-9e2c-0b169e8823d9"/>
+				<reportElement key="textField-5" x="355" y="87" width="102" height="13" uuid="e71fac69-6748-474a-9e2c-0b169e8823d9">
+					<printWhenExpression><![CDATA[new Boolean($F{sr_email}!=null)]]></printWhenExpression>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -404,7 +410,7 @@
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-5" x="355" y="100" width="89" height="13" uuid="63ab4ec5-b0a9-443f-9e3f-ce977efe9e53">
-					<printWhenExpression><![CDATA[$F{iscreditmemo}.equals( "N" )]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{iscreditmemo}.equals( "N" ) && new Boolean($F{offer_documentno}!=null)]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -434,7 +440,7 @@
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-5" x="355" y="113" width="89" height="13" uuid="940541e3-b008-4f77-b33e-4276d885b274">
-					<printWhenExpression><![CDATA[$F{iscreditmemo}.equals( "N" )]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{iscreditmemo}.equals( "N" ) && new Boolean($F{offer_date}!=null)]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -483,7 +489,9 @@
 				<textFieldExpression><![CDATA[$F{order_date}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-11" x="38" y="127" width="162" height="13" uuid="209fb84a-83fe-481a-8faf-5751a4be558f"/>
+				<reportElement key="textField-11" x="38" y="127" width="162" height="13" uuid="209fb84a-83fe-481a-8faf-5751a4be558f">
+					<printWhenExpression><![CDATA[new Boolean($F{cont_phone}!=null)]]></printWhenExpression>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -509,7 +517,9 @@
 				<textFieldExpression><![CDATA[$F{cont_phone}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-5" x="38" y="140" width="162" height="13" uuid="33cf5cf1-d339-4f2d-b4e9-9681d5a4d255"/>
+				<reportElement key="textField-5" x="38" y="140" width="162" height="13" uuid="33cf5cf1-d339-4f2d-b4e9-9681d5a4d255">
+					<printWhenExpression><![CDATA[new Boolean($F{cont_fax}!=null)]]></printWhenExpression>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -535,7 +545,9 @@
 				<textFieldExpression><![CDATA[$F{cont_fax}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-5" x="38" y="153" width="162" height="13" uuid="6e431f6e-1f5a-46ce-8aae-c06933ffa4a9"/>
+				<reportElement key="textField-5" x="38" y="153" width="162" height="13" uuid="6e431f6e-1f5a-46ce-8aae-c06933ffa4a9">
+					<printWhenExpression><![CDATA[new Boolean($F{vataxid}!=null)]]></printWhenExpression>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
