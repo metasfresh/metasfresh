@@ -420,6 +420,16 @@ jobs:
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }} \
           .
+      - name: cleanup-before-db-migration-tool
+        run: |
+          echo "=== Disk space before cleanup ==="
+          df -h /
+          echo "=== Pruning Docker builder cache ==="
+          docker builder prune -af
+          echo "=== Removing dangling images ==="
+          docker image prune -f
+          echo "=== Disk space after cleanup ==="
+          df -h /
       - name: build-db-migration-tool
         run: |
           docker buildx build \
