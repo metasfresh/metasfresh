@@ -4,7 +4,11 @@
 -- but the C_DocType record was not cleaned up, causing customer repo builds to fail
 -- when loading DocTypes during startup.
 
--- Delete the DocType translations first (FK constraint)
+-- Delete document action access records first (FK constraint)
+DELETE FROM AD_Document_Action_Access
+WHERE C_DocType_ID IN (SELECT C_DocType_ID FROM C_DocType WHERE DocBaseType = 'MMP');
+
+-- Delete the DocType translations (FK constraint)
 DELETE FROM C_DocType_Trl
 WHERE C_DocType_ID IN (SELECT C_DocType_ID FROM C_DocType WHERE DocBaseType = 'MMP');
 
