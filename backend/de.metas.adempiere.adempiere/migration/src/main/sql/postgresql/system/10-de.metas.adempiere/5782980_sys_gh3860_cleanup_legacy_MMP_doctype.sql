@@ -14,3 +14,6 @@ WHERE C_DocType_ID IN (SELECT C_DocType_ID FROM C_DocType WHERE DocBaseType = 'M
 
 -- Delete the DocType record(s)
 DELETE FROM C_DocType WHERE DocBaseType = 'MMP';
+
+-- Delete counter DocBaseType mappings that reference MMP
+DELETE FROM C_DocBaseType_Counter WHERE DocBaseType = 'MMP' OR Counter_DocBaseType = 'MMP';
