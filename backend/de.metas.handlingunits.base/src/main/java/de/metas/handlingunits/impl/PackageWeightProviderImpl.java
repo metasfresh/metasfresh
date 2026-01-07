@@ -70,6 +70,21 @@ public class PackageWeightProviderImpl implements IPackageWeightProvider
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
+	/**
+	 * Computes the gross weight in kilograms for a package containing the specified number of TUs.
+	 *
+	 * <p>The calculation includes:
+	 * <ul>
+	 *   <li>Content weight: Product gross weight × quantity</li>
+	 *   <li>LU tare: Weight of pallet/container (if configured)</li>
+	 *   <li>TU tare: Weight of boxes/cartons × tuQtyForPackage (if exactly one packing material)</li>
+	 * </ul>
+	 *
+	 * @param order The purchase order
+	 * @param orderLine The order line containing product and HU configuration
+	 * @param tuQtyForPackage Number of TUs in this package (typically distributed across LUs)
+	 * @return Gross weight in kg, or null if weight cannot be determined
+	 */
 	@Override
 	public @Nullable BigDecimal computeGrossWeightInKg(
 			@NonNull final I_C_Order order,
