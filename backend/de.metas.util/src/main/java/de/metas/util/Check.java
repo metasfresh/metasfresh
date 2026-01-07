@@ -875,4 +875,6 @@ public final class Check
 			throw new RuntimeException(errMessage);
 		}
 	}
+
+	// Test marker for private version chain validation - safe to remove
 }
