@@ -3,6 +3,7 @@ package de.metas.fresh.setup.process;
 import java.util.OptionalInt;
 import java.util.Properties;
 
+import de.metas.tax.api.VATIdentifier;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
@@ -44,6 +45,7 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.jetbrains.annotations.Nullable;
 
 /*
  * #%L
@@ -432,9 +434,15 @@ class ClientSetup
 		return this;
 	}
 
-	public final String getCompanyTaxID()
+	public final @Nullable VATIdentifier getCompanyTaxID()
 	{
-		return orgBPartner.getVATaxID();
+		final VATIdentifier bplVATId = VATIdentifier.ofNullable(orgBPartnerLocation.getVATaxID());
+		if (bplVATId != null)
+		{
+			return bplVATId;
+		}
+
+		return VATIdentifier.ofNullable(orgBPartner.getVATaxID());
 	}
 
 	public String getContactFirstName()

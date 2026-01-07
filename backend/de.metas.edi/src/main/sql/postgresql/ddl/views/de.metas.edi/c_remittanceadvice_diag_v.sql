@@ -20,12 +20,11 @@
  * #L%
  */
 
-CREATE VIEW "de.metas.edi".c_remittanceadvice_diag_v AS
+CREATE OR REPLACE VIEW "de.metas.edi".c_remittanceadvice_diag_v AS
 SELECT ral.created                    AS ral_created,
        ral.c_remittanceadvice_id      AS ral_c_remittanceadvice_id,
        ral.c_remittanceadvice_line_id AS ral_c_remittanceadvice_line_id,
-
-       i2p.inv_c_invoice_id,
+       ral.c_invoice_id               AS inv_c_invoice_id,
        i2p.inv_docstatus,
        i2p.inv_docstatus_ok,
        i2si.inv_c_invoice_docbasetype,

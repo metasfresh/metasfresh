@@ -11,10 +11,9 @@ import de.metas.quantity.Quantity;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_C_UOM;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestWatcher;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -25,8 +24,6 @@ import java.util.List;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
 /*
  * #%L
@@ -50,17 +47,12 @@ import static org.junit.Assert.assertThat;
  * #L%
  */
 
+@ExtendWith(AdempiereTestWatcher.class)
 public class HUTraceRepositoryTests
 {
-	/**
-	 * Watches the current tests and dumps the database to console in case of failure
-	 */
-	@Rule
-	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-
 	private HUTraceRepository huTraceRepository;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -97,9 +89,9 @@ public class HUTraceRepositoryTests
 				.recursionMode(RecursionMode.NONE)
 				.build();
 
-		assertThat(huTraceRepository.query(query).isEmpty(), is(true));
-		assertThat(huTraceRepository.query(query.withRecursionMode(RecursionMode.FORWARD)).isEmpty(), is(true));
-		assertThat(huTraceRepository.query(query.withRecursionMode(RecursionMode.BACKWARD)).isEmpty(), is(true));
+		assertThat(huTraceRepository.query(query)).isEmpty();
+		assertThat(huTraceRepository.query(query.withRecursionMode(RecursionMode.FORWARD))).isEmpty();
+		assertThat(huTraceRepository.query(query.withRecursionMode(RecursionMode.BACKWARD))).isEmpty();
 	}
 
 	/**
@@ -128,10 +120,10 @@ public class HUTraceRepositoryTests
 				.build();
 
 		final List<HUTraceEvent> result = huTraceRepository.query(query);
-		assertThat(result.size(), is(1));
-		assertThat(result.get(0).getHuTraceEventId().isPresent(), is(true));
-		assertThat(result.get(0).getVhuId().getRepoId(), is(12));
-		assertThat(result.get(0).getOrgId().getRepoId(), is(13));
+		assertThat(result).hasSize(1);
+		assertThat(result.get(0).getHuTraceEventId()).isPresent();
+		assertThat(result.get(0).getVhuId().getRepoId()).isEqualTo(12);
+		assertThat(result.get(0).getOrgId().getRepoId()).isEqualTo(13);
 
 		// add an equal event, again
 		huTraceRepository.addEvent(HUTraceEvent.builder()
@@ -171,11 +163,11 @@ public class HUTraceRepositoryTests
 				.build();
 
 		final List<HUTraceEvent> result = huTraceRepository.query(query);
-		assertThat(result.size(), is(1));
+		assertThat(result).hasSize(1);
 
-		assertThat(result.get(0).getTopLevelHuId().getRepoId(), is(2));
-		assertThat(result.get(0).getVhuId().getRepoId(), is(12));
-		assertThat(result.get(0).getVhuSourceId().getRepoId(), is(13));
+		assertThat(result.get(0).getTopLevelHuId().getRepoId()).isEqualTo(2);
+		assertThat(result.get(0).getVhuId().getRepoId()).isEqualTo(12);
+		assertThat(result.get(0).getVhuSourceId().getRepoId()).isEqualTo(13);
 	}
 
 	/**
@@ -207,10 +199,10 @@ public class HUTraceRepositoryTests
 				.build();
 
 		final List<HUTraceEvent> result = huTraceRepository.query(query);
-		assertThat(result.size(), is(1));
+		assertThat(result).hasSize(1);
 
-		assertThat(result.get(0).getVhuId().getRepoId(), is(13));
-		assertThat(result.get(0).getVhuSourceId().getRepoId(), is(14));
+		assertThat(result.get(0).getVhuId().getRepoId()).isEqualTo(13);
+		assertThat(result.get(0).getVhuSourceId().getRepoId()).isEqualTo(14);
 	}
 
 	@Test
@@ -226,16 +218,30 @@ public class HUTraceRepositoryTests
 																		  .recursionMode(RecursionMode.NONE)
 																		  .build());
 
-		assertThat(result.size(), is(6));
+		assertThat(result).hasSize(6);
 		for (int i = 0; i < result.size(); i++)
 		{
-			assertThat("i=" + i, result.get(i).getEventTime(), is(events.get(i + 5).getEventTime()));
-			assertThat("i=" + i, result.get(i).getVhuId(), is(events.get(i + 5).getVhuId()));
-			assertThat("i=" + i, result.get(i).getVhuSourceId(), is(events.get(i + 5).getVhuSourceId()));
-			assertThat("i=" + i, result.get(i).getInOutId(), is(events.get(i + 5).getInOutId()));
-			assertThat("i=" + i, result.get(i).getMovementId(), is(events.get(i + 5).getMovementId()));
-			assertThat("i=" + i, result.get(i).getPpCostCollectorId(), is(events.get(i + 5).getPpCostCollectorId()));
-			assertThat("i=" + i, result.get(i).getShipmentScheduleId(), is(events.get(i + 5).getShipmentScheduleId()));
+			assertThat(result.get(i).getEventTime())
+				.as("i=" + i)
+				.isEqualTo(events.get(i + 5).getEventTime());
+			assertThat(result.get(i).getVhuId())
+				.as("i=" + i)
+				.isEqualTo(events.get(i + 5).getVhuId());
+			assertThat(result.get(i).getVhuSourceId())
+				.as("i=" + i)
+				.isEqualTo(events.get(i + 5).getVhuSourceId());
+			assertThat(result.get(i).getInOutId())
+				.as("i=" + i)
+				.isEqualTo(events.get(i + 5).getInOutId());
+			assertThat(result.get(i).getMovementId())
+				.as("i=" + i)
+				.isEqualTo(events.get(i + 5).getMovementId());
+			assertThat(result.get(i).getPpCostCollectorId())
+				.as("i=" + i)
+				.isEqualTo(events.get(i + 5).getPpCostCollectorId());
+			assertThat(result.get(i).getShipmentScheduleId())
+				.as("i=" + i)
+				.isEqualTo(events.get(i + 5).getShipmentScheduleId());
 		}
 	}
 
@@ -258,17 +264,31 @@ public class HUTraceRepositoryTests
 		events.forEach(e -> System.out.println(e));
 		result.forEach(r -> System.out.println(r));
 
-		assertThat(result.size(), is(11));
+		assertThat(result).hasSize(11);
 		// expect matching result records for the first 11 events
 		for (int i = 0; i < result.size(); i++)
 		{
-			assertThat("i=" + i, result.get(i).getEventTime(), is(events.get(i).getEventTime()));
-			assertThat("i=" + i, result.get(i).getVhuId(), is(events.get(i).getVhuId()));
-			assertThat("i=" + i, result.get(i).getVhuSourceId(), is(events.get(i).getVhuSourceId()));
-			assertThat("i=" + i, result.get(i).getInOutId(), is(events.get(i).getInOutId()));
-			assertThat("i=" + i, result.get(i).getMovementId(), is(events.get(i).getMovementId()));
-			assertThat("i=" + i, result.get(i).getPpCostCollectorId(), is(events.get(i).getPpCostCollectorId()));
-			assertThat("i=" + i, result.get(i).getShipmentScheduleId(), is(events.get(i).getShipmentScheduleId()));
+			assertThat(result.get(i).getEventTime())
+				.as("i=" + i)
+				.isEqualTo(events.get(i).getEventTime());
+			assertThat(result.get(i).getVhuId())
+				.as("i=" + i)
+				.isEqualTo(events.get(i).getVhuId());
+			assertThat(result.get(i).getVhuSourceId())
+				.as("i=" + i)
+				.isEqualTo(events.get(i).getVhuSourceId());
+			assertThat(result.get(i).getInOutId())
+				.as("i=" + i)
+				.isEqualTo(events.get(i).getInOutId());
+			assertThat(result.get(i).getMovementId())
+				.as("i=" + i)
+				.isEqualTo(events.get(i).getMovementId());
+			assertThat(result.get(i).getPpCostCollectorId())
+				.as("i=" + i)
+				.isEqualTo(events.get(i).getPpCostCollectorId());
+			assertThat(result.get(i).getShipmentScheduleId())
+				.as("i=" + i)
+				.isEqualTo(events.get(i).getShipmentScheduleId());
 		}
 	}
 
@@ -290,16 +310,30 @@ public class HUTraceRepositoryTests
 		// events.forEach(e -> System.out.println(e));
 		// result.forEach(r -> System.out.println(r));
 
-		assertThat(result.size(), is(17));
+		assertThat(result).hasSize(17);
 		for (int i = 0; i < result.size(); i++)
 		{
-			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getEventTime(), is(events.get(i).getEventTime()));
-			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getVhuId(), is(events.get(i).getVhuId()));
-			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getVhuSourceId(), is(events.get(i).getVhuSourceId()));
-			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getInOutId(), is(events.get(i).getInOutId()));
-			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getMovementId(), is(events.get(i).getMovementId()));
-			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getPpCostCollectorId(), is(events.get(i).getPpCostCollectorId()));
-			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getShipmentScheduleId(), is(events.get(i).getShipmentScheduleId()));
+			assertThat(result.get(i).getEventTime())
+				.as("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i))
+				.isEqualTo(events.get(i).getEventTime());
+			assertThat(result.get(i).getVhuId())
+				.as("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i))
+				.isEqualTo(events.get(i).getVhuId());
+			assertThat(result.get(i).getVhuSourceId())
+				.as("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i))
+				.isEqualTo(events.get(i).getVhuSourceId());
+			assertThat(result.get(i).getInOutId())
+				.as("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i))
+				.isEqualTo(events.get(i).getInOutId());
+			assertThat(result.get(i).getMovementId())
+				.as("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i))
+				.isEqualTo(events.get(i).getMovementId());
+			assertThat(result.get(i).getPpCostCollectorId())
+				.as("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i))
+				.isEqualTo(events.get(i).getPpCostCollectorId());
+			assertThat(result.get(i).getShipmentScheduleId())
+				.as("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i))
+				.isEqualTo(events.get(i).getShipmentScheduleId());
 		}
 	}
 
@@ -316,16 +350,30 @@ public class HUTraceRepositoryTests
 																		  .recursionMode(RecursionMode.FORWARD)
 																		  .build());
 
-		assertThat(result.size(), is(12));
+		assertThat(result).hasSize(12);
 		for (int i = 0; i < result.size(); i++)
 		{
-			assertThat("i=" + i + ";\nevent=" + events.get(i + 5) + ";\nresult=" + result.get(i), result.get(i).getEventTime(), is(events.get(i + 5).getEventTime()));
-			assertThat("i=" + i + ";\nevent=" + events.get(i + 5) + ";\nresult=" + result.get(i), result.get(i).getVhuId(), is(events.get(i + 5).getVhuId()));
-			assertThat("i=" + i + ";\nevent=" + events.get(i + 5) + ";\nresult=" + result.get(i), result.get(i).getVhuSourceId(), is(events.get(i + 5).getVhuSourceId()));
-			assertThat("i=" + i + ";\nevent=" + events.get(i + 5) + ";\nresult=" + result.get(i), result.get(i).getInOutId(), is(events.get(i + 5).getInOutId()));
-			assertThat("i=" + i + ";\nevent=" + events.get(i + 5) + ";\nresult=" + result.get(i), result.get(i).getMovementId(), is(events.get(i + 5).getMovementId()));
-			assertThat("i=" + i + ";\nevent=" + events.get(i + 5) + ";\nresult=" + result.get(i), result.get(i).getPpCostCollectorId(), is(events.get(i + 5).getPpCostCollectorId()));
-			assertThat("i=" + i + ";\nevent=" + events.get(i + 5) + ";\nresult=" + result.get(i), result.get(i).getShipmentScheduleId(), is(events.get(i + 5).getShipmentScheduleId()));
+			assertThat(result.get(i).getEventTime())
+				.as("i=" + i + ";\nevent=" + events.get(i + 5) + ";\nresult=" + result.get(i))
+				.isEqualTo(events.get(i + 5).getEventTime());
+			assertThat(result.get(i).getVhuId())
+				.as("i=" + i + ";\nevent=" + events.get(i + 5) + ";\nresult=" + result.get(i))
+				.isEqualTo(events.get(i + 5).getVhuId());
+			assertThat(result.get(i).getVhuSourceId())
+				.as("i=" + i + ";\nevent=" + events.get(i + 5) + ";\nresult=" + result.get(i))
+				.isEqualTo(events.get(i + 5).getVhuSourceId());
+			assertThat(result.get(i).getInOutId())
+				.as("i=" + i + ";\nevent=" + events.get(i + 5) + ";\nresult=" + result.get(i))
+				.isEqualTo(events.get(i + 5).getInOutId());
+			assertThat(result.get(i).getMovementId())
+				.as("i=" + i + ";\nevent=" + events.get(i + 5) + ";\nresult=" + result.get(i))
+				.isEqualTo(events.get(i + 5).getMovementId());
+			assertThat(result.get(i).getPpCostCollectorId())
+				.as("i=" + i + ";\nevent=" + events.get(i + 5) + ";\nresult=" + result.get(i))
+				.isEqualTo(events.get(i + 5).getPpCostCollectorId());
+			assertThat(result.get(i).getShipmentScheduleId())
+				.as("i=" + i + ";\nevent=" + events.get(i + 5) + ";\nresult=" + result.get(i))
+				.isEqualTo(events.get(i + 5).getShipmentScheduleId());
 		}
 	}
 
@@ -347,16 +395,30 @@ public class HUTraceRepositoryTests
 		// events.forEach(e -> System.out.println(e));
 		// result.forEach(r -> System.out.println(r));
 
-		assertThat(result.size(), is(17));
+		assertThat(result).hasSize(17);
 		for (int i = 0; i < result.size(); i++)
 		{
-			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getEventTime(), is(events.get(i).getEventTime()));
-			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getVhuId(), is(events.get(i).getVhuId()));
-			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getVhuSourceId(), is(events.get(i).getVhuSourceId()));
-			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getInOutId(), is(events.get(i).getInOutId()));
-			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getMovementId(), is(events.get(i).getMovementId()));
-			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getPpCostCollectorId(), is(events.get(i).getPpCostCollectorId()));
-			assertThat("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i), result.get(i).getShipmentScheduleId(), is(events.get(i).getShipmentScheduleId()));
+			assertThat(result.get(i).getEventTime())
+				.as("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i))
+				.isEqualTo(events.get(i).getEventTime());
+			assertThat(result.get(i).getVhuId())
+				.as("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i))
+				.isEqualTo(events.get(i).getVhuId());
+			assertThat(result.get(i).getVhuSourceId())
+				.as("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i))
+				.isEqualTo(events.get(i).getVhuSourceId());
+			assertThat(result.get(i).getInOutId())
+				.as("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i))
+				.isEqualTo(events.get(i).getInOutId());
+			assertThat(result.get(i).getMovementId())
+				.as("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i))
+				.isEqualTo(events.get(i).getMovementId());
+			assertThat(result.get(i).getPpCostCollectorId())
+				.as("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i))
+				.isEqualTo(events.get(i).getPpCostCollectorId());
+			assertThat(result.get(i).getShipmentScheduleId())
+				.as("i=" + i + ";\nevent=" + events.get(i) + ";\nresult=" + result.get(i))
+				.isEqualTo(events.get(i).getShipmentScheduleId());
 		}
 	}
 

@@ -65,8 +65,7 @@ import java.util.stream.Collectors;
 	{
 		assertJUnitMode();
 
-		@SuppressWarnings("unchecked")
-		final Class<T> beanType = (Class<T>)beanImpl.getClass();
+		@SuppressWarnings("unchecked") final Class<T> beanType = (Class<T>)beanImpl.getClass();
 
 		registerJUnitBean(beanType, beanImpl);
 	}
@@ -78,8 +77,15 @@ import java.util.stream.Collectors;
 		assertJUnitMode();
 
 		final ArrayList<Object> beans = map.computeIfAbsent(ClassReference.of(beanType), key -> new ArrayList<>());
-		beans.add(beanImpl);
-		logger.info("JUnit testing: Registered bean {}={}", beanType, beanImpl);
+		if (!beans.contains(beanImpl))
+		{
+			beans.add(beanImpl);
+			logger.info("JUnit testing: Registered bean {}={}", beanType, beanImpl);
+		}
+		else
+		{
+			logger.info("JUnit testing: Skip registering bean because already registered {}={}", beanType, beanImpl);
+		}
 	}
 
 	public synchronized <BT, T extends BT> void registerJUnitBeans(
@@ -109,14 +115,13 @@ import java.util.stream.Collectors;
 		}
 
 		final T beanImpl = castBean(beans.get(0), beanType);
-		logger.info("JUnit testing Returning manually registered bean: {}", beanImpl);
+		logger.debug("JUnit testing Returning manually registered bean: {}", beanImpl);
 		return beanImpl;
 	}
 
-	private static <T> T castBean(final Object beanImpl, final Class<T> beanType)
+	private static <T> T castBean(final Object beanImpl, final Class<T> ignoredBeanType)
 	{
-		@SuppressWarnings("unchecked")
-		final T beanImplCasted = (T)beanImpl;
+		@SuppressWarnings("unchecked") final T beanImplCasted = (T)beanImpl;
 		return beanImplCasted;
 	}
 

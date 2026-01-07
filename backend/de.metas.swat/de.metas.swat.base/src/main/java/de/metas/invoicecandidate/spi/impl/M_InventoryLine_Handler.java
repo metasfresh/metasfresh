@@ -41,7 +41,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -89,7 +89,7 @@ import static java.math.BigDecimal.ZERO;
 public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 {
 	// Services
-	private static final transient IInventoryLine_HandlerDAO inventoryLineHandlerDAO = Services.get(IInventoryLine_HandlerDAO.class);
+	private static final IInventoryLine_HandlerDAO inventoryLineHandlerDAO = Services.get(IInventoryLine_HandlerDAO.class);
 
 	@Override
 	public CandidatesAutoCreateMode getGeneralCandidatesAutoCreateMode()
@@ -182,7 +182,7 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Pricing Informations
-		final PriceAndTax priceAndQty = calculatePriceAndQuantityAndUpdate(ic, inventoryLine);
+		final PriceAndTax priceAndQty = updatePriceAndTaxAndUpdate(ic, inventoryLine);
 
 		//
 		// Description
@@ -202,7 +202,6 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Set C_Tax from Product (07442)
-		final Properties ctx = InterfaceWrapperHelper.getCtx(inventoryLine);
 		final TaxCategoryId taxCategoryId = priceAndQty != null ? priceAndQty.getTaxCategoryId() : null;
 		final Timestamp shipDate = inOut.getMovementDate();
 		final BPartnerLocationAndCaptureId inoutBPLocationId = InOutDocumentLocationAdapterFactory
@@ -227,7 +226,7 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 		// set Quality Issue Percentage Override
 
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(inventoryLine.getM_AttributeSetInstance_ID());
-		final ImmutableAttributeSet attributes = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asiId);
+		final ImmutableAttributeSet attributes = Services.get(IAttributeSetInstanceBL.class).getImmutableAttributeSetById(asiId);
 
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
@@ -250,12 +249,12 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 		return ic;
 	}
 
-	private PriceAndTax calculatePriceAndQuantityAndUpdate(final I_C_Invoice_Candidate ic, final I_M_InventoryLine inventoryLine)
+	private PriceAndTax updatePriceAndTaxAndUpdate(@NonNull final I_C_Invoice_Candidate ic, final I_M_InventoryLine inventoryLine)
 	{
 		final org.compiere.model.I_M_InOutLine originInOutLine = inventoryLine.getM_InOutLine();
 		Check.assumeNotNull(originInOutLine, "InventoryLine {0} must have an origin inoutline set", inventoryLine);
 
-		return M_InOutLine_Handler.calculatePriceAndQuantityAndUpdate(ic, originInOutLine);
+		return M_InOutLine_Handler.calculatePriceAndTaxAndUpdate(ic, originInOutLine);
 	}
 
 	@Override
@@ -322,9 +321,9 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 
 			final User billUser = bPartnerBL
 					.retrieveContactOrNull(RetrieveContactRequest.builder()
-												   .bpartnerId(billLocationFromInOut.getBpartnerId())
-												   .bPartnerLocationId(billLocationFromInOut.getBpartnerLocationId())
-												   .build());
+							.bpartnerId(billLocationFromInOut.getBpartnerId())
+							.bPartnerLocationId(billLocationFromInOut.getBpartnerLocationId())
+							.build());
 			final BPartnerContactId billBPContactId = billUser != null
 					? BPartnerContactId.of(billLocationFromInOut.getBpartnerId(), billUser.getId())
 					: null;

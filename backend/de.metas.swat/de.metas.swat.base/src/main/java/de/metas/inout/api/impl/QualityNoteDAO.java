@@ -64,7 +64,7 @@ public class QualityNoteDAO implements IQualityNoteDAO
 	public AttributeId getQualityNoteAttributeId()
 	{
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-		return attributeDAO.retrieveAttributeIdByValueOrNull(QualityNoteAttribute);
+		return attributeDAO.retrieveActiveAttributeIdByValueOrNull(QualityNoteAttribute);
 	}
 
 	@Override

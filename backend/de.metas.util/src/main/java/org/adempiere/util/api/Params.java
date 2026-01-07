@@ -382,5 +382,13 @@ public final class Params implements IParams
 			return valueObj(toParameterName(value.getClass()), value);
 		}
 
+		public ParamsBuilder putAll(@NonNull final IParams params)
+		{
+			for (String parameterName : params.getParameterNames())
+			{
+				valueObj(parameterName, params.getParameterAsObject(parameterName));
+			}
+			return this;
+		}
 	}
 }

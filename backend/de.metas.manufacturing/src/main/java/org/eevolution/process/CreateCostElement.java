@@ -205,7 +205,7 @@ public class CreateCostElement extends JavaProcess
 
 		return queryBuilder
 				.create()
-				.listIds(OrgId::ofRepoId);
+				.idsAsSet(OrgId::ofRepoId);
 	}
 
 	private Collection<I_M_CostElement> getElements()

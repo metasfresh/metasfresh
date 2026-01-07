@@ -24,11 +24,13 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.util.HUTopLevel;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.interfaces.I_C_OrderLine;
@@ -38,6 +40,7 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityTU;
@@ -53,7 +56,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet.Builder;
@@ -95,6 +97,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IHUShipmentAssignmentBL huShipmentAssignmentBL = Services.get(IHUShipmentAssignmentBL.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
@@ -179,12 +182,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		}
 
 		// Disallow creating shipment lines with negative or ZERO qty
-		if (qtyEntered.signum() <= 0)
-		{
-			return false;
-		}
-
-		return true;
+		return qtyEntered.signum() > 0;
 	}
 
 	/**
@@ -218,13 +216,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 		// Check: same Order Line
 		// NOTE: this is also EDI requirement
-		if (!OrderAndLineId.equals(orderLineId, candidate.getOrderLineId()))
-		{
-			return false;
-		}
+		return OrderAndLineId.equals(orderLineId, candidate.getOrderLineId());
 
 		// Else, we can allow this candidate to be added here
-		return true;
 	}
 
 	public void add(@NonNull final ShipmentScheduleWithHU candidate)
@@ -324,8 +318,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 				// * store the shipment line's TU-qtys in M_ShipmentSchedule_QtyPicked (there is a column for that) even if no HUs were picked
 				// * introduce a column like M_ShipmentSchedule.QtyTUToDeliver, keep it up to date and use that column in here
 				// * note: updating that column should happen from the shipment-schedule-updater
+				final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
 				final List<I_M_InOutLine> shipmentLinesOfShipmentSchedule = Services.get(IShipmentScheduleAllocDAO.class)
-						.retrieveOnShipmentLineRecordsQuery(shipmentSchedule)
+						.retrieveOnShipmentLineRecordsQuery(shipmentScheduleId)
 						.andCollect(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_InOutLine_ID)
 						.addOnlyActiveRecordsFilter()
 						.create()
@@ -416,10 +411,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		// Product & ASI (retrieved from Shipment Schedule)
 		shipmentLine.setM_Product_ID(productId.getRepoId());
 
-		final I_M_AttributeSetInstance newASI;
+		final AttributeSetInstanceId newAsiId;
 		if (attributeValues.isEmpty())
 		{
-			newASI = Services.get(IAttributeDAO.class).retrieveNoAttributeSetInstance();
+			newAsiId = AttributeSetInstanceId.NONE;
 		}
 		else
 		{
@@ -430,9 +425,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 						attributeValue.getM_Attribute(),
 						attributeValue.getValue());
 			}
-			newASI = attributeSetInstanceBL.createASIFromAttributeSet(attributeSetBuilder.build());
+			final I_M_AttributeSetInstance newASI = attributeSetInstanceBL.createASIFromAttributeSet(attributeSetBuilder.build());
+			newAsiId = AttributeSetInstanceId.ofRepoId(newASI.getM_AttributeSetInstance_ID());
 		}
-		shipmentLine.setM_AttributeSetInstance(newASI);
+		shipmentLine.setM_AttributeSetInstance_ID(newAsiId.getRepoId());
 
 		//
 		// Order Line Link (retrieved from current Shipment)
@@ -442,6 +438,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		if (orderLine != null)
 		{
 			shipmentLine.setC_Project_ID(orderLine.getC_Project_ID());
+			shipmentLine.setExternalId(orderLine.getExternalId());
+		}
+		else
+		{
+			final ProjectId projectId = huShipmentScheduleBL.extractSingleProjectIdOrNull(candidates);
+			shipmentLine.setC_Project_ID(ProjectId.toRepoId(projectId));
 		}
 
 		optimisticallySetLineNo(shipmentLine);

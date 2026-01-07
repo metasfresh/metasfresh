@@ -145,6 +145,33 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	}
 
 	@Override
+	public void setCurrentEMailAddressCC (final @Nullable java.lang.String CurrentEMailAddressCC)
+	{
+		set_Value (COLUMNNAME_CurrentEMailAddressCC, CurrentEMailAddressCC);
+	}
+
+	@Override
+	public java.lang.String getCurrentEMailAddressCC()
+	{
+		return get_ValueAsString(COLUMNNAME_CurrentEMailAddressCC);
+	}
+
+	@Override
+	public void setCurrentEMailCCRecipient_ID (final int CurrentEMailCCRecipient_ID)
+	{
+		if (CurrentEMailCCRecipient_ID < 1)
+			set_Value (COLUMNNAME_CurrentEMailCCRecipient_ID, null);
+		else
+			set_Value (COLUMNNAME_CurrentEMailCCRecipient_ID, CurrentEMailCCRecipient_ID);
+	}
+
+	@Override
+	public int getCurrentEMailCCRecipient_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_CurrentEMailCCRecipient_ID);
+	}
+
+	@Override
 	public void setCurrentEMailRecipient_ID (final int CurrentEMailRecipient_ID)
 	{
 		if (CurrentEMailRecipient_ID < 1) 

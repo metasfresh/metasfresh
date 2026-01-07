@@ -219,7 +219,7 @@ public abstract class StepDefData<T>
 	{
 		if (identifier.isNullPlaceholder())
 		{
-			throw new AdempiereException("null identifier is shall not be used when getting from " + this);
+			throw new AdempiereException("null identifier shall not be used when getting from " + this);
 		}
 
 		return records.get(identifier);
@@ -299,8 +299,8 @@ public abstract class StepDefData<T>
 
 		@NonNull
 		Instant recordAdded;
-		@NonNull
 
+		@NonNull
 		Instant recordUpdated;
 
 		public T getRecord()

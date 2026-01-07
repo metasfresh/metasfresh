@@ -218,18 +218,20 @@ public class SourceHUsService
 		return sourceHuDAO.isSourceHu(huId);
 	}
 
-	/**
-	 *  Creates a M_Source_HU record for the given HU, if it carries component products and the target warehouse has
-	 *  the org.compiere.model.I_M_Warehouse#isReceiveAsSourceHU() flag.
-	 *
-	 * @param huId			target HU id
-	 * @param productId		target product Id
-	 * @param warehouseId   target warehouse ID
-	 */
 	public void addSourceHUMarkerIfCarringComponents(@NonNull final HuId huId, @NonNull final ProductId productId, @NonNull final WarehouseId warehouseId)
 	{
-		final I_M_Warehouse warehouse = warehousesRepo.getById(warehouseId);
+		addSourceHUMarkerIfCarringComponents(ImmutableSet.of(huId), productId, warehouseId);
+	}
 
+	/**
+	 * Creates an M_Source_HU record for the given HU, if it carries component products and the target warehouse has
+	 * the org.compiere.model.I_M_Warehouse#isReceiveAsSourceHU() flag.
+	 */
+	public void addSourceHUMarkerIfCarringComponents(@NonNull final Set<HuId> huIds, @NonNull final ProductId productId, @NonNull final WarehouseId warehouseId)
+	{
+		if (huIds.isEmpty()) {return;}
+
+		final I_M_Warehouse warehouse = warehousesRepo.getById(warehouseId);
 		if (!warehouse.isReceiveAsSourceHU())
 		{
 			return;
@@ -241,7 +243,7 @@ public class SourceHUsService
 			return;
 		}
 
-		addSourceHuMarker(huId);
+		huIds.forEach(this::addSourceHuMarker);
 	}
 
 	/**
@@ -264,7 +266,7 @@ public class SourceHUsService
 		public static MatchingSourceHusQuery fromHuId(final HuId huId)
 		{
 			final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-			
+
 			final I_M_HU hu = handlingUnitsBL.getById(huId);
 			final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
 			final IHUStorage storage = storageFactory.getStorage(hu);

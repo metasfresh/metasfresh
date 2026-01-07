@@ -34,8 +34,10 @@ class InventoryValuationResponseToTabularStringConverter
 		row.put("ProductName", inventoryValue.getProductName());
 		row.put("Qty", inventoryValue.getQty());
 		row.put("UOMSymbol", inventoryValue.getUomSymbol());
-		row.put("CostPrice", inventoryValue.getCostPrice());
-		row.put("TotalAmt", inventoryValue.getTotalAmt());
+		row.put("Acct_CostPrice", inventoryValue.getAccounted().getCostPrice());
+		row.put("Acct_ExpectedAmt", inventoryValue.getAccounted().getExpectedAmt());
+		row.put("Acct_ErrorAmt", inventoryValue.getAccounted().getErrorAmt());
+		row.put("InventoryValueAcctAmt", inventoryValue.getInventoryValueAcctAmt());
 		return row;
 	}
 }

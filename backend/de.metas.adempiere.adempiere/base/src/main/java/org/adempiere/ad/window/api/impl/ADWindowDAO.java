@@ -1222,7 +1222,7 @@ public class ADWindowDAO implements IADWindowDAO
 		return queryBL.createQueryBuilder(I_AD_Tab.class)
 				.addEqualsFilter(I_AD_Tab.COLUMN_AD_Element_ID, null)
 				.create()
-				.listIds(AdTabId::ofRepoId);
+				.idsAsSet(AdTabId::ofRepoId);
 	}
 
 	@Override
@@ -1231,7 +1231,7 @@ public class ADWindowDAO implements IADWindowDAO
 		return queryBL.createQueryBuilder(I_AD_Window.class)
 				.addEqualsFilter(I_AD_Window.COLUMN_AD_Element_ID, null)
 				.create()
-				.listIds(AdWindowId::ofRepoId);
+				.idsAsSet(AdWindowId::ofRepoId);
 	}
 
 	@Override
@@ -1306,7 +1306,8 @@ public class ADWindowDAO implements IADWindowDAO
 	{
 		return queryBL.createQueryBuilder(I_AD_Window.class)
 				.addOnlyActiveRecordsFilter()
+				.orderBy(I_AD_Window.COLUMNNAME_AD_Window_ID)
 				.create()
-				.listIds(AdWindowId::ofRepoId);
+				.idsAsSet(AdWindowId::ofRepoId);
 	}
 }

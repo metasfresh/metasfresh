@@ -41,8 +41,6 @@ import org.compiere.util.DB;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.productioncandidate.service.PPOrderCandidateService;
 
-import java.util.Iterator;
-
 public class PP_Order_Candidate_CloseSelection extends JavaProcess implements IProcessPrecondition
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -60,17 +58,9 @@ public class PP_Order_Candidate_CloseSelection extends JavaProcess implements IP
 	}
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
-		final PInstanceId pinstanceId = getPinstanceId();
-
-		final Iterator<I_PP_Order_Candidate> orderCandidates = ppOrderCandidateService.retrieveOCForSelection(pinstanceId);
-
-		while (orderCandidates.hasNext())
-		{
-			ppOrderCandidateService.closeCandidate(orderCandidates.next());
-		}
-
+		ppOrderCandidateService.closeCandidates(getPinstanceId());
 		return MSG_OK;
 	}
 

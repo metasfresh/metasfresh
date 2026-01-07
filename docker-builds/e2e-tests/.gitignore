@@ -1,0 +1,10 @@
+# Test outputs (created during test runs)
+playwright-report-frontend/
+playwright-report-mobile/
+test-results-frontend/
+test-results-mobile/
+allure-results/
+allure-results-mobile/
+
+# Development artifacts
+.dev-artifacts/

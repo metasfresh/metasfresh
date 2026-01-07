@@ -98,7 +98,7 @@ public class DocTypeQuery
 			return clientAndOrgId(clientAndOrgId.getClientId(), clientAndOrgId.getOrgId());
 		}
 
-		public DocTypeQueryBuilder clientAndOrgId(@NonNull final ClientId clientId, @NonNull OrgId orgId)
+		public DocTypeQueryBuilder clientAndOrgId(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
 		{
 			adClientId(clientId.getRepoId());
 			adOrgId(orgId.getRepoId());

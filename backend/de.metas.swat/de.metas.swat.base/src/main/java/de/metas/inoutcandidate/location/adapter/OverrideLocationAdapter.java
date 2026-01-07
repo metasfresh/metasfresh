@@ -112,6 +112,12 @@ public class OverrideLocationAdapter
 	}
 
 	@Override
+	public void setRenderedAddress(final @NonNull RenderedAddressAndCapturedLocation from)
+	{
+		IDocumentLocationAdapter.super.setRenderedAddress(from);
+	}
+
+	@Override
 	public I_M_ShipmentSchedule getWrappedRecord()
 	{
 		return delegate;

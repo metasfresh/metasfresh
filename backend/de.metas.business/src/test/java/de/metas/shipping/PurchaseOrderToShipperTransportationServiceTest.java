@@ -1,26 +1,6 @@
 package de.metas.shipping;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_PaymentTerm;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Shipper;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
+import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.CurrencyCode;
@@ -40,8 +20,31 @@ import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.sscc18.ISSCC18CodeBL;
+import de.metas.sscc18.SSCC18;
+import de.metas.sscc18.impl.SSCC18CodeBL;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_PaymentTerm;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Shipper;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Collections;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -67,6 +70,9 @@ import de.metas.util.Services;
 
 public class PurchaseOrderToShipperTransportationServiceTest
 {
+	public static final int M_SHIPPER_ID = 1000000;
+
+	final SSCC18 constantSSCC18 = new SSCC18(0, "0718908 ", "562723189", 6);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private CurrencyId chf;
 
@@ -82,6 +88,14 @@ public class PurchaseOrderToShipperTransportationServiceTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		Services.registerService(ISSCC18CodeBL.class, new SSCC18CodeBL()
+		{
+			@Override
+			public SSCC18 generate(final @NonNull OrgId orgId)
+			{
+				return constantSSCC18;
+			}
+		});
 
 		chf = PlainCurrencyDAO.createCurrencyId(CurrencyCode.CHF);
 
@@ -91,8 +105,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 
 		product2 = createProduct("Product2", uom1);
 
-		final PurchaseOrderToShipperTransportationRepository repo = new PurchaseOrderToShipperTransportationRepository();
-		service = new PurchaseOrderToShipperTransportationService(repo);
+		service = PurchaseOrderToShipperTransportationService.newInstanceForUnitTesting();
 	}
 
 	@Test
@@ -109,11 +122,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 				Money.of(10, chf)
 		);
 
-		final IQueryFilter<de.metas.adempiere.model.I_C_Order> queryFilter = Services.get(IQueryBL.class)
-				.createCompositeQueryFilter(de.metas.adempiere.model.I_C_Order.class)
-				.addEqualsFilter(I_C_Order.COLUMNNAME_C_Order_ID, order);
-
-		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), queryFilter);
+		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), Collections.singletonList(order));
 
 		final List<I_M_ShippingPackage> shippingPackages = Services.get(IShipperTransportationDAO.class).retrieveShippingPackages(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()));
 
@@ -125,7 +134,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 		assertThat(shippingPackage.isToBeFetched());
 
 		// try to add it again
-		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), queryFilter);
+		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), Collections.singletonList(order));
 
 		// => it was not added again
 		assertThat(1).isEqualTo(shippingPackages.size());
@@ -152,15 +161,11 @@ public class PurchaseOrderToShipperTransportationServiceTest
 				Money.of(10, chf)
 		);
 
-		final IQueryFilter<de.metas.adempiere.model.I_C_Order> queryFilter = Services.get(IQueryBL.class)
-				.createCompositeQueryFilter(de.metas.adempiere.model.I_C_Order.class)
-				.addEqualsFilter(I_C_Order.COLUMNNAME_C_Order_ID, order);
-
-		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), queryFilter);
+		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), Collections.singletonList(order));
 
 		final List<I_M_ShippingPackage> shippingPackages = Services.get(IShipperTransportationDAO.class).retrieveShippingPackages(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()));
 
-		assertThat(1).isEqualTo(shippingPackages.size());
+		assertThat(shippingPackages.size()).isEqualTo(2);
 
 		final I_M_ShippingPackage shippingPackage = shippingPackages.get(0);
 
@@ -168,10 +173,10 @@ public class PurchaseOrderToShipperTransportationServiceTest
 		assertThat(shippingPackage.isToBeFetched());
 
 		// try to add it again
-		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), queryFilter);
+		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), Collections.singletonList(order));
 
 		// => it was not added again
-		assertThat(1).isEqualTo(shippingPackages.size());
+		assertThat(shippingPackages.size()).isEqualTo(2);
 	}
 
 	@Test
@@ -204,11 +209,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 				Money.of(10, chf)
 		);
 
-		final IQueryFilter<de.metas.adempiere.model.I_C_Order> queryFilter = Services.get(IQueryBL.class)
-				.createCompositeQueryFilter(de.metas.adempiere.model.I_C_Order.class)
-				.addInArrayFilter(I_C_Order.COLUMNNAME_C_Order_ID, order1, order2);
-
-		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), queryFilter);
+		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), ImmutableSet.of(order1,order2));
 
 		final List<I_M_ShippingPackage> shippingPackages = Services.get(IShipperTransportationDAO.class).retrieveShippingPackages(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()));
 
@@ -221,11 +222,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 
 		// add a new order
 
-		final IQueryFilter<de.metas.adempiere.model.I_C_Order> queryFilter2 = Services.get(IQueryBL.class)
-				.createCompositeQueryFilter(de.metas.adempiere.model.I_C_Order.class)
-				.addInArrayFilter(I_C_Order.COLUMNNAME_C_Order_ID, order1, order2, order3);
-
-		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), queryFilter2);
+		service.addPurchaseOrdersToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), ImmutableSet.of(order1,order2,order3));
 
 		final List<I_M_ShippingPackage> shippingPackages2 = Services.get(IShipperTransportationDAO.class).retrieveShippingPackages(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()));
 
@@ -295,6 +292,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 		order.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 
 		order.setC_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
+		order.setM_Shipper_ID(M_SHIPPER_ID);
 
 		order.setDatePromised(TimeUtil.asTimestamp(LocalDate.of(2019, 6, 6), orgDAO.getTimeZone(OrgId.ofRepoId(warehouse.getAD_Org_ID()))));
 

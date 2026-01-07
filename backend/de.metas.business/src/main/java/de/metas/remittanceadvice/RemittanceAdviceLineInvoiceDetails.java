@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,6 +24,7 @@ package de.metas.remittanceadvice;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import lombok.Builder;
@@ -55,20 +56,20 @@ public class RemittanceAdviceLineInvoiceDetails
 	Amount overUnderAmtInREMADVCurrency;
 
 	@NonNull
-	String invoiceDocType;
+	InvoiceDocBaseType invoiceDocType;
 
 	@NonNull
 	Instant invoiceDate;
 
 	@Builder
 	public RemittanceAdviceLineInvoiceDetails(@NonNull final InvoiceId invoiceId,
-			@NonNull final BPartnerId billBPartnerId,
-			@NonNull final BigDecimal invoiceAmt,
-			@NonNull final CurrencyId invoiceCurrencyId,
-			@NonNull final Amount invoiceAmtInREMADVCurrency,
-			@NonNull final Amount overUnderAmtInREMADVCurrency,
-			@NonNull final String invoiceDocType,
-			@NonNull final Instant invoiceDate)
+											  @NonNull final BPartnerId billBPartnerId,
+											  @NonNull final BigDecimal invoiceAmt,
+											  @NonNull final CurrencyId invoiceCurrencyId,
+											  @NonNull final Amount invoiceAmtInREMADVCurrency,
+											  @NonNull final Amount overUnderAmtInREMADVCurrency,
+											  @NonNull final InvoiceDocBaseType invoiceDocType,
+											  @NonNull final Instant invoiceDate)
 	{
 		Amount.assertSameCurrency(invoiceAmtInREMADVCurrency, overUnderAmtInREMADVCurrency);
 

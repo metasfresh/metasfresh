@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-rabbitmq
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,11 +25,13 @@ package de.metas.camel.externalsystems.rabbitmq;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.rabbitmq.api.DispatchMessageRequest;
+import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
+import org.apache.camel.test.junit5.CamelContextConfiguration;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
 
@@ -52,6 +54,14 @@ public class RabbitMQDispatcherRouteBuilderTests extends CamelTestSupport
 
 	private final static ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 
+	@Override
+	public void configureContext(@NonNull final CamelContextConfiguration camelContextConfiguration)
+	{
+		super.configureContext(camelContextConfiguration);
+
+		testConfiguration().withUseAdviceWith(true);
+	}
+	
 	@Test
 	public void happyFlow() throws Exception
 	{
@@ -74,7 +84,7 @@ public class RabbitMQDispatcherRouteBuilderTests extends CamelTestSupport
 
 		//then
 		assertThat(mockRabbitMQEndpointProcessor.called).isEqualTo(1);
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 	}
 
 	@Test
@@ -101,13 +111,7 @@ public class RabbitMQDispatcherRouteBuilderTests extends CamelTestSupport
 		//then
 		assertThat(mockRabbitMQNegativeResponseProcessor.called).isEqualTo(3);
 		assertThat(mockErrorRouteProcessor.called).isEqualTo(1);
-		assertMockEndpointsSatisfied();
-	}
-
-	@Override
-	public boolean isUseAdviceWith()
-	{
-		return true;
+		MockEndpoint.assertIsSatisfied(context);
 	}
 
 	@Override

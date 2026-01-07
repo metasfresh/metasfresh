@@ -11,7 +11,6 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.sourcehu.ISourceHuDAO;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
-import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -168,7 +167,7 @@ public class SourceHuDAO implements ISourceHuDAO
 		final IHUQueryBuilder huQueryBuilder = handlingUnitsDAO.createHUQueryBuilder()
 				.setOnlyActiveHUs(true)
 				.setAllowEmptyStorage()
-				.addOnlyWithProductIds(ProductId.toRepoIds(query.getProductIds()));
+				.addOnlyWithProductIds(query.getProductIds());
 
 		final ImmutableSet<WarehouseId> warehouseIds = query.getWarehouseIds();
 		if (warehouseIds != null && !warehouseIds.isEmpty())

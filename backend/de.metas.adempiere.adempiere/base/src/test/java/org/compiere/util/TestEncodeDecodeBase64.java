@@ -33,8 +33,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.adempiere.process.rpl.XMLHelper;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -62,36 +62,36 @@ public class TestEncodeDecodeBase64
 		final byte[] dataDecoded = Util.decodeBase64(new String(dataEncoded));
 		final String dataDecodedStr = new String(dataDecoded);
 
-		Assert.assertEquals(asList(data), asList(dataDecoded));
-		Assert.assertEquals(dataStr, dataDecodedStr);
+		Assertions.assertEquals(asList(data), asList(dataDecoded));
+		Assertions.assertEquals(dataStr, dataDecodedStr);
 	}
 
 	@Test
 	public void testEncodeDecodePDFByte() throws Exception
 	{
 		final InputStream in = getClass().getResourceAsStream(RESOURSE_TestPdf);
-		Assert.assertNotNull("Resource " + RESOURSE_TestPdf + " not found", in);
+		Assertions.assertNotNull(in, "Resource " + RESOURSE_TestPdf + " not found");
 
 		final byte[] data = Util.readBytes(in);
-		Assert.assertNotNull(data);
+		Assertions.assertNotNull(data);
 
 		final byte[] dataEncoded = Util.encodeBase64(data).getBytes();
-		Assert.assertNotNull(dataEncoded);
+		Assertions.assertNotNull(dataEncoded);
 
 		final byte[] dataDecoded = Util.decodeBase64(new String(dataEncoded));
-		Assert.assertNotNull(dataDecoded);
+		Assertions.assertNotNull(dataDecoded);
 
-		Assert.assertEquals("Expect same size", data.length, dataDecoded.length);
-		Assert.assertEquals(asList(data), asList(dataDecoded));
+		Assertions.assertEquals(data.length, dataDecoded.length, "Expect same size");
+		Assertions.assertEquals(asList(data), asList(dataDecoded));
 	}
 
 	@Test
 	public void testEncodeDecodeXMLDocument() throws Exception
 	{
 		final InputStream in = getClass().getResourceAsStream(RESOURSE_TestPdf);
-		Assert.assertNotNull("Resource " + RESOURSE_TestPdf + " not found", in);
+		Assertions.assertNotNull(in, "Resource " + RESOURSE_TestPdf + " not found");
 		final byte[] data = Util.readBytes(in);
-		Assert.assertNotNull(data);
+		Assertions.assertNotNull(data);
 
 		final String documentStr = createBase64XMLDocument(data);
 
@@ -101,7 +101,7 @@ public class TestEncodeDecodeBase64
 		final String dataStrReceived = getText(base64Element);
 		final byte[] dataReceived = Util.decodeBase64(dataStrReceived);
 
-		Assert.assertEquals(asList(data), asList(dataReceived));
+		Assertions.assertEquals(asList(data), asList(dataReceived));
 	}
 
 	// thx to http://www.java2s.com/Code/Java/XML/DOMUtilgetElementText.htm

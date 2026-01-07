@@ -14,7 +14,6 @@ import org.adempiere.exceptions.AdempiereException;
 import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
 @Builder(toBuilder = true)
@@ -54,7 +53,7 @@ public class CurrentPickingTarget
 	public boolean isPickingSlotSet() {return pickingSlot != null;}
 
 	public Optional<PickingSlotIdAndCaption> getPickingSlot() {return Optional.ofNullable(pickingSlot);}
-	
+
 	public Optional<PickingSlotId> getPickingSlotId() {return Optional.ofNullable(pickingSlot).map(PickingSlotIdAndCaption::getPickingSlotId);}
 
 	public Optional<String> getPickingSlotCaption() {return Optional.ofNullable(pickingSlot).map(PickingSlotIdAndCaption::getCaption);}
@@ -89,19 +88,34 @@ public class CurrentPickingTarget
 				.build();
 	}
 
-	public CurrentPickingTarget withClosedLuPickingTarget(@Nullable final Consumer<HuId> closedLuIdCollector)
+	public CurrentPickingTarget withClosedLUAndTUPickingTarget(@Nullable final LUIdsAndTopLevelTUIdsCollector closedHuIdCollector)
 	{
-		if (luPickingTarget == null)
+		// already closed
+		if (this.luPickingTarget == null && this.tuPickingTarget == null)
 		{
 			return this;
 		}
 
-		if (closedLuIdCollector != null && luPickingTarget.getLuId() != null)
+		if (closedHuIdCollector != null)
 		{
-			closedLuIdCollector.accept(luPickingTarget.getLuId());
+			if (luPickingTarget == null || luPickingTarget.isNewLU())
+			{
+				// collect only top level TUs i.e. no LUs
+				if (tuPickingTarget != null && tuPickingTarget.isExistingTU())
+				{
+					closedHuIdCollector.addTopLevelTUId(tuPickingTarget.getTuIdNotNull());
+				}
+			}
+			else if (luPickingTarget.isExistingLU())
+			{
+				closedHuIdCollector.addLUId(luPickingTarget.getLuIdNotNull());
+			}
 		}
 
-		return withLuPickingTarget((LUPickingTarget)null);
+		return toBuilder()
+				.luPickingTarget(null)
+				.tuPickingTarget(null)
+				.build();
 	}
 
 	@NonNull
@@ -113,5 +127,10 @@ public class CurrentPickingTarget
 		return TUPickingTarget.equals(this.tuPickingTarget, tuPickingTarget)
 				? this
 				: toBuilder().tuPickingTarget(tuPickingTarget).build();
+	}
+
+	public boolean matches(@NonNull final HuId huId)
+	{
+		return luPickingTarget != null && HuId.equals(luPickingTarget.getLuId(), huId);
 	}
 }

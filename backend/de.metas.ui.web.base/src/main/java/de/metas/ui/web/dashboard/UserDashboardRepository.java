@@ -506,7 +506,7 @@ public class UserDashboardRepository
 				.endOrderBy()
 				//
 				.create()
-				.listIds(UserDashboardItemId::ofRepoId);
+				.idsAsSet(UserDashboardItemId::ofRepoId);
 	}
 
 	private int retrieveLastSeqNo(final UserDashboardId dashboardId, final DashboardWidgetType dashboardWidgetType)

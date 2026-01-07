@@ -147,7 +147,7 @@ class DocumentReferences extends Component {
         {this.renderData()}
         {loading ? (
           <div className="docref-spinner-wrapper">
-            <SpinnerOverlay iconSize={50} />
+            <SpinnerOverlay iconSize={50} spinnerType="inline" />
           </div>
         ) : null}
       </div>

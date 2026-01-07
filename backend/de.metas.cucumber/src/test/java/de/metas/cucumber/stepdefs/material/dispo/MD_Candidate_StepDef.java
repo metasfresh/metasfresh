@@ -25,7 +25,7 @@ package de.metas.cucumber.stepdefs.material.dispo;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -348,7 +348,6 @@ public class MD_Candidate_StepDef
 				throw new AdempiereException("Event type not handled: " + eventType);
 		}
 
-		//noinspection deprecation
 		postMaterialEventService.enqueueEventNow(event);
 	}
 

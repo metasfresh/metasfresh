@@ -54,7 +54,7 @@ class JsonRemittanceAdviceLineProducerTest
 
 		remadvListLineItemExtensionType.setMonetaryAmounts(monetaryAmounts);
 
-		final Optional<BigDecimal> serviceFeeVATRate = JsonRemittanceAdviceLineProducer.of(remadvListLineItemExtensionType).getServiceFeeVATRate(monetaryAmounts);
+		final Optional<BigDecimal> serviceFeeVATRate = JsonRemittanceAdviceLineProducer.of("10", remadvListLineItemExtensionType).getServiceFeeVATRate(monetaryAmounts);
 
 		assertThat(serviceFeeVATRate).isPresent();
 		assertThat(serviceFeeVATRate.get()).isEqualByComparingTo("7.7");

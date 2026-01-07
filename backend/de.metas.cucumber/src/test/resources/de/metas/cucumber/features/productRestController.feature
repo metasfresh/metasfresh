@@ -1,11 +1,15 @@
 @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00800
 @ghActions:run_on_executor6
 Feature:product get/create/update using metasfresh api
+## F00800: REST API
   As a REST-API invoker
   I want want to be able to upsert products
-  
+
   Background:
     Given infrastructure and metasfresh are running
+    And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And remove external reference if exists:
       | ExternalSystem | ExternalReference | Type     |
@@ -15,6 +19,8 @@ Feature:product get/create/update using metasfresh api
     And no product with value 'code345' exists
 
   @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00800
   Scenario: create Product request, as a REST-API invoker
   I want to be able to upsert products
 
@@ -40,10 +46,7 @@ Feature:product get/create/update using metasfresh api
         "typeSet": true,
         "uomCode": "PCE",
         "uomCodeSet": true,
-        "ean": "ean_test",
-        "eanSet": true,
-        "gtin": "gtin_test",
-        "gtinSet": true,
+        "gtinSet": true, "gtin": "0575095404663",
         "description": "test_description",
         "descriptionSet": true,
         "discontinued": null,
@@ -67,10 +70,7 @@ Feature:product get/create/update using metasfresh api
             "productNoSet": true,
             "description": "test",
             "descriptionSet": true,
-            "cuEAN": "ean_test",
-            "cuEANSet": true,
-            "gtin": "gtin_test",
-            "gtinSet": true,
+            "gtinSet": true, "gtin": "1101899104400",
             "customerLabelName": "test",
             "customerLabelNameSet": true,
             "ingredients": "test",
@@ -101,10 +101,7 @@ Feature:product get/create/update using metasfresh api
             "productNoSet": true,
             "description": "test",
             "descriptionSet": true,
-            "cuEAN": "ean_test",
-            "cuEANSet": true,
-            "gtin": "gtin_test",
-            "gtinSet": true,
+            "gtinSet": true, "gtin": "4418546988533",
             "customerLabelName": "test",
             "customerLabelNameSet": true,
             "ingredients": "test",
@@ -124,6 +121,18 @@ Feature:product get/create/update using metasfresh api
             "usedForVendor": null,
             "usedForVendorSet": false
           }
+        ],
+        "uomConversions": [
+          {
+            "fromUomCode": "PCE",
+            "toUomCode": "KGM",
+            "fromToMultiplier": 0.25
+          },
+          {
+            "fromUomCode": "PCE",
+            "toUomCode": "GRM",
+            "fromToMultiplier": 0.00025
+          }
         ]
       }
     }
@@ -138,8 +147,8 @@ Feature:product get/create/update using metasfresh api
       | M_Product_ID.Identifier | externalIdentifier |
       | p_1                     | ext-ALBERTA-345    |
     Then verify product info
-      | M_Product_ID.Identifier | Value   | Name         | ProductType | C_UOM_ID.X12DE355 | UPC      | GTIN      | Description      | IsActive |
-      | p_1                     | code345 | Product_Test | ITEM        | PCE               | ean_test | gtin_test | test_description | true     |
+      | M_Product_ID.Identifier | Value   | Name         | ProductType | C_UOM_ID.X12DE355 | UPC           | GTIN          | Description      | IsActive |
+      | p_1                     | code345 | Product_Test | ITEM        | PCE               | 0575095404663 | 0575095404663 | test_description | true     |
     Then locate bpartner by external identifier
       | C_BPartner_ID.Identifier | externalIdentifier |
       | bpartner_1               | ext-ALBERTA-345    |
@@ -149,14 +158,20 @@ Feature:product get/create/update using metasfresh api
       | bp_1                             | p_1                     | bpartner_1               |
       | bp_2                             | p_1                     | bpartner_2               |
     And verify bpartner product info
-      | C_BPartner_Product_ID.Identifier | IsActive | SeqNo | ProductNo | Description | EAN_CU   | GTIN      | CustomerLabelName | Ingredients | IsExcludedFromSale | ExclusionFromSaleReason | IsExcludedFromPurchase | ExclusionFromPurchaseReason |
-      | bp_1                             | true     | 10    | test      | test        | ean_test | gtin_test | test              | test        | true               | Test                    | false                  | null                        |
-      | bp_2                             | true     | 10    | test      | test        | ean_test | gtin_test | test              | test        | false              | null                    | true                   | test                        |
+      | C_BPartner_Product_ID.Identifier | IsActive | SeqNo | ProductNo | Description | EAN_CU        | GTIN          | CustomerLabelName | Ingredients | IsExcludedFromSale | ExclusionFromSaleReason | IsExcludedFromPurchase | ExclusionFromPurchaseReason |
+      | bp_1                             | true     | 10    | test      | test        | 1101899104400 | 1101899104400 | test              | test        | true               | Test                    | false                  | null                        |
+      | bp_2                             | true     | 10    | test      | test        | 4418546988533 | 4418546988533 | test              | test        | false              | null                    | true                   | test                        |
     And verify that S_ExternalReference was created
       | ExternalSystem | Type    | ExternalReference | ExternalReferenceURL         |
       | ALBERTA        | Product | 345               | www.ExternalReferenceURL.com |
+    And validate C_UOM_Conversion:
+      | M_Product_ID.Identifier | C_UOM_ID.X12DE355 | C_UOM_To_ID.X12DE355 | MultiplyRate |
+      | p_1                     | PCE               | KGM                  | 0.25         |
+      | p_1                     | PCE               | GRM                  | 0.00025      |
 
   @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00800
   Scenario: get Product, as a REST-API invoker
   I want to be able to retrieve products
 
@@ -182,10 +197,7 @@ Feature:product get/create/update using metasfresh api
         "typeSet": true,
         "uomCode": "PCE",
         "uomCodeSet": true,
-        "ean": "ean_test",
-        "eanSet": true,
-        "gtin": "gtin_test",
-        "gtinSet": true,
+        "gtinSet": true, "gtin": "0575095404663",
         "description": "test_description",
         "descriptionSet": true,
         "discontinued": null,
@@ -209,10 +221,7 @@ Feature:product get/create/update using metasfresh api
             "productNoSet": true,
             "description": "test",
             "descriptionSet": true,
-            "cuEAN": "ean_test",
-            "cuEANSet": true,
-            "gtin": "gtin_test",
-            "gtinSet": true,
+            "gtinSet": true, "gtin": "1101899104400",
             "customerLabelName": "test",
             "customerLabelNameSet": true,
             "ingredients": "test",
@@ -247,8 +256,8 @@ Feature:product get/create/update using metasfresh api
       | M_Product_ID.Identifier | externalIdentifier |
       | p_1                     | ext-ALBERTA-345    |
     Then verify product info
-      | M_Product_ID.Identifier | Value     | Name           | ProductType | C_UOM_ID.X12DE355 | UPC      | GTIN      | Description      | IsActive |
-      | p_1                     | code345_2 | Product_Test_2 | ITEM        | PCE               | ean_test | gtin_test | test_description | true     |
+      | M_Product_ID.Identifier | Value     | Name           | ProductType | C_UOM_ID.X12DE355 | UPC           | GTIN          | Description      | IsActive |
+      | p_1                     | code345_2 | Product_Test_2 | ITEM        | PCE               | 0575095404663 | 0575095404663 | test_description | true     |
     Then locate bpartner by external identifier
       | C_BPartner_ID.Identifier | externalIdentifier |
       | bpartner_1               | ext-ALBERTA-345    |
@@ -256,8 +265,8 @@ Feature:product get/create/update using metasfresh api
       | C_BPartner_Product_ID.Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier |
       | bp_1                             | p_1                     | bpartner_1               |
     And verify bpartner product info
-      | C_BPartner_Product_ID.Identifier | IsActive | SeqNo | ProductNo | Description | EAN_CU   | GTIN      | CustomerLabelName | Ingredients | IsExcludedFromSale | ExclusionFromSaleReason | IsExcludedFromPurchase | ExclusionFromPurchaseReason |
-      | bp_1                             | true     | 10    | test      | test        | ean_test | gtin_test | test              | test        | true               | testForSale             | true                   | testForPurchase             |
+      | C_BPartner_Product_ID.Identifier | IsActive | SeqNo | ProductNo | Description | EAN_CU        | GTIN          | CustomerLabelName | Ingredients | IsExcludedFromSale | ExclusionFromSaleReason | IsExcludedFromPurchase | ExclusionFromPurchaseReason |
+      | bp_1                             | true     | 10    | test      | test        | 1101899104400 | 1101899104400 | test              | test        | true               | testForSale             | true                   | testForPurchase             |
     And verify that S_ExternalReference was created
       | ExternalSystem | Type    | ExternalReference | ExternalReferenceURL         |
       | ALBERTA        | Product | 345               | www.ExternalReferenceURL.com |
@@ -265,11 +274,13 @@ Feature:product get/create/update using metasfresh api
 """
 """
     Then validate get products response
-      | M_Product_ID.Identifier | Value     | Name           | UOMSymbol | UPC      | Description      | C_BPartner_ID.Identifier | bpartners.ProductNo | bpartners.IsExcludedFromSale | bpartners.ExclusionFromSaleReason | bpartners.IsExcludedFromPurchase | bpartners.ExclusionFromPurchaseReason |
-      | p_1                     | code345_2 | Product_Test_2 | Stk       | ean_test | test_description | bpartner_1               | test                | true                         | testForSale                       | true                             | testForPurchase                       |
+      | M_Product_ID.Identifier | Value     | Name           | UOMSymbol | GTIN          | Description      | C_BPartner_ID.Identifier | bpartners.ProductNo | bpartners.IsExcludedFromSale | bpartners.ExclusionFromSaleReason | bpartners.IsExcludedFromPurchase | bpartners.ExclusionFromPurchaseReason |
+      | p_1                     | code345_2 | Product_Test_2 | Stk       | 0575095404663 | test_description | bpartner_1               | test                | true                         | testForSale                       | true                             | testForPurchase                       |
 
 
   @from:cucumber
+@allure.label.epic:E0291_REST_API
+@allure.label.feature:F00800
   Scenario: Retrieve product by external identifier
 
     Given load M_Product_Category:
@@ -277,23 +288,25 @@ Feature:product get/create/update using metasfresh api
       | standard_category                | Standard | Standard |
 
     And metasfresh contains M_Products:
-      | Identifier | Value        | Name        | OPT.M_Product_Category_ID.Identifier |
-      | product_1  | productValue | productName | standard_category                    |
+      | Identifier | M_Product_Category_ID |
+      | product_1  | standard_category     |
 
     And metasfresh contains C_BPartners:
-      | Identifier | Name         | OPT.IsVendor | OPT.IsCustomer |
-      | bpartner_1 | BPartnerName | N            | Y              |
+      | Identifier | IsVendor | IsCustomer |
+      | bpartner_1 | N        | Y          |
 
-    And metasfresh contains C_BPartner_Products:
-      | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.IsExcludedFromSale | OPT.ExclusionFromSaleReason | OPT.IsExcludedFromPurchase | OPT.ExclusionFromPurchaseReason | OPT.ProductNo | OPT.UPC |
-      | bpartner_1               | product_1               | true                   | testForSale                 | true                       | testForPurchase                 | bpProductNo   | ean     |
+    And metasfresh contains C_BPartner_Product
+      | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.IsExcludedFromSale | OPT.ExclusionFromSaleReason | OPT.IsExcludedFromPurchase | OPT.ExclusionFromPurchaseReason | OPT.ProductNo | GTIN          |
+      | bpartner_1               | product_1               | true                   | testForSale                 | true                       | testForPurchase                 | bpProductNo   | 1101899104400 |
 
     And metasfresh contains S_ExternalReferences:
-      | ExternalSystem.Code | ExternalReference  | ExternalReferenceType.Code | RecordId.Identifier |
-      | LeichUndMehl        | productExternalRef | Product                    | product_1           |
+      | ExternalSystem.Code | ExternalReference    | ExternalReferenceType.Code | RecordId.Identifier |
+      | LeichUndMehl        | productExternalRef_1 | Product                    | product_1           |
 
-    When the metasfresh REST-API endpoint path 'api/v2/material/products/001/ext-LeichUndMehl-productExternalRef' receives a 'GET' request
+    When the metasfresh REST-API endpoint path 'api/v2/material/products/001/ext-LeichUndMehl-productExternalRef_1' receives a 'GET' request
 
     Then validate retrieve product response
-      | M_Product_ID.Identifier | Name        | UomSymbol | M_Product_Category_ID.Identifier | C_BPartner_ID.Identifier | bpartners.ProductNo | bpartners.IsExcludedFromSale | bpartners.ExclusionFromSaleReason | bpartners.IsExcludedFromPurchase | bpartners.ExclusionFromPurchaseReason | bpartners.ean |
-      | product_1               | productName | Stk       | standard_category                | bpartner_1               | bpProductNo         | true                         | testForSale                       | true                             | testForPurchase                       | ean           |
+      | M_Product_ID.Identifier | UomSymbol | M_Product_Category_ID.Identifier | C_BPartner_ID.Identifier | bpartners.ProductNo | bpartners.IsExcludedFromSale | bpartners.ExclusionFromSaleReason | bpartners.IsExcludedFromPurchase | bpartners.ExclusionFromPurchaseReason | bpartners.ean |
+      | product_1               | Stk       | standard_category                | bpartner_1               | bpProductNo         | true                         | testForSale                       | true                             | testForPurchase                       | 1101899104400 |
+
+

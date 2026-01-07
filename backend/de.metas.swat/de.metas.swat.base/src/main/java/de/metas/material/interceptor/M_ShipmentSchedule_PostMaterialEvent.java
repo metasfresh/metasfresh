@@ -21,6 +21,7 @@ import de.metas.material.event.shipmentschedule.ShipmentScheduleDetail;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
 import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
@@ -70,7 +71,6 @@ public class M_ShipmentSchedule_PostMaterialEvent
 			ModelValidator.TYPE_AFTER_CHANGE,
 			ModelValidator.TYPE_BEFORE_DELETE /* before delete because we still need the M_ShipmentSchedule_ID */
 	}, ifColumnsChanged = {
-			I_M_ShipmentSchedule.COLUMNNAME_IsClosed,
 			I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Calculated,
 			I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override,
 			I_M_ShipmentSchedule.COLUMNNAME_QtyReserved,
@@ -85,6 +85,28 @@ public class M_ShipmentSchedule_PostMaterialEvent
 	public void createAndFireEvent(
 			@NonNull final I_M_ShipmentSchedule schedule,
 			@NonNull final ModelChangeType timing)
+	{
+		notifyShipmentSchedule(schedule, timing);
+	}
+
+	@ModelChange(timings = {
+			ModelValidator.TYPE_AFTER_NEW,
+			ModelValidator.TYPE_AFTER_CHANGE,
+			ModelValidator.TYPE_BEFORE_DELETE /* before delete because we still need the M_ShipmentSchedule_ID */
+	}, ifColumnsChanged = {
+			I_M_ShipmentSchedule.COLUMNNAME_IsClosed })
+	public void createAndFireEventIfClosed(
+			@NonNull final I_M_ShipmentSchedule schedule,
+			@NonNull final ModelChangeType timing)
+	{
+		if (!schedule.isClosed())
+		{
+			return;
+		}
+		notifyShipmentSchedule(schedule, timing);
+	}
+
+	private void notifyShipmentSchedule(final @NonNull I_M_ShipmentSchedule schedule, final @NonNull ModelChangeType timing)
 	{
 		final AbstractShipmentScheduleEvent event = createShipmentScheduleEvent(schedule, timing);
 
@@ -127,18 +149,19 @@ public class M_ShipmentSchedule_PostMaterialEvent
 				.toMinMaxDescriptor();
 
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(shipmentSchedule.getAD_Client_ID(), shipmentSchedule.getAD_Org_ID());
+		final UserId updatedBy = UserId.ofRepoId(shipmentSchedule.getUpdatedBy());
 
 		return ShipmentScheduleCreatedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(clientAndOrgId))
+				.eventDescriptor(EventDescriptor.ofClientOrgAndUserId(clientAndOrgId, updatedBy))
 				.materialDescriptor(materialDescriptor)
 				.shipmentScheduleDetail(ShipmentScheduleDetail.builder()
-												.orderedQuantity(shipmentScheduleEffectiveBL.computeQtyOrdered(shipmentSchedule))
-												.reservedQuantity(shipmentSchedule.getQtyReserved())
-												.reservedQuantityDelta(shipmentSchedule.getQtyReserved())
-												.orderedQuantityDelta(shipmentSchedule.getQtyOrdered())
-												// dev-note: no old data
-												.oldShipmentScheduleData(null)
-												.build())
+						.orderedQuantity(shipmentScheduleEffectiveBL.computeQtyOrdered(shipmentSchedule))
+						.reservedQuantity(shipmentSchedule.getQtyReserved())
+						.reservedQuantityDelta(shipmentSchedule.getQtyReserved())
+						.orderedQuantityDelta(shipmentSchedule.getQtyOrdered())
+						// dev-note: no old data
+						.oldShipmentScheduleData(null)
+						.build())
 				.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID())
 				.documentLineDescriptor(documentLineDescriptor)
 				.minMaxDescriptor(minMaxDescriptor)
@@ -189,19 +212,19 @@ public class M_ShipmentSchedule_PostMaterialEvent
 		{
 			shipmentScheduleUpdatedEventBuilder
 					.shipmentScheduleDetail(shipmentScheduleDetailBuilder
-													.reservedQuantityDelta(shipmentSchedule.getQtyReserved())
-													.orderedQuantityDelta(qtyOrdered)
-													.oldShipmentScheduleData(buildOldShipmentScheduleData(oldMaterialDescriptor, oldShipmentSchedule))
-													.build());
+							.reservedQuantityDelta(shipmentSchedule.getQtyReserved())
+							.orderedQuantityDelta(qtyOrdered)
+							.oldShipmentScheduleData(buildOldShipmentScheduleData(oldMaterialDescriptor, oldShipmentSchedule))
+							.build());
 		}
 		else
 		{
 			final BigDecimal oldQtyOrdered = shipmentScheduleEffectiveBL.computeQtyOrdered(oldShipmentSchedule);
 			shipmentScheduleUpdatedEventBuilder
 					.shipmentScheduleDetail(shipmentScheduleDetailBuilder
-													.reservedQuantityDelta(shipmentSchedule.getQtyReserved().subtract(oldShipmentSchedule.getQtyReserved()))
-													.orderedQuantityDelta(qtyOrdered.subtract(oldQtyOrdered))
-													.build());
+							.reservedQuantityDelta(shipmentSchedule.getQtyReserved().subtract(oldShipmentSchedule.getQtyReserved()))
+							.orderedQuantityDelta(qtyOrdered.subtract(oldQtyOrdered))
+							.build());
 		}
 	}
 
@@ -244,11 +267,11 @@ public class M_ShipmentSchedule_PostMaterialEvent
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(shipmentSchedule.getAD_Client_ID(), shipmentSchedule.getAD_Org_ID()))
 				.materialDescriptor(materialDescriptor)
 				.shipmentScheduleDetail(ShipmentScheduleDetail.builder()
-												.orderedQuantity(qtyOrdered)
-												.orderedQuantityDelta(qtyOrdered)
-												.reservedQuantity(shipmentSchedule.getQtyReserved())
-												.reservedQuantityDelta(shipmentSchedule.getQtyReserved())
-												.build())
+						.orderedQuantity(qtyOrdered)
+						.orderedQuantityDelta(qtyOrdered)
+						.reservedQuantity(shipmentSchedule.getQtyReserved())
+						.reservedQuantityDelta(shipmentSchedule.getQtyReserved())
+						.build())
 				.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID())
 				.build();
 	}
@@ -265,6 +288,7 @@ public class M_ShipmentSchedule_PostMaterialEvent
 				.date(preparationDate.toInstant())
 				.productDescriptor(productDescriptor)
 				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule))
+				.locatorId(shipmentScheduleEffectiveBL.getDefaultLocatorId(shipmentSchedule))
 				.customerId(shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule))
 				.quantity(orderedQuantity.subtract(getDeliveredQtyFromHUs(shipmentSchedule)))
 				.build();

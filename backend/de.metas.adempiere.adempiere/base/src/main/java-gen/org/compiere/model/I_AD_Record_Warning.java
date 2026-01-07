@@ -119,6 +119,28 @@ public interface I_AD_Record_Warning
 	String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
 
 	/**
+	 * Set Contact.
+	 * User within the system - Internal or Business Partner Contact
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAD_User_ID (int AD_User_ID);
+
+	/**
+	 * Get Contact.
+	 * User within the system - Internal or Business Partner Contact
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_User_ID();
+
+	String COLUMNNAME_AD_User_ID = "AD_User_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -142,6 +164,27 @@ public interface I_AD_Record_Warning
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Acknowledged.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAcknowledged (boolean IsAcknowledged);
+
+	/**
+	 * Get Acknowledged.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAcknowledged();
+
+	ModelColumn<I_AD_Record_Warning, Object> COLUMN_IsAcknowledged = new ModelColumn<>(I_AD_Record_Warning.class, "IsAcknowledged", null);
+	String COLUMNNAME_IsAcknowledged = "IsAcknowledged";
 
 	/**
 	 * Set Active.
@@ -211,6 +254,68 @@ public interface I_AD_Record_Warning
 
 	ModelColumn<I_AD_Record_Warning, Object> COLUMN_Record_ID = new ModelColumn<>(I_AD_Record_Warning.class, "Record_ID", null);
 	String COLUMNNAME_Record_ID = "Record_ID";
+
+	/**
+	 * Set Root Table.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setRoot_AD_Table_ID (int Root_AD_Table_ID);
+
+	/**
+	 * Get Root Table.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getRoot_AD_Table_ID();
+
+	String COLUMNNAME_Root_AD_Table_ID = "Root_AD_Table_ID";
+
+	/**
+	 * Set Root Record.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setRoot_Record_ID (int Root_Record_ID);
+
+	/**
+	 * Get Root Record.
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getRoot_Record_ID();
+
+	ModelColumn<I_AD_Record_Warning, Object> COLUMN_Root_Record_ID = new ModelColumn<>(I_AD_Record_Warning.class, "Root_Record_ID", null);
+	String COLUMNNAME_Root_Record_ID = "Root_Record_ID";
+
+	/**
+	 * Set Severity.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setSeverity (java.lang.String Severity);
+
+	/**
+	 * Get Severity.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getSeverity();
+
+	ModelColumn<I_AD_Record_Warning, Object> COLUMN_Severity = new ModelColumn<>(I_AD_Record_Warning.class, "Severity", null);
+	String COLUMNNAME_Severity = "Severity";
 
 	/**
 	 * Get Updated.

@@ -145,7 +145,8 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 		final List<I_M_HU> extractedCUs = HUTransformService.builder()
 				.emptyHUListener(emptyHUListener)
 				.build()
-				.husToNewCUs(request);
+				.husToNewCUs(request)
+				.getNewCUs();
 
 		final PPOrderLinesView ppOrderView = getView();
 

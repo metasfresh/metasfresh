@@ -22,23 +22,24 @@ package org.adempiere.util.trxConstraints.api.impl;
  * #L%
  */
 
-
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.trxConstraints.api.ITrxConstraints;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class TrxConstraintsBLTest
 {
-	/** service under test */
+	/**
+	 * service under test
+	 */
 	private TrxConstraintsBL trxConstraintsBL;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -64,10 +65,11 @@ public class TrxConstraintsBLTest
 		// Copy to constraints2 and test
 		trxConstraintsBL.saveConstraints();
 		final ITrxConstraints constraints2 = trxConstraintsBL.getConstraints();
-		Assert.assertNotSame(constraints1, constraints2);
-		Assert.assertEquals("Invalid AllowedTrxNamePrefixes for: " + constraints2,
+		Assertions.assertNotSame(constraints1, constraints2);
+		Assertions.assertEquals(
 				CollectionUtils.asSet("Trx1"), // expected
-				constraints2.getAllowedTrxNamePrefixes() // actual
+				constraints2.getAllowedTrxNamePrefixes(), // actual
+				"Invalid AllowedTrxNamePrefixes for: " + constraints2
 		);
 		//
 		constraints2.addAllowedTrxNamePrefix("Trx2");
@@ -76,10 +78,11 @@ public class TrxConstraintsBLTest
 		// Copy to constraints3 and test
 		trxConstraintsBL.saveConstraints();
 		final ITrxConstraints constraints3 = trxConstraintsBL.getConstraints();
-		Assert.assertNotSame(constraints2, constraints3);
-		Assert.assertEquals("Invalid AllowedTrxNamePrefixes for: " + constraints3,
+		Assertions.assertNotSame(constraints2, constraints3);
+		Assertions.assertEquals(
 				CollectionUtils.asSet("Trx1", "Trx2"), // expected
-				constraints3.getAllowedTrxNamePrefixes() // actual
+				constraints3.getAllowedTrxNamePrefixes(), // actual
+				"Invalid AllowedTrxNamePrefixes for: " + constraints3
 		);
 		//
 		constraints3.addAllowedTrxNamePrefix("Trx3");
@@ -89,10 +92,11 @@ public class TrxConstraintsBLTest
 		{
 			trxConstraintsBL.restoreConstraints();
 			final ITrxConstraints constraints2Restored = trxConstraintsBL.getConstraints();
-			Assert.assertSame(constraints2, constraints2Restored);
-			Assert.assertEquals("Invalid AllowedTrxNamePrefixes for: " + constraints2Restored,
+			Assertions.assertSame(constraints2, constraints2Restored);
+			Assertions.assertEquals(
 					CollectionUtils.asSet("Trx1", "Trx2"), // expected
-					constraints2Restored.getAllowedTrxNamePrefixes() // actual
+					constraints2Restored.getAllowedTrxNamePrefixes(), // actual
+					"Invalid AllowedTrxNamePrefixes for: " + constraints2Restored
 			);
 		}
 
@@ -101,10 +105,10 @@ public class TrxConstraintsBLTest
 		{
 			trxConstraintsBL.restoreConstraints();
 			final ITrxConstraints constraints1Restored = trxConstraintsBL.getConstraints();
-			Assert.assertSame(constraints1, constraints1Restored);
-			Assert.assertEquals("Invalid AllowedTrxNamePrefixes for: " + constraints1Restored,
-					CollectionUtils.asSet("Trx1"), // expected
-					constraints1Restored.getAllowedTrxNamePrefixes() // actual
+			Assertions.assertSame(constraints1, constraints1Restored);
+			Assertions.assertEquals(CollectionUtils.asSet("Trx1"), // expected
+					constraints1Restored.getAllowedTrxNamePrefixes(), // actual
+					"Invalid AllowedTrxNamePrefixes for: " + constraints1Restored
 			);
 		}
 
@@ -113,10 +117,10 @@ public class TrxConstraintsBLTest
 		{
 			trxConstraintsBL.restoreConstraints();
 			final ITrxConstraints constraints1Restored = trxConstraintsBL.getConstraints();
-			Assert.assertSame(constraints1, constraints1Restored);
-			Assert.assertEquals("Invalid AllowedTrxNamePrefixes for: " + constraints1Restored,
-					CollectionUtils.asSet("Trx1"), // expected
-					constraints1Restored.getAllowedTrxNamePrefixes() // actual
+			Assertions.assertSame(constraints1, constraints1Restored);
+			Assertions.assertEquals(CollectionUtils.asSet("Trx1"), // expected
+					constraints1Restored.getAllowedTrxNamePrefixes(), // actual
+					"Invalid AllowedTrxNamePrefixes for: " + constraints1Restored
 			);
 		}
 

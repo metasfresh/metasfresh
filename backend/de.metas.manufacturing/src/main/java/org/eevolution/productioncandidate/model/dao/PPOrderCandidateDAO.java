@@ -30,6 +30,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.ASIQueryFilterModifier;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.eevolution.api.PPOrderId;
@@ -39,15 +40,16 @@ import org.eevolution.model.I_PP_OrderCandidate_PP_Order;
 import org.eevolution.model.I_PP_OrderLine_Candidate;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-@Component
+@Repository
 public class PPOrderCandidateDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -59,7 +61,7 @@ public class PPOrderCandidateDAO
 	}
 
 	@NonNull
-	public ImmutableList<I_PP_Order_Candidate> getByIds(@NonNull final Set<PPOrderCandidateId> ppOrderCandidateIds)
+	public ImmutableList<I_PP_Order_Candidate> getByIds(@NonNull final Collection<PPOrderCandidateId> ppOrderCandidateIds)
 	{
 		if (ppOrderCandidateIds.isEmpty())
 		{
@@ -123,15 +125,26 @@ public class PPOrderCandidateDAO
 	}
 
 	@NonNull
-	public ImmutableList<I_PP_OrderCandidate_PP_Order> getOrderAllocations(@NonNull final PPOrderCandidateId ppOrderCandidateId)
+	public ImmutableList<I_PP_OrderCandidate_PP_Order> getOrderAllocationsByCandidateIds(@NonNull final Collection<PPOrderCandidateId> ppOrderCandidateIds)
 	{
+		if (ppOrderCandidateIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
 		return queryBL
 				.createQueryBuilder(I_PP_OrderCandidate_PP_Order.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_PP_OrderCandidate_PP_Order.COLUMNNAME_PP_Order_Candidate_ID, ppOrderCandidateId.getRepoId())
+				.addInArrayFilter(I_PP_OrderCandidate_PP_Order.COLUMNNAME_PP_Order_Candidate_ID, ppOrderCandidateIds)
 				.create()
 				.stream()
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public ImmutableList<I_PP_OrderCandidate_PP_Order> getOrderAllocations(@NonNull final PPOrderCandidateId ppOrderCandidateId)
+	{
+		return getOrderAllocationsByCandidateIds(ImmutableSet.of(ppOrderCandidateId));
 	}
 
 	public ImmutableSet<PPOrderId> getPPOrderIds(@NonNull final PPOrderCandidateId ppOrderCandidateId)
@@ -201,29 +214,6 @@ public class PPOrderCandidateDAO
 				.forEach(simulatedOrder -> InterfaceWrapperHelper.delete(simulatedOrder, failIfProcessed));
 	}
 
-	public void markAsProcessed(@NonNull final I_PP_Order_Candidate candidate)
-	{
-		if (candidate.isProcessed())
-		{
-			return;
-		}
-
-		candidate.setProcessed(true);
-
-		save(candidate);
-	}
-
-	public void closeCandidate(@NonNull final PPOrderCandidateId ppOrderCandidateId)
-	{
-		final I_PP_Order_Candidate ppOrderCandidate = getById(ppOrderCandidateId);
-
-		ppOrderCandidate.setIsClosed(true);
-		ppOrderCandidate.setProcessed(true);
-		ppOrderCandidate.setQtyEntered(ppOrderCandidate.getQtyProcessed());
-
-		save(ppOrderCandidate);
-	}
-
 	private void deleteLines(@NonNull final I_PP_Order_Candidate ppOrderCandidate)
 	{
 		deleteLines(PPOrderCandidateId.ofRepoId(ppOrderCandidate.getPP_Order_Candidate_ID()));
@@ -235,5 +225,21 @@ public class PPOrderCandidateDAO
 				.addEqualsFilter(I_PP_OrderLine_Candidate.COLUMNNAME_PP_Order_Candidate_ID, ppOrderCandidateId)
 				.create()
 				.deleteDirectly();
+	}
+
+	public List<PPOrderCandidateId> listIdsByQuery(@NonNull final PPOrderCandidatesQuery query)
+	{
+		final IQueryBuilder<I_PP_Order_Candidate> builder = queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_M_Product_ID, query.getProductId())
+				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_M_Warehouse_ID, query.getWarehouseId())
+				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_AD_Org_ID, query.getOrgId())
+				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_M_AttributeSetInstance_ID, query.getAttributesKey().getAsString(), ASIQueryFilterModifier.instance);
+		if (query.isOnlyNonZeroQty())
+		{
+			builder.addNotEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_QtyToProcess, 0);
+		}
+		return builder.create()
+				.listIds(PPOrderCandidateId::ofRepoId);
 	}
 }

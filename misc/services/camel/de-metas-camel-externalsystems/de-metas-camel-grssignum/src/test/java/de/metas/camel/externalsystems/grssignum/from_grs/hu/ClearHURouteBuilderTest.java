@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-grssignum
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -99,7 +99,7 @@ public class ClearHURouteBuilderTest extends CamelTestSupport
 		template.sendBody("direct:" + ClearHURouteBuilder.CLEAR_HU_ROUTE_ID, requestBodyAsString);
 
 		//then
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 		assertThat(mockClearHUEP.called).isEqualTo(1);
 	}
 

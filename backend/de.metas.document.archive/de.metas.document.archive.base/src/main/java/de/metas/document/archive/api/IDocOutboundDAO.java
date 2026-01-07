@@ -22,44 +22,32 @@ package de.metas.document.archive.api;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
 import de.metas.document.archive.DocOutboundLogId;
-import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
+import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
+import de.metas.document.engine.DocStatus;
 import de.metas.util.ISingletonService;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.archive.ArchiveId;
+import org.adempiere.archive.api.ArchiveAction;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Properties;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public interface IDocOutboundDAO extends ISingletonService
 {
-	/**
-	 * Retrieve all <b>active</b> {@link I_C_Doc_Outbound_Config}s for <b>all</b> clients.
-	 */
-	List<I_C_Doc_Outbound_Config> retrieveAllConfigs();
-
-	/**
-	 * Retrieve {@link I_C_Doc_Outbound_Config} for given tableId. First current AD_Client_ID will be checked if not found, it will be checked on System level.
-	 *
-	 * @return config or null
-	 */
-	I_C_Doc_Outbound_Config retrieveConfig(Properties ctx, int tableId);
-
-	/**
-	 * Retrieve {@link I_C_Doc_Outbound_Config} for given <code>model</code>.
-	 *
-	 * @return config or null
-	 * @see #retrieveConfig(Properties, int)
-	 */
-	I_C_Doc_Outbound_Config retrieveConfigForModel(Object model);
-
 	Stream<I_C_Doc_Outbound_Log> streamByIdsInOrder(@NonNull List<DocOutboundLogId> ids);
 
 	/**
@@ -69,6 +57,9 @@ public interface IDocOutboundDAO extends ISingletonService
 	 */
 	I_C_Doc_Outbound_Log retrieveLog(ArchiveId archiveId);
 
+	@NonNull
+	I_C_Doc_Outbound_Log retrieveLog(@NonNull DocOutboundLogId logId);
+	
 	@Nullable
 	I_C_Doc_Outbound_Log retrieveLog(@NonNull TableRecordReference tableRecordReference);
 
@@ -89,5 +80,35 @@ public interface IDocOutboundDAO extends ISingletonService
 	 */
 	I_C_Doc_Outbound_Log retrieveLog(final IContextAware contextProvider, int bpartnerId, int AD_Table_ID);
 
+	@NonNull
+	ImmutableList<I_C_Doc_Outbound_Log> retrieveLogs(@NonNull IQueryFilter<I_C_Doc_Outbound_Log> filter, boolean isFilterCurrentMailSet);
+
 	void updatePOReferenceIfExists(@NonNull TableRecordReference recordReference, @Nullable String poReference);
+
+	void updateLogAndLinesDocStatus(@NonNull TableRecordReference tableRecordReference, @Nullable DocStatus docStatus);
+
+	@NonNull
+	ImmutableList<LogWithLines> retrieveLogsWithLines(@NonNull final ImmutableList<I_C_Doc_Outbound_Log> logs);
+
+	@Value
+	@Builder(toBuilder = true)
+	class LogWithLines
+	{
+		@NonNull I_C_Doc_Outbound_Log log;
+		@NonNull @Singular List<I_C_Doc_Outbound_Log_Line> lines;
+
+		public Optional<I_C_Doc_Outbound_Log_Line> findCurrentPDFArchiveLogLine()
+		{
+			return getLines().stream()
+					.filter(line -> ArchiveAction.PDF_EXPORT.getCode().equals(line.getAction()))
+					.max(Comparator.comparingInt(I_C_Doc_Outbound_Log_Line::getC_Doc_Outbound_Log_Line_ID));
+		}
+
+		public boolean wasEmailSentAtLeastOnce()
+		{
+			return getLines().stream()
+					.anyMatch(line -> ArchiveAction.EMAIL.getCode().equals(line.getAction()) &&
+							X_C_Doc_Outbound_Log_Line.STATUS_Email_Success.equals(line.getStatus()));
+		}
+	}
 }

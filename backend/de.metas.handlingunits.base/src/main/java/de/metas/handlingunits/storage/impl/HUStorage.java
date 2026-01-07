@@ -50,6 +50,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.jetbrains.annotations.NotNull;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -420,7 +421,19 @@ import java.util.Set;
 	public boolean isSingleProductStorageMatching(@NonNull final ProductId productId)
 	{
 		final List<IHUProductStorage> productStorages = getProductStorages();
-		return productStorages.size() == 1
-				&& ProductId.equals(productStorages.get(0).getProductId(), productId);
+		return isSingleProductStorageMatching(productStorages, productId);
 	}
+
+	private static boolean isSingleProductStorageMatching(@NonNull final List<IHUProductStorage> productStorages, @NotNull final ProductId productId)
+	{
+		return productStorages.size() == 1 && ProductId.equals(productStorages.get(0).getProductId(), productId);
+	}
+
+	@Override
+	public boolean isEmptyOrSingleProductStorageMatching(@NonNull final ProductId productId)
+	{
+		final List<IHUProductStorage> productStorages = getProductStorages();
+		return productStorages.isEmpty() || isSingleProductStorageMatching(productStorages, productId);
+	}
+
 }

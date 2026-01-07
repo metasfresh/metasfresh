@@ -105,7 +105,7 @@ public final class PurchaseCandidateAdvisedHandler
 			final CandidatesQuery supplyCandidateQuery = CandidatesQuery.fromId(
 					CandidateId.ofRepoId(supplyRequiredDescriptor.getSupplyCandidateId()));
 			final Candidate existingCandidate = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(supplyCandidateQuery);
-			if (existingCandidate == null)
+			if (existingCandidate != null)
 			{
 				candidateBuilder = existingCandidate.toBuilder();
 			}
@@ -136,7 +136,7 @@ public final class PurchaseCandidateAdvisedHandler
 			}
 			
 			// the group contains just one item, i.e. the supplyCandidate, but for the same of generic-ness we use that same interface that's also used for production and distribution
-			requestMaterialOrderService.requestMaterialOrderForCandidates(groupId, event.getTraceId());
+			requestMaterialOrderService.requestMaterialOrderForCandidates(groupId, event.getEventDescriptor());
 		}
 	}
 }

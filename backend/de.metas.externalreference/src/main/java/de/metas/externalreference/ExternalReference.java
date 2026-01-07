@@ -22,6 +22,7 @@
 
 package de.metas.externalreference;
 
+import de.metas.externalsystem.ExternalSystem;
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -33,38 +34,12 @@ import javax.annotation.Nullable;
 @Builder
 public class ExternalReference
 {
-	/**
-	 * Used in maps to indicate that no reference was found for a given query.
-	 */
-	public static final ExternalReference NULL = ExternalReference.builder()
-			.orgId(OrgId.ANY)
-			.externalSystem(NullExternalSystem.NULL)
-			.externalReferenceType(NullExternalReferenceType.NULL)
-			.externalReference("NULL")
-			.externalReferenceUrl("NULL")
-			.recordId(-1)
-			.build();
-
-	@Nullable
-	ExternalReferenceId externalReferenceId;
-
-	@NonNull
-	OrgId orgId;
-
-	@NonNull
-	IExternalSystem externalSystem;
-
-	@NonNull
-	IExternalReferenceType externalReferenceType;
-
-	@NonNull
-	String externalReference;
-
-	@Nullable
-	String version;
-
-	@Nullable
-	String externalReferenceUrl;
-
+	@Nullable ExternalReferenceId externalReferenceId;
+	@NonNull OrgId orgId;
+	@NonNull ExternalSystem externalSystem;
+	@NonNull IExternalReferenceType externalReferenceType;
+	@NonNull String externalReference;
+	@Nullable String version;
+	@Nullable String externalReferenceUrl;
 	int recordId;
 }

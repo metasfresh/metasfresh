@@ -2,30 +2,38 @@ package de.metas.shipper.gateway.commons;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
-import de.metas.mpackage.PackageId;
+import de.metas.inoutcandidate.CarrierGoodsTypeId;
+import de.metas.shipping.CarrierProductId;
+import de.metas.inoutcandidate.CarrierServiceId;
+import de.metas.inoutcandidate.ShipmentScheduleCarrierServiceRepository;
+import de.metas.inoutcandidate.ShipmentSchedule;
+import de.metas.inoutcandidate.ShipmentScheduleRepository;
+import de.metas.product.PackageDimensions;
 import de.metas.shipper.gateway.commons.async.DeliveryOrderWorkpackageProcessor;
 import de.metas.shipper.gateway.spi.DeliveryOrderService;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.CreateDraftDeliveryOrderRequest;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.CreateDraftDeliveryOrderRequest.PackageInfo;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.DeliveryOrderKey;
+import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderCreateRequest;
 import de.metas.shipping.IShipperDAO;
+import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMPrecision;
 import de.metas.uom.X12DE355;
-import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Package;
-import org.compiere.model.I_M_Shipper;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -34,8 +42,10 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -60,17 +70,16 @@ import java.util.Set;
  */
 
 @Service
+@RequiredArgsConstructor
 public class ShipperGatewayFacade
 {
-	private final ShipperGatewayServicesRegistry shipperRegistry;
+	@NonNull private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final ShipperGatewayServicesRegistry shipperRegistry;
+	@NonNull private final ShipmentScheduleCarrierServiceRepository carrierServiceRepository;
+	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
 
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final UOMPrecision kgPrecision = uomDAO.getStandardPrecision(uomDAO.getUomIdByX12DE355(X12DE355.KILOGRAM));
-
-	public ShipperGatewayFacade(@NonNull final ShipperGatewayServicesRegistry shipperRegistry)
-	{
-		this.shipperRegistry = shipperRegistry;
-	}
 
 	public void createAndSendDeliveryOrdersForPackages(@NonNull final DeliveryOrderCreateRequest request)
 	{
@@ -103,7 +112,7 @@ public class ShipperGatewayFacade
 	}
 
 	@NonNull
-	private static DeliveryOrderKey createDeliveryOrderKey(
+	private DeliveryOrderKey createDeliveryOrderKey(
 			@NonNull final I_M_Package mpackage,
 			final ShipperTransportationId shipperTransportationId,
 			@NonNull final LocalDate pickupDate,
@@ -111,6 +120,13 @@ public class ShipperGatewayFacade
 			@NonNull final LocalTime timeTo,
 			@Nullable final AsyncBatchId asyncBatchId)
 	{
+		final List<ShipmentSchedule> shipmentSchedules = retrieveShipmentSchedulesByPackageId(PackageId.ofRepoId(mpackage.getM_Package_ID()));
+		if (shipmentSchedules.isEmpty())
+		{
+			throw new ShipperGatewayException("No shipment schedules found for package " + mpackage);
+		}
+		final Set<CarrierServiceId> carrierServices = retrieveCarrierServiceIdsForShipmentSchedules(shipmentSchedules);
+
 		return DeliveryOrderKey.builder()
 				.shipperId(ShipperId.ofRepoId(mpackage.getM_Shipper_ID()))
 				.shipperTransportationId(shipperTransportationId)
@@ -120,8 +136,51 @@ public class ShipperGatewayFacade
 				.pickupDate(pickupDate)
 				.timeFrom(timeFrom)
 				.timeTo(timeTo)
+				.carrierProductId(getCommonCarrierProductIdOrNull(shipmentSchedules))
+				.carrierGoodsTypeId(getCommonCarrierGoodsTypeIdOrNull(shipmentSchedules))
+				.carrierServices(carrierServices)
 				.asyncBatchId(asyncBatchId)
 				.build();
+	}
+
+	@Nullable
+	private CarrierGoodsTypeId getCommonCarrierGoodsTypeIdOrNull(final List<ShipmentSchedule> shipmentSchedules)
+	{
+		final Set<CarrierGoodsTypeId> goodsTypeIds = shipmentSchedules.stream()
+				.map(ShipmentSchedule::getCarrierGoodsTypeId)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toSet());
+		if (goodsTypeIds.size() > 1)
+		{
+			throw new ShipperGatewayException("No common CarrierGoodsTypeId found for shipment schedules: " + shipmentSchedules);
+		}
+		return goodsTypeIds.stream().findFirst().orElse(null);
+	}
+
+	@Nullable
+	private CarrierProductId getCommonCarrierProductIdOrNull(final List<ShipmentSchedule> shipmentSchedules)
+	{
+		final Set<CarrierProductId> carrierProductIds = shipmentSchedules.stream()
+				.map(ShipmentSchedule::getCarrierProductId)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toSet());
+		if (carrierProductIds.size() > 1)
+		{
+			throw new ShipperGatewayException("No common CarrierProductId found for shipment schedules: " + shipmentSchedules);
+		}
+		return carrierProductIds.stream().findFirst().orElse(null);
+	}
+
+	private List<ShipmentSchedule> retrieveShipmentSchedulesByPackageId(@NonNull final PackageId packageId)
+	{
+		return shipmentScheduleRepository.loadByPackageId(packageId);
+	}
+
+	private Set<CarrierServiceId> retrieveCarrierServiceIdsForShipmentSchedules(@NonNull final List<ShipmentSchedule> schedules)
+	{
+		return carrierServiceRepository.getAssignedServiceIdsByShipmentScheduleIds(schedules.stream()
+				.map(ShipmentSchedule::getId)
+				.collect(Collectors.toSet()));
 	}
 
 	private Optional<BigDecimal> extractWeightInKg(@NonNull final I_M_Package mpackage)
@@ -140,7 +199,7 @@ public class ShipperGatewayFacade
 			@NonNull final Collection<I_M_Package> mpackages)
 	{
 		final ShipperId shipperId = deliveryOrderKey.getShipperId();
-		final String shipperGatewayId = retrieveShipperGatewayId(shipperId);
+		final ShipperGatewayId shipperGatewayId = getShipperGatewayId(shipperId);
 		final DeliveryOrderService deliveryOrderRepository = shipperRegistry.getDeliveryOrderService(shipperGatewayId);
 
 		final ImmutableSet<PackageInfo> packageInfos = mpackages.stream()
@@ -149,6 +208,7 @@ public class ShipperGatewayFacade
 						.poReference(mpackage.getPOReference())
 						.description(StringUtils.trimBlankToNull(mpackage.getDescription()))
 						.weightInKg(extractWeightInKg(mpackage).orElse(null))
+						.packageDimension(extractPackageDimensions(mpackage))
 						.build())
 				.collect(ImmutableSet.toImmutableSet());
 
@@ -162,19 +222,25 @@ public class ShipperGatewayFacade
 		DeliveryOrder deliveryOrder = shipperGatewayService.createDraftDeliveryOrder(request);
 
 		deliveryOrder = deliveryOrderRepository.save(deliveryOrder);
-		DeliveryOrderWorkpackageProcessor.enqueueOnTrxCommit(deliveryOrder.getId().getRepoId(), shipperGatewayId, deliveryOrderKey.getAsyncBatchId());
+		DeliveryOrderWorkpackageProcessor.enqueueOnTrxCommit(deliveryOrder.getId(), shipperGatewayId, deliveryOrderKey.getAsyncBatchId());
 	}
 
-	private String retrieveShipperGatewayId(final ShipperId shipperId)
+	private static PackageDimensions extractPackageDimensions(@NonNull final I_M_Package mpackage)
 	{
-		final I_M_Shipper shipper = Services.get(IShipperDAO.class).getById(shipperId);
-		return Check.assumeNotEmpty(
-				shipper.getShipperGateway(),
-				"The given shipper with M_Shipper_ID={} has an empty ShipperGateway value; shipper={}", shipperId, shipper);
+		return PackageDimensions.builder()
+				.lengthInCM(mpackage.getLengthInCm())
+				.widthInCM(mpackage.getWidthInCm())
+				.heightInCM(mpackage.getHeightInCm())
+				.build();
+	}
+
+	private ShipperGatewayId getShipperGatewayId(final ShipperId shipperId)
+	{
+		return shipperDAO.getShipperGatewayId(shipperId).orElseThrow();
 	}
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
-	public boolean hasServiceSupport(@NonNull final String shipperGatewayId)
+	public boolean hasServiceSupport(@NonNull final ShipperGatewayId shipperGatewayId)
 	{
 		return shipperRegistry.hasServiceSupport(shipperGatewayId);
 	}

@@ -13,7 +13,6 @@
     <artifactId>de.metas.pos.base</artifactId>
 
     <properties>
-        <migration-sql-basedir/>
         <metasfresh.version>10.0.0</metasfresh.version>
     </properties>
 

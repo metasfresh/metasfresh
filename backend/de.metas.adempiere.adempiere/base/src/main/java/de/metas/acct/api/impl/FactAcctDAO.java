@@ -1,6 +1,7 @@
 package de.metas.acct.api.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.AccountConceptualName;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.FactAcctId;
@@ -31,6 +32,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
@@ -189,6 +191,19 @@ public class FactAcctDAO implements IFactAcctDAO
 	public List<I_Fact_Acct> list(@NonNull final FactAcctQuery query)
 	{
 		return toSqlQuery(query).list();
+	}
+
+	@Override
+	public ImmutableSet<FactAcctId> listIds(@NonNull final FactAcctQuery query)
+	{
+		final ImmutableList<FactAcctId> ids = toSqlQuery(query).listIds(FactAcctId::ofRepoId);
+		return ImmutableSet.copyOf(ids);
+	}
+
+	@Override
+	public Stream<I_Fact_Acct> stream(@NonNull final FactAcctQuery query)
+	{
+		return toSqlQuery(query).stream();
 	}
 
 	private IQuery<I_Fact_Acct> toSqlQuery(@NonNull final FactAcctQuery query)

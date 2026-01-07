@@ -106,6 +106,16 @@ public class DispoTestUtils
 				.create().list();
 	}
 
+	public List<I_MD_Candidate> retrieveAllStockRecords()
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_MD_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Type, X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK)
+				.orderBy(I_MD_Candidate.COLUMN_MD_Candidate_ID)
+				.create().list();
+	}
+
 	public List<I_MD_Candidate> sortBySeqNo(@NonNull final List<I_MD_Candidate> candidateRecords)
 	{
 		return DispoTestUtils.retrieveAllRecords().stream()

@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 /*
@@ -245,6 +246,12 @@ public class CostDetailService implements ICostDetailService
 	public Stream<CostDetail> stream(@NonNull final CostDetailQuery query)
 	{
 		return costDetailsRepo.stream(query);
+	}
+
+	@Override
+	public Optional<CostDetail> firstOnly(@NonNull final CostDetailQuery query)
+	{
+		return costDetailsRepo.firstOnly(query);
 	}
 
 }

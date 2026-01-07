@@ -1,5 +1,8 @@
 package org.adempiere.util.lang;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.io.Serializable;
 
 /*
@@ -24,20 +27,22 @@ import java.io.Serializable;
  * #L%
  */
 
+
 /**
  * Mutable <code>int</code> wrapper.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
-@SuppressWarnings("serial")
+@Setter
+@Getter
+@SuppressWarnings({ "unused", "UnusedReturnValue" })
 public final class MutableInt implements Comparable<MutableInt>, Serializable
 {
-	public static final MutableInt zero()
+	public static MutableInt zero()
 	{
 		return new MutableInt(0);
 	}
-	
+
 	private int value;
 
 	public MutableInt(final int value)
@@ -82,19 +87,14 @@ public final class MutableInt implements Comparable<MutableInt>, Serializable
 		return value - obj.value;
 	}
 
-	public int getValue()
-	{
-		return value;
-	}
-
-	public void setValue(final int value)
-	{
-		this.value = value;
-	}
-
 	public void add(final int valueToAdd)
 	{
 		value += valueToAdd;
+	}
+
+	public void increment()
+	{
+		value++;
 	}
 
 	public int incrementAndGet()
@@ -117,12 +117,12 @@ public final class MutableInt implements Comparable<MutableInt>, Serializable
 		}
 		return value;
 	}
-	
+
 	public boolean isZero()
 	{
 		return value == 0;
 	}
-	
+
 	public boolean isGreaterThanZero()
 	{
 		return value > 0;

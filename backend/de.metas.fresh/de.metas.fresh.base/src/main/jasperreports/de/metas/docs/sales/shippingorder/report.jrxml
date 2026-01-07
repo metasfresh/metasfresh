@@ -82,7 +82,9 @@ FROM de_metas_endcustomer_fresh_reports.Docs_Sales_TransportOrder_Root($P{RECORD
 				<subreportExpression><![CDATA["de/metas/docs/sales/shippingorder/report_description.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-7" x="285" y="137" width="309" height="99" uuid="36681144-0231-421b-baec-8e7f45c39773"/>
+				<reportElement key="subreport-7" x="285" y="137" width="309" height="99" uuid="36681144-0231-421b-baec-8e7f45c39773">
+					<printWhenExpression><![CDATA[$F{c_bpartner_location_id}.intValue()>0]]></printWhenExpression>
+				</reportElement>
 				<subreportParameter name="bp_loc_id">
 					<subreportParameterExpression><![CDATA[$F{c_bpartner_location_id}]]></subreportParameterExpression>
 				</subreportParameter>

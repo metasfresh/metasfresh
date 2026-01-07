@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.event.EventBusConfig;
 import de.metas.event.Topic;
 import de.metas.i18n.AdMessageKey;
+import de.metas.notification.impl.NotificationSeverity;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -57,19 +58,30 @@ public class UserNotificationRequest
 	private static final NotificationGroupName DEFAULT_NotificationGroupName = NotificationGroupName.of(EventBusConfig.TOPIC_GeneralUserNotifications.getName());
 	@NonNull NotificationGroupName notificationGroupName;
 
+	private static final NotificationSeverity DEFAULT_NotificationSeverity = NotificationSeverity.Notice;
+	@NonNull NotificationSeverity severity;
+
 	boolean important;
 
-	/** Optional; takes precedence over {@link #subjectADMessage}, if set. */
+	/**
+	 * Optional; takes precedence over {@link #subjectADMessage}, if set.
+	 */
 	String subjectPlain;
 
-	/** Optional */
+	/**
+	 * Optional
+	 */
 	AdMessageKey subjectADMessage;
 	List<Object> subjectADMessageParams;
 
-	/** Optional; takes precedence over {@link #contentADMessage}, if set. */
+	/**
+	 * Optional; takes precedence over {@link #contentADMessage}, if set.
+	 */
 	String contentPlain;
 
-	/** Optional */
+	/**
+	 * Optional
+	 */
 	AdMessageKey contentADMessage;
 	List<Object> contentADMessageParams;
 
@@ -101,7 +113,8 @@ public class UserNotificationRequest
 			//
 			@Singular final List<Resource> attachments,
 			// Options:
-			final boolean noEmail)
+			final boolean noEmail,
+			@Nullable final NotificationSeverity severity)
 	{
 		this.notificationsConfig = notificationsConfig;
 
@@ -136,6 +149,7 @@ public class UserNotificationRequest
 		this.contentPlain = contentPlain;
 		this.contentADMessage = contentADMessage;
 		this.contentADMessageParams = copyADMessageParams(contentADMessageParams);
+		this.severity = severity != null ? severity : DEFAULT_NotificationSeverity;
 
 		this.targetAction = targetAction;
 
@@ -197,13 +211,21 @@ public class UserNotificationRequest
 	{
 	}
 
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	@lombok.Value
 	@lombok.Builder(toBuilder = true)
 	public static class TargetRecordAction implements TargetAction
 	{
+		@NonNull
 		public static TargetRecordAction of(@NonNull final TableRecordReference record)
 		{
 			return builder().record(record).build();
+		}
+
+		@Nullable
+		public static TargetRecordAction ofNullable(@Nullable final TableRecordReference record)
+		{
+			return record == null ? null : of(record);
 		}
 
 		public static TargetRecordAction ofRecordAndWindow(@NonNull final TableRecordReference record, final int adWindowId)
@@ -226,13 +248,9 @@ public class UserNotificationRequest
 			return (TargetRecordAction)targetAction;
 		}
 
-		@NonNull
-		@Builder.Default
-		Optional<AdWindowId> adWindowId = Optional.empty();
+		@NonNull @Builder.Default Optional<AdWindowId> adWindowId = Optional.empty();
 
-		@NonNull
-		TableRecordReference record;
-
+		@NonNull TableRecordReference record;
 		String recordDisplayText;
 	}
 

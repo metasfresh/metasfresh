@@ -23,25 +23,28 @@
 package de.metas.cucumber.stepdefs.purchasecandidate;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
-import de.metas.cucumber.stepdefs.C_Order_StepDefData;
-import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.IdentifierIds_StepDefData;
 import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
-import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.purchasecandidate.v2.CreatePurchaseCandidate_StepDef;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.async.C_PurchaseCandidates_GeneratePurchaseOrders;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -49,11 +52,7 @@ import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 import org.springframework.lang.Nullable;
 
-import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Supplier;
 
 import static de.metas.purchasecandidate.model.I_C_PurchaseCandidate.COLUMNNAME_C_OrderLineSO_ID;
 import static de.metas.purchasecandidate.model.I_C_PurchaseCandidate.COLUMNNAME_C_OrderSO_ID;
@@ -64,6 +63,7 @@ public class C_PurchaseCandidate_StepDef
 {
 	private final static Logger logger = LogManager.getLogger(CreatePurchaseCandidate_StepDef.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	private final IdentifierIds_StepDefData identifierIdsTable;
 	private final C_PurchaseCandidate_StepDefData purchaseCandidateTable;
@@ -107,39 +107,29 @@ public class C_PurchaseCandidate_StepDef
 			@NonNull final String orderLineIdentifier,
 			@NonNull final DataTable dataTable) throws InterruptedException
 	{
-		final Map<String, String> tableRow = dataTable.asMaps().get(0);
 
-		final OrderLineId orderLineId = getOrderLineIdByIdentifier(orderLineIdentifier);
-		assertThat(orderLineId).isNotNull();
-
-		final Supplier<Optional<I_C_PurchaseCandidate>> recordFound = () -> Optional.ofNullable(getQueryByOrderLineId(orderLineId).first());
-
-		final I_C_PurchaseCandidate purchaseCandidateRecord = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, recordFound);
-
-		final String purchaseCandidateIdentifier = DataTableUtil.extractStringForColumnName(tableRow, StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		purchaseCandidateTable.putOrReplace(purchaseCandidateIdentifier, purchaseCandidateRecord);
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_C_PurchaseCandidate candidate = StepDefUtil.<I_C_PurchaseCandidate>tryAndWaitForItem()
+					.worker(() -> validatePurchaseCandidate(row, orderLineIdentifier))
+					.maxWaitSeconds(timeoutSec)
+					.execute();
+			row.getAsOptionalIdentifier().ifPresent(identifier -> purchaseCandidateTable.putOrReplace(identifier, candidate));
+		});
 	}
 
 	@And("the following C_PurchaseCandidates are enqueued for generating C_Orders")
 	public void enqueueC_PurchaseCandidates(@NonNull final DataTable dataTable)
 	{
-		final ImmutableSet.Builder<PurchaseCandidateId> purchaseCandidateIds = ImmutableSet.builder();
-
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> row : tableRows)
-		{
-			purchaseCandidateIds.add(getPurchaseCandidateId(row));
-		}
-
-		C_PurchaseCandidates_GeneratePurchaseOrders.enqueue(purchaseCandidateIds.build());
+		C_PurchaseCandidates_GeneratePurchaseOrders.enqueue(DataTableRows.of(dataTable)
+				.stream()
+				.map(this::getPurchaseCandidateId)
+				.collect(ImmutableSet.toImmutableSet()));
 	}
 
 	@NonNull
-	private PurchaseCandidateId getPurchaseCandidateId(@NonNull final Map<String, String> row)
+	private PurchaseCandidateId getPurchaseCandidateId(@NonNull final DataTableRow row)
 	{
-		final String purchaseCandidateIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_PurchaseCandidate.COLUMNNAME_C_PurchaseCandidate_ID + ".Identifier");
-
-		final I_C_PurchaseCandidate purchaseCandidateRecord = purchaseCandidateTable.get(purchaseCandidateIdentifier);
+		final I_C_PurchaseCandidate purchaseCandidateRecord = row.getAsIdentifier(I_C_PurchaseCandidate.COLUMNNAME_C_PurchaseCandidate_ID).lookupNotNullIn(purchaseCandidateTable);
 		assertThat(purchaseCandidateRecord).isNotNull();
 
 		return PurchaseCandidateId.ofRepoId(purchaseCandidateRecord.getC_PurchaseCandidate_ID());
@@ -148,29 +138,35 @@ public class C_PurchaseCandidate_StepDef
 	@And("^after not more than (.*)s, C_PurchaseCandidates are found$")
 	public void find_purchase_candidates(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> row : tableRows)
-		{
-			findPurchaseCandidate(timeoutSec, row);
-		}
+		DataTableRows.of(dataTable)
+				.forEach(row -> findPurchaseCandidate(timeoutSec, row));
 	}
 
 	@And("C_PurchaseCandidates are validated")
 	public void validate_purchase_candidates(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> row : tableRows)
-		{
-			validatePurchaseCandidate(row);
-		}
+		DataTableRows.of(dataTable)
+				.forEach(row -> this.validatePurchaseCandidate(row));
 	}
 
 	@NonNull
 	private IQuery<I_C_PurchaseCandidate> getQueryByOrderLineId(@NonNull final OrderLineId orderLineId)
 	{
-		return queryBL.createQueryBuilder(I_C_PurchaseCandidate.class)
-				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_C_OrderLineSO_ID, orderLineId)
-				.create();
+		return getQueryByOrderLineIdAndQty(orderLineId, null);
+	}
+
+	@NonNull
+	private IQuery<I_C_PurchaseCandidate> getQueryByOrderLineIdAndQty(@NonNull final OrderLineId orderLineId, @Nullable final Quantity quantityToPurchase)
+	{
+		final IQueryBuilder<I_C_PurchaseCandidate> builder = queryBL.createQueryBuilder(I_C_PurchaseCandidate.class)
+				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_C_OrderLineSO_ID, orderLineId);
+		if (quantityToPurchase != null)
+		{
+			builder.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_QtyToPurchase, quantityToPurchase.toBigDecimal());
+			builder.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_C_UOM_ID, quantityToPurchase.getUomId());
+
+		}
+		return builder.create();
 	}
 
 	private void logCurrentContextExpectedNoRecords(@NonNull final OrderLineId orderLineId)
@@ -195,19 +191,15 @@ public class C_PurchaseCandidate_StepDef
 	private OrderLineId getOrderLineIdByIdentifier(@NonNull final String orderLineIdentifier)
 	{
 		return OrderLineId.ofRepoIdOrNull(identifierIdsTable.getOptional(orderLineIdentifier)
-												  .orElseGet(() -> orderLineTable.get(orderLineIdentifier).getC_OrderLine_ID()));
+				.orElseGet(() -> orderLineTable.get(orderLineIdentifier).getC_OrderLine_ID()));
 	}
 
 	@NonNull
-	private String logCurrentContext(@NonNull final Map<String, String> row)
+	private String logCurrentContext(@NonNull final DataTableRow row)
 	{
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + ".Identifier");
-		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_OrderSO_ID + ".Identifier");
-		final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_OrderLineSO_ID + ".Identifier");
-
-		final I_C_Order orderRecord = orderTable.get(orderIdentifier);
-		final I_C_OrderLine orderLineRecord = orderLineTable.get(orderLineIdentifier);
-		final I_M_Product productRecord = productTable.get(productIdentifier);
+		final I_C_Order orderRecord = row.getAsIdentifier(COLUMNNAME_C_OrderSO_ID).lookupIn(orderTable);
+		final I_C_OrderLine orderLineRecord = row.getAsIdentifier(COLUMNNAME_C_OrderLineSO_ID).lookupIn(orderLineTable);
+		final I_M_Product productRecord = row.getAsIdentifier(COLUMNNAME_M_Product_ID).lookupIn(productTable);
 
 		final StringBuilder message = new StringBuilder();
 
@@ -230,36 +222,51 @@ public class C_PurchaseCandidate_StepDef
 		return "see current context: \n" + message;
 	}
 
-	private void validatePurchaseCandidate(@NonNull final Map<String, String> row)
+	private ItemProvider.ProviderResult<I_C_PurchaseCandidate> validatePurchaseCandidate(@NonNull final DataTableRow tableRow, final @NonNull String orderLineIdentifier)
 	{
-		final String purchaseCandidateIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_PurchaseCandidate.COLUMNNAME_C_PurchaseCandidate_ID + ".Identifier");
+		final OrderLineId orderLineId = getOrderLineIdByIdentifier(orderLineIdentifier);
+		assertThat(orderLineId).isNotNull();
 
-		final I_C_PurchaseCandidate purchaseCandidateRecord = purchaseCandidateTable.get(purchaseCandidateIdentifier);
+		final Quantity qtyToPurchase = tableRow.getAsOptionalQuantity(I_C_PurchaseCandidate.COLUMNNAME_QtyToPurchase, I_C_PurchaseCandidate.COLUMNNAME_C_UOM_ID, uomDAO::getByX12DE355).orElse(null);
 
-		final BigDecimal qtyToPurchase = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_PurchaseCandidate.COLUMNNAME_QtyToPurchase);
-
-		if (qtyToPurchase != null)
+		final List<I_C_PurchaseCandidate> candidates = getQueryByOrderLineIdAndQty(orderLineId, qtyToPurchase).list();
+		if (candidates.size() == 1)
 		{
-			assertThat(purchaseCandidateRecord.getQtyToPurchase()).isEqualTo(qtyToPurchase);
+			return ItemProvider.ProviderResult.resultWasFound(candidates.get(0));
 		}
+		else if (candidates.isEmpty())
+		{
+			return ItemProvider.ProviderResult.resultWasNotFound("No C_PurchaseCandidate found for qtyToPurchase=" + qtyToPurchase);
+		}
+		else
+		{
+			return ItemProvider.ProviderResult.resultWasNotFound("Multiple C_PurchaseCandidate found "
+					+ "\n\trow=" + tableRow
+					+ "\n\tcandidates=" + candidates);
+		}
+
 	}
 
-	private void findPurchaseCandidate(final int timeoutSec, @NonNull final Map<String, String> row) throws InterruptedException
+	private void validatePurchaseCandidate(@NonNull final DataTableRow row)
 	{
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + ".Identifier");
-		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_OrderSO_ID + ".Identifier");
-		final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_OrderLineSO_ID + ".Identifier");
+		final I_C_PurchaseCandidate purchaseCandidateRecord = row.getAsIdentifier(I_C_PurchaseCandidate.COLUMNNAME_C_PurchaseCandidate_ID).lookupNotNullIn(purchaseCandidateTable);
 
-		final I_C_Order orderRecord = orderTable.get(orderIdentifier);
-		final I_C_OrderLine orderLineRecord = orderLineTable.get(orderLineIdentifier);
-		final I_M_Product productRecord = productTable.get(productIdentifier);
+		row.getAsOptionalBigDecimal(I_C_PurchaseCandidate.COLUMNNAME_QtyToPurchase)
+				.ifPresent(qtyToPurchase -> assertThat(purchaseCandidateRecord.getQtyToPurchase()).isEqualTo(qtyToPurchase));
+	}
+
+	private void findPurchaseCandidate(final int timeoutSec, @NonNull final DataTableRow row) throws InterruptedException
+	{
+		final I_C_Order orderRecord = row.getAsIdentifier(COLUMNNAME_C_OrderSO_ID).lookupIn(orderTable);
+		final I_C_OrderLine orderLineRecord = row.getAsIdentifier(COLUMNNAME_C_OrderLineSO_ID).lookupIn(orderLineTable);
+		final I_M_Product productRecord = row.getAsIdentifier(COLUMNNAME_M_Product_ID).lookupIn(productTable);
 
 		final I_C_PurchaseCandidate purchaseCandidateRecord = StepDefUtil
 				.tryAndWaitForItem(timeoutSec, 500,
-								   () -> getPurchaseCandidate(orderRecord, orderLineRecord, productRecord),
-								   () -> logCurrentContext(row));
+						() -> getPurchaseCandidate(orderRecord, orderLineRecord, productRecord),
+						() -> logCurrentContext(row));
 
-		purchaseCandidateTable.putOrReplace(DataTableUtil.extractRecordIdentifier(row, I_C_PurchaseCandidate.COLUMNNAME_C_PurchaseCandidate_ID), purchaseCandidateRecord);
+		purchaseCandidateTable.putOrReplace(row.getAsIdentifier(), purchaseCandidateRecord);
 	}
 
 	@NonNull
@@ -278,8 +285,8 @@ public class C_PurchaseCandidate_StepDef
 				.firstOnlyOptional(I_C_PurchaseCandidate.class)
 				.map(ItemProvider.ProviderResult::resultWasFound)
 				.orElseGet(() -> ItemProvider.ProviderResult.resultWasNotFound("Couldn't find any C_PurchaseCandidate querying by"
-																					   + " C_OrderSO_ID=" + orderRecord.getC_Order_ID()
-																					   + " C_OrderLineSO_ID=" + orderLineRecord.getC_OrderLine_ID()
-																					   + " M_Product_ID=" + productRecord.getM_Product_ID()));
+						+ " C_OrderSO_ID=" + orderRecord.getC_Order_ID()
+						+ " C_OrderLineSO_ID=" + orderLineRecord.getC_OrderLine_ID()
+						+ " M_Product_ID=" + productRecord.getM_Product_ID()));
 	}
 }

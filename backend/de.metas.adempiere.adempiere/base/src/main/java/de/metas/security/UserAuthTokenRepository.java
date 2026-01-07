@@ -110,6 +110,7 @@ public class UserAuthTokenRepository
 		return UUID.randomUUID().toString().replace("-", "");
 	}
 
+	@NonNull
 	public UserAuthToken retrieveByUserId(@NonNull final UserId userId, @NonNull final RoleId roleId)
 	{
 		final ImmutableList<I_AD_User_AuthToken> userAuthTokens = retrieveByUserAndRoleId(userId, roleId);

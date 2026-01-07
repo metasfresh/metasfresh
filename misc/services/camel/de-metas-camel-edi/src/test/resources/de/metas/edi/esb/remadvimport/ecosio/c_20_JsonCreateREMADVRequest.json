@@ -1,0 +1,55 @@
+{
+  "remittanceAdviceList": [
+    {
+      "senderId": "gln-1234567890123",
+      "recipientId": "gln-1234567890124",
+      "documentNumber": "1022747",
+      "sendDate": "2024-09-07T09:43:00Z",
+      "documentDate": "2024-09-06T22:00:00Z",
+      "remittanceAdviceType": "INBOUND",
+      "remittedAmountSum": 51812.76,
+      "remittanceAmountCurrencyISO": "CHF",
+      "serviceFeeAmount": 1766.19,
+      "serviceFeeCurrencyISO": "CHF",
+      "paymentDiscountAmountSum": 0,
+      "lines": [
+        {
+          "lineIdentifier": "9",
+          "invoiceIdentifier": "doc-F244410",
+          "remittedAmount": 53535.11,
+          "dateInvoiced": "2024-08-07T22:00:00Z",
+          "bpartnerIdentifier": "gln-1234567890126",
+          "invoiceBaseDocType": "ARI",
+          "invoiceGrossAmount": 55278.05,
+          "paymentDiscountAmount": 771.9,
+          "serviceFeeAmount": 971.04,
+          "serviceFeeVatRate": 8.1
+        },
+        {
+          "lineIdentifier": "12",
+          "invoiceIdentifier": "doc-70119785",
+          "remittedAmount": 1644.73,
+          "dateInvoiced": "2024-08-01T22:00:00Z",
+          "bpartnerIdentifier": "gln-1234567890127",
+          "invoiceBaseDocType": "API",
+          "invoiceGrossAmount": 1621.5,
+          "paymentDiscountAmount": 0,
+          "serviceFeeAmount": 23.23,
+          "serviceFeeVatRate": 8.1
+        },
+        {
+          "lineIdentifier": "13",
+          "invoiceIdentifier": "doc-1057",
+          "remittedAmount": 77.61,
+          "dateInvoiced": "2024-08-06T22:00:00Z",
+          "bpartnerIdentifier": "gln-1234567890129",
+          "invoiceBaseDocType": "API",
+          "invoiceGrossAmount": 77.59,
+          "paymentDiscountAmount": -1.09,
+          "serviceFeeAmount": 1.11,
+          "serviceFeeVatRate": 8.1
+        }
+      ]
+    }
+  ]
+}

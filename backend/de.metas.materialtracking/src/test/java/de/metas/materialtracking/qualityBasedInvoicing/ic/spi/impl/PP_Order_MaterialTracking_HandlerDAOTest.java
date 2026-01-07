@@ -36,9 +36,9 @@ import org.adempiere.util.lang.IContextAware;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.util.Env;
 import org.eevolution.model.X_PP_Order;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -49,7 +49,7 @@ public class PP_Order_MaterialTracking_HandlerDAOTest
 	private IContextAware context;
 	private PP_Order_MaterialTracking_HandlerDAO dao;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -89,7 +89,7 @@ public class PP_Order_MaterialTracking_HandlerDAOTest
 		final Iterator<I_PP_Order> resultActualIt = dao.retrievePPOrdersWithMissingICs(QueryLimit.NO_LIMIT);
 		final List<I_PP_Order> resultActual = IteratorUtils.toList(resultActualIt);
 
-		Assert.assertEquals("Invalid result", resultExpected, resultActual);
+		Assertions.assertEquals(resultExpected, resultActual, "Invalid result");
 	}
 
 	private I_PP_Order createPP_Order(

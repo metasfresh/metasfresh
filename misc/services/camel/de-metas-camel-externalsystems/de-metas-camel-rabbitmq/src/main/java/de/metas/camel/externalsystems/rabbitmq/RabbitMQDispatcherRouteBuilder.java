@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-rabbitmq
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -32,7 +32,7 @@ import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
+import org.apache.camel.http.common.HttpMethods;
 import org.springframework.stereotype.Component;
 
 import static com.google.common.net.HttpHeaders.AUTHORIZATION;
@@ -68,7 +68,7 @@ public class RabbitMQDispatcherRouteBuilder extends RouteBuilder
 
 		from(direct(RABBITMQ_DISPATCHER_ROUTE_ID))
 				.routeId(RABBITMQ_DISPATCHER_ROUTE_ID)
-				.streamCaching()
+				.streamCache("true")
 				.process(this::extractAndAttachRabbitHttpRequest)
 				.to(direct(RABBITMQ_MESSAGE_SENDER));
 
@@ -93,18 +93,16 @@ public class RabbitMQDispatcherRouteBuilder extends RouteBuilder
 	{
 		final Object dispatchMessageRequestCandidate = exchange.getIn().getBody();
 
-		if (!(dispatchMessageRequestCandidate instanceof DispatchMessageRequest))
+		if (!(dispatchMessageRequestCandidate instanceof final DispatchMessageRequest dispatchMessageRequest))
 		{
 			throw new RuntimeCamelException("The route " + RABBITMQ_DISPATCHER_ROUTE_ID + " requires the body to be instanceof DispatchMessageRequest."
 													+ " However, it is " + (dispatchMessageRequestCandidate == null ? "null" : dispatchMessageRequestCandidate.getClass().getName()));
 		}
 
-		final DispatchMessageRequest dispatchMessageRequest = (DispatchMessageRequest)dispatchMessageRequestCandidate;
-
 		exchange.getIn().removeHeaders("CamelHttp*");
 		exchange.getIn().setHeader(AUTHORIZATION, dispatchMessageRequest.getAuthToken());
 		exchange.getIn().setHeader(Exchange.HTTP_URI, dispatchMessageRequest.getUrl());
-		exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpEndpointBuilderFactory.HttpMethods.POST);
+		exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.POST);
 		exchange.getIn().setBody(dispatchMessageRequest.getMessage());
 	}
 

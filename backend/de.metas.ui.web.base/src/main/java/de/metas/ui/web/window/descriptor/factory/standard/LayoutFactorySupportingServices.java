@@ -6,6 +6,7 @@ import de.metas.ui.web.quickinput.QuickInputDescriptorFactoryService;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.decorator.IDocumentDecorator;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
+import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
@@ -20,7 +21,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 class LayoutFactorySupportingServices
 {
-	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull @Getter private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull @Getter private final SqlDocumentsRepository documentsRepository;
 	@NonNull @Getter private final LookupDataSourceFactory lookupDataSourceFactory;
 	@NonNull private final QuickInputDescriptorFactoryService quickInputDescriptors;
 	@NonNull @Getter private final AttributesIncludedTabDescriptorService attributesIncludedTabDescriptorService;

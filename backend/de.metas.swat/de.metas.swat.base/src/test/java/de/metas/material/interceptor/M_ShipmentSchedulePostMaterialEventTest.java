@@ -18,17 +18,19 @@ import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
 import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.product.ProductId;
 import de.metas.shipping.ShipperId;
+import de.metas.user.UserId;
 import lombok.NonNull;
 import lombok.Setter;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
+import org.adempiere.mm.attributes.asi_aware.product.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -110,6 +112,8 @@ public class M_ShipmentSchedulePostMaterialEventTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(100));
 
 		shipmentScheduleReferencedLineFactory = Mockito.mock(ShipmentScheduleReferencedLineFactory.class);
 

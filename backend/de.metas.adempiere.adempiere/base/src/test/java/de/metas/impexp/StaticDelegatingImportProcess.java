@@ -1,17 +1,20 @@
 package de.metas.impexp;
 
-import java.util.Properties;
-import java.util.function.Supplier;
-
-import org.adempiere.service.ClientId;
-import org.adempiere.util.api.IParams;
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-
 import de.metas.impexp.processing.IImportProcess;
 import de.metas.impexp.processing.ImportDataDeleteRequest;
 import de.metas.impexp.processing.ImportProcessResult;
 import de.metas.process.PInstanceId;
+import de.metas.user.UserId;
 import de.metas.util.ILoggable;
+import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.service.ClientId;
+import org.adempiere.util.api.IParams;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Properties;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -23,12 +26,12 @@ import de.metas.util.ILoggable;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -41,8 +44,7 @@ public class StaticDelegatingImportProcess implements IImportProcess<Object>
 
 	public static <ImportRecordType, ImportProcessType extends IImportProcess<ImportRecordType>> Class<ImportProcessType> castTo(final Class<ImportRecordType> importRecordType)
 	{
-		@SuppressWarnings("unchecked")
-		final Class<ImportProcessType> importProcessClass = (Class<ImportProcessType>)StaticDelegatingImportProcess.class;
+		@SuppressWarnings("unchecked") final Class<ImportProcessType> importProcessClass = (Class<ImportProcessType>)StaticDelegatingImportProcess.class;
 		return importProcessClass;
 	}
 
@@ -122,8 +124,7 @@ public class StaticDelegatingImportProcess implements IImportProcess<Object>
 	@Override
 	public Class<Object> getImportModelClass()
 	{
-		@SuppressWarnings("unchecked")
-		final Class<Object> importModelClass = (Class<Object>)delegate.getImportModelClass();
+		@SuppressWarnings("unchecked") final Class<Object> importModelClass = (Class<Object>)delegate.getImportModelClass();
 		return importModelClass;
 	}
 
@@ -131,6 +132,39 @@ public class StaticDelegatingImportProcess implements IImportProcess<Object>
 	public String getImportTableName()
 	{
 		return delegate.getImportTableName();
+	}
+
+	@Override
+	public IImportProcess<Object> async(final boolean async)
+	{
+		delegate.async(async);
+		return this;
+	}
+
+	@Override
+	public IImportProcess<Object> limit(@NonNull final QueryLimit limit)
+	{
+		delegate.limit(limit);
+		return this;
+	}
+
+	@Override
+	public IImportProcess<Object> notifyUserId(@Nullable final UserId notifyUserId)
+	{
+		delegate.notifyUserId(notifyUserId);
+		return this;
+	}
+
+	@Override
+	public ImportProcessResult validate(final @NonNull ValidateImportRecordsRequest request)
+	{
+		return delegate.validate(request);
+	}
+
+	@Override
+	public ImportProcessResult validateAndImport(final @NonNull ImportRecordsRequest request)
+	{
+		return delegate.validateAndImport(request);
 	}
 
 	@Override

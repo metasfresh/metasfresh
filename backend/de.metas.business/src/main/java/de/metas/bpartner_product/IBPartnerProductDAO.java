@@ -26,7 +26,8 @@ package de.metas.bpartner_product;
  */
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.ean13.EAN13ProductCode;
+import de.metas.gs1.GTIN;
+import de.metas.gs1.ean13.EAN13ProductCode;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
@@ -43,7 +44,6 @@ import java.util.Set;
 
 /**
  * @author cg
- *
  */
 public interface IBPartnerProductDAO extends ISingletonService
 {
@@ -97,6 +97,8 @@ public interface IBPartnerProductDAO extends ISingletonService
 
 	List<I_C_BPartner_Product> retrieveByBPartnerId(BPartnerId bPartnerId);
 
+	@NonNull List<I_C_BPartner_Product> retrieveByEAN13ProductCode(@NonNull EAN13ProductCode ean13ProductCode, @NonNull BPartnerId bpartnerId);
+
 	@NonNull
-	List<I_C_BPartner_Product> retrieveByEAN13ProductCode(@NonNull EAN13ProductCode ean13ProductCode, @NonNull BPartnerId bpartnerId);
+	List<I_C_BPartner_Product> retrieveByGTIN(@NonNull GTIN gtin, @NonNull BPartnerId bpartnerId);
 }

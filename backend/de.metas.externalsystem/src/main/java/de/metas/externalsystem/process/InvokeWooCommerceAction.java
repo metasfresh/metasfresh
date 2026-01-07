@@ -92,7 +92,7 @@ public class InvokeWooCommerceAction extends AlterExternalSystemServiceStatusAct
 	@Override
 	protected String getTabName()
 	{
-		return ExternalSystemType.WOO.getName();
+		return ExternalSystemType.WOO.getValue();
 	}
 
 	@Override

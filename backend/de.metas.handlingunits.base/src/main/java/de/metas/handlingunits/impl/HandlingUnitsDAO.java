@@ -33,6 +33,7 @@ import de.metas.common.util.pair.ImmutablePair;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
 import de.metas.handlingunits.HUItemType;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuItemId;
 import de.metas.handlingunits.HuPackingInstructionsId;
@@ -53,6 +54,7 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Item_Storage;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_HU_Storage;
@@ -61,6 +63,7 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.reservation.HUReservationRepository;
+import de.metas.i18n.AdMessageKey;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
@@ -111,6 +114,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class HandlingUnitsDAO implements IHandlingUnitsDAO
 {
+	private static final AdMessageKey ERR_NoCurrentVersionFound = AdMessageKey.of("de.metas.handlingunits.HUPI.NoCurrentVersionFound");
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final IHUAndItemsDAO defaultHUAndItemsDAO;
@@ -138,6 +143,16 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
+	public boolean existsById(@NonNull final HuId huId)
+	{
+		return queryBL.createQueryBuilder(I_M_HU.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_HU.COLUMNNAME_M_HU_ID, huId)
+				.create()
+				.anyMatch();
+	}
+
+	@Override
 	public List<I_M_HU> getBySelectionId(@NonNull final PInstanceId selectionId)
 	{
 		return queryBL.createQueryBuilder(I_M_HU.class)
@@ -153,7 +168,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.setOnlySelection(selectionId)
 				.orderBy(I_M_HU.COLUMNNAME_M_HU_ID)
 				.create()
-				.listIds(HuId::ofRepoId);
+				.idsAsSet(HuId::ofRepoId);
 	}
 
 	@Override
@@ -222,6 +237,12 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
+	public List<I_M_HU_PI_Item> getPackingInstructionItemsByIds(@NonNull final Set<HuPackingInstructionsItemId> piItemIds)
+	{
+		return loadByRepoIdAwaresOutOfTrx(piItemIds, I_M_HU_PI_Item.class);
+	}
+
+	@Override
 	public IHUBuilder createHUBuilder(final IHUContext huContext)
 	{
 		final IHUBuilder huBuilder = new HUBuilder(huContext);
@@ -238,6 +259,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	@Override
 	public void saveHUItem(@NonNull final I_M_HU_Item huItem)
 	{
+		getHUAndItemsDAO().saveHUItem(huItem);
 		InterfaceWrapperHelper.save(huItem);
 	}
 
@@ -254,7 +276,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public int retrieveParentId(final I_M_HU hu)
+	public HuId retrieveParentId(final @NonNull I_M_HU hu)
 	{
 		return getHUAndItemsDAO().retrieveParentId(hu);
 	}
@@ -490,8 +512,8 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 	@Override
 	public Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
-			@NonNull HuPackingInstructionsId piId,
-			@Nullable String itemType,
+			@NonNull final HuPackingInstructionsId piId,
+			@Nullable final String itemType,
 			@Nullable final BPartnerId bpartnerId)
 	{
 		final I_M_HU_PI_Version version = retrievePICurrentVersion(piId);
@@ -502,7 +524,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	@Override
 	public Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
 			@NonNull final I_M_HU_PI_Version version,
-			@Nullable HUItemType itemType,
+			@Nullable final HUItemType itemType,
 			@Nullable final BPartnerId bpartnerId)
 	{
 		final List<I_M_HU_PI_Item> piItems = retrievePIItems(version, itemType != null ? itemType.getCode() : null, bpartnerId, null);
@@ -557,7 +579,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 	private List<I_M_HU_PI_Item> retrievePIItems(
 			@NonNull final I_M_HU_PI_Version version,
-			@Nullable String expectedItemType,
+			@Nullable final String expectedItemType,
 			@Nullable final BPartnerId bpartnerId,
 			@Nullable final HuPackingInstructionsId includedPIId)
 	{
@@ -721,18 +743,21 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		final I_M_HU_PI_Version piVersion = retrievePICurrentVersionOrNull(pi);
 		if (piVersion == null)
 		{
-			throw new HUException("No current version found for " + pi);
+			throw new HUException(ERR_NoCurrentVersionFound, pi)
+					.markAsUserValidationError();
 		}
 		return piVersion;
 	}
 
 	@Override
+	@NonNull
 	public I_M_HU_PI_Version retrievePICurrentVersion(@NonNull final HuPackingInstructionsId piId)
 	{
 		final I_M_HU_PI_Version piVersion = retrievePICurrentVersionOrNull(Env.getCtx(), piId, ITrx.TRXNAME_None);
 		if (piVersion == null)
 		{
-			throw new HUException("No current version found for " + piId);
+			throw new HUException(ERR_NoCurrentVersionFound, piId)
+					.markAsUserValidationError();
 		}
 		return piVersion;
 	}
@@ -963,7 +988,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 						.addOnlyActiveRecordsFilter()
 						.addInArrayFilter(I_M_HU_PI_Version.COLUMNNAME_M_HU_PI_Version_ID, parentPIVersionIdsToCheck)
 						.create()
-						.listIds(HuPackingInstructionsId::ofRepoId);
+						.idsAsSet(HuPackingInstructionsId::ofRepoId);
 			}
 			else
 			{
@@ -1018,7 +1043,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.andCollect(I_M_HU_PI_Version.COLUMNNAME_M_HU_PI_ID, I_M_HU_PI.class)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.listIds(HuPackingInstructionsId::ofRepoId);
+				.idsAsSet(HuPackingInstructionsId::ofRepoId);
 
 	}
 
@@ -1067,6 +1092,13 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		}
 
 		return itemPM.getM_HU_PackingMaterial();
+	}
+
+	@Override
+	public I_M_HU_PackingMaterial retrievePackingMaterialByPIVersionID(@NonNull final HuPackingInstructionsVersionId versionId, @Nullable final BPartnerId bpartnerId)
+	{
+		final I_M_HU_PI_Version version = retrievePIVersionById(versionId);
+		return retrievePackingMaterial(version, bpartnerId);
 	}
 
 	@Override
@@ -1224,6 +1256,18 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
+	public Set<LocatorId> getLocatorIds(final List<I_M_HU> hus)
+	{
+		final Set<Integer> locatorRepoIds = hus.stream()
+				.map(I_M_HU::getM_Locator_ID)
+				.filter(locatorRepoId -> locatorRepoId > 0)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+		return warehouseDAO.getLocatorIdsByRepoIds(locatorRepoIds);
+	}
+
+	@Override
 	public List<I_M_HU> retrieveByIds(@NonNull final Collection<HuId> huIds)
 	{
 		if (huIds.isEmpty())
@@ -1295,12 +1339,42 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public void createTUPackingInstructions(CreateTUPackingInstructionsRequest request)
+	public void createTUPackingInstructions(final CreateTUPackingInstructionsRequest request)
 	{
 		CreateTUPackingInstructionsCommand.builder()
 				.handlingUnitsDAO(this)
 				.request(request)
 				.build()
 				.execute();
+	}
+
+	@Override
+	public Optional<I_M_HU_PI_Item> getTUPIItemForLUPIAndItemProduct(final BPartnerId bpartnerId, final @NonNull HuPackingInstructionsId luPIId, final @NonNull HUPIItemProductId piItemProductId)
+	{
+		final I_M_HU_PI_Version luPIVersion = retrievePICurrentVersionOrNull(luPIId);
+		if (luPIVersion == null || !luPIVersion.isActive() || !luPIVersion.isCurrent() || !X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit.equals(luPIVersion.getHU_UnitType()))
+		{
+			return Optional.empty();
+		}
+
+		return queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID, piItemProductId)
+				.andCollect(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_ID, I_M_HU_PI_Item.class)
+				.addEqualsFilter(I_M_HU_PI_Item.COLUMNNAME_ItemType, X_M_HU_PI_Item.ITEMTYPE_Material)
+				.addInArrayFilter(I_M_HU_PI_Item.COLUMNNAME_C_BPartner_ID, bpartnerId, null)
+				.addOnlyActiveRecordsFilter()
+				.andCollect(I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Version_ID, I_M_HU_PI_Version.class)
+				.addEqualsFilter(I_M_HU_PI_Version.COLUMNNAME_HU_UnitType, X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit)
+				.addEqualsFilter(I_M_HU_PI_Version.COLUMNNAME_IsCurrent, true)
+				.addOnlyActiveRecordsFilter()
+				.andCollect(I_M_HU_PI_Version.COLUMNNAME_M_HU_PI_ID, I_M_HU_PI.class)
+				.andCollectChildren(I_M_HU_PI_Item.COLUMNNAME_Included_HU_PI_ID, I_M_HU_PI_Item.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_HU_PI_Item.COLUMNNAME_ItemType, X_M_HU_PI_Item.ITEMTYPE_HandlingUnit)
+				.addEqualsFilter(I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Version_ID, luPIVersion.getM_HU_PI_Version_ID())
+				.orderBy(I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Version_ID)
+				.create()
+				.firstOptional(I_M_HU_PI_Item.class);
 	}
 }

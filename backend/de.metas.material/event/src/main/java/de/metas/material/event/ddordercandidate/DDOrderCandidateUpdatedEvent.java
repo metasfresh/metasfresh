@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.material.event.commons.EventDescriptor;
+import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -25,10 +26,11 @@ public class DDOrderCandidateUpdatedEvent extends AbstractDDOrderCandidateEvent
 		super(eventDescriptor, ddOrderCandidate, null);
 	}
 
-	public static DDOrderCandidateUpdatedEvent of(@NonNull final DDOrderCandidateData data)
+	public static DDOrderCandidateUpdatedEvent of(@NonNull final DDOrderCandidateData data,
+												  @NonNull final UserId userId)
 	{
 		return builder()
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(data.getClientAndOrgId()))
+				.eventDescriptor(EventDescriptor.ofClientOrgAndUserId(data.getClientAndOrgId(), userId))
 				.ddOrderCandidate(data)
 				.build();
 	}

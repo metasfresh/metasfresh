@@ -25,23 +25,24 @@ package de.metas.inoutcandidate.spi.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assert;
-
 import de.metas.handlingunits.expectations.AbstractHUExpectation;
 import de.metas.handlingunits.expectations.IExpectationProducer;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
+import org.junit.jupiter.api.Assertions;
 
 public class QualityExpectations<ParentExpectationType> extends AbstractHUExpectation<ParentExpectationType>
 {
-	public static final QualityExpectations<Object> newInstance()
+	public static QualityExpectations<Object> newInstance()
 	{
 		return new QualityExpectations<>(null);
 	}
 
-	/** Creates a new {@link QualityExpectation} */
+	/**
+	 * Creates a new {@link QualityExpectation}
+	 */
 	private final IExpectationProducer<QualityExpectation<QualityExpectations<ParentExpectationType>>> newQualityExpectationProducer = new IExpectationProducer<QualityExpectation<QualityExpectations<ParentExpectationType>>>()
 	{
 		@Override
@@ -77,7 +78,7 @@ public class QualityExpectations<ParentExpectationType> extends AbstractHUExpect
 	{
 		final String prefix = "";
 
-		Assert.assertNotNull(prefix + "HUReceiptLineCandidatesBuilder not null", actual);
+		Assertions.assertNotNull(actual, prefix + "HUReceiptLineCandidatesBuilder not null");
 
 		if (aggregatedExpectation != null)
 		{
@@ -85,7 +86,7 @@ public class QualityExpectations<ParentExpectationType> extends AbstractHUExpect
 		}
 
 		final List<HUReceiptLineCandidate> receiptLineCandidates = actual.getHUReceiptLineCandidates();
-		Assert.assertEquals(prefix + "receiptLineCandidates count not match", expectations.size(), receiptLineCandidates.size());
+		Assertions.assertEquals(expectations.size(), receiptLineCandidates.size(), prefix + "receiptLineCandidates count not match");
 
 		for (int i = 0; i < expectations.size(); i++)
 		{
@@ -97,7 +98,7 @@ public class QualityExpectations<ParentExpectationType> extends AbstractHUExpect
 
 	public HUReceiptLineCandidatesBuilder createHUReceiptLineCandidatesBuilder()
 	{
-		Assert.assertNotNull("receipt schedule shall be set to " + this, receiptSchedule);
+		Assertions.assertNotNull(receiptSchedule, "receipt schedule shall be set to " + this);
 
 		final HUReceiptLineCandidatesBuilder huReceiptLineCandidatesBuilder = new HUReceiptLineCandidatesBuilder(receiptSchedule);
 

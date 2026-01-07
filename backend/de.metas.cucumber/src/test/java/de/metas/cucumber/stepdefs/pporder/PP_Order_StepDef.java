@@ -111,12 +111,12 @@ import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class PP_Order_StepDef
 {
 	private static final AdMessageKey MISSING_PRODUCT_PLU_CONFIG = AdMessageKey.of("de.metas.externalsystem.leichmehl.ExportPPOrderToLeichMehlService.MissingPLUConfigForProduct");
-	
+
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IPPOrderBL ppOrderService = Services.get(IPPOrderBL.class);
@@ -174,7 +174,7 @@ public class PP_Order_StepDef
 	}
 
 	@And("^after not more than (.*)s, PP_Orders are found$")
-	public void validatePP_Order_Candidate(
+	public void validatePP_Order(
 			final int timeoutSec,
 			@NonNull final DataTable dataTable)
 	{
@@ -339,12 +339,12 @@ public class PP_Order_StepDef
 		catch (final AdempiereException adempiereException)
 		{
 			final String adLanguage = Env.getAD_Language();
-			
+
 			final Map<String, String> row = dataTable.asMaps().get(0);
 			final String ppOrderIdentifier = DataTableUtil.extractStringForColumnName(row, I_PP_Order.COLUMNNAME_PP_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
 			final String productName = productBL.getProductName(ProductId.ofRepoId(ppOrder.getM_Product_ID()));
-			
+
 			final ITranslatableString message = msgBL.getTranslatableMsgText(MISSING_PRODUCT_PLU_CONFIG, productName);
 
 			assertThat(adempiereException.getMessage()).contains(message.translate(adLanguage));
@@ -550,7 +550,7 @@ public class PP_Order_StepDef
 		softly.assertAll();
 	}
 
-	private void locateAndLoadPPOrders(int timeoutSec, @NonNull final Map<String, ArrayList<String>> ppOrderCandidate2PPOrderIdsOrdered) throws InterruptedException
+	private void locateAndLoadPPOrders(final int timeoutSec, @NonNull final Map<String, ArrayList<String>> ppOrderCandidate2PPOrderIdsOrdered) throws InterruptedException
 	{
 		for (final String ppOrderCandIdentifier : ppOrderCandidate2PPOrderIdsOrdered.keySet())
 		{
@@ -648,5 +648,13 @@ public class PP_Order_StepDef
 				.firstOnly(I_M_HU.class);
 		assertThat(manufacturedHu).isNotNull();
 		huTable.putOrReplace(tableRow.getAsIdentifier(I_M_HU.COLUMNNAME_M_HU_ID), manufacturedHu);
+	}
+
+	@And("^the PP_Order (.*) is voided$")
+	public void voidPPOrder(@NonNull final String ppOrderIdentifier)
+	{
+		final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
+		ppOrder.setDocAction(IDocument.ACTION_Complete);
+		documentBL.processEx(ppOrder, IDocument.ACTION_Void, IDocument.STATUS_Voided);
 	}
 }

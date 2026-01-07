@@ -1,31 +1,27 @@
-import React from 'react';
-import { useDispatch } from 'react-redux';
-
-import { toastError } from '../../utils/toast';
-import { getWFProcessScreenLocation } from '../../routes/workflow_locations';
-import { startWorkflowRequest } from '../../api/launchers';
-import { updateWFProcess } from '../../actions/WorkflowActions';
+import React, { useEffect } from 'react';
 
 import BarcodeScannerComponent from '../../components/BarcodeScannerComponent';
 import { useScreenDefinition } from '../../hooks/useScreenDefinition';
 import { appLaunchersLocation } from '../../routes/launchers';
 
-const WFLaunchersScanBarcodeScreen = () => {
-  const { applicationId, history } = useScreenDefinition({ back: appLaunchersLocation });
+import { useFilterByQRCode } from './useFilterByQRCode';
 
-  const dispatch = useDispatch();
+const WFLaunchersScanBarcodeScreen = () => {
+  const { applicationId, history } = useScreenDefinition({
+    screenId: 'WFLaunchersScanBarcodeScreen',
+    back: appLaunchersLocation,
+  });
+  const { setFilterByQRCode } = useFilterByQRCode({ applicationId });
+
+  //
+  // Reset the current scanned barcode if any
+  useEffect(() => {
+    setFilterByQRCode(null);
+  }, []);
+
   const onBarcodeScanned = ({ scannedBarcode }) => {
-    startWorkflowRequest({
-      wfParameters: {
-        applicationId,
-        startByBarcode: scannedBarcode,
-      },
-    })
-      .then((wfProcess) => {
-        dispatch(updateWFProcess({ wfProcess }));
-        history.push(getWFProcessScreenLocation({ applicationId, wfprocessId: wfProcess.id }));
-      })
-      .catch((axiosError) => toastError({ axiosError }));
+    setFilterByQRCode(scannedBarcode);
+    history.goBack();
   };
 
   return <BarcodeScannerComponent onResolvedResult={onBarcodeScanned} />;

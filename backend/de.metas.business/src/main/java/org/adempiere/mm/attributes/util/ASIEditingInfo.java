@@ -12,20 +12,19 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetDescriptor;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeExcludeBL;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeSet;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.compiere.model.I_M_AttributeSetExclude;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
-import org.compiere.model.X_M_Attribute;
 
 import javax.annotation.Nullable;
-import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
@@ -57,7 +56,6 @@ import java.util.stream.Stream;
  * Helper class used to provide informations to the ASI editor.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public final class ASIEditingInfo
 {
@@ -78,6 +76,7 @@ public final class ASIEditingInfo
 	}
 
 	// services
+	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 	private final IAttributeExcludeBL attributeExcludeBL = Services.get(IAttributeExcludeBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
@@ -96,8 +95,8 @@ public final class ASIEditingInfo
 	private final SOTrx _soTrx;
 
 	// Deducted values
-	private final I_M_AttributeSet _attributeSet;
-	private ImmutableList<I_M_Attribute> _availableAttributes;
+	private final AttributeSetDescriptor _attributeSet;
+	private ImmutableList<Attribute> _availableAttributes;
 
 	@Nullable
 	private final I_M_AttributeSetInstance _attributeSetInstance;
@@ -129,7 +128,7 @@ public final class ASIEditingInfo
 		}
 		else
 		{
-			_attributeSetInstance = attributesRepo.getAttributeSetInstanceById(attributeSetInstanceId);
+			_attributeSetInstance = asiBL.getById(attributeSetInstanceId);
 		}
 
 		//
@@ -205,34 +204,37 @@ public final class ASIEditingInfo
 	}
 
 	@Nullable
-	public I_M_AttributeSet getM_AttributeSet()
+	private AttributeSetDescriptor getM_AttributeSet()
 	{
 		return _attributeSet;
 	}
 
+	@NonNull
 	public AttributeSetId getAttributeSetId()
 	{
-		final I_M_AttributeSet attributeSet = getM_AttributeSet();
-		return attributeSet != null ? AttributeSetId.ofRepoId(attributeSet.getM_AttributeSet_ID()) : AttributeSetId.NONE;
+		final AttributeSetDescriptor attributeSet = getM_AttributeSet();
+		return attributeSet != null ? attributeSet.getAttributeSetId() : AttributeSetId.NONE;
 	}
 
+	@NonNull
 	public String getM_AttributeSet_Name()
 	{
-		final I_M_AttributeSet attributeSet = getM_AttributeSet();
+		final AttributeSetDescriptor attributeSet = getM_AttributeSet();
 		return attributeSet == null ? "" : attributeSet.getName();
 	}
 
+	@Nullable
 	public String getM_AttributeSet_Description()
 	{
-		final I_M_AttributeSet attributeSet = getM_AttributeSet();
+		final AttributeSetDescriptor attributeSet = getM_AttributeSet();
 		return attributeSet == null ? "" : attributeSet.getDescription();
 	}
 
-	private I_M_AttributeSet retrieveAttributeSetOrNull()
+	private AttributeSetDescriptor retrieveAttributeSetOrNull()
 	{
 		final WindowType windowType = getWindowType();
 
-		final I_M_AttributeSet attributeSet;
+		final AttributeSetDescriptor attributeSet;
 		switch (windowType)
 		{
 			case Regular:
@@ -252,7 +254,7 @@ public final class ASIEditingInfo
 			}
 			case ProcessParameter:
 			{
-				final I_M_AttributeSet productAttributeSet = retrieveProductAttributeSetOrNull();
+				final AttributeSetDescriptor productAttributeSet = retrieveProductAttributeSetOrNull();
 				if (productAttributeSet != null)
 				{
 					attributeSet = productAttributeSet;
@@ -285,7 +287,7 @@ public final class ASIEditingInfo
 	}
 
 	@Nullable
-	private I_M_AttributeSet getAttributeSet(final I_M_AttributeSetInstance asi)
+	private AttributeSetDescriptor getAttributeSet(final I_M_AttributeSetInstance asi)
 	{
 		if (asi == null)
 		{
@@ -293,11 +295,11 @@ public final class ASIEditingInfo
 		}
 
 		final AttributeSetId attributeSetId = AttributeSetId.ofRepoIdOrNone(asi.getM_AttributeSet_ID());
-		return attributesRepo.getAttributeSetById(attributeSetId);
+		return attributeSetId.isNone() ? null : attributesRepo.getAttributeSetDescriptorById(attributeSetId);
 	}
 
 	@Nullable
-	private I_M_AttributeSet retrieveProductAttributeSetOrNull()
+	private AttributeSetDescriptor retrieveProductAttributeSetOrNull()
 	{
 		final ProductId productId = getProductId();
 		if (productId == null)
@@ -308,9 +310,8 @@ public final class ASIEditingInfo
 		return productBL.getAttributeSetOrNull(productId);
 	}
 
-
 	@Nullable
-	private I_M_AttributeSet retrieveProductMasterDataSchema()
+	private AttributeSetDescriptor retrieveProductMasterDataSchema()
 	{
 		final ProductId productId = getProductId();
 		if (productId == null)
@@ -362,7 +363,7 @@ public final class ASIEditingInfo
 		return false; // don't exclude
 	}
 
-	public List<I_M_Attribute> getAvailableAttributes()
+	public List<Attribute> getAvailableAttributes()
 	{
 		if (_availableAttributes == null)
 		{
@@ -375,12 +376,11 @@ public final class ASIEditingInfo
 	{
 		return getAvailableAttributes()
 				.stream()
-				.map(I_M_Attribute::getM_Attribute_ID)
-				.map(AttributeId::ofRepoId)
+				.map(Attribute::getAttributeId)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	private ImmutableList<I_M_Attribute> retrieveAvailableAttributes()
+	private ImmutableList<Attribute> retrieveAvailableAttributes()
 	{
 		final WindowType type = getWindowType();
 		final AttributeSetInstanceId attributeSetInstanceId = getAttributeSetInstanceId();
@@ -388,7 +388,7 @@ public final class ASIEditingInfo
 		final SOTrx soTrx = getSOTrx();
 		final int callerColumnId = getCallerColumnId();
 
-		final Stream<I_M_Attribute> attributes;
+		final Stream<Attribute> attributes;
 		switch (type)
 		{
 			case Regular:
@@ -409,16 +409,14 @@ public final class ASIEditingInfo
 				// All attributes
 				attributes = attributesRepo.getAllAttributes()
 						.stream()
-						.sorted(Comparator.comparing(I_M_Attribute::getName)
-								.thenComparing(I_M_Attribute::getM_Attribute_ID));
+						.sorted(Attribute.ORDER_BY_DisplayName);
 				break;
 			}
 			case Pricing:
 			{
 				attributes = attributesRepo.getAllAttributes()
 						.stream()
-						.sorted(Comparator.comparing(I_M_Attribute::getName)
-								.thenComparing(I_M_Attribute::getM_Attribute_ID))
+						.sorted(Attribute.ORDER_BY_DisplayName)
 						.filter(this::isPricingRelevantAttribute);
 				break;
 			}
@@ -439,34 +437,29 @@ public final class ASIEditingInfo
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private boolean isPricingRelevantAttribute(final I_M_Attribute attribute)
+	private boolean isPricingRelevantAttribute(final Attribute attribute)
 	{
-		return attribute.isPricingRelevant()
-				&& X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attribute.getAttributeValueType());
+		return attribute.isPricingRelevant() && attribute.getValueType().isList();
 	}
 
 	/**
-	 * 
-	 * @param attributeSetId
-	 * @param attributeSetInstanceId
 	 * @return list of available attributeSet's instance attributes, merged with the attributes which are currently present in our ASI (even if they are not present in attribute set)
 	 */
-	private List<I_M_Attribute> retrieveAvailableAttributeSetAndInstanceAttributes(
+	private List<Attribute> retrieveAvailableAttributeSetAndInstanceAttributes(
 			@Nullable final AttributeSetId attributeSetId,
 			@Nullable final AttributeSetInstanceId attributeSetInstanceId)
 	{
-		final LinkedHashMap<Integer, I_M_Attribute> attributes = new LinkedHashMap<>(); // preserve the order
+		final LinkedHashMap<AttributeId, Attribute> attributes = new LinkedHashMap<>(); // preserve the order
 
 		//
 		// Retrieve attribute set's instance attributes,
 		// and index them by M_Attribute_ID
 		if (attributeSetId != null && !attributeSetId.isNone())
 		{
-			attributesRepo
-					.getAttributesByAttributeSetId(attributeSetId)
+			attributesRepo.getAttributesByAttributeSetId(attributeSetId)
 					.stream()
-					.filter(I_M_Attribute::isInstanceAttribute)
-					.forEach(attribute -> attributes.put(attribute.getM_Attribute_ID(), attribute));
+					.filter(Attribute::isInstanceAttribute)
+					.forEach(attribute -> attributes.put(attribute.getAttributeId(), attribute));
 		}
 
 		//
@@ -474,12 +467,12 @@ public final class ASIEditingInfo
 		// and add them to our "attributes" index.
 		if (AttributeSetInstanceId.isRegular(attributeSetInstanceId))
 		{
-			final Set<Integer> alreadyLoadedAttributeIds = attributes.keySet();
-			final Set<AttributeId> asiAttributeIds = attributesRepo.getAttributeIdsByAttributeSetInstanceId(attributeSetInstanceId);
+			final Set<AttributeId> alreadyLoadedAttributeIds = attributes.keySet();
+			final Set<AttributeId> asiAttributeIds = asiBL.getAttributeIdsByAttributeSetInstanceId(attributeSetInstanceId);
 			final Set<AttributeId> attributeIdsToLoad = Sets.difference(asiAttributeIds, alreadyLoadedAttributeIds);
 
 			attributesRepo.getAttributesByIds(attributeIdsToLoad)
-					.forEach(attribute -> attributes.put(attribute.getM_Attribute_ID(), attribute));
+					.forEach(attribute -> attributes.put(attribute.getAttributeId(), attribute));
 		}
 
 		//

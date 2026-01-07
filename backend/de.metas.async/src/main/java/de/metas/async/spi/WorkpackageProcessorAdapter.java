@@ -1,5 +1,6 @@
 package de.metas.async.spi;
 
+import de.metas.async.QueueWorkPackageId;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_Element;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -50,6 +51,13 @@ public abstract class WorkpackageProcessorAdapter implements IWorkpackageProcess
 	{
 		Check.assumeNotNull(workpackage, "workpackage not null");
 		return this.workpackage;
+	}
+
+	@NonNull
+	protected final QueueWorkPackageId getQueueWorkPackageId()
+	{
+		Check.assumeNotNull(workpackage, "workpackage not null");
+		return QueueWorkPackageId.ofRepoId(this.workpackage.getC_Queue_WorkPackage_ID());
 	}
 
 	/**

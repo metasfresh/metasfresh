@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-leichundmehl
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,11 +24,9 @@ package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder.proc
 
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
-import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.XMLPluElement;
-import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.XMLPluRootElement;
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.DispatchMessageRequest;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder.ExportPPOrderRouteContext;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder.processor.file.FileUpdater;
-import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.DispatchMessageRequest;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.util.XMLUtil;
 import de.metas.common.externalsystem.leichundmehl.JsonExternalSystemLeichMehlConfigProductMapping;
 import de.metas.common.externalsystem.leichundmehl.JsonPluFileAudit;
@@ -44,7 +42,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.LeichMehlConstants.ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT;
+import static de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.util.XMLUtil.addXMLDeclarationIfNeeded;
 
+/**
+ * Reads a "template" PLU into memory and updates it from context.
+ * The updated result is likewise put into the context.
+ */
 public class ReadPluFileProcessor implements Processor
 {
 	private final ProcessLogger processLogger;
@@ -55,7 +58,7 @@ public class ReadPluFileProcessor implements Processor
 	}
 
 	@Override
-	public void process(final Exchange exchange)
+	public void process(@NonNull final Exchange exchange)
 	{
 		final ExportPPOrderRouteContext context = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT, ExportPPOrderRouteContext.class);
 
@@ -83,19 +86,13 @@ public class ReadPluFileProcessor implements Processor
 
 			final JsonPluFileAudit jsonPluFileAudit = updateDocument(pluDocument, filePath, context);
 
-			final String fileContent = XMLUtil.toString(pluDocument);
-
-			final XMLPluRootElement xmlPluRootElement = XMLPluRootElement.builder()
-					.xmlPluElement(XMLPluElement.of(fileContent))
-					.build();
-
-			final String xmlRootFile = XMLUtil.convertToXML(xmlPluRootElement, XMLPluRootElement.class);
+			final String fileContentWithoutXMLDeclaration = XMLUtil.toString(pluDocument);
 
 			context.setJsonPluFileAudit(jsonPluFileAudit);
-			context.setPluFileXmlContent(xmlRootFile);
+			context.setPluFileXmlContent(addXMLDeclarationIfNeeded(fileContentWithoutXMLDeclaration));
 			context.setPluTemplateFilename(filePath.getFileName().toString());
 
-			return xmlRootFile;
+			return fileContentWithoutXMLDeclaration;
 		}
 		catch (final Exception e)
 		{

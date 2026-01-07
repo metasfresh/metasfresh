@@ -24,6 +24,7 @@ import org.compiere.model.I_C_Payment;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -188,6 +189,9 @@ final class AllocationLineCandidateSaver
 				// Amounts
 				.amount(payAmt.negate().toBigDecimal())
 				.overUnderAmt(candidate.getPaymentOverUnderAmt().toBigDecimal())
+				.discountAmt(Optional.ofNullable(candidate.getPayAmtDiscountInInvoiceCurrency())
+									 .map(Money::toBigDecimal)
+									 .orElse(BigDecimal.ZERO))
 				//
 				.invoiceId(extractInvoiceId(candidate.getPaymentDocumentRef()));
 

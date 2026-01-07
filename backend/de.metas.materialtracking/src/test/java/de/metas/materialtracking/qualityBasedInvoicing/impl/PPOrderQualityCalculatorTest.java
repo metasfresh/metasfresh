@@ -27,14 +27,15 @@ import java.math.BigDecimal;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Test;
+
 
 import de.metas.materialtracking.WaschprobeOrderData;
 import de.metas.materialtracking.WaschprobeStandardMasterData;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.qualityBasedInvoicing.IQualityInspectionOrder;
 import de.metas.util.Services;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class PPOrderQualityCalculatorTest
 {
@@ -46,7 +47,7 @@ public class PPOrderQualityCalculatorTest
 
 	private I_M_Material_Tracking materialTracking;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

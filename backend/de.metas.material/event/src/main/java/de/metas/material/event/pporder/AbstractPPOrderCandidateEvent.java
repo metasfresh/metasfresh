@@ -32,6 +32,7 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.eevolution.model.I_PP_Order_Candidate;
+import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 
 import javax.annotation.Nullable;
 
@@ -55,7 +56,7 @@ public abstract class AbstractPPOrderCandidateEvent implements MaterialEvent
 	}
 
 	@JsonIgnore
-	public int getPpOrderCandidateId() {return getPpOrderCandidate().getPpOrderCandidateId();}
+	public PPOrderCandidateId getPpOrderCandidateId() {return getPpOrderCandidate().getPpOrderCandidateId();}
 
 	@Nullable
 	@Override

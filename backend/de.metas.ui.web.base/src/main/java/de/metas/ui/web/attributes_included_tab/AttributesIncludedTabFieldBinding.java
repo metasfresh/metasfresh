@@ -20,7 +20,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.AttributeValueType;
-import org.adempiere.mm.attributes.api.impl.AttributesBL;
+import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 
 import javax.annotation.Nullable;
@@ -70,7 +70,7 @@ public class AttributesIncludedTabFieldBinding implements DocumentFieldDataBindi
 		}
 		else if (AttributeValueType.NUMBER.equals(attributeValueType))
 		{
-			if (AttributesBL.isInteger(includedTabField.getUomId()))
+			if (Attribute.isInteger(includedTabField.getUomId()))
 			{
 				this.valueClass = Integer.class;
 				this.widgetType = DocumentFieldWidgetType.Integer;

@@ -5,8 +5,8 @@ import { findKey } from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 
 import {
-  dropdownRequest,
   dropdownModalRequest,
+  dropdownRequest,
 } from '../../../actions/GenericActions';
 import { getViewAttributeDropdown } from '../../../api';
 import RawList from './RawList';
@@ -229,20 +229,27 @@ class ListWidget extends Component {
   };
 
   handleBlur = () => {
-    const { field, onBlur } = this.props;
+    const { isMultiselect, field, onBlur } = this.props;
 
-    this.setState(
-      {
-        autoFocus: false,
-        listFocused: false,
-        list: [],
-        listHash: null,
-        listToggled: false,
-      },
-      () => {
-        onBlur && onBlur(field);
-      }
-    );
+    if (isMultiselect) {
+      // Avoid clearing the list if is a multiselect component,
+      // because that component is always displaying all options on the screen,
+      // so blur won't hide the dropdown list.
+      onBlur?.(field);
+    } else {
+      this.setState(
+        {
+          autoFocus: false,
+          listFocused: false,
+          list: [],
+          listHash: null,
+          listToggled: false,
+        },
+        () => {
+          onBlur?.(field);
+        }
+      );
+    }
   };
 
   handleOpenDropdownRequest = () => {
@@ -378,6 +385,7 @@ ListWidget.defaultProps = {
 
 ListWidget.propTypes = {
   properties: PropTypes.object,
+  isMultiselect: PropTypes.bool,
   isInputEmpty: PropTypes.bool,
   defaultValue: PropTypes.any,
   dataId: PropTypes.any,

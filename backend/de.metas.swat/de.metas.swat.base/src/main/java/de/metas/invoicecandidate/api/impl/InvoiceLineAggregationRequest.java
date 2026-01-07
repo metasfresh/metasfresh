@@ -22,23 +22,22 @@ package de.metas.invoicecandidate.api.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.invoicecandidate.api.IInvoiceLineAggregationRequest;
+import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.Check;
+import lombok.NonNull;
+import lombok.Setter;
+import org.adempiere.util.lang.ObjectUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-
-import org.adempiere.util.lang.ObjectUtils;
-import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.invoicecandidate.api.IInvoiceLineAggregationRequest;
-import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.util.Check;
 
 /**
  * Default immutable implementation of {@link IInvoiceLineAggregationRequest}.
@@ -48,7 +47,7 @@ import de.metas.util.Check;
  */
 /* package */final class InvoiceLineAggregationRequest implements IInvoiceLineAggregationRequest
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
@@ -56,15 +55,11 @@ import de.metas.util.Check;
 	private final I_C_Invoice_Candidate invoiceCandidate;
 	private final I_C_InvoiceCandidate_InOutLine iciol;
 	private final ImmutableList<Object> aggregationKeyElements;
-	private final ImmutableSet<IInvoiceLineAttribute> invoiceLineAttributes;
+	private final ImmutableSet<IInvoiceLineAttribute> attributesFromInoutLines;
 	private final boolean allocateRemainingQty;
 
-	private InvoiceLineAggregationRequest(final Builder builder)
+	private InvoiceLineAggregationRequest(@NonNull final Builder builder)
 	{
-		super();
-
-		Check.assumeNotNull(builder, "builder not null");
-
 		this.invoiceCandidate = builder.invoiceCandidate;
 		Check.assumeNotNull(invoiceCandidate, "invoiceCandidate not null");
 
@@ -76,7 +71,7 @@ import de.metas.util.Check;
 		}
 
 		this.aggregationKeyElements = ImmutableList.copyOf(builder.aggregationKeyElements);
-		this.invoiceLineAttributes = ImmutableSet.copyOf(builder.invoiceLineAttributes);
+		this.attributesFromInoutLines = ImmutableSet.copyOf(builder.attributesFromInoutLines);
 		this.allocateRemainingQty = builder.allocateRemainingQty;
 	}
 
@@ -105,9 +100,9 @@ import de.metas.util.Check;
 	}
 
 	@Override
-	public Set<IInvoiceLineAttribute> getInvoiceLineAttributes()
+	public Set<IInvoiceLineAttribute> getAttributesFromInoutLines()
 	{
-		return invoiceLineAttributes;
+		return attributesFromInoutLines;
 	}
 
 	@Override
@@ -118,20 +113,19 @@ import de.metas.util.Check;
 
 	/**
 	 * {@link InvoiceLineAggregationRequest} builder.
-	 *
-	 * @author tsa
 	 */
 	public static class Builder
 	{
 		private I_C_Invoice_Candidate invoiceCandidate;
 		private I_C_InvoiceCandidate_InOutLine iciol;
 		private final List<Object> aggregationKeyElements = new ArrayList<>();
-		private final Set<IInvoiceLineAttribute> invoiceLineAttributes = new LinkedHashSet<>();
+		private final Set<IInvoiceLineAttribute> attributesFromInoutLines = new LinkedHashSet<>();
+		@Setter
 		private boolean allocateRemainingQty = false;
 
-		public InvoiceLineAggregationRequest build()
+		/* package */ InvoiceLineAggregationRequest build()
 		{
-			return new InvoiceLineAggregationRequest(this);
+		 	return new InvoiceLineAggregationRequest(this);
 		}
 
 		private Builder()
@@ -158,31 +152,24 @@ import de.metas.util.Check;
 
 		/**
 		 * Adds an additional element to be considered part of the line aggregation key.
-		 *
+		 * <p>
 		 * NOTE: basically this shall be always empty because everything which is related to line aggregation
 		 * shall be configured from aggregation definition,
 		 * but we are also leaving this door open in case we need to implement some quick/hot fixes.
 		 *
-		 * @param aggregationKeyElement
 		 * @deprecated This method will be removed because we shall go entirely with standard aggregation definition.
 		 */
 		@Deprecated
-		public Builder addLineAggregationKeyElement(final Object aggregationKeyElement)
+		public Builder addLineAggregationKeyElement(@NonNull final Object aggregationKeyElement)
 		{
 			aggregationKeyElements.add(aggregationKeyElement);
 			return this;
 		}
 
-		public Builder addInvoiceLineAttributes(final Collection<IInvoiceLineAttribute> invoiceLineAttributes)
+		public void addInvoiceLineAttributes(@NonNull final Collection<IInvoiceLineAttribute> invoiceLineAttributes)
 		{
-			this.invoiceLineAttributes.addAll(invoiceLineAttributes);
-			return this;
+			this.attributesFromInoutLines.addAll(invoiceLineAttributes);
 		}
 
-		public Builder setAllocateRemainingQty(boolean allocateRemainingQty)
-		{
-			this.allocateRemainingQty = allocateRemainingQty;
-			return this;
-		}
 	}
 }

@@ -32,7 +32,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.util.OptionalBoolean;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_PriceList_Version;
 
@@ -125,4 +125,6 @@ public interface IPricingContext extends IContextAware
 	boolean isSkipCheckingPriceListSOTrxFlag();
 
 	Quantity getQuantity();
+
+	BigDecimal getManualPrice();
 }

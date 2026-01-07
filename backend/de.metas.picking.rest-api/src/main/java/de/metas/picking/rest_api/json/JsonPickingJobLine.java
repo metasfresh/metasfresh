@@ -23,7 +23,6 @@
 package de.metas.picking.rest_api.json;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.ean13.EAN13ProductCode;
 import de.metas.handlingunits.picking.job.model.CurrentPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingUnit;
@@ -33,6 +32,7 @@ import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.uom.UomId;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.JsonQRCode;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
+import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcessHeaderProperties;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -52,7 +52,7 @@ public class JsonPickingJobLine
 	@NonNull String pickingLineId;
 	@NonNull String productId;
 	@NonNull String productNo;
-	@Nullable EAN13ProductCode ean13ProductCode;
+	@Nullable JsonPickingJobLineProductCodes gs1ProductCodes;
 	@NonNull String caption;
 
 	@Nullable JsonQRCode pickingSlot;
@@ -76,6 +76,7 @@ public class JsonPickingJobLine
 	@NonNull String displayGroupKey;
 	@Nullable String salesOrderDocumentNo;
 	int orderLineSeqNo;
+	@Nullable JsonWFProcessHeaderProperties additionalHeaderProperties;
 
 	public static JsonPickingJobLineBuilder builderFrom(
 			@NonNull final PickingJobLine line,
@@ -113,7 +114,7 @@ public class JsonPickingJobLine
 				.pickingLineId(line.getId().getAsString())
 				.productId(line.getProductId().getAsString())
 				.productNo(line.getProductNo())
-				.ean13ProductCode(line.getEan13ProductCode())
+				.gs1ProductCodes(JsonPickingJobLineProductCodes.ofNullable(line.getGs1ProductCodes()))
 				.caption(line.getCaption().translate(adLanguage))
 				.pickingSlot(currentPickingTarget.getPickingSlot().map(JsonPickingJobLine::toJsonQRCode).orElse(null))
 				.luPickingTarget(currentPickingTarget.getLuPickingTarget().map(JsonLUPickingTarget::of).orElse(null))

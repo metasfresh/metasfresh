@@ -4,17 +4,20 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.frontend_testing.JsonTestId;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
+import de.metas.gs1.ean13.EAN13;
 import de.metas.handlingunits.HUItemType;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.HuUnitType;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.logging.LogManager;
 import de.metas.manufacturing.workflows_api.activity_handlers.generateHUQRCodes.GenerateHUQRCodesActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.MaterialReceiptActivityHandler;
 import de.metas.product.IProductBL;
@@ -24,7 +27,9 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -34,17 +39,36 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Builder
 public class CreatePackingInstructionsCommand
 {
+	private static final Logger logger = LogManager.getLogger(CreatePackingInstructionsCommand.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonPackingInstructionsRequest request;
 	@NonNull private final Identifier identifier;
 
 	public JsonPackingInstructionsResponse execute()
 	{
-		final PIResult tu = createPI(request.getTu(), HuUnitType.TU);
-		final HuPackingInstructionsItemId tuPIItemId = createPIItem_Material(tu);
-		final JsonTestId tuPIItemProductTestId = createPIItemProduct(request.getTu(), tuPIItemId);
+		renamePreviousEANs();
 
+		//
+		// TU or CU
+		final PIResult tu;
+		final JsonTestId tuPIItemProductTestId;
+		if (request.isCu())
+		{
+			tu = loadPI_CU();
+			tuPIItemProductTestId = null;
+		}
+		else
+		{
+			tu = createPI(request.getTuNotNull(), HuUnitType.TU);
+			final HuPackingInstructionsItemId tuPIItemId = createPIItem_Material(tu);
+			tuPIItemProductTestId = createPIItemProduct(tuPIItemId);
+		}
+
+		//
+		// LU
 		final PIResult lu;
 		final I_M_HU_PI_Item luPIItem;
 		final JsonTestId luPIItemTestId;
@@ -132,6 +156,17 @@ public class CreatePackingInstructionsCommand
 		return newPI;
 	}
 
+	private PIResult loadPI_CU()
+	{
+		final I_M_HU_PI piRecord = handlingUnitsBL.getPI(HuPackingInstructionsId.VIRTUAL);
+		return PIResult.builder()
+				.pi(piRecord)
+				.piId(HuPackingInstructionsId.VIRTUAL)
+				.piName(piRecord.getName())
+				.pivId(HuPackingInstructionsVersionId.VIRTUAL)
+				.build();
+	}
+
 	private I_M_HU_PI_Item createPIItem_IncludedHU(final PIResult lu, final PIResult tu, final int qtyTUsPerLU)
 	{
 		final I_M_HU_PI_Item luPIItemRecord = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item.class);
@@ -152,22 +187,48 @@ public class CreatePackingInstructionsCommand
 		return HuPackingInstructionsItemId.ofRepoId(huPiItemRecord.getM_HU_PI_Item_ID());
 	}
 
-	private JsonTestId createPIItemProduct(Identifier tuIdentifier, HuPackingInstructionsItemId tuPIItemId)
+	private JsonTestId createPIItemProduct(@NonNull final HuPackingInstructionsItemId tuPIItemId)
 	{
-		final ProductId productId = context.getId(request.getProduct(), ProductId.class);
+		final Identifier tuIdentifier = request.getTuNotNull();
+		final Identifier productIdentifier = request.getProductNotNull();
+		final ProductId productId = context.getId(productIdentifier, ProductId.class);
 		final UomId uomId = productBL.getStockUOMId(productId);
 
 		final I_M_HU_PI_Item_Product record = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class);
 
 		record.setM_Product_ID(productId.getRepoId());
 		record.setM_HU_PI_Item_ID(tuPIItemId.getRepoId());
-		record.setQty(request.getQtyCUsPerTU());
+		record.setQty(request.getQtyCUsPerTUNotNull());
 		record.setC_UOM_ID(uomId.getRepoId());
 		record.setValidFrom(Timestamp.from(MasterdataContext.DEFAULT_ValidFrom.atStartOfDay(SystemTime.zoneId()).toInstant()));
+		record.setEAN_TU(request.getTu_ean() != null ? request.getTu_ean().getAsString() : null);
 		saveRecord(record);
 		final HUPIItemProductId piItemProductId = HUPIItemProductId.ofRepoId(record.getM_HU_PI_Item_Product_ID());
-		context.putIdentifier(tuIdentifier, piItemProductId);
+
+		context.putIdentifierIfAbsent(tuIdentifier, piItemProductId);
+		context.putIdentifier(Identifier.ofString(tuIdentifier.getAsString() + "_" + productIdentifier.getAsString()), piItemProductId);
 
 		return MaterialReceiptActivityHandler.extractNewTUTargetTestId(record);
+	}
+
+	private void renamePreviousEANs()
+	{
+		final EAN13 tu_ean = request.getTu_ean();
+		if (tu_ean == null)
+		{
+			return;
+		}
+
+		queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_EAN_TU, tu_ean.getAsString())
+				.create()
+				.forEach(record -> {
+					final String tuEAN_before = record.getEAN_TU();
+					final String tuEAN_after = tuEAN_before + "_old";
+					record.setEAN_TU(tuEAN_after);
+					InterfaceWrapperHelper.saveRecord(record);
+					logger.info("Updated {}: changed EAN from {} to {}", record, tuEAN_before, tuEAN_after);
+				});
 	}
 }

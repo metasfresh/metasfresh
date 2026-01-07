@@ -35,11 +35,14 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
+
+import static de.metas.common.util.time.SystemTime.asZonedDateTime;
 
 /*
  * #%L
@@ -78,7 +81,7 @@ final class PackageableRowsRepository
 
 	public PackageableRowsRepository(
 			@NonNull final MoneyService moneyService,
-			@NonNull LookupDataSourceFactory lookupDataSourceFactory)
+			@NonNull final LookupDataSourceFactory lookupDataSourceFactory)
 	{
 		this.moneyService = moneyService;
 
@@ -113,12 +116,15 @@ final class PackageableRowsRepository
 	{
 		final PackageableViewFilterVO filterVO = PackageableViewFilters.extractPackageableViewFilterVO(filters);
 
+		final ZonedDateTime zonedDateTime = asZonedDateTime();
 		final PackageableQuery.PackageableQueryBuilder builder = PackageableQuery.builder()
 				.onlyFromSalesOrder(true)
 				.salesOrderId(filterVO.getSalesOrderId())
 				.warehouseId(filterVO.getWarehouseId())
 				.warehouseTypeId(filterVO.getWarehouseTypeId())
 				.preparationDate(filterVO.getPreparationDate())
+				.maximumFixedPreparationDate(zonedDateTime)
+				.maximumFixedPromisedDate(zonedDateTime)
 				.shipperId(filterVO.getShipperId());
 
 		if (filterVO.getCustomerId() != null)

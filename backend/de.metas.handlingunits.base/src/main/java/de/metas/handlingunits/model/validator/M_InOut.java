@@ -22,13 +22,11 @@ package de.metas.handlingunits.model.validator;
  * #L%
  */
 
-import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
-import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.document.IHUDocumentFactoryService;
@@ -44,20 +42,18 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.movement.api.IHUMovementBL;
-import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.job.service.HUWithPickOnTheFlyStatus;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.ReopenPickingJobRequest;
+import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
+import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.logging.LogManager;
 import de.metas.material.MovementType;
 import de.metas.util.Check;
-import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
@@ -70,7 +66,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -82,8 +77,6 @@ import java.util.TreeSet;
 @Component
 public class M_InOut
 {
-	private static final Logger logger = LogManager.getLogger(M_InOut.class);
-
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
@@ -120,16 +113,7 @@ public class M_InOut
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_REVERSEACCRUAL })
 	public void destroyHandlingUnitsForReversedInboundMovements(final I_M_InOut inout)
 	{
-		final MovementType movementType = MovementType.ofCode(inout.getMovementType());
-		if (movementType.isOutboundTransaction())
-		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("Skip destroying HUs as we are dealing with an outbound transaction!");
-			return;
-		}
-
-		// the incoming HU created from this M_InOut needs to be destroyed
-		huInOutBL.copyAssignmentsToReversal(inout);
-		huInOutBL.destroyHUs(inout);
+		huInOutBL.destroyHandlingUnitsIfReversedInboundTransaction(inout);
 	}
 
 	/**
@@ -251,7 +235,7 @@ public class M_InOut
 	public void removeHUAssignmentsForShipment(final I_M_InOut shipment)
 	{
 		final MovementType movementType = MovementType.ofCode(shipment.getMovementType());
-		
+
 		// Make sure we deal with a shipment (and not a customer-return)
 		final boolean isShipment = shipment.isSOTrx() && movementType.isOutboundTransaction();
 		if (!isShipment)

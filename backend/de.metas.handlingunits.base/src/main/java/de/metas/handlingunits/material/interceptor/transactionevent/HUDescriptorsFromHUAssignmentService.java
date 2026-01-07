@@ -154,6 +154,7 @@ public class HUDescriptorsFromHUAssignmentService
 
 			final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
 					.warehouseId(transaction.getWarehouseId())
+					.locatorId(transaction.getLocatorId())
 					.date(transaction.getTransactionDate())
 					.productDescriptor(productDescriptor)
 					.customerId(customerId)

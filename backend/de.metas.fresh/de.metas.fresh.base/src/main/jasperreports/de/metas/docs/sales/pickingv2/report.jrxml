@@ -85,6 +85,9 @@ where orderdocumentno = $P{OrderDocumentNo};]]>
 				<subreportParameter name="IsSOTrx">
 					<subreportParameterExpression><![CDATA["Y"]]></subreportParameterExpression>
 				</subreportParameter>
+				<subreportParameter name="ad_language">
+					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
+				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_orgblock_right.jasper"]]></subreportExpression>
 			</subreport>

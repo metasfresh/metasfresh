@@ -30,11 +30,13 @@ import de.metas.handlingunits.IHUAware;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IHUContextProcessorExecutor;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
+import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
-import de.metas.handlingunits.attribute.IHUTransactionAttributeBuilder;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
+import de.metas.handlingunits.attribute.IHUTransactionAttributeBuilder;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
@@ -43,9 +45,9 @@ import de.metas.handlingunits.attribute.strategy.impl.HUAttributeTransferRequest
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
-import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
@@ -58,12 +60,12 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.AttributeSetId;
+import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IMutable;
@@ -78,7 +80,7 @@ import java.util.Optional;
 public class HUAttributesBL implements IHUAttributesBL
 {
 
-	private final static transient Logger logger = LogManager.getLogger(HUAttributesBL.class);
+	private final static Logger logger = LogManager.getLogger(HUAttributesBL.class);
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
@@ -167,7 +169,7 @@ public class HUAttributesBL implements IHUAttributesBL
 	@Override
 	public void updateHUAttributeRecursive(@NonNull final HuId huId, @NonNull final AttributeCode attributeCode, @Nullable final Object attributeValue, @Nullable final String onlyHUStatus)
 	{
-		final I_M_Attribute attribute = attributeDAO.retrieveAttributeByValueOrNull(attributeCode);
+		final I_M_Attribute attribute = attributeDAO.retrieveActiveAttributeByValueOrNull(attributeCode);
 		if (attribute == null)
 		{
 			logger.debug("M_Attribute with Value={} does not exis of is inactive; -> do nothing", attributeCode.getCode());
@@ -265,14 +267,7 @@ public class HUAttributesBL implements IHUAttributesBL
 	@Override
 	public void validateMandatoryShipmentAttributes(@NonNull final HuId huId, @NonNull final ProductId productId)
 	{
-		final AttributeSetId attributeSetId = productBL.getAttributeSetId(productId);
-
-		final ImmutableList<I_M_Attribute> attributesMandatoryOnShipment = attributeDAO.getAttributesByAttributeSetId(attributeSetId).stream()
-				.filter(attribute -> attributesBL
-						.isMandatoryOnShipment(productId,
-								AttributeId.ofRepoId(attribute.getM_Attribute_ID())))
-				.collect(ImmutableList.toImmutableList());
-
+		final ImmutableList<Attribute> attributesMandatoryOnShipment = attributesBL.getAttributesMandatoryOnShipment(productId);
 		validateMandatoryAttributes(huId, productId, attributesMandatoryOnShipment, MSG_MandatoryOnShipment);
 
 	}
@@ -280,14 +275,13 @@ public class HUAttributesBL implements IHUAttributesBL
 	@Override
 	public void validateMandatoryPickingAttributes(@NonNull final HuId huId, @NonNull final ProductId productId)
 	{
-		final ImmutableList<I_M_Attribute> attributesMandatoryOnPicking = attributesBL.getAttributesMandatoryOnPicking(productId);
-
+		final ImmutableList<Attribute> attributesMandatoryOnPicking = attributesBL.getAttributesMandatoryOnPicking(productId);
 		validateMandatoryAttributes(huId, productId, attributesMandatoryOnPicking, MSG_MandatoryOnPicking);
 	}
 
 	private void validateMandatoryAttributes(@NonNull final HuId huId,
 											 @NonNull final ProductId productId,
-											 @NonNull final ImmutableList<I_M_Attribute> mandatoryAttributes,
+											 @NonNull final ImmutableList<Attribute> mandatoryAttributes,
 											 @NonNull final AdMessageKey messageKey)
 	{
 		final I_M_HU huRecord = handlingUnitsDAO.getById(huId);
@@ -296,15 +290,13 @@ public class HUAttributesBL implements IHUAttributesBL
 
 		final IAttributeStorage attributeStorage = attributesFactory.getAttributeStorage(huRecord);
 
-		for (final I_M_Attribute attribute : mandatoryAttributes)
+		for (final Attribute attribute : mandatoryAttributes)
 		{
-			final Object attributeValue = attributeStorage.getValue(attribute);
+			final Object attributeValue = attributeStorage.getValue(attribute.getAttributeCode());
 			if (Check.isEmpty(attributeValue))
 			{
 				final String productName = productBL.getProductName(productId);
-				throw new AdempiereException(
-						messageKey,
-						attribute.getName(), productName);
+				throw new AdempiereException(messageKey, attribute.getDisplayName(), productName);
 			}
 		}
 	}
@@ -314,7 +306,7 @@ public class HUAttributesBL implements IHUAttributesBL
 			@NonNull final HuId huId,
 			@NonNull final ProductId productId)
 	{
-		final ImmutableList<I_M_Attribute> attributesMandatoryOnPicking = attributesBL.getAttributesMandatoryOnPicking(productId);
+		final ImmutableList<Attribute> attributesMandatoryOnPicking = attributesBL.getAttributesMandatoryOnPicking(productId);
 
 		final I_M_HU huRecord = handlingUnitsDAO.getById(huId);
 
@@ -322,10 +314,9 @@ public class HUAttributesBL implements IHUAttributesBL
 
 		final IAttributeStorage attributeStorage = attributesFactory.getAttributeStorage(huRecord);
 
-		for (final I_M_Attribute attribute : attributesMandatoryOnPicking)
+		for (final Attribute attribute : attributesMandatoryOnPicking)
 		{
-			final Object attributeValue = attributeStorage.getValue(attribute);
-
+			final Object attributeValue = attributeStorage.getValue(attribute.getAttributeCode());
 			if (Check.isEmpty(attributeValue))
 			{
 				return false;
@@ -369,7 +360,7 @@ public class HUAttributesBL implements IHUAttributesBL
 	@Override
 	public void updateHUAttribute(@NonNull final HuId huId, @NonNull final AttributeCode attributeCode, @Nullable final Object attributeValue)
 	{
-		final I_M_Attribute attribute = attributeDAO.retrieveAttributeByValueOrNull(attributeCode);
+		final I_M_Attribute attribute = attributeDAO.retrieveActiveAttributeByValueOrNull(attributeCode);
 		if (attribute == null)
 		{
 			logger.debug("M_Attribute with Value={} does not exist or it is inactive; -> do nothing", attributeCode.getCode());
@@ -391,14 +382,26 @@ public class HUAttributesBL implements IHUAttributesBL
 			attributeStorage.saveChangesIfNeeded();
 		});
 	}
+
 	@Override
 	@Nullable
 	public String getHUAttributeValue(@NonNull final I_M_HU hu, @NonNull final AttributeCode attributeCode)
 	{
-		return Optional.ofNullable(attributeDAO.retrieveAttributeIdByValueOrNull(attributeCode))
+		return Optional.ofNullable(attributeDAO.retrieveActiveAttributeIdByValueOrNull(attributeCode))
 				.map(atrId -> huAttributesDAO.retrieveAttribute(hu, atrId))
 				.map(I_M_HU_Attribute::getValue)
 				.orElse(null);
 	}
 
+	@Override
+	@Nullable
+	public IAttributeValue getAttributeValue(@NonNull final I_M_HU hu, @NonNull final AttributeCode attributeCode)
+	{
+		final IMutableHUContext huContext = handlingUnitsBL
+				.createMutableHUContext(PlainContextAware.newWithThreadInheritedTrx());
+
+		final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
+		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu);
+		return attributeStorage.getAttributeValue(attributeCode);
+	}
 }

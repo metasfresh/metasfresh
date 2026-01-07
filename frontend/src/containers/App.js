@@ -10,27 +10,23 @@ import {
 } from '../utils/locale';
 import {
   addNotification,
-  setProcessSaved,
-  initHotkeys,
-  initKeymap,
+  connectionError,
   setLanguages,
+  setProcessSaved,
 } from '../actions/AppActions';
 import { getAvailableLang } from '../api/login';
-import { connectionError } from '../actions/AppActions';
 // import PluginsRegistry from '../services/PluginsRegistry';
 import { useAuth } from '../hooks/useAuth';
 import useConstructor from '../hooks/useConstructor';
 import history from '../services/History';
 import Routes from '../routes';
 import { NO_CONNECTION_ERROR } from '../constants/Constants';
-import { generateHotkeys, ShortcutProvider } from '../components/keyshortcuts';
+import { ShortcutProvider } from '../components/keyshortcuts/ShortcutProvider';
 import Translation from '../components/Translation';
 import NotificationHandler from '../components/notifications/NotificationHandler';
-import blacklist from '../shortcuts/blacklist';
-import keymap from '../shortcuts/keymap';
 import { getDocSummaryDataFromState } from '../reducers/windowHandlerUtils';
-
-const hotkeys = generateHotkeys({ keymap, blacklist });
+import { useNotificationsWebsocket } from '../hooks/useNotificationsWebsocket';
+import { useSessionWebsocket } from '../hooks/useSessionWebsocket';
 
 // const APP_PLUGINS = PLUGINS ? PLUGINS : [];
 
@@ -68,6 +64,8 @@ const App = () => {
   const dispatch = useDispatch();
   const store = useStore();
   const language = useSelector((state) => state.appHandler.me.language);
+  useNotificationsWebsocket();
+  useSessionWebsocket();
 
   useConstructor(() => {
     // this.pluginsRegistry = new PluginsRegistry(this);
@@ -233,9 +231,6 @@ const App = () => {
     });
 
     counterpart.setMissingEntryGenerator(() => '');
-
-    dispatch(initKeymap(keymap));
-    dispatch(initHotkeys(hotkeys));
 
     /**
      * this is the part of the application that activates the plugins from the plugins array found in - plugins.js

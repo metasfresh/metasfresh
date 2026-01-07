@@ -23,10 +23,11 @@
 package de.metas.material.cockpit.availableforsales;
 
 import com.google.common.collect.ImmutableList;
-import org.adempiere.mm.attributes.keys.AttributesKeyPatternsUtil;
 import de.metas.material.commons.attributes.clasifiers.ProductClassifier;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
+import org.adempiere.mm.attributes.keys.AttributesKeyPatternsUtil;
+import org.adempiere.warehouse.WarehouseId;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -61,6 +62,7 @@ public class AvailableForSaleResultTest
 				.productId(ProductId.ofRepoId(100001))
 				.qtyOnHandStock(BigDecimal.valueOf(2))
 				.qtyToBeShipped(BigDecimal.valueOf(1))
+				.warehouseId(WarehouseId.ofRepoId(100001))
 				.queryNo(0);
 
 		resultBuilder.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(AttributesKey.ofString("1" + delim + "2")).build());
@@ -71,11 +73,13 @@ public class AvailableForSaleResultTest
 		assertThat(groups).hasSize(2);
 
 		assertThat(groups.get(0).getProductId().getRepoId()).isEqualTo(100001);
+		assertThat(groups.get(0).getWarehouseId().getRepoId()).isEqualTo(100001);
 		assertThat(groups.get(0).getStorageAttributesKey().getAsString()).isEqualTo(AttributesKey.ofString("1").getAsString());
 		assertThat(groups.get(0).getQuantities().getQtyOnHandStock()).isEqualByComparingTo("2");
 		assertThat(groups.get(0).getQuantities().getQtyToBeShipped()).isEqualByComparingTo("1");
 
 		assertThat(groups.get(1).getProductId().getRepoId()).isEqualTo(100001);
+		assertThat(groups.get(1).getWarehouseId().getRepoId()).isEqualTo(100001);
 		assertThat(groups.get(1).getStorageAttributesKey().getAsString()).isEqualTo(AttributesKey.ofString("2").getAsString());
 		assertThat(groups.get(1).getQuantities().getQtyOnHandStock()).isEqualByComparingTo("4");
 		assertThat(groups.get(1).getQuantities().getQtyToBeShipped()).isEqualByComparingTo("2");
@@ -104,6 +108,7 @@ public class AvailableForSaleResultTest
 				.productId(ProductId.ofRepoId(100001))
 				.qtyOnHandStock(TWO)
 				.qtyToBeShipped(BigDecimal.valueOf(1))
+				.warehouseId(WarehouseId.ofRepoId(100001))
 				.queryNo(0);
 
 		resultBuilder.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(AttributesKey.ofString("1=1")).build());
@@ -118,4 +123,59 @@ public class AvailableForSaleResultTest
 						tuple(AttributesKey.ofString("2"), BigDecimal.valueOf(4), TWO));
 	}
 
+	@Test
+	public void four_buckets()
+	{
+		final AvailableForSaleResultBuilder resultBuilder;
+		{
+			final AvailableForSaleResultBucket emptyBucket1 = AvailableForSaleResultBucket.builder()
+					.product(ProductClassifier.specific(100001))
+					.storageAttributesKeyMatcher(AttributesKeyPatternsUtil.matching(AttributesKey.ofString("1")))
+					.build();
+
+			final AvailableForSaleResultBucket emptyBucket2 = AvailableForSaleResultBucket.builder()
+					.product(ProductClassifier.specific(100001))
+					.storageAttributesKeyMatcher(AttributesKeyPatternsUtil.matching(AttributesKey.ofString("2")))
+					.build();
+
+			resultBuilder = new AvailableForSaleResultBuilder(ImmutableList.of(emptyBucket1, emptyBucket2));
+		}
+
+		final AddToResultGroupRequest.AddToResultGroupRequestBuilder requestBuilder = AddToResultGroupRequest.builder()
+				.productId(ProductId.ofRepoId(100001))
+				.qtyOnHandStock(BigDecimal.valueOf(2))
+				.qtyToBeShipped(BigDecimal.valueOf(1))
+				.queryNo(0);
+
+		resultBuilder.addQtyToAllMatchingGroups(requestBuilder.warehouseId(WarehouseId.ofRepoId(100001)).storageAttributesKey(AttributesKey.ofString("1" + delim + "2")).build());
+		resultBuilder.addQtyToAllMatchingGroups(requestBuilder.warehouseId(WarehouseId.ofRepoId(100001)).storageAttributesKey(AttributesKey.ofString("1" + delim + "2")).build());
+		resultBuilder.addQtyToAllMatchingGroups(requestBuilder.warehouseId(WarehouseId.ofRepoId(100002)).storageAttributesKey(AttributesKey.ofString("1" + delim + "2")).build());
+
+		final List<AvailableForSalesLookupBucketResult> groups = resultBuilder.build().getAvailableForSalesResults();
+		assertThat(groups).hasSize(4);
+
+		assertThat(groups.get(0).getProductId().getRepoId()).isEqualTo(100001);
+		assertThat(groups.get(0).getWarehouseId().getRepoId()).isEqualTo(100001);
+		assertThat(groups.get(0).getStorageAttributesKey().getAsString()).isEqualTo(AttributesKey.ofString("1").getAsString());
+		assertThat(groups.get(0).getQuantities().getQtyOnHandStock()).isEqualByComparingTo("2");
+		assertThat(groups.get(0).getQuantities().getQtyToBeShipped()).isEqualByComparingTo("1");
+
+		assertThat(groups.get(1).getProductId().getRepoId()).isEqualTo(100001);
+		assertThat(groups.get(1).getWarehouseId().getRepoId()).isEqualTo(100002);
+		assertThat(groups.get(1).getStorageAttributesKey().getAsString()).isEqualTo(AttributesKey.ofString("1").getAsString());
+		assertThat(groups.get(1).getQuantities().getQtyOnHandStock()).isEqualByComparingTo("2");
+		assertThat(groups.get(1).getQuantities().getQtyToBeShipped()).isEqualByComparingTo("1");
+
+		assertThat(groups.get(2).getProductId().getRepoId()).isEqualTo(100001);
+		assertThat(groups.get(2).getWarehouseId().getRepoId()).isEqualTo(100001);
+		assertThat(groups.get(2).getStorageAttributesKey().getAsString()).isEqualTo(AttributesKey.ofString("2").getAsString());
+		assertThat(groups.get(2).getQuantities().getQtyOnHandStock()).isEqualByComparingTo("2");
+		assertThat(groups.get(2).getQuantities().getQtyToBeShipped()).isEqualByComparingTo("1");
+
+		assertThat(groups.get(3).getProductId().getRepoId()).isEqualTo(100001);
+		assertThat(groups.get(3).getWarehouseId().getRepoId()).isEqualTo(100002);
+		assertThat(groups.get(3).getStorageAttributesKey().getAsString()).isEqualTo(AttributesKey.ofString("2").getAsString());
+		assertThat(groups.get(3).getQuantities().getQtyOnHandStock()).isEqualByComparingTo("2");
+		assertThat(groups.get(3).getQuantities().getQtyToBeShipped()).isEqualByComparingTo("1");
+	}
 }

@@ -43,6 +43,9 @@ public class CreateRemittanceAdviceLineRequest
 	OrgId orgId;
 
 	@NonNull
+	String lineIdentifier;
+	
+	@NonNull
 	BigDecimal remittedAmount;
 
 	@Nullable

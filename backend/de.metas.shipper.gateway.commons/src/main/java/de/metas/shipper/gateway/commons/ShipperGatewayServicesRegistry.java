@@ -6,15 +6,16 @@ import de.metas.logging.LogManager;
 import de.metas.shipper.gateway.spi.DeliveryOrderService;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.ShipperGatewayClientFactory;
+import de.metas.shipping.ShipperGatewayId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 /*
@@ -42,59 +43,83 @@ import java.util.Optional;
 @Service
 public class ShipperGatewayServicesRegistry
 {
-	private final transient Logger logger = LogManager.getLogger(getClass());
+	private static final Logger logger = LogManager.getLogger(ShipperGatewayServicesRegistry.class);
 
-	private final ImmutableMap<String, DeliveryOrderService> servicesByGatewayId;
-	private final ImmutableMap<String, ShipperGatewayClientFactory> clientFactoriesByGatewayId;
-	private final ImmutableMap<String, DraftDeliveryOrderCreator> draftDeliveryOrderCreatorsByGatewayId;
+	private final ImmutableMap<ShipperGatewayId, DeliveryOrderService> servicesByGatewayId;
+	private final ImmutableMap<ShipperGatewayId, ShipperGatewayClientFactory> clientFactoriesByGatewayId;
+	private final ImmutableMap<ShipperGatewayId, DraftDeliveryOrderCreator> draftDeliveryOrderCreatorsByGatewayId;
+
+	@Nullable private final DeliveryOrderService defaultDeliveryOrderService;
+	@Nullable private final DraftDeliveryOrderCreator defaultDraftDeliveryOrderCreator;
+	@Nullable private final ShipperGatewayClientFactory defaultShipperGatewayClientFactory;
 
 	public ShipperGatewayServicesRegistry(
 			@NonNull final Optional<List<DeliveryOrderService>> deliveryOrderServices,
 			@NonNull final Optional<List<ShipperGatewayClientFactory>> shipperGatewayClientFactories,
-			@NonNull final Optional<List<DraftDeliveryOrderCreator>> services)
+			@NonNull final Optional<List<DraftDeliveryOrderCreator>> draftDeliveryOrderCreators)
 	{
-		servicesByGatewayId = deliveryOrderServices.orElse(ImmutableList.of())
+		this.servicesByGatewayId = deliveryOrderServices.orElse(ImmutableList.of())
 				.stream()
-				.filter(Objects::nonNull)
+				.filter(service -> service != null && service.getShipperGatewayId() != null)
 				.collect(GuavaCollectors.toImmutableMapByKey(DeliveryOrderService::getShipperGatewayId));
+		logger.info("servicesByGatewayId: {}", this.servicesByGatewayId);
 
-		clientFactoriesByGatewayId = shipperGatewayClientFactories.orElse(ImmutableList.of())
+		this.defaultDeliveryOrderService = deliveryOrderServices.orElse(ImmutableList.of())
 				.stream()
-				.filter(Objects::nonNull)
+				.filter(service -> service != null && service.getShipperGatewayId() == null)
+				.collect(GuavaCollectors.noneOrSingleElementOrThrow(() -> new AdempiereException("One and only one service can be default: " + deliveryOrderServices)));
+		logger.info("defaultDeliveryOrderService: {}", this.defaultDeliveryOrderService);
+
+		//
+
+		this.clientFactoriesByGatewayId = shipperGatewayClientFactories.orElse(ImmutableList.of())
+				.stream()
+				.filter(service -> service != null && service.getShipperGatewayId() != null)
 				.collect(GuavaCollectors.toImmutableMapByKey(ShipperGatewayClientFactory::getShipperGatewayId));
+		logger.info("clientFactoriesByGatewayId: {}", this.clientFactoriesByGatewayId);
 
-		draftDeliveryOrderCreatorsByGatewayId = services.orElse(ImmutableList.of())
+		this.defaultShipperGatewayClientFactory = shipperGatewayClientFactories.orElse(ImmutableList.of())
 				.stream()
-				.filter(Objects::nonNull)
-				.collect(GuavaCollectors.toImmutableMapByKey(DraftDeliveryOrderCreator::getShipperGatewayId));
+				.filter(service -> service != null && service.getShipperGatewayId() == null)
+				.collect(GuavaCollectors.noneOrSingleElementOrThrow(() -> new AdempiereException("One and only one service can be default: " + shipperGatewayClientFactories)));
+		logger.info("defaultShipperGatewayClientFactory: {}", this.defaultShipperGatewayClientFactory);
 
-		logger.info("deliveryOrderServices: {}", servicesByGatewayId);
+		//
+
+		this.draftDeliveryOrderCreatorsByGatewayId = draftDeliveryOrderCreators.orElse(ImmutableList.of())
+				.stream()
+				.filter(service -> service != null && service.getShipperGatewayId() != null)
+				.collect(GuavaCollectors.toImmutableMapByKey(DraftDeliveryOrderCreator::getShipperGatewayId));
+		logger.info("draftDeliveryOrderCreatorsByGatewayId: {}", this.draftDeliveryOrderCreatorsByGatewayId);
+
+		this.defaultDraftDeliveryOrderCreator = draftDeliveryOrderCreators.orElse(ImmutableList.of())
+				.stream()
+				.filter(service -> service != null && service.getShipperGatewayId() == null)
+				.collect(GuavaCollectors.noneOrSingleElementOrThrow(() -> new AdempiereException("One and only one service can be default: " + draftDeliveryOrderCreators)));
+		logger.info("defaultDraftDeliveryOrderCreator: {}", this.defaultDraftDeliveryOrderCreator);
 	}
 
-	public DeliveryOrderService getDeliveryOrderService(@NonNull final String shipperGatewayId)
+	public DeliveryOrderService getDeliveryOrderService(@NonNull final ShipperGatewayId shipperGatewayId)
 	{
-		final DeliveryOrderService deliveryOrderService = servicesByGatewayId.get(shipperGatewayId);
+		final DeliveryOrderService deliveryOrderService = servicesByGatewayId.getOrDefault(shipperGatewayId, defaultDeliveryOrderService);
 		return Check.assumeNotNull(deliveryOrderService, "deliveryOrderService shall exist for shipperGatewayId={}", shipperGatewayId);
 	}
 
-	public ShipperGatewayClientFactory getClientFactory(@NonNull final String shipperGatewayId)
+	public ShipperGatewayClientFactory getClientFactory(@NonNull final ShipperGatewayId shipperGatewayId)
 	{
-		final ShipperGatewayClientFactory shipperGatewayClientFactory = clientFactoriesByGatewayId.get(shipperGatewayId);
+		final ShipperGatewayClientFactory shipperGatewayClientFactory = clientFactoriesByGatewayId.getOrDefault(shipperGatewayId, defaultShipperGatewayClientFactory);
 		return Check.assumeNotNull(shipperGatewayClientFactory, "shipperGatewayClientFactory shall exist for shipperGatewayId={}", shipperGatewayId);
 	}
 
-	public DraftDeliveryOrderCreator getShipperGatewayService(@NonNull final String shipperGatewayId)
+	public DraftDeliveryOrderCreator getShipperGatewayService(@NonNull final ShipperGatewayId shipperGatewayId)
 	{
-		final DraftDeliveryOrderCreator service = draftDeliveryOrderCreatorsByGatewayId.get(shipperGatewayId);
+		final DraftDeliveryOrderCreator service = draftDeliveryOrderCreatorsByGatewayId.getOrDefault(shipperGatewayId, defaultDraftDeliveryOrderCreator);
 		return Check.assumeNotNull(service, "service shall exist for shipperGatewayId={}", shipperGatewayId);
 	}
 
-	public boolean hasServiceSupport(@Nullable final String shipperGatewayId)
+	public boolean hasServiceSupport(@Nullable final ShipperGatewayId shipperGatewayId)
 	{
-		if(Check.isEmpty(shipperGatewayId,true))
-		{
-			return false;
-		}
-		return draftDeliveryOrderCreatorsByGatewayId.containsKey(shipperGatewayId);
+		return defaultDraftDeliveryOrderCreator != null
+				|| draftDeliveryOrderCreatorsByGatewayId.containsKey(shipperGatewayId);
 	}
 }

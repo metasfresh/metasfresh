@@ -1,6 +1,5 @@
 package de.metas.business_rule.descriptor;
 
-import de.metas.business_rule.descriptor.interceptor.AD_BusinessRule_Trigger;
 import de.metas.business_rule.descriptor.model.BusinessRulesCollection;
 import de.metas.cache.CCache;
 import de.metas.cache.CacheMgt;
@@ -11,6 +10,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_AD_BusinessRule;
 import org.compiere.model.I_AD_BusinessRule_Precondition;
 import org.compiere.model.I_AD_BusinessRule_Trigger;
+import org.compiere.model.I_AD_BusinessRule_WarningTarget;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -22,6 +22,7 @@ public class BusinessRuleRepository
 			.tableName(I_AD_BusinessRule.Table_Name)
 			.additionalTableNameToResetFor(I_AD_BusinessRule_Precondition.Table_Name)
 			.additionalTableNameToResetFor(I_AD_BusinessRule_Trigger.Table_Name)
+			.additionalTableNameToResetFor(I_AD_BusinessRule_WarningTarget.Table_Name)
 			.build();
 
 	public void addCacheResetListener(@NonNull final BusinessRulesChangedListener listener)
@@ -35,6 +36,7 @@ public class BusinessRuleRepository
 		cacheMgt.addCacheResetListener(I_AD_BusinessRule.Table_Name, cacheResetListener);
 		cacheMgt.addCacheResetListener(I_AD_BusinessRule_Precondition.Table_Name, cacheResetListener);
 		cacheMgt.addCacheResetListener(I_AD_BusinessRule_Trigger.Table_Name, cacheResetListener);
+		cacheMgt.addCacheResetListener(I_AD_BusinessRule_WarningTarget.Table_Name, cacheResetListener);
 	}
 
 	public BusinessRulesCollection getAll()
@@ -56,4 +58,6 @@ public class BusinessRuleRepository
 	public void validate(final I_AD_BusinessRule_Precondition record) {newLoader().validate(record);}
 
 	public void validate(final I_AD_BusinessRule_Trigger record) {newLoader().validate(record);}
+
+	public void validate(final I_AD_BusinessRule_WarningTarget record) {newLoader().validate(record);}
 }

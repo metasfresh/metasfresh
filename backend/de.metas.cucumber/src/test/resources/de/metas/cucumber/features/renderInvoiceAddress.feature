@@ -1,7 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00702
 @topic:invoiceAddress
 @ghActions:run_on_executor7
 Feature: Render invoice address
+## F00702: Invoice Address
   Especially tracing the "BPartnerName" part of the address
 
   Background:
@@ -28,8 +31,8 @@ Feature: Render invoice address
 
     # create bpartner with invoice-rule "immediate", because we need just an invoice without a shipment
     And metasfresh contains C_BPartners without locations:
-      | Identifier        | Name              | M_PricingSystem_ID.Identifier | OPT.IsCustomer | OPT.CompanyName       | OPT.InvoiceRule | OPT.C_PaymentTerm_ID.Value |
-      | customer_bp_26_02 | customer_bp_26_02 | ps_12                         | Y              | customer_bp_26_02_cmp | I               | 1000002                    |
+      | Identifier        | Name              | M_PricingSystem_ID.Identifier | OPT.IsCustomer | OPT.CompanyName       | OPT.InvoiceRule | C_PaymentTerm_ID.Value |
+      | customer_bp_26_02 | customer_bp_26_02 | ps_12                         | Y              | customer_bp_26_02_cmp | I               | 1000002                |
 
   Scenario: Invoice when business partner location doesn't have BPartnerName
     Given metasfresh contains C_Location:
@@ -41,8 +44,8 @@ Feature: Render invoice address
 
     # create order with invoice-rule "immediate", because we need just an invoice without a shipment
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.POReference | OPT.DeliveryRule | OPT.DeliveryViaRule | OPT.InvoiceRule | OPT.C_PaymentTerm_ID.Value |
-      | order_1    | true    | customer_bp_26_02        | 2022-02-02  | bpLocation_1                          | order_ref_12307 | F                | S                   | I               | 1000002                    |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.POReference | OPT.DeliveryRule | OPT.DeliveryViaRule | OPT.InvoiceRule | C_PaymentTerm_ID.Value |
+      | order_1    | true    | customer_bp_26_02        | 2022-02-02  | bpLocation_1                          | order_ref_12307 | F                | S                   | I               | 1000002                |
     And metasfresh contains C_OrderLines:
       | Identifier  | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | orderLine_1 | order_1               | test_product_26_02      | 1          |
@@ -50,8 +53,8 @@ Feature: Render invoice address
     And the order identified by order_1 is completed
 
     And validate the created orders
-      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference     | processed | docStatus | OPT.InvoiceRule | OPT.C_PaymentTerm_ID.Value |
-      | order_1               | customer_bp_26_02        | bpLocation_1                      | 2022-02-02  | SOO         | EUR          | F            | S               | order_ref_12307 | true      | CO        | I               | 1000002                    |
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference     | processed | DocStatus | OPT.InvoiceRule | C_PaymentTerm_ID.Value |
+      | order_1               | customer_bp_26_02        | bpLocation_1                      | 2022-02-02  | SOO         | EUR          | F            | S               | order_ref_12307 | true      | CO        | I               | 1000002                |
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | orderLine_1               | order_1               | 2022-02-02      | test_product_26_02      | 0            | 1          | 0           | 10.0  | 0        | EUR          | true      |
@@ -67,7 +70,7 @@ Feature: Render invoice address
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoiceCand_1                     |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.BPartnerAddress                            |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | DocStatus | OPT.BPartnerAddress                            |
       | invoice_1               | customer_bp_26_02        | bpLocation_1                      | order_ref_12307 | 1000002     | true      | CO        | customer_bp_26_02\naddr 11\n123 locationCity_1 |
 
   Scenario: Invoice when business partner location has BPartnerName
@@ -80,8 +83,8 @@ Feature: Render invoice address
 
     # create order with invoice-rule "immediate", because we need just an invoice without a shipment
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.POReference | OPT.DeliveryRule | OPT.DeliveryViaRule | OPT.InvoiceRule | OPT.C_PaymentTerm_ID.Value |
-      | order_1    | true    | customer_bp_26_02        | 2022-02-02  | bpLocation_2                          | order_ref_23407 | F                | S                   | I               | 1000002                    |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.POReference | OPT.DeliveryRule | OPT.DeliveryViaRule | OPT.InvoiceRule | C_PaymentTerm_ID.Value |
+      | order_1    | true    | customer_bp_26_02        | 2022-02-02  | bpLocation_2                          | order_ref_23407 | F                | S                   | I               | 1000002                |
     And metasfresh contains C_OrderLines:
       | Identifier  | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | orderLine_1 | order_1               | test_product_26_02      | 1          |
@@ -89,8 +92,8 @@ Feature: Render invoice address
     And the order identified by order_1 is completed
 
     And validate the created orders
-      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference     | processed | docStatus | OPT.InvoiceRule | OPT.C_PaymentTerm_ID.Value |
-      | order_1               | customer_bp_26_02        | bpLocation_2                      | 2022-02-02  | SOO         | EUR          | F            | S               | order_ref_23407 | true      | CO        | I               | 1000002                    |
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference     | processed | DocStatus | OPT.InvoiceRule | C_PaymentTerm_ID.Value |
+      | order_1               | customer_bp_26_02        | bpLocation_2                      | 2022-02-02  | SOO         | EUR          | F            | S               | order_ref_23407 | true      | CO        | I               | 1000002                |
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | orderLine_1               | order_1               | 2022-02-02      | test_product_26_02      | 0            | 1          | 0           | 10.0  | 0        | EUR          | true      |
@@ -106,7 +109,7 @@ Feature: Render invoice address
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoiceCand_1                     |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.BPartnerAddress                         |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | DocStatus | OPT.BPartnerAddress                         |
       | invoice_1               | customer_bp_26_02        | bpLocation_2                      | order_ref_23407 | 1000002     | true      | CO        | locationBPName\naddr 22\n456 locationCity_2 |
 
 
@@ -132,8 +135,8 @@ Feature: Render invoice address
 
     # create order with invoice-rule "immediate", because we need just an invoice without a shipment
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.POReference | OPT.DeliveryRule | OPT.DeliveryViaRule | OPT.InvoiceRule | OPT.C_PaymentTerm_ID.Value |
-      | order_1    | true    | customer_bp_26_02        | 2022-02-02  | bpLocation_DE                         | bpLocation_CH                   | order_ref_45607 | F                | S                   | I               | 1000002                    |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.C_BPartner_Location_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.POReference | OPT.DeliveryRule | OPT.DeliveryViaRule | OPT.InvoiceRule | C_PaymentTerm_ID.Value |
+      | order_1    | true    | customer_bp_26_02        | 2022-02-02  | bpLocation_DE                         | bpLocation_CH                   | order_ref_45607 | F                | S                   | I               | 1000002                |
     And metasfresh contains C_OrderLines:
       | Identifier  | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | orderLine_1 | order_1               | test_product_26_02      | 1          |
@@ -141,7 +144,7 @@ Feature: Render invoice address
     And the order identified by order_1 is completed
 
     And validate the created orders
-      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference     | processed | docStatus | OPT.InvoiceRule |
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference     | processed | DocStatus | OPT.InvoiceRule |
       | order_1               | customer_bp_26_02        | bpLocation_DE                     | 2022-02-02  | SOO         | EUR          | F            | S               | order_ref_45607 | true      | CO        | I               |
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
@@ -157,7 +160,7 @@ Feature: Render invoice address
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoiceCand_1                     |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.BPartnerAddress                                     |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | DocStatus | OPT.BPartnerAddress                                     |
       | invoice_1               | customer_bp_26_02        | bpLocation_CH                     | order_ref_45607 | 1000002     | true      | CO        | locationBPNameCH\naddr 33\n258 locationCity_CH\nSchweiz |
 
 
@@ -176,6 +179,7 @@ Feature: Render invoice address
     "orgCode": "001",
     "externalHeaderId": 10001,
     "externalLineId": 2222,
+    "externalSystemCode": "Shopware6",
     "dataSource": "int-Shopware",
     "bpartner": {
         "bpartnerIdentifier": "gln-1234567892266",
@@ -200,7 +204,7 @@ Feature: Render invoice address
 """
 {
     "externalHeaderId": "10001",
-    "inputDataSourceName": "int-Shopware",
+    "externalSystemCode": "Shopware6",
     "ship": true,
     "invoice": true,
     "closeOrder": false
@@ -212,24 +216,24 @@ Feature: Render invoice address
       | order_1               | shipment_1            | invoice_1               |
 
     And validate the created orders
-      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference      | processed | docStatus | OPT.AD_InputDataSource_ID.InternalName |
-      | order_1               | customer_bp_26_02        | bpLocation_2                      | 2022-02-02  | SOO         | EUR          | F            | S               | olCand_ref_18231 | true      | CO        | Shopware                               |
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference      | processed | DocStatus | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value |
+      | order_1               | customer_bp_26_02        | bpLocation_2                      | 2022-02-02  | SOO         | EUR          | F            | S               | olCand_ref_18231 | true      | CO        | Shopware                               | Shopware6            |
 
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | orderLine_1               | order_1               | 2022-02-02      | test_product_26_02      | 1            | 1          | 1           | 10.0  | 0        | EUR          | true      |
 
     And validate the created shipments
-      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference      | processed | docStatus | OPT.AD_InputDataSource_ID.InternalName |
-      | shipment_1            | customer_bp_26_02        | bpLocation_2                      | 2022-02-02  | olCand_ref_10001 | true      | CO        | Shopware                               |
+      | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | poreference      | processed | DocStatus | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value |
+      | shipment_1            | customer_bp_26_02        | bpLocation_2                      | 2022-02-02  | olCand_ref_10001 | true      | CO        | Shopware                               | Shopware6            |
 
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
       | shipmentLine1_1           | shipment_1            | test_product_26_02      | 1           | true      |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference  | paymentTerm | processed | docStatus | OPT.BPartnerAddress                         | OPT.AD_InputDataSource_ID.InternalName |
-      | invoice_1               | customer_bp_26_02        | bpLocation_2                      | olCand_ref_10001 | 1000002     | true      | CO        | locationBPName\naddr 22\n456 locationCity_2 | Shopware                               |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference  | paymentTerm | processed | DocStatus | OPT.BPartnerAddress                         | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value |
+      | invoice_1               | customer_bp_26_02        | bpLocation_2                      | olCand_ref_10001 | 1000002     | true      | CO        | locationBPName\naddr 22\n456 locationCity_2 | Shopware                               | Shopware6            |
 
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |

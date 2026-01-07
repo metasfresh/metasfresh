@@ -28,8 +28,10 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.location.adapter.IDocumentLocationAdapter;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.inoutcandidate.api.ApplyReceiptScheduleChangesRequest;
 import de.metas.inoutcandidate.api.IInOutProducer;
 import de.metas.inoutcandidate.api.IReceiptScheduleAllocBuilder;
@@ -54,7 +56,9 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.ad.trx.processor.api.LoggableTrxItemExceptionHandler;
 import org.adempiere.exceptions.AdempiereException;
@@ -80,6 +84,7 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -92,8 +97,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class ReceiptScheduleBL implements IReceiptScheduleBL
 {
 	public static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.inoutcandidate.M_ReceiptSchedule.canBeExportedAfterSeconds";
+	private static final AdMessageKey MSG_DATEPROMISEDOVERRIDE_POREFERENCE_VALIDATION_ERROR = AdMessageKey.of("receiptschedule.ChangeDatePromised_OverrideAndPOReference.paramsValidationError");
 
-	private final static transient Logger logger = LogManager.getLogger(M_ReceiptSchedule.class);
+	private final static Logger logger = LogManager.getLogger(M_ReceiptSchedule.class);
 
 	private final CompositeReceiptScheduleListener listeners = new CompositeReceiptScheduleListener();
 	private final IAggregationKeyBuilder<I_M_ReceiptSchedule> headerAggregationKeyBuilder = new ReceiptScheduleHeaderAggregationKeyBuilder();
@@ -104,7 +110,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
-	public void addReceiptScheduleListener(IReceiptScheduleListener listener)
+	public void addReceiptScheduleListener(final IReceiptScheduleListener listener)
 	{
 		listeners.addReceiptScheduleListener(listener);
 	}
@@ -446,7 +452,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	}
 
 	@Override
-	public void updatePreparationTime(I_M_ReceiptSchedule receiptSchedule)
+	public void updatePreparationTime(final I_M_ReceiptSchedule receiptSchedule)
 	{
 		final I_C_Order order = InterfaceWrapperHelper.create(receiptSchedule.getC_Order(), I_C_Order.class);
 		if (order != null)
@@ -523,6 +529,16 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	public boolean isClosed(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
 		return receiptSchedule.isProcessed();
+	}
+
+	@Override
+	public boolean hasUnProcessedRecords(@NonNull final IQueryFilter<I_M_ReceiptSchedule> receiptScheduleQueryFilter)
+	{
+		return queryBL.createQueryBuilder(I_M_ReceiptSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.filter(receiptScheduleQueryFilter)
+				.create()
+				.anyMatch();
 	}
 
 	public void applyReceiptScheduleChanges(@NonNull final ApplyReceiptScheduleChangesRequest applyReceiptScheduleChangesRequest)
@@ -606,6 +622,12 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 			sched.setCanBeExportedFrom(TimeUtil.asTimestamp(instant));
 			logger.debug("canBeExportedAfterSeconds={}; -> set CanBeExportedFrom={}", canBeExportedAfterSeconds, sched.getCanBeExportedFrom());
 		}
+	}
+
+	@Override
+	public List<ReceiptScheduleId> retainLUQtySchedules(@NonNull final List<ReceiptScheduleId> receiptSchedules)
+	{
+		return receiptScheduleDAO.retainLUQtySchedules(receiptSchedules);
 	}
 
 	private static class ReceiptScheduleDocumentLocationAdapter implements IDocumentLocationAdapter
@@ -744,5 +766,33 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 		{
 			delegate.setBPartnerAddress_Override(address);
 		}
+	}
+
+	@Override
+	public int updateDatePromisedOverrideAndPOReference(@NonNull final PInstanceId pinstanceId, @Nullable final LocalDate datePromisedOverride, @Nullable final String poReference)
+	{
+		if (datePromisedOverride == null && Check.isBlank(poReference))
+		{
+			throw new AdempiereException(MSG_DATEPROMISEDOVERRIDE_POREFERENCE_VALIDATION_ERROR)
+					.markAsUserValidationError();
+		}
+
+		final ICompositeQueryUpdater<I_M_ReceiptSchedule> updater = queryBL
+				.createCompositeQueryUpdater(I_M_ReceiptSchedule.class);
+
+		if (datePromisedOverride != null)
+		{
+			updater.addSetColumnValue(I_M_ReceiptSchedule.COLUMNNAME_DatePromised_Override, datePromisedOverride);
+		}
+
+		if (!Check.isBlank(poReference))
+		{
+			updater.addSetColumnValue(I_M_ReceiptSchedule.COLUMNNAME_POReference, poReference);
+		}
+
+		return queryBL.createQueryBuilder(I_M_ReceiptSchedule.class)
+				.setOnlySelection(pinstanceId)
+				.create()
+				.update(updater);
 	}
 }

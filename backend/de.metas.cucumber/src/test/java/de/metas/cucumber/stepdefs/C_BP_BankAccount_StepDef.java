@@ -174,7 +174,7 @@ public class C_BP_BankAccount_StepDef
 		}
 	}
 
-	private void createOrUpdateBankAccount(@NonNull final DataTableRow row, boolean isOrgBankAccount)
+	private void createOrUpdateBankAccount(@NonNull final DataTableRow row, final boolean isOrgBankAccount)
 	{
 		final BPartnerId bpartnerId;
 		if (isOrgBankAccount)

@@ -185,6 +185,48 @@ public interface I_M_Package
 	String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	/**
+	 * Set Height In Cm.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setHeightInCm (int HeightInCm);
+
+	/**
+	 * Get Height In Cm.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getHeightInCm();
+
+	ModelColumn<I_M_Package, Object> COLUMN_HeightInCm = new ModelColumn<>(I_M_Package.class, "HeightInCm", null);
+	String COLUMNNAME_HeightInCm = "HeightInCm";
+
+	/**
+	 * Set SSCC18.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIPA_SSCC18 (@Nullable java.lang.String IPA_SSCC18);
+
+	/**
+	 * Get SSCC18.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIPA_SSCC18();
+
+	ModelColumn<I_M_Package, Object> COLUMN_IPA_SSCC18 = new ModelColumn<>(I_M_Package.class, "IPA_SSCC18", null);
+	String COLUMNNAME_IPA_SSCC18 = "IPA_SSCC18";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -227,6 +269,27 @@ public interface I_M_Package
 
 	ModelColumn<I_M_Package, Object> COLUMN_IsClosed = new ModelColumn<>(I_M_Package.class, "IsClosed", null);
 	String COLUMNNAME_IsClosed = "IsClosed";
+
+	/**
+	 * Set Length In Cm.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setLengthInCm (int LengthInCm);
+
+	/**
+	 * Get Length In Cm.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getLengthInCm();
+
+	ModelColumn<I_M_Package, Object> COLUMN_LengthInCm = new ModelColumn<>(I_M_Package.class, "LengthInCm", null);
+	String COLUMNNAME_LengthInCm = "LengthInCm";
 
 	/**
 	 * Set Shipment/ Receipt.
@@ -296,6 +359,11 @@ public interface I_M_Package
 	 */
 	int getM_PackagingContainer_ID();
 
+	@Nullable org.compiere.model.I_M_PackagingContainer getM_PackagingContainer();
+
+	void setM_PackagingContainer(@Nullable org.compiere.model.I_M_PackagingContainer M_PackagingContainer);
+
+	ModelColumn<I_M_Package, org.compiere.model.I_M_PackagingContainer> COLUMN_M_PackagingContainer_ID = new ModelColumn<>(I_M_Package.class, "M_PackagingContainer_ID", org.compiere.model.I_M_PackagingContainer.class);
 	String COLUMNNAME_M_PackagingContainer_ID = "M_PackagingContainer_ID";
 
 	/**
@@ -368,7 +436,7 @@ public interface I_M_Package
 
 	/**
 	 * Set Weight.
-	 * Weight of a package
+	 * Weight of a package calculation can be changed via system config "de.metas.shipping.WeightSourceTypes"
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -378,7 +446,7 @@ public interface I_M_Package
 
 	/**
 	 * Get Weight.
-	 * Weight of a package
+	 * Weight of a package calculation can be changed via system config "de.metas.shipping.WeightSourceTypes"
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -547,4 +615,25 @@ public interface I_M_Package
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Width In Cm.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setWidthInCm (int WidthInCm);
+
+	/**
+	 * Get Width In Cm.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getWidthInCm();
+
+	ModelColumn<I_M_Package, Object> COLUMN_WidthInCm = new ModelColumn<>(I_M_Package.class, "WidthInCm", null);
+	String COLUMNNAME_WidthInCm = "WidthInCm";
 }

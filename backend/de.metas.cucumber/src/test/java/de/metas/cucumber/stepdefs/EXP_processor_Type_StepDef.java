@@ -73,6 +73,7 @@ public class EXP_processor_Type_StepDef
 		return queryBL.createQueryBuilder(I_EXP_Processor_Type.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_EXP_Processor_Type.COLUMNNAME_Value, value)
+				.orderBy(I_EXP_Processor_Type.COLUMNNAME_Value)
 				.create()
 				.firstNotNull(I_EXP_Processor_Type.class);
 	}

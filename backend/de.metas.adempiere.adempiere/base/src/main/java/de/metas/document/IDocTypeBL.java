@@ -1,8 +1,11 @@
 package de.metas.document;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.i18n.ITranslatableString;
+import de.metas.organization.OrgId;
+import de.metas.process.PInstanceId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.compiere.model.I_C_DocType;
@@ -75,4 +78,9 @@ public interface IDocTypeBL extends ISingletonService
 	boolean isCallOrder(DocTypeId docTypeId);
 
 	void save(I_C_DocType dt);
+
+	@NonNull
+	ImmutableList<I_C_DocType> retrieveForSelection(@NonNull PInstanceId pinstanceId);
+
+	DocTypeId cloneToOrg(@NonNull I_C_DocType dt, @NonNull OrgId toOrgId);
 }

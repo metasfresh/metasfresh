@@ -261,9 +261,10 @@ import java.util.TreeMap;
 
 			final CountryId countryId = CountryId.ofRepoId(location.getC_Country_ID());
 			final Iterator<I_M_PriceList> priceLists = priceListDAO.retrievePriceLists(
-					PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID()),
-					countryId,
-					SOTrx.PURCHASE)
+							PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID()),
+							countryId,
+							SOTrx.PURCHASE,
+							null)
 					.iterator();
 
 			if (!priceLists.hasNext())
@@ -341,7 +342,7 @@ import java.util.TreeMap;
 			final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 
 			final PriceListId priceListId = PriceListId.ofRepoId(plv.getM_PriceList_ID());
-			I_M_PriceList priceList = priceListsRepo.getById(priceListId);
+			final I_M_PriceList priceList = priceListsRepo.getById(priceListId);
 
 			final PricingSystemId pricingSystemId = PricingSystemId.ofRepoIdOrNull(priceList.getM_PricingSystem_ID());
 			final I_M_PricingSystem pricingSystem = priceListsRepo.getPricingSystemById(pricingSystemId);

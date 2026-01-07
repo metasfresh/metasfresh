@@ -515,33 +515,6 @@ public interface I_PP_Order_Candidate
 	String COLUMNNAME_PP_Order_Candidate_ID = "PP_Order_Candidate_ID";
 
 	/**
-	 * Set Parent-Candidate.
-	 * If this production candidate was automatically created to produce a component for another production candidate, then this field contains a reference to the other production candidate.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPP_Order_Candidate_Parent_ID (int PP_Order_Candidate_Parent_ID);
-
-	/**
-	 * Get Parent-Candidate.
-	 * If this production candidate was automatically created to produce a component for another production candidate, then this field contains a reference to the other production candidate.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getPP_Order_Candidate_Parent_ID();
-
-	@Nullable org.eevolution.model.I_PP_Order_Candidate getPP_Order_Candidate_Parent();
-
-	void setPP_Order_Candidate_Parent(@Nullable org.eevolution.model.I_PP_Order_Candidate PP_Order_Candidate_Parent);
-
-	ModelColumn<I_PP_Order_Candidate, org.eevolution.model.I_PP_Order_Candidate> COLUMN_PP_Order_Candidate_Parent_ID = new ModelColumn<>(I_PP_Order_Candidate.class, "PP_Order_Candidate_Parent_ID", org.eevolution.model.I_PP_Order_Candidate.class);
-	String COLUMNNAME_PP_Order_Candidate_Parent_ID = "PP_Order_Candidate_Parent_ID";
-
-	/**
 	 * Set BOM & Formula Version.
 	 * BOM & Formula
 	 *
@@ -652,6 +625,27 @@ public interface I_PP_Order_Candidate
 
 	ModelColumn<I_PP_Order_Candidate, Object> COLUMN_QtyProcessed = new ModelColumn<>(I_PP_Order_Candidate.class, "QtyProcessed", null);
 	String COLUMNNAME_QtyProcessed = "QtyProcessed";
+
+	/**
+	 * Set Total Quantity per Day.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyProcessed_OnDate (@Nullable BigDecimal QtyProcessed_OnDate);
+
+	/**
+	 * Get Total Quantity per Day.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyProcessed_OnDate();
+
+	ModelColumn<I_PP_Order_Candidate, Object> COLUMN_QtyProcessed_OnDate = new ModelColumn<>(I_PP_Order_Candidate.class, "QtyProcessed_OnDate", null);
+	String COLUMNNAME_QtyProcessed_OnDate = "QtyProcessed_OnDate";
 
 	/**
 	 * Set Quantity To Process.

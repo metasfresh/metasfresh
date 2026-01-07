@@ -53,10 +53,12 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
+import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -89,6 +91,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 @Service
 public class CandidateRepositoryRetrieval
 {
+	public static final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final DimensionService dimensionService;
 	private final StockChangeDetailRepo stockChangeDetailRepo;
 
@@ -112,7 +115,6 @@ public class CandidateRepositoryRetrieval
 	 */
 	public Optional<Candidate> retrieveSingleChild(@NonNull final CandidateId parentId)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		final I_MD_Candidate candidateRecord = queryBL.createQueryBuilder(I_MD_Candidate.class)
 				.addOnlyActiveRecordsFilter()
@@ -125,7 +127,7 @@ public class CandidateRepositoryRetrieval
 			return Optional.empty();
 		}
 
-		return fromCandidateRecord(candidateRecord);
+		return Optional.ofNullable(fromCandidateRecordOrNull(candidateRecord));
 	}
 
 	/**
@@ -147,16 +149,17 @@ public class CandidateRepositoryRetrieval
 				.orderBy(I_MD_Candidate.COLUMN_MD_Candidate_ID)
 				.create()
 				.stream()
-				.map(r -> fromCandidateRecord(r).get())
+				.map(this::fromCandidateRecordOrNull)
 				.collect(CandidatesGroup.collect());
 	}
 
 	@VisibleForTesting
-	Optional<Candidate> fromCandidateRecord(final I_MD_Candidate candidateRecordOrNull)
+	@Nullable
+	Candidate fromCandidateRecordOrNull(@Nullable final I_MD_Candidate candidateRecordOrNull)
 	{
 		if (candidateRecordOrNull == null || isNew(candidateRecordOrNull) || candidateRecordOrNull.getMD_Candidate_ID() <= 0)
 		{
-			return Optional.empty();
+			return null;
 		}
 
 		final CandidateBuilder builder = createAndInitializeBuilder(candidateRecordOrNull);
@@ -190,7 +193,7 @@ public class CandidateRepositoryRetrieval
 		builder.transactionDetails(getTransactionDetails(candidateRecordOrNull));
 		builder.dimension(dimensionService.getFromRecord(candidateRecordOrNull));
 
-		return Optional.of(builder.build());
+		return builder.build();
 	}
 
 	@Nullable
@@ -285,9 +288,9 @@ public class CandidateRepositoryRetrieval
 	@Nullable
 	private static PPOrderRef extractPPOrderRef(final I_MD_Candidate_Prod_Detail record)
 	{
-		final int ppOrderCandidateId = record.getPP_Order_Candidate_ID();
+		final PPOrderCandidateId ppOrderCandidateId = PPOrderCandidateId.ofRepoIdOrNull(record.getPP_Order_Candidate_ID());
 		final PPOrderId ppOrderId = PPOrderId.ofRepoIdOrNull(record.getPP_Order_ID());
-		if (ppOrderCandidateId <= 0 && ppOrderId == null)
+		if (ppOrderCandidateId == null && ppOrderId == null)
 		{
 			return null;
 		}
@@ -298,6 +301,21 @@ public class CandidateRepositoryRetrieval
 				.ppOrderId(ppOrderId)
 				.ppOrderBOMLineId(PPOrderBOMLineId.ofRepoIdOrNull(record.getPP_Order_BOMLine_ID()))
 				.build();
+	}
+
+	@NonNull
+	public ImmutableList<Candidate> retrieveMainCandidatesForStockCandidates(@NonNull final Collection<CandidateId> stockCandidateIds, @NonNull final Collection<CandidateId> stockParentIds)
+	{
+		return queryBL.createQueryBuilder(I_MD_Candidate.class)
+				.addNotEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Type, X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK)
+				.filter(queryBL.createCompositeQueryFilter(I_MD_Candidate.class).setJoinOr()
+						.addInArrayFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID, stockParentIds) // for DEMAND main types
+						.addInArrayFilter(I_MD_Candidate.COLUMN_MD_Candidate_Parent_ID, stockCandidateIds))
+				.create()
+				.stream()
+				.map(this::fromCandidateRecordOrNull)
+				.collect(ImmutableList.toImmutableList());
+
 	}
 
 	@Nullable
@@ -351,7 +369,18 @@ public class CandidateRepositoryRetrieval
 				.create()
 				.first();
 
-		return fromCandidateRecord(candidateRecordOrNull).orElse(null);
+		return fromCandidateRecordOrNull(candidateRecordOrNull);
+	}
+
+	@Nullable
+	public Candidate retrievePreviousMatchForCandidateIdOrNull(@NonNull final CandidatesQuery query, @NonNull final CandidateId candidateId)
+	{
+		final IQueryBuilder<I_MD_Candidate> queryBuilderWithoutOrdering = RepositoryCommons.mkQueryBuilder(query);
+
+		final ImmutableList<CandidateId> orderedCandidateIds = addOrderingLatestFirst(queryBuilderWithoutOrdering)
+				.create()
+				.listIds(CandidateId::ofRepoId);
+		return orderedCandidateIds.isEmpty() ? null : retrieveLatestMatchOrNull(CandidatesQuery.fromId(orderedCandidateIds.get(0)));
 	}
 
 	@NonNull
@@ -399,10 +428,10 @@ public class CandidateRepositoryRetrieval
 				.stream();
 
 		return candidateRecords
-				.map(record -> fromCandidateRecord(record).get())
+				.map(this::fromCandidateRecordOrNull)
 				.collect(Collectors.toList());
 	}
-	
+
 	private IQueryBuilder<I_MD_Candidate> addOrderingYoungestFirst(final IQueryBuilder<I_MD_Candidate> queryBuilderWithoutOrdering)
 	{
 		return queryBuilderWithoutOrdering

@@ -29,6 +29,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
@@ -119,9 +120,11 @@ public class DDOrderLoader
 				() -> BPartnerId.ofRepoIdOrNull(lineRecord.getC_BPartner_ID()),
 				() -> BPartnerId.ofRepoId(headerRecord.getC_BPartner_ID()));
 
-		final ReplenishInfo replenishInfo = replenishInfoRepository.getBy(
-				WarehouseId.ofRepoId(headerRecord.getM_Warehouse_From_ID()), // both from-warehouse and product are mandatory DB-columns
-				ProductId.ofRepoId(lineRecord.getM_Product_ID()));
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(headerRecord.getM_Warehouse_From_ID());
+		final ReplenishInfo replenishInfo = replenishInfoRepository.getBy(ReplenishInfo.Identifier.of(
+				warehouseId, // both from-warehouse and product are mandatory DB-columns
+				LocatorId.ofRepoIdOrNull(warehouseId, lineRecord.getM_Locator_ID()),
+				ProductId.ofRepoId(lineRecord.getM_Product_ID())));
 
 		final BigDecimal qtyToMoveTotal = lineRecord.getQtyOrdered();
 		final BigDecimal qtyMoved = lineRecord.getQtyDelivered();

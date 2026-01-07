@@ -55,7 +55,10 @@ const HUBulkActionsScreen = () => {
         huQRCodes: scannedHandlingUnitQRCodes,
         targetQRCode: scannedBarcode,
       })
-      .then(() => toastNotification({ messageKey: 'huManager.action.bulkActions.moveSuccess' }))
+      .then(() => {
+        toastNotification({ messageKey: 'huManager.action.bulkActions.moveSuccess' });
+        history.goHome();
+      })
       .catch((axiosError) => toastError({ axiosError }))
       .finally(() => toggleTargetScanner(false));
   };
@@ -99,6 +102,7 @@ const HUBulkActionsScreen = () => {
                 : trl('huManager.action.bulkActions.move')
             }
             onClick={() => toggleTargetScanner(!showTargetScanner)}
+            testId="toggle-target-scanner-button"
           />
           {showTargetScanner && (
             <BarcodeScannerComponent

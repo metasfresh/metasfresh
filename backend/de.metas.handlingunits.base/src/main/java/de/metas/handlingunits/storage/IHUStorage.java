@@ -108,4 +108,6 @@ public interface IHUStorage extends IGenericHUStorage
 	boolean isSingleProductWithQtyEqualsTo(@NonNull ProductId productId, @NonNull Quantity qty);
 
 	boolean isSingleProductStorageMatching(@NonNull ProductId productId);
+
+	boolean isEmptyOrSingleProductStorageMatching(@NonNull ProductId productId);
 }

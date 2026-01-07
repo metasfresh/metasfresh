@@ -89,7 +89,7 @@ public interface IInvoiceDAO extends ISingletonService
 	List<I_C_InvoiceLine> retrieveLines(I_M_InOutLine inoutLine);
 
 	List<I_C_LandedCost> retrieveLandedCosts(I_C_InvoiceLine invoiceLine,
-			String whereClause, String trxName);
+											 String whereClause, String trxName);
 
 	I_C_LandedCost createLandedCost(String trxName);
 
@@ -113,7 +113,7 @@ public interface IInvoiceDAO extends ISingletonService
 	Iterator<I_C_Invoice> retrieveOpenInvoicesByOrg(I_AD_Org adOrg);
 
 	/**
-	 * Gets invoice open amount (not paid amount) by calling {@link IAllocationDAO#retrieveOpenAmt(org.compiere.model.I_C_Invoice, boolean)} with <code>creditMemoAdjusted == true</code>. Please note that the value
+	 * Gets invoice open amount (not paid amount) by calling {@link IAllocationDAO#retrieveOpenAmtInInvoiceCurrency(org.compiere.model.I_C_Invoice, boolean)} with <code>creditMemoAdjusted == true</code>. Please note that the value
 	 * is:
 	 * <ul>
 	 * <li>relative regarding if is a sales or purchase transaction ({@link I_C_Invoice#isSOTrx()})
@@ -125,7 +125,7 @@ public interface IInvoiceDAO extends ISingletonService
 	Amount retrieveOpenAmt(InvoiceId invoiceId);
 
 	/**
-	 * Gets invoice open amount (not paid amount) by calling {@link IAllocationDAO#retrieveOpenAmt(org.compiere.model.I_C_Invoice, boolean)} with <code>creditMemoAdjusted == true</code>. Please note that the value
+	 * Gets invoice open amount (not paid amount) by calling {@link IAllocationDAO#retrieveOpenAmtInInvoiceCurrency(org.compiere.model.I_C_Invoice, boolean)} with <code>creditMemoAdjusted == true</code>. Please note that the value
 	 * is:
 	 * <ul>
 	 * <li>relative regarding if is a sales or purchase transaction ({@link I_C_Invoice#isSOTrx()})
@@ -167,9 +167,9 @@ public interface IInvoiceDAO extends ISingletonService
 	 */
 	Iterator<I_C_Invoice> retrieveCreditMemosForInvoice(I_C_Invoice invoice);
 
-	org.compiere.model.I_C_Invoice getByIdInTrx(InvoiceId invoiceId);
+	org.compiere.model.I_C_Invoice getByIdInTrx(@NonNull InvoiceId invoiceId);
 
-	List<? extends org.compiere.model.I_C_Invoice> getByIdsInTrx(Collection<InvoiceId> invoiceIds);
+	List<org.compiere.model.I_C_Invoice> getByIdsInTrx(Collection<InvoiceId> invoiceIds);
 
 	List<org.compiere.model.I_C_Invoice> getByIdsOutOfTrx(Collection<InvoiceId> invoiceIds);
 
@@ -178,6 +178,8 @@ public interface IInvoiceDAO extends ISingletonService
 	ImmutableMap<InvoiceId, String> getDocumentNosByInvoiceIds(@NonNull Collection<InvoiceId> invoiceIds);
 
 	org.compiere.model.I_C_InvoiceLine getByIdOutOfTrx(InvoiceLineId invoiceLineId);
+
+	<T extends org.compiere.model.I_C_Invoice> T getByIdOutOfTrx(@NonNull InvoiceId invoiceId, @NonNull Class<T> clazz);
 
 	List<I_C_Invoice> retrieveBySalesrepPartnerId(BPartnerId salesRepBPartnerId, InstantInterval invoicedDateInterval);
 

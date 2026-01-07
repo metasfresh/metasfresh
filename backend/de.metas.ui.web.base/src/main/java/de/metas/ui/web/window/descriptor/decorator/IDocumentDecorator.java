@@ -33,6 +33,7 @@ public interface IDocumentDecorator
 	{
 		return ReadOnlyInfo.of(BooleanWithReason.FALSE);
 	}
+
 	@NonNull
 	default BooleanWithReason isDeleteForbidden(@NonNull final TableRecordReference tableRecordReference)
 	{

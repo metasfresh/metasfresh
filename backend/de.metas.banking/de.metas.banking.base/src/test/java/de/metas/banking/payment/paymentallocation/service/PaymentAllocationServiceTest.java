@@ -2,7 +2,7 @@
  * #%L
  * de.metas.banking.base
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,7 +26,6 @@ import de.metas.acct.GLCategoryId;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationCriteria;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationPayableItem;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
-import de.metas.banking.remittanceadvice.process.C_RemittanceAdvice_CreateAndAllocatePayment;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -263,6 +262,7 @@ public class PaymentAllocationServiceTest
 		final de.metas.interfaces.I_C_BPartner bpartner = newInstance(de.metas.interfaces.I_C_BPartner.class);
 		bpartner.setPO_PricingSystem_ID(purchasePricingSystemId.getRepoId());
 		bpartner.setPaymentRule(PaymentRule.OnCredit.getCode());
+		bpartner.setPaymentRulePO(PaymentRule.OnCredit.getCode());
 		saveRecord(bpartner);
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
 		feeCompanyId1 = bpartnerId;
@@ -451,7 +451,7 @@ public class PaymentAllocationServiceTest
 			@NonNull final SOTrx soTrx)
 	{
 		final boolean creditMemo = isCreditMemo(invoice);
-		final InvoiceAmtMultiplier amtMultiplier = C_RemittanceAdvice_CreateAndAllocatePayment.toInvoiceAmtMultiplier(soTrx, creditMemo);
+		final InvoiceAmtMultiplier amtMultiplier = InvoiceAmtMultiplier.create(soTrx, creditMemo, false);
 
 		return PaymentAllocationPayableItem.builder()
 				.amtMultiplier(amtMultiplier)
@@ -468,7 +468,6 @@ public class PaymentAllocationServiceTest
 				.documentNo(invoice.getDocumentNo())
 				.soTrx(soTrx)
 				.dateInvoiced(LocalDate.now())
-				.invoiceIsCreditMemo(creditMemo)
 				.build();
 	}
 
@@ -559,6 +558,7 @@ public class PaymentAllocationServiceTest
 	private BPartnerId createBPartnerId()
 	{
 		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
+		bpartnerRecord.setPaymentRulePO(PaymentRule.OnCredit.getCode());
 		saveRecord(bpartnerRecord);
 		return BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID());
 	}
@@ -566,10 +566,10 @@ public class PaymentAllocationServiceTest
 	@Test
 	public void checkTestsAreUsingSameInvoiceAmtMultiplierAsRealLife()
 	{
-		final InvoiceAmtMultiplier multiplierInRealLife = C_RemittanceAdvice_CreateAndAllocatePayment.toInvoiceAmtMultiplier(SOTrx.SALES, false);
+		final InvoiceAmtMultiplier multiplierInRealLife = InvoiceAmtMultiplier.create(SOTrx.SALES, false, false);
 
 		//noinspection AssertThatBooleanCondition
-		assertThat(multiplierInRealLife.isSOTrxAdjusted()).isEqualTo(INVOICE_AMT_IsSOTrxAdjusted);
+		assertThat(multiplierInRealLife.isAPAdjusted()).isEqualTo(INVOICE_AMT_IsSOTrxAdjusted);
 
 		//noinspection AssertThatBooleanCondition
 		assertThat(multiplierInRealLife.isCreditMemoAdjusted()).isEqualTo(INVOICE_AMT_IsCreditMemoAdjusted);

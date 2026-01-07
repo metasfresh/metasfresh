@@ -1,10 +1,8 @@
-package de.metas.handlingunits.inout.impl;
-
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package de.metas.handlingunits.inout.impl;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.handlingunits.inout.impl;
 
 import de.metas.handlingunits.HUAssignmentListenerAdapter;
 import de.metas.handlingunits.HuId;
@@ -123,10 +123,6 @@ public final class ReceiptInOutLineHUAssignmentListener extends HUAssignmentList
 	 * </ul>
 	 *
 	 * NOTE: we assume this method is executed in a {@link IHUContextProcessor}.
-	 *
-	 * @param huContext
-	 * @param hu
-	 * @param receiptLine
 	 */
 	private void activeHUAfterReceipt(final IHUContext huContext, final I_M_HU hu, final I_M_InOutLine receiptLine)
 	{

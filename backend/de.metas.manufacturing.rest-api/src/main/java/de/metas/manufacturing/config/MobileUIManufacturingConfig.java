@@ -9,15 +9,17 @@ import javax.annotation.Nullable;
 import java.util.Optional;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class MobileUIManufacturingConfig
 {
 	@NonNull OptionalBoolean isScanResourceRequired;
+	@NonNull OptionalBoolean isAllowIssuingAnyHU;
 
 	public MobileUIManufacturingConfig fallbackTo(@NonNull final MobileUIManufacturingConfig other)
 	{
 		final MobileUIManufacturingConfig result = MobileUIManufacturingConfig.builder()
 				.isScanResourceRequired(this.isScanResourceRequired.ifUnknown(other.isScanResourceRequired))
+				.isAllowIssuingAnyHU(this.isAllowIssuingAnyHU.ifUnknown(other.isAllowIssuingAnyHU))
 				.build();
 		if (result.equals(this))
 		{

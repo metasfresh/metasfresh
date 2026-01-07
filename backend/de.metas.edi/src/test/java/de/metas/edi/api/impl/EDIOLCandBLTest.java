@@ -1,17 +1,17 @@
 package de.metas.edi.api.impl;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
 import de.metas.edi.api.IEDIOLCandBL;
 import de.metas.edi.model.I_AD_InputDataSource;
 import de.metas.edi.model.I_C_OLCand;
 import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.util.Env;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -40,7 +40,7 @@ public class EDIOLCandBLTest
 	/** service under test */
 	private IEDIOLCandBL ediOLCandBL;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -52,14 +52,14 @@ public class EDIOLCandBLTest
 	public void test_IsEdiEnabled_Yes()
 	{
 		I_C_OLCand olCand = createOLCandWithInputDataSource(true);
-		Assert.assertEquals(true, ediOLCandBL.isEDIInput(olCand));
+		assertThat(ediOLCandBL.isEDIInput(olCand)).isTrue();
 	}
 
 	@Test
 	public void test_IsEdiEnabled_No()
 	{
 		I_C_OLCand olCand = createOLCandWithInputDataSource(false);
-		Assert.assertEquals(false, ediOLCandBL.isEDIInput(olCand));
+		assertThat(ediOLCandBL.isEDIInput(olCand)).isFalse();
 	}
 
 	@Test
@@ -69,7 +69,7 @@ public class EDIOLCandBLTest
 		olCand.setAD_InputDataSource_ID(-1);
 		InterfaceWrapperHelper.save(olCand);
 		
-		Assert.assertEquals(false, ediOLCandBL.isEDIInput(olCand));
+		assertThat(ediOLCandBL.isEDIInput(olCand)).isFalse();
 	}
 
 	private I_C_OLCand createOLCandWithInputDataSource(final boolean isEdiEnabled)

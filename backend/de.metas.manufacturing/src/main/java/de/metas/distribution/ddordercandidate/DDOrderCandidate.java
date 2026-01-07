@@ -28,6 +28,7 @@ import lombok.Setter;
 import lombok.ToString;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.PPOrderId;
 
@@ -49,7 +50,7 @@ public class DDOrderCandidate
 
 	@NonNull private final ProductId productId;
 	@NonNull private final HUPIItemProductId hupiItemProductId;
-	@NonNull private final Quantity qty;
+	@NonNull @Setter private Quantity qtyEntered;
 	private final int qtyTUs;
 	@NonNull private Quantity qtyProcessed;
 
@@ -57,6 +58,8 @@ public class DDOrderCandidate
 
 	@NonNull private final WarehouseId sourceWarehouseId;
 	@NonNull private final WarehouseId targetWarehouseId;
+	@Nullable private final LocatorId sourceLocatorId;
+	@Nullable private final LocatorId targetLocatorId;
 	@Nullable private final ResourceId targetPlantId;
 	@NonNull private final ShipperId shipperId;
 
@@ -85,12 +88,14 @@ public class DDOrderCandidate
 			@NonNull final Instant demandDate,
 			@NonNull final ProductId productId,
 			@Nullable final HUPIItemProductId hupiItemProductId,
-			@NonNull final Quantity qty,
-			int qtyTUs,
+			@NonNull final Quantity qtyEntered,
+			final int qtyTUs,
 			@Nullable final Quantity qtyProcessed,
 			@Nullable final AttributeSetInstanceId attributeSetInstanceId,
 			@NonNull final WarehouseId sourceWarehouseId,
 			@NonNull final WarehouseId targetWarehouseId,
+			@Nullable final LocatorId sourceLocatorId,
+			@Nullable final LocatorId targetLocatorId,
 			@Nullable final ResourceId targetPlantId,
 			@NonNull final ShipperId shipperId,
 			final boolean isSimulated,
@@ -105,7 +110,7 @@ public class DDOrderCandidate
 			@Nullable final String traceId,
 			@Nullable final MaterialDispoGroupId materialDispoGroupId)
 	{
-		Quantity.assertSameUOM(qty, qtyProcessed);
+		Quantity.assertSameUOM(qtyEntered, qtyProcessed);
 
 		this.id = id;
 		this.clientAndOrgId = clientAndOrgId;
@@ -114,12 +119,14 @@ public class DDOrderCandidate
 		this.demandDate = demandDate;
 		this.productId = productId;
 		this.hupiItemProductId = hupiItemProductId != null ? hupiItemProductId : HUPIItemProductId.VIRTUAL_HU;
-		this.qty = qty;
+		this.qtyEntered = qtyEntered;
 		this.qtyTUs = qtyTUs;
-		this.qtyProcessed = qtyProcessed != null ? qtyProcessed : this.qty.toZero();
+		this.qtyProcessed = qtyProcessed != null ? qtyProcessed : this.qtyEntered.toZero();
 		this.attributeSetInstanceId = attributeSetInstanceId != null ? attributeSetInstanceId : AttributeSetInstanceId.NONE;
 		this.sourceWarehouseId = sourceWarehouseId;
 		this.targetWarehouseId = targetWarehouseId;
+		this.sourceLocatorId = sourceLocatorId;
+		this.targetLocatorId = targetLocatorId;
 		this.targetPlantId = targetPlantId;
 		this.shipperId = shipperId;
 		this.isSimulated = isSimulated;
@@ -145,7 +152,7 @@ public class DDOrderCandidate
 				//
 				.productId(ProductId.ofRepoId(data.getProductId()))
 				.hupiItemProductId(data.getHupiItemProductId())
-				.qty(Quantitys.of(data.getQty(), UomId.ofRepoId(data.getUomId())))
+				.qtyEntered(Quantitys.of(data.getQty(), UomId.ofRepoId(data.getUomId())))
 				.qtyTUs(1)// TODO
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(data.getAttributeSetInstanceId()))
 				//
@@ -213,11 +220,11 @@ public class DDOrderCandidate
 		return toBuilder().forwardPPOrderRef(forwardPPOrderRefNew).build();
 	}
 
-	public Quantity getQtyToProcess() {return getQty().subtract(getQtyProcessed());}
+	public Quantity getQtyToProcess() {return getQtyEntered().subtract(getQtyProcessed());}
 
 	public void setQtyProcessed(final @NonNull Quantity qtyProcessed)
 	{
-		Quantity.assertSameUOM(this.qty, qtyProcessed);
+		Quantity.assertSameUOM(this.qtyEntered, qtyProcessed);
 		this.qtyProcessed = qtyProcessed;
 
 		updateProcessed();

@@ -29,6 +29,7 @@ import de.metas.material.event.ddorder.DDOrderDeletedEvent;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ddorder.DistributionNetworkRepository;
 import de.metas.material.replenish.ReplenishInfoRepository;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -73,6 +74,8 @@ public class DD_OrderLine_PostMaterialEvent
 		}
 
 		final DDOrder ddOrder = newLoader().loadWithSingleLine(ddOrderLineRecord);
-		materialEventService.enqueueEventAfterNextCommit(DDOrderDeletedEvent.of(ddOrder));
+		final UserId userId = UserId.ofRepoId(ddOrderLineRecord.getUpdatedBy());
+
+		materialEventService.enqueueEventAfterNextCommit(DDOrderDeletedEvent.of(ddOrder, userId));
 	}
 }

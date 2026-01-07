@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_bpblock" pageWidth="329" pageHeight="842" columnWidth="329" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/generics/report" uuid="6cc02216-72bb-41b0-ae21-d670206ee05e">
+<!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_bpblock" pageWidth="400" pageHeight="842" columnWidth="400" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/generics/report" uuid="6cc02216-72bb-41b0-ae21-d670206ee05e">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.5"/>
@@ -28,26 +28,76 @@
 FROM 	de_metas_endcustomer_fresh_reports.Docs_Generics_BPartner_Report( $P{org_id}, $P{doctype}, $P{bp_loc_id}, $P{RECORD_ID} )
 ;]]>
 	</queryString>
-	<field name="org_addressline" class="java.lang.String"/>
-	<field name="addressblock" class="java.lang.String"/>
+	<field name="org_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="org_name"/>
+		<property name="com.jaspersoft.studio.field.label" value="org_name"/>
+	</field>
+	<field name="org_addressline" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="org_addressline"/>
+		<property name="com.jaspersoft.studio.field.label" value="org_addressline"/>
+	</field>
+	<field name="address1" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="address1"/>
+		<property name="com.jaspersoft.studio.field.label" value="address1"/>
+	</field>
+	<field name="address2" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="address2"/>
+		<property name="com.jaspersoft.studio.field.label" value="address2"/>
+	</field>
+	<field name="address3" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="address3"/>
+		<property name="com.jaspersoft.studio.field.label" value="address3"/>
+	</field>
+	<field name="address4" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="address4"/>
+		<property name="com.jaspersoft.studio.field.label" value="address4"/>
+	</field>
+	<field name="pobox" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="pobox"/>
+		<property name="com.jaspersoft.studio.field.label" value="pobox"/>
+	</field>
+	<field name="postal" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="postal"/>
+		<property name="com.jaspersoft.studio.field.label" value="postal"/>
+	</field>
+	<field name="city" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="city"/>
+		<property name="com.jaspersoft.studio.field.label" value="city"/>
+	</field>
+	<field name="country" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="country"/>
+		<property name="com.jaspersoft.studio.field.label" value="country"/>
+	</field>
+	<field name="gln" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="gln"/>
+		<property name="com.jaspersoft.studio.field.label" value="gln"/>
+	</field>
+	<field name="vataxid" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="vataxid"/>
+		<property name="com.jaspersoft.studio.field.label" value="vataxid"/>
+	</field>
+	<field name="addressblock" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="addressblock"/>
+		<property name="com.jaspersoft.studio.field.label" value="addressblock"/>
+	</field>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
 	<title>
 		<band height="114" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="0" y="16" width="300" height="96" uuid="6622332f-b31d-40fc-add3-777b8f875905">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement x="0" y="16" width="300" height="98" uuid="6622332f-b31d-40fc-add3-777b8f875905">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement>
 					<font fontName="Arial" size="11" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{addressblock}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{addressblock} + (($F{vataxid}!=null) ? $F{vataxid} :"")]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="0" y="0" width="328" height="12" uuid="4b99bcc1-d46f-4b92-ba33-860c86089c6a"/>
+				<reportElement x="0" y="0" width="400" height="12" uuid="4b99bcc1-d46f-4b92-ba33-860c86089c6a"/>
 				<textElement>
 					<font fontName="Arial" size="9" isBold="false" isUnderline="true"/>
 				</textElement>

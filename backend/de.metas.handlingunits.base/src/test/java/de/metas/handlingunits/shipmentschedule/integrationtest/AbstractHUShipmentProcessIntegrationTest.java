@@ -25,7 +25,6 @@ package de.metas.handlingunits.shipmentschedule.integrationtest;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
-import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHUContext;
@@ -33,7 +32,6 @@ import de.metas.handlingunits.IHUPackageDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.expectations.HUsExpectation;
 import de.metas.handlingunits.expectations.ShipmentScheduleQtyPickedExpectations;
-import de.metas.handlingunits.impl.ShipperTransportationRepository;
 import de.metas.handlingunits.model.I_C_Order;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU;
@@ -41,14 +39,12 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationRepository;
-import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
 import de.metas.handlingunits.shipmentschedule.api.HUShippingFacade;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU.BillAssociatedInvoiceCandidates;
 import de.metas.handlingunits.shipping.CreatePackageForHURequest;
+import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.inout.model.I_M_InOut;
@@ -62,7 +58,7 @@ import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.logging.LogManager;
 import de.metas.order.DeliveryRule;
 import de.metas.order.inoutcandidate.OrderLineShipmentScheduleHandler;
-import de.metas.printing.DoNothingMassPrintingService;
+import de.metas.product.ProductRepository;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.user.UserGroupRepository;
@@ -83,7 +79,6 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_AD_User;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
-import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
@@ -115,6 +110,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 {
 	// Services
 	protected IHUShipperTransportationBL huShipperTransportationBL;
+	protected IHUPackageBL huPackageBL;
 	protected IHUPackageDAO huPackageDAO;
 
 	// Config: Product
@@ -221,15 +217,13 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		// Services
 		// this.huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 		// this.huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
-		SpringContextHolder.registerJUnitBean(new ShipperTransportationRepository());
 		SpringContextHolder.registerJUnitBean(new UserGroupRepository());
-
-		final QRCodeConfigurationService qrCodeConfigurationService = new QRCodeConfigurationService(new QRCodeConfigurationRepository());
-		SpringContextHolder.registerJUnitBean(qrCodeConfigurationService);
-		SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService(DoNothingMassPrintingService.instance), qrCodeConfigurationService));
+		SpringContextHolder.registerJUnitBean(HUQRCodesService.newInstanceForUnitTesting());
+		SpringContextHolder.registerJUnitBean(ProductRepository.newInstanceForUnitTesting());
 
 		huShipperTransportationBL = Services.get(IHUShipperTransportationBL.class);
 		huPackageDAO = Services.get(IHUPackageDAO.class);
+		huPackageBL = Services.get(IHUPackageBL.class);
 
 		// Masterdata: Shipper Transportation
 		{
@@ -347,8 +341,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		{
 			//
 			// Add our aggregated HU to Shipper Transportation
-			Assert.assertTrue("HU is not eligible for shipper transportation: " + afterAggregation_HU,
-					huShipperTransportationBL.isEligibleForAddingToShipperTransportation(afterAggregation_HU));
+			assertThat(huPackageBL.isEligibleForAddingToShipperTransportation(afterAggregation_HU)).as("HU is not eligible for shipper transportation: " + afterAggregation_HU).isTrue();
 			huShipperTransportationBL
 					.addHUsToShipperTransportation(
 							ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()),
@@ -358,7 +351,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 			//
 			// Make sure M_Package was created and added to shipper transportation
 			final I_M_Package mpackage_AggregatedHU = huPackageDAO.retrievePackage(afterAggregation_HU);
-			Assert.assertNotNull("M_Package not created for Aggregated HU: " + afterAggregation_HU, mpackage_AggregatedHU);
+			assertThat(mpackage_AggregatedHU).as("M_Package not created for Aggregated HU: " + afterAggregation_HU).isNotNull();
 
 			mpackagesForAggregatedHUs.add(mpackage_AggregatedHU);
 		}
@@ -406,8 +399,8 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		//
 		// When matching expectations, sort the candidates so that they have the same indexes as the aggregated HUs
 		//
-		final List<ShipmentScheduleWithHU> candidatesSorted = new ArrayList<>(huShippingFacade.getCandidates());
-		Collections.sort(candidatesSorted, new Comparator<ShipmentScheduleWithHU>()
+		final ArrayList<ShipmentScheduleWithHU> candidatesSorted = new ArrayList<>(huShippingFacade.getCandidates());
+		candidatesSorted.sort(new Comparator<ShipmentScheduleWithHU>()
 		{
 			@Override
 			public int compare(final ShipmentScheduleWithHU schedWithHU1, final ShipmentScheduleWithHU schedWithHU2)

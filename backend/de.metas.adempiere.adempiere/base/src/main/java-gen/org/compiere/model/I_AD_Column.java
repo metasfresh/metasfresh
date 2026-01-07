@@ -258,7 +258,7 @@ public interface I_AD_Column
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setColumnName (@Nullable java.lang.String ColumnName);
+	void setColumnName (java.lang.String ColumnName);
 
 	/**
 	 * Get DB Column Name.
@@ -592,6 +592,29 @@ public interface I_AD_Column
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Advanced Text.
+	 * This is an advanced text field. It supports text variables.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAdvancedText (boolean IsAdvancedText);
+
+	/**
+	 * Get Advanced Text.
+	 * This is an advanced text field. It supports text variables.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAdvancedText();
+
+	ModelColumn<I_AD_Column, Object> COLUMN_IsAdvancedText = new ModelColumn<>(I_AD_Column.class, "IsAdvancedText", null);
+	String COLUMNNAME_IsAdvancedText = "IsAdvancedText";
+
+	/**
 	 * Set Allow Logging.
 	 * Determine if a column must be recorded into the change log
 	 *
@@ -616,7 +639,7 @@ public interface I_AD_Column
 
 	/**
 	 * Set Always Updateable.
-	 * The column is always updateable, even if the record is not active or processed
+	 * The column's field is always updateable, even if the record is not active or processed
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -626,7 +649,7 @@ public interface I_AD_Column
 
 	/**
 	 * Get Always Updateable.
-	 * The column is always updateable, even if the record is not active or processed
+	 * The column's field is always updateable, even if the record is not active or processed
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -705,6 +728,29 @@ public interface I_AD_Column
 
 	ModelColumn<I_AD_Column, Object> COLUMN_IsCalculated = new ModelColumn<>(I_AD_Column.class, "IsCalculated", null);
 	String COLUMNNAME_IsCalculated = "IsCalculated";
+
+	/**
+	 * Set Partitionsgrenze.
+	 * Falls ja, dann gehören Datensatze, die über die jeweilige Referenz verknüpft sind nicht zur selben Partition.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDLMPartitionBoundary (boolean IsDLMPartitionBoundary);
+
+	/**
+	 * Get Partitionsgrenze.
+	 * Falls ja, dann gehören Datensatze, die über die jeweilige Referenz verknüpft sind nicht zur selben Partition.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDLMPartitionBoundary();
+
+	ModelColumn<I_AD_Column, Object> COLUMN_IsDLMPartitionBoundary = new ModelColumn<>(I_AD_Column.class, "IsDLMPartitionBoundary", null);
+	String COLUMNNAME_IsDLMPartitionBoundary = "IsDLMPartitionBoundary";
 
 	/**
 	 * Set Column Encryption.
