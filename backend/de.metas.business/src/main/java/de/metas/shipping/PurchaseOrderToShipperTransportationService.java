@@ -30,6 +30,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.ILUQtyProvider;
+import de.metas.handlingunits.ITUDistributionProvider;
+import de.metas.handlingunits.IPackageWeightProvider;
 import de.metas.handlingunits.impl.ShipperTransportationQuery;
 import de.metas.i18n.AdMessageKey;
 import de.metas.interfaces.I_C_OrderLine;
@@ -60,6 +62,7 @@ import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -80,11 +83,15 @@ public class PurchaseOrderToShipperTransportationService
 	private final ISSCC18CodeBL sscc18CodeBL = Services.get(ISSCC18CodeBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ILUQtyProvider qtyProvider;
+	private final ITUDistributionProvider tuDistributionProvider;
+	private final IPackageWeightProvider packageWeightProvider;
 
 	public static PurchaseOrderToShipperTransportationService newInstanceForUnitTesting()
 	{
 		final ILUQtyProvider luQtyProvider = (o, ol) -> 1;
-		return new PurchaseOrderToShipperTransportationService(PurchaseOrderToShipperTransportationRepository.newInstanceForUnitTesting(), luQtyProvider);
+		final ITUDistributionProvider tuProvider = (order, orderLine, totalTU, luCount) -> ImmutableList.of();
+		final IPackageWeightProvider weightProvider = (order, orderLine, tuQtyForPackage) -> null;
+		return new PurchaseOrderToShipperTransportationService(PurchaseOrderToShipperTransportationRepository.newInstanceForUnitTesting(), luQtyProvider, tuProvider, weightProvider);
 	}
 
 	private static final String AD_PROCESS_VALUE_C_Order_SSCC_Print_Jasper = "C_Order_SSCC_Print_Jasper";
@@ -162,28 +169,47 @@ public class PurchaseOrderToShipperTransportationService
 		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(bPartnerId, order.getC_BPartner_Location_ID());
 		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
 		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
-		final PurchaseShippingPackageCreateRequest.PurchaseShippingPackageCreateRequestBuilder requestTemplate = PurchaseShippingPackageCreateRequest.builder()
+		// Build an immutable base request and derive per-package builders via toBuilder() to avoid state bleeding across builds
+		final PurchaseShippingPackageCreateRequest baseRequest = PurchaseShippingPackageCreateRequest.builder()
 				.orderId(orderId)
 				.datePromised(order.getDatePromised().toInstant())
 				.shipperTransportationId(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()))
 				.shiperId(ShipperId.ofRepoId(shipperTransportation.getM_Shipper_ID()))
 				.bPartnerLocationId(bPartnerLocationId)
-				.orgId(orgId);
+				.orgId(orgId)
+				.build();
 
 		for (final I_C_OrderLine ol : orderLinesWithoutLUQty)
 		{
 			final int requiredLUCount = qtyProvider.getRequiredLUCount(order, ol);
+			if (requiredLUCount <= 0)
+			{
+				break;
+			}
+
+			final BigDecimal totalTU = ol.getQtyEnteredTU();
+			final ImmutableList<BigDecimal> tuDistribution = tuDistributionProvider.distributeTuUsingLutu(order, ol, totalTU, requiredLUCount);
 			for (int i = 0; i < requiredLUCount; i++)
 			{
-				repo.addPurchaseOrderToShipperTransportation(requestTemplate
+				final PurchaseShippingPackageCreateRequest.PurchaseShippingPackageCreateRequestBuilder builder = baseRequest.toBuilder()
 						.orderLineId(OrderLineId.ofRepoId(ol.getC_OrderLine_ID()))
-						.sscc(sscc18CodeBL.generate(orgId))
-						.build());
+						.sscc(sscc18CodeBL.generate(orgId));
+
+				final BigDecimal tuQtyForPackage = tuDistribution.isEmpty() ? BigDecimal.ZERO : tuDistribution.get(i);
+
+				builder.tuQty(tuQtyForPackage);
+				final BigDecimal grossWeightKg = packageWeightProvider.computeGrossWeightKg(order, ol, tuQtyForPackage);
+				if (grossWeightKg != null)
+				{
+					builder.grossWeightKg(grossWeightKg);
+				}
+
+				repo.addPurchaseOrderToShipperTransportation(builder.build());
 			}
 		}
 		for (final I_C_OrderLine ol : orderLinesWithLUQty)
 		{
-			addPurchaseOrderLineToShipperTransportationId(requestTemplate, ol);
+			addPurchaseOrderLineToShipperTransportationId(baseRequest, ol);
 		}
 	}
 
@@ -202,7 +228,7 @@ public class PurchaseOrderToShipperTransportationService
 				.map(sp -> OrderAndLineId.ofRepoIdsOrNull(sp.getC_Order_ID(), sp.getC_OrderLine_ID()))
 				.filter(Objects::nonNull)
 				.collect(Collectors.toSet());
-		
+
 		return orderAndLineIdToPoMap.keySet()
 				.stream()
 				.filter(olId -> !assignedOrderAndLineIds.contains(olId))
@@ -210,7 +236,7 @@ public class PurchaseOrderToShipperTransportationService
 				.collect(Collectors.toList());
 	}
 
-	private void addPurchaseOrderLineToShipperTransportationId(@NonNull final PurchaseShippingPackageCreateRequest.PurchaseShippingPackageCreateRequestBuilder requestTemplate, @NonNull final I_C_OrderLine ol)
+	private void addPurchaseOrderLineToShipperTransportationId(@NonNull final PurchaseShippingPackageCreateRequest baseRequest, @NonNull final I_C_OrderLine ol)
 	{
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(ol.getC_OrderLine_ID());
 		final ImmutableList<Package> existingPackages = repo.getPackagesBy(ShippingPackageQuery.builder().orderLineId(orderLineId).build());
@@ -223,18 +249,44 @@ public class PurchaseOrderToShipperTransportationService
 					.stream()
 					.map(Package::getId)
 					.collect(ImmutableList.toImmutableList());
-			repo.deleteFromShipperTransportation(packageIdsToRemove);
+			repo.deleteFromShipperTransportation(packageIdsToRemove); //TODO check why not delete all and recreate
 		}
 		else if (existingPackagesCount < qtyLUs)
 		{
-			requestTemplate.orderLineId(orderLineId);
+			final PurchaseShippingPackageCreateRequest.PurchaseShippingPackageCreateRequestBuilder requestBuilderTemplate = baseRequest.toBuilder()
+					.orderLineId(orderLineId);
 			final OrgId orgId = OrgId.ofRepoId(ol.getAD_Org_ID());
 
-			for (int i = 0; i < qtyLUs - existingPackagesCount; i++)
+			final BigDecimal totalTU = ol.getQtyEnteredTU();
+			final int packagesToCreate = qtyLUs - existingPackagesCount;
+			final I_C_Order orderRecord = orderDAO.getById(OrderId.ofRepoId(ol.getC_Order_ID()));
+			final ImmutableList<BigDecimal> tuDistribution = tuDistributionProvider.distributeTuUsingLutu(orderRecord, ol, totalTU, qtyLUs);
+			if (tuDistribution.isEmpty())
 			{
-				repo.addPurchaseOrderToShipperTransportation(requestTemplate
-						.sscc(sscc18CodeBL.generate(orgId))
-						.build());
+				return;
+			}
+
+			for (int i = 0; i < packagesToCreate; i++)
+			{
+				final PurchaseShippingPackageCreateRequest.PurchaseShippingPackageCreateRequestBuilder b = requestBuilderTemplate
+						.sscc(sscc18CodeBL.generate(orgId));
+
+				if (!tuDistribution.isEmpty())
+				{
+					// assign TU for the next uncreated package index
+					final int packageIndex = existingPackagesCount + i;
+					final BigDecimal tuQtyForPackage = tuDistribution.get(packageIndex);
+					b.tuQty(tuQtyForPackage);
+					// compute gross weight in kg for this package
+					final I_C_Order orderRecord2 = orderDAO.getById(OrderId.ofRepoId(ol.getC_Order_ID()));
+					final BigDecimal grossWeightKg = packageWeightProvider.computeGrossWeightKg(orderRecord2, ol, tuQtyForPackage);
+					if (grossWeightKg != null)
+					{
+						b.grossWeightKg(grossWeightKg);
+					}
+				}
+
+				repo.addPurchaseOrderToShipperTransportation(b.build());
 			}
 		}
 	}
