@@ -17,3 +17,6 @@ DELETE FROM C_DocType WHERE DocBaseType = 'MMP';
 
 -- Delete counter DocBaseType mappings that reference MMP
 DELETE FROM C_DocBaseType_Counter WHERE DocBaseType = 'MMP' OR Counter_DocBaseType = 'MMP';
+
+-- Delete period controls for MMP DocBaseType
+DELETE FROM C_PeriodControl WHERE DocBaseType = 'MMP';
