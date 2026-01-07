@@ -51,5 +51,5 @@ public class PurchaseShippingPackageCreateRequest
 	@Nullable SSCC18 sscc;
     @Nullable BigDecimal tuQty;
 	@NonNull @Default BigDecimal luQty = BigDecimal.ONE;
-	@Nullable BigDecimal grossWeightKg;
+	@Nullable BigDecimal grossWeightInKg;
 }

@@ -49,7 +49,6 @@ import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.mpackage.Package;
-import de.metas.shipping.mpackage.PackageId;
 import de.metas.sscc18.ISSCC18CodeBL;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -140,7 +139,7 @@ public class PurchaseOrderToShipperTransportationService
 		addPurchaseOrderToShipperTransportation(orderDAO.getById(purchaseOrderId), shipperTransportationId);
 	}
 
-	private void addPurchaseOrderToShipperTransportation(@NonNull final org.compiere.model.I_C_Order order,
+	private void addPurchaseOrderToShipperTransportation(@NonNull final I_C_Order order,
 														 @NonNull final ShipperTransportationId shipperTransportationId)
 	{
 		final I_M_ShipperTransportation shipperTransportationRecord = shipperTransportationDAO.getById(shipperTransportationId);
@@ -155,7 +154,7 @@ public class PurchaseOrderToShipperTransportationService
 		addPurchaseOrderLines(shipperTransportationRecord, order, orderLines);
 	}
 
-	private void addPurchaseOrderLines(final @NonNull I_M_ShipperTransportation shipperTransportation, final org.compiere.model.@NonNull I_C_Order order, @NonNull final List<I_C_OrderLine> orderLines)
+	private void addPurchaseOrderLines(final @NonNull I_M_ShipperTransportation shipperTransportation, final @NonNull I_C_Order order, @NonNull final List<I_C_OrderLine> orderLines)
 	{
 		final List<I_C_OrderLine> orderLinesWithLUQty = orderLines.stream()
 				.filter(orderBL::isLUQtySet)
@@ -184,7 +183,7 @@ public class PurchaseOrderToShipperTransportationService
 			final int requiredLUCount = qtyProvider.getRequiredLUCount(order, ol);
 			if (requiredLUCount <= 0)
 			{
-				break;
+				continue;
 			}
 
 			final BigDecimal totalTU = ol.getQtyEnteredTU();
@@ -198,10 +197,10 @@ public class PurchaseOrderToShipperTransportationService
 				final BigDecimal tuQtyForPackage = tuDistribution.isEmpty() ? BigDecimal.ZERO : tuDistribution.get(i);
 
 				builder.tuQty(tuQtyForPackage);
-				final BigDecimal grossWeightKg = packageWeightProvider.computeGrossWeightKg(order, ol, tuQtyForPackage);
-				if (grossWeightKg != null)
+				final BigDecimal grossWeightInKg = packageWeightProvider.computeGrossWeightInKg(order, ol, tuQtyForPackage);
+				if (grossWeightInKg != null)
 				{
-					builder.grossWeightKg(grossWeightKg);
+					builder.grossWeightInKg(grossWeightInKg);
 				}
 
 				repo.addPurchaseOrderToShipperTransportation(builder.build());
@@ -209,7 +208,7 @@ public class PurchaseOrderToShipperTransportationService
 		}
 		for (final I_C_OrderLine ol : orderLinesWithLUQty)
 		{
-			addPurchaseOrderLineToShipperTransportationId(baseRequest, ol);
+			addPurchaseOrderLineToShipperTransportationId(baseRequest, order, ol);
 		}
 	}
 
@@ -236,58 +235,44 @@ public class PurchaseOrderToShipperTransportationService
 				.collect(Collectors.toList());
 	}
 
-	private void addPurchaseOrderLineToShipperTransportationId(@NonNull final PurchaseShippingPackageCreateRequest baseRequest, @NonNull final I_C_OrderLine ol)
+	private void addPurchaseOrderLineToShipperTransportationId(@NonNull final PurchaseShippingPackageCreateRequest baseRequest,
+															   @NonNull final I_C_Order order,
+															   @NonNull final I_C_OrderLine ol)
 	{
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(ol.getC_OrderLine_ID());
 		final ImmutableList<Package> existingPackages = repo.getPackagesBy(ShippingPackageQuery.builder().orderLineId(orderLineId).build());
 		final int qtyLUs = ol.getQtyLU().intValueExact();
 
 		final int existingPackagesCount = existingPackages.size();
-		if (existingPackagesCount > qtyLUs)
+		if (existingPackagesCount > 0)
 		{
-			final ImmutableList<PackageId> packageIdsToRemove = existingPackages.subList(qtyLUs - 1, existingPackages.size() - 1)
-					.stream()
-					.map(Package::getId)
-					.collect(ImmutableList.toImmutableList());
-			repo.deleteFromShipperTransportation(packageIdsToRemove); //TODO check why not delete all and recreate
+			repo.deleteFromShipperTransportation(existingPackages.stream().map(Package::getId).collect(ImmutableList.toImmutableList()));
 		}
-		else if (existingPackagesCount < qtyLUs)
+		final OrgId orgId = OrgId.ofRepoId(ol.getAD_Org_ID());
+
+		final BigDecimal totalTU = ol.getQtyEnteredTU();
+		final ImmutableList<BigDecimal> tuDistribution = tuDistributionProvider.distributeTuUsingLutu(order, ol, totalTU, qtyLUs);
+		if (tuDistribution.isEmpty())
 		{
-			final PurchaseShippingPackageCreateRequest.PurchaseShippingPackageCreateRequestBuilder requestBuilderTemplate = baseRequest.toBuilder()
-					.orderLineId(orderLineId);
-			final OrgId orgId = OrgId.ofRepoId(ol.getAD_Org_ID());
+			return;
+		}
 
-			final BigDecimal totalTU = ol.getQtyEnteredTU();
-			final int packagesToCreate = qtyLUs - existingPackagesCount;
-			final I_C_Order orderRecord = orderDAO.getById(OrderId.ofRepoId(ol.getC_Order_ID()));
-			final ImmutableList<BigDecimal> tuDistribution = tuDistributionProvider.distributeTuUsingLutu(orderRecord, ol, totalTU, qtyLUs);
-			if (tuDistribution.isEmpty())
+		for (int i = 0; i < qtyLUs; i++)
+		{
+			final PurchaseShippingPackageCreateRequest.PurchaseShippingPackageCreateRequestBuilder requestBuilder = baseRequest.toBuilder()
+					.orderLineId(orderLineId)
+					.sscc(sscc18CodeBL.generate(orgId));
+
+			final BigDecimal tuQtyForPackage = tuDistribution.get(i);
+			requestBuilder.tuQty(tuQtyForPackage);
+
+			final BigDecimal grossWeightInKg = packageWeightProvider.computeGrossWeightInKg(order, ol, tuQtyForPackage);
+			if (grossWeightInKg != null)
 			{
-				return;
+				requestBuilder.grossWeightInKg(grossWeightInKg);
 			}
 
-			for (int i = 0; i < packagesToCreate; i++)
-			{
-				final PurchaseShippingPackageCreateRequest.PurchaseShippingPackageCreateRequestBuilder b = requestBuilderTemplate
-						.sscc(sscc18CodeBL.generate(orgId));
-
-				if (!tuDistribution.isEmpty())
-				{
-					// assign TU for the next uncreated package index
-					final int packageIndex = existingPackagesCount + i;
-					final BigDecimal tuQtyForPackage = tuDistribution.get(packageIndex);
-					b.tuQty(tuQtyForPackage);
-					// compute gross weight in kg for this package
-					final I_C_Order orderRecord2 = orderDAO.getById(OrderId.ofRepoId(ol.getC_Order_ID()));
-					final BigDecimal grossWeightKg = packageWeightProvider.computeGrossWeightKg(orderRecord2, ol, tuQtyForPackage);
-					if (grossWeightKg != null)
-					{
-						b.grossWeightKg(grossWeightKg);
-					}
-				}
-
-				repo.addPurchaseOrderToShipperTransportation(b.build());
-			}
+			repo.addPurchaseOrderToShipperTransportation(requestBuilder.build());
 		}
 	}
 

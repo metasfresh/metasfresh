@@ -33,7 +33,7 @@ import java.math.BigDecimal;
 public interface IPackageWeightProvider
 {
     @Nullable
-    BigDecimal computeGrossWeightKg(
+    BigDecimal computeGrossWeightInKg(
             @NonNull I_C_Order order,
             @NonNull I_C_OrderLine orderLine,
             @NonNull BigDecimal tuQtyForPackage);

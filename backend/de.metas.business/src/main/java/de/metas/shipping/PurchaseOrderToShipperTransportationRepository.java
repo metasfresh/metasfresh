@@ -77,9 +77,9 @@ public class PurchaseOrderToShipperTransportationRepository
 		mpackage.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(request.getBPartnerLocationId()));
 		mpackage.setAD_Org_ID(OrgId.toRepoId(request.getOrgId()));
 		mpackage.setIPA_SSCC18(SSCC18.toString(request.getSscc()));
-		if (request.getGrossWeightKg() != null)
+		if (request.getGrossWeightInKg() != null)
 		{
-			mpackage.setPackageWeight(request.getGrossWeightKg());
+			mpackage.setPackageWeight(request.getGrossWeightInKg());
 		}
 		save(mpackage);
 
@@ -97,9 +97,9 @@ public class PurchaseOrderToShipperTransportationRepository
 		{
 			shippingPackage.setQtyTU(request.getTuQty());
 		}
-		if (request.getGrossWeightKg() != null)
+		if (request.getGrossWeightInKg() != null)
 		{
-			shippingPackage.setPackageWeight(request.getGrossWeightKg());
+			shippingPackage.setPackageWeight(request.getGrossWeightInKg());
 		}
 		save(shippingPackage);
 	}
