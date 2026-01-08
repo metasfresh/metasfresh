@@ -138,8 +138,8 @@ final class ASIDescriptionBuilderCommand
 					.adLanguage(adLanguage)
 					.verboseDescription(verboseDescription)
 					.build();
-			final String description = descriptionPattern.evaluate(ctx, OnVariableNotFound.Empty);
-			if (description != null && !description.isEmpty())
+			final String description = descriptionPattern.evaluate(ctx, OnVariableNotFound.ReturnNoResult);
+			if(!descriptionPattern.isNoResult(description))
 			{
 				return TranslatableStrings.anyLanguage(description);
 			}
