@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
 @ghActions:run_on_executor2
 Feature: Group invoices and credit memos into a single document
+## F00701: Invoice Candidates
 
   Background:
     Given infrastructure and metasfresh are running
@@ -12,6 +16,9 @@ Feature: Group invoices and credit memos into a single document
       | warehouseStd   | StdWarehouse |
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   @Id:S0242_100
   Scenario: 2 invoice candidates (both sales); 1 x credit memo; 1 x invoice candidate; invoicing pool setup active, credit memo amt > invoice amt => one invoice with 2 lines, DocType=CreditMemo
     Given metasfresh contains M_Products:
@@ -178,6 +185,9 @@ Feature: Group invoices and credit memos into a single document
       | invoiceLine_2               | invoice_1               | product_SO              | 10         | 10          | true      |
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   @Id:S0242_200
   Scenario: 2 invoice candidates (both sales); 1 x credit memo; 1 x invoice candidate; invoicing pool setup active, credit memo < invoice => one invoice with 2 lines, DocType=SalesInvoice
     Given metasfresh contains M_Products:
@@ -354,6 +364,9 @@ Feature: Group invoices and credit memos into a single document
 
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   @Id:S0242_300
   Scenario: 2 invoice candidates(both sales); 1 x credit memo; 1 x invoice candidate; no invoicing pool setup => 2 invoices
     Given metasfresh contains M_Products:
@@ -525,6 +538,9 @@ Feature: Group invoices and credit memos into a single document
       | invoiceLine_2    | invoice_2    | product_SO   | 10         | 10          | true      |
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   @Id:S0242_400
   Scenario: 2 invoice candidates(both sales); 2 x invoice candidate; no invoicing pool setup => 1 invoice with 2 lines, DocType=SalesInvoice
     Given metasfresh contains M_Products:
@@ -642,6 +658,9 @@ Feature: Group invoices and credit memos into a single document
       | invoiceLine_2               | invoice_1               | product_SO              | 10          | true      | 10             |
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   @Id:S0242_510
   Scenario: 1 invoice candidates(sales); 1 x invoice candidate; no invoicing pool setup, IC has docTypeInvoiceID = A => 1 invoice with 1 line, DocType=A
     Given metasfresh contains M_Products:
@@ -734,6 +753,9 @@ Feature: Group invoices and credit memos into a single document
 
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   @Id:S0242_520
   Scenario: 1 invoice candidates(sales); 1 x invoice candidate; invoice pool exists, ic and invoice pool have the same invoiceDocTypeId = A => 1 invoice with 1 line, DocType=A
     Given metasfresh contains M_Products:
@@ -830,6 +852,9 @@ Feature: Group invoices and credit memos into a single document
 
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   @Id:S0242_530
   Scenario: 1 invoice candidates(sales); 1 x invoice candidate;  IC has invoiceDocTypeID =C; invoicing pool is set, it has doctypeId = D, => 1 invoice with 1 line, DocType=C
     Given metasfresh contains M_Products:
@@ -927,6 +952,9 @@ Feature: Group invoices and credit memos into a single document
 
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   @Id:S0242_540
   Scenario: 2 invoice candidates(both sales); 2 x invoice candidate; both ICs have invoiceDocType = A , A has pool with invoiceDocType = B, IsOnDistinctICTypes = true => 1 invoice with 2 lines, DocType=A
     Given metasfresh contains M_Products:
@@ -1060,6 +1088,9 @@ Feature: Group invoices and credit memos into a single document
 
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   @Id:S0242_550
   Scenario: 2 invoice candidates(both sales); 2 x invoice candidate; both ICs have invoiceDocType = A , A has pool with invoiceDocType = B, IsOnDistinctICTypes = false => 1 invoice with 2 lines, DocType=B
     Given metasfresh contains M_Products:

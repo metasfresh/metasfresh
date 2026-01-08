@@ -1,12 +1,12 @@
 import { expect } from '@playwright/test';
 import { test } from '../../playwright.config';
+import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { PurchaseOrderPage } from '../utils/pages/PurchaseOrderPage';
 import { ReceiptCandidatesPage } from '../utils/pages/ReceiptCandidatesPage';
 import { InvoiceCandidatePage } from '../utils/pages/InvoiceCandidatePage';
-import { AllureHelpers } from '../utils/AllureHelpers';
 
 /**
  * Purchase-to-Invoice E2E test suite.
@@ -42,19 +42,25 @@ testCases.forEach(({ language, label }) => {
   test.describe(`Purchase-to-Invoice Workflow (${label})`, () => {
     test(`Complete purchase-to-invoice flow: PO → Receipt → Invoice (${label} UI)`, async ({ page }) => {
       // === ALLURE METADATA ===
-      // This test spans multiple features/epics
-      await AllureHelpers.setFeatures([
-        { id: 'F00600', name: 'Purchase Order', epicId: 'E0140', epicName: 'Purchasing' },
-        { id: 'F65010', name: 'Material Receipt Candidates', epicId: 'E0150', epicName: 'Material Receipt' }
-      ]);
-      await AllureHelpers.setStory('Complete PO → Receipt → Invoice flow');
-      await AllureHelpers.setSeverity('critical');
-      await AllureHelpers.addParameter('Language', language);
-      await AllureHelpers.addParameter('UI Label', label);
-      await AllureHelpers.addTags(language);
+      // Feature metadata - IDs for filtering, full names in description
+      allure.epic('E0140: Purchasing');
+      allure.tag('F00600: Purchase Order');
+      allure.tag('F00600');  // Standalone tag for Tags section
+      allure.tag('F65010: Material Receipt Candidates');
+      allure.tag('F65010');  // Standalone tag for Tags section
+      allure.story('Complete PO → Receipt → Invoice flow');
+      allure.severity('critical');
+      allure.parameter('Language', language);
+      allure.parameter('UI Label', label);
+      allure.tag(language);
 
-      await AllureHelpers.setDescription(`
-## Test Scenario
+      allure.description(`
+## E0140: Purchasing
+
+## F00600: Purchase Order
+## F65010: Material Receipt Candidates
+
+### Test Scenario
 This test validates the complete purchase-to-invoice workflow:
 
 1. **Create Purchase Order** - New PO with vendor and product line

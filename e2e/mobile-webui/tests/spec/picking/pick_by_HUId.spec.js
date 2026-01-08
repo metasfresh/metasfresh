@@ -1,4 +1,5 @@
 import { test } from "../../../playwright.config";
+import { allure } from 'allure-playwright';
 import { Backend } from '../../utils/screens/Backend';
 import { LoginScreen } from '../../utils/screens/LoginScreen';
 import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScreen';
@@ -60,6 +61,13 @@ const createMasterdata = async () => {
 
 // noinspection JSUnusedLocalSymbols
 test('LU/CU -> LU/CU', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');  // Standalone tag for Tags section;
+    allure.story('Pick by HU ID - LU/CU to LU/CU');
+    allure.severity('normal');
+
     const masterdata = await createMasterdata();
 
     await LoginScreen.login(masterdata.login.user);

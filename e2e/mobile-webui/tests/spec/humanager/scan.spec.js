@@ -1,4 +1,5 @@
 import { test } from "../../../playwright.config";
+import { allure } from 'allure-playwright';
 import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
@@ -24,6 +25,12 @@ const createMasterdata = async ({ externalBarcode } = {}) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Scan by HU QR Code', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5120');
+    allure.story('HU Manager - Scan Methods');
+    allure.severity('critical');
+
     const masterdata = await createMasterdata();
 
     await LoginScreen.login(masterdata.login.user);
@@ -36,6 +43,12 @@ test('Scan by HU QR Code', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Scan by M_HU_ID', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5120');
+    allure.story('HU Manager - Scan Methods');
+    allure.severity('normal');
+
     const masterdata = await createMasterdata();
 
     await LoginScreen.login(masterdata.login.user);
@@ -48,6 +61,12 @@ test('Scan by M_HU_ID', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Scan by ExternalBarcode attribute', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5120');
+    allure.story('HU Manager - Scan Methods');
+    allure.severity('normal');
+
     const externalBarcode = "EXT" + Date.now();
     const masterdata = await createMasterdata({ externalBarcode });
 

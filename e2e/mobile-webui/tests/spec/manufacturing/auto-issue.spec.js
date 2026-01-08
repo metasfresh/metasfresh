@@ -1,5 +1,6 @@
 import { Backend } from '../../utils/screens/Backend';
 import { test } from '../../../playwright.config';
+import { allure } from 'allure-playwright';
 import { LoginScreen } from '../../utils/screens/LoginScreen';
 import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScreen';
 import { ManufacturingJobsListScreen } from '../../utils/screens/manufacturing/ManufacturingJobsListScreen';
@@ -56,6 +57,13 @@ const createMasterdata = async () => {
 
 // noinspection JSUnusedLocalSymbols
 test('Auto-issue first line hides Scan button; manual second line shows it', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0160: Manufacturing Execution');
+    allure.tag('F8030: MobileUI Manufacturing');
+        allure.tag('F8030');  // Standalone tag for Tags section;
+    allure.story('Auto-issue BOM component behavior');
+    allure.severity('normal');
+
     const masterdata = await createMasterdata();
 
     await LoginScreen.login(masterdata.login.user);

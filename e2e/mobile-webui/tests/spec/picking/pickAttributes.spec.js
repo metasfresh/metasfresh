@@ -1,4 +1,5 @@
 import { test } from "../../../playwright.config";
+import { allure } from 'allure-playwright';
 import { Backend } from '../../utils/screens/Backend';
 import { LoginScreen } from '../../utils/screens/LoginScreen';
 import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScreen';
@@ -44,6 +45,13 @@ const createMasterdata = async ({ readAttributes, qty }) => {
 }
 // noinspection JSUnusedLocalSymbols
 test('Expect picking directly without dialog', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');  // Standalone tag for Tags section;
+    allure.story('Pick attributes behavior');
+    allure.severity('normal');
+
     const masterdata = await createMasterdata({ readAttributes: [], qty: 1 });
 
     await LoginScreen.login(masterdata.login.user);

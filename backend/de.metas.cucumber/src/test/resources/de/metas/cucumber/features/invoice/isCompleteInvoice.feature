@@ -1,5 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
 Feature: completeInvoice option when processing invoice candidates
+## F00700: Invoice
 
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
@@ -8,6 +12,9 @@ Feature: completeInvoice option when processing invoice candidates
     And metasfresh has date and time 2021-12-21T13:30:13+01:00[Europe/Berlin]
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   @Id:S0209_100
   Scenario: process IC with completeInvoices=N should result in Invoice DocStatus=IP and IC should be invoiceable again after voiding Invoice
     Given metasfresh contains M_Products:
@@ -71,6 +78,9 @@ Feature: completeInvoice option when processing invoice candidates
       | invoice_ci_3            | endcustomer_ci_1         | l_ci_1                            | po_ref_mock_ci_1  | false     | IP        |
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   @Id:S0209_110
   Scenario: process IC with completeInvoice=Y should result in processed IC
     Given metasfresh contains M_Products:

@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
 @ghActions:run_on_executor6
 Feature: Production + Distribution material dispo scenarios
+## F5100: Material Disposition
 
   Background:
     Given infrastructure and metasfresh are running
@@ -79,6 +82,8 @@ Feature: Production + Distribution material dispo scenarios
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
   Scenario: sales order -> PP_Order_Candidate -> DD_Order_Candidate
     When update existing PP_Product_Plannings
       | Identifier           | IsCreatePlan |
@@ -121,6 +126,8 @@ Feature: Production + Distribution material dispo scenarios
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
   Scenario: sales order -> PP_Order_Candidate + PP_Order -> DD_Order_Candidate
     When update existing PP_Product_Plannings
       | Identifier           | IsCreatePlan |
@@ -180,6 +187,8 @@ Feature: Production + Distribution material dispo scenarios
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
   @ignore #DD_OrderCandidate is not processed as expected
   Scenario: sales order -> PP_Order_Candidate + PP_Order -> DD_Order_Candidate + DD_Order
     When update existing PP_Product_Plannings
@@ -251,6 +260,8 @@ Feature: Production + Distribution material dispo scenarios
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
   Scenario: sales order -> PP_Order_Candidate -> DD_Order_Candidate with products partially on stock
     When update existing PP_Product_Plannings
       | Identifier           | IsCreatePlan |
@@ -313,6 +324,8 @@ Feature: Production + Distribution material dispo scenarios
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
   Scenario: sales order -> PP_Order_Candidate -> DD_Order_Candidate -> Manually process PP_Order_Candidate -> Manually process DD_Order_Candidate
     When update existing PP_Product_Plannings
       | Identifier           | IsCreatePlan |

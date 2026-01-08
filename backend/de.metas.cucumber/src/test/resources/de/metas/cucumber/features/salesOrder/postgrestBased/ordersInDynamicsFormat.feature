@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00100_Sales_Order
+@F00100
 @ghActions:run_on_executor3
 Feature: Export Orders in specific format via postgREST
+## F00100: Sales Order
 
   Background:
     Given infrastructure and metasfresh are running
@@ -35,6 +39,9 @@ Feature: Export Orders in specific format via postgREST
       | orgBP                    | metasfresh | orgBPartner_ID |
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00100_Sales_Order
+@F00100
   Scenario: create a sales order and export it to JSON via C_Order_ID. The used BPartner does not have an external reference for Dynamics365 External System
     Given metasfresh contains M_Products:
       | Identifier | REST.Context.Value           | REST.Context | REST.Context.Name           | Description                        | ProductType |
@@ -108,6 +115,9 @@ Feature: Export Orders in specific format via postgREST
     """
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00100_Sales_Order
+@F00100
   Scenario: create a sales order and export it to JSON via C_Order_ID. The used BPartner has an external reference for Dynamics365 External System
     And metasfresh contains External System
       | Name        | Value       |
@@ -187,6 +197,9 @@ Feature: Export Orders in specific format via postgREST
     """
 
   @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00100_Sales_Order
+@F00100
   Scenario: create a purchase order and export it to JSON via C_Order_ID
     Given metasfresh contains M_Products:
       | Identifier | REST.Context.Value           | REST.Context | REST.Context.Name           | Description                        |

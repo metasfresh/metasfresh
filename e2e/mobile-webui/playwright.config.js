@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig, devices, test as testOrig } from '@playwright/test';
 import { setCurrentPage } from "./tests/utils/common";
+import os from 'os';
 
 /**
  * @see https://playwright.dev/docs/test-configuration
@@ -15,6 +16,32 @@ export default defineConfig({
         ['list'],
         ['html', { outputFolder: 'playwright-report/html', open: 'never' }],
         ['junit', { outputFile: 'playwright-report/junit/results.xml' }],
+        ['allure-playwright', {
+            resultsDir: 'allure-results',
+            detail: true,
+            suiteTitle: true,
+            links: {
+                issue: {
+                    nameTemplate: 'GitHub Issue #%s',
+                    urlTemplate: 'https://github.com/metasfresh/metasfresh/issues/%s',
+                },
+                tms: {
+                    nameTemplate: 'Feature %s',
+                    urlTemplate: 'https://docs.google.com/spreadsheets/d/1HYDaiNZVseCg4WtIaxJQ-LLclNl7vkHXp6WsMEaKK9A/edit#gid=1284833774',
+                },
+            },
+            categories: [
+                { name: 'Timing/Timeout issues', messageRegex: '.*timeout.*|.*timed out.*|.*waiting.*' },
+                { name: 'Backend API errors', messageRegex: '.*Backend API error.*|.*500.*|.*503.*' },
+                { name: 'Network errors', messageRegex: '.*network.*|.*connection.*|.*ECONNREFUSED.*' },
+            ],
+            environmentInfo: {
+                os_platform: os.platform(),
+                os_release: os.release(),
+                node_version: process.version,
+                test_environment: process.env.CI ? 'CI' : 'Local',
+            },
+        }],
     ],
     timeout: 120000, // Set global timeout
     /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
