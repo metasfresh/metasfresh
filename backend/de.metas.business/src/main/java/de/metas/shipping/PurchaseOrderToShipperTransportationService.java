@@ -198,27 +198,12 @@ public class PurchaseOrderToShipperTransportationService
 				continue;
 			}
 
-			final BigDecimal totalTU = ol.getQtyEnteredTU();
-			final List<BigDecimal> tuDistribution = tuDistributionProvider.distributeTuUsingLutu(order, ol, totalTU, requiredLUCount);
-			Check.assume(tuDistribution.size() == requiredLUCount, "tuDistribution.size() == requiredLUCount");
-			for (int i = 0; i < requiredLUCount; i++)
-			{
-				final BigDecimal tuQtyForPackage = tuDistribution.get(i);
-				final BigDecimal grossWeightInKg = packageWeightProvider.computeGrossWeightInKg(order, ol, tuQtyForPackage);
-
-				repo.addPurchaseOrderToShipperTransportation(
-						baseRequest.toBuilder()
-								.orderLineId(OrderLineId.ofRepoId(ol.getC_OrderLine_ID()))
-								.sscc(sscc18CodeBL.generate(orgId))
-								.tuQty(tuQtyForPackage)
-								.grossWeightInKg(grossWeightInKg)
-								.build()
-				);
-			}
+			addPurchaseOrderLineToShipperTransportationId(baseRequest, order, ol, requiredLUCount);
 		}
 		for (final I_C_OrderLine ol : orderLinesWithLUQty)
 		{
-			addPurchaseOrderLineToShipperTransportationId(baseRequest, order, ol);
+			final int qtyLUs = ol.getQtyLU().intValueExact();
+			addPurchaseOrderLineToShipperTransportationId(baseRequest, order, ol, qtyLUs);
 		}
 	}
 
@@ -247,14 +232,13 @@ public class PurchaseOrderToShipperTransportationService
 
 	private void addPurchaseOrderLineToShipperTransportationId(@NonNull final PurchaseShippingPackageCreateRequest baseRequest,
 															   @NonNull final I_C_Order order,
-															   @NonNull final I_C_OrderLine ol)
+															   @NonNull final I_C_OrderLine ol,
+															   final int qtyLUs)
 	{
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(ol.getC_OrderLine_ID());
 		final ImmutableList<Package> existingPackages = repo.getPackagesBy(ShippingPackageQuery.builder().orderLineId(orderLineId).build());
-		final int qtyLUs = ol.getQtyLU().intValueExact();
 
-		final int existingPackagesCount = existingPackages.size();
-		if (existingPackagesCount > 0)
+		if (!existingPackages.isEmpty())
 		{
 			repo.deleteFromShipperTransportation(existingPackages.stream().map(Package::getId).collect(ImmutableList.toImmutableList()));
 		}
@@ -266,20 +250,16 @@ public class PurchaseOrderToShipperTransportationService
 
 		for (int i = 0; i < qtyLUs; i++)
 		{
-			final PurchaseShippingPackageCreateRequest.PurchaseShippingPackageCreateRequestBuilder requestBuilder = baseRequest.toBuilder()
-					.orderLineId(orderLineId)
-					.sscc(sscc18CodeBL.generate(orgId));
-
 			final BigDecimal tuQtyForPackage = tuDistribution.get(i);
-			requestBuilder.tuQty(tuQtyForPackage);
-
 			final BigDecimal grossWeightInKg = packageWeightProvider.computeGrossWeightInKg(order, ol, tuQtyForPackage);
-			if (grossWeightInKg != null)
-			{
-				requestBuilder.grossWeightInKg(grossWeightInKg);
-			}
 
-			repo.addPurchaseOrderToShipperTransportation(requestBuilder.build());
+			repo.addPurchaseOrderToShipperTransportation(
+					baseRequest.toBuilder()
+							.orderLineId(orderLineId)
+							.sscc(sscc18CodeBL.generate(orgId))
+							.tuQty(tuQtyForPackage)
+							.grossWeightInKg(grossWeightInKg)
+							.build());
 		}
 	}
 
