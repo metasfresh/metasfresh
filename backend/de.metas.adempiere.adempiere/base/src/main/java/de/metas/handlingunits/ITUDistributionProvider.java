@@ -22,19 +22,19 @@
 
 package de.metas.handlingunits;
 
-import com.google.common.collect.ImmutableList;
 import lombok.NonNull;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @FunctionalInterface
 public interface ITUDistributionProvider
 {
-    ImmutableList<BigDecimal> distributeTuUsingLutu(
-            @NonNull I_C_Order order,
-            @NonNull I_C_OrderLine orderLine,
-            @NonNull BigDecimal totalTU,
-            int luCount);
+	List<BigDecimal> distributeTuUsingLutu(
+			@NonNull I_C_Order order,
+			@NonNull I_C_OrderLine orderLine,
+			@NonNull BigDecimal totalTU,
+			int luCount);
 }

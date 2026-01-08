@@ -30,8 +30,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.ILUQtyProvider;
-import de.metas.handlingunits.ITUDistributionProvider;
 import de.metas.handlingunits.IPackageWeightProvider;
+import de.metas.handlingunits.ITUDistributionProvider;
 import de.metas.handlingunits.impl.ShipperTransportationQuery;
 import de.metas.i18n.AdMessageKey;
 import de.metas.interfaces.I_C_OrderLine;
@@ -50,18 +50,21 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.shipping.mpackage.Package;
 import de.metas.sscc18.ISSCC18CodeBL;
+import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -87,8 +90,17 @@ public class PurchaseOrderToShipperTransportationService
 
 	public static PurchaseOrderToShipperTransportationService newInstanceForUnitTesting()
 	{
+		Adempiere.assertUnitTestMode();
+
 		final ILUQtyProvider luQtyProvider = (o, ol) -> 1;
-		final ITUDistributionProvider tuProvider = (order, orderLine, totalTU, luCount) -> ImmutableList.of();
+		final ITUDistributionProvider tuProvider = (order, orderLine, totalTU, luCount) -> {
+			final ArrayList<BigDecimal> tuDistribution = new ArrayList<>(luCount);
+			for (int i = 0; i < luCount; i++)
+			{
+				tuDistribution.add(BigDecimal.ZERO);
+			}
+			return tuDistribution;
+		};
 		final IPackageWeightProvider weightProvider = (order, orderLine, tuQtyForPackage) -> null;
 		return new PurchaseOrderToShipperTransportationService(PurchaseOrderToShipperTransportationRepository.newInstanceForUnitTesting(), luQtyProvider, tuProvider, weightProvider);
 	}
@@ -187,23 +199,21 @@ public class PurchaseOrderToShipperTransportationService
 			}
 
 			final BigDecimal totalTU = ol.getQtyEnteredTU();
-			final ImmutableList<BigDecimal> tuDistribution = tuDistributionProvider.distributeTuUsingLutu(order, ol, totalTU, requiredLUCount);
+			final List<BigDecimal> tuDistribution = tuDistributionProvider.distributeTuUsingLutu(order, ol, totalTU, requiredLUCount);
+			Check.assume(tuDistribution.size() == requiredLUCount, "tuDistribution.size() == requiredLUCount");
 			for (int i = 0; i < requiredLUCount; i++)
 			{
-				final PurchaseShippingPackageCreateRequest.PurchaseShippingPackageCreateRequestBuilder builder = baseRequest.toBuilder()
-						.orderLineId(OrderLineId.ofRepoId(ol.getC_OrderLine_ID()))
-						.sscc(sscc18CodeBL.generate(orgId));
-
-				final BigDecimal tuQtyForPackage = tuDistribution.isEmpty() ? BigDecimal.ZERO : tuDistribution.get(i);
-
-				builder.tuQty(tuQtyForPackage);
+				final BigDecimal tuQtyForPackage = tuDistribution.get(i);
 				final BigDecimal grossWeightInKg = packageWeightProvider.computeGrossWeightInKg(order, ol, tuQtyForPackage);
-				if (grossWeightInKg != null)
-				{
-					builder.grossWeightInKg(grossWeightInKg);
-				}
 
-				repo.addPurchaseOrderToShipperTransportation(builder.build());
+				repo.addPurchaseOrderToShipperTransportation(
+						baseRequest.toBuilder()
+								.orderLineId(OrderLineId.ofRepoId(ol.getC_OrderLine_ID()))
+								.sscc(sscc18CodeBL.generate(orgId))
+								.tuQty(tuQtyForPackage)
+								.grossWeightInKg(grossWeightInKg)
+								.build()
+				);
 			}
 		}
 		for (final I_C_OrderLine ol : orderLinesWithLUQty)
@@ -251,11 +261,8 @@ public class PurchaseOrderToShipperTransportationService
 		final OrgId orgId = OrgId.ofRepoId(ol.getAD_Org_ID());
 
 		final BigDecimal totalTU = ol.getQtyEnteredTU();
-		final ImmutableList<BigDecimal> tuDistribution = tuDistributionProvider.distributeTuUsingLutu(order, ol, totalTU, qtyLUs);
-		if (tuDistribution.isEmpty())
-		{
-			return;
-		}
+		final List<BigDecimal> tuDistribution = tuDistributionProvider.distributeTuUsingLutu(order, ol, totalTU, qtyLUs);
+		Check.assume(tuDistribution.size() == qtyLUs, "tuDistribution.size() == qtyLUs");
 
 		for (int i = 0; i < qtyLUs; i++)
 		{
