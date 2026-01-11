@@ -420,26 +420,7 @@ jobs:
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }} \
           .
-      - name: cleanup-before-db-migration-tool
-        run: |
-          echo "=== Disk space before cleanup ==="
-          df -h /
-          echo "=== Pruning Docker builder cache ==="
-          docker builder prune -af
-          echo "=== Removing dangling images ==="
-          docker image prune -f
-          echo "=== Disk space after cleanup ==="
-          df -h /
-      - name: build-db-migration-tool
-        run: |
-          docker buildx build \
-          --file docker-builds/Dockerfile.db-migration-tool \
-          --cache-to type=inline \
-          --cache-from metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-floating }} \
-          --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
-          --tag metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-floating }} \
-          --tag metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }} \
-          .
+      # Push images BEFORE cleanup to free disk space for db-migration-tool build
       - name: push-image metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}
         uses: nick-fields/retry@v3
         with:
@@ -454,7 +435,7 @@ jobs:
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}
-      - name: push-image push metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}
+      - name: push-image metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}
         uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
@@ -475,13 +456,6 @@ jobs:
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }}
-      - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}
-        uses: nick-fields/retry@v3
-        with:
-          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
-          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
-          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}
       - name: push-image metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-floating }}
         uses: nick-fields/retry@v3
         with:
@@ -489,27 +463,6 @@ jobs:
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-floating }}
-      - name: push-image metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }}
-        uses: nick-fields/retry@v3
-        with:
-          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
-          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
-          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}
-      - name: push-image metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }}
-        uses: nick-fields/retry@v3
-        with:
-          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
-          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
-          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }}
-      - name: push-image metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-floating }}
-        uses: nick-fields/retry@v3
-        with:
-          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
-          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
-          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-floating }}
       - name: push-image metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }}
         uses: nick-fields/retry@v3
         with:
@@ -524,6 +477,52 @@ jobs:
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push metasfresh/metas-edi:${{ needs.init.outputs.tag-floating }}
+      - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}
+        uses: nick-fields/retry@v3
+        with:
+          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
+          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
+          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
+          command: docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}
+      - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}
+        uses: nick-fields/retry@v3
+        with:
+          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
+          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
+          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
+          command: docker push metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}
+      - name: cleanup-before-db-migration-tool
+        run: |
+          echo "=== Disk space before cleanup ==="
+          df -h /
+          echo "=== Removing ALL unused Docker data (images, build cache, volumes) ==="
+          docker system prune -af --volumes
+          echo "=== Disk space after cleanup ==="
+          df -h /
+      - name: build-db-migration-tool
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.db-migration-tool \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-floating }} \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
+          --tag metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }} \
+          .
+      - name: push-image metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }}
+        uses: nick-fields/retry@v3
+        with:
+          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
+          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
+          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
+          command: docker push metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }}
+      - name: push-image metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-floating }}
+        uses: nick-fields/retry@v3
+        with:
+          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
+          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
+          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
+          command: docker push metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-floating }}
 
       - name: produce-summary
         run: |
