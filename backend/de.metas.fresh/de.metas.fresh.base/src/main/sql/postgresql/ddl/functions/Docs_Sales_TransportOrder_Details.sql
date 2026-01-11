@@ -51,8 +51,8 @@ FROM (SELECT name,
              istobefetched,
              DeliveryDateTimeMax,
              isPallet,
-             QtyTU,
-             QtyLU,
+             SUM(QtyTU)              AS QtyTU,
+             SUM(QtyLU)              AS QtyLU,
              note
       FROM (SELECT bp.name,
                    bpl.address,
@@ -60,8 +60,8 @@ FROM (SELECT name,
                    CASE WHEN hupm.name ILIKE '%pal%' THEN 'Y' ELSE 'N' END     AS isPallet,
                    hu.M_HU_ID,
                    dd.DeliveryDateTimeMax,
-                   (CASE WHEN TU IS NULL AND TU > 0 THEN TU ELSE sp.QtyTU END) AS QtyTU,
-                   (CASE WHEN LU IS NULL AND LU > 0 THEN LU ELSE sp.QtyLU END) AS QtyLU,
+                   (CASE WHEN TU IS NOT NULL AND TU > 0 THEN TU ELSE sp.QtyTU END) AS QtyTU,
+                   (CASE WHEN LU IS NOT NULL AND LU > 0 THEN LU ELSE sp.QtyLU END) AS QtyLU,
                    note
             FROM M_ShippingPackage sp
                      INNER JOIN C_BPartner bp ON sp.C_BPartner_ID = bp.C_BPartner_ID
