@@ -378,4 +378,6 @@ public interface IOrderBL extends ISingletonService
 	void syncDateInvoicedFromInvoice(@NonNull OrderId orderId, @NonNull I_C_Invoice invoice);
 
 	List<I_C_Order> getByQueryFilter(final IQueryFilter<I_C_Order> queryFilter);
+
+	void updateASIFromProjectId(@NonNull de.metas.interfaces.I_C_OrderLine orderLine);
 }
