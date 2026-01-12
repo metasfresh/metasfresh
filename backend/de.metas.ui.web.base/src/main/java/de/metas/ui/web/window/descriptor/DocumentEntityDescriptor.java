@@ -452,6 +452,7 @@ public class DocumentEntityDescriptor
 	{
 		private static final Logger logger = LogManager.getLogger(DocumentEntityDescriptor.Builder.class);
 		private DocumentFilterDescriptorsProvidersService filterDescriptorsProvidersService;
+		private ImmutableList<IDocumentDecorator> documentDecorators;
 
 		private boolean _built = false;
 
@@ -1199,6 +1200,12 @@ public class DocumentEntityDescriptor
 					.sorted(Ordering.natural().onResultOf(DocumentFieldDescriptor.Builder::getDefaultOrderByPriority))
 					.map(field -> DocumentQueryOrderBy.byFieldName(field.getFieldName(), field.isDefaultOrderByAscending()))
 					.collect(DocumentQueryOrderByList.toDocumentQueryOrderByList());
+		}
+
+		public Builder queryIfNoFilters(final boolean queryIfNoFilters)
+		{
+			this.queryIfNoFilters = queryIfNoFilters;
+			return this;
 		}
 
 		public Builder notFoundMessages(@Nullable final NotFoundMessages notFoundMessages)
