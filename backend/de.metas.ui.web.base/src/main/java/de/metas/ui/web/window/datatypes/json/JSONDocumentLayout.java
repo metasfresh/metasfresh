@@ -16,9 +16,8 @@ import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSingleRow;
-import io.swagger.v3.oas.annotations.media.Schema;
 import de.metas.ui.web.window.descriptor.NotFoundMessages;
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
