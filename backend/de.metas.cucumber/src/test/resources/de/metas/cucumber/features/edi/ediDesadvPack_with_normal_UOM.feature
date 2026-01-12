@@ -1433,7 +1433,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | M_HU_ID.Identifier      | M_Attribute_ID | Value        | AttributeValueType |
       | createdLU_1_S0457_020   | 1000017        | luLotNumber  | S                  |
       | createdLU_1_S0457_020   | 540020         | 2021-04-18   | D                  |
-      | createdTU_1_1_S0457_020 | 1000017        | luLotNumber1 | S                  |
+      | createdTU_1_1_S0457_020 | 1000017        | tuLotNumber1 | S                  |
       | createdTU_1_1_S0457_020 | 540020         | 2021-04-20   | D                  |
       | createdTU_1_2_S0457_020 | 1000017        | tuLotNumber2 | S                  |
       | createdTU_1_2_S0457_020 | 540020         | 2021-04-30   | D                  |
