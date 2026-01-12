@@ -22,6 +22,8 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
+import de.metas.project.service.ProjectRepository;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -35,9 +37,14 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.compiere.model.CalloutOrder;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_PO_OrderLine_Alloc;
+import org.compiere.model.I_C_Project;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -85,19 +92,23 @@ public class C_OrderLine
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IOrderLinePricingConditions orderLinePricingConditions = Services.get(IOrderLinePricingConditions.class);
+	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final OrderGroupCompensationChangesHandler groupChangesHandler;
 	private final OrderLineDetailRepository orderLineDetailRepository;
 	private final BPartnerSupplierApprovalService bPartnerSupplierApprovalService;
+	private final ProjectRepository projectRepository;
 
 	C_OrderLine(
 			@NonNull final OrderGroupCompensationChangesHandler groupChangesHandler,
 			@NonNull final OrderLineDetailRepository orderLineDetailRepository,
-			@NonNull final BPartnerSupplierApprovalService bPartnerSupplierApprovalService)
+			@NonNull final BPartnerSupplierApprovalService bPartnerSupplierApprovalService,
+			@NonNull final ProjectRepository projectRepository)
 	{
 		this.groupChangesHandler = groupChangesHandler;
 		this.orderLineDetailRepository = orderLineDetailRepository;
 		this.bPartnerSupplierApprovalService = bPartnerSupplierApprovalService;
+		this.projectRepository = projectRepository;
 
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
@@ -451,7 +462,7 @@ public class C_OrderLine
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, //
-			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_IsWithoutCharge})
+			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_IsWithoutCharge })
 	public void updatePriceToStd(final I_C_OrderLine orderLine)
 	{
 		if (!orderLine.isWithoutCharge())
@@ -462,6 +473,28 @@ public class C_OrderLine
 
 			final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 			orderLineBL.updateLineNetAmtFromQtyEntered(orderLine);
+		}
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
+			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_C_Project_ID })
+	public void updateASIFromProjectId(@NonNull final I_C_OrderLine orderLine)
+	{
+		AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNull(orderLine.getM_AttributeSetInstance_ID());
+		if (asiId == null)
+		{
+			final I_M_AttributeSetInstance asi = attributeSetInstanceBL.createASI(ProductId.ofRepoId(orderLine.getM_Product_ID()));
+			asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
+		}
+		final ProjectId projectId = ProjectId.ofRepoIdOrNull(orderLine.getC_Project_ID());
+		if (projectId != null)
+		{
+			final I_C_Project project = projectRepository.getById(projectId);
+			attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_Project, project.getValue());
+		}
+		else
+		{
+			attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_Project, null);
 		}
 	}
 }
