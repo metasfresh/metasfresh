@@ -165,8 +165,8 @@ public class C_Payment_StepDef
 				throw new AdempiereException("Unhandled C_Payment action")
 						.appendParametersToMessage()
 						.setParameter("action:", action);
+			}
 		}
-	}
 
 	@And("validate payments")
 	public void validate_created_payments(@NonNull final DataTable table)

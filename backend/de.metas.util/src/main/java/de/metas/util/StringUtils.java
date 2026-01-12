@@ -81,7 +81,7 @@ public final class StringUtils
 	}
 
 	@Nullable
-	public static <T> T trimBlankToNullAndMap(@Nullable final String str, @NonNull Function<String, T> mapper)
+	public static <T> T trimBlankToNullAndMap(@Nullable final String str, @NonNull final Function<String, T> mapper)
 	{
 		final String strNorm = trimBlankToNull(str);
 		return strNorm != null
@@ -179,11 +179,16 @@ public final class StringUtils
 	/**
 	 * Casts a string to BigDecimal. Returns BigDecimal.ZERO if the operation fails.
 	 */
-	public static BigDecimal toBigDecimalOrZero(final String str)
+	public static BigDecimal toBigDecimalOrZero(@Nullable final String str)
+	{
+		return toBigDecimal(str, BigDecimal.ZERO);
+	}
+
+	public static BigDecimal toBigDecimal(@Nullable final String str, @NonNull final BigDecimal defaultValue)
 	{
 		if (str == null || str.isEmpty())
 		{
-			return BigDecimal.ZERO;
+			return defaultValue;
 		}
 
 		try
@@ -192,7 +197,7 @@ public final class StringUtils
 		}
 		catch (final NumberFormatException e)
 		{
-			return BigDecimal.ZERO;
+			return defaultValue;
 		}
 	}
 
@@ -555,8 +560,8 @@ public final class StringUtils
 	@Nullable
 	public static String replace(final String value, final String oldPart, final String newPart)
 	{
-		if (value == null || value.length() == 0
-				|| oldPart == null || oldPart.length() == 0)
+		if (value == null || value.isEmpty()
+				|| oldPart == null || oldPart.isEmpty())
 		{
 			return value;
 		}
@@ -568,7 +573,7 @@ public final class StringUtils
 		while (pos != -1)
 		{
 			retValue.append(oldValue, 0, pos);
-			if (newPart != null && newPart.length() > 0)
+			if (newPart != null && !newPart.isEmpty())
 			{
 				retValue.append(newPart);
 			}
@@ -593,7 +598,7 @@ public final class StringUtils
 		{
 			return null;
 		}
-		return in.replaceAll("(\\r|\\n)", "");
+		return in.replaceAll("([\\r\\n])", "");
 	}
 
 	/**
@@ -651,17 +656,17 @@ public final class StringUtils
 	 * @param in in
 	 * @return cleaned string
 	 */
-	public static String cleanWhitespace(@Nullable String in)
+	public static String cleanWhitespace(@Nullable final String in)
 	{
 		if (in == null)
 		{
 			return in;
 		}
-		
+
 		return CharMatcher.whitespace().removeFrom(in);
 	}    // cleanWhitespace
 
-	
+
 	/**
 	 * remove white space from the begin
 	 */
@@ -727,7 +732,10 @@ public final class StringUtils
 	 * @param content content
 	 * @return masked content
 	 * @see #maskHTML(String, boolean)
+	 * @deprecated please consider using {@link StringEscapeUtils#escapeHtml4(String)} instead.
 	 */
+	@Deprecated
+	@Nullable
 	public static String maskHTML(final String content)
 	{
 		return maskHTML(content, false);
@@ -802,9 +810,9 @@ public final class StringUtils
 	 * @param countChar to be counted character
 	 * @return number of occurances
 	 */
-	public static int getCount(String string, char countChar)
+	public static int getCount(final String string, final char countChar)
 	{
-		if (string == null || string.length() == 0)
+		if (string == null || string.isEmpty())
 		{
 			return 0;
 		}
@@ -827,7 +835,7 @@ public final class StringUtils
 	 * @param search search character
 	 * @return index or -1 if not found
 	 */
-	public static int findIndexOf(String str, char search)
+	public static int findIndexOf(final String str, final char search)
 	{
 		return findIndexOf(str, search, search);
 	}   // findIndexOf
@@ -840,7 +848,7 @@ public final class StringUtils
 	 * @param search2 second search character (or)
 	 * @return index or -1 if not found
 	 */
-	public static int findIndexOf(String str, char search1, char search2)
+	public static int findIndexOf(final String str, final char search1, final char search2)
 	{
 		if (str == null)
 		{
@@ -884,9 +892,9 @@ public final class StringUtils
 	 * @param search search character
 	 * @return index or -1 if not found
 	 */
-	public static int findIndexOf(String str, String search)
+	public static int findIndexOf(final String str, final String search)
 	{
-		if (str == null || search == null || search.length() == 0)
+		if (str == null || search == null || search.isEmpty())
 		{
 			return -1;
 		}
@@ -959,9 +967,9 @@ public final class StringUtils
 	 * @param in string
 	 * @return init cap
 	 */
-	public static String initCap(String in)
+	public static String initCap(final String in)
 	{
-		if (in == null || in.length() == 0)
+		if (in == null || in.isEmpty())
 		{
 			return in;
 		}
@@ -991,7 +999,7 @@ public final class StringUtils
 	 * @param in input {@link String}
 	 * @return {@param in} if != null, empty string otherwise
 	 */
-	@Nullable
+	@NonNull
 	public static String nullToEmpty(@Nullable final String in)
 	{
 		return in != null ? in : "";
@@ -1041,7 +1049,7 @@ public final class StringUtils
 			return ImmutableMap.of();
 		}
 
-		final HashMap<String, String> params = new HashMap<String, String>();
+		final HashMap<String, String> params = new HashMap<>();
 		for (final String param : queryNorm.split("&"))
 		{
 			final String key;

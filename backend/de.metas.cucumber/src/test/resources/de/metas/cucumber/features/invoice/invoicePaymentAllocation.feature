@@ -1207,7 +1207,7 @@ Feature: invoice payment allocation
   Scenario: allocate payment to purchase invoice with overpayment and negative discount
 
     Given metasfresh contains M_Products:
-      | Identifier  | Name        |
+      | Identifier         | Name               |
       | product_10012025_1 | product_10012025_1 |
     And metasfresh contains M_ProductPrices
       | Identifier    | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
