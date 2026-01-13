@@ -115,6 +115,7 @@ public class DistributionJobLoader
 				.isClosed(!docStatus.isCompleted()) // NOTE: we consider closed (for us) anything which is not completed
 				.salesOrderRef(loadingSupportServices.getSalesOderRef(ddOrder))
 				.manufacturingOrderRef(loadingSupportServices.getManufacturingOrderRef(ddOrder))
+				.pickingInstruction(loadingSupportServices.getPickingInstruction(ddOrder))
 				.allowPickingAnyHU(config.isAllowPickingAnyHU())
 				.lines(getDDOrderLines(ddOrderId)
 						.stream()
