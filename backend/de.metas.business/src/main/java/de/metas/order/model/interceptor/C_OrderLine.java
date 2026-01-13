@@ -85,6 +85,7 @@ public class C_OrderLine
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IOrderLinePricingConditions orderLinePricingConditions = Services.get(IOrderLinePricingConditions.class);
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final OrderGroupCompensationChangesHandler groupChangesHandler;
 	private final OrderLineDetailRepository orderLineDetailRepository;
@@ -451,7 +452,7 @@ public class C_OrderLine
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, //
-			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_IsWithoutCharge})
+			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_IsWithoutCharge })
 	public void updatePriceToStd(final I_C_OrderLine orderLine)
 	{
 		if (!orderLine.isWithoutCharge())
@@ -463,5 +464,12 @@ public class C_OrderLine
 			final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 			orderLineBL.updateLineNetAmtFromQtyEntered(orderLine);
 		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW },
+			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_C_Project_ID })
+	public void updateASIFromProjectId(@NonNull final I_C_OrderLine orderLine)
+	{
+		orderBL.updateASIFromProjectId(orderLine);
 	}
 }

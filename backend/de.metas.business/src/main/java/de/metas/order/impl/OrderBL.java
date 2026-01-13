@@ -84,6 +84,7 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
+import de.metas.project.service.ProjectRepository;
 import de.metas.quantity.Quantity;
 import de.metas.request.RequestTypeId;
 import de.metas.shipping.ShipperId;
@@ -104,6 +105,9 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
@@ -114,6 +118,8 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_Project;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
@@ -166,8 +172,10 @@ public class OrderBL implements IOrderBL
 	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 
 	private final SpringContextHolder.Lazy<BPartnerOrderParamsRepository> bpartnerOrderParamsRepository = SpringContextHolder.lazyBean(BPartnerOrderParamsRepository.class);
+	private final SpringContextHolder.Lazy<ProjectRepository> projectRepository = SpringContextHolder.lazyBean(ProjectRepository.class);
 
 	@Override
 	public I_C_Order getById(@NonNull final OrderId orderId)
@@ -488,8 +496,7 @@ public class OrderBL implements IOrderBL
 
 		final I_C_DocType docType = docTypeBL.getById(docTypeId);
 
-		@Nullable
-		final CopyDescriptionAndDocumentNote copyDescriptionAndDocumentNote = CopyDescriptionAndDocumentNote.ofNullableCode(docType.getCopyDescriptionAndDocumentNote());
+		@Nullable final CopyDescriptionAndDocumentNote copyDescriptionAndDocumentNote = CopyDescriptionAndDocumentNote.ofNullableCode(docType.getCopyDescriptionAndDocumentNote());
 
 		if (copyDescriptionAndDocumentNote == null)
 		{
@@ -702,9 +709,9 @@ public class OrderBL implements IOrderBL
 	{
 		// TODO figure out what partnerBL.extractShipToLocation(bp); does
 		final I_C_BPartner_Location shipToLocationId = bpartnerDAO.retrieveBPartnerLocation(BPartnerLocationQuery.builder()
-																									.bpartnerId(BPartnerId.ofRepoId(bp.getC_BPartner_ID()))
-																									.type(Type.SHIP_TO)
-																									.build());
+				.bpartnerId(BPartnerId.ofRepoId(bp.getC_BPartner_ID()))
+				.type(Type.SHIP_TO)
+				.build());
 		if (shipToLocationId == null)
 		{
 			logger.error("MOrder.setBPartner - Has no Ship To Address: {}", bp);
@@ -751,11 +758,11 @@ public class OrderBL implements IOrderBL
 		OrderDocumentLocationAdapterFactory
 				.billLocationAdapter(order)
 				.setFrom(DocumentLocation.builder()
-								 .bpartnerId(newBPartnerLocationId.getBpartnerId())
-								 .bpartnerLocationId(newBPartnerLocationId.getBpartnerLocationId())
-								 .locationId(newBPartnerLocationId.getLocationCaptureId())
-								 .contactId(newContactId)
-								 .build());
+						.bpartnerId(newBPartnerLocationId.getBpartnerId())
+						.bpartnerLocationId(newBPartnerLocationId.getBpartnerLocationId())
+						.locationId(newBPartnerLocationId.getLocationCaptureId())
+						.contactId(newContactId)
+						.build());
 
 		return true; // found it
 	}
@@ -1036,7 +1043,7 @@ public class OrderBL implements IOrderBL
 	{
 		return isSalesOrder(getById(orderId));
 	}
-	
+
 	@Override
 	public boolean isRequisition(@NonNull final I_C_Order order)
 	{
@@ -1488,5 +1495,35 @@ public class OrderBL implements IOrderBL
 	public List<I_C_Order> getByQueryFilter(final IQueryFilter<I_C_Order> queryFilter)
 	{
 		return orderDAO.getByQueryFilter(queryFilter);
+	}
+
+	@Override
+	public void updateASIFromProjectId(@NonNull final I_C_OrderLine orderLine)
+	{
+		AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNull(orderLine.getM_AttributeSetInstance_ID());
+		final ProjectId projectId = ProjectId.ofRepoIdOrNull(orderLine.getC_Project_ID());
+
+		if (asiId == null && projectId == null)
+		{
+			return;
+		}
+		if (asiId == null || asiId.isNone())
+		{
+			final I_M_AttributeSetInstance asi = attributeSetInstanceBL.createASI(ProductId.ofRepoId(orderLine.getM_Product_ID()));
+			asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
+		}
+
+		if (projectId != null)
+		{
+			final I_C_Project project = projectRepository.get().getById(projectId);
+			final AttributeSetInstanceId attributeSetInstanceId = attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_Project, project.getValue());
+			orderLine.setM_AttributeSetInstance_ID(attributeSetInstanceId.getRepoId());
+		}
+		else
+		{
+			final AttributeSetInstanceId attributeSetInstanceId = attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_Project, null);
+			orderLine.setM_AttributeSetInstance_ID(attributeSetInstanceId.getRepoId());
+		}
+
 	}
 }
