@@ -216,22 +216,12 @@ public class HURepository
 					return Result.CONTINUE; // in some corner cases, there can be empty aggregate HU, because an aggregate HU "stub" was created, but due to a small/odd number of CUs it was not used
 				}
 				final ImmutableMap<ProductId, Quantity> productsAndQuantities = extractProductsAndQuantities(huRecord);
-
 				final ImmutableMap<ProductId, Quantity> productsAndQuantitiesPerHU = divideQuantities(productsAndQuantities, logicalNumberOfTUs);
-				childBuilder.productQtysInStockUOM(productsAndQuantitiesPerHU);
 
 				final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(huRecord);
 				final Quantity weightNetPerHU = Optional.ofNullable(extractWeightNetOrNull(attributeStorage))
 						.map(weightNet -> weightNet.divide(logicalNumberOfTUs))
 						.orElse(null);
-
-				childBuilder.weightNet(weightNetPerHU);
-
-				for (int i = 0; i < logicalNumberOfTUs - 1; i++)
-				{
-					final HU currentChild = childBuilder.build();
-					parentBuilderOrNull.childHU(currentChild);
-				}
 
 				// Calculate remaining values for the last TU to avoid rounding errors
 				final ImmutableMap<ProductId, Quantity> remainingProductQtys = calculateRemainingQuantities(
@@ -244,12 +234,20 @@ public class HURepository
 						weightNetPerHU,
 						logicalNumberOfTUs - 1);
 
-				// Build the last TU with remaining quantities
-				final HU lastChild = childBuilder
-						.productQtysInStockUOM(remainingProductQtys)
-						.weightNet(remainingWeightNet)
-						.build();
-				parentBuilderOrNull.childHU(lastChild);
+				// Build N-1 children with divided quantities
+				for (int i = 0; i < logicalNumberOfTUs; i++)
+				{
+					final boolean isLastChild = (i == logicalNumberOfTUs - 1);
+					final ImmutableMap<ProductId, Quantity> qtysForThisChild = isLastChild ? remainingProductQtys : productsAndQuantitiesPerHU;
+					final Quantity weightForThisChild = isLastChild ? remainingWeightNet : weightNetPerHU;
+
+					final HU currentChild = childBuilder.build()
+							.toBuilder()
+							.productQtysInStockUOM(qtysForThisChild)
+							.weightNet(weightForThisChild)
+							.build();
+					parentBuilderOrNull.childHU(currentChild);
+				}
 			}
 			else
 			{
