@@ -466,7 +466,7 @@ public class C_OrderLine
 		}
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW },
 			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_C_Project_ID })
 	public void updateASIFromProjectId(@NonNull final I_C_OrderLine orderLine)
 	{

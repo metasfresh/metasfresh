@@ -1501,22 +1501,28 @@ public class OrderBL implements IOrderBL
 	public void updateASIFromProjectId(@NonNull final I_C_OrderLine orderLine)
 	{
 		AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNull(orderLine.getM_AttributeSetInstance_ID());
+		final ProjectId projectId = ProjectId.ofRepoIdOrNull(orderLine.getC_Project_ID());
+
+		if (asiId == null && projectId == null)
+		{
+			return;
+		}
 		if (asiId == null || asiId.isNone())
 		{
 			final I_M_AttributeSetInstance asi = attributeSetInstanceBL.createASI(ProductId.ofRepoId(orderLine.getM_Product_ID()));
 			asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
 		}
-		final ProjectId projectId = ProjectId.ofRepoIdOrNull(orderLine.getC_Project_ID());
-		final AttributeSetInstanceId clonedAsiId = attributeSetInstanceBL.copy(asiId);
-		orderLine.setM_AttributeSetInstance_ID(AttributeSetInstanceId.toRepoId(clonedAsiId));
+
 		if (projectId != null)
 		{
 			final I_C_Project project = projectRepository.get().getById(projectId);
-			attributeSetInstanceBL.setAttributeInstanceValue(clonedAsiId, AttributeConstants.ATTR_Project, project.getValue());
+			final AttributeSetInstanceId attributeSetInstanceId = attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_Project, project.getValue());
+			orderLine.setM_AttributeSetInstance_ID(attributeSetInstanceId.getRepoId());
 		}
 		else
 		{
-			attributeSetInstanceBL.setAttributeInstanceValue(clonedAsiId, AttributeConstants.ATTR_Project, null);
+			final AttributeSetInstanceId attributeSetInstanceId = attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_Project, null);
+			orderLine.setM_AttributeSetInstance_ID(attributeSetInstanceId.getRepoId());
 		}
 
 	}

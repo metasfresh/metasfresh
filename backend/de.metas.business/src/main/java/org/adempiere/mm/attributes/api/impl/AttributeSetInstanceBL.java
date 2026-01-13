@@ -275,8 +275,7 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 		//attributes.forEach(attribute -> setAttributeInstanceValue(asiId, attribute.getAttributeCode(), attribute.getValue()));
 	}
 
-	@Override
-	public void setAttributeInstanceValue(
+	public void setAttributeInstanceValueToCurrentASI(
 			@NonNull final AttributeSetInstanceId asiId,
 			@NonNull final AttributeCode attributeCode,
 			@Nullable final Object value)
@@ -298,6 +297,14 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 		final I_M_AttributeInstance attributeInstance = getCreateAttributeInstance(asiId, attributeId);
 
 		setAttributeInstanceValue(attribute, attributeInstance, value);
+	}
+
+	@Override
+	public AttributeSetInstanceId setAttributeInstanceValue(@NonNull final AttributeSetInstanceId asiId, @NonNull final AttributeCode attributeCode, @Nullable final Object value)
+	{
+		final AttributeSetInstanceId newASI = copy(asiId);
+		setAttributeInstanceValueToCurrentASI(newASI, attributeCode, value);
+		return newASI;
 	}
 
 	private void setAttributeInstanceValue(
@@ -372,7 +379,7 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 		if (fromASIAware == null || fromASIAware.getM_AttributeSetInstance_ID() <= 0)
 		{
 			final ProductId productId = ProductId.ofRepoId(toASIAware.getM_Product_ID());
-			I_M_AttributeSetInstance newASI = createASI(productId);
+			final I_M_AttributeSetInstance newASI = createASI(productId);
 			toASIAware.setM_AttributeSetInstance_ID(newASI.getM_AttributeSetInstance_ID());
 		}
 
@@ -490,7 +497,7 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 			return "";
 		}
 
-		I_M_AttributeSetInstance asi = getById(asiId);
+		final I_M_AttributeSetInstance asi = getById(asiId);
 		return asi != null ? asi.getDescription() : "";
 	}
 
@@ -661,7 +668,7 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 
 		for (final I_M_Attribute attributeRecord : attributeSet.getAttributes())
 		{
-			setAttributeInstanceValue(
+			setAttributeInstanceValueToCurrentASI(
 					asiId,
 					AttributeCode.ofString(attributeRecord.getValue()),
 					attributeSet.getValue(attributeRecord));
@@ -796,7 +803,7 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 				return Optional.empty();
 			}
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			logger.warn("Failed generating default value for {}. Returning empty.", attribute, ex);
 			return Optional.empty();
