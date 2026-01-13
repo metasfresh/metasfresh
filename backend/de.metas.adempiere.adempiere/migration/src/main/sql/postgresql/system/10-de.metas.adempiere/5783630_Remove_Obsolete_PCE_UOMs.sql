@@ -113,7 +113,6 @@ UPDATE m_product SET grossweight_uom_id = 100 WHERE grossweight_uom_id IN (SELEC
 UPDATE m_product SET issuingtolerance_uom_id = 100 WHERE issuingtolerance_uom_id IN (SELECT c_uom_id FROM deprecated_pce_uoms);
 UPDATE m_product SET package_uom_id = 100 WHERE package_uom_id IN (SELECT c_uom_id FROM deprecated_pce_uoms);
 UPDATE m_product SET salesgroup_uom_id = 100 WHERE salesgroup_uom_id IN (SELECT c_uom_id FROM deprecated_pce_uoms);
-UPDATE m_product SET weight_uom_id = 100 WHERE weight_uom_id IN (SELECT c_uom_id FROM deprecated_pce_uoms);
 UPDATE m_product_allergen SET c_uom_id = 100 WHERE c_uom_id IN (SELECT c_uom_id FROM deprecated_pce_uoms);
 UPDATE m_product_allergen_trace SET c_uom_id = 100 WHERE c_uom_id IN (SELECT c_uom_id FROM deprecated_pce_uoms);
 UPDATE m_product_ingredients SET c_uom_id = 100 WHERE c_uom_id IN (SELECT c_uom_id FROM deprecated_pce_uoms);
@@ -161,7 +160,20 @@ UPDATE s_training SET c_uom_id = 100 WHERE c_uom_id IN (SELECT c_uom_id FROM dep
 UPDATE t_trialbalance SET c_uom_id = 100 WHERE c_uom_id IN (SELECT c_uom_id FROM deprecated_pce_uoms);
 UPDATE test SET c_uom_id = 100 WHERE c_uom_id IN (SELECT c_uom_id FROM deprecated_pce_uoms);
 
-
+DO
+$$
+    BEGIN
+        IF EXISTS (SELECT 1
+                   FROM information_schema.columns
+                   WHERE table_name = 'm_product'
+                     AND column_name = 'weight_uom_id') THEN
+            UPDATE m_product
+            SET weight_uom_id = 540017
+            WHERE weight_uom_id IN (SELECT c_uom_id FROM deprecated_pce_uoms);
+        END IF;
+    END
+$$
+;
 
 DELETE FROM c_uom_trl WHERE c_uom_id IN (SELECT c_uom_id FROM deprecated_pce_uoms);
 
