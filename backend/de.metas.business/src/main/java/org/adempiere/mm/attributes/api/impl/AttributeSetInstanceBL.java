@@ -275,6 +275,7 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 		//attributes.forEach(attribute -> setAttributeInstanceValue(asiId, attribute.getAttributeCode(), attribute.getValue()));
 	}
 
+	@Override
 	public void setAttributeInstanceValueToCurrentASI(
 			@NonNull final AttributeSetInstanceId asiId,
 			@NonNull final AttributeCode attributeCode,
