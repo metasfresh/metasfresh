@@ -2,7 +2,7 @@
 
 
 
-create temp table  deprecated_pce_uoms as (select c_uom_id from c_uom WHERE x12de355 = 'KGM' and c_uom_id != 100);
+create temp table  deprecated_pce_uoms as (select c_uom_id from c_uom WHERE x12de355 = 'PCE' and c_uom_id != 100);
 
 UPDATE c_callorderdetail SET c_uom_id = 100 WHERE c_uom_id in (select c_uom_id from deprecated_pce_uoms);
 
