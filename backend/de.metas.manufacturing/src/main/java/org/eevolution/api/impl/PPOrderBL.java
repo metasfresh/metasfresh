@@ -159,6 +159,12 @@ public class PPOrderBL implements IPPOrderBL
 	}
 
 	@Override
+	public List<I_PP_Order_BOMLine> getOrderBOMLines(final PPOrderId orderId)
+	{
+		return orderBOMService.getOrderBOMLines(orderId);
+	}
+
+	@Override
 	public void save(final I_PP_Order ppOrder)
 	{
 		ppOrdersRepo.save(ppOrder);

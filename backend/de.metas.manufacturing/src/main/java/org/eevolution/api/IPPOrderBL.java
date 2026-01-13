@@ -31,6 +31,8 @@ public interface IPPOrderBL extends ISingletonService
 
 	I_PP_Order_BOMLine getOrderBOMLineById(PPOrderBOMLineId orderBOMLineId);
 
+	List<I_PP_Order_BOMLine> getOrderBOMLines(PPOrderId orderId);
+
 	void save(I_PP_Order ppOrder);
 
 	I_PP_Order createOrder(PPOrderCreateRequest request);
