@@ -180,7 +180,3 @@ DELETE FROM c_uom_trl WHERE c_uom_id IN (SELECT c_uom_id FROM deprecated_pce_uom
 
 DELETE FROM c_uom WHERE c_uom_id IN (SELECT c_uom_id FROM deprecated_pce_uoms);
 
-
-
-update c_uom set isactive='Y' where c_uom_id = 100;
-

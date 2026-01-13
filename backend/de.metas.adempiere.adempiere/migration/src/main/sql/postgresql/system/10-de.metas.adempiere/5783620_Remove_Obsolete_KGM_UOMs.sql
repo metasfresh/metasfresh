@@ -805,10 +805,3 @@ FROM c_uom
 WHERE c_uom_id IN (SELECT c_uom_id FROM deprecated_kg_uoms)
 ;
 
-
-
-UPDATE c_uom
-SET isactive='Y'
-WHERE c_uom_id = 540017
-;
-
