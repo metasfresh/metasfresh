@@ -168,7 +168,7 @@ $$
                    WHERE table_name = 'm_product'
                      AND column_name = 'weight_uom_id') THEN
             UPDATE m_product
-            SET weight_uom_id = 540017
+            SET weight_uom_id = 100
             WHERE weight_uom_id IN (SELECT c_uom_id FROM deprecated_pce_uoms);
         END IF;
     END
