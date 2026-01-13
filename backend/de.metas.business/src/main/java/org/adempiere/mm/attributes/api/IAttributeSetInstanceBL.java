@@ -134,7 +134,7 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	 * Similar to {@link #setAttributeInstanceValue(AttributeSetInstanceId, AttributeId, Object)},
 	 * but the {@link AttributeId} is loaded from the given {@code attributeCode}.
 	 */
-	void setAttributeInstanceValue(AttributeSetInstanceId asiId, AttributeCode attributeCode, Object value);
+	void setAttributeInstanceValue(AttributeSetInstanceId asiId, AttributeCode attributeCode, @Nullable Object value);
 
 	String getASIDescriptionById(AttributeSetInstanceId asiId);
 

@@ -57,13 +57,12 @@ class IOrderBL_UpdateASIFromProjectIdTest
 	private static final String PROJECT_VALUE = "PROJECT-001";
 	private static final String PROJECT_VALUE_2 = "PROJECT-002";
 
-	private IAttributeSetInstanceBL attributeSetInstanceBL;
+	final private IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 
 	@BeforeEach
-	void beforeEach()
+	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		this.attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 		SpringContextHolder.registerJUnitBean(ProjectRepository.newInstanceForUnitTesting());
 		createProjectValueAttr();
 	}
@@ -112,7 +111,7 @@ class IOrderBL_UpdateASIFromProjectIdTest
 	@Nullable
 	private String getProjectValueFromASI(final AttributeSetInstanceId asiId)
 	{
-		return attributeSetInstanceBL.getImmutableAttributeSetById(asiId).getValueAsString( AttributeConstants.ATTR_Project);
+		return attributeSetInstanceBL.getImmutableAttributeSetById(asiId).getValueAsString(AttributeConstants.ATTR_Project);
 	}
 
 	@Test
@@ -169,24 +168,26 @@ class IOrderBL_UpdateASIFromProjectIdTest
 	{
 		// Given
 		final I_M_Product product = createProduct("Product-3");
-		final I_C_Project project = createProject(PROJECT_VALUE);
 		final I_M_AttributeSetInstance asi = createASI(product);
-		final I_C_OrderLine orderLine = createOrderLine(product);
-		orderLine.setM_AttributeSetInstance_ID(asi.getM_AttributeSetInstance_ID());
 
 		// First set a project value
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
 		attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_Project, PROJECT_VALUE);
 
+		final I_C_OrderLine orderLine = createOrderLine(product);
+		orderLine.setM_AttributeSetInstance_ID(asi.getM_AttributeSetInstance_ID());
+		saveRecord(orderLine);
+
 		// Now clear the project
-		orderLine.setC_Project_ID(0);
+		orderLine.setC_Project_ID(-1);
 
 		// When
 		final IOrderBL toBeTested = Services.get(IOrderBL.class);
 		toBeTested.updateASIFromProjectId(orderLine);
 
 		// Then
-		final String actualProjectValue = getProjectValueFromASI(asiId);
+		final AttributeSetInstanceId updatedAsiId = AttributeSetInstanceId.ofRepoId(orderLine.getM_AttributeSetInstance_ID());
+		final String actualProjectValue = getProjectValueFromASI(updatedAsiId);
 		assertNull(actualProjectValue, "Project attribute should be cleared");
 	}
 

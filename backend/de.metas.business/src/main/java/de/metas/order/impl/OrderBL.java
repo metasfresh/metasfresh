@@ -1505,17 +1505,19 @@ public class OrderBL implements IOrderBL
 		{
 			final I_M_AttributeSetInstance asi = attributeSetInstanceBL.createASI(ProductId.ofRepoId(orderLine.getM_Product_ID()));
 			asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
-			orderLine.setM_AttributeSetInstance_ID(asiId.getRepoId());
 		}
 		final ProjectId projectId = ProjectId.ofRepoIdOrNull(orderLine.getC_Project_ID());
+		final AttributeSetInstanceId clonedAsiId = attributeSetInstanceBL.copy(asiId);
+		orderLine.setM_AttributeSetInstance_ID(AttributeSetInstanceId.toRepoId(clonedAsiId));
 		if (projectId != null)
 		{
 			final I_C_Project project = projectRepository.get().getById(projectId);
-			attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_Project, project.getValue());
+			attributeSetInstanceBL.setAttributeInstanceValue(clonedAsiId, AttributeConstants.ATTR_Project, project.getValue());
 		}
 		else
 		{
-			attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_Project, null);
+			attributeSetInstanceBL.setAttributeInstanceValue(clonedAsiId, AttributeConstants.ATTR_Project, null);
 		}
+
 	}
 }
