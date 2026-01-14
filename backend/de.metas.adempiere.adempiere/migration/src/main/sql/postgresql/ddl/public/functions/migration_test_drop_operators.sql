@@ -1,6 +1,6 @@
 -- Function: migration_test_drop_operators
--- Purpose: Tests if custom minus operators can be dropped WITHOUT actually dropping them.
---          Uses SAVEPOINT to rollback test drops, reporting blocking dependencies if any.
+-- Purpose: Tests if custom minus operators can be dropped by checking pg_depend
+--          for dependencies. Reports blocking dependencies if any.
 --
 -- Usage:
 --   SELECT * FROM migration_test_drop_operators();
@@ -8,11 +8,11 @@
 -- Returns:
 --   operator_signature - The operator being tested (e.g., "- (timestamptz, numeric)")
 --   can_drop          - TRUE if operator can be safely dropped, FALSE if blocked
---   blocking_reason   - Error message if blocked, NULL if can drop
+--   blocking_reason   - Description of blocking objects, NULL if can drop
 --
 -- Safety:
---   This function uses SAVEPOINT to ensure no actual changes are made.
---   All test drops are rolled back immediately after testing.
+--   This function only queries pg_depend - it does not attempt any modifications.
+--   It checks both direct dependencies and view rewrite rule dependencies.
 
 DROP FUNCTION IF EXISTS migration_test_drop_operators();
 
@@ -26,12 +26,13 @@ LANGUAGE plpgsql
 AS $func$
 DECLARE
     v_rec RECORD;
+    v_dep_count INTEGER;
+    v_dep_objects TEXT;
 BEGIN
     FOR v_rec IN
         SELECT
             o.oid,
-            o.oprname || ' (' || COALESCE(lt.typname, 'NONE') || ', ' || COALESCE(rt.typname, 'NONE') || ')' AS signature,
-            'public.- (' || COALESCE(lt.typname, 'NONE') || ', ' || COALESCE(rt.typname, 'NONE') || ')' AS drop_syntax
+            o.oprname || ' (' || COALESCE(lt.typname, 'NONE') || ', ' || COALESCE(rt.typname, 'NONE') || ')' AS signature
         FROM pg_operator o
         JOIN pg_namespace n ON n.oid = o.oprnamespace
         LEFT JOIN pg_type lt ON lt.oid = o.oprleft
@@ -39,17 +40,33 @@ BEGIN
         WHERE n.nspname = 'public' AND o.oprname = '-'
     LOOP
         operator_signature := v_rec.signature;
-        BEGIN
-            EXECUTE 'SAVEPOINT test_drop';
-            EXECUTE 'DROP OPERATOR IF EXISTS ' || v_rec.drop_syntax;
+
+        -- Check for dependencies in pg_depend (direct object dependencies)
+        SELECT COUNT(*), string_agg(DISTINCT c.relname, ', ')
+        INTO v_dep_count, v_dep_objects
+        FROM pg_depend d
+        JOIN pg_class c ON c.oid = d.objid
+        WHERE d.refobjid = v_rec.oid
+          AND d.deptype = 'n';
+
+        -- Also check for rewrite rule dependencies (views)
+        IF v_dep_count = 0 THEN
+            SELECT COUNT(*), string_agg(DISTINCT c.relname, ', ')
+            INTO v_dep_count, v_dep_objects
+            FROM pg_depend d
+            JOIN pg_rewrite r ON r.oid = d.objid
+            JOIN pg_class c ON c.oid = r.ev_class
+            WHERE d.refobjid = v_rec.oid;
+        END IF;
+
+        IF v_dep_count > 0 THEN
+            can_drop := FALSE;
+            blocking_reason := 'Blocked by ' || v_dep_count || ' object(s): ' || COALESCE(v_dep_objects, '(unknown)');
+        ELSE
             can_drop := TRUE;
             blocking_reason := NULL;
-            EXECUTE 'ROLLBACK TO SAVEPOINT test_drop';
-        EXCEPTION WHEN OTHERS THEN
-            can_drop := FALSE;
-            blocking_reason := SQLERRM;
-            EXECUTE 'ROLLBACK TO SAVEPOINT test_drop';
-        END;
+        END IF;
+
         RETURN NEXT;
     END LOOP;
 
