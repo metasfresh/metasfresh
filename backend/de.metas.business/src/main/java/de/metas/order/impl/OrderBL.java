@@ -1500,14 +1500,14 @@ public class OrderBL implements IOrderBL
 	@Override
 	public void updateASIFromProjectId(@NonNull final I_C_OrderLine orderLine)
 	{
-		AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNull(orderLine.getM_AttributeSetInstance_ID());
+		AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(orderLine.getM_AttributeSetInstance_ID());
 		final ProjectId projectId = ProjectId.ofRepoIdOrNull(orderLine.getC_Project_ID());
 
-		if (asiId == null && projectId == null)
+		if (asiId.isNone() && projectId == null)
 		{
 			return;
 		}
-		if (asiId == null || asiId.isNone())
+		if (asiId.isNone())
 		{
 			final I_M_AttributeSetInstance asi = attributeSetInstanceBL.createASI(ProductId.ofRepoId(orderLine.getM_Product_ID()));
 			asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
