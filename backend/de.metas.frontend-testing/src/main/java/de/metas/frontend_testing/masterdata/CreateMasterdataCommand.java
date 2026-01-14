@@ -82,8 +82,8 @@ public class CreateMasterdataCommand
 		final ImmutableMap<String, JsonCreateHUResponse> hus = createHUs();
 		final ImmutableMap<String, JsonGenerateHUQRCodeResponse> generatedHUQRCodes = generateHUQRCodes();
 		final ImmutableMap<String, JsonSalesOrderCreateResponse> salesOrders = createSalesOrders();
-		final ImmutableMap<String, JsonDDOrderResponse> distributionOrders = createDistributionOrders();
 		final ImmutableMap<String, JsonPPOrderResponse> manufacturingOrders = createManufacturingOrders();
+		final ImmutableMap<String, JsonDDOrderResponse> distributionOrders = createDistributionOrders();
 		final ImmutableMap<String, JsonInventoryResponse> inventories = createInventories();
 		createCustomQRCodeFormats();
 

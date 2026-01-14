@@ -8,6 +8,8 @@ import de.metas.distribution.mobileui.external_services.sourcedoc.PlantInfo;
 import de.metas.distribution.mobileui.external_services.sourcedoc.SalesOrderRef;
 import de.metas.distribution.mobileui.external_services.warehouse.LocatorInfo;
 import de.metas.distribution.mobileui.external_services.warehouse.WarehouseInfo;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.product.ProductId;
 import de.metas.quantity.MixedQuantity;
 import de.metas.quantity.Quantity;
@@ -48,6 +50,7 @@ public class DistributionJob
 	private final boolean isClosed;
 	@Nullable private final SalesOrderRef salesOrderRef;
 	@Nullable private final ManufacturingOrderRef manufacturingOrderRef;
+	@NonNull private final ITranslatableString pickingInstruction;
 	private final boolean allowPickingAnyHU;
 	@NonNull private final ImmutableList<DistributionJobLine> lines;
 
@@ -55,22 +58,23 @@ public class DistributionJob
 
 	@Builder(toBuilder = true)
 	private DistributionJob(
-			final @NonNull DistributionJobId id,
-			final @NonNull String documentNo,
-			final @NonNull SeqNo seqNo,
-			final @NonNull BPartnerId customerId,
-			final @NonNull ZonedDateTime dateRequired,
-			final @NonNull ZonedDateTime pickDate,
-			final @NonNull WarehouseInfo pickFromWarehouse,
-			final @NonNull WarehouseInfo dropToWarehouse,
-			final @Nullable PlantInfo plantInfo,
-			final @NonNull String priority,
-			final @Nullable UserId responsibleId,
+			@NonNull final DistributionJobId id,
+			@NonNull final String documentNo,
+			@NonNull final SeqNo seqNo,
+			@NonNull final BPartnerId customerId,
+			@NonNull final ZonedDateTime dateRequired,
+			@NonNull final ZonedDateTime pickDate,
+			@NonNull final WarehouseInfo pickFromWarehouse,
+			@NonNull final WarehouseInfo dropToWarehouse,
+			@Nullable final PlantInfo plantInfo,
+			@NonNull final String priority,
+			@Nullable final UserId responsibleId,
 			final boolean isClosed,
-			final @Nullable SalesOrderRef salesOrderRef,
-			final @Nullable ManufacturingOrderRef manufacturingOrderRef,
+			@Nullable final SalesOrderRef salesOrderRef,
+			@Nullable final ManufacturingOrderRef manufacturingOrderRef,
+			@Nullable final ITranslatableString pickingInstruction,
 			final boolean allowPickingAnyHU,
-			final @NonNull List<DistributionJobLine> lines)
+			@NonNull final List<DistributionJobLine> lines)
 	{
 		this.id = id;
 		this.documentNo = documentNo;
@@ -86,6 +90,7 @@ public class DistributionJob
 		this.isClosed = isClosed;
 		this.salesOrderRef = salesOrderRef;
 		this.manufacturingOrderRef = manufacturingOrderRef;
+		this.pickingInstruction = pickingInstruction != null ? pickingInstruction : TranslatableStrings.empty();
 		this.allowPickingAnyHU = allowPickingAnyHU;
 		this.lines = ImmutableList.copyOf(lines);
 

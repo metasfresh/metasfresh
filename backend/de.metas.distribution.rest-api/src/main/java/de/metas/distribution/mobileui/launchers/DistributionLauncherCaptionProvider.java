@@ -9,10 +9,10 @@ import de.metas.distribution.mobileui.config.DistributionJobSortingField;
 import de.metas.distribution.mobileui.config.DistributionJobSortingItem;
 import de.metas.distribution.mobileui.config.MobileUIDistributionConfig;
 import de.metas.distribution.mobileui.config.MobileUIDistributionConfigRepository;
-import de.metas.distribution.mobileui.job.model.DDOrderReference;
 import de.metas.distribution.mobileui.external_services.product.DistributionProductService;
 import de.metas.distribution.mobileui.external_services.sourcedoc.DistributionSourceDocService;
 import de.metas.distribution.mobileui.external_services.warehouse.DistributionWarehouseService;
+import de.metas.distribution.mobileui.job.model.DDOrderReference;
 import de.metas.gs1.GTIN;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -63,7 +63,7 @@ public class DistributionLauncherCaptionProvider
 		for (DistributionJobSortingItem item : sorting.getItems())
 		{
 			final DistributionJobSortingField field = item.getField();
-			
+
 			if (!fieldValues.containsKey(field.getCode()))
 			{
 				final ITranslatableString captionItem = computeItem(ddOrderReference, field);
@@ -111,6 +111,8 @@ public class DistributionLauncherCaptionProvider
 				return extractSourceDoc(ddOrderReference);
 			case Priority:
 				return extractPriority(ddOrderReference);
+			case PickingInstruction:
+				return extractPickingInstruction(ddOrderReference);
 			default:
 				return TranslatableStrings.empty();
 		}
@@ -239,4 +241,10 @@ public class DistributionLauncherCaptionProvider
 				.build();
 	}
 
+	@NonNull
+	private ITranslatableString extractPickingInstruction(final @NonNull DDOrderReference ddOrderReference)
+	{
+		final ITranslatableString pickingInstruction = ddOrderReference.getPickingInstruction();
+		return pickingInstruction != null ? pickingInstruction : TranslatableStrings.empty();
+	}
 }

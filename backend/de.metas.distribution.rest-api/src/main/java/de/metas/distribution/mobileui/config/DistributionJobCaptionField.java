@@ -22,6 +22,7 @@ public enum DistributionJobCaptionField implements ReferenceListAwareEnum
 	ProductValueAndName(X_MobileUI_UserProfile_DD_CaptionItem.FIELDNAME_ProductValueAndName),
 	SourceDoc(X_MobileUI_UserProfile_DD_CaptionItem.FIELDNAME_SourceDoc),
 	Priority(X_MobileUI_UserProfile_DD_CaptionItem.FIELDNAME_Priority),
+	PickingInstruction(X_MobileUI_UserProfile_DD_CaptionItem.FIELDNAME_PickingInstruction),
 	;
 
 	private static final ReferenceListAwareEnums.ValuesIndex<DistributionJobCaptionField> index = ReferenceListAwareEnums.index(values());
