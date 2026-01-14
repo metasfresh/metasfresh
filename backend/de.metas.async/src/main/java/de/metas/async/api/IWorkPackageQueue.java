@@ -58,7 +58,27 @@ public interface IWorkPackageQueue
 	IWorkpackagePrioStrategy PRIORITY_AUTO = SizeBasedWorkpackagePrio.INSTANCE;
 
 	/**
+<<<<<<< HEAD
 	 * Retrieve the global queue size (i.e. number of unprocessed workpackages). This includes a DB query.
+=======
+	 * Unlocks given package
+	 *
+	 * @throws UnlockFailedException if unlocking fails
+	 */
+	void unlock(I_C_Queue_WorkPackage workPackage) throws UnlockFailedException;
+
+	/**
+	 * Unlocks given package.
+	 *
+	 * Any unlock exceptions will be logged but not propagated.
+	 *
+	 * @return true if unlocked
+	 */
+	boolean unlockNoFail(I_C_Queue_WorkPackage workPackage);
+
+	/**
+	 * Retrieve the number of processable workpackages using a DB-query.
+>>>>>>> 272bcbd9ed (Don't enqueue for CreateMissingShipmentSchedulesWorkpackageProcessor if processable WPs exist already (#21949))
 	 */
 	int size();
 
