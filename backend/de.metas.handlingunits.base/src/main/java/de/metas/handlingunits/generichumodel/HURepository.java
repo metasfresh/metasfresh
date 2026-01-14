@@ -46,7 +46,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
+import java.util.Map;
 import java.util.Optional;
 
 import static de.metas.util.Check.assume;
@@ -216,30 +216,26 @@ public class HURepository
 					return Result.CONTINUE; // in some corner cases, there can be empty aggregate HU, because an aggregate HU "stub" was created, but due to a small/odd number of CUs it was not used
 				}
 				final ImmutableMap<ProductId, Quantity> productsAndQuantities = extractProductsAndQuantities(huRecord);
-				final ImmutableMap<ProductId, Quantity> productsAndQuantitiesPerHU = divideQuantities(productsAndQuantities, logicalNumberOfTUs);
+
+				final ImmutableMap<ProductId, List<Quantity>> spreadProductQuantities = productsAndQuantities.entrySet().stream()
+						.collect(ImmutableMap.toImmutableMap(
+								Map.Entry::getKey,
+								entry -> entry.getValue().spreadEqually(logicalNumberOfTUs)));
 
 				final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(huRecord);
-				final Quantity weightNetPerHU = Optional.ofNullable(extractWeightNetOrNull(attributeStorage))
-						.map(weightNet -> weightNet.divide(logicalNumberOfTUs))
+				final List<Quantity> spreadWeights = Optional.ofNullable(extractWeightNetOrNull(attributeStorage))
+						.map(weightNet -> weightNet.spreadEqually(logicalNumberOfTUs))
 						.orElse(null);
 
-				// Calculate remaining values for the last TU to avoid rounding errors
-				final ImmutableMap<ProductId, Quantity> remainingProductQtys = calculateRemainingQuantities(
-						productsAndQuantities,
-						productsAndQuantitiesPerHU,
-						logicalNumberOfTUs - 1);
-
-				final Quantity remainingWeightNet = calculateRemainingWeight(
-						extractWeightNetOrNull(attributeStorage),
-						weightNetPerHU,
-						logicalNumberOfTUs - 1);
-
-				// Build N-1 children with divided quantities
 				for (int i = 0; i < logicalNumberOfTUs; i++)
 				{
-					final boolean isLastChild = (i == logicalNumberOfTUs - 1);
-					final ImmutableMap<ProductId, Quantity> qtysForThisChild = isLastChild ? remainingProductQtys : productsAndQuantitiesPerHU;
-					final Quantity weightForThisChild = isLastChild ? remainingWeightNet : weightNetPerHU;
+					final int index = i;
+					final ImmutableMap<ProductId, Quantity> qtysForThisChild = productsAndQuantities.keySet().stream()
+							.collect(ImmutableMap.toImmutableMap(
+									productId -> productId,
+									productId -> spreadProductQuantities.get(productId).get(index)));
+
+					final Quantity weightForThisChild = spreadWeights != null ? spreadWeights.get(index) : null;
 
 					final HU currentChild = childBuilder.build()
 							.toBuilder()
@@ -260,45 +256,6 @@ public class HURepository
 				}
 			}
 			return Result.CONTINUE;
-		}
-
-		/**
-		 * Calculate remaining quantities: original - (perHU × numberOfTUsBuilt)
-		 */
-		private ImmutableMap<ProductId, Quantity> calculateRemainingQuantities(
-				@NonNull final ImmutableMap<ProductId, Quantity> originalQtys,
-				@NonNull final ImmutableMap<ProductId, Quantity> qtyPerHU,
-				final int numberOfTUsBuilt)
-		{
-			return originalQtys.entrySet()
-					.stream()
-					.collect(ImmutableMap.toImmutableMap(
-							Entry::getKey,
-							entry -> {
-								final ProductId productId = entry.getKey();
-								final Quantity originalQty = entry.getValue();
-								final Quantity perHUQty = qtyPerHU.get(productId);
-								final Quantity distributedQty = perHUQty.multiply(numberOfTUsBuilt);
-								return originalQty.subtract(distributedQty);
-							}));
-		}
-
-		/**
-		 * Calculate remaining weight: original - (perHU × numberOfTUsBuilt)
-		 */
-		@Nullable
-		private Quantity calculateRemainingWeight(
-				@Nullable final Quantity originalWeight,
-				@Nullable final Quantity weightPerHU,
-				final int numberOfTUsBuilt)
-		{
-			if (originalWeight == null || weightPerHU == null)
-			{
-				return null;
-			}
-
-			final Quantity distributedWeight = weightPerHU.multiply(numberOfTUsBuilt);
-			return originalWeight.subtract(distributedWeight);
 		}
 
 		private ImmutableMap<ProductId, Quantity> extractProductsAndQuantities(@NonNull final I_M_HU huRecord)
@@ -326,20 +283,6 @@ public class HURepository
 			{
 				return null;
 			}
-		}
-
-		private ImmutableMap<ProductId, Quantity> divideQuantities(
-				@NonNull final ImmutableMap<ProductId, Quantity> productsAndQuantities,
-				final int divisor)
-		{
-			final ImmutableSet<Entry<ProductId, Quantity>> entrySet = productsAndQuantities.entrySet();
-			final BigDecimal divisorBD = new BigDecimal(divisor);
-			return entrySet
-					.stream()
-					.collect(ImmutableMap.toImmutableMap(
-							Entry::getKey,
-							e -> e.getValue().divide(divisorBD)));
-
 		}
 
 		@Nullable
