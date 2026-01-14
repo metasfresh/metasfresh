@@ -47,6 +47,7 @@ import static org.compiere.model.X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Test class for {@link IOrderBL#updateASIFromProjectId(I_C_OrderLine)}
@@ -192,7 +193,7 @@ class IOrderBL_UpdateASIFromProjectIdTest
 	}
 
 	@Test
-	void updateASIFromProjectId_WhenASIDoesNotExist_AndProjectIsNull_ShouldCreateASIAndClearProjectAttribute()
+	void updateASIFromProjectId_WhenASIDoesNotExist_AndProjectIsNull_ShouldNotCreateASI()
 	{
 		// Given
 		final I_M_Product product = createProduct("Product-4");
@@ -204,10 +205,8 @@ class IOrderBL_UpdateASIFromProjectIdTest
 		toBeTested.updateASIFromProjectId(orderLine);
 
 		// Then
-		assertNotNull(orderLine.getM_AttributeSetInstance_ID(), "ASI should be created");
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(orderLine.getM_AttributeSetInstance_ID());
-		final String actualProjectValue = getProjectValueFromASI(asiId);
-		assertNull(actualProjectValue, "Project attribute should be null");
+		assertTrue(asiId.isNone(), "ASI should be none");
 	}
 
 	@Test
