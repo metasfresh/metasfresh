@@ -192,7 +192,7 @@ public interface I_PP_Order_BOMLine
 	 * Set UOM.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -202,7 +202,7 @@ public interface I_PP_Order_BOMLine
 	 * Get UOM.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -389,7 +389,7 @@ public interface I_PP_Order_BOMLine
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Allow Issuing Any Product.
+	 * Set Issue any product.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -398,7 +398,7 @@ public interface I_PP_Order_BOMLine
 	void setIsAllowIssuingAnyProduct (boolean IsAllowIssuingAnyProduct);
 
 	/**
-	 * Get Allow Issuing Any Product.
+	 * Get Issue any product.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -766,6 +766,29 @@ public interface I_PP_Order_BOMLine
 	int getM_Warehouse_ID();
 
 	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
+
+	/**
+	 * Set Picking Instruction.
+	 * Instructions for warehouse operators and manufacturing personnel on how to identify, select, and handle this material component
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPickingInstruction (@Nullable java.lang.String PickingInstruction);
+
+	/**
+	 * Get Picking Instruction.
+	 * Instructions for warehouse operators and manufacturing personnel on how to identify, select, and handle this material component
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPickingInstruction();
+
+	ModelColumn<I_PP_Order_BOMLine, Object> COLUMN_PickingInstruction = new ModelColumn<>(I_PP_Order_BOMLine.class, "PickingInstruction", null);
+	String COLUMNNAME_PickingInstruction = "PickingInstruction";
 
 	/**
 	 * Set Manufacturing Order BOM.

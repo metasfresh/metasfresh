@@ -39,6 +39,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.X_DD_Order;
@@ -106,6 +108,15 @@ public class DDOrderCommand
 		if (request.getSeqNo() != null)
 		{
 			ddOrder.setSeqNo(request.getSeqNo().toInt());
+		}
+
+		if (request.getForwardPPOrder() != null)
+		{
+			ddOrder.setForward_PP_Order_ID(context.getId(request.getForwardPPOrder(), PPOrderId.class).getRepoId());
+		}
+		if (request.getForwardPPOrderBOMLine() != null)
+		{
+			ddOrder.setForward_PP_Order_BOMLine_ID(context.getId(request.getForwardPPOrderBOMLine(), PPOrderBOMLineId.class).getRepoId());
 		}
 
 		ddOrderService.save(ddOrder);
