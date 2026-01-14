@@ -312,6 +312,10 @@ public class C_BPartner_StepDef
 				.map(orgTable::getIdAsInt)
 				.ifPresent(bPartnerRecord::setAD_OrgBP_ID);
 
+		row.getAsOptionalIdentifier(COLUMNNAME_SO_Invoice_Aggregation_ID)
+				.map(aggregationTable::getId)
+				.ifPresent(aggregationId -> bPartnerRecord.setSO_Invoice_Aggregation_ID(aggregationId.getRepoId()));
+
 		final boolean alsoCreateLocation = InterfaceWrapperHelper.isNew(bPartnerRecord) && addDefaultLocationIfNewBPartner;
 
 		InterfaceWrapperHelper.saveRecord(bPartnerRecord);
@@ -335,7 +339,7 @@ public class C_BPartner_StepDef
 			}
 
 			InterfaceWrapperHelper.saveRecord(bPartnerLocationRecord);
-			
+
 			// if a location was cretaed "on-they-fly", add it to bPartnerLocationTable.
 			// if no C_BPartner_Location_ID-identifer was given, use the C_BPartner_ID identifier
 			final StepDefDataIdentifier locationIdentifier =
