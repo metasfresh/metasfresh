@@ -43,7 +43,7 @@ BEGIN
             WHEN 'v' THEN 'VIEW'
             WHEN 'r' THEN 'TABLE'
             WHEN 'm' THEN 'MATERIALIZED VIEW'
-            ELSE 'OBJECT (' || c.relkind || ')'
+            ELSE 'OBJECT (' || c.relkind::text || ')'
         END::TEXT,
         n.nspname::TEXT,
         c.relname::TEXT,
