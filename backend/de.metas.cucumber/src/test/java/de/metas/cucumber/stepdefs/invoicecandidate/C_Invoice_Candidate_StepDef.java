@@ -784,7 +784,7 @@ public class C_Invoice_Candidate_StepDef
 					invoicingParams.setSupplementMissingPaymentTermIds(true);
 					invoicingParams.setUpdateLocationAndContactForInvoice(isUpdateLocationAndContactForInvoice);
 
-					final boolean completeInvoices = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + PARA_IsCompleteInvoices, true);
+					final boolean completeInvoices = row.getAsOptionalBoolean(PARA_IsCompleteInvoices).orElse(true);
 					invoicingParams.setCompleteInvoices(completeInvoices);
 
 					StepDefUtil.tryAndWait(timeoutSec, 500, () -> checkNotMarkedAsToRecompute(invoiceCandidate));
@@ -827,56 +827,38 @@ public class C_Invoice_Candidate_StepDef
 	{
 		final I_C_Invoice_Candidate invoiceCandidateRecord = row.getAsIdentifier(COLUMNNAME_C_Invoice_Candidate_ID).lookupNotNullIn(invoiceCandTable);
 
-		final BigDecimal qtyToInvoiceOverride = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_QtyToInvoice_Override);
-		if (qtyToInvoiceOverride != null)
-		{
-			invoiceCandidateRecord.setQtyToInvoice_Override(qtyToInvoiceOverride);
-		}
+		row.getAsOptionalBigDecimal(I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override)
+				.ifPresent(invoiceCandidateRecord::setQtyToInvoice_Override);
 
-		row.getAsOptionalBigDecimal(COLUMNNAME_PriceEntered_Override).ifPresent(invoiceCandidateRecord::setPriceEntered_Override);
+		row.getAsOptionalBigDecimal(COLUMNNAME_PriceEntered_Override)
+				.ifPresent(invoiceCandidateRecord::setPriceEntered_Override);
 
-		final BigDecimal discountOverride = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_Discount_Override);
-		if (discountOverride != null)
-		{
-			invoiceCandidateRecord.setDiscount_Override(discountOverride);
-		}
+		row.getAsOptionalBigDecimal(COLUMNNAME_Discount_Override)
+				.ifPresent(invoiceCandidateRecord::setDiscount_Override);
 
-		final Timestamp dateToInvoiceOverride = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + COLUMNNAME_DateToInvoice_Override);
-		if (dateToInvoiceOverride != null)
-		{
-			invoiceCandidateRecord.setDateToInvoice_Override(dateToInvoiceOverride);
-		}
+		row.getAsOptionalInstantTimestamp(COLUMNNAME_DateToInvoice_Override)
+				.ifPresent(invoiceCandidateRecord::setDateToInvoice_Override);
 
-		final String invoiceRuleOverride = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_InvoiceRule_Override);
-		if (Check.isNotBlank(invoiceRuleOverride))
-		{
-			invoiceCandidateRecord.setInvoiceRule_Override(invoiceRuleOverride);
-		}
+		row.getAsOptionalString(COLUMNNAME_InvoiceRule_Override)
+				.ifPresent(invoiceCandidateRecord::setInvoiceRule_Override);
 
-		final String taxIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Tax_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(taxIdentifier))
-		{
-			final TaxId taxId = taxTable.getId(taxIdentifier);
-			invoiceCandidateRecord.setC_Tax_Override_ID(taxId.getRepoId());
-		}
+		row.getAsOptionalIdentifier(I_C_Invoice_Candidate.COLUMNNAME_C_Tax_ID)
+				.map(taxTable::getId)
+				.ifPresent(taxId -> invoiceCandidateRecord.setC_Tax_Override_ID(taxId.getRepoId()));
 
-		final BigDecimal qualityDiscountOverride = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_QualityDiscountPercent_Override);
-		if (qualityDiscountOverride != null)
-		{
-			invoiceCandidateRecord.setQualityDiscountPercent_Override(qualityDiscountOverride);
-		}
+		row.getAsOptionalBigDecimal(COLUMNNAME_QualityDiscountPercent_Override)
+				.ifPresent(invoiceCandidateRecord::setQualityDiscountPercent_Override);
 
-		final String docTypeInvoiceName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_DocTypeInvoice_ID + "." + I_C_DocType.COLUMNNAME_Name);
-		if (Check.isNotBlank(docTypeInvoiceName))
-		{
-			final DocTypeId docTypeId = queryBL.createQueryBuilder(I_C_DocType.class)
-					.addEqualsFilter(I_C_DocType.COLUMNNAME_Name, docTypeInvoiceName)
-					.create()
-					.firstId(DocTypeId::ofRepoIdOrNull);
+		row.getAsOptionalString(COLUMNNAME_C_DocTypeInvoice_ID + "." + I_C_DocType.COLUMNNAME_Name)
+				.ifPresent(name -> {
+					final DocTypeId docTypeId = queryBL.createQueryBuilder(I_C_DocType.class)
+							.addEqualsFilter(I_C_DocType.COLUMNNAME_Name, name)
+							.create()
+							.firstId(DocTypeId::ofRepoIdOrNull);
 
-			assertThat(docTypeId).isNotNull();
-			invoiceCandidateRecord.setC_DocTypeInvoice_ID(docTypeId.getRepoId());
-		}
+					assertThat(docTypeId).isNotNull();
+					invoiceCandidateRecord.setC_DocTypeInvoice_ID(docTypeId.getRepoId());
+				});
 
 		saveRecord(invoiceCandidateRecord);
 	}
