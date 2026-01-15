@@ -342,6 +342,7 @@ DO $$
 DECLARE
     v_definition TEXT;
     v_fixed_definition TEXT;
+    v_has_operator_dep BOOLEAN;
 BEGIN
     SELECT definition INTO v_definition
     FROM pg_views
@@ -352,12 +353,31 @@ BEGIN
         RETURN;
     END IF;
 
-    IF v_definition NOT LIKE '%- 1)%' OR v_definition LIKE '%subtractdays%' THEN
-        RAISE NOTICE 'View c_invoice_candidate_v does not need fixing - skipping';
+    -- Skip if view already uses subtractdays (already fixed)
+    IF v_definition LIKE '%subtractdays%' THEN
+        RAISE NOTICE 'View c_invoice_candidate_v already uses subtractdays - skipping';
         RETURN;
     END IF;
 
-    RAISE NOTICE 'Fixing c_invoice_candidate_v...';
+    -- Check if view depends on custom minus operators using pg_depend (most reliable method)
+    SELECT EXISTS(
+        SELECT 1
+        FROM pg_depend d
+        JOIN pg_rewrite r ON r.oid = d.objid
+        JOIN pg_class c ON c.oid = r.ev_class
+        JOIN pg_operator o ON o.oid = d.refobjid
+        JOIN pg_namespace n ON n.oid = o.oprnamespace
+        WHERE c.relname = 'c_invoice_candidate_v'
+          AND n.nspname = 'public'
+          AND o.oprname = '-'
+    ) INTO v_has_operator_dep;
+
+    IF NOT v_has_operator_dep THEN
+        RAISE NOTICE 'View c_invoice_candidate_v has no custom operator dependency - skipping';
+        RETURN;
+    END IF;
+
+    RAISE NOTICE 'Fixing c_invoice_candidate_v (has custom operator dependency)...';
 
     v_fixed_definition := v_definition;
 
