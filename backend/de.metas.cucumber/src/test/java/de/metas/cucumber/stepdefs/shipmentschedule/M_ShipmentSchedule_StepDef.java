@@ -246,8 +246,15 @@ public class M_ShipmentSchedule_StepDef
 		waitUntilValid(timeoutSec, shipmentScheduleIds);
 	}
 
-	public void waitUntilValid(final int timeoutSec, final Collection<ShipmentScheduleId> shipmentScheduleIds) throws InterruptedException
+	private void waitUntilValid(final int timeoutSec, final ShipmentScheduleId shipmentScheduleId) throws InterruptedException
 	{
+		waitUntilValid(timeoutSec, ImmutableSet.of(shipmentScheduleId));
+	}
+
+	private void waitUntilValid(final int timeoutSec, final Collection<ShipmentScheduleId> shipmentScheduleIds) throws InterruptedException
+	{
+		if (shipmentScheduleIds.isEmpty()) {return;}
+
 		final Supplier<Boolean> noRecords = () -> queryBL.createQueryBuilder(I_M_ShipmentSchedule_Recompute.class)
 				.addInArrayFilter(I_M_ShipmentSchedule_Recompute.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleIds)
 				.create()
@@ -256,7 +263,7 @@ public class M_ShipmentSchedule_StepDef
 		StepDefUtil.tryAndWait(timeoutSec, 500, noRecords);
 
 		assertThat(noRecords.get())
-				.as("There are still records in M_ShipmentSchedules_Recompute after %s second timeout", timeoutSec)
+				.as("There are still records in M_ShipmentSchedules_Recompute after %s second timeout -- " + shipmentScheduleIds, timeoutSec)
 				.isTrue();
 	}
 
@@ -289,13 +296,11 @@ public class M_ShipmentSchedule_StepDef
 	}
 
 	@And("^after not more than (.*)s, validate shipment schedules:$")
-	public void validate_shipment_schedule(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	public void validateShipmentSchedules(final int timeoutSec, @NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			validateShipmentSchedule(timeoutSec, tableRow);
-		}
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID)
+				.forEach(row -> validateShipmentSchedule(timeoutSec, row));
 	}
 
 	@And("recompute shipment schedules")
@@ -620,7 +625,7 @@ public class M_ShipmentSchedule_StepDef
 		saveRecord(shipmentScheduleRecord);
 	}
 
-	private void validateShipmentSchedule(final int timeoutSec, @NonNull final Map<String, String> tableRow) throws InterruptedException
+	private void validateShipmentSchedule(final int timeoutSec, @NonNull final DataTableRow tableRow) throws InterruptedException
 	{
 		final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered);
 		final BigDecimal qtyReserved = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyReserved);
@@ -632,14 +637,17 @@ public class M_ShipmentSchedule_StepDef
 		final Boolean isProcessed = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_Processed, null);
 		final Boolean isClosed = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_IsClosed, null);
 
-		final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ".Identifier");
-		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
+		final StepDefDataIdentifier shipmentScheduleIdentifier = tableRow.getAsIdentifier(COLUMNNAME_M_ShipmentSchedule_ID);
+		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleIdentifier.lookupNotNullIn(shipmentScheduleTable);
+		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
+
+		waitUntilValid(timeoutSec, shipmentScheduleId);
 
 		final Supplier<Boolean> isShipmentScheduleFound = () -> {
 			final IQueryBuilder<I_M_ShipmentSchedule> queryBuilder = queryBL
 					.createQueryBuilder(I_M_ShipmentSchedule.class)
 					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID());
+					.addEqualsFilter(COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId);
 			if (qtyToDeliver != null)
 			{
 				queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver, qtyToDeliver);
