@@ -301,24 +301,24 @@ BEGIN
     END IF;
 
     RAISE NOTICE 'Fixing m_hu_bestbefore_v (has custom operator dependency)...';
-    RAISE NOTICE 'View definition snippet: %', substring(v_definition from 1 for 200);
+    RAISE NOTICE 'View definition snippet: %', substring(v_definition from 1 for 500);
 
     v_fixed_definition := v_definition;
 
     -- Replace the subtraction pattern with subtractdays function
-    -- Use regex to handle potential whitespace variations around the minus sign
-    -- Pattern: t.hu_bestbeforedate - max(t.guaranteedaysmin)
+    -- Actual pattern in pg_views: ((t.hu_bestbeforedate)::timestamp with time zone - max(t.guaranteedaysmin))
+    -- Note: pg_views adds explicit cast to timestamp with time zone
     v_fixed_definition := regexp_replace(v_fixed_definition,
-        E't\\.hu_bestbeforedate\\s*-\\s*max\\(t\\.guaranteedaysmin\\)',
-        'subtractdays(t.hu_bestbeforedate, max(t.guaranteedaysmin))',
+        E'\\(t\\.hu_bestbeforedate\\)::timestamp with time zone\\s*-\\s*max\\(t\\.guaranteedaysmin\\)',
+        'subtractdays((t.hu_bestbeforedate)::timestamp with time zone, max(t.guaranteedaysmin))',
         'gi');
 
     -- Verify the replacement was made
     IF v_fixed_definition = v_definition THEN
-        RAISE NOTICE 'WARNING: Pattern replacement did not change definition, trying alternative pattern...';
-        -- Try with different whitespace patterns
+        RAISE NOTICE 'WARNING: First pattern did not match, trying without cast...';
+        -- Try without explicit timestamp cast
         v_fixed_definition := regexp_replace(v_fixed_definition,
-            E'hu_bestbeforedate\\s*-\\s*max\\s*\\(\\s*t\\.guaranteedaysmin\\s*\\)',
+            E't\\.hu_bestbeforedate\\s*-\\s*max\\(t\\.guaranteedaysmin\\)',
             'subtractdays(t.hu_bestbeforedate, max(t.guaranteedaysmin))',
             'gi');
     END IF;
