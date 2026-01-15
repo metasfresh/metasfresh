@@ -77,10 +77,7 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public class HUAttributesBL implements IHUAttributesBL
 {
@@ -307,7 +304,7 @@ public class HUAttributesBL implements IHUAttributesBL
 	}
 
 	@Override
-	public Optional<Object> extractCommonAttributeValue(final ImmutableSet<HuId> huIds, final AttributeCode attributeCode)
+	public Optional<String> extractCommonAttributeValue(final ImmutableSet<HuId> huIds, final AttributeCode attributeCode)
 	{
 		if (huIds.isEmpty())
 		{
@@ -320,18 +317,7 @@ public class HUAttributesBL implements IHUAttributesBL
 			return Optional.empty();
 		}
 
-		final Set<Object> distinctAttrValues = huAttributesDAO.retrieveAllAttributesNoCache(huIds)
-				.stream()
-				.filter(huAttr -> AttributeId.equals(AttributeId.ofRepoId(huAttr.getM_Attribute_ID()), attributeId))
-				.map(I_M_HU_Attribute::getValue)
-				.filter(Objects::nonNull)
-				.collect(Collectors.toSet());
-
-		if (distinctAttrValues.size() == 1)
-		{
-			return Optional.of(distinctAttrValues.iterator().next());
-		}
-		return Optional.empty();
+		return huAttributesDAO.extractCommonStringAttributeValue(huIds, attributeId);
 	}
 
 	@Override

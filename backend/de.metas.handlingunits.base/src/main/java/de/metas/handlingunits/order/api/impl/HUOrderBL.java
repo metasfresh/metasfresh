@@ -545,7 +545,6 @@ public class HUOrderBL implements IHUOrderBL
 			return;
 		}
 		final ProjectId projectId = huAttributesBL.extractCommonAttributeValue(huIds, AttributeConstants.ATTR_Project)
-				.map(Object::toString)
 				.map(projectRepo::getIdByValueOrNull)
 				.orElse(null);
 

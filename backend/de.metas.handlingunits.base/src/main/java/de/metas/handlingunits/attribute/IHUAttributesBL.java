@@ -104,7 +104,7 @@ public interface IHUAttributesBL extends ISingletonService
 
 	void validateMandatoryPickingAttributes(HuId huId, ProductId productId);
 
-	Optional<Object> extractCommonAttributeValue(ImmutableSet<HuId> huIds, AttributeCode attributeCode);
+	Optional<String> extractCommonAttributeValue(ImmutableSet<HuId> huIds, AttributeCode attributeCode);
 
 	boolean areMandatoryPickingAttributesFulfilled(@NonNull HuId huId,
 												   @NonNull ProductId productId);
