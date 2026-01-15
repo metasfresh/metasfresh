@@ -325,19 +325,20 @@ BEGIN
 
     v_fixed_definition := v_definition;
 
-    -- Apply fixes - only for - 1 patterns, NOT + 14 patterns
-    v_fixed_definition := replace(v_fixed_definition,
-        'si.invoicedaycutoff) - 1))',
-        'si.invoicedaycutoff), 1))');
-    v_fixed_definition := replace(v_fixed_definition,
-        'si.invoiceday) - 1)))',
-        'si.invoiceday), 1)))');
-    v_fixed_definition := replace(v_fixed_definition,
-        '(((firstof(getdate()',
-        'subtractdays(((firstof(getdate()');
-    v_fixed_definition := replace(v_fixed_definition,
-        '(((firstof((o.dateordered)',
-        'subtractdays(((firstof((o.dateordered)');
+    -- Fix patterns using regex to handle ONLY the "- 1)" subtractions, NOT the "+ 14" additions
+    -- Pattern 1: ((firstof(getdate()...) + si.invoicedaycutoff) - 1))
+    -- Transform to: subtractdays(((firstof(getdate()...) + si.invoicedaycutoff), 1))
+    v_fixed_definition := regexp_replace(v_fixed_definition,
+        E'\\(\\(\\(firstof\\(getdate\\(\\),([^)]+)\\)\\)::timestamp with time zone \\+ si\\.invoicedaycutoff\\) - 1\\)\\)',
+        E'subtractdays(((firstof(getdate(),\\1))::timestamp with time zone + si.invoicedaycutoff), 1))',
+        'g');
+
+    -- Pattern 2: ((firstof((o.dateordered)...) + si.invoiceday) - 1)))
+    -- Transform to: subtractdays(((firstof((o.dateordered)...) + si.invoiceday), 1)))
+    v_fixed_definition := regexp_replace(v_fixed_definition,
+        E'\\(\\(\\(firstof\\(\\(o\\.dateordered\\),([^)]+)\\)\\)::timestamp with time zone \\+ si\\.invoiceday\\) - 1\\)\\)\\)',
+        E'subtractdays(((firstof((o.dateordered),\\1))::timestamp with time zone + si.invoiceday), 1)))',
+        'g');
 
     DROP VIEW IF EXISTS public.c_invoice_candidate_v;
     EXECUTE 'CREATE OR REPLACE VIEW public.c_invoice_candidate_v AS ' || v_fixed_definition;
