@@ -258,38 +258,7 @@ END $$;
 
 
 -- ============================================================================
--- STEP 3: Pre-flight check - verify all operators can be dropped
--- ============================================================================
-
-DO $$
-DECLARE
-    v_rec RECORD;
-    v_has_blockers BOOLEAN := FALSE;
-BEGIN
-    FOR v_rec IN SELECT * FROM migration_test_drop_operators() WHERE NOT can_drop
-    LOOP
-        v_has_blockers := TRUE;
-        RAISE WARNING 'Cannot drop operator %: %', v_rec.operator_signature, v_rec.blocking_reason;
-    END LOOP;
-
-    IF v_has_blockers THEN
-        RAISE NOTICE '';
-        RAISE NOTICE 'Blocked dependencies found. Checking affected objects...';
-        FOR v_rec IN SELECT * FROM migration_find_all_affected_objects()
-        LOOP
-            RAISE NOTICE '  % %.% - % (%)',
-                v_rec.object_type, v_rec.schema_name, v_rec.object_name,
-                v_rec.pattern_found, v_rec.action_needed;
-        END LOOP;
-        RAISE EXCEPTION 'Migration blocked: Fix all dependencies before dropping operators. Do NOT use CASCADE.';
-    END IF;
-
-    RAISE NOTICE 'Pre-flight check passed: All operators can be safely dropped.';
-END $$;
-
-
--- ============================================================================
--- STEP 4: Fix m_hu_bestbefore_v if it exists and uses custom operators
+-- STEP 3: Fix m_hu_bestbefore_v if it exists and uses custom operators
 -- ============================================================================
 
 DO $$
@@ -330,7 +299,7 @@ END $$;
 
 
 -- ============================================================================
--- STEP 5: Fix c_invoice_candidate_v if it exists and uses custom operators
+-- STEP 4: Fix c_invoice_candidate_v if it exists and uses custom operators
 -- ============================================================================
 
 DO $$
@@ -378,6 +347,37 @@ END $$;
 
 
 -- ============================================================================
+-- STEP 5: Pre-flight check - verify all operators can be dropped
+-- ============================================================================
+
+DO $$
+DECLARE
+    v_rec RECORD;
+    v_has_blockers BOOLEAN := FALSE;
+BEGIN
+    FOR v_rec IN SELECT * FROM migration_test_drop_operators() WHERE NOT can_drop
+    LOOP
+        v_has_blockers := TRUE;
+        RAISE WARNING 'Cannot drop operator %: %', v_rec.operator_signature, v_rec.blocking_reason;
+    END LOOP;
+
+    IF v_has_blockers THEN
+        RAISE NOTICE '';
+        RAISE NOTICE 'Blocked dependencies found. Checking affected objects...';
+        FOR v_rec IN SELECT * FROM migration_find_all_affected_objects()
+        LOOP
+            RAISE NOTICE '  % %.% - % (%)',
+                v_rec.object_type, v_rec.schema_name, v_rec.object_name,
+                v_rec.pattern_found, v_rec.action_needed;
+        END LOOP;
+        RAISE EXCEPTION 'Migration blocked: Fix all dependencies before dropping operators. Do NOT use CASCADE.';
+    END IF;
+
+    RAISE NOTICE 'Pre-flight check passed: All operators can be safely dropped.';
+END $$;
+
+
+-- ============================================================================
 -- STEP 6: Drop custom operators (NO CASCADE - must fail if dependencies exist)
 -- ============================================================================
 
@@ -388,7 +388,7 @@ DROP OPERATOR IF EXISTS public.- (numeric, interval);
 
 
 -- ============================================================================
--- STEP 7: Verification
+-- STEP 7: Verification - ensure all operators were removed
 -- ============================================================================
 
 DO $$
