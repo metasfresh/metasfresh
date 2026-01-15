@@ -36,7 +36,8 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Transpo
                 packageweight    numeric,
                 packagenetweight numeric,
                 paletno          varchar,
-                order_docno      varchar
+                order_docno      varchar,
+                note             text
             )
 AS
 $$
@@ -51,7 +52,8 @@ SELECT bp.name                                                                  
        shippingPackage.packageweight,
        piip.qty * p.weight * (CASE WHEN TU IS NOT NULL AND TU > 0 THEN TU ELSE shippingPackage.QtyTU END) AS packagenetweight,
        sscc18_extract_serialnumber(package.ipa_sscc18::TEXT)                                              AS paletno,
-       o.documentno                                                                                       AS order_docno
+       o.documentno                                                                                       AS order_docno,
+       shippingPackage.note
 
 FROM M_ShippingPackage shippingPackage
          INNER JOIN C_BPartner bp ON shippingPackage.C_BPartner_ID = bp.C_BPartner_ID
