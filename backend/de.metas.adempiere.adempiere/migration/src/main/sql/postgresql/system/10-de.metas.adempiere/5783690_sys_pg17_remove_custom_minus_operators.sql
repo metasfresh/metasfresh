@@ -276,7 +276,8 @@ BEGIN
     END IF;
 
     -- Check if view uses the problematic pattern: date - number (for GuaranteeDaysMin)
-    IF v_definition NOT LIKE '%HU_BestBeforeDate - %' OR v_definition LIKE '%subtractdays%' THEN
+    -- Note: pg_views returns lowercase column names, so use lowercase in pattern
+    IF v_definition NOT LIKE '%hu_bestbeforedate - %' OR v_definition LIKE '%subtractdays%' THEN
         RAISE NOTICE 'View m_hu_bestbefore_v does not need fixing - skipping';
         RETURN;
     END IF;
