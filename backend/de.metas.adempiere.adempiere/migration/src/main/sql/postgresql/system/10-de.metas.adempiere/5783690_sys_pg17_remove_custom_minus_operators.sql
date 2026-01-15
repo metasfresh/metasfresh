@@ -265,6 +265,7 @@ DO $$
 DECLARE
     v_definition TEXT;
     v_fixed_definition TEXT;
+    v_has_operator_dep BOOLEAN;
 BEGIN
     SELECT definition INTO v_definition
     FROM pg_views
@@ -275,22 +276,56 @@ BEGIN
         RETURN;
     END IF;
 
-    -- Check if view uses the problematic pattern: date - number (for GuaranteeDaysMin)
-    -- Note: pg_views returns lowercase column names, so use lowercase in pattern
-    IF v_definition NOT LIKE '%hu_bestbeforedate - %' OR v_definition LIKE '%subtractdays%' THEN
-        RAISE NOTICE 'View m_hu_bestbefore_v does not need fixing - skipping';
+    -- Skip if view already uses subtractdays (already fixed)
+    IF v_definition LIKE '%subtractdays%' THEN
+        RAISE NOTICE 'View m_hu_bestbefore_v already uses subtractdays - skipping';
         RETURN;
     END IF;
 
-    RAISE NOTICE 'Fixing m_hu_bestbefore_v...';
+    -- Check if view depends on custom minus operators using pg_depend (most reliable method)
+    SELECT EXISTS(
+        SELECT 1
+        FROM pg_depend d
+        JOIN pg_rewrite r ON r.oid = d.objid
+        JOIN pg_class c ON c.oid = r.ev_class
+        JOIN pg_operator o ON o.oid = d.refobjid
+        JOIN pg_namespace n ON n.oid = o.oprnamespace
+        WHERE c.relname = 'm_hu_bestbefore_v'
+          AND n.nspname = 'public'
+          AND o.oprname = '-'
+    ) INTO v_has_operator_dep;
+
+    IF NOT v_has_operator_dep THEN
+        RAISE NOTICE 'View m_hu_bestbefore_v has no custom operator dependency - skipping';
+        RETURN;
+    END IF;
+
+    RAISE NOTICE 'Fixing m_hu_bestbefore_v (has custom operator dependency)...';
+    RAISE NOTICE 'View definition snippet: %', substring(v_definition from 1 for 200);
 
     v_fixed_definition := v_definition;
 
-    -- Replace: t.HU_BestBeforeDate - max(t.GuaranteeDaysMin) as HU_ExpiredWarnDate
-    -- With:    subtractdays(t.HU_BestBeforeDate, max(t.GuaranteeDaysMin)) as HU_ExpiredWarnDate
-    v_fixed_definition := replace(v_fixed_definition,
-        't.hu_bestbeforedate - max(t.guaranteedaysmin)',
-        'subtractdays(t.hu_bestbeforedate, max(t.guaranteedaysmin))');
+    -- Replace the subtraction pattern with subtractdays function
+    -- Use regex to handle potential whitespace variations around the minus sign
+    -- Pattern: t.hu_bestbeforedate - max(t.guaranteedaysmin)
+    v_fixed_definition := regexp_replace(v_fixed_definition,
+        E't\\.hu_bestbeforedate\\s*-\\s*max\\(t\\.guaranteedaysmin\\)',
+        'subtractdays(t.hu_bestbeforedate, max(t.guaranteedaysmin))',
+        'gi');
+
+    -- Verify the replacement was made
+    IF v_fixed_definition = v_definition THEN
+        RAISE NOTICE 'WARNING: Pattern replacement did not change definition, trying alternative pattern...';
+        -- Try with different whitespace patterns
+        v_fixed_definition := regexp_replace(v_fixed_definition,
+            E'hu_bestbeforedate\\s*-\\s*max\\s*\\(\\s*t\\.guaranteedaysmin\\s*\\)',
+            'subtractdays(t.hu_bestbeforedate, max(t.guaranteedaysmin))',
+            'gi');
+    END IF;
+
+    IF v_fixed_definition = v_definition THEN
+        RAISE EXCEPTION 'Failed to replace subtraction pattern in m_hu_bestbefore_v. View definition: %', v_definition;
+    END IF;
 
     DROP VIEW IF EXISTS public.m_hu_bestbefore_v;
     EXECUTE 'CREATE OR REPLACE VIEW public.m_hu_bestbefore_v AS ' || v_fixed_definition;
