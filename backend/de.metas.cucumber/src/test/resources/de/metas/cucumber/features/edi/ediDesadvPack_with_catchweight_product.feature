@@ -1,5 +1,8 @@
 @from:cucumber
 @ghActions:run_on_executor4
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00350_EDI
+@F00350
 Feature: DESADV - mobileUI Picking - Pick catch weight products
 
   Background:
