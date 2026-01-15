@@ -202,3 +202,46 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 -- 2026-01-14T14:36:06.859Z
 UPDATE AD_Column SET ReadOnlyLogic='1=1',Updated=TO_TIMESTAMP('2026-01-14 14:36:06.859000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591859
 ;
+
+-- Element: IsFactorer
+-- 2026-01-15T10:41:38.632Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Factorer', PrintName='Factorer',Updated=TO_TIMESTAMP('2026-01-15 10:41:38.632000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584394 AND AD_Language='de_DE'
+;
+
+-- 2026-01-15T10:41:38.713Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='de_DE' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2026-01-15T10:41:47.367Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(584394,'de_DE')
+;
+
+-- 2026-01-15T10:41:47.531Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584394,'de_DE')
+;
+
+-- Element: IsFactorer
+-- 2026-01-15T10:41:59.276Z
+UPDATE AD_Element_Trl SET Name='Factorer', PrintName='Factorer',Updated=TO_TIMESTAMP('2026-01-15 10:41:59.276000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584394 AND AD_Language='en_US'
+;
+
+-- 2026-01-15T10:41:59.361Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2026-01-15T10:42:08.841Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584394,'en_US')
+;
+
+-- Element: IsFactorer
+-- 2026-01-15T10:42:23.334Z
+UPDATE AD_Element_Trl SET Description='Factoring is a financial transaction and a type of debtor finance in which a business sells its accounts receivable (i.e., invoices) to a third party (called a Factorer).', Help='Factoring is a financial transaction and a type of debtor finance in which a business sells its accounts receivable (i.e., invoices) to a third party (called a Factorer).',Updated=TO_TIMESTAMP('2026-01-15 10:42:23.334000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584394 AND AD_Language='en_US'
+;
+
+-- 2026-01-15T10:42:23.406Z
+UPDATE AD_Element base SET Description=trl.Description, Help=trl.Help, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2026-01-15T10:42:35.301Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584394,'en_US')
+;
