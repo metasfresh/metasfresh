@@ -61,6 +61,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
@@ -305,20 +306,32 @@ public class HUAttributesBL implements IHUAttributesBL
 		}
 	}
 
-	@Nullable
 	@Override
-	public Object extractCommonAttributeValueOrNull(final ImmutableSet<HuId> huIds, final AttributeCode attributeCode)
+	public Optional<Object> extractCommonAttributeValue(final ImmutableSet<HuId> huIds, final AttributeCode attributeCode)
 	{
-		final Set<Object> distinctAttrValues = handlingUnitsDAO.getByIds(huIds)
+		if (huIds.isEmpty())
+		{
+			return Optional.empty();
+		}
+
+		final AttributeId attributeId = attributeDAO.retrieveActiveAttributeIdByValueOrNull(attributeCode);
+		if (attributeId == null)
+		{
+			return Optional.empty();
+		}
+
+		final Set<Object> distinctAttrValues = huAttributesDAO.retrieveAllAttributesNoCache(huIds)
 				.stream()
-				.map(hu -> getHUAttributeValue(hu, attributeCode))
+				.filter(huAttr -> AttributeId.equals(AttributeId.ofRepoId(huAttr.getM_Attribute_ID()), attributeId))
+				.map(I_M_HU_Attribute::getValue)
 				.filter(Objects::nonNull)
 				.collect(Collectors.toSet());
+
 		if (distinctAttrValues.size() == 1)
 		{
-			return distinctAttrValues.iterator().next();
+			return Optional.of(distinctAttrValues.iterator().next());
 		}
-		return null;
+		return Optional.empty();
 	}
 
 	@Override

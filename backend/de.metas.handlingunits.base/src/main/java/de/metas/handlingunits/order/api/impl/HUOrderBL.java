@@ -67,7 +67,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Date;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Consumer;
 
@@ -545,7 +544,7 @@ public class HUOrderBL implements IHUOrderBL
 			setProjectIdAndSave(orderLine, null);
 			return;
 		}
-		final ProjectId projectId = Optional.ofNullable(huAttributesBL.extractCommonAttributeValueOrNull(huIds, AttributeConstants.ATTR_Project))
+		final ProjectId projectId = huAttributesBL.extractCommonAttributeValue(huIds, AttributeConstants.ATTR_Project)
 				.map(Object::toString)
 				.map(projectRepo::getIdByValueOrNull)
 				.orElse(null);

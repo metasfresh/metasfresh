@@ -35,6 +35,7 @@ import org.compiere.model.I_M_Attribute;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Optional;
 
 public interface IHUAttributesBL extends ISingletonService
 {
@@ -103,8 +104,7 @@ public interface IHUAttributesBL extends ISingletonService
 
 	void validateMandatoryPickingAttributes(HuId huId, ProductId productId);
 
-	@Nullable
-	Object extractCommonAttributeValueOrNull(ImmutableSet<HuId> huIds, AttributeCode attributeCode);
+	Optional<Object> extractCommonAttributeValue(ImmutableSet<HuId> huIds, AttributeCode attributeCode);
 
 	boolean areMandatoryPickingAttributesFulfilled(@NonNull HuId huId,
 												   @NonNull ProductId productId);
