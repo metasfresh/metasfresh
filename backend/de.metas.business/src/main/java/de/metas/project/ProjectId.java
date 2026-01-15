@@ -34,6 +34,8 @@ import java.util.Objects;
 @Value
 public class ProjectId implements RepoIdAware
 {
+	public static int NO_PROJECT_REPO_ID = -1;
+
 	@JsonCreator
 	public static ProjectId ofRepoId(final int repoId)
 	{
@@ -54,7 +56,7 @@ public class ProjectId implements RepoIdAware
 
 	public static int toRepoId(@Nullable final ProjectId id)
 	{
-		return id != null ? id.getRepoId() : -1;
+		return id != null ? id.getRepoId() : NO_PROJECT_REPO_ID;
 	}
 
 	int repoId;

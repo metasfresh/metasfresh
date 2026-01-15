@@ -23,6 +23,7 @@
 package de.metas.handlingunits.attribute.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HuId;
@@ -75,7 +76,10 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class HUAttributesBL implements IHUAttributesBL
 {
@@ -299,6 +303,22 @@ public class HUAttributesBL implements IHUAttributesBL
 				throw new AdempiereException(messageKey, attribute.getDisplayName(), productName);
 			}
 		}
+	}
+
+	@Nullable
+	@Override
+	public Object extractCommonAttributeValueOrNull(final ImmutableSet<HuId> huIds, final AttributeCode attributeCode)
+	{
+		final Set<Object> distinctAttrValues = handlingUnitsDAO.getByIds(huIds)
+				.stream()
+				.map(hu -> getHUAttributeValue(hu, attributeCode))
+				.filter(Objects::nonNull)
+				.collect(Collectors.toSet());
+		if (distinctAttrValues.size() == 1)
+		{
+			return distinctAttrValues.iterator().next();
+		}
+		return null;
 	}
 
 	@Override
