@@ -102,6 +102,9 @@ Feature: Make sure C_Invoice_Candidate.QtyToInvoice_Override is respected
     And update invoice candidates
       | C_Invoice_Candidate_ID | QtyToInvoice_Override |
       | ic_1                   | 90                    |
+    And validate invoice candidate
+      | C_Invoice_Candidate_ID.Identifier | QtyToInvoice |
+      | ic_1                              | 90           |
     And process invoice candidates
       | C_Invoice_Candidate_ID |
       | ic_1                   |
