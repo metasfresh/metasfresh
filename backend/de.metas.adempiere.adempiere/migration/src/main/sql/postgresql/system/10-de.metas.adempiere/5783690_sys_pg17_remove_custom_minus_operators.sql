@@ -289,7 +289,48 @@ END $$;
 
 
 -- ============================================================================
--- STEP 4: Fix c_invoice_candidate_v if it exists and uses custom operators
+-- STEP 4: Fix m_hu_bestbefore_v if it exists and uses custom operators
+-- ============================================================================
+
+DO $$
+DECLARE
+    v_definition TEXT;
+    v_fixed_definition TEXT;
+BEGIN
+    SELECT definition INTO v_definition
+    FROM pg_views
+    WHERE schemaname = 'public' AND viewname = 'm_hu_bestbefore_v';
+
+    IF v_definition IS NULL THEN
+        RAISE NOTICE 'View m_hu_bestbefore_v does not exist - skipping';
+        RETURN;
+    END IF;
+
+    -- Check if view uses the problematic pattern: date - number (for GuaranteeDaysMin)
+    IF v_definition NOT LIKE '%HU_BestBeforeDate - %' OR v_definition LIKE '%subtractdays%' THEN
+        RAISE NOTICE 'View m_hu_bestbefore_v does not need fixing - skipping';
+        RETURN;
+    END IF;
+
+    RAISE NOTICE 'Fixing m_hu_bestbefore_v...';
+
+    v_fixed_definition := v_definition;
+
+    -- Replace: t.HU_BestBeforeDate - max(t.GuaranteeDaysMin) as HU_ExpiredWarnDate
+    -- With:    subtractdays(t.HU_BestBeforeDate, max(t.GuaranteeDaysMin)) as HU_ExpiredWarnDate
+    v_fixed_definition := replace(v_fixed_definition,
+        't.hu_bestbeforedate - max(t.guaranteedaysmin)',
+        'subtractdays(t.hu_bestbeforedate, max(t.guaranteedaysmin))');
+
+    DROP VIEW IF EXISTS public.m_hu_bestbefore_v;
+    EXECUTE 'CREATE OR REPLACE VIEW public.m_hu_bestbefore_v AS ' || v_fixed_definition;
+
+    RAISE NOTICE 'View m_hu_bestbefore_v fixed successfully';
+END $$;
+
+
+-- ============================================================================
+-- STEP 5: Fix c_invoice_candidate_v if it exists and uses custom operators
 -- ============================================================================
 
 DO $$
@@ -337,7 +378,7 @@ END $$;
 
 
 -- ============================================================================
--- STEP 5: Drop custom operators (NO CASCADE - must fail if dependencies exist)
+-- STEP 6: Drop custom operators (NO CASCADE - must fail if dependencies exist)
 -- ============================================================================
 
 DROP OPERATOR IF EXISTS public.- (timestamptz, numeric);
@@ -347,7 +388,7 @@ DROP OPERATOR IF EXISTS public.- (numeric, interval);
 
 
 -- ============================================================================
--- STEP 6: Verification
+-- STEP 7: Verification
 -- ============================================================================
 
 DO $$
