@@ -84,14 +84,18 @@ from de_metas_endcustomer_fresh_reports.Docs_Sales_TransportOrder_Package_Detail
 	<detail>
 		<band height="182">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="37" y="45" width="47" height="16" uuid="2eee60aa-f3f6-4bde-bb6a-7a1a3fcb258a"/>
+				<reportElement positionType="Float" x="37" y="45" width="47" height="16" uuid="2eee60aa-f3f6-4bde-bb6a-7a1a3fcb258a">
+					<printWhenExpression><![CDATA[$F{cu_per_tu}!=null]]></printWhenExpression>
+				</reportElement>
 				<textElement textAlignment="Center" verticalAlignment="Bottom" markup="none">
 					<font fontName="Arial" size="12" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{cu_per_tu}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="###0.##" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="37" y="60" width="47" height="20" uuid="c11e598f-9ca6-40ba-ae82-afdc6e13c4a4"/>
+				<reportElement positionType="Float" x="37" y="60" width="47" height="20" uuid="c11e598f-9ca6-40ba-ae82-afdc6e13c4a4">
+					<printWhenExpression><![CDATA[$F{cu_per_tu}!=null]]></printWhenExpression>
+				</reportElement>
 				<textElement textAlignment="Center">
 					<font fontName="Arial" size="15" isBold="true"/>
 				</textElement>
@@ -112,14 +116,18 @@ from de_metas_endcustomer_fresh_reports.Docs_Sales_TransportOrder_Package_Detail
 				<textFieldExpression><![CDATA[$R{tu_per_lu}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="###0.00 kg" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="152" y="59" width="84" height="20" uuid="d5b2b16f-343b-4dd4-b05f-61daa5f8df23"/>
+				<reportElement positionType="Float" x="152" y="59" width="84" height="20" uuid="d5b2b16f-343b-4dd4-b05f-61daa5f8df23">
+					<printWhenExpression><![CDATA[$F{cu_per_tu}!=null]]></printWhenExpression>
+				</reportElement>
 				<textElement>
 					<font fontName="Arial" size="15" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{packagenetweight}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="152" y="44" width="84" height="16" uuid="ef0655da-df42-4cec-812f-3cbf3bb834db"/>
+				<reportElement positionType="Float" x="152" y="44" width="84" height="16" uuid="ef0655da-df42-4cec-812f-3cbf3bb834db">
+					<printWhenExpression><![CDATA[$F{cu_per_tu}!=null]]></printWhenExpression>
+				</reportElement>
 				<textElement verticalAlignment="Bottom" markup="none">
 					<font fontName="Arial" size="12" isBold="false"/>
 				</textElement>
@@ -167,7 +175,7 @@ from de_metas_endcustomer_fresh_reports.Docs_Sales_TransportOrder_Package_Detail
 					<printWhenExpression><![CDATA[$F{order_docno}!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Left">
-					<font fontName="Arial" size="13" isBold="false"/>
+					<font fontName="Arial" size="13" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{order_docno}]]></textFieldExpression>
 			</textField>

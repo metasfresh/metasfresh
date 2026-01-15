@@ -43,16 +43,16 @@ AS
 $$
 
 
-SELECT bp.name                                                                                            AS BPName,
-       bpl.address                                                                                        AS BPAddress,
-       package.ipa_sscc18                                                                                 AS sscc,
-       piip.qty                                                                                           AS cu_per_tu,
-       (CASE WHEN TU IS NOT NULL AND TU > 0 THEN TU ELSE shippingPackage.QtyTU END)                       AS QtyTU,
-       (CASE WHEN LU IS NOT NULL AND LU > 0 THEN LU ELSE shippingPackage.QtyLU END)                       AS QtyLU,
+SELECT bp.name                                                                                                                      AS BPName,
+       bpl.address                                                                                                                  AS BPAddress,
+       package.ipa_sscc18                                                                                                           AS sscc,
+       piip.qty                                                                                                                     AS cu_per_tu,
+       (CASE WHEN TU IS NOT NULL AND TU > 0 THEN TU ELSE shippingPackage.QtyTU END)                                                 AS QtyTU,
+       (CASE WHEN LU IS NOT NULL AND LU > 0 THEN LU ELSE shippingPackage.QtyLU END)                                                 AS QtyLU,
        shippingPackage.packageweight,
-       piip.qty * p.weight * (CASE WHEN TU IS NOT NULL AND TU > 0 THEN TU ELSE shippingPackage.QtyTU END) AS packagenetweight,
-       sscc18_extract_serialnumber(package.ipa_sscc18::TEXT)                                              AS paletno,
-       o.documentno                                                                                       AS order_docno,
+       COALESCE(piip.qty, 0) * COALESCE(p.weight, 0) * (CASE WHEN TU IS NOT NULL AND TU > 0 THEN TU ELSE shippingPackage.QtyTU END) AS packagenetweight,
+       sscc18_extract_serialnumber(package.ipa_sscc18::TEXT)                                                                        AS paletno,
+       o.documentno                                                                                                                 AS order_docno,
        shippingPackage.note
 
 FROM M_ShippingPackage shippingPackage
