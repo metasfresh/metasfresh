@@ -20,10 +20,10 @@
  * #L%
  */
 
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Invoice_Details_Factoring(IN p_Record_ID numeric)
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Invoice_Factorer_BankDetails(IN p_Record_ID numeric)
 ;
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Invoice_Details_Factoring(IN p_Record_ID numeric)
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Invoice_Factorer_BankDetails(IN p_Record_ID numeric)
     RETURNS TABLE
             (
                 bp_name       character varying,
