@@ -403,6 +403,11 @@ public class CreateProductCommand
 			lineRecord.setQtyBOM(line.getQty());
 		}
 
+		if (line.getPickingInstruction() != null)
+		{
+			lineRecord.setPickingInstruction(line.getPickingInstruction());
+		}
+
 		saveRecord(lineRecord);
 	}
 

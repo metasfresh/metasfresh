@@ -8,6 +8,7 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 @Value
@@ -15,6 +16,7 @@ import java.util.List;
 @Jacksonized
 public class JsonDistributionJob
 {
+	@Nullable String pickingInstruction;
 	@NonNull List<JsonDistributionJobLine> lines;
 	boolean requireScanningProductCode;
 	boolean completeJobAutomatically;
@@ -26,6 +28,7 @@ public class JsonDistributionJob
 			@NonNull final JsonOpts jsonOpts)
 	{
 		return builder()
+				.pickingInstruction(job.getPickingInstruction().translate(jsonOpts.getAdLanguage()))
 				.lines(job.getLines()
 						.stream()
 						.map(line -> JsonDistributionJobLine.of(line, job, jsonOpts))

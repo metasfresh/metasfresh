@@ -1431,11 +1431,13 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
 
     And update M_HU_Attribute:
       | M_HU_ID.Identifier      | M_Attribute_ID | Value        | AttributeValueType |
-      | createdTU_1_1_S0457_020 | 1000017        | luLotNumber1 | S                  |
+      | createdLU_1_S0457_020   | 1000017        | luLotNumber  | S                  |
+      | createdLU_1_S0457_020   | 540020         | 2021-04-18   | D                  |
+      | createdTU_1_1_S0457_020 | 1000017        | tuLotNumber1 | S                  |
       | createdTU_1_1_S0457_020 | 540020         | 2021-04-20   | D                  |
-      | createdTU_1_2_S0457_020 | 1000017        | luLotNumber2 | S                  |
+      | createdTU_1_2_S0457_020 | 1000017        | tuLotNumber2 | S                  |
       | createdTU_1_2_S0457_020 | 540020         | 2021-04-30   | D                  |
-      | createdTU_2_S0457_020   | 1000017        | luLotNumber1 | S                  |
+      | createdTU_2_S0457_020   | 1000017        | tuLotNumber1 | S                  |
       | createdTU_2_S0457_020   | 540020         | 2021-04-20   | D                  |
 
     And metasfresh contains C_BPartner_Product
@@ -1505,9 +1507,9 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
     And validate M_AttributeInstance:
       | M_AttributeSetInstance_ID | AttributeCode     | Value                 |
       | asi_1_S0457_020           | HU_BestBeforeDate | 2021-04-20 00:00:00.0 |
-      | asi_1_S0457_020           | Lot-Nummer        | luLotNumber1          |
+      | asi_1_S0457_020           | Lot-Nummer        | tuLotNumber1          |
       | asi_2_S0457_020           | HU_BestBeforeDate | 2021-04-30 00:00:00.0 |
-      | asi_2_S0457_020           | Lot-Nummer        | luLotNumber2          |
+      | asi_2_S0457_020           | Lot-Nummer        | tuLotNumber2          |
 
     Then after not more than 30s, EDI_Desadv_Pack records are found:
       | EDI_Desadv_Pack_ID | IsManual_IPA_SSCC18 | M_HU_ID               | M_HU_PackagingCode_ID       | GTIN_PackingMaterial | SeqNo | IPA_SSCC18         |
@@ -1516,9 +1518,9 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
 
     And after not more than 30s, the EDI_Desadv_Pack_Item has only the following records:
       | EDI_Desadv_Pack_Item_ID | EDI_Desadv_Pack_ID | MovementQty | M_InOutLine_ID             | QtyCUsPerTU | QtyCUsPerLU | QtyItemCapacity | QtyTU | M_InOut_ID    | BestBeforeDate | LotNumber    | M_HU_PackagingCode_TU_ID    | GTIN_TU_PackingMaterial |
-      | pi_1_1_S0457_020        | p_1_S0457_020      | 10          | shipmentLine_1_1_S0457_020 | 10          | 10          | 10              | 1     | s_1_S0457_020 | 2021-04-20     | luLotNumber1 | huPackagingCode_2_S0457_020 | 4418546988533           |
-      | pi_1_2_S0457_020        | p_1_S0457_020      | 10          | shipmentLine_1_2_S0457_020 | 10          | 10          | 10              | 1     | s_1_S0457_020 | 2021-04-30     | luLotNumber2 | huPackagingCode_2_S0457_020 | 4418546988533           |
-      | pi_2_S0457_020          | p_2_S0457_020      | 10          | shipmentLine_1_1_S0457_020 | 10          | 10          | 10              | 1     | s_1_S0457_020 | 2021-04-20     | luLotNumber1 | huPackagingCode_2_S0457_020 | 4418546988533           |
+      | pi_1_1_S0457_020        | p_1_S0457_020      | 10          | shipmentLine_1_1_S0457_020 | 10          | 10          | 10              | 1     | s_1_S0457_020 | 2021-04-20     | tuLotNumber1 | huPackagingCode_2_S0457_020 | 4418546988533           |
+      | pi_1_2_S0457_020        | p_1_S0457_020      | 10          | shipmentLine_1_2_S0457_020 | 10          | 10          | 10              | 1     | s_1_S0457_020 | 2021-04-30     | tuLotNumber2 | huPackagingCode_2_S0457_020 | 4418546988533           |
+      | pi_2_S0457_020          | p_2_S0457_020      | 10          | shipmentLine_1_1_S0457_020 | 10          | 10          | 10              | 1     | s_1_S0457_020 | 2021-04-20     | tuLotNumber1 | huPackagingCode_2_S0457_020 | 4418546988533           |
 
     And the shipment identified by s_1_S0457_020 is reversed
 
