@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="1.1000000000000025"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="96"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="uat.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\hotfix.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -112,19 +112,8 @@ FROM de_metas_endcustomer_fresh_reports.Docs_Sales_TransportOrder_Root($P{RECORD
 		</band>
 	</title>
 	<pageHeader>
-		<band height="143" splitType="Stretch">
+		<band height="123" splitType="Stretch">
 			<printWhenExpression><![CDATA[( $V{PAGE_NUMBER}.intValue() > 1 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
-			<subreport isUsingCache="true">
-				<reportElement key="subreport-10" x="20" y="116" width="534" height="27" uuid="de34aee4-8f69-4006-ab9a-00c53a15ffc1"/>
-				<subreportParameter name="ad_language">
-					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="RECORD_ID">
-					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
-				</subreportParameter>
-				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/sales/invoice/report_page_header.jasper"]]></subreportExpression>
-			</subreport>
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-11" x="0" y="31" width="595" height="85" uuid="3987685a-ab7a-4fdc-be33-8c501454c286"/>
 				<subreportParameter name="org_id">
@@ -153,6 +142,19 @@ FROM de_metas_endcustomer_fresh_reports.Docs_Sales_TransportOrder_Root($P{RECORD
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/sales/shippingorder/report_details.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="50">
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-3" x="0" y="0" width="595" height="12" uuid="fae87225-7d79-468d-b369-50d30403734b"/>
+				<subreportParameter name="RECORD_ID">
+					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="ad_language">
+					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/sales/shippingorder/report_details_package.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 	</detail>
