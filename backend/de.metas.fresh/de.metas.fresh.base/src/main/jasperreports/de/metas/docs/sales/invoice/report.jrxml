@@ -54,9 +54,9 @@ JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
 		<property name="com.jaspersoft.studio.field.name" value="iscreditmemo"/>
 		<property name="com.jaspersoft.studio.field.label" value="iscreditmemo"/>
 	</field>
-	<field name="existsfactoringpartner" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="existsfactoringpartner"/>
-		<property name="com.jaspersoft.studio.field.label" value="existsfactoringpartner"/>
+	<field name="isfactoringpartner" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="isfactoringpartner"/>
+		<property name="com.jaspersoft.studio.field.label" value="isfactoringpartner"/>
 	</field>
 	<field name="showqrbill" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="showqrbill"/>
@@ -244,7 +244,7 @@ JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
 		</band>
 		<band height="36">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<printWhenExpression><![CDATA[new Boolean( $F{existsfactoringpartner}.equals( "Y" ) )]]></printWhenExpression>
+			<printWhenExpression><![CDATA[new Boolean( $F{isfactoringpartner}.equals( "Y" ) )]]></printWhenExpression>
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-3" x="0" y="24" width="595" height="12" uuid="0db7639e-4a95-423f-bfe1-5bc5871d6637"/>
 				<subreportParameter name="ad_org_id">
