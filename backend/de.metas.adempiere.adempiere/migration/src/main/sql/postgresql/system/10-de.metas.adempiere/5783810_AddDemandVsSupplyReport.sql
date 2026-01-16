@@ -169,7 +169,7 @@ UPDATE AD_Process base SET Description=trl.Description, Name=trl.Name, Updated=t
 
 -- Process: SupplyVsDemand_Product_Info(de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess)
 -- 2026-01-16T11:58:37.560Z
-UPDATE AD_Process_Trl SET Description='Vergleichende Analyse des Lagerangebots (aktueller Bestand, Reserviert und Zulauf) gegenüber dem tatsächlichen Verkaufsbedarf (verkaufte Menge) für einen definierten Zeitraum. Enthält lieferantenspezifische Einkaufspreise und interne Einstandspreise zur Unterstützung fundierter Beschaffungsentscheidungen.', IsTranslated='Y', Name='Bestand vs. Bedarf - Produktinfo (Excel)',Updated=TO_TIMESTAMP('2026-01-16 11:58:37.560000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language IN ('de_CH', 'DE_de') AND AD_Process_ID=585558
+UPDATE AD_Process_Trl SET Description='Vergleichende Analyse des Lagerangebots (aktueller Bestand, Reserviert und Zulauf) gegenüber dem tatsächlichen Verkaufsbedarf (verkaufte Menge) für einen definierten Zeitraum. Enthält lieferantenspezifische Einkaufspreise und interne Einstandspreise zur Unterstützung fundierter Beschaffungsentscheidungen.', IsTranslated='Y', Name='Bestand vs. Bedarf - Produktinfo (Excel)',Updated=TO_TIMESTAMP('2026-01-16 11:58:37.560000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language IN ('de_CH', 'de_DE') AND AD_Process_ID=585558
 ;
 
 -- 2026-01-16T11:58:37.561Z

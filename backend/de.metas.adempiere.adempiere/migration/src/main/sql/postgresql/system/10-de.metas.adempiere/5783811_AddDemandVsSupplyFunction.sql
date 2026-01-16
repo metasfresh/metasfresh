@@ -1,7 +1,8 @@
 DROP FUNCTION IF EXISTS report.SupplyVsDemand_Product_Info(
     p_date_from TIMESTAMP,
     p_date_to   TIMESTAMP
-);
+)
+;
 
 CREATE OR REPLACE FUNCTION report.SupplyVsDemand_Product_Info(
     p_date_from TIMESTAMP,
@@ -30,7 +31,7 @@ BEGIN
                pc.CurrentCostPrice,
                dsv.qtyToMove,
                dsv.qtyStock,
-               coalesce(sales.QtySold, 0) AS QtySold,
+               COALESCE(sales.QtySold, 0) AS QtySold,
                uom.UOMSymbol
 
         FROM M_Product p
@@ -63,15 +64,17 @@ BEGIN
             SELECT mc.CurrentCostPrice
             FROM M_Cost mc
                      INNER JOIN AD_ClientInfo ci ON p.AD_Client_ID = ci.AD_Client_ID
-                     INNER JOIN C_AcctSchema acs ON ci.C_AcctSchema1_ID = acs.C_AcctSchema_ID
-                     INNER JOIN M_CostElement ce ON mc.M_CostElement_ID = ce.M_CostElement_ID
+                     INNER JOIN C_AcctSchema acs ON ci.C_AcctSchema1_ID = acs.C_AcctSchema_ID AND COALESCE(acs.AD_Org_ID, 0) = COALESCE(mc.AD_Org_ID, 0)
+                     INNER JOIN M_CostElement ce ON mc.M_CostElement_ID = ce.M_CostElement_ID AND COALESCE(ce.AD_Org_ID, 0) = COALESCE(ce.AD_Org_ID, 0)
                 AND ce.CostingMethod = acs.CostingMethod
             WHERE mc.M_Product_ID = p.M_Product_ID
+            ORDER BY ce.m_costelement_id DESC
+            LIMIT 1
             ) pc ON TRUE
 
             -- Sum of Sold Qty for the Parameterized Period
                  LEFT JOIN LATERAL (
-            SELECT SUM(ol.QtyOrdered) AS QtySold
+            SELECT SUM(ol.QtyOrdered - ol.qtydelivered) AS QtySold
             FROM C_OrderLine ol
                      INNER JOIN C_Order o ON ol.C_Order_ID = o.C_Order_ID
                      INNER JOIN C_DocType dt ON o.C_DocTypeTarget_ID = dt.C_DocType_ID
