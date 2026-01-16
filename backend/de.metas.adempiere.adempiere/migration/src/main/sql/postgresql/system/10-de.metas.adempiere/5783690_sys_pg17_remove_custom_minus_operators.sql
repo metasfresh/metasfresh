@@ -1,5 +1,5 @@
 -- Migration: PostgreSQL 17 Compatibility - Remove Custom Minus Operators
--- https://github.com/metasfresh/metasfresh/issues/XXXX
+-- https://github.com/metasfresh/metasfresh/pull/21982
 --
 -- Problem: Custom operators in public schema that override the built-in '-' operator
 --          cannot be migrated by pg_upgrade to PostgreSQL 17.
@@ -14,11 +14,11 @@
 --
 
 -- ============================================================================
--- STEP 1: Install helper functions for discovery and fix generation
+-- STEP 1: Install helper functions for discovery and dependency checking
 -- ============================================================================
 
 -- Function: migration_find_all_affected_objects
--- Scans the database for views and functions that use custom minus operators.
+-- Uses pg_depend for accurate dependency tracking plus text pattern matching as fallback
 DROP FUNCTION IF EXISTS migration_find_all_affected_objects();
 CREATE OR REPLACE FUNCTION migration_find_all_affected_objects()
 RETURNS TABLE (
@@ -30,16 +30,90 @@ RETURNS TABLE (
 )
 LANGUAGE plpgsql
 AS $func$
+DECLARE
+    v_operator_oids oid[];
 BEGIN
+    -- Get all custom minus operator OIDs in public schema
+    SELECT array_agg(o.oid) INTO v_operator_oids
+    FROM pg_operator o
+    JOIN pg_namespace n ON n.oid = o.oprnamespace
+    WHERE n.nspname = 'public' AND o.oprname = '-';
+
+    IF v_operator_oids IS NULL OR array_length(v_operator_oids, 1) IS NULL THEN
+        RETURN;
+    END IF;
+
+    -- Method 1: Check pg_depend for direct dependencies (most accurate)
+    RETURN QUERY
+    SELECT DISTINCT
+        CASE c.relkind
+            WHEN 'v' THEN 'VIEW'
+            WHEN 'r' THEN 'TABLE'
+            WHEN 'm' THEN 'MATERIALIZED VIEW'
+            ELSE 'OBJECT (' || c.relkind::text || ')'
+        END::TEXT,
+        n.nspname::TEXT,
+        c.relname::TEXT,
+        'pg_depend reference'::TEXT,
+        'FIX REQUIRED (direct dependency)'::TEXT
+    FROM pg_depend d
+    JOIN pg_class c ON c.oid = d.objid
+    JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE d.refobjid = ANY(v_operator_oids)
+      AND c.relkind IN ('v', 'r', 'm');
+
+    -- Method 2: Check pg_depend via rewrite rules (for views)
+    RETURN QUERY
+    SELECT DISTINCT
+        'VIEW'::TEXT,
+        n.nspname::TEXT,
+        c.relname::TEXT,
+        'pg_rewrite dependency'::TEXT,
+        'FIX REQUIRED (rewrite rule)'::TEXT
+    FROM pg_depend d
+    JOIN pg_rewrite r ON r.oid = d.objid
+    JOIN pg_class c ON c.oid = r.ev_class
+    JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE d.refobjid = ANY(v_operator_oids)
+      AND n.nspname NOT IN ('pg_catalog', 'information_schema');
+
+    -- Method 3: Check for operator class dependencies
+    RETURN QUERY
+    SELECT
+        'OPERATOR CLASS'::TEXT,
+        n.nspname::TEXT,
+        opc.opcname::TEXT,
+        'operator class member'::TEXT,
+        'FIX REQUIRED (operator class)'::TEXT
+    FROM pg_amop amop
+    JOIN pg_opclass opc ON opc.oid = amop.amopfamily
+    JOIN pg_namespace n ON n.oid = opc.opcnamespace
+    WHERE amop.amopopr = ANY(v_operator_oids);
+
+    -- Method 4: Check pg_depend for function dependencies
+    RETURN QUERY
+    SELECT DISTINCT
+        'FUNCTION'::TEXT,
+        n.nspname::TEXT,
+        p.proname::TEXT,
+        'pg_depend reference'::TEXT,
+        'FIX REQUIRED (function dependency)'::TEXT
+    FROM pg_depend d
+    JOIN pg_proc p ON p.oid = d.objid
+    JOIN pg_namespace n ON n.oid = p.pronamespace
+    WHERE d.refobjid = ANY(v_operator_oids)
+      AND n.nspname NOT IN ('pg_catalog', 'information_schema');
+
+    -- Method 5: Text search in view definitions (fallback for edge cases)
     RETURN QUERY
     SELECT
         'VIEW'::TEXT,
         v.schemaname::TEXT,
         v.viewname::TEXT,
-        'timestamp_expr - numeric_literal'::TEXT,
+        'timestamp_expr - numeric (text match)'::TEXT,
         CASE
             WHEN v.definition LIKE '%subtractdays%' THEN 'VERIFY - may already be fixed'
-            ELSE 'FIX REQUIRED'
+            ELSE 'FIX REQUIRED (text pattern)'
         END::TEXT
     FROM pg_views v
     WHERE v.schemaname NOT IN ('pg_catalog', 'information_schema')
@@ -47,38 +121,125 @@ BEGIN
           v.definition ~ E'timestamp\\s+with\\s+time\\s+zone[^)]*\\)\\s*-\\s*\\d+[^:]'
           OR v.definition ~ E'\\+ si\\.[a-z_]+\\)\\s*-\\s*1'
       )
-    ORDER BY v.schemaname, v.viewname;
+      AND NOT EXISTS (
+          SELECT 1 FROM pg_depend d
+          JOIN pg_rewrite r ON r.oid = d.objid
+          JOIN pg_class c ON c.oid = r.ev_class
+          WHERE d.refobjid = ANY(v_operator_oids)
+            AND c.relname = v.viewname
+      );
 
+    -- Method 6: Text search in function bodies (fallback for SQL functions)
+    -- Catches patterns like "DateOrdered - DiscountDays" that use the custom operator
     RETURN QUERY
-    SELECT
+    SELECT DISTINCT
         'FUNCTION'::TEXT,
         n.nspname::TEXT,
         p.proname::TEXT,
-        CASE
-            WHEN p.prosrc ~ E'now\\(\\)\\s*-\\s*\\d+' THEN 'now() - numeric'
-            WHEN p.prosrc ~ E'getdate\\(\\)\\s*-\\s*\\d+' THEN 'getdate() - numeric'
-            ELSE 'possible timestamp - numeric'
-        END::TEXT,
+        'date - numeric pattern in body'::TEXT,
         CASE
             WHEN p.prosrc LIKE '%subtractdays%' THEN 'VERIFY - may already be fixed'
-            ELSE 'REVIEW REQUIRED'
+            ELSE 'FIX REQUIRED (text pattern)'
         END::TEXT
     FROM pg_proc p
     JOIN pg_namespace n ON n.oid = p.pronamespace
     WHERE n.nspname NOT IN ('pg_catalog', 'information_schema')
-      AND p.prokind = 'f'
+      AND p.prolang = (SELECT oid FROM pg_language WHERE lanname = 'sql')
       AND (
-          p.prosrc ~ E'now\\(\\)\\s*-\\s*\\d+'
-          OR p.prosrc ~ E'getdate\\(\\)\\s*-\\s*\\d+'
+          -- Pattern: date/timestamp column minus numeric (e.g., DateOrdered - DiscountDays)
+          p.prosrc ~* E'\\.(date[a-z_]*|timestamp[a-z_]*)\\s*-\\s*[a-z_]+days'
+          OR p.prosrc ~* E'ordered\\s*-\\s*discount'
       )
-      AND p.proname NOT LIKE 'migration_%'
-    ORDER BY n.nspname, p.proname;
+      AND NOT EXISTS (
+          SELECT 1 FROM pg_depend d
+          WHERE d.objid = p.oid
+            AND d.refobjid = ANY(v_operator_oids)
+      );
+END;
+$func$;
+
+
+-- Function: migration_test_drop_operators
+-- Tests if operators can be dropped by checking pg_depend for dependencies
+-- Reports blocking dependencies if any (without actually attempting to drop)
+DROP FUNCTION IF EXISTS migration_test_drop_operators();
+CREATE OR REPLACE FUNCTION migration_test_drop_operators()
+RETURNS TABLE (
+    operator_signature TEXT,
+    can_drop BOOLEAN,
+    blocking_reason TEXT
+)
+LANGUAGE plpgsql
+AS $func$
+DECLARE
+    v_rec RECORD;
+    v_dep_count INTEGER;
+    v_dep_objects TEXT;
+BEGIN
+    FOR v_rec IN
+        SELECT
+            o.oid,
+            o.oprname || ' (' || COALESCE(lt.typname, 'NONE') || ', ' || COALESCE(rt.typname, 'NONE') || ')' AS signature
+        FROM pg_operator o
+        JOIN pg_namespace n ON n.oid = o.oprnamespace
+        LEFT JOIN pg_type lt ON lt.oid = o.oprleft
+        LEFT JOIN pg_type rt ON rt.oid = o.oprright
+        WHERE n.nspname = 'public' AND o.oprname = '-'
+    LOOP
+        operator_signature := v_rec.signature;
+
+        -- Check for dependencies in pg_depend (direct object dependencies)
+        SELECT COUNT(*), string_agg(DISTINCT c.relname, ', ')
+        INTO v_dep_count, v_dep_objects
+        FROM pg_depend d
+        JOIN pg_class c ON c.oid = d.objid
+        WHERE d.refobjid = v_rec.oid
+          AND d.deptype = 'n';
+
+        -- Also check for rewrite rule dependencies (views)
+        IF v_dep_count = 0 THEN
+            SELECT COUNT(*), string_agg(DISTINCT c.relname, ', ')
+            INTO v_dep_count, v_dep_objects
+            FROM pg_depend d
+            JOIN pg_rewrite r ON r.oid = d.objid
+            JOIN pg_class c ON c.oid = r.ev_class
+            WHERE d.refobjid = v_rec.oid;
+        END IF;
+
+        -- Also check for function dependencies
+        IF v_dep_count = 0 THEN
+            SELECT COUNT(*), string_agg(DISTINCT n.nspname || '.' || p.proname, ', ')
+            INTO v_dep_count, v_dep_objects
+            FROM pg_depend d
+            JOIN pg_proc p ON p.oid = d.objid
+            JOIN pg_namespace n ON n.oid = p.pronamespace
+            WHERE d.refobjid = v_rec.oid
+              AND n.nspname NOT IN ('pg_catalog', 'information_schema');
+        END IF;
+
+        IF v_dep_count > 0 THEN
+            can_drop := FALSE;
+            blocking_reason := 'Blocked by ' || v_dep_count || ' object(s): ' || COALESCE(v_dep_objects, '(unknown)');
+        ELSE
+            can_drop := TRUE;
+            blocking_reason := NULL;
+        END IF;
+
+        RETURN NEXT;
+    END LOOP;
+
+    IF NOT FOUND THEN
+        operator_signature := '(no custom operators found)';
+        can_drop := TRUE;
+        blocking_reason := 'No operators to drop';
+        RETURN NEXT;
+    END IF;
 END;
 $func$;
 
 
 -- Function: migration_generate_view_fix
--- Generates DROP + CREATE VIEW script with custom operator patterns replaced.
+-- Generates DROP + CREATE VIEW script with custom operator patterns replaced
 DROP FUNCTION IF EXISTS migration_generate_view_fix(TEXT, TEXT);
 CREATE OR REPLACE FUNCTION migration_generate_view_fix(
     p_schema_name TEXT,
@@ -91,7 +252,6 @@ DECLARE
     v_definition TEXT;
     v_fixed_definition TEXT;
     v_result TEXT;
-    v_changes INTEGER := 0;
 BEGIN
     SELECT definition INTO v_definition
     FROM pg_views
@@ -103,29 +263,23 @@ BEGIN
 
     v_fixed_definition := v_definition;
 
-    -- Replace known patterns with explicit subtractdays() calls
+    -- Replace patterns: (timestamp + offset) - 1 -> subtractdays(timestamp + offset, 1)
+    -- Only replace the - 1 patterns, NOT the + 14 patterns
     v_fixed_definition := replace(v_fixed_definition,
         'si.invoicedaycutoff) - 1))',
         'si.invoicedaycutoff), 1))');
-
     v_fixed_definition := replace(v_fixed_definition,
         'si.invoiceday) - 1)))',
         'si.invoiceday), 1)))');
-
     v_fixed_definition := replace(v_fixed_definition,
         '(((firstof(getdate()',
         'subtractdays(((firstof(getdate()');
-
     v_fixed_definition := replace(v_fixed_definition,
         '(((firstof((o.dateordered)',
         'subtractdays(((firstof((o.dateordered)');
 
-    v_changes := (length(v_definition) - length(replace(v_definition, ') - 1)', '')))
-               - (length(v_fixed_definition) - length(replace(v_fixed_definition, ') - 1)', '')));
-
     v_result := '-- Fix for VIEW: ' || p_schema_name || '.' || p_view_name || E'\n';
-    v_result := v_result || '-- Changes: ' || v_changes || ' operator replacements' || E'\n\n';
-    v_result := v_result || 'DROP VIEW IF EXISTS ' || p_schema_name || '.' || p_view_name || ';' || E'\n\n';
+    v_result := v_result || 'DROP VIEW IF EXISTS ' || p_schema_name || '.' || p_view_name || ';' || E'\n';
     v_result := v_result || 'CREATE OR REPLACE VIEW ' || p_schema_name || '.' || p_view_name || ' AS' || E'\n';
     v_result := v_result || v_fixed_definition || E'\n';
 
@@ -135,119 +289,166 @@ $func$;
 
 
 -- ============================================================================
--- STEP 2: Check if operators exist and need to be fixed
+-- STEP 2: Check if migration is needed
 -- ============================================================================
 
 DO $$
 DECLARE
     v_op_count INTEGER;
-    v_affected_count INTEGER;
 BEGIN
-    -- Check if custom operators exist
     SELECT COUNT(*) INTO v_op_count
     FROM pg_operator o
     JOIN pg_namespace n ON n.oid = o.oprnamespace
     WHERE n.nspname = 'public' AND o.oprname = '-';
 
     IF v_op_count = 0 THEN
-        RAISE NOTICE 'No custom minus operators found in public schema. Migration not needed.';
-        RETURN;
-    END IF;
-
-    RAISE NOTICE 'Found % custom minus operator(s) in public schema.', v_op_count;
-
-    -- Check for affected objects
-    SELECT COUNT(*) INTO v_affected_count
-    FROM migration_find_all_affected_objects()
-    WHERE action_needed = 'FIX REQUIRED';
-
-    IF v_affected_count > 0 THEN
-        RAISE NOTICE 'Found % object(s) that need to be fixed.', v_affected_count;
+        RAISE NOTICE 'No custom minus operators found. Migration already complete or not needed.';
     ELSE
-        RAISE NOTICE 'No objects need fixing - operators can be safely dropped.';
+        RAISE NOTICE 'Found % custom minus operator(s) to remove.', v_op_count;
     END IF;
 END $$;
 
 
 -- ============================================================================
--- STEP 3: Fix c_invoice_candidate_v if it exists and uses custom operators
+-- STEP 3: Fix m_hu_bestbefore_v if it exists and uses custom operators
 -- ============================================================================
 
-DO $$
-DECLARE
-    v_view_exists BOOLEAN;
-    v_uses_custom_op BOOLEAN;
-BEGIN
-    -- Check if view exists
-    SELECT EXISTS (
-        SELECT 1 FROM pg_views WHERE schemaname = 'public' AND viewname = 'c_invoice_candidate_v'
-    ) INTO v_view_exists;
-
-    IF NOT v_view_exists THEN
-        RAISE NOTICE 'View c_invoice_candidate_v does not exist - skipping';
-        RETURN;
-    END IF;
-
-    -- Check if it uses custom operators (has ') - 1)' but no 'subtractdays')
-    SELECT EXISTS (
-        SELECT 1 FROM pg_views
-        WHERE schemaname = 'public'
-          AND viewname = 'c_invoice_candidate_v'
-          AND definition LIKE '%- 1)%'
-          AND definition NOT LIKE '%subtractdays%'
-    ) INTO v_uses_custom_op;
-
-    IF NOT v_uses_custom_op THEN
-        RAISE NOTICE 'View c_invoice_candidate_v does not use custom operators or is already fixed - skipping';
-        RETURN;
-    END IF;
-
-    RAISE NOTICE 'Fixing c_invoice_candidate_v...';
-END $$;
-
--- Drop and recreate c_invoice_candidate_v with explicit subtractdays() calls
--- Only executed if the view exists and uses custom operators
 DO $$
 DECLARE
     v_definition TEXT;
     v_fixed_definition TEXT;
+    v_has_operator_dep BOOLEAN;
 BEGIN
-    -- Get current definition
+    SELECT definition INTO v_definition
+    FROM pg_views
+    WHERE schemaname = 'public' AND viewname = 'm_hu_bestbefore_v';
+
+    IF v_definition IS NULL THEN
+        RAISE NOTICE 'View m_hu_bestbefore_v does not exist - skipping';
+        RETURN;
+    END IF;
+
+    -- Skip if view already uses subtractdays (already fixed)
+    IF v_definition LIKE '%subtractdays%' THEN
+        RAISE NOTICE 'View m_hu_bestbefore_v already uses subtractdays - skipping';
+        RETURN;
+    END IF;
+
+    -- Check if view depends on custom minus operators using pg_depend (most reliable method)
+    SELECT EXISTS(
+        SELECT 1
+        FROM pg_depend d
+        JOIN pg_rewrite r ON r.oid = d.objid
+        JOIN pg_class c ON c.oid = r.ev_class
+        JOIN pg_operator o ON o.oid = d.refobjid
+        JOIN pg_namespace n ON n.oid = o.oprnamespace
+        WHERE c.relname = 'm_hu_bestbefore_v'
+          AND n.nspname = 'public'
+          AND o.oprname = '-'
+    ) INTO v_has_operator_dep;
+
+    IF NOT v_has_operator_dep THEN
+        RAISE NOTICE 'View m_hu_bestbefore_v has no custom operator dependency - skipping';
+        RETURN;
+    END IF;
+
+    RAISE NOTICE 'Fixing m_hu_bestbefore_v (has custom operator dependency)...';
+    RAISE NOTICE 'View definition snippet: %', substring(v_definition from 1 for 500);
+
+    v_fixed_definition := v_definition;
+
+    -- Replace the subtraction pattern with subtractdays function
+    -- Actual pattern in pg_views: ((t.hu_bestbeforedate)::timestamp with time zone - max(t.guaranteedaysmin))
+    -- Note: pg_views adds explicit cast to timestamp with time zone
+    v_fixed_definition := regexp_replace(v_fixed_definition,
+        E'\\(t\\.hu_bestbeforedate\\)::timestamp with time zone\\s*-\\s*max\\(t\\.guaranteedaysmin\\)',
+        'subtractdays((t.hu_bestbeforedate)::timestamp with time zone, max(t.guaranteedaysmin))',
+        'gi');
+
+    -- Verify the replacement was made
+    IF v_fixed_definition = v_definition THEN
+        RAISE NOTICE 'WARNING: First pattern did not match, trying without cast...';
+        -- Try without explicit timestamp cast
+        v_fixed_definition := regexp_replace(v_fixed_definition,
+            E't\\.hu_bestbeforedate\\s*-\\s*max\\(t\\.guaranteedaysmin\\)',
+            'subtractdays(t.hu_bestbeforedate, max(t.guaranteedaysmin))',
+            'gi');
+    END IF;
+
+    IF v_fixed_definition = v_definition THEN
+        RAISE EXCEPTION 'Failed to replace subtraction pattern in m_hu_bestbefore_v. View definition: %', v_definition;
+    END IF;
+
+    DROP VIEW IF EXISTS public.m_hu_bestbefore_v;
+    EXECUTE 'CREATE OR REPLACE VIEW public.m_hu_bestbefore_v AS ' || v_fixed_definition;
+
+    RAISE NOTICE 'View m_hu_bestbefore_v fixed successfully';
+END $$;
+
+
+-- ============================================================================
+-- STEP 4: Fix c_invoice_candidate_v if it exists and uses custom operators
+-- ============================================================================
+
+DO $$
+DECLARE
+    v_definition TEXT;
+    v_fixed_definition TEXT;
+    v_has_operator_dep BOOLEAN;
+BEGIN
     SELECT definition INTO v_definition
     FROM pg_views
     WHERE schemaname = 'public' AND viewname = 'c_invoice_candidate_v';
 
     IF v_definition IS NULL THEN
+        RAISE NOTICE 'View c_invoice_candidate_v does not exist - skipping';
         RETURN;
     END IF;
 
-    -- Check if fix is needed
-    IF v_definition NOT LIKE '%- 1)%' OR v_definition LIKE '%subtractdays%' THEN
+    -- Skip if view already uses subtractdays (already fixed)
+    IF v_definition LIKE '%subtractdays%' THEN
+        RAISE NOTICE 'View c_invoice_candidate_v already uses subtractdays - skipping';
         RETURN;
     END IF;
+
+    -- Check if view depends on custom minus operators using pg_depend (most reliable method)
+    SELECT EXISTS(
+        SELECT 1
+        FROM pg_depend d
+        JOIN pg_rewrite r ON r.oid = d.objid
+        JOIN pg_class c ON c.oid = r.ev_class
+        JOIN pg_operator o ON o.oid = d.refobjid
+        JOIN pg_namespace n ON n.oid = o.oprnamespace
+        WHERE c.relname = 'c_invoice_candidate_v'
+          AND n.nspname = 'public'
+          AND o.oprname = '-'
+    ) INTO v_has_operator_dep;
+
+    IF NOT v_has_operator_dep THEN
+        RAISE NOTICE 'View c_invoice_candidate_v has no custom operator dependency - skipping';
+        RETURN;
+    END IF;
+
+    RAISE NOTICE 'Fixing c_invoice_candidate_v (has custom operator dependency)...';
 
     v_fixed_definition := v_definition;
 
-    -- Apply fixes
-    v_fixed_definition := replace(v_fixed_definition,
-        'si.invoicedaycutoff) - 1))',
-        'si.invoicedaycutoff), 1))');
+    -- Fix patterns using regex to handle ONLY the "- 1)" subtractions, NOT the "+ 14" additions
+    -- Pattern 1: ((firstof(getdate()...) + si.invoicedaycutoff) - 1))
+    -- Transform to: subtractdays(((firstof(getdate()...) + si.invoicedaycutoff), 1))
+    v_fixed_definition := regexp_replace(v_fixed_definition,
+        E'\\(\\(\\(firstof\\(getdate\\(\\),([^)]+)\\)\\)::timestamp with time zone \\+ si\\.invoicedaycutoff\\) - 1\\)\\)',
+        E'subtractdays(((firstof(getdate(),\\1))::timestamp with time zone + si.invoicedaycutoff), 1))',
+        'g');
 
-    v_fixed_definition := replace(v_fixed_definition,
-        'si.invoiceday) - 1)))',
-        'si.invoiceday), 1)))');
+    -- Pattern 2: ((firstof((o.dateordered)...) + si.invoiceday) - 1)))
+    -- Transform to: subtractdays(((firstof((o.dateordered)...) + si.invoiceday), 1)))
+    v_fixed_definition := regexp_replace(v_fixed_definition,
+        E'\\(\\(\\(firstof\\(\\(o\\.dateordered\\),([^)]+)\\)\\)::timestamp with time zone \\+ si\\.invoiceday\\) - 1\\)\\)\\)',
+        E'subtractdays(((firstof((o.dateordered),\\1))::timestamp with time zone + si.invoiceday), 1)))',
+        'g');
 
-    v_fixed_definition := replace(v_fixed_definition,
-        '(((firstof(getdate()',
-        'subtractdays(((firstof(getdate()');
-
-    v_fixed_definition := replace(v_fixed_definition,
-        '(((firstof((o.dateordered)',
-        'subtractdays(((firstof((o.dateordered)');
-
-    -- Drop and recreate view
     DROP VIEW IF EXISTS public.c_invoice_candidate_v;
-
     EXECUTE 'CREATE OR REPLACE VIEW public.c_invoice_candidate_v AS ' || v_fixed_definition;
 
     RAISE NOTICE 'View c_invoice_candidate_v fixed successfully';
@@ -255,7 +456,248 @@ END $$;
 
 
 -- ============================================================================
--- STEP 4: Drop custom operators
+-- STEP 5: Fix Docs_Sales_Order_Details_Footer if it uses custom operators
+-- ============================================================================
+
+DO $$
+DECLARE
+    v_func_body TEXT;
+    v_fixed_body TEXT;
+    v_has_operator_dep BOOLEAN;
+    v_operator_oids oid[];
+BEGIN
+    -- Get custom operator OIDs
+    SELECT array_agg(o.oid) INTO v_operator_oids
+    FROM pg_operator o
+    JOIN pg_namespace n ON n.oid = o.oprnamespace
+    WHERE n.nspname = 'public' AND o.oprname = '-';
+
+    IF v_operator_oids IS NULL THEN
+        RAISE NOTICE 'No custom operators found - skipping Docs_Sales_Order_Details_Footer fix';
+        RETURN;
+    END IF;
+
+    -- Get function body
+    SELECT prosrc INTO v_func_body
+    FROM pg_proc p
+    JOIN pg_namespace n ON n.oid = p.pronamespace
+    WHERE n.nspname = 'de_metas_endcustomer_fresh_reports'
+      AND p.proname = 'docs_sales_order_details_footer';
+
+    IF v_func_body IS NULL THEN
+        RAISE NOTICE 'Function Docs_Sales_Order_Details_Footer does not exist - skipping';
+        RETURN;
+    END IF;
+
+    -- Skip if already fixed
+    IF v_func_body LIKE '%subtractdays%' THEN
+        RAISE NOTICE 'Function Docs_Sales_Order_Details_Footer already uses subtractdays - skipping';
+        RETURN;
+    END IF;
+
+    -- Check for operator dependency via pg_depend OR text pattern
+    SELECT EXISTS(
+        SELECT 1
+        FROM pg_depend d
+        JOIN pg_proc p ON p.oid = d.objid
+        JOIN pg_namespace n ON n.oid = p.pronamespace
+        WHERE n.nspname = 'de_metas_endcustomer_fresh_reports'
+          AND p.proname = 'docs_sales_order_details_footer'
+          AND d.refobjid = ANY(v_operator_oids)
+    ) OR v_func_body ~* E'DateOrdered\\s*-\\s*Discount'
+    INTO v_has_operator_dep;
+
+    IF NOT v_has_operator_dep THEN
+        RAISE NOTICE 'Function Docs_Sales_Order_Details_Footer has no custom operator usage - skipping';
+        RETURN;
+    END IF;
+
+    RAISE NOTICE 'Fixing Docs_Sales_Order_Details_Footer...';
+
+    -- Replace (o.DateOrdered - DiscountDays) with subtractdays(o.DateOrdered, DiscountDays)
+    v_fixed_body := regexp_replace(v_func_body,
+        E'\\(o\\.DateOrdered\\s*-\\s*DiscountDays\\)',
+        'subtractdays(o.DateOrdered, DiscountDays)',
+        'gi');
+
+    -- Replace (o.DateOrdered - DiscountDays2) with subtractdays(o.DateOrdered, DiscountDays2)
+    v_fixed_body := regexp_replace(v_fixed_body,
+        E'\\(o\\.DateOrdered\\s*-\\s*DiscountDays2\\)',
+        'subtractdays(o.DateOrdered, DiscountDays2)',
+        'gi');
+
+    IF v_fixed_body = v_func_body THEN
+        RAISE WARNING 'No replacements made in Docs_Sales_Order_Details_Footer - pattern may have changed';
+        RETURN;
+    END IF;
+
+    -- Recreate the function with fixed body
+    EXECUTE '
+    CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Details_Footer(
+        IN p_Order_ID numeric,
+        IN p_Language Character Varying(6)
+    )
+    RETURNS TABLE (
+        paymentrule character varying(60),
+        paymentterm character varying(60),
+        discount1 numeric,
+        discount2 numeric,
+        discount_date1 text,
+        discount_date2 text,
+        cursymbol character varying(10),
+        documentnote text,
+        descriptionbottom text,
+        subject character varying,
+        textsnippet character varying,
+        Incoterms character varying,
+        incotermlocation character varying,
+        additionaltext text,
+        isoffer character,
+        taxnote text
+    )
+    AS $f$' || v_fixed_body || '$f$ LANGUAGE sql STABLE';
+
+    RAISE NOTICE 'Function Docs_Sales_Order_Details_Footer fixed successfully';
+END $$;
+
+
+-- ============================================================================
+-- STEP 6: Fix Docs_Purchase_Order_Details_Footer if it uses custom operators
+-- ============================================================================
+
+DO $$
+DECLARE
+    v_func_body TEXT;
+    v_fixed_body TEXT;
+    v_has_operator_dep BOOLEAN;
+    v_operator_oids oid[];
+BEGIN
+    -- Get custom operator OIDs
+    SELECT array_agg(o.oid) INTO v_operator_oids
+    FROM pg_operator o
+    JOIN pg_namespace n ON n.oid = o.oprnamespace
+    WHERE n.nspname = 'public' AND o.oprname = '-';
+
+    IF v_operator_oids IS NULL THEN
+        RAISE NOTICE 'No custom operators found - skipping Docs_Purchase_Order_Details_Footer fix';
+        RETURN;
+    END IF;
+
+    -- Get function body
+    SELECT prosrc INTO v_func_body
+    FROM pg_proc p
+    JOIN pg_namespace n ON n.oid = p.pronamespace
+    WHERE n.nspname = 'de_metas_endcustomer_fresh_reports'
+      AND p.proname = 'docs_purchase_order_details_footer';
+
+    IF v_func_body IS NULL THEN
+        RAISE NOTICE 'Function Docs_Purchase_Order_Details_Footer does not exist - skipping';
+        RETURN;
+    END IF;
+
+    -- Skip if already fixed
+    IF v_func_body LIKE '%subtractdays%' THEN
+        RAISE NOTICE 'Function Docs_Purchase_Order_Details_Footer already uses subtractdays - skipping';
+        RETURN;
+    END IF;
+
+    -- Check for operator dependency via pg_depend OR text pattern
+    SELECT EXISTS(
+        SELECT 1
+        FROM pg_depend d
+        JOIN pg_proc p ON p.oid = d.objid
+        JOIN pg_namespace n ON n.oid = p.pronamespace
+        WHERE n.nspname = 'de_metas_endcustomer_fresh_reports'
+          AND p.proname = 'docs_purchase_order_details_footer'
+          AND d.refobjid = ANY(v_operator_oids)
+    ) OR v_func_body ~* E'DateOrdered\\s*-\\s*Discount'
+    INTO v_has_operator_dep;
+
+    IF NOT v_has_operator_dep THEN
+        RAISE NOTICE 'Function Docs_Purchase_Order_Details_Footer has no custom operator usage - skipping';
+        RETURN;
+    END IF;
+
+    RAISE NOTICE 'Fixing Docs_Purchase_Order_Details_Footer...';
+
+    -- Replace (o.DateOrdered - DiscountDays) with subtractdays(o.DateOrdered, DiscountDays)
+    v_fixed_body := regexp_replace(v_func_body,
+        E'\\(o\\.DateOrdered\\s*-\\s*DiscountDays\\)',
+        'subtractdays(o.DateOrdered, DiscountDays)',
+        'gi');
+
+    -- Replace (o.DateOrdered - DiscountDays2) with subtractdays(o.DateOrdered, DiscountDays2)
+    v_fixed_body := regexp_replace(v_fixed_body,
+        E'\\(o\\.DateOrdered\\s*-\\s*DiscountDays2\\)',
+        'subtractdays(o.DateOrdered, DiscountDays2)',
+        'gi');
+
+    IF v_fixed_body = v_func_body THEN
+        RAISE WARNING 'No replacements made in Docs_Purchase_Order_Details_Footer - pattern may have changed';
+        RETURN;
+    END IF;
+
+    -- Recreate the function with fixed body
+    EXECUTE '
+    CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details_Footer(
+        IN p_Order_ID numeric,
+        IN p_language Character Varying(6)
+    )
+    RETURNS TABLE (
+        paymentrule character varying(60),
+        paymentterm character varying(60),
+        discount1 numeric,
+        discount2 numeric,
+        discount_date1 text,
+        discount_date2 text,
+        cursymbol character varying(10),
+        Incoterms character varying,
+        incotermlocation character varying,
+        descriptionbottom character varying,
+        deliveryrule character varying,
+        deliveryviarule character varying,
+        additionaltext text,
+        taxnote text
+    )
+    AS $f$' || v_fixed_body || '$f$ LANGUAGE sql STABLE';
+
+    RAISE NOTICE 'Function Docs_Purchase_Order_Details_Footer fixed successfully';
+END $$;
+
+
+-- ============================================================================
+-- STEP 7: Pre-flight check - verify all operators can be dropped
+-- ============================================================================
+
+DO $$
+DECLARE
+    v_rec RECORD;
+    v_has_blockers BOOLEAN := FALSE;
+BEGIN
+    FOR v_rec IN SELECT * FROM migration_test_drop_operators() WHERE NOT can_drop
+    LOOP
+        v_has_blockers := TRUE;
+        RAISE WARNING 'Cannot drop operator %: %', v_rec.operator_signature, v_rec.blocking_reason;
+    END LOOP;
+
+    IF v_has_blockers THEN
+        RAISE NOTICE '';
+        RAISE NOTICE 'Blocked dependencies found. Checking affected objects...';
+        FOR v_rec IN SELECT * FROM migration_find_all_affected_objects()
+        LOOP
+            RAISE NOTICE '  % %.% - % (%)',
+                v_rec.object_type, v_rec.schema_name, v_rec.object_name,
+                v_rec.pattern_found, v_rec.action_needed;
+        END LOOP;
+        RAISE EXCEPTION 'Migration blocked: Fix all dependencies before dropping operators. Do NOT use CASCADE.';
+    END IF;
+
+    RAISE NOTICE 'Pre-flight check passed: All operators can be safely dropped.';
+END $$;
+
+
+-- ============================================================================
+-- STEP 8: Drop custom operators (NO CASCADE - must fail if dependencies exist)
 -- ============================================================================
 
 DROP OPERATOR IF EXISTS public.- (timestamptz, numeric);
@@ -265,7 +707,7 @@ DROP OPERATOR IF EXISTS public.- (numeric, interval);
 
 
 -- ============================================================================
--- STEP 5: Verification
+-- STEP 9: Verification - ensure all operators were removed
 -- ============================================================================
 
 DO $$
@@ -278,18 +720,209 @@ BEGIN
     WHERE n.nspname = 'public' AND o.oprname = '-';
 
     IF v_op_count > 0 THEN
-        RAISE EXCEPTION 'Migration incomplete: % custom minus operator(s) still exist in public schema', v_op_count;
+        RAISE EXCEPTION 'Migration incomplete: % custom minus operator(s) still exist', v_op_count;
     ELSE
-        RAISE NOTICE 'SUCCESS: All custom minus operators removed from public schema';
-        RAISE NOTICE 'Database is now ready for pg_upgrade to PostgreSQL 17';
+        RAISE NOTICE 'Original custom minus operators removed successfully.';
     END IF;
 END $$;
 
 
 -- ============================================================================
--- STEP 6: Cleanup helper functions (optional - keep for future use)
+-- STEP 10: Create DEPRECATED operator functions with warning logging
 -- ============================================================================
--- Note: Helper functions are kept for diagnosing similar issues in other databases
--- To remove them, uncomment the following:
--- DROP FUNCTION IF EXISTS migration_find_all_affected_objects();
--- DROP FUNCTION IF EXISTS migration_generate_view_fix(TEXT, TEXT);
+-- These functions replace the old operators but log a deprecation warning.
+-- They log only ONCE per session to avoid performance impact.
+-- This serves as a safety net to catch any usages we missed.
+
+-- Function for: timestamptz - numeric (e.g., date - days)
+CREATE OR REPLACE FUNCTION public.subtract_numeric_from_timestamptz_deprecated(
+    p_timestamp timestamptz,
+    p_days numeric
+)
+RETURNS timestamptz
+LANGUAGE plpgsql
+AS $func$
+DECLARE
+    v_query TEXT;
+    v_warn_key TEXT;
+BEGIN
+    -- Get current query and create a unique key for this specific usage
+    v_query := current_query();
+    v_warn_key := 'metasfresh.warned_minus_ts_num_' || md5(v_query);
+
+    -- Log warning once per unique query per session
+    IF current_setting(v_warn_key, true) IS NULL THEN
+        RAISE WARNING E'\n'
+            '[DEPRECATED OPERATOR] timestamp - numeric\n'
+            '================================================================================\n'
+            'QUERY:\n'
+            '%\n'
+            '--------------------------------------------------------------------------------\n'
+            'FIX: Replace (date - days) with subtractdays(date, days)\n'
+            '     Example: TO_CHAR(subtractdays(o.DateOrdered, DiscountDays), ''dd.MM.YYYY'')\n'
+            'DOCS: https://github.com/metasfresh/metasfresh/pull/21982\n'
+            '================================================================================',
+            v_query;
+        PERFORM set_config(v_warn_key, 'true', false);
+    END IF;
+
+    RETURN subtractdays(p_timestamp, p_days);
+END;
+$func$;
+
+-- Function for: interval - numeric
+CREATE OR REPLACE FUNCTION public.subtract_numeric_from_interval_deprecated(
+    p_interval interval,
+    p_days numeric
+)
+RETURNS interval
+LANGUAGE plpgsql
+AS $func$
+DECLARE
+    v_query TEXT;
+    v_warn_key TEXT;
+BEGIN
+    v_query := current_query();
+    v_warn_key := 'metasfresh.warned_minus_int_num_' || md5(v_query);
+
+    IF current_setting(v_warn_key, true) IS NULL THEN
+        RAISE WARNING E'\n'
+            '[DEPRECATED OPERATOR] interval - numeric\n'
+            '================================================================================\n'
+            'QUERY:\n'
+            '%\n'
+            '--------------------------------------------------------------------------------\n'
+            'FIX: Replace (interval - days) with subtractdays(interval, days)\n'
+            'DOCS: https://github.com/metasfresh/metasfresh/pull/21982\n'
+            '================================================================================',
+            v_query;
+        PERFORM set_config(v_warn_key, 'true', false);
+    END IF;
+
+    RETURN subtractdays(p_interval, p_days);
+END;
+$func$;
+
+-- Function for: numeric - timestamptz (reversed operands)
+CREATE OR REPLACE FUNCTION public.subtract_timestamptz_from_numeric_deprecated(
+    p_days numeric,
+    p_timestamp timestamptz
+)
+RETURNS timestamptz
+LANGUAGE plpgsql
+AS $func$
+DECLARE
+    v_query TEXT;
+    v_warn_key TEXT;
+BEGIN
+    v_query := current_query();
+    v_warn_key := 'metasfresh.warned_minus_num_ts_' || md5(v_query);
+
+    IF current_setting(v_warn_key, true) IS NULL THEN
+        RAISE WARNING E'\n'
+            '[DEPRECATED OPERATOR] numeric - timestamp (unusual reversed operands)\n'
+            '================================================================================\n'
+            'QUERY:\n'
+            '%\n'
+            '--------------------------------------------------------------------------------\n'
+            'FIX: Review and rewrite this unusual pattern\n'
+            'DOCS: https://github.com/metasfresh/metasfresh/pull/21982\n'
+            '================================================================================',
+            v_query;
+        PERFORM set_config(v_warn_key, 'true', false);
+    END IF;
+
+    RETURN subtractdays(p_timestamp, p_days);
+END;
+$func$;
+
+-- Function for: numeric - interval (reversed operands)
+CREATE OR REPLACE FUNCTION public.subtract_interval_from_numeric_deprecated(
+    p_days numeric,
+    p_interval interval
+)
+RETURNS interval
+LANGUAGE plpgsql
+AS $func$
+DECLARE
+    v_query TEXT;
+    v_warn_key TEXT;
+BEGIN
+    v_query := current_query();
+    v_warn_key := 'metasfresh.warned_minus_num_int_' || md5(v_query);
+
+    IF current_setting(v_warn_key, true) IS NULL THEN
+        RAISE WARNING E'\n'
+            '[DEPRECATED OPERATOR] numeric - interval (unusual reversed operands)\n'
+            '================================================================================\n'
+            'QUERY:\n'
+            '%\n'
+            '--------------------------------------------------------------------------------\n'
+            'FIX: Review and rewrite this unusual pattern\n'
+            'DOCS: https://github.com/metasfresh/metasfresh/pull/21982\n'
+            '================================================================================',
+            v_query;
+        PERFORM set_config(v_warn_key, 'true', false);
+    END IF;
+
+    RETURN subtractdays(p_interval, p_days);
+END;
+$func$;
+
+
+-- ============================================================================
+-- STEP 11: Recreate operators using deprecated functions (SAFETY NET)
+-- ============================================================================
+-- These operators provide backwards compatibility while logging warnings.
+-- They will be removed in a future release once all usages are fixed.
+--
+-- IMPORTANT: These operators are in the 'public' schema intentionally.
+-- Before the NEXT pg_upgrade, they must be removed again and all usages fixed.
+
+CREATE OPERATOR public.- (
+    LEFTARG = timestamptz,
+    RIGHTARG = numeric,
+    FUNCTION = public.subtract_numeric_from_timestamptz_deprecated
+);
+
+CREATE OPERATOR public.- (
+    LEFTARG = interval,
+    RIGHTARG = numeric,
+    FUNCTION = public.subtract_numeric_from_interval_deprecated
+);
+
+CREATE OPERATOR public.- (
+    LEFTARG = numeric,
+    RIGHTARG = timestamptz,
+    FUNCTION = public.subtract_timestamptz_from_numeric_deprecated
+);
+
+CREATE OPERATOR public.- (
+    LEFTARG = numeric,
+    RIGHTARG = interval,
+    FUNCTION = public.subtract_interval_from_numeric_deprecated
+);
+
+
+-- ============================================================================
+-- STEP 12: Final status message
+-- ============================================================================
+
+DO $$
+BEGIN
+    RAISE NOTICE '';
+    RAISE NOTICE '=========================================================';
+    RAISE NOTICE 'MIGRATION COMPLETE';
+    RAISE NOTICE '=========================================================';
+    RAISE NOTICE '';
+    RAISE NOTICE 'Custom minus operators have been replaced with DEPRECATED';
+    RAISE NOTICE 'versions that log warnings when used.';
+    RAISE NOTICE '';
+    RAISE NOTICE 'IMPORTANT: Before the next pg_upgrade, you must:';
+    RAISE NOTICE '  1. Monitor logs for deprecation warnings';
+    RAISE NOTICE '  2. Fix all remaining usages (replace - with subtractdays)';
+    RAISE NOTICE '  3. Remove these deprecated operators';
+    RAISE NOTICE '';
+    RAISE NOTICE 'See: https://github.com/metasfresh/metasfresh/pull/21982';
+    RAISE NOTICE '=========================================================';
+END $$;

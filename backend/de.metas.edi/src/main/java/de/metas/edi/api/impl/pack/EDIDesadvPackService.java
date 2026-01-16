@@ -484,12 +484,7 @@ public class EDIDesadvPackService
 	{
 		final Quantity qtyCUInStockUOM = parameters.topLevelHU.extractMedianCUQtyPerChildHU(parameters.productId);
 
-		// get minimum best before of all HUs and sub-HUs
-		final Date bestBefore = parameters.topLevelHU.extractSingleAttributeValue(
-				attrSet -> attrSet.hasAttribute(AttributeConstants.ATTR_BestBeforeDate)
-						? attrSet.getValueAsDate(AttributeConstants.ATTR_BestBeforeDate)
-						: null,
-				TimeUtil::min);
+		final Timestamp bestBefore = extractBestBeforeDate(parameters.getInOutLineRecord()).orElse(null);
 
 		final CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createPackItemRequestBuilder =
 				CreateEDIDesadvPackItemRequest.builder()
@@ -498,10 +493,11 @@ public class EDIDesadvPackService
 						.inOutLineId(InOutLineId.ofRepoId(parameters.inOutLineRecord.getM_InOutLine_ID()))
 						.line(parameters.packItemLineSequence.next())
 						.qtyItemCapacity(qtyCUInStockUOM.toBigDecimal())
-						.bestBeforeDate(TimeUtil.asTimestamp(bestBefore))
+						.bestBeforeDate(bestBefore)
 						.qtyTu(parameters.topLevelHU.getChildHUs().size());
 
-		final String lotNumber = parameters.topLevelHU.extractLotNumber();
+		final String lotNumber = extractLotNumber(parameters.getInOutLineRecord()).orElse(null);
+
 		if (Check.isNotBlank(lotNumber))
 		{
 			createPackItemRequestBuilder.lotNumber(lotNumber);

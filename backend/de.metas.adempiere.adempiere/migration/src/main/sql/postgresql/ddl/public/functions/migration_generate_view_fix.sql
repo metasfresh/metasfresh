@@ -37,12 +37,8 @@ BEGIN
 
     v_fixed_definition := v_definition;
 
-    -- Strategy: Find patterns like "offset) - 1)" and replace the outer structure
-    -- Pattern: + si.invoicedaycutoff) - 1)  -> + si.invoicedaycutoff), 1)
-    -- Then wrap with subtractdays()
-
-    -- First, do targeted replacements for known column patterns
-    -- Replace: si.invoicedaycutoff) - 1)) with: si.invoicedaycutoff), 1))
+    -- Replace patterns: (timestamp + offset) - 1 -> subtractdays(timestamp + offset, 1)
+    -- Only replace the - 1 patterns, NOT the + 14 patterns
     v_fixed_definition := replace(v_fixed_definition,
         'si.invoicedaycutoff) - 1))',
         'si.invoicedaycutoff), 1))');
@@ -65,17 +61,8 @@ BEGIN
         '(((firstof((o.dateordered)',
         'subtractdays(((firstof((o.dateordered)');
 
-    -- Count changes made
-    v_changes := (length(v_definition) - length(replace(v_definition, ') - 1)', '')))
-               - (length(v_fixed_definition) - length(replace(v_fixed_definition, ') - 1)', '')));
-
-    -- Build result
-    v_result := '-- ============================================================================' || E'\n';
-    v_result := v_result || '-- Generated fix for VIEW: ' || p_schema_name || '.' || p_view_name || E'\n';
-    v_result := v_result || '-- Changes: ' || v_changes || ' operator replacements' || E'\n';
-    v_result := v_result || '-- Generated at: ' || now()::TEXT || E'\n';
-    v_result := v_result || '-- ============================================================================' || E'\n\n';
-    v_result := v_result || 'DROP VIEW IF EXISTS ' || p_schema_name || '.' || p_view_name || ';' || E'\n\n';
+    v_result := '-- Fix for VIEW: ' || p_schema_name || '.' || p_view_name || E'\n';
+    v_result := v_result || 'DROP VIEW IF EXISTS ' || p_schema_name || '.' || p_view_name || ';' || E'\n';
     v_result := v_result || 'CREATE OR REPLACE VIEW ' || p_schema_name || '.' || p_view_name || ' AS' || E'\n';
     v_result := v_result || v_fixed_definition || E'\n';
 
