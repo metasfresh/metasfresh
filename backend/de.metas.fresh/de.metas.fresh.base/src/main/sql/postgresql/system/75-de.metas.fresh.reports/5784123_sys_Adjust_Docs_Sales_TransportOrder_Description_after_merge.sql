@@ -35,10 +35,7 @@ CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_TransportOrder_Des
                 UserName        varchar(60),
                 UserLastName    varchar(60),
                 UserMail        varchar(60),
-                UserPhone       varchar(60),
-                containerno     varchar,
-                trackingid      varchar,
-                vesselname      varchar
+                UserPhone       varchar(60)
             )
 AS
 $$
@@ -54,10 +51,7 @@ SELECT st.description AS description,
        us.name        AS UserName,
        us.lastname    AS UserLastName,
        us.email       AS UserMail,
-       us.phone       AS UserPhone,
-       st.containerno,
-       st.trackingid,
-       st.vesselname
+       us.phone       AS UserPhone
 FROM M_ShipperTransportation st
          INNER JOIN C_BPartner_Location bpl ON st.Shipper_Location_ID = bpl.C_BPartner_Location_ID
          INNER JOIN C_BPartner bp ON bpl.C_BPartner_ID = bp.C_BPartner_ID
