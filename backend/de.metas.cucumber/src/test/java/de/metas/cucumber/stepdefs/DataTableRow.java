@@ -437,6 +437,16 @@ public class DataTableRow
 				.orElseThrow(() -> new AdempiereException("No value found for " + valueColumnName));
 	}
 
+	public Quantity getAsQuantity(
+			@NonNull final String valueColumnName,
+			@Nullable final String uomColumnName,
+			@Nullable final X12DE355 uomDefaultCode,
+			@NonNull final Function<X12DE355, I_C_UOM> uomMapper)
+	{
+		return getAsOptionalQuantity(valueColumnName, uomColumnName, uomDefaultCode, uomMapper)
+				.orElseThrow(() -> new AdempiereException("No value found for " + valueColumnName));
+	}
+
 	public Optional<Quantity> getAsOptionalQuantity(
 			@NonNull final String valueColumnName,
 			@NonNull final Function<X12DE355, I_C_UOM> uomMapper)
@@ -447,6 +457,15 @@ public class DataTableRow
 	public Optional<Quantity> getAsOptionalQuantity(
 			@NonNull final String valueColumnName,
 			@Nullable final String uomColumnName,
+			@NonNull final Function<X12DE355, I_C_UOM> uomMapper)
+	{
+		return getAsOptionalQuantity(valueColumnName, uomColumnName, null, uomMapper);
+	}
+
+	public Optional<Quantity> getAsOptionalQuantity(
+			@NonNull final String valueColumnName,
+			@Nullable final String uomColumnName,
+			@Nullable final X12DE355 uomDefaultCode,
 			@NonNull final Function<X12DE355, I_C_UOM> uomMapper)
 	{
 		final String valueStr = getAsOptionalString(valueColumnName).map(StringUtils::trimBlankToNull).orElse(null);
@@ -469,14 +488,19 @@ public class DataTableRow
 			uomCode = X12DE355.ofNullableCode(valueStr.substring(spaceIdx).trim());
 		}
 
+		if (uomCode == null && uomColumnName != null)
+		{
+			uomCode = getAsOptionalUOMCode(uomColumnName).orElse(null);
+		}
+
+		if (uomCode == null && uomDefaultCode != null)
+		{
+			uomCode = uomDefaultCode;
+		}
+
 		if (uomCode == null)
 		{
-			if (uomColumnName == null)
-			{
-				throw new AdempiereException("When UOM is not incorporated in `" + valueColumnName + "` then an UOM column name shall be provided");
-			}
-
-			uomCode = getAsUOMCode(uomColumnName);
+			throw new AdempiereException("When UOM is not incorporated in `" + valueColumnName + "` then an UOM column name shall be provided or a default assumed");
 		}
 
 		final I_C_UOM uom = uomMapper.apply(uomCode);
@@ -486,16 +510,19 @@ public class DataTableRow
 	@NonNull
 	public X12DE355 getAsUOMCode(@NonNull final String columnName)
 	{
+		return getAsOptionalUOMCode(columnName)
+				.orElseThrow(() -> new AdempiereException("No value found in column " + columnName));
+	}
+
+	@NonNull
+	public Optional<X12DE355> getAsOptionalUOMCode(@NonNull final String columnName)
+	{
 		String valueStr = getAsOptionalString(columnName).orElse(null);
 		if (valueStr == null && !columnName.endsWith("X12DE355"))
 		{
 			valueStr = getAsOptionalString(columnName + ".X12DE355").orElse(null);
 		}
-		if (valueStr == null)
-		{
-			throw new AdempiereException("No value found for " + columnName);
-		}
-		return X12DE355.ofCode(valueStr);
+		return valueStr != null ? Optional.of(X12DE355.ofCode(valueStr)) : Optional.empty();
 	}
 
 	public CurrencyCode getAsCurrencyCode()
@@ -509,7 +536,8 @@ public class DataTableRow
 		return Optionals.firstPresentOfSuppliers(
 						() -> getAsOptionalString("C_Currency.ISO_Code"),
 						() -> getAsOptionalString("C_Currency." + StepDefDataIdentifier.SUFFIX),
-						() -> getAsOptionalString("C_Currency_ID")
+						() -> getAsOptionalString("C_Currency_ID"),
+						() -> getAsOptionalString("currencyCode")
 				)
 				.map(CurrencyCode::ofThreeLetterCode);
 	}
