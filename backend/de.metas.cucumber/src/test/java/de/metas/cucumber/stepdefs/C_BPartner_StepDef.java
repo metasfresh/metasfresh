@@ -278,6 +278,13 @@ public class C_BPartner_StepDef
 			bPartnerRecord.setPO_PricingSystem_ID(poPricingSystemId);
 		}
 
+		final int paymentTermId = row.getAsOptionalInt("C_PaymentTerm_ID").orElse(-1);
+		if (paymentTermId > 0)
+		{
+			bPartnerRecord.setC_PaymentTerm_ID(paymentTermId);
+			bPartnerRecord.setPO_PaymentTerm_ID(paymentTermId);
+		}
+
 		bPartnerRecord.setAD_Language(row.getAsOptionalString(COLUMNNAME_AD_Language).orElse(null));
 
 		final StepDefDataIdentifier salesRepIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_SalesRep_ID).orElse(null);
@@ -333,6 +340,10 @@ public class C_BPartner_StepDef
 		row.getAsOptionalString(COLUMNNAME_C_Incoterms_Customer_ID + ".Value")
 				.ifPresent(incotermValue -> bPartnerRecord.setC_Incoterms_Customer_ID(incotermsRepository.getByValue(incotermValue, OrgId.ofRepoId(orgId)).getId().getRepoId()));
 		row.getAsOptionalString(COLUMNNAME_IncotermLocation).ifPresent(bPartnerRecord::setIncotermLocation);
+
+		row.getAsOptionalIdentifier(COLUMNNAME_SO_Invoice_Aggregation_ID)
+				.map(aggregationTable::getId)
+				.ifPresent(aggregationId -> bPartnerRecord.setSO_Invoice_Aggregation_ID(aggregationId.getRepoId()));
 
 		final boolean alsoCreateLocation = InterfaceWrapperHelper.isNew(bPartnerRecord) && addDefaultLocationIfNewBPartner;
 
@@ -424,8 +435,8 @@ public class C_BPartner_StepDef
 	{
 		// I don't dare to open the can of worms of overhauling this entirely,
 		// because we have "C_BPartner_ID.Identifier" and "OPT.C_BPartner_ID"
-		final DataTableRow tableRow = DataTableRow.singleRow(row); 
-		
+		final DataTableRow tableRow = DataTableRow.singleRow(row);
+
 		final String identifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_ID + ".Identifier");
 		final Integer id = DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT." + COLUMNNAME_C_BPartner_ID);
 
