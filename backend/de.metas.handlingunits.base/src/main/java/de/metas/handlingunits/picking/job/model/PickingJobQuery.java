@@ -157,6 +157,7 @@ public class PickingJobQuery
 		return PickingJobScheduleQuery.builder()
 				.workplaceId(this.scheduledForWorkplaceId)
 				.excludeJobScheduleIds(this.excludeScheduleIds.getJobScheduleIds())
+				.isProcessed(false)
 				.build();
 	}
 
