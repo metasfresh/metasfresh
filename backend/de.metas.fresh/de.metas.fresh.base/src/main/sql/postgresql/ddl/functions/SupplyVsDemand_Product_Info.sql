@@ -1,9 +1,9 @@
-DROP FUNCTION IF EXISTS report.SupplyVsDemand_Product_Info.sql(
+DROP FUNCTION IF EXISTS report.SupplyVsDemand_Product_Info(
     p_date_from TIMESTAMP,
     p_date_to   TIMESTAMP
 );
 
-CREATE OR REPLACE FUNCTION report.SupplyVsDemand_Product_Info.sql(
+CREATE OR REPLACE FUNCTION report.SupplyVsDemand_Product_Info(
     p_date_from TIMESTAMP,
     p_date_to   TIMESTAMP
 )
