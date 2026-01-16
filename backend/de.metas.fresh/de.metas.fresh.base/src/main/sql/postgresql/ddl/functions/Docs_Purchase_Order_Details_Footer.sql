@@ -12,6 +12,7 @@ RETURNS TABLE
 )
 AS
 $$
+<<<<<<< HEAD
 SELECT
 	COALESCE(reft.name, ref.name) AS paymentrule,
 	COALESCE(ptt.name, pt.name) as paymentterm,
@@ -21,6 +22,35 @@ SELECT
 	to_char((o.DateOrdered - DiscountDays2),'dd.MM.YYYY') AS discount_date2,
 	c.cursymbol
 	
+=======
+SELECT COALESCE(reft.name, ref.name)                                          AS paymentrule,
+       REPLACE(REPLACE(REPLACE(COALESCE(ptt.name, pt.name),
+                               '$datum_netto',
+                               TO_CHAR(o.dateordered + pt.netdays, 'DD.MM.YYYY')),
+                       '$datum_skonto_1',
+                       TO_CHAR(o.dateordered::date + pt.discountdays, 'DD.MM.YYYY')),
+               '$datum_skonto_2',
+               TO_CHAR(o.dateordered::date + pt.discountdays2, 'DD.MM.YYYY')) AS paymentterm,
+       (CASE
+            WHEN pt.DiscountDays > 0
+                THEN (o.grandtotal + (o.grandtotal * pt.discount / 100))
+        END)                                                                  AS discount1,
+       (CASE
+            WHEN pt.DiscountDays2 > 0
+                THEN (o.grandtotal + (o.grandtotal * pt.discount2 / 100))
+        END)                                                                  AS discount2,
+       TO_CHAR(subtractdays(o.DateOrdered, DiscountDays), 'dd.MM.YYYY')                  AS discount_date1,
+       TO_CHAR(subtractdays(o.DateOrdered, DiscountDays2), 'dd.MM.YYYY')                 AS discount_date2,
+       c.cursymbol,
+       COALESCE(inc_trl.name, inc.name)                                       AS Incoterms,
+       o.incotermlocation,
+       o.descriptionbottom,
+       COALESCE(o_dr_trl.name, o_dr.name)                                     AS deliveryrule,
+       COALESCE(o_dvr_trl.name, o_dvr.name)                                   AS deliveryviarule,
+       report.getBPartner_CustomDocumentText(o.C_DocTypeTarget_ID, o.c_bpartner_id)       AS AdditionalText,
+       report.TaxNote(p_Order_ID, NULL, p_Language)                                                 AS taxnote
+
+>>>>>>> 9b9b8b4eae (fix(db): PostgreSQL 17 compatibility - remove custom minus operators (#21982))
 FROM C_Order o
 
 LEFT OUTER JOIN C_PaymentTerm pt on o.C_PaymentTerm_ID = pt.C_PaymentTerm_ID AND pt.isActive = 'Y'

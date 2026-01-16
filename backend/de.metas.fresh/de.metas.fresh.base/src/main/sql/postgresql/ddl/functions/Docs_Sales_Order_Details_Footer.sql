@@ -20,9 +20,15 @@ SELECT COALESCE(reft.name, ref.name)                                            
             ELSE null END)                                                                                      AS discount1,
        (CASE
             WHEN pt.DiscountDays2 > 0 THEN (o.grandtotal + (o.grandtotal * pt.discount2 / 100))
+<<<<<<< HEAD
             ELSE null END)                                                                                      AS discount2,
        to_char((o.DateOrdered - DiscountDays), 'dd.MM.YYYY')                                                    AS discount_date1,
        to_char((o.DateOrdered - DiscountDays2), 'dd.MM.YYYY')                                                   AS discount_date2,
+=======
+        END)                                                  AS discount2,
+       TO_CHAR(subtractdays(o.DateOrdered, DiscountDays), 'dd.MM.YYYY')  AS discount_date1,
+       TO_CHAR(subtractdays(o.DateOrdered, DiscountDays2), 'dd.MM.YYYY') AS discount_date2,
+>>>>>>> 9b9b8b4eae (fix(db): PostgreSQL 17 compatibility - remove custom minus operators (#21982))
        c.cursymbol,
        COALESCE(nullif(dtt.documentnote, ''),
                 nullif(dt.documentnote, ''))                                                                    as documentnote
