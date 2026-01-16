@@ -722,10 +722,192 @@ BEGIN
     IF v_op_count > 0 THEN
         RAISE EXCEPTION 'Migration incomplete: % custom minus operator(s) still exist', v_op_count;
     ELSE
-        RAISE NOTICE '';
-        RAISE NOTICE '=========================================================';
-        RAISE NOTICE 'SUCCESS: All custom minus operators removed';
-        RAISE NOTICE 'Database is now ready for pg_upgrade to PostgreSQL 17';
-        RAISE NOTICE '=========================================================';
+        RAISE NOTICE 'Original custom minus operators removed successfully.';
     END IF;
+END $$;
+
+
+-- ============================================================================
+-- STEP 10: Create DEPRECATED operator functions with warning logging
+-- ============================================================================
+-- These functions replace the old operators but log a deprecation warning.
+-- They log only ONCE per session to avoid performance impact.
+-- This serves as a safety net to catch any usages we missed.
+
+-- Function for: timestamptz - numeric (e.g., date - days)
+CREATE OR REPLACE FUNCTION public.subtract_numeric_from_timestamptz_deprecated(
+    p_timestamp timestamptz,
+    p_days numeric
+)
+RETURNS timestamptz
+LANGUAGE plpgsql
+AS $func$
+BEGIN
+    -- Log warning once per session
+    IF current_setting('metasfresh.warned_deprecated_minus_timestamptz_numeric', true) IS NULL THEN
+        RAISE WARNING E'\n'
+            '╔══════════════════════════════════════════════════════════════════════════════╗\n'
+            '║ DEPRECATED OPERATOR USAGE DETECTED                                           ║\n'
+            '╠══════════════════════════════════════════════════════════════════════════════╣\n'
+            '║ Pattern: timestamp - numeric (e.g., date_column - days_column)               ║\n'
+            '║                                                                              ║\n'
+            '║ REPLACE WITH: subtractdays(timestamp, numeric)                               ║\n'
+            '║                                                                              ║\n'
+            '║ Example:                                                                     ║\n'
+            '║   OLD: TO_CHAR((o.DateOrdered - DiscountDays), ''dd.MM.YYYY'')                 ║\n'
+            '║   NEW: TO_CHAR(subtractdays(o.DateOrdered, DiscountDays), ''dd.MM.YYYY'')      ║\n'
+            '║                                                                              ║\n'
+            '║ This operator will be REMOVED in a future release.                           ║\n'
+            '║ See: https://github.com/metasfresh/metasfresh/pull/21982                     ║\n'
+            '╚══════════════════════════════════════════════════════════════════════════════╝';
+        PERFORM set_config('metasfresh.warned_deprecated_minus_timestamptz_numeric', 'true', false);
+    END IF;
+
+    RETURN subtractdays(p_timestamp, p_days);
+END;
+$func$;
+
+-- Function for: interval - numeric
+CREATE OR REPLACE FUNCTION public.subtract_numeric_from_interval_deprecated(
+    p_interval interval,
+    p_days numeric
+)
+RETURNS interval
+LANGUAGE plpgsql
+AS $func$
+BEGIN
+    -- Log warning once per session
+    IF current_setting('metasfresh.warned_deprecated_minus_interval_numeric', true) IS NULL THEN
+        RAISE WARNING E'\n'
+            '╔══════════════════════════════════════════════════════════════════════════════╗\n'
+            '║ DEPRECATED OPERATOR USAGE DETECTED                                           ║\n'
+            '╠══════════════════════════════════════════════════════════════════════════════╣\n'
+            '║ Pattern: interval - numeric                                                  ║\n'
+            '║                                                                              ║\n'
+            '║ REPLACE WITH: subtractdays(interval, numeric)                                ║\n'
+            '║                                                                              ║\n'
+            '║ This operator will be REMOVED in a future release.                           ║\n'
+            '║ See: https://github.com/metasfresh/metasfresh/pull/21982                     ║\n'
+            '╚══════════════════════════════════════════════════════════════════════════════╝';
+        PERFORM set_config('metasfresh.warned_deprecated_minus_interval_numeric', 'true', false);
+    END IF;
+
+    RETURN subtractdays(p_interval, p_days);
+END;
+$func$;
+
+-- Function for: numeric - timestamptz (reversed operands)
+CREATE OR REPLACE FUNCTION public.subtract_timestamptz_from_numeric_deprecated(
+    p_days numeric,
+    p_timestamp timestamptz
+)
+RETURNS timestamptz
+LANGUAGE plpgsql
+AS $func$
+BEGIN
+    -- Log warning once per session
+    IF current_setting('metasfresh.warned_deprecated_minus_numeric_timestamptz', true) IS NULL THEN
+        RAISE WARNING E'\n'
+            '╔══════════════════════════════════════════════════════════════════════════════╗\n'
+            '║ DEPRECATED OPERATOR USAGE DETECTED                                           ║\n'
+            '╠══════════════════════════════════════════════════════════════════════════════╣\n'
+            '║ Pattern: numeric - timestamp (reversed operands)                             ║\n'
+            '║                                                                              ║\n'
+            '║ This unusual pattern should be reviewed and rewritten.                       ║\n'
+            '║                                                                              ║\n'
+            '║ This operator will be REMOVED in a future release.                           ║\n'
+            '║ See: https://github.com/metasfresh/metasfresh/pull/21982                     ║\n'
+            '╚══════════════════════════════════════════════════════════════════════════════╝';
+        PERFORM set_config('metasfresh.warned_deprecated_minus_numeric_timestamptz', 'true', false);
+    END IF;
+
+    RETURN subtractdays(p_timestamp, p_days);
+END;
+$func$;
+
+-- Function for: numeric - interval (reversed operands)
+CREATE OR REPLACE FUNCTION public.subtract_interval_from_numeric_deprecated(
+    p_days numeric,
+    p_interval interval
+)
+RETURNS interval
+LANGUAGE plpgsql
+AS $func$
+BEGIN
+    -- Log warning once per session
+    IF current_setting('metasfresh.warned_deprecated_minus_numeric_interval', true) IS NULL THEN
+        RAISE WARNING E'\n'
+            '╔══════════════════════════════════════════════════════════════════════════════╗\n'
+            '║ DEPRECATED OPERATOR USAGE DETECTED                                           ║\n'
+            '╠══════════════════════════════════════════════════════════════════════════════╣\n'
+            '║ Pattern: numeric - interval (reversed operands)                              ║\n'
+            '║                                                                              ║\n'
+            '║ This unusual pattern should be reviewed and rewritten.                       ║\n'
+            '║                                                                              ║\n'
+            '║ This operator will be REMOVED in a future release.                           ║\n'
+            '║ See: https://github.com/metasfresh/metasfresh/pull/21982                     ║\n'
+            '╚══════════════════════════════════════════════════════════════════════════════╝';
+        PERFORM set_config('metasfresh.warned_deprecated_minus_numeric_interval', 'true', false);
+    END IF;
+
+    RETURN subtractdays(p_interval, p_days);
+END;
+$func$;
+
+
+-- ============================================================================
+-- STEP 11: Recreate operators using deprecated functions (SAFETY NET)
+-- ============================================================================
+-- These operators provide backwards compatibility while logging warnings.
+-- They will be removed in a future release once all usages are fixed.
+--
+-- IMPORTANT: These operators are in the 'public' schema intentionally.
+-- Before the NEXT pg_upgrade, they must be removed again and all usages fixed.
+
+CREATE OPERATOR public.- (
+    LEFTARG = timestamptz,
+    RIGHTARG = numeric,
+    FUNCTION = public.subtract_numeric_from_timestamptz_deprecated
+);
+
+CREATE OPERATOR public.- (
+    LEFTARG = interval,
+    RIGHTARG = numeric,
+    FUNCTION = public.subtract_numeric_from_interval_deprecated
+);
+
+CREATE OPERATOR public.- (
+    LEFTARG = numeric,
+    RIGHTARG = timestamptz,
+    FUNCTION = public.subtract_timestamptz_from_numeric_deprecated
+);
+
+CREATE OPERATOR public.- (
+    LEFTARG = numeric,
+    RIGHTARG = interval,
+    FUNCTION = public.subtract_interval_from_numeric_deprecated
+);
+
+
+-- ============================================================================
+-- STEP 12: Final status message
+-- ============================================================================
+
+DO $$
+BEGIN
+    RAISE NOTICE '';
+    RAISE NOTICE '=========================================================';
+    RAISE NOTICE 'MIGRATION COMPLETE';
+    RAISE NOTICE '=========================================================';
+    RAISE NOTICE '';
+    RAISE NOTICE 'Custom minus operators have been replaced with DEPRECATED';
+    RAISE NOTICE 'versions that log warnings when used.';
+    RAISE NOTICE '';
+    RAISE NOTICE 'IMPORTANT: Before the next pg_upgrade, you must:';
+    RAISE NOTICE '  1. Monitor logs for deprecation warnings';
+    RAISE NOTICE '  2. Fix all remaining usages (replace - with subtractdays)';
+    RAISE NOTICE '  3. Remove these deprecated operators';
+    RAISE NOTICE '';
+    RAISE NOTICE 'See: https://github.com/metasfresh/metasfresh/pull/21982';
+    RAISE NOTICE '=========================================================';
 END $$;
