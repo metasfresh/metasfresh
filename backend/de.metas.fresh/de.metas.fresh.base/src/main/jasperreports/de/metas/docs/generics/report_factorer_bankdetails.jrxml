@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details_factorer_bankdetails" pageWidth="521" pageHeight="842" columnWidth="521" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/invoice/report" uuid="07781559-9273-40dd-ab0a-726b6e29bd5a">
+<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_factorer_bankdetails" pageWidth="521" pageHeight="842" columnWidth="521" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/invoice/report" uuid="07781559-9273-40dd-ab0a-726b6e29bd5a">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="Remote"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\dev.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="316"/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="679"/>
@@ -14,22 +14,17 @@
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
 	<style name="Test" isDefault="true" markup="styled"/>
-	<parameter name="c_invoice_id" class="java.lang.Integer">
-		<defaultValueExpression><![CDATA[$P{c_invoice_id}]]></defaultValueExpression>
-	</parameter>
-	<parameter name="ad_language" class="java.lang.String">
-		<defaultValueExpression><![CDATA[$P{ad_language}]]></defaultValueExpression>
-	</parameter>
+	<parameter name="ad_org_id" class="java.lang.Integer"/>
 	<queryString>
-		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Invoice_Factorer_BankDetails ( $P{c_invoice_id} ) ;]]>
+		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.getFactorer_BankDetails ( $P{ad_org_id} ) ;]]>
 	</queryString>
-	<field name="bp_name" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="bp_name"/>
-		<property name="com.jaspersoft.studio.field.label" value="bp_name"/>
+	<field name="org_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="org_name"/>
+		<property name="com.jaspersoft.studio.field.label" value="org_name"/>
 	</field>
-	<field name="bp_address" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="bp_address"/>
-		<property name="com.jaspersoft.studio.field.label" value="bp_address"/>
+	<field name="org_addressline" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="org_addressline"/>
+		<property name="com.jaspersoft.studio.field.label" value="org_addressline"/>
 	</field>
 	<field name="bank_acct" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="bank_acct"/>
@@ -58,7 +53,7 @@
 	<detail>
 		<band height="229" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-82" style="Test" x="200" y="51" width="300" height="12" isPrintWhenDetailOverflows="true" uuid="4ff37ef9-5963-48e1-b50b-c31a32425867"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -69,9 +64,9 @@
 				<textElement markup="html">
 					<font fontName="Arial" size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{bp_name}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{org_name}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-1" style="Test" x="40" y="51" width="160" height="12" isPrintWhenDetailOverflows="true" uuid="5c6e9099-bbbd-48a8-8175-4092f979f1a9"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -84,7 +79,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA["Kontoinhaber / account holder:"]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-1" style="Test" x="40" y="0" width="460" height="12" isPrintWhenDetailOverflows="true" uuid="1786a71d-7610-4f69-bc2c-cc1017a84b19"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -97,7 +92,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA["Bestätigung der Bankverbindung / Confirmation of account details"]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-1" style="Test" x="40" y="20" width="460" height="12" isPrintWhenDetailOverflows="true" uuid="34d479e4-c88e-470f-bc15-ae17dd24f7f6"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -110,7 +105,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA["Sehr geehrte Damen und Herren / Dear Sir or Madam"]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-1" style="Test" x="40" y="32" width="460" height="12" isPrintWhenDetailOverflows="true" uuid="8f9edc3b-0a34-4b22-acd5-dd04d883e490"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -123,7 +118,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA["hiermit bestätigen wir Ihre Kontodaten wie folgt / we hereby confirm your account details as follows:"]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-1" style="Test" x="40" y="63" width="160" height="12" isPrintWhenDetailOverflows="true" uuid="ace831e6-b41b-4b30-af72-6c38b66a4e16"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -136,7 +131,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA["Adresse / address:"]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-82" style="Test" x="200" y="63" width="300" height="12" isPrintWhenDetailOverflows="true" uuid="d5aad993-ae2c-4a35-8990-f90abe5c15e3"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -147,9 +142,9 @@
 				<textElement markup="html">
 					<font fontName="Arial" size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{bp_address}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{org_addressline}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-1" style="Test" x="40" y="90" width="160" height="12" isPrintWhenDetailOverflows="true" uuid="28c3c778-7bc8-4d8e-b017-2b2a5a9e93fb"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -162,7 +157,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA["Konto Nr. / account no.:"]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-82" style="Test" x="200" y="90" width="300" height="12" isPrintWhenDetailOverflows="true" uuid="6c7278ef-ad7c-42f1-b715-523de37a9cb8"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -175,7 +170,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bank_acct}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-1" style="Test" x="40" y="102" width="160" height="12" isPrintWhenDetailOverflows="true" uuid="8f619c7a-8c54-4141-b01f-33b77e502494"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -188,7 +183,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA["Währung(en) / currency(s):"]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-82" style="Test" x="200" y="102" width="300" height="12" isPrintWhenDetailOverflows="true" uuid="e936255b-c2ee-414a-ad51-2b6e8305eee4"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -201,7 +196,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bank_currency}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-1" style="Test" x="40" y="114" width="160" height="12" isPrintWhenDetailOverflows="true" uuid="78025de2-6454-414c-b666-bb45c805957b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -214,7 +209,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA["Bankleitzahl / bank code:"]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-82" style="Test" x="200" y="114" width="300" height="12" isPrintWhenDetailOverflows="true" uuid="2b078381-ec96-4bfd-b492-5c7730debc30"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -227,7 +222,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bank_code}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-1" style="Test" x="40" y="126" width="160" height="12" isPrintWhenDetailOverflows="true" uuid="91dfb7be-122f-4579-bb60-b81e168ed151"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -240,7 +235,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA["Bank / bank name:"]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-82" style="Test" x="200" y="126" width="300" height="12" isPrintWhenDetailOverflows="true" uuid="499499bc-dbbc-43bc-af4a-8cf791522eab"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -253,7 +248,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bank_name}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-1" style="Test" x="40" y="138" width="160" height="12" isPrintWhenDetailOverflows="true" uuid="317767ea-e554-4e69-b0b2-a22cf69c4807"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -266,7 +261,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA["IBAN:"]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-82" style="Test" x="200" y="138" width="300" height="12" isPrintWhenDetailOverflows="true" uuid="5919ff1e-df39-4661-905d-5d6192cd2678"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -279,7 +274,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bank_iban}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-1" style="Test" x="40" y="150" width="160" height="12" isPrintWhenDetailOverflows="true" uuid="f7fb5ed1-af55-426b-ac7e-c72391e0c71b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -292,7 +287,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA["BIC/SWIFT:"]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-82" style="Test" x="200" y="150" width="300" height="12" isPrintWhenDetailOverflows="true" uuid="d1215512-b3ef-4f46-8d67-ba17d19e6aa3"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -305,7 +300,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bank_swift}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-1" style="Test" x="40" y="168" width="460" height="12" isPrintWhenDetailOverflows="true" uuid="d6e9937a-a94c-4726-9408-f3730a46ef93"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -318,7 +313,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA["Mit freundlichen Grüßen / Yours sincerely"]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-1" style="Test" x="40" y="180" width="460" height="12" isPrintWhenDetailOverflows="true" uuid="89262df5-7108-4ccf-b891-e4279f387bdc"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -331,7 +326,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA["Firmenkunden-Service / Corporate Client Service"]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-1" style="Test" x="40" y="192" width="460" height="12" isPrintWhenDetailOverflows="true" uuid="be3134f4-ffd6-4fbc-9789-7fff73f8d097"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
