@@ -14,9 +14,9 @@ CREATE OR REPLACE FUNCTION report.SupplyVsDemand_Product_Info(
                 CurrentVendorName          VARCHAR,
                 CurrentVendorPurchasePrice NUMERIC,
                 CurrentCostPrice           NUMERIC,
-                QtyToMove                  NUMERIC,
+                QtyPurchased               NUMERIC,
                 QtyStock                   NUMERIC,
-                QtyReserved                NUMERIC,
+                QtySold                    NUMERIC,
                 UOM                        VARCHAR
             )
 AS
@@ -30,7 +30,7 @@ BEGIN
                pc.CurrentCostPrice,
                dsv.qtyToMove,
                dsv.qtyStock,
-               sales.QtySold AS qtyReserved,
+               coalesce(sales.QtySold, 0) AS QtySold,
                uom.UOMSymbol
 
         FROM M_Product p

@@ -333,3 +333,108 @@ UPDATE AD_TreeNodeMM SET Parent_ID=1000009, SeqNo=25, Updated=now(), UpdatedBy=1
 UPDATE AD_TreeNodeMM SET Parent_ID=1000035, SeqNo=0, Updated=now(), UpdatedBy=100 WHERE  Node_ID=542292 AND AD_Tree_ID=10
 ;
 
+
+
+
+-- 2026-01-16T12:39:42.200Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,584410,0,'QtySold',TO_TIMESTAMP('2026-01-16 12:39:42.063000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','QtySold','QtySold',TO_TIMESTAMP('2026-01-16 12:39:42.063000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-01-16T12:39:42.206Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=584410 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- Element: QtySold
+-- 2026-01-16T12:40:04.242Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Verkaufsmenge', PrintName='Verkaufsmenge',Updated=TO_TIMESTAMP('2026-01-16 12:40:04.242000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584410 AND AD_Language='de_CH'
+;
+
+-- 2026-01-16T12:40:04.243Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='de_CH' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2026-01-16T12:40:04.450Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584410,'de_CH')
+;
+
+-- Element: QtySold
+-- 2026-01-16T12:40:09.202Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Verkaufsmenge', PrintName='Verkaufsmenge',Updated=TO_TIMESTAMP('2026-01-16 12:40:09.202000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584410 AND AD_Language='de_DE'
+;
+
+-- 2026-01-16T12:40:09.203Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='de_DE' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2026-01-16T12:40:09.688Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(584410,'de_DE')
+;
+
+-- 2026-01-16T12:40:09.689Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584410,'de_DE')
+;
+
+-- Element: QtySold
+-- 2026-01-16T12:40:18.873Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Qty Sold', PrintName='Qty Sold',Updated=TO_TIMESTAMP('2026-01-16 12:40:18.873000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584410 AND AD_Language='en_US'
+;
+
+-- 2026-01-16T12:40:18.875Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2026-01-16T12:40:19.082Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584410,'en_US')
+;
+
+-- 2026-01-16T12:40:33.150Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,584411,0,'QtyPurchased',TO_TIMESTAMP('2026-01-16 12:40:33.019000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','QtyPurchased','QtyPurchased',TO_TIMESTAMP('2026-01-16 12:40:33.019000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-01-16T12:40:33.152Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=584411 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- Element: QtyPurchased
+-- 2026-01-16T12:40:42.474Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Qty Purchased', PrintName='Qty Purchased',Updated=TO_TIMESTAMP('2026-01-16 12:40:42.474000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584411 AND AD_Language='en_US'
+;
+
+-- 2026-01-16T12:40:42.475Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2026-01-16T12:40:42.659Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584411,'en_US')
+;
+
+-- Element: QtyPurchased
+-- 2026-01-16T12:41:04.822Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Bestellmenge', PrintName='Bestellmenge',Updated=TO_TIMESTAMP('2026-01-16 12:41:04.822000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584411 AND AD_Language='de_CH'
+;
+
+-- 2026-01-16T12:41:04.823Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='de_CH' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2026-01-16T12:41:05.017Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584411,'de_CH')
+;
+
+-- Element: QtyPurchased
+-- 2026-01-16T12:41:11.826Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Bestellmenge', PrintName='Bestellmenge',Updated=TO_TIMESTAMP('2026-01-16 12:41:11.826000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584411 AND AD_Language='de_DE'
+;
+
+-- 2026-01-16T12:41:11.827Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='de_DE' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2026-01-16T12:41:12.113Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(584411,'de_DE')
+;
+
+-- 2026-01-16T12:41:12.114Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584411,'de_DE')
+;
+
