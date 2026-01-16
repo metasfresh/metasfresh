@@ -742,15 +742,21 @@ CREATE OR REPLACE FUNCTION public.subtract_numeric_from_timestamptz_deprecated(
 RETURNS timestamptz
 LANGUAGE plpgsql
 AS $func$
+DECLARE
+    v_query TEXT;
+    v_warn_key TEXT;
 BEGIN
-    -- Log warning once per session
-    IF current_setting('metasfresh.warned_deprecated_minus_timestamptz_numeric', true) IS NULL THEN
+    -- Get current query and create a unique key for this specific usage
+    v_query := current_query();
+    v_warn_key := 'metasfresh.warned_minus_ts_num_' || md5(v_query);
+
+    -- Log warning once per unique query per session
+    IF current_setting(v_warn_key, true) IS NULL THEN
         RAISE WARNING E'\n'
             '╔══════════════════════════════════════════════════════════════════════════════╗\n'
             '║ DEPRECATED OPERATOR USAGE DETECTED                                           ║\n'
             '╠══════════════════════════════════════════════════════════════════════════════╣\n'
             '║ Pattern: timestamp - numeric (e.g., date_column - days_column)               ║\n'
-            '║                                                                              ║\n'
             '║ REPLACE WITH: subtractdays(timestamp, numeric)                               ║\n'
             '║                                                                              ║\n'
             '║ Example:                                                                     ║\n'
@@ -759,8 +765,11 @@ BEGIN
             '║                                                                              ║\n'
             '║ This operator will be REMOVED in a future release.                           ║\n'
             '║ See: https://github.com/metasfresh/metasfresh/pull/21982                     ║\n'
-            '╚══════════════════════════════════════════════════════════════════════════════╝';
-        PERFORM set_config('metasfresh.warned_deprecated_minus_timestamptz_numeric', 'true', false);
+            '╠══════════════════════════════════════════════════════════════════════════════╣\n'
+            '║ LOCATION - Query using this operator:                                        ║\n'
+            '╚══════════════════════════════════════════════════════════════════════════════╝\n'
+            '%', v_query;
+        PERFORM set_config(v_warn_key, 'true', false);
     END IF;
 
     RETURN subtractdays(p_timestamp, p_days);
@@ -775,21 +784,28 @@ CREATE OR REPLACE FUNCTION public.subtract_numeric_from_interval_deprecated(
 RETURNS interval
 LANGUAGE plpgsql
 AS $func$
+DECLARE
+    v_query TEXT;
+    v_warn_key TEXT;
 BEGIN
-    -- Log warning once per session
-    IF current_setting('metasfresh.warned_deprecated_minus_interval_numeric', true) IS NULL THEN
+    v_query := current_query();
+    v_warn_key := 'metasfresh.warned_minus_int_num_' || md5(v_query);
+
+    IF current_setting(v_warn_key, true) IS NULL THEN
         RAISE WARNING E'\n'
             '╔══════════════════════════════════════════════════════════════════════════════╗\n'
             '║ DEPRECATED OPERATOR USAGE DETECTED                                           ║\n'
             '╠══════════════════════════════════════════════════════════════════════════════╣\n'
             '║ Pattern: interval - numeric                                                  ║\n'
-            '║                                                                              ║\n'
             '║ REPLACE WITH: subtractdays(interval, numeric)                                ║\n'
             '║                                                                              ║\n'
             '║ This operator will be REMOVED in a future release.                           ║\n'
             '║ See: https://github.com/metasfresh/metasfresh/pull/21982                     ║\n'
-            '╚══════════════════════════════════════════════════════════════════════════════╝';
-        PERFORM set_config('metasfresh.warned_deprecated_minus_interval_numeric', 'true', false);
+            '╠══════════════════════════════════════════════════════════════════════════════╣\n'
+            '║ LOCATION - Query using this operator:                                        ║\n'
+            '╚══════════════════════════════════════════════════════════════════════════════╝\n'
+            '%', v_query;
+        PERFORM set_config(v_warn_key, 'true', false);
     END IF;
 
     RETURN subtractdays(p_interval, p_days);
@@ -804,21 +820,28 @@ CREATE OR REPLACE FUNCTION public.subtract_timestamptz_from_numeric_deprecated(
 RETURNS timestamptz
 LANGUAGE plpgsql
 AS $func$
+DECLARE
+    v_query TEXT;
+    v_warn_key TEXT;
 BEGIN
-    -- Log warning once per session
-    IF current_setting('metasfresh.warned_deprecated_minus_numeric_timestamptz', true) IS NULL THEN
+    v_query := current_query();
+    v_warn_key := 'metasfresh.warned_minus_num_ts_' || md5(v_query);
+
+    IF current_setting(v_warn_key, true) IS NULL THEN
         RAISE WARNING E'\n'
             '╔══════════════════════════════════════════════════════════════════════════════╗\n'
             '║ DEPRECATED OPERATOR USAGE DETECTED                                           ║\n'
             '╠══════════════════════════════════════════════════════════════════════════════╣\n'
             '║ Pattern: numeric - timestamp (reversed operands)                             ║\n'
-            '║                                                                              ║\n'
             '║ This unusual pattern should be reviewed and rewritten.                       ║\n'
             '║                                                                              ║\n'
             '║ This operator will be REMOVED in a future release.                           ║\n'
             '║ See: https://github.com/metasfresh/metasfresh/pull/21982                     ║\n'
-            '╚══════════════════════════════════════════════════════════════════════════════╝';
-        PERFORM set_config('metasfresh.warned_deprecated_minus_numeric_timestamptz', 'true', false);
+            '╠══════════════════════════════════════════════════════════════════════════════╣\n'
+            '║ LOCATION - Query using this operator:                                        ║\n'
+            '╚══════════════════════════════════════════════════════════════════════════════╝\n'
+            '%', v_query;
+        PERFORM set_config(v_warn_key, 'true', false);
     END IF;
 
     RETURN subtractdays(p_timestamp, p_days);
@@ -833,21 +856,28 @@ CREATE OR REPLACE FUNCTION public.subtract_interval_from_numeric_deprecated(
 RETURNS interval
 LANGUAGE plpgsql
 AS $func$
+DECLARE
+    v_query TEXT;
+    v_warn_key TEXT;
 BEGIN
-    -- Log warning once per session
-    IF current_setting('metasfresh.warned_deprecated_minus_numeric_interval', true) IS NULL THEN
+    v_query := current_query();
+    v_warn_key := 'metasfresh.warned_minus_num_int_' || md5(v_query);
+
+    IF current_setting(v_warn_key, true) IS NULL THEN
         RAISE WARNING E'\n'
             '╔══════════════════════════════════════════════════════════════════════════════╗\n'
             '║ DEPRECATED OPERATOR USAGE DETECTED                                           ║\n'
             '╠══════════════════════════════════════════════════════════════════════════════╣\n'
             '║ Pattern: numeric - interval (reversed operands)                              ║\n'
-            '║                                                                              ║\n'
             '║ This unusual pattern should be reviewed and rewritten.                       ║\n'
             '║                                                                              ║\n'
             '║ This operator will be REMOVED in a future release.                           ║\n'
             '║ See: https://github.com/metasfresh/metasfresh/pull/21982                     ║\n'
-            '╚══════════════════════════════════════════════════════════════════════════════╝';
-        PERFORM set_config('metasfresh.warned_deprecated_minus_numeric_interval', 'true', false);
+            '╠══════════════════════════════════════════════════════════════════════════════╣\n'
+            '║ LOCATION - Query using this operator:                                        ║\n'
+            '╚══════════════════════════════════════════════════════════════════════════════╝\n'
+            '%', v_query;
+        PERFORM set_config(v_warn_key, 'true', false);
     END IF;
 
     RETURN subtractdays(p_interval, p_days);
