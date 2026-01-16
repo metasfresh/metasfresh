@@ -753,22 +753,16 @@ BEGIN
     -- Log warning once per unique query per session
     IF current_setting(v_warn_key, true) IS NULL THEN
         RAISE WARNING E'\n'
-            '╔══════════════════════════════════════════════════════════════════════════════╗\n'
-            '║ DEPRECATED OPERATOR USAGE DETECTED                                           ║\n'
-            '╠══════════════════════════════════════════════════════════════════════════════╣\n'
-            '║ Pattern: timestamp - numeric (e.g., date_column - days_column)               ║\n'
-            '║ REPLACE WITH: subtractdays(timestamp, numeric)                               ║\n'
-            '║                                                                              ║\n'
-            '║ Example:                                                                     ║\n'
-            '║   OLD: TO_CHAR((o.DateOrdered - DiscountDays), ''dd.MM.YYYY'')                 ║\n'
-            '║   NEW: TO_CHAR(subtractdays(o.DateOrdered, DiscountDays), ''dd.MM.YYYY'')      ║\n'
-            '║                                                                              ║\n'
-            '║ This operator will be REMOVED in a future release.                           ║\n'
-            '║ See: https://github.com/metasfresh/metasfresh/pull/21982                     ║\n'
-            '╠══════════════════════════════════════════════════════════════════════════════╣\n'
-            '║ LOCATION - Query using this operator:                                        ║\n'
-            '╚══════════════════════════════════════════════════════════════════════════════╝\n'
-            '%', v_query;
+            '[DEPRECATED OPERATOR] timestamp - numeric\n'
+            '================================================================================\n'
+            'QUERY:\n'
+            '%\n'
+            '--------------------------------------------------------------------------------\n'
+            'FIX: Replace (date - days) with subtractdays(date, days)\n'
+            '     Example: TO_CHAR(subtractdays(o.DateOrdered, DiscountDays), ''dd.MM.YYYY'')\n'
+            'DOCS: https://github.com/metasfresh/metasfresh/pull/21982\n'
+            '================================================================================',
+            v_query;
         PERFORM set_config(v_warn_key, 'true', false);
     END IF;
 
@@ -793,18 +787,15 @@ BEGIN
 
     IF current_setting(v_warn_key, true) IS NULL THEN
         RAISE WARNING E'\n'
-            '╔══════════════════════════════════════════════════════════════════════════════╗\n'
-            '║ DEPRECATED OPERATOR USAGE DETECTED                                           ║\n'
-            '╠══════════════════════════════════════════════════════════════════════════════╣\n'
-            '║ Pattern: interval - numeric                                                  ║\n'
-            '║ REPLACE WITH: subtractdays(interval, numeric)                                ║\n'
-            '║                                                                              ║\n'
-            '║ This operator will be REMOVED in a future release.                           ║\n'
-            '║ See: https://github.com/metasfresh/metasfresh/pull/21982                     ║\n'
-            '╠══════════════════════════════════════════════════════════════════════════════╣\n'
-            '║ LOCATION - Query using this operator:                                        ║\n'
-            '╚══════════════════════════════════════════════════════════════════════════════╝\n'
-            '%', v_query;
+            '[DEPRECATED OPERATOR] interval - numeric\n'
+            '================================================================================\n'
+            'QUERY:\n'
+            '%\n'
+            '--------------------------------------------------------------------------------\n'
+            'FIX: Replace (interval - days) with subtractdays(interval, days)\n'
+            'DOCS: https://github.com/metasfresh/metasfresh/pull/21982\n'
+            '================================================================================',
+            v_query;
         PERFORM set_config(v_warn_key, 'true', false);
     END IF;
 
@@ -829,18 +820,15 @@ BEGIN
 
     IF current_setting(v_warn_key, true) IS NULL THEN
         RAISE WARNING E'\n'
-            '╔══════════════════════════════════════════════════════════════════════════════╗\n'
-            '║ DEPRECATED OPERATOR USAGE DETECTED                                           ║\n'
-            '╠══════════════════════════════════════════════════════════════════════════════╣\n'
-            '║ Pattern: numeric - timestamp (reversed operands)                             ║\n'
-            '║ This unusual pattern should be reviewed and rewritten.                       ║\n'
-            '║                                                                              ║\n'
-            '║ This operator will be REMOVED in a future release.                           ║\n'
-            '║ See: https://github.com/metasfresh/metasfresh/pull/21982                     ║\n'
-            '╠══════════════════════════════════════════════════════════════════════════════╣\n'
-            '║ LOCATION - Query using this operator:                                        ║\n'
-            '╚══════════════════════════════════════════════════════════════════════════════╝\n'
-            '%', v_query;
+            '[DEPRECATED OPERATOR] numeric - timestamp (unusual reversed operands)\n'
+            '================================================================================\n'
+            'QUERY:\n'
+            '%\n'
+            '--------------------------------------------------------------------------------\n'
+            'FIX: Review and rewrite this unusual pattern\n'
+            'DOCS: https://github.com/metasfresh/metasfresh/pull/21982\n'
+            '================================================================================',
+            v_query;
         PERFORM set_config(v_warn_key, 'true', false);
     END IF;
 
@@ -865,18 +853,15 @@ BEGIN
 
     IF current_setting(v_warn_key, true) IS NULL THEN
         RAISE WARNING E'\n'
-            '╔══════════════════════════════════════════════════════════════════════════════╗\n'
-            '║ DEPRECATED OPERATOR USAGE DETECTED                                           ║\n'
-            '╠══════════════════════════════════════════════════════════════════════════════╣\n'
-            '║ Pattern: numeric - interval (reversed operands)                              ║\n'
-            '║ This unusual pattern should be reviewed and rewritten.                       ║\n'
-            '║                                                                              ║\n'
-            '║ This operator will be REMOVED in a future release.                           ║\n'
-            '║ See: https://github.com/metasfresh/metasfresh/pull/21982                     ║\n'
-            '╠══════════════════════════════════════════════════════════════════════════════╣\n'
-            '║ LOCATION - Query using this operator:                                        ║\n'
-            '╚══════════════════════════════════════════════════════════════════════════════╝\n'
-            '%', v_query;
+            '[DEPRECATED OPERATOR] numeric - interval (unusual reversed operands)\n'
+            '================================================================================\n'
+            'QUERY:\n'
+            '%\n'
+            '--------------------------------------------------------------------------------\n'
+            'FIX: Review and rewrite this unusual pattern\n'
+            'DOCS: https://github.com/metasfresh/metasfresh/pull/21982\n'
+            '================================================================================',
+            v_query;
         PERFORM set_config(v_warn_key, 'true', false);
     END IF;
 
