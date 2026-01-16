@@ -39,7 +39,7 @@ SELECT i.AD_Org_ID,
                THEN 'Y'
                ELSE 'N'
        END                                                                                                                                            AS isCreditMemo,
-      IsFactoring
+       IsFactoring
 FROM C_Invoice i
          INNER JOIN C_DocType dt ON i.C_DocType_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
          LEFT OUTER JOIN C_DocType_Trl dtt ON i.C_DocType_ID = dtt.C_DocType_ID AND dtt.AD_Language = p_Language AND dtt.isActive = 'Y'
