@@ -1,14 +1,9 @@
 package de.metas.ui.web.order.sales.hu.reservation.process;
 
-import java.math.BigDecimal;
-
-import de.metas.handlingunits.reservation.HUReservationDocRef;
-import org.adempiere.exceptions.AdempiereException;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.order.api.IHUOrderBL;
+import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.reservation.ReserveHUsRequest;
 import de.metas.handlingunits.reservation.RetrieveHUsQtyRequest;
@@ -27,6 +22,10 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -61,6 +60,7 @@ public class WEBUI_C_OrderLineSO_Make_HUReservation
 	private SalesOrderLineRepository salesOrderLineRepository;
 
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IHUOrderBL huOrderBL = Services.get(IHUOrderBL.class);
 
 	private static final String PARAMNAME_QTY_TO_RESERVE = "QtyToReserve";
 	@Param(mandatory = true, parameterName = PARAMNAME_QTY_TO_RESERVE)
@@ -151,6 +151,7 @@ public class WEBUI_C_OrderLineSO_Make_HUReservation
 				.documentRef(HUReservationDocRef.ofSalesOrderLineId(salesOrderLine.getId().getOrderLineId()))
 				.build();
 		huReservationService.makeReservation(reservationRequest);
+		huOrderBL.updateOrderLineFromReservations(salesOrderLine.getId());
 
 		return MSG_OK;
 	}

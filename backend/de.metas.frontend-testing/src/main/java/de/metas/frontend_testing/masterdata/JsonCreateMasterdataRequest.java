@@ -45,8 +45,8 @@ public class JsonCreateMasterdataRequest
 	@Nullable Map<String, JsonCreateHURequest> handlingUnits;
 	@Nullable Map<String, JsonGenerateHUQRCodeRequest> generatedHUQRCodes;
 	@Nullable Map<String, JsonSalesOrderCreateRequest> salesOrders;
-	@Nullable Map<String, JsonDDOrderRequest> distributionOrders;
 	@Nullable Map<String, JsonPPOrderRequest> manufacturingOrders;
+	@Nullable Map<String, JsonDDOrderRequest> distributionOrders;
 	@Nullable List<JsonCustomQRCodeFormatRequest> customQRCodeFormats;
 	@Nullable Map<String, JsonInventoryRequest> inventories;
 }

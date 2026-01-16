@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs;
 
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
+import de.metas.cucumber.stepdefs.pricing.C_TaxCategory_StepDef;
 import de.metas.location.ICountryDAO;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
@@ -34,24 +35,20 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_C_TaxCategory;
-import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.Nullable;
 
-import static de.metas.cucumber.stepdefs.StepDefConstants.DEFAULT_TaxCategory_InternalName;
 import static de.metas.cucumber.stepdefs.StepDefConstants.DEFAULT_ValidFrom;
 
 @RequiredArgsConstructor
 public class C_Tax_StepDef
 {
-	@NonNull private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	@NonNull private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final C_Tax_StepDefData taxTable;
+	@NonNull private final C_TaxCategory_StepDef taxCategoryStepDef;
 	@NonNull private final AD_Org_StepDefData orgTable;
 
 	@And("metasfresh contains C_Tax")
@@ -64,10 +61,7 @@ public class C_Tax_StepDef
 
 	private void createC_Tax(@NonNull final DataTableRow tableRow)
 	{
-		final String taxCategoryInternalName = tableRow.getAsOptionalString(I_M_ProductPrice.COLUMNNAME_C_TaxCategory_ID + "." + I_C_TaxCategory.COLUMNNAME_InternalName)
-				.orElse(DEFAULT_TaxCategory_InternalName);
-		final TaxCategoryId taxCategoryId = taxBL.getTaxCategoryIdByInternalName(taxCategoryInternalName)
-				.orElseThrow(() -> new AdempiereException("Missing taxCategory for internalName=" + taxCategoryInternalName));
+		final TaxCategoryId taxCategoryId = taxCategoryStepDef.extractTaxCategoryIdOrDefault(tableRow);
 
 		final ValueAndName valueAndName = tableRow.suggestValueAndName();
 		final String taxName = valueAndName.getName();

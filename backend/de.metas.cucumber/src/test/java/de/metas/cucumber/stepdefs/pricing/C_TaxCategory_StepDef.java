@@ -24,22 +24,104 @@ package de.metas.cucumber.stepdefs.pricing;
 
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.ValueAndName;
+import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.util.Optionals;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
+import org.compiere.model.I_M_ProductPrice;
+
+import java.util.Map;
+import java.util.Optional;
+
+import static de.metas.cucumber.stepdefs.StepDefConstants.DEFAULT_TaxCategory_InternalName;
 
 @RequiredArgsConstructor
 public class C_TaxCategory_StepDef
 {
-	private final C_TaxCategory_StepDefData taxCategoryTable;
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final ITaxBL taxBL = Services.get(ITaxBL.class);
+	@NonNull private final C_TaxCategory_StepDefData taxCategoryTable;
+
+	public Optional<TaxCategoryId> extractTaxCategoryId(@NonNull final DataTableRow row)
+	{
+		return extractTaxCategoryIdentifier(row).map(this::resolveTaxCategoryId);
+	}
+
+	@NonNull
+	public TaxCategoryId extractTaxCategoryIdOrDefault(final DataTableRow row)
+	{
+		return extractTaxCategoryId(row).orElseGet(this::getDefaultTaxCategoryId);
+	}
+
+	private Optional<StepDefDataIdentifier> extractTaxCategoryIdentifier(final DataTableRow row)
+	{
+		return Optionals.firstPresentOfSuppliers(
+				() -> row.getAsOptionalIdentifier(I_M_ProductPrice.COLUMNNAME_C_TaxCategory_ID + "." + I_C_TaxCategory.COLUMNNAME_InternalName),
+				() -> row.getAsOptionalIdentifier(I_M_ProductPrice.COLUMNNAME_C_TaxCategory_ID)
+		);
+	}
+
+	private TaxCategoryId resolveTaxCategoryId(final StepDefDataIdentifier identifier)
+	{
+		// Lookup into C_TaxCategory_StepDefData
+		{
+			final TaxCategoryId taxCategoryId = taxCategoryTable.getIdOptional(identifier).orElse(null);
+			if (taxCategoryId != null)
+			{
+				return taxCategoryId;
+			}
+		}
+
+		// Lookup by InternalName
+		{
+			final String internalName = identifier.getAsString();
+			return taxBL.getTaxCategoryIdByInternalName(internalName)
+					.orElseThrow(() -> new AdempiereException("Missing taxCategory for internalName=" + internalName));
+		}
+	}
+
+	private TaxCategoryId getDefaultTaxCategoryId()
+	{
+		return taxBL.getTaxCategoryIdByInternalName(DEFAULT_TaxCategory_InternalName)
+				.orElseThrow(() -> new AdempiereException("Missing default taxCategory for internalName=" + DEFAULT_TaxCategory_InternalName));
+	}
+
+	@And("metasfresh contains C_TaxCategory")
+	public void createTaxCategories(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_C_Tax.COLUMNNAME_C_TaxCategory_ID)
+				.forEach(this::createTaxCategory);
+	}
+
+	private void createTaxCategory(@NonNull final DataTableRow row)
+	{
+		final ValueAndName valueAndName = row.suggestValueAndName();
+		final String name = valueAndName.getName();
+		final String internalName = row.getAsOptionalString(I_C_TaxCategory.COLUMNNAME_InternalName).orElse(name);
+
+		final I_C_TaxCategory taxCategoryRecord = InterfaceWrapperHelper.newInstance(I_C_TaxCategory.class);
+		taxCategoryRecord.setName(name);
+		taxCategoryRecord.setInternalName(internalName);
+		InterfaceWrapperHelper.saveRecord(taxCategoryRecord);
+
+		row.getAsOptionalIdentifier()
+				.ifPresent(identifier -> taxCategoryTable.put(identifier, taxCategoryRecord));
+	}
 
 	@And("load C_TaxCategory:")
-	public void load_c_taxCategory(@NonNull final DataTable dataTable)
+	public void loadTaxCategories(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(this::loadTaxCategory);
 	}
