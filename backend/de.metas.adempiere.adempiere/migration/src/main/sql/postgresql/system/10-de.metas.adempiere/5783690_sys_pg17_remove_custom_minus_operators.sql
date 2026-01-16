@@ -90,7 +90,21 @@ BEGIN
     JOIN pg_namespace n ON n.oid = opc.opcnamespace
     WHERE amop.amopopr = ANY(v_operator_oids);
 
-    -- Method 4: Text search in view definitions (fallback for edge cases)
+    -- Method 4: Check pg_depend for function dependencies
+    RETURN QUERY
+    SELECT DISTINCT
+        'FUNCTION'::TEXT,
+        n.nspname::TEXT,
+        p.proname::TEXT,
+        'pg_depend reference'::TEXT,
+        'FIX REQUIRED (function dependency)'::TEXT
+    FROM pg_depend d
+    JOIN pg_proc p ON p.oid = d.objid
+    JOIN pg_namespace n ON n.oid = p.pronamespace
+    WHERE d.refobjid = ANY(v_operator_oids)
+      AND n.nspname NOT IN ('pg_catalog', 'information_schema');
+
+    -- Method 5: Text search in view definitions (fallback for edge cases)
     RETURN QUERY
     SELECT
         'VIEW'::TEXT,
@@ -113,6 +127,33 @@ BEGIN
           JOIN pg_class c ON c.oid = r.ev_class
           WHERE d.refobjid = ANY(v_operator_oids)
             AND c.relname = v.viewname
+      );
+
+    -- Method 6: Text search in function bodies (fallback for SQL functions)
+    -- Catches patterns like "DateOrdered - DiscountDays" that use the custom operator
+    RETURN QUERY
+    SELECT DISTINCT
+        'FUNCTION'::TEXT,
+        n.nspname::TEXT,
+        p.proname::TEXT,
+        'date - numeric pattern in body'::TEXT,
+        CASE
+            WHEN p.prosrc LIKE '%subtractdays%' THEN 'VERIFY - may already be fixed'
+            ELSE 'FIX REQUIRED (text pattern)'
+        END::TEXT
+    FROM pg_proc p
+    JOIN pg_namespace n ON n.oid = p.pronamespace
+    WHERE n.nspname NOT IN ('pg_catalog', 'information_schema')
+      AND p.prolang = (SELECT oid FROM pg_language WHERE lanname = 'sql')
+      AND (
+          -- Pattern: date/timestamp column minus numeric (e.g., DateOrdered - DiscountDays)
+          p.prosrc ~* E'\\.(date[a-z_]*|timestamp[a-z_]*)\\s*-\\s*[a-z_]+days'
+          OR p.prosrc ~* E'ordered\\s*-\\s*discount'
+      )
+      AND NOT EXISTS (
+          SELECT 1 FROM pg_depend d
+          WHERE d.objid = p.oid
+            AND d.refobjid = ANY(v_operator_oids)
       );
 END;
 $func$;
@@ -163,6 +204,17 @@ BEGIN
             JOIN pg_rewrite r ON r.oid = d.objid
             JOIN pg_class c ON c.oid = r.ev_class
             WHERE d.refobjid = v_rec.oid;
+        END IF;
+
+        -- Also check for function dependencies
+        IF v_dep_count = 0 THEN
+            SELECT COUNT(*), string_agg(DISTINCT n.nspname || '.' || p.proname, ', ')
+            INTO v_dep_count, v_dep_objects
+            FROM pg_depend d
+            JOIN pg_proc p ON p.oid = d.objid
+            JOIN pg_namespace n ON n.oid = p.pronamespace
+            WHERE d.refobjid = v_rec.oid
+              AND n.nspname NOT IN ('pg_catalog', 'information_schema');
         END IF;
 
         IF v_dep_count > 0 THEN
@@ -404,7 +456,217 @@ END $$;
 
 
 -- ============================================================================
--- STEP 5: Pre-flight check - verify all operators can be dropped
+-- STEP 5: Fix Docs_Sales_Order_Details_Footer if it uses custom operators
+-- ============================================================================
+
+DO $$
+DECLARE
+    v_func_body TEXT;
+    v_fixed_body TEXT;
+    v_has_operator_dep BOOLEAN;
+    v_operator_oids oid[];
+BEGIN
+    -- Get custom operator OIDs
+    SELECT array_agg(o.oid) INTO v_operator_oids
+    FROM pg_operator o
+    JOIN pg_namespace n ON n.oid = o.oprnamespace
+    WHERE n.nspname = 'public' AND o.oprname = '-';
+
+    IF v_operator_oids IS NULL THEN
+        RAISE NOTICE 'No custom operators found - skipping Docs_Sales_Order_Details_Footer fix';
+        RETURN;
+    END IF;
+
+    -- Get function body
+    SELECT prosrc INTO v_func_body
+    FROM pg_proc p
+    JOIN pg_namespace n ON n.oid = p.pronamespace
+    WHERE n.nspname = 'de_metas_endcustomer_fresh_reports'
+      AND p.proname = 'docs_sales_order_details_footer';
+
+    IF v_func_body IS NULL THEN
+        RAISE NOTICE 'Function Docs_Sales_Order_Details_Footer does not exist - skipping';
+        RETURN;
+    END IF;
+
+    -- Skip if already fixed
+    IF v_func_body LIKE '%subtractdays%' THEN
+        RAISE NOTICE 'Function Docs_Sales_Order_Details_Footer already uses subtractdays - skipping';
+        RETURN;
+    END IF;
+
+    -- Check for operator dependency via pg_depend OR text pattern
+    SELECT EXISTS(
+        SELECT 1
+        FROM pg_depend d
+        JOIN pg_proc p ON p.oid = d.objid
+        JOIN pg_namespace n ON n.oid = p.pronamespace
+        WHERE n.nspname = 'de_metas_endcustomer_fresh_reports'
+          AND p.proname = 'docs_sales_order_details_footer'
+          AND d.refobjid = ANY(v_operator_oids)
+    ) OR v_func_body ~* E'DateOrdered\\s*-\\s*Discount'
+    INTO v_has_operator_dep;
+
+    IF NOT v_has_operator_dep THEN
+        RAISE NOTICE 'Function Docs_Sales_Order_Details_Footer has no custom operator usage - skipping';
+        RETURN;
+    END IF;
+
+    RAISE NOTICE 'Fixing Docs_Sales_Order_Details_Footer...';
+
+    -- Replace (o.DateOrdered - DiscountDays) with subtractdays(o.DateOrdered, DiscountDays)
+    v_fixed_body := regexp_replace(v_func_body,
+        E'\\(o\\.DateOrdered\\s*-\\s*DiscountDays\\)',
+        'subtractdays(o.DateOrdered, DiscountDays)',
+        'gi');
+
+    -- Replace (o.DateOrdered - DiscountDays2) with subtractdays(o.DateOrdered, DiscountDays2)
+    v_fixed_body := regexp_replace(v_fixed_body,
+        E'\\(o\\.DateOrdered\\s*-\\s*DiscountDays2\\)',
+        'subtractdays(o.DateOrdered, DiscountDays2)',
+        'gi');
+
+    IF v_fixed_body = v_func_body THEN
+        RAISE WARNING 'No replacements made in Docs_Sales_Order_Details_Footer - pattern may have changed';
+        RETURN;
+    END IF;
+
+    -- Recreate the function with fixed body
+    EXECUTE '
+    CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Details_Footer(
+        IN p_Order_ID numeric,
+        IN p_Language Character Varying(6)
+    )
+    RETURNS TABLE (
+        paymentrule character varying(60),
+        paymentterm character varying(60),
+        discount1 numeric,
+        discount2 numeric,
+        discount_date1 text,
+        discount_date2 text,
+        cursymbol character varying(10),
+        documentnote text,
+        descriptionbottom text,
+        subject character varying,
+        textsnippet character varying,
+        Incoterms character varying,
+        incotermlocation character varying,
+        additionaltext text,
+        isoffer character,
+        taxnote text
+    )
+    AS $f$' || v_fixed_body || '$f$ LANGUAGE sql STABLE';
+
+    RAISE NOTICE 'Function Docs_Sales_Order_Details_Footer fixed successfully';
+END $$;
+
+
+-- ============================================================================
+-- STEP 6: Fix Docs_Purchase_Order_Details_Footer if it uses custom operators
+-- ============================================================================
+
+DO $$
+DECLARE
+    v_func_body TEXT;
+    v_fixed_body TEXT;
+    v_has_operator_dep BOOLEAN;
+    v_operator_oids oid[];
+BEGIN
+    -- Get custom operator OIDs
+    SELECT array_agg(o.oid) INTO v_operator_oids
+    FROM pg_operator o
+    JOIN pg_namespace n ON n.oid = o.oprnamespace
+    WHERE n.nspname = 'public' AND o.oprname = '-';
+
+    IF v_operator_oids IS NULL THEN
+        RAISE NOTICE 'No custom operators found - skipping Docs_Purchase_Order_Details_Footer fix';
+        RETURN;
+    END IF;
+
+    -- Get function body
+    SELECT prosrc INTO v_func_body
+    FROM pg_proc p
+    JOIN pg_namespace n ON n.oid = p.pronamespace
+    WHERE n.nspname = 'de_metas_endcustomer_fresh_reports'
+      AND p.proname = 'docs_purchase_order_details_footer';
+
+    IF v_func_body IS NULL THEN
+        RAISE NOTICE 'Function Docs_Purchase_Order_Details_Footer does not exist - skipping';
+        RETURN;
+    END IF;
+
+    -- Skip if already fixed
+    IF v_func_body LIKE '%subtractdays%' THEN
+        RAISE NOTICE 'Function Docs_Purchase_Order_Details_Footer already uses subtractdays - skipping';
+        RETURN;
+    END IF;
+
+    -- Check for operator dependency via pg_depend OR text pattern
+    SELECT EXISTS(
+        SELECT 1
+        FROM pg_depend d
+        JOIN pg_proc p ON p.oid = d.objid
+        JOIN pg_namespace n ON n.oid = p.pronamespace
+        WHERE n.nspname = 'de_metas_endcustomer_fresh_reports'
+          AND p.proname = 'docs_purchase_order_details_footer'
+          AND d.refobjid = ANY(v_operator_oids)
+    ) OR v_func_body ~* E'DateOrdered\\s*-\\s*Discount'
+    INTO v_has_operator_dep;
+
+    IF NOT v_has_operator_dep THEN
+        RAISE NOTICE 'Function Docs_Purchase_Order_Details_Footer has no custom operator usage - skipping';
+        RETURN;
+    END IF;
+
+    RAISE NOTICE 'Fixing Docs_Purchase_Order_Details_Footer...';
+
+    -- Replace (o.DateOrdered - DiscountDays) with subtractdays(o.DateOrdered, DiscountDays)
+    v_fixed_body := regexp_replace(v_func_body,
+        E'\\(o\\.DateOrdered\\s*-\\s*DiscountDays\\)',
+        'subtractdays(o.DateOrdered, DiscountDays)',
+        'gi');
+
+    -- Replace (o.DateOrdered - DiscountDays2) with subtractdays(o.DateOrdered, DiscountDays2)
+    v_fixed_body := regexp_replace(v_fixed_body,
+        E'\\(o\\.DateOrdered\\s*-\\s*DiscountDays2\\)',
+        'subtractdays(o.DateOrdered, DiscountDays2)',
+        'gi');
+
+    IF v_fixed_body = v_func_body THEN
+        RAISE WARNING 'No replacements made in Docs_Purchase_Order_Details_Footer - pattern may have changed';
+        RETURN;
+    END IF;
+
+    -- Recreate the function with fixed body
+    EXECUTE '
+    CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details_Footer(
+        IN p_Order_ID numeric,
+        IN p_language Character Varying(6)
+    )
+    RETURNS TABLE (
+        paymentrule character varying(60),
+        paymentterm character varying(60),
+        discount1 numeric,
+        discount2 numeric,
+        discount_date1 text,
+        discount_date2 text,
+        cursymbol character varying(10),
+        Incoterms character varying,
+        incotermlocation character varying,
+        descriptionbottom character varying,
+        deliveryrule character varying,
+        deliveryviarule character varying,
+        additionaltext text,
+        taxnote text
+    )
+    AS $f$' || v_fixed_body || '$f$ LANGUAGE sql STABLE';
+
+    RAISE NOTICE 'Function Docs_Purchase_Order_Details_Footer fixed successfully';
+END $$;
+
+
+-- ============================================================================
+-- STEP 7: Pre-flight check - verify all operators can be dropped
 -- ============================================================================
 
 DO $$
@@ -435,7 +697,7 @@ END $$;
 
 
 -- ============================================================================
--- STEP 6: Drop custom operators (NO CASCADE - must fail if dependencies exist)
+-- STEP 8: Drop custom operators (NO CASCADE - must fail if dependencies exist)
 -- ============================================================================
 
 DROP OPERATOR IF EXISTS public.- (timestamptz, numeric);
@@ -445,7 +707,7 @@ DROP OPERATOR IF EXISTS public.- (numeric, interval);
 
 
 -- ============================================================================
--- STEP 7: Verification - ensure all operators were removed
+-- STEP 9: Verification - ensure all operators were removed
 -- ============================================================================
 
 DO $$
