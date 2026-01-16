@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
+<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/invoice/report" uuid="2fa464b6-5b59-45d9-8f05-3c4f9b99aa01">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="0.9090909090909095"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="240"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="uat.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\dev.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -54,9 +54,9 @@ JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
 		<property name="com.jaspersoft.studio.field.name" value="iscreditmemo"/>
 		<property name="com.jaspersoft.studio.field.label" value="iscreditmemo"/>
 	</field>
-	<field name="isfactoring" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="isfactoring"/>
-		<property name="com.jaspersoft.studio.field.label" value="isfactoring"/>
+	<field name="existsfactoringpartner" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="existsfactoringpartner"/>
+		<property name="com.jaspersoft.studio.field.label" value="existsfactoringpartner"/>
 	</field>
 	<field name="showqrbill" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="showqrbill"/>
@@ -244,17 +244,14 @@ JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
 		</band>
 		<band height="36">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<printWhenExpression><![CDATA[new Boolean( $F{isfactoring}.equals( "Y" ) )]]></printWhenExpression>
+			<printWhenExpression><![CDATA[new Boolean( $F{existsfactoringpartner}.equals( "Y" ) )]]></printWhenExpression>
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-3" x="0" y="24" width="595" height="12" uuid="0db7639e-4a95-423f-bfe1-5bc5871d6637"/>
-				<subreportParameter name="c_invoice_id">
-					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="ad_language">
-					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
+				<subreportParameter name="ad_org_id">
+					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/sales/invoice/report_details_factorer_bankdetails.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/docs/generics/report_factorer_bankdetails.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 	</detail>

@@ -20,7 +20,7 @@
  * #L%
  */
 
-    DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.getFactorer_BankDetails(IN p_AD_Org_ID numeric)
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.getFactorer_BankDetails(IN p_AD_Org_ID numeric)
 ;
 
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.getFactorer_BankDetails(IN p_AD_Org_ID numeric)
@@ -28,6 +28,10 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.getFactorer_BankDe
             (
                 org_name        character varying,
                 org_addressline character varying,
+                org_address1    character varying,
+                org_postal      character varying,
+                org_city        character varying,
+                org_country     character varying,
                 bank_acct       character varying,
                 bank_currency   character varying,
                 bank_code       character varying,
@@ -46,6 +50,10 @@ SELECT COALESCE(org_bp.name, '')    AS org_name,
                COALESCE(loc.postal || ' ', '') ||
                COALESCE(loc.city, '')
        )                            AS org_addressline,
+       COALESCE(loc.address1, '') as org_address1,
+       COALESCE(loc.postal, '') as org_postal,
+       COALESCE(loc.city, '') as org_city,
+       COALESCE(c.name, '') as org_country,
        COALESCE(bpb.accountno, '')  AS bank_acct,
        cur.iso_code                 AS bank_currency,
        COALESCE(bank.routingno, '') AS bank_code,
@@ -67,3 +75,4 @@ FROM ad_orginfo oi
 WHERE oi.ad_org_id = p_AD_Org_ID
 $$
 ;
+

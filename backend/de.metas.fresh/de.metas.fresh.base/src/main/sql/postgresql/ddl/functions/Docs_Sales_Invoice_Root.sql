@@ -6,14 +6,14 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice
                                                                                       IN p_Language  Character Varying(6))
     RETURNS TABLE
             (
-                AD_Org_ID     numeric,
-                DocStatus     character(2),
-                PrintName     character varying(60),
-                countrycode   character(2),
-                C_Currency_ID numeric,
-                displayhu     text,
-                isCreditMemo  character(1),
-                IsFactoring   character(1)
+                AD_Org_ID              numeric,
+                DocStatus              character(2),
+                PrintName              character varying(60),
+                countrycode            character(2),
+                C_Currency_ID          numeric,
+                displayhu              text,
+                isCreditMemo           character(1),
+                existsFactoringPartner character(1)
             )
 AS
 $$
@@ -33,13 +33,13 @@ SELECT i.AD_Org_ID,
                         AND il.isActive = 'Y')
                THEN 'Y'
                ELSE 'N'
-       END AS displayhu,
+       END                                                                                                                                            AS displayhu,
        CASE
            WHEN dt.docbasetype = 'ARC'
                THEN 'Y'
                ELSE 'N'
-       END AS isCreditMemo,
-       bp.IsFactoring
+       END                                                                                                                                            AS isCreditMemo,
+       (CASE WHEN (SELECT COUNT(*) AS cnt FROM c_bpartner bpf WHERE bpf.IsFactoring = 'Y' AND i.ad_org_id = bpf.ad_org_id) = 1 THEN 'Y' ELSE 'N' END) AS existsFactoringPartner
 FROM C_Invoice i
          INNER JOIN C_DocType dt ON i.C_DocType_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
          LEFT OUTER JOIN C_DocType_Trl dtt ON i.C_DocType_ID = dtt.C_DocType_ID AND dtt.AD_Language = p_Language AND dtt.isActive = 'Y'
