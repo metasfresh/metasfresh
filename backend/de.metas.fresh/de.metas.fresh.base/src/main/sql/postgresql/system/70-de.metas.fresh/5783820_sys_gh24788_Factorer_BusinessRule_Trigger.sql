@@ -9,7 +9,7 @@
 
 -- Name: C_BPartner_IsFactorer_BankAccount
 -- 2026-01-14T18:10:26.420Z
-INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Code,Created,CreatedBy,EntityType,IsActive,Name,Type,Updated,UpdatedBy) VALUES (0,0,540763,'C_BPartner.IsFactorer ='N' OR ( C_BPartner.IsFactorer ='Y' AND EXISTS (SELECT 1 FROM C_BP_BankAccount ba WHERE ba.C_BPartner_ID = C_BPartner.C_BPartner_ID) ) ',TO_TIMESTAMP('2026-01-14 18:10:26.418000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','C_BPartner_IsFactorer_BankAccount','S',TO_TIMESTAMP('2026-01-14 18:10:26.418000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Code,Created,CreatedBy,EntityType,IsActive,Name,Type,Updated,UpdatedBy) VALUES (0,0,540763,'C_BPartner.IsFactorer =''N'' OR ( C_BPartner.IsFactorer =''Y'' AND EXISTS (SELECT 1 FROM C_BP_BankAccount ba WHERE ba.C_BPartner_ID = C_BPartner.C_BPartner_ID) ) ',TO_TIMESTAMP('2026-01-14 18:10:26.418000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','C_BPartner_IsFactorer_BankAccount','S',TO_TIMESTAMP('2026-01-14 18:10:26.418000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- Name: C_BPartner_Factorer_BankAccount
