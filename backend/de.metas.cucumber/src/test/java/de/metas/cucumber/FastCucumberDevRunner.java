@@ -29,7 +29,7 @@ public class FastCucumberDevRunner
 		{
 			System.out.flush();
 			System.err.flush();
-			System.out.println("\n=======================================================");
+			System.out.println("\n\n\n=======================================================");
 			System.out.println("WAITING: Paste absolute path to .feature file (or 'exit'):");
 			// Line 2: Contextual Instruction (Conditional)
 			if (lastFeatureFilePath != null)
