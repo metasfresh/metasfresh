@@ -170,7 +170,7 @@ from de_metas_endcustomer_fresh_reports.Docs_Sales_TransportOrder_Package_Detail
 				<textFieldExpression><![CDATA[$R{paletno}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="176" y="147" width="148" height="20" uuid="25b62c58-ced7-4bd7-bac1-c401921eb7e9">
+				<reportElement positionType="Float" x="190" y="147" width="148" height="20" uuid="25b62c58-ced7-4bd7-bac1-c401921eb7e9">
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
 					<printWhenExpression><![CDATA[$F{order_docno}!=null]]></printWhenExpression>
 				</reportElement>
@@ -180,14 +180,14 @@ from de_metas_endcustomer_fresh_reports.Docs_Sales_TransportOrder_Package_Detail
 				<textFieldExpression><![CDATA[$F{order_docno}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="175" y="13" width="148" height="28" uuid="c001e4a4-db1e-4fbc-81ca-a6ae2c8ac867"/>
+				<reportElement positionType="Float" x="190" y="13" width="148" height="28" uuid="c001e4a4-db1e-4fbc-81ca-a6ae2c8ac867"/>
 				<textElement>
 					<font fontName="Arial" size="15" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{paletno}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="40" y="85" width="140" height="16" uuid="e87639ec-06a1-4e4f-b600-384b3d144aca"/>
+				<reportElement positionType="Float" x="40" y="83" width="140" height="16" uuid="e87639ec-06a1-4e4f-b600-384b3d144aca"/>
 				<textElement verticalAlignment="Bottom" markup="none">
 					<font fontName="Arial" size="12" isBold="false"/>
 				</textElement>
