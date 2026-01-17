@@ -1,6 +1,7 @@
 import { expect } from '@playwright/test';
 import { test } from '../../../playwright.config';
 import { getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../common';
+import { PdfDownloader } from '../PdfDownloader';
 
 /**
  * Page object for Material Receipt Candidates window (ID: 540196).
@@ -672,29 +673,7 @@ export class ReceiptCandidatesPage {
    * This opens the PDF generation modal for the document.
    */
   static async openPrintModal() {
-    return await test.step('ReceiptCandidatesPage - Open print modal (Alt+P)', async () => {
-      const page = getPage();
-
-      // Focus page first
-      await page.locator('body').click();
-      await page.waitForTimeout(200);
-
-      // Press Alt+P to open print modal
-      await page.keyboard.press('Alt+P');
-
-      // Two-step wait pattern: Wait for modal container first
-      await page
-        .locator('.modal-content, .modal, .panel-modal')
-        .waitFor({
-          state: 'visible',
-          timeout: SLOW_ACTION_TIMEOUT,
-        });
-
-      // Wait for modal content to load
-      await page.waitForTimeout(500);
-
-      console.log('Print modal opened successfully');
-    });
+    return await PdfDownloader.openPrintModal('ReceiptCandidatesPage');
   }
 
   /**
@@ -706,105 +685,9 @@ export class ReceiptCandidatesPage {
    */
   static async downloadPdf() {
     return await test.step('ReceiptCandidatesPage - Download Material Receipt PDF', async () => {
-      const page = getPage();
-      const fs = require('fs');
-      const path = require('path');
-
-      // Step 1: Open print modal with Alt+P
+      // Open print modal and download
       await this.openPrintModal();
-
-      // Step 2: Wait for modal to be fully loaded
-      await page.waitForTimeout(1000);
-
-      // Step 3: Find the Print button in the modal
-      // Uses data-testid='print-modal-button' (language-independent)
-      const printButton = page.getByTestId('print-modal-button');
-
-      await printButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-
-      // Set up both download and popup listeners BEFORE clicking
-      const downloadPromise = page
-        .waitForEvent('download', { timeout: VERY_SLOW_ACTION_TIMEOUT })
-        .catch(() => null);
-
-      const popupPromise = page
-        .waitForEvent('popup', { timeout: VERY_SLOW_ACTION_TIMEOUT })
-        .catch(() => null);
-
-      console.log('Clicking Print button in modal...');
-      await printButton.click();
-
-      // Wait for either download OR popup
-      const result = await Promise.race([
-        downloadPromise.then((d) => (d ? { type: 'download', data: d } : null)),
-        popupPromise.then((p) => (p ? { type: 'popup', data: p } : null)),
-      ]);
-
-      if (!result || !result.data) {
-        throw new Error('Neither download nor popup occurred after clicking print button');
-      }
-
-      if (result.type === 'download') {
-        console.log('PDF download started:', result.data.suggestedFilename());
-        return result.data;
-      } else {
-        // Handle popup - PDF opened in new tab
-        console.log('PDF opened in new tab');
-        const popup = result.data;
-
-        // Wait for popup to load with proper error handling
-        try {
-          await popup.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT });
-        } catch (loadError) {
-          console.log('Warning: popup networkidle timeout, continuing anyway');
-        }
-
-        const pdfUrl = popup.url();
-        console.log('PDF URL:', pdfUrl);
-
-        // Validate URL is not blank or error page
-        if (!pdfUrl || pdfUrl === 'about:blank' || !pdfUrl.includes('/print/')) {
-          throw new Error(`Invalid PDF popup URL: ${pdfUrl}`);
-        }
-
-        // Use Playwright's built-in request API instead of axios
-        // This automatically handles cookies and session from the browser context
-        const context = popup.context();
-        const response = await context.request.get(pdfUrl);
-
-        if (!response.ok()) {
-          throw new Error(`Failed to download PDF: ${response.status()} ${response.statusText()}`);
-        }
-
-        const buffer = await response.body();
-        console.log('PDF downloaded, size:', buffer.length, 'bytes');
-
-        // Validate PDF content (should start with %PDF-)
-        const pdfHeader = buffer.slice(0, 5).toString();
-        if (pdfHeader !== '%PDF-') {
-          console.error('Invalid PDF content, first 100 bytes:', buffer.slice(0, 100).toString());
-          throw new Error(`Downloaded file is not a valid PDF. Header: ${pdfHeader}`);
-        }
-
-        // Save to temp file
-        const tempDir = path.join(process.cwd(), 'test-results', 'temp-pdfs');
-        if (!fs.existsSync(tempDir)) {
-          fs.mkdirSync(tempDir, { recursive: true });
-        }
-
-        const timestamp = Date.now();
-        const tempPath = path.join(tempDir, `material-receipt-${timestamp}.pdf`);
-        fs.writeFileSync(tempPath, buffer);
-
-        console.log('PDF saved to:', tempPath);
-
-        await popup.close().catch(() => {});
-
-        return {
-          suggestedFilename: () => `material-receipt-${timestamp}.pdf`,
-          path: async () => tempPath,
-        };
-      }
+      return await PdfDownloader.downloadPdf('material-receipt', 'ReceiptCandidatesPage');
     });
   }
 
@@ -822,12 +705,26 @@ export class ReceiptCandidatesPage {
   static async downloadAndValidatePdf(expectedData) {
     return await test.step('ReceiptCandidatesPage - Download and validate Material Receipt PDF', async () => {
       const { PdfValidator } = require('../PdfValidator');
+      const page = getPage();
+
+      // Log current URL for debugging
+      const currentUrl = page.url();
+      console.log(`Current URL before PDF download: ${currentUrl}`);
+
+      // Validate we're on the Material Receipt window (184)
+      if (!currentUrl.includes('/window/184/')) {
+        throw new Error(`Expected to be on Material Receipt window (184), but URL is: ${currentUrl}`);
+      }
 
       // Auto-detect document number if not provided
       let documentNo = expectedData.documentNo;
       if (!documentNo) {
         documentNo = await this.getDocumentNo();
       }
+
+      console.log(`Downloading PDF for Material Receipt document: ${documentNo}`);
+      console.log(`Expected vendor: ${expectedData.vendorName}`);
+      console.log(`Expected product: ${expectedData.productCode}`);
 
       // Download the PDF
       const download = await this.downloadPdf();
