@@ -172,6 +172,17 @@ export const ShortcutProvider = ({ children }) => {
       .replace(/\s/, 'Spacebar')
       .toUpperCase();
 
+<<<<<<< HEAD
+=======
+    const handles = hotkeys[serializedSequence];
+    if (!handles || handles.length === 0) {
+      console.debug(`[Shortcut ${key}] no handlers found`);
+      return;
+    }
+
+    // some shortcuts should be disabled
+    // when the input field is focused (for typing)
+>>>>>>> 06330f7cfd (refactor: change commented-out `console.log` to `console.debug` in ShortcutProvider)
     if (
       !(serializedSequence in hotkeys) ||
       // some shortcuts should be disabled
@@ -180,6 +191,12 @@ export const ShortcutProvider = ({ children }) => {
         activeNode.nodeName === 'INPUT' &&
         disabledWithFocus.indexOf(serializedSequence) > -1)
     ) {
+<<<<<<< HEAD
+=======
+      console.debug(
+        `[Shortcut ${key}] skip firing because disabled for input field`
+      );
+>>>>>>> 06330f7cfd (refactor: change commented-out `console.log` to `console.debug` in ShortcutProvider)
       return;
     }
 
@@ -237,10 +254,58 @@ export const ShortcutProvider = ({ children }) => {
       return;
     }
 
+<<<<<<< HEAD
     const key = keymap[name].toUpperCase();
     const bucket = hotkeys[key];
 
     hotkeys[key] = [handler, ...bucket];
+=======
+    const keymap = keymapRef.current;
+    const previousKey = keymap[name];
+    const key = (shortcut ? shortcut : keymap[name])?.toUpperCase();
+    if (!key) {
+      console.warn(`There are no hotkeys defined for "${name}".`, {
+        shortcut,
+        keymap,
+      });
+      return;
+    }
+
+    if (key in blacklist) {
+      const reason = blacklist[key];
+      const reasonFormatted = reason ? ` (${reason})` : '';
+
+      console.warn(
+        `Key "${key}" used by "${name}" is blacklisted since it overrides browser behaviour${reasonFormatted}.`
+      );
+      return;
+    }
+
+    const hotkeys = hotkeysRef.current;
+    keymap[name] = key;
+    hotkeys[key] = [handler, ...(hotkeys[key] ?? [])];
+
+    // console.debug(`Added handler for "${name}" with shortcut "${key}".`, {
+    //   shortcut,
+    //   previousKey,
+    //   hotkeys,
+    //   keymap,
+    // });
+
+    return () => {
+      // Restore previous key binding
+      keymapRef.current[name] = previousKey;
+
+      // Remove handler
+      const hotkeys = hotkeysRef.current;
+      hotkeys[key] = (hotkeys[key] || []).filter((h) => h !== handler);
+
+      // console.debug(`Removed handler for "${name}" with shortcut "${key}".`, {
+      //   shortcut,
+      //   previousKey,
+      // });
+    };
+>>>>>>> 06330f7cfd (refactor: change commented-out `console.log` to `console.debug` in ShortcutProvider)
   };
 
   unsubscribe = (name, handler) => {
@@ -280,8 +345,46 @@ export const ShortcutProvider = ({ children }) => {
     }
   };
 
+<<<<<<< HEAD
   render() {
     return this.props.children;
+=======
+  return (
+    <ShortcutContext.Provider value={contextValue}>
+      {children}
+    </ShortcutContext.Provider>
+  );
+};
+
+ShortcutProvider.propTypes = {
+  children: PropTypes.node,
+};
+
+//
+//
+//
+//
+//
+
+// In the case of different handlers using the same shortcut, we can control which
+// one will be fired by returning true/false from their execution. Handlers are
+// added in reverse order, so this way we can only call the latest in the queue.
+// Summarizing - if you want a handler to just pass through, return false before
+// any other code in the function.
+const fireHandlers = (event, handlers) => {
+  for (let i = 0; i < handlers.length; i++) {
+    const handler = handlers[i];
+    const stopPropagation = handler(event);
+    // console.debug(`[Event ${event}] Invoked handler`, {
+    //   handler,
+    //   stopPropagation,
+    //   event,
+    // });
+
+    if (stopPropagation) {
+      break;
+    }
+>>>>>>> 06330f7cfd (refactor: change commented-out `console.log` to `console.debug` in ShortcutProvider)
   }
 }
 
