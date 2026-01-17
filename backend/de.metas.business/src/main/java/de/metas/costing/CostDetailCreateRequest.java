@@ -7,12 +7,14 @@ import de.metas.currency.CurrencyConversionContext;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 
@@ -61,6 +63,7 @@ public class CostDetailCreateRequest
 	@NonNull CostAmountType amtType;
 	@NonNull CostAmount amt;
 	@NonNull Quantity qty;
+	@Nullable Quantity catchWeight;
 	@Nullable CurrencyConversionContext currencyConversionContext;
 	@NonNull Instant date;
 	@Nullable String description;
@@ -80,6 +83,7 @@ public class CostDetailCreateRequest
 			@Nullable final CostAmountType amtType,
 			@NonNull final CostAmount amt,
 			@NonNull final Quantity qty,
+			@Nullable Quantity catchWeight,
 			@Nullable final CurrencyConversionContext currencyConversionContext,
 			@NonNull final Instant date,
 			@Nullable final String description,
@@ -96,10 +100,27 @@ public class CostDetailCreateRequest
 		this.amtType = amtType != null ? amtType : CostAmountType.MAIN;
 		this.amt = amt;
 		this.qty = qty;
+		this.catchWeight = catchWeight;
 		this.currencyConversionContext = currencyConversionContext;
 		this.date = date;
 		this.description = description;
 		this.explicitCostPrice = explicitCostPrice;
+	}
+
+	public static class CostDetailCreateRequestBuilder
+	{
+		public CostDetailCreateRequestBuilder qtyAndCatchWeight(@NonNull StockQtyAndUOMQty qtyAndCatchWeight)
+		{
+			//noinspection ConstantValue
+			if (this.productId != null && !ProductId.equals(this.productId, qtyAndCatchWeight.getProductId()))
+			{
+				throw new AdempiereException("Invalid productId: " + qtyAndCatchWeight.getProductId() + " != " + this.productId);
+			}
+
+			qty(qtyAndCatchWeight.getStockQty());
+			catchWeight(qtyAndCatchWeight.getUOMQtyOpt().orElse(null));
+			return this;
+		}
 	}
 
 	public AcctSchemaId getAcctSchemaId()
@@ -157,6 +178,12 @@ public class CostDetailCreateRequest
 		}
 
 		return toBuilder().costElement(costElement).build();
+	}
+
+	@NonNull
+	public Quantity getQtyCatchWeightOrNominal()
+	{
+		return catchWeight != null ? catchWeight : qty;
 	}
 
 	public CostDetailCreateRequest withAmount(@NonNull final CostAmount amt)
