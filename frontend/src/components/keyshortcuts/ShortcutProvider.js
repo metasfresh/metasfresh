@@ -88,7 +88,7 @@ export const useShortcut = ({
     // noinspection UnnecessaryLocalVariableJS
     const unsubscribe = subscribe({ name, shortcut, handler });
     return unsubscribe;
-  }, [subscribe, name, shortcut, enabled, ...(dependencies ?? [])]);
+  }, [subscribe, name, shortcut, handler, enabled, ...(dependencies ?? [])]);
 };
 
 export const ShortcutProvider = ({ children }) => {
