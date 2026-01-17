@@ -752,23 +752,39 @@ export class ReceiptCandidatesPage {
         console.log('PDF opened in new tab');
         const popup = result.data;
 
-        await popup.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+        // Wait for popup to load with proper error handling
+        try {
+          await popup.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT });
+        } catch (loadError) {
+          console.log('Warning: popup networkidle timeout, continuing anyway');
+        }
 
         const pdfUrl = popup.url();
         console.log('PDF URL:', pdfUrl);
 
-        // Download PDF directly from the URL
-        const axios = require('axios');
-        const response = await axios.get(pdfUrl, {
-          responseType: 'arraybuffer',
-          headers: {
-            Cookie: (await page.context().cookies())
-              .map((c) => `${c.name}=${c.value}`)
-              .join('; '),
-          },
-        });
+        // Validate URL is not blank or error page
+        if (!pdfUrl || pdfUrl === 'about:blank' || !pdfUrl.includes('/print/')) {
+          throw new Error(`Invalid PDF popup URL: ${pdfUrl}`);
+        }
 
-        const buffer = Buffer.from(response.data);
+        // Use Playwright's built-in request API instead of axios
+        // This automatically handles cookies and session from the browser context
+        const context = popup.context();
+        const response = await context.request.get(pdfUrl);
+
+        if (!response.ok()) {
+          throw new Error(`Failed to download PDF: ${response.status()} ${response.statusText()}`);
+        }
+
+        const buffer = await response.body();
+        console.log('PDF downloaded, size:', buffer.length, 'bytes');
+
+        // Validate PDF content (should start with %PDF-)
+        const pdfHeader = buffer.slice(0, 5).toString();
+        if (pdfHeader !== '%PDF-') {
+          console.error('Invalid PDF content, first 100 bytes:', buffer.slice(0, 100).toString());
+          throw new Error(`Downloaded file is not a valid PDF. Header: ${pdfHeader}`);
+        }
 
         // Save to temp file
         const tempDir = path.join(process.cwd(), 'test-results', 'temp-pdfs');
@@ -780,7 +796,7 @@ export class ReceiptCandidatesPage {
         const tempPath = path.join(tempDir, `material-receipt-${timestamp}.pdf`);
         fs.writeFileSync(tempPath, buffer);
 
-        console.log('PDF downloaded from popup:', tempPath);
+        console.log('PDF saved to:', tempPath);
 
         await popup.close().catch(() => {});
 
