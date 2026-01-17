@@ -24,6 +24,7 @@ import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
@@ -357,6 +358,11 @@ public final class FactLineBuilder
 		assertNotBuild();
 		this.qty = qty;
 		return this;
+	}
+
+	public FactLineBuilder setQty(@NonNull final StockQtyAndUOMQty qty)
+	{
+		return setQty(qty.getStockQty());
 	}
 
 	public FactLineBuilder setAmtSource(final CurrencyId currencyId, @Nullable final BigDecimal amtSourceDr, @Nullable final BigDecimal amtSourceCr)

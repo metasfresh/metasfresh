@@ -54,8 +54,12 @@ import de.metas.order.costs.inout.InOutCost;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
+<<<<<<< HEAD
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+=======
+import de.metas.quantity.StockQtyAndUOMQty;
+>>>>>>> 81584d09bd (Fix Product costing when dealing with included tax prices and catch weight (#22013))
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Check;
@@ -213,9 +217,9 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		return getModel(I_M_MatchInv.class);
 	}
 
-	private Quantity getQty()
+	private StockQtyAndUOMQty getQty()
 	{
-		return docLine.getQty();
+		return getMatchInv().getQty();
 	}
 
 	/**
@@ -470,7 +474,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 		if (qtyInvoiced.signum() != 0) // task 08337: guard against division by zero
 		{
-			return getQty().divide(qtyInvoiced, 12, RoundingMode.HALF_UP).toBigDecimal();
+			return getQty().getStockQty().divide(qtyInvoiced, 12, RoundingMode.HALF_UP).toBigDecimal();
 		}
 		else
 		{
@@ -548,7 +552,12 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		Check.assume(!isSOTrx(), "Cannot create cost details for sales match invoice");
 
 		final I_M_InOut receipt = getReceipt();
+<<<<<<< HEAD
 		final Quantity qtyMatched = getQty();
+=======
+		final MovementType movementType = MovementType.ofCode(receipt.getMovementType());
+		final StockQtyAndUOMQty qtyMatched = getQty().negateIf(movementType.isMaterialReturn());
+>>>>>>> 81584d09bd (Fix Product costing when dealing with included tax prices and catch weight (#22013))
 
 		final MatchInvType type = matchInv.getType();
 		final Money amtMatched;
@@ -578,7 +587,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 								.attributeSetInstanceId(matchInv.getAsiId())
 								.documentRef(CostingDocumentRef.ofMatchInvoiceId(matchInv.getId()))
 								.costElement(costElement)
-								.qty(qtyMatched)
+								.qtyAndCatchWeight(qtyMatched)
 								.amt(CostAmount.ofMoney(amtMatched))
 								.currencyConversionContext(inOutBL.getCurrencyConversionContext(receipt))
 								.date(getDateAcctAsInstant())

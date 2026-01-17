@@ -44,7 +44,6 @@ import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.costing.ShipmentCosts;
 import de.metas.currency.CurrencyConversionContext;
-import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
@@ -59,7 +58,6 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.costs.OrderCostService;
 import de.metas.order.costs.inout.InOutCost;
 import de.metas.product.ProductId;
-import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -495,35 +493,71 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		final InvoiceId invoiceId = matchInv.getInvoiceId();
 		final boolean isReversal = invoiceBL.isReversal(invoiceId);
 
-		final Quantity receiptQty = request.getQty().negateIf(isReversal); // i.e. qty matched
-		final CostAmount receiptAmt = getReceiptAmount(matchInv, receiptQty, request.getCostElement(), request.getAcctSchemaId(), currentCost.getPrecision());
+		final Quantity qty = request.getQty().negateIf(isReversal); // i.e. qty matched
+		final @NonNull CostElement costElement = request.getCostElement();
+		final @NonNull AcctSchemaId acctSchemaId = request.getAcctSchemaId();
+		final CurrencyConversionContext currencyConversionContext = inoutBL.getCurrencyConversionContext(matchInv.getInOutId());
+
+		final CostAmount receiptAmt;
+		final MatchInvType type = matchInv.getType();
+		if (type.isMaterial())
+		{
+			Check.assume(costElement.isMaterial(), "Cost Element shall be material: {}", costElement);
+
+			final I_C_OrderLine orderLine = matchInvoiceService.getOrderLineId(matchInv)
+					.map(orderLineBL::getOrderLineById)
+					.orElseThrow(() -> new AdempiereException("Cannot determine order line for " + matchInv));
+
+			receiptAmt = getCostAmountInAcctCurrency(
+					orderLine, 
+					request.getQtyCatchWeightOrNominal().negateIf(isReversal),  
+					acctSchemaId, 
+					currencyConversionContext);
+		}
+		else if (type.isCost())
+		{
+			final InOutCost inoutCost = orderCostService.getInOutCostsById(matchInv.getCostPartNotNull().getInoutCostId());
+			Check.assumeEquals(inoutCost.getCostElementId(), costElement.getId(), "Cost Element shall match: {}, {}", inoutCost, costElement);
+
+			final Money receiptAmount = inoutCost.getCostAmountForQty(qty, currentCost.getPrecision());
+
+			receiptAmt = utils.convertToAcctSchemaCurrency(
+					CostAmount.ofMoney(receiptAmount),
+					() -> currencyConversionContext,
+					acctSchemaId);
+		}
+		else
+		{
+			throw new AdempiereException("Unknown type: " + type);
+		}
+
 		final CostAmount invoicedAmt = request.getAmt().negateIf(isReversal);
 		final CostAmount amtDifference = invoicedAmt.subtract(receiptAmt);
 
 		final CostAmount costAdjustmentAmt;
 		final CostAmount alreadyShippedAmt;
 
-		final Quantity qtyStillInStock = currentCost.getCurrentQty().min(receiptQty);
+		final Quantity qtyStillInStock = currentCost.getCurrentQty().min(qty);
 		if (amtDifference.isZero())
 		{
 			costAdjustmentAmt = CostAmount.zero(currentCost.getCurrencyId());
 			alreadyShippedAmt = CostAmount.zero(currentCost.getCurrencyId());
 		}
-		else if (receiptQty.isZero())
+		else if (qty.isZero())
 		{
 			costAdjustmentAmt = CostAmount.zero(currentCost.getCurrencyId());
 			alreadyShippedAmt = amtDifference;
 		}
-		else if (receiptQty.equalsIgnoreSource(qtyStillInStock))
+		else if (qty.equalsIgnoreSource(qtyStillInStock))
 		{
 			costAdjustmentAmt = amtDifference;
 			alreadyShippedAmt = CostAmount.zero(currentCost.getCurrencyId());
 		}
 		else
 		{
-			final CostAmount priceDifference = amtDifference.isZero() || receiptQty.isZero()
+			final CostAmount priceDifference = amtDifference.isZero() || qty.isZero()
 					? CostAmount.zero(currentCost.getCurrencyId())
-					: amtDifference.divide(receiptQty, currentCost.getPrecision());
+					: amtDifference.divide(qty, currentCost.getPrecision());
 
 			costAdjustmentAmt = priceDifference.multiply(qtyStillInStock);
 			alreadyShippedAmt = amtDifference.subtract(costAdjustmentAmt);
@@ -537,6 +571,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 				.negateIf(isReversal);
 	}
 
+<<<<<<< HEAD
 	private CostAmount getReceiptAmount(
 			@NonNull final MatchInv matchInv,
 			@NonNull final Quantity receiptQty,
@@ -594,6 +629,8 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		}
 	}
 
+=======
+>>>>>>> 81584d09bd (Fix Product costing when dealing with included tax prices and catch weight (#22013))
 	@Override
 	public void voidCosts(final CostDetailVoidRequest request)
 	{
@@ -625,7 +662,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 			@NonNull final AcctSchemaId acctSchemaId,
 			@NonNull final CurrencyConversionContext currencyConversionContext)
 	{
-		final CostAmount amt = getCostAmountInSourceCurrency(orderLine, qty);
+		final CostAmount amt = orderLineBL.getCostAmount(orderLine, qty);
 
 		return utils.convertToAcctSchemaCurrency(
 				amt,
@@ -633,13 +670,4 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 				acctSchemaId);
 	}
 
-	@NonNull
-	private CostAmount getCostAmountInSourceCurrency(@NonNull final I_C_OrderLine orderLine, @NonNull final Quantity qty)
-	{
-		final ProductPrice costPriceConv = utils.convertToUOM(
-				orderLineBL.getCostPrice(orderLine),
-				qty.getUomId());
-
-		return CostAmount.ofProductPrice(costPriceConv).multiply(qty);
-	}
 }
