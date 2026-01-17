@@ -487,4 +487,371 @@ export class ReceiptCandidatesPage {
       await expect(quickActionButton).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
     });
   }
+
+  /**
+   * Navigate to the Material Receipt detail view via the "Allocated Material Receipt" tab.
+   *
+   * This method:
+   * 1. Clicks on the "Allocated Material Receipt" tab (M_ReceiptSchedule_Alloc)
+   * 2. Right-clicks on the first allocation row
+   * 3. Selects "Zoom Into" from the context menu
+   * 4. Navigates to the Material Receipt (M_InOut) detail view
+   *
+   * IMPORTANT: Call this after createReceipt() while still on the Receipt Candidates window.
+   *
+   * @param {Object} options - Configuration options
+   * @param {number} options.maxRetries - Maximum retry attempts (default: 3)
+   */
+  static async navigateToMaterialReceiptViaTab({ maxRetries = 3 } = {}) {
+    return await test.step('ReceiptCandidatesPage - Navigate to Material Receipt via Allocated tab', async () => {
+      const page = getPage();
+
+      let lastError = null;
+
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          // Step 0: Check if we're on a list view and need to open detail view first
+          // List view URL: /window/540196?page=1&... (has query params, no record ID)
+          // Detail view URL: /window/540196/{recordId} (has record ID after window ID)
+          const currentUrl = page.url();
+          const isListView = currentUrl.includes('page=') || !currentUrl.match(/\/window\/540196\/\d+/);
+
+          if (isListView) {
+            console.log('On list view, need to open detail view first');
+
+            // Double-click on first row to open detail view
+            // Use various selectors for table rows in the document list
+            const listRow = page.locator('.document-list-wrapper .table-row, .document-list .table-row, .table tbody tr').first();
+            await listRow.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+            await listRow.dblclick();
+            console.log('Double-clicked on receipt candidate row');
+
+            // Wait for navigation to detail view
+            await page.waitForURL(/\/window\/540196\/\d+/, { timeout: SLOW_ACTION_TIMEOUT });
+            await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+
+            console.log('Navigated to detail view:', page.url());
+          }
+
+          // Wait for detail view to fully load
+          await page.waitForTimeout(500);
+          await page.locator('.rotating, .indicator-pending, .loader')
+            .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+
+          // Step 1: Click on the "Allocated Material Receipt" tab
+          // Tab ID 540530, internal name M_ReceiptSchedule_Alloc
+          // Language-independent: Use data-testid with tab ID (format: tab-{tabId})
+          // Also fallback to id="tab_M_ReceiptSchedule_Alloc" using internal name
+          const allocatedReceiptTab = page.getByTestId('tab-540530').or(
+            page.locator('#tab_M_ReceiptSchedule_Alloc')
+          );
+
+          await allocatedReceiptTab.waitFor({
+            state: 'visible',
+            timeout: SLOW_ACTION_TIMEOUT,
+          });
+
+          await allocatedReceiptTab.click();
+          console.log('Clicked Allocated Material Receipt tab');
+
+          // Wait for tab content to load
+          await page.waitForTimeout(500);
+
+          // Wait for spinners to disappear
+          await page
+            .locator('.rotating, .indicator-pending, .loader')
+            .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
+            .catch(() => {});
+
+          // Step 2: Wait for table rows in the tab
+          // The tab contains M_ReceiptSchedule_Alloc records linking to M_InOutLine
+          // Tab tables are inside .tabs-content or similar container
+          const tabTableRow = page.locator('.tabs-content .table-row, .tab-content .table-row, .tabs-content .table tbody tr').first();
+          await tabTableRow.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+          console.log('Found allocation row in tab');
+
+          // Step 3: Right-click on the row to open context menu
+          await tabTableRow.click({ button: 'right' });
+
+          // Wait for context menu to appear
+          const contextMenu = page.locator('.context-menu');
+          await contextMenu.waitFor({ state: 'visible', timeout: 5000 });
+
+          console.log('Context menu opened');
+
+          // Step 4: Click "Zoom Into" option
+          // LANGUAGE-INDEPENDENT: Use icon class 'meta-icon-share' instead of text
+          // The menu item has icon="meta-icon-share" which is stable across languages
+          // IMPORTANT: Zoom Into opens in a NEW TAB (window.open with _blank)
+          const zoomIntoItem = contextMenu.locator('.context-menu-item').filter({
+            has: page.locator('.meta-icon-share'),
+          }).first();
+
+          await zoomIntoItem.waitFor({ state: 'visible', timeout: 5000 });
+
+          // Set up listener for the popup BEFORE clicking
+          const popupPromise = page.context().waitForEvent('page', { timeout: SLOW_ACTION_TIMEOUT });
+
+          await zoomIntoItem.click();
+          console.log('Clicked Zoom Into');
+
+          // Step 5: Wait for new tab to open
+          const newPage = await popupPromise;
+          console.log('New tab opened:', newPage.url());
+
+          // Wait for the new page to load
+          await newPage.waitForLoadState('networkidle', {
+            timeout: SLOW_ACTION_TIMEOUT,
+          }).catch(() => {});
+
+          // Verify we're on the Material Receipt detail view
+          const finalUrl = newPage.url();
+          if (finalUrl.includes('/window/184/')) {
+            console.log(`Successfully navigated to Material Receipt on attempt ${attempt}`);
+
+            // IMPORTANT: Switch context to new page
+            // The shared page reference uses global.currentPage
+            global.currentPage = newPage;
+
+            return;
+          }
+
+          // Close the new page if it wasn't the right one
+          await newPage.close();
+          throw new Error(`Expected navigation to window/184, but URL is ${finalUrl}`);
+
+        } catch (error) {
+          lastError = error;
+          console.log(`Attempt ${attempt}/${maxRetries} failed: ${error.message}`);
+
+          // Press Escape to close any open menus before retrying
+          await page.keyboard.press('Escape');
+          await page.waitForTimeout(200);
+
+          if (attempt < maxRetries) {
+            await page.waitForTimeout(2000 * attempt);
+          }
+        }
+      }
+
+      throw new Error(
+        `Failed to navigate to Material Receipt via tab after ${maxRetries} attempts. ` +
+        `Last error: ${lastError?.message}`
+      );
+    });
+  }
+
+  /**
+   * Get the document number from the current Material Receipt window.
+   * Language-independent: Uses database field name DocumentNo.
+   * @returns {Promise<string>} The document number
+   */
+  static async getDocumentNo() {
+    return await test.step('ReceiptCandidatesPage - Get document number', async () => {
+      const page = getPage();
+
+      // Language-independent selector: use form-field class with database column name
+      const documentNoInput = page.locator('.form-field-DocumentNo input, .form-field-DocumentNo .form-control');
+
+      await documentNoInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+      const docNo = await documentNoInput.inputValue();
+
+      expect(docNo).toBeTruthy();
+      expect(docNo.length).toBeGreaterThan(0);
+
+      console.log('Material Receipt document number:', docNo);
+      return docNo;
+    });
+  }
+
+  /**
+   * Open the print modal using Alt+P keyboard shortcut.
+   * This opens the PDF generation modal for the document.
+   */
+  static async openPrintModal() {
+    return await test.step('ReceiptCandidatesPage - Open print modal (Alt+P)', async () => {
+      const page = getPage();
+
+      // Focus page first
+      await page.locator('body').click();
+      await page.waitForTimeout(200);
+
+      // Press Alt+P to open print modal
+      await page.keyboard.press('Alt+P');
+
+      // Two-step wait pattern: Wait for modal container first
+      await page
+        .locator('.modal-content, .modal, .panel-modal')
+        .waitFor({
+          state: 'visible',
+          timeout: SLOW_ACTION_TIMEOUT,
+        });
+
+      // Wait for modal content to load
+      await page.waitForTimeout(500);
+
+      console.log('Print modal opened successfully');
+    });
+  }
+
+  /**
+   * Download the Material Receipt PDF.
+   *
+   * Opens the print modal (Alt+P) and clicks the print button.
+   *
+   * @returns {Promise<Download>} Playwright Download object
+   */
+  static async downloadPdf() {
+    return await test.step('ReceiptCandidatesPage - Download Material Receipt PDF', async () => {
+      const page = getPage();
+      const fs = require('fs');
+      const path = require('path');
+
+      // Step 1: Open print modal with Alt+P
+      await this.openPrintModal();
+
+      // Step 2: Wait for modal to be fully loaded
+      await page.waitForTimeout(1000);
+
+      // Step 3: Find the Print button in the modal
+      // Uses data-testid='print-modal-button' (language-independent)
+      const printButton = page.getByTestId('print-modal-button');
+
+      await printButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+      // Set up both download and popup listeners BEFORE clicking
+      const downloadPromise = page
+        .waitForEvent('download', { timeout: VERY_SLOW_ACTION_TIMEOUT })
+        .catch(() => null);
+
+      const popupPromise = page
+        .waitForEvent('popup', { timeout: VERY_SLOW_ACTION_TIMEOUT })
+        .catch(() => null);
+
+      console.log('Clicking Print button in modal...');
+      await printButton.click();
+
+      // Wait for either download OR popup
+      const result = await Promise.race([
+        downloadPromise.then((d) => (d ? { type: 'download', data: d } : null)),
+        popupPromise.then((p) => (p ? { type: 'popup', data: p } : null)),
+      ]);
+
+      if (!result || !result.data) {
+        throw new Error('Neither download nor popup occurred after clicking print button');
+      }
+
+      if (result.type === 'download') {
+        console.log('PDF download started:', result.data.suggestedFilename());
+        return result.data;
+      } else {
+        // Handle popup - PDF opened in new tab
+        console.log('PDF opened in new tab');
+        const popup = result.data;
+
+        await popup.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+
+        const pdfUrl = popup.url();
+        console.log('PDF URL:', pdfUrl);
+
+        // Download PDF directly from the URL
+        const axios = require('axios');
+        const response = await axios.get(pdfUrl, {
+          responseType: 'arraybuffer',
+          headers: {
+            Cookie: (await page.context().cookies())
+              .map((c) => `${c.name}=${c.value}`)
+              .join('; '),
+          },
+        });
+
+        const buffer = Buffer.from(response.data);
+
+        // Save to temp file
+        const tempDir = path.join(process.cwd(), 'test-results', 'temp-pdfs');
+        if (!fs.existsSync(tempDir)) {
+          fs.mkdirSync(tempDir, { recursive: true });
+        }
+
+        const timestamp = Date.now();
+        const tempPath = path.join(tempDir, `material-receipt-${timestamp}.pdf`);
+        fs.writeFileSync(tempPath, buffer);
+
+        console.log('PDF downloaded from popup:', tempPath);
+
+        await popup.close().catch(() => {});
+
+        return {
+          suggestedFilename: () => `material-receipt-${timestamp}.pdf`,
+          path: async () => tempPath,
+        };
+      }
+    });
+  }
+
+  /**
+   * Download and validate the Material Receipt PDF.
+   *
+   * @param {Object} expectedData - Expected data to validate
+   * @param {string} expectedData.documentNo - Document number (optional, auto-detected if not provided)
+   * @param {string} expectedData.vendorName - Vendor name/code
+   * @param {string} expectedData.productCode - Product code
+   * @param {string} expectedData.quantity - Quantity
+   * @param {string} expectedData.language - Language (e.g., 'en_US', 'de_DE')
+   * @returns {Promise<void>}
+   */
+  static async downloadAndValidatePdf(expectedData) {
+    return await test.step('ReceiptCandidatesPage - Download and validate Material Receipt PDF', async () => {
+      const { PdfValidator } = require('../PdfValidator');
+
+      // Auto-detect document number if not provided
+      let documentNo = expectedData.documentNo;
+      if (!documentNo) {
+        documentNo = await this.getDocumentNo();
+      }
+
+      // Download the PDF
+      const download = await this.downloadPdf();
+
+      // Use unified PDF validator
+      // Note: quantity validation is disabled for Material Receipts because PDF text
+      // extraction often merges adjacent cells (e.g., "5" qty + "10" price = "510")
+      await PdfValidator.validate(download, {
+        documentNo: documentNo,
+        customerName: expectedData.vendorName, // Vendor for purchase-side documents
+        productCode: expectedData.productCode,
+        // quantity: expectedData.quantity, // Disabled due to PDF text extraction quirks
+        language: expectedData.language,
+        checkOverlaps: true,
+        checkMargins: false,
+      });
+    });
+  }
+
+  /**
+   * Create receipt and validate PDF in one workflow.
+   *
+   * This is a convenience method that:
+   * 1. Creates the material receipt
+   * 2. Opens the created M_InOut document
+   * 3. Downloads and validates the PDF
+   *
+   * @param {Object} expectedData - Expected data for PDF validation
+   * @returns {Promise<void>}
+   */
+  static async createReceiptAndValidatePdf(expectedData) {
+    return await test.step('ReceiptCandidatesPage - Create receipt and validate PDF', async () => {
+      // Create the receipt
+      await this.createReceipt();
+
+      // Open the related Material Receipt document
+      await this.openRelatedMaterialReceipt();
+
+      // Download and validate PDF
+      await this.downloadAndValidatePdf(expectedData);
+    });
+  }
 }

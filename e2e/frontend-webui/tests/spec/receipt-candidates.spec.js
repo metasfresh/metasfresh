@@ -19,10 +19,11 @@ import { InvoiceCandidatePage } from '../utils/pages/InvoiceCandidatePage';
  * 1. Create a purchase order
  * 2. Complete the purchase order
  * 3. Navigate to Receipt Candidates (Alt+6)
- * 4. Create material receipt via Quick Action
+ * 4. Create material receipt via Quick Action (HU-Editor workflow)
  * 5. Navigate back to Purchase Order
- * 6. Navigate to Invoice Candidates (Alt+6)
- * 7. Generate invoice via Quick Action
+ * 6. Open Material Receipt via Alt+6 and validate PDF
+ * 7. Navigate to Invoice Candidates (Alt+6)
+ * 8. Generate invoice via Quick Action
  *
  * This validates language-independent selectors for:
  * - Quick Actions button (data-testid="quick-action-button")
@@ -30,6 +31,7 @@ import { InvoiceCandidatePage } from '../utils/pages/InvoiceCandidatePage';
  * - Specific actions (data-testid="quick-action-{internalName}")
  * - Modal buttons (data-testid="modal-done", data-testid="modal-start")
  * - Related documents navigation (Alt+6)
+ * - PDF download and validation
  */
 
 // Test cases for multi-language validation
@@ -66,9 +68,11 @@ This test validates the complete purchase-to-invoice workflow:
 1. **Create Purchase Order** - New PO with vendor and product line
 2. **Complete Order** - Mark as completed to trigger downstream processes
 3. **Navigate to Receipt Candidates** - Use Alt+6 to open related receipt candidates
-4. **Create Material Receipt** - Execute quick action to receive goods
-5. **Navigate to Invoice Candidates** - Use Alt+6 to open related invoice candidates
-6. **Generate Invoice** - Execute quick action to create vendor invoice
+4. **Create Material Receipt** - Execute HU-Editor workflow to receive goods
+5. **Navigate back to PO** - Return to PO for accessing related documents
+6. **Validate Material Receipt PDF** - Open M_InOut via Alt+6 and verify PDF content
+7. **Navigate to Invoice Candidates** - Use Alt+6 to open related invoice candidates
+8. **Generate Invoice** - Execute quick action to create vendor invoice
 
 ## Features Tested
 - **F00600**: Purchase Order
@@ -144,26 +148,26 @@ Ensures the purchase-to-pay flow works correctly across UI languages.
 
       console.log(`[${language}] Material Receipt created from PO ${poDocumentNo}`);
 
-      // Step 4: Navigate back to the Purchase Order to access invoice candidates
-      // Use the saved PO URL from step 1
+      // Step 4: Validate Material Receipt PDF
+      // Navigate to Material Receipt via the "Allocated Material Receipt" tab,
+      // then right-click -> Zoom Into to open the M_InOut detail view
+      await ReceiptCandidatesPage.navigateToMaterialReceiptViaTab();
+      await ReceiptCandidatesPage.downloadAndValidatePdf({
+        vendorName: masterdata.bpartners.VENDOR1.bpartnerCode,
+        productCode: masterdata.products.Product1.productCode,
+        quantity: '5',
+        language,
+      });
+      console.log(`[${language}] Material Receipt PDF validated`);
+
+      // Step 5: Navigate back to the Purchase Order for invoice creation
       await page.goto(poUrl);
-
-      // Wait for PO detail view to load
-      await page.waitForURL(/\/window\/181\/\d+/, {
-        timeout: 10000,
-      });
-
-      await page.waitForLoadState('networkidle', {
-        timeout: 10000,
-      }).catch(() => {
-        // Ignore timeout
-      });
-
-      await page.waitForTimeout(1000);
+      await page.waitForURL(/\/window\/181\/\d+/, { timeout: 10000 });
+      await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
 
       console.log(`[${language}] Navigated back to Purchase Order ${poDocumentNo}`);
 
-      // Step 5: Open related invoice candidate using Alt+6
+      // Step 6: Open related invoice candidate using Alt+6
       // This navigates directly to the correct invoice candidate for this PO
       // Note: Invoice candidates are created when PO is completed (one IC per PO line)
       // Additional ICs may be created after material receipt for non-PO items
@@ -174,7 +178,7 @@ Ensures the purchase-to-pay flow works correctly across UI languages.
 
       console.log(`[${language}] Invoice Candidate opened for PO ${poDocumentNo}`);
 
-      // Step 6: Generate invoice using Quick Action
+      // Step 7: Generate invoice using Quick Action
       await InvoiceCandidatePage.generateInvoice();
 
       console.log(`[${language}] Invoice generated from PO ${poDocumentNo}`);
