@@ -9,7 +9,6 @@ import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyConversionResult;
-import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
@@ -20,9 +19,7 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLineId;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
-import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -60,7 +57,6 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 {
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-	private final IUOMConversionBL uomConversionsBL = Services.get(IUOMConversionBL.class);
 
 	private final I_C_OrderLine orderLine;
 	private final I_M_InOutLine _receiptLine;
@@ -99,7 +95,7 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 
 	CostAmount getPOCostAmountInAcctCurrency(final AcctSchema acctSchema)
 	{
-		final CostAmount poCostAmt = CostAmount.multiply(getOrderLineCostPriceInStockingUOM(), getQty());
+		final CostAmount poCostAmt = orderLineBL.getCostAmount(getOrderLine(), getQty());
 		return convertToAcctCurrency(poCostAmt, acctSchema);
 	}
 
@@ -116,15 +112,6 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 				acctSchema.getCurrencyId());
 
 		return CostAmount.of(poCostConv.getAmount(), acctSchema.getCurrencyId());
-	}
-
-	private ProductPrice getOrderLineCostPriceInStockingUOM()
-	{
-		final I_C_OrderLine orderLine = getOrderLine();
-		final ProductPrice costPrice = orderLineBL.getCostPrice(orderLine);
-
-		final CurrencyPrecision precision = currencyBL.getCostingPrecision(costPrice.getCurrencyId());
-		return uomConversionsBL.convertProductPriceToUom(costPrice, getProductStockingUOMId(), precision);
 	}
 
 	CostAmount getStandardCosts(final AcctSchema acctSchema)
@@ -151,7 +138,7 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 	{
 		final I_M_InOut receipt = getReceipt();
 		final Quantity qty = isReturnTrx() ? getQty().negate() : getQty();
-		final CostAmount amt = CostAmount.multiply(getOrderLineCostPriceInStockingUOM(), qty);
+		final CostAmount amt = getPOCostAmountInAcctCurrency(as).negateIf(isReturnTrx());
 
 		// NOTE: there is no need to fail if no cost details were created because:
 		// * not all costing methods are creating cost details for MatchPO
