@@ -80,6 +80,7 @@ class ShortcutProvider extends Component {
   keySequence = [];
   fired = {};
 
+<<<<<<< HEAD
   getChildContext() {
     return {
       shortcuts: {
@@ -87,6 +88,26 @@ class ShortcutProvider extends Component {
         unsubscribe: this.unsubscribe,
       },
     };
+=======
+  useEffect(() => {
+    if (!enabled) return;
+
+    // noinspection UnnecessaryLocalVariableJS
+    const unsubscribe = subscribe({ name, shortcut, handler });
+    return unsubscribe;
+  }, [subscribe, name, shortcut, handler, enabled, ...(dependencies ?? [])]);
+};
+
+export const ShortcutProvider = ({ children }) => {
+  const keymapRef = useRef(null);
+  const hotkeysRef = useRef({});
+  const keySequenceRef = useRef([]);
+  const firedRef = useRef({});
+
+  // Initialize keymap
+  if (keymapRef.current == null) {
+    keymapRef.current = { ...defaultKeymap };
+>>>>>>> ec04f0933a (fix: include `handler` in ShortcutProvider dependencies array)
   }
 
   UNSAFE_componentWillMount() {
