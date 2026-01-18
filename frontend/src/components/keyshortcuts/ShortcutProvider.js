@@ -88,7 +88,7 @@ export const useShortcut = ({
     // noinspection UnnecessaryLocalVariableJS
     const unsubscribe = subscribe({ name, shortcut, handler });
     return unsubscribe;
-  }, [subscribe, name, shortcut, enabled, ...(dependencies ?? [])]);
+  }, [subscribe, name, shortcut, handler, enabled, ...(dependencies ?? [])]);
 };
 
 export const ShortcutProvider = ({ children }) => {
@@ -143,7 +143,7 @@ export const ShortcutProvider = ({ children }) => {
 
     const handles = hotkeys[serializedSequence];
     if (!handles || handles.length === 0) {
-      // console.debug(`[Shortcut ${key}] no handlers found`);
+      console.debug(`[Shortcut ${key}] no handlers found`);
       return;
     }
 
@@ -154,7 +154,9 @@ export const ShortcutProvider = ({ children }) => {
       activeNode.nodeName === 'INPUT' &&
       disabledWithFocus.indexOf(serializedSequence) > -1
     ) {
-      // console.debug(`[Shortcut ${key}] skip firing because disabled for input field`);
+      console.debug(
+        `[Shortcut ${key}] skip firing because disabled for input field`
+      );
       return;
     }
 
@@ -193,7 +195,10 @@ export const ShortcutProvider = ({ children }) => {
     const previousKey = keymap[name];
     const key = (shortcut ? shortcut : keymap[name])?.toUpperCase();
     if (!key) {
-      // console.warn(`There are no hotkeys defined for "${name}".`, { keymap });
+      console.warn(`There are no hotkeys defined for "${name}".`, {
+        shortcut,
+        keymap,
+      });
       return;
     }
 
@@ -211,7 +216,7 @@ export const ShortcutProvider = ({ children }) => {
     keymap[name] = key;
     hotkeys[key] = [handler, ...(hotkeys[key] ?? [])];
 
-    // console.log(`Added handler for "${name}" with shortcut "${key}".`, {
+    // console.debug(`Added handler for "${name}" with shortcut "${key}".`, {
     //   shortcut,
     //   previousKey,
     //   hotkeys,
@@ -226,7 +231,7 @@ export const ShortcutProvider = ({ children }) => {
       const hotkeys = hotkeysRef.current;
       hotkeys[key] = (hotkeys[key] || []).filter((h) => h !== handler);
 
-      // console.log(`Removed handler for "${name}" with shortcut "${key}".`, {
+      // console.debug(`Removed handler for "${name}" with shortcut "${key}".`, {
       //   shortcut,
       //   previousKey,
       // });
@@ -263,7 +268,11 @@ const fireHandlers = (event, handlers) => {
   for (let i = 0; i < handlers.length; i++) {
     const handler = handlers[i];
     const stopPropagation = handler(event);
-    // console.log(`[Event ${event}] Invoked handler`, { handler, stopPropagation, event });
+    // console.debug(`[Event ${event}] Invoked handler`, {
+    //   handler,
+    //   stopPropagation,
+    //   event,
+    // });
 
     if (stopPropagation) {
       break;
