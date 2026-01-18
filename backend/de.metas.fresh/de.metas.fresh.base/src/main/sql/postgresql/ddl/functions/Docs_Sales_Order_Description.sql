@@ -1,8 +1,8 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Description(IN record_id     numeric,
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Description(IN p_record_id   numeric,
                                                                                         IN p_ad_language Character Varying(6))
 ;
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Description(record_id     numeric,
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Description(p_record_id   numeric,
                                                                                            p_ad_language character varying)
     RETURNS TABLE
             (
@@ -121,7 +121,7 @@ FROM C_Order o
     -- project
          LEFT JOIN c_project pr ON o.c_project_id = pr.c_project_id
 
-WHERE o.C_Order_ID = record_id
+WHERE o.C_Order_ID = p_record_id
 $$
 ;
 

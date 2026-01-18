@@ -1,7 +1,17 @@
-﻿DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Root(IN record_id numeric);
+-- Title: Fix record_id parameter in Docs_Purchase_InOut_Root
+-- Description: This function was missed in 5784230_sys_fix_record_id_parameter_collision.sql
+--              The DDL file was updated but not the migration script, causing the preloaded
+--              DB image to have the old buggy version with 'record_id' parameter collision.
+--              This causes M_InOut (Material Receipt) reports to return wrong data (first
+--              record's data for all subsequent queries).
+-- Issue: https://github.com/metasfresh/metasfresh/pull/22012
+-- 2026-01-18
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Root(IN record_id numeric);
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Root(IN p_record_id numeric);
 
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Root(IN p_record_id numeric)
-RETURNS TABLE 
+RETURNS TABLE
 	(
 	ad_org_id numeric,
 	c_orderline_id integer,
@@ -10,7 +20,7 @@ RETURNS TABLE
 	movementdate date
 	)
 AS
-$$	
+$$
 SELECT
 	ol.AD_Org_ID,
 	ol.C_OrderLine_ID::int,
