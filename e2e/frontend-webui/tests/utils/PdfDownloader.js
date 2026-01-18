@@ -109,7 +109,7 @@ class PdfDownloader {
         }
 
         const pdfUrl = popup.url();
-        console.log('PDF URL:', pdfUrl);
+        console.log('PDF URL (original):', pdfUrl);
 
         // Validate URL is not blank or error page
         if (!pdfUrl || pdfUrl === 'about:blank' || !pdfUrl.includes('/print/')) {
@@ -118,8 +118,16 @@ class PdfDownloader {
 
         // Use Playwright's built-in request API instead of axios
         // This automatically handles cookies and session from the browser context
+        // IMPORTANT: Add cache-busting to prevent cached PDF content from previous tests
         const context = popup.context();
-        const response = await context.request.get(pdfUrl);
+        const cacheBustUrl = pdfUrl + (pdfUrl.includes('?') ? '&' : '?') + '_t=' + Date.now();
+        console.log('PDF URL (cache-bust):', cacheBustUrl);
+        const response = await context.request.get(cacheBustUrl, {
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+          },
+        });
 
         if (!response.ok()) {
           throw new Error(`Failed to download PDF: ${response.status()} ${response.statusText()}`);
