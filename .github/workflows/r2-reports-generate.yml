@@ -49,24 +49,33 @@ jobs:
 
       - name: Extract build info from triggering workflow
         id: build-info
+        env:
+          # Use env vars to avoid code injection from untrusted branch names
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_BRANCH: ${{ github.event.inputs.branch }}
+          INPUT_VERSION: ${{ github.event.inputs.version }}
+          WORKFLOW_HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          WORKFLOW_RUN_ID: ${{ github.event.workflow_run.id }}
+          WORKFLOW_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          CURRENT_SHA: ${{ github.sha }}
         run: |
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+          if [ "$EVENT_NAME" == "workflow_dispatch" ]; then
             # Manual trigger - use inputs
-            echo "branch=${{ github.event.inputs.branch }}" >> $GITHUB_OUTPUT
-            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
-            echo "head_sha=${{ github.sha }}" >> $GITHUB_OUTPUT
+            echo "branch=${INPUT_BRANCH}" >> $GITHUB_OUTPUT
+            echo "version=${INPUT_VERSION}" >> $GITHUB_OUTPUT
+            echo "head_sha=${CURRENT_SHA}" >> $GITHUB_OUTPUT
           else
             # workflow_run trigger - extract from event
             # The branch name needs to be extracted and sanitized
-            RAW_BRANCH="${{ github.event.workflow_run.head_branch }}"
+            RAW_BRANCH="${WORKFLOW_HEAD_BRANCH}"
             SANITIZED=$(echo "$RAW_BRANCH" | tr '/' '-' | tr '_' '-' | tr -cd 'a-zA-Z0-9.-' | tr '[:upper:]' '[:lower:]' | sed 's/--*/-/g' | sed 's/^-*//' | sed 's/-*$//')
             echo "branch=${SANITIZED}" >> $GITHUB_OUTPUT
 
             # Version needs to be constructed from workflow run
             # Format: {mfversion}-{branch}.{run_number}
             # We'll need to get this from R2 raw data path or from the triggering workflow
-            echo "Triggering workflow run: ${{ github.event.workflow_run.id }}"
-            echo "head_sha=${{ github.event.workflow_run.head_sha }}" >> $GITHUB_OUTPUT
+            echo "Triggering workflow run: ${WORKFLOW_RUN_ID}"
+            echo "head_sha=${WORKFLOW_HEAD_SHA}" >> $GITHUB_OUTPUT
 
             # For now, we'll list the R2 bucket to find the latest build for this branch
             echo "needs_version_lookup=true" >> $GITHUB_OUTPUT
