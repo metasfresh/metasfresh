@@ -33,8 +33,8 @@ SELECT COALESCE(reft.name, ref.name)                          AS paymentrule,
        (CASE
             WHEN pt.DiscountDays2 > 0 THEN (o.grandtotal + (o.grandtotal * pt.discount2 / 100))
         END)                                                  AS discount2,
-       TO_CHAR(subtractdays(o.DateOrdered, DiscountDays), 'dd.MM.YYYY')  AS discount_date1,
-       TO_CHAR(subtractdays(o.DateOrdered, DiscountDays2), 'dd.MM.YYYY') AS discount_date2,
+       TO_CHAR((o.DateOrdered - DiscountDays), 'dd.MM.YYYY')  AS discount_date1,
+       TO_CHAR((o.DateOrdered - DiscountDays2), 'dd.MM.YYYY') AS discount_date2,
        c.cursymbol,
        COALESCE(NULLIF(dtt.documentnote, ''),
                 NULLIF(dt.documentnote, ''))                  AS documentnote,
