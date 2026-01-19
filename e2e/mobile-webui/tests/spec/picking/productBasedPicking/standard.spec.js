@@ -153,10 +153,9 @@ test('Product based aggregation', async ({ page }) => {
                     shipmentSchedules: {
                         P1: {
                             qtyPicked: [
-                                // TODO find out why is not processed/shipped?!
-                                { qtyPicked: "20 PCE", qtyTUs: 5, qtyLUs: 1, vhu: 'tu11', tu: 'tu11', lu: 'lu11', processed: false, shipmentLineId: '-' },
-                                { qtyPicked: "24 PCE", qtyTUs: 6, qtyLUs: 1, vhu: 'tu12', tu: 'tu12', lu: 'lu12', processed: false, shipmentLineId: '-' },
-                                { qtyPicked: "28 PCE", qtyTUs: 7, qtyLUs: 1, vhu: 'tu13', tu: 'tu13', lu: 'lu13', processed: false, shipmentLineId: '-' },
+                                { qtyPicked: "20 PCE", qtyTUs: 5, qtyLUs: 1, vhu: 'tu11', tu: 'tu11', lu: 'lu11', processed: true, shipmentLineId: 'shipment1_line1' },
+                                { qtyPicked: "24 PCE", qtyTUs: 6, qtyLUs: 1, vhu: 'tu12', tu: 'tu12', lu: 'lu12', processed: true, shipmentLineId: 'shipment2_line1' },
+                                { qtyPicked: "28 PCE", qtyTUs: 7, qtyLUs: 1, vhu: 'tu13', tu: 'tu13', lu: 'lu13', processed: true, shipmentLineId: 'shipment3_line1' },
                             ]
                         }
                     }
