@@ -473,11 +473,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 				.setDocLine(line)
 				.setAccount(getBPGroupAccount(BPartnerGroupAccountType.NotInvoicedReceipts, as))
 				.setAmt(roundToStdPrecision(costs), null)
-<<<<<<< HEAD
-				.setQty(line.getQty())
-=======
-				.setQty(line.getQtyNominalAndCatchWeight().negate())
->>>>>>> 81584d09bd (Fix Product costing when dealing with included tax prices and catch weight (#22013))
+				.setQty(line.getQtyNominalAndCatchWeight())
 				.locatorId(line.getM_Locator_ID())
 				.fromLocationOfBPartner(getBPartnerLocationId())
 				.toLocationOfLocator(line.getM_Locator_ID())
@@ -501,11 +497,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 				.setDocLine(line)
 				.setAccount(line.getProductAssetAccount(as))
 				.setAmt(null, roundToStdPrecision(costs))
-<<<<<<< HEAD
-				.setQty(line.getQty().negate())
-=======
-				.setQty(line.getQtyNominalAndCatchWeight())
->>>>>>> 81584d09bd (Fix Product costing when dealing with included tax prices and catch weight (#22013))
+				.setQty(line.getQtyNominalAndCatchWeight().negate())
 				.locatorId(line.getM_Locator_ID())
 				.fromLocationOfBPartner(getBPartnerLocationId())
 				.toLocationOfLocator(line.getM_Locator_ID())

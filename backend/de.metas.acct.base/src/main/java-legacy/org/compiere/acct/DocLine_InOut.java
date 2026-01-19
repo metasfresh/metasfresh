@@ -167,11 +167,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 					.productId(getProductId())
 					.attributeSetInstanceId(getAttributeSetInstanceId())
 					.documentRef(CostingDocumentRef.ofReceiptLineId(get_ID()))
-<<<<<<< HEAD
-					.qty(getQty().negateIf(isMaterialReturn()))
-=======
-					.qtyAndCatchWeight(getQtyNominalAndCatchWeight())
->>>>>>> 81584d09bd (Fix Product costing when dealing with included tax prices and catch weight (#22013))
+					.qtyAndCatchWeight(getQtyNominalAndCatchWeight().negateIf(isMaterialReturn()))
 					//.amt(null)
 					.currencyConversionContext(getCurrencyConversionContext(as))
 					.date(getDateAcctAsInstant());
@@ -224,11 +220,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 							.productId(getProductId())
 							.attributeSetInstanceId(getAttributeSetInstanceId())
 							.documentRef(CostingDocumentRef.ofShipmentLineId(get_ID()))
-<<<<<<< HEAD
-							.qty(getQty().negateIf(isMaterialReturn()))
-=======
-							.qtyAndCatchWeight(getQtyNominalAndCatchWeight())
->>>>>>> 81584d09bd (Fix Product costing when dealing with included tax prices and catch weight (#22013))
+							.qtyAndCatchWeight(getQtyNominalAndCatchWeight().negateIf(isMaterialReturn()))
 							.amt(CostAmount.zero(as.getCurrencyId())) // expect to be calculated
 							.currencyConversionContext(getCurrencyConversionContext(as))
 							.date(getDateAcctAsInstant())

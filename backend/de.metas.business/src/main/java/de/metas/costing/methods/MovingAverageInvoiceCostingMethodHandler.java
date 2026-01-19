@@ -27,17 +27,14 @@ import de.metas.common.util.Check;
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostAmountAndQty;
-import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostDetailPreviousAmounts;
-import de.metas.costing.CostDetailQuery;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegmentAndElement;
-import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.MoveCostsRequest;
@@ -571,66 +568,6 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 				.negateIf(isReversal);
 	}
 
-<<<<<<< HEAD
-	private CostAmount getReceiptAmount(
-			@NonNull final MatchInv matchInv,
-			@NonNull final Quantity receiptQty,
-			@NonNull final CostElement costElement,
-			@NonNull final AcctSchemaId acctSchemaId,
-			@NonNull final CurrencyPrecision precision)
-	{
-		final CurrencyConversionContext currencyConversionContext = inoutBL.getCurrencyConversionContext(matchInv.getInOutId());
-
-		final MatchInvType type = matchInv.getType();
-		if (type.isMaterial())
-		{
-			Check.assume(costElement.isMaterial(), "Cost Element shall be material: {}", costElement);
-
-			final I_C_OrderLine orderLine = matchInvoiceService.getOrderLineId(matchInv)
-					.map(orderLineBL::getOrderLineById)
-					.orElse(null);
-			if (orderLine != null)
-			{
-				return getCostAmountInAcctCurrency(orderLine, receiptQty, acctSchemaId, currencyConversionContext);
-			}
-			else
-			{
-				final CostDetail receiptCostDetail = utils.getSingleCostDetail(CostDetailQuery.builder()
-						.acctSchemaId(acctSchemaId)
-						.costElementId(costElement.getId())
-						.documentRef(CostingDocumentRef.ofReceiptLineId(matchInv.getInoutLineId().getInOutLineId()))
-						.amtType(CostAmountType.MAIN)
-						.productId(matchInv.getProductId())
-						.build());
-
-				final CostAmount receiptAmount = receiptCostDetail.computePartialCostAmount(receiptQty, precision);
-
-				return utils.convertToAcctSchemaCurrency(
-						receiptAmount,
-						() -> currencyConversionContext,
-						acctSchemaId);
-			}
-		}
-		else if (type.isCost())
-		{
-			final InOutCost inoutCost = orderCostService.getInOutCostsById(matchInv.getCostPartNotNull().getInoutCostId());
-			Check.assumeEquals(inoutCost.getCostElementId(), costElement.getId(), "Cost Element shall match: {}, {}", inoutCost, costElement);
-
-			final Money receiptAmount = inoutCost.getCostAmountForQty(receiptQty, precision);
-
-			return utils.convertToAcctSchemaCurrency(
-					CostAmount.ofMoney(receiptAmount),
-					() -> currencyConversionContext,
-					acctSchemaId);
-		}
-		else
-		{
-			throw new AdempiereException("Unknown type: " + type);
-		}
-	}
-
-=======
->>>>>>> 81584d09bd (Fix Product costing when dealing with included tax prices and catch weight (#22013))
 	@Override
 	public void voidCosts(final CostDetailVoidRequest request)
 	{

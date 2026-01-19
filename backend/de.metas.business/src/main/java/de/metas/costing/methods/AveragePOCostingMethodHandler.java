@@ -30,6 +30,7 @@ import de.metas.money.Money;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.costs.OrderCostService;
 import de.metas.order.costs.inout.InOutCost;
+import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -104,25 +105,8 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		final MatchInv matchInv = matchInvoiceService.getById(request.getDocumentRef().getId(MatchInvId.class));
 		final CurrentCost currentCost = utils.getCurrentCost(request);
 
-<<<<<<< HEAD
-		final CostAmount amtConv = getReceiptAmount(matchInv, request.getQty(), request.getCostElement(), request.getAcctSchemaId(), currentCost);
-
-		return utils.createCostDetailRecordNoCostsChanged(
-				request.withAmount(amtConv),
-				CostDetailPreviousAmounts.of(currentCost));
-	}
-
-	private CostAmount getReceiptAmount(
-			@NonNull final MatchInv matchInv,
-			@NonNull final Quantity receiptQty,
-			@NonNull final CostElement costElement,
-			@NonNull final AcctSchemaId acctSchemaId,
-			@NonNull final CurrentCost currentCost)
-	{
-=======
 		final @NonNull CostElement costElement = request.getCostElement();
 		final @NonNull AcctSchemaId acctSchemaId = request.getAcctSchemaId();
->>>>>>> 81584d09bd (Fix Product costing when dealing with included tax prices and catch weight (#22013))
 		final CurrencyConversionContext currencyConversionContext = inoutBL.getCurrencyConversionContext(matchInv.getInOutId());
 
 		final CostAmount amtConv;
@@ -136,7 +120,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 					.orElse(null);
 			if (orderLine != null)
 			{
-				return getCostAmountInAcctCurrency(orderLine, receiptQty, acctSchemaId, currencyConversionContext);
+				amtConv = getCostAmountInAcctCurrency(orderLine, request.getQtyCatchWeightOrNominal(), acctSchemaId, currencyConversionContext);
 			}
 			else
 			{
@@ -148,28 +132,20 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 						.productId(matchInv.getProductId())
 						.build());
 
-<<<<<<< HEAD
-				final CostAmount receiptAmount = receiptCostDetail.computePartialCostAmount(receiptQty, currentCost.getPrecision());
+				final CostAmount receiptAmount = receiptCostDetail.computePartialCostAmount(request.getQty(), currentCost.getPrecision());
 
-				return utils.convertToAcctSchemaCurrency(
+				amtConv = utils.convertToAcctSchemaCurrency(
 						receiptAmount,
 						() -> currencyConversionContext,
 						acctSchemaId);
 			}
-=======
-			amtConv = getCostAmountInAcctCurrency(orderLine, request.getQtyCatchWeightOrNominal(), acctSchemaId, currencyConversionContext);
->>>>>>> 81584d09bd (Fix Product costing when dealing with included tax prices and catch weight (#22013))
 		}
 		else if (type.isCost())
 		{
 			final InOutCost inoutCost = orderCostService.getInOutCostsById(matchInv.getCostPartNotNull().getInoutCostId());
 			Check.assumeEquals(inoutCost.getCostElementId(), costElement.getId(), "Cost Element shall match: {}, {}", inoutCost, costElement);
 
-<<<<<<< HEAD
-			final Money receiptAmount = inoutCost.getCostAmountForQty(receiptQty, currentCost.getPrecision());
-=======
 			final Money receiptAmount = inoutCost.getCostAmountForQty(request.getQty(), currentCost.getPrecision());
->>>>>>> 81584d09bd (Fix Product costing when dealing with included tax prices and catch weight (#22013))
 
 			amtConv = utils.convertToAcctSchemaCurrency(
 					CostAmount.ofMoney(receiptAmount),

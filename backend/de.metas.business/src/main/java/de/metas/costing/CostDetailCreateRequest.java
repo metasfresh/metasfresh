@@ -109,7 +109,6 @@ public class CostDetailCreateRequest
 
 	public static class CostDetailCreateRequestBuilder
 	{
-<<<<<<< HEAD
 		public CostDetailCreateRequestBuilder costSegment(final CostSegment costSegment)
 		{
 			return this
@@ -119,7 +118,8 @@ public class CostDetailCreateRequest
 					.productId(costSegment.getProductId())
 					.attributeSetInstanceId(costSegment.getAttributeSetInstanceId())
 					;
-=======
+		}
+
 		public CostDetailCreateRequestBuilder qtyAndCatchWeight(@NonNull StockQtyAndUOMQty qtyAndCatchWeight)
 		{
 			//noinspection ConstantValue
@@ -131,7 +131,6 @@ public class CostDetailCreateRequest
 			qty(qtyAndCatchWeight.getStockQty());
 			catchWeight(qtyAndCatchWeight.getUOMQtyOpt().orElse(null));
 			return this;
->>>>>>> 81584d09bd (Fix Product costing when dealing with included tax prices and catch weight (#22013))
 		}
 	}
 

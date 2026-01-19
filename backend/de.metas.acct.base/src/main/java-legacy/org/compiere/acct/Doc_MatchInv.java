@@ -54,12 +54,10 @@ import de.metas.order.costs.inout.InOutCost;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
-<<<<<<< HEAD
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-=======
 import de.metas.quantity.StockQtyAndUOMQty;
->>>>>>> 81584d09bd (Fix Product costing when dealing with included tax prices and catch weight (#22013))
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Check;
@@ -552,12 +550,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		Check.assume(!isSOTrx(), "Cannot create cost details for sales match invoice");
 
 		final I_M_InOut receipt = getReceipt();
-<<<<<<< HEAD
-		final Quantity qtyMatched = getQty();
-=======
-		final MovementType movementType = MovementType.ofCode(receipt.getMovementType());
-		final StockQtyAndUOMQty qtyMatched = getQty().negateIf(movementType.isMaterialReturn());
->>>>>>> 81584d09bd (Fix Product costing when dealing with included tax prices and catch weight (#22013))
+		final StockQtyAndUOMQty qtyMatched = getQty();
 
 		final MatchInvType type = matchInv.getType();
 		final Money amtMatched;
