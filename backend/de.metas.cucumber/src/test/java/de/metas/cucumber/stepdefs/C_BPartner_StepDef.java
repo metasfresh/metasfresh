@@ -283,7 +283,12 @@ public class C_BPartner_StepDef
 		if (paymentTermId > 0)
 		{
 			bPartnerRecord.setC_PaymentTerm_ID(paymentTermId);
-			bPartnerRecord.setPO_PaymentTerm_ID(paymentTermId);
+		}
+
+		final int poPaymentTermId = row.getAsOptionalInt("PO_PaymentTerm_ID").orElse(-1);
+		if (poPaymentTermId > 0)
+		{
+			bPartnerRecord.setPO_PaymentTerm_ID(poPaymentTermId);
 		}
 
 		bPartnerRecord.setAD_Language(row.getAsOptionalString(COLUMNNAME_AD_Language).orElse(null));
@@ -312,13 +317,17 @@ public class C_BPartner_StepDef
 		final String paymentTermValue = row.getAsOptionalString(I_C_BPartner.COLUMNNAME_C_PaymentTerm_ID + ".Value").orElse(null);
 		if (Check.isNotBlank(paymentTermValue))
 		{
-			final I_C_PaymentTerm paymentTerm = queryBL.createQueryBuilder(I_C_PaymentTerm.class)
-					.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_Value, paymentTermValue)
-					.create()
-					.firstOnlyNotNull(I_C_PaymentTerm.class);
+			bPartnerRecord.setC_PaymentTerm_ID(paymentTermRepository.retrievePaymentTermIdNotNull(PaymentTermQuery.builder()
+					.value(paymentTermValue)
+					.build()).getRepoId());
+		}
 
-			bPartnerRecord.setC_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
-			bPartnerRecord.setPO_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
+		final String paymentTermPOValue = row.getAsOptionalString(I_C_BPartner.COLUMNNAME_PO_PaymentTerm_ID + ".Value").orElse(null);
+		if (Check.isNotBlank(paymentTermPOValue))
+		{
+			bPartnerRecord.setPO_PaymentTerm_ID(paymentTermRepository.retrievePaymentTermIdNotNull(PaymentTermQuery.builder()
+					.value(paymentTermPOValue)
+					.build()).getRepoId());
 		}
 
 		row.getAsOptionalEnum(COLUMNNAME_PaymentRule, PaymentRule.class).ifPresent(paymentRule -> bPartnerRecord.setPaymentRule(paymentRule.getCode()));
