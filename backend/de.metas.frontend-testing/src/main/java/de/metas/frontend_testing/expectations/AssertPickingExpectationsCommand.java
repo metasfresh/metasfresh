@@ -1,6 +1,7 @@
 package de.metas.frontend_testing.expectations;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.base.Supplier;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -16,12 +17,15 @@ import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Recompute;
 import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.jetbrains.annotations.NotNull;
@@ -33,6 +37,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static de.metas.frontend_testing.expectations.assertions.Assertions.assertThat;
 import static de.metas.frontend_testing.expectations.assertions.Assertions.softly;
@@ -66,9 +71,40 @@ class AssertPickingExpectationsCommand
 
 		if (pickingExpectation.getShipmentSchedules() != null)
 		{
-			final Collection<I_M_ShipmentSchedule> shipmentSchedules = services.getShipmentSchedulesByIds(pickingJob.getScheduleIds().getShipmentScheduleIds());
+			final Set<ShipmentScheduleId> shipmentScheduleIdSet = pickingJob.getScheduleIds().getShipmentScheduleIds();
+			waitShipmentSchedulesValid(shipmentScheduleIdSet);
+
+			final Collection<I_M_ShipmentSchedule> shipmentSchedules = services.getShipmentSchedulesByIds(shipmentScheduleIdSet);
 			assertShipmentSchedules(pickingExpectation.getShipmentSchedules(), shipmentSchedules);
 		}
+	}
+
+	private void waitShipmentSchedulesValid(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds) throws InterruptedException
+	{
+		// TODO move to proper location in AssertExpectationsCommandServices
+		final Supplier<Boolean> noRecomputeRecords = () ->
+				Services.get(IQueryBL.class).createQueryBuilder(I_M_ShipmentSchedule_Recompute.class)
+						.addInArrayFilter(
+								I_M_ShipmentSchedule_Recompute.COLUMNNAME_M_ShipmentSchedule_ID,
+								shipmentScheduleIds)
+						.create()
+						.noneMatch();
+
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+		while (!noRecomputeRecords.get() && stopwatch.elapsed().compareTo(DEFAULT_TIMEOUT) < 0)
+		{
+			logger.info("Waiting for shipment schedules to become valid: {}", shipmentScheduleIds);
+			//noinspection BusyWait
+			Thread.sleep(1000);
+		}
+
+		if (!noRecomputeRecords.get())
+		{
+			throw new AdempiereException(
+					"Shipment schedules not valid after " + stopwatch + ": " + shipmentScheduleIds);
+		}
+
+		logger.info("Shipment schedules are now valid after {}", stopwatch);
 	}
 
 	private PickingJobId getPickingJobIdByMatcherString(@NotNull final String matcherStr)
