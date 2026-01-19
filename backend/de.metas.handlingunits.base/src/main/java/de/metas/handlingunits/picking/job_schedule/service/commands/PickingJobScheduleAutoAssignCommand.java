@@ -130,6 +130,7 @@ public class PickingJobScheduleAutoAssignCommand
 
 		if (shipmentSchedulesCandidates.isEmpty()) {return;}
 
+		// On limit reach exclude the last order to avoid having the order only partially included
 		final OrderId orderIdToExclude = shipmentSchedulesCandidates.size() == queryLimit.toInt() ?
 				shipmentSchedulesCandidates.get(shipmentSchedulesCandidates.size() - 1).getOrderId()
 				: null;
@@ -137,7 +138,7 @@ public class PickingJobScheduleAutoAssignCommand
 		final ImmutableList<ShipmentSchedule> allEligibleShipmentSchedules = shipmentSchedulesCandidates
 				.stream()
 				.filter(sched -> sched.getCarrierProductId() != null || !isCarrierProductRequired)
-				.filter(shipmentSchedule -> !OrderId.equals(shipmentSchedule.getOrderId(), orderIdToExclude))
+				.filter(shipmentSchedule -> orderIdToExclude == null || !OrderId.equals(shipmentSchedule.getOrderId(), orderIdToExclude))
 				.collect(ImmutableList.toImmutableList());
 
 		if (allEligibleShipmentSchedules.isEmpty()) {return;}
