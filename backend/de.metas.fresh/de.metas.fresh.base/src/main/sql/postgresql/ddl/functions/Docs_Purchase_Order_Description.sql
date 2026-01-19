@@ -1,9 +1,9 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Description(IN record_id  numeric,
-                                                                                           IN p_language Character Varying(6))
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Description(IN p_record_id numeric,
+                                                                                           IN p_language  Character Varying(6))
 ;
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Description(record_id  numeric,
-                                                                                              p_language character varying)
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Description(p_record_id numeric,
+                                                                                              p_language  character varying)
     RETURNS TABLE
             (
                 description        character varying,
@@ -36,10 +36,13 @@ SELECT o.description                         AS description,
        TRIM(o.poreference)                   AS reference,
        o.dateordered                         AS dateordered,
        o.datepromised                        AS datepromised,
-       REPLACE(
-               REPLACE(o.DeliveryToAddress, E'\r\n', ' | '),
-               E'\n', ' | '
-       )                                     AS deliverto,
+       CASE
+           WHEN report.IsHiddenReportElement(o.C_DocType_ID, 'Delivery_To_Address') = 'N' THEN
+               REPLACE(
+                       REPLACE(o.DeliveryToAddress, E'\r\n', ' | '),
+                       E'\n', ' | '
+               )
+       END                                                                              AS deliverto,
        bp.value                              AS bp_value,
        bp.eori                               AS eori,
        bp.customernoatvendor                 AS customernoatvendor,
@@ -60,10 +63,13 @@ SELECT o.description                         AS description,
        srep.fax                              AS sr_fax,
        srep.email                            AS sr_email,
        COALESCE(dtt.PrintName, dt.PrintName) AS PrintName,
-       REPLACE(
-               REPLACE(o.billtoaddress, E'\r\n', ' | '),
-               E'\n', ' | '
-       )                                     AS billtoaddress,
+       CASE
+           WHEN report.IsHiddenReportElement(o.C_DocType_ID, 'Bill_To_Address') = 'N' THEN
+               REPLACE(
+                       REPLACE(o.billtoaddress, E'\r\n', ' | '),
+                       E'\n', ' | '
+               )
+       END                                                                              AS billtoaddress,
        inc.value                             AS incoterms
 FROM C_Order o
          INNER JOIN C_BPartner bp ON o.C_BPartner_ID = bp.C_BPartner_ID
@@ -75,7 +81,7 @@ FROM C_Order o
          LEFT OUTER JOIN C_DocType_Trl dtt ON o.C_DocTypeTarget_ID = dtt.C_DocType_ID AND dtt.AD_Language = p_language
          LEFT OUTER JOIN C_Incoterms inc ON o.c_incoterms_id = inc.c_incoterms_id
 
-WHERE o.c_order_id = record_id
+WHERE o.c_order_id = p_record_id
 $$
 ;
 

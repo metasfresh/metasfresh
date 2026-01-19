@@ -22,17 +22,17 @@ package de.metas.handlingunits.order.api;
  * #L%
  */
 
-import java.util.Date;
-import java.util.Properties;
-import java.util.function.Consumer;
-
-import org.compiere.model.I_M_Forecast;
-
 import de.metas.handlingunits.model.I_C_Order;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
+import org.compiere.model.I_M_Forecast;
+
+import java.util.Date;
+import java.util.Properties;
+import java.util.function.Consumer;
 
 /**
  * Order and Handling Units integration BL
@@ -109,4 +109,6 @@ public interface IHUOrderBL extends ISingletonService
 	boolean hasTUs(Properties ctx, int bpartnerId, int productId, Date date);
 
 	void findM_HU_PI_Item_ProductForForecast(I_M_Forecast forecast, ProductId productId, Consumer<I_M_HU_PI_Item_Product> pipConsumer);
+
+	void updateOrderLineFromReservations(OrderAndLineId orderLineId);
 }

@@ -713,6 +713,7 @@ class TableRow extends PureComponent {
         <tr
           onClick={this.handleClick}
           onDoubleClick={this.handleDoubleClick}
+          data-testid={`table-row-${keyProperty}`}
           className={classnames(dataKey, `table-row row-${keyProperty}`, {
             'row-selected': isSelected,
             'tr-odd': odd,
