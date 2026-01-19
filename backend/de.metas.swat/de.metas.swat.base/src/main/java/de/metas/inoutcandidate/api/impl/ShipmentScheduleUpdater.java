@@ -436,7 +436,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				.map(OlAndSched::getShipmentScheduleId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		final Map<ShipmentScheduleId, PickingJobScheduleCollection> jobSchedulesByShipmentScheduleId = pickingJobScheduleRepository
+		final Map<ShipmentScheduleId, PickingJobScheduleCollection> unprocessedJobSchedulesByShipmentScheduleId = pickingJobScheduleRepository
 				.stream(PickingJobScheduleQuery.builder()
 						.onlyShipmentScheduleIds(shipmentScheduleIds)
 						.isProcessed(false)
@@ -448,20 +448,20 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			try (final MDCCloseable ignored = ShipmentSchedulesMDC.putShipmentScheduleId(olAndSched.getShipmentScheduleId()))
 			{
 				final ShipmentScheduleId shipmentScheduleId = olAndSched.getShipmentScheduleId();
-				final PickingJobScheduleCollection jobSchedules = jobSchedulesByShipmentScheduleId.getOrDefault(shipmentScheduleId, PickingJobScheduleCollection.EMPTY);
-				updateFromPickingJobSchedules(olAndSched, jobSchedules);
+				final PickingJobScheduleCollection unprocessedJobSchedules = unprocessedJobSchedulesByShipmentScheduleId.getOrDefault(shipmentScheduleId, PickingJobScheduleCollection.EMPTY);
+				updateFromPickingJobSchedules(olAndSched, unprocessedJobSchedules);
 			}
 		}
 	}
 
-	private void updateFromPickingJobSchedules(@NonNull final OlAndSched olAndSched, @NonNull final PickingJobScheduleCollection jobSchedules)
+	private void updateFromPickingJobSchedules(@NonNull final OlAndSched olAndSched, @NonNull final PickingJobScheduleCollection unprocessedJobSchedules)
 	{
-		final Quantity qtyScheduledToPick = jobSchedules.getQtyToPick().orElse(null);
+		final Quantity qtyScheduledToPick = unprocessedJobSchedules.getQtyToPick().orElse(null);
 		final I_M_ShipmentSchedule shipmentSchedule = olAndSched.getSched();
 
 		shipmentSchedule.setIsScheduledForPicking(qtyScheduledToPick != null && qtyScheduledToPick.signum() > 0);
 		shipmentSchedule.setQtyScheduledForPicking(qtyScheduledToPick != null ? qtyScheduledToPick.toBigDecimal() : null);
-		shipmentSchedulePA.save(shipmentSchedule); // TODO 2025-11-13-metas-ts: remove this save and see if things stil work 
+		shipmentSchedulePA.save(shipmentSchedule); // TODO 2025-11-13-metas-ts: remove this save and see if things stil work
 	}
 
 	ShipmentSchedulesDuringUpdate generate_FirstRun(@NonNull final List<OlAndSched> lines)

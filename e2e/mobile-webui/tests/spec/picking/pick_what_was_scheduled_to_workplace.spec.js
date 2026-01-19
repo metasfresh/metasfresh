@@ -127,21 +127,21 @@ test('Pick one sales order to different workplaces', async ({ page }) => {
                     shipmentSchedules: {
                         P1: {
                             isScheduledForPicking: true,
-                            qtyScheduledForPicking: 10,
+                            qtyScheduledForPicking: 3,
                             qtyPicked: [
                                 { qtyPicked: "7 PCE", qtyTUs: 1, qtyLUs: 1, vhu: 'tu11', tu: 'tu11', lu: 'lu1', processed: true, shipmentLineId: 'shipment1_line1' }
                             ]
                         },
                         P2: {
                             isScheduledForPicking: true,
-                            qtyScheduledForPicking: 20,
+                            qtyScheduledForPicking: 9,
                             qtyPicked: [
                                 { qtyPicked: "11 PCE", qtyTUs: 1, qtyLUs: 1, vhu: 'tu12', tu: 'tu12', lu: 'lu1', processed: true, shipmentLineId: 'shipment1_line2' }
                             ]
                         },
                         P3: {
                             isScheduledForPicking: true,
-                            qtyScheduledForPicking: 30,
+                            qtyScheduledForPicking: 13,
                             qtyPicked: [
                                 { qtyPicked: "17 PCE", qtyTUs: 1, qtyLUs: 1, vhu: 'tu13', tu: 'tu13', lu: 'lu1', processed: true, shipmentLineId: 'shipment1_line3' }
                             ]
@@ -197,24 +197,24 @@ test('Pick one sales order to different workplaces', async ({ page }) => {
                 [pickingJobId]: {
                     shipmentSchedules: {
                         P1: {
-                            isScheduledForPicking: true,
-                            qtyScheduledForPicking: 10,
+                            isScheduledForPicking: false,
+                            qtyScheduledForPicking: 0,
                             qtyPicked: [
                                 { qtyPicked: "7 PCE", qtyTUs: 1, qtyLUs: 1, vhu: 'tu11', tu: 'tu11', lu: 'lu1', processed: true, shipmentLineId: 'shipment1_line1' },
                                 { qtyPicked: "3 PCE", qtyTUs: 1, qtyLUs: 1, vhu: 'tu21', tu: 'tu21', lu: 'lu2', processed: true, shipmentLineId: 'shipment2_line1' },
                             ]
                         },
                         P2: {
-                            isScheduledForPicking: true,
-                            qtyScheduledForPicking: 20,
+                            isScheduledForPicking: false,
+                            qtyScheduledForPicking: 0,
                             qtyPicked: [
                                 { qtyPicked: "11 PCE", qtyTUs: 1, qtyLUs: 1, vhu: 'tu12', tu: 'tu12', lu: 'lu1', processed: true, shipmentLineId: 'shipment1_line2' },
                                 { qtyPicked: "9 PCE", qtyTUs: 1, qtyLUs: 1, vhu: 'tu22', tu: 'tu22', lu: 'lu2', processed: true, shipmentLineId: 'shipment2_line2' },
                             ]
                         },
                         P3: {
-                            isScheduledForPicking: true,
-                            qtyScheduledForPicking: 30,
+                            isScheduledForPicking: false,
+                            qtyScheduledForPicking: 0,
                             qtyPicked: [
                                 { qtyPicked: "17 PCE", qtyTUs: 1, qtyLUs: 1, vhu: 'tu13', tu: 'tu13', lu: 'lu1', processed: true, shipmentLineId: 'shipment1_line3' },
                                 { qtyPicked: "13 PCE", qtyTUs: 1, qtyLUs: 1, vhu: 'tu23', tu: 'tu23', lu: 'lu2', processed: true, shipmentLineId: 'shipment2_line3' },

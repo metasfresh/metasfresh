@@ -70,6 +70,9 @@ Feature: Auto picking job schedule
     And after not more than 60s, picking job schedules are found:
       | M_ShipmentSchedule_ID | C_Workplace_ID | QtyToPick |
       | sched1                | workplace2     | 10        |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID.Identifier | IsScheduledForPicking | QtyScheduledForPicking |
+      | sched1                           | Y                     | 10                     |
 
   Scenario: auto job schedule - OrderPickingType
     Given deactivate all C_Workplace records
@@ -92,6 +95,10 @@ Feature: Auto picking job schedule
       | M_ShipmentSchedule_ID | C_Workplace_ID | QtyToPick |
       | sched2                | workplace1     | 10        |
       | sched3                | workplace2     | 1         |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID.Identifier | IsScheduledForPicking | QtyScheduledForPicking |
+      | sched2                           | Y                     | 10                     |
+      | sched3                           | Y                     | 1                      |
 
   Scenario: auto job schedule - Warehouse
     Given deactivate all C_Workplace records
@@ -109,6 +116,9 @@ Feature: Auto picking job schedule
     And after not more than 60s, picking job schedules are found:
       | M_ShipmentSchedule_ID | C_Workplace_ID | QtyToPick |
       | sched4                | workplace2     | 10        |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID.Identifier | IsScheduledForPicking | QtyScheduledForPicking |
+      | sched4                           | Y                     | 10                     |
 
   Scenario: auto job schedule - Product
     Given deactivate all C_Workplace records
@@ -126,6 +136,9 @@ Feature: Auto picking job schedule
     And after not more than 60s, picking job schedules are found:
       | M_ShipmentSchedule_ID | C_Workplace_ID | QtyToPick |
       | sched5                | workplace2     | 10        |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID.Identifier | IsScheduledForPicking | QtyScheduledForPicking |
+      | sched5                           | Y                     | 10                     |
 
   Scenario: auto job schedule - Product Category
     Given deactivate all C_Workplace records
@@ -143,6 +156,9 @@ Feature: Auto picking job schedule
     And after not more than 60s, picking job schedules are found:
       | M_ShipmentSchedule_ID | C_Workplace_ID | QtyToPick |
       | sched6                | workplace2     | 10        |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID.Identifier | IsScheduledForPicking | QtyScheduledForPicking |
+      | sched6                           | Y                     | 10                     |
 
   Scenario: auto job schedule - External System
     Given deactivate all C_Workplace records
@@ -160,3 +176,6 @@ Feature: Auto picking job schedule
     And after not more than 60s, picking job schedules are found:
       | M_ShipmentSchedule_ID | C_Workplace_ID | QtyToPick |
       | sched7                | workplace2     | 10        |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID.Identifier | IsScheduledForPicking | QtyScheduledForPicking |
+      | sched7                           | Y                     | 10                     |
