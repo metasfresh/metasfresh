@@ -136,6 +136,7 @@ public final class AggregationEngine
 	private final LocalDate dateAcctParam;
 	private final boolean useDefaultBillLocationAndContactIfNotOverride;
 	private final DocTypeInvoicingPoolService docTypeInvoicingPoolService;
+	private final boolean deliveryDateAsInvoiceDate;
 
 	private final AdTableId inoutLineTableId;
 	/**
@@ -151,7 +152,8 @@ public final class AggregationEngine
 			@Nullable final LocalDate dateInvoicedParam,
 			@Nullable final LocalDate dateAcctParam,
 			final boolean useDefaultBillLocationAndContactIfNotOverride,
-			@NonNull final DocTypeInvoicingPoolService docTypeInvoicingPoolService)
+			@NonNull final DocTypeInvoicingPoolService docTypeInvoicingPoolService,
+			final boolean deliveryDateAsInvoiceDate)
 	{
 		this.bpartnerBL = coalesce(bpartnerBL, Services.get(IBPartnerBL.class));
 		this.matchInvoiceService = coalesceNotNull(matchInvoiceService, MatchInvoiceService::get);
@@ -168,6 +170,7 @@ public final class AggregationEngine
 		inoutLineTableId = AdTableId.ofRepoId(adTableDAO.retrieveTableId(I_M_InOutLine.Table_Name));
 
 		this.docTypeInvoicingPoolService = docTypeInvoicingPoolService;
+		this.deliveryDateAsInvoiceDate = deliveryDateAsInvoiceDate;
 	}
 
 	@Override
@@ -522,6 +525,7 @@ public final class AggregationEngine
 		}
 	}
 
+	@Nullable
 	private LocalDate computeDateInvoiced(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		return CoalesceUtil.coalesceSuppliers(
@@ -531,6 +535,15 @@ public final class AggregationEngine
 						logger.debug("computeDateInvoiced - returning aggregator's dateInvoicedParam={} as dateInvoiced", dateInvoicedParam);
 					}
 					return dateInvoicedParam;
+				},
+				() -> {
+					final LocalDate result = TimeUtil.asLocalDate(ic.getDeliveryDate());
+					if (deliveryDateAsInvoiceDate)
+					{
+						logger.debug("computeDateInvoiced - returning ic's deliveryDate={} as dateInvoiced", result);
+						return result;
+					}
+					return null;
 				},
 				() -> {
 					final LocalDate result = TimeUtil.asLocalDate(ic.getPresetDateInvoiced());

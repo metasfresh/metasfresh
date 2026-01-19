@@ -23,6 +23,11 @@ package de.metas.invoicecandidate.api.impl;
  */
 
 import de.metas.invoicecandidate.api.IInvoicingParams;
+<<<<<<< HEAD
+=======
+import lombok.Getter;
+import lombok.Setter;
+>>>>>>> c78604b0aa (Introduce support for using delivery date as invoice date for invoice creation.)
 import lombok.ToString;
 
 import javax.annotation.Nullable;
@@ -45,9 +50,15 @@ public class PlainInvoicingParams implements IInvoicingParams
 	private boolean dateAcctSet = false;
 	private String poReference;
 	private boolean poReferenceSet = false;
+<<<<<<< HEAD
 	private BigDecimal check_NetAmtToInvoice = null;
 	private boolean updateLocationAndContactForInvoice = false;
+=======
+	@Setter private BigDecimal check_NetAmtToInvoice = null;
+	@Setter @Getter private boolean updateLocationAndContactForInvoice = false;
+>>>>>>> c78604b0aa (Introduce support for using delivery date as invoice date for invoice creation.)
 	private boolean completeInvoices = true; // default=true for backwards-compantibility
+	@Setter private Boolean deliveryDateAsInvoiceDate; // default=true for backwards-compantibility
 
 	public PlainInvoicingParams()
 	{
@@ -283,14 +294,21 @@ public class PlainInvoicingParams implements IInvoicingParams
 		return this;
 	}
 
-	public boolean isUpdateLocationAndContactForInvoice()
+	@Override
+	public boolean isDeliveryDateAsInvoiceDate()
 	{
-		return updateLocationAndContactForInvoice;
-	}
-
-	public void setUpdateLocationAndContactForInvoice(boolean updateLocationAndContactForInvoice)
-	{
-		this.updateLocationAndContactForInvoice = updateLocationAndContactForInvoice;
+		if (deliveryDateAsInvoiceDate != null)
+		{
+			return deliveryDateAsInvoiceDate;
+		}
+		else if (defaults != null)
+		{
+			return defaults.isDeliveryDateAsInvoiceDate();
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	public PlainInvoicingParams setCompleteInvoices(final boolean completeInvoices)
