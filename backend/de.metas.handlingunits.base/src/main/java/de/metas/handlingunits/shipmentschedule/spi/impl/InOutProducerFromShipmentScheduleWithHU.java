@@ -529,6 +529,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 		// Iterate all candidates which were added on this shipment and notify them about the generated shipment
 		for (final ShipmentScheduleWithHU candidate : currentCandidates)
 		{
+			result.addQtyPicked(candidate.getShipmentScheduleId(), candidate.getQtyPicked().toBigDecimal());
 			candidate.setM_InOut(currentShipment);
 		}
 

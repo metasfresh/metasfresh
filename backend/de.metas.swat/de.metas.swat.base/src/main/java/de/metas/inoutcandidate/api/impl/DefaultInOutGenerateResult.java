@@ -22,10 +22,16 @@ package de.metas.inoutcandidate.api.impl;
  * #L%
  */
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import com.google.common.collect.ImmutableMap;
+import de.metas.inout.ShipmentScheduleId;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -43,11 +49,7 @@ public final class DefaultInOutGenerateResult implements InOutGenerateResult
 	private int inoutCount = 0;
 	private final List<I_M_InOut> inouts = new ArrayList<>();
 	private final List<I_M_InOut> inoutsRO = Collections.unmodifiableList(inouts);
-
-	public DefaultInOutGenerateResult()
-	{
-		this(false);
-	}
+	private final Map<ShipmentScheduleId, BigDecimal> qtyPickedByShipmentScheduleId = new HashMap<>();
 
 	public DefaultInOutGenerateResult(final boolean storeInOuts)
 	{
@@ -75,6 +77,19 @@ public final class DefaultInOutGenerateResult implements InOutGenerateResult
 			inouts.add(inOut);
 		}
 		inoutCount++;
+	}
+
+	@Override
+	public void addQtyPicked(final ShipmentScheduleId shipmentScheduleId, final BigDecimal qtyPicked)
+	{
+		qtyPickedByShipmentScheduleId.merge(shipmentScheduleId, qtyPicked, BigDecimal::add);
+	}
+
+	@Override
+	@NonNull
+	public ImmutableMap<ShipmentScheduleId, BigDecimal> getQtysPicked()
+	{
+		return ImmutableMap.copyOf(qtyPickedByShipmentScheduleId);
 	}
 
 	@Override

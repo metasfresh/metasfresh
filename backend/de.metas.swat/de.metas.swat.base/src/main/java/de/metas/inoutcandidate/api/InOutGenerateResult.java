@@ -22,10 +22,14 @@ package de.metas.inoutcandidate.api;
  * #L%
  */
 
+import com.google.common.collect.ImmutableMap;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.util.collections.CollectionUtils;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -40,6 +44,11 @@ public interface InOutGenerateResult
 	List<I_M_InOut> getInOuts();
 
 	void addInOut(I_M_InOut inOut);
+
+	void addQtyPicked(ShipmentScheduleId shipmentScheduleId, BigDecimal qtyPicked);
+
+	@NonNull
+	ImmutableMap<ShipmentScheduleId, BigDecimal> getQtysPicked();
 
 	default <T extends org.compiere.model.I_M_InOut> T getSingleInOut(final Class<T> type)
 	{
