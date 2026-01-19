@@ -538,7 +538,7 @@ public final class AggregationEngine
 				},
 				() -> {
 					final LocalDate result = TimeUtil.asLocalDate(ic.getDeliveryDate());
-					if (deliveryDateAsInvoiceDate)
+					if (deliveryDateAsInvoiceDate && result != null)
 					{
 						logger.debug("computeDateInvoiced - returning ic's deliveryDate={} as dateInvoiced", result);
 						return result;
