@@ -108,7 +108,7 @@ public class PickingJobScheduleCollection implements Iterable<PickingJobSchedule
 				.reduce(Quantity::add);
 	}
 
-	public Optional<PickingJobSchedule> getSingleScheduleByShipmentScheduleId(@NonNull ShipmentScheduleId shipmentScheduleId)
+	public Optional<PickingJobSchedule> getSingleScheduleByShipmentScheduleId(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
 		final ImmutableList<PickingJobSchedule> schedules = byShipmentScheduleId.get(shipmentScheduleId);
 		if (schedules.isEmpty())

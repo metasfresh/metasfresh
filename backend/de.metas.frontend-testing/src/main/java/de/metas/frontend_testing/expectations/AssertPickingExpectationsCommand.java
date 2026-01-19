@@ -59,7 +59,7 @@ class AssertPickingExpectationsCommand
 		}
 	}
 
-	private void assertPicking(@NonNull String matcherStr, @NonNull final JsonPickingExpectation pickingExpectation) throws Exception
+	private void assertPicking(@NonNull final String matcherStr, @NonNull final JsonPickingExpectation pickingExpectation) throws Exception
 	{
 		final PickingJobId pickingJobId = getPickingJobIdByMatcherString(matcherStr);
 		final PickingJob pickingJob = services.getPickingJobById(pickingJobId);
