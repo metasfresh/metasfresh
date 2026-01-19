@@ -68,7 +68,7 @@ public class CreateOrUpdatePickingJobSchedulesCommand
 			shipmentSchedules.getByIds(shipmentScheduleIds).forEach(CreateOrUpdatePickingJobSchedulesCommand::assumeCarrierProductSet);
 		}
 
-		final ShipmentScheduleAndJobScheduleIdSet existingJobScheduleIds = pickingJobScheduleRepository.getIdsByShipmentScheduleIdsAndWorkplaceId(shipmentScheduleIds, workplaceId);
+		final ShipmentScheduleAndJobScheduleIdSet existingJobScheduleIds = pickingJobScheduleRepository.getUnprocessedIdsByShipmentScheduleIdsAndWorkplaceId(shipmentScheduleIds, workplaceId);
 		final Set<ShipmentScheduleId> shipmentScheduleIds_woJobSchedule = Sets.difference(shipmentScheduleIds, existingJobScheduleIds.getShipmentScheduleIds());
 
 		//

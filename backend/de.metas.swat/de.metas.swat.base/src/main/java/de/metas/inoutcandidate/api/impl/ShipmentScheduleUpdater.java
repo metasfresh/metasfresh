@@ -437,7 +437,10 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				.collect(ImmutableSet.toImmutableSet());
 
 		final Map<ShipmentScheduleId, PickingJobScheduleCollection> jobSchedulesByShipmentScheduleId = pickingJobScheduleRepository
-				.stream(PickingJobScheduleQuery.builder().onlyShipmentScheduleIds(shipmentScheduleIds).build())
+				.stream(PickingJobScheduleQuery.builder()
+						.onlyShipmentScheduleIds(shipmentScheduleIds)
+						.isProcessed(false)
+						.build())
 				.collect(PickingJobScheduleCollection.collectGroupedByShipmentScheduleId());
 
 		for (final OlAndSched olAndSched : olsAndScheds)
@@ -449,7 +452,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				updateFromPickingJobSchedules(olAndSched, jobSchedules);
 			}
 		}
-
 	}
 
 	private void updateFromPickingJobSchedules(@NonNull final OlAndSched olAndSched, @NonNull final PickingJobScheduleCollection jobSchedules)
