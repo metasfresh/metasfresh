@@ -84,7 +84,7 @@ Feature: Invoice Date can be taken from DeliveryDate
       | invoice_1  | customer_1    | true      | CO        | 2021-04-20   |
 
   @from:cucumber
-  Scenario: Invoice with DeliveryDateAsInvoiceDate = 'Y' and Invoice date override provided (which takes precedence). InvoiceDate will be the overridden date.
+  Scenario: Invoice with DeliveryDateAsInvoiceDate = 'Y' and Invoice date override provided. InvoiceDate will be the delivery date.
 
     When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
       | C_Invoice_Candidate_ID | IsDeliveryDateAsInvoiceDate | DateInvoiced |
@@ -94,5 +94,5 @@ Feature: Invoice Date can be taken from DeliveryDate
       | ic_1                   | invoice_1    |
     And validate created invoices
       | Identifier | C_BPartner_ID | processed | DocStatus | DateInvoiced |
-      | invoice_1  | customer_1    | true      | CO        | 2021-04-25   |
+      | invoice_1  | customer_1    | true      | CO        | 2021-04-20   |
 
