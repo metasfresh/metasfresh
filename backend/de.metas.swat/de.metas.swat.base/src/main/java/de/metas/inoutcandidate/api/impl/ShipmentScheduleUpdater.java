@@ -461,7 +461,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 		shipmentSchedule.setIsScheduledForPicking(qtyScheduledToPick != null && qtyScheduledToPick.signum() > 0);
 		shipmentSchedule.setQtyScheduledForPicking(qtyScheduledToPick != null ? qtyScheduledToPick.toBigDecimal() : null);
-		shipmentSchedulePA.save(shipmentSchedule); // TODO 2025-11-13-metas-ts: remove this save and see if things stil work
 	}
 
 	ShipmentSchedulesDuringUpdate generate_FirstRun(@NonNull final List<OlAndSched> lines)

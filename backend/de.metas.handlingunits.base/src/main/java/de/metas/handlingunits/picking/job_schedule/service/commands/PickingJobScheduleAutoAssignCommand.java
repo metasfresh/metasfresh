@@ -114,7 +114,7 @@ public class PickingJobScheduleAutoAssignCommand
 				.map(Workplace::getWarehouseId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		final QueryLimit queryLimit = QueryLimit.ofInt(sysConfigBL.getIntValue(SYSCONFIG_QUERY_LIMIT, DEFAULT_QUERY_LIMIT));
+		final QueryLimit queryLimit = getQueryLimit();
 		final ImmutableList<ShipmentSchedule> shipmentSchedulesCandidates = pickingJobShipmentScheduleService.getBy(
 						ShipmentScheduleQuery.builder()
 								.warehouseIds(warehouseIds)
@@ -131,7 +131,7 @@ public class PickingJobScheduleAutoAssignCommand
 		if (shipmentSchedulesCandidates.isEmpty()) {return;}
 
 		// On limit reach exclude the last order to avoid having the order only partially included
-		final OrderId orderIdToExclude = shipmentSchedulesCandidates.size() == queryLimit.toInt() ?
+		final OrderId orderIdToExclude = queryLimit.isLimitHitOrExceeded(shipmentSchedulesCandidates.size()) ?
 				shipmentSchedulesCandidates.get(shipmentSchedulesCandidates.size() - 1).getOrderId()
 				: null;
 		final boolean isCarrierProductRequired = sysConfigBL.getBooleanValue(SYSCONFIG_CARRIER_PRODUCT_REQUIRED, false);
@@ -193,6 +193,12 @@ public class PickingJobScheduleAutoAssignCommand
 
 			workplacesCapacity.increase(matchingWorkplace.getId());
 		}
+	}
+
+	@NonNull
+	private QueryLimit getQueryLimit()
+	{
+		return QueryLimit.ofInt(sysConfigBL.getIntValue(SYSCONFIG_QUERY_LIMIT, DEFAULT_QUERY_LIMIT));
 	}
 
 	@Nullable
