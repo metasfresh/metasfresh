@@ -45,18 +45,6 @@ FROM de_metas_endcustomer_fresh_reports.Docs_Sales_TransportOrder_Description($P
 		<property name="com.jaspersoft.studio.field.name" value="username"/>
 		<property name="com.jaspersoft.studio.field.label" value="username"/>
 	</field>
-	<field name="containerno" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="containerno"/>
-		<property name="com.jaspersoft.studio.field.label" value="containerno"/>
-	</field>
-	<field name="trackingid" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="trackingid"/>
-		<property name="com.jaspersoft.studio.field.label" value="trackingid"/>
-	</field>
-	<field name="vesselname" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="vesselname"/>
-		<property name="com.jaspersoft.studio.field.label" value="vesselname"/>
-	</field>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
