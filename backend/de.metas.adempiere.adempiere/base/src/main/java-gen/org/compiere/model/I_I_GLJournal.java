@@ -21,22 +21,22 @@ package org.compiere.model;
  *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
-public interface I_I_GLJournal 
+public interface I_I_GLJournal
 {
 
-    /** TableName=I_GLJournal */
-    public static final String Table_Name = "I_GLJournal";
+	/** TableName=I_GLJournal */
+	public static final String Table_Name = "I_GLJournal";
 
-    /** AD_Table_ID=599 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+	/** AD_Table_ID=599 */
+	//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
+	//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 2 - Client
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(2);
+	/** AccessLevel = 2 - Client
+	 */
+	//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(2);
 
-    /** Load Meta Data */
+	/** Load Meta Data */
 
 	/**
 	 * Set Konto Aus.
@@ -62,10 +62,10 @@ public interface I_I_GLJournal
 
 	public void setAccountFrom(org.compiere.model.I_C_ElementValue AccountFrom);
 
-    /** Column definition for AccountFrom_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_ElementValue> COLUMN_AccountFrom_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_ElementValue>(I_I_GLJournal.class, "AccountFrom_ID", org.compiere.model.I_C_ElementValue.class);
-    /** Column name AccountFrom_ID */
-    public static final String COLUMNNAME_AccountFrom_ID = "AccountFrom_ID";
+	/** Column definition for AccountFrom_ID */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_ElementValue> COLUMN_AccountFrom_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_ElementValue>(I_I_GLJournal.class, "AccountFrom_ID", org.compiere.model.I_C_ElementValue.class);
+	/** Column name AccountFrom_ID */
+	public static final String COLUMNNAME_AccountFrom_ID = "AccountFrom_ID";
 
 	/**
 	 * Set Konto Zu.
@@ -91,10 +91,10 @@ public interface I_I_GLJournal
 
 	public void setAccountTo(org.compiere.model.I_C_ElementValue AccountTo);
 
-    /** Column definition for AccountTo_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_ElementValue> COLUMN_AccountTo_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_ElementValue>(I_I_GLJournal.class, "AccountTo_ID", org.compiere.model.I_C_ElementValue.class);
-    /** Column name AccountTo_ID */
-    public static final String COLUMNNAME_AccountTo_ID = "AccountTo_ID";
+	/** Column definition for AccountTo_ID */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_ElementValue> COLUMN_AccountTo_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_ElementValue>(I_I_GLJournal.class, "AccountTo_ID", org.compiere.model.I_C_ElementValue.class);
+	/** Column name AccountTo_ID */
+	public static final String COLUMNNAME_AccountTo_ID = "AccountTo_ID";
 
 	/**
 	 * Set Konto-Schlüssel Aus.
@@ -114,10 +114,10 @@ public interface I_I_GLJournal
 	 */
 	public java.lang.String getAccountValueFrom();
 
-    /** Column definition for AccountValueFrom */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_AccountValueFrom = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "AccountValueFrom", null);
-    /** Column name AccountValueFrom */
-    public static final String COLUMNNAME_AccountValueFrom = "AccountValueFrom";
+	/** Column definition for AccountValueFrom */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_AccountValueFrom = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "AccountValueFrom", null);
+	/** Column name AccountValueFrom */
+	public static final String COLUMNNAME_AccountValueFrom = "AccountValueFrom";
 
 	/**
 	 * Set Konto-Schlüssel Zu.
@@ -137,10 +137,10 @@ public interface I_I_GLJournal
 	 */
 	public java.lang.String getAccountValueTo();
 
-    /** Column definition for AccountValueTo */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_AccountValueTo = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "AccountValueTo", null);
-    /** Column name AccountValueTo */
-    public static final String COLUMNNAME_AccountValueTo = "AccountValueTo";
+	/** Column definition for AccountValueTo */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_AccountValueTo = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "AccountValueTo", null);
+	/** Column name AccountValueTo */
+	public static final String COLUMNNAME_AccountValueTo = "AccountValueTo";
 
 	/**
 	 * Set Kontenschema-Bezeichnung.
@@ -162,10 +162,10 @@ public interface I_I_GLJournal
 	 */
 	public java.lang.String getAcctSchemaName();
 
-    /** Column definition for AcctSchemaName */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_AcctSchemaName = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "AcctSchemaName", null);
-    /** Column name AcctSchemaName */
-    public static final String COLUMNNAME_AcctSchemaName = "AcctSchemaName";
+	/** Column definition for AcctSchemaName */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_AcctSchemaName = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "AcctSchemaName", null);
+	/** Column name AcctSchemaName */
+	public static final String COLUMNNAME_AcctSchemaName = "AcctSchemaName";
 
 	/**
 	 * Get Mandant.
@@ -179,10 +179,10 @@ public interface I_I_GLJournal
 
 	public org.compiere.model.I_AD_Client getAD_Client();
 
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_AD_Client>(I_I_GLJournal.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	/** Column definition for AD_Client_ID */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_AD_Client>(I_I_GLJournal.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
+	/** Column name AD_Client_ID */
+	public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
 	 * Set Beleg-Organisation.
@@ -208,10 +208,10 @@ public interface I_I_GLJournal
 
 	public void setAD_OrgDoc(org.compiere.model.I_AD_Org AD_OrgDoc);
 
-    /** Column definition for AD_OrgDoc_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_AD_Org> COLUMN_AD_OrgDoc_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_AD_Org>(I_I_GLJournal.class, "AD_OrgDoc_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_OrgDoc_ID */
-    public static final String COLUMNNAME_AD_OrgDoc_ID = "AD_OrgDoc_ID";
+	/** Column definition for AD_OrgDoc_ID */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_AD_Org> COLUMN_AD_OrgDoc_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_AD_Org>(I_I_GLJournal.class, "AD_OrgDoc_ID", org.compiere.model.I_AD_Org.class);
+	/** Column name AD_OrgDoc_ID */
+	public static final String COLUMNNAME_AD_OrgDoc_ID = "AD_OrgDoc_ID";
 
 	/**
 	 * Set Sektion.
@@ -237,10 +237,10 @@ public interface I_I_GLJournal
 
 	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
 
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_AD_Org>(I_I_GLJournal.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	/** Column definition for AD_Org_ID */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_AD_Org>(I_I_GLJournal.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
+	/** Column name AD_Org_ID */
+	public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Buchende Organisation.
@@ -266,10 +266,10 @@ public interface I_I_GLJournal
 
 	public void setAD_OrgTrx(org.compiere.model.I_AD_Org AD_OrgTrx);
 
-    /** Column definition for AD_OrgTrx_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_AD_Org> COLUMN_AD_OrgTrx_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_AD_Org>(I_I_GLJournal.class, "AD_OrgTrx_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_OrgTrx_ID */
-    public static final String COLUMNNAME_AD_OrgTrx_ID = "AD_OrgTrx_ID";
+	/** Column definition for AD_OrgTrx_ID */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_AD_Org> COLUMN_AD_OrgTrx_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_AD_Org>(I_I_GLJournal.class, "AD_OrgTrx_ID", org.compiere.model.I_AD_Org.class);
+	/** Column name AD_OrgTrx_ID */
+	public static final String COLUMNNAME_AD_OrgTrx_ID = "AD_OrgTrx_ID";
 
 	/**
 	 * Set Haben.
@@ -291,10 +291,10 @@ public interface I_I_GLJournal
 	 */
 	public java.math.BigDecimal getAmtAcctCr();
 
-    /** Column definition for AmtAcctCr */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_AmtAcctCr = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "AmtAcctCr", null);
-    /** Column name AmtAcctCr */
-    public static final String COLUMNNAME_AmtAcctCr = "AmtAcctCr";
+	/** Column definition for AmtAcctCr */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_AmtAcctCr = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "AmtAcctCr", null);
+	/** Column name AmtAcctCr */
+	public static final String COLUMNNAME_AmtAcctCr = "AmtAcctCr";
 
 	/**
 	 * Set Soll.
@@ -316,10 +316,10 @@ public interface I_I_GLJournal
 	 */
 	public java.math.BigDecimal getAmtAcctDr();
 
-    /** Column definition for AmtAcctDr */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_AmtAcctDr = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "AmtAcctDr", null);
-    /** Column name AmtAcctDr */
-    public static final String COLUMNNAME_AmtAcctDr = "AmtAcctDr";
+	/** Column definition for AmtAcctDr */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_AmtAcctDr = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "AmtAcctDr", null);
+	/** Column name AmtAcctDr */
+	public static final String COLUMNNAME_AmtAcctDr = "AmtAcctDr";
 
 	/**
 	 * Set Ausgangsforderung.
@@ -341,10 +341,10 @@ public interface I_I_GLJournal
 	 */
 	public java.math.BigDecimal getAmtSourceCr();
 
-    /** Column definition for AmtSourceCr */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_AmtSourceCr = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "AmtSourceCr", null);
-    /** Column name AmtSourceCr */
-    public static final String COLUMNNAME_AmtSourceCr = "AmtSourceCr";
+	/** Column definition for AmtSourceCr */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_AmtSourceCr = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "AmtSourceCr", null);
+	/** Column name AmtSourceCr */
+	public static final String COLUMNNAME_AmtSourceCr = "AmtSourceCr";
 
 	/**
 	 * Set Ausgangsverbindlichkeit.
@@ -366,10 +366,10 @@ public interface I_I_GLJournal
 	 */
 	public java.math.BigDecimal getAmtSourceDr();
 
-    /** Column definition for AmtSourceDr */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_AmtSourceDr = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "AmtSourceDr", null);
-    /** Column name AmtSourceDr */
-    public static final String COLUMNNAME_AmtSourceDr = "AmtSourceDr";
+	/** Column definition for AmtSourceDr */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_AmtSourceDr = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "AmtSourceDr", null);
+	/** Column name AmtSourceDr */
+	public static final String COLUMNNAME_AmtSourceDr = "AmtSourceDr";
 
 	/**
 	 * Set Beschreibung Lauf.
@@ -391,10 +391,10 @@ public interface I_I_GLJournal
 	 */
 	public java.lang.String getBatchDescription();
 
-    /** Column definition for BatchDescription */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_BatchDescription = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "BatchDescription", null);
-    /** Column name BatchDescription */
-    public static final String COLUMNNAME_BatchDescription = "BatchDescription";
+	/** Column definition for BatchDescription */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_BatchDescription = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "BatchDescription", null);
+	/** Column name BatchDescription */
+	public static final String COLUMNNAME_BatchDescription = "BatchDescription";
 
 	/**
 	 * Set Beleg-Nr. Lauf.
@@ -416,10 +416,10 @@ public interface I_I_GLJournal
 	 */
 	public java.lang.String getBatchDocumentNo();
 
-    /** Column definition for BatchDocumentNo */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_BatchDocumentNo = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "BatchDocumentNo", null);
-    /** Column name BatchDocumentNo */
-    public static final String COLUMNNAME_BatchDocumentNo = "BatchDocumentNo";
+	/** Column definition for BatchDocumentNo */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_BatchDocumentNo = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "BatchDocumentNo", null);
+	/** Column name BatchDocumentNo */
+	public static final String COLUMNNAME_BatchDocumentNo = "BatchDocumentNo";
 
 	/**
 	 * Set Geschäftspartner-Schlüssel.
@@ -441,10 +441,10 @@ public interface I_I_GLJournal
 	 */
 	public java.lang.String getBPartnerValue();
 
-    /** Column definition for BPartnerValue */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_BPartnerValue = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "BPartnerValue", null);
-    /** Column name BPartnerValue */
-    public static final String COLUMNNAME_BPartnerValue = "BPartnerValue";
+	/** Column definition for BPartnerValue */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_BPartnerValue = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "BPartnerValue", null);
+	/** Column name BPartnerValue */
+	public static final String COLUMNNAME_BPartnerValue = "BPartnerValue";
 
 	/**
 	 * Set Buchführungs-Schema.
@@ -470,10 +470,10 @@ public interface I_I_GLJournal
 
 	public void setC_AcctSchema(org.compiere.model.I_C_AcctSchema C_AcctSchema);
 
-    /** Column definition for C_AcctSchema_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_AcctSchema> COLUMN_C_AcctSchema_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_AcctSchema>(I_I_GLJournal.class, "C_AcctSchema_ID", org.compiere.model.I_C_AcctSchema.class);
-    /** Column name C_AcctSchema_ID */
-    public static final String COLUMNNAME_C_AcctSchema_ID = "C_AcctSchema_ID";
+	/** Column definition for C_AcctSchema_ID */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_AcctSchema> COLUMN_C_AcctSchema_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_AcctSchema>(I_I_GLJournal.class, "C_AcctSchema_ID", org.compiere.model.I_C_AcctSchema.class);
+	/** Column name C_AcctSchema_ID */
+	public static final String COLUMNNAME_C_AcctSchema_ID = "C_AcctSchema_ID";
 
 	/**
 	 * Set Kostenstelle.
@@ -499,10 +499,10 @@ public interface I_I_GLJournal
 
 	public void setC_Activity(org.compiere.model.I_C_Activity C_Activity);
 
-    /** Column definition for C_Activity_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_Activity> COLUMN_C_Activity_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_Activity>(I_I_GLJournal.class, "C_Activity_ID", org.compiere.model.I_C_Activity.class);
-    /** Column name C_Activity_ID */
-    public static final String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
+	/** Column definition for C_Activity_ID */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_Activity> COLUMN_C_Activity_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_Activity>(I_I_GLJournal.class, "C_Activity_ID", org.compiere.model.I_C_Activity.class);
+	/** Column name C_Activity_ID */
+	public static final String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
 	/**
 	 * Set Kategorie-Bezeichnung.
@@ -524,10 +524,10 @@ public interface I_I_GLJournal
 	 */
 	public java.lang.String getCategoryName();
 
-    /** Column definition for CategoryName */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_CategoryName = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "CategoryName", null);
-    /** Column name CategoryName */
-    public static final String COLUMNNAME_CategoryName = "CategoryName";
+	/** Column definition for CategoryName */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_CategoryName = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "CategoryName", null);
+	/** Column name CategoryName */
+	public static final String COLUMNNAME_CategoryName = "CategoryName";
 
 	/**
 	 * Set Geschäftspartner.
@@ -553,10 +553,10 @@ public interface I_I_GLJournal
 
 	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
 
-    /** Column definition for C_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_BPartner>(I_I_GLJournal.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
-    /** Column name C_BPartner_ID */
-    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+	/** Column definition for C_BPartner_ID */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_BPartner>(I_I_GLJournal.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
+	/** Column name C_BPartner_ID */
+	public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
 	 * Set Werbemassnahme.
@@ -582,10 +582,10 @@ public interface I_I_GLJournal
 
 	public void setC_Campaign(org.compiere.model.I_C_Campaign C_Campaign);
 
-    /** Column definition for C_Campaign_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_Campaign> COLUMN_C_Campaign_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_Campaign>(I_I_GLJournal.class, "C_Campaign_ID", org.compiere.model.I_C_Campaign.class);
-    /** Column name C_Campaign_ID */
-    public static final String COLUMNNAME_C_Campaign_ID = "C_Campaign_ID";
+	/** Column definition for C_Campaign_ID */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_Campaign> COLUMN_C_Campaign_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_Campaign>(I_I_GLJournal.class, "C_Campaign_ID", org.compiere.model.I_C_Campaign.class);
+	/** Column name C_Campaign_ID */
+	public static final String COLUMNNAME_C_Campaign_ID = "C_Campaign_ID";
 
 	/**
 	 * Set Kursart.
@@ -611,10 +611,10 @@ public interface I_I_GLJournal
 
 	public void setC_ConversionType(org.compiere.model.I_C_ConversionType C_ConversionType);
 
-    /** Column definition for C_ConversionType_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_ConversionType> COLUMN_C_ConversionType_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_ConversionType>(I_I_GLJournal.class, "C_ConversionType_ID", org.compiere.model.I_C_ConversionType.class);
-    /** Column name C_ConversionType_ID */
-    public static final String COLUMNNAME_C_ConversionType_ID = "C_ConversionType_ID";
+	/** Column definition for C_ConversionType_ID */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_ConversionType> COLUMN_C_ConversionType_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_ConversionType>(I_I_GLJournal.class, "C_ConversionType_ID", org.compiere.model.I_C_ConversionType.class);
+	/** Column name C_ConversionType_ID */
+	public static final String COLUMNNAME_C_ConversionType_ID = "C_ConversionType_ID";
 
 	/**
 	 * Set Währung.
@@ -640,10 +640,10 @@ public interface I_I_GLJournal
 
 	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
 
-    /** Column definition for C_Currency_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_Currency>(I_I_GLJournal.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
-    /** Column name C_Currency_ID */
-    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+	/** Column definition for C_Currency_ID */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_Currency>(I_I_GLJournal.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
+	/** Column name C_Currency_ID */
+	public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
 	 * Set Belegart.
@@ -669,10 +669,10 @@ public interface I_I_GLJournal
 
 	public void setC_DocType(org.compiere.model.I_C_DocType C_DocType);
 
-    /** Column definition for C_DocType_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_DocType> COLUMN_C_DocType_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_DocType>(I_I_GLJournal.class, "C_DocType_ID", org.compiere.model.I_C_DocType.class);
-    /** Column name C_DocType_ID */
-    public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
+	/** Column definition for C_DocType_ID */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_DocType> COLUMN_C_DocType_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_DocType>(I_I_GLJournal.class, "C_DocType_ID", org.compiere.model.I_C_DocType.class);
+	/** Column name C_DocType_ID */
+	public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
 	/**
 	 * Set Mandanten-Schlüssel.
@@ -694,10 +694,10 @@ public interface I_I_GLJournal
 	 */
 	public java.lang.String getClientValue();
 
-    /** Column definition for ClientValue */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_ClientValue = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "ClientValue", null);
-    /** Column name ClientValue */
-    public static final String COLUMNNAME_ClientValue = "ClientValue";
+	/** Column definition for ClientValue */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_ClientValue = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "ClientValue", null);
+	/** Column name ClientValue */
+	public static final String COLUMNNAME_ClientValue = "ClientValue";
 
 	/**
 	 * Set Von Ort.
@@ -723,10 +723,10 @@ public interface I_I_GLJournal
 
 	public void setC_LocFrom(org.compiere.model.I_C_Location C_LocFrom);
 
-    /** Column definition for C_LocFrom_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_Location> COLUMN_C_LocFrom_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_Location>(I_I_GLJournal.class, "C_LocFrom_ID", org.compiere.model.I_C_Location.class);
-    /** Column name C_LocFrom_ID */
-    public static final String COLUMNNAME_C_LocFrom_ID = "C_LocFrom_ID";
+	/** Column definition for C_LocFrom_ID */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_Location> COLUMN_C_LocFrom_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_Location>(I_I_GLJournal.class, "C_LocFrom_ID", org.compiere.model.I_C_Location.class);
+	/** Column name C_LocFrom_ID */
+	public static final String COLUMNNAME_C_LocFrom_ID = "C_LocFrom_ID";
 
 	/**
 	 * Set Nach Ort.
@@ -752,10 +752,10 @@ public interface I_I_GLJournal
 
 	public void setC_LocTo(org.compiere.model.I_C_Location C_LocTo);
 
-    /** Column definition for C_LocTo_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_Location> COLUMN_C_LocTo_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_Location>(I_I_GLJournal.class, "C_LocTo_ID", org.compiere.model.I_C_Location.class);
-    /** Column name C_LocTo_ID */
-    public static final String COLUMNNAME_C_LocTo_ID = "C_LocTo_ID";
+	/** Column definition for C_LocTo_ID */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_Location> COLUMN_C_LocTo_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_Location>(I_I_GLJournal.class, "C_LocTo_ID", org.compiere.model.I_C_Location.class);
+	/** Column name C_LocTo_ID */
+	public static final String COLUMNNAME_C_LocTo_ID = "C_LocTo_ID";
 
 	/**
 	 * Set Kursart-Schlüssel.
@@ -777,10 +777,10 @@ public interface I_I_GLJournal
 	 */
 	public java.lang.String getConversionTypeValue();
 
-    /** Column definition for ConversionTypeValue */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_ConversionTypeValue = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "ConversionTypeValue", null);
-    /** Column name ConversionTypeValue */
-    public static final String COLUMNNAME_ConversionTypeValue = "ConversionTypeValue";
+	/** Column definition for ConversionTypeValue */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_ConversionTypeValue = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "ConversionTypeValue", null);
+	/** Column name ConversionTypeValue */
+	public static final String COLUMNNAME_ConversionTypeValue = "ConversionTypeValue";
 
 	/**
 	 * Set Periode.
@@ -806,10 +806,10 @@ public interface I_I_GLJournal
 
 	public void setC_Period(org.compiere.model.I_C_Period C_Period);
 
-    /** Column definition for C_Period_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_Period> COLUMN_C_Period_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_Period>(I_I_GLJournal.class, "C_Period_ID", org.compiere.model.I_C_Period.class);
-    /** Column name C_Period_ID */
-    public static final String COLUMNNAME_C_Period_ID = "C_Period_ID";
+	/** Column definition for C_Period_ID */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_Period> COLUMN_C_Period_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_Period>(I_I_GLJournal.class, "C_Period_ID", org.compiere.model.I_C_Period.class);
+	/** Column name C_Period_ID */
+	public static final String COLUMNNAME_C_Period_ID = "C_Period_ID";
 
 	/**
 	 * Set Projekt.
@@ -835,10 +835,10 @@ public interface I_I_GLJournal
 
 	public void setC_Project(org.compiere.model.I_C_Project C_Project);
 
-    /** Column definition for C_Project_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_Project> COLUMN_C_Project_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_Project>(I_I_GLJournal.class, "C_Project_ID", org.compiere.model.I_C_Project.class);
-    /** Column name C_Project_ID */
-    public static final String COLUMNNAME_C_Project_ID = "C_Project_ID";
+	/** Column definition for C_Project_ID */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_Project> COLUMN_C_Project_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_Project>(I_I_GLJournal.class, "C_Project_ID", org.compiere.model.I_C_Project.class);
+	/** Column name C_Project_ID */
+	public static final String COLUMNNAME_C_Project_ID = "C_Project_ID";
 
 	/**
 	 * Get Erstellt.
@@ -850,10 +850,10 @@ public interface I_I_GLJournal
 	 */
 	public java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	/** Column definition for Created */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "Created", null);
+	/** Column name Created */
+	public static final String COLUMNNAME_Created = "Created";
 
 	/**
 	 * Get Erstellt durch.
@@ -865,10 +865,10 @@ public interface I_I_GLJournal
 	 */
 	public int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_AD_User>(I_I_GLJournal.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	/** Column definition for CreatedBy */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_AD_User>(I_I_GLJournal.class, "CreatedBy", org.compiere.model.I_AD_User.class);
+	/** Column name CreatedBy */
+	public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Vertriebsgebiet.
@@ -894,10 +894,10 @@ public interface I_I_GLJournal
 
 	public void setC_SalesRegion(org.compiere.model.I_C_SalesRegion C_SalesRegion);
 
-    /** Column definition for C_SalesRegion_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_SalesRegion> COLUMN_C_SalesRegion_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_SalesRegion>(I_I_GLJournal.class, "C_SalesRegion_ID", org.compiere.model.I_C_SalesRegion.class);
-    /** Column name C_SalesRegion_ID */
-    public static final String COLUMNNAME_C_SalesRegion_ID = "C_SalesRegion_ID";
+	/** Column definition for C_SalesRegion_ID */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_SalesRegion> COLUMN_C_SalesRegion_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_SalesRegion>(I_I_GLJournal.class, "C_SalesRegion_ID", org.compiere.model.I_C_SalesRegion.class);
+	/** Column name C_SalesRegion_ID */
+	public static final String COLUMNNAME_C_SalesRegion_ID = "C_SalesRegion_ID";
 
 	/**
 	 * Set Maßeinheit.
@@ -923,10 +923,10 @@ public interface I_I_GLJournal
 
 	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
 
-    /** Column definition for C_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_UOM>(I_I_GLJournal.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+	/** Column definition for C_UOM_ID */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_UOM>(I_I_GLJournal.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
+	/** Column name C_UOM_ID */
+	public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Wechselkurs.
@@ -948,10 +948,10 @@ public interface I_I_GLJournal
 	 */
 	public java.math.BigDecimal getCurrencyRate();
 
-    /** Column definition for CurrencyRate */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_CurrencyRate = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "CurrencyRate", null);
-    /** Column name CurrencyRate */
-    public static final String COLUMNNAME_CurrencyRate = "CurrencyRate";
+	/** Column definition for CurrencyRate */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_CurrencyRate = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "CurrencyRate", null);
+	/** Column name CurrencyRate */
+	public static final String COLUMNNAME_CurrencyRate = "CurrencyRate";
 
 	/**
 	 * Set Kombination Aus.
@@ -977,10 +977,10 @@ public interface I_I_GLJournal
 
 	public void setC_ValidCombinationFrom(org.compiere.model.I_C_ElementValue C_ValidCombinationFrom);
 
-    /** Column definition for C_ValidCombinationFrom_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_ElementValue> COLUMN_C_ValidCombinationFrom_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_ElementValue>(I_I_GLJournal.class, "C_ValidCombinationFrom_ID", org.compiere.model.I_C_ElementValue.class);
-    /** Column name C_ValidCombinationFrom_ID */
-    public static final String COLUMNNAME_C_ValidCombinationFrom_ID = "C_ValidCombinationFrom_ID";
+	/** Column definition for C_ValidCombinationFrom_ID */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_ElementValue> COLUMN_C_ValidCombinationFrom_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_ElementValue>(I_I_GLJournal.class, "C_ValidCombinationFrom_ID", org.compiere.model.I_C_ElementValue.class);
+	/** Column name C_ValidCombinationFrom_ID */
+	public static final String COLUMNNAME_C_ValidCombinationFrom_ID = "C_ValidCombinationFrom_ID";
 
 	/**
 	 * Set Kombination Zu.
@@ -1006,10 +1006,10 @@ public interface I_I_GLJournal
 
 	public void setC_ValidCombinationTo(org.compiere.model.I_C_ElementValue C_ValidCombinationTo);
 
-    /** Column definition for C_ValidCombinationTo_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_ElementValue> COLUMN_C_ValidCombinationTo_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_ElementValue>(I_I_GLJournal.class, "C_ValidCombinationTo_ID", org.compiere.model.I_C_ElementValue.class);
-    /** Column name C_ValidCombinationTo_ID */
-    public static final String COLUMNNAME_C_ValidCombinationTo_ID = "C_ValidCombinationTo_ID";
+	/** Column definition for C_ValidCombinationTo_ID */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_ElementValue> COLUMN_C_ValidCombinationTo_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_ElementValue>(I_I_GLJournal.class, "C_ValidCombinationTo_ID", org.compiere.model.I_C_ElementValue.class);
+	/** Column name C_ValidCombinationTo_ID */
+	public static final String COLUMNNAME_C_ValidCombinationTo_ID = "C_ValidCombinationTo_ID";
 
 	/**
 	 * Set Buchungsdatum.
@@ -1031,10 +1031,10 @@ public interface I_I_GLJournal
 	 */
 	public java.sql.Timestamp getDateAcct();
 
-    /** Column definition for DateAcct */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_DateAcct = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "DateAcct", null);
-    /** Column name DateAcct */
-    public static final String COLUMNNAME_DateAcct = "DateAcct";
+	/** Column definition for DateAcct */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_DateAcct = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "DateAcct", null);
+	/** Column name DateAcct */
+	public static final String COLUMNNAME_DateAcct = "DateAcct";
 
 	/**
 	 * Set Beschreibung.
@@ -1054,10 +1054,10 @@ public interface I_I_GLJournal
 	 */
 	public java.lang.String getDescription();
 
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "Description", null);
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	/** Column definition for Description */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "Description", null);
+	/** Column name Description */
+	public static final String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set Belegart-Bezeichnung.
@@ -1079,10 +1079,10 @@ public interface I_I_GLJournal
 	 */
 	public java.lang.String getDocTypeName();
 
-    /** Column definition for DocTypeName */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_DocTypeName = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "DocTypeName", null);
-    /** Column name DocTypeName */
-    public static final String COLUMNNAME_DocTypeName = "DocTypeName";
+	/** Column definition for DocTypeName */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_DocTypeName = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "DocTypeName", null);
+	/** Column name DocTypeName */
+	public static final String COLUMNNAME_DocTypeName = "DocTypeName";
 
 	/**
 	 * Set Budget.
@@ -1108,10 +1108,10 @@ public interface I_I_GLJournal
 
 	public void setGL_Budget(org.compiere.model.I_GL_Budget GL_Budget);
 
-    /** Column definition for GL_Budget_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_GL_Budget> COLUMN_GL_Budget_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_GL_Budget>(I_I_GLJournal.class, "GL_Budget_ID", org.compiere.model.I_GL_Budget.class);
-    /** Column name GL_Budget_ID */
-    public static final String COLUMNNAME_GL_Budget_ID = "GL_Budget_ID";
+	/** Column definition for GL_Budget_ID */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_GL_Budget> COLUMN_GL_Budget_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_GL_Budget>(I_I_GLJournal.class, "GL_Budget_ID", org.compiere.model.I_GL_Budget.class);
+	/** Column name GL_Budget_ID */
+	public static final String COLUMNNAME_GL_Budget_ID = "GL_Budget_ID";
 
 	/**
 	 * Set Hauptbuch - Kategorie.
@@ -1137,10 +1137,10 @@ public interface I_I_GLJournal
 
 	public void setGL_Category(org.compiere.model.I_GL_Category GL_Category);
 
-    /** Column definition for GL_Category_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_GL_Category> COLUMN_GL_Category_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_GL_Category>(I_I_GLJournal.class, "GL_Category_ID", org.compiere.model.I_GL_Category.class);
-    /** Column name GL_Category_ID */
-    public static final String COLUMNNAME_GL_Category_ID = "GL_Category_ID";
+	/** Column definition for GL_Category_ID */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_GL_Category> COLUMN_GL_Category_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_GL_Category>(I_I_GLJournal.class, "GL_Category_ID", org.compiere.model.I_GL_Category.class);
+	/** Column name GL_Category_ID */
+	public static final String COLUMNNAME_GL_Category_ID = "GL_Category_ID";
 
 	/**
 	 * Set Journal-Lauf.
@@ -1166,10 +1166,10 @@ public interface I_I_GLJournal
 
 	public void setGL_JournalBatch(org.compiere.model.I_GL_JournalBatch GL_JournalBatch);
 
-    /** Column definition for GL_JournalBatch_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_GL_JournalBatch> COLUMN_GL_JournalBatch_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_GL_JournalBatch>(I_I_GLJournal.class, "GL_JournalBatch_ID", org.compiere.model.I_GL_JournalBatch.class);
-    /** Column name GL_JournalBatch_ID */
-    public static final String COLUMNNAME_GL_JournalBatch_ID = "GL_JournalBatch_ID";
+	/** Column definition for GL_JournalBatch_ID */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_GL_JournalBatch> COLUMN_GL_JournalBatch_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_GL_JournalBatch>(I_I_GLJournal.class, "GL_JournalBatch_ID", org.compiere.model.I_GL_JournalBatch.class);
+	/** Column name GL_JournalBatch_ID */
+	public static final String COLUMNNAME_GL_JournalBatch_ID = "GL_JournalBatch_ID";
 
 	/**
 	 * Set Journal.
@@ -1195,10 +1195,10 @@ public interface I_I_GLJournal
 
 	public void setGL_Journal(org.compiere.model.I_GL_Journal GL_Journal);
 
-    /** Column definition for GL_Journal_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_GL_Journal> COLUMN_GL_Journal_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_GL_Journal>(I_I_GLJournal.class, "GL_Journal_ID", org.compiere.model.I_GL_Journal.class);
-    /** Column name GL_Journal_ID */
-    public static final String COLUMNNAME_GL_Journal_ID = "GL_Journal_ID";
+	/** Column definition for GL_Journal_ID */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_GL_Journal> COLUMN_GL_Journal_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_GL_Journal>(I_I_GLJournal.class, "GL_Journal_ID", org.compiere.model.I_GL_Journal.class);
+	/** Column name GL_Journal_ID */
+	public static final String COLUMNNAME_GL_Journal_ID = "GL_Journal_ID";
 
 	/**
 	 * Set Journal-Position.
@@ -1224,10 +1224,10 @@ public interface I_I_GLJournal
 
 	public void setGL_JournalLine(org.compiere.model.I_GL_JournalLine GL_JournalLine);
 
-    /** Column definition for GL_JournalLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_GL_JournalLine> COLUMN_GL_JournalLine_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_GL_JournalLine>(I_I_GLJournal.class, "GL_JournalLine_ID", org.compiere.model.I_GL_JournalLine.class);
-    /** Column name GL_JournalLine_ID */
-    public static final String COLUMNNAME_GL_JournalLine_ID = "GL_JournalLine_ID";
+	/** Column definition for GL_JournalLine_ID */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_GL_JournalLine> COLUMN_GL_JournalLine_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_GL_JournalLine>(I_I_GLJournal.class, "GL_JournalLine_ID", org.compiere.model.I_GL_JournalLine.class);
+	/** Column name GL_JournalLine_ID */
+	public static final String COLUMNNAME_GL_JournalLine_ID = "GL_JournalLine_ID";
 
 	/**
 	 * Set Import-Fehlermeldung.
@@ -1249,10 +1249,10 @@ public interface I_I_GLJournal
 	 */
 	public java.lang.String getI_ErrorMsg();
 
-    /** Column definition for I_ErrorMsg */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_I_ErrorMsg = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "I_ErrorMsg", null);
-    /** Column name I_ErrorMsg */
-    public static final String COLUMNNAME_I_ErrorMsg = "I_ErrorMsg";
+	/** Column definition for I_ErrorMsg */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_I_ErrorMsg = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "I_ErrorMsg", null);
+	/** Column name I_ErrorMsg */
+	public static final String COLUMNNAME_I_ErrorMsg = "I_ErrorMsg";
 
 	/**
 	 * Set Import - Hauptbuchjournal.
@@ -1274,10 +1274,10 @@ public interface I_I_GLJournal
 	 */
 	public int getI_GLJournal_ID();
 
-    /** Column definition for I_GLJournal_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_I_GLJournal_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "I_GLJournal_ID", null);
-    /** Column name I_GLJournal_ID */
-    public static final String COLUMNNAME_I_GLJournal_ID = "I_GLJournal_ID";
+	/** Column definition for I_GLJournal_ID */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_I_GLJournal_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "I_GLJournal_ID", null);
+	/** Column name I_GLJournal_ID */
+	public static final String COLUMNNAME_I_GLJournal_ID = "I_GLJournal_ID";
 
 	/**
 	 * Set Importiert.
@@ -1299,10 +1299,10 @@ public interface I_I_GLJournal
 	 */
 	public boolean isI_IsImported();
 
-    /** Column definition for I_IsImported */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_I_IsImported = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "I_IsImported", null);
-    /** Column name I_IsImported */
-    public static final String COLUMNNAME_I_IsImported = "I_IsImported";
+	/** Column definition for I_IsImported */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_I_IsImported = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "I_IsImported", null);
+	/** Column name I_IsImported */
+	public static final String COLUMNNAME_I_IsImported = "I_IsImported";
 
 	/**
 	 * Set Aktiv.
@@ -1324,10 +1324,10 @@ public interface I_I_GLJournal
 	 */
 	public boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	/** Column definition for IsActive */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "IsActive", null);
+	/** Column name IsActive */
+	public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Neuen Lauf erstellen.
@@ -1349,10 +1349,10 @@ public interface I_I_GLJournal
 	 */
 	public boolean isCreateNewBatch();
 
-    /** Column definition for IsCreateNewBatch */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_IsCreateNewBatch = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "IsCreateNewBatch", null);
-    /** Column name IsCreateNewBatch */
-    public static final String COLUMNNAME_IsCreateNewBatch = "IsCreateNewBatch";
+	/** Column definition for IsCreateNewBatch */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_IsCreateNewBatch = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "IsCreateNewBatch", null);
+	/** Column name IsCreateNewBatch */
+	public static final String COLUMNNAME_IsCreateNewBatch = "IsCreateNewBatch";
 
 	/**
 	 * Set Neues Journal anlegen.
@@ -1374,10 +1374,10 @@ public interface I_I_GLJournal
 	 */
 	public boolean isCreateNewJournal();
 
-    /** Column definition for IsCreateNewJournal */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_IsCreateNewJournal = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "IsCreateNewJournal", null);
-    /** Column name IsCreateNewJournal */
-    public static final String COLUMNNAME_IsCreateNewJournal = "IsCreateNewJournal";
+	/** Column definition for IsCreateNewJournal */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_IsCreateNewJournal = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "IsCreateNewJournal", null);
+	/** Column name IsCreateNewJournal */
+	public static final String COLUMNNAME_IsCreateNewJournal = "IsCreateNewJournal";
 
 	/**
 	 * Set ISO Währungscode.
@@ -1399,10 +1399,10 @@ public interface I_I_GLJournal
 	 */
 	public java.lang.String getISO_Code();
 
-    /** Column definition for ISO_Code */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_ISO_Code = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "ISO_Code", null);
-    /** Column name ISO_Code */
-    public static final String COLUMNNAME_ISO_Code = "ISO_Code";
+	/** Column definition for ISO_Code */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_ISO_Code = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "ISO_Code", null);
+	/** Column name ISO_Code */
+	public static final String COLUMNNAME_ISO_Code = "ISO_Code";
 
 	/**
 	 * Set Journalbeleg-Nr..
@@ -1424,10 +1424,10 @@ public interface I_I_GLJournal
 	 */
 	public java.lang.String getJournalDocumentNo();
 
-    /** Column definition for JournalDocumentNo */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_JournalDocumentNo = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "JournalDocumentNo", null);
-    /** Column name JournalDocumentNo */
-    public static final String COLUMNNAME_JournalDocumentNo = "JournalDocumentNo";
+	/** Column definition for JournalDocumentNo */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_JournalDocumentNo = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "JournalDocumentNo", null);
+	/** Column name JournalDocumentNo */
+	public static final String COLUMNNAME_JournalDocumentNo = "JournalDocumentNo";
 
 	/**
 	 * Set Zeile Nr..
@@ -1449,10 +1449,10 @@ public interface I_I_GLJournal
 	 */
 	public int getLine();
 
-    /** Column definition for Line */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_Line = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "Line", null);
-    /** Column name Line */
-    public static final String COLUMNNAME_Line = "Line";
+	/** Column definition for Line */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_Line = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "Line", null);
+	/** Column name Line */
+	public static final String COLUMNNAME_Line = "Line";
 
 	/**
 	 * Set Produkt.
@@ -1478,10 +1478,10 @@ public interface I_I_GLJournal
 
 	public void setM_Product(org.compiere.model.I_M_Product M_Product);
 
-    /** Column definition for M_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_M_Product>(I_I_GLJournal.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
-    /** Column name M_Product_ID */
-    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+	/** Column definition for M_Product_ID */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_M_Product>(I_I_GLJournal.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
+	/** Column name M_Product_ID */
+	public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
 	 * Set Schlüssel buchende Org.
@@ -1503,10 +1503,10 @@ public interface I_I_GLJournal
 	 */
 	public java.lang.String getOrgTrxValue();
 
-    /** Column definition for OrgTrxValue */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_OrgTrxValue = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "OrgTrxValue", null);
-    /** Column name OrgTrxValue */
-    public static final String COLUMNNAME_OrgTrxValue = "OrgTrxValue";
+	/** Column definition for OrgTrxValue */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_OrgTrxValue = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "OrgTrxValue", null);
+	/** Column name OrgTrxValue */
+	public static final String COLUMNNAME_OrgTrxValue = "OrgTrxValue";
 
 	/**
 	 * Set Organisations-Schlüssel.
@@ -1528,10 +1528,10 @@ public interface I_I_GLJournal
 	 */
 	public java.lang.String getOrgValue();
 
-    /** Column definition for OrgValue */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_OrgValue = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "OrgValue", null);
-    /** Column name OrgValue */
-    public static final String COLUMNNAME_OrgValue = "OrgValue";
+	/** Column definition for OrgValue */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_OrgValue = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "OrgValue", null);
+	/** Column name OrgValue */
+	public static final String COLUMNNAME_OrgValue = "OrgValue";
 
 	/**
 	 * Set Buchungsart.
@@ -1553,10 +1553,10 @@ public interface I_I_GLJournal
 	 */
 	public java.lang.String getPostingType();
 
-    /** Column definition for PostingType */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_PostingType = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "PostingType", null);
-    /** Column name PostingType */
-    public static final String COLUMNNAME_PostingType = "PostingType";
+	/** Column definition for PostingType */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_PostingType = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "PostingType", null);
+	/** Column name PostingType */
+	public static final String COLUMNNAME_PostingType = "PostingType";
 
 	/**
 	 * Set Verarbeitet.
@@ -1578,10 +1578,10 @@ public interface I_I_GLJournal
 	 */
 	public boolean isProcessed();
 
-    /** Column definition for Processed */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "Processed", null);
-    /** Column name Processed */
-    public static final String COLUMNNAME_Processed = "Processed";
+	/** Column definition for Processed */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "Processed", null);
+	/** Column name Processed */
+	public static final String COLUMNNAME_Processed = "Processed";
 
 	/**
 	 * Set Verarbeiten.
@@ -1601,10 +1601,10 @@ public interface I_I_GLJournal
 	 */
 	public boolean isProcessing();
 
-    /** Column definition for Processing */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_Processing = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "Processing", null);
-    /** Column name Processing */
-    public static final String COLUMNNAME_Processing = "Processing";
+	/** Column definition for Processing */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_Processing = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "Processing", null);
+	/** Column name Processing */
+	public static final String COLUMNNAME_Processing = "Processing";
 
 	/**
 	 * Set Produktschlüssel.
@@ -1626,10 +1626,10 @@ public interface I_I_GLJournal
 	 */
 	public java.lang.String getProductValue();
 
-    /** Column definition for ProductValue */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_ProductValue = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "ProductValue", null);
-    /** Column name ProductValue */
-    public static final String COLUMNNAME_ProductValue = "ProductValue";
+	/** Column definition for ProductValue */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_ProductValue = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "ProductValue", null);
+	/** Column name ProductValue */
+	public static final String COLUMNNAME_ProductValue = "ProductValue";
 
 	/**
 	 * Set Projekt-Schlüssel.
@@ -1651,10 +1651,10 @@ public interface I_I_GLJournal
 	 */
 	public java.lang.String getProjectValue();
 
-    /** Column definition for ProjectValue */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_ProjectValue = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "ProjectValue", null);
-    /** Column name ProjectValue */
-    public static final String COLUMNNAME_ProjectValue = "ProjectValue";
+	/** Column definition for ProjectValue */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_ProjectValue = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "ProjectValue", null);
+	/** Column name ProjectValue */
+	public static final String COLUMNNAME_ProjectValue = "ProjectValue";
 
 	/**
 	 * Set Menge.
@@ -1676,10 +1676,10 @@ public interface I_I_GLJournal
 	 */
 	public java.math.BigDecimal getQty();
 
-    /** Column definition for Qty */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_Qty = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "Qty", null);
-    /** Column name Qty */
-    public static final String COLUMNNAME_Qty = "Qty";
+	/** Column definition for Qty */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_Qty = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "Qty", null);
+	/** Column name Qty */
+	public static final String COLUMNNAME_Qty = "Qty";
 
 	/**
 	 * Set SKU.
@@ -1701,10 +1701,10 @@ public interface I_I_GLJournal
 	 */
 	public java.lang.String getSKU();
 
-    /** Column definition for SKU */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_SKU = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "SKU", null);
-    /** Column name SKU */
-    public static final String COLUMNNAME_SKU = "SKU";
+	/** Column definition for SKU */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_SKU = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "SKU", null);
+	/** Column name SKU */
+	public static final String COLUMNNAME_SKU = "SKU";
 
 	/**
 	 * Set UPC/EAN.
@@ -1726,10 +1726,10 @@ public interface I_I_GLJournal
 	 */
 	public java.lang.String getUPC();
 
-    /** Column definition for UPC */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_UPC = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "UPC", null);
-    /** Column name UPC */
-    public static final String COLUMNNAME_UPC = "UPC";
+	/** Column definition for UPC */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_UPC = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "UPC", null);
+	/** Column name UPC */
+	public static final String COLUMNNAME_UPC = "UPC";
 
 	/**
 	 * Get Aktualisiert.
@@ -1741,10 +1741,10 @@ public interface I_I_GLJournal
 	 */
 	public java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	/** Column definition for Updated */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "Updated", null);
+	/** Column name Updated */
+	public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
 	 * Get Aktualisiert durch.
@@ -1756,10 +1756,10 @@ public interface I_I_GLJournal
 	 */
 	public int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_AD_User>(I_I_GLJournal.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	/** Column definition for UpdatedBy */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_AD_User>(I_I_GLJournal.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
+	/** Column name UpdatedBy */
+	public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
 	 * Set Nutzer 1.
@@ -1785,10 +1785,10 @@ public interface I_I_GLJournal
 
 	public void setUser1(org.compiere.model.I_C_ElementValue User1);
 
-    /** Column definition for User1_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_ElementValue> COLUMN_User1_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_ElementValue>(I_I_GLJournal.class, "User1_ID", org.compiere.model.I_C_ElementValue.class);
-    /** Column name User1_ID */
-    public static final String COLUMNNAME_User1_ID = "User1_ID";
+	/** Column definition for User1_ID */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_ElementValue> COLUMN_User1_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_ElementValue>(I_I_GLJournal.class, "User1_ID", org.compiere.model.I_C_ElementValue.class);
+	/** Column name User1_ID */
+	public static final String COLUMNNAME_User1_ID = "User1_ID";
 
 	/**
 	 * Set Nutzer 2.
@@ -1814,8 +1814,332 @@ public interface I_I_GLJournal
 
 	public void setUser2(org.compiere.model.I_C_ElementValue User2);
 
-    /** Column definition for User2_ID */
-    public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_ElementValue> COLUMN_User2_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_ElementValue>(I_I_GLJournal.class, "User2_ID", org.compiere.model.I_C_ElementValue.class);
-    /** Column name User2_ID */
-    public static final String COLUMNNAME_User2_ID = "User2_ID";
+	/** Column definition for User2_ID */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_ElementValue> COLUMN_User2_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_ElementValue>(I_I_GLJournal.class, "User2_ID", org.compiere.model.I_C_ElementValue.class);
+	/** Column name User2_ID */
+	public static final String COLUMNNAME_User2_ID = "User2_ID";
+
+	/**
+	 * Set Tax Account From.
+	 * Tax Account Value From (Debit)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setTaxAccountFrom (java.lang.String TaxAccountFrom);
+
+	/**
+	 * Get Tax Account From.
+	 * Tax Account Value From (Debit)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getTaxAccountFrom();
+
+	/** Column definition for TaxAccountFrom */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_TaxAccountFrom = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "TaxAccountFrom", null);
+	/** Column name TaxAccountFrom */
+	public static final String COLUMNNAME_TaxAccountFrom = "TaxAccountFrom";
+
+	/**
+	 * Set Tax Account DR.
+	 * Tax Account (Debit)
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setTaxAccount_DR_ID (int TaxAccount_DR_ID);
+
+	/**
+	 * Get Tax Account DR.
+	 * Tax Account (Debit)
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getTaxAccount_DR_ID();
+
+	public org.compiere.model.I_C_ElementValue getTaxAccount_DR();
+
+	public void setTaxAccount_DR(org.compiere.model.I_C_ElementValue TaxAccount_DR);
+
+	/** Column definition for TaxAccount_DR_ID */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_ElementValue> COLUMN_TaxAccount_DR_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_ElementValue>(I_I_GLJournal.class, "TaxAccount_DR_ID", org.compiere.model.I_C_ElementValue.class);
+	/** Column name TaxAccount_DR_ID */
+	public static final String COLUMNNAME_TaxAccount_DR_ID = "TaxAccount_DR_ID";
+
+	/**
+	 * Set Tax Combination From.
+	 * Valid Tax Account Combination (Debit)
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_ValidCombinationTaxFrom_ID (int C_ValidCombinationTaxFrom_ID);
+
+	/**
+	 * Get Tax Combination From.
+	 * Valid Tax Account Combination (Debit)
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_ValidCombinationTaxFrom_ID();
+
+	public org.compiere.model.I_C_ValidCombination getC_ValidCombinationTaxFrom();
+
+	public void setC_ValidCombinationTaxFrom(org.compiere.model.I_C_ValidCombination C_ValidCombinationTaxFrom);
+
+	/** Column definition for C_ValidCombinationTaxFrom_ID */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_ValidCombination> COLUMN_C_ValidCombinationTaxFrom_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_ValidCombination>(I_I_GLJournal.class, "C_ValidCombinationTaxFrom_ID", org.compiere.model.I_C_ValidCombination.class);
+	/** Column name C_ValidCombinationTaxFrom_ID */
+	public static final String COLUMNNAME_C_ValidCombinationTaxFrom_ID = "C_ValidCombinationTaxFrom_ID";
+
+	/**
+	 * Set Tax Amount DR.
+	 * Tax Amount (Debit)
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setTaxAmount_DR (java.math.BigDecimal TaxAmount_DR);
+
+	/**
+	 * Get Tax Amount DR.
+	 * Tax Amount (Debit)
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getTaxAmount_DR();
+
+	/** Column definition for TaxAmount_DR */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_TaxAmount_DR = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "TaxAmount_DR", null);
+	/** Column name TaxAmount_DR */
+	public static final String COLUMNNAME_TaxAmount_DR = "TaxAmount_DR";
+
+	/**
+	 * Set Tax Value DR.
+	 * Tax Value/Code (Debit)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setTaxValue_DR (java.lang.String TaxValue_DR);
+
+	/**
+	 * Get Tax Value DR.
+	 * Tax Value/Code (Debit)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getTaxValue_DR();
+
+	/** Column definition for TaxValue_DR */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_TaxValue_DR = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "TaxValue_DR", null);
+	/** Column name TaxValue_DR */
+	public static final String COLUMNNAME_TaxValue_DR = "TaxValue_DR";
+
+	/**
+	 * Set Tax DR.
+	 * Tax identifier (Debit)
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setDR_Tax_ID (int DR_Tax_ID);
+
+	/**
+	 * Get Tax DR.
+	 * Tax identifier (Debit)
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getDR_Tax_ID();
+
+	public org.compiere.model.I_C_Tax getDR_Tax();
+
+	public void setDR_Tax(org.compiere.model.I_C_Tax DR_Tax);
+
+	/** Column definition for DR_Tax_ID */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_Tax> COLUMN_DR_Tax_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_Tax>(I_I_GLJournal.class, "DR_Tax_ID", org.compiere.model.I_C_Tax.class);
+	/** Column name DR_Tax_ID */
+	public static final String COLUMNNAME_DR_Tax_ID = "DR_Tax_ID";
+
+	/**
+	 * Set Tax Account To.
+	 * Tax Account Value To (Credit)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setTaxAccountTo (java.lang.String TaxAccountTo);
+
+	/**
+	 * Get Tax Account To.
+	 * Tax Account Value To (Credit)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getTaxAccountTo();
+
+	/** Column definition for TaxAccountTo */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_TaxAccountTo = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "TaxAccountTo", null);
+	/** Column name TaxAccountTo */
+	public static final String COLUMNNAME_TaxAccountTo = "TaxAccountTo";
+
+	/**
+	 * Set Tax Account CR.
+	 * Tax Account (Credit)
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setTaxAccount_CR_ID (int TaxAccount_CR_ID);
+
+	/**
+	 * Get Tax Account CR.
+	 * Tax Account (Credit)
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getTaxAccount_CR_ID();
+
+	public org.compiere.model.I_C_ElementValue getTaxAccount_CR();
+
+	public void setTaxAccount_CR(org.compiere.model.I_C_ElementValue TaxAccount_CR);
+
+	/** Column definition for TaxAccount_CR_ID */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_ElementValue> COLUMN_TaxAccount_CR_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_ElementValue>(I_I_GLJournal.class, "TaxAccount_CR_ID", org.compiere.model.I_C_ElementValue.class);
+	/** Column name TaxAccount_CR_ID */
+	public static final String COLUMNNAME_TaxAccount_CR_ID = "TaxAccount_CR_ID";
+
+	/**
+	 * Set Tax Combination To.
+	 * Valid Tax Account Combination (Credit)
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setC_ValidCombinationTaxTo_ID (int C_ValidCombinationTaxTo_ID);
+
+	/**
+	 * Get Tax Combination To.
+	 * Valid Tax Account Combination (Credit)
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getC_ValidCombinationTaxTo_ID();
+
+	public org.compiere.model.I_C_ValidCombination getC_ValidCombinationTaxTo();
+
+	public void setC_ValidCombinationTaxTo(org.compiere.model.I_C_ValidCombination C_ValidCombinationTaxTo);
+
+	/** Column definition for C_ValidCombinationTaxTo_ID */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_ValidCombination> COLUMN_C_ValidCombinationTaxTo_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_ValidCombination>(I_I_GLJournal.class, "C_ValidCombinationTaxTo_ID", org.compiere.model.I_C_ValidCombination.class);
+	/** Column name C_ValidCombinationTaxTo_ID */
+	public static final String COLUMNNAME_C_ValidCombinationTaxTo_ID = "C_ValidCombinationTaxTo_ID";
+
+	/**
+	 * Set Tax Amount CR.
+	 * Tax Amount (Credit)
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setTaxAmount_CR (java.math.BigDecimal TaxAmount_CR);
+
+	/**
+	 * Get Tax Amount CR.
+	 * Tax Amount (Credit)
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getTaxAmount_CR();
+
+	/** Column definition for TaxAmount_CR */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_TaxAmount_CR = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "TaxAmount_CR", null);
+	/** Column name TaxAmount_CR */
+	public static final String COLUMNNAME_TaxAmount_CR = "TaxAmount_CR";
+
+	/**
+	 * Set Tax Value CR.
+	 * Tax Value/Code (Credit)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setTaxValue_CR (java.lang.String TaxValue_CR);
+
+	/**
+	 * Get Tax Value CR.
+	 * Tax Value/Code (Credit)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getTaxValue_CR();
+
+	/** Column definition for TaxValue_CR */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, Object> COLUMN_TaxValue_CR = new org.adempiere.model.ModelColumn<I_I_GLJournal, Object>(I_I_GLJournal.class, "TaxValue_CR", null);
+	/** Column name TaxValue_CR */
+	public static final String COLUMNNAME_TaxValue_CR = "TaxValue_CR";
+
+	/**
+	 * Set Tax CR.
+	 * Tax identifier (Credit)
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCR_Tax_ID (int CR_Tax_ID);
+
+	/**
+	 * Get Tax CR.
+	 * Tax identifier (Credit)
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getCR_Tax_ID();
+
+	public org.compiere.model.I_C_Tax getCR_Tax();
+
+	public void setCR_Tax(org.compiere.model.I_C_Tax CR_Tax);
+
+	/** Column definition for CR_Tax_ID */
+	public static final org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_Tax> COLUMN_CR_Tax_ID = new org.adempiere.model.ModelColumn<I_I_GLJournal, org.compiere.model.I_C_Tax>(I_I_GLJournal.class, "CR_Tax_ID", org.compiere.model.I_C_Tax.class);
+	/** Column name CR_Tax_ID */
+	public static final String COLUMNNAME_CR_Tax_ID = "CR_Tax_ID";
 }

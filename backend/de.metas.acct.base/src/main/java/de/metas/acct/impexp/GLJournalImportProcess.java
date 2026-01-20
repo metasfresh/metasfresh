@@ -539,6 +539,88 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 			log.warn("Invalid OrgTrx=" + no);
 		}
 
+		// Set Tax Account DR from Tax Account From Value
+		sql = new StringBuilder("UPDATE I_GLJournal i "
+				+ "SET TaxAccount_DR_ID=(SELECT MAX(ev.C_ElementValue_ID) FROM C_ElementValue ev"
+				+ " INNER JOIN C_Element e ON (e.C_Element_ID=ev.C_Element_ID)"
+				+ " INNER JOIN C_AcctSchema_Element ase ON (e.C_Element_ID=ase.C_Element_ID AND ase.ElementType='AC')"
+				+ " WHERE ev.Value=i.TaxAccountFrom AND ev.IsSummary='N'"
+				+ " AND i.C_AcctSchema_ID=ase.C_AcctSchema_ID AND i.AD_Client_ID=ev.AD_Client_ID) "
+				+ "WHERE TaxAccount_DR_ID IS NULL AND TaxAccountFrom IS NOT NULL"
+				+ " AND I_IsImported<>'Y'")
+				.append(selection.toSqlWhereClause("i"));
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
+		log.debug("Set TaxAccount_DR from Value=" + no);
+
+		// Set Tax Account CR from Tax Account To Value
+		sql = new StringBuilder("UPDATE I_GLJournal i "
+				+ "SET TaxAccount_CR_ID=(SELECT MAX(ev.C_ElementValue_ID) FROM C_ElementValue ev"
+				+ " INNER JOIN C_Element e ON (e.C_Element_ID=ev.C_Element_ID)"
+				+ " INNER JOIN C_AcctSchema_Element ase ON (e.C_Element_ID=ase.C_Element_ID AND ase.ElementType='AC')"
+				+ " WHERE ev.Value=i.TaxAccountTo AND ev.IsSummary='N'"
+				+ " AND i.C_AcctSchema_ID=ase.C_AcctSchema_ID AND i.AD_Client_ID=ev.AD_Client_ID) "
+				+ "WHERE TaxAccount_CR_ID IS NULL AND TaxAccountTo IS NOT NULL"
+				+ " AND I_IsImported<>'Y'")
+				.append(selection.toSqlWhereClause("i"));
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
+		log.debug("Set TaxAccount_CR from Value=" + no);
+
+		// Set DR Tax from Tax Value DR
+		sql = new StringBuilder("UPDATE I_GLJournal i "
+				+ "SET DR_Tax_ID=(SELECT t.C_Tax_ID FROM C_Tax t"
+				+ " WHERE t.TaxIndicator=i.TaxValue_DR AND i.AD_Client_ID=t.AD_Client_ID) "
+				+ "WHERE DR_Tax_ID IS NULL AND TaxValue_DR IS NOT NULL"
+				+ " AND I_IsImported<>'Y'")
+				.append(selection.toSqlWhereClause("i"));
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
+		log.debug("Set DR_Tax from TaxValue=" + no);
+		sql = new StringBuilder("UPDATE I_GLJournal i "
+				+ "SET I_ErrorMsg=I_ErrorMsg||'WARN=Invalid DR Tax, '"
+				+ "WHERE DR_Tax_ID IS NULL AND TaxValue_DR IS NOT NULL"
+				+ " AND I_IsImported<>'Y'")
+				.append(selection.toSqlWhereClause("i"));
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
+		if (no != 0)
+		{
+			log.warn("Invalid DR Tax=" + no);
+		}
+
+		// Set CR Tax from Tax Value CR
+		sql = new StringBuilder("UPDATE I_GLJournal i "
+				+ "SET CR_Tax_ID=(SELECT t.C_Tax_ID FROM C_Tax t"
+				+ " WHERE t.TaxIndicator=i.TaxValue_CR AND i.AD_Client_ID=t.AD_Client_ID) "
+				+ "WHERE CR_Tax_ID IS NULL AND TaxValue_CR IS NOT NULL"
+				+ " AND I_IsImported<>'Y'")
+				.append(selection.toSqlWhereClause("i"));
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
+		log.debug("Set CR_Tax from TaxValue=" + no);
+		sql = new StringBuilder("UPDATE I_GLJournal i "
+				+ "SET I_ErrorMsg=I_ErrorMsg||'WARN=Invalid CR Tax, '"
+				+ "WHERE CR_Tax_ID IS NULL AND TaxValue_CR IS NOT NULL"
+				+ " AND I_IsImported<>'Y'")
+				.append(selection.toSqlWhereClause("i"));
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
+		if (no != 0)
+		{
+			log.warn("Invalid CR Tax=" + no);
+		}
+
+		// Tax Amounts - Set default to 0
+		sql = new StringBuilder("UPDATE I_GLJournal "
+				+ "SET TaxAmount_DR = 0 "
+				+ "WHERE TaxAmount_DR IS NULL"
+				+ " AND I_IsImported<>'Y'")
+				.append(selection.toSqlWhereClause());
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
+		log.debug("Set 0 Tax Amount Dr=" + no);
+		sql = new StringBuilder("UPDATE I_GLJournal "
+				+ "SET TaxAmount_CR = 0 "
+				+ "WHERE TaxAmount_CR IS NULL"
+				+ " AND I_IsImported<>'Y'")
+				.append(selection.toSqlWhereClause());
+		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
+		log.debug("Set 0 Tax Amount Cr=" + no);
+
 		// Source Amounts
 		sql = new StringBuilder("UPDATE I_GLJournal "
 				+ "SET AmtSourceDr = 0 "
@@ -834,6 +916,50 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 				importRecord.setC_ValidCombinationTo_ID(acct.get_ID());
 			}
 		}
+
+		// Set/Get Tax Account Combination From (Debit)
+		if (importRecord.getTaxAccount_DR_ID() > 0 && importRecord.getC_ValidCombinationTaxFrom_ID() == 0)
+		{
+			final AccountDimension taxAcctDim = newMinimalAccountDimension(importRecord, importRecord.getTaxAccount_DR_ID());
+			final MAccount taxAcct = MAccount.get(getCtx(), taxAcctDim);
+			if (taxAcct.get_ID() == 0)
+			{
+				taxAcct.save();
+			}
+			if (taxAcct.get_ID() == 0)
+			{
+				importRecord.setI_ErrorMsg("ERROR creating Tax Account DR");
+				importRecord.setI_IsImported(false);
+				InterfaceWrapperHelper.save(importRecord);
+			}
+			else
+			{
+				importRecord.setC_ValidCombinationTaxFrom_ID(taxAcct.get_ID());
+				InterfaceWrapperHelper.save(importRecord);
+			}
+		}
+
+		// Set/Get Tax Account Combination To (Credit)
+		if (importRecord.getTaxAccount_CR_ID() > 0 && importRecord.getC_ValidCombinationTaxTo_ID() == 0)
+		{
+			final AccountDimension taxAcctDim = newMinimalAccountDimension(importRecord, importRecord.getTaxAccount_CR_ID());
+			final MAccount taxAcct = MAccount.get(getCtx(), taxAcctDim);
+			if (taxAcct.get_ID() == 0)
+			{
+				taxAcct.save();
+			}
+			if (taxAcct.get_ID() == 0)
+			{
+				importRecord.setI_ErrorMsg("ERROR creating Tax Account CR");
+				importRecord.setI_IsImported(false);
+				InterfaceWrapperHelper.save(importRecord);
+			}
+			else
+			{
+				importRecord.setC_ValidCombinationTaxTo_ID(taxAcct.get_ID());
+				InterfaceWrapperHelper.save(importRecord);
+			}
+		}
 		//
 		line.setAccount_DR_ID(importRecord.getC_ValidCombinationFrom_ID());
 		line.setAccount_CR_ID(importRecord.getC_ValidCombinationTo_ID());
@@ -847,6 +973,63 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 			importRecord.setGL_JournalBatch_ID(context.batch.getGL_JournalBatch_ID());
 			importRecord.setGL_Journal_ID(context.journal.getGL_Journal_ID());
 			importRecord.setGL_JournalLine_ID(line.getGL_JournalLine_ID());
+
+			// Create separate tax journal lines if tax amounts exist
+			if ((importRecord.getTaxAmount_DR() != null && importRecord.getTaxAmount_DR().signum() != 0)
+					|| (importRecord.getTaxAmount_CR() != null && importRecord.getTaxAmount_CR().signum() != 0))
+			{
+				if (importRecord.getC_ValidCombinationTaxFrom_ID() > 0 || importRecord.getC_ValidCombinationTaxTo_ID() > 0)
+				{
+					MJournalLine taxLine = new MJournalLine(context.journal);
+					taxLine.setDescription("Tax: " + (importRecord.getDescription() != null ? importRecord.getDescription() : ""));
+					taxLine.setCurrency(importRecord.getC_Currency_ID(), importRecord.getC_ConversionType_ID(), importRecord.getCurrencyRate());
+
+					// Set tax amounts
+					if (importRecord.getTaxAmount_DR() != null && importRecord.getTaxAmount_DR().signum() != 0)
+					{
+						taxLine.setAmtSourceDr(importRecord.getTaxAmount_DR());
+					}
+					if (importRecord.getTaxAmount_CR() != null && importRecord.getTaxAmount_CR().signum() != 0)
+					{
+						taxLine.setAmtSourceCr(importRecord.getTaxAmount_CR());
+					}
+
+					// Calculate accounted amounts for tax
+					BigDecimal taxAmtAcctDr = BigDecimal.ZERO;
+					BigDecimal taxAmtAcctCr = BigDecimal.ZERO;
+					if (importRecord.getTaxAmount_DR() != null)
+					{
+						taxAmtAcctDr = importRecord.getTaxAmount_DR().multiply(importRecord.getCurrencyRate());
+					}
+					if (importRecord.getTaxAmount_CR() != null)
+					{
+						taxAmtAcctCr = importRecord.getTaxAmount_CR().multiply(importRecord.getCurrencyRate());
+					}
+					taxLine.setAmtAcct(taxAmtAcctDr, taxAmtAcctCr);
+
+					// Set tax account combinations
+					if (importRecord.getC_ValidCombinationTaxFrom_ID() > 0)
+					{
+						taxLine.setAccount_DR_ID(importRecord.getC_ValidCombinationTaxFrom_ID());
+					}
+					if (importRecord.getC_ValidCombinationTaxTo_ID() > 0)
+					{
+						taxLine.setAccount_CR_ID(importRecord.getC_ValidCombinationTaxTo_ID());
+					}
+
+					taxLine.setDateAcct(importRecord.getDateAcct());
+
+					// Save tax line
+					if (!taxLine.save())
+					{
+						log.warn("Failed to save tax journal line for import record: " + importRecord.getI_GLJournal_ID());
+					}
+					else
+					{
+						log.info("Created tax journal line for import record: " + importRecord.getI_GLJournal_ID());
+					}
+				}
+			}
 
 			importRecord.setI_IsImported(true);
 			importRecord.setProcessed(true);
