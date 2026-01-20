@@ -164,7 +164,7 @@ public class ManufacturingJob
 	}
 
 	@NonNull
-	public ManufacturingJob withChangedRawMaterialIssue(@NonNull final UnaryOperator<RawMaterialsIssue> mapper)
+	public ManufacturingJob withChangedRawMaterialIssues(@NonNull final UnaryOperator<RawMaterialsIssue> mapper)
 	{
 		final ImmutableList<ManufacturingJobActivity> updatedActivities = activities
 				.stream()
