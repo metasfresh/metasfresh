@@ -93,8 +93,6 @@ export class ReceiptCandidatesPage {
         state: 'visible',
         timeout: SLOW_ACTION_TIMEOUT,
       });
-
-      await page.waitForTimeout(300);
     });
   }
 
@@ -453,6 +451,141 @@ export class ReceiptCandidatesPage {
   }
 
   /**
+   * Execute the "Receive CUs with Qty" action with a specified quantity.
+   *
+   * This method executes the parameterized receipt action (WEBUI_M_ReceiptSchedule_ReceiveCUs_WithParam)
+   * which creates a Material Receipt directly with the specified CU quantity.
+   *
+   * Unlike the two-phase HU workflow, this action:
+   * - Opens a parameter dialog to enter the quantity
+   * - Creates the M_InOut directly without opening HU-Editor modal
+   *
+   * IMPORTANT: Assumes receipt candidate is already selected via PurchaseOrderPage.openRelatedReceiptCandidate().
+   *
+   * @param {number} quantity - The quantity of CUs to receive
+   */
+  static async receiveCUsWithQuantity(quantity) {
+    return await test.step(`ReceiptCandidatesPage - Receive CUs with quantity ${quantity}`, async () => {
+      const page = getPage();
+
+      // Step 1: Open Quick Actions dropdown
+      await this.openQuickActionsDropdown();
+
+      // Step 2: Click the parameterized CU receipt action
+      // Language-independent: Use data-testid with process value
+      const actionItem = page.getByTestId('quick-action-WEBUI_M_ReceiptSchedule_ReceiveCUs_WithParam');
+
+      await actionItem.waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+
+      await actionItem.click();
+
+      // Step 3: Wait for parameter dialog to appear
+      // The dialog contains a form field for QtyCUsPerTU
+      await page.locator('.panel-modal, .modal-content').waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+
+      // Step 4: Find and fill the quantity field
+      // Language-independent: Use field name selector (QtyCUsPerTU)
+      // Try multiple selector patterns for the quantity input
+      const quantityInput = page.locator(
+        '.form-field-QtyCUsPerTU input, ' +
+        'input[name="QtyCUsPerTU"], ' +
+        '.panel-modal .input-number input, ' +
+        '.modal-content .input-number input'
+      ).first();
+
+      await quantityInput.waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+
+      // Clear existing value and enter new quantity
+      await quantityInput.clear();
+      await quantityInput.fill(String(quantity));
+
+      // Wait for input to have the expected value (React state update)
+      await expect(quantityInput).toHaveValue(String(quantity), { timeout: 5000 });
+
+      // Step 5: Submit the parameter dialog by clicking the Start button
+      // Language-independent: Use data-testid for modal buttons
+      // Note: Process modals use "process-modal-start-button" (see Modal.js)
+      const submitButton = page.getByTestId('process-modal-start-button').or(
+        page.getByTestId('modal-start')
+      ).or(
+        page.getByTestId('modal-done')
+      );
+
+      await submitButton.waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+
+      await submitButton.click();
+
+      // Step 6: Wait for HU Editor to appear
+      // The process opens an HU Editor modal where we need to create the receipt
+      // Using data-testid for language-independent detection (modal-done button appears when modal opens)
+      await page.getByTestId('modal-done').waitFor({
+        state: 'visible',
+        timeout: VERY_SLOW_ACTION_TIMEOUT,
+      });
+
+      // Step 7: Click "Create material receipt" button in the HU Editor
+      // This button is the first quick action in the HU Editor Actions area
+      // Using data-testid for language-independent selection
+      // Note: There are two quick-action-button elements on screen (HU Editor and main view)
+      // We target the first one which is inside the HU Editor modal
+      const createReceiptButton = page.getByTestId('quick-action-button').first();
+      await createReceiptButton.waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+      await createReceiptButton.click();
+
+      // Step 8: Wait for receipt creation to complete
+      // First wait for any spinners to disappear
+      await page
+        .locator('.rotating, .indicator-pending, .loader, .spinner')
+        .waitFor({
+          state: 'detached',
+          timeout: VERY_SLOW_ACTION_TIMEOUT,
+        })
+        .catch(() => {
+          // Continue if no spinner visible
+        });
+
+      // Then wait for network to settle (receipt creation involves backend processing)
+      await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+
+      // Step 9: Click "Done" to close the HU Editor
+      // Using data-testid for language-independent selection
+      const doneButton = page.getByTestId('modal-done');
+      await doneButton.waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+      await doneButton.click();
+
+      // Step 10: Wait for HU Editor modal to close
+      // Using data-testid for language-independent detection (modal-done button disappears when modal closes)
+      await page.getByTestId('modal-done').waitFor({
+        state: 'detached',
+        timeout: VERY_SLOW_ACTION_TIMEOUT,
+      }).catch(() => {
+        // Modal might stay open in some cases
+      });
+
+      // Wait for page to stabilize after modal close
+      await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+    });
+  }
+
+  /**
    * Complete workflow: Create a material receipt using a specific action (explicit approach).
    *
    * Opens the dropdown and selects a specific action by internal name.
@@ -502,9 +635,11 @@ export class ReceiptCandidatesPage {
    *
    * @param {Object} options - Configuration options
    * @param {number} options.maxRetries - Maximum retry attempts (default: 3)
+   * @param {number} options.rowIndex - Which row to click (0 = first, -1 = last, default: 0)
    */
-  static async navigateToMaterialReceiptViaTab({ maxRetries = 3 } = {}) {
-    return await test.step('ReceiptCandidatesPage - Navigate to Material Receipt via Allocated tab', async () => {
+  static async navigateToMaterialReceiptViaTab({ maxRetries = 3, rowIndex = 0 } = {}) {
+    const rowDescription = rowIndex === -1 ? 'last' : rowIndex === 0 ? 'first' : `row ${rowIndex}`;
+    return await test.step(`ReceiptCandidatesPage - Navigate to Material Receipt via Allocated tab (${rowDescription} row)`, async () => {
       const page = getPage();
 
       let lastError = null;
@@ -535,8 +670,7 @@ export class ReceiptCandidatesPage {
             console.log('Navigated to detail view:', page.url());
           }
 
-          // Wait for detail view to fully load
-          await page.waitForTimeout(500);
+          // Wait for detail view to fully load (spinners to disappear)
           await page.locator('.rotating, .indicator-pending, .loader')
             .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
 
@@ -556,10 +690,7 @@ export class ReceiptCandidatesPage {
           await allocatedReceiptTab.click();
           console.log('Clicked Allocated Material Receipt tab');
 
-          // Wait for tab content to load
-          await page.waitForTimeout(500);
-
-          // Wait for spinners to disappear
+          // Wait for tab content to load (spinners to disappear)
           await page
             .locator('.rotating, .indicator-pending, .loader')
             .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
@@ -568,12 +699,23 @@ export class ReceiptCandidatesPage {
           // Step 2: Wait for table rows in the tab
           // The tab contains M_ReceiptSchedule_Alloc records linking to M_InOutLine
           // Tab tables are inside .tabs-content or similar container
-          const tabTableRow = page.locator('.tabs-content .table-row, .tab-content .table-row, .tabs-content .table tbody tr').first();
-          await tabTableRow.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+          const allTabRows = page.locator('.tabs-content .table-row, .tab-content .table-row, .tabs-content .table tbody tr');
+          await allTabRows.first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
-          console.log('Found allocation row in tab');
+          // Select the appropriate row based on rowIndex
+          // rowIndex -1 means last row, 0 means first row, etc.
+          let tabTableRow;
+          if (rowIndex === -1) {
+            tabTableRow = allTabRows.last();
+          } else {
+            tabTableRow = allTabRows.nth(rowIndex);
+          }
 
-          // Step 3: Right-click on the row to open context menu
+          const rowCount = await allTabRows.count();
+          console.log(`Found ${rowCount} allocation row(s) in tab, selecting ${rowDescription}`);
+
+          // Step 3: First left-click to select the row, then right-click for context menu
+          await tabTableRow.click();
           await tabTableRow.click({ button: 'right' });
 
           // Wait for context menu to appear
@@ -700,6 +842,7 @@ export class ReceiptCandidatesPage {
    * @param {string} expectedData.productCode - Product code
    * @param {string} expectedData.quantity - Quantity
    * @param {string} expectedData.language - Language (e.g., 'en_US', 'de_DE')
+   * @param {boolean} expectedData.skipDocNumberValidation - Skip document number validation (for partial receipts)
    * @returns {Promise<void>}
    */
   static async downloadAndValidatePdf(expectedData) {
@@ -740,6 +883,7 @@ export class ReceiptCandidatesPage {
         language: expectedData.language,
         checkOverlaps: true,
         checkMargins: false,
+        skipDocNumberValidation: expectedData.skipDocNumberValidation || false,
       });
     });
   }

@@ -1,15 +1,18 @@
 package de.metas.util;
 
+import com.google.common.base.MoreObjects;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import java.util.function.Function;
-
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
-
-import com.google.common.base.MoreObjects;
+import java.util.function.UnaryOperator;
 
 /*
  * #%L
@@ -39,13 +42,9 @@ import com.google.common.base.MoreObjects;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@UtilityClass
 public final class Functions
 {
-	private Functions()
-	{
-		throw new IllegalStateException();
-	}
-
 	/**
 	 * Returns a function which caches the instance retrieved during the first
 	 * call to {@code apply(input)} and returns that value on subsequent calls to
@@ -58,7 +57,7 @@ public final class Functions
 	 * <p>
 	 * If {@code delegate} is an instance created by an earlier call to {@code memoizing}, it is returned directly.
 	 */
-	public static final <T, R> MemoizingFunction<T, R> memoizing(final Function<T, R> delegate)
+	public static <T, R> MemoizingFunction<T, R> memoizing(final Function<T, R> delegate)
 	{
 		if (delegate instanceof SimpleMemoizingFunction)
 		{
@@ -70,18 +69,17 @@ public final class Functions
 	/**
 	 * Same as {@link #memoizing(Function)} but the <code>keyFunction</code> will be internally used to index the cached results.
 	 */
-	public static final <T, R, K> MemoizingFunction<T, R> memoizing(final Function<T, R> delegate, final Function<T, K> keyFunction)
+	public static <T, R, K> MemoizingFunction<T, R> memoizing(final Function<T, R> delegate, final Function<T, K> keyFunction)
 	{
 		return new MemoizingFunctionWithKeyExtractor<>(delegate, keyFunction);
 	}
 
 	/**
 	 * Same as {@link #memoizing(Function)} but the value of the first call will be memorized.
-	 *
 	 * This might look similar to {@link ExtendedMemorizingSupplier} with the difference that in this case,
 	 * on first call the function will be called with <code>input</code> parameter which can be used for some initializations.
 	 */
-	public static final <T, R> MemoizingFunction<T, R> memoizingFirstCall(final Function<T, R> delegate)
+	public static <T, R> MemoizingFunction<T, R> memoizingFirstCall(final Function<T, R> delegate)
 	{
 		final Function<T, Boolean> keyFunction = input -> Boolean.TRUE;
 		return new MemoizingFunctionWithKeyExtractor<>(delegate, keyFunction);
@@ -89,39 +87,37 @@ public final class Functions
 
 	/**
 	 * Same as {@link #memoizing(Function)} but the value of the last call will be memorized.
-	 *
 	 * This might look similar to {@link ExtendedMemorizingSupplier} with the difference that in this case,
-	 * the last call will always memorized.
+	 * the last call will always memorize.
 	 */
-	public static final <T, R> MemoizingFunction<T, R> memoizingLastCall(final Function<T, R> delegate)
+	public static <T, R> MemoizingFunction<T, R> memoizingLastCall(final Function<T, R> delegate)
 	{
 		final Function<T, T> keyFunction = input -> input;
 		return new MemoizingLastCallFunction<>(delegate, keyFunction);
 	}
 
 	/**
-	 * Function which memorize it's calls, so repeated calls with same inputs will be served from it's internal cache.
-	 *
+	 * Function which memorizes its calls, so repeated calls with the same inputs will be served from its internal cache.
 	 * IMPORTANT: some implementations might use some "key function" internally, which derives the given input and produced a cache. The value will be stored for that key.
-	 * So in this case, the function will serve from it's internal cache if there is already a precalculated result for the key which is derived from given <code>input</code>.
-	 *
-	 * @author metas-dev <dev@metasfresh.com>
+	 * So in this case, the function will serve from its internal cache if there is already a precalculated result for the key which is derived from given <code>input</code>.
 	 *
 	 * @param <T> input type
 	 * @param <R> result type
+	 * @author metas-dev <dev@metasfresh.com>
 	 */
-	public static interface MemoizingFunction<T, R> extends Function<T, R>
+	public interface MemoizingFunction<T, R> extends Function<T, R>
 	{
 		@Override
 		R apply(final T input);
 
 		/**
-		 * @param input
 		 * @return memorized value or <code>null</code>
 		 */
 		R peek(final T input);
 
-		/** Forget all cached values */
+		/**
+		 * Forget all cached values
+		 */
 		void forget();
 	}
 
@@ -160,7 +156,7 @@ public final class Functions
 		{
 			return values.get(keyFunction.apply(input));
 		}
-		
+
 		@Override
 		public void forget()
 		{
@@ -256,7 +252,7 @@ public final class Functions
 				readLock.unlock();
 			}
 		}
-		
+
 		@Override
 		public void forget()
 		{
@@ -283,4 +279,35 @@ public final class Functions
 
 	}
 
+	public static <T> CallOnceUnaryOperator<T> callOnce(@NonNull final UnaryOperator<T> unaryOperator)
+	{
+		return new CallOnceUnaryOperator<>(unaryOperator);
+	}
+
+	public static class CallOnceUnaryOperator<T> implements UnaryOperator<T>
+	{
+		@NonNull private final UnaryOperator<T> delegate;
+		@NonNull private final AtomicBoolean called = new AtomicBoolean(false);
+
+		private CallOnceUnaryOperator(@NonNull final UnaryOperator<T> delegate)
+		{
+			this.delegate = delegate;
+		}
+
+		@Override
+		public String toString() {return "callOnce(" + delegate + ")";}
+
+		@Override
+		public T apply(final T value)
+		{
+			if (called.getAndSet(true))
+			{
+				return value;
+			}
+
+			return delegate.apply(value);
+		}
+
+		public boolean isCalled() {return called.get();}
+	}
 }
