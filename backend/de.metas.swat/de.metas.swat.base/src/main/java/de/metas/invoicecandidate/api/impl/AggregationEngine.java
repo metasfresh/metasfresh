@@ -530,13 +530,6 @@ public final class AggregationEngine
 	{
 		return CoalesceUtil.coalesceSuppliers(
 				() -> {
-					if (dateInvoicedParam != null)
-					{
-						logger.debug("computeDateInvoiced - returning aggregator's dateInvoicedParam={} as dateInvoiced", dateInvoicedParam);
-					}
-					return dateInvoicedParam;
-				},
-				() -> {
 					final LocalDate result = TimeUtil.asLocalDate(ic.getDeliveryDate());
 					if (deliveryDateAsInvoiceDate && result != null)
 					{
@@ -544,6 +537,13 @@ public final class AggregationEngine
 						return result;
 					}
 					return null;
+				},
+				() -> {
+					if (dateInvoicedParam != null)
+					{
+						logger.debug("computeDateInvoiced - returning aggregator's dateInvoicedParam={} as dateInvoiced", dateInvoicedParam);
+					}
+					return dateInvoicedParam;
 				},
 				() -> {
 					final LocalDate result = TimeUtil.asLocalDate(ic.getPresetDateInvoiced());

@@ -58,3 +58,8 @@ UPDATE AD_Process_Para SET IsCentrallyMaintained='N',Updated=TO_TIMESTAMP('2026-
 UPDATE AD_Process_Para SET IsCentrallyMaintained='Y',Updated=TO_TIMESTAMP('2026-01-19 12:44:15.091000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_Para_ID=543098
 ;
 
+-- Process: C_Invoice_Candidate_EnqueueSelectionForInvoicing(de.metas.invoicecandidate.process.C_Invoice_Candidate_EnqueueSelectionForInvoicing)
+-- ParameterName: DateInvoiced
+-- 2026-01-20T07:03:37.520Z
+UPDATE AD_Process_Para SET DisplayLogic='@IsDeliveryDateAsInvoiceDate@ ! ''Y''',Updated=TO_TIMESTAMP('2026-01-20 07:03:37.519000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_Para_ID=540424
+;
