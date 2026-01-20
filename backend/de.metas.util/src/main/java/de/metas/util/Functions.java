@@ -1,15 +1,18 @@
 package de.metas.util;
 
+import com.google.common.base.MoreObjects;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import java.util.function.Function;
-
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
-
-import com.google.common.base.MoreObjects;
+import java.util.function.UnaryOperator;
 
 /*
  * #%L
@@ -276,4 +279,35 @@ public final class Functions
 
 	}
 
+	public static <T> CallOnceUnaryOperator<T> callOnce(@NonNull final UnaryOperator<T> unaryOperator)
+	{
+		return new CallOnceUnaryOperator<>(unaryOperator);
+	}
+
+	public static class CallOnceUnaryOperator<T> implements UnaryOperator<T>
+	{
+		@NonNull private final UnaryOperator<T> delegate;
+		@NonNull private final AtomicBoolean called = new AtomicBoolean(false);
+
+		private CallOnceUnaryOperator(@NonNull final UnaryOperator<T> delegate)
+		{
+			this.delegate = delegate;
+		}
+
+		@Override
+		public String toString() {return "callOnce(" + delegate + ")";}
+
+		@Override
+		public T apply(final T value)
+		{
+			if (called.getAndSet(true))
+			{
+				return value;
+			}
+
+			return delegate.apply(value);
+		}
+
+		public boolean isCalled() {return called.get();}
+	}
 }
