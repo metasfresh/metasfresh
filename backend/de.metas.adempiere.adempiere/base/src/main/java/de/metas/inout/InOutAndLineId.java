@@ -54,13 +54,13 @@ public class InOutAndLineId
 	public static InOutAndLineId ofRepoIdOrNull(final int inOutRepoId, final int inOutLineRepoId)
 	{
 		final InOutId inoutId = InOutId.ofRepoIdOrNull(inOutRepoId);
-		if (inoutId == null)
+		if(inoutId == null)
 		{
 			return null;
 		}
 
 		final InOutLineId inoutLineId = InOutLineId.ofRepoIdOrNull(inOutLineRepoId);
-		if (inoutLineId == null)
+		if(inoutLineId == null)
 		{
 			return null;
 		}
@@ -68,11 +68,11 @@ public class InOutAndLineId
 		return new InOutAndLineId(inoutId, inoutLineId);
 	}
 
-	@JsonProperty("inOutId")
-	@NonNull InOutId inOutId;
 
+	@JsonProperty("inOutId")
+	InOutId inOutId;
 	@JsonProperty("inOutLineId")
-	@NonNull InOutLineId inOutLineId;
+	InOutLineId inOutLineId;
 
 	@JsonCreator
 	private InOutAndLineId(

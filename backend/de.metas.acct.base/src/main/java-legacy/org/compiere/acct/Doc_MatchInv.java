@@ -55,7 +55,7 @@ import de.metas.order.costs.inout.InOutCost;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
-import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.Quantity;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Check;
@@ -213,9 +213,9 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		return getModel(I_M_MatchInv.class);
 	}
 
-	private StockQtyAndUOMQty getQty()
+	private Quantity getQty()
 	{
-		return getMatchInv().getQty();
+		return docLine.getQty();
 	}
 
 	/**
@@ -463,7 +463,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		final BigDecimal qtyInvoiced = getQtyInvoiced();
 		if (qtyInvoiced.signum() != 0) // task 08337: guard against division by zero
 		{
-			return getQty().getStockQty().divide(qtyInvoiced, 12, RoundingMode.HALF_UP).toBigDecimal();
+			return getQty().divide(qtyInvoiced, 12, RoundingMode.HALF_UP).toBigDecimal();
 		}
 		else
 		{
@@ -542,7 +542,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 		final I_M_InOut receipt = getReceipt();
 		final MovementType movementType = MovementType.ofCode(receipt.getMovementType());
-		final StockQtyAndUOMQty qtyMatched = getQty().negateIf(movementType.isMaterialReturn());
+		final Quantity qtyMatched = getQty().negateIf(movementType.isMaterialReturn());
 
 		final MatchInvType type = matchInv.getType();
 		final Money amtMatched;
@@ -572,7 +572,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 								.attributeSetInstanceId(matchInv.getAsiId())
 								.documentRef(CostingDocumentRef.ofMatchInvoiceId(matchInv.getId()))
 								.costElement(costElement)
-								.qtyAndCatchWeight(qtyMatched)
+								.qty(qtyMatched)
 								.amt(CostAmount.ofMoney(amtMatched))
 								.currencyConversionContext(inOutBL.getCurrencyConversionContext(receipt))
 								.date(getDateAcctAsInstant())

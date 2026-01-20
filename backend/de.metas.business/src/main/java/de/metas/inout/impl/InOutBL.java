@@ -264,8 +264,7 @@ public class InOutBL implements IInOutBL
 	public StockQtyAndUOMQty getStockQtyAndCatchQty(@NonNull final I_M_InOutLine inoutLine)
 	{
 		final UomId catchUomIdOrNull;
-		final BigDecimal qtyDeliveredCatch = inoutLine.getQtyDeliveredCatch();
-		if (qtyDeliveredCatch.signum() != 0)
+		if (inoutLine.getQtyDeliveredCatch().signum() != 0)
 		{
 			catchUomIdOrNull = UomId.ofRepoIdOrNull(inoutLine.getCatch_UOM_ID());
 		}
@@ -279,7 +278,7 @@ public class InOutBL implements IInOutBL
 		return StockQtyAndUOMQtys.create(
 				inoutLine.getMovementQty(),
 				productId,
-				qtyDeliveredCatch,
+				inoutLine.getQtyDeliveredCatch(),
 				catchUomIdOrNull);
 	}
 
