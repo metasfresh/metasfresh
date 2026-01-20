@@ -1,3 +1,10 @@
+-- Title: Fix Docs_Purchase_Order_Details_Footer to use subtractdays function
+-- Description: The function was using direct subtraction (o.DateOrdered - DiscountDays) which
+--              requires a custom operator. Replace with subtractdays() function call.
+-- Issue: PG17 migration STEP 6 had a bug - it skipped fixing when custom operators didn't exist
+-- 2026-01-18
+-- Task: Fix Jasper report failures (same issue as Docs_Sales_Order_Details_Footer)
+
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details_Footer (IN p_Order_ID  numeric,
                                                                                                IN p_language Character Varying(6))
 ;

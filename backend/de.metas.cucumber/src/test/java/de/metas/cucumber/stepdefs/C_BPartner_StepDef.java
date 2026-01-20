@@ -69,6 +69,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Dunning;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product;
@@ -317,10 +318,6 @@ public class C_BPartner_StepDef
 					.build()).getRepoId());
 		}
 
-		row.getAsOptionalIdentifier(I_C_BPartner.COLUMNNAME_C_PaymentTerm_ID)
-				.map(paymentTermTable::getId)
-				.ifPresent(paymentTermId -> bPartnerRecord.setC_PaymentTerm_ID(paymentTermId.getRepoId()));
-
 		row.getAsOptionalEnum(COLUMNNAME_PaymentRule, PaymentRule.class).ifPresent(paymentRule -> bPartnerRecord.setPaymentRule(paymentRule.getCode()));
 		row.getAsOptionalEnum(COLUMNNAME_PaymentRulePO, PaymentRule.class).ifPresent(paymentRulePO -> bPartnerRecord.setPaymentRulePO(paymentRulePO.getCode()));
 		row.getAsOptionalEnum(COLUMNNAME_PO_InvoiceRule, InvoiceRule.class).ifPresent(poInvoiceRule -> bPartnerRecord.setPO_InvoiceRule(poInvoiceRule.getCode()));
@@ -333,6 +330,10 @@ public class C_BPartner_StepDef
 		row.getAsOptionalString(COLUMNNAME_C_Incoterms_Customer_ID + ".Value")
 				.ifPresent(incotermValue -> bPartnerRecord.setC_Incoterms_Customer_ID(incotermsRepository.getByValue(incotermValue, OrgId.ofRepoId(orgId)).getId().getRepoId()));
 		row.getAsOptionalString(COLUMNNAME_IncotermLocation).ifPresent(bPartnerRecord::setIncotermLocation);
+
+		row.getAsOptionalIdentifier(COLUMNNAME_SO_Invoice_Aggregation_ID)
+				.map(aggregationTable::getId)
+				.ifPresent(aggregationId -> bPartnerRecord.setSO_Invoice_Aggregation_ID(aggregationId.getRepoId()));
 
 		final boolean alsoCreateLocation = InterfaceWrapperHelper.isNew(bPartnerRecord) && addDefaultLocationIfNewBPartner;
 
@@ -424,8 +425,8 @@ public class C_BPartner_StepDef
 	{
 		// I don't dare to open the can of worms of overhauling this entirely,
 		// because we have "C_BPartner_ID.Identifier" and "OPT.C_BPartner_ID"
-		final DataTableRow tableRow = DataTableRow.singleRow(row); 
-		
+		final DataTableRow tableRow = DataTableRow.singleRow(row);
+
 		final String identifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_ID + ".Identifier");
 		final Integer id = DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT." + COLUMNNAME_C_BPartner_ID);
 

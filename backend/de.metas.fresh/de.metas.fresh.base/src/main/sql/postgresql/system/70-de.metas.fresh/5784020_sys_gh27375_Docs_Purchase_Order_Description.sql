@@ -1,9 +1,9 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Description(IN p_record_id numeric,
-                                                                                           IN p_language  Character Varying(6))
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Description(IN record_id  numeric,
+                                                                                           IN p_language Character Varying(6))
 ;
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Description(p_record_id numeric,
-                                                                                              p_language  character varying)
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Description(record_id  numeric,
+                                                                                              p_language character varying)
     RETURNS TABLE
             (
                 description        character varying,
@@ -81,7 +81,7 @@ FROM C_Order o
          LEFT OUTER JOIN C_DocType_Trl dtt ON o.C_DocTypeTarget_ID = dtt.C_DocType_ID AND dtt.AD_Language = p_language
          LEFT OUTER JOIN C_Incoterms inc ON o.c_incoterms_id = inc.c_incoterms_id
 
-WHERE o.c_order_id = p_record_id
+WHERE o.c_order_id = record_id
 $$
 ;
 

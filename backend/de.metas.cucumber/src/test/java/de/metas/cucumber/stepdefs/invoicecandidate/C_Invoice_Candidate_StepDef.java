@@ -275,20 +275,18 @@ public class C_Invoice_Candidate_StepDef
 	@And("update C_Invoice_Candidate:")
 	public void update_C_Invoice_Candidate(@NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
-			final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(invoiceCandIdentifier);
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_C_Invoice_Candidate_ID)
+				.forEach(row -> {
+					final StepDefDataIdentifier invoiceCandIdentifier = row.getAsIdentifier();
+					final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(invoiceCandIdentifier);
 
-			final BigDecimal qtyToInvoiceOverride = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override);
-			if (qtyToInvoiceOverride != null)
-			{
-				invoiceCandidate.setQtyToInvoice_Override(qtyToInvoiceOverride);
-			}
+					row.getAsOptionalBigDecimal(I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override)
+							.ifPresent(invoiceCandidate::setQtyToInvoice_Override);
 
-			InterfaceWrapperHelper.saveRecord(invoiceCandidate);
-			invoiceCandTable.putOrReplace(invoiceCandIdentifier, invoiceCandidate);
-		}
+					InterfaceWrapperHelper.saveRecord(invoiceCandidate);
+					invoiceCandTable.putOrReplace(invoiceCandIdentifier, invoiceCandidate);
+				});
 	}
 
 	@And("^there is no C_Invoice_Candidate for C_Order (.*)$")
