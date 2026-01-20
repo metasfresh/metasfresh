@@ -93,8 +93,6 @@ export class ReceiptCandidatesPage {
         state: 'visible',
         timeout: SLOW_ACTION_TIMEOUT,
       });
-
-      await page.waitForTimeout(300);
     });
   }
 
@@ -491,8 +489,6 @@ export class ReceiptCandidatesPage {
         timeout: SLOW_ACTION_TIMEOUT,
       });
 
-      await page.waitForTimeout(500);
-
       // Step 4: Find and fill the quantity field
       // Language-independent: Use field name selector (QtyCUsPerTU)
       // Try multiple selector patterns for the quantity input
@@ -511,7 +507,9 @@ export class ReceiptCandidatesPage {
       // Clear existing value and enter new quantity
       await quantityInput.clear();
       await quantityInput.fill(String(quantity));
-      await page.waitForTimeout(300);
+
+      // Wait for input to have the expected value (React state update)
+      await expect(quantityInput).toHaveValue(String(quantity), { timeout: 5000 });
 
       // Step 5: Submit the parameter dialog by clicking the Start button
       // Language-independent: Use data-testid for modal buttons
@@ -537,8 +535,6 @@ export class ReceiptCandidatesPage {
         timeout: VERY_SLOW_ACTION_TIMEOUT,
       });
 
-      await page.waitForTimeout(500);
-
       // Step 7: Click "Create material receipt" button in the HU Editor
       // This button is the first quick action in the HU Editor Actions area
       // Using data-testid for language-independent selection
@@ -552,6 +548,7 @@ export class ReceiptCandidatesPage {
       await createReceiptButton.click();
 
       // Step 8: Wait for receipt creation to complete
+      // First wait for any spinners to disappear
       await page
         .locator('.rotating, .indicator-pending, .loader, .spinner')
         .waitFor({
@@ -562,7 +559,8 @@ export class ReceiptCandidatesPage {
           // Continue if no spinner visible
         });
 
-      await page.waitForTimeout(1000);
+      // Then wait for network to settle (receipt creation involves backend processing)
+      await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
 
       // Step 9: Click "Done" to close the HU Editor
       // Using data-testid for language-independent selection
@@ -582,7 +580,8 @@ export class ReceiptCandidatesPage {
         // Modal might stay open in some cases
       });
 
-      await page.waitForTimeout(1000);
+      // Wait for page to stabilize after modal close
+      await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
     });
   }
 
@@ -671,8 +670,7 @@ export class ReceiptCandidatesPage {
             console.log('Navigated to detail view:', page.url());
           }
 
-          // Wait for detail view to fully load
-          await page.waitForTimeout(500);
+          // Wait for detail view to fully load (spinners to disappear)
           await page.locator('.rotating, .indicator-pending, .loader')
             .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
 
@@ -692,10 +690,7 @@ export class ReceiptCandidatesPage {
           await allocatedReceiptTab.click();
           console.log('Clicked Allocated Material Receipt tab');
 
-          // Wait for tab content to load
-          await page.waitForTimeout(500);
-
-          // Wait for spinners to disappear
+          // Wait for tab content to load (spinners to disappear)
           await page
             .locator('.rotating, .indicator-pending, .loader')
             .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
@@ -719,7 +714,8 @@ export class ReceiptCandidatesPage {
           const rowCount = await allTabRows.count();
           console.log(`Found ${rowCount} allocation row(s) in tab, selecting ${rowDescription}`);
 
-          // Step 3: Right-click on the row to open context menu
+          // Step 3: First left-click to select the row, then right-click for context menu
+          await tabTableRow.click();
           await tabTableRow.click({ button: 'right' });
 
           // Wait for context menu to appear
@@ -846,7 +842,7 @@ export class ReceiptCandidatesPage {
    * @param {string} expectedData.productCode - Product code
    * @param {string} expectedData.quantity - Quantity
    * @param {string} expectedData.language - Language (e.g., 'en_US', 'de_DE')
-   * @param {boolean} expectedData.skipDocumentNoValidation - Skip document number validation (for partial receipts)
+   * @param {boolean} expectedData.skipDocNumberValidation - Skip document number validation (for partial receipts)
    * @returns {Promise<void>}
    */
   static async downloadAndValidatePdf(expectedData) {
@@ -887,7 +883,7 @@ export class ReceiptCandidatesPage {
         language: expectedData.language,
         checkOverlaps: true,
         checkMargins: false,
-        skipDocumentNoValidation: expectedData.skipDocumentNoValidation || false,
+        skipDocNumberValidation: expectedData.skipDocNumberValidation || false,
       });
     });
   }

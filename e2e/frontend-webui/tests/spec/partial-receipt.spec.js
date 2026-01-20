@@ -189,7 +189,10 @@ goods in multiple shipments while maintaining accurate inventory and documentati
       await remainingPage.goto(poUrl);
       await remainingPage.waitForURL(/\/window\/181\/\d+/, { timeout: 15000 });
       await remainingPage.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
-      await remainingPage.waitForTimeout(1000);
+
+      // Wait for page to be fully loaded (spinners to disappear)
+      await remainingPage.locator('.rotating, .indicator-pending, .loader')
+        .waitFor({ state: 'detached', timeout: 15000 }).catch(() => {});
 
       console.log(`[${language}] Navigated back to PO: ${poUrl}`);
 
@@ -206,9 +209,9 @@ goods in multiple shipments while maintaining accurate inventory and documentati
       console.log(`[${language}] Second partial receipt created (qty=4)`);
 
       // Step 7: Navigate to the second Material Receipt and validate PDF
-      // IMPORTANT: Use rowIndex: -1 to select the LAST (most recent) allocation row
-      // because navigateToMaterialReceiptViaTab defaults to first row which is the first receipt
-      await ReceiptCandidatesPage.navigateToMaterialReceiptViaTab({ rowIndex: -1 });
+      // IMPORTANT: Allocation table is sorted oldest-first (by ID ascending)
+      // After second receipt: row 0 = first receipt, row 1 (last) = second receipt
+      await ReceiptCandidatesPage.navigateToMaterialReceiptViaTab({ rowIndex: 1 });
 
       // Get second receipt document number
       const receipt2DocNo = await ReceiptCandidatesPage.getDocumentNo();
@@ -227,7 +230,7 @@ goods in multiple shipments while maintaining accurate inventory and documentati
         productCode: masterdata.products.Product1.productCode,
         quantity: '4',
         language,
-        skipDocumentNoValidation: true, // PDF shows "first_doc ff." format for partial receipts
+        skipDocNumberValidation: true, // PDF shows "first_doc ff." format for partial receipts
       });
 
       console.log(`[${language}] Second receipt PDF validated (qty=4)`);

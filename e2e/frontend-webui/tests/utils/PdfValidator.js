@@ -63,11 +63,11 @@ class PdfValidator {
         overlapTolerance = 2,
         margins,
         pageSize,
-        skipDocumentNoValidation = false,
+        skipDocNumberValidation = false,
       } = options;
 
       // Validate required fields (unless skipped)
-      if (!documentNo && !skipDocumentNoValidation) {
+      if (!documentNo && !skipDocNumberValidation) {
         throw new Error('documentNo is required for PDF validation');
       }
 
@@ -104,7 +104,7 @@ class PdfValidator {
       const errors = [];
 
       // Validate document number (unless skipped)
-      if (documentNo && !skipDocumentNoValidation) {
+      if (documentNo && !skipDocNumberValidation) {
         if (!text.includes(documentNo)) {
           errors.push(
             `Document Number Validation Failed:\n` +
@@ -115,7 +115,7 @@ class PdfValidator {
         } else {
           console.log(`✓ Document number validated: ${documentNo}`);
         }
-      } else if (skipDocumentNoValidation) {
+      } else if (skipDocNumberValidation) {
         console.log(`⏭ Document number validation skipped (partial receipt)`);
       }
 
