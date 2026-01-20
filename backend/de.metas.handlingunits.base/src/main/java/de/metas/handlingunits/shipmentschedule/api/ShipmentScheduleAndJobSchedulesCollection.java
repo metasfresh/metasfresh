@@ -73,14 +73,6 @@ public class ShipmentScheduleAndJobSchedulesCollection implements Iterable<Shipm
 		return getShipmentScheduleIds(schedule -> !schedule.hasJobSchedules());
 	}
 
-	public ImmutableSet<ShipmentScheduleId> getShipmentScheduleIdsFullyDelivered(@NonNull final ImmutableMap<ShipmentScheduleId, BigDecimal> qtyPickedByShipmentScheduleId)
-	{
-		return list.stream()
-				.filter((sched) -> sched.isFullyDelivered(qtyPickedByShipmentScheduleId.get(sched.getShipmentScheduleId())))
-				.map(ShipmentScheduleAndJobSchedules::getShipmentScheduleId)
-				.collect(ImmutableSet.toImmutableSet());
-	}
-
 	public ImmutableSet<ShipmentScheduleId> getShipmentScheduleIds(@NonNull final Predicate<ShipmentScheduleAndJobSchedules> filter)
 	{
 		return list.stream()

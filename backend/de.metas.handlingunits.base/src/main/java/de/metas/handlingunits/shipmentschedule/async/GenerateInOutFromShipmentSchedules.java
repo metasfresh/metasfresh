@@ -119,7 +119,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		final boolean isCloseShipmentSchedules = parameters.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsCloseShipmentSchedules);
 		if (isCloseShipmentSchedules)
 		{
-			closeSchedules(result);
+			closeSchedules();
 		}
 
 		return Result.SUCCESS;
@@ -221,17 +221,13 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		);
 	}
 
-	private void closeSchedules(@NonNull final InOutGenerateResult result)
+	private void closeSchedules()
 	{
 		final ShipmentScheduleAndJobSchedulesCollection schedules = getShipmentScheduleAndJobSchedulesCollection();
 
 		pickingJobScheduleService.markAsProcessed(schedules.getJobScheduleIds());
 
-		final HashSet<ShipmentScheduleId> shipmentScheduleIdsToClose = new HashSet<>();
-		shipmentScheduleIdsToClose.addAll(schedules.getShipmentScheduleIdsWithoutJobSchedules());
-		shipmentScheduleIdsToClose.addAll(schedules.getShipmentScheduleIdsFullyDelivered(result.getQtysPicked()));
-
-		shipmentScheduleBL.closeShipmentSchedules(shipmentScheduleIdsToClose);
+		shipmentScheduleBL.closeShipmentSchedules(schedules.getShipmentScheduleIdsWithoutJobSchedules());
 	}
 
 }

@@ -10,28 +10,22 @@ package de.metas.inoutcandidate.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import com.google.common.collect.ImmutableMap;
-import de.metas.inout.ShipmentScheduleId;
-import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -49,7 +43,6 @@ public final class DefaultInOutGenerateResult implements InOutGenerateResult
 	private int inoutCount = 0;
 	private final List<I_M_InOut> inouts = new ArrayList<>();
 	private final List<I_M_InOut> inoutsRO = Collections.unmodifiableList(inouts);
-	private final Map<ShipmentScheduleId, BigDecimal> qtyPickedByShipmentScheduleId = new HashMap<>();
 
 	public DefaultInOutGenerateResult(final boolean storeInOuts)
 	{
@@ -77,19 +70,6 @@ public final class DefaultInOutGenerateResult implements InOutGenerateResult
 			inouts.add(inOut);
 		}
 		inoutCount++;
-	}
-
-	@Override
-	public void addQtyPicked(final ShipmentScheduleId shipmentScheduleId, final BigDecimal qtyPicked)
-	{
-		qtyPickedByShipmentScheduleId.merge(shipmentScheduleId, qtyPicked, BigDecimal::add);
-	}
-
-	@Override
-	@NonNull
-	public ImmutableMap<ShipmentScheduleId, BigDecimal> getQtysPicked()
-	{
-		return ImmutableMap.copyOf(qtyPickedByShipmentScheduleId);
 	}
 
 	@Override

@@ -71,9 +71,4 @@ public class ShipmentScheduleAndJobSchedules
 
 	@Nullable
 	public String getHeaderAggregationKey() {return StringUtils.trimBlankToNull(shipmentSchedule.getHeaderAggregationKey());}
-
-	public boolean isFullyDelivered(@NonNull final BigDecimal qtyPicked)
-	{
-		return shipmentSchedule.getQtyReserved().compareTo(qtyPicked) <= 0;
-	}
 }
