@@ -7,7 +7,6 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.costing.ChargeId;
-import de.metas.costing.CostAmount;
 import de.metas.costing.impl.ChargeRepository;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
@@ -370,7 +369,7 @@ public class OrderLineBL implements IOrderLineBL
 		final Quantity qtyInPriceUOM = orderLine.isManualQtyInPriceUOM()
 				? getQtyEnteredInPriceUOM(orderLine)
 				: convertQtyEnteredToPriceUOM(orderLine);
-
+		
 		updateLineNetAmtFromQtyInPriceUOM(orderLine, qtyInPriceUOM);
 	}
 
@@ -605,7 +604,7 @@ public class OrderLineBL implements IOrderLineBL
 		final BigDecimal qtyItemCapacity = orderLine.getQtyItemCapacity();
 		if (qtyItemCapacity.signum() <= 0 && orderLine.getQtyEntered().signum() != 0)
 		{
-			throw new AdempiereException(TranslatableStrings.constant("Missing QtyItemCapacity for C_ORderLine_ID=" + orderLine.getC_OrderLine_ID()))
+			throw new AdempiereException(TranslatableStrings.constant("Missing QtyItemCapacity for C_ORderLine_ID="+orderLine.getC_OrderLine_ID()))
 					.appendParametersToMessage()
 					.setParameter("C_Order_ID", orderLine.getC_Order_ID())
 					.setParameter("Line", orderLine.getLine())
@@ -761,34 +760,68 @@ public class OrderLineBL implements IOrderLineBL
 	}
 
 	@Override
-	public CostAmount getCostAmount(@NonNull final org.compiere.model.I_C_OrderLine orderLine, @NonNull final Quantity qty)
+	public ProductPrice getCostPrice(final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		// IMPORTANT: the order how we calculate is super important because these amounts are used in accounting 
-		// so we shall also have to match how the invoice net amount is calculated.
-		// i.e. we calculated the amount then we subtract the included tax at the end,
-		// and not subtracting the included tax from the price and then multiplying with the qty because that would introduce a big rounding error
+		final CurrencyId currencyId = CurrencyId.ofRepoId(orderLine.getC_Currency_ID());
+		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
 
-		ProductPrice price = getPriceActual(orderLine);
-		if (!UomId.equals(price.getUomId(), qty.getUomId()))
+		final BigDecimal poCostPrice = orderLine.getPriceCost();
+		if (poCostPrice != null && poCostPrice.signum() != 0)
 		{
-			final CurrencyPrecision stdPrecision = currencyDAO.getStdPrecision(price.getCurrencyId());
-			price = uomConversionBL.convertProductPriceToUom(price, qty.getUomId(), stdPrecision);
+			final UomId productUomId = productBL.getStockUOMId(productId);
+
+			return ProductPrice.builder()
+					.productId(productId)
+					.uomId(productUomId)
+					.money(Money.of(poCostPrice, currencyId))
+					.build();
 		}
 
-		CostAmount costAmount = CostAmount.multiply(price, qty);
-
-		//
-		// Subtract included tax if any
-		final TaxId taxId = TaxId.ofRepoIdOrNull(orderLine.getC_Tax_ID());
-		if (taxId != null && isTaxIncluded(orderLine))
+		UomId priceUomId = UomId.ofRepoId(orderLine.getPrice_UOM_ID());
+		if (priceUomId == null)
 		{
-			final Tax tax = taxBL.getTaxById(taxId);
-			final CurrencyPrecision taxPrecision = getTaxPrecision(orderLine);
-			final BigDecimal baseAmt = tax.calculateBaseAmt(costAmount.toBigDecimal(), true, taxPrecision.toInt());
-			costAmount = CostAmount.of(baseAmt, costAmount.getCurrencyId());
+			priceUomId = UomId.ofRepoId(orderLine.getC_UOM_ID());
 		}
 
-		return costAmount;
+		final BigDecimal priceActual = orderLine.getPriceActual();
+		if (!isTaxIncluded(orderLine))
+		{
+			return ProductPrice.builder()
+					.productId(productId)
+					.uomId(priceUomId)
+					.money(Money.of(priceActual, currencyId))
+					.build();
+		}
+
+		final int taxId = orderLine.getC_Tax_ID();
+		if (taxId <= 0)
+		{
+			// shall not happen
+			return ProductPrice.builder()
+					.productId(productId)
+					.uomId(priceUomId)
+					.money(Money.of(priceActual, currencyId))
+					.build();
+		}
+
+		final MTax tax = MTax.get(Env.getCtx(), taxId);
+		if (tax.isZeroTax())
+		{
+			return ProductPrice.builder()
+					.productId(productId)
+					.uomId(priceUomId)
+					.money(Money.of(priceActual, currencyId))
+					.build();
+		}
+
+		final CurrencyPrecision taxPrecision = getTaxPrecision(orderLine);
+		final BigDecimal taxAmt = taxBL.calculateTaxAmt(tax, priceActual, true/* taxIncluded */, taxPrecision.toInt());
+		final BigDecimal priceActualWithoutTax = priceActual.subtract(taxAmt);
+		return ProductPrice.builder()
+				.productId(productId)
+				.uomId(priceUomId)
+				.money(Money.of(priceActualWithoutTax, currencyId))
+				.build();
 	}
 
 	@Override
@@ -796,17 +829,12 @@ public class OrderLineBL implements IOrderLineBL
 	{
 		final CurrencyId currencyId = CurrencyId.ofRepoId(orderLine.getC_Currency_ID());
 		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+		final UomId productUomId = productBL.getStockUOMId(productId);
 		final BigDecimal priceActual = orderLine.getPriceActual();
-
-		UomId priceUomId = UomId.ofRepoIdOrNull(orderLine.getPrice_UOM_ID());
-		if (priceUomId == null)
-		{
-			priceUomId = UomId.ofRepoId(orderLine.getC_UOM_ID());
-		}
 
 		return ProductPrice.builder()
 				.productId(productId)
-				.uomId(priceUomId)
+				.uomId(productUomId)
 				.money(Money.of(priceActual, currencyId))
 				.build();
 	}

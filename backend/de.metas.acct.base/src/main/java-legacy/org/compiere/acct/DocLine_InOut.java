@@ -22,7 +22,7 @@ import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.costs.inout.InOutCost;
 import de.metas.organization.OrgId;
-import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.Quantity;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Getter;
 import lombok.NonNull;
@@ -64,7 +64,6 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 	@NonNull private final IOrderBL orderBL;
 
 	@NonNull @Getter private final ImmutableList<InOutCost> inoutCosts;
-	@NonNull @Getter private final StockQtyAndUOMQty qtyNominalAndCatchWeight;
 
 	/**
 	 * Outside Processing
@@ -80,9 +79,8 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 		this.orderBL = doc.orderBL;
 		this.inoutCosts = ImmutableList.copyOf(inoutCosts);
 
-		final boolean isSOTrx = doc.isSOTrx();
-		this.qtyNominalAndCatchWeight = doc.inOutBL.getStockQtyAndCatchQty(inoutLine).negateIf(isSOTrx);
-		setQty(qtyNominalAndCatchWeight.getStockQty());
+		final Quantity qty = doc.inOutBL.getMovementQty(inoutLine);
+		setQty(qty, doc.isSOTrx());
 	}
 
 	public InOutLineId getInOutLineId()
@@ -166,7 +164,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 					.productId(getProductId())
 					.attributeSetInstanceId(getAttributeSetInstanceId())
 					.documentRef(CostingDocumentRef.ofReceiptLineId(get_ID()))
-					.qtyAndCatchWeight(getQtyNominalAndCatchWeight())
+					.qty(getQty())
 					//.amt(null)
 					.currencyConversionContext(getCurrencyConversionContext(as))
 					.date(getDateAcctAsInstant());
@@ -219,7 +217,7 @@ class DocLine_InOut extends DocLine<Doc_InOut>
 							.productId(getProductId())
 							.attributeSetInstanceId(getAttributeSetInstanceId())
 							.documentRef(CostingDocumentRef.ofShipmentLineId(get_ID()))
-							.qtyAndCatchWeight(getQtyNominalAndCatchWeight())
+							.qty(getQty())
 							.amt(CostAmount.zero(as.getCurrencyId())) // expect to be calculated
 							.currencyConversionContext(getCurrencyConversionContext(as))
 							.date(getDateAcctAsInstant())

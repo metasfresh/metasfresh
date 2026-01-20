@@ -416,7 +416,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 				.setDocLine(line)
 				.setAccount(line.getProductAssetAccount(as))
 				.setAmt(roundToStdPrecision(costs), null)
-				.setQty(line.getQtyNominalAndCatchWeight()) // (+) Qty
+				.setQty(line.getQty()) // (+) Qty
 				.bPartnerAndLocationId(line.getBPartnerId(costElement.getId()), line.getBPartnerLocationId(costElement.getId()))
 				.locatorId(line.getM_Locator_ID())
 				.fromLocationOfBPartner(line.getBPartnerLocationId(costElement.getId()))
@@ -436,7 +436,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 						? getBPGroupAccount(BPartnerGroupAccountType.NotInvoicedReceipts, as)
 						: getCostElementAccount(as, costElement.getId(), CostElementAccountType.P_CostClearing_Acct))
 				.setAmt(null, roundToStdPrecision(costs))
-				.setQty(line.getQtyNominalAndCatchWeight().negate()) // (-) Qty
+				.setQty(line.getQty().negate()) // (-) Qty
 				.bPartnerAndLocationId(line.getBPartnerId(costElement.getId()), line.getBPartnerLocationId(costElement.getId()))
 				.locatorId(line.getM_Locator_ID())
 				.fromLocationOfBPartner(line.getBPartnerLocationId(costElement.getId()))
@@ -476,7 +476,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 				.setDocLine(line)
 				.setAccount(getBPGroupAccount(BPartnerGroupAccountType.NotInvoicedReceipts, as))
 				.setAmt(roundToStdPrecision(costs), null)
-				.setQty(line.getQtyNominalAndCatchWeight().negate())
+				.setQty(line.getQty().negate())
 				.locatorId(line.getM_Locator_ID())
 				.fromLocationOfBPartner(getBPartnerLocationId())
 				.toLocationOfLocator(line.getM_Locator_ID())
@@ -500,7 +500,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 				.setDocLine(line)
 				.setAccount(line.getProductAssetAccount(as))
 				.setAmt(null, roundToStdPrecision(costs))
-				.setQty(line.getQtyNominalAndCatchWeight())
+				.setQty(line.getQty())
 				.locatorId(line.getM_Locator_ID())
 				.fromLocationOfBPartner(getBPartnerLocationId())
 				.toLocationOfLocator(line.getM_Locator_ID())

@@ -23,7 +23,6 @@ package de.metas.order;
  */
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.costing.CostAmount;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -210,7 +209,7 @@ public interface IOrderLineBL extends ISingletonService
 	 */
 	boolean isAllowedCounterLineCopy(org.compiere.model.I_C_OrderLine fromLine);
 
-	CostAmount getCostAmount(@NonNull org.compiere.model.I_C_OrderLine orderLine, @NonNull Quantity qty);
+	ProductPrice getCostPrice(org.compiere.model.I_C_OrderLine orderLine);
 
 	ProductPrice getPriceActual(org.compiere.model.I_C_OrderLine orderLine);
 
