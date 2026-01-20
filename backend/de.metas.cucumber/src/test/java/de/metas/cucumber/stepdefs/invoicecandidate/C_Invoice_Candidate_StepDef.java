@@ -961,24 +961,7 @@ public class C_Invoice_Candidate_StepDef
 				.create()
 				.count() == 0;
 
-<<<<<<< HEAD
 		StepDefUtil.tryAndWait(timeoutSec, 500, isInvoiceCandidateValidated);
-=======
-		try
-		{
-			StepDefUtil.tryAndWait(timeoutSec, 500, isInvoiceCandidateValidated);
-		}
-		catch (final InterruptedException e)
-		{
-			throw AdempiereException.wrapIfNeeded(e)
-					.setParameter("invoiceCandidateIds", invoiceCandidateIds);
-		}
-	}
-
-	public void waitUntilValid(final InvoiceCandidateId invoiceCandidateId, final int timeoutSec)
-	{
-		waitUntilValid(ImmutableSet.of(invoiceCandidateId), timeoutSec);
->>>>>>> c78604b0aa (Introduce support for using delivery date as invoice date for invoice creation.)
 	}
 
 	private ItemProvider.ProviderResult<I_C_Invoice_Candidate> retrieveInvoiceCandidate(final @NonNull IQuery<I_C_Invoice_Candidate> query)
