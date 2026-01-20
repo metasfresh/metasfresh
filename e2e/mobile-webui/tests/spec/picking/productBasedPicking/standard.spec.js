@@ -179,8 +179,14 @@ test('Product based aggregation', async ({ page }) => {
                 [masterdata.handlingUnits.P1_HU.qrCode]: { huStatus: 'A', storages: { P1: '8  PCE' } },
                 tu11: { huStatus: 'S', storages: { P1: '20 PCE' } },
                 tu12: { huStatus: 'S', storages: { P1: '24 PCE' } },
-                tu13: { huStatus: 'S', storages: { P1: '28 PCE' } },
+                tu13: { huStatus: 'E', storages: { P1: '28 PCE' } },
             }
+            // hus: {
+            //     [masterdata.handlingUnits.P1_HU.qrCode]: { huStatus: 'A', storages: { P1: '8  PCE' } },
+            //     tu11: { huStatus: 'E', storages: { P1: '20 PCE' } },
+            //     tu12: { huStatus: 'E', storages: { P1: '24 PCE' } },
+            //     tu13: { huStatus: 'E', storages: { P1: '28 PCE' } },
+            // }
         });
     });
 
