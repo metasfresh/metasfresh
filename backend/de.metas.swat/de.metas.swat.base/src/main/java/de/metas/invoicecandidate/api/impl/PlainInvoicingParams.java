@@ -288,7 +288,7 @@ public class PlainInvoicingParams implements IInvoicingParams
 		this.completeInvoices = completeInvoices;
 		return this;
 	}
-	
+
 	@Override
 	public boolean isCompleteInvoices()
 	{
