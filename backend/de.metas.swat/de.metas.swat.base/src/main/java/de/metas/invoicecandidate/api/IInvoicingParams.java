@@ -48,7 +48,8 @@ public interface IInvoicingParams
 	String PARA_Check_NetAmtToInvoice = "Check_NetAmtToInvoice";
 	String PARA_IsUpdateLocationAndContactForInvoice = "IsUpdateLocationAndContactForInvoice";
 	String PARA_IsCompleteInvoices = "IsCompleteInvoices";
-	
+	String PARA_IsDeliveryDateAsInvoiceDate = "IsDeliveryDateAsInvoiceDate";
+
 	
 	/**
 	 * @return {@code true} if only those invoice candidates which were approved for invoicing shall be enqueued.
@@ -117,6 +118,11 @@ public interface IInvoicingParams
 	boolean isUpdateLocationAndContactForInvoice();
 
 	/**
+	 * @return {@code true} if the delivery date shall be used as invoice date.
+	 */
+	boolean isDeliveryDateAsInvoiceDate();
+
+	/**
 	 *  When this parameter is set on true, the newly generated invoices are directly completed.
 	 *  Otherwise they are just prepared and left in the DocStatus IP (in progress);
 	 */
@@ -149,6 +155,7 @@ public interface IInvoicingParams
 		result.put(InvoicingParams.PARA_OnlyApprovedForInvoicing, isOnlyApprovedForInvoicing());
 		result.put(InvoicingParams.PARA_SupplementMissingPaymentTermIds, isSupplementMissingPaymentTermIds());
 		result.put(InvoicingParams.PARA_IsCompleteInvoices, isCompleteInvoices());
+		result.put(InvoicingParams.PARA_IsDeliveryDateAsInvoiceDate, isDeliveryDateAsInvoiceDate());
 
 		return result.build();
 	}

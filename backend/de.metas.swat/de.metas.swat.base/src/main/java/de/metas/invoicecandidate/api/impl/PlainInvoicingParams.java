@@ -23,6 +23,8 @@ package de.metas.invoicecandidate.api.impl;
  */
 
 import de.metas.invoicecandidate.api.IInvoicingParams;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
 import javax.annotation.Nullable;
@@ -45,9 +47,10 @@ public class PlainInvoicingParams implements IInvoicingParams
 	private boolean dateAcctSet = false;
 	private String poReference;
 	private boolean poReferenceSet = false;
-	private BigDecimal check_NetAmtToInvoice = null;
-	private boolean updateLocationAndContactForInvoice = false;
+	@Setter private BigDecimal check_NetAmtToInvoice = null;
+	@Setter @Getter private boolean updateLocationAndContactForInvoice = false;
 	private boolean completeInvoices = true; // default=true for backwards-compantibility
+	@Setter private Boolean deliveryDateAsInvoiceDate; // default=true for backwards-compantibility
 
 	public PlainInvoicingParams()
 	{
@@ -232,11 +235,6 @@ public class PlainInvoicingParams implements IInvoicingParams
 		return null;
 	}
 
-	public void setCheck_NetAmtToInvoice(final BigDecimal check_NetAmtToInvoice)
-	{
-		this.check_NetAmtToInvoice = check_NetAmtToInvoice;
-	}
-
 	@Override
 	public boolean isStoreInvoicesInResult()
 	{
@@ -283,14 +281,21 @@ public class PlainInvoicingParams implements IInvoicingParams
 		return this;
 	}
 
-	public boolean isUpdateLocationAndContactForInvoice()
+	@Override
+	public boolean isDeliveryDateAsInvoiceDate()
 	{
-		return updateLocationAndContactForInvoice;
-	}
-
-	public void setUpdateLocationAndContactForInvoice(boolean updateLocationAndContactForInvoice)
-	{
-		this.updateLocationAndContactForInvoice = updateLocationAndContactForInvoice;
+		if (deliveryDateAsInvoiceDate != null)
+		{
+			return deliveryDateAsInvoiceDate;
+		}
+		else if (defaults != null)
+		{
+			return defaults.isDeliveryDateAsInvoiceDate();
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	public PlainInvoicingParams setCompleteInvoices(final boolean completeInvoices)
@@ -298,7 +303,7 @@ public class PlainInvoicingParams implements IInvoicingParams
 		this.completeInvoices = completeInvoices;
 		return this;
 	}
-	
+
 	@Override
 	public boolean isCompleteInvoices()
 	{
