@@ -917,6 +917,14 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 			}
 		}
 
+		//
+		line.setAccount_DR_ID(importRecord.getC_ValidCombinationFrom_ID());
+		line.setAccount_CR_ID(importRecord.getC_ValidCombinationTo_ID());
+		//
+		line.setC_UOM_ID(importRecord.getC_UOM_ID());
+		line.setQty(importRecord.getQty());
+		//
+
 		// Set/Get Tax Account Combination From (Debit)
 		if (importRecord.getTaxAccount_DR_ID() > 0 && importRecord.getC_ValidCombinationTaxFrom_ID() == 0)
 		{
@@ -960,76 +968,43 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 				InterfaceWrapperHelper.save(importRecord);
 			}
 		}
-		//
-		line.setAccount_DR_ID(importRecord.getC_ValidCombinationFrom_ID());
-		line.setAccount_CR_ID(importRecord.getC_ValidCombinationTo_ID());
-		//
-		line.setC_UOM_ID(importRecord.getC_UOM_ID());
-		line.setQty(importRecord.getQty());
-		//
+
+
+		// Add tax accnt and amounts if exists exist
+		if ((importRecord.getTaxAmount_DR() != null && importRecord.getTaxAmount_DR().signum() != 0)
+				|| (importRecord.getTaxAmount_CR() != null && importRecord.getTaxAmount_CR().signum() != 0))
+		{
+			if (importRecord.getC_ValidCombinationTaxFrom_ID() > 0 || importRecord.getC_ValidCombinationTaxTo_ID() > 0)
+			{
+
+				// Set tax amounts
+				if (importRecord.getTaxAmount_DR() != null && importRecord.getTaxAmount_DR().signum() != 0)
+				{
+					line.setAmtSourceDr(importRecord.getTaxAmount_DR());
+				}
+				if (importRecord.getTaxAmount_CR() != null && importRecord.getTaxAmount_CR().signum() != 0)
+				{
+					line.setAmtSourceCr(importRecord.getTaxAmount_CR());
+				}
+
+
+				// Set tax account combinations
+				if (importRecord.getC_ValidCombinationTaxFrom_ID() > 0)
+				{
+					line.setAccount_DR_ID(importRecord.getC_ValidCombinationTaxFrom_ID());
+				}
+				if (importRecord.getC_ValidCombinationTaxTo_ID() > 0)
+				{
+					line.setAccount_CR_ID(importRecord.getC_ValidCombinationTaxTo_ID());
+				}
+			}
+		}
 
 		if (line.save())
 		{
 			importRecord.setGL_JournalBatch_ID(context.batch.getGL_JournalBatch_ID());
 			importRecord.setGL_Journal_ID(context.journal.getGL_Journal_ID());
 			importRecord.setGL_JournalLine_ID(line.getGL_JournalLine_ID());
-
-			// Create separate tax journal lines if tax amounts exist
-			if ((importRecord.getTaxAmount_DR() != null && importRecord.getTaxAmount_DR().signum() != 0)
-					|| (importRecord.getTaxAmount_CR() != null && importRecord.getTaxAmount_CR().signum() != 0))
-			{
-				if (importRecord.getC_ValidCombinationTaxFrom_ID() > 0 || importRecord.getC_ValidCombinationTaxTo_ID() > 0)
-				{
-					MJournalLine taxLine = new MJournalLine(context.journal);
-					taxLine.setDescription("Tax: " + (importRecord.getDescription() != null ? importRecord.getDescription() : ""));
-					taxLine.setCurrency(importRecord.getC_Currency_ID(), importRecord.getC_ConversionType_ID(), importRecord.getCurrencyRate());
-
-					// Set tax amounts
-					if (importRecord.getTaxAmount_DR() != null && importRecord.getTaxAmount_DR().signum() != 0)
-					{
-						taxLine.setAmtSourceDr(importRecord.getTaxAmount_DR());
-					}
-					if (importRecord.getTaxAmount_CR() != null && importRecord.getTaxAmount_CR().signum() != 0)
-					{
-						taxLine.setAmtSourceCr(importRecord.getTaxAmount_CR());
-					}
-
-					// Calculate accounted amounts for tax
-					BigDecimal taxAmtAcctDr = BigDecimal.ZERO;
-					BigDecimal taxAmtAcctCr = BigDecimal.ZERO;
-					if (importRecord.getTaxAmount_DR() != null)
-					{
-						taxAmtAcctDr = importRecord.getTaxAmount_DR().multiply(importRecord.getCurrencyRate());
-					}
-					if (importRecord.getTaxAmount_CR() != null)
-					{
-						taxAmtAcctCr = importRecord.getTaxAmount_CR().multiply(importRecord.getCurrencyRate());
-					}
-					taxLine.setAmtAcct(taxAmtAcctDr, taxAmtAcctCr);
-
-					// Set tax account combinations
-					if (importRecord.getC_ValidCombinationTaxFrom_ID() > 0)
-					{
-						taxLine.setAccount_DR_ID(importRecord.getC_ValidCombinationTaxFrom_ID());
-					}
-					if (importRecord.getC_ValidCombinationTaxTo_ID() > 0)
-					{
-						taxLine.setAccount_CR_ID(importRecord.getC_ValidCombinationTaxTo_ID());
-					}
-
-					taxLine.setDateAcct(importRecord.getDateAcct());
-
-					// Save tax line
-					if (!taxLine.save())
-					{
-						log.warn("Failed to save tax journal line for import record: " + importRecord.getI_GLJournal_ID());
-					}
-					else
-					{
-						log.info("Created tax journal line for import record: " + importRecord.getI_GLJournal_ID());
-					}
-				}
-			}
 
 			importRecord.setI_IsImported(true);
 			importRecord.setProcessed(true);
