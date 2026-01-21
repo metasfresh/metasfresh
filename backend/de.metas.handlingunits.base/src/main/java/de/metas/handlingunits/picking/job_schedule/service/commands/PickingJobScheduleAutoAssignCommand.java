@@ -131,10 +131,10 @@ public class PickingJobScheduleAutoAssignCommand
 		if (shipmentSchedulesCandidates.isEmpty()) {return;}
 
 		// On limit reach exclude the last order to avoid having the order only partially included
-		final OrderId orderIdToExclude = queryLimit.isLimitHitOrExceeded(shipmentSchedulesCandidates.size()) ?
+		final OrderId orderIdToExclude = queryLimit.isLimitHitOrExceeded(shipmentSchedulesCandidates) ?
 				shipmentSchedulesCandidates.get(shipmentSchedulesCandidates.size() - 1).getOrderId()
 				: null;
-		final boolean isCarrierProductRequired = sysConfigBL.getBooleanValue(SYSCONFIG_CARRIER_PRODUCT_REQUIRED, false);
+		final boolean isCarrierProductRequired = isCarrierProductRequired();
 		final ImmutableList<ShipmentSchedule> allEligibleShipmentSchedules = shipmentSchedulesCandidates
 				.stream()
 				.filter(sched -> sched.getCarrierProductId() != null || !isCarrierProductRequired)
@@ -199,6 +199,12 @@ public class PickingJobScheduleAutoAssignCommand
 	private QueryLimit getQueryLimit()
 	{
 		return QueryLimit.ofInt(sysConfigBL.getIntValue(SYSCONFIG_QUERY_LIMIT, DEFAULT_QUERY_LIMIT));
+	}
+
+	@NonNull
+	private boolean isCarrierProductRequired()
+	{
+		return sysConfigBL.getBooleanValue(SYSCONFIG_CARRIER_PRODUCT_REQUIRED, false);
 	}
 
 	@Nullable

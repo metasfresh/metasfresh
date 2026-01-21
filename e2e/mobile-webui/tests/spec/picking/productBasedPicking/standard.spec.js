@@ -148,7 +148,7 @@ test('Product based aggregation', async ({ page }) => {
         await PickingJobScreen.waitForScreen();
         await PickingJobScreen.complete();
         await Backend.expect({
-            // FIXME all should be processed and shipped
+            // FIXME all should be processed and shipped (expected result commented out below)
             pickings: {
                 [pickingJobId]: {
                     shipmentSchedules: {
