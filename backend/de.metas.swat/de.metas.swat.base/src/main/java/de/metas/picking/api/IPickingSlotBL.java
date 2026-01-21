@@ -4,6 +4,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.global_qrcodes.service.QRCodePDFResource;
 import de.metas.picking.model.I_M_PickingSlot;
+import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
@@ -25,6 +26,10 @@ public interface IPickingSlotBL extends ISingletonService
 	Set<PickingSlotIdAndCaption> getPickingSlotIdAndCaptions(@NonNull PickingSlotQuery query);
 
 	QRCodePDFResource createQRCodesPDF(Set<PickingSlotIdAndCaption> pickingSlotIdAndCaptions);
+
+	PickingSlotQRCode getPickingSlotQRCode(PickingSlotId pickingSlotId);
+
+	QRCodePDFResource createPDF(@NonNull PickingSlotQRCode qrCode);
 
 	boolean isAvailableForAnyBPartner(@NonNull PickingSlotId pickingSlotId);
 

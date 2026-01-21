@@ -19,6 +19,7 @@ import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Set;
 
 public class PickingSlotBL implements IPickingSlotBL
@@ -68,6 +69,24 @@ public class PickingSlotBL implements IPickingSlotBL
 				.map(PickingSlotQRCode::toPrintableQRCode)
 				.collect(ImmutableList.toImmutableList());
 
+		return createPDF(qrCodes);
+	}
+
+	@Override
+	public PickingSlotQRCode getPickingSlotQRCode(final PickingSlotId pickingSlotId)
+	{
+		final PickingSlotIdAndCaption pickingSlotIdAndCaption = getPickingSlotIdAndCaption(pickingSlotId);
+		return PickingSlotQRCode.ofPickingSlotIdAndCaption(pickingSlotIdAndCaption);
+	}
+
+	@Override
+	public QRCodePDFResource createPDF(@NonNull final PickingSlotQRCode qrCode)
+	{
+		return createPDF(ImmutableList.of(qrCode.toPrintableQRCode()));
+	}
+
+	private QRCodePDFResource createPDF(final List<PrintableQRCode> qrCodes)
+	{
 		final GlobalQRCodeService globalQRCodeService = SpringContextHolder.instance.getBean(GlobalQRCodeService.class);
 		return globalQRCodeService.createPDF(qrCodes);
 	}
