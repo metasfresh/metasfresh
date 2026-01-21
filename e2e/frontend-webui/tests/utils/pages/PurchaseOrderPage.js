@@ -777,4 +777,133 @@ export class PurchaseOrderPage {
       );
     });
   }
+
+  /**
+   * Open the related Vendor Invoice (C_Invoice) for the current purchase order using Alt+6.
+   *
+   * This method:
+   * 1. Opens the related documents panel (Alt+6)
+   * 2. Clicks on the "Vendor Invoice" link
+   * 3. Navigates to the Vendor Invoice window with the document already selected
+   *
+   * Use this method after creating a vendor invoice via Invoice Candidates workflow.
+   *
+   * @param {Object} options - Configuration options
+   * @param {number} options.maxRetries - Maximum retry attempts (default: 5)
+   * @param {number} options.retryDelay - Initial delay between retries in ms (default: 2000)
+   */
+  static async openRelatedVendorInvoice({ maxRetries = 5, retryDelay = 2000 } = {}) {
+    return await test.step('PurchaseOrderPage - Open related Vendor Invoice (Alt+6)', async () => {
+      const page = getPage();
+
+      // Language-independent selector for Vendor Invoice link
+      // English: "Vendor Invoice (#1)" or "Invoice (Vendor) (#1)"
+      // German: "Eingangsrechnung (#1)"
+      // Window ID 183 = "Eingangsrechnung" (Vendor Invoice)
+      // Note: The text format is "Invoice (Vendor) (#1)" with (Vendor) part and then (#1) count
+      const vendorInvoiceLink = page.getByText(
+        /(?:Vendor Invoice|Invoice\s*\(Vendor\)|Eingangsrechnung).*\(#\d+\)/i
+      ).first();
+
+      let lastError = null;
+
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          // Close any existing Alt+6 panel by pressing Escape
+          await page.keyboard.press('Escape');
+          await page.waitForTimeout(200);
+
+          // Click on the page body to ensure it has focus
+          await page.locator('body').click();
+          await page.waitForTimeout(100);
+
+          // Press Alt+6 to open related documents panel
+          await page.keyboard.press('Alt+6');
+
+          // Wait for the related documents panel to become visible
+          await page
+            .locator('.subheader-shadow, .document-references')
+            .waitFor({
+              state: 'visible',
+              timeout: 5000,
+            })
+            .catch(() => {
+              // Panel structure may vary
+            });
+
+          // Wait for any loading spinners in the panel to disappear
+          await page
+            .locator('.rotating, .spinner, .indicator-pending')
+            .waitFor({
+              state: 'detached',
+              timeout: 10000,
+            })
+            .catch(() => {
+              // No spinners present
+            });
+
+          // Wait for the specific "Vendor Invoice" link to appear
+          await vendorInvoiceLink.waitFor({
+            state: 'visible',
+            timeout: 10000,
+          });
+
+          // Click the link
+          await vendorInvoiceLink.click();
+
+          // Wait for navigation to Vendor Invoice window
+          // Instead of checking URL (which has timing issues with SPA), wait for:
+          // 1. The Vendor Invoice table row to appear (indicates list view loaded)
+          // 2. OR a document detail view with Print button
+          await page.waitForTimeout(1000); // Small wait for navigation to start
+
+          // Wait for table row OR detail view elements
+          const tableRow = page.locator('.table-row, [class*="table-row"]').first();
+          const printButton = page.getByTestId('action-Print');
+
+          // Try waiting for either element (list view table row or detail view print button)
+          await Promise.race([
+            tableRow.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT }),
+            printButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT }),
+          ]).catch(async () => {
+            // If neither appears, wait for any content to load
+            await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+          });
+
+          // Wait for loading spinners to disappear
+          await page
+            .locator('.rotating, .indicator-pending')
+            .waitFor({
+              state: 'detached',
+              timeout: SLOW_ACTION_TIMEOUT,
+            })
+            .catch(() => {
+              // No spinners present
+            });
+
+          // Success - exit the retry loop
+          console.log(`Vendor Invoice opened on attempt ${attempt}`);
+          return;
+
+        } catch (error) {
+          lastError = error;
+          console.log(`Attempt ${attempt}/${maxRetries} failed: ${error.message}`);
+
+          if (attempt < maxRetries) {
+            // Exponential backoff: 2s, 4s, 6s, 8s...
+            const delay = retryDelay * attempt;
+            console.log(`Waiting ${delay}ms before retry...`);
+            await page.waitForTimeout(delay);
+          }
+        }
+      }
+
+      // All retries exhausted
+      throw new Error(
+        `Failed to find "Vendor Invoice" link after ${maxRetries} attempts. ` +
+        `This usually means the C_Invoice document hasn't been created or linked yet. ` +
+        `Last error: ${lastError?.message}`
+      );
+    });
+  }
 }
