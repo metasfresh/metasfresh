@@ -197,3 +197,10 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=160,Updated=TO_TIMESTAMP
 UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2026-01-16 09:55:06.712000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591861
 ;
 
+-- Column: M_Picking_Job_Schedule_view.IsAssigned
+-- Column SQL (old): (CASE WHEN C_Workplace_ID IS NULL THEN 'N' ELSE 'Y' END)
+-- 2026-01-21T12:11:41.336Z
+UPDATE AD_Column SET ColumnSQL='', IsCalculated='Y', IsLazyLoading='N',Updated=TO_TIMESTAMP('2026-01-21 12:11:41.336000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591490
+;
+
+--TODO add other new columns
