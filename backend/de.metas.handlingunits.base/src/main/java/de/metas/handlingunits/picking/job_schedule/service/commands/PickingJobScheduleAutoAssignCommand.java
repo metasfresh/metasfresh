@@ -186,7 +186,7 @@ public class PickingJobScheduleAutoAssignCommand
 					.request(CreateOrUpdatePickingJobSchedulesRequest.builder()
 							.workplaceId(matchingWorkplace.getId())
 							.shipmentScheduleAndJobScheduleIds(ShipmentScheduleAndJobScheduleIdSet.of(schedule.getId()))
-							.qtyToPickBD(schedule.getQuantityToDeliver().toBigDecimal()) //.qtyToPickBD(remainingQtyToPick)
+							.qtyToPickBD(schedule.getQuantityToDeliver().toBigDecimal())
 							.build())
 					.build()
 					.execute();
