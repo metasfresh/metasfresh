@@ -118,12 +118,8 @@ FROM (SELECT
              AND pc.IsActive = 'Y')                                               AS QtyPickedPlanned,
           s.qtyonhand                                                             AS QtyOnHand,
           s.qtyscheduledforpicking                                                AS QtyScheduledForPicking,
-          -- TODO add real column and set together with qtyscheduledforpicking
-          (SELECT COALESCE(sum(qtytopick), 0)
-           FROM m_picking_job_schedule js
-           WHERE js.M_ShipmentSchedule_ID = s.M_ShipmentSchedule_ID
-             AND js.processed = 'Y')                                                 AS QtyScheduledForPickingOfProcessed,
-          s.qtytodeliver - COALESCE(qtyscheduledforpicking, 0)                    AS QtyToScheduleForPicking,
+          s.qtyscheduledforpickingofprocessed                                     AS QtyScheduledForPickingOfProcessed,
+          s.qtytodeliver - COALESCE(s.qtyscheduledforpicking, 0)                  AS QtyToScheduleForPicking,
 
           --
           -- Rules&Quantities

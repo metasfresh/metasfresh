@@ -436,11 +436,8 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				.map(OlAndSched::getShipmentScheduleId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		final Map<ShipmentScheduleId, PickingJobScheduleCollection> unprocessedJobSchedulesByShipmentScheduleId = pickingJobScheduleRepository
-				.stream(PickingJobScheduleQuery.builder()
-						.onlyShipmentScheduleIds(shipmentScheduleIds)
-						.isProcessed(false)
-						.build())
+		final Map<ShipmentScheduleId, PickingJobScheduleCollection> jobSchedulesByShipmentScheduleId = pickingJobScheduleRepository
+				.stream(PickingJobScheduleQuery.builder().onlyShipmentScheduleIds(shipmentScheduleIds).build())
 				.collect(PickingJobScheduleCollection.collectGroupedByShipmentScheduleId());
 
 		for (final OlAndSched olAndSched : olsAndScheds)
@@ -448,19 +445,21 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			try (final MDCCloseable ignored = ShipmentSchedulesMDC.putShipmentScheduleId(olAndSched.getShipmentScheduleId()))
 			{
 				final ShipmentScheduleId shipmentScheduleId = olAndSched.getShipmentScheduleId();
-				final PickingJobScheduleCollection unprocessedJobSchedules = unprocessedJobSchedulesByShipmentScheduleId.getOrDefault(shipmentScheduleId, PickingJobScheduleCollection.EMPTY);
-				updateFromPickingJobSchedules(olAndSched, unprocessedJobSchedules);
+				final PickingJobScheduleCollection jobSchedules = jobSchedulesByShipmentScheduleId.getOrDefault(shipmentScheduleId, PickingJobScheduleCollection.EMPTY);
+				updateFromPickingJobSchedules(olAndSched, jobSchedules);
 			}
 		}
 	}
 
-	private void updateFromPickingJobSchedules(@NonNull final OlAndSched olAndSched, @NonNull final PickingJobScheduleCollection unprocessedJobSchedules)
+	private void updateFromPickingJobSchedules(@NonNull final OlAndSched olAndSched, @NonNull final PickingJobScheduleCollection jobSchedules)
 	{
-		final Quantity qtyScheduledToPick = unprocessedJobSchedules.getQtyToPick().orElse(null);
+		final Quantity qtyScheduledToPick = jobSchedules.getQtyToPick().orElse(null);
+		final Quantity qtyScheduledToPickOfProcessed = jobSchedules.getQtyToPickOfProcessed().orElse(null);
 		final I_M_ShipmentSchedule shipmentSchedule = olAndSched.getSched();
 
 		shipmentSchedule.setIsScheduledForPicking(qtyScheduledToPick != null && qtyScheduledToPick.signum() > 0);
 		shipmentSchedule.setQtyScheduledForPicking(qtyScheduledToPick != null ? qtyScheduledToPick.toBigDecimal() : null);
+		shipmentSchedule.setQtyScheduledForPickingOfProcessed(qtyScheduledToPickOfProcessed != null ? qtyScheduledToPickOfProcessed.toBigDecimal() : null);
 	}
 
 	ShipmentSchedulesDuringUpdate generate_FirstRun(@NonNull final List<OlAndSched> lines)

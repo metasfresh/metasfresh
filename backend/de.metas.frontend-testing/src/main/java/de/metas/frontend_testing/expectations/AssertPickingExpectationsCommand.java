@@ -151,7 +151,8 @@ class AssertPickingExpectationsCommand
 			@NonNull final List<I_M_ShipmentSchedule> actuals) throws Exception
 	{
 		if (expectation.getIsScheduledForPicking() != null
-				|| expectation.getQtyScheduledForPicking() != null)
+				|| expectation.getQtyScheduledForPicking() != null
+				|| expectation.getQtyScheduledForPickingOfProcessed() != null)
 		{
 			assertThat(actuals).isNotEmpty();
 			actuals.forEach(actual -> softly(() -> {
@@ -164,6 +165,10 @@ class AssertPickingExpectationsCommand
 				if (expectation.getQtyScheduledForPicking() != null)
 				{
 					assertThat(actual.getQtyScheduledForPicking()).isEqualTo(expectation.getQtyScheduledForPicking());
+				}
+				if (expectation.getQtyScheduledForPickingOfProcessed() != null)
+				{
+					assertThat(actual.getQtyScheduledForPickingOfProcessed()).isEqualTo(expectation.getQtyScheduledForPickingOfProcessed());
 				}
 			}));
 		}

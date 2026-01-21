@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.inoutcandidate.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_ShipmentSchedule
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_ShipmentSchedule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2101981371L;
+	private static final long serialVersionUID = 1604460451L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule (final Properties ctx, final int M_ShipmentSchedule_ID, @Nullable final String trxName)
@@ -1665,6 +1665,19 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public BigDecimal getQtyScheduledForPicking() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyScheduledForPicking);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyScheduledForPickingOfProcessed (final @Nullable BigDecimal QtyScheduledForPickingOfProcessed)
+	{
+		set_Value (COLUMNNAME_QtyScheduledForPickingOfProcessed, QtyScheduledForPickingOfProcessed);
+	}
+
+	@Override
+	public BigDecimal getQtyScheduledForPickingOfProcessed() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyScheduledForPickingOfProcessed);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
