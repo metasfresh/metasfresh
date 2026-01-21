@@ -40,7 +40,7 @@ public interface IShipmentScheduleInvalidateRepository extends ISingletonService
 {
 	boolean isFlaggedForRecompute(ShipmentScheduleId shipmentScheduleId);
 
-	boolean areAllNotFlaggedForRecompute(@NonNull Set<ShipmentScheduleId> shipmentScheduleIds);
+	boolean isAllValid(@NonNull Set<ShipmentScheduleId> shipmentScheduleIds);
 
 	/**
 	 * Invalidate all shipment schedules for give product.

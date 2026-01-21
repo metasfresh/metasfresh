@@ -119,8 +119,8 @@ public class AssertExpectationsCommandServices
 
 	public List<I_M_HU> getCUs(final HuId huId) {return handlingUnitsBL.getVHUs(huId);}
 
-	public boolean areAllNotFlaggedForRecompute(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
+	public boolean isAllValid(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
 	{
-		return invalidationRepository.areAllNotFlaggedForRecompute(shipmentScheduleIds);
+		return invalidationRepository.isAllValid(shipmentScheduleIds);
 	}
 }

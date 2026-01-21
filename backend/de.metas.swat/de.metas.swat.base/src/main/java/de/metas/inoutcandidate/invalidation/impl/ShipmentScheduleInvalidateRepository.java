@@ -117,7 +117,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	}
 
 	@Override
-	public boolean areAllNotFlaggedForRecompute(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
+	public boolean isAllValid(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
 	{
 		return queryBL.createQueryBuilder(I_M_ShipmentSchedule_Recompute.class)
 				.addInArrayFilter(

@@ -78,7 +78,7 @@ class AssertPickingExpectationsCommand
 
 	private void waitShipmentSchedulesValid(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds) throws InterruptedException
 	{
-		final Supplier<Boolean> noRecomputeRecords = () -> services.areAllNotFlaggedForRecompute(shipmentScheduleIds);
+		final Supplier<Boolean> noRecomputeRecords = () -> services.isAllValid(shipmentScheduleIds);
 
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		do
