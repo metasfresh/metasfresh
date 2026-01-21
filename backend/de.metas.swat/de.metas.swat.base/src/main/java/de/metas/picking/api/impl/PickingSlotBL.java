@@ -60,6 +60,12 @@ public class PickingSlotBL implements IPickingSlotBL
 	}
 
 	@Override
+	public Set<PickingSlotIdAndCaption> getPickingSlotIdAndCaptions(@NonNull final Set<PickingSlotId> pickingSlotIds)
+	{
+		return pickingSlotDAO.getPickingSlotIdAndCaptions(pickingSlotIds);
+	}
+
+	@Override
 	public QRCodePDFResource createQRCodesPDF(@NonNull final Set<PickingSlotIdAndCaption> pickingSlotIdAndCaptions)
 	{
 		Check.assumeNotEmpty(pickingSlotIdAndCaptions, "pickingSlotIdAndCaptions is not empty");
