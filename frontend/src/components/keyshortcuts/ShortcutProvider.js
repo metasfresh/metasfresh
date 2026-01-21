@@ -143,7 +143,12 @@ export const ShortcutProvider = ({ children }) => {
 
     const handles = hotkeys[serializedSequence];
     if (!handles || handles.length === 0) {
+<<<<<<< HEAD
       // console.debug(`[Shortcut ${key}] no handlers found`);
+=======
+      // NOTE: commenting it out because this is a very common case, any key press which is not a shortcut (like typing) will get here.
+      // console.debug(`[Shortcut ${serializedSequence}] no handlers found`);
+>>>>>>> b07ee0a702 (webui: Fix view's header padding (css)  (#22052))
       return;
     }
 
