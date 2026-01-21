@@ -178,6 +178,10 @@ const Indicator = ({ testId, indicator, completeStatus }) => {
   let className = null;
   if (indicator) {
     switch (indicator) {
+      case 'none':
+      case '-':
+        className = 'indicator-box';
+        break;
       case WorkflowLauncherIndicator.JOB_ALREADY_STARTED:
         className = 'indicator-box fas fa-lock';
         break;
