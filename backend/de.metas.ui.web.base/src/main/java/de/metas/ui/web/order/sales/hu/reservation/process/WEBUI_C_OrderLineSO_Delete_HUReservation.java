@@ -2,6 +2,7 @@ package de.metas.ui.web.order.sales.hu.reservation.process;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.order.api.IHUOrderBL;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.reservation.RetrieveHUsQtyRequest;
 import de.metas.process.IProcessPrecondition;
@@ -14,6 +15,7 @@ import de.metas.quantity.Quantity;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
+import de.metas.util.Services;
 import org.compiere.SpringContextHolder;
 
 /*
@@ -42,6 +44,7 @@ public class WEBUI_C_OrderLineSO_Delete_HUReservation
 		extends HUEditorProcessTemplate
 		implements IProcessPrecondition
 {
+	private final IHUOrderBL huOrderBL = Services.get(IHUOrderBL.class);
 	private final HUReservationService huReservationService = SpringContextHolder.instance.getBean(HUReservationService.class);
 	private final SalesOrderLineRepository salesOrderLineRepository = SpringContextHolder.instance.getBean(SalesOrderLineRepository.class);
 
@@ -76,10 +79,14 @@ public class WEBUI_C_OrderLineSO_Delete_HUReservation
 	@RunOutOfTrx // the service we invoke creates its own transaction
 	protected String doIt()
 	{
+		final SalesOrderLine salesOrderLine = WEBUI_C_OrderLineSO_Util.retrieveSalesOrderLine(getView(), salesOrderLineRepository).get();
+
 		final ImmutableSet<HuId> selectedReservedHUs = streamSelectedHUIds(HUEditorRowFilter.ALL)
 				.collect(ImmutableSet.toImmutableSet());
 
 		huReservationService.deleteReservationsByVHUIds(selectedReservedHUs);
+
+		huOrderBL.updateOrderLineFromReservations(salesOrderLine.getId());
 
 		return MSG_OK;
 	}

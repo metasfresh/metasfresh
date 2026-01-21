@@ -422,71 +422,122 @@ export class PurchaseOrderPage {
    * IMPORTANT: Use this method instead of navigating to window 540196 and searching,
    * because it ensures we select the CORRECT receipt candidate for this specific PO.
    *
-   * @param {number} waitTime - Time to wait for receipt candidates to be created (default: 5000ms)
+   * Uses deterministic wait conditions instead of arbitrary timeouts:
+   * - Retries Alt+6 menu opening until receipt candidates link appears
+   * - Waits for specific menu item visibility before clicking
+   * - Provides clear error messages on failure
+   *
+   * @param {Object} options - Configuration options
+   * @param {number} options.maxRetries - Maximum retry attempts (default: 5)
+   * @param {number} options.retryDelay - Initial delay between retries in ms (default: 2000)
    */
-  static async openRelatedReceiptCandidate(waitTime = 5000) {
+  static async openRelatedReceiptCandidate({ maxRetries = 5, retryDelay = 2000 } = {}) {
     return await test.step('PurchaseOrderPage - Open related receipt candidate (Alt+6)', async () => {
       const page = getPage();
 
-      // Wait for receipt candidates to be created asynchronously by backend
-      // Receipt candidates are created by the app server after PO completion
-      await page.waitForTimeout(waitTime);
-
-      // Click on the page body to ensure it has focus
-      await page.locator('body').click();
-      await page.waitForTimeout(200);
-
-      // Press Alt+6 to open related documents panel
-      await page.keyboard.press('Alt+6');
-
-      // Wait for the related documents panel to appear
-      // The panel typically contains links like "Material Receipt Candidates (#1)"
-      await page.waitForTimeout(1000);
-
-      // Wait for any loading spinners in the related documents panel to disappear
-      await page
-        .locator('.rotating, .spinner')
-        .waitFor({
-          state: 'detached',
-          timeout: SLOW_ACTION_TIMEOUT,
-        })
-        .catch(() => {
-          // Ignore if spinner doesn't exist
-        });
-
-      // Click on "Material Receipt Candidates" link (or "Wareneingangsdisposition" in German)
-      // This navigates to window 540196 with the correct candidate already selected
-      // Language-independent: Use regex to match English or German text with count indicator
+      // Language-independent selector for Material Receipt Candidates link
       // English: "Material Receipt Candidates (#1)"
       // German: "Wareneingangsdisposition (#1)"
-      await page.getByText(/(?:Material Receipt Candidates|Wareneingangsdisposition).*\(#\d+\)/).first().click();
+      const receiptCandidatesLink = page.getByText(
+        /(?:Material Receipt Candidates|Wareneingangsdisposition).*\(#\d+\)/
+      ).first();
 
-      // Wait for navigation to Receipt Candidates window with pre-selected candidate
-      // URL pattern: /window/540196?page=1&refDocumentId={poId}&refType=181&...
-      await page.waitForURL(/\/window\/540196/, {
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
+      let lastError = null;
 
-      // Wait for the window to fully load
-      await page.waitForLoadState('networkidle', {
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {
-        // Ignore timeout
-      });
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          // Close any existing Alt+6 panel by pressing Escape
+          await page.keyboard.press('Escape');
+          await page.waitForTimeout(200);
 
-      // Wait for any loading spinners to disappear
-      await page
-        .locator('.rotating, .panel-spaced-lg')
-        .waitFor({
-          state: 'detached',
-          timeout: SLOW_ACTION_TIMEOUT,
-        })
-        .catch(() => {
-          // Ignore if spinner doesn't exist
-        });
+          // Click on the page body to ensure it has focus
+          await page.locator('body').click();
+          await page.waitForTimeout(100);
 
-      // Give the window a moment to be ready
-      await page.waitForTimeout(500);
+          // Press Alt+6 to open related documents panel
+          await page.keyboard.press('Alt+6');
+
+          // Wait for the related documents panel to become visible
+          // The panel has class 'subheader-shadow' or similar
+          await page
+            .locator('.subheader-shadow, .document-references')
+            .waitFor({
+              state: 'visible',
+              timeout: 5000,
+            })
+            .catch(() => {
+              // Panel structure may vary
+            });
+
+          // Wait for any loading spinners in the panel to disappear
+          await page
+            .locator('.rotating, .spinner, .indicator-pending')
+            .waitFor({
+              state: 'detached',
+              timeout: 10000,
+            })
+            .catch(() => {
+              // No spinners present
+            });
+
+          // Wait for the specific "Material Receipt Candidates" link to appear
+          // This is the deterministic condition - the link only appears when
+          // backend has created the receipt candidates
+          await receiptCandidatesLink.waitFor({
+            state: 'visible',
+            timeout: 10000,
+          });
+
+          // Click the link
+          await receiptCandidatesLink.click();
+
+          // Wait for navigation to Receipt Candidates window
+          // URL pattern: /window/540196?page=1&refDocumentId={poId}&refType=181&...
+          await page.waitForURL(/\/window\/540196/, {
+            timeout: SLOW_ACTION_TIMEOUT,
+          });
+
+          // Wait for the window to fully load
+          await page.waitForLoadState('networkidle', {
+            timeout: SLOW_ACTION_TIMEOUT,
+          }).catch(() => {
+            // Ignore timeout - page may be ready anyway
+          });
+
+          // Wait for loading spinners to disappear
+          await page
+            .locator('.rotating, .panel-spaced-lg, .indicator-pending')
+            .waitFor({
+              state: 'detached',
+              timeout: SLOW_ACTION_TIMEOUT,
+            })
+            .catch(() => {
+              // No spinners present
+            });
+
+          // Success - exit the retry loop
+          console.log(`Receipt candidate link found and clicked on attempt ${attempt}`);
+          return;
+
+        } catch (error) {
+          lastError = error;
+          console.log(`Attempt ${attempt}/${maxRetries} failed: ${error.message}`);
+
+          if (attempt < maxRetries) {
+            // Exponential backoff: 2s, 4s, 6s, 8s...
+            const delay = retryDelay * attempt;
+            console.log(`Waiting ${delay}ms before retry...`);
+            await page.waitForTimeout(delay);
+          }
+        }
+      }
+
+      // All retries exhausted
+      throw new Error(
+        `Failed to find "Material Receipt Candidates" link after ${maxRetries} attempts. ` +
+        `This usually means the backend hasn't created receipt candidates yet. ` +
+        `Last error: ${lastError?.message}`
+      );
     });
   }
 
@@ -572,6 +623,158 @@ export class PurchaseOrderPage {
 
       // Give the window a moment to be ready
       await page.waitForTimeout(500);
+    });
+  }
+
+  /**
+   * Open the related Material Receipt (M_InOut) for the current purchase order using Alt+6.
+   *
+   * This method:
+   * 1. Opens the related documents panel (Alt+6)
+   * 2. Clicks on the "Material Receipt" link
+   * 3. Navigates to the Material Receipt window with the document already selected
+   *
+   * Use this method after creating a material receipt via Receipt Candidates workflow.
+   *
+   * @param {Object} options - Configuration options
+   * @param {number} options.maxRetries - Maximum retry attempts (default: 5)
+   * @param {number} options.retryDelay - Initial delay between retries in ms (default: 2000)
+   */
+  static async openRelatedMaterialReceipt({ maxRetries = 5, retryDelay = 2000 } = {}) {
+    return await test.step('PurchaseOrderPage - Open related Material Receipt (Alt+6)', async () => {
+      const page = getPage();
+
+      // Language-independent selector for Material Receipt link
+      // English: "Material Receipt (#1)" - note: may also be "Wareneingang (#1)" in German
+      // The window name (not caption) may vary, so we use a flexible pattern
+      // Window ID 184 = "Wareneingang" (Material Receipt for purchase)
+      const materialReceiptLink = page.getByText(
+        /(?:Material Receipt|Wareneingang)\s*\(#\d+\)/
+      ).first();
+
+      let lastError = null;
+
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          // Close any existing Alt+6 panel by pressing Escape
+          await page.keyboard.press('Escape');
+          await page.waitForTimeout(200);
+
+          // Click on the page body to ensure it has focus
+          await page.locator('body').click();
+          await page.waitForTimeout(100);
+
+          // Press Alt+6 to open related documents panel
+          await page.keyboard.press('Alt+6');
+
+          // Wait for the related documents panel to become visible
+          await page
+            .locator('.subheader-shadow, .document-references')
+            .waitFor({
+              state: 'visible',
+              timeout: 5000,
+            })
+            .catch(() => {
+              // Panel structure may vary
+            });
+
+          // Wait for any loading spinners in the panel to disappear
+          await page
+            .locator('.rotating, .spinner, .indicator-pending')
+            .waitFor({
+              state: 'detached',
+              timeout: 10000,
+            })
+            .catch(() => {
+              // No spinners present
+            });
+
+          // Wait for the specific "Material Receipt" link to appear
+          await materialReceiptLink.waitFor({
+            state: 'visible',
+            timeout: 10000,
+          });
+
+          // Click the link
+          await materialReceiptLink.click();
+
+          // Wait for navigation to Material Receipt window
+          // Instead of checking URL (which has timing issues with SPA), wait for:
+          // 1. The Material Receipt table row to appear (indicates list view loaded)
+          // 2. OR a document detail view with Print button
+          await page.waitForTimeout(1000); // Small wait for navigation to start
+
+          // Wait for table row OR detail view elements
+          const tableRow = page.locator('.table-row, [class*="table-row"]').first();
+          const printButton = page.getByTestId('action-Print');
+
+          // Try waiting for either element (list view table row or detail view print button)
+          await Promise.race([
+            tableRow.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT }),
+            printButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT }),
+          ]).catch(async () => {
+            // If neither appears, wait for any content to load
+            await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+          });
+
+          // Wait for loading spinners to disappear
+          await page
+            .locator('.rotating, .indicator-pending')
+            .waitFor({
+              state: 'detached',
+              timeout: SLOW_ACTION_TIMEOUT,
+            })
+            .catch(() => {
+              // No spinners present
+            });
+
+          // Check if we're on a list view by looking for table rows
+          const hasTableRow = await tableRow.isVisible().catch(() => false);
+          const hasPrintButton = await printButton.isVisible().catch(() => false);
+
+          if (hasTableRow && !hasPrintButton) {
+            // We're on list view - DOUBLE-click the first row to navigate to detail view
+            // In metasfresh, single click selects row, double-click opens detail view
+            console.log('On Material Receipt list view, double-clicking first row...');
+            await tableRow.dblclick();
+
+            // Wait for detail view to load (indicated by Print button)
+            await printButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+            // Wait for any loading to complete
+            await page.waitForLoadState('networkidle', {
+              timeout: SLOW_ACTION_TIMEOUT,
+            }).catch(() => {});
+
+            await page
+              .locator('.rotating, .indicator-pending')
+              .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
+              .catch(() => {});
+          }
+
+          // Success - exit the retry loop
+          console.log(`Material Receipt opened on attempt ${attempt}`);
+          return;
+
+        } catch (error) {
+          lastError = error;
+          console.log(`Attempt ${attempt}/${maxRetries} failed: ${error.message}`);
+
+          if (attempt < maxRetries) {
+            // Exponential backoff: 2s, 4s, 6s, 8s...
+            const delay = retryDelay * attempt;
+            console.log(`Waiting ${delay}ms before retry...`);
+            await page.waitForTimeout(delay);
+          }
+        }
+      }
+
+      // All retries exhausted
+      throw new Error(
+        `Failed to find "Material Receipt" link after ${maxRetries} attempts. ` +
+        `This usually means the M_InOut document hasn't been linked to the PO yet. ` +
+        `Last error: ${lastError?.message}`
+      );
     });
   }
 }
