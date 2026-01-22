@@ -119,7 +119,6 @@ FROM (SELECT
           s.qtyonhand                                                             AS QtyOnHand,
           s.qtyscheduledforpicking                                                AS QtyScheduledForPicking,
           s.qtyscheduledforpickingofprocessed                                     AS QtyScheduledForPickingOfProcessed,
-          s.qtytodeliver - COALESCE(s.qtyscheduledforpicking, 0)                  AS QtyToScheduleForPicking,
 
           --
           -- Rules&Quantities

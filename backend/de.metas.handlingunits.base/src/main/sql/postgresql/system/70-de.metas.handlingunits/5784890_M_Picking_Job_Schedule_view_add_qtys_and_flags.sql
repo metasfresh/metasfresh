@@ -31,7 +31,7 @@ WITH base_schedule AS (SELECT s.m_shipmentschedule_id,
                               s.qtypickedordelivered,
                               s.qtyonhand,
                               s.qtyscheduledforpicking,
-                              s.qtytoscheduleforpicking,
+                              s.qtytodeliver - COALESCE(s.qtyscheduledforpicking, 0) AS QtyToScheduleForPicking,
                               s.qtyscheduledforpickingofprocessed,
 
                               s.deliveryviarule,
