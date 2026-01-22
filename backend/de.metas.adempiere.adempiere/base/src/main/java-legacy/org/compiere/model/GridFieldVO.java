@@ -463,7 +463,7 @@ public class GridFieldVO implements Serializable
 				.defaultFilterSeqNo(rs.getInt(I_AD_Column.COLUMNNAME_SelectionColumnSeqNo))
 				.operator(rs.getString(I_AD_Column.COLUMNNAME_FilterOperator))
 				.showFilterIncrementButtons(StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsShowFilterIncrementButtons)))
-				.showInactiveValues(true) // FIXME introduce AD_Field_v[t].IsShowFilterInactiveValues
+				.showInactiveValues(rs.getBoolean(I_AD_Field.COLUMNNAME_IsShowFilterInactiveValues))
 				.showFilterInline(StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsShowFilterInline)))
 				.defaultValue(rs.getString(I_AD_Column.COLUMNNAME_FilterDefaultValue))
 				//.adValRuleId(AdValRuleId.ofRepoIdOrNull(rs.getInt(I_AD_Column.COLUMNNAME_Filter_Val_Rule_ID)))
@@ -620,7 +620,7 @@ public class GridFieldVO implements Serializable
 			final boolean isCreated,
 			final boolean isTimestamp)
 	{
-		GridFieldVO vo = new GridFieldVO(ctx, WindowNo, TabNo, AD_Window_ID, AD_Tab_ID, tabReadOnly, applyRolePermissions);
+		final GridFieldVO vo = new GridFieldVO(ctx, WindowNo, TabNo, AD_Window_ID, AD_Tab_ID, tabReadOnly, applyRolePermissions);
 		vo.ColumnName = isCreated ? "Created" : "Updated";
 		if (!isTimestamp)
 		{
@@ -1003,7 +1003,7 @@ public class GridFieldVO implements Serializable
 							AD_Val_Rule_ID); // metas: 03271
 				}
 			}
-			catch (Exception e)     // Cannot create Lookup
+			catch (final Exception e)     // Cannot create Lookup
 			{
 				logger.warn("No LookupInfo for {}. Considering displayType=ID", ColumnName, e);
 				displayType = DisplayType.ID;
