@@ -7,6 +7,7 @@ import { DashboardPage } from '../utils/pages/DashboardPage';
 import { PurchaseOrderPage } from '../utils/pages/PurchaseOrderPage';
 import { ReceiptCandidatesPage } from '../utils/pages/ReceiptCandidatesPage';
 import { InvoiceCandidatePage } from '../utils/pages/InvoiceCandidatePage';
+import { VendorInvoicePage } from '../utils/pages/VendorInvoicePage';
 
 /**
  * Purchase-to-Invoice E2E test suite.
@@ -15,7 +16,7 @@ import { InvoiceCandidatePage } from '../utils/pages/InvoiceCandidatePage';
  * - F00600: Purchase Order (Epic: Purchasing)
  * - F65010: Material Receipt Candidates (Epic: Material Receipt)
  *
- * Tests the complete purchase-to-invoice workflow:
+ * Tests the complete purchase-to-pay workflow:
  * 1. Create a purchase order
  * 2. Complete the purchase order
  * 3. Navigate to Receipt Candidates (Alt+6)
@@ -24,6 +25,8 @@ import { InvoiceCandidatePage } from '../utils/pages/InvoiceCandidatePage';
  * 6. Open Material Receipt via Alt+6 and validate PDF
  * 7. Navigate to Invoice Candidates (Alt+6)
  * 8. Generate invoice via Quick Action
+ * 9. Navigate to Vendor Invoice (Alt+6)
+ * 10. Validate Vendor Invoice PDF
  *
  * This validates language-independent selectors for:
  * - Quick Actions button (data-testid="quick-action-button")
@@ -31,7 +34,7 @@ import { InvoiceCandidatePage } from '../utils/pages/InvoiceCandidatePage';
  * - Specific actions (data-testid="quick-action-{internalName}")
  * - Modal buttons (data-testid="modal-done", data-testid="modal-start")
  * - Related documents navigation (Alt+6)
- * - PDF download and validation
+ * - PDF download and validation (Material Receipt + Vendor Invoice)
  */
 
 // Test cases for multi-language validation
@@ -42,6 +45,10 @@ const testCases = [
 
 testCases.forEach(({ language, label }) => {
   test.describe(`Purchase-to-Invoice Workflow (${label})`, () => {
+    // Increase timeout for this complete purchase-to-pay workflow
+    // Vendor invoice creation is async and takes ~40-60s
+    test.setTimeout(180000);
+
     test(`Complete purchase-to-invoice flow: PO → Receipt → Invoice (${label} UI)`, async ({ page }) => {
       // === ALLURE METADATA ===
       // Feature metadata - IDs for filtering, full names in description
@@ -63,7 +70,7 @@ testCases.forEach(({ language, label }) => {
 ## F65010: Material Receipt Candidates
 
 ### Test Scenario
-This test validates the complete purchase-to-invoice workflow:
+This test validates the complete purchase-to-pay workflow:
 
 1. **Create Purchase Order** - New PO with vendor and product line
 2. **Complete Order** - Mark as completed to trigger downstream processes
@@ -73,13 +80,16 @@ This test validates the complete purchase-to-invoice workflow:
 6. **Validate Material Receipt PDF** - Open M_InOut via Alt+6 and verify PDF content
 7. **Navigate to Invoice Candidates** - Use Alt+6 to open related invoice candidates
 8. **Generate Invoice** - Execute quick action to create vendor invoice
+9. **Navigate to Vendor Invoice** - Use Alt+6 to open generated invoice
+10. **Validate Invoice PDF** - Download and verify invoice document content
 
 ## Features Tested
 - **F00600**: Purchase Order
 - **F65010**: Material Receipt Candidates
 
 ## Business Value
-Ensures the purchase-to-pay flow works correctly across UI languages.
+Ensures the complete purchase-to-pay flow works correctly across UI languages,
+including material receipt and vendor invoice PDF validation.
       `);
 
       // Create test data with specified language
@@ -151,7 +161,12 @@ Ensures the purchase-to-pay flow works correctly across UI languages.
       // Step 4: Validate Material Receipt PDF
       // Navigate to Material Receipt via the "Allocated Material Receipt" tab,
       // then right-click -> Zoom Into to open the M_InOut detail view
+      // IMPORTANT: This opens a NEW TAB and switches global.currentPage to it
       await ReceiptCandidatesPage.navigateToMaterialReceiptViaTab();
+
+      // Capture the Material Receipt page (the new tab) for cleanup later
+      const materialReceiptPage = global.currentPage;
+
       await ReceiptCandidatesPage.downloadAndValidatePdf({
         vendorName: masterdata.bpartners.VENDOR1.bpartnerCode,
         productCode: masterdata.products.Product1.productCode,
@@ -159,6 +174,11 @@ Ensures the purchase-to-pay flow works correctly across UI languages.
         language,
       });
       console.log(`[${language}] Material Receipt PDF validated`);
+
+      // IMPORTANT: Close the Material Receipt tab and restore global.currentPage
+      // to the original Playwright page fixture, so page objects use the correct page
+      await materialReceiptPage.close();
+      global.currentPage = page;
 
       // Step 5: Navigate back to the Purchase Order for invoice creation
       await page.goto(poUrl);
@@ -181,10 +201,42 @@ Ensures the purchase-to-pay flow works correctly across UI languages.
       // Step 7: Generate invoice using Quick Action
       await InvoiceCandidatePage.generateInvoice();
 
-      console.log(`[${language}] Invoice generated from PO ${poDocumentNo}`);
+      console.log(`[${language}] Invoice generation triggered from PO ${poDocumentNo}`);
 
-      // The invoice generation is now complete
-      // We could verify the invoice document number, but that's optional
+      // Step 8: Navigate back to Purchase Order for vendor invoice access
+      // The invoice is created asynchronously (~40 seconds) so we need to navigate
+      // back to PO and wait for it to appear in Alt+6 related documents
+      await page.goto(poUrl);
+      await page.waitForURL(/\/window\/181\/\d+/, { timeout: 15000 });
+      await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
+
+      // Wait for the PO detail view to be fully loaded
+      await page.locator('.form-field-DocumentNo, .document-header').first()
+        .waitFor({ state: 'visible', timeout: 15000 });
+      await page.locator('.rotating, .indicator-pending, .loader')
+        .waitFor({ state: 'detached', timeout: 10000 }).catch(() => {});
+
+      // Give the page time to be ready for keyboard input
+      await page.waitForTimeout(1000);
+
+      console.log(`[${language}] Navigated back to Purchase Order for invoice access`);
+
+      // Step 9: Open related Vendor Invoice using Alt+6 (with polling)
+      // This method polls with page refresh until the invoice appears (~60s max wait)
+      await PurchaseOrderPage.openRelatedVendorInvoice();
+
+      console.log(`[${language}] Vendor Invoice opened for PO ${poDocumentNo}`);
+
+      // Step 10: Validate Vendor Invoice PDF
+      await VendorInvoicePage.downloadAndValidatePdf({
+        vendorName: masterdata.bpartners.VENDOR1.bpartnerCode,
+        productCode: masterdata.products.Product1.productCode,
+        quantity: '5',
+        language,
+      });
+
+      console.log(`[${language}] Vendor Invoice PDF validated`);
+      console.log(`[${language}] Complete purchase-to-invoice workflow finished: PO ${poDocumentNo}`);
     });
 
     // TODO: Add explicit action test after adding data-testid to dropdown action items
