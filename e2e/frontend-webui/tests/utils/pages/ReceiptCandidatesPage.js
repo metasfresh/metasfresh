@@ -543,17 +543,27 @@ export class ReceiptCandidatesPage {
         timeout: VERY_SLOW_ACTION_TIMEOUT,
       });
 
-      // Step 7: Click "Create material receipt" button in the HU Editor
-      // This button is the first quick action in the HU Editor Actions area
-      // Using data-testid for language-independent selection
-      // Note: There are two quick-action-button elements on screen (HU Editor and main view)
-      // We target the first one which is inside the HU Editor modal
-      const createReceiptButton = page.getByTestId('quick-action-button').first();
-      await createReceiptButton.waitFor({
+      // Step 7: Click "Create material receipt" action in the HU Editor
+      // IMPORTANT: Scope to the modal to avoid interacting with elements from the main view behind the modal
+      // The modal has class "screen-freeze raw-modal" and contains the HU Editor
+      const modal = page.locator('.screen-freeze.raw-modal, .panel-modal').first();
+
+      // Open the quick actions dropdown to access the specific action
+      const dropdownToggle = modal.getByTestId('quick-action-dropdown-toggle');
+      await dropdownToggle.waitFor({
         state: 'visible',
         timeout: SLOW_ACTION_TIMEOUT,
       });
-      await createReceiptButton.click();
+      await dropdownToggle.click();
+
+      // Click the specific "Create material receipt" action by its AD_Process.Value
+      // Using data-testid ensures we get the correct action regardless of display order
+      const createReceiptAction = modal.getByTestId('quick-action-WEBUI_M_HU_CreateReceipt_NoParams');
+      await createReceiptAction.waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+      await createReceiptAction.click();
 
       // Step 8: Wait for receipt creation to complete
       // First wait for any spinners to disappear
