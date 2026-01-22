@@ -55,7 +55,7 @@ public class PickingJobScheduleView_Schedule extends PickingJobScheduleViewBased
 				}
 				else
 				{
-					return pickingJobScheduleService.getByIds(ImmutableSet.of(pickingJobScheduleId)).get(0).getQtyToPick().toBigDecimal();
+					return pickingJobScheduleService.getById(pickingJobScheduleId).getQtyToPick().toBigDecimal();
 				}
 			}
 		}
@@ -71,7 +71,7 @@ public class PickingJobScheduleView_Schedule extends PickingJobScheduleViewBased
 				final PickingJobScheduleId pickingJobScheduleId = shipmentScheduleAndJobScheduleId.getJobScheduleId();
 				if (pickingJobScheduleId != null)
 				{
-					return pickingJobScheduleService.getByIds(ImmutableSet.of(pickingJobScheduleId)).get(0).getWorkplaceId();
+					return pickingJobScheduleService.getById(pickingJobScheduleId).getWorkplaceId();
 				}
 			}
 		}

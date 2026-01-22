@@ -60,6 +60,11 @@ public class PickingJobScheduleService
 		);
 	}
 
+	public PickingJobSchedule getById(@NonNull final PickingJobScheduleId id)
+	{
+		return pickingJobScheduleRepository.getById(id);
+	}
+
 	public List<PickingJobSchedule> getByIds(@NonNull final Set<PickingJobScheduleId> ids)
 	{
 		return pickingJobScheduleRepository.getByIds(ids);

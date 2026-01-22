@@ -31,6 +31,8 @@ import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 @Repository
 public class PickingJobScheduleRepository
 {
@@ -43,6 +45,11 @@ public class PickingJobScheduleRepository
 		//noinspection DataFlowIssue
 		return SpringContextHolder.getBeanOrSupply(PickingJobScheduleRepository.class ,
 				PickingJobScheduleRepository::new);
+	}
+
+	public PickingJobSchedule getById(@NonNull final PickingJobScheduleId id)
+	{
+		return fromRecord(load(id, I_M_Picking_Job_Schedule.class));
 	}
 
 	public List<PickingJobSchedule> getByIds(@NonNull final Set<PickingJobScheduleId> ids)
@@ -68,7 +75,7 @@ public class PickingJobScheduleRepository
 
 	public void save(@NonNull final PickingJobSchedule schedule)
 	{
-		final I_M_Picking_Job_Schedule record = InterfaceWrapperHelper.load(schedule.getId(), I_M_Picking_Job_Schedule.class);
+		final I_M_Picking_Job_Schedule record = load(schedule.getId(), I_M_Picking_Job_Schedule.class);
 		updateRecord(record, schedule);
 		InterfaceWrapperHelper.saveRecord(record);
 	}
@@ -119,7 +126,7 @@ public class PickingJobScheduleRepository
 		}
 	}
 
-	public ShipmentScheduleAndJobScheduleIdSet getUnprocessedIdsByShipmentScheduleIds(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds, @NonNull final WorkplaceId workplaceId)
+	public ShipmentScheduleAndJobScheduleIdSet getIdsByShipmentScheduleIds(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
 	{
 		if (shipmentScheduleIds.isEmpty())
 		{
@@ -128,7 +135,6 @@ public class PickingJobScheduleRepository
 
 		return queryBL.createQueryBuilder(I_M_Picking_Job_Schedule.class)
 				.addInArrayFilter(I_M_Picking_Job_Schedule.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleIds)
-				.addEqualsFilter(I_M_Picking_Job_Schedule.COLUMNNAME_Processed, false)
 				.create()
 				.stream()
 				.map(PickingJobScheduleRepository::extractShipmentScheduleAndJobScheduleId)
