@@ -24,7 +24,7 @@
 	<parameter name="PRINTER_OPTS_IsPrintTotals" class="java.lang.String">
 		<defaultValueExpression><![CDATA["Y"]]></defaultValueExpression>
 	</parameter>
-	<parameter name="PRINTER_OPTS_IsPrintPrice" class="java.lang.String">
+	<parameter name="PRINTER_OPTS_IsPrintPrices" class="java.lang.String">
 		<defaultValueExpression><![CDATA["Y"]]></defaultValueExpression>
 	</parameter>
 	<queryString>
@@ -199,8 +199,8 @@
 				<subreportParameter name="PRINTER_OPTS_IsPrintTotals">
 					<subreportParameterExpression><![CDATA[$P{PRINTER_OPTS_IsPrintTotals}]]></subreportParameterExpression>
 				</subreportParameter>
-				<subreportParameter name="PRINTER_OPTS_IsPrintPrice">
-					<subreportParameterExpression><![CDATA[$P{PRINTER_OPTS_IsPrintPrice}]]></subreportParameterExpression>
+				<subreportParameter name="PRINTER_OPTS_IsPrintPrices">
+					<subreportParameterExpression><![CDATA[$P{PRINTER_OPTS_IsPrintPrices}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/sales/order/report_details.jasper"]]></subreportExpression>
@@ -222,8 +222,8 @@
 				<subreportParameter name="PRINTER_OPTS_IsPrintTotals">
 					<subreportParameterExpression><![CDATA[$P{PRINTER_OPTS_IsPrintTotals}]]></subreportParameterExpression>
 				</subreportParameter>
-				<subreportParameter name="PRINTER_OPTS_IsPrintPrice}">
-					<subreportParameterExpression><![CDATA[$P{PRINTER_OPTS_IsPrintPrice}]]></subreportParameterExpression>
+				<subreportParameter name="PRINTER_OPTS_IsPrintPrices}">
+					<subreportParameterExpression><![CDATA[$P{PRINTER_OPTS_IsPrintPrices}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/sales/order/report_details_v2.jasper"]]></subreportExpression>
