@@ -361,7 +361,13 @@ export class SalesOrderPage {
       await page.waitForTimeout(200);
 
       await page.keyboard.press('Alt+6');
-      await page.waitForTimeout(1000);
+
+      // Wait for Alt+6 side panel to open
+      // The panel has class 'order-list-panel-open' when visible
+      await page.locator('.order-list-panel-open').waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
 
       await page.locator('.rotating, .spinner').waitFor({
         state: 'detached',
@@ -370,7 +376,9 @@ export class SalesOrderPage {
 
       // Click on Shipment Schedule link using data-cy attribute (language-independent)
       // This corresponds to the M_ShipmentSchedule reference
-      await page.locator('[data-cy="reference-M_ShipmentSchedule"]').click();
+      const link = page.locator('[data-cy="reference-M_ShipmentSchedule"]');
+      await link.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await link.click();
 
       await page.waitForURL(/\/window\/500221/, {
         timeout: SLOW_ACTION_TIMEOUT,
@@ -403,7 +411,13 @@ export class SalesOrderPage {
       await page.waitForTimeout(200);
 
       await page.keyboard.press('Alt+6');
-      await page.waitForTimeout(1000);
+
+      // Wait for Alt+6 side panel to open
+      // The panel has class 'order-list-panel-open' when visible
+      await page.locator('.order-list-panel-open').waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
 
       await page.locator('.rotating, .spinner').waitFor({
         state: 'detached',
@@ -411,8 +425,10 @@ export class SalesOrderPage {
       }).catch(() => {});
 
       // Click on Shipment link using data-cy attribute (language-independent)
-      // AD_RelationType_ID 540159 = "Shipment (Customer)" relation
-      await page.locator('[data-cy="reference-AD_RelationType_ID-540159"]').click();
+      // Uses InternalName from AD_RelationType (C_Order -> M_InOut SOTrx)
+      const link = page.locator('[data-cy="reference-C_Order_to_M_InOut_SO"]');
+      await link.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await link.click();
 
       await page.waitForURL(/\/window\/169/, {
         timeout: SLOW_ACTION_TIMEOUT,
@@ -445,7 +461,13 @@ export class SalesOrderPage {
       await page.waitForTimeout(200);
 
       await page.keyboard.press('Alt+6');
-      await page.waitForTimeout(1000);
+
+      // Wait for Alt+6 side panel to open
+      // The panel has class 'order-list-panel-open' when visible
+      await page.locator('.order-list-panel-open').waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
 
       await page.locator('.rotating, .spinner').waitFor({
         state: 'detached',
@@ -454,7 +476,9 @@ export class SalesOrderPage {
 
       // Click on Invoice Candidate link using data-cy attribute (language-independent)
       // The reference is: reference-C_Invoice_Candidate_Sales (not just C_Invoice_Candidate)
-      await page.locator('[data-cy="reference-C_Invoice_Candidate_Sales"]').click();
+      const link = page.locator('[data-cy="reference-C_Invoice_Candidate_Sales"]');
+      await link.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await link.click();
 
       // Sales IC window is 540092, not 540983 (purchase)
       await page.waitForURL(/\/window\/540092/, {
@@ -570,7 +594,13 @@ export class SalesOrderPage {
       await page.waitForTimeout(200);
 
       await page.keyboard.press('Alt+6');
-      await page.waitForTimeout(1000);
+
+      // Wait for Alt+6 side panel to open
+      // The panel has class 'order-list-panel-open' when visible
+      await page.locator('.order-list-panel-open').waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
 
       await page.locator('.rotating, .spinner').waitFor({
         state: 'detached',
@@ -578,10 +608,9 @@ export class SalesOrderPage {
       }).catch(() => {});
 
       // Click on Invoice link
-      // CRITICAL: Correct selector discovered through debugging
-      // Pattern: reference-AD_RelationType_ID-{ID} for relation-type-based references
-      // Invoice (Customer) uses AD_RelationType_ID-540160 (not a table-based pattern)
-      const invoiceLink = page.locator('[data-cy="reference-AD_RelationType_ID-540160"]').first();
+      // CRITICAL: Uses data-cy with InternalName from AD_RelationType
+      // C_Order_to_C_Invoice_SO = Sales Order -> Customer Invoice relation
+      const invoiceLink = page.locator('[data-cy="reference-C_Order_to_C_Invoice_SO"]').first();
 
       await invoiceLink.waitFor({
         state: 'visible',
