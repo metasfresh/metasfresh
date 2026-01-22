@@ -81,6 +81,7 @@ class AssertPickingExpectationsCommand
 		final Supplier<Boolean> noRecomputeRecords = () -> services.isAllValid(shipmentScheduleIds);
 
 		final Stopwatch stopwatch = Stopwatch.createStarted();
+		// using do-while because otherwise the first check could be done before invalidation
 		do
 		{
 			logger.info("Waiting for shipment schedules to become valid: {}", shipmentScheduleIds);

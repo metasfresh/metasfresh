@@ -119,7 +119,7 @@ public class PickingJobScheduleRepository
 		}
 	}
 
-	public ShipmentScheduleAndJobScheduleIdSet getUnprocessedIdsByShipmentScheduleIdsAndWorkplaceId(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds, @NonNull final WorkplaceId workplaceId)
+	public ShipmentScheduleAndJobScheduleIdSet getUnprocessedIdsByShipmentScheduleIds(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds, @NonNull final WorkplaceId workplaceId)
 	{
 		if (shipmentScheduleIds.isEmpty())
 		{
@@ -128,7 +128,6 @@ public class PickingJobScheduleRepository
 
 		return queryBL.createQueryBuilder(I_M_Picking_Job_Schedule.class)
 				.addInArrayFilter(I_M_Picking_Job_Schedule.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleIds)
-				.addEqualsFilter(I_M_Picking_Job_Schedule.COLUMNNAME_C_Workplace_ID, workplaceId)
 				.addEqualsFilter(I_M_Picking_Job_Schedule.COLUMNNAME_Processed, false)
 				.create()
 				.stream()
