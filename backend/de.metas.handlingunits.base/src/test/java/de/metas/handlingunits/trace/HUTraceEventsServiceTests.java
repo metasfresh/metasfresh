@@ -374,7 +374,7 @@ public class HUTraceEventsServiceTests
 				.as("EventTime should be from the more specific assignment (VHU_ID set)")
 				.isEqualTo(time2);
 	}
-	
+
 
 	@Test
 	public void createAndAddForShipmentScheduleQtyPicked()

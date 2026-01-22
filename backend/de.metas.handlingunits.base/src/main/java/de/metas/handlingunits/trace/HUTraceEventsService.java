@@ -37,6 +37,7 @@ import de.metas.util.Services;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.compiere.model.I_M_InOut;
@@ -190,7 +191,7 @@ public class HUTraceEventsService
 				.docStatus(inventory.getDocStatus())
 				.type(HUTraceType.MATERIAL_INVENTORY)
 
-				.orgId(OrgId.ofRepoId(inventory.getAD_Org_ID()));
+				.orgId(OrgId.ofRepoIdOrAny(inventory.getAD_Org_ID()));
 
 		createAndAddEventsForInventoryLines(builder, inventoryLines);
 	}
@@ -560,7 +561,7 @@ public class HUTraceEventsService
 		}
 
 		final HUTraceEventBuilder builder = HUTraceEvent.builder()
-				.orgId(OrgId.ofRepoId(hu.getAD_Org_ID()))
+				.orgId(OrgId.ofRepoIdOrAny(hu.getAD_Org_ID()))
 				.type(HUTraceType.TRANSFORM_PARENT)
 				.eventTime(Instant.now());
 
@@ -636,10 +637,10 @@ public class HUTraceEventsService
 				final List<VhuWithAssignmentInfo> vhuInfos = retrieveVhusFromAssignment(huAssignment);
 				for (final VhuWithAssignmentInfo vhuInfo : vhuInfos)
 				{
-					final HuId vhuId = HuId.ofRepoId(vhuInfo.vhu.getM_HU_ID());
+					final HuId vhuId = HuId.ofRepoId(vhuInfo.getVhu().getM_HU_ID());
 					// Keep the one with highest assignmentDetail (most specific assignment wins)
 					uniqueVhus.merge(vhuId, vhuInfo, (existing, newOne) ->
-							newOne.assignmentDetail > existing.assignmentDetail ? newOne : existing);
+							newOne.getAssignmentDetail() > existing.getAssignmentDetail() ? newOne : existing);
 				}
 			}
 		}
@@ -647,8 +648,8 @@ public class HUTraceEventsService
 		// Now create trace events for each unique VHU
 		for (final VhuWithAssignmentInfo vhuInfo : uniqueVhus.values())
 		{
-			final I_M_HU vhu = vhuInfo.vhu;
-			final I_M_HU_Assignment huAssignment = vhuInfo.assignment;
+			final I_M_HU vhu = vhuInfo.getVhu();
+			final I_M_HU_Assignment huAssignment = vhuInfo.getAssignment();
 
 			final Optional<IPair<ProductId, Quantity>> productAndQty = huAccessService.retrieveProductAndQty(vhu);
 			if (!productAndQty.isPresent())
@@ -703,13 +704,13 @@ public class HUTraceEventsService
 			return VhuWithAssignmentInfo.of(vhus, huAssignment, 0);
 		}
 	}
-
+	@Value
 	@AllArgsConstructor
 	private static class VhuWithAssignmentInfo
 	{
 		private static ImmutableList<VhuWithAssignmentInfo> of(
-				final List<I_M_HU> vhus,
-				final I_M_HU_Assignment assignment,
+				@NonNull final List<I_M_HU> vhus,
+				@NonNull final I_M_HU_Assignment assignment,
 				final int assignmentDetail)
 		{
 			return vhus.stream()
@@ -717,8 +718,8 @@ public class HUTraceEventsService
 					.collect(ImmutableList.toImmutableList());
 		}
 
-		@NonNull final I_M_HU vhu;
-		@NonNull final I_M_HU_Assignment assignment;
+		@NonNull I_M_HU vhu;
+		@NonNull I_M_HU_Assignment assignment;
 
 		/**
 		 * 0 if the assignment has just an M_HU_ID, 3 if it has a VHU_ID
