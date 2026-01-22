@@ -1,0 +1,1 @@
+C:/ai/mf15-ai-dev-support/claude/metasfresh/e2e/mobile-webui/CLAUDE.md

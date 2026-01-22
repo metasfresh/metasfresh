@@ -1,0 +1,1 @@
+C:/ai/mf15-ai-dev-support/claude/metasfresh/backend/de.metas.async/src/main/java/de/metas/async/CLAUDE.md

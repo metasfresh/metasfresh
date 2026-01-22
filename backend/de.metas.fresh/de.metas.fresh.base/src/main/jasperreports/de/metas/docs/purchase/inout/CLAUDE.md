@@ -1,0 +1,1 @@
+C:/ai/mf15-ai-dev-support/claude/metasfresh/backend/de.metas.fresh/de.metas.fresh.base/src/main/jasperreports/de/metas/docs/purchase/inout/CLAUDE.md

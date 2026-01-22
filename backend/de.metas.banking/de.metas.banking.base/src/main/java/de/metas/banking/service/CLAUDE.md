@@ -1,0 +1,1 @@
+C:/ai/mf15-ai-dev-support/claude/metasfresh/backend/de.metas.banking/de.metas.banking.base/src/main/java/de/metas/banking/service/CLAUDE.md

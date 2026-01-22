@@ -1,0 +1,1 @@
+C:/ai/mf15-ai-dev-support/claude/metasfresh/backend/de.metas.business.rest-api-impl/src/main/java/de/metas/rest_api/remittanceadvice/CLAUDE.md

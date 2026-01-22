@@ -1,8 +1,9 @@
 ARG REFNAME=local
-FROM metasfresh/metas-frontend:$REFNAME as frontend
-FROM metasfresh/metas-mobile:$REFNAME-compat as mobile
+ARG REGISTRY=
+FROM ${REGISTRY}metasfresh/metas-frontend:$REFNAME AS frontend
+FROM ${REGISTRY}metasfresh/metas-mobile:$REFNAME-compat AS mobile
 
-FROM ubuntu:16.04 as runtime
+FROM ubuntu:16.04 AS runtime
 
 RUN apt-get update && apt-get install -y apache2 && rm -rf /var/lib/apt/lists/*
 
