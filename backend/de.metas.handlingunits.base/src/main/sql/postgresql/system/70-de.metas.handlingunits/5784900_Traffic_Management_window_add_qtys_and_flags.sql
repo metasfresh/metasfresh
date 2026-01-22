@@ -539,3 +539,46 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=752541
 -- 2026-01-21T19:17:02.629Z
 /* DDL */ select AD_Element_Link_Create_Missing_Field(752541)
 ;
+
+-- Element: null
+-- 2026-01-22T18:16:02.495Z
+UPDATE AD_Element_Trl SET Description='Gelieferte Menge (gesamt)',Updated=TO_TIMESTAMP('2026-01-22 18:16:02.495000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584448 AND AD_Language='de_CH'
+;
+
+-- 2026-01-22T18:16:02.501Z
+UPDATE AD_Element base SET Description=trl.Description, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='de_CH' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2026-01-22T18:16:03.876Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584448,'de_CH')
+;
+
+-- Element: null
+-- 2026-01-22T18:16:10.223Z
+UPDATE AD_Element_Trl SET Description='Gelieferte Menge (gesamt)',Updated=TO_TIMESTAMP('2026-01-22 18:16:10.223000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584448 AND AD_Language='de_DE'
+;
+
+-- 2026-01-22T18:16:10.225Z
+UPDATE AD_Element base SET Description=trl.Description, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='de_DE' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2026-01-22T18:16:11.475Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(584448,'de_DE')
+;
+
+-- 2026-01-22T18:16:11.480Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584448,'de_DE')
+;
+
+-- Element: null
+-- 2026-01-22T18:16:21.250Z
+UPDATE AD_Element_Trl SET Description='Qty Delivered (total)',Updated=TO_TIMESTAMP('2026-01-22 18:16:21.250000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584448 AND AD_Language='en_US'
+;
+
+-- 2026-01-22T18:16:21.265Z
+UPDATE AD_Element base SET Description=trl.Description, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2026-01-22T18:16:23.399Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584448,'en_US')
+;
