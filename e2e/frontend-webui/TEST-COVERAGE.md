@@ -1,6 +1,6 @@
 # Frontend Web UI E2E Test Coverage
 
-**Last Updated**: 2025-12-04
+**Last Updated**: 2026-01-21
 
 This document provides a complete overview of E2E test coverage for the metasfresh desktop web UI.
 
@@ -103,15 +103,77 @@ npm run test:report
 
 ---
 
+### 4. Partial Receipt Workflow
+**File**: `tests/spec/partial-receipt.spec.js`
+**Status**: ✅ Passing (English, German)
+**Duration**: ~60 seconds per language
+
+**Workflow**:
+1. Create purchase order with vendor and product (qty=10)
+2. Complete the purchase order
+3. Navigate to Receipt Candidates (Alt+6)
+4. Create first partial receipt with qty=6 using "Receive CUs with Qty"
+5. Create second partial receipt with qty=4
+6. Validate both partial receipt PDFs
+
+**Key Validations**:
+- Parameterized Quick Action (WEBUI_M_ReceiptSchedule_ReceiveCUs_WithParam)
+- Parameter dialog input for quantity
+- Multiple receipts from single PO line
+- PDF validation for each partial receipt
+
+**Components Tested**:
+- Purchase Order window (181)
+- Receipt Candidates window (540196)
+- Material Receipt window (184)
+- Quick Actions with parameters
+- PDF generation and validation
+
+---
+
+### 5. Vendor Invoice Workflow
+**File**: `tests/spec/vendor-invoice.spec.js`
+**Status**: ✅ Passing (English, German)
+**Duration**: ~72 seconds per language
+
+**Workflow**:
+1. Create purchase order with vendor and product (qty=10)
+2. Complete the purchase order
+3. Navigate to Receipt Candidates (Alt+6)
+4. Create material receipt using "Receive CUs with Qty"
+5. Navigate to Invoice Candidates (Alt+6)
+6. Create vendor invoice via Quick Action
+7. Navigate to Vendor Invoice (Alt+6)
+8. Download and validate Invoice PDF
+
+**Key Validations**:
+- Complete PO → Receipt → Invoice flow
+- Invoice Candidate processing (C_Invoice_Candidate_EnqueueSelectionForInvoicing)
+- Async invoice generation
+- PDF content validation (document number, vendor, product, quantity)
+
+**Components Tested**:
+- Purchase Order window (181)
+- Receipt Candidates window (540196)
+- Material Receipt window (184)
+- Invoice Candidate Purchase window (540983)
+- Vendor Invoice window (183)
+- PDF generation and validation
+
+---
+
 ## Test Architecture
 
 ### Page Objects
 - **LoginPage.js** - Login and authentication
 - **DashboardPage.js** - Main dashboard
 - **SalesOrderPage.js** - Sales orders, PDF validation, batch entry
-- **PurchaseOrderPage.js** - Purchase orders, batch entry
+- **PurchaseOrderPage.js** - Purchase orders, batch entry, invoice navigation
 - **ShipmentSchedulePage.js** - Shipment schedule grid
 - **BusinessPartnerPage.js** - Business partner management
+- **ReceiptCandidatesPage.js** - Receipt candidates, material receipt creation
+- **InvoiceCandidatePage.js** - Invoice candidates (sales and purchase)
+- **VendorInvoicePage.js** - Vendor invoice viewing and PDF validation
 
 ### Utilities
 - **Backend.js** - Test data creation via `/api/v2/frontendTesting`
@@ -147,23 +209,21 @@ npm run test:report
 ## Coverage Gaps
 
 Areas **NOT yet covered** by E2E tests:
-- Material Receipt workflow
-- Invoice Candidate workflow
 - Product window management
 - Advanced search and filtering
 - Document reversal/void actions
-- Multi-tab workflows (beyond order lines)
 - Error handling scenarios
 - Permission-based UI changes
+- Sales invoice workflow (analogous to vendor invoice)
 
 ## Test Quality Metrics
 
-- **Total test specs**: 3
-- **Total test cases**: 6 (3 specs × 2 languages)
+- **Total test specs**: 5
+- **Total test cases**: 10 (5 specs × 2 languages)
 - **Language coverage**: en_US, de_DE
-- **Success rate**: 100% (6/6 passing)
-- **Average execution time**: ~27 seconds per test
-- **Total suite time**: ~2.7 minutes (sequential execution)
+- **Success rate**: 100% (10/10 passing)
+- **Average execution time**: ~45 seconds per test
+- **Total suite time**: ~7.5 minutes (sequential execution)
 
 ## CI/CD Integration
 

@@ -170,12 +170,19 @@ class PdfValidator {
             // Also match "1010" pattern (Pos. 10, Menge 10) or "10Stk" pattern
             const qtyWithUnitRegex = new RegExp(`(${quantity})(Stk|St|Stück|pcs|pc|pieces)`);
             const qtyDoubleRegex = new RegExp(`(\\d+)(${quantity})\\s`);
+            // Match price,00 followed by quantity followed by line number: "10,00510" = price(10,00) + qty(5) + line(10)
+            // Pattern: comma or period followed by digits, then our quantity, then more digits
+            const qtyAfterPriceRegex = new RegExp(`[.,]\\d{2}(${quantity})\\d`);
+            // Match quantity followed by digits (line number) without space
+            const qtyBeforeLineNoRegex = new RegExp(`(${quantity})\\d+\\s`);
 
             const quantityFound =
               qtyRegex.test(productLineText) ||
               qtyDecimalRegex.test(productLineText) ||
               qtyWithUnitRegex.test(productLineText) ||
-              qtyDoubleRegex.test(productLineText);
+              qtyDoubleRegex.test(productLineText) ||
+              qtyAfterPriceRegex.test(productLineText) ||
+              qtyBeforeLineNoRegex.test(productLineText);
 
             if (!quantityFound) {
               errors.push(
