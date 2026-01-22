@@ -168,3 +168,21 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 UPDATE AD_Column SET DefaultValue='Y',Updated=TO_TIMESTAMP('2026-01-21 10:11:12.531000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591863
 ;
 
+-- UI Element: Dokumenten Typ Druck Optionen(541004,D) -> Dokumenten Typ Druck Optionen(543206,D) -> main -> 20 -> Flags.Preis drucken
+-- Column: C_DocType_PrintOptions.PRINTER_OPTS_IsPrintPrices
+-- 2026-01-22T07:31:28.713Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=50,Updated=TO_TIMESTAMP('2026-01-22 07:31:28.713000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=643569
+;
+
+-- UI Element: Dokumenten Typ Druck Optionen(541004,D) -> Dokumenten Typ Druck Optionen(543206,D) -> main -> 20 -> Flags.Aktiv
+-- Column: C_DocType_PrintOptions.IsActive
+-- 2026-01-22T07:31:28.724Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=60,Updated=TO_TIMESTAMP('2026-01-22 07:31:28.724000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=575097
+;
+
+-- UI Element: Dokumenten Typ Druck Optionen(541004,D) -> Dokumenten Typ Druck Optionen(543206,D) -> main -> 10 -> main.Beschreibung
+-- Column: C_DocType_PrintOptions.Description
+-- 2026-01-22T07:31:28.730Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=70,Updated=TO_TIMESTAMP('2026-01-22 07:31:28.730000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=575096
+;
+
