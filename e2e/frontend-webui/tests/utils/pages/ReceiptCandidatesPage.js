@@ -400,14 +400,22 @@ export class ReceiptCandidatesPage {
 
       await doneButton.click();
 
-      // Wait for modal to close
+      // CRITICAL: Wait for the modal overlay (screen-freeze) to be removed
+      // This prevents "intercepts pointer events" errors on subsequent actions
+      await page.locator('.screen-freeze, .raw-modal').waitFor({
+        state: 'detached',
+        timeout: VERY_SLOW_ACTION_TIMEOUT,
+      });
+
+      // Also wait for modal content to be removed
       await page.locator('.panel-modal, .modal-content').waitFor({
         state: 'detached',
         timeout: SLOW_ACTION_TIMEOUT,
       }).catch(() => {
-        // Modal might still be visible, that's OK
+        // Modal content might already be gone
       });
 
+      // Additional stabilization wait to ensure no lingering modal effects
       await page.waitForTimeout(500);
     });
   }
@@ -571,17 +579,27 @@ export class ReceiptCandidatesPage {
       });
       await doneButton.click();
 
-      // Step 10: Wait for HU Editor modal to close
-      // Using data-testid for language-independent detection (modal-done button disappears when modal closes)
-      await page.getByTestId('modal-done').waitFor({
+      // Step 10: Wait for HU Editor modal to fully close
+      // CRITICAL: Wait for the modal overlay (screen-freeze) to be removed
+      // This prevents "intercepts pointer events" errors on subsequent actions
+      await page.locator('.screen-freeze, .raw-modal').waitFor({
         state: 'detached',
         timeout: VERY_SLOW_ACTION_TIMEOUT,
+      });
+
+      // Also ensure the Done button is gone (confirms modal closed)
+      await page.getByTestId('modal-done').waitFor({
+        state: 'detached',
+        timeout: SLOW_ACTION_TIMEOUT,
       }).catch(() => {
-        // Modal might stay open in some cases
+        // Button might already be gone
       });
 
       // Wait for page to stabilize after modal close
       await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+
+      // Additional stabilization wait to ensure no lingering modal effects
+      await page.waitForTimeout(500);
     });
   }
 
