@@ -84,6 +84,160 @@ export class VendorInvoicePage {
   }
 
   /**
+   * Select and open the first invoice in the grid.
+   * @deprecated Use selectInvoiceByVendor() instead for reliable selection
+   */
+  static async selectFirstInvoice() {
+    return await test.step('VendorInvoicePage - Select first invoice in grid', async () => {
+      const page = getPage();
+
+      // Wait for grid table to be loaded
+      await page.locator('.document-list-table, table').first().waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+
+      // Wait for at least one table row
+      await page.locator('tbody tr').first().waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+
+      // Single click to select the first row
+      const firstRow = page.locator('tbody tr').first();
+      await firstRow.click();
+      await page.waitForTimeout(500);
+
+      // Double click to open detail view
+      await firstRow.dblclick();
+
+      // Wait for navigation to detail view (URL pattern: /window/183/{id})
+      await page.waitForURL(/\/window\/183\/\d+/, {
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+
+      // Wait for detail view to load
+      await page.waitForLoadState('networkidle', {
+        timeout: SLOW_ACTION_TIMEOUT,
+      }).catch(() => {});
+
+      // Wait for spinners to disappear
+      await page.locator('.rotating, .indicator-pending').waitFor({
+        state: 'detached',
+        timeout: SLOW_ACTION_TIMEOUT,
+      }).catch(() => {});
+
+      await page.waitForTimeout(500);
+
+      console.log('Opened first vendor invoice detail view');
+    });
+  }
+
+  /**
+   * Filter the Vendor Invoice grid by vendor code and select the matching invoice.
+   * This is more reliable than selectFirstInvoice() because vendor codes are unique per test.
+   *
+   * @param {string} vendorCode - The unique vendor code to filter by
+   */
+  static async selectInvoiceByVendor(vendorCode) {
+    return await test.step(`VendorInvoicePage - Select invoice for vendor ${vendorCode}`, async () => {
+      const page = getPage();
+
+      console.log(`Filtering vendor invoices by vendor: ${vendorCode}`);
+
+      // Wait for grid table to be loaded
+      await page.locator('.document-list-table, table').first().waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+
+      // Wait for at least one table row
+      await page.locator('tbody tr').first().waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+
+      // Use Ctrl+F to open the filter panel
+      await page.keyboard.press('Control+f');
+      await page.waitForTimeout(1000);
+
+      // Wait for filter panel to appear
+      await page.locator('.filter-wrapper, .filters-wrapper, .filter-panel').first().waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      }).catch(() => {
+        console.log('Filter panel locator not found, trying alternative...');
+      });
+
+      // Find the BPartner filter input field
+      // In metasfresh, filters use field names like C_BPartner_ID
+      const bpartnerFilter = page.locator('[data-cy="filter-C_BPartner_ID"] input, #lookup_C_BPartner_ID input, input[placeholder*="Business Partner"], input[placeholder*="Geschäftspartner"]').first();
+      const filterExists = await bpartnerFilter.count() > 0;
+
+      if (filterExists) {
+        await bpartnerFilter.click();
+        await page.waitForTimeout(300);
+        await bpartnerFilter.fill(vendorCode);
+        await page.waitForTimeout(500);
+
+        // Press Enter to apply filter
+        await page.keyboard.press('Enter');
+        await page.waitForTimeout(2000);
+
+        console.log(`Applied filter for vendor: ${vendorCode}`);
+      } else {
+        // Try typing in the search box at the top of the grid
+        console.log('BPartner filter not found, trying global search...');
+        const searchInput = page.locator('.search-input, input[type="search"], .document-list-header input').first();
+        if (await searchInput.count() > 0) {
+          await searchInput.click();
+          await searchInput.fill(vendorCode);
+          await page.keyboard.press('Enter');
+          await page.waitForTimeout(2000);
+        } else {
+          console.log('No filter/search input found, proceeding with first row');
+        }
+      }
+
+      // Wait for grid to refresh with filtered results
+      await page.waitForTimeout(1000);
+
+      // Now select and open the first row (should be the filtered result)
+      const firstRow = page.locator('tbody tr').first();
+      await firstRow.waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+
+      await firstRow.click();
+      await page.waitForTimeout(500);
+
+      // Double click to open detail view
+      await firstRow.dblclick();
+
+      // Wait for navigation to detail view (URL pattern: /window/183/{id})
+      await page.waitForURL(/\/window\/183\/\d+/, {
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+
+      // Wait for detail view to load
+      await page.waitForLoadState('networkidle', {
+        timeout: SLOW_ACTION_TIMEOUT,
+      }).catch(() => {});
+
+      // Wait for spinners to disappear
+      await page.locator('.rotating, .indicator-pending').waitFor({
+        state: 'detached',
+        timeout: SLOW_ACTION_TIMEOUT,
+      }).catch(() => {});
+
+      await page.waitForTimeout(500);
+
+      console.log(`Opened vendor invoice detail view for vendor: ${vendorCode}`);
+    });
+  }
+
+  /**
    * Get the document number of the current vendor invoice from the grid.
    *
    * Since vendor invoice opens as a filtered list (not a detail window),
@@ -196,6 +350,88 @@ export class VendorInvoicePage {
         checkOverlaps: true, // Enabled - detects true 2D overlaps
         checkMargins: false, // Disabled - not needed yet
       });
+    });
+  }
+
+  /**
+   * Download and validate vendor invoice PDF in one combined operation.
+   * This is a convenience method that combines openPrintModal, downloadPDF, and validatePdfContent.
+   *
+   * @param {Object} expectedData - Expected data to validate
+   * @param {string} expectedData.vendorName - Vendor name/code
+   * @param {string} expectedData.productCode - Product code
+   * @param {string} expectedData.quantity - Quantity
+   * @param {string} expectedData.language - Language (e.g., 'en_US', 'de_DE')
+   * @returns {Promise<void>}
+   */
+  static async downloadAndValidatePdf(expectedData) {
+    return await test.step('VendorInvoicePage - Download and validate PDF', async () => {
+      const page = getPage();
+      let url = page.url();
+
+      // Check if we're on a list view (no document ID in URL)
+      // List view: /window/183?filters...
+      // Detail view: /window/183/12345
+      const isListView = !url.match(/\/window\/183\/\d+/);
+
+      if (isListView) {
+        console.log('On list view, opening detail view by double-clicking first row');
+
+        // Wait for table row to be visible
+        const firstRow = page.locator('.table-row, [class*="table-row"], tbody tr').first();
+        await firstRow.waitFor({ state: 'visible', timeout: 10000 });
+
+        // Double-click to open detail view
+        await firstRow.dblclick();
+
+        // Wait for navigation to detail view
+        await page.waitForURL(/\/window\/183\/\d+/, { timeout: 15000 });
+        await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+
+        // Update URL after navigation
+        url = page.url();
+        console.log(`Navigated to detail view: ${url}`);
+      }
+
+      // Get the document number from the page (not from URL - URL has document ID, not DocumentNo)
+      // Language-independent selector: use form-field class with database column name
+      const documentNoInput = page.locator('.form-field-DocumentNo input, .form-field-DocumentNo .form-control');
+
+      // Wait for detail view to be loaded
+      await page.locator('.rotating, .indicator-pending, .loader')
+        .waitFor({ state: 'detached', timeout: 10000 }).catch(() => {});
+
+      let documentNo;
+      try {
+        await documentNoInput.first().waitFor({ state: 'visible', timeout: 10000 });
+        documentNo = await documentNoInput.first().inputValue();
+      } catch {
+        // Fallback: extract from URL (less reliable but better than nothing)
+        const documentId = url.match(/\/window\/183\/(\d+)/)?.[1];
+        console.log(`Warning: Could not get DocumentNo from page, using URL document ID: ${documentId}`);
+        documentNo = documentId;
+      }
+
+      console.log(`Downloading PDF for Vendor Invoice document: ${documentNo}`);
+      console.log(`Expected vendor: ${expectedData.vendorName}`);
+      console.log(`Expected product: ${expectedData.productCode}`);
+
+      // Open print modal
+      await VendorInvoicePage.openPrintModal();
+
+      // Download PDF
+      const download = await VendorInvoicePage.downloadPDF();
+
+      // Validate PDF content
+      await VendorInvoicePage.validatePdfContent(download, {
+        documentNo: documentNo,
+        vendorName: expectedData.vendorName,
+        productCode: expectedData.productCode,
+        quantity: expectedData.quantity,
+        language: expectedData.language,
+      });
+
+      console.log(`Vendor Invoice PDF validated successfully`);
     });
   }
 

@@ -458,9 +458,9 @@ export class PurchaseOrderPage {
           await page.keyboard.press('Alt+6');
 
           // Wait for the related documents panel to become visible
-          // The panel has class 'subheader-shadow' or similar
+          // Wait for the side panel to become visible (class 'order-list-panel-open')
           await page
-            .locator('.subheader-shadow, .document-references')
+            .locator('.order-list-panel-open')
             .waitFor({
               state: 'visible',
               timeout: 5000,
@@ -669,7 +669,7 @@ export class PurchaseOrderPage {
 
           // Wait for the related documents panel to become visible
           await page
-            .locator('.subheader-shadow, .document-references')
+            .locator('.order-list-panel-open')
             .waitFor({
               state: 'visible',
               timeout: 5000,
@@ -788,27 +788,67 @@ export class PurchaseOrderPage {
    *
    * Use this method after creating a vendor invoice via Invoice Candidates workflow.
    *
+   * IMPORTANT: Vendor invoice creation is asynchronous and can take 40-60 seconds.
+   * This method uses polling with page refresh to wait for the invoice to appear.
+   *
    * @param {Object} options - Configuration options
-   * @param {number} options.maxRetries - Maximum retry attempts (default: 5)
-   * @param {number} options.retryDelay - Initial delay between retries in ms (default: 2000)
+   * @param {number} options.maxRetries - Maximum retry attempts (default: 20 for ~60s total wait)
+   * @param {number} options.retryDelay - Delay between retries in ms (default: 3000)
    */
-  static async openRelatedVendorInvoice({ maxRetries = 5, retryDelay = 2000 } = {}) {
+  static async openRelatedVendorInvoice({ maxRetries = 20, retryDelay = 3000 } = {}) {
     return await test.step('PurchaseOrderPage - Open related Vendor Invoice (Alt+6)', async () => {
       const page = getPage();
 
       // Language-independent selector for Vendor Invoice link
-      // English: "Vendor Invoice (#1)" or "Invoice (Vendor) (#1)"
-      // German: "Eingangsrechnung (#1)"
-      // Window ID 183 = "Eingangsrechnung" (Vendor Invoice)
-      // Note: The text format is "Invoice (Vendor) (#1)" with (Vendor) part and then (#1) count
-      const vendorInvoiceLink = page.getByText(
-        /(?:Vendor Invoice|Invoice\s*\(Vendor\)|Eingangsrechnung).*\(#\d+\)/i
-      ).first();
+      // Uses data-cy attribute with InternalName from AD_RelationType (C_Order -> C_Invoice POTrx)
+      // This relation links Purchase Order to Vendor Invoice (IsSOTrx='N')
+      const vendorInvoiceLink = page.locator('[data-cy="reference-C_Order_to_C_Invoice_PO"]');
 
       let lastError = null;
+      let sseReferences = []; // Collect references from SSE responses for debugging
+
+      // Set up SSE response listener to capture actual reference data from backend
+      // This helps diagnose whether the vendor invoice reference is being returned
+      const sseResponseHandler = async (response) => {
+        const url = response.url();
+        if (url.includes('/references/sse')) {
+          try {
+            const text = await response.text().catch(() => '');
+            // SSE responses are event-stream format: "data: {...}"
+            const lines = text.split('\n').filter(line => line.startsWith('data:'));
+            for (const line of lines) {
+              try {
+                const data = JSON.parse(line.substring(5).trim());
+                if (data.type === 'PARTIAL_RESULT' && data.partialGroup?.references) {
+                  sseReferences.push(...data.partialGroup.references);
+                  console.log(`[SSE] Received ${data.partialGroup.references.length} references from group "${data.partialGroup.caption}":`,
+                    data.partialGroup.references.map(r => `${r.internalName}: "${r.caption}"`));
+                }
+              } catch {
+                // Ignore parse errors for partial chunks
+              }
+            }
+          } catch {
+            // Ignore response read errors
+          }
+        }
+      };
+      page.on('response', sseResponseHandler);
+
+      console.log(`Waiting for vendor invoice to be created (max ${maxRetries * retryDelay / 1000}s)...`);
 
       for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
+          // Refresh the page to ensure latest related documents data
+          // This is necessary because the Alt+6 panel doesn't auto-refresh
+          // when documents are created asynchronously
+          if (attempt > 1) {
+            console.log(`[Attempt ${attempt}/${maxRetries}] Refreshing page...`);
+            await page.keyboard.press('F5');
+            await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {});
+            await page.waitForTimeout(1000);
+          }
+
           // Close any existing Alt+6 panel by pressing Escape
           await page.keyboard.press('Escape');
           await page.waitForTimeout(200);
@@ -817,19 +857,21 @@ export class PurchaseOrderPage {
           await page.locator('body').click();
           await page.waitForTimeout(100);
 
-          // Press Alt+6 to open related documents panel
+          // Press Alt+6 to open related documents panel (tab 1 = Referenced Documents)
+          console.log(`[DEBUG openVendorInvoice attempt ${attempt}] URL: ${page.url()}`);
           await page.keyboard.press('Alt+6');
 
-          // Wait for the related documents panel to become visible
-          await page
-            .locator('.subheader-shadow, .document-references')
+          // Wait for the side panel to become visible
+          // The panel has class 'order-list-panel-open' when open
+          const panelOpened = await page
+            .locator('.order-list-panel-open')
             .waitFor({
               state: 'visible',
               timeout: 5000,
             })
-            .catch(() => {
-              // Panel structure may vary
-            });
+            .then(() => true)
+            .catch(() => false);
+          console.log(`[DEBUG openVendorInvoice] Panel opened: ${panelOpened}`);
 
           // Wait for any loading spinners in the panel to disappear
           await page
@@ -842,13 +884,29 @@ export class PurchaseOrderPage {
               // No spinners present
             });
 
-          // Wait for the specific "Vendor Invoice" link to appear
-          await vendorInvoiceLink.waitFor({
-            state: 'visible',
-            timeout: 10000,
-          });
+          // Check if the vendor invoice link exists using language-independent data-cy selector
+          const linkVisible = await vendorInvoiceLink.isVisible().catch(() => false);
 
-          // Click the link
+          if (!linkVisible) {
+            // Debug: Log all reference links with their data-cy attributes
+            const allRefs = await page.locator('[data-cy^="reference-"]').all();
+            const refAttrs = await Promise.all(
+              allRefs.map(async (el) => ({
+                dataCy: await el.getAttribute('data-cy'),
+                text: await el.textContent().catch(() => 'N/A'),
+              }))
+            );
+            console.log(`[DEBUG] Found ${allRefs.length} reference elements with data-cy:`);
+            refAttrs.forEach((ref) => console.log(`  - ${ref.dataCy}: "${ref.text}"`));
+
+            // Also check for any subheader items (references without data-cy)
+            const subheaderItems = await page.locator('.subheader-item').all();
+            console.log(`[DEBUG] Found ${subheaderItems.length} .subheader-item elements`);
+
+            throw new Error('Vendor Invoice link (data-cy="reference-C_Order_to_C_Invoice_PO") not yet visible');
+          }
+
+          // Link is visible - click it
           await vendorInvoiceLink.click();
 
           // Wait for navigation to Vendor Invoice window
@@ -882,26 +940,41 @@ export class PurchaseOrderPage {
             });
 
           // Success - exit the retry loop
-          console.log(`Vendor Invoice opened on attempt ${attempt}`);
+          console.log(`Vendor Invoice opened on attempt ${attempt} (after ~${(attempt - 1) * retryDelay / 1000}s wait)`);
+          page.off('response', sseResponseHandler); // Clean up SSE handler
           return;
 
         } catch (error) {
           lastError = error;
-          console.log(`Attempt ${attempt}/${maxRetries} failed: ${error.message}`);
 
           if (attempt < maxRetries) {
-            // Exponential backoff: 2s, 4s, 6s, 8s...
-            const delay = retryDelay * attempt;
-            console.log(`Waiting ${delay}ms before retry...`);
-            await page.waitForTimeout(delay);
+            // Fixed delay between attempts (no exponential backoff - we want consistent polling)
+            console.log(`[Attempt ${attempt}/${maxRetries}] ${error.message}. Waiting ${retryDelay}ms...`);
+            await page.waitForTimeout(retryDelay);
           }
         }
       }
 
-      // All retries exhausted
+      // All retries exhausted - clean up and report
+      page.off('response', sseResponseHandler);
+
+      // Log all SSE references collected during attempts for debugging
+      if (sseReferences.length > 0) {
+        console.log(`[SSE SUMMARY] Total references collected from SSE during all attempts:`);
+        const uniqueRefs = [...new Map(sseReferences.map(r => [r.internalName, r])).values()];
+        uniqueRefs.forEach(r => console.log(`  - ${r.internalName}: "${r.caption}" (window: ${r.targetWindowId})`));
+        console.log(`[SSE SUMMARY] Looking for internalName="C_Order_to_C_Invoice_PO", found: ${
+          uniqueRefs.some(r => r.internalName === 'C_Order_to_C_Invoice_PO') ? 'YES' : 'NO'
+        }`);
+      } else {
+        console.log(`[SSE SUMMARY] No references received via SSE - panel may not have opened or loaded`);
+      }
+
+      const totalWaitTime = maxRetries * retryDelay / 1000;
       throw new Error(
-        `Failed to find "Vendor Invoice" link after ${maxRetries} attempts. ` +
-        `This usually means the C_Invoice document hasn't been created or linked yet. ` +
+        `Failed to find "Vendor Invoice" link after ${maxRetries} attempts (~${totalWaitTime}s). ` +
+        `SSE received ${sseReferences.length} total references. ` +
+        `The async invoice generation may have failed or taken longer than expected. ` +
         `Last error: ${lastError?.message}`
       );
     });
