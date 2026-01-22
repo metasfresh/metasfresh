@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.pair.ImmutablePair;
 import de.metas.common.util.time.SystemTime;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
@@ -26,6 +27,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -105,25 +107,25 @@ public class HUTraceEventsServiceTests
 		save(user2);
 
 		final I_M_HU luHu11 = saveFluent(newInstance(I_M_HU.class));
-		final I_M_HU vhu11 = createVHU(X_M_HU.HUSTATUS_Active);
+		final I_M_HU vhu11 = createVHU();
 
 		final ProductId prod11 = newProduct("prod11");
 		final Quantity qty11 = Quantity.of(11, uom);
 
 		final I_M_HU luHu12 = saveFluent(newInstance(I_M_HU.class));
-		final I_M_HU vhu12 = createVHU(X_M_HU.HUSTATUS_Active);
+		final I_M_HU vhu12 = createVHU();
 
 		final ProductId prod12 = newProduct("prod12");
 		// final Quantity qty12 = Quantity.of(12, uom);
 
 		final I_M_HU luHu21 = saveFluent(newInstance(I_M_HU.class));
-		final I_M_HU vhu21 = createVHU(X_M_HU.HUSTATUS_Active);
+		final I_M_HU vhu21 = createVHU();
 
 		final ProductId prod21 = newProduct("prod21");
 		// final Quantity qty21 = Quantity.of(21, uom);
 
 		final I_M_HU luHu22 = saveFluent(newInstance(I_M_HU.class));
-		final I_M_HU vhu22 = createVHU(X_M_HU.HUSTATUS_Active);
+		final I_M_HU vhu22 = createVHU();
 		vhu22.setHUStatus(X_M_HU.HUSTATUS_Active);
 
 		final ProductId prod22 = newProduct("prod22");
@@ -209,11 +211,11 @@ public class HUTraceEventsServiceTests
 		assertThat(allHuTraceRecords.get(3).getM_HU_ID()).isEqualTo(luHu22.getM_HU_ID());
 	}
 
-	private I_M_HU createVHU(final String huStatus)
+	private I_M_HU createVHU()
 	{
 		final I_M_HU vhu = saveFluent(newInstance(I_M_HU.class));
 		vhu.setM_HU_PI_Version_ID(HuPackingInstructionsVersionId.VIRTUAL.getRepoId());
-		vhu.setHUStatus(huStatus);
+		vhu.setHUStatus(X_M_HU.HUSTATUS_Active);
 		saveRecord(vhu);
 		return vhu;
 	}
@@ -284,6 +286,95 @@ public class HUTraceEventsServiceTests
 				.as("There shall be no HU_Trace records for HUs with stautus='planned'")
 				.isEmpty();
 	}
+
+	/**
+	 * Test that when the same VHU is referenced by multiple M_HU_Assignment records with different specificity levels,
+	 * only one trace event is created, and the most specific assignment (highest assignmentDetail) wins.
+	 * <p>
+	 * assignmentDetail priority: VHU_ID=3 > M_TU_HU_ID=2 > M_LU_HU_ID=1 > M_HU_ID=0
+	 */
+	@Test
+	public void createAndAddEvents_SameVhuDifferentAssignmentPaths()
+	{
+		// Create a model to associate assignments with
+		final I_M_InOut inout = newInstance(I_M_InOut.class);
+		save(inout);
+
+		final TableRecordReference inoutRef = TableRecordReference.of(inout);
+
+		// Create HU hierarchy: LU -> VHU (simplified for this test)
+		final I_M_HU luHu = saveFluent(newInstance(I_M_HU.class));
+		final I_M_HU vhu = createVHU();
+
+		final ProductId product = newProduct("testProduct");
+		final Quantity qty = Quantity.of(10, uom);
+
+		// Create first assignment with M_HU_ID only (low specificity, assignmentDetail=0)
+		// This uses an earlier timestamp
+		final long time1 = System.currentTimeMillis() - 10000; // 10 seconds ago
+		SystemTime.setTimeSource(() -> time1);
+		final I_M_HU_Assignment assignmentGeneric = newInstance(I_M_HU_Assignment.class);
+		assignmentGeneric.setM_HU_ID(luHu.getM_HU_ID());
+		assignmentGeneric.setAD_Table_ID(inoutRef.getAD_Table_ID());
+		assignmentGeneric.setRecord_ID(inoutRef.getRecord_ID());
+		save(assignmentGeneric);
+
+		// Create second assignment with VHU_ID set (high specificity, assignmentDetail=3)
+		// This uses a later timestamp
+		final long time2 = System.currentTimeMillis();
+		SystemTime.setTimeSource(() -> time2);
+		final I_M_HU_Assignment assignmentSpecific = newInstance(I_M_HU_Assignment.class);
+		assignmentSpecific.setM_HU_ID(luHu.getM_HU_ID());
+		assignmentSpecific.setVHU_ID(vhu.getM_HU_ID());
+		assignmentSpecific.setAD_Table_ID(inoutRef.getAD_Table_ID());
+		assignmentSpecific.setRecord_ID(inoutRef.getRecord_ID());
+		save(assignmentSpecific);
+
+		SystemTime.resetTimeSource();
+
+		// Mock huAccessService to return both assignments
+		Mockito.doReturn(ImmutableList.of(assignmentGeneric, assignmentSpecific))
+				.when(huAccessService).retrieveHuAssignments(inout);
+
+		// Mock to return the VHU when retrieving from LU
+		Mockito.doReturn(ImmutableList.of(vhu))
+				.when(huAccessService).retrieveVhus(HuId.ofRepoId(luHu.getM_HU_ID()));
+
+		// Mock top-level HU retrieval
+		Mockito.doReturn(luHu.getM_HU_ID()).when(huAccessService).retrieveTopLevelHuId(luHu);
+
+		// Mock product and qty retrieval for VHU
+		Mockito.doReturn(Optional.of(ImmutablePair.of(product, qty)))
+				.when(huAccessService).retrieveProductAndQty(vhu);
+
+		// Create builder
+		final HUTraceEventBuilder builder = HUTraceEvent.builder()
+				.orgId(OrgId.ofRepoId(10))
+				.inOutId(123)
+				.type(HUTraceType.MATERIAL_RECEIPT);
+
+		// Execute
+		huTraceEventsService.createAndAddEvents(builder, ImmutableList.of(inout));
+
+		// Verify
+		final List<I_M_HU_Trace> allHuTraceRecords = retrieveAllHUTraceRecords();
+
+		assertThat(allHuTraceRecords)
+				.as("Should create only 1 trace record despite 2 assignments pointing to the same VHU")
+				.hasSize(1);
+
+		final I_M_HU_Trace trace = allHuTraceRecords.get(0);
+
+		assertThat(trace.getVHU_ID()).isEqualTo(vhu.getM_HU_ID());
+		assertThat(trace.getM_HU_ID()).isEqualTo(luHu.getM_HU_ID());
+
+		// Verify the trace uses the eventTime from the SPECIFIC assignment (assignmentDetail=3)
+		// not the generic one (assignmentDetail=0)
+		assertThat(trace.getEventTime().getTime())
+				.as("EventTime should be from the more specific assignment (VHU_ID set)")
+				.isEqualTo(time2);
+	}
+	
 
 	@Test
 	public void createAndAddForShipmentScheduleQtyPicked()
