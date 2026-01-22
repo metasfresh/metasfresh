@@ -5,8 +5,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Picking_Job_Schedule;
 import de.metas.picking.api.PickingJobScheduleId;
-import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
-import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.picking.job_schedule.model.PickingJobSchedule;
 import de.metas.picking.job_schedule.model.PickingJobScheduleCollection;
 import de.metas.picking.job_schedule.model.PickingJobScheduleQuery;
@@ -126,29 +124,6 @@ public class PickingJobScheduleRepository
 		}
 	}
 
-	public ShipmentScheduleAndJobScheduleIdSet getIdsByShipmentScheduleIds(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
-	{
-		if (shipmentScheduleIds.isEmpty())
-		{
-			return ShipmentScheduleAndJobScheduleIdSet.EMPTY;
-		}
-
-		return queryBL.createQueryBuilder(I_M_Picking_Job_Schedule.class)
-				.addInArrayFilter(I_M_Picking_Job_Schedule.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleIds)
-				.create()
-				.stream()
-				.map(PickingJobScheduleRepository::extractShipmentScheduleAndJobScheduleId)
-				.collect(ShipmentScheduleAndJobScheduleIdSet.collect());
-	}
-
-	private static ShipmentScheduleAndJobScheduleId extractShipmentScheduleAndJobScheduleId(final I_M_Picking_Job_Schedule record)
-	{
-		return ShipmentScheduleAndJobScheduleId.of(
-				ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()),
-				PickingJobScheduleId.ofRepoId(record.getM_Picking_Job_Schedule_ID())
-		);
-	}
-
 	public PickingJobScheduleCollection deleteByIdsAndReturn(final @NonNull Set<PickingJobScheduleId> jobScheduleIds)
 	{
 		if (jobScheduleIds.isEmpty())
@@ -158,7 +133,6 @@ public class PickingJobScheduleRepository
 
 		final List<I_M_Picking_Job_Schedule> records = queryBL.createQueryBuilder(I_M_Picking_Job_Schedule.class)
 				.addInArrayFilter(I_M_Picking_Job_Schedule.COLUMNNAME_M_Picking_Job_Schedule_ID, jobScheduleIds)
-				.addEqualsFilter(I_M_Picking_Job_Schedule.COLUMNNAME_Processed, false)
 				.create()
 				.list();
 		if (records.isEmpty())
