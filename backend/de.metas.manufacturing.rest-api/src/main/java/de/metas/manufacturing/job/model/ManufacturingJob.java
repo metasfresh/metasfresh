@@ -23,6 +23,8 @@ import java.util.Objects;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+import static de.metas.util.Functions.callOnce;
+
 @Value
 public class ManufacturingJob
 {
@@ -107,10 +109,11 @@ public class ManufacturingJob
 			throw new AdempiereException("Cannot find issue step");
 		}
 
+		final UnaryOperator<RawMaterialsIssueStep> callOnceMapper = callOnce(mapper);
 		final ImmutableList<ManufacturingJobActivity> activitiesNew = CollectionUtils.map(
 				activities,
 				activity -> PPOrderRoutingActivityId.equals(activity.getOrderRoutingActivityId(), activityId)
-						? activity.withChangedRawMaterialsIssueStep(issueScheduleId, mapper)
+						? activity.withChangedRawMaterialsIssueStep(issueScheduleId, callOnceMapper)
 						: activity);
 		return withActivities(activitiesNew);
 	}
@@ -131,7 +134,8 @@ public class ManufacturingJob
 			@NonNull final FinishedGoodsReceiveLineId id,
 			@NonNull UnaryOperator<FinishedGoodsReceiveLine> mapper)
 	{
-		final ImmutableList<ManufacturingJobActivity> activitiesNew = CollectionUtils.map(activities, activity -> activity.withChangedReceiveLine(id, mapper));
+		final UnaryOperator<FinishedGoodsReceiveLine> callOnceMapper = callOnce(mapper);
+		final ImmutableList<ManufacturingJobActivity> activitiesNew = CollectionUtils.map(activities, activity -> activity.withChangedReceiveLine(id, callOnceMapper));
 		return withActivities(activitiesNew);
 	}
 
@@ -160,7 +164,7 @@ public class ManufacturingJob
 	}
 
 	@NonNull
-	public ManufacturingJob withChangedRawMaterialIssue(@NonNull final UnaryOperator<RawMaterialsIssue> mapper)
+	public ManufacturingJob withChangedRawMaterialIssues(@NonNull final UnaryOperator<RawMaterialsIssue> mapper)
 	{
 		final ImmutableList<ManufacturingJobActivity> updatedActivities = activities
 				.stream()

@@ -3,6 +3,9 @@ package de.metas.ui.web.window.datatypes;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.process.SelectionSize;
 import de.metas.util.lang.RepoIdAware;
 import lombok.EqualsAndHashCode;
@@ -59,6 +62,8 @@ import java.util.stream.Stream;
 @EqualsAndHashCode
 public final class DocumentIdsSelection
 {
+	private static final ITranslatableString STRING_ALL = TranslatableStrings.adMessage(AdMessageKey.of("All"));
+
 	public static DocumentIdsSelection of(final Collection<DocumentId> documentIds)
 	{
 		if (documentIds == null || documentIds.isEmpty())
@@ -229,6 +234,11 @@ public final class DocumentIdsSelection
 	{
 		assertNotAll();
 		return documentIds.size();
+	}
+
+	public ITranslatableString getSizeAsTranslatableString()
+	{
+		return isAll() ? STRING_ALL : TranslatableStrings.number(size());
 	}
 
 	public boolean contains(final DocumentId documentId)
