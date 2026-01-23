@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -82,6 +82,8 @@ public interface IOrderBL extends ISingletonService
 	 * @throws PriceListNotFoundException if no price list was found
 	 */
 	void setPriceList(I_C_Order order);
+
+	Optional<BPartnerOrderParams> retrieveBPartnerParams(@NonNull I_C_Order orderRecord);
 
 	/**
 	 * Gets the corresponding priceListVersion for the given <code>order</code>, using
@@ -261,6 +263,8 @@ public interface IOrderBL extends ISingletonService
 
 	boolean isSalesOrder(@NonNull I_C_Order order);
 
+	boolean isSalesOrder(@NonNull OrderId orderId);
+	
 	boolean isRequisition(@NonNull I_C_Order order);
 
 	boolean isMediated(@NonNull I_C_Order order);
@@ -374,4 +378,6 @@ public interface IOrderBL extends ISingletonService
 	void syncDateInvoicedFromInvoice(@NonNull OrderId orderId, @NonNull I_C_Invoice invoice);
 
 	List<I_C_Order> getByQueryFilter(final IQueryFilter<I_C_Order> queryFilter);
+
+	void updateASIFromProjectId(@NonNull de.metas.interfaces.I_C_OrderLine orderLine);
 }

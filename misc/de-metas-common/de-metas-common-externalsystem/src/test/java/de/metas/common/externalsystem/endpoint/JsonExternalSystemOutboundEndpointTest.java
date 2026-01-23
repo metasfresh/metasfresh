@@ -44,6 +44,7 @@ class JsonExternalSystemOutboundEndpointTest
 				.endpointUrl("endpointUrl")
 				.method("method")
 				.password("password")
+				.sasSignature("sasSignature")
 				.clientSecret("clientSecret")
 				.clientId("clientId")
 				.build();

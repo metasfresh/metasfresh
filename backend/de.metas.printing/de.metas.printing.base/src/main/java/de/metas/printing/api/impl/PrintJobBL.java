@@ -321,7 +321,7 @@ public class PrintJobBL implements IPrintJobBL
 		final IWorkPackageQueue queue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, PDFDocPrintingWorkpackageProcessor.class);
 		queue
 				.newWorkPackage()
-				.setC_Async_Batch_ID(asyncBatchId) // set the async batch in workpackage in order to track it
+				.setAsyncBatchId(asyncBatchId) // set the async batch in workpackage in order to track it
 				.addElement(jobInstructions)
 				.buildAndEnqueue();
 	}

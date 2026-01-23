@@ -63,6 +63,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.IProductDAO.ProductQuery;
+import de.metas.product.PackageDimensions;
 import de.metas.product.ProductId;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
@@ -418,6 +419,7 @@ public class ShipmentService
 								.trackingNumber(jsonPackage.getTrackingCode())
 								.weight(jsonPackage.getWeight())
 								.trackingUrl(trackingURL)
+								.packageDimensions(PackageDimensions.UNSPECIFIED)//not supported in this version
 								.build()
 				)
 				.collect(ImmutableList.toImmutableList());

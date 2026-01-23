@@ -71,6 +71,8 @@ public interface IWarehouseBL extends ISingletonService
 	 */
 	LocatorId getOrCreateDefaultLocatorId(WarehouseId warehouse);
 
+	LocatorId createOrUpdateLocator(@NonNull CreateOrUpdateLocatorRequest request);
+
 	@NonNull
 	CountryId getCountryId(WarehouseId warehouseId);
 
@@ -90,6 +92,8 @@ public interface IWarehouseBL extends ISingletonService
 
 	@NonNull
 	ImmutableSet<LocatorId> getLocatorIdsByRepoIds(Set<Integer> locatorRepoIds);
+
+	ImmutableSet<LocatorId> getLocatorIdsByWarehouseId(@NonNull WarehouseId warehouseId);
 
 	I_M_Locator getLocatorByRepoId(int locatorRepoId);
 

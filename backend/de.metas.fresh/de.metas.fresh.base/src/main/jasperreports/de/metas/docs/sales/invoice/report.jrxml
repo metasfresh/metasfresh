@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="0.9090909090909095"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="240"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="uat.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\dev.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -27,30 +27,43 @@ JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
 ;]]>
 	</queryString>
 	<field name="ad_org_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="ad_org_id"/>
 		<property name="com.jaspersoft.studio.field.label" value="ad_org_id"/>
 	</field>
 	<field name="docstatus" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="docstatus"/>
 		<property name="com.jaspersoft.studio.field.label" value="docstatus"/>
 	</field>
 	<field name="printname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="printname"/>
 		<property name="com.jaspersoft.studio.field.label" value="printname"/>
 	</field>
 	<field name="countrycode" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="countrycode"/>
 		<property name="com.jaspersoft.studio.field.label" value="countrycode"/>
 	</field>
 	<field name="c_currency_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="c_currency_id"/>
 		<property name="com.jaspersoft.studio.field.label" value="c_currency_id"/>
 	</field>
 	<field name="displayhu" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="displayhu"/>
 		<property name="com.jaspersoft.studio.field.label" value="displayhu"/>
 	</field>
 	<field name="iscreditmemo" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="iscreditmemo"/>
 		<property name="com.jaspersoft.studio.field.label" value="iscreditmemo"/>
 	</field>
+	<field name="isfactoringpartner" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="isfactoringpartner"/>
+		<property name="com.jaspersoft.studio.field.label" value="isfactoringpartner"/>
+	</field>
 	<field name="showqrbill" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="showqrbill"/>
 		<property name="com.jaspersoft.studio.field.label" value="showqrbill"/>
 	</field>
 	<field name="showesr_qr" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="showesr_qr"/>
 		<property name="com.jaspersoft.studio.field.label" value="showesr_qr"/>
 	</field>
 	<background>
@@ -72,7 +85,7 @@ JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
 		</band>
 	</background>
 	<title>
-		<band height="343" splitType="Stretch">
+		<band height="287" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<printWhenExpression><![CDATA[new Boolean(true)]]></printWhenExpression>
 			<subreport isUsingCache="true">
@@ -90,7 +103,7 @@ JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_logo.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-8" x="0" y="187" width="595" height="153" uuid="81f0c08c-9291-471d-aad0-8a595d5eb71e">
+				<reportElement key="subreport-8" x="0" y="187" width="595" height="93" uuid="81f0c08c-9291-471d-aad0-8a595d5eb71e">
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 				</reportElement>
 				<subreportParameter name="ad_language">
@@ -227,6 +240,18 @@ JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/sales/invoice/report_details_footer.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+		<band height="36">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<printWhenExpression><![CDATA[new Boolean( $F{isfactoringpartner}.equals( "Y" ) )]]></printWhenExpression>
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-3" x="0" y="24" width="595" height="12" uuid="0db7639e-4a95-423f-bfe1-5bc5871d6637"/>
+				<subreportParameter name="ad_org_id">
+					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/generics/report_factorer_bankdetails.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 	</detail>

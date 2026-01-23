@@ -1,12 +1,6 @@
 package de.metas.bpartner.impexp;
 
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_I_BPartner;
-import org.compiere.model.ModelValidationEngine;
-
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.impexp.BPartnersCache.BPartner;
@@ -18,6 +12,12 @@ import de.metas.location.LocationId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_I_BPartner;
+import org.compiere.model.ModelValidationEngine;
+
+import javax.annotation.Nullable;
 
 import static org.compiere.model.MakeUniqueLocationNameCommand.BPARTNER_LOCATION_NAME_DEFAULT;
 
@@ -83,6 +83,7 @@ import static org.compiere.model.MakeUniqueLocationNameCommand.BPARTNER_LOCATION
 	/**
 	 * retrieve existent BPartner location and call method for updating the fields
 	 */
+	@Nullable
 	private I_C_BPartner_Location fetchAndUpdateExistingBPLocation(@NonNull final BPartnerImportContext context)
 	{
 		final BPartnersCache cache = context.getBpartnersCache();
@@ -119,8 +120,8 @@ import static org.compiere.model.MakeUniqueLocationNameCommand.BPARTNER_LOCATION
 	 * <ul>
 	 * * City not empty
 	 * </ul>
-	 *
 	 */
+	@Nullable
 	private I_C_BPartner_Location createNewBPartnerLocation(@NonNull final BPartnerImportContext context)
 	{
 		final I_I_BPartner importRecord = context.getCurrentImportRecord();
@@ -161,6 +162,9 @@ import static org.compiere.model.MakeUniqueLocationNameCommand.BPARTNER_LOCATION
 		bpartnerLocation.setM_Shipper_ID(from.getLocation_M_Shipper_ID());
 		bpartnerLocation.setM_Shipper_RoutingCode_ID(from.getM_Shipper_RoutingCode_ID());
 
+		bpartnerLocation.setBPartnerName(from.getBPartnerName());
+		bpartnerLocation.setBPartnerName2(from.getBPartnerName2());
+
 		if(from.isUpdateLocationName()) bpartnerLocation.setName(BPARTNER_LOCATION_NAME_DEFAULT);
 
 		fireImportValidator(from, bpartnerLocation);
@@ -171,7 +175,7 @@ import static org.compiere.model.MakeUniqueLocationNameCommand.BPARTNER_LOCATION
 			@NonNull final I_I_BPartner importRecord,
 			@NonNull final I_C_BPartner_Location bpartnerLocation)
 	{
-		final LocationId locationId = locationDAO.createLocation(LocationCreateRequest.builder()
+		final LocationId locationId = locationDAO.createOrReuseLocation(LocationCreateRequest.builder()
 				.address1(importRecord.getAddress1())
 				.address2(importRecord.getAddress2())
 				.address3(importRecord.getAddress3())
@@ -223,14 +227,14 @@ import static org.compiere.model.MakeUniqueLocationNameCommand.BPARTNER_LOCATION
 	}
 
 	@VisibleForTesting
-	static final boolean extractIsShipTo(@NonNull final I_I_BPartner importRecord)
+	static boolean extractIsShipTo(@NonNull final I_I_BPartner importRecord)
 	{
-		return importRecord.isShipToDefault() ? true : importRecord.isShipTo();
+		return importRecord.isShipToDefault() || importRecord.isShipTo();
 	}
 
 	@VisibleForTesting
-	static final boolean extractIsBillTo(@NonNull final I_I_BPartner importRecord)
+	static boolean extractIsBillTo(@NonNull final I_I_BPartner importRecord)
 	{
-		return importRecord.isBillToDefault() ? true : importRecord.isBillTo();
+		return importRecord.isBillToDefault() || importRecord.isBillTo();
 	}
 }

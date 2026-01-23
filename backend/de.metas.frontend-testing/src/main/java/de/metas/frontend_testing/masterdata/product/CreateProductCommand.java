@@ -42,6 +42,7 @@ import org.adempiere.service.ClientId;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.TimeUtil;
+import org.eevolution.api.BOMComponentIssueMethod;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.BOMType;
 import org.eevolution.api.BOMUse;
@@ -96,6 +97,7 @@ public class CreateProductCommand
 		return JsonCreateProductResponse.builder()
 				.id(ProductId.ofRepoId(productRecord.getM_Product_ID()))
 				.productCode(productRecord.getValue())
+				.productName(productRecord.getName())
 				.gtin(GTIN.ofNullableString(productRecord.getGTIN()))
 				.ean13ProductCode(EAN13ProductCode.ofNullableString(productRecord.getEAN13_ProductCode()))
 				.build();
@@ -112,7 +114,15 @@ public class CreateProductCommand
 
 		productRecord.setAD_Org_ID(orgId.getRepoId());
 		productRecord.setValue(value);
-		productRecord.setName(value);
+
+		// Allow custom name separate from value (max 600 chars - very generous)
+		final String customName = org.apache.commons.lang3.StringUtils.trimToNull(request.getName());
+		if (customName != null && customName.length() > 600)
+		{
+			throw new AdempiereException("product name must not exceed 600 characters (got: " + customName.length() + ")");
+		}
+		final String name = customName != null ? customName : value;
+		productRecord.setName(name);
 		productRecord.setGTIN(request.getGtin() != null ? request.getGtin().getAsString() : null);
 		productRecord.setEAN13_ProductCode(request.getEan13ProductCode() != null ? request.getEan13ProductCode().getAsString() : null);
 		productRecord.setC_UOM_ID(productUomId.getRepoId());
@@ -131,6 +141,18 @@ public class CreateProductCommand
 
 	private String generateValue()
 	{
+		// Use custom value if provided (no timestamp, max 255 chars)
+		final String customValue = org.apache.commons.lang3.StringUtils.trimToNull(request.getValue());
+		if (customValue != null)
+		{
+			if (customValue.length() > 255)
+			{
+				throw new AdempiereException("product value must not exceed 255 characters (got: " + customValue.length() + ")");
+			}
+			return customValue;
+		}
+
+		// or Use valuePrefix with timestamp
 		final String valuePrefix = StringUtils.trimBlankToNull(request.getValuePrefix());
 		final JsonCreateProductRequest.RandomValueSpec randomValueSpec = request.getRandomValue();
 		if (valuePrefix != null && randomValueSpec != null)
@@ -148,6 +170,7 @@ public class CreateProductCommand
 		}
 		else
 		{
+			// or use Default timestamp-based
 			return identifier.toUniqueString();
 		}
 	}
@@ -362,6 +385,13 @@ public class CreateProductCommand
 		lineRecord.setComponentType(componentType.getCode());
 		lineRecord.setValidFrom(bomRecord.getValidFrom());
 
+		// Optionally set Issue Method if provided by test data (e.g., IssueOnlyForReceived)
+		final BOMComponentIssueMethod issueMethod = line.getIssueMethod();
+		if (issueMethod != null)
+		{
+			lineRecord.setIssueMethod(issueMethod.getCode());
+		}
+
 		if (line.isPercentage())
 		{
 			lineRecord.setIsQtyPercentage(true);
@@ -371,6 +401,11 @@ public class CreateProductCommand
 		{
 			lineRecord.setIsQtyPercentage(false);
 			lineRecord.setQtyBOM(line.getQty());
+		}
+
+		if (line.getPickingInstruction() != null)
+		{
+			lineRecord.setPickingInstruction(line.getPickingInstruction());
 		}
 
 		saveRecord(lineRecord);

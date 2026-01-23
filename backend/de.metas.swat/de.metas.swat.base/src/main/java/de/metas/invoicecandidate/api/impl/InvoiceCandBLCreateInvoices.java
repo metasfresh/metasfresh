@@ -268,6 +268,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			if (!allCands.isEmpty())
 			{
 				invoiceCandListeners.onBeforeInvoiceComplete(invoice, allCands);
+				invoiceCandBL.extractCommonProjectId(allCands)
+						.ifPresent(projectId -> invoice.setC_Project_ID(projectId.getRepoId()));
 			}
 
 			if (getInvoicingParams().isCompleteInvoices())
@@ -948,6 +950,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				.dateAcctParam(invoicingParams != null ? invoicingParams.getDateAcct() : null)
 				.useDefaultBillLocationAndContactIfNotOverride(invoicingParams != null && invoicingParams.isUpdateLocationAndContactForInvoice())
 				.docTypeInvoicingPoolService(docTypeInvoicingPoolService)
+				.deliveryDateAsInvoiceDate(invoicingParams != null && invoicingParams.isDeliveryDateAsInvoiceDate())
 				.build();
 	}
 

@@ -1,10 +1,8 @@
-package de.metas.handlingunits.shipmentschedule.spi.impl;
-
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package de.metas.handlingunits.shipmentschedule.spi.impl;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.handlingunits.shipmentschedule.spi.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -58,6 +58,7 @@ import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.project.ProjectId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -365,8 +366,9 @@ public class InOutProducerFromShipmentScheduleWithHU
 
 		//
 		// C_Order reference
+		if(shipmentSchedule.getC_Order_ID() > 0)
 		{
-			final de.metas.order.model.I_C_Order order = orderDAO.getById(OrderId.ofRepoIdOrNull(shipmentSchedule.getC_Order_ID()), de.metas.order.model.I_C_Order.class);
+			final de.metas.order.model.I_C_Order order = orderDAO.getById(OrderId.ofRepoId(shipmentSchedule.getC_Order_ID()), de.metas.order.model.I_C_Order.class);
 			if (order != null && order.getC_Order_ID() > 0)
 			{
 				shipment.setDateOrdered(order.getDateOrdered());
@@ -512,6 +514,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 		{
 			packingMaterialLinesBuilder.collectPackingMaterialsAndUpdateShipmentLines();
 		}
+		currentShipment.setC_Project_ID(ProjectId.toRepoId(huShipmentScheduleBL.extractSingleProjectIdOrNull(currentCandidates)));
 
 		//
 		// Process current shipment
@@ -652,12 +655,8 @@ public class InOutProducerFromShipmentScheduleWithHU
 			return true;
 		}
 
-		else if (isCandidateSoonerThanMovementDate)
-		{
-			return true;
-		}
-
-		return false;
+		else
+			return isCandidateSoonerThanMovementDate;
 	}
 
 	private void createUpdateShipmentLine(@NonNull final ShipmentScheduleWithHU candidate)

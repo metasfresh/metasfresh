@@ -14,10 +14,6 @@
 
     <description>ESR Payments</description>
 
-    <properties>
-        <migration-sql-basedir>70-de.metas.payment.esr</migration-sql-basedir>
-    </properties>
-
     <dependencies>
 
         <dependency>

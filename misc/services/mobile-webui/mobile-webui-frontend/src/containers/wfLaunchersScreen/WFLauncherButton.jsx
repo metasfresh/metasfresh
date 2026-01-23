@@ -1,8 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
-
-import * as CompleteStatus from '../../constants/CompleteStatus';
 import { toastError } from '../../utils/toast';
 import { continueWorkflowRequest, startWorkflowRequest } from '../../api/launchers';
 import { updateWFProcess } from '../../actions/WorkflowActions';
@@ -10,8 +8,10 @@ import { getWFProcessScreenLocation } from '../../routes/workflow_locations';
 
 import ButtonWithIndicator from '../../components/buttons/ButtonWithIndicator';
 import { useMobileNavigation } from '../../hooks/useMobileNavigation';
+import { WorkflowLauncherIndicator } from '../../constants/WorkflowLauncherIndicator';
 
 const TEST_PROPS = [
+  'salesOrderId',
   'qtyToDeliver',
   'productId',
   'customerId',
@@ -20,7 +20,16 @@ const TEST_PROPS = [
   'inventoryId',
 ];
 
-const WFLauncherButton = ({ applicationId, startedWFProcessId, wfParameters, caption, showWarningSign, testId }) => {
+const WFLauncherButton = ({
+  applicationId,
+  startedWFProcessId,
+  wfParameters,
+  caption,
+  showWarningSign,
+  indicator,
+  testId,
+  disabled,
+}) => {
   const dispatch = useDispatch();
   const history = useMobileNavigation();
   const handleClick = () => {
@@ -43,8 +52,9 @@ const WFLauncherButton = ({ applicationId, startedWFProcessId, wfParameters, cap
       additionalCssClass="wflauncher-button"
       caption={caption}
       showWarningSign={showWarningSign}
-      completeStatus={startedWFProcessId ? CompleteStatus.IN_PROGRESS : CompleteStatus.NOT_STARTED}
-      disabled={false}
+      indicator1={indicator ?? '-'}
+      indicator2={startedWFProcessId ? WorkflowLauncherIndicator.JOB_ALREADY_STARTED : '-'}
+      disabled={disabled}
       onClick={handleClick}
     />
   );
@@ -56,7 +66,9 @@ WFLauncherButton.propTypes = {
   wfParameters: PropTypes.object,
   caption: PropTypes.string.isRequired,
   showWarningSign: PropTypes.bool,
+  indicator: PropTypes.string,
   testId: PropTypes.string,
+  disabled: PropTypes.bool,
 };
 
 export default WFLauncherButton;

@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.salescandidate.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ordercandidate.api;
 
 import com.google.common.collect.ImmutableList;
@@ -47,28 +69,6 @@ import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2018 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 @Repository
 @RequiredArgsConstructor
@@ -281,6 +281,8 @@ public class OLCandRepository
 			olCandPO.setInvoiceRule(invoiceRule.getCode());
 		}
 
+		olCandPO.setIsAutoInvoice(request.isAutoInvoice());
+
 		final PaymentRule paymentRule = request.getPaymentRule();
 		if (paymentRule != null)
 		{
@@ -306,6 +308,12 @@ public class OLCandRepository
 		olCandPO.setDescription(request.getDescription());
 		olCandPO.setDeliveryRule(request.getDeliveryRule());
 		olCandPO.setDeliveryViaRule(request.getDeliveryViaRule());
+		if (request.getIncotermsId() != null)
+		{
+            olCandPO.setC_Incoterms_ID(request.getIncotermsId().getRepoId());
+			olCandPO.setIncotermLocation(request.getIncotermsLocation());
+		}
+
 		olCandPO.setImportWarningMessage(request.getImportWarningMessage());
 		if (request.getPrice() == null)
 		{

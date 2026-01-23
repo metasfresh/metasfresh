@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.security.IUserRolePermissions;
 import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentFieldLogicExpressionResultRevaluator;
 import de.metas.ui.web.window.model.DocumentStandardAction;
@@ -129,8 +130,11 @@ public class JSONDocumentPermissions
 			{
 				if (allowWindowEdit == null)
 				{
-					final AdWindowId adWindowId = document.getEntityDescriptor().getWindowId().toAdWindowId();
-					allowWindowEdit = permissions.checkWindowPermission(adWindowId).hasWriteAccess();
+					final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
+					final AdWindowId adWindowId = entityDescriptor.getDocumentType().isWindow()
+							? entityDescriptor.getWindowId().toAdWindowId()
+							: null;
+					allowWindowEdit = adWindowId != null && permissions.checkWindowPermission(adWindowId).hasWriteAccess();
 				}
 
 				if (!allowWindowEdit)

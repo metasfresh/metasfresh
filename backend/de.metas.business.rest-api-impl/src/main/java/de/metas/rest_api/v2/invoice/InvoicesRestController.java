@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -41,6 +41,7 @@ import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesR
 import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonReverseInvoiceResponse;
 import de.metas.rest_api.utils.JsonErrors;
+import de.metas.rest_api.v2.bpartner.BPartnerMasterdataProvider;
 import de.metas.rest_api.v2.bpartner.BpartnerRestController;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.invoice.impl.JSONInvoiceInfoResponse;
@@ -90,6 +91,7 @@ public class InvoicesRestController
 	private final @NonNull ExternalReferenceRestControllerService externalReferenceRestControllerService;
 	private final @NonNull JsonServiceFactory jsonServiceFactory;
 	private final @NonNull ExternalSystemRepository externalSystemRepository;
+	private final @NonNull BPartnerMasterdataProvider bPartnerMasterdataProvider;
 
 	@ApiOperation("Create new invoice candidates")
 	@ApiResponses(value = {
@@ -108,6 +110,7 @@ public class InvoicesRestController
 				.externalReferenceRestControllerService(externalReferenceRestControllerService)
 				.jsonRetrieverService(jsonServiceFactory.createRetriever())
 				.externalSystemRepository(externalSystemRepository)
+				.bPartnerMasterdataProvider(bPartnerMasterdataProvider)
 				.build();
 		// TODO make individual IC accessible via URL, then return "created" instead
 		final JsonCreateInvoiceCandidatesResponse response = createInvoiceCandidatesService.createInvoiceCandidates(request, masterdataProvider);

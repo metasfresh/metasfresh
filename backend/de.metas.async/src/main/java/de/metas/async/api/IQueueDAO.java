@@ -1,10 +1,8 @@
-package de.metas.async.api;
-
 /*
  * #%L
  * de.metas.async
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,9 +20,16 @@ package de.metas.async.api;
  * #L%
  */
 
+package de.metas.async.api;
+
 import de.metas.async.AsyncBatchId;
 import de.metas.async.QueueWorkPackageId;
-import de.metas.async.model.*;
+import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.model.I_C_Queue_Element;
+import de.metas.async.model.I_C_Queue_PackageProcessor;
+import de.metas.async.model.I_C_Queue_Processor;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
 import de.metas.async.processor.QueuePackageProcessorId;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.util.ISingletonService;

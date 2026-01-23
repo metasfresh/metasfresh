@@ -64,6 +64,8 @@ public interface IOrderLineBL extends ISingletonService
 
 	Quantity getQtyToDeliver(OrderAndLineId orderAndLineId);
 
+	Quantity getQtyDelivered(OrderAndLineId orderAndLineId);
+
 	/**
 	 * Creates a new order line using the given {@code order} as header.
 	 */
@@ -234,4 +236,6 @@ public interface IOrderLineBL extends ISingletonService
 	Optional<BPartnerId> getBPartnerId(OrderLineId orderLineId);
 
 	Optional<BPartnerId> getBPartnerId(@NonNull OrderAndLineId orderLineId);
+
+	void setTax(@NonNull org.compiere.model.I_C_OrderLine orderLine);
 }

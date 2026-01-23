@@ -2,7 +2,7 @@
  * #%L
  * de-metas-common-ordercandidates
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -253,7 +253,7 @@ public class JsonOLCandCreateRequest
 	@JsonInclude(Include.NON_NULL)
 	String deliveryViaRule;
 
-	@ApiModelProperty(position = 390, value = "Translates to C_OLCand.DeliveryViaRule")
+	@ApiModelProperty(position = 390, value = "Translates to C_OLCand.DeliveryRule")
 	@JsonInclude(Include.NON_NULL)
 	String deliveryRule;
 
@@ -266,7 +266,7 @@ public class JsonOLCandCreateRequest
 	BigDecimal qtyShipped;
 
 	@ApiModelProperty(position = 420, //
-			value = "Translates to C_OLCand.QtyItemCapacity. If given, it overrides the capcity set in the M_HU_PI_Item_Product that might be given via packingMaterialId or \"GTIN-..\" productIdentifier.")
+			value = "Translates to C_OLCand.QtyItemCapacity. If given, it overrides the capacity set in the M_HU_PI_Item_Product that might be given via packingMaterialId or \"GTIN-..\" productIdentifier.")
 	@JsonInclude(Include.NON_NULL)
 	BigDecimal qtyItemCapacity;
 
@@ -293,6 +293,23 @@ public class JsonOLCandCreateRequest
 	@ApiModelProperty(position = 470)
 	@JsonInclude(Include.NON_NULL)
 	JsonAlbertaOrderInfo albertaOrderInfo;
+
+	@ApiModelProperty(position = 480)
+	@JsonInclude(Include.NON_NULL)
+	Boolean isAutoInvoice;
+
+	@ApiModelProperty(position = 490)
+	@JsonInclude(Include.NON_NULL)
+	String invoiceRule;
+
+	@ApiModelProperty(position = 500)
+	@JsonInclude(Include.NON_NULL)
+	String incotermsValue;
+
+	@ApiModelProperty(position = 510)
+	@JsonInclude(Include.NON_NULL)
+	String incotermsLocation;
+
 
 	@JsonCreator
 	@Builder(toBuilder = true)
@@ -343,7 +360,11 @@ public class JsonOLCandCreateRequest
 			@JsonProperty("applySalesRepFrom") final @Nullable JsonApplySalesRepFrom applySalesRepFrom,
 			@JsonProperty("bpartnerName") final @Nullable String bpartnerName,
 			@JsonProperty("email") final @Nullable String email,
-			@JsonProperty("phone") final @Nullable String phone)
+			@JsonProperty("phone") final @Nullable String phone,
+			@JsonProperty("isAutoInvoice") final @Nullable Boolean isAutoInvoice,
+			@JsonProperty("invoiceRule") final @Nullable String invoiceRule,
+			@JsonProperty("incotermsValue") final @Nullable String incotermsValue,
+			@JsonProperty("incotermsLocation") final @Nullable String incotermsLocation)
 	{
 		this.orgCode = orgCode;
 		this.externalLineId = externalLineId;
@@ -394,6 +415,11 @@ public class JsonOLCandCreateRequest
 		this.qtyShipped = qtyShipped;
 		this.qtyItemCapacity = qtyItemCapacity;
 		this.applySalesRepFrom = CoalesceUtil.coalesceNotNull(applySalesRepFrom, JsonApplySalesRepFrom.CandidateFirst);
+		this.isAutoInvoice = isAutoInvoice;
+		this.invoiceRule = invoiceRule;
+
+		this.incotermsValue = incotermsValue;
+		this.incotermsLocation = incotermsLocation;
 	}
 
 	/**

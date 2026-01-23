@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0130_Payment
+@allure.label.feature:F00982_Payment
+@F00982
 @ghActions:run_on_executor4
 Feature: Payment Term propagation
+## F00982: Payment
 
   Background:
     Given infrastructure and metasfresh are running
@@ -43,6 +47,9 @@ Feature: Payment Term propagation
       | ch_ch_tax  | Normal                        | ch_ch_tax | 2021-04-02 | 2.5  | CH                       | CH                        |
 
   @from:cucumber
+@allure.label.epic:E0130_Payment
+@allure.label.feature:F00982_Payment
+@F00982
   Scenario: Purchase Order non default Payment Term is propagated to invoice
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_PricingSystem_ID | M_Warehouse_ID | paymentTerm   |
@@ -98,6 +105,9 @@ Feature: Payment Term propagation
 
 
   @from:cucumber
+@allure.label.epic:E0130_Payment
+@allure.label.feature:F00982_Payment
+@F00982
   Scenario: Sales Order on default Payment Term is propagated to invoice
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | paymentTerm   |
@@ -129,6 +139,9 @@ Feature: Payment Term propagation
       | salesInvoice1 | 10 Tage netto |
 
   @from:cucumber
+@allure.label.epic:E0130_Payment
+@allure.label.feature:F00982_Payment
+@F00982
   Scenario: Purchase Order default Payment Term is used, if no BPartner Payment Term is set
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_PricingSystem_ID | M_Warehouse_ID |
@@ -142,6 +155,9 @@ Feature: Payment Term propagation
       | po2        | 30 Tage netto |
 
   @from:cucumber
+@allure.label.epic:E0130_Payment
+@allure.label.feature:F00982_Payment
+@F00982
   Scenario: Sales Order default Payment Term is used, if no BPartner Payment Term is set
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
@@ -155,6 +171,9 @@ Feature: Payment Term propagation
       | so2        | 30 Tage netto |
 
   @from:cucumber
+@allure.label.epic:E0130_Payment
+@allure.label.feature:F00982_Payment
+@F00982
   Scenario: Purchase Order BPartner Payment Term is used
     When metasfresh contains C_BPartners without locations:
       | Identifier     | IsVendor | IsCustomer | M_PricingSystem_ID | PO_PaymentTerm_ID.Value |
@@ -174,6 +193,9 @@ Feature: Payment Term propagation
       | po3        | 10 Tage netto |
 
   @from:cucumber
+@allure.label.epic:E0130_Payment
+@allure.label.feature:F00982_Payment
+@F00982
   Scenario: Sales Order BPartner Payment Term is used
     When metasfresh contains C_BPartners without locations:
       | Identifier       | IsVendor | IsCustomer | M_PricingSystem_ID | C_PaymentTerm_ID.Value |

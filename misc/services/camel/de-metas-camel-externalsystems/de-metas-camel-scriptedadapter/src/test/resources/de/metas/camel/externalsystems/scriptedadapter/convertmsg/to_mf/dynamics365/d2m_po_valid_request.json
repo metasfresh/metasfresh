@@ -1,0 +1,53 @@
+{
+  "d2m_po": [
+    {
+      "orgCode": "orgCode",
+      "orderDocumentNo": "orderDocumentNo",
+      "orderNumber": "1",
+      "currencyCode": "EUR",
+      "partnerIdentifier": "partnerIdentifier",
+      "partnerValue": "000000001",
+      "partnerName": "partnerName",
+      "dateRequired": "2026-01-15",
+      "dateOrdered": "2025-11-06",
+      "dropShip": {
+        "partnerID": "partnerID",
+        "partnerValue": "",
+        "partnerName": "partnerName",
+        "address1": "address1",
+        "address2": "",
+        "address3": "",
+        "address4": "",
+        "postal": "7800",
+        "city": "city",
+        "country": "DE"
+      },
+      "lines": [
+        {
+          "orderLineId": "1",
+          "dateRequired": "2026-01-15",
+          "dateOrdered": "2025-11-06",
+          "productIdentifier": "productIdentifier1",
+          "qty": "11",
+          "price": "15",
+          "discount": "0"
+        },
+        {
+          "orderLineId": "2",
+          "dateRequired": "2026-01-15",
+          "dateOrdered": "2025-11-06",
+          "productIdentifier": "productIdentifier2",
+          "qty": "1",
+          "price": "0",
+          "discount": "0"
+        }
+      ],
+      "charges": [
+        {
+          "chargeIdentifier": "Freight",
+          "price": "15"
+        }
+      ]
+    }
+  ]
+}

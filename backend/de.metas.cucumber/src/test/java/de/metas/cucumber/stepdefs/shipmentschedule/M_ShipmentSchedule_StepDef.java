@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -526,7 +526,7 @@ public class M_ShipmentSchedule_StepDef
 		return queries.build();
 	}
 
-	private ShipmentScheduleQuery createShipmentScheduleQuery(final DataTableRow row)
+	private ShipmentScheduleQuery createShipmentScheduleQuery(@NonNull final DataTableRow row)
 	{
 		final IQueryBuilder<I_M_ShipmentSchedule> queryBuilder = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class);
 
@@ -616,6 +616,7 @@ public class M_ShipmentSchedule_StepDef
 		tableRow.getAsOptionalInstantTimestamp(I_M_ShipmentSchedule.COLUMNNAME_PreparationDate_Override).ifPresent(shipmentScheduleRecord::setPreparationDate_Override);
 		tableRow.getAsOptionalIdentifier(I_M_ShipmentSchedule.COLUMNNAME_M_Shipper_ID)
 				.ifPresent(identifier -> shipmentScheduleRecord.setM_Shipper_ID(ShipperId.toRepoId(identifier.lookupIdIn(shipperTable))));
+		tableRow.getAsOptionalInstantTimestamp(I_M_ShipmentSchedule.COLUMNNAME_DeliveryDate_Override).ifPresent(shipmentScheduleRecord::setDeliveryDate_Override);
 
 		saveRecord(shipmentScheduleRecord);
 	}

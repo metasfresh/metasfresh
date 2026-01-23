@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.salescandidate.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ordercandidate.api;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -68,9 +90,9 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
 import org.adempiere.mm.attributes.asi_aware.factory.IAttributeSetInstanceAwareFactoryService;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -107,28 +129,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.deleteAll;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 class OLCandOrderFactory
 {
@@ -179,15 +179,22 @@ class OLCandOrderFactory
 	private final ListMultimap<String, OrderLineId> groupsToOrderLines = ArrayListMultimap.create();
 	private final Map<OrderLineId, OrderLineGroup> primaryOrderLineToGroup = new HashMap<>();
 
+	/**
+	 * If {@code true} and the {@link OLCand} used as parameter in {@link #newOrder(OLCand)} has an asyncBatchId, then propagate it to the C_Order record.
+	 */
+	private final boolean propagateAsyncBatchIdToOrderRecord;
+
 	@Builder
 	private OLCandOrderFactory(
 			@NonNull final OLCandOrderDefaults orderDefaults,
+			final boolean propagateAsyncBatchIdToOrderRecord,
 			final int olCandProcessorId,
 			final UserId userInChargeId,
 			final ILoggable loggable,
 			final IOLCandListener olCandListeners)
 	{
 		this.orderDefaults = orderDefaults;
+		this.propagateAsyncBatchIdToOrderRecord = propagateAsyncBatchIdToOrderRecord;
 		ctx = Env.getCtx();
 		this.userInChargeId = userInChargeId != null ? userInChargeId : UserId.SYSTEM;
 		this.loggable = loggable != null ? loggable : Loggables.nop();
@@ -275,6 +282,7 @@ class OLCandOrderFactory
 		order.setDeliveryViaRule(DeliveryViaRule.toCodeOrNull(candidateOfGroup.getDeliveryViaRule()));
 		order.setFreightCostRule(FreightCostRule.toCodeOrNull(candidateOfGroup.getFreightCostRule()));
 		order.setInvoiceRule(InvoiceRule.toCodeOrNull(candidateOfGroup.getInvoiceRule()));
+		order.setIsAutoInvoice(candidateOfGroup.isAutoInvoice());
 		order.setPaymentRule(PaymentRule.toCodeOrNull(candidateOfGroup.getPaymentRule()));
 		order.setC_PaymentTerm_ID(PaymentTermId.toRepoId(candidateOfGroup.getPaymentTermId()));
 		order.setM_PricingSystem_ID(PricingSystemId.toRepoId(candidateOfGroup.getPricingSystemId()));
@@ -297,7 +305,7 @@ class OLCandOrderFactory
 			order.setSalesPartnerCode(salesPartner.getSalesPartnerCode());
 		}
 
-		if (candidateOfGroup.getAsyncBatchId() != null)
+		if (candidateOfGroup.getAsyncBatchId() != null && propagateAsyncBatchIdToOrderRecord)
 		{
 			order.setC_Async_Batch_ID(candidateOfGroup.getAsyncBatchId().getRepoId());
 		}
@@ -315,6 +323,12 @@ class OLCandOrderFactory
 		order.setBPartnerName(candidateOfGroup.getBpartnerName());
 		order.setEMail(candidateOfGroup.getEmail());
 		order.setPhone(candidateOfGroup.getPhone());
+
+		if (candidateOfGroup.getIncotermsId() != null)
+		{
+			order.setC_Incoterms_ID(candidateOfGroup.getIncotermsId().getRepoId());
+			order.setIncotermLocation(candidateOfGroup.getIncotermLocation());
+		}
 
 		save(order);
 		return order;
@@ -436,9 +450,9 @@ class OLCandOrderFactory
 		orderDAO.save(mainOrderLineInGroup);
 
 		orderGroupsRepository.retrieveOrCreateGroup(GroupRepository.RetrieveOrCreateGroupRequest.builder()
-															.orderLineIds(orderLineIds)
-															.newGroupTemplate(createNewGroupTemplate(productId))
-															.build());
+				.orderLineIds(orderLineIds)
+				.newGroupTemplate(createNewGroupTemplate(productId))
+				.build());
 	}
 
 	@NonNull
@@ -554,7 +568,7 @@ class OLCandOrderFactory
 			if (candidate.isManualPrice())
 			{
 				currentOrderLine.setPriceEntered(candidate.getPriceActual());
-				if(sysConfigBL.getBooleanValue(SYSCONFIG_USE_QTY_UOM_ON_MANUAL_PRICE, false))
+				if (sysConfigBL.getBooleanValue(SYSCONFIG_USE_QTY_UOM_ON_MANUAL_PRICE, false))
 				{
 					currentOrderLine.setPrice_UOM_ID(candidate.getQty().getUomId().getRepoId());
 				}
