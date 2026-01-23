@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for AD_Column
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1082024214L;
+	private static final long serialVersionUID = -896246354L;
 
     /** Standard Constructor */
     public X_AD_Column (final Properties ctx, final int AD_Column_ID, @Nullable final String trxName)
@@ -610,6 +610,18 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	public boolean isSelectionColumn() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsSelectionColumn);
+	}
+
+	@Override
+	public void setIsShowFilterInactiveValues (final boolean IsShowFilterInactiveValues)
+	{
+		set_Value (COLUMNNAME_IsShowFilterInactiveValues, IsShowFilterInactiveValues);
+	}
+
+	@Override
+	public boolean isShowFilterInactiveValues() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsShowFilterInactiveValues);
 	}
 
 	@Override
