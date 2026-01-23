@@ -43,6 +43,7 @@ public class DocumentFieldDefaultFilterDescriptor
 	int defaultFilterSeqNo;
 	FilterOperator operator;
 	boolean showFilterIncrementButtons;
+	boolean showInactiveValues;
 	Object autoFilterInitialValue;
 	boolean showFilterInline;
 	@Nullable AdValRuleId adValRuleId;
@@ -58,7 +59,8 @@ public class DocumentFieldDefaultFilterDescriptor
 			final boolean defaultFilter,
 			final int defaultFilterSeqNo,
 			final FilterOperator operator,
-			final boolean showFilterIncrementButtons,
+			final boolean showFilterIncrementButtons, 
+			final boolean showInactiveValues,
 			final boolean showFilterInline,
 			@Nullable final Object autoFilterInitialValue,
 			@Nullable AdValRuleId adValRuleId,
@@ -78,6 +80,7 @@ public class DocumentFieldDefaultFilterDescriptor
 			this.defaultFilterSeqNo = defaultFilterSeqNo > 0 ? defaultFilterSeqNo : Integer.MAX_VALUE;
 			this.operator = operator != null ? operator : FilterOperator.EQUALS_OR_ILIKE;
 			this.showFilterIncrementButtons = showFilterIncrementButtons;
+			this.showInactiveValues = showInactiveValues;
 			this.autoFilterInitialValue = autoFilterInitialValue;
 			this.showFilterInline = showFilterInline;
 			this.adValRuleId = adValRuleId;
@@ -88,6 +91,7 @@ public class DocumentFieldDefaultFilterDescriptor
 			this.defaultFilterSeqNo = Integer.MAX_VALUE;
 			this.operator = FilterOperator.EQUALS_OR_ILIKE;
 			this.showFilterIncrementButtons = false;
+			this.showInactiveValues = false;
 			this.autoFilterInitialValue = null;
 			this.showFilterInline = false;
 			this.adValRuleId = null;
