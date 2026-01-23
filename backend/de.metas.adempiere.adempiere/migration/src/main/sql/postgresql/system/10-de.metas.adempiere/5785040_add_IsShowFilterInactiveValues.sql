@@ -21,10 +21,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(584455)
 ;
 
--- 2026-01-22T13:55:26.845Z
-/* DDL */ SELECT public.db_alter_table('AD_Column','ALTER TABLE public.AD_Column ADD COLUMN IsShowFilterInactiveValues CHAR(1) DEFAULT ''N'' CHECK (IsShowFilterInactiveValues IN (''Y'',''N'')) NOT NULL')
-;
-
 -- Column: AD_Field.IsShowFilterInactiveValues
 -- 2026-01-22T14:05:26.714Z
 INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,CloningStrategy,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,591881,584455,0,17,540528,107,'XX','IsShowFilterInactiveValues',TO_TIMESTAMP('2026-01-22 14:05:26.578000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'N','','D',0,1,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Show inactive values in filter',0,0,TO_TIMESTAMP('2026-01-22 14:05:26.578000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0)
@@ -36,10 +32,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2026-01-22T14:05:26.718Z
 /* DDL */  select update_Column_Translation_From_AD_Element(584455)
-;
-
--- 2026-01-22T14:05:28.927Z
-/* DDL */ SELECT public.db_alter_table('AD_Field','ALTER TABLE public.AD_Field ADD COLUMN IsShowFilterInactiveValues CHAR(1)')
 ;
 
 -- Field: Tabelle und Spalte(100,D) -> Spalte(101,D) -> Show inactive values in filter
