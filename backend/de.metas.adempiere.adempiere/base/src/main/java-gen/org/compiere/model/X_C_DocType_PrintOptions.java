@@ -1,17 +1,18 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_DocType_PrintOptions
  *  @author metasfresh (generated) 
  */
+@SuppressWarnings("unused")
 public class X_C_DocType_PrintOptions extends org.compiere.model.PO implements I_C_DocType_PrintOptions, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -67888006L;
+	private static final long serialVersionUID = 458533581L;
 
     /** Standard Constructor */
     public X_C_DocType_PrintOptions (final Properties ctx, final int C_DocType_PrintOptions_ID, @Nullable final String trxName)
@@ -64,7 +65,7 @@ public class X_C_DocType_PrintOptions extends org.compiere.model.PO implements I
 	}
 
 	@Override
-	public void setDescription (final java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
@@ -85,7 +86,7 @@ public class X_C_DocType_PrintOptions extends org.compiere.model.PO implements I
 	/** Print = P */
 	public static final String DOCUMENTFLAVOR_Print = "P";
 	@Override
-	public void setDocumentFlavor (final java.lang.String DocumentFlavor)
+	public void setDocumentFlavor (final @Nullable java.lang.String DocumentFlavor)
 	{
 		set_Value (COLUMNNAME_DocumentFlavor, DocumentFlavor);
 	}
@@ -106,6 +107,18 @@ public class X_C_DocType_PrintOptions extends org.compiere.model.PO implements I
 	public boolean isPRINTER_OPTS_IsPrintLogo() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_PRINTER_OPTS_IsPrintLogo);
+	}
+
+	@Override
+	public void setPRINTER_OPTS_IsPrintPrices (final boolean PRINTER_OPTS_IsPrintPrices)
+	{
+		set_Value (COLUMNNAME_PRINTER_OPTS_IsPrintPrices, PRINTER_OPTS_IsPrintPrices);
+	}
+
+	@Override
+	public boolean isPRINTER_OPTS_IsPrintPrices() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_PRINTER_OPTS_IsPrintPrices);
 	}
 
 	@Override
