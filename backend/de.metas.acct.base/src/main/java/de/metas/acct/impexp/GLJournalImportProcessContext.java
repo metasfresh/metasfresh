@@ -22,10 +22,13 @@
 
 package de.metas.acct.impexp;
 
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.organization.OrgId;
 import de.metas.process.ProcessInfoParameter;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
@@ -34,9 +37,12 @@ import java.sql.Timestamp;
 @Builder
 public class GLJournalImportProcessContext
 {
-	int adClientId;
-	int adOrgId;
-	int cAcctSchemaId;
+	@Nullable
+	ClientId adClientId;
+	@Nullable
+	OrgId adOrgId;
+	@Nullable
+	AcctSchemaId cAcctSchemaId;
 	@Nullable
 	Timestamp dateAcct;
 

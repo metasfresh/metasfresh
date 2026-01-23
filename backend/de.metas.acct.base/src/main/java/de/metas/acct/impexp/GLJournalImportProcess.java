@@ -351,10 +351,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 		{
 			final AccountDimension taxAcctDim = newMinimalAccountDimension(importRecord, importRecord.getDR_Tax_Acct_ID());
 			final MAccount taxAcct = MAccount.get(getCtx(), taxAcctDim);
-			if (taxAcct.get_ID() == 0)
-			{
-				taxAcct.save();
-			}
+
 			if (taxAcct.get_ID() == 0)
 			{
 				importRecord.setI_ErrorMsg("ERROR creating Tax Account DR");
@@ -373,10 +370,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 		{
 			final AccountDimension taxAcctDim = newMinimalAccountDimension(importRecord, importRecord.getCR_Tax_Acct_ID());
 			final MAccount taxAcct = MAccount.get(getCtx(), taxAcctDim);
-			if (taxAcct.get_ID() == 0)
-			{
-				taxAcct.save();
-			}
+
 			if (taxAcct.get_ID() == 0)
 			{
 				importRecord.setI_ErrorMsg("ERROR creating Tax Account CR");
@@ -391,18 +385,18 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 		}
 
 		// Add tax accunt and amounts if exists
-		if ((importRecord.getDR_TaxTotalAmt() != null && importRecord.getDR_TaxTotalAmt().signum() != 0)
-				|| (importRecord.getCR_TaxTotalAmt() != null && importRecord.getCR_TaxTotalAmt().signum() != 0))
+		if (importRecord.getDR_TaxTotalAmt().signum() != 0
+				||  importRecord.getCR_TaxTotalAmt().signum() != 0)
 		{
 			if (importRecord.getC_ValidCombinationTaxFrom_ID() > 0 || importRecord.getC_ValidCombinationTaxTo_ID() > 0)
 			{
 
 				// Set tax amounts
-				if (importRecord.getDR_TaxTotalAmt() != null && importRecord.getDR_TaxTotalAmt().signum() != 0)
+				if (importRecord.getDR_TaxTotalAmt().signum() != 0)
 				{
 					line.setAmtSourceDr(importRecord.getDR_TaxTotalAmt());
 				}
-				if (importRecord.getCR_TaxTotalAmt() != null && importRecord.getCR_TaxTotalAmt().signum() != 0)
+				if (importRecord.getCR_TaxTotalAmt().signum() != 0)
 				{
 					line.setAmtSourceCr(importRecord.getCR_TaxTotalAmt());
 				}

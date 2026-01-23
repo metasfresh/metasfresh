@@ -707,8 +707,8 @@ public class GLJournalImportTableSqlUpdater
 		// Set OrgTrx from Value
 		StringBuilder sql = new StringBuilder("UPDATE I_GLJournal i "
 				+ "SET AD_OrgTrx_ID=(SELECT o.AD_Org_ID FROM AD_Org o"
-				+ " WHERE o.Value=i.OrgValue AND o.IsSummary='N' AND i.AD_Client_ID=o.AD_Client_ID) "
-				+ "WHERE AD_OrgTrx_ID IS NULL AND OrgTrxValue IS NOT NULL"
+				+ " WHERE o.Value=coalesce(i.OrgTrxValue,i.OrgValue) AND o.IsSummary='N' AND i.AD_Client_ID=o.AD_Client_ID) "
+				+ "WHERE AD_OrgTrx_ID IS NULL AND (OrgTrxValue IS NOT NULL OR OrgValue IS NOT NULL)"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
 		int no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
