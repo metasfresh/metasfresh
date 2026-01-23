@@ -2,6 +2,7 @@ import { test } from '../../../playwright.config';
 import { FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../common';
 import { SALES_ORDER_WINDOW_ID } from '../WindowIds';
 import { waitForRecordSaved, waitForTabAllowsNew } from '../WebAPIValidation';
+import { PdfDownloader } from '../PdfDownloader';
 
 /**
  * Page object for Sales Order window (ID: 143).
@@ -360,7 +361,13 @@ export class SalesOrderPage {
       await page.waitForTimeout(200);
 
       await page.keyboard.press('Alt+6');
-      await page.waitForTimeout(1000);
+
+      // Wait for Alt+6 side panel to open
+      // The panel has class 'order-list-panel-open' when visible
+      await page.locator('.order-list-panel-open').waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
 
       await page.locator('.rotating, .spinner').waitFor({
         state: 'detached',
@@ -369,7 +376,9 @@ export class SalesOrderPage {
 
       // Click on Shipment Schedule link using data-cy attribute (language-independent)
       // This corresponds to the M_ShipmentSchedule reference
-      await page.locator('[data-cy="reference-M_ShipmentSchedule"]').click();
+      const link = page.locator('[data-cy="reference-M_ShipmentSchedule"]');
+      await link.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await link.click();
 
       await page.waitForURL(/\/window\/500221/, {
         timeout: SLOW_ACTION_TIMEOUT,
@@ -402,7 +411,13 @@ export class SalesOrderPage {
       await page.waitForTimeout(200);
 
       await page.keyboard.press('Alt+6');
-      await page.waitForTimeout(1000);
+
+      // Wait for Alt+6 side panel to open
+      // The panel has class 'order-list-panel-open' when visible
+      await page.locator('.order-list-panel-open').waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
 
       await page.locator('.rotating, .spinner').waitFor({
         state: 'detached',
@@ -410,8 +425,10 @@ export class SalesOrderPage {
       }).catch(() => {});
 
       // Click on Shipment link using data-cy attribute (language-independent)
-      // AD_RelationType_ID 540159 = "Shipment (Customer)" relation
-      await page.locator('[data-cy="reference-AD_RelationType_ID-540159"]').click();
+      // Uses InternalName from AD_RelationType (C_Order -> M_InOut SOTrx)
+      const link = page.locator('[data-cy="reference-C_Order_to_M_InOut_SO"]');
+      await link.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await link.click();
 
       await page.waitForURL(/\/window\/169/, {
         timeout: SLOW_ACTION_TIMEOUT,
@@ -444,7 +461,13 @@ export class SalesOrderPage {
       await page.waitForTimeout(200);
 
       await page.keyboard.press('Alt+6');
-      await page.waitForTimeout(1000);
+
+      // Wait for Alt+6 side panel to open
+      // The panel has class 'order-list-panel-open' when visible
+      await page.locator('.order-list-panel-open').waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
 
       await page.locator('.rotating, .spinner').waitFor({
         state: 'detached',
@@ -453,7 +476,9 @@ export class SalesOrderPage {
 
       // Click on Invoice Candidate link using data-cy attribute (language-independent)
       // The reference is: reference-C_Invoice_Candidate_Sales (not just C_Invoice_Candidate)
-      await page.locator('[data-cy="reference-C_Invoice_Candidate_Sales"]').click();
+      const link = page.locator('[data-cy="reference-C_Invoice_Candidate_Sales"]');
+      await link.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await link.click();
 
       // Sales IC window is 540092, not 540983 (purchase)
       await page.waitForURL(/\/window\/540092/, {
@@ -478,29 +503,7 @@ export class SalesOrderPage {
    * This opens the PDF generation modal for the sales order.
    */
   static async openPrintModal() {
-    return await test.step('SalesOrderPage - Open print modal (Alt+P)', async () => {
-      const page = getPage();
-
-      // Focus page first
-      await page.locator('body').click();
-      await page.waitForTimeout(200);
-
-      // Press Alt+P to open print modal
-      await page.keyboard.press('Alt+P');
-
-      // Two-step wait pattern: Wait for modal container first
-      await page
-        .locator('.modal-content, .modal, .panel-modal')
-        .waitFor({
-          state: 'visible',
-          timeout: SLOW_ACTION_TIMEOUT,
-        });
-
-      // Wait for modal content to load
-      await page.waitForTimeout(500);
-
-      console.log('Print modal opened successfully');
-    });
+    return await PdfDownloader.openPrintModal('SalesOrderPage');
   }
 
   /**
@@ -509,89 +512,7 @@ export class SalesOrderPage {
    * @returns {Promise<Download>} Playwright download object
    */
   static async downloadPDF() {
-    return await test.step('SalesOrderPage - Download PDF', async () => {
-      const page = getPage();
-      const fs = require('fs');
-      const path = require('path');
-
-      // Wait for modal to be fully loaded and buttons to be ready
-      await page.waitForTimeout(1000);
-
-      // Find the Print button using data-testid (language-independent)
-      const printButton = page.getByTestId('print-modal-button');
-
-      await printButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-
-      // Set up both download and popup listeners BEFORE clicking
-      const downloadPromise = page.waitForEvent('download', {
-        timeout: VERY_SLOW_ACTION_TIMEOUT,
-      }).catch(() => null); // Don't fail if download doesn't happen
-
-      const popupPromise = page.waitForEvent('popup', {
-        timeout: VERY_SLOW_ACTION_TIMEOUT,
-      }).catch(() => null); // Don't fail if popup doesn't happen
-
-      console.log('Clicking Print button...');
-      await printButton.click();
-
-      // Wait for either download OR popup
-      const result = await Promise.race([
-        downloadPromise.then(d => d ? { type: 'download', data: d } : null),
-        popupPromise.then(p => p ? { type: 'popup', data: p } : null),
-      ]);
-
-      if (!result || !result.data) {
-        throw new Error('Neither download nor popup occurred after clicking print button');
-      }
-
-      if (result.type === 'download') {
-        console.log('PDF download started:', result.data.suggestedFilename());
-        return result.data;
-      } else {
-        // Handle popup - PDF opened in new tab
-        console.log('PDF opened in new tab');
-        const popup = result.data;
-
-        // Wait for popup to load the PDF
-        await popup.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
-
-        const pdfUrl = popup.url();
-        console.log('PDF URL:', pdfUrl);
-
-        // Download PDF directly from the URL using fetch
-        const axios = require('axios');
-        const response = await axios.get(pdfUrl, {
-          responseType: 'arraybuffer',
-          headers: {
-            // Forward cookies from the browser context
-            Cookie: (await page.context().cookies()).map(c => `${c.name}=${c.value}`).join('; '),
-          },
-        });
-
-        const buffer = Buffer.from(response.data);
-
-        // Save to temp file
-        const tempDir = path.join(process.cwd(), 'test-results', 'temp-pdfs');
-        if (!fs.existsSync(tempDir)) {
-          fs.mkdirSync(tempDir, { recursive: true });
-        }
-
-        const timestamp = Date.now();
-        const tempPath = path.join(tempDir, `sales-order-${timestamp}.pdf`);
-        fs.writeFileSync(tempPath, buffer);
-
-        console.log('PDF downloaded from popup:', tempPath);
-
-        // Close the popup
-        await popup.close().catch(() => {});
-
-        // Return a mock download object with path() method
-        return {
-          suggestedFilename: () => `sales-order-${timestamp}.pdf`,
-          path: async () => tempPath,
-        };
-      }
-    });
+    return await PdfDownloader.downloadPdf('sales-order', 'SalesOrderPage');
   }
 
   /**
@@ -673,7 +594,13 @@ export class SalesOrderPage {
       await page.waitForTimeout(200);
 
       await page.keyboard.press('Alt+6');
-      await page.waitForTimeout(1000);
+
+      // Wait for Alt+6 side panel to open
+      // The panel has class 'order-list-panel-open' when visible
+      await page.locator('.order-list-panel-open').waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
 
       await page.locator('.rotating, .spinner').waitFor({
         state: 'detached',
@@ -681,10 +608,9 @@ export class SalesOrderPage {
       }).catch(() => {});
 
       // Click on Invoice link
-      // CRITICAL: Correct selector discovered through debugging
-      // Pattern: reference-AD_RelationType_ID-{ID} for relation-type-based references
-      // Invoice (Customer) uses AD_RelationType_ID-540160 (not a table-based pattern)
-      const invoiceLink = page.locator('[data-cy="reference-AD_RelationType_ID-540160"]').first();
+      // CRITICAL: Uses data-cy with InternalName from AD_RelationType
+      // C_Order_to_C_Invoice_SO = Sales Order -> Customer Invoice relation
+      const invoiceLink = page.locator('[data-cy="reference-C_Order_to_C_Invoice_SO"]').first();
 
       await invoiceLink.waitFor({
         state: 'visible',

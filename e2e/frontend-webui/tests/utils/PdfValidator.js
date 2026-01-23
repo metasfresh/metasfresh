@@ -63,10 +63,11 @@ class PdfValidator {
         overlapTolerance = 2,
         margins,
         pageSize,
+        skipDocNumberValidation = false,
       } = options;
 
-      // Validate required fields
-      if (!documentNo) {
+      // Validate required fields (unless skipped)
+      if (!documentNo && !skipDocNumberValidation) {
         throw new Error('documentNo is required for PDF validation');
       }
 
@@ -102,16 +103,20 @@ class PdfValidator {
       // ============================================================
       const errors = [];
 
-      // Validate document number
-      if (!text.includes(documentNo)) {
-        errors.push(
-          `Document Number Validation Failed:\n` +
-            `  Field: Document Number\n` +
-            `  Expected: "${documentNo}"\n` +
-            `  Actual: Not found in PDF`
-        );
-      } else {
-        console.log(`✓ Document number validated: ${documentNo}`);
+      // Validate document number (unless skipped)
+      if (documentNo && !skipDocNumberValidation) {
+        if (!text.includes(documentNo)) {
+          errors.push(
+            `Document Number Validation Failed:\n` +
+              `  Field: Document Number\n` +
+              `  Expected: "${documentNo}"\n` +
+              `  Actual: Not found in PDF`
+          );
+        } else {
+          console.log(`✓ Document number validated: ${documentNo}`);
+        }
+      } else if (skipDocNumberValidation) {
+        console.log(`⏭ Document number validation skipped (partial receipt)`);
       }
 
       // Validate customer name/code (if provided)
@@ -165,12 +170,19 @@ class PdfValidator {
             // Also match "1010" pattern (Pos. 10, Menge 10) or "10Stk" pattern
             const qtyWithUnitRegex = new RegExp(`(${quantity})(Stk|St|Stück|pcs|pc|pieces)`);
             const qtyDoubleRegex = new RegExp(`(\\d+)(${quantity})\\s`);
+            // Match price,00 followed by quantity followed by line number: "10,00510" = price(10,00) + qty(5) + line(10)
+            // Pattern: comma or period followed by digits, then our quantity, then more digits
+            const qtyAfterPriceRegex = new RegExp(`[.,]\\d{2}(${quantity})\\d`);
+            // Match quantity followed by digits (line number) without space
+            const qtyBeforeLineNoRegex = new RegExp(`(${quantity})\\d+\\s`);
 
             const quantityFound =
               qtyRegex.test(productLineText) ||
               qtyDecimalRegex.test(productLineText) ||
               qtyWithUnitRegex.test(productLineText) ||
-              qtyDoubleRegex.test(productLineText);
+              qtyDoubleRegex.test(productLineText) ||
+              qtyAfterPriceRegex.test(productLineText) ||
+              qtyBeforeLineNoRegex.test(productLineText);
 
             if (!quantityFound) {
               errors.push(

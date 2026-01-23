@@ -38,7 +38,8 @@ public class MobileUIDistributionConfigRepository
 					DistributionJobCaptionFormatItem.builder().field(DistributionJobCaptionField.PickDate).build(),
 					DistributionJobCaptionFormatItem.builder().field(DistributionJobCaptionField.Plant).build(),
 					DistributionJobCaptionFormatItem.builder().field(DistributionJobCaptionField.ProductValueAndName).build(),
-					DistributionJobCaptionFormatItem.builder().field(DistributionJobCaptionField.Qty).build()
+					DistributionJobCaptionFormatItem.builder().field(DistributionJobCaptionField.Qty).build(),
+					DistributionJobCaptionFormatItem.builder().field(DistributionJobCaptionField.PickingInstruction).build()
 			)))
 			.sorting(DistributionJobSorting.DEFAULT)
 			.build();

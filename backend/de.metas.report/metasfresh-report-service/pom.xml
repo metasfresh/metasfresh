@@ -35,7 +35,6 @@
     <artifactId>metasfresh-report-service</artifactId>
 
     <properties>
-        <migration-sql-basedir>42-de.metas.report.jasper.server</migration-sql-basedir>
         <metasfresh.version>[1,10.0.0]</metasfresh.version>
     </properties>
 

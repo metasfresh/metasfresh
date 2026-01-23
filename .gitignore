@@ -79,4 +79,9 @@ misc/services/camel/de-metas-camel-shipping/tmp/
 
 # dev-mode artifacts extracted from CI images
 .dev-artifacts/
+
+# Local CI/CD output logs
+act_output_*.txt
+nul
+
 /mcp-scripts/**/*

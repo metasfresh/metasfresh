@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
 @ghActions:run_on_executor2
 Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
+## F00700: Invoice
 
   Background:
     Given infrastructure and metasfresh are running
@@ -10,6 +14,9 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
     And metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   @Id:S0156.2_100
   Scenario:
   In:
@@ -98,6 +105,9 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | invoiceLine1_1              | p_1                     | 100         | true      | 2                | 2               | 52.71          | 0            |
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   @Id:S0156.2_110
   Scenario:
   In:
@@ -186,6 +196,9 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | invoiceLine1_1              | p_1                     | 150         | true      | 2                | 2               | 73.97          | 0            |
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   @Id:S0156.2_120
   Scenario:
   In:
@@ -274,6 +287,9 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | invoiceLine1_1              | p_1                     | 102         | true      | 2                | 2               | 54.03          | 0            |
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   @Id:S0156.2_130
   Scenario:
   In:
@@ -362,6 +378,9 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | invoiceLine1_1              | p_1                     | 148         | true      | 2                | 2               | 71.37          | 0            |
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   @Id:S0156.2_140
   Scenario:
   In:
@@ -444,6 +463,9 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | invoiceLine1_1              | p_1                     | 153         | true      | 2                | 2               | 306            | 0            |
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   @Id:S0156.2_150
   Scenario:
   In:
@@ -526,6 +548,9 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | invoiceLine1_1              | p_1                     | 98          | true      | 2                | 2               | 196            | 0            |
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   @Id:S0156.2_160
   Scenario:
   In:
@@ -612,6 +637,9 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | 540024                       | 1.00         | KGM                   | Nominal                  |
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   @Id:S0156.2_170
   Scenario:
   In:
@@ -697,6 +725,9 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | 540024                       | 1.00         | KGM                   | Nominal                  |
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   @Id:S0156.2_200
   Scenario:
   In:
@@ -783,6 +814,9 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | 540024                       | 1.00         | KGM                   | Nominal                  |
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   @Id:S0156.2_210
   Scenario:
   In:
@@ -870,6 +904,9 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | 540024                       | 1.00         | KGM                   | Nominal                  |
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   @Id:S0156.2_180
   Scenario:
   IN:
@@ -969,6 +1006,9 @@ Feature: Extend invoice-candidate test-coverage to IC QtyToInvoiceOverride
       | invoiceLine1_1              | p_1                     | 97          | true      | 1                | 1               | 97             | 0            |
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00700_Invoicing
+@F00700
   @Id:S0156.2_190
   Scenario:
   In:

@@ -23,6 +23,7 @@
 package de.metas.handlingunits.attribute.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HuId;
@@ -60,6 +61,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
@@ -299,6 +301,23 @@ public class HUAttributesBL implements IHUAttributesBL
 				throw new AdempiereException(messageKey, attribute.getDisplayName(), productName);
 			}
 		}
+	}
+
+	@Override
+	public Optional<String> extractCommonAttributeValue(final ImmutableSet<HuId> huIds, final AttributeCode attributeCode)
+	{
+		if (huIds.isEmpty())
+		{
+			return Optional.empty();
+		}
+
+		final AttributeId attributeId = attributeDAO.retrieveActiveAttributeIdByValueOrNull(attributeCode);
+		if (attributeId == null)
+		{
+			return Optional.empty();
+		}
+
+		return huAttributesDAO.extractCommonStringAttributeValue(huIds, attributeId);
 	}
 
 	@Override

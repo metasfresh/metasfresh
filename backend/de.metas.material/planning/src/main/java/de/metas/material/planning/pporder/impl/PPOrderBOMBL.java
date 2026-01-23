@@ -170,6 +170,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		orderBOMLine.setM_ChangeNotice_ID(bomLine.getM_ChangeNotice_ID());
 		orderBOMLine.setDescription(bomLine.getDescription());
 		orderBOMLine.setHelp(bomLine.getHelp());
+		orderBOMLine.setPickingInstruction(bomLine.getPickingInstruction());
 		orderBOMLine.setAssay(bomLine.getAssay());
 		orderBOMLine.setQtyBatch(bomLine.getQtyBatch());
 		orderBOMLine.setQtyBOM(bomLine.getQtyBOM());

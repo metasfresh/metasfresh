@@ -22,6 +22,8 @@ import de.metas.distribution.mobileui.external_services.warehouse.DistributionWa
 import de.metas.distribution.mobileui.external_services.warehouse.LocatorInfo;
 import de.metas.distribution.mobileui.external_services.warehouse.WarehouseInfo;
 import de.metas.handlingunits.HuId;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -32,6 +34,7 @@ import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.warehouse.LocatorId;
+import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
@@ -125,6 +128,13 @@ public class DistributionJobLoaderSupportingServices
 	{
 		final PPOrderId ppOrderId = PPOrderId.ofRepoIdOrNull(ddOrder.getForward_PP_Order_ID());
 		return ppOrderId != null ? sourceDocService.getManufacturingOrderRef(ppOrderId) : null;
+	}
+
+	@NonNull
+	public ITranslatableString getPickingInstruction(@NonNull final I_DD_Order ddOrder)
+	{
+		final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(ddOrder.getForward_PP_Order_BOMLine_ID());
+		return orderBOMLineId != null ? sourceDocService.getPickingInstruction(orderBOMLineId) : TranslatableStrings.empty();
 	}
 
 	@NonNull

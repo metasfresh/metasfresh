@@ -1,7 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00102
 @topic:invoiceAddress
 @ghActions:run_on_executor5
 Feature: Compensation Group
+## F00102: Compensation Group
 
   Background:
     Given infrastructure and metasfresh are running

@@ -1,5 +1,6 @@
 import { Backend } from '../../utils/screens/Backend';
 import { test } from '../../../playwright.config';
+import { allure } from 'allure-playwright';
 import { LoginScreen } from '../../utils/screens/LoginScreen';
 import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScreen';
 import { ManufacturingJobsListScreen } from '../../utils/screens/manufacturing/ManufacturingJobsListScreen';
@@ -30,7 +31,7 @@ const createMasterdata = async () => {
                             // Auto-issue component: the test framework supports an optional issueMethod flag
                             { product: 'COMP_AUTO', qty: 1, issueMethod: 'IssueOnlyForReceived' },
                             // Manual issue component
-                            { product: 'COMP_MANUAL', qty: 1 },
+                            { product: 'COMP_MANUAL', qty: 1, issueMethod: 'Backflush' /* atm works exactly like `Issue` */ },
                         ],
                     },
                 },
@@ -40,7 +41,7 @@ const createMasterdata = async () => {
             },
             handlingUnits: {
                 HU_AUTO: { product: 'COMP_AUTO', warehouse: 'wh', qty: 100, sourceHU: true },
-                HU_MAN: { product: 'COMP_MANUAL', warehouse: 'wh', qty: 100 },
+                HU_MAN: { product: 'COMP_MANUAL', warehouse: 'wh', qty: 1000 },
             },
             manufacturingOrders: {
                 PP1: {
@@ -56,6 +57,13 @@ const createMasterdata = async () => {
 
 // noinspection JSUnusedLocalSymbols
 test('Auto-issue first line hides Scan button; manual second line shows it', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0160: Manufacturing Execution');
+    allure.tag('F8030: MobileUI Manufacturing');
+    allure.tag('F8030');  // Standalone tag for Tags section;
+    allure.story('Auto-issue BOM component behavior');
+    allure.severity('normal');
+
     const masterdata = await createMasterdata();
 
     await LoginScreen.login(masterdata.login.user);
@@ -102,7 +110,7 @@ test('Auto-issue first line hides Scan button; manual second line shows it', asy
             hus: {
                 'HU_FINISHED_GOODS_1': { huStatus: 'A', storages: { 'BOM': '1 PCE' } },
                 'HU_AUTO': { huStatus: 'A', storages: { 'COMP_AUTO': '99 PCE' } },
-                'HU_MAN': { huStatus: 'A', storages: { 'COMP_MANUAL': '100 PCE' } },
+                'HU_MAN': { huStatus: 'A', storages: { 'COMP_MANUAL': '1000 PCE' } },
             }
         });
     });
@@ -131,7 +139,32 @@ test('Auto-issue first line hides Scan button; manual second line shows it', asy
                 'HU_FINISHED_GOODS_1': { huStatus: 'A', storages: { 'BOM': '1 PCE' } },
                 'HU_FINISHED_GOODS_2': { huStatus: 'A', storages: { 'BOM': '9 PCE' } },
                 'HU_AUTO': { huStatus: 'A', storages: { 'COMP_AUTO': '90 PCE' } },
-                'HU_MAN': { huStatus: 'A', storages: { 'COMP_MANUAL': '100 PCE' } },
+                'HU_MAN': { huStatus: 'A', storages: { 'COMP_MANUAL': '1000 PCE' } },
+            }
+        });
+    });
+
+    await test.step('Issue COMP_MANUAL (regression)', async () => {
+        await ManufacturingJobScreen.issueRawProduct({
+            index: 2,
+            expectQtyEntered: 100,
+            qrCode: masterdata.handlingUnits.HU_MAN.qrCode,
+        });
+
+        await Backend.expect({
+            manufacturings: {
+                [jobId]: {
+                    receivedHUs: [
+                        { lu: 'HU_FINISHED_GOODS_1', qty: '1 PCE' },
+                        { lu: 'HU_FINISHED_GOODS_2', qty: '9 PCE' },
+                    ]
+                }
+            },
+            hus: {
+                'HU_FINISHED_GOODS_1': { huStatus: 'A', storages: { 'BOM': '1 PCE' } },
+                'HU_FINISHED_GOODS_2': { huStatus: 'A', storages: { 'BOM': '9 PCE' } },
+                'HU_AUTO': { huStatus: 'A', storages: { 'COMP_AUTO': '90 PCE' } },
+                'HU_MAN': { huStatus: 'A', storages: { 'COMP_MANUAL': '900 PCE' } },
             }
         });
     });

@@ -1,5 +1,6 @@
 import { Backend } from '../../utils/screens/Backend';
 import { test } from '../../../playwright.config';
+import { allure } from 'allure-playwright';
 import { LoginScreen } from '../../utils/screens/LoginScreen';
 import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScreen';
 import { PickingJobsListScreen } from '../../utils/screens/picking/PickingJobsListScreen';
@@ -47,6 +48,13 @@ const createMasterdata = async ({ externalBarcode } = {}) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Pick by scanning ExternalBarcode attribute', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');  // Standalone tag for Tags section;
+    allure.story('Pick by external barcode attribute');
+    allure.severity('normal');
+
     const externalBarcode = "EXT" + Date.now();
     const masterdata = await createMasterdata({ externalBarcode });
 

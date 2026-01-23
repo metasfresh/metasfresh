@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/order/report" uuid="5f0022aa-eb3f-4217-b976-dc8c02ccecd8">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -19,6 +19,12 @@
 	</parameter>
 	<parameter name="displayhu" class="java.lang.String">
 		<parameterDescription><![CDATA[]]></parameterDescription>
+	</parameter>
+	<parameter name="PRINTER_OPTS_IsPrintPrices" class="java.lang.String">
+		<defaultValueExpression><![CDATA["Y"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="PRINTER_OPTS_IsPrintTotals" class="java.lang.String">
+		<defaultValueExpression><![CDATA["Y"]]></defaultValueExpression>
 	</parameter>
 	<queryString>
 		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details($P{c_order_id}, $P{ad_language});]]>
@@ -224,6 +230,7 @@
 			<textField>
 				<reportElement key="textField-20" x="431" y="7" width="36" height="12" forecolor="#000000" uuid="f067526f-8425-4403-b747-4e335c927f94">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<printWhenExpression><![CDATA[$P{PRINTER_OPTS_IsPrintPrices}.equals("Y")]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
@@ -273,7 +280,7 @@
 	</pageHeader>
 	<columnHeader>
 		<band height="12" splitType="Stretch">
-			<printWhenExpression><![CDATA[new Boolean($V{PAGE_COUNT}.intValue() > 1)]]></printWhenExpression>
+			<printWhenExpression><![CDATA[new Boolean($V{PAGE_COUNT}.intValue() > 1) && $P{PRINTER_OPTS_IsPrintTotals}.equals("Y")]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-50" mode="Transparent" x="470" y="0" width="75" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="8179748d-b1ef-42c7-bdb6-2a8298a17a3d">
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
@@ -408,6 +415,7 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-20" x="431" y="0" width="36" height="12" forecolor="#000000" uuid="61afa9a6-bbb5-471f-ba1f-7f0a23db20e3">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<printWhenExpression><![CDATA[$P{PRINTER_OPTS_IsPrintPrices}.equals("Y")]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -603,6 +611,7 @@
 	</pageFooter>
 	<lastPageFooter>
 		<band height="12" splitType="Stretch">
+			<printWhenExpression><![CDATA[$P{PRINTER_OPTS_IsPrintTotals}.equals("Y")]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-52" mode="Transparent" x="37" y="0" width="201" height="12" forecolor="#000000" uuid="a2f45176-d00b-4244-a534-f1db9f5cb54c">
 					<printWhenExpression><![CDATA[( $V{LINESUM_SUM}.intValue() > 0 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>

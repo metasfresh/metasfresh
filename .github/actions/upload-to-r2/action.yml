@@ -1,0 +1,81 @@
+name: 'Upload to R2'
+description: 'Upload files to Cloudflare R2 storage for test reports'
+
+inputs:
+  source-dir:
+    description: 'Local directory to upload'
+    required: true
+  r2-path:
+    description: 'Destination path suffix in R2 (e.g., raw/junit-xml/jest/)'
+    required: true
+  branch:
+    description: 'Branch name (sanitized for R2 path)'
+    required: true
+  version:
+    description: 'Build version tag'
+    required: true
+  access-key-id:
+    description: 'R2 access key ID'
+    required: true
+  secret-access-key:
+    description: 'R2 secret access key'
+    required: true
+  endpoint-url:
+    description: 'R2 S3-compatible endpoint URL'
+    required: true
+  bucket-name:
+    description: 'R2 bucket name'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Check if source directory exists
+      id: check-source
+      shell: bash
+      run: |
+        if [ -d "${{ inputs.source-dir }}" ] && [ "$(ls -A ${{ inputs.source-dir }} 2>/dev/null)" ]; then
+          echo "has_files=true" >> $GITHUB_OUTPUT
+          echo "Found files to upload in ${{ inputs.source-dir }}"
+          ls -la "${{ inputs.source-dir }}"
+        else
+          echo "has_files=false" >> $GITHUB_OUTPUT
+          echo "::warning::No files found in ${{ inputs.source-dir }} - skipping upload"
+        fi
+
+    - name: Install AWS CLI if needed
+      if: steps.check-source.outputs.has_files == 'true'
+      shell: bash
+      run: |
+        if ! command -v aws &> /dev/null; then
+          echo "Installing AWS CLI..."
+          curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip -q awscliv2.zip
+          sudo ./aws/install
+          rm -rf awscliv2.zip aws/
+          echo "AWS CLI installed"
+        else
+          echo "AWS CLI already available"
+        fi
+
+    - name: Upload to R2
+      if: steps.check-source.outputs.has_files == 'true'
+      shell: bash
+      env:
+        AWS_ACCESS_KEY_ID: ${{ inputs.access-key-id }}
+        AWS_SECRET_ACCESS_KEY: ${{ inputs.secret-access-key }}
+        AWS_DEFAULT_REGION: auto
+      run: |
+        # Configure for 50 concurrent uploads
+        aws configure set default.s3.max_concurrent_requests 50
+
+        # Construct full R2 path
+        R2_FULL_PATH="branches/${{ inputs.branch }}/builds/${{ inputs.version }}/${{ inputs.r2-path }}"
+
+        echo "Uploading to R2: s3://${{ inputs.bucket-name }}/${R2_FULL_PATH}"
+
+        aws s3 sync "${{ inputs.source-dir }}" "s3://${{ inputs.bucket-name }}/${R2_FULL_PATH}" \
+          --endpoint-url "${{ inputs.endpoint-url }}" \
+          --no-progress
+
+        echo "Upload complete: $(du -sh ${{ inputs.source-dir }} | cut -f1) uploaded to ${R2_FULL_PATH}"
