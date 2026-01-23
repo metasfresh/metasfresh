@@ -13,11 +13,7 @@ import java.util.Properties;
 public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, org.compiere.model.I_Persistent 
 {
 
-<<<<<<< HEAD
-	private static final long serialVersionUID = 1082024214L;
-=======
 	private static final long serialVersionUID = -896246354L;
->>>>>>> b02aa77b0c (Add support for inactive value handling in filters and process params (#21920))
 
     /** Standard Constructor */
     public X_AD_Column (final Properties ctx, final int AD_Column_ID, @Nullable final String trxName)
