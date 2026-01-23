@@ -38,6 +38,56 @@ import { PdfDownloader } from '../PdfDownloader';
 export class ReceiptCandidatesPage {
 
   /**
+   * Ensure no modal overlays are blocking the page.
+   *
+   * This method waits for any modal overlays (screen-freeze, raw-modal) to be
+   * removed from the DOM before proceeding. This prevents "element intercepts
+   * pointer events" errors when trying to click elements on the main page.
+   *
+   * @param {number} [timeout=SLOW_ACTION_TIMEOUT] - Maximum time to wait
+   */
+  static async ensureNoModalBlocking(timeout = SLOW_ACTION_TIMEOUT) {
+    return await test.step('ReceiptCandidatesPage - Ensure no modal blocking', async () => {
+      const page = getPage();
+
+      // Wait for screen-freeze overlay to be removed
+      await page.locator('.screen-freeze').waitFor({
+        state: 'detached',
+        timeout: timeout,
+      }).catch(() => {
+        // No overlay present, which is fine
+      });
+
+      // Wait for raw-modal to be removed
+      await page.locator('.raw-modal').waitFor({
+        state: 'detached',
+        timeout: timeout,
+      }).catch(() => {
+        // No modal present, which is fine
+      });
+
+      // Wait for modal-done button to be removed (confirms modal is fully closed)
+      await page.getByTestId('modal-done').waitFor({
+        state: 'detached',
+        timeout: timeout,
+      }).catch(() => {
+        // No done button present, which is fine
+      });
+
+      // Wait for any spinners/loaders to complete
+      await page.locator('.rotating, .indicator-pending, .loader, .spinner').waitFor({
+        state: 'detached',
+        timeout: timeout,
+      }).catch(() => {
+        // No spinners present, which is fine
+      });
+
+      // Final stabilization wait
+      await page.waitForTimeout(300);
+    });
+  }
+
+  /**
    * Execute the default Quick Action (simple approach).
    *
    * Clicks the quick action button which executes the default action.
@@ -73,10 +123,16 @@ export class ReceiptCandidatesPage {
    * Open the Quick Actions dropdown.
    *
    * Clicks the dropdown toggle button (down arrow) to show all available actions.
+   *
+   * IMPORTANT: This method first ensures no modal overlays are blocking the page.
+   * This prevents "element intercepts pointer events" errors after modal operations.
    */
   static async openQuickActionsDropdown() {
     return await test.step('ReceiptCandidatesPage - Open Quick Actions dropdown', async () => {
       const page = getPage();
+
+      // CRITICAL: Ensure no modal is blocking before trying to click
+      await this.ensureNoModalBlocking();
 
       // Language-independent: Use data-testid added in Phase 2
       const dropdownToggle = page.getByTestId('quick-action-dropdown-toggle');
@@ -385,6 +441,10 @@ export class ReceiptCandidatesPage {
 
   /**
    * Close the HU Editor modal by clicking "Done".
+   *
+   * IMPORTANT: This method uses a robust wait pattern to ensure the modal
+   * is fully closed before returning. This prevents "intercepts pointer events"
+   * errors on subsequent actions.
    */
   static async closeHUEditorModal() {
     return await test.step('ReceiptCandidatesPage - Close HU Editor modal', async () => {
@@ -402,9 +462,29 @@ export class ReceiptCandidatesPage {
 
       // CRITICAL: Wait for the modal overlay (screen-freeze) to be removed
       // This prevents "intercepts pointer events" errors on subsequent actions
-      await page.locator('.screen-freeze, .raw-modal').waitFor({
+
+      // Wait for compound class selector (element with both classes)
+      await page.locator('.screen-freeze.raw-modal').waitFor({
         state: 'detached',
         timeout: VERY_SLOW_ACTION_TIMEOUT,
+      }).catch(() => {
+        // Try individual selectors
+      });
+
+      // Wait for screen-freeze alone
+      await page.locator('.screen-freeze').waitFor({
+        state: 'detached',
+        timeout: SLOW_ACTION_TIMEOUT,
+      }).catch(() => {
+        // Might already be gone
+      });
+
+      // Wait for raw-modal alone
+      await page.locator('.raw-modal').waitFor({
+        state: 'detached',
+        timeout: SLOW_ACTION_TIMEOUT,
+      }).catch(() => {
+        // Might already be gone
       });
 
       // Also wait for modal content to be removed
@@ -414,6 +494,25 @@ export class ReceiptCandidatesPage {
       }).catch(() => {
         // Modal content might already be gone
       });
+
+      // Ensure the Done button is gone (confirms modal closed)
+      await page.getByTestId('modal-done').waitFor({
+        state: 'detached',
+        timeout: SLOW_ACTION_TIMEOUT,
+      }).catch(() => {
+        // Button might already be gone
+      });
+
+      // Wait for any spinners/loaders
+      await page.locator('.rotating, .indicator-pending, .loader, .spinner').waitFor({
+        state: 'detached',
+        timeout: SLOW_ACTION_TIMEOUT,
+      }).catch(() => {
+        // No spinners present
+      });
+
+      // Wait for network to settle
+      await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
 
       // Additional stabilization wait to ensure no lingering modal effects
       await page.waitForTimeout(500);
@@ -592,12 +691,33 @@ export class ReceiptCandidatesPage {
       // Step 10: Wait for HU Editor modal to fully close
       // CRITICAL: Wait for the modal overlay (screen-freeze) to be removed
       // This prevents "intercepts pointer events" errors on subsequent actions
-      await page.locator('.screen-freeze, .raw-modal').waitFor({
+
+      // Wait for screen-freeze overlay to be removed (compound selector for element with both classes)
+      await page.locator('.screen-freeze.raw-modal').waitFor({
         state: 'detached',
         timeout: VERY_SLOW_ACTION_TIMEOUT,
+      }).catch(() => {
+        // Try again with individual selectors
+        console.log('Compound selector detach failed, trying individual selectors');
       });
 
-      // Also ensure the Done button is gone (confirms modal closed)
+      // Also wait for screen-freeze alone (in case classes aren't combined)
+      await page.locator('.screen-freeze').waitFor({
+        state: 'detached',
+        timeout: SLOW_ACTION_TIMEOUT,
+      }).catch(() => {
+        // Might already be gone
+      });
+
+      // Also wait for raw-modal alone
+      await page.locator('.raw-modal').waitFor({
+        state: 'detached',
+        timeout: SLOW_ACTION_TIMEOUT,
+      }).catch(() => {
+        // Might already be gone
+      });
+
+      // Ensure the Done button is gone (confirms modal closed)
       await page.getByTestId('modal-done').waitFor({
         state: 'detached',
         timeout: SLOW_ACTION_TIMEOUT,
@@ -605,11 +725,21 @@ export class ReceiptCandidatesPage {
         // Button might already be gone
       });
 
+      // Wait for any remaining spinners/loaders
+      await page.locator('.rotating, .indicator-pending, .loader, .spinner').waitFor({
+        state: 'detached',
+        timeout: SLOW_ACTION_TIMEOUT,
+      }).catch(() => {
+        // No spinners present
+      });
+
       // Wait for page to stabilize after modal close
       await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
 
       // Additional stabilization wait to ensure no lingering modal effects
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(1000);
+
+      console.log(`Receipt created successfully for quantity ${quantity}`);
     });
   }
 
