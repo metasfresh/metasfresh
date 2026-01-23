@@ -34,7 +34,7 @@ import java.time.Instant;
 
 @Value
 @Builder
-protected static class GLJournalImportProcessContext
+class GLJournalImportProcessContext
 {
 	@NonNull ClientId adClientId;
 	@NonNull OrgId adOrgId;
