@@ -38,6 +38,7 @@ public class ExternalId implements Comparable<ExternalId>
 	 */
 	public static final ExternalId INVALID = ExternalId.of("INVALID");
 
+	@NonNull
 	String value;
 
 	@JsonCreator
@@ -80,6 +81,7 @@ public class ExternalId implements Comparable<ExternalId>
 	}
 
 	@JsonValue
+	@NonNull
 	public String getValue()
 	{
 		return value;

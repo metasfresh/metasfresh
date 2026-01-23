@@ -320,6 +320,13 @@
                         <encoding>UTF-8</encoding>
                         <source>${metasfresh.java.version}</source>
                         <target>${metasfresh.java.version}</target>
+                        <useIncrementalCompilation>true</useIncrementalCompilation>
+                        <!-- Force javac to generate .class files for package-info.java even if they only contain Javadoc.
+                             Without this, javac produces no .class file for Javadoc-only package-info.java, causing Maven
+                             to repeatedly mark them as "stale" and trigger full module recompilation (JDK-6960424). -->
+                        <compilerArgs>
+                            <arg>-Xpkginfo:always</arg>
+                        </compilerArgs>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -335,6 +342,12 @@
                     <groupId>org.jvnet.jaxb2.maven2</groupId>
                     <artifactId>maven-jaxb2-plugin</artifactId>
                     <version>0.14.0</version>
+                    <configuration>
+                        <!-- Suppress timestamp in generated file headers to avoid unnecessary git changes -->
+                        <args>
+                            <arg>-no-header</arg>
+                        </args>
+                    </configuration>
                 </plugin>
 
                 <plugin>
@@ -654,47 +667,6 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                                 <configuration>
                                     <descriptorRefs>
                                         <descriptorRef>configs</descriptorRef>
-                                    </descriptorRefs>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-
-        <profile>
-            <!-- If there is a sql directory, then this profile will activate and
-                zip up the migration SQL files in that directory. Note the property "migration-sql-basedir"
-                needs to be defined in that case -->
-            <id>postgres</id>
-            <activation>
-                <file>
-                    <exists>src/main/sql/postgresql/system</exists>
-                </file>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-assembly-plugin</artifactId>
-                        <dependencies>
-                            <dependency>
-                                <groupId>de.metas</groupId>
-                                <artifactId>metasfresh-assemblies</artifactId>
-                                <!-- version>${metasfresh.assembly.descriptor.version}</version -->
-                                <version>10.0.0</version>
-                            </dependency>
-                        </dependencies>
-                        <executions>
-                            <execution>
-                                <id>make-postgresql-assembly</id> <!-- this is used for inheritance merges -->
-                                <phase>package</phase> <!-- bind to the packaging phase -->
-                                <goals>
-                                    <goal>single</goal>
-                                </goals>
-                                <configuration>
-                                    <descriptorRefs>
-                                        <descriptorRef>migration_postgresql_system</descriptorRef>
                                     </descriptorRefs>
                                 </configuration>
                             </execution>

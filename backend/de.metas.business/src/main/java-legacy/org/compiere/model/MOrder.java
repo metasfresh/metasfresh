@@ -623,7 +623,7 @@ public class MOrder extends X_C_Order implements IDocument
 		// Tax
 		// MOrder otherOrder = fromLine.getC_Order ();
 		// if (getC_BPartner_ID() != otherOrder.getC_BPartner_ID())
-		line.setTax();        // recalculate
+		Services.get(IOrderLineBL.class).setTax(line); // recalculate
 		//
 		//
 		line.setProcessed(false);

@@ -57,4 +57,7 @@ public class JsonExternalSystemOutboundEndpoint
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	String password;
+	
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	String sasSignature;
 }

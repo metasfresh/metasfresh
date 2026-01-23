@@ -19,6 +19,7 @@ import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryCreate
 import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryProducer;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.report.labels.HULabelService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inventory.AggregationType;
@@ -86,6 +87,7 @@ public class InventoryService
 	@NonNull HuForInventoryLineFactory huForInventoryLineFactory;
 	@NonNull private final SourceHUsService sourceHUsService;
 	@NonNull private final HUQRCodesService huQRCodesService;
+	@NonNull private final HULabelService huLabelService;
 
 	private static final AdMessageKey MSG_EXISTING_LINES_WITH_DIFFERENT_HU_AGGREGATION_TYPE = AdMessageKey.of("de.metas.handlingunits.inventory.ExistingLinesWithDifferentHUAggregationType");
 
@@ -96,7 +98,8 @@ public class InventoryService
 		return new InventoryService(
 				new HuForInventoryLineFactory(),
 				SourceHUsService.get(),
-				HUQRCodesService.newInstanceForUnitTesting()
+				HUQRCodesService.newInstanceForUnitTesting(),
+				HULabelService.newInstanceForUnitTesting()
 		);
 	}
 
@@ -229,6 +232,7 @@ public class InventoryService
 				.inventoryRepository(inventoryRepository)
 				.sourceHUsService(sourceHUsService)
 				.huQRCodesService(huQRCodesService)
+				.huLabelService(huLabelService)
 				.inventory(inventory)
 				.build()
 				//

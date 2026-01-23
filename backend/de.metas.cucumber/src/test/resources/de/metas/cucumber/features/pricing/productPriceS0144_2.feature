@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
 @ghActions:run_on_executor6
 Feature: Product price validation (S0144_2)
+## F32000: Pricing
 
   Background:
 #  Prerequisite:
@@ -54,6 +58,9 @@ Feature: Product price validation (S0144_2)
       | bpartner_03062022 | BPartner03062022 | Y              | Y            | ps_03062022                   |
 
   @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
   @Id:S0144.2_100
   Scenario: Validate that productCategory.ASI is propagated on order line with default value if configured so (M_AttributeValue.IsNullFieldValue=Y)
     # disable all default values for attributes
@@ -91,6 +98,9 @@ Feature: Product price validation (S0144_2)
 
 
   @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
   @Id:S0144.2_110
   Scenario: Validate that productPrice attributes are preserved on order line prior to productCategory attributes
     # disable all default values for attributes
@@ -138,6 +148,9 @@ Feature: Product price validation (S0144_2)
 
 
   @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
   @Id:S0144.2_120
   @Id:S0150_200
   Scenario: Validate that productPrice attributes and packing material are preserved on order line
@@ -217,6 +230,9 @@ Feature: Product price validation (S0144_2)
       | ol_SO144.2_120            | order_S0144.2_120     | product_S0144.2_120     | 0            | 10         | 0           | 120   | 0        | EUR          | true      | ppASI_S0144.2_120                        | huProductTU                            |
 
   @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
   @Id:S0144.2_140
   Scenario: Validate that Age attribute set on productCategory.ASI has default value on order line if configured so (M_AttributeValue.IsNullFieldValue=Y)
     # disable all default values for attributes
@@ -258,6 +274,9 @@ Feature: Product price validation (S0144_2)
       | ol_SO144.2_140            | order_S0144.2_140     | 2022-06-02      | product_S0144.2_140     | 4          | 0            | 0           | 140   | 0        | EUR          | false     | attr_age:24                                  |
 
   @from:cucumber
+@allure.label.epic:E0260_Pricing
+@allure.label.feature:F32000_Pricing
+@F32000
   @Id:S0144.2_150
   Scenario: Validate that Age attribute set on productCategory.ASI doesn't have default value on order line if configured so (M_AttributeValue.IsNullFieldValue=N)
     # disable all default values for attributes

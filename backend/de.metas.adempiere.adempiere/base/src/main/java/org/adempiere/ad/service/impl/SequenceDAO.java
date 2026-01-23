@@ -34,11 +34,13 @@ import org.adempiere.ad.service.ISequenceDAO;
 import org.adempiere.ad.service.ITableSequenceChecker;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.compiere.model.I_AD_Sequence;
 import org.compiere.util.DB;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 import java.util.Properties;
 
 public class SequenceDAO implements ISequenceDAO
@@ -99,15 +101,16 @@ public class SequenceDAO implements ISequenceDAO
 
 	@Override
 	@NonNull
-	public I_AD_Sequence retrieveSequenceByName(@NonNull final String sequenceName)
+	public Optional<I_AD_Sequence> retrieveSequenceByName(@NonNull final String sequenceName, @NonNull final ClientId clientId)
 	{
 		return queryBL
 				.createQueryBuilder(I_AD_Sequence.class)
 				.addEqualsFilter(I_AD_Sequence.COLUMNNAME_Name, sequenceName)
+				.addEqualsFilter(I_AD_Sequence.COLUMNNAME_AD_Client_ID, clientId)
+				.addEqualsFilter(I_AD_Sequence.COLUMNNAME_IsTableID, false)
 				.addOnlyActiveRecordsFilter()
-				.orderByDescending(I_AD_Sequence.COLUMNNAME_AD_Client_ID)
 				.create()
-				.firstNotNull(I_AD_Sequence.class);
+				.firstOptional(I_AD_Sequence.class);
 	}
 
 	@Override

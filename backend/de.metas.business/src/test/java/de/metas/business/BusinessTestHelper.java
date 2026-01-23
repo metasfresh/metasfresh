@@ -373,6 +373,7 @@ public class BusinessTestHelper
 		final I_C_BP_Group bpGroupRecord = newInstanceOutOfTrx(I_C_BP_Group.class);
 		bpGroupRecord.setC_BP_Group_ID(BPGroupId.STANDARD.getRepoId());
 		bpGroupRecord.setName("Standard");
+		bpGroupRecord.setValue("Standard");
 		bpGroupRecord.setIsDefault(true);
 		setValue(bpGroupRecord, I_C_BP_Group.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId());
 
@@ -387,6 +388,7 @@ public class BusinessTestHelper
 		final I_C_BP_Group bpGroupRecord = newInstanceOutOfTrx(I_C_BP_Group.class);
 		POJOWrapper.setInstanceName(bpGroupRecord, name);
 		bpGroupRecord.setName(name);
+		bpGroupRecord.setValue(name);
 		bpGroupRecord.setIsDefault(isDefault);
 		setValue(bpGroupRecord, I_C_BP_Group.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId());
 

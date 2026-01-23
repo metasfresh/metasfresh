@@ -1,5 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00350_EDI
+@F00350
 Feature: import order candidate to metasfresh
+## F00350: EDI
 
   Background:
     Given infrastructure and metasfresh are running
@@ -57,6 +61,9 @@ Feature: import order candidate to metasfresh
 
 
   @from:cucumber
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00350_EDI
+@F00350
   Scenario: Properly identify M_HU_PI_Item_Product when metasfresh contains two different BPartners that share their main location but have different store locations; UPC is set on C_BPartner_Product
   _Given one main C_BPartner and one Subsidiary_BPartner that share their main location but their store locations are different
   _And 2 x M_HU_PI_Item_Product for each C_BPartner and for the same product
@@ -144,6 +151,9 @@ Feature: import order candidate to metasfresh
       | olCand_1               | bpartner1_1              | bpLocation_main1_1                | product                 | 10         | F            | S               | PORefTest       | Y       | N             | 101                                    |
 
   @from:cucumber
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00350_EDI
+@F00350
   Scenario: Properly identify M_HU_PI_Item_Product when metasfresh contains three different BPartners:first partner shares the same main location with the second one and same store location with the third one.
   _Given three BPartners, each of them having two locations: main and store
   _And MainBPartner shares its main location with BPartner2

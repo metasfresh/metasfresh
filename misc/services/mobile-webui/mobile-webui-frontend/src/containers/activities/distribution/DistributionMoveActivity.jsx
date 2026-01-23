@@ -7,8 +7,9 @@ import DistributionLineButton from './DistributionLineButton';
 import { getLinesArrayFromActivity } from '../../../reducers/wfProcesses';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import { trl } from '../../../utils/translations';
-import { distributionDropAllToScreenLocation } from '../../../routes/distribution';
+import { distributionDropAllToScreenLocation, distributionPickFromScreenLocation } from '../../../routes/distribution';
 import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
+import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 
 const DistributionMoveActivity = ({ applicationId, wfProcessId, activityId, activityState }) => {
   const history = useMobileNavigation();
@@ -16,6 +17,10 @@ const DistributionMoveActivity = ({ applicationId, wfProcessId, activityId, acti
   const {
     dataStored: { isUserEditable, hasLinesInTransit },
   } = activityState;
+
+  const onScannedCode = ({ scannedBarcode: huQRCode }) => {
+    history.goTo(distributionPickFromScreenLocation({ applicationId, wfProcessId, activityId, huQRCode }));
+  };
 
   const onDropAllToLocator = () => {
     history.push(
@@ -29,6 +34,7 @@ const DistributionMoveActivity = ({ applicationId, wfProcessId, activityId, acti
 
   return (
     <div className="mt-5">
+      <BarcodeScannerComponent isShowInputText={false} isShowVideo={false} onResolvedResult={onScannedCode} />
       {lines.map((line, lineIdx) => {
         const lineId = line.lineId;
         return (
@@ -50,7 +56,7 @@ const DistributionMoveActivity = ({ applicationId, wfProcessId, activityId, acti
       })}
       <ButtonWithIndicator
         testId="scanDropToLocator-button"
-        caption={trl('activities.distribution.scanLocator')}
+        caption={trl('activities.distribution.scanDropToLocator')}
         disabled={!isUserEditable || !hasLinesInTransit}
         onClick={onDropAllToLocator}
       />

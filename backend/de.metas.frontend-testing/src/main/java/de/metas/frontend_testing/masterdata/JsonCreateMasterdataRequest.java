@@ -30,6 +30,8 @@ import java.util.Map;
 @Jacksonized
 public class JsonCreateMasterdataRequest
 {
+	@Nullable Map<String, Object> context;
+	
 	@Nullable JsonMobileConfigRequest mobileConfig;
 	@Nullable Map<String, JsonLoginUserRequest> login;
 	@Nullable Map<String, JsonCreateBPartnerRequest> bpartners;
@@ -43,8 +45,8 @@ public class JsonCreateMasterdataRequest
 	@Nullable Map<String, JsonCreateHURequest> handlingUnits;
 	@Nullable Map<String, JsonGenerateHUQRCodeRequest> generatedHUQRCodes;
 	@Nullable Map<String, JsonSalesOrderCreateRequest> salesOrders;
-	@Nullable Map<String, JsonDDOrderRequest> distributionOrders;
 	@Nullable Map<String, JsonPPOrderRequest> manufacturingOrders;
+	@Nullable Map<String, JsonDDOrderRequest> distributionOrders;
 	@Nullable List<JsonCustomQRCodeFormatRequest> customQRCodeFormats;
 	@Nullable Map<String, JsonInventoryRequest> inventories;
 }

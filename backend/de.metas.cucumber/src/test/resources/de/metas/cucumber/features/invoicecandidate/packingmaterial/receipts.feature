@@ -1,6 +1,9 @@
 @from:cucumber
-@ghActions:run_on_executor1
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
 Feature: Packing material invoice candidates: receipts
+## F00701: Invoice Candidates
 
   Background:
     Given infrastructure and metasfresh are running
@@ -59,8 +62,12 @@ Feature: Packing material invoice candidates: receipts
       | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID | M_Product_ID    | Qty |
       | huPiItemPurchaseProduct | huPiItemTU      | purchaseProduct | 10  |
 
+  @ghActions:run_on_executor4
   @Id:S0160_100
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Order 10 TU, receive what was ordered, receipt automatically completed
   _Given TU packing material (IFCO) x 10 CUs
   _And order 10 x TU (IFCO) (100 CUs)
@@ -111,8 +118,12 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 10               |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 1                |
 
+  @ghActions:run_on_executor5
   @Id:S0160_110
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Order 10 TU, receive more than was ordered, receipt automatically completed
   _Given TU packing material (IFCO) x 10 CUs
   _And order 10 x TU (IFCO) (100 CUs)
@@ -163,8 +174,12 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 20               |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 2                |
 
+  @ghActions:run_on_executor6
   @Id:S0160_120
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Order 10 TU, receive less than was ordered, receipt automatically completed
   _Given TU packing material (IFCO) x 10 CUs
   _And order 10 x TU (IFCO) (100 CUs)
@@ -215,8 +230,12 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 5                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 1                |
 
+  @ghActions:run_on_executor7
   @Id:S0160_130
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Order 10 TU, receive without LU, receipt automatically completed
   _Given TU packing material (IFCO) x 10 CUs
   _And order 10 x TU (IFCO) (100 CUs)
@@ -269,8 +288,12 @@ Feature: Packing material invoice candidates: receipts
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 10               |
 
+  @ghActions:run_on_executor1
   @Id:S0160_140
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Order 10 TU, receive with no packing item, receipt automatically completed
   _Given packing material (IFCO) x10 CUs
   _And LU packing material (Tauschpalette) set up to carry TUs with no packing material
@@ -332,8 +355,12 @@ Feature: Packing material invoice candidates: receipts
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 1                |
 
+  @ghActions:run_on_executor2
   @Id:S0160_150
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Order 10 TU, receive with other packing instructions
   _Given 1x TU packing material x 10 CUs (IFCO) and 1x TU packing material x 5 CUs (G1)
   _And order 10 x TU (IFCO) (100 CUs)
@@ -403,8 +430,12 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 10               |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 1                |
 
+  @ghActions:run_on_executor3
   @Id:S0160_160
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Order 1000 Tus, so it doesn’t fit 1 LU, receive what was ordered, receipt automatically completed
   _Given TU packing material (IFCO) x 10 CUs
   _And LU packing material (Tauschpalette) x 76 TUs
@@ -462,8 +493,12 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 1064             |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 14               |
 
+  @ghActions:run_on_executor4
   @Id:S0160_170
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Reactivate receipt similar with case 100
   _Given TU packing material (IFCO) x 10 CUs
   _And order 10 x TU (IFCO) (100 CUs)
@@ -529,8 +564,12 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 0                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 0                |
 
+  @ghActions:run_on_executor5
   @Id:S0160_180
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Reactivate receipt similar with case 110
   _Given TU packing material (IFCO) x 10 CUs
   _And order 10 x TU (IFCO) (100 CUs)
@@ -595,8 +634,12 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 0                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 0                |
 
+  @ghActions:run_on_executor6
   @Id:S0160_190
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Reactivate receipt similar with case 120
   _Given TU packing material (IFCO) x 10 CUs
   _And order 10 x TU (IFCO) (100 CUs)
@@ -661,8 +704,12 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 0                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 0                |
 
+  @ghActions:run_on_executor7
   @Id:S0160_200
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Reactivate receipt similar with case 130
   _Given TU packing material (IFCO) x 10 CUs
   _And order 10 x TU (IFCO) (100 CUs)
@@ -742,8 +789,12 @@ Feature: Packing material invoice candidates: receipts
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 0                |
 
+  @ghActions:run_on_executor1
   @Id:S0160_210
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Reactivate receipt similar with case 140
   _Given packing material (IFCO) x10 CUs
   _And LU packing material (Tauschpalette) set up to carry TUs with no packing material
@@ -818,8 +869,12 @@ Feature: Packing material invoice candidates: receipts
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 0                |
 
+  @ghActions:run_on_executor2
   @Id:S0160_220
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Reactivate receipt similar with case 150
   _Given 1x TU packing material x 10 CUs (IFCO) and 1x TU packing material x 5 CUs (G1)
   _And order 10 x TU (IFCO) (100 CUs)
@@ -907,6 +962,9 @@ Feature: Packing material invoice candidates: receipts
   @flaky
   @Id:S0160_230
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Reactivate receipt similar with case 160
   _Given TU packing material (IFCO) x 10 CUs
   _And LU packing material (Tauschpalette) x 76 TUs
@@ -978,8 +1036,12 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 0                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 0                |
 
+  @ghActions:run_on_executor3
   @Id:S0160_240
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Complete receipt similar with case 170
   _Given TU packing material (IFCO) x 10 CUs
   _And order 10 x TU (IFCO) (100 CUs)
@@ -1053,8 +1115,12 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 10               |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 1                |
 
+  @ghActions:run_on_executor4
   @Id:S0160_241
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Reactivate receipt similar with case 100, increase qtys, complete again
   _Given TU packing material (IFCO) x 10 CUs
   _And order 10 x TU (IFCO) (100 CUs)
@@ -1134,8 +1200,12 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 20               |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 20               |
 
+  @ghActions:run_on_executor5
   @Id:S0160_242
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Reactivate receipt similar with case 100, decrease qtys, complete again
   _Given TU packing material (IFCO) x 10 CUs
   _And order 10 x TU (IFCO) (100 CUs)
@@ -1215,8 +1285,12 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 5                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 5                |
 
+  @ghActions:run_on_executor6
   @Id:S0160_250
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Complete receipt similar with case 180
   _Given TU packing material (IFCO) x 10 CUs
   _And order 10 x TU (IFCO) (100 CUs)
@@ -1300,8 +1374,12 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 20               |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 2                |
 
+  @ghActions:run_on_executor7
   @Id:S0160_260
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Complete receipt similar with case 190
   _Given TU packing material (IFCO) x 10 CUs
   _And order 10 x TU (IFCO) (100 CUs)
@@ -1388,6 +1466,9 @@ Feature: Packing material invoice candidates: receipts
   @flaky
   @Id:S0160_270
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Complete receipt similar with case 200
   _Given TU packing material (IFCO) x 10 CUs
   _And order 10 x TU (IFCO) (100 CUs)
@@ -1484,8 +1565,12 @@ Feature: Packing material invoice candidates: receipts
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 10               |
 
+  @ghActions:run_on_executor1
   @Id:S0160_280
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Complete receipt similar with case 210
   _Given TU packing material (IFCO) x10 CUs
   _And LU packing material (Tauschpalette) set up to carry TUs with no packing material
@@ -1577,8 +1662,12 @@ Feature: Packing material invoice candidates: receipts
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 1                |
 
+  @ghActions:run_on_executor2
   @Id:S0160_290
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Complete receipt similar with case 220
   _Given 1x TU packing material x 10 CUs (IFCO) and 1x TU packing material x 5 CUs (G1)
   _And order 10 x TU (IFCO) (100 CUs)
@@ -1682,8 +1771,12 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 10               |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 1                |
 
+  @ghActions:run_on_executor3
   @Id:S0160_300
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Complete receipt similar with case 230
   _Given TU packing material (IFCO) x 10 CUs
   _And LU packing material (Tauschpalette) x 76 TUs
@@ -1774,8 +1867,12 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 1064             |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 14               |
 
+  @ghActions:run_on_executor4
   @Id:S0160_310
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Close receipt similar with case 240
   _Given TU packing material (IFCO) x 10 CUs
   _And order 10 x TU (IFCO) (100 CUs)
@@ -1840,8 +1937,12 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 10               |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 1                |
 
+  @ghActions:run_on_executor5
   @Id:S0160_320
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Close receipt similar with case 250
   _Given TU packing material (IFCO) x 10 CUs
   _And order 10 x TU (IFCO) (100 CUs)
@@ -1906,8 +2007,12 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 20               |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 2                |
 
+  @ghActions:run_on_executor6
   @Id:S0160_330
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Close receipt similar with case 260
   _Given TU packing material (IFCO) x 10 CUs
   _And order 10 x TU (IFCO) (100 CUs)
@@ -1972,8 +2077,12 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 5                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 1                |
 
+  @ghActions:run_on_executor7
   @Id:S0160_340
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Close receipt similar with case 270
   _Given TU packing material (IFCO) x 10 CUs
   _And order 10 x TU (IFCO) (100 CUs)
@@ -2053,8 +2162,12 @@ Feature: Packing material invoice candidates: receipts
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 10               |
 
+  @ghActions:run_on_executor1
   @Id:S0160_350
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Close receipt similar with case 280
   _Given TU packing material (IFCO) x10 CUs
   _And LU packing material (Tauschpalette) set up to carry TUs with no packing material
@@ -2129,8 +2242,12 @@ Feature: Packing material invoice candidates: receipts
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 1                |
 
+  @ghActions:run_on_executor2
   @Id:S0160_360
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Close receipt similar with case 290
   _Given 1x TU packing material x 10 CUs (IFCO) and 1x TU packing material x 5 CUs (G1)
   _And order 10 x TU (IFCO) (100 CUs)
@@ -2215,8 +2332,12 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 10               |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 1                |
 
+  @ghActions:run_on_executor3
   @Id:S0160_370
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Close receipt similar with case 300
   _Given TU packing material (IFCO) x 10 CUs
   _And LU packing material (Tauschpalette) x 76 TUs
@@ -2288,8 +2409,12 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 1064             |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 14               |
 
+  @ghActions:run_on_executor4
   @Id:S0160_380
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Revert receipt similar with case 100
   _Given TU packing material (IFCO) x 10 CUs
   _And order 10 x TU (IFCO) (100 CUs)
@@ -2354,8 +2479,12 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 0                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 0                |
 
+  @ghActions:run_on_executor5
   @Id:S0160_390
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Revert receipt similar with case 110
   _Given TU packing material (IFCO) x 10 CUs
   _And order 10 x TU (IFCO) (100 CUs)
@@ -2420,8 +2549,12 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 0                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 0                |
 
+  @ghActions:run_on_executor6
   @Id:S0160_400
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Revert receipt similar with case 120
   _Given TU packing material (IFCO) x 10 CUs
   _And order 10 x TU (IFCO) (100 CUs)
@@ -2486,8 +2619,12 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 0                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 0                |
 
+  @ghActions:run_on_executor7
   @Id:S0160_410
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Revert receipt similar with case 130
   _Given TU packing material (IFCO) x 10 CUs
   _And order 10 x TU (IFCO) (100 CUs)
@@ -2567,8 +2704,12 @@ Feature: Packing material invoice candidates: receipts
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 0                |
 
+  @ghActions:run_on_executor1
   @Id:S0160_420
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Revert receipt similar with case 140
   _Given packing material (IFCO) x10 CUs
   _And LU packing material (Tauschpalette) set up to carry TUs with no packing material
@@ -2643,8 +2784,12 @@ Feature: Packing material invoice candidates: receipts
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 0                |
 
+  @ghActions:run_on_executor2
   @Id:S0160_430
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Revert receipt similar with case 150
   _Given 1x TU packing material x 10 CUs (IFCO) and 1x TU packing material x 5 CUs (G1)
   _And order 10 x TU (IFCO) (100 CUs)
@@ -2729,8 +2874,12 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 0                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 0                |
 
+  @ghActions:run_on_executor3
   @Id:S0160_440
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Revert receipt similar with case 160
   _Given TU packing material (IFCO) x 10 CUs
   _And LU packing material (Tauschpalette) x 76 TUs
@@ -2802,8 +2951,12 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 0                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 0                |
 
+  @ghActions:run_on_executor4
   @Id:S0160_450
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Void receipt similar with case 100
   _Given TU packing material (IFCO) x 10 CUs
   _And order 10 x TU (IFCO) (100 CUs)
@@ -2871,8 +3024,12 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 0                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 0                |
 
+  @ghActions:run_on_executor5
   @Id:S0160_460
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Void receipt similar with case 110
   _Given TU packing material (IFCO) x 10 CUs
   _And order 10 x TU (IFCO) (100 CUs)
@@ -2940,8 +3097,12 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 0                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 0                |
 
+  @ghActions:run_on_executor6
   @Id:S0160_470
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Void receipt similar with case 120
   _Given TU packing material (IFCO) x 10 CUs
   _And order 10 x TU (IFCO) (100 CUs)
@@ -3009,8 +3170,12 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 0                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 0                |
 
+  @ghActions:run_on_executor7
   @Id:S0160_480
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Void receipt similar with case 130
   _Given TU packing material (IFCO) x 10 CUs
   _And order 10 x TU (IFCO) (100 CUs)
@@ -3093,8 +3258,12 @@ Feature: Packing material invoice candidates: receipts
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 0                |
 
+  @ghActions:run_on_executor1
   @Id:S0160_490
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Void receipt similar with case 140
   _Given packing material (IFCO) x10 CUs
   _And LU packing material (Tauschpalette) set up to carry TUs with no packing material
@@ -3172,8 +3341,12 @@ Feature: Packing material invoice candidates: receipts
       | C_InvoiceCandidate_InOutLine_ID.Identifier | OPT.C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 0                |
 
+  @ghActions:run_on_executor1
   @Id:S0160_500
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Void receipt similar with case 150
   _Given 1x TU packing material x 10 CUs (IFCO) and 1x TU packing material x 5 CUs (G1)
   _And order 10 x TU (IFCO) (100 CUs)
@@ -3260,8 +3433,12 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 0                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 0                |
 
+  @ghActions:run_on_executor1
   @Id:S0160_510
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   Scenario: Void receipt similar with case 160
   _Given TU packing material (IFCO) x 10 CUs
   _And LU packing material (Tauschpalette) x 76 TUs

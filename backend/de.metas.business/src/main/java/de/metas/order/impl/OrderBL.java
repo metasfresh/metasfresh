@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -51,7 +51,7 @@ import de.metas.document.location.DocumentLocation;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
-import de.metas.incoterms.IIncotermsDAO;
+import de.metas.incoterms.Incoterms;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.lang.SOTrx;
@@ -84,6 +84,7 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
+import de.metas.project.service.ProjectRepository;
 import de.metas.quantity.Quantity;
 import de.metas.request.RequestTypeId;
 import de.metas.shipping.ShipperId;
@@ -104,6 +105,9 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
@@ -112,9 +116,10 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_Incoterms;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_Project;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
@@ -167,7 +172,10 @@ public class OrderBL implements IOrderBL
 	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
-	private final IIncotermsDAO incotermsDAO = Services.get(IIncotermsDAO.class);
+	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+
+	private final SpringContextHolder.Lazy<BPartnerOrderParamsRepository> bpartnerOrderParamsRepository = SpringContextHolder.lazyBean(BPartnerOrderParamsRepository.class);
+	private final SpringContextHolder.Lazy<ProjectRepository> projectRepository = SpringContextHolder.lazyBean(ProjectRepository.class);
 
 	@Override
 	public I_C_Order getById(@NonNull final OrderId orderId)
@@ -488,8 +496,7 @@ public class OrderBL implements IOrderBL
 
 		final I_C_DocType docType = docTypeBL.getById(docTypeId);
 
-		@Nullable
-		final CopyDescriptionAndDocumentNote copyDescriptionAndDocumentNote = CopyDescriptionAndDocumentNote.ofNullableCode(docType.getCopyDescriptionAndDocumentNote());
+		@Nullable final CopyDescriptionAndDocumentNote copyDescriptionAndDocumentNote = CopyDescriptionAndDocumentNote.ofNullableCode(docType.getCopyDescriptionAndDocumentNote());
 
 		if (copyDescriptionAndDocumentNote == null)
 		{
@@ -525,28 +532,24 @@ public class OrderBL implements IOrderBL
 		return params.flatMap(BPartnerOrderParams::getDeliveryViaRule);
 	}
 
-	private Optional<BPartnerOrderParams> retrieveBPartnerParams(@NonNull final I_C_Order orderRecord)
+	@Override
+	public Optional<BPartnerOrderParams> retrieveBPartnerParams(@NonNull final I_C_Order orderRecord)
 	{
 		final BPartnerId shipBPartnerId = BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_ID());
-		final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(coalesce(
-				orderRecord.getBill_BPartner_ID(),
-				orderRecord.getC_BPartner_ID()));
+		final BPartnerId billBPartnerId = coalesce(BPartnerId.ofRepoIdOrNull(orderRecord.getBill_BPartner_ID()), shipBPartnerId);
 		if (shipBPartnerId == null || billBPartnerId == null)
 		{
 			return Optional.empty(); // orderRecord is not yet ready
 		}
 
 		final SOTrx soTrx = SOTrx.ofBoolean(orderRecord.isSOTrx());
-
-		final BPartnerOrderParamsRepository bpartnerOrderParamsRepository = SpringContextHolder.instance.getBean(BPartnerOrderParamsRepository.class);
-
 		final BPartnerOrderParamsQuery query = BPartnerOrderParamsQuery.builder()
 				.shipBPartnerId(shipBPartnerId)
 				.billBPartnerId(billBPartnerId)
 				.soTrx(soTrx)
 				.build();
 
-		return Optional.of(bpartnerOrderParamsRepository.getBy(query));
+		return Optional.of(bpartnerOrderParamsRepository.get().getBy(query));
 	}
 
 	@Override
@@ -706,9 +709,9 @@ public class OrderBL implements IOrderBL
 	{
 		// TODO figure out what partnerBL.extractShipToLocation(bp); does
 		final I_C_BPartner_Location shipToLocationId = bpartnerDAO.retrieveBPartnerLocation(BPartnerLocationQuery.builder()
-																									.bpartnerId(BPartnerId.ofRepoId(bp.getC_BPartner_ID()))
-																									.type(Type.SHIP_TO)
-																									.build());
+				.bpartnerId(BPartnerId.ofRepoId(bp.getC_BPartner_ID()))
+				.type(Type.SHIP_TO)
+				.build());
 		if (shipToLocationId == null)
 		{
 			logger.error("MOrder.setBPartner - Has no Ship To Address: {}", bp);
@@ -755,11 +758,11 @@ public class OrderBL implements IOrderBL
 		OrderDocumentLocationAdapterFactory
 				.billLocationAdapter(order)
 				.setFrom(DocumentLocation.builder()
-								 .bpartnerId(newBPartnerLocationId.getBpartnerId())
-								 .bpartnerLocationId(newBPartnerLocationId.getBpartnerLocationId())
-								 .locationId(newBPartnerLocationId.getLocationCaptureId())
-								 .contactId(newContactId)
-								 .build());
+						.bpartnerId(newBPartnerLocationId.getBpartnerId())
+						.bpartnerLocationId(newBPartnerLocationId.getBpartnerLocationId())
+						.locationId(newBPartnerLocationId.getLocationCaptureId())
+						.contactId(newContactId)
+						.build());
 
 		return true; // found it
 	}
@@ -1036,6 +1039,12 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+	public boolean isSalesOrder(@NonNull final OrderId orderId)
+	{
+		return isSalesOrder(getById(orderId));
+	}
+
+	@Override
 	public boolean isRequisition(@NonNull final I_C_Order order)
 	{
 		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
@@ -1301,41 +1310,15 @@ public class OrderBL implements IOrderBL
 	@Override
 	public void setIncoterms(@NonNull final I_C_Order order)
 	{
-		final org.compiere.model.I_C_BPartner bpartner = getBPartner(order);
-		if (bpartner == null)
+		final BPartnerOrderParams bPartnerOrderParams = retrieveBPartnerParams(order).orElse(null);
+		if (bPartnerOrderParams == null || bPartnerOrderParams.getIncoterms() == null)
 		{
 			return;
 		}
 
-		int incotermsRecordId;
-		String incotermLocation;
-
-		if (order.isSOTrx())
-		{
-			incotermsRecordId = bpartner.getC_Incoterms_Customer_ID();
-			incotermLocation = bpartner.getIncotermLocation();
-		}
-		else
-		{
-			incotermsRecordId = bpartner.getC_Incoterms_Vendor_ID();
-			incotermLocation = bpartner.getPO_IncotermLocation();
-		}
-
-		if (incotermsRecordId <= 0)
-		{
-			final I_C_Incoterms defaultIncoterms = incotermsDAO.getDefaultIncoterms(OrgId.ofRepoId(order.getAD_Org_ID()));
-			if (defaultIncoterms != null)
-			{
-				incotermsRecordId = defaultIncoterms.getC_Incoterms_ID();
-				incotermLocation = defaultIncoterms.getDefaultLocation();
-			}
-		}
-
-		if (incotermsRecordId > 0)
-		{
-			order.setC_Incoterms_ID(incotermsRecordId);
-			order.setIncotermLocation(incotermLocation);
-		}
+		final Incoterms incoterms = bPartnerOrderParams.getIncoterms();
+		order.setC_Incoterms_ID(incoterms.getId().getRepoId());
+		order.setIncotermLocation(incoterms.getLocationEffective());
 	}
 
 	@Override
@@ -1512,5 +1495,35 @@ public class OrderBL implements IOrderBL
 	public List<I_C_Order> getByQueryFilter(final IQueryFilter<I_C_Order> queryFilter)
 	{
 		return orderDAO.getByQueryFilter(queryFilter);
+	}
+
+	@Override
+	public void updateASIFromProjectId(@NonNull final I_C_OrderLine orderLine)
+	{
+		AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(orderLine.getM_AttributeSetInstance_ID());
+		final ProjectId projectId = ProjectId.ofRepoIdOrNull(orderLine.getC_Project_ID());
+
+		if (asiId.isNone() && projectId == null)
+		{
+			return;
+		}
+		if (asiId.isNone())
+		{
+			final I_M_AttributeSetInstance asi = attributeSetInstanceBL.createASI(ProductId.ofRepoId(orderLine.getM_Product_ID()));
+			asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
+		}
+
+		if (projectId != null)
+		{
+			final I_C_Project project = projectRepository.get().getById(projectId);
+			final AttributeSetInstanceId attributeSetInstanceId = attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_Project, project.getValue());
+			orderLine.setM_AttributeSetInstance_ID(attributeSetInstanceId.getRepoId());
+		}
+		else
+		{
+			final AttributeSetInstanceId attributeSetInstanceId = attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeConstants.ATTR_Project, null);
+			orderLine.setM_AttributeSetInstance_ID(attributeSetInstanceId.getRepoId());
+		}
+
 	}
 }

@@ -393,6 +393,11 @@ public class DocumentEntityDescriptor
 		return adTabId.orElseThrow(() -> new IllegalStateException("No TableName defined for " + this));
 	}
 
+	public AdTabId getAdTabIdOrNull()
+	{
+		return adTabId.orElse(null);
+	}
+
 	// legacy
 
 	/**
@@ -699,7 +704,8 @@ public class DocumentEntityDescriptor
 			return idFieldBuilders.size() == 1 ? idFieldBuilders.get(0).getFieldName() : null;
 		}
 
-		private List<DocumentFieldDescriptor.Builder> getIdFieldBuilders()
+		@NonNull
+		public List<DocumentFieldDescriptor.Builder> getIdFieldBuilders()
 		{
 			return _fieldBuilders
 					.values()

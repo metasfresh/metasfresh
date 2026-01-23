@@ -125,3 +125,5 @@ this can be adjusted by modifying the *cucumber.command* section in _docker-buil
 to run cypress tests, go to *\docker-builds\e2e* and execute ```run.cmd```<br>
 should take about 120 minutes localy<br>
 cypress tests are currently not run on github actions<br>
+
+<!-- TEST: Private version chain validation - safe to remove after testing -->

@@ -1,7 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
 @topic:materialdispo
 @ghActions:run_on_executor6
 Feature: material-dispo updates on StockEstimateEvent events
+## F5100: Material Disposition
   As a user
   I want material dispo to be updated properly if a StockEstimateEvent is processed or unprocessed
   So that the ATP is always correct
@@ -12,6 +15,8 @@ Feature: material-dispo updates on StockEstimateEvent events
     And no product with value 'product_value1234' exists
 
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
   @topic:materialdispo
   Scenario: StockEstimateCreatedEvent without stock or ATP
     Given metasfresh contains M_Products:
@@ -34,6 +39,8 @@ Feature: material-dispo updates on StockEstimateEvent events
       | c_2                        | 1                  | 11                      | N          |
 
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
   @topic:materialdispo
   Scenario: StockEstimateCreatedEvent with stock
     Given metasfresh contains M_Products:
@@ -68,6 +75,8 @@ Feature: material-dispo updates on StockEstimateEvent events
       | cp_1       | p_1                     | 2021-06-23  |                              | 0                            | 0                  | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 90                             | 90                         | 0                                  |
 
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
   @topic:materialdispo
   Scenario: StockEstimateDeletedEvents without related data are ignored
     Given metasfresh contains M_Products:
@@ -84,6 +93,8 @@ Feature: material-dispo updates on StockEstimateEvent events
       | INVENTORY_UP      |                               | p_1                     | 2020-12-12T10:00:00.00Z | 100 | 100                    |
 
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
   @topic:materialdispo
   Scenario: StockEstimateDeletedEvents with related data are processed
     Given metasfresh contains M_Products:
@@ -105,6 +116,8 @@ Feature: material-dispo updates on StockEstimateEvent events
     And after not more than 120s, metasfresh has no MD_Candidate_StockChange_Detail data for identifier scd_1
 
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
   @topic:materialdispo
   Scenario: StockEstimateEvent flow with INVENTORY_UP and positive ATP
     Given metasfresh contains M_Products:
@@ -135,6 +148,8 @@ Feature: material-dispo updates on StockEstimateEvent events
     And after not more than 120s, metasfresh has no MD_Candidate_StockChange_Detail data for identifier scd_2
 
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
   @topic:materialdispo
   Scenario: Stock estimate event with INVENTORY_DOWN and positive ATP
     Given metasfresh contains M_Products:

@@ -1,7 +1,28 @@
+/*
+ * #%L
+ * de.metas.salescandidate.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ordercandidate.api.impl;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.async.AsyncBatchId;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
@@ -14,6 +35,7 @@ import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.i18n.AdMessageKey;
+import de.metas.incoterms.IncotermsId;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
@@ -28,7 +50,6 @@ import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandOrderDefaults;
-import de.metas.ordercandidate.api.OLCandProcessorDescriptor;
 import de.metas.ordercandidate.api.OLCandQuery;
 import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.ordercandidate.api.OLCandSPIRegistry;
@@ -44,7 +65,6 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
-import de.metas.process.PInstanceId;
 import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
@@ -104,22 +124,20 @@ public class OLCandBL implements IOLCandBL
 	}
 
 	@Override
-	public void process(
-			@NonNull final OLCandProcessorDescriptor processor,
-			@NonNull final PInstanceId selectionId,
-			@Nullable final AsyncBatchId asyncBatchId)
+	public void process(@NonNull final OLCandProcessRequest request)
 	{
 		final SpringContextHolder springContextHolder = SpringContextHolder.instance;
 		final OLCandSPIRegistry olCandSPIRegistry = springContextHolder.getBean(OLCandSPIRegistry.class);
 		final OLCandProcessingHelper olCandProcessingHelper = springContextHolder.getBean(OLCandProcessingHelper.class);
 
 		OLCandsProcessorExecutor.builder()
-				.processorDescriptor(processor)
+				.processorDescriptor(request.getProcessor())
 				.olCandListeners(olCandSPIRegistry.getListeners())
 				.groupingValuesProviders(olCandSPIRegistry.getGroupingValuesProviders())
 				.olCandProcessingHelper(olCandProcessingHelper)
-				.selectionId(selectionId)
-				.asyncBatchId(asyncBatchId)
+				.selectionId(request.getSelectionId())
+				.asyncBatchId(request.getAsyncBatchId())
+				.propagateAsyncBatchIdToOrderRecord(request.isPropagateAsyncBatchIdToOrderRecord())
 				.build()
 				.process();
 	}
@@ -136,9 +154,9 @@ public class OLCandBL implements IOLCandBL
 			return PricingSystemId.ofRepoId(olCand.getM_PricingSystem_ID());
 		}
 
-		if (bPartnerOrderParams != null && bPartnerOrderParams.getPricingSystemId().isPresent())
+		if (bPartnerOrderParams != null && bPartnerOrderParams.getPricingSystemId() != null)
 		{
-			return bPartnerOrderParams.getPricingSystemId().get();
+			return bPartnerOrderParams.getPricingSystemId();
 		}
 
 		if (orderDefaults != null && orderDefaults.getPricingSystemId() != null)
@@ -149,6 +167,7 @@ public class OLCandBL implements IOLCandBL
 		return null;
 	}
 
+	@Nullable
 	@Override
 	public DeliveryRule getDeliveryRule(
 			@NonNull final I_C_OLCand olCandRecord,
@@ -173,6 +192,7 @@ public class OLCandBL implements IOLCandBL
 		return null;
 	}
 
+	@Nullable
 	@Override
 	public DeliveryViaRule getDeliveryViaRule(
 			@NonNull final I_C_OLCand olCandRecord,
@@ -196,6 +216,7 @@ public class OLCandBL implements IOLCandBL
 		return null;
 	}
 
+	@Nullable
 	@Override
 	public FreightCostRule getFreightCostRule(@Nullable final BPartnerOrderParams bPartnerOrderParams, @Nullable final OLCandOrderDefaults orderDefaults)
 	{
@@ -210,6 +231,7 @@ public class OLCandBL implements IOLCandBL
 		return null;
 	}
 
+	@Nullable
 	@Override
 	public InvoiceRule getInvoiceRule(
 			@NonNull final I_C_OLCand olCandRecord,
@@ -222,9 +244,9 @@ public class OLCandBL implements IOLCandBL
 			return olCandInvoiceRule;
 		}
 
-		if (bPartnerOrderParams != null && bPartnerOrderParams.getInvoiceRule().isPresent())
+		if (bPartnerOrderParams != null)
 		{
-			return bPartnerOrderParams.getInvoiceRule().get();
+			return bPartnerOrderParams.getInvoiceRule();
 		}
 		if (orderDefaults != null)
 		{
@@ -233,10 +255,11 @@ public class OLCandBL implements IOLCandBL
 		return null;
 	}
 
+	@Nullable
 	@Override
 	public PaymentRule getPaymentRule(@Nullable final BPartnerOrderParams bPartnerOrderParams,
 									  @Nullable final OLCandOrderDefaults orderDefaults,
-			@Nullable final I_C_OLCand orderCandidateRecord)
+									  @Nullable final I_C_OLCand orderCandidateRecord)
 	{
 		final PaymentRule orderCandidatePaymentRule = orderCandidateRecord == null ? null
 				: PaymentRule.ofNullableCode(orderCandidateRecord.getPaymentRule());
@@ -253,13 +276,13 @@ public class OLCandBL implements IOLCandBL
 	@Override
 	public PaymentTermId getPaymentTermId(@Nullable final BPartnerOrderParams bPartnerOrderParams,
 										  @Nullable final OLCandOrderDefaults orderDefaults,
-			@Nullable final I_C_OLCand orderCandidateRecord)
+										  @Nullable final I_C_OLCand orderCandidateRecord)
 	{
 		final PaymentTermId orderCandidatePaymenTermId = orderCandidateRecord == null ? null
 				: PaymentTermId.ofRepoIdOrNull(orderCandidateRecord.getC_PaymentTerm_ID());
 
 		final PaymentTermId bpartnerOrderParamsPaymentTermId = bPartnerOrderParams == null ? null
-				: bPartnerOrderParams.getPaymentTermId().orElse(null);
+				: bPartnerOrderParams.getPaymentTermId();
 
 		final PaymentTermId orderDefaultsPaymentTermId = orderDefaults == null ? null
 				: orderDefaults.getPaymentTermId();
@@ -302,6 +325,7 @@ public class OLCandBL implements IOLCandBL
 				orderDefaultsDocTypeId);
 	}
 
+	@Nullable
 	@Override
 	public I_C_OLCand invokeOLCandCreator(final PO po, final IOLCandCreator olCandCreator)
 	{
@@ -431,6 +455,7 @@ public class OLCandBL implements IOLCandBL
 		return pricingResult;
 	}
 
+	@NonNull
 	@Override
 	public BPartnerOrderParams getBPartnerOrderParams(@NonNull final I_C_OLCand olCandRecord)
 	{

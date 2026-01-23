@@ -44,6 +44,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.CreateOrUpdateLocatorRequest;
 import org.adempiere.warehouse.api.CreateWarehouseRequest;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -147,6 +148,12 @@ public class WarehouseBL implements IWarehouseBL
 		// No Locator was found: no default one and non which is active
 		// => Create a new Locator and return it
 		return warehouseDAO.createDefaultLocator(warehouseId);
+	}
+
+	@Override
+	public LocatorId createOrUpdateLocator(@NonNull final CreateOrUpdateLocatorRequest request)
+	{
+		return warehouseDAO.createOrUpdateLocator(request);
 	}
 
 	private I_C_Location getC_Location(@NonNull final WarehouseId warehouseId)
@@ -254,6 +261,12 @@ public class WarehouseBL implements IWarehouseBL
 	public ImmutableSet<LocatorId> getLocatorIdsByRepoIds(final Set<Integer> locatorRepoIds)
 	{
 		return warehouseDAO.getLocatorIdsByRepoIds(locatorRepoIds);
+	}
+
+	@Override
+	public ImmutableSet<LocatorId> getLocatorIdsByWarehouseId(@NonNull final WarehouseId warehouseId)
+	{
+		return warehouseDAO.getLocatorIdsByWarehouseIds(ImmutableSet.of(warehouseId));
 	}
 
 	@Override

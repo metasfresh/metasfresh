@@ -46,6 +46,9 @@ public class C_PaySelection_SEPA_XmlExport
 	@Param(parameterName = REFERENCE_AS_END_TO_END_ID)
 	private boolean referenceAsEndToEndId;
 
+	@Param(parameterName = "IsGroupTransactions")
+	private boolean isGroupTransactions;
+
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
@@ -86,7 +89,7 @@ public class C_PaySelection_SEPA_XmlExport
 
 		//
 		// First, generate the SEPA export as an intermediary step, to use the old framework.
-		final I_SEPA_Export sepaExport = sepaDocumentBL.createSEPAExportFromPaySelection(paySelection);
+		final I_SEPA_Export sepaExport = sepaDocumentBL.createSEPAExportFromPaySelection(paySelection, isGroupTransactions);
 
 		final SEPAExportContext exportContext = SEPAExportContext.builder()
 				.referenceAsEndToEndId(referenceAsEndToEndId)

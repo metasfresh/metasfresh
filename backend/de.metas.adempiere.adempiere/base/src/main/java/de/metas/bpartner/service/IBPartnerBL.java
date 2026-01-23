@@ -46,6 +46,7 @@ import org.compiere.model.I_C_BPartner_Location;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
@@ -179,6 +180,11 @@ public interface IBPartnerBL extends ISingletonService
 	@Nullable
 	UserId setSalesRepId(BPartnerId bpartnerId, final UserId salesRepId);
 
+	/**
+	 * @return the payment rule for the BP. If none is set, gets the one of the BP group.
+	 */
+	Optional<PaymentRule> getPaymentRuleForBPartner(@NonNull BPartnerId bpartnerId, @NonNull SOTrx soTrx);
+
 	BPartnerPrintFormatMap getPrintFormats(@NonNull BPartnerId bpartnerId);
 
 	void updateNameAndGreetingFromContacts(@NonNull BPartnerId bpartnerId);
@@ -186,6 +192,10 @@ public interface IBPartnerBL extends ISingletonService
 	void setPreviousIdIfPossible(@NonNull I_C_BPartner_Location location);
 
 	boolean isInvoiceEmailCcToMember(@NonNull BPartnerId bpartnerId);
+
+	I_C_BPartner_Location getBPartnerLocationByIdEvenInactive(@NonNull BPartnerLocationId bpartnerLocationId);
+
+	List<I_C_BPartner_Location> getBPartnerLocationsByIds(Set<BPartnerLocationId> ids);
 
 	@Value
 	@Builder
@@ -248,11 +258,6 @@ public interface IBPartnerBL extends ISingletonService
 	ShipmentAllocationBestBeforePolicy getBestBeforePolicy(BPartnerId bpartnerId);
 
 	Optional<PaymentTermId> getPaymentTermIdForBPartner(BPartnerId bpartnerId, SOTrx soTrx);
-
-	/**
-	 * @return the payment rule for the BP. If none is set, gets the one of the BP group.
-	 */
-	Optional<PaymentRule> getPaymentRuleForBPartner(BPartnerId bpartnerId);
 
 	boolean isSalesRep(BPartnerId bpartnerId);
 

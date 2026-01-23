@@ -51,12 +51,16 @@ class JsonPickingJobTest
 
 	void testSerializeDeserialize(final JsonPickingJob obj) throws JsonProcessingException
 	{
+		System.out.println("-----------------------------------------------");
 		System.out.println("Object: " + obj);
+		System.out.println("-----------------------------------------------");
 
 		final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 
 		final String jsonString = jsonObjectMapper.writeValueAsString(obj);
-		System.out.println("JSON: " + obj);
+		System.out.println("-----------------------------------------------");
+		System.out.println("JSON: " + jsonString);
+		System.out.println("-----------------------------------------------");
 
 		final JsonPickingJob objDeserialized = jsonObjectMapper.readValue(jsonString, obj.getClass());
 		assertThat(objDeserialized).isEqualTo(obj);
@@ -87,6 +91,7 @@ class JsonPickingJobTest
 						.build())
 				.allowSkippingRejectedReason(true)
 				.showPromptWhenOverPicking(true)
+				.completeJobAutomatically(true)
 				.build());
 	}
 

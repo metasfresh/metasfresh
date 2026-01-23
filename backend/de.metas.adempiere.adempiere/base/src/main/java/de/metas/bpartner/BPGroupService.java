@@ -56,7 +56,11 @@ public class BPGroupService
 		}
 		else
 		{
-			bpGroup = BPGroup.of(orgId, null, groupName);
+			bpGroup = BPGroup.builder()
+					.orgId(orgId)
+					.value(groupName)
+					.name(groupName)
+					.build();
 		}
 
 		try

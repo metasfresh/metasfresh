@@ -131,6 +131,8 @@ public class ShipperTransportationDAO implements IShipperTransportationDAO
 
 		shipperTransportation.setAD_Org_ID(request.getOrgId().getRepoId());
 		shipperTransportation.setM_Shipper_ID(request.getShipperId().getRepoId());
+		shipperTransportation.setPickupTimeFrom(TimeUtil.asTimestamp(request.getPickupTimeFrom()));
+		shipperTransportation.setPickupTimeTo(TimeUtil.asTimestamp(request.getPickupTimeTo()));
 		shipperTransportation.setShipper_BPartner_ID(request.getShipperBPartnerAndLocationId().getBpartnerId().getRepoId());
 		shipperTransportation.setShipper_Location_ID(request.getShipperBPartnerAndLocationId().getRepoId());
 		shipperTransportation.setDateDoc(TimeUtil.asTimestamp(request.getShipDate()));

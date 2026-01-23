@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.salescandidate.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ordercandidate.api;
 
 import de.metas.async.AsyncBatchId;
@@ -7,6 +29,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.externalsystem.ExternalSystemId;
 import de.metas.impexp.InputDataSourceId;
+import de.metas.incoterms.IncotermsId;
 import de.metas.money.CurrencyId;
 import de.metas.order.InvoiceRule;
 import de.metas.order.OrderLineGroup;
@@ -27,28 +50,6 @@ import org.adempiere.warehouse.WarehouseId;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2018 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 @Value
 public class OLCandCreateRequest
@@ -112,11 +113,10 @@ public class OLCandCreateRequest
 	WarehouseId warehouseId;
 	WarehouseId warehouseDestId;
 
-	ShipperId shipperId;
-
 	BPartnerId salesRepId;
 
 	@Nullable InvoiceRule invoiceRule;
+	boolean isAutoInvoice;
 	@Nullable PaymentRule paymentRule;
 
 	PaymentTermId paymentTermId;
@@ -127,8 +127,11 @@ public class OLCandCreateRequest
 
 	Boolean isManualPrice;
 
-	String deliveryViaRule;
-	String deliveryRule;
+	@Nullable ShipperId shipperId;
+	@Nullable String deliveryViaRule;
+	@Nullable String deliveryRule;
+	@Nullable IncotermsId incotermsId;
+	@Nullable String incotermsLocation;
 
 	String importWarningMessage;
 
@@ -179,9 +182,9 @@ public class OLCandCreateRequest
 			final Percent discount,
 			@Nullable final WarehouseId warehouseId,
 			@Nullable final WarehouseId warehouseDestId,
-			@Nullable final ShipperId shipperId,
 			@Nullable final BPartnerId salesRepId,
 			@Nullable final InvoiceRule invoiceRule,
+			final boolean isAutoInvoice,
 			@Nullable final PaymentRule paymentRule,
 			@Nullable final PaymentTermId paymentTermId,
 			@Nullable final OrderLineGroup orderLineGroup,
@@ -189,8 +192,11 @@ public class OLCandCreateRequest
 			@Nullable final Integer line,
 			@Nullable final String description,
 			@Nullable final Boolean isManualPrice,
+			@Nullable final ShipperId shipperId,
 			@Nullable final String deliveryViaRule,
 			@Nullable final String deliveryRule,
+			@Nullable final IncotermsId incotermsId,
+			@Nullable final String incotermsLocation,
 			@Nullable final String importWarningMessage,
 			@Nullable final AsyncBatchId asyncBatchId,
 			@Nullable final BigDecimal qtyShipped,
@@ -241,13 +247,13 @@ public class OLCandCreateRequest
 		this.currencyId = currencyId;
 		this.discount = discount;
 
-		this.shipperId = shipperId;
 		this.salesRepId = salesRepId;
 
 		this.warehouseId = warehouseId;
 		this.warehouseDestId = warehouseDestId;
 
 		this.invoiceRule = invoiceRule;
+		this.isAutoInvoice = isAutoInvoice;
 		this.paymentRule = paymentRule;
 
 		this.paymentTermId = paymentTermId;
@@ -255,8 +261,11 @@ public class OLCandCreateRequest
 		this.line = line;
 		this.description = description;
 		this.isManualPrice = isManualPrice;
+		this.shipperId = shipperId;
 		this.deliveryViaRule = deliveryViaRule;
 		this.deliveryRule = deliveryRule;
+		this.incotermsId = incotermsId;
+		this.incotermsLocation = incotermsLocation;
 		this.importWarningMessage = importWarningMessage;
 		this.asyncBatchId = asyncBatchId;
 		this.qtyShipped = qtyShipped;

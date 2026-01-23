@@ -1,6 +1,10 @@
 @report
 @from:cucumber
+@allure.label.epic:E0191_System_Reporting
+@allure.label.feature:F00400_System_Reporting
+@F00400
 Feature: Jasper Report Tests
+## F00400: Report
 
   Background:
     Given infrastructure and metasfresh are running
@@ -35,10 +39,14 @@ Feature: Jasper Report Tests
       | Identifier | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
       | pp_1       | plv_purchase           | product      | 8.0      | PCE      |
       | pp_2       | plv_sales              | product      | 10.0     | PCE      |
+        # dev-note: make sure that the correct payment term is used, regardless of the branch
+    And metasfresh contains C_PaymentTerm
+      | Identifier          |
+      | customerPaymentTerm |
     And metasfresh contains C_BPartners without locations:
-      | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID |
-      | vendor     | Y        | N          | ps_1               |
-      | customer   | N        | Y          | ps_1               |
+      | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID | C_PaymentTerm_ID    |
+      | vendor     | Y        | N          | ps_1               |                     |
+      | customer   | N        | Y          | ps_1               | customerPaymentTerm |
     And metasfresh contains C_BPartner_Locations:
       | Identifier       | C_BPartner_ID | C_Country_ID | IsShipToDefault | IsBillToDefault |
       | vendorLocation   | vendor        | CH           | Y               | Y               |
@@ -50,6 +58,9 @@ Feature: Jasper Report Tests
 
   @S0471_100
   @from:cucumber
+@allure.label.epic:E0191_System_Reporting
+@allure.label.feature:F00400_System_Reporting
+@F00400
   Scenario: Purchase Report Test
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_PricingSystem_ID | M_Warehouse_ID |
@@ -112,6 +123,9 @@ Feature: Jasper Report Tests
 
   @S0471_200
   @from:cucumber
+@allure.label.epic:E0191_System_Reporting
+@allure.label.feature:F00400_System_Reporting
+@F00400
   Scenario: Sales Report and Dunning Report Test
     And metasfresh contains C_Dunning:
       | Identifier        |
@@ -175,6 +189,9 @@ Feature: Jasper Report Tests
       | C_DunningDoc | dunningDoc_1 |
 
   @from:cucumber
+@allure.label.epic:E0191_System_Reporting
+@allure.label.feature:F00400_System_Reporting
+@F00400
   Scenario: Deactivate StoreArchiveOnFileSystem
     And update AD_Client
       | Identifier | StoreArchiveOnFileSystem |

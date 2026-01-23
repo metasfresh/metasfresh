@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -32,12 +32,15 @@ import de.metas.bpartner.BPartnerSupplierApprovalService;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.incoterms.IncotermsId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.lang.SOTrx;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
@@ -80,6 +83,7 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.time.ZoneId;
@@ -88,28 +92,29 @@ import java.util.Optional;
 
 @Interceptor(I_C_Order.class)
 @Callout(I_C_Order.class)
+@Component
 public class C_Order
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-	private final IOrderLinePricingConditions orderLinePricingConditions = Services.get(IOrderLinePricingConditions.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IBPGroupDAO groupDAO = Services.get(IBPGroupDAO.class);
-	private final IBPartnerBL bpartnerBL;
-	private final OrderLineDetailRepository orderLineDetailRepository;
-	private final BPartnerSupplierApprovalService partnerSupplierApprovalService;
-	private final IDocumentLocationBL documentLocationBL;
-	private final PurchaseOrderToShipperTransportationService purchaseOrderToShipperTransportationService;
-	private final OrderPayScheduleService orderPayScheduleService;
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	@NonNull private final IOrderLinePricingConditions orderLinePricingConditions = Services.get(IOrderLinePricingConditions.class);
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IBPGroupDAO groupDAO = Services.get(IBPGroupDAO.class);
+	@NonNull private final IBPartnerBL bpartnerBL;
+	@NonNull private final OrderLineDetailRepository orderLineDetailRepository;
+	@NonNull private final BPartnerSupplierApprovalService partnerSupplierApprovalService;
+	@NonNull private final IDocumentLocationBL documentLocationBL;
+	@NonNull private final PurchaseOrderToShipperTransportationService purchaseOrderToShipperTransportationService;
+	@NonNull private final OrderPayScheduleService orderPayScheduleService;
 
 	@VisibleForTesting
 	public static final String AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG = "de.metas.payment.autoAssignToSalesOrderByExternalOrderId.enabled";
@@ -237,6 +242,10 @@ public class C_Order
 		{
 			return; // nothing to do yet
 		}
+		if(order.isSOTrx() && IncotermsId.ofRepoIdOrNull(order.getC_Incoterms_ID()) != null && !InterfaceWrapperHelper.isUIAction(order))
+		{
+			return; // prevent updating value from OLCand
+		}
 
 		orderBL.setIncoterms(order);
 	}
@@ -253,10 +262,10 @@ public class C_Order
 	}
 
 	/**
-	 * When creating a manual order: The new order must inherit the payment rule from the BPartner.
+	 * When creating a manual order: The new order must inherit the payment rule from the BillPartner (or BPartner if no BillPartner is set).
 	 * When cloning an order: all should be set as in the original order, so the payment rule should be the same as in the old order
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_Order.COLUMNNAME_C_BPartner_ID)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {I_C_Order.COLUMNNAME_C_BPartner_ID, I_C_Order.COLUMNNAME_Bill_BPartner_ID})
 	public void setPaymentRule(final I_C_Order order)
 	{
 		if (!InterfaceWrapperHelper.isUIAction(order) || InterfaceWrapperHelper.isCopying(order))
@@ -264,15 +273,13 @@ public class C_Order
 			return;
 		}
 
-		final I_C_BPartner bpartner = order.getC_BPartner();
+		final BPartnerId bpartnerId = CoalesceUtil.coalesce(BPartnerId.ofRepoIdOrNull(order.getBill_BPartner_ID()), BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID()));
+
 		final PaymentRule paymentRule;
-		if (order.isSOTrx() && bpartner != null && bpartner.getPaymentRule() != null)
+		if (bpartnerId != null)
 		{
-			paymentRule = PaymentRule.ofCode(bpartner.getPaymentRule());
-		}
-		else if (!order.isSOTrx() && bpartner != null && bpartner.getPaymentRulePO() != null)
-		{
-			paymentRule = PaymentRule.ofCode(bpartner.getPaymentRulePO());
+			paymentRule = bpartnerBL.getPaymentRuleForBPartner(bpartnerId, SOTrx.ofBoolean(order.isSOTrx()))
+					.orElseGet(invoiceBL::getDefaultPaymentRule);
 		}
 		else
 		{
@@ -281,6 +288,7 @@ public class C_Order
 
 		order.setPaymentRule(paymentRule.getCode());
 	}
+
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void beforeDelete(@NonNull final I_C_Order order)
@@ -632,5 +640,4 @@ public class C_Order
 	{
 		orderPayScheduleService.updatePayScheduleStatus(order);
 	}
-
 }

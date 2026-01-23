@@ -77,7 +77,7 @@ public class ShipmentScheduleAndJobSchedulesCollection implements Iterable<Shipm
 		return getShipmentScheduleIds(ShipmentScheduleAndJobSchedules::hasJobSchedules);
 	}
 
-	public ImmutableSet<ShipmentScheduleId> getShipmentScheduleIds(@NonNull Predicate<ShipmentScheduleAndJobSchedules> filter)
+	public ImmutableSet<ShipmentScheduleId> getShipmentScheduleIds(@NonNull final Predicate<ShipmentScheduleAndJobSchedules> filter)
 	{
 		return list.stream()
 				.filter(filter)
