@@ -3,6 +3,7 @@
 # See https://help.testspace.com/dashboard/project#configuration
 # Please keep in sync with the branch list in .mergify.yml
 release:
+  - green_oak_hotfix
   - green_oak_release
   - mighty_pegasus_hotfix
   - mighty_pegasus_release
