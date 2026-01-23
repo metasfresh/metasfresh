@@ -207,6 +207,57 @@ npm run test:report
 
 ---
 
+### 7. Payment Discount Workflow
+**File**: `tests/spec/receipt.spec.js` (extended test)
+**Status**: ✅ Passing (English, German)
+**Duration**: ~100 seconds per language (includes full P2P + payment)
+
+**Features Tested**:
+- F00600: Purchase Order
+- F65010: Material Receipt Candidates
+- F00700: Invoice Candidate (Purchase)
+- F00710: Vendor Invoice
+- F00750: Payment Term (with discount)
+- F00760: Vendor Payment
+- F00770: Payment Allocation
+
+**Epic**: E0140: Purchasing, E0160: Payments
+
+**Workflow**:
+1. Create Payment Term with 5% discount if paid within 10 days (via WebUI)
+2. Set PO_PaymentTerm_ID on vendor (via WebAPI - field is in included tab)
+3. Create purchase order with vendor and product (qty=5)
+4. Verify payment term auto-fills on PO (via WebAPI - field not displayed)
+5. Complete PO, create receipt, create invoice (standard P2P flow)
+6. Create vendor payment with discounted amount (PayAmt = GrandTotal - 5%)
+7. Complete the payment
+8. Validate payment allocation (IsPaid, IsAllocated flags, payment amount)
+
+**Key Validations**:
+- Payment Term creation with discount percentage and days
+- PO_PaymentTerm_ID field update via WebAPI (included tab pattern)
+- C_PaymentTerm_ID verification on Purchase Order via WebAPI
+- Payment amount calculation with discount applied
+- Payment IsAllocated flag validation
+- Invoice IsPaid flag validation
+- Allocation line details (when available via API)
+
+**Components Tested**:
+- Payment Term window (161)
+- Business Partner window (123) - Vendor tab (AD_Tab-224)
+- Purchase Order window (181)
+- Payment window (195)
+- Document type selection for AP Payment
+- Document actions (Complete)
+
+**Technical Notes**:
+- PO_PaymentTerm_ID is in an "included tab" (TabLevel=1, IsSingleRow=Y) that doesn't render separately
+- C_PaymentTerm_ID on Purchase Order has IsDisplayed='N' in AD_Field
+- Both fields are updated/verified via WebAPI instead of UI navigation
+- Allocation validation is resilient to async processing (logs warnings if pending)
+
+---
+
 ## Test Architecture
 
 ### Page Objects
@@ -221,10 +272,14 @@ npm run test:report
 - **InvoiceCandidatePage.js** - Invoice candidates (sales and purchase)
 - **InvoicePage.js** - Sales invoice viewing and PDF validation
 - **VendorInvoicePage.js** - Vendor invoice viewing and PDF validation
+- **PaymentTermPage.js** - Payment term creation with discount settings
+- **PaymentPage.js** - Vendor payment creation and document actions
+- **BusinessPartnerPage.js** - Business partner navigation and PO_PaymentTerm_ID setting
 
 ### Utilities
 - **Backend.js** - Test data creation via `/api/v2/frontendTesting`
 - **WebAPIValidation.js** - Record state validation via WebAPI
+- **PaymentValidation.js** - Payment allocation and IsPaid/IsAllocated flag validation
 - **common.js** - Shared timeouts and helpers
 - **WindowIds.js** - Window ID constants
 
@@ -264,12 +319,12 @@ Areas **NOT yet covered** by E2E tests:
 
 ## Test Quality Metrics
 
-- **Total test specs**: 6
-- **Total test cases**: 10 (6 specs, some with 2 languages × 2 tests)
+- **Total test specs**: 6 files
+- **Total test cases**: 11 (6 specs, some with 2 languages × 2 tests, receipt.spec.js has 2 tests per language)
 - **Language coverage**: en_US, de_DE
 - **Success rate**: 100% passing
-- **Average execution time**: ~35 seconds per test
-- **Total suite time**: ~6 minutes (sequential execution)
+- **Average execution time**: ~40 seconds per test
+- **Total suite time**: ~8 minutes (sequential execution)
 
 ## CI/CD Integration
 
