@@ -15,6 +15,8 @@ import { VendorInvoicePage } from '../utils/pages/VendorInvoicePage';
  * Features tested (from Google Sheets):
  * - F00600: Purchase Order (Epic: Purchasing)
  * - F65010: Material Receipt Candidates (Epic: Material Receipt)
+ * - F00700: Invoice Candidate (Purchase) (Epic: Purchasing)
+ * - F00710: Vendor Invoice (Epic: Purchasing)
  *
  * Tests the complete purchase-to-pay workflow:
  * 1. Create a purchase order
@@ -57,6 +59,10 @@ testCases.forEach(({ language, label }) => {
       allure.tag('F00600');  // Standalone tag for Tags section
       allure.tag('F65010: Material Receipt Candidates');
       allure.tag('F65010');  // Standalone tag for Tags section
+      allure.tag('F00700: Invoice Candidate (Purchase)');
+      allure.tag('F00700');  // Standalone tag for Tags section
+      allure.tag('F00710: Vendor Invoice');
+      allure.tag('F00710');  // Standalone tag for Tags section
       allure.story('Complete PO → Receipt → Invoice flow');
       allure.severity('critical');
       allure.parameter('Language', language);
@@ -68,6 +74,8 @@ testCases.forEach(({ language, label }) => {
 
 ## F00600: Purchase Order
 ## F65010: Material Receipt Candidates
+## F00700: Invoice Candidate (Purchase)
+## F00710: Vendor Invoice
 
 ### Test Scenario
 This test validates the complete purchase-to-pay workflow:
@@ -86,6 +94,8 @@ This test validates the complete purchase-to-pay workflow:
 ## Features Tested
 - **F00600**: Purchase Order
 - **F65010**: Material Receipt Candidates
+- **F00700**: Invoice Candidate (Purchase)
+- **F00710**: Vendor Invoice
 
 ## Business Value
 Ensures the complete purchase-to-pay flow works correctly across UI languages,
