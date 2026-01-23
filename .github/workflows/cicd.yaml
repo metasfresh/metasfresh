@@ -135,7 +135,7 @@ jobs:
       - name: build-migration-cli
         run: |
           docker buildx build \
-            --progress=plain \
+            --progress=auto \
             --file docker-builds/Dockerfile.migration-cli \
             --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
             --output type=local,dest=./artifacts \
@@ -173,7 +173,7 @@ jobs:
       - name: build-commons
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.common \
           --cache-to type=inline \
           --cache-from metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }} \
@@ -184,7 +184,7 @@ jobs:
       - name: build-backend
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.backend \
           --cache-to type=inline \
           --cache-from metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-floating }} \
@@ -211,7 +211,7 @@ jobs:
       - name: build-backend-dist
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.backend.dist \
           --cache-to type=inline \
           --cache-from metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-floating }} \
@@ -223,7 +223,7 @@ jobs:
       - name: build-camel
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.camel \
           --cache-to type=inline \
           --cache-from metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-floating }} \
@@ -235,7 +235,7 @@ jobs:
       - name: build-camel-dist
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.camel.dist \
           --cache-to type=inline \
           --cache-from metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-floating }} \
@@ -345,7 +345,7 @@ jobs:
       - name: build-frontend
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.frontend \
           --cache-to type=inline \
           --cache-from metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }} \
@@ -355,7 +355,7 @@ jobs:
       - name: build-mobile
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.mobile \
           --cache-to type=inline \
           --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }} \
@@ -365,7 +365,7 @@ jobs:
       - name: build-mobile-test
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.mobile.test \
           --cache-to type=inline \
           --cache-from metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-floating }} \
@@ -375,7 +375,7 @@ jobs:
       - name: build-frontend-test
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.frontend.test \
           --cache-to type=inline \
           --cache-from metasfresh/metas-frontend-test:${{ needs.init.outputs.tag-floating }} \
@@ -468,7 +468,7 @@ jobs:
       - name: run-tests
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.frontend \
           --target test \
           --tag metas-frontend:test \
@@ -529,7 +529,7 @@ jobs:
       - name: build-api
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.backend.api \
           --cache-to type=inline \
           --cache-from metasfresh/metas-api:${{ needs.init.outputs.tag-floating }} \
@@ -540,7 +540,7 @@ jobs:
       - name: build-app
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.backend.app \
           --cache-to type=inline \
           --cache-from metasfresh/metas-app:${{ needs.init.outputs.tag-floating }} \
@@ -551,7 +551,7 @@ jobs:
       - name: build-externalsystems
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.camel.externalsystems \
           --cache-to type=inline \
           --cache-from metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-floating }} \
@@ -562,7 +562,7 @@ jobs:
       - name: build-edi
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.camel.edi \
           --cache-to type=inline \
           --cache-from metasfresh/metas-edi:${{ needs.init.outputs.tag-floating }} \
@@ -691,7 +691,7 @@ jobs:
       - name: build-db-init
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.db-init \
           --cache-to type=inline \
           --cache-from metasfresh/metas-db:${{ needs.init.outputs.tag-floating }} \
@@ -702,7 +702,7 @@ jobs:
       - name: build-db-migration-tool
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.db-migration-tool-lite \
           --cache-to type=inline \
           --cache-from metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-floating }} \
@@ -761,7 +761,7 @@ jobs:
       - name: build-db-preloaded
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.db-preloaded \
           --cache-to type=inline \
           --cache-from metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded \
@@ -823,7 +823,7 @@ jobs:
       - name: build-procurement-backend
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.procurement.backend \
           --cache-to type=inline \
           --cache-from metasfresh/metas-procurement-backend:${{ needs.init.outputs.tag-floating }} \
@@ -835,7 +835,7 @@ jobs:
       - name: build-procurement-nginx
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.procurement.nginx \
           --cache-to type=inline \
           --cache-from metasfresh/metas-procurement-nginx:${{ needs.init.outputs.tag-floating }} \
@@ -845,7 +845,7 @@ jobs:
       - name: build-procurement-rabbitmq
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.procurement.rabbitmq \
           --cache-to type=inline \
           --cache-from metasfresh/metas-procurement-rabbitmq:${{ needs.init.outputs.tag-floating }} \
@@ -855,7 +855,7 @@ jobs:
       - name: build-procurement-frontend
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.procurement.frontend \
           --cache-to type=inline \
           --cache-from metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-floating }} \
@@ -954,7 +954,7 @@ jobs:
       - name: build-api-compat
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.backend.api.compat \
           --cache-to type=inline \
           --cache-from metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}-compat \
@@ -966,7 +966,7 @@ jobs:
       - name: build-app-compat
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.backend.app.compat \
           --cache-to type=inline \
           --cache-from metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat \
@@ -978,7 +978,7 @@ jobs:
       - name: build-mobile-compat
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.mobile.compat \
           --cache-to type=inline \
           --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat \
@@ -989,7 +989,7 @@ jobs:
       - name: build-frontend-compat
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.frontend.compat \
           --cache-to type=inline \
           --cache-from metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}-compat \
@@ -1170,7 +1170,7 @@ jobs:
       - name: run-junit-tests-j8
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.junit \
           --cache-to type=inline \
           --cache-from metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }} \
@@ -1183,7 +1183,7 @@ jobs:
       - name: run-junit-tests-j14
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.camel.junit \
           --cache-to type=inline \
           --cache-from metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14 \
@@ -1288,7 +1288,7 @@ jobs:
       - name: build-cucumber
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.cucumber \
           --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
@@ -1712,7 +1712,10 @@ jobs:
           mfregistry: metasfresh
           dbqualifier: preloaded
         run: |
-          docker compose --profile mobile up --abort-on-container-exit --exit-code-from playwright-mobile 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
+          # Start stack and attach only to playwright container for clean logs
+          docker compose --profile mobile up --attach playwright-mobile --abort-on-container-exit --exit-code-from playwright-mobile 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
+          # Capture infrastructure logs separately for debugging
+          docker compose --profile mobile logs --no-log-prefix db rabbitmq search app mobile > infra.log 2>&1 || true
           docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest
           docker compose --profile mobile down
       - name: push-results to testspace
@@ -1759,6 +1762,7 @@ jobs:
           path: |
             docker-builds/e2e-tests/playwright-report-mobile/
             docker-builds/e2e-tests/test-results-mobile/
+            docker-builds/e2e-tests/infra.log
           retention-days: 30
       - name: Upload Playwright Mobile JUnit results for R2
         uses: actions/upload-artifact@v4
@@ -1804,7 +1808,10 @@ jobs:
           mfregistry: metasfresh
           dbqualifier: preloaded
         run: |
-          docker compose --profile frontend up --abort-on-container-exit --exit-code-from playwright-frontend 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
+          # Start stack and attach only to playwright container for clean logs
+          docker compose --profile frontend up --attach playwright-frontend --abort-on-container-exit --exit-code-from playwright-frontend 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
+          # Capture infrastructure logs separately for debugging
+          docker compose --profile frontend logs --no-log-prefix db rabbitmq search app webapi webui > infra.log 2>&1 || true
           docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest
           docker compose --profile frontend down
       - name: push-results to testspace
@@ -1851,6 +1858,7 @@ jobs:
           path: |
             docker-builds/e2e-tests/playwright-report-frontend/
             docker-builds/e2e-tests/test-results-frontend/
+            docker-builds/e2e-tests/infra.log
           retention-days: 30
       - name: Upload Playwright Frontend JUnit results for R2
         uses: actions/upload-artifact@v4
