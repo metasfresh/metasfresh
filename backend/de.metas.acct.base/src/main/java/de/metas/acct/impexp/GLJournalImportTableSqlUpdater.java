@@ -660,7 +660,7 @@ public class GLJournalImportTableSqlUpdater
 
 		// Error Invalid Activity
 		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Project, '"
+				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Activity, '"
 				+ "WHERE C_Activity_ID IS NULL AND ActivityValue IS NOT NULL"
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
