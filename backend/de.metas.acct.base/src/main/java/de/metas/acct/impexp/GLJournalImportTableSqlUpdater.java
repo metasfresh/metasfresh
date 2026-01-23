@@ -1,10 +1,13 @@
 package de.metas.acct.impexp;
 
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.service.ClientId;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
@@ -123,11 +126,11 @@ public class GLJournalImportTableSqlUpdater
 	private void setClientAndDefaults()
 	{
 		final StringBuilder sql = new StringBuilder("UPDATE I_GLJournal "
-				+ "SET AD_Client_ID = COALESCE (AD_Client_ID,").append(importProcessContext.getAdClientId()).append("),"
-				+ " AD_OrgDoc_ID = COALESCE (AD_OrgDoc_ID,").append(importProcessContext.getAdOrgId()).append("),");
+				+ "SET AD_Client_ID = COALESCE (AD_Client_ID,").append(ClientId.toRepoId(importProcessContext.getAdClientId()) ).append("),"
+				+ " AD_OrgDoc_ID = COALESCE (AD_OrgDoc_ID,").append(OrgId.toRepoId(importProcessContext.getAdOrgId())).append("),");
 		if (importProcessContext.getAcctSchemaId() != null)
 		{
-			sql.append(" C_AcctSchema_ID = COALESCE (C_AcctSchema_ID,").append(importProcessContext.getAcctSchemaId()).append("),");
+			sql.append(" C_AcctSchema_ID = COALESCE (C_AcctSchema_ID,").append(AcctSchemaId.toRepoId(importProcessContext.getAcctSchemaId())).append("),");
 		}
 		if (importProcessContext.getDateAcct() != null)
 		{
@@ -357,7 +360,7 @@ public class GLJournalImportTableSqlUpdater
 	{
 		// Set Home Currency Rate to 1
 		StringBuilder sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET CurrencyRate=1"
+				+ "SET CurrencyRate=1 "
 				+ "WHERE EXISTS (SELECT * FROM C_AcctSchema a"
 				+ " WHERE a.C_AcctSchema_ID=i.C_AcctSchema_ID AND a.C_Currency_ID=i.C_Currency_ID)"
 				+ " AND C_Currency_ID IS NOT NULL AND I_IsImported<>'Y'")

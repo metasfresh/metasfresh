@@ -36,8 +36,8 @@ import java.time.Instant;
 @Builder
 class GLJournalImportProcessContext
 {
-	@NonNull ClientId adClientId;
-	@NonNull OrgId adOrgId;
+	@Nullable ClientId adClientId;
+	@Nullable OrgId adOrgId;
 	@Nullable AcctSchemaId acctSchemaId;
 	@Nullable Instant dateAcct;
 }

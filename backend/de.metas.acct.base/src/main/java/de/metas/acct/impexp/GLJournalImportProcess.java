@@ -67,8 +67,8 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 
 	private GLJournalImportProcessContext initProcessContext()
 	{
-		final ClientId adClientId = ClientId.ofRepoId(getParameters().getParameterAsInt(I_GL_Journal.COLUMNNAME_AD_Client_ID, -1));
-		final OrgId adOrgId = OrgId.ofRepoId(getParameters().getParameterAsInt(I_GL_Journal.COLUMNNAME_AD_Org_ID, -1));
+		final ClientId adClientId = ClientId.ofRepoIdOrNull(getParameters().getParameterAsInt(I_GL_Journal.COLUMNNAME_AD_Client_ID, -1));
+		final OrgId adOrgId = OrgId.ofRepoIdOrNull(getParameters().getParameterAsInt(I_GL_Journal.COLUMNNAME_AD_Org_ID, -1));
 		final AcctSchemaId cAcctSchemaId = AcctSchemaId.ofRepoIdOrNull(getParameters().getParameterAsInt(I_GL_Journal.COLUMNNAME_C_AcctSchema_ID, -1));
 		final Instant dateAcct = getParameters().getParameterAsInstant(I_GL_Journal.COLUMNNAME_DateAcct);
 
