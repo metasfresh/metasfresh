@@ -2,11 +2,10 @@ package de.metas.picking.job_schedule.repository;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Picking_Job_Schedule;
 import de.metas.picking.api.PickingJobScheduleId;
-import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
-import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.picking.job_schedule.model.PickingJobSchedule;
 import de.metas.picking.job_schedule.model.PickingJobScheduleCollection;
 import de.metas.picking.job_schedule.model.PickingJobScheduleQuery;
@@ -31,9 +30,12 @@ import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+
 @Repository
 public class PickingJobScheduleRepository
 {
+	@NonNull private static final AdMessageKey UPDATE_OF_PROCESSED_NOT_ALLOWED = AdMessageKey.of("UPDATE_OF_PROCESSED_NOT_ALLOWED");
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@VisibleForTesting
@@ -41,8 +43,13 @@ public class PickingJobScheduleRepository
 	{
 		Adempiere.assertUnitTestMode();
 		//noinspection DataFlowIssue
-		return SpringContextHolder.getBeanOrSupply(PickingJobScheduleRepository.class ,
+		return SpringContextHolder.getBeanOrSupply(PickingJobScheduleRepository.class,
 				PickingJobScheduleRepository::new);
+	}
+
+	public PickingJobSchedule getById(@NonNull final PickingJobScheduleId id)
+	{
+		return fromRecord(load(id, I_M_Picking_Job_Schedule.class));
 	}
 
 	public List<PickingJobSchedule> getByIds(@NonNull final Set<PickingJobScheduleId> ids)
@@ -68,7 +75,8 @@ public class PickingJobScheduleRepository
 
 	public void save(@NonNull final PickingJobSchedule schedule)
 	{
-		final I_M_Picking_Job_Schedule record = InterfaceWrapperHelper.load(schedule.getId(), I_M_Picking_Job_Schedule.class);
+		final I_M_Picking_Job_Schedule record = load(schedule.getId(), I_M_Picking_Job_Schedule.class);
+		if (record.isProcessed()) {throw new AdempiereException(UPDATE_OF_PROCESSED_NOT_ALLOWED);}
 		updateRecord(record, schedule);
 		InterfaceWrapperHelper.saveRecord(record);
 	}
@@ -112,35 +120,12 @@ public class PickingJobScheduleRepository
 				}
 				else
 				{
+					if (record.isProcessed()) {throw new AdempiereException(UPDATE_OF_PROCESSED_NOT_ALLOWED);}
 					updateRecord(record, scheduleUpdated);
 					InterfaceWrapperHelper.saveRecord(record);
 				}
 			}
 		}
-	}
-
-	public ShipmentScheduleAndJobScheduleIdSet getIdsByShipmentScheduleIdsAndWorkplaceId(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds, @NonNull final WorkplaceId workplaceId)
-	{
-		if (shipmentScheduleIds.isEmpty())
-		{
-			return ShipmentScheduleAndJobScheduleIdSet.EMPTY;
-		}
-
-		return queryBL.createQueryBuilder(I_M_Picking_Job_Schedule.class)
-				.addInArrayFilter(I_M_Picking_Job_Schedule.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleIds)
-				.addEqualsFilter(I_M_Picking_Job_Schedule.COLUMNNAME_C_Workplace_ID, workplaceId)
-				.create()
-				.stream()
-				.map(PickingJobScheduleRepository::extractShipmentScheduleAndJobScheduleId)
-				.collect(ShipmentScheduleAndJobScheduleIdSet.collect());
-	}
-
-	private static ShipmentScheduleAndJobScheduleId extractShipmentScheduleAndJobScheduleId(final I_M_Picking_Job_Schedule record)
-	{
-		return ShipmentScheduleAndJobScheduleId.of(
-				ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()),
-				PickingJobScheduleId.ofRepoId(record.getM_Picking_Job_Schedule_ID())
-		);
 	}
 
 	public PickingJobScheduleCollection deleteByIdsAndReturn(final @NonNull Set<PickingJobScheduleId> jobScheduleIds)

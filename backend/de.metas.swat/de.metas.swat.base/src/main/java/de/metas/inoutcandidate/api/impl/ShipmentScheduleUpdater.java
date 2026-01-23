@@ -449,17 +449,17 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				updateFromPickingJobSchedules(olAndSched, jobSchedules);
 			}
 		}
-
 	}
 
 	private void updateFromPickingJobSchedules(@NonNull final OlAndSched olAndSched, @NonNull final PickingJobScheduleCollection jobSchedules)
 	{
 		final Quantity qtyScheduledToPick = jobSchedules.getQtyToPick().orElse(null);
+		final Quantity qtyScheduledToPickOfProcessed = jobSchedules.getQtyToPickOfProcessed().orElse(null);
 		final I_M_ShipmentSchedule shipmentSchedule = olAndSched.getSched();
 
 		shipmentSchedule.setIsScheduledForPicking(qtyScheduledToPick != null && qtyScheduledToPick.signum() > 0);
 		shipmentSchedule.setQtyScheduledForPicking(qtyScheduledToPick != null ? qtyScheduledToPick.toBigDecimal() : null);
-		shipmentSchedulePA.save(shipmentSchedule); // TODO 2025-11-13-metas-ts: remove this save and see if things stil work 
+		shipmentSchedule.setQtyScheduledForPickingOfProcessed(qtyScheduledToPickOfProcessed != null ? qtyScheduledToPickOfProcessed.toBigDecimal() : null);
 	}
 
 	ShipmentSchedulesDuringUpdate generate_FirstRun(@NonNull final List<OlAndSched> lines)
