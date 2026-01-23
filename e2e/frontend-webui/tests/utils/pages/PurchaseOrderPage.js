@@ -800,9 +800,11 @@ export class PurchaseOrderPage {
       const page = getPage();
 
       // Language-independent selector for Vendor Invoice link
-      // Uses data-cy attribute with InternalName from AD_RelationType (C_Order -> C_Invoice POTrx)
-      // This relation links Purchase Order to Vendor Invoice (IsSOTrx='N')
-      const vendorInvoiceLink = page.locator('[data-cy="reference-C_Order_to_C_Invoice_PO"]');
+      // Handle both InternalName format and fallback AD_RelationType_ID format
+      // InternalName: C_Order_to_C_Invoice_PO, Fallback: AD_RelationType_ID-540161
+      const vendorInvoiceLink = page.locator(
+        '[data-cy="reference-C_Order_to_C_Invoice_PO"], [data-cy="reference-AD_RelationType_ID-540161"]'
+      );
 
       let lastError = null;
       let sseReferences = []; // Collect references from SSE responses for debugging
@@ -903,7 +905,7 @@ export class PurchaseOrderPage {
             const subheaderItems = await page.locator('.subheader-item').all();
             console.log(`[DEBUG] Found ${subheaderItems.length} .subheader-item elements`);
 
-            throw new Error('Vendor Invoice link (data-cy="reference-C_Order_to_C_Invoice_PO") not yet visible');
+            throw new Error('Vendor Invoice link (data-cy="reference-C_Order_to_C_Invoice_PO" or "reference-AD_RelationType_ID-540161") not yet visible');
           }
 
           // Link is visible - click it

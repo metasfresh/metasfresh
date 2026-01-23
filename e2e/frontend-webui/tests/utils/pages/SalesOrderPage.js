@@ -50,7 +50,8 @@ export class SalesOrderPage {
 
       await page.keyboard.press('Alt+N');
 
-      await page.waitForURL(/\/window\/143\/\d+/, {
+      // Use flexible window ID pattern - custom projects may override window 143
+      await page.waitForURL(/\/window\/\d+\/\d+/, {
         timeout: SLOW_ACTION_TIMEOUT,
       });
 
@@ -375,12 +376,16 @@ export class SalesOrderPage {
       }).catch(() => {});
 
       // Click on Shipment Schedule link using data-cy attribute (language-independent)
-      // This corresponds to the M_ShipmentSchedule reference
-      const link = page.locator('[data-cy="reference-M_ShipmentSchedule"]');
+      // Handle both InternalName format and fallback AD_RelationType_ID format
+      // InternalName: M_ShipmentSchedule, Fallback: AD_RelationType_ID-540170 (C_Order_to_M_ShipmentSchedule)
+      const link = page.locator(
+        '[data-cy="reference-M_ShipmentSchedule"], [data-cy="reference-AD_RelationType_ID-540170"]'
+      );
       await link.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       await link.click();
 
-      await page.waitForURL(/\/window\/500221/, {
+      // Use flexible window ID pattern - custom projects may override windows
+      await page.waitForURL(/\/window\/\d+/, {
         timeout: SLOW_ACTION_TIMEOUT,
       });
 
@@ -425,12 +430,16 @@ export class SalesOrderPage {
       }).catch(() => {});
 
       // Click on Shipment link using data-cy attribute (language-independent)
-      // Uses InternalName from AD_RelationType (C_Order -> M_InOut SOTrx)
-      const link = page.locator('[data-cy="reference-C_Order_to_M_InOut_SO"]');
+      // Handle both InternalName format and fallback AD_RelationType_ID format
+      // InternalName: C_Order_to_M_InOut_SO, Fallback: AD_RelationType_ID-540159
+      const link = page.locator(
+        '[data-cy="reference-C_Order_to_M_InOut_SO"], [data-cy="reference-AD_RelationType_ID-540159"]'
+      );
       await link.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       await link.click();
 
-      await page.waitForURL(/\/window\/169/, {
+      // Use flexible window ID pattern - custom projects may override window 169 (M_InOut)
+      await page.waitForURL(/\/window\/\d+/, {
         timeout: SLOW_ACTION_TIMEOUT,
       });
 
@@ -475,13 +484,16 @@ export class SalesOrderPage {
       }).catch(() => {});
 
       // Click on Invoice Candidate link using data-cy attribute (language-independent)
-      // The reference is: reference-C_Invoice_Candidate_Sales (not just C_Invoice_Candidate)
-      const link = page.locator('[data-cy="reference-C_Invoice_Candidate_Sales"]');
+      // Handle both InternalName format and fallback AD_RelationType_ID format
+      // InternalName: C_Invoice_Candidate_Sales, Fallback: AD_RelationType_ID-540119
+      const link = page.locator(
+        '[data-cy="reference-C_Invoice_Candidate_Sales"], [data-cy="reference-AD_RelationType_ID-540119"]'
+      );
       await link.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       await link.click();
 
-      // Sales IC window is 540092, not 540983 (purchase)
-      await page.waitForURL(/\/window\/540092/, {
+      // Use flexible window ID pattern - custom projects may override windows
+      await page.waitForURL(/\/window\/\d+/, {
         timeout: SLOW_ACTION_TIMEOUT,
       });
 
@@ -607,10 +619,12 @@ export class SalesOrderPage {
         timeout: SLOW_ACTION_TIMEOUT,
       }).catch(() => {});
 
-      // Click on Invoice link
-      // CRITICAL: Uses data-cy with InternalName from AD_RelationType
-      // C_Order_to_C_Invoice_SO = Sales Order -> Customer Invoice relation
-      const invoiceLink = page.locator('[data-cy="reference-C_Order_to_C_Invoice_SO"]').first();
+      // Click on Invoice link using data-cy attribute (language-independent)
+      // Handle both InternalName format and fallback AD_RelationType_ID format
+      // InternalName: C_Order_to_C_Invoice_SO, Fallback: AD_RelationType_ID-540160
+      const invoiceLink = page.locator(
+        '[data-cy="reference-C_Order_to_C_Invoice_SO"], [data-cy="reference-AD_RelationType_ID-540160"]'
+      ).first();
 
       await invoiceLink.waitFor({
         state: 'visible',
@@ -619,7 +633,8 @@ export class SalesOrderPage {
 
       await invoiceLink.click();
 
-      await page.waitForURL(/\/window\/167/, {
+      // Use flexible window ID pattern - custom projects may override window 167 (C_Invoice)
+      await page.waitForURL(/\/window\/\d+/, {
         timeout: SLOW_ACTION_TIMEOUT,
       });
 

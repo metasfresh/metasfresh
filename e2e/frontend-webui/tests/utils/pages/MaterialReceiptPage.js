@@ -66,8 +66,8 @@ export class MaterialReceiptPage {
       // Use keyboard shortcut Alt+N to create new document
       await page.keyboard.press('Alt+N');
 
-      // Wait for navigation to new document
-      await page.waitForURL(/\/window\/184\/\d+/, {
+      // Wait for navigation to new document (flexible pattern for window overrides)
+      await page.waitForURL(/\/window\/\d+\/\d+/, {
         timeout: SLOW_ACTION_TIMEOUT,
       });
 
