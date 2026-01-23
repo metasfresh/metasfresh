@@ -67,15 +67,15 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 
 	private GLJournalImportProcessContext initProcessContext()
 	{
-		final ClientId adClientId = ClientId.ofRepoIdOrNull(getParameters().getParameterAsInt(I_GL_Journal.COLUMNNAME_AD_Client_ID, -1));
-		final OrgId adOrgId = OrgId.ofRepoIdOrNull(getParameters().getParameterAsInt(I_GL_Journal.COLUMNNAME_AD_Org_ID, -1));
+		final ClientId adClientId = ClientId.ofRepoId(getParameters().getParameterAsInt(I_GL_Journal.COLUMNNAME_AD_Client_ID, -1));
+		final OrgId adOrgId = OrgId.ofRepoId(getParameters().getParameterAsInt(I_GL_Journal.COLUMNNAME_AD_Org_ID, -1));
 		final AcctSchemaId cAcctSchemaId = AcctSchemaId.ofRepoIdOrNull(getParameters().getParameterAsInt(I_GL_Journal.COLUMNNAME_C_AcctSchema_ID, -1));
 		final Instant dateAcct = getParameters().getParameterAsInstant(I_GL_Journal.COLUMNNAME_DateAcct);
 
 		return GLJournalImportProcessContext.builder()
 				.adClientId(adClientId)
 				.adOrgId(adOrgId)
-				.cAcctSchemaId(cAcctSchemaId)
+				.acctSchemaId(cAcctSchemaId)
 				.dateAcct(dateAcct)
 				.build();
 	}
@@ -347,41 +347,23 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 		//
 
 		// Set/Get Tax Account Combination From (Debit)
-		if (importRecord.getDR_Tax_Acct_ID() > 0 && importRecord.getC_ValidCombinationTaxFrom_ID() == 0)
+		if (importRecord.getDR_Tax_Acct_ID() > 0 && importRecord.getC_ValidCombinationTaxFrom_ID() <= 0)
 		{
 			final AccountDimension taxAcctDim = newMinimalAccountDimension(importRecord, importRecord.getDR_Tax_Acct_ID());
 			final MAccount taxAcct = MAccount.get(getCtx(), taxAcctDim);
 
-			if (taxAcct.get_ID() == 0)
-			{
-				importRecord.setI_ErrorMsg("ERROR creating Tax Account DR");
-				importRecord.setI_IsImported(false);
-				InterfaceWrapperHelper.save(importRecord);
-			}
-			else
-			{
-				importRecord.setC_ValidCombinationTaxFrom_ID(taxAcct.get_ID());
-				InterfaceWrapperHelper.save(importRecord);
-			}
+			importRecord.setC_ValidCombinationTaxFrom_ID(taxAcct.get_ID());
+			InterfaceWrapperHelper.save(importRecord);
 		}
 
 		// Set/Get Tax Account Combination To (Credit)
-		if (importRecord.getCR_Tax_Acct_ID() > 0 && importRecord.getC_ValidCombinationTaxTo_ID() == 0)
+		if (importRecord.getCR_Tax_Acct_ID() > 0 && importRecord.getC_ValidCombinationTaxTo_ID() <= 0)
 		{
 			final AccountDimension taxAcctDim = newMinimalAccountDimension(importRecord, importRecord.getCR_Tax_Acct_ID());
 			final MAccount taxAcct = MAccount.get(getCtx(), taxAcctDim);
 
-			if (taxAcct.get_ID() == 0)
-			{
-				importRecord.setI_ErrorMsg("ERROR creating Tax Account CR");
-				importRecord.setI_IsImported(false);
-				InterfaceWrapperHelper.save(importRecord);
-			}
-			else
-			{
-				importRecord.setC_ValidCombinationTaxTo_ID(taxAcct.get_ID());
-				InterfaceWrapperHelper.save(importRecord);
-			}
+			importRecord.setC_ValidCombinationTaxTo_ID(taxAcct.get_ID());
+			InterfaceWrapperHelper.save(importRecord);
 		}
 
 		// Add tax accunt and amounts if exists
@@ -470,19 +452,5 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 	protected I_I_GLJournal retrieveImportRecord(Properties ctx, ResultSet rs) throws SQLException
 	{
 		return new X_I_GLJournal(ctx, rs, ITrx.TRXNAME_ThreadInherited);
-	}
-
-	@Value
-	@Builder
-	protected static class GLJournalImportProcessContext
-	{
-		@Nullable
-		ClientId adClientId;
-		@Nullable
-		OrgId adOrgId;
-		@Nullable
-		AcctSchemaId cAcctSchemaId;
-		@Nullable
-		Instant dateAcct;
 	}
 }

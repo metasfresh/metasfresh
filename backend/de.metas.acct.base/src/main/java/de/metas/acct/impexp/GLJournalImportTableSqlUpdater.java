@@ -41,12 +41,12 @@ public class GLJournalImportTableSqlUpdater
 	private static final Logger log = LogManager.getLogger(GLJournalImportTableSqlUpdater.class);
 
 	private final ImportRecordsSelection selection;
-	private final GLJournalImportProcess.GLJournalImportProcessContext importProcessContext;
+	private final GLJournalImportProcessContext importProcessContext;
 
 	@Builder
 	private GLJournalImportTableSqlUpdater(
 			@NonNull final ImportRecordsSelection selection,
-			@NonNull final GLJournalImportProcess.GLJournalImportProcessContext importProcessContext)
+			@NonNull final GLJournalImportProcessContext importProcessContext)
 	{
 		this.selection = selection;
 		this.importProcessContext = importProcessContext;
@@ -125,9 +125,9 @@ public class GLJournalImportTableSqlUpdater
 		final StringBuilder sql = new StringBuilder("UPDATE I_GLJournal "
 				+ "SET AD_Client_ID = COALESCE (AD_Client_ID,").append(importProcessContext.getAdClientId()).append("),"
 				+ " AD_OrgDoc_ID = COALESCE (AD_OrgDoc_ID,").append(importProcessContext.getAdOrgId()).append("),");
-		if (importProcessContext.getCAcctSchemaId() != null)
+		if (importProcessContext.getAcctSchemaId() != null)
 		{
-			sql.append(" C_AcctSchema_ID = COALESCE (C_AcctSchema_ID,").append(importProcessContext.getCAcctSchemaId()).append("),");
+			sql.append(" C_AcctSchema_ID = COALESCE (C_AcctSchema_ID,").append(importProcessContext.getAcctSchemaId()).append("),");
 		}
 		if (importProcessContext.getDateAcct() != null)
 		{
@@ -772,7 +772,6 @@ public class GLJournalImportTableSqlUpdater
 				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
 		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-
 
 	}
 
