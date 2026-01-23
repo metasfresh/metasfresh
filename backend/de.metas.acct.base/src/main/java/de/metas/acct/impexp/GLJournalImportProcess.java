@@ -27,10 +27,14 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_I_GLJournal;
@@ -43,11 +47,13 @@ import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Properties;
 
 /**
@@ -61,28 +67,22 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 
 	private GLJournalImportProcessContext initProcessContext()
 	{
-		return GLJournalImportProcessContext.ofParams(
-				new GLJournalImportProcessContext.GLJournalImportProcessParameters()
-				{
-					@Override
-					public int getParameterAsInt(String name, int defaultValue)
-					{
-						return getParameters().getParameterAsInt(name, defaultValue);
-					}
+		final ClientId adClientId = ClientId.ofRepoIdOrNull(getParameters().getParameterAsInt(I_GL_Journal.COLUMNNAME_AD_Client_ID, -1));
+		final OrgId adOrgId = OrgId.ofRepoIdOrNull(getParameters().getParameterAsInt(I_GL_Journal.COLUMNNAME_AD_Org_ID, -1));
+		final AcctSchemaId cAcctSchemaId = AcctSchemaId.ofRepoIdOrNull(getParameters().getParameterAsInt(I_GL_Journal.COLUMNNAME_C_AcctSchema_ID, -1));
+		final Instant dateAcct = getParameters().getParameterAsInstant(I_GL_Journal.COLUMNNAME_DateAcct);
 
-					@Override
-					public Timestamp getParameterAsTimestamp(String name)
-					{
-						return getParameters().getParameterAsTimestamp(name);
-					}
-				}
-		);
+		return GLJournalImportProcessContext.builder()
+				.adClientId(adClientId)
+				.adOrgId(adOrgId)
+				.cAcctSchemaId(cAcctSchemaId)
+				.dateAcct(dateAcct)
+				.build();
 	}
 
 	@Override
 	protected void updateAndValidateImportRecords()
 	{
-		final String trxName = ITrx.TRXNAME_ThreadInherited;
 		final ImportRecordsSelection selection = getImportRecordsSelection();
 
 		// get process parameters
@@ -200,8 +200,8 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 			{
 				context.batch.setDocumentNo(importRecord.getBatchDocumentNo());
 			}
-			context.batch.setDateAcct(processContext.getDateAcct());
-			context.batch.setDateDoc(processContext.getDateAcct());
+			context.batch.setDateAcct(TimeUtil.asTimestamp(processContext.getDateAcct()));
+			context.batch.setDateDoc(TimeUtil.asTimestamp(processContext.getDateAcct()));
 			context.batch.setC_DocType_ID(importRecord.getC_DocType_ID());
 			context.batch.setPostingType(importRecord.getPostingType());
 			String description = importRecord.getBatchDescription();
@@ -386,7 +386,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 
 		// Add tax accunt and amounts if exists
 		if (importRecord.getDR_TaxTotalAmt().signum() != 0
-				||  importRecord.getCR_TaxTotalAmt().signum() != 0)
+				|| importRecord.getCR_TaxTotalAmt().signum() != 0)
 		{
 			if (importRecord.getC_ValidCombinationTaxFrom_ID() > 0 || importRecord.getC_ValidCombinationTaxTo_ID() > 0)
 			{
@@ -470,5 +470,19 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 	protected I_I_GLJournal retrieveImportRecord(Properties ctx, ResultSet rs) throws SQLException
 	{
 		return new X_I_GLJournal(ctx, rs, ITrx.TRXNAME_ThreadInherited);
+	}
+
+	@Value
+	@Builder
+	protected static class GLJournalImportProcessContext
+	{
+		@Nullable
+		ClientId adClientId;
+		@Nullable
+		OrgId adOrgId;
+		@Nullable
+		AcctSchemaId cAcctSchemaId;
+		@Nullable
+		Instant dateAcct;
 	}
 }

@@ -41,12 +41,12 @@ public class GLJournalImportTableSqlUpdater
 	private static final Logger log = LogManager.getLogger(GLJournalImportTableSqlUpdater.class);
 
 	private final ImportRecordsSelection selection;
-	private final GLJournalImportProcessContext importProcessContext;
+	private final GLJournalImportProcess.GLJournalImportProcessContext importProcessContext;
 
 	@Builder
 	private GLJournalImportTableSqlUpdater(
 			@NonNull final ImportRecordsSelection selection,
-			@NonNull final GLJournalImportProcessContext importProcessContext)
+			@NonNull final GLJournalImportProcess.GLJournalImportProcessContext importProcessContext)
 	{
 		this.selection = selection;
 		this.importProcessContext = importProcessContext;
@@ -125,7 +125,7 @@ public class GLJournalImportTableSqlUpdater
 		final StringBuilder sql = new StringBuilder("UPDATE I_GLJournal "
 				+ "SET AD_Client_ID = COALESCE (AD_Client_ID,").append(importProcessContext.getAdClientId()).append("),"
 				+ " AD_OrgDoc_ID = COALESCE (AD_OrgDoc_ID,").append(importProcessContext.getAdOrgId()).append("),");
-		if (importProcessContext.getCAcctSchemaId() != 0)
+		if (importProcessContext.getCAcctSchemaId() != null)
 		{
 			sql.append(" C_AcctSchema_ID = COALESCE (C_AcctSchema_ID,").append(importProcessContext.getCAcctSchemaId()).append("),");
 		}
@@ -757,6 +757,23 @@ public class GLJournalImportTableSqlUpdater
 				.append(selection.toSqlWhereClause("i"));
 		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		log.debug("Set CR_Tax_Acct_ID from Value={}", no);
+
+		// Error Invalid Account
+		sql = new StringBuilder("UPDATE I_GLJournal i "
+				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Account for TaxAccountValueFrom, '"
+				+ "WHERE (DR_Tax_Acct_ID IS NULL OR DR_Tax_Acct_ID=0) AND TaxAccountValueFrom IS NOT NULL"
+				+ " AND I_IsImported<>'Y'")
+				.append(selection.toSqlWhereClause("i"));
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+
+		sql = new StringBuilder("UPDATE I_GLJournal i "
+				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Account for TaxAccountValueTo, '"
+				+ "WHERE (CR_Tax_Acct_ID IS NULL OR CR_Tax_Acct_ID=0) AND TaxAccountValueTo IS NOT NULL"
+				+ " AND I_IsImported<>'Y'")
+				.append(selection.toSqlWhereClause("i"));
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+
+
 	}
 
 	/**
