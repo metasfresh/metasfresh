@@ -493,6 +493,7 @@
 			<staticText>
 				<reportElement x="565" y="0" width="8" height="12" uuid="c7acd6de-af63-42ec-a530-5ed4496aa666">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<printWhenExpression><![CDATA[$F{rate}!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement>
 					<font size="9"/>

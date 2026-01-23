@@ -444,7 +444,9 @@
 				<textFieldExpression><![CDATA[$F{rate}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="565" y="0" width="9" height="12" uuid="c7acd6de-af63-42ec-a530-5ed4496aa666"/>
+				<reportElement x="565" y="0" width="9" height="12" uuid="c7acd6de-af63-42ec-a530-5ed4496aa666">
+					<printWhenExpression><![CDATA[$F{rate}!=null]]></printWhenExpression>
+				</reportElement>
 				<textElement textAlignment="Right">
 					<font size="9"/>
 				</textElement>
