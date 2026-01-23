@@ -2,6 +2,7 @@ package de.metas.picking.job_schedule.repository;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Picking_Job_Schedule;
 import de.metas.picking.api.PickingJobScheduleId;
@@ -34,6 +35,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 @Repository
 public class PickingJobScheduleRepository
 {
+	@NonNull private static final AdMessageKey UPDATE_OF_PROCESSED_NOT_ALLOWED = AdMessageKey.of("UPDATE_OF_PROCESSED_NOT_ALLOWED");
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@VisibleForTesting
@@ -41,7 +43,7 @@ public class PickingJobScheduleRepository
 	{
 		Adempiere.assertUnitTestMode();
 		//noinspection DataFlowIssue
-		return SpringContextHolder.getBeanOrSupply(PickingJobScheduleRepository.class ,
+		return SpringContextHolder.getBeanOrSupply(PickingJobScheduleRepository.class,
 				PickingJobScheduleRepository::new);
 	}
 
@@ -74,6 +76,7 @@ public class PickingJobScheduleRepository
 	public void save(@NonNull final PickingJobSchedule schedule)
 	{
 		final I_M_Picking_Job_Schedule record = load(schedule.getId(), I_M_Picking_Job_Schedule.class);
+		if (record.isProcessed()) {throw new AdempiereException(UPDATE_OF_PROCESSED_NOT_ALLOWED);}
 		updateRecord(record, schedule);
 		InterfaceWrapperHelper.saveRecord(record);
 	}
@@ -117,6 +120,7 @@ public class PickingJobScheduleRepository
 				}
 				else
 				{
+					if (record.isProcessed()) {throw new AdempiereException(UPDATE_OF_PROCESSED_NOT_ALLOWED);}
 					updateRecord(record, scheduleUpdated);
 					InterfaceWrapperHelper.saveRecord(record);
 				}
