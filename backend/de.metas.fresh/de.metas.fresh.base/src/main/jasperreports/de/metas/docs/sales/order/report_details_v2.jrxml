@@ -152,6 +152,7 @@
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<printWhenExpression><![CDATA[$F{linenetamt}!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
@@ -227,6 +228,7 @@
 				<reportElement key="textField-20" x="543" y="0" width="30" height="12" forecolor="#000000" uuid="2e12ffef-b477-4e3f-87e3-44b74485fb6c">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<printWhenExpression><![CDATA[$F{rate}!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
@@ -432,6 +434,7 @@
 			<staticText>
 				<reportElement x="565" y="0" width="8" height="12" uuid="c7acd6de-af63-42ec-a530-5ed4496aa666">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<printWhenExpression><![CDATA[$F{rate}!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement>
 					<font size="9"/>
