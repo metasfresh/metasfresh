@@ -24,30 +24,35 @@ package de.metas.acct.impexp;
 
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
-import lombok.Builder;
+import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.Tax;
+import de.metas.util.Services;
 import lombok.NonNull;
-import lombok.Value;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_GL_Journal;
+import org.compiere.model.I_GL_JournalLine;
 import org.compiere.model.I_I_GLJournal;
 import org.compiere.model.MAccount;
 import org.compiere.model.MJournal;
 import org.compiere.model.MJournalBatch;
 import org.compiere.model.MJournalLine;
+import org.compiere.model.X_GL_JournalLine;
 import org.compiere.model.X_I_GLJournal;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -62,8 +67,8 @@ import java.util.Properties;
 public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJournal>
 {
 	private static final Logger log = LogManager.getLogger(GLJournalImportProcess.class);
-
-	private GLJournalImportProcessContext processContext;
+	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 
 	private GLJournalImportProcessContext initProcessContext()
 	{
@@ -86,7 +91,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 		final ImportRecordsSelection selection = getImportRecordsSelection();
 
 		// get process parameters
-		processContext = initProcessContext();
+		final GLJournalImportProcessContext processContext = initProcessContext();
 
 		GLJournalImportTableSqlUpdater.builder()
 				.selection(selection)
@@ -200,8 +205,8 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 			{
 				context.batch.setDocumentNo(importRecord.getBatchDocumentNo());
 			}
-			context.batch.setDateAcct(TimeUtil.asTimestamp(processContext.getDateAcct()));
-			context.batch.setDateDoc(TimeUtil.asTimestamp(processContext.getDateAcct()));
+			context.batch.setDateAcct(importRecord.getDateAcct());
+			context.batch.setDateDoc(importRecord.getDateAcct());
 			context.batch.setC_DocType_ID(importRecord.getC_DocType_ID());
 			context.batch.setPostingType(importRecord.getPostingType());
 			String description = importRecord.getBatchDescription();
@@ -288,6 +293,9 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 		//
 		line.setDescription(importRecord.getDescription());
 		line.setCurrency(importRecord.getC_Currency_ID(), importRecord.getC_ConversionType_ID(), importRecord.getCurrencyRate());
+		line.setC_Activity_ID(importRecord.getC_Activity_ID());
+		line.setCR_Tax_ID(importRecord.getCR_Tax_ID());
+		line.setDR_Tax_ID(importRecord.getDR_Tax_ID());
 
 		//
 		line.setLine(importRecord.getLine());
@@ -367,31 +375,51 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 		}
 
 		// Add tax accunt and amounts if exists
-		if (importRecord.getDR_TaxTotalAmt().signum() != 0
-				|| importRecord.getCR_TaxTotalAmt().signum() != 0)
+		if ((importRecord.getDR_TaxTotalAmt().signum() != 0 && line.getDR_Tax_ID() > 0)
+				|| (importRecord.getCR_TaxTotalAmt().signum() != 0 && line.getCR_Tax_ID() > 0))
 		{
 			if (importRecord.getC_ValidCombinationTaxFrom_ID() > 0 || importRecord.getC_ValidCombinationTaxTo_ID() > 0)
 			{
+				final CurrencyPrecision precision = getPrecision(line);
 
 				// Set tax amounts
 				if (importRecord.getDR_TaxTotalAmt().signum() != 0)
 				{
-					line.setAmtSourceDr(importRecord.getDR_TaxTotalAmt());
+					final Tax drTax = taxDAO.getTaxById(line.getDR_Tax_ID());
+					final BigDecimal taxTotalAmt = importRecord.getDR_TaxTotalAmt();
+					final BigDecimal taxAmt = drTax.calculateTax(taxTotalAmt, true, precision.toInt()).getTaxAmount();
+					final BigDecimal taxBaseAmt = taxTotalAmt.subtract(taxAmt);
+
+					line.setDR_TaxTotalAmt(taxTotalAmt);
+					line.setDR_TaxAmt(taxAmt);
+					line.setDR_TaxBaseAmt(taxBaseAmt);
 				}
 				if (importRecord.getCR_TaxTotalAmt().signum() != 0)
 				{
-					line.setAmtSourceCr(importRecord.getCR_TaxTotalAmt());
+
+					final Tax crTax = taxDAO.getTaxById(line.getCR_Tax_ID());
+					final BigDecimal taxTotalAmt = importRecord.getCR_TaxTotalAmt();
+					final BigDecimal taxAmt = crTax.calculateTax(taxTotalAmt, true, precision.toInt()).getTaxAmount();
+					final BigDecimal taxBaseAmt = taxTotalAmt.subtract(taxAmt);
+
+					line.setCR_TaxTotalAmt(taxTotalAmt);
+					line.setCR_TaxAmt(taxAmt);
+					line.setCR_TaxBaseAmt(taxBaseAmt);
 				}
 
 				// Set tax account combinations
 				if (importRecord.getC_ValidCombinationTaxFrom_ID() > 0)
 				{
-					line.setAccount_DR_ID(importRecord.getC_ValidCombinationTaxFrom_ID());
+					line.setDR_Tax_Acct_ID(importRecord.getC_ValidCombinationTaxFrom_ID());
+					line.setDR_AutoTaxAccount(true);
 				}
 				if (importRecord.getC_ValidCombinationTaxTo_ID() > 0)
 				{
-					line.setAccount_CR_ID(importRecord.getC_ValidCombinationTaxTo_ID());
+					line.setCR_Tax_Acct_ID(importRecord.getC_ValidCombinationTaxTo_ID());
+					line.setCR_AutoTaxAccount(true);
 				}
+
+				line.setType(X_GL_JournalLine.TYPE_Tax);
 			}
 		}
 
@@ -410,6 +438,14 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 		}
 
 		return wasInsert ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
+	}
+
+	private CurrencyPrecision getPrecision(@NonNull final I_GL_JournalLine glJournalLine)
+	{
+		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(glJournalLine.getC_Currency_ID());
+		return currencyId != null
+				? currencyDAO.getStdPrecision(currencyId)
+				: CurrencyPrecision.TWO;
 	}
 
 	private AccountDimension newMinimalAccountDimension(final I_I_GLJournal importRecord, final int accountId)

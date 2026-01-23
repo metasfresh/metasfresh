@@ -818,7 +818,7 @@ public interface I_I_GLJournal
 	/**
 	 * Set Tax account (credit).
 	 *
-	 * <br>Type: Account
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -885,10 +885,10 @@ public interface I_I_GLJournal
 	 * Set Sum (Credit).
 	 *
 	 * <br>Type: Amount
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setCR_TaxTotalAmt (BigDecimal CR_TaxTotalAmt);
+	void setCR_TaxTotalAmt (@Nullable BigDecimal CR_TaxTotalAmt);
 
 	/**
 	 * Get Sum (Credit).
@@ -1146,7 +1146,7 @@ public interface I_I_GLJournal
 	/**
 	 * Set Tax Account (Debit).
 	 *
-	 * <br>Type: Account
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */

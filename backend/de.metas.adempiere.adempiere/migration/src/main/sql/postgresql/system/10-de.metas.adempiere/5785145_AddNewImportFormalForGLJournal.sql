@@ -70,3 +70,79 @@ INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFo
 UPDATE AD_ImpFormat_Row SET StartNo=6,Updated=TO_TIMESTAMP('2026-01-20 16:22:34.556000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=542151
 ;
 
+update AD_ImpFormat set AD_Client_ID=0, AD_Org_ID=0 where AD_ImpFormat_ID = 540102;
+update AD_ImpFormat_Row set AD_Client_ID=0, AD_Org_ID=0 where AD_ImpFormat_ID = 540102;
+
+
+
+-- 2026-01-23T16:30:25.997Z
+UPDATE AD_ImpFormat_Row SET SeqNo=160,Updated=TO_TIMESTAMP('2026-01-23 16:30:25.996000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=542144
+;
+
+-- 2026-01-23T16:30:28.854Z
+UPDATE AD_ImpFormat_Row SET SeqNo=170,Updated=TO_TIMESTAMP('2026-01-23 16:30:28.852000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=542145
+;
+
+-- 2026-01-23T16:30:57.525Z
+UPDATE AD_ImpFormat_Row SET SeqNo=10,Updated=TO_TIMESTAMP('2026-01-23 16:30:57.522000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=542146
+;
+
+-- 2026-01-23T16:30:59.572Z
+UPDATE AD_ImpFormat_Row SET SeqNo=20,Updated=TO_TIMESTAMP('2026-01-23 16:30:59.570000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=542147
+;
+
+-- 2026-01-23T16:31:01.967Z
+UPDATE AD_ImpFormat_Row SET SeqNo=30,Updated=TO_TIMESTAMP('2026-01-23 16:31:01.965000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=542148
+;
+
+-- 2026-01-23T16:31:04.063Z
+UPDATE AD_ImpFormat_Row SET SeqNo=40,Updated=TO_TIMESTAMP('2026-01-23 16:31:04.061000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=542149
+;
+
+-- 2026-01-23T16:31:06.706Z
+UPDATE AD_ImpFormat_Row SET SeqNo=50,Updated=TO_TIMESTAMP('2026-01-23 16:31:06.704000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=542150
+;
+
+-- 2026-01-23T16:31:37.272Z
+UPDATE AD_ImpFormat_Row SET SeqNo=60,Updated=TO_TIMESTAMP('2026-01-23 16:31:37.270000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=542151
+;
+
+-- 2026-01-23T16:31:57.792Z
+INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFormat_Row_ID,AD_Org_ID,Created,CreatedBy,DataType,DecimalPoint,DivideBy100,EndNo,IsActive,Name,SeqNo,StartNo,Updated,UpdatedBy) VALUES (0,591886,540102,542153,0,TO_TIMESTAMP('2026-01-23 16:31:56.732000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'S','.','N',0,'Y','TaxAccountValueFrom',70,7,TO_TIMESTAMP('2026-01-23 16:31:56.732000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-01-23T16:32:13.179Z
+INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFormat_Row_ID,AD_Org_ID,Created,CreatedBy,DataType,DecimalPoint,DivideBy100,EndNo,IsActive,Name,SeqNo,StartNo,Updated,UpdatedBy) VALUES (0,591887,540102,542154,0,TO_TIMESTAMP('2026-01-23 16:32:13.041000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'S','.','N',0,'Y','TaxAccountValueFrom',80,8,TO_TIMESTAMP('2026-01-23 16:32:13.041000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-01-23T16:32:33.338Z
+INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFormat_Row_ID,AD_Org_ID,Created,CreatedBy,DataType,DecimalPoint,DivideBy100,EndNo,IsActive,Name,SeqNo,StartNo,Updated,UpdatedBy) VALUES (0,591884,540102,542155,0,TO_TIMESTAMP('2026-01-23 16:32:33.189000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'S','.','N',0,'Y','DR Tax Name',90,9,TO_TIMESTAMP('2026-01-23 16:32:33.189000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-01-23T16:32:39.573Z
+UPDATE AD_ImpFormat_Row SET Name='Tax Account Value To',Updated=TO_TIMESTAMP('2026-01-23 16:32:39.571000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=542154
+;
+
+-- 2026-01-23T16:33:02.798Z
+INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFormat_Row_ID,AD_Org_ID,Created,CreatedBy,DataType,DecimalPoint,DivideBy100,EndNo,IsActive,Name,SeqNo,StartNo,Updated,UpdatedBy) VALUES (0,591885,540102,542156,0,TO_TIMESTAMP('2026-01-23 16:33:02.649000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'S','.','N',0,'Y','CR Tax Name',100,10,TO_TIMESTAMP('2026-01-23 16:33:02.649000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-01-23T16:33:34.923Z
+INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFormat_Row_ID,AD_Org_ID,Created,CreatedBy,DataType,DecimalPoint,DivideBy100,EndNo,IsActive,Name,SeqNo,StartNo,Updated,UpdatedBy) VALUES (0,591873,540102,542157,0,TO_TIMESTAMP('2026-01-23 16:33:34.625000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'S','.','N',0,'Y','DR Total Tax Amt',110,11,TO_TIMESTAMP('2026-01-23 16:33:34.625000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-01-23T16:33:57.921Z
+INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFormat_Row_ID,AD_Org_ID,Created,CreatedBy,DataType,DecimalPoint,DivideBy100,EndNo,IsActive,Name,SeqNo,StartNo,Updated,UpdatedBy) VALUES (0,591875,540102,542158,0,TO_TIMESTAMP('2026-01-23 16:33:57.771000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'N','.','N',0,'Y','CR Total Tax Amt',120,12,TO_TIMESTAMP('2026-01-23 16:33:57.771000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-01-23T16:34:01.833Z
+UPDATE AD_ImpFormat_Row SET DataType='N',Updated=TO_TIMESTAMP('2026-01-23 16:34:01.831000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=542157
+;
+
+-- 2026-01-23T16:34:42.245Z
+INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFormat_Row_ID,AD_Org_ID,Created,CreatedBy,DataType,DecimalPoint,DivideBy100,EndNo,IsActive,Name,SeqNo,StartNo,Updated,UpdatedBy) VALUES (0,591872,540102,542159,0,TO_TIMESTAMP('2026-01-23 16:34:42.088000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'S','.','N',0,'Y','ActivityValue',130,13,TO_TIMESTAMP('2026-01-23 16:34:42.088000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-01-23T16:34:56.518Z
+INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFormat_Row_ID,AD_Org_ID,Created,CreatedBy,DataType,DecimalPoint,DivideBy100,EndNo,IsActive,Name,SeqNo,StartNo,Updated,UpdatedBy) VALUES (0,9286,540102,542160,0,TO_TIMESTAMP('2026-01-23 16:34:56.384000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'S','.','N',0,'Y','Description',140,14,TO_TIMESTAMP('2026-01-23 16:34:56.384000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;

@@ -145,17 +145,12 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */ SELECT public.db_alter_table('I_GLJournal','ALTER TABLE public.I_GLJournal ADD COLUMN C_ValidCombinationTaxTo_ID NUMERIC(10)')
 ;
 
--- 2026-01-22T11:38:33.765Z
-ALTER TABLE I_GLJournal ADD CONSTRAINT CValidCombinationTaxTo_IGLJournal FOREIGN KEY (C_ValidCombinationTaxTo_ID) REFERENCES public.C_ElementValue DEFERRABLE INITIALLY DEFERRED
-;
 
 -- 2026-01-22T11:38:37.222Z
 /* DDL */ SELECT public.db_alter_table('I_GLJournal','ALTER TABLE public.I_GLJournal ADD COLUMN C_ValidCombinationTaxFrom_ID NUMERIC(10)')
 ;
 
--- 2026-01-22T11:38:37.229Z
-ALTER TABLE I_GLJournal ADD CONSTRAINT CValidCombinationTaxFrom_IGLJournal FOREIGN KEY (C_ValidCombinationTaxFrom_ID) REFERENCES public.C_ElementValue DEFERRABLE INITIALLY DEFERRED
-;
+
 
 -- 2026-01-22T11:38:43.282Z
 INSERT INTO t_alter_column values('i_gljournal','C_Tax_ID','NUMERIC(10)',null,null)

@@ -30,16 +30,8 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */ SELECT public.db_alter_table('I_GLJournal','ALTER TABLE public.I_GLJournal ADD COLUMN DR_Tax_Acct_ID NUMERIC(10)')
 ;
 
--- 2026-01-22T15:11:16.723Z
-ALTER TABLE I_GLJournal ADD CONSTRAINT DRTaxAcct_IGLJournal FOREIGN KEY (DR_Tax_Acct_ID) REFERENCES public.C_ValidCombination DEFERRABLE INITIALLY DEFERRED
-;
-
 -- 2026-01-22T15:11:24.675Z
 /* DDL */ SELECT public.db_alter_table('I_GLJournal','ALTER TABLE public.I_GLJournal ADD COLUMN CR_Tax_Acct_ID NUMERIC(10)')
-;
-
--- 2026-01-22T15:11:24.681Z
-ALTER TABLE I_GLJournal ADD CONSTRAINT CRTaxAcct_IGLJournal FOREIGN KEY (CR_Tax_Acct_ID) REFERENCES public.C_ValidCombination DEFERRABLE INITIALLY DEFERRED
 ;
 
 -- Field: Import - Hauptbuchjournal(278,D) -> Hauptbuch(508,D) -> Probleme
@@ -438,3 +430,96 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=768075
 /* DDL */ select AD_Element_Link_Create_Missing_Field(768075)
 ;
 
+
+
+-- Column: I_GLJournal.CR_TaxTotalAmt
+-- 2026-01-23T16:38:27.984Z
+UPDATE AD_Column SET IsMandatory='N',Updated=TO_TIMESTAMP('2026-01-23 16:38:27.984000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591875
+;
+
+-- 2026-01-23T16:38:36.978Z
+INSERT INTO t_alter_column values('i_gljournal','CR_TaxTotalAmt','NUMERIC',null,null)
+;
+
+-- 2026-01-23T16:38:36.981Z
+INSERT INTO t_alter_column values('i_gljournal','CR_TaxTotalAmt',null,'NULL',null)
+;
+
+-- Column: I_GLJournal.DR_Tax_Acct_ID
+-- 2026-01-23T16:58:33.850Z
+UPDATE AD_Column SET AD_Reference_ID=30, AD_Reference_Value_ID=362, AD_Val_Rule_ID=252,Updated=TO_TIMESTAMP('2026-01-23 16:58:33.850000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591889
+;
+
+-- 2026-01-23T16:58:36.352Z
+INSERT INTO t_alter_column values('i_gljournal','DR_Tax_Acct_ID','NUMERIC(10)',null,null)
+;
+
+-- Column: I_GLJournal.CR_Tax_Acct_ID
+-- 2026-01-23T16:59:07.156Z
+UPDATE AD_Column SET AD_Reference_ID=30, AD_Reference_Value_ID=362,Updated=TO_TIMESTAMP('2026-01-23 16:59:07.155000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591888
+;
+
+-- 2026-01-23T16:59:08.624Z
+INSERT INTO t_alter_column values('i_gljournal','CR_Tax_Acct_ID','NUMERIC(10)',null,null)
+;
+
+-- Column: I_GLJournal.DR_Tax_Acct_ID
+-- 2026-01-23T16:59:28.636Z
+UPDATE AD_Column SET AD_Val_Rule_ID=NULL,Updated=TO_TIMESTAMP('2026-01-23 16:59:28.636000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591889
+;
+
+-- Column: I_GLJournal.C_ValidCombinationTaxTo_ID
+-- 2026-01-23T17:23:00.713Z
+UPDATE AD_Column SET AD_Reference_ID=25, AD_Reference_Value_ID=NULL,Updated=TO_TIMESTAMP('2026-01-23 17:23:00.713000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591879
+;
+
+-- Column: I_GLJournal.C_ValidCombinationTaxFrom_ID
+-- 2026-01-23T17:23:19.487Z
+UPDATE AD_Column SET AD_Reference_ID=25, AD_Reference_Value_ID=NULL,Updated=TO_TIMESTAMP('2026-01-23 17:23:19.487000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591878
+;
+
+
+
+------------
+
+
+
+-- Process: Import_GLJournal(org.compiere.process.ImportGLJournal)
+-- ParameterName: AD_Org_ID
+-- 2026-01-23T18:22:46.523Z
+DELETE FROM  AD_Process_Para_Trl WHERE AD_Process_Para_ID=329
+;
+
+-- 2026-01-23T18:22:46.528Z
+DELETE FROM AD_Process_Para WHERE AD_Process_Para_ID=329
+;
+
+-- Process: Import_GLJournal(org.compiere.process.ImportGLJournal)
+-- ParameterName: C_AcctSchema_ID
+-- 2026-01-23T18:22:49.761Z
+DELETE FROM  AD_Process_Para_Trl WHERE AD_Process_Para_ID=330
+;
+
+-- 2026-01-23T18:22:49.768Z
+DELETE FROM AD_Process_Para WHERE AD_Process_Para_ID=330
+;
+
+-- Process: Import_GLJournal(org.compiere.process.ImportGLJournal)
+-- ParameterName: DateAcct
+-- 2026-01-23T18:22:52.916Z
+DELETE FROM  AD_Process_Para_Trl WHERE AD_Process_Para_ID=331
+;
+
+-- 2026-01-23T18:22:52.921Z
+DELETE FROM AD_Process_Para WHERE AD_Process_Para_ID=331
+;
+
+-- Process: Import_GLJournal(org.compiere.process.ImportGLJournal)
+-- ParameterName: AD_Client_ID
+-- 2026-01-23T18:22:57.992Z
+DELETE FROM  AD_Process_Para_Trl WHERE AD_Process_Para_ID=328
+;
+
+-- 2026-01-23T18:22:57.998Z
+DELETE FROM AD_Process_Para WHERE AD_Process_Para_ID=328
+;

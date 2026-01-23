@@ -11,6 +11,8 @@ import org.adempiere.service.ClientId;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
+import java.time.Instant;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -64,7 +66,6 @@ public class GLJournalImportTableSqlUpdater
 		resetAndInitializeFields();
 		setClientFromName();
 		setClientAndDefaults();
-		validateDocOrg();
 		setAcctSchema();
 		setDateAcct();
 		setDocType();
@@ -126,39 +127,21 @@ public class GLJournalImportTableSqlUpdater
 	private void setClientAndDefaults()
 	{
 		final StringBuilder sql = new StringBuilder("UPDATE I_GLJournal "
-				+ "SET AD_Client_ID = COALESCE (AD_Client_ID,").append(ClientId.toRepoId(importProcessContext.getAdClientId()) ).append("),"
-				+ " AD_OrgDoc_ID = COALESCE (AD_OrgDoc_ID,").append(OrgId.toRepoId(importProcessContext.getAdOrgId())).append("),");
+				+ "SET AD_Client_ID = COALESCE (AD_Client_ID,").append(ClientId.METASFRESH.getRepoId()).append("),"
+				+ " AD_OrgDoc_ID = COALESCE (AD_OrgDoc_ID,").append(OrgId.MAIN.getRepoId()).append("),");
 		if (importProcessContext.getAcctSchemaId() != null)
 		{
 			sql.append(" C_AcctSchema_ID = COALESCE (C_AcctSchema_ID,").append(AcctSchemaId.toRepoId(importProcessContext.getAcctSchemaId())).append("),");
 		}
 		if (importProcessContext.getDateAcct() != null)
 		{
-			sql.append(" DateAcct = COALESCE (DateAcct,").append(DB.TO_DATE(importProcessContext.getDateAcct())).append("),");
+			sql.append(" DateAcct = COALESCE (DateAcct,").append(DB.TO_DATE(Instant.now())).append("),");
 		}
 		sql.append(" Updated = COALESCE (Updated, now()) "
 						+ "WHERE I_IsImported<>'Y' OR I_IsImported IS NULL")
 				.append(selection.toSqlWhereClause());
 		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		log.debug("Client/DocOrg/Default={}", no);
-	}
-
-	/**
-	 * Validate Doc Org - mark as error if invalid
-	 */
-	private void validateDocOrg()
-	{
-		final String sql = "UPDATE I_GLJournal o "
-				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Doc Org, '"
-				+ "WHERE (AD_OrgDoc_ID IS NULL OR AD_OrgDoc_ID=0"
-				+ " OR EXISTS (SELECT * FROM AD_Org oo WHERE o.AD_OrgDoc_ID=oo.AD_Org_ID AND (oo.IsSummary='Y' OR oo.IsActive='N')))"
-				+ " AND I_IsImported<>'Y'"
-				+ selection.toSqlWhereClause("o");
-		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
-		if (no != 0)
-		{
-			log.warn("Invalid Doc Org={}", no);
-		}
 	}
 
 	/**
@@ -313,7 +296,7 @@ public class GLJournalImportTableSqlUpdater
 		StringBuilder sql = new StringBuilder("UPDATE I_GLJournal i "
 				+ "SET ConversionTypeValue='S' "
 				+ "WHERE C_ConversionType_ID IS NULL AND ConversionTypeValue IS NULL"
-				+ " AND I_IsImported='N'")
+				+ " AND I_IsImported<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
 		int no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		log.debug("Set CurrencyType Value to Spot ={}", no);
