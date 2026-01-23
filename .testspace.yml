@@ -7,8 +7,6 @@ release:
   - green_oak_release
   - mighty_pegasus_hotfix
   - mighty_pegasus_release
-  - temporary_test20251106_hotfix
-  - temporary_test20251106_release
   - task_force_hotfix
   - task_force_release
   - keen_hawk_hotfix

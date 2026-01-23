@@ -57,7 +57,6 @@ pull_request_rules:
               # HOTFIX BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
               - base=green_oak_hotfix
               - base=mighty_pegasus_hotfix
-              - base=temporary_test20251106_hotfix
               - base=task_force_hotfix
               - base=keen_hawk_hotfix
               - base=game_time_hotfix
@@ -81,7 +80,6 @@ pull_request_rules:
               # RELEASE BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
               - base=green_oak_release
               - base=mighty_pegasus_release
-              - base=temporary_test20251106_release
               - base=task_force_release
               - base=keen_hawk_release
               - base=game_time_release
