@@ -29,6 +29,7 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.sql.SqlForFetchingLookups;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.DocumentFieldLogicExpressionResultRevaluator;
@@ -53,6 +54,7 @@ import org.adempiere.util.lang.SynchronizedMutable;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.POInfo;
 import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -525,10 +527,17 @@ public final class DefaultView implements IEditableView
 	{
 		assertNotClosed();
 
-		final Evaluatee ctxEffective = ctx.mapParameterValues(parameterValues -> normalizeFilterParameterValues(parameterValues, filterId)).toEvaluatee();
+		Evaluatee ctxEffective = ctx.mapParameterValues(parameterValues -> normalizeFilterParameterValues(parameterValues, filterId))
+				.toEvaluatee();
 
-		return viewFilterDescriptors.getByFilterId(filterId)
-				.getParameterByName(filterParameterName)
+		final DocumentFilterParamDescriptor paramDescriptor = viewFilterDescriptors.getByFilterId(filterId).getParameterByName(filterParameterName);
+		if (paramDescriptor.isShowInactiveValues())
+		{
+			ctxEffective = Evaluatees.ofSingleton(SqlForFetchingLookups.SQL_PARAM_ShowInactive.getName(), SqlForFetchingLookups.SQL_PARAM_VALUE_ShowInactive_Yes)
+					.andComposeWith(ctxEffective);
+		}
+		
+		return paramDescriptor
 				.getLookupDataSource()
 				.orElseThrow(() -> new AdempiereException("No lookup found for filterId=" + filterId + ", filterParameterName=" + filterParameterName))
 				.findEntities(ctxEffective, query);
