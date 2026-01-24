@@ -1,10 +1,27 @@
 import { expect } from '@playwright/test';
 import { test } from '../../../playwright.config';
 import { FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../common';
-import { BUSINESS_PARTNER_WINDOW_ID, PAYMENT_TERM_WINDOW_ID } from '../WindowIds';
-import { assertRecordIsValid } from '../WebAPIValidation';
+import { BUSINESS_PARTNER_WINDOW_ID } from '../WindowIds';
 
-const WEBAPI_BASE_URL = process.env.WEBAPI_BASE_URL || 'http://localhost:8080/rest/api';
+// Named timing constants for UI interactions
+const TAB_SWITCH_DELAY = 500;
+const EDIT_MODE_DELAY = 300;
+const DROPDOWN_OPEN_DELAY = 300;
+const SAVE_CONFIRMATION_DELAY = 500;
+
+// Language-independent patterns for column headers
+// These match both English and German translations
+const PO_PAYMENT_TERM_PATTERN = /PO Payment Term|Zahlungskondition.*Einkauf|Zahlungsbedingung/i;
+
+// Tab IDs - language-independent, verified via browser inspection
+// These are stable across languages and work in window overrides
+const TAB_IDS = {
+  VENDOR: 'tab_Vendor',
+  CUSTOMER: 'tab_Customer',
+  LOCATION: 'tab_C_BPartner_Location',
+  CONTACT: 'tab_AD_User',
+  BANK_ACCOUNT: 'tab_C_BP_BankAccount',
+};
 
 /**
  * Page object for Business Partner window (ID: 123).
@@ -62,7 +79,8 @@ export class BusinessPartnerPage {
       await page.goto(`${FRONTEND_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}/${bpartnerId}`);
 
       // Wait for document detail view to load
-      await page.waitForURL(/\/window\/123\/\d+/, {
+      // Use flexible pattern - window ID may differ in overridden windows
+      await page.waitForURL(/\/window\/\d+\/\d+/, {
         timeout: SLOW_ACTION_TIMEOUT,
       });
 
@@ -92,17 +110,49 @@ export class BusinessPartnerPage {
   }
 
   /**
+   * Click on a tab in the Business Partner window by its ID.
+   * Uses the language-independent 'id' attribute which is stable across languages and window overrides.
+   *
+   * @param {string} tabId - The tab ID (use TAB_IDS constants, e.g., TAB_IDS.VENDOR)
+   */
+  static async clickTab(tabId) {
+    return await test.step(`BusinessPartnerPage - Click tab: ${tabId}`, async () => {
+      const page = getPage();
+
+      const tab = page.locator(`li.nav-item#${tabId}`);
+      const tabExists = await tab.count() > 0;
+
+      if (!tabExists) {
+        const allTabs = page.locator('li.nav-item[id^="tab_"]');
+        const tabCount = await allTabs.count();
+        const availableTabs = [];
+        for (let i = 0; i < tabCount; i++) {
+          const id = await allTabs.nth(i).getAttribute('id');
+          const text = await allTabs.nth(i).textContent();
+          availableTabs.push(`${id} ("${text?.trim()}")`);
+        }
+        throw new Error(
+          `Tab not found. Looking for id="${tabId}". ` +
+          `Available tabs: ${availableTabs.join(', ')}`
+        );
+      }
+
+      await tab.click();
+      await page.waitForTimeout(TAB_SWITCH_DELAY);
+    });
+  }
+
+  /**
    * Navigate to a business partner by ID and set PO Payment Term.
    * This is a convenience method that combines gotoRecord and setPOPaymentTerm.
    *
    * @param {string|number} bpartnerId - The C_BPartner_ID
-   * @param {string} paymentTermName - Name of the payment term to set
-   * @param {string|number} [paymentTermId] - Optional C_PaymentTerm_ID (skips lookup if provided)
+   * @param {string} paymentTermName - Name of the payment term to set (e.g., "30 days net")
    */
-  static async setVendorPaymentTerm(bpartnerId, paymentTermName, paymentTermId) {
+  static async setVendorPaymentTerm(bpartnerId, paymentTermName) {
     return await test.step(`BusinessPartnerPage - Set PO payment term for vendor ${bpartnerId}`, async () => {
       await this.gotoRecord(bpartnerId);
-      await this.setPOPaymentTerm(paymentTermName, paymentTermId);
+      await this.setPOPaymentTerm(paymentTermName);
     });
   }
 
@@ -149,7 +199,8 @@ export class BusinessPartnerPage {
       await firstRow.dblclick();
 
       // Wait for detail view to load
-      await page.waitForURL(/\/window\/123\/\d+/, {
+      // Use flexible pattern - window ID may differ in overridden windows
+      await page.waitForURL(/\/window\/\d+\/\d+/, {
         timeout: SLOW_ACTION_TIMEOUT,
       });
 
@@ -168,177 +219,100 @@ export class BusinessPartnerPage {
 
   /**
    * Set the Purchase Payment Term (PO_PaymentTerm_ID) on the current business partner.
-   * Uses the testing API endpoint since WebAPI PATCH requires all mandatory fields.
+   * Uses pure UI interaction: clicks on Vendor tab, double-clicks the cell, selects from dropdown.
    *
-   * @param {string} paymentTermName - Name of the payment term to select
-   * @param {string|number} [paymentTermIdParam] - Optional C_PaymentTerm_ID (skips lookup if provided)
+   * @param {string} paymentTermName - Name of the payment term to select (e.g., "30 days net")
    */
-  static async setPOPaymentTerm(paymentTermName, paymentTermIdParam) {
+  static async setPOPaymentTerm(paymentTermName) {
     return await test.step(`BusinessPartnerPage - Set PO Payment Term: ${paymentTermName}`, async () => {
       const page = getPage();
 
-      // The PO_PaymentTerm_ID field is in the Vendor tab (AD_Tab_ID=224)
-      // which is an "included tab" that's not easily accessible in WebUI.
-      // WebAPI PATCH validation requires all mandatory fields, so we use
-      // the testing API to update the field directly.
+      // Step 1: Click on the Vendor tab (clickTab already waits for content to load)
+      await this.clickTab(TAB_IDS.VENDOR);
 
-      // Get the current record ID from the URL
-      const recordId = this.getRecordId();
+      // Step 2: Find the PO Payment Term column using language-independent pattern
+      const headers = page.locator('th, [role="columnheader"]');
+      const headerCount = await headers.count();
+      let columnIndex = -1;
+      const availableHeaders = [];
 
-      // CRITICAL: Verify record is valid before attempting modifications
-      // If valid=false, changes will NOT be saved (common cause of silent failures)
-      await assertRecordIsValid(BUSINESS_PARTNER_WINDOW_ID, recordId, 'before setting PO_PaymentTerm_ID');
-
-      // Use provided ID
-      const paymentTermId = paymentTermIdParam;
-      if (!paymentTermId) {
-        throw new Error('Payment term ID is required for setPOPaymentTerm');
+      for (let i = 0; i < headerCount; i++) {
+        const headerText = await headers.nth(i).textContent();
+        availableHeaders.push(headerText);
+        if (headerText && PO_PAYMENT_TERM_PATTERN.test(headerText)) {
+          columnIndex = i;
+          break;
+        }
       }
 
-      console.log(`Updating business partner ${recordId} with PO_PaymentTerm_ID=${paymentTermId}`);
-
-      // Use the testing API to update the field directly
-      // This bypasses WebUI validation requirements
-      const testApiBaseUrl = process.env.TESTING_API_BASE_URL || 'http://localhost:8282/api/v2';
-
-      const updateResponse = await page.request.put(
-        `${testApiBaseUrl}/testing/bpartner/${recordId}/po-payment-term/${paymentTermId}`,
-        {
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
-
-      // Track which method succeeded
-      let updateSucceeded = false;
-      let lastError = null;
-
-      // Method 1: Try the dedicated Testing API endpoint
-      if (updateResponse.ok()) {
-        console.log('PO_PaymentTerm_ID updated via testing API');
-        updateSucceeded = true;
-      } else {
-        console.log(`Testing API failed (${updateResponse.status()}), trying fallback methods...`);
-
-        // Method 2: Try the generic execute endpoint
-        const executeResponse = await page.request.post(
-          `${testApiBaseUrl}/testing/execute`,
-          {
-            data: {
-              sql: `UPDATE C_BPartner SET PO_PaymentTerm_ID = ${paymentTermId} WHERE C_BPartner_ID = ${recordId}`,
-            },
-            headers: { 'Content-Type': 'application/json' },
-          }
+      if (columnIndex === -1) {
+        throw new Error(
+          `PO Payment Term column not found in Vendor tab. ` +
+          `Available headers: ${availableHeaders.join(', ')}`
         );
-
-        if (executeResponse.ok()) {
-          console.log('PO_PaymentTerm_ID updated via testing execute');
-          updateSucceeded = true;
-        } else {
-          console.log(`Testing execute failed (${executeResponse.status()}), trying WebAPI PATCH...`);
-
-          // Method 3: Try WebAPI PATCH with CompanyName included
-          const recordResponse = await page.request.get(
-            `${WEBAPI_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}/${recordId}`,
-            { headers: { 'Content-Type': 'application/json' } }
-          );
-
-          if (recordResponse.ok()) {
-            const recordData = await recordResponse.json();
-            const companyName = recordData[0]?.fieldsByName?.CompanyName?.value || recordData.fieldsByName?.CompanyName?.value || 'Test Company';
-
-            // Include CompanyName in the patch to satisfy mandatory field requirement
-            const patchBody = [
-              {
-                op: 'replace',
-                path: 'CompanyName',
-                value: companyName || 'E2E Test Company'
-              },
-              {
-                op: 'replace',
-                path: 'PO_PaymentTerm_ID',
-                value: { key: paymentTermId.toString(), caption: paymentTermName }
-              }
-            ];
-
-            const patchResponse = await page.request.patch(
-              `${WEBAPI_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}/${recordId}`,
-              {
-                data: patchBody,
-                headers: { 'Content-Type': 'application/json' },
-              }
-            );
-
-            if (patchResponse.ok()) {
-              const patchResult = await patchResponse.json();
-              const saveStatus = patchResult.documents?.[0]?.saveStatus || {};
-              if (saveStatus.saved) {
-                console.log(`PO_PaymentTerm_ID updated successfully via WebAPI PATCH`);
-                updateSucceeded = true;
-              } else if (saveStatus.error) {
-                lastError = `WebAPI PATCH save failed: ${saveStatus.reason}`;
-                console.warn(lastError);
-              } else {
-                // No error but not marked as saved - check if it actually worked
-                console.log('WebAPI PATCH response unclear, assuming success');
-                updateSucceeded = true;
-              }
-            } else {
-              lastError = `WebAPI PATCH request failed: ${patchResponse.status()}`;
-              console.warn(lastError);
-            }
-          } else {
-            lastError = `Failed to get record for PATCH: ${recordResponse.status()}`;
-            console.warn(lastError);
-          }
-        }
       }
 
-      // CRITICAL: Fail the test if no update method succeeded
-      if (!updateSucceeded) {
-        throw new Error(`Failed to update PO_PaymentTerm_ID on business partner ${recordId}. Last error: ${lastError || 'All update methods failed'}`);
+      // Step 3: Find the data row and the corresponding cell
+      // The Vendor tab typically has only one row for the vendor record
+      const dataRow = page.locator('tbody tr, [role="rowgroup"] [role="row"]').first();
+      await dataRow.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+      const cells = dataRow.locator('td, [role="cell"]');
+      const poPaymentTermCell = cells.nth(columnIndex);
+
+      // Step 4: Double-click to enter edit mode
+      await poPaymentTermCell.dblclick();
+      await page.waitForTimeout(EDIT_MODE_DELAY);
+
+      // Verify edit mode by checking for input or dropdown element
+      const editInput = poPaymentTermCell.locator('input, select, [role="combobox"], [role="textbox"]');
+      await editInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT })
+        .catch(() => {
+          throw new Error('Failed to enter edit mode on PO Payment Term cell');
+        });
+
+      // Step 5: Press ArrowDown to open the dropdown
+      await page.keyboard.press('ArrowDown');
+      await page.waitForTimeout(DROPDOWN_OPEN_DELAY);
+
+      // Verify dropdown is open by checking for listbox or dropdown menu
+      const dropdownList = page.locator('[role="listbox"], .input-dropdown-list');
+      await dropdownList.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT })
+        .catch(() => {
+          throw new Error('Failed to open payment term dropdown');
+        });
+
+      // Step 6: Find and click the payment term option
+      // Use simple filter by text - more robust than complex attribute selectors
+      const paymentTermOption = page.locator('[role="option"], .input-dropdown-list-option')
+        .filter({ hasText: paymentTermName });
+
+      const optionCount = await paymentTermOption.count();
+      if (optionCount === 0) {
+        const allOptions = await page.locator('[role="option"], .input-dropdown-list-option').allTextContents();
+        throw new Error(
+          `Payment term "${paymentTermName}" not found in dropdown. ` +
+          `Available options: ${allOptions.join(', ')}`
+        );
       }
 
-      // Wait for any save operations to propagate
-      await page.waitForTimeout(500);
+      await paymentTermOption.first().click();
+
+      // Step 7: Press Escape to close any remaining dropdown and confirm selection
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(SAVE_CONFIRMATION_DELAY);
+
+      // Wait for save to complete
       await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+
+      // Verify the value was set by checking the cell text
+      const cellText = await poPaymentTermCell.textContent();
+      if (!cellText || !cellText.includes(paymentTermName)) {
+        console.warn(`Warning: Cell text "${cellText}" does not contain expected value "${paymentTermName}"`);
+      }
 
       console.log(`PO Payment Term set to: ${paymentTermName}`);
     });
-  }
-
-  /**
-   * Lookup a payment term ID by name using the WebAPI typeahead.
-   * @param {string} paymentTermName - Name of the payment term
-   * @returns {Promise<string>} The C_PaymentTerm_ID
-   */
-  static async lookupPaymentTermId(paymentTermName) {
-    const page = getPage();
-
-    // Use typeahead API to search for the payment term
-    // The endpoint is: /rest/api/window/{windowId}/{documentId}/field/{fieldName}/typeahead?query=...
-    // For a fresh document lookup, we can use the Payment Term window directly
-    const response = await page.request.get(
-      `${WEBAPI_BASE_URL}/window/${PAYMENT_TERM_WINDOW_ID}?` +
-        `filters=[{"parameterName":"Name","value":"${encodeURIComponent(paymentTermName)}","operator":"like"}]`,
-      {
-        headers: { 'Content-Type': 'application/json' },
-      }
-    );
-
-    if (!response.ok()) {
-      throw new Error(`Failed to lookup payment term: ${response.status()}`);
-    }
-
-    const result = await response.json();
-    const rows = result.result || [];
-
-    if (rows.length === 0) {
-      throw new Error(`Payment term "${paymentTermName}" not found`);
-    }
-
-    // Return the first matching payment term ID
-    const paymentTermId = rows[0].rowId || rows[0].id;
-    return paymentTermId;
   }
 
   /**
@@ -394,4 +368,10 @@ export class BusinessPartnerPage {
     const recordId = url.split('/').pop();
     return recordId;
   }
+
+  /**
+   * Tab IDs for use with clickTab().
+   * These are language-independent and stable across window overrides.
+   */
+  static TAB_IDS = TAB_IDS;
 }

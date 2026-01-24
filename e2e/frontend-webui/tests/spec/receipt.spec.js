@@ -376,11 +376,10 @@ Ensures early payment discount workflows work correctly, including:
       console.log(`[${language}] Linking payment term to vendor: ${masterdata.bpartners.VENDOR1.bpartnerCode} (ID: ${masterdata.bpartners.VENDOR1.id})`);
 
       // Navigate directly to the vendor business partner by ID and set PO_PaymentTerm_ID
-      // Pass both the name and ID since we already have the ID from creation
+      // Uses UI interaction: clicks Vendor tab, double-clicks cell, selects from dropdown
       await BusinessPartnerPage.setVendorPaymentTerm(
         masterdata.bpartners.VENDOR1.id,
-        paymentTermName,
-        paymentTerm.paymentTermId
+        paymentTermName
       );
 
       console.log(`[${language}] Payment term linked to vendor`);

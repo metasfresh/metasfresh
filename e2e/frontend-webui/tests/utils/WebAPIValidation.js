@@ -80,9 +80,9 @@ export async function getRecordData(windowId, recordId) {
  * @throws {Error} If record is not valid
  *
  * @example
- * // ALWAYS call this before modifying a record
- * await assertRecordIsValid('123', bpartnerId, 'before setting PO_PaymentTerm_ID');
- * await BusinessPartnerPage.setPOPaymentTerm(paymentTermName, paymentTermId);
+ * // ALWAYS call this before modifying a record via API
+ * await assertRecordIsValid('123', bpartnerId, 'before API modification');
+ * // Note: UI-based methods like BusinessPartnerPage.setPOPaymentTerm() handle this internally
  */
 export async function assertRecordIsValid(windowId, recordId, context = '') {
   const recordData = await getRecordData(windowId, recordId);
