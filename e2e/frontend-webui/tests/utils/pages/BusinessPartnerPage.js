@@ -2,6 +2,7 @@ import { expect } from '@playwright/test';
 import { test } from '../../../playwright.config';
 import { FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../common';
 import { BUSINESS_PARTNER_WINDOW_ID, PAYMENT_TERM_WINDOW_ID } from '../WindowIds';
+import { assertRecordIsValid } from '../WebAPIValidation';
 
 const WEBAPI_BASE_URL = process.env.WEBAPI_BASE_URL || 'http://localhost:8080/rest/api';
 
@@ -181,14 +182,19 @@ export class BusinessPartnerPage {
       // WebAPI PATCH validation requires all mandatory fields, so we use
       // the testing API to update the field directly.
 
+      // Get the current record ID from the URL
+      const recordId = this.getRecordId();
+
+      // CRITICAL: Verify record is valid before attempting modifications
+      // If valid=false, changes will NOT be saved (common cause of silent failures)
+      await assertRecordIsValid(BUSINESS_PARTNER_WINDOW_ID, recordId, 'before setting PO_PaymentTerm_ID');
+
       // Use provided ID
       const paymentTermId = paymentTermIdParam;
       if (!paymentTermId) {
         throw new Error('Payment term ID is required for setPOPaymentTerm');
       }
 
-      // Get the current record ID from the URL
-      const recordId = this.getRecordId();
       console.log(`Updating business partner ${recordId} with PO_PaymentTerm_ID=${paymentTermId}`);
 
       // Use the testing API to update the field directly
@@ -201,6 +207,10 @@ export class BusinessPartnerPage {
           headers: { 'Content-Type': 'application/json' },
         }
       );
+
+      // Track which method succeeded
+      let updateSucceeded = false;
+      let lastError = null;
 
       // If testing API endpoint doesn't exist, fall back to direct execute endpoint
       if (!updateResponse.ok() && updateResponse.status() === 404) {
@@ -258,16 +268,34 @@ export class BusinessPartnerPage {
               const saveStatus = patchResult.documents?.[0]?.saveStatus || {};
               if (saveStatus.saved) {
                 console.log(`PO_PaymentTerm_ID updated successfully via WebAPI PATCH`);
+                updateSucceeded = true;
               } else if (saveStatus.error) {
-                console.warn(`WebAPI PATCH returned error: ${saveStatus.reason}`);
+                lastError = `WebAPI PATCH save failed: ${saveStatus.reason}`;
+                console.warn(lastError);
               }
+            } else {
+              lastError = `WebAPI PATCH request failed: ${patchResponse.status()}`;
+              console.warn(lastError);
             }
+          } else {
+            lastError = `Failed to get record for PATCH: ${recordResponse.status()}`;
+            console.warn(lastError);
           }
         } else {
           console.log('PO_PaymentTerm_ID updated via testing execute');
+          updateSucceeded = true;
         }
       } else if (updateResponse.ok()) {
         console.log('PO_PaymentTerm_ID updated via testing API');
+        updateSucceeded = true;
+      } else {
+        lastError = `Testing API failed with unexpected status: ${updateResponse.status()}`;
+        console.warn(lastError);
+      }
+
+      // CRITICAL: Fail the test if no update method succeeded
+      if (!updateSucceeded) {
+        throw new Error(`Failed to update PO_PaymentTerm_ID on business partner ${recordId}. Last error: ${lastError || 'All update methods failed'}`);
       }
 
       // Wait for any save operations to propagate
