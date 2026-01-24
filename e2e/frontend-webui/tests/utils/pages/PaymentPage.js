@@ -2,6 +2,7 @@ import { expect } from '@playwright/test';
 import { test } from '../../../playwright.config';
 import { FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../common';
 import { PAYMENT_WINDOW_ID } from '../WindowIds';
+import { DOCTYPE_AP_PAYMENT, DOCTYPE_AR_RECEIPT } from '../DocTypeIds';
 
 /**
  * Page object for Payment window (ID: 195).
@@ -183,51 +184,101 @@ export class PaymentPage {
   /**
    * Select the invoice to pay.
    * Language-independent: Uses database column name C_Invoice_ID.
+   *
+   * IMPLEMENTATION NOTE: Based on frontend source code analysis (SelectionDropdown.js),
+   * the dropdown uses onMouseDown (not onClick). Using keyboard navigation (ArrowDown + Enter)
+   * is more reliable than clicking because it doesn't depend on mouse event handling.
+   *
    * @param {string} invoiceDocNo - Invoice document number to search for
    */
   static async selectInvoice(invoiceDocNo) {
     return await test.step(`PaymentPage - Select invoice: ${invoiceDocNo}`, async () => {
       const page = getPage();
 
+      // 1. Locate and focus the invoice lookup input
       const invoiceInput = page.locator('#lookup_C_Invoice_ID input.input-field');
       await invoiceInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       await invoiceInput.click();
+      console.log('Focused invoice lookup field');
 
-      // Wait for initial loading spinner to disappear
-      await page.locator('#lookup_C_Invoice_ID .rotating, #lookup_C_Invoice_ID .spinner').waitFor({
+      // 2. Wait for any initial loading to complete
+      await page.locator('#lookup_C_Invoice_ID .rotating').waitFor({
         state: 'detached',
         timeout: SLOW_ACTION_TIMEOUT,
       }).catch(() => {});
 
-      await page.waitForTimeout(300);
+      // 3. Clear and type the invoice document number
+      await invoiceInput.fill('');
+      await page.waitForTimeout(200);
       await invoiceInput.fill(invoiceDocNo);
+      console.log(`Typed invoice search: ${invoiceDocNo}`);
+
+      // 4. Wait for dropdown to load (debounce ~300ms + API call)
+      await page.waitForTimeout(800);
+      await page.locator('#lookup_C_Invoice_ID .rotating').waitFor({
+        state: 'detached',
+        timeout: SLOW_ACTION_TIMEOUT,
+      }).catch(() => {});
+
+      // 5. Wait for dropdown list to appear
+      const dropdownList = page.locator('.input-dropdown-list');
+      await dropdownList.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+      // 6. Log available options for debugging
+      const options = await page.locator('.input-dropdown-list-option').allTextContents().catch(() => []);
+      console.log(`Invoice dropdown options (${options.length}): ${options.slice(0, 3).join(' | ')}`);
+
+      // 7. Verify the invoice option exists (not just "none")
+      const invoiceOption = page.locator('.input-dropdown-list-option')
+        .filter({ hasText: invoiceDocNo })
+        .first();
+      const optionExists = await invoiceOption.count() > 0;
+
+      if (!optionExists) {
+        throw new Error(`Invoice ${invoiceDocNo} not found in dropdown. Available: ${options.join(', ')}`);
+      }
+
+      // 8. USE KEYBOARD NAVIGATION: ArrowDown to select first option, Enter to confirm
+      // This is more reliable than clicking because it uses the widget's built-in keyboard handling
+      // See: frontend/src/components/widget/Lookup/RawLookup.js handleInputTextKeyDown
+      await page.keyboard.press('ArrowDown');
+      await page.waitForTimeout(100);
+
+      // Check if the first option is "none" - if so, press ArrowDown again
+      const highlightedOption = await page.locator('.input-dropdown-list-option-key-on').textContent().catch(() => '');
+      if (highlightedOption.toLowerCase().includes('none') || !highlightedOption.includes(invoiceDocNo)) {
+        // Skip the "none" option
+        await page.keyboard.press('ArrowDown');
+        await page.waitForTimeout(100);
+      }
+
+      // 9. Press Enter to select the highlighted option
+      await page.keyboard.press('Enter');
+      console.log(`Selected invoice via keyboard: ${invoiceDocNo}`);
+
+      // 10. Wait for dropdown to close and value to be set
+      await dropdownList.waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
       await page.waitForTimeout(500);
 
-      // Wait for dropdown to populate
-      await page.locator('#lookup_C_Invoice_ID .rotating, #lookup_C_Invoice_ID .spinner').waitFor({
-        state: 'detached',
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {});
+      // 11. Verify selection by checking the input field or widget display
+      const fieldValue = await invoiceInput.inputValue().catch(() => '');
+      const widgetText = await page.locator('#lookup_C_Invoice_ID').textContent().catch(() => '');
+      console.log(`Invoice field value: "${fieldValue}", widget text contains invoice: ${widgetText.includes(invoiceDocNo)}`);
 
-      await page.waitForTimeout(300);
-
-      // Click the option by text
-      await page.locator('.input-dropdown-list-option').getByText(invoiceDocNo).first().click();
-
-      // Wait for dropdown to close
-      await page.locator('.input-dropdown-list').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
-
-      // Trigger blur by pressing Tab
+      // 12. Press Tab to move to next field and ensure blur/save triggers
       await page.keyboard.press('Tab');
 
-      // Wait for save operations to complete
+      // 13. Wait for auto-save to complete
       await page.waitForTimeout(500);
       await page.locator('.rotating, .indicator-pending').waitFor({
         state: 'detached',
         timeout: SLOW_ACTION_TIMEOUT,
       }).catch(() => {});
 
-      await page.waitForTimeout(1000);
+      // 14. Wait for network idle to confirm save
+      await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+
+      console.log('Invoice selection completed');
     });
   }
 
@@ -280,11 +331,15 @@ export class PaymentPage {
 
   /**
    * Select the document type for the payment.
-   * For vendor payments, this should be set to "AP Payment" or equivalent.
-   * @param {string} [docTypeName] - Optional specific document type name
+   * For vendor payments, this should be set to "AP Payment" (DOCTYPE_AP_PAYMENT).
+   *
+   * Uses language-independent data-testid selectors based on C_DocType_ID.
+   * See DocTypeIds.js for the mapping of document type constants.
+   *
+   * @param {number} [docTypeId] - Optional document type ID (defaults to DOCTYPE_AP_PAYMENT for vendor payments)
    */
-  static async selectDocumentType(docTypeName) {
-    return await test.step(`PaymentPage - Select document type`, async () => {
+  static async selectDocumentType(docTypeId = DOCTYPE_AP_PAYMENT) {
+    return await test.step(`PaymentPage - Select document type (ID: ${docTypeId})`, async () => {
       const page = getPage();
 
       // Document Type field is a combobox/dropdown (not a lookup field)
@@ -332,22 +387,34 @@ export class PaymentPage {
           timeout: SLOW_ACTION_TIMEOUT,
         }).catch(() => {});
 
-        // Click the first available option (AP Payment for vendor)
-        const optionSelectors = [
-          '.input-dropdown-list-option',
-          '.select-option',
-          'option',
-        ];
+        // Log available options for debugging
+        const allOptions = await page.locator('.input-dropdown-list-option').allTextContents().catch(() => []);
+        console.log(`Document type options: ${allOptions.join(', ')}`);
 
-        for (const optSelector of optionSelectors) {
-          const options = page.locator(optSelector);
-          const optCount = await options.count();
-          if (optCount > 0) {
-            // Click the first option
-            await options.first().click();
+        // Use language-independent data-testid selector based on DocTypeIds constant
+        // Frontend SelectionDropdown renders: data-testid="option-{key}"
+        const docTypeOption = page.locator(`[data-testid="option-${docTypeId}"]`);
+        const optionExists = await docTypeOption.count() > 0;
+
+        if (optionExists) {
+          await docTypeOption.click();
+          await page.waitForTimeout(500);
+          console.log(`Selected document type by ID: ${docTypeId}`);
+        } else {
+          // Fallback: log all data-testid values for debugging
+          const testIds = await page.locator('.input-dropdown-list-option').evaluateAll(
+            els => els.map(el => el.getAttribute('data-testid') || el.getAttribute('data-test-id'))
+          );
+          console.log(`Available option data-testid values: ${testIds.join(', ')}`);
+
+          // Try legacy data-test-id format as fallback
+          const legacyOption = page.locator(`[data-test-id^="${docTypeId}"]`);
+          if (await legacyOption.count() > 0) {
+            await legacyOption.first().click();
             await page.waitForTimeout(500);
-            console.log(`Selected document type using ${optSelector}`);
-            break;
+            console.log(`Selected document type using legacy data-test-id: ${docTypeId}`);
+          } else {
+            throw new Error(`Document type option with ID ${docTypeId} not found. Available test IDs: ${testIds.join(', ')}`);
           }
         }
 
