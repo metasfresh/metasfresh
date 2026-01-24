@@ -16,6 +16,7 @@
  */
 
 const { test } = require('../../playwright.config');
+const { allure } = require('allure-playwright');
 const { PdfLayoutValidator } = require('./PdfLayoutValidator');
 
 class PdfValidator {
@@ -248,6 +249,21 @@ class PdfValidator {
       }
 
       console.log(`✅ PDF validation completed successfully for ${language}`);
+
+      // ============================================================
+      // STEP 4: Attach PDF to Allure report
+      // ============================================================
+      try {
+        const filename = await download.suggestedFilename();
+        // Create descriptive name: e.g., "material-receipt-1000001.pdf"
+        const attachmentName = documentNo ? `${filename.replace('.pdf', '')}-${documentNo}.pdf` : filename;
+
+        await allure.attachment(attachmentName, buffer, 'application/pdf');
+        console.log(`📎 PDF attached to Allure report: ${attachmentName}`);
+      } catch (attachError) {
+        // Don't fail the test if attachment fails, just log warning
+        console.warn(`⚠️ Failed to attach PDF to Allure report: ${attachError.message}`);
+      }
     });
   }
 }
