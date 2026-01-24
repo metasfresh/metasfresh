@@ -9,9 +9,11 @@ const EDIT_MODE_DELAY = 300;
 const DROPDOWN_OPEN_DELAY = 300;
 const SAVE_CONFIRMATION_DELAY = 500;
 
-// Language-independent patterns for column headers
-// These match both English and German translations
-const PO_PAYMENT_TERM_PATTERN = /PO Payment Term|Zahlungskondition.*Einkauf|Zahlungsbedingung/i;
+// Column field names - these are database column names used in data-testid attributes
+// Format in HTML: data-testid="column-{fieldName}"
+const COLUMN_FIELDS = {
+  PO_PAYMENT_TERM: 'PO_PaymentTerm_ID',
+};
 
 // Tab IDs - language-independent, verified via browser inspection
 // These are stable across languages and work in window overrides
@@ -230,30 +232,41 @@ export class BusinessPartnerPage {
       // Step 1: Click on the Vendor tab (clickTab already waits for content to load)
       await this.clickTab(TAB_IDS.VENDOR);
 
-      // Step 2: Find the PO Payment Term column using language-independent pattern
-      const headers = page.locator('th, [role="columnheader"]');
-      const headerCount = await headers.count();
-      let columnIndex = -1;
-      const availableHeaders = [];
+      // Step 2: Find the PO Payment Term column using language-independent data-testid
+      // The frontend renders column headers with data-testid="column-{fieldName}"
+      const columnHeader = page.locator(`th[data-testid="column-${COLUMN_FIELDS.PO_PAYMENT_TERM}"]`);
+      const headerExists = await columnHeader.count() > 0;
 
+      if (!headerExists) {
+        // Collect available columns for error message
+        const allHeaders = page.locator('th[data-testid^="column-"]');
+        const headerCount = await allHeaders.count();
+        const availableColumns = [];
+        for (let i = 0; i < headerCount; i++) {
+          const testId = await allHeaders.nth(i).getAttribute('data-testid');
+          const text = await allHeaders.nth(i).textContent();
+          availableColumns.push(`${testId} ("${text?.trim()}")`);
+        }
+        throw new Error(
+          `PO Payment Term column not found. Looking for data-testid="column-${COLUMN_FIELDS.PO_PAYMENT_TERM}". ` +
+          `Available columns: ${availableColumns.join(', ')}`
+        );
+      }
+
+      // Step 3: Find the column index and corresponding cell
+      // Get all headers to determine column position
+      const allHeaders = page.locator('th');
+      const headerCount = await allHeaders.count();
+      let columnIndex = -1;
       for (let i = 0; i < headerCount; i++) {
-        const headerText = await headers.nth(i).textContent();
-        availableHeaders.push(headerText);
-        if (headerText && PO_PAYMENT_TERM_PATTERN.test(headerText)) {
+        const testId = await allHeaders.nth(i).getAttribute('data-testid');
+        if (testId === `column-${COLUMN_FIELDS.PO_PAYMENT_TERM}`) {
           columnIndex = i;
           break;
         }
       }
 
-      if (columnIndex === -1) {
-        throw new Error(
-          `PO Payment Term column not found in Vendor tab. ` +
-          `Available headers: ${availableHeaders.join(', ')}`
-        );
-      }
-
-      // Step 3: Find the data row and the corresponding cell
-      // The Vendor tab typically has only one row for the vendor record
+      // Find the data row and corresponding cell
       const dataRow = page.locator('tbody tr, [role="rowgroup"] [role="row"]').first();
       await dataRow.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
