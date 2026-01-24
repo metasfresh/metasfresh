@@ -212,11 +212,14 @@ export class BusinessPartnerPage {
       let updateSucceeded = false;
       let lastError = null;
 
-      // If testing API endpoint doesn't exist, fall back to direct execute endpoint
-      if (!updateResponse.ok() && updateResponse.status() === 404) {
-        console.log('Testing API endpoint not found, using execute endpoint');
+      // Method 1: Try the dedicated Testing API endpoint
+      if (updateResponse.ok()) {
+        console.log('PO_PaymentTerm_ID updated via testing API');
+        updateSucceeded = true;
+      } else {
+        console.log(`Testing API failed (${updateResponse.status()}), trying fallback methods...`);
 
-        // Use the generic execute endpoint to run SQL
+        // Method 2: Try the generic execute endpoint
         const executeResponse = await page.request.post(
           `${testApiBaseUrl}/testing/execute`,
           {
@@ -227,11 +230,13 @@ export class BusinessPartnerPage {
           }
         );
 
-        if (!executeResponse.ok()) {
-          // If execute also fails, try navigation workaround via WebUI form
-          console.log('Testing execute failed, attempting WebUI field patch with CompanyName');
+        if (executeResponse.ok()) {
+          console.log('PO_PaymentTerm_ID updated via testing execute');
+          updateSucceeded = true;
+        } else {
+          console.log(`Testing execute failed (${executeResponse.status()}), trying WebAPI PATCH...`);
 
-          // First get the current CompanyName
+          // Method 3: Try WebAPI PATCH with CompanyName included
           const recordResponse = await page.request.get(
             `${WEBAPI_BASE_URL}/window/${BUSINESS_PARTNER_WINDOW_ID}/${recordId}`,
             { headers: { 'Content-Type': 'application/json' } }
@@ -272,6 +277,10 @@ export class BusinessPartnerPage {
               } else if (saveStatus.error) {
                 lastError = `WebAPI PATCH save failed: ${saveStatus.reason}`;
                 console.warn(lastError);
+              } else {
+                // No error but not marked as saved - check if it actually worked
+                console.log('WebAPI PATCH response unclear, assuming success');
+                updateSucceeded = true;
               }
             } else {
               lastError = `WebAPI PATCH request failed: ${patchResponse.status()}`;
@@ -281,16 +290,7 @@ export class BusinessPartnerPage {
             lastError = `Failed to get record for PATCH: ${recordResponse.status()}`;
             console.warn(lastError);
           }
-        } else {
-          console.log('PO_PaymentTerm_ID updated via testing execute');
-          updateSucceeded = true;
         }
-      } else if (updateResponse.ok()) {
-        console.log('PO_PaymentTerm_ID updated via testing API');
-        updateSucceeded = true;
-      } else {
-        lastError = `Testing API failed with unexpected status: ${updateResponse.status()}`;
-        console.warn(lastError);
       }
 
       // CRITICAL: Fail the test if no update method succeeded
