@@ -246,7 +246,7 @@ class SelectionDropdown extends Component {
       <div
         ref={(ref) => this.optionToRef.set(option, ref)}
         key={`${key}-${idx}-${caption}`}
-        data-test-id={`${key}${caption}`}
+        data-testid={`option-${key}`}
         className={classnames(
           'input-dropdown-list-option ignore-react-onclickoutside',
           {
