@@ -30,7 +30,6 @@ import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
-import de.metas.organization.OrgId;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.util.Services;
@@ -38,7 +37,6 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
@@ -70,32 +68,19 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 
-	private GLJournalImportProcessContext initProcessContext()
-	{
-		final ClientId adClientId = ClientId.ofRepoIdOrNull(getParameters().getParameterAsInt(I_GL_Journal.COLUMNNAME_AD_Client_ID, -1));
-		final OrgId adOrgId = OrgId.ofRepoIdOrNull(getParameters().getParameterAsInt(I_GL_Journal.COLUMNNAME_AD_Org_ID, -1));
-		final AcctSchemaId cAcctSchemaId = AcctSchemaId.ofRepoIdOrNull(getParameters().getParameterAsInt(I_GL_Journal.COLUMNNAME_C_AcctSchema_ID, -1));
-		final Instant dateAcct = getParameters().getParameterAsInstant(I_GL_Journal.COLUMNNAME_DateAcct);
-
-		return GLJournalImportProcessContext.builder()
-				.adClientId(adClientId)
-				.adOrgId(adOrgId)
-				.acctSchemaId(cAcctSchemaId)
-				.dateAcct(dateAcct)
-				.build();
-	}
-
 	@Override
 	protected void updateAndValidateImportRecords()
 	{
 		final ImportRecordsSelection selection = getImportRecordsSelection();
 
 		// get process parameters
-		final GLJournalImportProcessContext processContext = initProcessContext();
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoIdOrNull(getParameters().getParameterAsInt(I_GL_Journal.COLUMNNAME_C_AcctSchema_ID, -1));
+		final Instant dateAcct = getParameters().getParameterAsInstant(I_GL_Journal.COLUMNNAME_DateAcct);
 
 		GLJournalImportTableSqlUpdater.builder()
 				.selection(selection)
-				.importProcessContext(processContext)
+				.acctSchemaId(acctSchemaId)
+				.dateAcct(dateAcct)
 				.build()
 				.updateGLJournal();
 

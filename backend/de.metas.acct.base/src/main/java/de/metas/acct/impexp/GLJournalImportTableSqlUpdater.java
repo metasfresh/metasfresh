@@ -11,6 +11,7 @@ import org.adempiere.service.ClientId;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 
 /*
@@ -46,15 +47,19 @@ public class GLJournalImportTableSqlUpdater
 	private static final Logger log = LogManager.getLogger(GLJournalImportTableSqlUpdater.class);
 
 	private final ImportRecordsSelection selection;
-	private final GLJournalImportProcessContext importProcessContext;
+	@Nullable private final AcctSchemaId acctSchemaId;
+	@Nullable private final Instant dateAcct;
 
 	@Builder
 	private GLJournalImportTableSqlUpdater(
 			@NonNull final ImportRecordsSelection selection,
-			@NonNull final GLJournalImportProcessContext importProcessContext)
+			@Nullable final AcctSchemaId acctSchemaId,
+			@Nullable final Instant dateAcct
+	)
 	{
 		this.selection = selection;
-		this.importProcessContext = importProcessContext;
+		this.acctSchemaId = acctSchemaId;
+		this.dateAcct = dateAcct;
 	}
 
 	/**
@@ -129,13 +134,13 @@ public class GLJournalImportTableSqlUpdater
 		final StringBuilder sql = new StringBuilder("UPDATE I_GLJournal "
 				+ "SET AD_Client_ID = COALESCE (AD_Client_ID,").append(ClientId.METASFRESH.getRepoId()).append("),"
 				+ " AD_OrgDoc_ID = COALESCE (AD_OrgDoc_ID,").append(OrgId.MAIN.getRepoId()).append("),");
-		if (importProcessContext.getAcctSchemaId() != null)
+		if (acctSchemaId != null)
 		{
-			sql.append(" C_AcctSchema_ID = COALESCE (C_AcctSchema_ID,").append(AcctSchemaId.toRepoId(importProcessContext.getAcctSchemaId())).append("),");
+			sql.append(" C_AcctSchema_ID = COALESCE (C_AcctSchema_ID,").append(AcctSchemaId.toRepoId(acctSchemaId)).append("),");
 		}
-		if (importProcessContext.getDateAcct() != null)
+		if (dateAcct != null)
 		{
-			sql.append(" DateAcct = COALESCE (DateAcct,").append(DB.TO_DATE(Instant.now())).append("),");
+			sql.append(" DateAcct = COALESCE (DateAcct,").append(DB.TO_DATE(dateAcct)).append("),");
 		}
 		sql.append(" Updated = COALESCE (Updated, now()) "
 						+ "WHERE I_IsImported<>'Y' OR I_IsImported IS NULL")

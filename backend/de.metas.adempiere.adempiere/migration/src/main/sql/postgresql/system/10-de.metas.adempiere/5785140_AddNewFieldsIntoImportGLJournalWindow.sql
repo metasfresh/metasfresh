@@ -493,25 +493,6 @@ DELETE FROM  AD_Process_Para_Trl WHERE AD_Process_Para_ID=329
 -- 2026-01-23T18:22:46.528Z
 DELETE FROM AD_Process_Para WHERE AD_Process_Para_ID=329
 ;
-
--- Process: Import_GLJournal(org.compiere.process.ImportGLJournal)
--- ParameterName: C_AcctSchema_ID
--- 2026-01-23T18:22:49.761Z
-DELETE FROM  AD_Process_Para_Trl WHERE AD_Process_Para_ID=330
-;
-
--- 2026-01-23T18:22:49.768Z
-DELETE FROM AD_Process_Para WHERE AD_Process_Para_ID=330
-;
-
--- Process: Import_GLJournal(org.compiere.process.ImportGLJournal)
--- ParameterName: DateAcct
--- 2026-01-23T18:22:52.916Z
-DELETE FROM  AD_Process_Para_Trl WHERE AD_Process_Para_ID=331
-;
-
--- 2026-01-23T18:22:52.921Z
-DELETE FROM AD_Process_Para WHERE AD_Process_Para_ID=331
 ;
 
 -- Process: Import_GLJournal(org.compiere.process.ImportGLJournal)
