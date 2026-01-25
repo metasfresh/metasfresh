@@ -152,12 +152,16 @@ export async function getInvoiceIdByDocNo(documentNo) {
  * @param {string} params.invoiceId - C_Invoice_ID
  * @param {number} params.expectedPaymentAmount - Expected payment amount
  * @param {number} params.expectedDiscountAmount - Expected discount amount
+ * @param {boolean} [params.strictAllocation=true] - If true, fail when IsPaid/IsAllocated not set.
+ *   Set to false when invoice-payment linkage can't be established via UI (known limitation with
+ *   lookup dropdown interaction). When false, only validates payment amount calculation.
  */
 export async function validatePaymentAllocation({
   paymentId,
   invoiceId,
   expectedPaymentAmount,
   expectedDiscountAmount,
+  strictAllocation = true,
 }) {
   return await test.step('PaymentValidation - Validate payment allocation', async () => {
     console.log(`Validating payment ${paymentId} against invoice ${invoiceId}`);
@@ -171,16 +175,22 @@ export async function validatePaymentAllocation({
     const paymentStatus = await getPaymentStatus(paymentId);
     console.log(`Payment ${paymentStatus.documentno}: IsAllocated=${paymentStatus.isallocated}, PayAmt=${paymentStatus.payamt}`);
 
-    // Validate payment amount
+    // Validate payment amount (always required - this proves discount calculation works)
     expect(paymentStatus.payamt).toBeCloseTo(expectedPaymentAmount, 2);
 
-    // Note: IsPaid and IsAllocated flags may not be set immediately after completion
-    // in all scenarios. Log the values for debugging but allow test to continue.
-    if (invoiceStatus.ispaid !== 'Y') {
-      console.warn(`Warning: Invoice IsPaid flag is '${invoiceStatus.ispaid}' (expected 'Y')`);
-    }
-    if (paymentStatus.isallocated !== 'Y') {
-      console.warn(`Warning: Payment IsAllocated flag is '${paymentStatus.isallocated}' (expected 'Y')`);
+    // CRITICAL: These assertions validate that the payment discount workflow actually worked.
+    // If the payment term with discount was not set on the BP, the allocation will fail.
+    if (strictAllocation) {
+      expect(invoiceStatus.ispaid, `Invoice ${invoiceStatus.documentno} should be marked as paid (IsPaid=Y)`).toBe('Y');
+      expect(paymentStatus.isallocated, `Payment ${paymentStatus.documentno} should be allocated (IsAllocated=Y)`).toBe('Y');
+    } else {
+      // Non-strict mode: Log status but don't fail
+      // This is used when invoice-payment UI linkage isn't working (known limitation)
+      if (invoiceStatus.ispaid !== 'Y' || paymentStatus.isallocated !== 'Y') {
+        console.log(`NOTE: Invoice IsPaid=${invoiceStatus.ispaid}, Payment IsAllocated=${paymentStatus.isallocated}`);
+        console.log(`Allocation not automatic - payment-invoice UI linkage may need manual allocation`);
+        console.log(`Payment amount validation PASSED: ${paymentStatus.payamt} EUR (discount calculation is correct)`);
+      }
     }
 
     // Try to get allocation lines for additional validation

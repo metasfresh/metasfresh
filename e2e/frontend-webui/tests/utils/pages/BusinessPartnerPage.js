@@ -2,6 +2,7 @@ import { expect } from '@playwright/test';
 import { test } from '../../../playwright.config';
 import { FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../common';
 import { BUSINESS_PARTNER_WINDOW_ID } from '../WindowIds';
+import { assertRecordIsValid } from '../WebAPIValidation';
 
 // Named timing constants for UI interactions
 const TAB_SWITCH_DELAY = 500;
@@ -159,6 +160,53 @@ export class BusinessPartnerPage {
   }
 
   /**
+   * Set the CompanyName field on the current business partner.
+   * This is a workaround for Docker images that don't have the fix to set CompanyName
+   * automatically when creating BPartners via the frontendTesting API.
+   *
+   * The CompanyName field is mandatory for vendors - if it's not set, the record is
+   * invalid and any changes made via the UI won't be saved.
+   *
+   * @param {string} companyName - The company name to set
+   */
+  static async setCompanyName(companyName) {
+    return await test.step(`BusinessPartnerPage - Set Company Name: ${companyName}`, async () => {
+      const page = getPage();
+
+      // Find the CompanyName field
+      const companyNameInput = page.locator('.form-field-CompanyName input');
+      await companyNameInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+      // Clear and fill the value
+      await companyNameInput.click();
+      await companyNameInput.fill(companyName);
+
+      // Tab out to trigger save
+      await page.keyboard.press('Tab');
+      await page.waitForTimeout(SAVE_CONFIRMATION_DELAY);
+
+      // Wait for save to complete
+      await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+
+      console.log(`Company Name set to: ${companyName}`);
+    });
+  }
+
+  /**
+   * Fix the CompanyName for a business partner (workaround for Docker images without the fix).
+   * Navigates to the record, sets CompanyName if missing, then returns.
+   *
+   * @param {string|number} bpartnerId - The C_BPartner_ID
+   * @param {string} companyName - The company name to set
+   */
+  static async fixCompanyName(bpartnerId, companyName) {
+    return await test.step(`BusinessPartnerPage - Fix Company Name for ${bpartnerId}`, async () => {
+      await this.gotoRecord(bpartnerId);
+      await this.setCompanyName(companyName);
+    });
+  }
+
+  /**
    * Search for a business partner by name/code and open the record.
    * @param {string} searchText - Text to search for (name or code)
    */
@@ -228,6 +276,11 @@ export class BusinessPartnerPage {
   static async setPOPaymentTerm(paymentTermName) {
     return await test.step(`BusinessPartnerPage - Set PO Payment Term: ${paymentTermName}`, async () => {
       const page = getPage();
+
+      // CRITICAL: Validate the record before modifying
+      // If valid=false, changes made in the UI WILL NOT BE SAVED!
+      const recordId = BusinessPartnerPage.getRecordId();
+      await assertRecordIsValid(BUSINESS_PARTNER_WINDOW_ID.toString(), recordId, 'before setting PO_PaymentTerm_ID');
 
       // Step 1: Click on the Vendor tab (clickTab already waits for content to load)
       await this.clickTab(TAB_IDS.VENDOR);
@@ -310,18 +363,42 @@ export class BusinessPartnerPage {
       }
 
       await paymentTermOption.first().click();
+      console.log(`Clicked payment term option: ${paymentTermName}`);
 
-      // Step 7: Press Escape to close any remaining dropdown and confirm selection
-      await page.keyboard.press('Escape');
+      // Step 7: Press Tab to confirm selection and trigger save (NOT Escape, which cancels!)
+      await page.waitForTimeout(DROPDOWN_OPEN_DELAY);
+      await page.keyboard.press('Tab');
       await page.waitForTimeout(SAVE_CONFIRMATION_DELAY);
 
       // Wait for save to complete
       await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
 
-      // Verify the value was set by checking the cell text
-      const cellText = await poPaymentTermCell.textContent();
-      if (!cellText || !cellText.includes(paymentTermName)) {
-        console.warn(`Warning: Cell text "${cellText}" does not contain expected value "${paymentTermName}"`);
+      // Give more time for the save to propagate to the UI
+      await page.waitForTimeout(1000);
+
+      // Step 8: Verify the value was saved by checking the table content
+      // The table should now show the payment term name
+      const tableText = await page.locator('table').textContent().catch(() => '');
+      console.log(`Table content (first 600 chars): ${tableText?.substring(0, 600)}`);
+
+      // Check if the payment term name appears in the table content
+      const paymentTermSaved = tableText.includes(paymentTermName);
+
+      if (!paymentTermSaved) {
+        // Try a shorter match (first 20 chars) in case of truncation
+        const shortName = paymentTermName.substring(0, 20);
+        const shortMatch = tableText.includes(shortName);
+
+        if (!shortMatch) {
+          throw new Error(
+            `PO Payment Term "${paymentTermName}" was NOT saved. ` +
+            `The value does not appear in the Vendor tab table. ` +
+            `Check if the dropdown selection and Tab key triggered a save.`
+          );
+        }
+        console.log(`PO Payment Term verified (partial match: ${shortName})`);
+      } else {
+        console.log(`PO Payment Term verified in table: ${paymentTermName}`);
       }
 
       console.log(`PO Payment Term set to: ${paymentTermName}`);
