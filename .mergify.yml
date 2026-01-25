@@ -5,6 +5,17 @@ merge_protections:
     success_conditions:
       - check-success=testspace-analytics
 
+queue_rules:
+  - name: squash-queue
+    merge_method: squash
+    merge_conditions:
+      - check-success=testspace-analytics
+
+  - name: merge-queue
+    merge_method: merge
+    merge_conditions:
+      - check-success=testspace-analytics
+
 pull_request_rules:
 
   ############
@@ -100,7 +111,6 @@ pull_request_rules:
 
   - name: Automatic squash-merge successful PRs into the respective base-branch
     conditions:
-      - check-success=testspace-analytics
       - label=ops:auto_squash_merge
       - or:
           - or: *ALL_BASE_BRANCHES
@@ -108,12 +118,11 @@ pull_request_rules:
           - "#approved-reviews-by>=1"
           - label=ops:without_review_approval
     actions:
-      merge:
-        method: squash
+      queue:
+        name: squash-queue
 
   - name: Automatic merge commit (not squash) successful PRs
     conditions:
-      - check-success=testspace-analytics
       - label=ops:auto_merge_commit
       - or:
           - or: *ALL_BASE_BRANCHES
@@ -121,6 +130,6 @@ pull_request_rules:
           - "#approved-reviews-by>=1"
           - label=ops:without_review_approval
     actions:
-      merge:
-        method: merge
+      queue:
+        name: merge-queue
 
