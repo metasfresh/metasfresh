@@ -186,8 +186,8 @@ export class PaymentPage {
    * Language-independent: Uses database column name C_Invoice_ID.
    *
    * IMPLEMENTATION NOTE: Based on frontend source code analysis (SelectionDropdown.js),
-   * the dropdown uses onMouseDown (not onClick). Using keyboard navigation (ArrowDown + Enter)
-   * is more reliable than clicking because it doesn't depend on mouse event handling.
+   * the dropdown uses onMouseDown event handler for selection. Clicking the option directly
+   * is the most reliable approach as documented in WIDGET_PATTERNS.md.
    *
    * @param {string} invoiceDocNo - Invoice document number to search for
    */
@@ -228,7 +228,7 @@ export class PaymentPage {
       const options = await page.locator('.input-dropdown-list-option').allTextContents().catch(() => []);
       console.log(`Invoice dropdown options (${options.length}): ${options.slice(0, 3).join(' | ')}`);
 
-      // 7. Verify the invoice option exists (not just "none")
+      // 7. Find the invoice option (filter out "none" options)
       const invoiceOption = page.locator('.input-dropdown-list-option')
         .filter({ hasText: invoiceDocNo })
         .first();
@@ -238,44 +238,31 @@ export class PaymentPage {
         throw new Error(`Invoice ${invoiceDocNo} not found in dropdown. Available: ${options.join(', ')}`);
       }
 
-      // 8. USE KEYBOARD NAVIGATION: ArrowDown to select first option, Enter to confirm
-      // This is more reliable than clicking because it uses the widget's built-in keyboard handling
-      // See: frontend/src/components/widget/Lookup/RawLookup.js handleInputTextKeyDown
-      await page.keyboard.press('ArrowDown');
-      await page.waitForTimeout(100);
+      // 8. Click the option directly - this triggers onMouseDown → handleSelect
+      // SelectionDropdown.js line 224-226: handleMouseDown calls onSelect(option, true)
+      await invoiceOption.click();
+      console.log(`Clicked invoice option: ${invoiceDocNo}`);
 
-      // Check if the first option is "none" - if so, press ArrowDown again
-      const highlightedOption = await page.locator('.input-dropdown-list-option-key-on').textContent().catch(() => '');
-      if (highlightedOption.toLowerCase().includes('none') || !highlightedOption.includes(invoiceDocNo)) {
-        // Skip the "none" option
-        await page.keyboard.press('ArrowDown');
-        await page.waitForTimeout(100);
-      }
-
-      // 9. Press Enter to select the highlighted option
-      await page.keyboard.press('Enter');
-      console.log(`Selected invoice via keyboard: ${invoiceDocNo}`);
-
-      // 10. Wait for dropdown to close and value to be set
+      // 9. Wait for dropdown to close
       await dropdownList.waitFor({ state: 'detached', timeout: 5000 }).catch(() => {});
-      await page.waitForTimeout(500);
+      await page.waitForTimeout(300);
 
-      // 11. Verify selection by checking the input field or widget display
+      // 10. Verify selection by checking the input field value
       const fieldValue = await invoiceInput.inputValue().catch(() => '');
       const widgetText = await page.locator('#lookup_C_Invoice_ID').textContent().catch(() => '');
       console.log(`Invoice field value: "${fieldValue}", widget text contains invoice: ${widgetText.includes(invoiceDocNo)}`);
 
-      // 12. Press Tab to move to next field and ensure blur/save triggers
+      // 11. Press Tab to move to next field and ensure blur/save triggers
       await page.keyboard.press('Tab');
 
-      // 13. Wait for auto-save to complete
+      // 12. Wait for auto-save to complete
       await page.waitForTimeout(500);
       await page.locator('.rotating, .indicator-pending').waitFor({
         state: 'detached',
         timeout: SLOW_ACTION_TIMEOUT,
       }).catch(() => {});
 
-      // 14. Wait for network idle to confirm save
+      // 13. Wait for network idle to confirm save
       await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
 
       console.log('Invoice selection completed');
