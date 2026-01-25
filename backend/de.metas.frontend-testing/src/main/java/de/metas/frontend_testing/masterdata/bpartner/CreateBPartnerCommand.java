@@ -106,7 +106,7 @@ public class CreateBPartnerCommand
 		final String bpName = CoalesceUtil.coalesceNotNull(customName, bpValue);
 		bpartner.setName(bpName);
 		bpartner.setIsCompany(true);
-		bpartner.setCompanyName(request.getName());
+		bpartner.setCompanyName(bpName);
 		bpartner.setC_BP_Group_ID(bpGroupId.getRepoId());
 		bpartner.setIsVendor(request.isVendor());
 		bpartner.setIsCustomer(request.isCustomer());
