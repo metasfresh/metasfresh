@@ -105,3 +105,23 @@ export const SALES_INVOICE_WINDOW_ID = 167;
  * Description: Wareneingangsdisposition verwalten
  */
 export const RECEIPT_CANDIDATES_WINDOW_ID = 540196;
+
+// ============================================================================
+// PAYMENT WINDOWS
+// ============================================================================
+
+/**
+ * Payment Term window (Zahlungsbedingung)
+ * Table: C_PaymentTerm
+ * Window ID: 141
+ * Description: Define payment terms including discount days and percentages
+ */
+export const PAYMENT_TERM_WINDOW_ID = 141;
+
+/**
+ * Payment window (Zahlung)
+ * Table: C_Payment
+ * Window ID: 195
+ * Description: Payments to vendors and from customers
+ */
+export const PAYMENT_WINDOW_ID = 195;
