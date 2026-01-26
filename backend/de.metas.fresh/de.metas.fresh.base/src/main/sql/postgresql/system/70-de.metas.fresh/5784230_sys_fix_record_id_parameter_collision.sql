@@ -561,8 +561,8 @@ $$
 LANGUAGE sql STABLE;
 
 -- Function: Docs_Purchase_Invoice_Root
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Root(IN record_id numeric, IN ad_language Character Varying (6);
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Root(IN p_record_id numeric, IN ad_language Character Varying (6);
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Root(IN record_id numeric, IN ad_language Character Varying (6));
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Root(IN p_record_id numeric, IN ad_language Character Varying (6));
 
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Root(IN p_record_id numeric, IN ad_language Character Varying (6));
 
