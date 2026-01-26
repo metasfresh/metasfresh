@@ -184,7 +184,7 @@ DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_P
 
 -- Function: de_metas_endcustomer_fresh_reports.docs_purchase_inout_page_header(numeric, character varying)
 
-DROP FUNCTION de_metas_endcustomer_fresh_reports.docs_purchase_inout_page_header(numeric, character varying);
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.docs_purchase_inout_page_header(numeric, character varying);
 
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.docs_purchase_inout_page_header(IN p_record_id numeric, IN ad_language character varying)
     RETURNS TABLE(
@@ -561,8 +561,8 @@ $$
     LANGUAGE sql STABLE;
 
 -- Function: Docs_Purchase_Invoice_Root
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Root(IN record_id numeric, IN ad_language Character Varying (6);
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Root(IN p_record_id numeric, IN ad_language Character Varying (6);
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Root(IN record_id numeric, IN ad_language Character Varying (6));
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Root(IN p_record_id numeric, IN ad_language Character Varying (6));
 
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Root(IN p_record_id numeric, IN ad_language Character Varying (6));
 
@@ -604,8 +604,8 @@ $$
     LANGUAGE sql STABLE;
 
 -- Function: Docs_Purchase_Order_Details_HU
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details_HU(IN record_id numeric, IN ad_language Character Varying (6);
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details_HU(IN p_record_id numeric, IN ad_language Character Varying (6);
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details_HU(IN record_id numeric, IN ad_language Character Varying (6));
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details_HU(IN p_record_id numeric, IN ad_language Character Varying (6));
 
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details_HU(IN p_record_id numeric, IN ad_language Character Varying (6));
 
@@ -648,8 +648,8 @@ $$
 ;
 
 -- Function: Docs_Purchase_Order_Root
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Root(IN record_id numeric, IN ad_language Character Varying (6);
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Root(IN p_record_id numeric, IN ad_language Character Varying (6);
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Root(IN record_id numeric, IN ad_language Character Varying (6));
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Root(IN p_record_id numeric, IN ad_language Character Varying (6));
 
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Root(IN p_record_id numeric, IN ad_language Character Varying (6));
 
@@ -692,8 +692,8 @@ $$
 ;
 
 -- Function: Docs_Sales_InOut_Customer_Returns_Description
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Customer_Returns_Description(IN record_id numeric, IN AD_Language Character Varying (6);
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Customer_Returns_Description(IN p_record_id numeric, IN AD_Language Character Varying (6);
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Customer_Returns_Description(IN record_id numeric, IN AD_Language Character Varying (6));
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Customer_Returns_Description(IN p_record_id numeric, IN AD_Language Character Varying (6));
 
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Customer_Returns_Description(IN p_record_id numeric, IN AD_Language Character Varying (6));
 
@@ -727,8 +727,8 @@ $$
     LANGUAGE sql STABLE;
 
 -- Function: Docs_Sales_Order_Root
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Root(IN record_id numeric, IN ad_language Character Varying (6);
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Root(IN p_record_id numeric, IN ad_language Character Varying (6);
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Root(IN record_id numeric, IN ad_language Character Varying (6));
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Root(IN p_record_id numeric, IN ad_language Character Varying (6));
 
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Root(IN p_record_id numeric, IN ad_language Character Varying (6));
 
