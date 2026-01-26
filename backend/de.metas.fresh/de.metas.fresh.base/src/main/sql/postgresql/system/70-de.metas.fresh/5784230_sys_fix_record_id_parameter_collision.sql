@@ -90,7 +90,7 @@ DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_M
 
 -- Function: de_metas_endcustomer_fresh_reports.docs_purchase_inout_page_header(numeric, character varying)
 
-DROP FUNCTION de_metas_endcustomer_fresh_reports.docs_purchase_InOut_Material_Disposal_page_header(numeric, character varying);
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.docs_purchase_InOut_Material_Disposal_page_header(numeric, character varying);
 
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.docs_purchase_InOut_Material_Disposal_page_header(IN p_record_id numeric, IN ad_language character varying)
   RETURNS TABLE(
@@ -184,7 +184,7 @@ DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_P
 
 -- Function: de_metas_endcustomer_fresh_reports.docs_purchase_inout_page_header(numeric, character varying)
 
-DROP FUNCTION de_metas_endcustomer_fresh_reports.docs_purchase_inout_page_header(numeric, character varying);
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.docs_purchase_inout_page_header(numeric, character varying);
 
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.docs_purchase_inout_page_header(IN p_record_id numeric, IN ad_language character varying)
   RETURNS TABLE(
