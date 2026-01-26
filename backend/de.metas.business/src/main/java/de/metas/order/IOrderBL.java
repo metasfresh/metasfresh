@@ -106,8 +106,11 @@ public interface IOrderBL extends ISingletonService
 	@Nullable
 	BPartnerId getEffectiveBillPartnerId(@NonNull I_C_Order orderRecord);
 
-	@Nullable
+	@NonNull
 	BPartnerId getEffectiveDropshipPartnerId(@NonNull I_C_Order orderRecord);
+
+	@Nullable
+	BPartnerId getEffectiveDropshipPartnerIdOrNull(@NonNull I_C_Order orderRecord);
 
 	/**
 	 * @return the order's bill contact <b>but</b> falls back to the "general" contact ({@code C_Order.AD_User_ID}) if possible.

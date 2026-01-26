@@ -36,6 +36,7 @@ import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingMaterial;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderBL;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -69,6 +70,7 @@ public class PackageWeightProviderImpl implements IPackageWeightProvider
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	/**
 	 * Computes the gross weight in kilograms for a package containing the specified number of TUs.
@@ -98,16 +100,17 @@ public class PackageWeightProviderImpl implements IPackageWeightProvider
 
 		final de.metas.handlingunits.model.I_C_OrderLine huOrderLine = InterfaceWrapperHelper.create(orderLine, de.metas.handlingunits.model.I_C_OrderLine.class);
 		final I_M_HU_PI_Item_Product tuPIItemProduct = hupiItemProductBL.extractHUPIItemProduct(order, huOrderLine);
-		final UomId cuUomId = UomId.ofRepoId(orderLine.getC_UOM_ID());
+		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+		final UomId cuUomId = productBL.getStockUOMId(productId);
 
 		final I_M_HU_LUTU_Configuration lutuConfiguration = lutuConfigurationFactory.createLUTUConfiguration(
 				tuPIItemProduct,
-				ProductId.ofRepoId(orderLine.getM_Product_ID()),
+				productId,
 				cuUomId,
-				BPartnerId.ofRepoId(order.getC_BPartner_ID()),
+				orderBL.getEffectiveDropshipPartnerId(order),
 				false,
 				HuPackingInstructionsId.ofRepoIdOrNull(huOrderLine.getM_LU_HU_PI_ID()),
-				huOrderLine.getQtyLU());
+				huOrderLine.getQtyLU() != null ? huOrderLine.getQtyLU() : BigDecimal.ZERO);
 
 		final BigDecimal qtyCUsPerTU = lutuConfiguration.getQtyCUsPerTU();
 		if (qtyCUsPerTU == null || qtyCUsPerTU.signum() <= 0)
@@ -117,7 +120,6 @@ public class PackageWeightProviderImpl implements IPackageWeightProvider
 
 		final BigDecimal qtyCUsForPkg = tuQtyForPackage.multiply(qtyCUsPerTU);
 
-		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
 		final Quantity cuQty = Quantitys.of(qtyCUsForPkg, cuUomId);
 		final Quantity cuWeight = productBL.computeGrossWeight(productId, cuQty).orElse(null);
 		if (cuWeight == null)

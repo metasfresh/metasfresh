@@ -66,6 +66,6 @@ public class LUQtyProvider implements ILUQtyProvider
 				bpartnerId,
 				false/* noLUForVirtualTU */);
 
-		return huPIItemProductBL.getRequiredLUCount(qtyInStockUOM, lutuConfigurationInStockUOM);
+		return lutuConfigurationFactory.calculateQtyLUForTotalQtyCUs(lutuConfigurationInStockUOM, qtyInStockUOM);
 	}
 }
