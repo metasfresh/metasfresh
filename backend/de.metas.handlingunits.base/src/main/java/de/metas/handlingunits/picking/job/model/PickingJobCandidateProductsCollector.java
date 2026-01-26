@@ -1,8 +1,7 @@
 package de.metas.handlingunits.picking.job.model;
 
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStrings;
 import de.metas.product.ProductId;
+import de.metas.product.ProductValueAndName;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.Data;
@@ -19,18 +18,18 @@ public class PickingJobCandidateProductsCollector
 	public void collect(@NonNull final ScheduledPackageable item)
 	{
 		collect(item.getProductId(),
-				() -> TranslatableStrings.anyLanguage(item.getProductName()),
+				() -> item.getProductValueAndName(),
 				item.getQtyToDeliver());
 	}
 
 	public void collect(
 			@NonNull final ProductId productId,
-			@NonNull final Supplier<ITranslatableString> productName,
+			@NonNull final Supplier<ProductValueAndName> productValueAndName,
 			@NonNull final Quantity qtyToDeliver)
 	{
 		productsById.computeIfAbsent(productId, k -> ProductCollector.builder()
 						.productId(productId)
-						.productName(productName.get())
+						.productValueAndName(productValueAndName.get())
 						.build())
 				.addQtyToDeliver(qtyToDeliver);
 	}
@@ -54,7 +53,7 @@ public class PickingJobCandidateProductsCollector
 	private static class ProductCollector
 	{
 		@NonNull private final ProductId productId;
-		@NonNull private final ITranslatableString productName;
+		@NonNull private final ProductValueAndName productValueAndName;
 		@Nullable private Quantity qtyToDeliver;
 
 		public void addQtyToDeliver(@NonNull final Quantity qtyToAdd)
@@ -68,7 +67,7 @@ public class PickingJobCandidateProductsCollector
 		{
 			return PickingJobCandidateProduct.builder()
 					.productId(productId)
-					.productName(productName)
+					.productValueAndName(productValueAndName)
 					.qtyToDeliver(qtyToDeliver)
 					.build();
 		}

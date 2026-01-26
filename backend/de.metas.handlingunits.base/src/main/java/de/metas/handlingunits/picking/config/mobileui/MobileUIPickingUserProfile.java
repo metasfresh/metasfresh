@@ -71,7 +71,7 @@ public class MobileUIPickingUserProfile
 							.build(),
 					PickingJobField.builder()
 							.seqNo(30)
-							.field(PickingJobFieldType.PRODUCT)
+							.field(PickingJobFieldType.PRODUCT_NAME)
 							.isShowInDetailed(true)
 							.isShowInSummary(true)
 							.build(),
