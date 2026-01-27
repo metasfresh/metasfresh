@@ -51,7 +51,8 @@ export class SalesOrderPage {
 
       await page.keyboard.press('Alt+N');
 
-      await page.waitForURL(/\/window\/143\/\d+/, {
+      // Use flexible window ID pattern - custom projects may override window 143
+      await page.waitForURL(/\/window\/\d+\/\d+/, {
         timeout: SLOW_ACTION_TIMEOUT,
       });
 
