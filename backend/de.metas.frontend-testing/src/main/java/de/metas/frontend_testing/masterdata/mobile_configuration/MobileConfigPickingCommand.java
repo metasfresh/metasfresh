@@ -60,6 +60,10 @@ class MobileConfigPickingCommand
 			{
 				newProfileBuilder.fields(toPickingJobFields(request.getFields()));
 			}
+			else
+			{
+				newProfileBuilder.fields(PickingJobField.DEFAULTS);
+			}
 
 			return newProfileBuilder.build();
 		});
