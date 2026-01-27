@@ -3,6 +3,7 @@ import { FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEO
 import { SALES_ORDER_WINDOW_ID } from '../WindowIds';
 import { waitForRecordSaved, waitForTabAllowsNew } from '../WebAPIValidation';
 import { PdfDownloader } from '../PdfDownloader';
+import { openRelatedDocument, REFERENCE_DATA_CY } from '../DocumentReferences';
 
 /**
  * Page object for Sales Order window (ID: 143).
@@ -349,164 +350,53 @@ export class SalesOrderPage {
   }
 
   /**
-   * Open the related Shipment Candidate using Alt+6.
-   * @param {number} waitTime - Time to wait for candidates to be created (default: 5000ms)
+   * Open the related Shipment Candidate (Shipment Schedule) using Alt+6.
+   *
+   * @param {Object} options - Configuration options
+   * @param {number} options.maxRetries - Maximum retry attempts (default: 5)
+   * @param {number} options.retryDelay - Delay between retries in ms (default: 2000)
    */
-  static async openRelatedShipmentCandidate(waitTime = 5000) {
-    return await test.step('SalesOrderPage - Open related shipment candidate (Alt+6)', async () => {
-      const page = getPage();
-
-      await page.waitForTimeout(waitTime);
-
-      await page.locator('body').click();
-      await page.waitForTimeout(200);
-
-      await page.keyboard.press('Alt+6');
-
-      // Wait for Alt+6 side panel to open
-      // The panel has class 'order-list-panel-open' when visible
-      await page.locator('.order-list-panel-open').waitFor({
-        state: 'visible',
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
-
-      await page.locator('.rotating, .spinner').waitFor({
-        state: 'detached',
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {});
-
-      // Click on Shipment Schedule link using data-cy attribute (language-independent)
-      // Handle both InternalName format and fallback AD_RelationType_ID format
-      // InternalName: M_ShipmentSchedule, Fallback: AD_RelationType_ID-540170 (C_Order_to_M_ShipmentSchedule)
-      const link = page.locator(
-        '[data-cy="reference-M_ShipmentSchedule"], [data-cy="reference-AD_RelationType_ID-540170"]'
-      );
-      await link.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      await link.click();
-
-      // Use flexible window ID pattern - custom projects may override windows
-      await page.waitForURL(/\/window\/\d+/, {
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
-
-      await page.waitForLoadState('networkidle', {
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {});
-
-      await page.locator('.rotating, .panel-spaced-lg').waitFor({
-        state: 'detached',
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {});
-
-      await page.waitForTimeout(500);
+  static async openRelatedShipmentCandidate({ maxRetries = 5, retryDelay = 2000 } = {}) {
+    await openRelatedDocument({
+      dataCy: REFERENCE_DATA_CY.SO_TO_SHIPMENT_SCHEDULE,
+      stepName: 'SalesOrderPage - Open related shipment candidate (Alt+6)',
+      maxRetries,
+      retryDelay,
+      navigateToDetail: false, // Opens as list view
     });
   }
 
   /**
    * Open the related Shipment using Alt+6.
-   * @param {number} waitTime - Time to wait for shipment to be created (default: 5000ms)
+   *
+   * @param {Object} options - Configuration options
+   * @param {number} options.maxRetries - Maximum retry attempts (default: 5)
+   * @param {number} options.retryDelay - Delay between retries in ms (default: 2000)
    */
-  static async openRelatedShipment(waitTime = 5000) {
-    return await test.step('SalesOrderPage - Open related shipment (Alt+6)', async () => {
-      const page = getPage();
-
-      await page.waitForTimeout(waitTime);
-
-      await page.locator('body').click();
-      await page.waitForTimeout(200);
-
-      await page.keyboard.press('Alt+6');
-
-      // Wait for Alt+6 side panel to open
-      // The panel has class 'order-list-panel-open' when visible
-      await page.locator('.order-list-panel-open').waitFor({
-        state: 'visible',
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
-
-      await page.locator('.rotating, .spinner').waitFor({
-        state: 'detached',
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {});
-
-      // Click on Shipment link using data-cy attribute (language-independent)
-      // Handle both InternalName format and fallback AD_RelationType_ID format
-      // InternalName: C_Order_to_M_InOut_SO, Fallback: AD_RelationType_ID-540159
-      const link = page.locator(
-        '[data-cy="reference-C_Order_to_M_InOut_SO"], [data-cy="reference-AD_RelationType_ID-540159"]'
-      );
-      await link.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      await link.click();
-
-      // Use flexible window ID pattern - custom projects may override window 169 (M_InOut)
-      await page.waitForURL(/\/window\/\d+/, {
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
-
-      await page.waitForLoadState('networkidle', {
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {});
-
-      await page.locator('.rotating, .panel-spaced-lg').waitFor({
-        state: 'detached',
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {});
-
-      await page.waitForTimeout(500);
+  static async openRelatedShipment({ maxRetries = 5, retryDelay = 2000 } = {}) {
+    await openRelatedDocument({
+      dataCy: REFERENCE_DATA_CY.SO_TO_SHIPMENT,
+      stepName: 'SalesOrderPage - Open related shipment (Alt+6)',
+      maxRetries,
+      retryDelay,
+      navigateToDetail: false, // Stay on list view - test will call ShipmentPage.openDetailView() explicitly
     });
   }
 
   /**
    * Open the related Invoice Candidate using Alt+6.
-   * @param {number} waitTime - Time to wait for candidates to be created (default: 5000ms)
+   *
+   * @param {Object} options - Configuration options
+   * @param {number} options.maxRetries - Maximum retry attempts (default: 5)
+   * @param {number} options.retryDelay - Delay between retries in ms (default: 2000)
    */
-  static async openRelatedInvoiceCandidate(waitTime = 5000) {
-    return await test.step('SalesOrderPage - Open related invoice candidate (Alt+6)', async () => {
-      const page = getPage();
-
-      await page.waitForTimeout(waitTime);
-
-      await page.locator('body').click();
-      await page.waitForTimeout(200);
-
-      await page.keyboard.press('Alt+6');
-
-      // Wait for Alt+6 side panel to open
-      // The panel has class 'order-list-panel-open' when visible
-      await page.locator('.order-list-panel-open').waitFor({
-        state: 'visible',
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
-
-      await page.locator('.rotating, .spinner').waitFor({
-        state: 'detached',
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {});
-
-      // Click on Invoice Candidate link using data-cy attribute (language-independent)
-      // Handle both InternalName format and fallback AD_RelationType_ID format
-      // InternalName: C_Invoice_Candidate_Sales, Fallback: AD_RelationType_ID-540119
-      const link = page.locator(
-        '[data-cy="reference-C_Invoice_Candidate_Sales"], [data-cy="reference-AD_RelationType_ID-540119"]'
-      );
-      await link.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      await link.click();
-
-      // Use flexible window ID pattern - custom projects may override windows
-      await page.waitForURL(/\/window\/\d+/, {
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
-
-      await page.waitForLoadState('networkidle', {
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {});
-
-      await page.locator('.rotating, .panel-spaced-lg').waitFor({
-        state: 'detached',
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {});
-
-      await page.waitForTimeout(500);
+  static async openRelatedInvoiceCandidate({ maxRetries = 5, retryDelay = 2000 } = {}) {
+    await openRelatedDocument({
+      dataCy: REFERENCE_DATA_CY.SO_TO_INVOICE_CANDIDATES,
+      stepName: 'SalesOrderPage - Open related invoice candidate (Alt+6)',
+      maxRetries,
+      retryDelay,
+      navigateToDetail: false, // Opens as list view
     });
   }
 
@@ -592,62 +482,20 @@ export class SalesOrderPage {
   }
 
   /**
-   * Open the related Invoice using Alt+6.
+   * Open the related Invoice (Customer Invoice) using Alt+6.
    * This navigates to the invoice created from the invoice candidates.
-   * @param {number} waitTime - Time to wait for invoice to be created (default: 5000ms)
+   *
+   * @param {Object} options - Configuration options
+   * @param {number} options.maxRetries - Maximum retry attempts (default: 5)
+   * @param {number} options.retryDelay - Delay between retries in ms (default: 2000)
    */
-  static async openRelatedInvoice(waitTime = 5000) {
-    return await test.step('SalesOrderPage - Open related invoice (Alt+6)', async () => {
-      const page = getPage();
-
-      await page.waitForTimeout(waitTime);
-
-      await page.locator('body').click();
-      await page.waitForTimeout(200);
-
-      await page.keyboard.press('Alt+6');
-
-      // Wait for Alt+6 side panel to open
-      // The panel has class 'order-list-panel-open' when visible
-      await page.locator('.order-list-panel-open').waitFor({
-        state: 'visible',
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
-
-      await page.locator('.rotating, .spinner').waitFor({
-        state: 'detached',
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {});
-
-      // Click on Invoice link using data-cy attribute (language-independent)
-      // Handle both InternalName format and fallback AD_RelationType_ID format
-      // InternalName: C_Order_to_C_Invoice_SO, Fallback: AD_RelationType_ID-540160
-      const invoiceLink = page.locator(
-        '[data-cy="reference-C_Order_to_C_Invoice_SO"], [data-cy="reference-AD_RelationType_ID-540160"]'
-      ).first();
-
-      await invoiceLink.waitFor({
-        state: 'visible',
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
-
-      await invoiceLink.click();
-
-      // Use flexible window ID pattern - custom projects may override window 167 (C_Invoice)
-      await page.waitForURL(/\/window\/\d+/, {
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
-
-      await page.waitForLoadState('networkidle', {
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {});
-
-      await page.locator('.rotating, .panel-spaced-lg').waitFor({
-        state: 'detached',
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {});
-
-      await page.waitForTimeout(500);
+  static async openRelatedInvoice({ maxRetries = 5, retryDelay = 2000 } = {}) {
+    await openRelatedDocument({
+      dataCy: REFERENCE_DATA_CY.SO_TO_CUSTOMER_INVOICE,
+      stepName: 'SalesOrderPage - Open related invoice (Alt+6)',
+      maxRetries,
+      retryDelay,
+      navigateToDetail: false, // Stay on list view - test will call InvoicePage.openDetailView() explicitly
     });
   }
 }

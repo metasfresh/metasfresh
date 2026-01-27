@@ -248,8 +248,8 @@ Ensures the complete order-to-cash flow works correctly across UI languages.
             console.log(`[${language}] Navigated back to Sales Order ${soDocumentNo}`);
 
             // Step 9: Zoom to shipment from sales order (Alt+6)
-            // Wait longer for shipment to be fully linked (10 seconds)
-            await SalesOrderPage.openRelatedShipment(10000);
+            // Default: 5 retries × 2s delay = 10 seconds max wait time
+            await SalesOrderPage.openRelatedShipment();
             console.log(`[${language}] Navigated to Shipment from Sales Order`);
 
             // Step 10: Verify shipment is visible
@@ -325,8 +325,8 @@ Ensures the complete order-to-cash flow works correctly across UI languages.
             console.log(`[${language}] Navigated back to Sales Order ${soDocumentNo} for invoice zoom`);
 
             // Step 19: Zoom to invoice from sales order (Alt+6)
-            // Wait for invoice to be fully linked (5 seconds)
-            await SalesOrderPage.openRelatedInvoice(5000);
+            // Default: 5 retries × 2s delay = 10 seconds max wait time
+            await SalesOrderPage.openRelatedInvoice();
             console.log(`[${language}] Navigated to Invoice from Sales Order`);
 
             // Step 20: Verify invoice is visible
