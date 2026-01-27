@@ -51,6 +51,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
@@ -375,6 +376,11 @@ public class InventoryService
 	public void setQtyCountToQtyBookForInventory(@NonNull final InventoryId inventoryId)
 	{
 		inventoryRepository.setQtyCountToQtyBookForInventory(inventoryId);
+	}
+
+	public Set<HuId> getAssignedHUIds(@NonNull final InventoryLineId inventoryLineId)
+	{
+		return inventoryRepository.getAssignedHUIds(inventoryLineId);
 	}
 
 }
