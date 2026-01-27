@@ -74,6 +74,7 @@ import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
@@ -108,6 +109,7 @@ import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShipping
 public class InOutProducerFromShipmentScheduleWithHU
 		implements IInOutProducerFromShipmentScheduleWithHU, ITrxItemChunkProcessor<ShipmentScheduleWithHU, InOutGenerateResult>
 {
+	private static final String SYSCONFIG_SHIPMENT_SCHEDULE_DEBUG = "de.metas.handlingunits.shipmentschedule.debug";
 	private static final Logger logger = LogManager.getLogger(InOutProducerFromShipmentScheduleWithHU.class);
 	// Services
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
@@ -122,6 +124,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final transient ITrxItemProcessorExecutorService trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
 	private final transient IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
@@ -673,7 +676,10 @@ public class InOutProducerFromShipmentScheduleWithHU
 			final BooleanWithReason canAdd = currentShipmentLineBuilder.canAdd(candidate);
 			if (canAdd.isFalse())
 			{
-				Loggables.withLogger(logger, Level.DEBUG).addLog("Cannot add {} to current shipment line builder because: {}", candidate, canAdd.getReason());
+				if (sysConfigBL.getBooleanValue(SYSCONFIG_SHIPMENT_SCHEDULE_DEBUG, false))
+				{
+					Loggables.withLogger(logger, Level.DEBUG).addLog("Cannot add {} to current shipment line builder because: {}", candidate, canAdd.getReason());
+				}
 				createShipmentLineIfAny(); // => currentShipmentLineBuilder is null after this
 			}
 		}
