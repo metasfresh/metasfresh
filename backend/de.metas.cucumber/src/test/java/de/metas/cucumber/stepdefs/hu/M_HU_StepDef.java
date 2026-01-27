@@ -308,12 +308,13 @@ public class M_HU_StepDef
 			assertThat(inventoryLine).isNotNull();
 			if (Objects.equals(inventoryLine.getHUAggregationType(), X_M_InventoryLine.HUAGGREGATIONTYPE_SINGLE_HU) && rows.size() == 1)
 			{
-				findMultipleHUsForInventoryLine(timeoutSec, rows, inventoryLineId);
-				return;
+				findSingleHUForInventoryLine(timeoutSec, rows.get(0), inventoryLineId);
 			}
-
-			// Get all assigned HU IDs for this inventory line via the M_InventoryLine_HU table
-			findMultipleHUsForInventoryLine(timeoutSec, inventoryLineIdentifier, inventoryLineId, rows);
+			else
+			{
+				// Get all assigned HU IDs for this inventory line via the M_InventoryLine_HU table
+				findMultipleHUsForInventoryLine(timeoutSec, inventoryLineIdentifier, inventoryLineId, rows);
+			}
 		}
 	}
 
@@ -352,9 +353,8 @@ public class M_HU_StepDef
 		}
 	}
 
-	private void findMultipleHUsForInventoryLine(final int timeoutSec, final List<DataTableRow> rows, final InventoryLineId inventoryLineId) throws InterruptedException
+	private void findSingleHUForInventoryLine(final int timeoutSec, final DataTableRow row, final InventoryLineId inventoryLineId) throws InterruptedException
 	{
-		final DataTableRow row = rows.get(0);
 		final HuId huId = HuId.ofRepoIdOrNull(inventoryDAO.getLineById(inventoryLineId, de.metas.handlingunits.model.I_M_InventoryLine.class).getM_HU_ID());
 		assertThat(huId).as("inventory line has HU set").isNotNull();
 		final StepDefDataIdentifier huIdentifier = row.getAsIdentifier(COLUMNNAME_M_HU_ID);
