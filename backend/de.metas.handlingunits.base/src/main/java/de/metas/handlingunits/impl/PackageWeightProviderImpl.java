@@ -110,7 +110,7 @@ public class PackageWeightProviderImpl implements IPackageWeightProvider
 				orderBL.getEffectiveDropshipPartnerId(order),
 				false,
 				HuPackingInstructionsId.ofRepoIdOrNull(huOrderLine.getM_LU_HU_PI_ID()),
-				huOrderLine.getQtyLU() != null ? huOrderLine.getQtyLU() : BigDecimal.ZERO);
+				huOrderLine.getQtyLU());
 
 		final BigDecimal qtyCUsPerTU = lutuConfiguration.getQtyCUsPerTU();
 		if (qtyCUsPerTU == null || qtyCUsPerTU.signum() <= 0)
