@@ -27,6 +27,7 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.util.HUTopLevel;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.ShipmentScheduleId;
@@ -188,40 +189,47 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 	}
 
 	/**
-	 * @return true if we can append to current shipment line
+	 * @return BooleanWithReason.TRUE if we can append to the current shipment line, or a reason why that's not possible
 	 */
-	boolean canAdd(final ShipmentScheduleWithHU candidate)
+	@NonNull
+	BooleanWithReason canAdd(final ShipmentScheduleWithHU candidate)
 	{
 		// If there were no candidates added so far, obviously we allow our first candidate
 		if (isEmpty())
 		{
-			return true;
+			return BooleanWithReason.TRUE;
 		}
 
 		// Check: HU context
 		if (!Objects.equals(huContext, candidate.getHUContext()))
 		{
-			return false;
+			return BooleanWithReason.falseBecause("Different HU context : " + huContext + " vs " + candidate.getHUContext());
 		}
 
 		// Check: same product
 		if (!ProductId.equals(productId, candidate.getProductId()))
 		{
-			return false;
+			return BooleanWithReason.falseBecause("Different product : " + productId + " vs " + candidate.getProductId());
 		}
 
 		// Check: same attributes aggregation key
 		if (!Objects.equals(this.attributesAggregationKey, candidate.getAttributesAggregationKey()))
 		{
-			return false;
+			return BooleanWithReason.falseBecause("Different attributeAggregationKey : " + attributesAggregationKey + " vs " + candidate.getAttributesAggregationKey());
 		}
 
 		// Check: same Order Line
 		// NOTE: this is also EDI requirement
 		if (!OrderAndLineId.equals(orderLineId, candidate.getOrderLineId()))
 		{
+<<<<<<< HEAD
 			return false;
 		}
+=======
+			return BooleanWithReason.falseBecause("Different orderLine : " + orderLineId + " vs " + candidate.getOrderLineId());
+		}
+		return BooleanWithReason.TRUE;
+>>>>>>> 81813800f5 (Add detailed logging for shipment line builder decisions. Enhance inventory and shipment processing logic to account for multiple HUs per inventory and proper HU assignment in shipping scenarios. Introduce new utility methods for handling HU IDs. (#22148))
 
 		// Else, we can allow this candidate to be added here
 		return true;
@@ -271,7 +279,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 	private void append(@NonNull final ShipmentScheduleWithHU candidate)
 	{
-		Check.assume(canAdd(candidate), "The given candidate can be added to shipment line builder; candidate={}", candidate);
+		Check.assume(canAdd(candidate).isTrue(), "The given candidate can be added to shipment line builder; candidate={}", candidate);
 		attributeValues.addAll(candidate.getAttributeValues()); // because of canAdd()==true, we may assume that it's all fine
 
 		logger.trace("Adding candidate to {}: candidate={}", this, candidate);
