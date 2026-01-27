@@ -53,10 +53,13 @@ public class ExecuteReportStrategyUtil
 			@NonNull final ProcessInfo processInfo,
 			@NonNull final OutputType outputType)
 	{
+		final boolean isPrintLogo = processInfo.getParameterAsIParams().getParameterAsBool(DocumentPrintOptions.OPTION_IsPrintLogo);
+
 		final ProcessExecutor processExecutor = ProcessInfo.builder()
 				.setCtx(Env.getCtx())
 				.setAD_Process_ID(jasperProcessId)
 				.setRecord(processInfo.getTable_ID(), processInfo.getRecord_ID())
+				.addParameter(DocumentPrintOptions.OPTION_IsPrintLogo, isPrintLogo)
 				.addParameter(ReportConstants.REPORT_PARAM_BARCODE_URL, DocumentReportService.getBarcodeServlet(processInfo.getClientId(), processInfo.getOrgId()))
 				.addParameter(IMassPrintingService.PARAM_PrintCopies, PrintCopies.ONE.toInt())
 				.setArchiveReportData(false) // don't archive it! just give us the PDF data
