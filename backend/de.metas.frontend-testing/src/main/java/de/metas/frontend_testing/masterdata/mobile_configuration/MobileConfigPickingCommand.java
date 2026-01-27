@@ -13,10 +13,13 @@ import de.metas.handlingunits.picking.config.mobileui.PickingCustomerConfig;
 import de.metas.handlingunits.picking.config.mobileui.PickingCustomerConfigsCollection;
 import de.metas.handlingunits.picking.config.mobileui.PickingFilter;
 import de.metas.handlingunits.picking.config.mobileui.PickingFiltersList;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobField;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.job.model.facets.PickingJobFacetGroup;
 import de.metas.util.OptionalBoolean;
+import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.SeqNo;
 import de.metas.util.lang.SeqNoProvider;
 import lombok.Builder;
 import lombok.NonNull;
@@ -51,6 +54,11 @@ class MobileConfigPickingCommand
 			if (request.getAllowPickingAnyCustomer() != null)
 			{
 				newProfileBuilder.isAllowPickingAnyCustomer(request.getAllowPickingAnyCustomer());
+			}
+
+			if (request.getFields() != null && !request.getFields().isEmpty())
+			{
+				newProfileBuilder.fields(toPickingJobFields(request.getFields()));
 			}
 
 			return newProfileBuilder.build();
@@ -229,4 +237,31 @@ class MobileConfigPickingCommand
 					.collect(PickingFiltersList.collect());
 		}
 	}
+
+	@NonNull
+	private static ImmutableList<PickingJobField> toPickingJobFields(@NonNull final List<JsonMobileConfigRequest.Picking.Field> fields)
+	{
+		final SeqNoProvider seqNoProvider = SeqNoProvider.ofInt(10);
+		final ImmutableList.Builder<PickingJobField> result = ImmutableList.builder();
+		for (final JsonMobileConfigRequest.Picking.Field field : fields)
+		{
+			final SeqNo seqNo = seqNoProvider.getAndIncrement();
+			result.add(toPickingJobField(field, seqNo));
+		}
+
+		return result.build();
+	}
+
+	@NonNull
+	private static PickingJobField toPickingJobField(@NonNull final JsonMobileConfigRequest.Picking.Field field, @NonNull final SeqNo seqNo)
+	{
+		return PickingJobField.builder()
+				.field(field.getField())
+				.seqNo(seqNo.toInt())
+				.isShowInSummary(field.getIsShowInSummary() != null ? field.getIsShowInSummary() : true)
+				.isShowInDetailed(field.getIsShowInDetailed() != null ? field.getIsShowInDetailed() : true)
+				.pattern(StringUtils.trimBlankToNull(field.getPattern()))
+				.build();
+	}
+
 }

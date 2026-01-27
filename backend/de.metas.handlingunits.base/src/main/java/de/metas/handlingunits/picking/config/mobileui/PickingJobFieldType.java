@@ -22,13 +22,14 @@
 
 package de.metas.handlingunits.picking.config.mobileui;
 
-import com.google.common.collect.ImmutableMap;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.ad_reference.ReferenceId;
-import de.metas.common.util.Check;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
+import de.metas.util.lang.ReferenceListAwareEnums.ValuesIndex;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
@@ -62,25 +63,22 @@ public enum PickingJobFieldType implements ReferenceListAwareEnum
 	QTY_TO_DELIVER(PICKINGJOBFIELD_QtyToDeliver),
 	;
 
-	private static final ReferenceId PICKING_JOB_FIELD_REFERENCE_ID = ReferenceId.ofRepoId(PICKINGJOBFIELD_AD_Reference_ID);
+	private static final ValuesIndex<PickingJobFieldType> index = ReferenceListAwareEnums.index(values());
 
-	private final String code;
+	private static final ReferenceId PICKING_JOB_FIELD_REFERENCE_ID = ReferenceId.ofRepoId(PICKINGJOBFIELD_AD_Reference_ID);
+	@NonNull private final String code;
 
 	@NonNull
-	public static PickingJobFieldType ofCode(@NonNull final String code)
-	{
-		return Check.assumeNotNull(typesByCode.get(code), "No Type found for code=" + code);
-	}
+	public static PickingJobFieldType ofCode(@NonNull final String code) {return index.ofCode(code);}
 
-	private static final ImmutableMap<String, PickingJobFieldType> typesByCode = ReferenceListAwareEnums.indexByCode(values());
+	@NonNull
+	@JsonCreator
+	public static PickingJobFieldType ofCodeOrName(@NonNull final String code) {return index.ofCodeOrName(code);}
 
-	public ITranslatableString getCaption()
-	{
-		return TranslatableStrings.adRefList(PickingJobFieldType.PICKING_JOB_FIELD_REFERENCE_ID, code);
-	}
+	@JsonValue
+	public String toJson() {return getCode();}
 
-	public static boolean equals(@Nullable PickingJobFieldType type1, @Nullable PickingJobFieldType type2)
-	{
-		return Objects.equals(type1, type2);
-	}
+	public ITranslatableString getCaption() {return TranslatableStrings.adRefList(PickingJobFieldType.PICKING_JOB_FIELD_REFERENCE_ID, code);}
+
+	public static boolean equals(@Nullable PickingJobFieldType type1, @Nullable PickingJobFieldType type2) {return Objects.equals(type1, type2);}
 }
