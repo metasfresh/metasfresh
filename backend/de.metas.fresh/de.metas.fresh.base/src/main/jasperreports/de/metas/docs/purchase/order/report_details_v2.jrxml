@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<<<<<<< HEAD
 <!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/order/report" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
+=======
+<!-- Created with Jaspersoft Studio version 6.21.5.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/order/report" uuid="5f0022aa-eb3f-4217-b976-dc8c02ccecd8">
+>>>>>>> 3a8848d3e6 (Add PRINTER_OPTS_IsPrintPrice parameter to sales order reports (#22058))
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="2.0"/>
@@ -19,6 +24,9 @@
 	</parameter>
 	<parameter name="displayhu" class="java.lang.String">
 		<parameterDescription><![CDATA[]]></parameterDescription>
+	</parameter>
+	<parameter name="PRINTER_OPTS_IsPrintPrices" class="java.lang.String">
+		<defaultValueExpression><![CDATA["Y"]]></defaultValueExpression>
 	</parameter>
 	<queryString>
 		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details($P{c_order_id}, $P{ad_language});]]>
@@ -187,7 +195,11 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-20" x="411" y="0" width="36" height="12" forecolor="#000000" uuid="9cc1b771-5336-44cd-a8cf-406dccb79903">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+<<<<<<< HEAD
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+=======
+					<printWhenExpression><![CDATA[$P{PRINTER_OPTS_IsPrintPrices}.equals("Y")]]></printWhenExpression>
+>>>>>>> 3a8848d3e6 (Add PRINTER_OPTS_IsPrintPrice parameter to sales order reports (#22058))
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
@@ -379,6 +391,7 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-20" x="411" y="0" width="36" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<printWhenExpression><![CDATA[$P{PRINTER_OPTS_IsPrintPrices}.equals("Y")]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
