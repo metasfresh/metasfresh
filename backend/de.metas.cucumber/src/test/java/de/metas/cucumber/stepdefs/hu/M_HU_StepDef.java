@@ -289,24 +289,53 @@ public class M_HU_StepDef
 	}
 
 	@And("^after not more than (.*)s, there are added M_HUs for inventory$")
-	public void find_HUs(final int timeoutSec, @NonNull final DataTable dataTable)
+	public void find_HUs(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
-		DataTableRows.of(dataTable).forEach((row) -> {
-			final InventoryLineId inventoryLineId = inventoryLineTable.getId(row.getAsIdentifier(I_M_InventoryLine.COLUMNNAME_M_InventoryLine_ID));
-			final StepDefDataIdentifier huIdentifier = row.getAsIdentifier(COLUMNNAME_M_HU_ID);
+		// Group rows by inventory line identifier to handle multiple HUs per line
+		final Map<StepDefDataIdentifier, List<DataTableRow>> rowsByInventoryLine = DataTableRows.of(dataTable)
+				.stream()
+				.collect(Collectors.groupingBy(row -> row.getAsIdentifier(I_M_InventoryLine.COLUMNNAME_M_InventoryLine_ID)));
 
-			final I_M_InventoryLine inventoryLine = inventoryDAO.getLineById(inventoryLineId, I_M_InventoryLine.class);
-			assertThat(inventoryLine).isNotNull();
-			final HuId huId = HuId.ofRepoIdOrNull(inventoryLine.getM_HU_ID());
-			assertThat(huId).as("inventory line has HU set").isNotNull();
+		// Process each inventory line and its associated rows
+		for (final Map.Entry<StepDefDataIdentifier, List<DataTableRow>> entry : rowsByInventoryLine.entrySet())
+		{
+			final StepDefDataIdentifier inventoryLineIdentifier = entry.getKey();
+			final List<DataTableRow> rows = entry.getValue();
+			final InventoryLineId inventoryLineId = inventoryLineTable.getId(inventoryLineIdentifier);
 
-			StepDefUtil.tryAndWait(timeoutSec, 500, () -> loadHU(LoadHURequest.builder()
-					.huId(huId)
-					.huIdentifier(huIdentifier)
-					.build()));
+			// Get all assigned HU IDs for this inventory line via the M_InventoryLine_HU table
+			final Set<HuId> assignedHuIds = StepDefUtil.tryAndWaitForItem(
+					timeoutSec,
+					500,
+					() -> {
+						final Set<HuId> huIds = inventoryService.getAssignedHUIds(inventoryLineId);
+						// Wait until we have the expected number of HUs
+						return huIds.size() >= rows.size() ? Optional.of(huIds) : Optional.empty();
+					}
+			);
 
-			restTestContext.setIdVariableFromRow(row, huId);
-		});
+			assertThat(assignedHuIds)
+					.as("Expected at least %d HU(s) for inventory line %s", rows.size(), inventoryLineIdentifier)
+					.hasSizeGreaterThanOrEqualTo(rows.size());
+
+			// Convert Set to List for indexed access
+			final List<HuId> huIdsList = assignedHuIds.stream().sorted().collect(Collectors.toList());
+
+			// Map each row to an HU ID and load the HU
+			for (int i = 0; i < rows.size(); i++)
+			{
+				final DataTableRow row = rows.get(i);
+				final StepDefDataIdentifier huIdentifier = row.getAsIdentifier(COLUMNNAME_M_HU_ID);
+				final HuId huId = huIdsList.get(i);
+
+				StepDefUtil.tryAndWait(timeoutSec, 500, () -> loadHU(LoadHURequest.builder()
+						.huId(huId)
+						.huIdentifier(huIdentifier)
+						.build()));
+
+				restTestContext.setIdVariableFromRow(row, huId);
+			}
+		}
 	}
 
 	@And("^after not more than (.*)s, M_HUs should have$")

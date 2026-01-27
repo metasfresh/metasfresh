@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits.shipmentschedule.spi.impl;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -52,6 +53,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.logging.LogManager;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
@@ -79,6 +81,7 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 import org.slf4j.MDC;
 
 import javax.annotation.Nullable;
@@ -105,6 +108,7 @@ import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShipping
 public class InOutProducerFromShipmentScheduleWithHU
 		implements IInOutProducerFromShipmentScheduleWithHU, ITrxItemChunkProcessor<ShipmentScheduleWithHU, InOutGenerateResult>
 {
+	private static final Logger logger = LogManager.getLogger(InOutProducerFromShipmentScheduleWithHU.class);
 	// Services
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
@@ -184,7 +188,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 		try
 		{
 			final InOutGenerateResult result = trxItemProcessorExecutorService
-					.<ShipmentScheduleWithHU, InOutGenerateResult> createExecutor()
+					.<ShipmentScheduleWithHU, InOutGenerateResult>createExecutor()
 					.setContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 					.setProcessor(this)
 					.setExceptionHandler(trxItemExceptionHandler)
@@ -366,7 +370,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 
 		//
 		// C_Order reference
-		if(shipmentSchedule.getC_Order_ID() > 0)
+		if (shipmentSchedule.getC_Order_ID() > 0)
 		{
 			final de.metas.order.model.I_C_Order order = orderDAO.getById(OrderId.ofRepoId(shipmentSchedule.getC_Order_ID()), de.metas.order.model.I_C_Order.class);
 			if (order != null && order.getC_Order_ID() > 0)
@@ -664,9 +668,14 @@ public class InOutProducerFromShipmentScheduleWithHU
 		//
 		// If we cannot add this "candidate" to current shipment line builder
 		// then create shipment line (if any) and reset the builder
-		if (currentShipmentLineBuilder != null && !currentShipmentLineBuilder.canAdd(candidate))
+		if (currentShipmentLineBuilder != null)
 		{
-			createShipmentLineIfAny(); // => currentShipmentLineBuilder is null after this
+			final BooleanWithReason canAdd = currentShipmentLineBuilder.canAdd(candidate);
+			if (canAdd.isFalse())
+			{
+				Loggables.withLogger(logger, Level.DEBUG).addLog("Cannot add {} to current shipment line builder because: {}", candidate, canAdd.getReason());
+				createShipmentLineIfAny(); // => currentShipmentLineBuilder is null after this
+			}
 		}
 
 		//
