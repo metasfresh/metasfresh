@@ -140,22 +140,28 @@ static async selectLookupValue(fieldName, searchText, optionText) {
 4. **Wrong selector scope**: Dropdown list is NOT inside `#lookup_X`, it's a separate element
 
 **Composite Lookups (BPartner + Location + Contact)**:
-Some lookup fields are "composed" - multiple related fields in one widget:
+Some lookup fields are "composed" - multiple related fields in one widget.
+**IMPORTANT**: Each sub-field has its OWN container ID, NOT indexed wrappers:
 ```html
-<div id="lookup_C_BPartner_ID" class="raw-lookup-wrapper composed">
-  <!-- First lookup: Partner -->
-  <div class="lookup-widget-wrapper">...</div>
-  <!-- Second lookup: Location -->
-  <div class="lookup-widget-wrapper">...</div>
-  <!-- Third lookup: Contact -->
-  <div class="lookup-widget-wrapper">...</div>
+<!-- Each sub-field gets its own #lookup_{fieldName} container -->
+<div class="input-dropdown-container lookup-wrapper">
+  <div id="lookup_C_BPartner_ID" class="raw-lookup-wrapper">
+    <div class="lookup-widget-wrapper">...</div>
+  </div>
+  <div id="lookup_C_BPartner_Location_ID" class="raw-lookup-wrapper">
+    <div class="lookup-widget-wrapper">...</div>
+  </div>
+  <div id="lookup_AD_User_ID" class="raw-lookup-wrapper">
+    <div class="lookup-widget-wrapper">...</div>
+  </div>
 </div>
 ```
 
-For composed lookups, target the specific sub-widget:
+For composed lookups, target by the specific field's container ID:
 ```javascript
-const partnerInput = page.locator('#lookup_C_BPartner_ID .lookup-widget-wrapper').nth(0).locator('input');
-const locationInput = page.locator('#lookup_C_BPartner_ID .lookup-widget-wrapper').nth(1).locator('input');
+const partnerInput = page.locator('#lookup_C_BPartner_ID input.input-field');
+const locationInput = page.locator('#lookup_C_BPartner_Location_ID input.input-field');
+const contactInput = page.locator('#lookup_AD_User_ID input.input-field');
 ```
 
 ### Date Widget
@@ -579,11 +585,12 @@ await page.locator('.input-dropdown-list-option').first().waitFor();
 
 ### 4. Multiple Lookup Fields
 
-Composed lookups (e.g., partner + location + contact) have multiple inputs:
+Composed lookups (e.g., partner + location + contact) have separate container IDs:
 ```javascript
-// Target specific field within composed lookup
-const partnerInput = page.locator('.lookup-widget-wrapper').nth(0).locator('input');
-const locationInput = page.locator('.lookup-widget-wrapper').nth(1).locator('input');
+// Each sub-field has its own container ID - use specific IDs, NOT indices
+const partnerInput = page.locator('#lookup_C_BPartner_ID input.input-field');
+const locationInput = page.locator('#lookup_C_BPartner_Location_ID input.input-field');
+const contactInput = page.locator('#lookup_AD_User_ID input.input-field');
 ```
 
 ## Resources
