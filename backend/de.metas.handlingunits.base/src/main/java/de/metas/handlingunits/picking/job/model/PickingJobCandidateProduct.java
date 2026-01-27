@@ -16,7 +16,6 @@ import java.util.Optional;
 public class PickingJobCandidateProduct
 {
 	@NonNull ProductId productId;
-	@NonNull String productNo;
 	@NonNull ProductValueAndName productValueAndName;
 	@Nullable Quantity qtyToDeliver;
 	@Nullable Quantity qtyAvailableToPick;
