@@ -1,9 +1,9 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description(IN record_id  numeric,
-                                                                                        IN p_language Character Varying(6))
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description(IN p_record_id numeric,
+                                                                                        IN p_language  Character Varying(6))
 ;
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description(record_id  numeric,
-                                                                                           p_language character varying)
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description(p_record_id numeric,
+                                                                                           p_language  character varying)
     RETURNS TABLE
             (
                 description   character varying,
@@ -79,9 +79,9 @@ FROM m_inout io
              JOIN C_OrderLine ol ON iol.C_OrderLine_ID = ol.C_OrderLine_ID
              JOIN C_Order o ON ol.C_Order_ID = o.C_Order_ID
 
-    WHERE iol.M_InOut_ID = record_id
+    WHERE iol.M_InOut_ID = p_record_id
     GROUP BY o.PreparationDate
     ) o ON TRUE
-WHERE io.m_inout_id = record_id
+WHERE io.m_inout_id = p_record_id
 $$
 ;
