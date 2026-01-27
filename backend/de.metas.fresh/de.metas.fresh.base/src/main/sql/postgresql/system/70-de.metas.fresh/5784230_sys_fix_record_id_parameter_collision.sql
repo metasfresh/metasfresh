@@ -1,700 +1,1068 @@
 -- Title: Fix record_id parameter naming collision in report functions
 -- Description: Rename 'record_id' parameter to 'p_record_id' to prevent collision
---              with table columns named 'record_id' (e.g., M_ReceiptSchedule.record_id,
---              C_Invoice_Candidate.record_id). This bug caused reports to return wrong data.
--- Issue: https://github.com/metasfresh/mf15/issues/XXXX
--- 2026-01-17T22:00:00
--- Task: Fix SQL function parameter/column name collision bug
+--              with table columns named 'record_id'. Uses this branch's own function versions.
+-- Issue: https://github.com/metasfresh/metasfresh/pull/22016
+-- 2026-01-18
+-- Branch-specific migration generated for memorable_shiny_hotfix
+
 
 -- ===========================================================================
--- 1. Docs_Manufacturing_Order_Details
+-- Docs_Purchase_InOut_Customs_Root
 -- ===========================================================================
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Manufacturing_Order_Details(IN numeric, IN numeric, IN Character Varying);
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Customs_Root(IN record_id numeric)
+;
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Manufacturing_Order_Details(IN p_record_id      numeric,
-                                                                                               IN p_m_attribute_id numeric,
-                                                                                               IN p_ad_language    character Varying)
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Customs_Root(IN p_record_id numeric)
+;
 
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Customs_Root(IN p_record_id numeric)
+;
+
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Customs_Root(IN p_record_id numeric)
     RETURNS TABLE
             (
-                line            numeric,
-                qtyrequiered    numeric,
-                uomsymbol       character varying,
-                value           character varying,
-                vendorProductNo character varying,
-                description     character varying,
-                productName     character varying,
-                attributes      character varying
+                ad_org_id         numeric,
+                c_orderline_id    numeric,
+                c_order_id        numeric,
+                HasWeightSnapshot boolean
             )
 AS
 $$
+SELECT ol.AD_Org_ID,
+       ol.C_OrderLine_ID,
+       ol.C_Order_ID
+        ,
+       EXISTS(SELECT 0
+              FROM M_InOut io
+                       INNER JOIN M_HU_Assignment thuas ON iol.M_InOutLine_ID = thuas.Record_ID AND ad_table_id = (SELECT Get_Table_ID('M_InOutLine')) AND thuas.isActive = 'Y'
+                  -- Get snapshot weight
+                       INNER JOIN M_HU_Attribute_Snapshot thuwns ON thuas.M_HU_ID = thuwns.M_HU_ID
+                  AND thuwns.M_Attribute_ID = ((SELECT M_Attribute_ID FROM M_Attribute WHERE value = 'WeightNet'))
+                  AND thuwns.Snapshot_UUID = io.Snapshot_UUID
+                  AND thuwns.isActive = 'Y'
+              WHERE iol.M_InOut_ID = io.M_InOut_ID
+                AND io.isActive = 'Y') AS HasWeightSnapshot
 
-SELECT line,
-       qtyrequiered,
-       COALESCE(uom.UOMSymbol, uomt.UOMSymbol) AS UOMSymbol,
-       p.value,
-       coalesce(bpp.productno, p.value)        AS vendorProductNo,
-       coalesce(pt.description, p.description) AS description,
-       coalesce(pt.Name, p.Name)               AS productName,
-       Attributes.attributes_value
-FROM PP_Order_BOMLine bomLine
-
-         -- Product and its translation
-         JOIN M_Product p ON bomLine.m_product_id = p.m_product_id
-         LEFT OUTER JOIN M_Product_Trl pt ON bomLine.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = p_ad_language AND pt.isActive = 'Y'
-    -- Unit of measurement and its translation
-         JOIN c_uom uom ON bomLine.c_uom_id = uom.c_uom_id
-         LEFT OUTER JOIN C_UOM_Trl uomt ON bomLine.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = p_ad_language
-         LEFT JOIN getc_bpartner_product_vendor(p.m_product_id) bpp ON 1 = 1
-         LEFT JOIN de_metas_endcustomer_fresh_reports.get_hu_attribute_value_for_pp_order_and_pp_order_bomline(p_m_attribute_id, bomLine.pp_order_id, bomLine.pp_order_bomline_id) AS Attributes ON 1 = 1
-WHERE bomLine.PP_Order_ID = p_record_id
-  AND bomLine.isActive = 'Y'
-  AND bomLine.componenttype != 'BY'
-ORDER BY line
+FROM C_OrderLine ol
+         INNER JOIN M_ReceiptSchedule rs ON rs.C_OrderLine_ID = ol.C_OrderLine_ID AND rs.AD_Table_ID = (SELECT Get_Table_ID('C_OrderLine')) AND rs.isActive = 'Y'
+         INNER JOIN M_ReceiptSchedule_Alloc rsa ON rs.M_ReceiptSchedule_ID = rsa.M_ReceiptSchedule_ID AND rsa.isActive = 'Y'
+         INNER JOIN M_InOutLine iol ON rsa.M_InOutLine_ID = iol.M_InOutLine_ID AND iol.isActive = 'Y'
+WHERE iol.M_InOut_ID = $1
+LIMIT 1
 $$
-    LANGUAGE sql
-    STABLE
+    LANGUAGE sql STABLE
 ;
 
 -- ===========================================================================
--- 2. Docs_Manufacturing_Order_Description
+-- Docs_Purchase_InOut_Material_Disposal_Details_Footer
 -- ===========================================================================
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Manufacturing_Order_Description(IN NUMERIC, IN NUMERIC, IN CHARACTER VARYING(6));
-
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Manufacturing_Order_Description(IN p_record_id      NUMERIC,
-                                                                                                   IN p_m_attribute_id NUMERIC,
-                                                                                                   IN p_ad_language    CHARACTER VARYING(6))
-
-    RETURNS TABLE
-            (
-                documentno    CHARACTER VARYING(30),
-                dateordered   TIMESTAMP WITH TIME ZONE,
-                datepromised  TIMESTAMP WITH TIME ZONE,
-                VALUE         CHARACTER VARYING(60),
-                NAME          CHARACTER VARYING(255),
-                PrintName     CHARACTER VARYING(60),
-                attributes    CHARACTER VARYING,
-                co_documentno CHARACTER VARYING,
-                qty           NUMERIC,
-                bpName        CHARACTER VARYING(255)
-            )
-AS
-$$
-
-SELECT pp.DocumentNo,
-       pp.DateOrdered,
-       pp.datepromised,
-       pbom.value,
-       COALESCE(pt.name, pbom.name)          AS name,
-       COALESCE(dtt.PrintName, dt.PrintName) AS PrintName,
-       Attributes.attributes_value,
-       o.documentno                          AS co_documentno,
-       pp.qtyentered,
-       bp.name                               AS bpName
-FROM PP_Order pp
-         JOIN PP_Product_BOM bom ON pp.PP_Product_BOM_ID = bom.PP_Product_BOM_ID
-         LEFT JOIN c_bpartner bp ON pp.c_bpartner_id = bp.c_bpartner_id
-         LEFT JOIN c_orderline ol ON pp.c_orderline_id = ol.c_orderline_id
-         LEFT JOIN c_order o ON ol.c_order_id = o.c_order_id
-         LEFT JOIN de_metas_endcustomer_fresh_reports.get_hu_attribute_value_for_pp_order_and_pp_order_bomline(p_m_attribute_id, pp.pp_order_id, NULL) AS Attributes ON 1 = 1
-
-    -- Product and its translation
-         JOIN M_product pbom ON bom.m_product_id = pbom.m_product_id
-         LEFT JOIN M_Product_Trl pt ON bom.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = p_ad_language
-
-         LEFT JOIN C_DocType dt ON pp.C_DocTypeTarget_ID = dt.C_DocType_ID
-         LEFT JOIN C_DocType_Trl dtt
-                   ON pp.C_DocTypeTarget_ID = dtt.C_DocType_ID AND dtt.AD_Language = p_ad_language
-WHERE pp.PP_Order_ID = p_record_id
-$$
-    LANGUAGE SQL
-    STABLE
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Material_Disposal_Details_Footer(IN record_id numeric)
 ;
 
--- ===========================================================================
--- 3. Docs_Purchase_Order_Description
--- ===========================================================================
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Description(IN numeric, IN Character Varying(6));
-
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Description(p_record_id numeric,
-                                                                                              p_language  character varying)
-    RETURNS TABLE
-            (
-                description        character varying,
-                documentno         character varying,
-                reference          text,
-                dateordered        timestamp WITHOUT TIME ZONE,
-                datepromised       timestamp WITH TIME ZONE,
-                deliverto          character varying,
-                bp_value           character varying,
-                eori               character varying,
-                customernoatvendor character varying,
-                cont_name          text,
-                cont_phone         character varying,
-                cont_fax           character varying,
-                cont_email         character varying,
-                sr_name            text,
-                sr_phone           character varying,
-                sr_fax             character varying,
-                sr_email           character varying,
-                printname          character varying,
-                billtoaddress      character varying,
-                incoterms          character varying
-            )
-    STABLE
-    LANGUAGE sql
-AS
-$$
-SELECT o.description                         AS description,
-       o.documentno                          AS documentno,
-       TRIM(o.poreference)                   AS reference,
-       o.dateordered                         AS dateordered,
-       o.datepromised                        AS datepromised,
-       CASE
-           WHEN report.IsHiddenReportElement(o.C_DocType_ID, 'Delivery_To_Address') = 'N' THEN
-               REPLACE(
-                       REPLACE(o.DeliveryToAddress, E'\r\n', ' | '),
-                       E'\n', ' | '
-               )
-       END                                                                              AS deliverto,
-       bp.value                              AS bp_value,
-       bp.eori                               AS eori,
-       bp.customernoatvendor                 AS customernoatvendor,
-       COALESCE(cogr.name, '') ||
-       COALESCE(' ' || cont.title, '') ||
-       COALESCE(' ' || cont.firstName, '') ||
-       COALESCE(' ' || cont.lastName, '')    AS cont_name,
-       cont.phone                            AS cont_phone,
-       cont.fax                              AS cont_fax,
-       cont.email                            AS cont_email,
-       TRIM(
-               COALESCE(srgr.name, '') ||
-               COALESCE(' ' || srep.title, '') ||
-               COALESCE(' ' || srep.firstName, '') ||
-               COALESCE(' ' || srep.lastName, '')
-       )                                     AS sr_name,
-       srep.phone                            AS sr_phone,
-       srep.fax                              AS sr_fax,
-       srep.email                            AS sr_email,
-       COALESCE(dtt.PrintName, dt.PrintName) AS PrintName,
-       CASE
-           WHEN report.IsHiddenReportElement(o.C_DocType_ID, 'Bill_To_Address') = 'N' THEN
-               REPLACE(
-                       REPLACE(o.billtoaddress, E'\r\n', ' | '),
-                       E'\n', ' | '
-               )
-       END                                                                              AS billtoaddress,
-       inc.value                             AS incoterms
-FROM C_Order o
-         INNER JOIN C_BPartner bp ON o.C_BPartner_ID = bp.C_BPartner_ID
-         LEFT OUTER JOIN AD_User srep ON o.SalesRep_ID = srep.AD_User_ID
-         LEFT OUTER JOIN AD_User cont ON o.AD_User_ID = cont.AD_User_ID
-         LEFT OUTER JOIN C_Greeting cogr ON cont.C_Greeting_ID = cogr.C_Greeting_ID
-         LEFT OUTER JOIN C_Greeting srgr ON srep.C_Greeting_ID = srgr.C_Greeting_ID
-         LEFT OUTER JOIN C_DocType dt ON o.C_DocTypeTarget_ID = dt.C_DocType_ID
-         LEFT OUTER JOIN C_DocType_Trl dtt ON o.C_DocTypeTarget_ID = dtt.C_DocType_ID AND dtt.AD_Language = p_language
-         LEFT OUTER JOIN C_Incoterms inc ON o.c_incoterms_id = inc.c_incoterms_id
-
-WHERE o.c_order_id = p_record_id
-$$
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Material_Disposal_Details_Footer(IN p_record_id numeric)
 ;
 
--- ===========================================================================
--- 4. Docs_Sales_InOut_Description
--- ===========================================================================
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description(IN numeric, IN Character Varying(6));
-
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description(p_record_id numeric,
-                                                                                           p_language  character varying)
-    RETURNS TABLE
-            (
-                description        character varying,
-                documentno         character varying,
-                movementdate       timestamp WITHOUT TIME ZONE,
-                reference          character varying,
-                bp_value           character varying,
-                vataxid            character varying,
-                eori               character varying,
-                customernoatvendor character varying,
-                cont_name          text,
-                cont_phone         character varying,
-                cont_fax           character varying,
-                cont_email         character varying,
-                sr_name            text,
-                sr_phone           character varying,
-                sr_fax             character varying,
-                sr_email           character varying,
-                printname          character varying,
-                order_docno        text,
-                order_date         text,
-                offer_documentno   character varying,
-                offer_date         text,
-                billtoaddress      character varying,
-                PreparationDate    text,
-                docstatus          char(2),
-                delivery_week_year character varying
-            )
-    STABLE
-    LANGUAGE sql
-AS
-$$
-SELECT io.description                        AS description,
-       io.documentno                         AS documentno,
-       io.movementdate                       AS movementdate,
-       io.poreference                        AS reference,
-       bp.value                              AS bp_value,
-       CASE
-           WHEN report.IsHiddenReportElement(io.C_DocType_ID, 'VATaxID') = 'N' THEN
-               bp.VATaxID
-       END                                   AS VATaxID,
-       bp.eori                               AS eori,
-       CASE
-           WHEN report.IsHiddenReportElement(io.C_DocType_ID, 'Customer_No_At_Vendor') = 'N' THEN
-               bp.customernoatvendor
-       END                                   AS customernoatvendor,
-       COALESCE(cogr.name, '') ||
-       COALESCE(' ' || cont.title, '') ||
-       COALESCE(' ' || cont.firstName, '') ||
-       COALESCE(' ' || cont.lastName, '')    AS cont_name,
-       CASE
-           WHEN report.IsHiddenReportElement(io.C_DocType_ID, 'Contact_Phone') = 'N' THEN
-               cont.phone
-       END                                   AS cont_phone,
-       CASE
-           WHEN report.IsHiddenReportElement(io.C_DocType_ID, 'Contact_Fax') = 'N' THEN
-               cont.fax
-       END                                   AS cont_fax,
-       cont.email                            AS cont_email,
-       COALESCE(srgr.name, '') ||
-       COALESCE(' ' || srep.title, '') ||
-       COALESCE(' ' || srep.firstName, '') ||
-       COALESCE(' ' || srep.lastName, '')    AS sr_name,
-       srep.phone                            AS sr_phone,
-       srep.fax                              AS sr_fax,
-       CASE
-           WHEN report.IsHiddenReportElement(io.C_DocType_ID, 'SalesRep_Email') = 'N' THEN
-               srep.email
-       END                                   AS sr_email,
-       COALESCE(dtt.printname, dt.printname) AS printname,
-       o.docno                               AS order_docno,
-       o.dateordered                         AS order_date,
-       CASE
-           WHEN report.IsHiddenReportElement(io.C_DocType_ID, 'Offer_DocumentNo') = 'N' THEN
-               o.offer_documentno
-       END                                   AS offer_documentno,
-       CASE
-           WHEN report.IsHiddenReportElement(io.C_DocType_ID, 'Offer_Date') = 'N' THEN
-               o.offer_date
-       END                                   AS offer_date,
-       o.billtoaddress,
-       o.PreparationDate,
-       io.docstatus,
-       CASE
-           WHEN report.IsHiddenReportElement(io.C_DocType_ID, 'Delivery_Week_Year') = 'N' THEN
-               TO_CHAR(io.MovementDate, 'WW') || '.' || TO_CHAR(io.MovementDate, 'YY')
-       END                                   AS delivery_week_year
-FROM m_inout io
-         INNER JOIN C_DocType dt ON io.C_DocType_ID = dt.C_DocType_ID
-         LEFT OUTER JOIN C_DocType_Trl dtt ON dt.C_DocType_ID = dtt.C_DocType_ID AND dtt.AD_Language = p_language
-         INNER JOIN c_bpartner bp ON io.c_bpartner_id = bp.c_bpartner_id
-         LEFT OUTER JOIN AD_User srep ON io.SalesRep_ID = srep.AD_User_ID AND srep.AD_User_ID <> 100
-         LEFT OUTER JOIN AD_User cont ON io.AD_User_ID = cont.AD_User_ID
-         LEFT OUTER JOIN C_Greeting cogr ON cont.C_Greeting_ID = cogr.C_Greeting_ID
-         LEFT OUTER JOIN C_Greeting srgr ON srep.C_Greeting_ID = srgr.C_Greeting_ID
-
-         LEFT JOIN LATERAL
-    (
-    SELECT First_Agg(o.DocumentNo ORDER BY o.DocumentNo) ||
-           CASE WHEN COUNT(DISTINCT o.documentNo) > 1 THEN ' ff.' ELSE '' END AS DocNo,
-
-
-           First_Agg(o.dateordered::text ORDER BY o.dateordered) ||
-           CASE WHEN COUNT(o.dateordered) > 1 THEN ' ff.' ELSE '' END         AS dateordered,
-
-           First_Agg(offer.DocumentNo ORDER BY offer.DocumentNo) ||
-           CASE WHEN COUNT(offer.DocumentNo) > 1 THEN ' ff.' ELSE '' END      AS offer_documentno,
-
-           First_Agg(offer.dateordered::text ORDER BY offer.dateordered) ||
-           CASE WHEN COUNT(offer.dateordered) > 1 THEN ' ff.' ELSE '' END     AS offer_date,
-
-           First_Agg(o.dateordered::text ORDER BY o.PreparationDate) ||
-           CASE WHEN COUNT(o.dateordered) > 1 THEN ' ff.' ELSE '' END         AS PreparationDate,
-
-
-           REPLACE(
-                   REPLACE(o.billtoaddress, E'\r\n', ' | '),
-                   E'\n', ' | '
-           )                                                                  AS billtoaddress
-    FROM M_InOutLine iol
-             JOIN C_OrderLine ol ON iol.C_OrderLine_ID = ol.C_OrderLine_ID
-             JOIN C_Order o ON ol.C_Order_ID = o.C_Order_ID
-             LEFT JOIN C_Order offer ON offer.C_Order_ID = o.ref_proposal_id
-
-    WHERE iol.M_InOut_ID = p_record_id
-    GROUP BY o.billtoaddress
-    ) o ON TRUE
-WHERE io.m_inout_id = p_record_id
-$$
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Material_Disposal_Details_Footer(IN p_record_id numeric)
 ;
 
--- ===========================================================================
--- 5. Docs_Sales_InOut_Sum_Weight
--- Note: This function has a dependent view (de_metas_endcustomer_fresh_reports.m_inout_v)
---       Using db_alter_function to automatically handle dependent views.
--- ===========================================================================
-SELECT db_alter_function(
-    'de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Sum_Weight(numeric, character varying)',
-$func$
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Sum_Weight(IN p_Record_ID   numeric,
-                                                                                          IN p_AD_Language Character Varying)
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Material_Disposal_Details_Footer(IN p_record_id numeric)
     RETURNS TABLE
             (
-                catchweight numeric,
-                weight_uom  character varying
+                iso_code character(3)
             )
 AS
 $$
-SELECT SUM(
-               COALESCE((COALESCE(qtydeliveredcatch,
-                                  uomConvert(iol.M_Product_ID,
-                                             iol.C_UOM_ID,
-                                             (SELECT c_uom_Id FROM C_uom WHERE isactive = 'Y' AND x12de355 = 'KGM'),
-                                             qtyentered))),
-                        iol.qtyentered * p.weight)) AS catchweight,
-       COALESCE(uomt.UOMSymbol, uom.UOMSymbol)      AS weight_uom
-FROM M_InOutline iol
-         LEFT OUTER JOIN C_UOM uom ON uom.C_UOM_ID = COALESCE(iol.catch_uom_id, (SELECT c_uom_Id FROM C_uom WHERE isactive = 'Y' AND x12de355 = 'KGM'))
-         LEFT OUTER JOIN C_UOM_Trl uomt ON uomt.c_UOM_ID = uom.C_UOM_ID AND uomt.AD_Language = p_AD_Language
-         INNER JOIN M_Product p ON p.M_Product_ID = iol.M_Product_ID
-WHERE iol.m_inout_id = p_Record_ID
-GROUP BY uomt.UOMSymbol, uom.UOMSymbol, iol.m_inout_id
+SELECT c.iso_code
+FROM M_Inventory i
+
+         INNER JOIN M_InventoryLine il ON i.M_Inventory_ID = il.M_Inventory_ID AND il.isActive = 'Y'
+         INNER JOIN M_InOutLine iol ON il.M_InOutLine_ID = iol.M_InOutLine_ID AND iol.isActive = 'Y'
+         INNER JOIN M_InOut io ON iol.M_InOut_ID = io.M_InOut_ID AND io.isActive = 'Y'
+         INNER JOIN C_BPartner bp ON io.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
+         INNER JOIN C_BPartner_Location bpl ON bp.C_BPartner_ID = bpl.C_BPartner_ID AND bpl.isActive = 'Y'
+         LEFT JOIN C_Location l ON bpl.C_Location_id = l.C_Location_ID AND l.isActive = 'Y'
+
+         LEFT OUTER JOIN M_Pricingsystem ps ON bp.PO_Pricingsystem_ID = ps.M_Pricingsystem_ID AND ps.isActive = 'Y'
+         LEFT OUTER JOIN M_PriceList pl ON ps.M_Pricingsystem_ID = pl.M_Pricingsystem_ID AND pl.C_Country_ID = l.C_Country_ID AND pl.isActive = 'Y'
+
+         LEFT OUTER JOIN AD_ClientInfo ci ON ci.AD_Client_ID = i.ad_client_id AND ci.isActive = 'Y'
+         LEFT OUTER JOIN C_AcctSchema acs ON acs.C_AcctSchema_ID = ci.C_AcctSchema1_ID AND acs.isActive = 'Y'
+         LEFT OUTER JOIN C_Currency c ON COALESCE(pl.C_Currency_ID, acs.C_Currency_ID) = c.C_Currency_ID AND c.isActive = 'Y'
+WHERE i.M_Inventory_ID = $1
+  AND i.isActive = 'Y'
+LIMIT 1
 $$
-    LANGUAGE sql
-    STABLE
-$func$
-);
+    LANGUAGE sql STABLE
+;
+
+
 
 -- ===========================================================================
--- 6. Docs_Sales_Invoice_Description
+-- Docs_Purchase_InOut_Material_Disposal_Page_Header
 -- ===========================================================================
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.docs_sales_invoice_description(IN numeric, IN Character Varying(6));
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Material_Disposal_Page_Header(IN record_id numeric)
+;
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.docs_sales_invoice_description(p_record_id numeric,
-                                                                                             p_language  character varying)
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Material_Disposal_Page_Header(IN p_record_id numeric)
+;
+
+-- Function: de_metas_endcustomer_fresh_reports.docs_purchase_inout_page_header(numeric, character varying)
+
+DROP FUNCTION de_metas_endcustomer_fresh_reports.docs_purchase_InOut_Material_Disposal_page_header(numeric,
+                                                                                                   character varying)
+;
+
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.docs_purchase_InOut_Material_Disposal_page_header(IN p_record_id numeric,
+                                                                                                                IN ad_language character varying)
     RETURNS TABLE
             (
-                description        character varying,
-                documentno         character varying,
-                reference          character varying,
-                dateinvoiced       timestamp WITHOUT TIME ZONE,
-                duedate            timestamp WITH TIME ZONE,
-                vataxid            character varying,
-                bp_value           character varying,
-                eori               character varying,
-                customernoatvendor character varying,
-                cont_name          text,
-                cont_phone         character varying,
-                cont_fax           character varying,
-                cont_email         character varying,
-                sr_name            text,
-                sr_phone           character varying,
-                sr_fax             character varying,
-                sr_email           character varying,
-                printname          character varying,
-                order_docno        text,
-                order_date         text,
-                inout_docno        text,
-                io_movementdate    date,
-                iscreditmemo       character,
-                creditmemo_docno   character varying,
-                offer_documentno   character varying,
-                offer_date         text,
-                warehouse          character varying,
-                projectno          character varying
+                documentno    text,
+                inventorydate timestamp without time zone,
+                bp_value      character varying,
+                printname     character varying
             )
-    STABLE
-    LANGUAGE sql
 AS
 $$
-SELECT i.description                                                                    AS description,
-       i.documentno                                                                     AS documentno,
-       i.poreference                                                                    AS reference,
-       i.dateinvoiced                                                                   AS dateinvoiced,
-       paymenttermduedate(i.C_PaymentTerm_ID, i.DateInvoiced::timestamp WITH TIME ZONE) AS DueDate,
+
+SELECT i.DocumentNo                          AS documentNo,
+       i.movementDate                        AS inventorydate,
+       COALESCE(dtt.printName, dt.printName) AS printname,
+       bp.Value                              AS BP_Value
+
+
+FROM M_Inventory i
+
+         -- data from inventory
+         INNER JOIN C_DocType dt ON i.C_DocType_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
+         LEFT OUTER JOIN C_DocType_Trl dtt ON dt.C_DocType_ID = dtt.C_DocType_ID AND dtt.isActive = 'Y' AND dtt.AD_Language = $2
+
+    --data from inout
+         INNER JOIN M_InventoryLine il ON i.M_Inventory_ID = il.M_Inventory_ID AND il.isActive = 'Y'
+         INNER JOIN M_InOutLine iol ON il.M_InOutLine_ID = iol.M_InOutLine_ID AND iol.isActive = 'Y'
+         INNER JOIN M_InOut io ON iol.M_InOut_ID = io.M_InOut_ID AND io.isActive = 'Y'
+
+         INNER JOIN C_BPartner bp ON io.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
+
+WHERE i.M_Inventory_ID = $1
+  AND i.isActive = 'Y'
+
+ORDER BY bp_value
+
+$$
+    LANGUAGE sql STABLE
+;
+
+
+-- ===========================================================================
+-- Docs_Purchase_InOut_Material_Disposal_Root
+-- ===========================================================================
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Material_Disposal_Root(IN record_id numeric)
+;
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Material_Disposal_Root(IN p_record_id numeric)
+;
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Material_Disposal_Root(IN p_record_id numeric)
+;
+
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Material_Disposal_Root(IN p_record_id numeric)
+    RETURNS TABLE
+            (
+                ad_org_id  numeric,
+                m_inout_id integer,
+                displayhu  text,
+                DocStatus  Character(2)
+            )
+AS
+$$
+SELECT i.ad_org_id,
+       MIN(io.M_inOut_ID)::int,
        CASE
-           WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'VATaxID') = 'N' THEN
-               bp.VATaxID
-       END                                                                              AS VATaxID,
-       bp.value                                                                         AS bp_value,
-       bp.eori                                                                          AS eori,
-       CASE
-           WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'Customer_No_At_Vendor') = 'N' THEN
-               bp.customernoatvendor
-       END                                                                              AS customernoatvendor,
-       COALESCE(cogr.name, '') ||
-       COALESCE(' ' || cont.title, '') ||
-       COALESCE(' ' || cont.firstName, '') ||
-       COALESCE(' ' || cont.lastName, '')                                               AS cont_name,
-       CASE
-           WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'Contact_Phone') = 'N' THEN
-               cont.phone
-       END                                                                              AS cont_phone,
-       CASE
-           WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'Contact_Fax') = 'N' THEN
-               cont.fax
-       END                                                                              AS cont_fax,
-       cont.email                                                                       AS cont_email,
-       CASE
-           WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'SalesRep_Name') = 'N' THEN
-               COALESCE(srgr.name, '') ||
-               COALESCE(' ' || srep.title, '') ||
-               COALESCE(' ' || srep.firstName, '') ||
-               COALESCE(' ' || srep.lastName, '')
-       END                                                                              AS sr_name,
-       srep.phone                                                                       AS sr_phone,
-       srep.fax                                                                         AS sr_fax,
-       CASE
-           WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'SalesRep_Email') = 'N' THEN
-               srep.email
-       END                                                                              AS sr_email,
-       COALESCE(dtt.PrintName, dt.PrintName)                                            AS PrintName,
-       o.docno                                                                          AS order_docno,
-       o.dateordered                                                                    AS order_date,
-       io.docno                                                                         AS inout_docno,
-       io.DateFrom                                                                      AS io_movementdate,
-       CASE
-           WHEN dt.docbasetype = 'ARC'
+           WHEN
+               EXISTS(SELECT 0
+                      FROM M_InventoryLine il1
+                      WHERE m_hu_pi_item_product_id IS NOT NULL
+                        AND il1.M_Inventory_ID = $1)
                THEN 'Y'
                ELSE 'N'
-       END                                                                              AS isCreditMemo,
-       cm.documentno                                                                    AS creditmemo_docNo,
-       CASE
-           WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'Offer_DocumentNo') = 'N' THEN
-               o.offer_documentno
-       END                                                                              AS offer_documentno,
-       CASE
-           WHEN report.IsHiddenReportElement(i.C_DocType_ID, 'Offer_Date') = 'N' THEN
-               o.offer_date
-       END                                                                              AS offer_date,
-       wh.name                                                                          AS warehouse,
-       pr.value                                                                         AS projectno
-FROM C_Invoice i
-         JOIN C_BPartner bp ON i.C_BPartner_ID = bp.C_BPartner_ID
-         LEFT JOIN AD_User srep ON i.SalesRep_ID = srep.AD_User_ID
-         LEFT JOIN AD_User cont ON i.AD_User_ID = cont.AD_User_ID
-         LEFT JOIN C_Greeting cogr ON cont.C_Greeting_ID = cogr.C_Greeting_ID
-         LEFT JOIN C_Greeting srgr ON srep.C_Greeting_ID = srgr.C_Greeting_ID
-         LEFT JOIN C_Invoice cm ON cm.C_Invoice_id = i.ref_invoice_id
-         LEFT OUTER JOIN C_DocType dt ON i.C_DocTypeTarget_ID = dt.C_DocType_ID
-         LEFT OUTER JOIN C_DocType_Trl dtt ON i.C_DocTypeTarget_ID = dtt.C_DocType_ID AND dtt.AD_Language = p_language
-         LEFT JOIN LATERAL
-    (
-    SELECT First_Agg(o.DocumentNo ORDER BY o.DocumentNo) ||
-           CASE WHEN COUNT(o.documentNo) > 1 THEN ' ff.' ELSE '' END      AS DocNo,
+       END AS displayhu,
+       i.docstatus
 
-           First_Agg((o.dateordered::date)::text ORDER BY o.dateordered) ||
-           CASE WHEN COUNT(o.dateordered) > 1 THEN ' ff.' ELSE '' END     AS dateordered,
+FROM M_Inventory i
 
-           First_Agg(offer.DocumentNo ORDER BY offer.DocumentNo) ||
-           CASE WHEN COUNT(offer.DocumentNo) > 1 THEN ' ff.' ELSE '' END  AS offer_documentno,
 
-           First_Agg(offer.dateordered::text ORDER BY offer.dateordered) ||
-           CASE WHEN COUNT(offer.dateordered) > 1 THEN ' ff.' ELSE '' END AS offer_date
-    FROM C_InvoiceLine il
-             JOIN C_OrderLine ol ON il.C_OrderLine_ID = ol.C_OrderLine_ID
-             JOIN C_Order o ON ol.C_Order_ID = o.C_Order_ID
+         INNER JOIN M_InventoryLine il ON i.M_Inventory_ID = il.M_Inventory_ID
+         INNER JOIN M_InOutLine iol ON il.M_InOutLine_ID = iol.M_InOutLine_ID AND iol.isActive = 'Y'
+         INNER JOIN M_InOut io ON iol.M_InOut_ID = io.M_InOut_ID AND io.isActive = 'Y'
 
-        -- proposal order
-             LEFT JOIN C_Order offer ON offer.C_Order_ID = o.ref_proposal_id
 
-    WHERE il.C_Invoice_ID = p_record_id
-    ) o ON TRUE
+WHERE i.M_Inventory_ID = $1
+  AND i.isActive = 'Y'
 
-         LEFT JOIN LATERAL
-    (
-    SELECT First_Agg(io.DocumentNo ORDER BY io.DocumentNo) ||
-           CASE WHEN COUNT(io.documentNo) > 1 THEN ' ff.' ELSE '' END AS DocNo,
-           MIN(io.MovementDate)::date                                 AS DateFrom
-    FROM C_InvoiceLine il
-             JOIN M_InOutLine iol ON il.M_InOutLine_ID = iol.M_InOutLine_ID
-             JOIN M_InOut io ON iol.M_InOut_ID = io.M_InOut_ID
-
-    WHERE il.C_Invoice_ID = p_record_id
-    ) io ON TRUE
-
-    -- warehouse
-         LEFT JOIN m_warehouse wh ON i.m_warehouse_id = wh.m_warehouse_id
-    -- project
-         LEFT JOIN c_project pr ON i.c_project_id = pr.c_project_id
-WHERE i.C_Invoice_ID = p_record_id
+GROUP BY i.ad_org_id, i.docstatus
 
 $$
+    LANGUAGE sql STABLE
+;
+
+
+-- ===========================================================================
+-- Docs_Purchase_InOut_Page_Header
+-- ===========================================================================
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Page_Header(IN record_id numeric)
+;
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Page_Header(IN p_record_id numeric)
+;
+
+-- Function: de_metas_endcustomer_fresh_reports.docs_purchase_inout_page_header(numeric, character varying)
+
+DROP FUNCTION de_metas_endcustomer_fresh_reports.docs_purchase_inout_page_header(numeric,
+                                                                                 character varying)
+;
+
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.docs_purchase_inout_page_header(IN p_record_id numeric,
+                                                                                              IN ad_language character varying)
+    RETURNS TABLE
+            (
+                documentno   text,
+                dateinvoiced timestamp without time zone,
+                bp_value     character varying,
+                printname    character varying
+            )
+AS
+$$
+
+SELECT CASE
+           WHEN io.DocNo_hi = io.DocNo_lo THEN io.DocNo_lo
+                                          ELSE io.DocNo_lo || ' ff.'
+       END                                   AS documentno,
+       io.movementdate                       AS dateinvoiced,
+       bp.value                              AS bp_value,
+       COALESCE(dtt.PrintName, dt.PrintName) AS PrintName
+FROM C_OrderLine ol
+         INNER JOIN (SELECT ol.C_Order_ID,
+                            MAX(io.movementdate) AS movementdate,
+                            MIN(io.Documentno)   AS Docno_lo,
+                            MAX(io.Documentno)   AS Docno_hi,
+                            MAX(io.C_DocType_ID) AS C_DocType_ID
+                     FROM C_OrderLine ol
+
+                              INNER JOIN M_InOutLine iol ON ol.C_OrderLine_ID = iol.C_OrderLine_ID AND iol.isActive = 'Y'
+                              INNER JOIN M_InOut io ON iol.M_InOut_ID = io.M_InOut_ID AND io.isActive = 'Y'
+                     WHERE ol.C_OrderLine_ID = $1
+                       AND ol.isActive = 'Y'
+                     GROUP BY ol.C_Order_ID) io ON ol.C_Order_ID = io.C_Order_ID
+         INNER JOIN C_Order o ON ol.C_Order_ID = o.C_Order_ID AND o.isActive = 'Y'
+         INNER JOIN C_BPartner bp ON o.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
+         LEFT OUTER JOIN C_DocType dt ON io.C_DocType_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
+         LEFT OUTER JOIN C_DocType_Trl dtt ON io.C_DocType_ID = dtt.C_DocType_ID AND dtt.AD_Language = $2 AND dtt.isActive = 'Y'
+WHERE ol.C_OrderLine_ID = $1
+  AND ol.isActive = 'Y'
+$$
+    LANGUAGE sql STABLE
+;
+
+
+-- ===========================================================================
+-- Docs_Purchase_InOut_POS_Root
+-- ===========================================================================
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_POS_Root(IN record_id numeric)
+;
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_POS_Root(IN p_record_id numeric)
+;
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_POS_Root(IN p_record_id numeric,
+                                                                                        IN ad_table_id numeric)
+;
+
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_POS_Root(IN p_record_id numeric,
+                                                                                           IN ad_table_id numeric)
+    RETURNS TABLE
+            (
+                ad_org_id      numeric,
+                c_order_id     integer,
+                c_orderline_id integer,
+                displayhu      text
+            )
+AS
+$$
+SELECT ol.ad_org_id,
+       ol.C_Order_ID::int,
+       ol.C_OrderLine_ID::int,
+       CASE
+           WHEN
+               EXISTS(SELECT 0
+                      FROM c_orderline ol1
+                               JOIN c_order o ON ol1.c_order_id = o.c_order_id AND o.isactive = 'Y'
+                               JOIN m_inout io2 ON o.c_order_id = io2.c_order_id AND io2.isactive = 'Y'
+                               JOIN m_inoutLine iol2 ON io2.m_inout_id = iol2.m_inout_id AND iol2.isactive = 'Y'
+
+                               INNER JOIN M_Product p ON iol2.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+                               INNER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
+                      WHERE pc.M_Product_Category_ID = getSysConfigAsNumeric('PackingMaterialProductCategoryID', iol2.AD_Client_ID, iol2.AD_Org_ID)
+                        AND ol.C_OrderLine_ID = ol1.C_OrderLine_ID
+                        AND ol1.isActive = 'Y')
+               THEN 'Y'
+               ELSE 'N'
+       END AS displayhu
+FROM C_OrderLine ol
+WHERE ol.C_OrderLine_ID = $1
+  AND ol.isActive = 'Y'
+  AND get_Table_ID('C_OrderLine') = $2
+
+UNION
+(SELECT ol.ad_org_id,
+        ol.C_Order_ID::int,
+        ol.C_OrderLine_ID::int,
+        CASE
+            WHEN
+                EXISTS(SELECT 0
+                       FROM c_orderline ol1
+                                JOIN c_order o ON ol1.c_order_id = o.c_order_id AND o.isactive = 'Y'
+                                JOIN m_inout io2 ON o.c_order_id = io2.c_order_id AND io2.isactive = 'Y'
+                                JOIN m_inoutLine iol2 ON io2.m_inout_id = iol2.m_inout_id AND iol2.isactive = 'Y'
+
+                                INNER JOIN M_Product p ON iol2.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+                                INNER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
+                       WHERE pc.M_Product_Category_ID = getSysConfigAsNumeric('PackingMaterialProductCategoryID', iol2.AD_Client_ID, iol2.AD_Org_ID)
+                         AND ol.C_OrderLine_ID = ol1.C_OrderLine_ID
+                         AND ol1.isActive = 'Y')
+                THEN 'Y'
+                ELSE 'N'
+        END AS displayhu
+ FROM M_ReceiptSchedule rs
+          JOIN C_OrderLine ol ON rs.C_OrderLine_ID = ol.C_OrderLine_id AND ol.isActive = 'Y'
+ WHERE rs.M_ReceiptSchedule_ID = $1
+   AND rs.isActive = 'Y'
+   AND get_Table_ID('M_ReceiptSchedule') = $2)
+$$
+    LANGUAGE sql STABLE
 ;
 
 -- ===========================================================================
--- 7. Docs_Sales_Order_Description
+-- Docs_Purchase_InOut_Root
 -- ===========================================================================
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Description(IN numeric, IN Character Varying(6));
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Root(IN record_id numeric)
+;
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Description(p_record_id   numeric,
-                                                                                           p_ad_language character varying)
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Root(IN p_record_id numeric)
+;
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Root(IN p_record_id numeric)
+;
+
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Root(IN p_record_id numeric)
     RETURNS TABLE
             (
-                description       character varying,
-                documentno        character varying,
-                dateordered       timestamp WITHOUT TIME ZONE,
-                reference         text,
-                isoffer           character,
-                isprepay          character,
-                offervaliddate    timestamp WITHOUT TIME ZONE,
-                offervaliddays    numeric,
-                bp_value          character varying,
-                eori              character varying,
-                vataxid           character varying,
-                cont_name         text,
-                cont_phone        character varying,
-                cont_fax          character varying,
-                cont_email        character varying,
-                sr_name           text,
-                sr_phone          character varying,
-                sr_fax            character varying,
-                sr_email          character varying,
-                printname         character varying,
-                datepromised      timestamp WITH TIME ZONE,
-                dt_description    text,
-                offer_documentno  character varying,
-                offer_date        timestamp WITHOUT TIME ZONE,
-                deliverytoaddress character varying,
-                validuntil        timestamp,
-                versionno         character varying,
-                warehouse         character varying,
-                projectno         character varying
+                ad_org_id      numeric,
+                c_orderline_id integer,
+                displayhu      text,
+                c_order_id     integer,
+                movementdate   date
             )
-    STABLE
-    LANGUAGE sql
 AS
 $$
-SELECT o.description                             AS description,
-       o.documentno                              AS documentno,
-       o.dateordered                             AS dateordered,
-       o.poreference                             AS reference,
+SELECT ol.AD_Org_ID,
+       ol.C_OrderLine_ID::int,
+       CASE
+           WHEN
+               EXISTS(SELECT 0
+                      FROM c_orderline ol1
+                               JOIN c_order o ON ol1.c_order_id = o.c_order_id AND o.isactive = 'Y'
+                               JOIN m_inout io2 ON o.c_order_id = io2.c_order_id AND io2.isactive = 'Y'
+                               JOIN m_inoutLine iol2 ON io2.m_inout_id = iol2.m_inout_id AND iol2.isactive = 'Y'
+
+                               INNER JOIN M_Product p ON iol2.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+                               INNER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
+                      WHERE pc.M_Product_Category_ID = getSysConfigAsNumeric('PackingMaterialProductCategoryID', iol2.AD_Client_ID, iol2.AD_Org_ID)
+                        AND ol.C_OrderLine_ID = ol1.C_OrderLine_ID
+                        AND ol1.isActive = 'Y')
+               THEN 'Y'
+               ELSE 'N'
+       END                                           AS displayhu,
+       ol.C_Order_ID::int,
+       (SELECT MAX(io.movementdate)::date AS Movementdate
+        FROM M_ReceiptSchedule rs
+                 INNER JOIN M_ReceiptSchedule_Alloc rsa ON rs.M_ReceiptSchedule_ID = rsa.M_ReceiptSchedule_ID
+                 INNER JOIN M_InOutLine siol ON rsa.M_InOutLine_ID = siol.M_InOutLine_ID
+                 INNER JOIN M_InOut io ON siol.M_InOut_ID = io.M_InOut_ID
+        WHERE rs.AD_Table_ID = (SELECT Get_Table_ID('C_OrderLine'))
+          AND ol.C_OrderLine_ID = rs.C_OrderLine_ID) AS MovementDate
+FROM
+    -- All In Out Lines directly linked to the order
+    M_InOutLine iol
+        INNER JOIN M_ReceiptSchedule_Alloc rsa ON rsa.M_InOutLine_ID = iol.M_InOutLine_ID
+        INNER JOIN M_ReceiptSchedule rs ON rs.M_ReceiptSchedule_ID = rsa.M_ReceiptSchedule_ID
+        AND rs.AD_Table_ID = (SELECT Get_Table_ID('C_OrderLine'))
+        INNER JOIN C_OrderLine ol ON rs.C_OrderLine_ID = ol.C_OrderLine_ID
+WHERE iol.M_InOut_ID = p_record_id
+
+UNION
+DISTINCT
+
+SELECT ol.AD_Org_ID,
+       ol.C_OrderLine_ID::int,
+       CASE
+           WHEN
+               EXISTS(SELECT 0
+                      FROM c_orderline ol1
+                               JOIN c_order o ON ol1.c_order_id = o.c_order_id AND o.isactive = 'Y'
+                               JOIN m_inout io2 ON o.c_order_id = io2.c_order_id AND io2.isactive = 'Y'
+                               JOIN m_inoutLine iol2 ON io2.m_inout_id = iol2.m_inout_id AND iol2.isactive = 'Y'
+
+                               INNER JOIN M_Product p ON iol2.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+                               INNER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
+                      WHERE pc.M_Product_Category_ID = getSysConfigAsNumeric('PackingMaterialProductCategoryID', iol2.AD_Client_ID, iol2.AD_Org_ID)
+                        AND ol.C_OrderLine_ID = ol1.C_OrderLine_ID
+                        AND ol1.isActive = 'Y')
+               THEN 'Y'
+               ELSE 'N'
+       END                                             AS displayhu,
+       ol.C_Order_ID::int,
+       (SELECT MAX(io.movementdate)::date AS Movementdate
+        FROM M_InOut io
+                 INNER JOIN M_InOutLine siol ON io.m_inout_id = siol.m_inout_id
+        WHERE ol.C_OrderLine_ID = siol.C_OrderLine_ID) AS MovementDate
+FROM M_InOutLine iol
+         INNER JOIN C_OrderLine ol ON iol.C_OrderLine_ID = ol.C_OrderLine_ID
+WHERE iol.M_InOut_ID = p_record_id
+
+LIMIT 1
+$$
+    LANGUAGE sql STABLE
+;
+
+-- ===========================================================================
+-- Docs_Purchase_InOut_Vendor_Returns_Description
+-- ===========================================================================
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Vendor_Returns_Description(IN record_id numeric)
+;
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Vendor_Returns_Description(IN p_record_id numeric)
+;
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Vendor_Returns_Description(IN p_record_id numeric,
+                                                                                                          IN AD_Language Character Varying(6))
+;
+
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Vendor_Returns_Description(IN p_record_id numeric,
+                                                                                                             IN AD_Language Character Varying(6))
+    RETURNS TABLE
+            (
+                printname       character varying(60),
+                io_printname    character varying(60),
+                documentno      character varying(30),
+                io_documentno   text,
+                bp_value        character varying(40),
+                movementdate_io timestamp without time zone,
+                movementdate    timestamp without time zone
+            )
+AS
+$$
+SELECT COALESCE(dtt.printName, dt.printName)       AS printname,
+       COALESCE(io_dtt.printName, io_dt.printName) AS io_printname,
+       io.DocumentNo                               AS documentNo,
+       CASE
+           WHEN io_origin.DocNo_hi = io_origin.DocNo_lo THEN io_origin.DocNo_lo
+                                                        ELSE io_origin.DocNo_lo || ' ff.'
+       END                                         AS io_documentno,
+       bp.Value                                    AS BP_Value,
+       io.movementDate                             AS movementDate,
+       io_origin.movementDate                      AS movementdate_io
+
+FROM M_Inout io --vendor return
+--INNER JOIN M_InOutLine iol ON io.M_Inout_ID = iol.M_Inout_ID
+         INNER JOIN C_DocType dt ON io.C_DocType_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
+         LEFT OUTER JOIN C_DocType_Trl dtt ON dt.C_DocType_ID = dtt.C_DocType_ID AND dtt.isActive = 'Y' AND dtt.AD_Language = $2
+
+
+    --data from original inout
+         INNER JOIN (SELECT iol.M_InOut_ID,
+                            MAX(io_origin.movementdate) AS movementdate,
+                            MIN(io_origin.Documentno)   AS Docno_lo,
+                            MAX(io_origin.Documentno)   AS Docno_hi,
+                            MAX(io_origin.C_DocType_ID) AS C_DocType_ID
+                     FROM M_InOutLine iol
+                              INNER JOIN M_InOutLine iol_origin ON iol.return_origin_inoutline_id = iol_origin.M_InOutLine_ID AND iol_origin.isActive = 'Y'
+                              INNER JOIN M_InOut io_origin ON iol_origin.M_InOut_ID = io_origin.M_InOut_ID AND io_origin.isActive = 'Y'
+
+                     GROUP BY iol.M_InOut_ID) io_origin ON io.M_InOut_ID = io_origin.M_InOut_ID
+
+         INNER JOIN C_BPartner bp ON io.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
+         INNER JOIN C_DocType io_dt ON io_origin.C_DocType_ID = io_dt.C_DocType_ID AND io_dt.isActive = 'Y'
+         LEFT OUTER JOIN C_DocType_Trl io_dtt ON io_dt.C_DocType_ID = io_dtt.C_DocType_ID AND io_dtt.isActive = 'Y' AND io_dtt.AD_Language = $2
+
+WHERE io.M_InOut_ID = $1
+
+
+$$
+    LANGUAGE sql STABLE
+;
+
+-- ===========================================================================
+-- Docs_Purchase_InOut_Vendor_Returns_Details_HU
+-- ===========================================================================
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Vendor_Returns_Details_HU(IN record_id numeric)
+;
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Vendor_Returns_Details_HU(IN p_record_id numeric)
+;
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Vendor_Returns_Details_HU(IN p_record_id numeric,
+                                                                                                         IN AD_Language Character Varying(6))
+;
+
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Vendor_Returns_Details_HU(IN p_record_id numeric,
+                                                                                                            IN AD_Language Character Varying(6))
+    RETURNS TABLE
+            (
+                Name        character varying,
+                HUQty       numeric,
+                MovementQty numeric,
+                UOMSymbol   character varying,
+                Description character varying
+            )
+AS
+$$
+
+SELECT Name, -- product
+       SUM(HUQty)       AS HUQty,
+       SUM(MovementQty) AS MovementQty,
+       UOMSymbol,
+       iol.Description
+
+FROM (SELECT COALESCE(pt.Name, p.name)               AS Name,
+             iol.QtyEnteredTU                        AS HUQty,
+             iol.MovementQty                         AS MovementQty,
+             COALESCE(uomt.UOMSymbol, uom.UOMSymbol) AS UOMSymbol,
+             iol.Description
+
+
+      FROM M_Inout io --vendor return
+
+               INNER JOIN M_InOutLine iol ON io.M_InOut_ID = iol.M_InOut_ID
+
+               INNER JOIN M_Product p ON iol.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+               LEFT OUTER JOIN M_Product_Trl pt ON p.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $2 AND pt.isActive = 'Y'
+               INNER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
+               LEFT OUTER JOIN C_BPartner bp ON io.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
+               LEFT OUTER JOIN C_BPartner_Product bpp ON bp.C_BPartner_ID = bpp.C_BPartner_ID
+          AND p.M_Product_ID = bpp.M_Product_ID AND bpp.isActive = 'Y'
+
+          -- Unit of measurement & its translation
+               INNER JOIN C_UOM uom ON iol.C_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
+               LEFT OUTER JOIN C_UOM_Trl uomt ON iol.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = $2 AND uomt.isActive = 'Y'
+
+      WHERE pc.M_Product_Category_ID = getSysConfigAsNumeric('PackingMaterialProductCategoryID', iol.AD_Client_ID, iol.AD_Org_ID)
+        AND io.M_InOut_ID = $1) iol
+
+
+GROUP BY Name,
+         UOMSymbol,
+         iol.Description
+$$
+    LANGUAGE sql STABLE
+;
+
+-- ===========================================================================
+-- Docs_Purchase_InOut_Vendor_Returns_Root
+-- ===========================================================================
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Vendor_Returns_Root(IN record_id numeric)
+;
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Vendor_Returns_Root(IN p_record_id numeric)
+;
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Vendor_Returns_Root(IN p_record_id numeric)
+;
+
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Vendor_Returns_Root(IN p_record_id numeric)
+    RETURNS TABLE
+            (
+                ad_org_id numeric,
+                displayhu text,
+                DocStatus Character(2)
+            )
+AS
+$$
+SELECT io.AD_Org_ID,
+       CASE
+           WHEN
+               EXISTS(SELECT 0
+                      FROM M_InOutLine iol1
+                               INNER JOIN M_Product p ON iol1.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+                               INNER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
+                      WHERE pc.M_Product_Category_ID = getSysConfigAsNumeric('PackingMaterialProductCategoryID', iol1.AD_Client_ID, iol1.AD_Org_ID)
+                        AND io.M_InOut_ID = iol1.M_InOut_ID
+                        AND iol1.isActive = 'Y')
+               THEN 'Y'
+               ELSE 'N'
+       END AS displayhum,
+       io.docstatus
+FROM M_InOut io
+WHERE io.M_InOut_ID = $1
+  AND io.isActive = 'Y'
+$$
+    LANGUAGE sql STABLE
+;
+
+-- ===========================================================================
+-- Docs_Purchase_Invoice_Root
+-- ===========================================================================
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Root(IN record_id numeric)
+;
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Root(IN p_record_id numeric)
+;
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Root(IN p_record_id numeric,
+                                                                                      IN ad_language Character Varying(6))
+;
+
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Root(IN p_record_id numeric,
+                                                                                         IN ad_language Character Varying(6))
+    RETURNS TABLE
+            (
+                ad_org_id numeric,
+                docstatus character(2),
+                printname character varying(60),
+                displayhu text
+            )
+AS
+$$
+SELECT i.AD_Org_ID,
+       i.DocStatus,
+       dt.PrintName,
+       CASE
+           WHEN
+               EXISTS(SELECT 0
+                      FROM C_InvoiceLine il
+                               INNER JOIN M_Product p ON il.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+                               INNER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
+                      WHERE pc.M_Product_Category_ID = getSysConfigAsNumeric('PackingMaterialProductCategoryID', il.AD_Client_ID, il.AD_Org_ID)
+                        AND il.C_Invoice_ID = i.C_Invoice_ID
+                        AND il.isActive = 'Y')
+               THEN 'Y'
+               ELSE 'N'
+       END AS displayhu
+FROM C_Invoice i
+         INNER JOIN C_DocType dt ON i.C_DocType_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
+         LEFT OUTER JOIN C_DocType_Trl dtt ON i.C_DocType_ID = dtt.C_DocType_ID AND dtt.AD_Language = $2 AND dtt.isActive = 'Y'
+WHERE i.C_Invoice_ID = $1
+  AND i.isActive = 'Y'
+
+$$
+    LANGUAGE sql STABLE
+;
+
+-- ===========================================================================
+-- Docs_Purchase_Order_Details_HU
+-- ===========================================================================
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details_HU(IN record_id numeric)
+;
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details_HU(IN p_record_id numeric)
+;
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details_HU(IN p_record_id numeric,
+                                                                                          IN ad_language Character Varying(6))
+;
+
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details_HU(IN p_record_id numeric,
+                                                                                             IN ad_language Character Varying(6))
+
+    RETURNS TABLE
+            (
+                qtyordered  numeric,
+                Name        character varying,
+                Price       numeric,
+                LineNetAmt  numeric,
+                UOMSymbol   character varying(10),
+                Description character varying
+
+            )
+AS
+$$
+SELECT ol.QtyOrdered,
+       COALESCE(pt.Name, p.name)               AS Name,
+       ol.PriceEntered                         AS Price,
+       ol.LineNetAmt,
+       COALESCE(uom.UOMSymbol, uomt.UOMSymbol) AS UOMSymbol,
+       ol.Description
+FROM C_OrderLine ol
+         -- Product and its translation
+         LEFT OUTER JOIN M_Product p ON ol.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+         LEFT OUTER JOIN M_Product_Trl pt ON ol.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $2 AND pt.isActive = 'Y'
+         LEFT OUTER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
+    -- Unit of measurement and its translation
+         LEFT OUTER JOIN C_UOM uom ON ol.C_UOM_ID = uom.C_UOM_ID
+         LEFT OUTER JOIN C_UOM_Trl uomt ON ol.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = $2
+WHERE ol.C_Order_ID = $1
+  AND ol.isActive = 'Y'
+  AND pc.M_Product_Category_ID = getSysConfigAsNumeric('PackingMaterialProductCategoryID', ol.AD_Client_ID, ol.AD_Org_ID)
+
+$$
+    LANGUAGE sql STABLE
+;
+
+-- ===========================================================================
+-- Docs_Purchase_Order_Root
+-- ===========================================================================
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Root(IN record_id numeric)
+;
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Root(IN p_record_id numeric)
+;
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Root(IN p_record_id numeric,
+                                                                                    IN ad_language Character Varying(6))
+;
+
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Root(IN p_record_id numeric,
+                                                                                       IN ad_language Character Varying(6))
+    RETURNS TABLE
+            (
+                ad_org_id numeric(10, 0),
+                docstatus character(2),
+                printname character varying(60),
+                displayhu text
+            )
+AS
+$$
+
+SELECT o.AD_Org_ID,
+       o.DocStatus,
+       dt.PrintName,
+       CASE
+           WHEN
+               EXISTS(SELECT 0
+                      FROM C_OrderLine ol
+                               INNER JOIN M_Product p ON ol.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+                               INNER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
+                      WHERE pc.M_Product_Category_ID = getSysConfigAsNumeric('PackingMaterialProductCategoryID', ol.AD_Client_ID, ol.AD_Org_ID)
+                        AND ol.C_Order_ID = o.C_Order_ID)
+               THEN 'Y'
+               ELSE 'N'
+       END AS displayhu
+FROM C_Order o
+         INNER JOIN C_DocType dt ON o.C_DocType_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
+         LEFT OUTER JOIN C_DocType_Trl dtt ON o.C_DocType_ID = dtt.C_DocType_ID AND dtt.AD_Language = $2 AND dtt.isActive = 'Y'
+WHERE o.C_Order_ID = $1
+  AND o.isActive = 'Y'
+$$
+    LANGUAGE sql STABLE
+;
+
+-- ===========================================================================
+-- Docs_Sales_InOut_Customer_Returns_Description
+-- ===========================================================================
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Customer_Returns_Description(IN record_id numeric)
+;
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Customer_Returns_Description(IN p_record_id numeric)
+;
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Customer_Returns_Description(IN p_record_id numeric,
+                                                                                                         IN AD_Language Character Varying(6))
+;
+
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Customer_Returns_Description(IN p_record_id numeric,
+                                                                                                            IN AD_Language Character Varying(6))
+    RETURNS TABLE
+            (
+                printname    character varying(60),
+                documentno   character varying(30),
+                bp_value     character varying(40),
+                movementdate timestamp without time zone
+            )
+AS
+$$
+SELECT COALESCE(dtt.printName, dt.printName) AS printname,
+       io.DocumentNo                         AS documentNo,
+       bp.Value                              AS BP_Value,
+       io.movementDate                       AS movementDate
+
+FROM M_Inout io --customer return
+         INNER JOIN C_DocType dt ON io.C_DocType_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
+         LEFT OUTER JOIN C_DocType_Trl dtt ON dt.C_DocType_ID = dtt.C_DocType_ID AND dtt.isActive = 'Y' AND dtt.AD_Language = $2
+
+
+         INNER JOIN C_BPartner bp ON io.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
+
+WHERE io.M_InOut_ID = $1
+
+
+$$
+    LANGUAGE sql STABLE
+;
+
+-- ===========================================================================
+-- Docs_Sales_Order_Root
+-- ===========================================================================
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Root(IN record_id numeric)
+;
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Root(IN p_record_id numeric)
+;
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Root(IN p_record_id numeric,
+                                                                                 IN ad_language Character Varying(6))
+;
+
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Root(IN p_record_id numeric,
+                                                                                    IN ad_language Character Varying(6))
+    RETURNS TABLE
+            (
+                ad_org_id     numeric(10, 0),
+                docstatus     character(2),
+                printname     character varying(60),
+                C_Currency_ID numeric,
+                poreference   varchar(60),
+                displayhu     text,
+                isoffer       character(1),
+                isprepay      character(1)
+            )
+AS
+$$
+
+SELECT o.AD_Org_ID,
+       o.DocStatus,
+       dt.PrintName,
+       o.C_Currency_ID,
+       poreference,
+       CASE
+           WHEN
+               EXISTS(SELECT 0
+                      FROM C_OrderLine ol
+                               INNER JOIN M_Product p ON ol.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+                               INNER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
+                      WHERE pc.M_Product_Category_ID = getSysConfigAsNumeric('PackingMaterialProductCategoryID', ol.AD_Client_ID, ol.AD_Org_ID)
+                        AND ol.C_Order_ID = o.C_Order_ID
+                        AND ol.isActive = 'Y')
+               THEN 'Y'
+               ELSE 'N'
+       END AS displayhu,
        CASE
            WHEN dt.docbasetype = 'SOO' AND dt.docsubtype IN ('ON', 'OB')
                THEN 'Y'
                ELSE 'N'
-       END                                       AS isoffer,
+       END AS isoffer,
        CASE
            WHEN dt.docbasetype = 'SOO' AND dt.docsubtype = 'PR'
                THEN 'Y'
                ELSE 'N'
-       END                                       AS isprepay,
-       o.offervaliddate,
-       o.offervaliddays,
-       bp.value                                  AS bp_value,
-       bp.eori                                   AS eori,
-       bp.vataxid                                AS vataxid,
-       LTRIM(COALESCE(cogrt.name, cogrt.name, '') ||
-             COALESCE(' ' || cont.title, '') ||
-             COALESCE(' ' || cont.firstName, '') ||
-             COALESCE(' ' || cont.lastName, '')) AS cont_name,
-       cont.phone                                AS cont_phone,
-       cont.fax                                  AS cont_fax,
-       cont.email                                AS cont_email,
-       LTRIM(COALESCE(srgrt.name, srgr.name, '') ||
-             COALESCE(' ' || srep.title, '') ||
-             COALESCE(' ' || srep.firstName, '') ||
-             COALESCE(' ' || srep.lastName, '')) AS sr_name,
-       srep.phone                                AS sr_phone,
-       srep.fax                                  AS sr_fax,
-       srep.email                                AS sr_email,
-       COALESCE(dtt.PrintName, dt.PrintName)     AS PrintName,
-       o.datepromised,
-       COALESCE(dtt.Description, dt.Description) AS dt_description,
-       offer.documentno                          AS offer_documentno,
-       offer.dateordered                         AS offer_date,
-       CASE
-           WHEN o.isdropship = 'Y'
-               THEN REPLACE(
-                   REPLACE(o.deliverytoaddress, E'\r\n', ' | '),
-                   E'\n', ' | '
-                    )
-               ELSE REPLACE(
-                       REPLACE(o.bpartneraddress, E'\r\n', ' | '),
-                       E'\n', ' | '
-                    )
-       END                                       AS deliverytoaddress,
-       CASE
-           WHEN o.OrderType = 'ON'
-               THEN o.validuntil
-       END                                       AS validuntil,
-       CASE
-           WHEN o.OrderType = 'ON'
-               THEN o.versionno
-       END                                       AS versionno,
-       wh.name                                   AS warehouse,
-       pr.value                                  AS projectno
+       END AS isprepay
 FROM C_Order o
-         INNER JOIN C_BPartner bp ON o.C_BPartner_ID = bp.C_BPartner_ID
-         LEFT OUTER JOIN AD_User srep ON o.SalesRep_ID = srep.AD_User_ID AND srep.AD_User_ID <> 100
-         LEFT OUTER JOIN AD_User cont ON o.Bill_User_ID = cont.AD_User_ID
-         LEFT OUTER JOIN C_DocType dt ON o.C_DocTypeTarget_ID = dt.C_DocType_ID
-         LEFT OUTER JOIN C_DocType_Trl dtt ON o.C_DocTypeTarget_ID = dtt.C_DocType_ID AND dtt.AD_Language = p_ad_language
-
-    -- Translatables
-         LEFT OUTER JOIN C_Greeting cogr ON cont.C_Greeting_ID = cogr.C_Greeting_ID
-         LEFT OUTER JOIN C_Greeting_Trl cogrt ON cont.C_Greeting_ID = cogrt.C_Greeting_ID AND cogrt.ad_language = p_ad_language
-         LEFT OUTER JOIN C_Greeting srgr ON srep.C_Greeting_ID = srgr.C_Greeting_ID
-         LEFT OUTER JOIN C_Greeting_Trl srgrt ON srep.C_Greeting_ID = srgrt.C_Greeting_ID AND srgrt.ad_language = p_ad_language
-
-    -- proposal order
-         LEFT JOIN C_Order offer ON offer.C_Order_ID = o.ref_proposal_id
-
-    -- warehouse
-         LEFT JOIN m_warehouse wh ON o.m_warehouse_id = wh.m_warehouse_id
-
-    -- project
-         LEFT JOIN c_project pr ON o.c_project_id = pr.c_project_id
-
-WHERE o.C_Order_ID = p_record_id
+         INNER JOIN C_DocType dt ON o.C_DocTypeTarget_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
+         LEFT OUTER JOIN C_DocType_Trl dtt ON o.C_DocTypeTarget_ID = dtt.C_DocType_ID AND dtt.AD_Language = $2 AND dtt.isActive = 'Y'
+WHERE o.C_Order_ID = $1
+  AND o.isActive = 'Y'
 $$
+    LANGUAGE sql STABLE
+;
+
+
+-- ===========================================================================
+-- Docs_Sales_OrderCheckup_Description
+-- ===========================================================================
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Description(IN record_id numeric)
+;
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Description(IN p_record_id numeric)
+;
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Description(IN p_record_id numeric)
+;
+
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Description(IN p_record_id numeric)
+    RETURNS TABLE
+            (
+                bpValue                character varying(50),
+                order_no               character varying(30),
+                reference              character varying(40),
+                preparationdate        timestamp with time zone,
+                datepromised           timestamp with time zone,
+                ReportDocumentTypeName character varying(40),
+                handoverlocation       character varying(140),
+                warehousename          character varying(60),
+                plantname              character varying(60)
+            )
+AS
+$$
+SELECT r.bpValue,
+       r.document_no     AS order_no,
+       r.poreference     AS reference,
+       r.preparationdate AS PreparationDate,
+       r.datepromised    AS DatePromised,
+       r.ReportDocumentTypeName,
+       r.handoverlocation,
+       r.warehousename,
+       r.plantname
+
+FROM report.RV_C_Order_MFGWarehouse_Report_Description r
+WHERE r.C_Order_MFGWarehouse_Report_ID = $1
+LIMIT 1
+
+$$
+    LANGUAGE sql STABLE
 ;
 
 -- ===========================================================================
--- 8. Docs_Sales_OrderCheckup_Root
+-- Docs_Sales_OrderCheckup_Details
 -- ===========================================================================
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Root(IN numeric, IN numeric, IN date);
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Details(IN record_id numeric)
+;
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Details(IN p_record_id numeric)
+;
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Details(IN p_record_id numeric)
+;
+
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Details(IN p_record_id numeric)
+    RETURNS TABLE
+            (
+                line                               numeric,
+                attributes                         text,
+                prodValue                          character varying,
+                value                              character varying,
+                name                               character varying(255),
+                ean                                character varying,
+                pricelist                          numeric,
+                capacity                           numeric,
+                priceactual                        numeric,
+                qtyenteredtu                       numeric,
+                qtyentered                         numeric,
+                container                          character varying(60),
+                uomsymbol                          character varying(10),
+                c_order_mfgwarehouse_report_id     numeric,
+                reportdocumenttype                 character varying(2),
+                C_Order_MFGWarehouse_ReportLine_ID numeric,
+                c_order_id                         numeric,
+                c_orderline_id                     numeric,
+                m_warehouse_id                     numeric,
+                pp_plant_id                        numeric,
+                c_bpartner_id                      numeric,
+                datepromised                       timestamp with time zone,
+                barcode                            character varying(255)
+            )
+AS
+$$
+
+SELECT ol.line,
+       att.Attributes,
+       p.value                          AS prodValue,
+       COALESCE(bpp.ProductNo, p.value) AS Value,
+       p.Name                           AS Name,
+       COALESCE(bpp.UPC, p.UPC)         AS EAN,
+       -- Rounding these columns is important to have them in one group
+       -- Jasper groups by comparing the BigDecimals. In that logic, 1.00 is not the same as 1
+       ROUND(ol.pricelist, 3)           AS PriceList,
+       ROUND(ip.qty, 3)                 AS Capacity,
+       ROUND(ol.Priceactual, 3)         AS PriceActual,
+       ol.QtyEnteredTU,
+       ol.QtyEntered,
+       pm.name                          AS Container,
+       uom.UOMSymbol                    AS UOMSymbol,
+       --
+       -- Filtering columns
+       report.C_Order_MFGWarehouse_Report_ID,
+       report.DocumentType              AS ReportDocumentType,
+       reportLine.C_Order_MFGWarehouse_ReportLine_ID,
+       o.C_Order_ID,
+       ol.C_OrderLine_ID,
+       report.M_Warehouse_ID,
+       report.PP_Plant_ID,
+       o.C_BPartner_ID,
+       o.DatePromised,
+       reportLine.barcode               AS barcode
+FROM C_Order_MFGWarehouse_Report report
+         INNER JOIN C_Order o ON (report.C_Order_ID = o.C_Order_ID) AND o.isActive = 'Y'
+         INNER JOIN C_Order_MFGWarehouse_ReportLine reportLine ON (reportLine.C_Order_MFGWarehouse_Report_ID = report.C_Order_MFGWarehouse_Report_ID)
+         INNER JOIN C_OrderLine ol ON (ol.C_OrderLine_ID = reportLine.C_OrderLine_ID) AND ol.isActive = 'Y'
+    --
+         LEFT OUTER JOIN C_BPartner bp ON ol.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
+         LEFT OUTER JOIN M_HU_PI_Item_Product ip ON ol.M_HU_PI_Item_Product_ID = ip.M_HU_PI_Item_Product_ID AND ip.isActive = 'Y'
+         LEFT OUTER JOIN M_HU_PI_Item pii ON ip.M_HU_PI_Item_ID = pii.M_HU_PI_Item_ID AND pii.isActive = 'Y'
+         LEFT OUTER JOIN M_HU_PI_Item pmi ON pmi.M_HU_PI_Version_ID = pii.M_HU_PI_Version_ID AND pmi.isActive = 'Y'
+    AND pmi.ItemType = 'PM'
+         LEFT OUTER JOIN M_HU_PackingMaterial pm ON pmi.M_HU_PackingMaterial_ID = pm.M_HU_PackingMaterial_ID AND pm.isActive = 'Y'
+    -- Product and its translation
+         LEFT OUTER JOIN M_Product p ON ol.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
+
+         LEFT OUTER JOIN C_BPartner_Product bpp ON bp.C_BPartner_ID = bpp.C_BPartner_ID AND bpp.isActive = 'Y'
+    AND p.M_Product_ID = bpp.M_Product_ID
+         LEFT OUTER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
+    -- Unit of measurement and its translation
+         LEFT OUTER JOIN C_UOM uom ON ol.C_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
+    -- ADR Attribute
+         LEFT OUTER JOIN LATERAL (
+    SELECT STRING_AGG(ai_value, ', ') AS Attributes, M_AttributeSetInstance_ID
+    FROM Report.fresh_Attributes
+    WHERE at_Value IN ('1000015', '1000001', '1000002') -- Marke (ADR), task 08891: also Herkunft, task 2237: also Label
+      AND M_AttributeSetInstance_ID = ol.M_AttributeSetInstance_ID
+      AND ol.M_AttributeSetInstance_ID != 0
+    GROUP BY M_AttributeSetInstance_ID
+    ) att ON TRUE
+WHERE 1 = 1
+  AND report.IsActive = 'Y'
+  AND reportLine.IsActive = 'Y'
+  AND COALESCE(pc.M_Product_Category_ID, -1) != getSysConfigAsNumeric('PackingMaterialProductCategoryID', ol.AD_Client_ID, ol.AD_Org_ID)
+  AND o.IsSOTrx != 'N'
+  AND o.DocStatus = 'CO'
+  AND report.C_Order_MFGWarehouse_Report_ID = $1
+
+ORDER BY ol.line
+
+$$
+    LANGUAGE sql STABLE
+;
+
+-- ===========================================================================
+-- Docs_Sales_OrderCheckup_Root
+-- ===========================================================================
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Root(IN record_id numeric)
+;
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Root(IN p_record_id numeric)
+;
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Root(numeric,
+                                                                                        numeric,
+                                                                                        date)
+;
 
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_OrderCheckup_Root(IN p_record_id    numeric,
                                                                                            IN bPartnerId     numeric,
                                                                                            IN p_datePromised date)
-  RETURNS TABLE
-  (
-    ad_org_id  numeric,
-    docstatus  character(2),
-    printname  character varying(60),
-    c_order_id integer,
-	C_Order_MFGWarehouse_Report_ID integer
-  )
+    RETURNS TABLE
+            (
+                ad_org_id                      numeric,
+                docstatus                      character(2),
+                printname                      character varying(60),
+                c_order_id                     integer,
+                C_Order_MFGWarehouse_Report_ID integer
+            )
 AS
 $$
-SELECT
-  r.AD_Org_ID,
-  r.DocStatus,
-  r.PrintName,
-  r.C_Order_ID :: int,
-  r.C_Order_MFGWarehouse_Report_ID :: int
+SELECT r.AD_Org_ID,
+       r.DocStatus,
+       r.PrintName,
+       r.C_Order_ID :: int,
+       r.C_Order_MFGWarehouse_Report_ID :: int
 FROM report.RV_C_Order_MFGWarehouse_Report_Header r
-WHERE
-  CASE
-  WHEN p_record_id IS NOT NULL
-    THEN r.C_Order_MFGWarehouse_Report_ID = p_record_id
-  WHEN bPartnerId IS NOT NULL AND DatePromised :: date IS NOT NULL
-    THEN r.C_BPartner_ID = bPartnerId AND r.DatePromised :: date = p_datePromised :: date
-  ELSE false -- shall never happen
-  END
+WHERE CASE
+          WHEN p_record_id IS NOT NULL
+              THEN r.C_Order_MFGWarehouse_Report_ID = p_record_id
+          WHEN bPartnerId IS NOT NULL AND DatePromised :: date IS NOT NULL
+              THEN r.C_BPartner_ID = bPartnerId AND r.DatePromised :: date = p_datePromised :: date
+              ELSE FALSE -- shall never nappen
+      END
 LIMIT 1
 
 $$
-LANGUAGE sql
-STABLE;
-
+    LANGUAGE sql
+    STABLE
+;
