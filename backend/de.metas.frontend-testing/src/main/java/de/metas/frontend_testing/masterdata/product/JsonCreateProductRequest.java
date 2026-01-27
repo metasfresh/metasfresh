@@ -40,6 +40,14 @@ public class JsonCreateProductRequest
 
 	@Nullable BOM bom;
 
+	/**
+	 * Attribute Set name to associate with the product.
+	 * If set, the product will have this M_AttributeSet_ID assigned,
+	 * enabling the Attributes button in the Test Window.
+	 * Example values: "Lot", "Serial", "LotSerial"
+	 */
+	@Nullable String attributeSetName;
+
 	//
 	//
 	//

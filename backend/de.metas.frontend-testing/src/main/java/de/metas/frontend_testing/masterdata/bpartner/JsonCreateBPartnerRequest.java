@@ -20,6 +20,12 @@ public class JsonCreateBPartnerRequest
 	@Nullable Map<String, Location> locations;
 
 	/**
+	 * Contacts (AD_User records) to create for this business partner.
+	 * Each contact is linked to the business partner via C_BPartner_ID.
+	 */
+	@Nullable Map<String, Contact> contacts;
+
+	/**
 	 * Whether this business partner is a vendor (purchase side).
 	 * Default: false
 	 */
@@ -45,5 +51,20 @@ public class JsonCreateBPartnerRequest
 	public static class Location
 	{
 		@Nullable String gln;
+	}
+
+	@Value
+	@Builder
+	@Jacksonized
+	public static class Contact
+	{
+		@Nullable String firstName;
+		@Nullable String lastName;
+		@Nullable String email;
+		@Nullable String phone;
+		/**
+		 * Description or title for the contact.
+		 */
+		@Nullable String description;
 	}
 }
