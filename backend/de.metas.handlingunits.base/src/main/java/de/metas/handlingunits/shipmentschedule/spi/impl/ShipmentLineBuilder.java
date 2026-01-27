@@ -180,12 +180,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		}
 
 		// Disallow creating shipment lines with negative or ZERO qty
-		if (qtyEntered.signum() <= 0)
-		{
-			return false;
-		}
-
-		return true;
+		return qtyEntered.signum() > 0;
 	}
 
 	/**
@@ -222,17 +217,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		// NOTE: this is also EDI requirement
 		if (!OrderAndLineId.equals(orderLineId, candidate.getOrderLineId()))
 		{
-<<<<<<< HEAD
-			return false;
-		}
-=======
 			return BooleanWithReason.falseBecause("Different orderLine : " + orderLineId + " vs " + candidate.getOrderLineId());
 		}
-		return BooleanWithReason.TRUE;
->>>>>>> 81813800f5 (Add detailed logging for shipment line builder decisions. Enhance inventory and shipment processing logic to account for multiple HUs per inventory and proper HU assignment in shipping scenarios. Introduce new utility methods for handling HU IDs. (#22148))
-
 		// Else, we can allow this candidate to be added here
-		return true;
+		return BooleanWithReason.TRUE;
 	}
 
 	public void add(@NonNull final ShipmentScheduleWithHU candidate)

@@ -22,12 +22,8 @@ package de.metas.handlingunits.shipmentschedule.spi.impl;
  * #L%
  */
 
-<<<<<<< HEAD
-=======
-package de.metas.handlingunits.shipmentschedule.spi.impl;
 
 import ch.qos.logback.classic.Level;
->>>>>>> 81813800f5 (Add detailed logging for shipment line builder decisions. Enhance inventory and shipment processing logic to account for multiple HUs per inventory and proper HU assignment in shipping scenarios. Introduce new utility methods for handling HU IDs. (#22148))
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -377,10 +373,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 
 		//
 		// C_Order reference
-<<<<<<< HEAD
-=======
 		if (shipmentSchedule.getC_Order_ID() > 0)
->>>>>>> 81813800f5 (Add detailed logging for shipment line builder decisions. Enhance inventory and shipment processing logic to account for multiple HUs per inventory and proper HU assignment in shipping scenarios. Introduce new utility methods for handling HU IDs. (#22148))
 		{
 			final de.metas.order.model.I_C_Order order = orderDAO.getById(OrderId.ofRepoIdOrNull(shipmentSchedule.getC_Order_ID()), de.metas.order.model.I_C_Order.class);
 			if (order != null && order.getC_Order_ID() > 0)
@@ -668,12 +661,8 @@ public class InOutProducerFromShipmentScheduleWithHU
 			return true;
 		}
 
-		else if (isCandidateSoonerThanMovementDate)
-		{
-			return true;
-		}
-
-		return false;
+		else
+			return isCandidateSoonerThanMovementDate;
 	}
 
 	private void createUpdateShipmentLine(@NonNull final ShipmentScheduleWithHU candidate)

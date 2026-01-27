@@ -369,17 +369,9 @@ public class InventoryService
 				.execute();
 	}
 
-<<<<<<< HEAD
-=======
-	public void setQtyCountToQtyBookForInventory(@NonNull final InventoryId inventoryId)
-	{
-		inventoryRepository.setQtyCountToQtyBookForInventory(inventoryId);
-	}
-
 	public Set<HuId> getAssignedHUIds(@NonNull final InventoryLineId inventoryLineId)
 	{
 		return inventoryRepository.getAssignedHUIds(inventoryLineId);
 	}
 
->>>>>>> 81813800f5 (Add detailed logging for shipment line builder decisions. Enhance inventory and shipment processing logic to account for multiple HUs per inventory and proper HU assignment in shipping scenarios. Introduce new utility methods for handling HU IDs. (#22148))
 }
