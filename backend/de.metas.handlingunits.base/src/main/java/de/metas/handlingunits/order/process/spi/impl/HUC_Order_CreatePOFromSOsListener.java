@@ -90,19 +90,14 @@ public class HUC_Order_CreatePOFromSOsListener implements IC_Order_CreatePOFromS
 					orderBL.getEffectiveDropshipPartnerId(purchaseOrder),
 					false,
 					HuPackingInstructionsId.ofRepoIdOrNull(huSalesOrderLine.getM_LU_HU_PI_ID()),
-					luQty != null ? luQty : BigDecimal.ZERO
+					luQty
 					);
 
 			final HuPackingInstructionsId luId = HuPackingInstructionsId.ofRepoIdOrNull(lutuConfiguration.getM_LU_HU_PI_ID());
 			if(luId != null)
 			{
-				final int qtyLU = lutuConfigurationFactory.calculateQtyLUForTotalQtyCUs(lutuConfiguration, orderLineBL.getQtyOrdered(huPurchaseOrderLine));
+				//purchaseLine final qty is not available at this point
 				huPurchaseOrderLine.setM_LU_HU_PI_ID(luId.getRepoId());
-				huPurchaseOrderLine.setQtyLU(BigDecimal.valueOf(qtyLU));
-			}
-			else
-			{
-				huPurchaseOrderLine.setQtyLU(BigDecimal.ZERO);
 			}
 		}
 	}
