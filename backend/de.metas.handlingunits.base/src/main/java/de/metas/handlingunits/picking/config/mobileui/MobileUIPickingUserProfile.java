@@ -54,6 +54,7 @@ public class MobileUIPickingUserProfile
 					.isAllowCompletingPartialPickingJob(true)
        			                .isShowLastPickedBestBeforeDateForLines(false)
 					.build())
+<<<<<<< HEAD
 			.filters(PickingFiltersList.ofList(ImmutableList.of(
 					PickingFilter.of(PickingJobFacetGroup.CUSTOMER, 10),
 					PickingFilter.of(PickingJobFacetGroup.DELIVERY_DATE, 20)))
@@ -84,6 +85,10 @@ public class MobileUIPickingUserProfile
 							.isShowInSummary(true)
 							.build()
 			))
+=======
+			.filters(PickingFiltersList.DEFAULT)
+			.fields(PickingJobField.DEFAULTS)
+>>>>>>> 5287177c7d (mobile UI picking: show ProductNo if configured (#22139))
 			.build();
 
 	@NonNull String name;

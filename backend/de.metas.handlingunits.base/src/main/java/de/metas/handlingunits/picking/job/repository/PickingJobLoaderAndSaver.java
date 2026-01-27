@@ -56,6 +56,7 @@ import de.metas.organization.OrgId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.product.ProductId;
+import de.metas.product.ProductValueAndName;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
@@ -377,14 +378,19 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		final PickingJobOptions pickingJobOptions = getPickingJobOptions(deliveryBPLocationId.getBpartnerId());
 
 		final String salesOrderDocumentNo = loadingSupportingServices.getSalesOrderDocumentNo(salesOrderAndLineId.getOrderId());
-		final ITranslatableString productName = loadingSupportingServices.getProductName(productId);
+		final ProductValueAndName productValueAndName = loadingSupportingServices.getProductValueAndName(productId);
 		final CurrentPickingTarget currentPickingTarget = extractCurrentPickingTarget(record);
 
 		final ITranslatableString caption;
 		switch (aggregationType)
 		{
 			case SALES_ORDER:
+<<<<<<< HEAD
 				caption = productName;
+=======
+			{
+				caption = productValueAndName.getName();
+>>>>>>> 5287177c7d (mobile UI picking: show ProductNo if configured (#22139))
 				break;
 			case PRODUCT:
 				caption = TranslatableStrings.builder()
@@ -393,6 +399,19 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 						.append(salesOrderDocumentNo)
 						.build();
 				break;
+<<<<<<< HEAD
+=======
+			}
+			case DELIVERY_LOCATION:
+			{
+				caption = TranslatableStrings.builder()
+						.append(productValueAndName.getName())
+						.appendIfNotEmpty(", ")
+						.append(salesOrderDocumentNo)
+						.build();
+				break;
+			}
+>>>>>>> 5287177c7d (mobile UI picking: show ProductNo if configured (#22139))
 			default:
 				throw new AdempiereException("Unknown aggregation type: " + aggregationType);
 		}
@@ -402,8 +421,13 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				.caption(caption)
 				.productId(productId)
 				.productNo(loadingSupportingServices.getProductNo(productId))
+<<<<<<< HEAD
 				.ean13ProductCode(loadingSupportingServices.getEAN13ProductCode(productId, deliveryBPLocationId.getBpartnerId()).orElse(null))
 				.productName(productName)
+=======
+				.gs1ProductCodes(loadingSupportingServices.getGS1ProductCodes(productId, deliveryBPLocationId.getBpartnerId()).orElse(null))
+				.productValueAndName(productValueAndName)
+>>>>>>> 5287177c7d (mobile UI picking: show ProductNo if configured (#22139))
 				.productCategoryId(loadingSupportingServices.getProductCategoryId(productId))
 				.packingInfo(packingInfo)
 				.qtyToPick(extractQtyToPick(record))
@@ -532,7 +556,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				//
 				// What?
 				.productId(productId)
-				.productName(loadingSupportingServices.getProductName(productId))
+				.productValueAndName(loadingSupportingServices.getProductValueAndName(productId))
 				.qtyToPick(Quantitys.of(record.getQtyToPick(), uomId))
 				//
 				// Pick From
@@ -755,8 +779,23 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 	@Nullable
 	private ITranslatableString extractSingleProductNameOrNull(final PickingJobId pickingJobId)
 	{
+<<<<<<< HEAD
 		final ProductId productId = extractSingleProductIdOrNull(pickingJobId);
 		return productId != null ? loadingSupportingServices.getProductName(productId) : null;
+=======
+		final PickingJobCandidateProductsCollector collector = new PickingJobCandidateProductsCollector();
+		for (final I_M_Picking_Job_Line line : this.pickingJobLines.get(pickingJobId))
+		{
+			final ProductId productId = extractProductId(line);
+			collector.collect(
+					productId,
+					() -> loadingSupportingServices.getProductValueAndName(productId),
+					extractQtyToPick(line)
+			);
+		}
+
+		return collector.toProducts();
+>>>>>>> 5287177c7d (mobile UI picking: show ProductNo if configured (#22139))
 	}
 
 	@Nullable

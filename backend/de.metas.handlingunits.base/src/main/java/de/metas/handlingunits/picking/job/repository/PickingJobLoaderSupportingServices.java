@@ -20,6 +20,7 @@ import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductValueAndName;
 import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
 
@@ -58,7 +59,7 @@ public interface PickingJobLoaderSupportingServices
 
 	int getSalesOrderLineSeqNo(@NonNull OrderAndLineId orderAndLineId);
 
-	ITranslatableString getProductName(@NonNull ProductId productId);
+	ProductValueAndName getProductValueAndName(@NonNull ProductId productId);
 
 	HUPIItemProduct getPackingInfo(@NonNull HUPIItemProductId huPIItemProductId);
 

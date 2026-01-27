@@ -143,6 +143,7 @@ class JsonPickingJobTest
 				.pickingStepId("pickingStepId_" + UUID.randomUUID())
 				.completeStatus(JsonCompleteStatus.IN_PROGRESS)
 				.productId("productId")
+				.productNo("productNo")
 				.productName("productName")
 				.uom("uom")
 				.qtyToPick(new BigDecimal("666.777"))

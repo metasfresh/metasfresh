@@ -41,6 +41,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.location.AddressDisplaySequence;
 import de.metas.organization.IOrgDAO;
+import de.metas.product.ProductValueAndName;
 import de.metas.quantity.Quantity;
 import de.metas.util.NumberUtils;
 import de.metas.util.StringUtils;
@@ -189,7 +190,7 @@ public class DisplayValueProvider
 				.customerName(pickingJobCandidate.getCustomerName())
 				.preparationDate(pickingJobCandidate.getPreparationDate() != null ? pickingJobCandidate.getPreparationDate().toZonedDateTime(orgDAO::getTimeZone) : null)
 				.handoverLocationId(pickingJobCandidate.getHandoverLocationId())
-				.productName(pickingJobCandidate.getProductName())
+				.productValueAndName(pickingJobCandidate.getProductValueAndName())
 				.qtyToDeliver(pickingJobCandidate.getQtyToDeliver())
 				.build();
 	}
@@ -203,7 +204,7 @@ public class DisplayValueProvider
 				.customerName(pickingJobReference.getCustomerName())
 				.preparationDate(pickingJobReference.getPreparationDate())
 				.handoverLocationId(pickingJobReference.getHandoverLocationId())
-				.productName(pickingJobReference.getProductName())
+				.productValueAndName(pickingJobReference.getProductValueAndName())
 				.qtyToDeliver(pickingJobReference.getQtyToDeliver())
 				.build();
 	}
@@ -217,7 +218,7 @@ public class DisplayValueProvider
 				.customerName(pickingJob.getCustomerName())
 				.preparationDate(pickingJob.getPreparationDate())
 				.handoverLocationId(pickingJob.getHandoverLocationId())
-				.productName(pickingJob.getSingleProductNameOrEmpty())
+				.productValueAndName(pickingJob.getSingleProductValueAndName())
 				.qtyToDeliver(pickingJob.getSingleQtyToPickOrNull())
 				.build();
 	}
@@ -261,10 +262,15 @@ public class DisplayValueProvider
 				final AddressDisplaySequence displaySequence = getAddressDisplaySequence(field);
 				return TranslatableStrings.anyLanguage(getHandoverAddress(context, displaySequence));
 			}
-			case PRODUCT:
+			case PRODUCT_NO:
 			{
-				final ITranslatableString productName = context.getProductName();
-				return productName != null ? productName : TranslatableStrings.empty();
+				final ProductValueAndName productValueAndName = context.getProductValueAndName();
+				return TranslatableStrings.anyLanguage(productValueAndName != null ? productValueAndName.getValue() : null);
+			}
+			case PRODUCT_NAME:
+			{
+				final ProductValueAndName productValueAndName = context.getProductValueAndName();
+				return productValueAndName != null ? productValueAndName.getName() : TranslatableStrings.empty();
 			}
 			case QTY_TO_DELIVER:
 			{
@@ -361,7 +367,7 @@ public class DisplayValueProvider
 		@Nullable ZonedDateTime preparationDate;
 		@Nullable BPartnerLocationId deliveryLocationId;
 		@Nullable BPartnerLocationId handoverLocationId;
-		@Nullable ITranslatableString productName;
+		@Nullable ProductValueAndName productValueAndName;
 		@Nullable Quantity qtyToDeliver;
 
 		@Nullable

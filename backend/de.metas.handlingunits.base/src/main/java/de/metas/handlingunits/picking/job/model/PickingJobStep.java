@@ -28,10 +28,15 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
+<<<<<<< HEAD
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.ShipmentScheduleId;
+=======
+>>>>>>> 5287177c7d (mobile UI picking: show ProductNo if configured (#22139))
 import de.metas.order.OrderAndLineId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductValueAndName;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
@@ -59,7 +64,7 @@ public class PickingJobStep
 	//
 	// What?
 	@NonNull ProductId productId;
-	@NonNull ITranslatableString productName;
+	@NonNull ProductValueAndName productValueAndName;
 	@NonNull Quantity qtyToPick;
 
 	//
@@ -82,7 +87,7 @@ public class PickingJobStep
 			//
 			// What?
 			@NonNull final ProductId productId,
-			@NonNull final ITranslatableString productName,
+			@NonNull final ProductValueAndName productValueAndName,
 			@NonNull final Quantity qtyToPick,
 			//
 			// Pick From
@@ -96,7 +101,7 @@ public class PickingJobStep
 		this.salesOrderAndLineId = salesOrderAndLineId;
 		this.shipmentScheduleId = shipmentScheduleId;
 		this.productId = productId;
-		this.productName = productName;
+		this.productValueAndName = productValueAndName;
 		this.qtyToPick = qtyToPick;
 		this.pickFroms = pickFroms;
 		this.packToSpec = packToSpec;

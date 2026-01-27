@@ -30,6 +30,7 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderId;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductValueAndName;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import lombok.Builder;
@@ -58,5 +59,30 @@ public class PickingJobCandidate
 	@Nullable ImmutableSet<ShipmentScheduleId> shipmentScheduleIds;
 
 	@Nullable
+<<<<<<< HEAD
 	public UomId getUomId() {return qtyToDeliver != null ? qtyToDeliver.getUomId() : null;}
+=======
+	public ProductId getProductId()
+	{
+		return products.getSingleProductIdOrNull();
+	}
+
+	@Nullable
+	public ProductValueAndName getProductValueAndName()
+	{
+		return products.getSingleProductValueAndNameOrNull();
+	}
+
+	@Nullable
+	public Quantity getQtyToDeliver()
+	{
+		return products.getSingleQtyToDeliverOrNull();
+	}
+
+	@Nullable
+	public Quantity getQtyAvailableToPick()
+	{
+		return products.getSingleQtyAvailableToPickOrNull();
+	}
+>>>>>>> 5287177c7d (mobile UI picking: show ProductNo if configured (#22139))
 }

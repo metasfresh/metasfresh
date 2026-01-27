@@ -32,12 +32,16 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
+<<<<<<< HEAD
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.inout.ShipmentScheduleId;
+=======
+>>>>>>> 5287177c7d (mobile UI picking: show ProductNo if configured (#22139))
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.product.ProductId;
+import de.metas.product.ProductValueAndName;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
@@ -435,11 +439,11 @@ public final class PickingJob
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	@NonNull
-	public ITranslatableString getSingleProductNameOrEmpty()
+	@Nullable
+	public ProductValueAndName getSingleProductValueAndName()
 	{
 		ProductId productId = null;
-		ITranslatableString productName = TranslatableStrings.empty();
+		ProductValueAndName productValueAndName = null;
 		for (final PickingJobLine line : lines)
 		{
 			if (productId == null)
@@ -449,13 +453,13 @@ public final class PickingJob
 			else if (!ProductId.equals(productId, line.getProductId()))
 			{
 				// found different products
-				return TranslatableStrings.empty();
+				return null;
 			}
 
-			productName = line.getProductName();
+			productValueAndName = line.getProductValueAndName();
 		}
 
-		return productName;
+		return productValueAndName;
 	}
 
 	@Nullable

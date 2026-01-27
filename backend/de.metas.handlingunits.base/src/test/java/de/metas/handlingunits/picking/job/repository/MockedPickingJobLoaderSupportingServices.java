@@ -11,8 +11,12 @@ import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
+<<<<<<< HEAD
+=======
+import de.metas.handlingunits.picking.job.model.ScheduledPackageableList;
+import de.metas.handlingunits.picking.job.model.ScheduledPackageableLocks;
+>>>>>>> 5287177c7d (mobile UI picking: show ProductNo if configured (#22139))
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
-import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.lock.spi.ExistingLockInfo;
@@ -22,8 +26,10 @@ import de.metas.organization.OrgId;
 import de.metas.picking.api.PackageableList;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductValueAndName;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
@@ -112,9 +118,12 @@ public class MockedPickingJobLoaderSupportingServices implements PickingJobLoade
 	}
 
 	@Override
-	public ITranslatableString getProductName(@NonNull final ProductId productId)
+	public ProductValueAndName getProductValueAndName(@NonNull final ProductId productId)
 	{
-		return TranslatableStrings.anyLanguage("productName-" + productId.getRepoId());
+		return ProductValueAndName.of(
+				"productValue-" + productId.getRepoId(),
+				TranslatableStrings.anyLanguage("productName-" + productId.getRepoId())
+		);
 	}
 
 	@Override

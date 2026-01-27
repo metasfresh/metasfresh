@@ -2,6 +2,11 @@ package de.metas.frontend_testing.masterdata.mobile_configuration;
 
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
+<<<<<<< HEAD
+=======
+import de.metas.handlingunits.picking.config.mobileui.PickingJobFieldType;
+import de.metas.handlingunits.picking.job.model.facets.PickingJobFacetGroup;
+>>>>>>> 5287177c7d (mobile UI picking: show ProductNo if configured (#22139))
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.mobile.MobileAuthMethod;
 import lombok.Builder;
@@ -43,6 +48,13 @@ public class JsonMobileConfigRequest
 		@Nullable Boolean showLastPickedBestBeforeDateForLines;
 
 		@Nullable List<Customer> customers;
+<<<<<<< HEAD
+=======
+		
+		@Nullable List<PickingJobFacetGroup> filters;
+		
+		@Nullable List<Field> fields;
+>>>>>>> 5287177c7d (mobile UI picking: show ProductNo if configured (#22139))
 
 		@Value
 		@Builder
@@ -50,6 +62,17 @@ public class JsonMobileConfigRequest
 		public static class Customer
 		{
 			@NonNull Identifier customer;
+		}
+
+		@Value
+		@Builder
+		@Jacksonized
+		public static class Field
+		{
+			@NonNull PickingJobFieldType field;
+			@Nullable Boolean isShowInSummary;
+			@Nullable Boolean isShowInDetailed;
+			@Nullable String pattern;
 		}
 	}
 

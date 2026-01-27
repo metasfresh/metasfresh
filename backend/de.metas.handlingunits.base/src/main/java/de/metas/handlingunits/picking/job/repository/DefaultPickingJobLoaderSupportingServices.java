@@ -16,6 +16,7 @@ import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
+<<<<<<< HEAD
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.ShipmentScheduleId;
@@ -23,6 +24,8 @@ import de.metas.lock.api.ILockManager;
 import de.metas.lock.spi.ExistingLockInfo;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
+=======
+>>>>>>> 5287177c7d (mobile UI picking: show ProductNo if configured (#22139))
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
@@ -34,6 +37,7 @@ import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductValueAndName;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
@@ -155,9 +159,9 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	}
 
 	@Override
-	public ITranslatableString getProductName(@NonNull final ProductId productId)
+	public ProductValueAndName getProductValueAndName(@NonNull final ProductId productId)
 	{
-		return getProductInfo(productId).getName();
+		return getProductInfo(productId).getProductValueAndName();
 	}
 
 	private ProductInfo getProductInfo(@NonNull final ProductId productId)

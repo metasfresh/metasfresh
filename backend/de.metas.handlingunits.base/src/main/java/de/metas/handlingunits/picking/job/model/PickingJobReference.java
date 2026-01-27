@@ -4,10 +4,14 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
+<<<<<<< HEAD
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.ShipmentScheduleId;
+=======
+>>>>>>> 5287177c7d (mobile UI picking: show ProductNo if configured (#22139))
 import de.metas.order.OrderId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductValueAndName;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
@@ -36,4 +40,21 @@ public class PickingJobReference
 	@NonNull ImmutableSet<ShipmentScheduleId> shipmentScheduleIds;
 	boolean isShipmentSchedulesLocked;
 	@Nullable BPartnerLocationId handoverLocationId;
+<<<<<<< HEAD
+=======
+
+	public Set<ProductId> getProductIds() {return products.getProductIds();}
+
+	@Nullable
+	public ProductId getProductId() {return products.getSingleProductIdOrNull();}
+
+	@Nullable
+	public ProductValueAndName getProductValueAndName() {return products.getSingleProductValueAndNameOrNull();}
+
+	@Nullable
+	public Quantity getQtyToDeliver() {return products.getSingleQtyToDeliverOrNull();}
+
+	@Nullable
+	public Quantity getQtyAvailableToPick() {return products.getSingleQtyAvailableToPickOrNull();}
+>>>>>>> 5287177c7d (mobile UI picking: show ProductNo if configured (#22139))
 }

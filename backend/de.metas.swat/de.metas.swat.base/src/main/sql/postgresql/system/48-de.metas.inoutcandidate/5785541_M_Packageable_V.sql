@@ -126,7 +126,12 @@ FROM (SELECT
           (SELECT l.LockedBy_User_ID
            FROM M_ShipmentSchedule_Lock l
            WHERE l.M_ShipmentSchedule_ID = s.M_ShipmentSchedule_ID)               AS LockedBy_User_ID,
-
+          o.datepromised,
+          o.IsFixedDatePromised,
+          o.IsFixedPreparationDate,
+          s.carrier_advising_status,
+          s.carrier_product_id,
+          s.carrier_goods_type_id,
           --
           -- Standard columns
           s.AD_Client_ID,
@@ -149,7 +154,7 @@ FROM (SELECT
       WHERE TRUE
         AND s.Processed = 'N'
         AND s.IsActive = 'Y'
-        AND s.QtyToDeliver > 0
+        AND (s.QtyToDeliver > 0 OR s.qtypicklist > 0)
         AND s.isclosed = 'N'
         AND (stats.SOCreditStatus NOT IN ('S', 'H') OR stats.SOCreditStatus IS NULL)) p
 ;
