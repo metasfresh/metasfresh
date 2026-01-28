@@ -41,6 +41,7 @@ public class C_OrderLine
 
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	private final IHUPackingAwareBL packingAwareBL = Services.get(IHUPackingAwareBL.class);
 
 	@Init
 	public void setupCallouts()
@@ -156,6 +157,7 @@ public class C_OrderLine
 	private void updateQtyPacks(final de.metas.handlingunits.model.I_C_OrderLine orderLine)
 	{
 		final IHUPackingAware packingAware = new OrderLineHUPackingAware(orderLine);
-		Services.get(IHUPackingAwareBL.class).setQtyTU(packingAware);
+		packingAwareBL.setQtyTU(packingAware);
+		packingAwareBL.setQtyLUFromQtyTU(packingAware);
 	}
 }
