@@ -19,11 +19,13 @@ import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.reservation.ReserveHUsRequest;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
 import de.metas.picking.api.Packageable;
 import de.metas.product.ProductId;
+import de.metas.product.ProductValueAndName;
 import de.metas.quantity.Quantity;
 import de.metas.user.UserRepository;
 import lombok.Builder;
@@ -36,6 +38,7 @@ import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -58,6 +61,7 @@ class CreatePickingPlanCommand_UsingCUs_Test
 	// Master data
 	I_C_UOM uomKg;
 	ProductId productId;
+	private ProductValueAndName productValueAndName;
 	private LocatorId wh1_loc1;
 	private final BPartnerLocationId customerLocationId = BPartnerLocationId.ofRepoId(3, 4);
 	private final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(2);
@@ -75,7 +79,10 @@ class CreatePickingPlanCommand_UsingCUs_Test
 		pickingCandidateRepository = new PickingCandidateRepository();
 
 		uomKg = BusinessTestHelper.createUOM("Kg", 3, 3);
-		productId = BusinessTestHelper.createProductId("Product", uomKg);
+
+		final I_M_Product product = BusinessTestHelper.createProduct("Product", uomKg);
+		productId = ProductId.ofRepoId(product.getM_Product_ID());
+		productValueAndName = ProductValueAndName.of(product.getValue(), TranslatableStrings.anyLanguage(product.getName()));
 
 		final I_M_Warehouse wh1 = BusinessTestHelper.createWarehouse("WH1");
 		this.wh1_loc1 = LocatorId.ofRecord(BusinessTestHelper.createLocator("wh1_loc1", wh1));
@@ -128,6 +135,7 @@ class CreatePickingPlanCommand_UsingCUs_Test
 				.warehouseId(warehouseId)
 				.bestBeforePolicy(Optional.of(ShipmentAllocationBestBeforePolicy.Expiring_First))
 				.productId(productId)
+				.productValueAndName(productValueAndName)
 				.asiId(AttributeSetInstanceId.NONE)
 				.build();
 	}

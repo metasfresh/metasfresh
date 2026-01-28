@@ -643,7 +643,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public boolean isShowFilterInactiveValues() 
+	public boolean isShowFilterInactiveValues()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsShowFilterInactiveValues);
 	}
