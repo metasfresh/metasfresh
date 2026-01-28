@@ -8,6 +8,24 @@ import { PurchaseOrderPage } from '../utils/pages/PurchaseOrderPage';
 import { ReceiptCandidatesPage } from '../utils/pages/ReceiptCandidatesPage';
 
 /**
+ * Check if this test suite should be skipped.
+ *
+ * Custom repos (e.g., ms205) can set SKIP_TESTS environment variable to skip specific test files.
+ * Format: comma-separated list of test file names (without path, with or without .spec.js)
+ * Example: SKIP_TESTS="partial-receipt,shipment" will skip partial-receipt.spec.js and shipment.spec.js
+ *
+ * This is useful when custom DB configurations or window overrides cause standard tests to fail.
+ */
+const shouldSkipThisTest = () => {
+  const skipTests = process.env.SKIP_TESTS || '';
+  if (!skipTests) return false;
+
+  const currentFile = 'partial-receipt';
+  const testsToSkip = skipTests.split(',').map(t => t.trim().replace(/\.spec\.js$/, ''));
+  return testsToSkip.some(t => currentFile.includes(t) || t.includes(currentFile));
+};
+
+/**
  * Partial Receipt Workflow E2E test suite.
  *
  * Features tested (from Google Sheets):
@@ -57,6 +75,10 @@ testCases.forEach(({ language, label }) => {
   test.describe(`Partial Receipt Workflow (${label})`, () => {
     // Increase timeout for this complex multi-receipt workflow
     test.setTimeout(120000);
+
+    // Skip this test if SKIP_TESTS environment variable includes 'partial-receipt'
+    // This allows custom repos to disable tests that don't work with their customizations
+    test.skip(shouldSkipThisTest, 'Skipped via SKIP_TESTS environment variable');
 
     test(`Create partial receipts: PO qty=10 → Receipt1 qty=6 → Receipt2 qty=4 (${label} UI)`, async ({ page }) => {
       // === ALLURE METADATA ===
