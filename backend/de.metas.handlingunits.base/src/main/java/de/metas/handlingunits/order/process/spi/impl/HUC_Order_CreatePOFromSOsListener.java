@@ -28,7 +28,6 @@ import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.order.IOrderBL;
-import de.metas.order.IOrderLineBL;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
@@ -57,7 +56,6 @@ public class HUC_Order_CreatePOFromSOsListener implements IC_Order_CreatePOFromS
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 
 
@@ -96,7 +94,10 @@ public class HUC_Order_CreatePOFromSOsListener implements IC_Order_CreatePOFromS
 			final HuPackingInstructionsId luId = HuPackingInstructionsId.ofRepoIdOrNull(lutuConfiguration.getM_LU_HU_PI_ID());
 			if(luId != null)
 			{
-				//purchaseLine final qty is not available at this point
+				// purchaseLine final qty is not available at this point
+				// qtyEntered is calculated on aggregation after
+				// TU and LU Qty are set on interceptor
+
 				huPurchaseOrderLine.setM_LU_HU_PI_ID(luId.getRepoId());
 			}
 		}
