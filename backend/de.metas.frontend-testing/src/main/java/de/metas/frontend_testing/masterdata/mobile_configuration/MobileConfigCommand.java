@@ -10,12 +10,16 @@ import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
 import de.metas.handlingunits.picking.config.mobileui.PickingCustomerConfig;
 import de.metas.handlingunits.picking.config.mobileui.PickingCustomerConfigsCollection;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobField;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions.PickingJobOptionsBuilder;
 import de.metas.mobile.MobileConfig;
 import de.metas.mobile.MobileConfig.MobileConfigBuilder;
 import de.metas.mobile.MobileConfigService;
+import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.SeqNo;
+import de.metas.util.lang.SeqNoProvider;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -78,6 +82,15 @@ public class MobileConfigCommand
 		if (picking.getAllowPickingAnyCustomer() != null)
 		{
 			newProfileBuilder.isAllowPickingAnyCustomer(picking.getAllowPickingAnyCustomer());
+		}
+
+		if (picking.getFields() != null && !picking.getFields().isEmpty())
+		{
+			newProfileBuilder.fields(toPickingJobFields(picking.getFields()));
+		}
+		else
+		{
+			newProfileBuilder.fields(PickingJobField.DEFAULTS);
 		}
 
 		final MobileUIPickingUserProfile newProfile = newProfileBuilder.build();
@@ -196,6 +209,32 @@ public class MobileConfigCommand
 
 		return JsonMobileConfigResponse.Distribution.builder()
 				.allowPickingAnyHU(newConfig.isAllowPickingAnyHU())
+				.build();
+	}
+
+	@NonNull
+	private static ImmutableList<PickingJobField> toPickingJobFields(@NonNull final List<JsonMobileConfigRequest.Picking.Field> fields)
+	{
+		final SeqNoProvider seqNoProvider = SeqNoProvider.ofInt(10);
+		final ImmutableList.Builder<PickingJobField> result = ImmutableList.builder();
+		for (final JsonMobileConfigRequest.Picking.Field field : fields)
+		{
+			final SeqNo seqNo = seqNoProvider.getAndIncrement();
+			result.add(toPickingJobField(field, seqNo));
+		}
+
+		return result.build();
+	}
+
+	@NonNull
+	private static PickingJobField toPickingJobField(@NonNull final JsonMobileConfigRequest.Picking.Field field, @NonNull final SeqNo seqNo)
+	{
+		return PickingJobField.builder()
+				.field(field.getField())
+				.seqNo(seqNo.toInt())
+				.isShowInSummary(field.getIsShowInSummary() != null ? field.getIsShowInSummary() : true)
+				.isShowInDetailed(field.getIsShowInDetailed() != null ? field.getIsShowInDetailed() : true)
+				.pattern(StringUtils.trimBlankToNull(field.getPattern()))
 				.build();
 	}
 }
