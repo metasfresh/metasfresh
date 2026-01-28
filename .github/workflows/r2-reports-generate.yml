@@ -42,8 +42,9 @@ jobs:
   generate-reports:
     name: Generate and Publish Reports
     runs-on: ubuntu-latest
-    # Skip if triggered by workflow_run but cicd was cancelled
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion != 'cancelled'
+    # DISABLED: R2 upload not working
+    # Original condition was: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion != 'cancelled'
+    if: false
     steps:
       - uses: actions/checkout@v4
 
