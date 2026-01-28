@@ -135,7 +135,7 @@ public class C_Order
 				return;
 			}
 		}
-		final BPartnerId recipientBPartnerId =  orderBL.getEffectiveDropshipPartnerId(order);
+		final BPartnerId recipientBPartnerId =  orderBL.getEffectiveDropshipPartnerIdOrNull(order);
 		if (recipientBPartnerId != null)
 		{
 			final I_C_BPartner recipient = InterfaceWrapperHelper.load(recipientBPartnerId, de.metas.edi.model.I_C_BPartner.class);

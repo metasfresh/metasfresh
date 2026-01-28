@@ -114,8 +114,6 @@ public interface IHUPIItemProductBL extends ISingletonService
 
 	I_M_HU_PI_Item_Product extractHUPIItemProduct(final I_C_Order order, final I_C_OrderLine orderLine);
 
-	int getRequiredLUCount(@NonNull Quantity qty, I_M_HU_LUTU_Configuration lutuConfigurationInStockUOM);
-
 	static StockQtyAndUOMQty getMaxQtyCUsPerLU(final @NonNull StockQtyAndUOMQty qty, final I_M_HU_LUTU_Configuration lutuConfigurationInStockUOM, final ProductId productId)
 	{
 		final StockQtyAndUOMQty maxQtyCUsPerLU;
