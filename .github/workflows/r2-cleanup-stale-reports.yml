@@ -80,6 +80,8 @@ jobs:
   cleanup:
     name: Clean up stale R2 Allure reports
     runs-on: ubuntu-latest
+    # DISABLED: R2 upload not working
+    if: false
     permissions:
       contents: read
     steps:

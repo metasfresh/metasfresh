@@ -490,7 +490,7 @@ jobs:
           retention-days: 1
           if-no-files-found: warn
       - name: upload raw junit xml to R2
-        if: always() && env.ACT != 'true'
+        if: false  # DISABLED: R2 upload not working - was: always() && env.ACT != 'true'
         uses: ./.github/actions/upload-to-r2
         with:
           source-dir: jest/frontend
@@ -1232,7 +1232,7 @@ jobs:
           retention-days: 1
           if-no-files-found: warn
       - name: upload raw backend junit xml to R2
-        if: always() && env.ACT != 'true'
+        if: false  # DISABLED: R2 upload not working - was: always() && env.ACT != 'true'
         uses: ./.github/actions/upload-to-r2
         with:
           source-dir: junit/backend
@@ -1244,7 +1244,7 @@ jobs:
           endpoint-url: ${{ vars.R2_ENDPOINT_URL }}
           bucket-name: ${{ vars.R2_BUCKET_NAME }}
       - name: upload raw camel junit xml to R2
-        if: always() && env.ACT != 'true'
+        if: false  # DISABLED: R2 upload not working - was: always() && env.ACT != 'true'
         uses: ./.github/actions/upload-to-r2
         with:
           source-dir: junit/camel
@@ -1509,7 +1509,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 1
       - name: upload raw cucumber allure results to R2
-        if: always() && env.ACT != 'true'
+        if: false  # DISABLED: R2 upload not working - was: always() && env.ACT != 'true'
         uses: ./.github/actions/upload-to-r2
         with:
           source-dir: cucumber-allure-results
@@ -1521,7 +1521,7 @@ jobs:
           endpoint-url: ${{ vars.R2_ENDPOINT_URL }}
           bucket-name: ${{ vars.R2_BUCKET_NAME }}
       - name: upload raw cucumber junit xml to R2
-        if: always() && env.ACT != 'true'
+        if: false  # DISABLED: R2 upload not working - was: always() && env.ACT != 'true'
         uses: ./.github/actions/upload-to-r2
         with:
           source-dir: cucumber
@@ -1773,7 +1773,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 1
       - name: upload raw mobile allure results to R2
-        if: always() && env.ACT != 'true'
+        if: false  # DISABLED: R2 upload not working - was: always() && env.ACT != 'true'
         uses: ./.github/actions/upload-to-r2
         with:
           source-dir: docker-builds/e2e-tests/allure-results-mobile
@@ -1869,7 +1869,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 1
       - name: upload raw frontend allure results to R2
-        if: always() && env.ACT != 'true'
+        if: false  # DISABLED: R2 upload not working - was: always() && env.ACT != 'true'
         uses: ./.github/actions/upload-to-r2
         with:
           source-dir: docker-builds/e2e-tests/allure-results
