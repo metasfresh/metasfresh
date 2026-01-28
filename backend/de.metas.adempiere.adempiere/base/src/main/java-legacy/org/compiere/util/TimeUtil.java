@@ -1887,6 +1887,13 @@ public class TimeUtil
 	}
 
 	@Nullable
+	public static Date asStartOfDay(@Nullable final Object obj)
+	{
+		final Date date = asDate(obj);
+		return date == null ? null : trunc(date, TRUNC_DAY);
+	}
+
+	@Nullable
 	public static Date asDate(@Nullable final Object obj)
 	{
 		if (obj == null)
