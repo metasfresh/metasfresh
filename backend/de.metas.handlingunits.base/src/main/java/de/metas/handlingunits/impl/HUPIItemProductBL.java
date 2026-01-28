@@ -30,9 +30,7 @@ import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHUPIItemProductDisplayNameBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.model.I_C_OrderLine;
-import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -40,10 +38,10 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.i18n.ITranslatableString;
+import de.metas.order.IOrderBL;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -64,7 +62,7 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 	@NonNull private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	@NonNull private final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	@Override
 	public HUPIItemProduct getById(@NonNull final HUPIItemProductId id) {return huPIItemProductDAO.getById(id);}
@@ -214,32 +212,14 @@ public class HUPIItemProductBL implements IHUPIItemProductBL
 		else
 		{
 			final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
-			final BPartnerId buyerBPartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
+			final BPartnerId shipToBPartnerId = orderBL.getEffectiveDropshipPartnerId(order);
 			final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
 
 			return huPIItemProductDAO.retrieveMaterialItemProduct(
 					productId,
-					buyerBPartnerId,
+					shipToBPartnerId,
 					TimeUtil.asZonedDateTime(order.getDateOrdered(), timeZone),
 					X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit, true/* allowInfiniteCapacity */);
 		}
 	}
-
-	@Override
-	public int getRequiredLUCount(final @NonNull Quantity qty, final I_M_HU_LUTU_Configuration lutuConfigurationInStockUOM)
-	{
-		if (lutuConfigurationInStockUOM.isInfiniteQtyTU() || lutuConfigurationInStockUOM.isInfiniteQtyCU())
-		{
-			return 1;
-		}
-		else
-		{
-			// Note need to use the StockQty because lutuConfigurationInStockUOM is also in stock-UOM.
-			// And in the case of catchweight, it's very important to *not* make metasfresh convert quantites using the UOM-conversion
-			return lutuConfigurationFactory.calculateQtyLUForTotalQtyCUs(
-					lutuConfigurationInStockUOM,
-					qty);
-		}
-	}
-
 }
