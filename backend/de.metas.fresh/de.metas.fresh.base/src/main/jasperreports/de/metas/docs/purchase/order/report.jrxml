@@ -20,6 +20,9 @@
 	<parameter name="PRINTER_OPTS_IsPrintLogo" class="java.lang.String">
 		<defaultValueExpression><![CDATA["Y"]]></defaultValueExpression>
 	</parameter>
+	<parameter name="PRINTER_OPTS_IsPrintPrices" class="java.lang.String">
+		<defaultValueExpression><![CDATA["Y"]]></defaultValueExpression>
+	</parameter>
 	<queryString>
 		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Root($P{RECORD_ID}, $P{ad_language});]]>
 	</queryString>
@@ -155,6 +158,9 @@
 				<subreportParameter name="c_order_id">
 					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
 				</subreportParameter>
+				<subreportParameter name="PRINTER_OPTS_IsPrintPrices">
+					<subreportParameterExpression><![CDATA[$P{PRINTER_OPTS_IsPrintPrices}]]></subreportParameterExpression>
+				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/purchase/order/report_details.jasper"]]></subreportExpression>
 			</subreport>
@@ -172,6 +178,9 @@
 				</subreportParameter>
 				<subreportParameter name="displayhu">
 					<subreportParameterExpression><![CDATA[$F{displayhu}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="PRINTER_OPTS_IsPrintPrices">
+					<subreportParameterExpression><![CDATA[$P{PRINTER_OPTS_IsPrintPrices}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/purchase/order/report_details_v2.jasper"]]></subreportExpression>
