@@ -10,8 +10,10 @@ import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.model.InterfaceWrapperHelper;
 
+@Interceptor(I_C_OrderLine.class)
 @Callout(I_C_OrderLine.class)
 public class C_OrderLine
 {
@@ -52,7 +54,7 @@ public class C_OrderLine
 		packingAwareBL.setQtyCUFromQtyTU(packingAware, qtyPacks);
 	}
 
-	@CalloutMethod(columnNames = { I_C_OrderLine.COLUMNNAME_QtyLU, I_C_OrderLine.COLUMNNAME_M_LU_HU_PI_ID })
+	@CalloutMethod(columnNames = { I_C_OrderLine.COLUMNNAME_QtyLU })
 	public void updateQtyTUCU(final I_C_OrderLine orderLine, final ICalloutField field)
 	{
 		packingAwareBL.validateLUQty(orderLine.getQtyLU());
@@ -60,6 +62,13 @@ public class C_OrderLine
 		final IHUPackingAware packingAware = new OrderLineHUPackingAware(orderLine);
 		packingAwareBL.setQtyTUFromQtyLU(packingAware);
 		updateQtyCU(orderLine, field);
+	}
+
+	@CalloutMethod(columnNames = { I_C_OrderLine.COLUMNNAME_M_LU_HU_PI_ID })
+	public void updateQtyLU(final I_C_OrderLine orderLine, final ICalloutField field)
+	{
+		final IHUPackingAware packingAware = new OrderLineHUPackingAware(orderLine);
+		packingAwareBL.setQtyLUFromQtyTU(packingAware);
 	}
 
 	@CalloutMethod(columnNames = { I_C_OrderLine.COLUMNNAME_C_BPartner_ID

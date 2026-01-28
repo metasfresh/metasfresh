@@ -108,7 +108,7 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 			purchaseOrderLine = createPurchaseOrderLine(salesOrderLine);
 			Services.get(IC_Order_CreatePOFromSOsBL.class)
 					.getCompositeListener()
-					.afterPurchaseOrderLineCreatedBeforeSave(purchaseOrderLine, salesOrderLine);
+					.afterPurchaseOrderLineCreatedBeforeSave(purchaseOrderLine, salesOrderLine, purchaseOrder);
 		}
 		catch (final Throwable t)
 		{

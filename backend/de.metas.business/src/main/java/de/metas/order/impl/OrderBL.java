@@ -918,12 +918,19 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	@Nullable
-	public BPartnerId getEffectiveDropshipPartnerId(@NonNull final I_C_Order orderRecord)
+	public @NonNull BPartnerId getEffectiveDropshipPartnerId(@NonNull final I_C_Order orderRecord)
 	{
-		if (orderRecord.isDropShip() && orderRecord.getDropShip_BPartner_ID() > 0)
+		return Check.assumeNotNull(getEffectiveDropshipPartnerIdOrNull(orderRecord), "ShipTo Partner should be present");
+	}
+
+	@Override
+	@Nullable
+	public BPartnerId getEffectiveDropshipPartnerIdOrNull(@NonNull final I_C_Order orderRecord)
+	{
+		final BPartnerId dropShipPartnerId = BPartnerId.ofRepoIdOrNull(orderRecord.getDropShip_BPartner_ID());
+		if (orderRecord.isDropShip() && dropShipPartnerId != null)
 		{
-			return BPartnerId.ofRepoId(orderRecord.getDropShip_BPartner_ID());
+			return dropShipPartnerId;
 		}
 		return BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_ID());
 	}
