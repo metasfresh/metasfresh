@@ -53,8 +53,6 @@ public class ExecuteReportStrategyUtil
 			@NonNull final ProcessInfo processInfo,
 			@NonNull final OutputType outputType)
 	{
-		final boolean isPrintLogo = processInfo.getParameterAsIParams().getParameterAsBool(DocumentPrintOptions.OPTION_IsPrintLogo);
-
 		final ProcessExecutor processExecutor = ProcessInfo.builder()
 				.setCtx(Env.getCtx())
 				.setAD_Process_ID(jasperProcessId)
