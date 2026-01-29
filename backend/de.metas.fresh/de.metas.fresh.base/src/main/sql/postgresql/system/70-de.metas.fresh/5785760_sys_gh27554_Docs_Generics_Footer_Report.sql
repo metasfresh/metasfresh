@@ -7,7 +7,7 @@ DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_
 ;
 
 CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report(p_org_id             numeric,
-                                                                               p_isFactoringPartner character(1))
+                                                                               p_isFactoringPartner character(1) DEFAULT 'N')
     RETURNS TABLE
             (
                 org_name          character varying,
@@ -117,37 +117,5 @@ FROM ad_org org
 WHERE org.ad_org_id = p_org_id
 ORDER BY bpb.isDefault DESC
 LIMIT 1
-$$
-;
-
-CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report(p_org_id numeric)
-    RETURNS TABLE
-            (
-                org_name          character varying,
-                org_address1      character varying,
-                org_postal        character varying,
-                org_city          character varying,
-                org_bank_acct     character varying,
-                org_bank_name     character varying,
-                org_bank_blz      character varying,
-                org_bank_iban     character varying,
-                org_bank_swift    character varying,
-                org_bank_currency character varying,
-                org_addressline   character varying,
-                description       character varying,
-                manager           character varying,
-                vataxid           character varying,
-                phone             character varying,
-                fax               character varying,
-                email             character varying,
-                url               character varying
-            )
-    STABLE
-    LANGUAGE sql
-AS
-$$
-
-SELECT *
-FROM de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report(p_org_id, 'N')
 $$
 ;
