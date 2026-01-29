@@ -1,3 +1,7 @@
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report(IN p_org_id numeric)
+;
+
+
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report(IN p_org_id          numeric,
                                                                                        p_isFactoringPartner character(1))
 ;
@@ -115,4 +119,3 @@ ORDER BY bpb.isDefault DESC
 LIMIT 1
 $$
 ;
-
