@@ -1,4 +1,4 @@
-import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, VERY_FAST_ACTION_TIMEOUT } from "../../common";
+import { FAST_ACTION_TIMEOUT, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, VERY_FAST_ACTION_TIMEOUT } from "../../common";
 import { test } from "../../../../playwright.config";
 import { PickingJobScreen } from "./PickingJobScreen";
 import { PickingJobsListFiltersScreen } from "./PickingJobsListFiltersScreen";
@@ -73,7 +73,7 @@ export const PickingJobsListScreen = {
     expectJobButtons: async (expectationsArray) => await test.step(`${NAME} - Expect ${expectationsArray.length} job buttons`, async () => {
         await test.step(`Wait for all expected buttons to be attached`, async () => {
             for (const expectation of expectationsArray) {
-                await locateJobButtons(expectation).waitFor({ state: 'attached' });
+                await locateJobButtons(expectation).waitFor({ state: 'attached', timeout: SLOW_ACTION_TIMEOUT });
             }
         });
 
@@ -102,7 +102,7 @@ export const PickingJobsListScreen = {
 
 };
 
-const locateJobButtons = ({ documentNo, index, salesOrderId, qtyToDeliver, productId, customerLocationId } = {}) => {
+const locateJobButtons = ({ documentNo, index, salesOrderId, qtyToDeliver, productId, customerLocationId, caption } = {}) => {
     let selector = '.wflauncher-button';
     if (salesOrderId != null) {
         selector += `[data-salesorderid="${salesOrderId}"]`;
@@ -125,6 +125,10 @@ const locateJobButtons = ({ documentNo, index, salesOrderId, qtyToDeliver, produ
 
     if (index != null) {
         locator = locator.nth(index - 1);
+    }
+
+    if (caption != null) {
+        locator = locator.filter({ hasText: caption })
     }
 
     return locator;

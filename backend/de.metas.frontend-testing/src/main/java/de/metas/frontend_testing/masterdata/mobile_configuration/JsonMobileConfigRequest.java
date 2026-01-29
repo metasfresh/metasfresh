@@ -4,6 +4,7 @@ import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.handlingunits.picking.config.mobileui.PickAttribute;
 import de.metas.handlingunits.picking.config.mobileui.PickToStructure;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobFieldType;
 import de.metas.handlingunits.picking.job.model.facets.PickingJobFacetGroup;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.mobile.MobileAuthMethod;
@@ -62,6 +63,8 @@ public class JsonMobileConfigRequest
 		@Nullable List<Customer> customers;
 		
 		@Nullable List<PickingJobFacetGroup> filters;
+		
+		@Nullable List<Field> fields;
 
 		@Value
 		@Builder
@@ -69,6 +72,17 @@ public class JsonMobileConfigRequest
 		public static class Customer
 		{
 			@NonNull Identifier customer;
+		}
+
+		@Value
+		@Builder
+		@Jacksonized
+		public static class Field
+		{
+			@NonNull PickingJobFieldType field;
+			@Nullable Boolean isShowInSummary;
+			@Nullable Boolean isShowInDetailed;
+			@Nullable String pattern;
 		}
 	}
 

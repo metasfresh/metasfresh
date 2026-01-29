@@ -379,6 +379,7 @@ public class PickingJobTestHelper
 		final String bpName = bpartnerService.getBPartnerName(shipToBPLocationId.getBpartnerId());
 
 		final ProductId productId = ProductId.ofRepoId(sched.getM_Product_ID());
+		final I_M_Product product = productBL.getById(productId);
 		final UomId uomId = productBL.getStockUOMId(productId);
 
 		final I_M_Packageable_V item = InterfaceWrapperHelper.newInstance(I_M_Packageable_V.class);
@@ -396,6 +397,8 @@ public class PickingJobTestHelper
 		item.setM_Warehouse_ID(sched.getM_Warehouse_ID());
 		item.setShipmentAllocation_BestBefore_Policy(ShipmentAllocationBestBeforePolicy.Expiring_First.getCode());
 		item.setM_Product_ID(productId.getRepoId());
+		item.setProductValue(product.getValue());
+		item.setProductName(product.getName());
 		item.setPackTo_HU_PI_Item_Product_ID(CoalesceUtil.firstGreaterThanZero(
 				sched.getM_HU_PI_Item_Product_Override_ID(),
 				sched.getM_HU_PI_Item_Product_ID()));
