@@ -27,13 +27,51 @@ CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report(p
     LANGUAGE sql
 AS
 $$
+
+SELECT *
+FROM de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report(p_org_id, 'N')
+$$
+;
+
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report(IN p_org_id          numeric,
+                                                                                       p_isFactoringPartner character(1))
+;
+
+CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report(p_org_id             numeric,
+                                                                               p_isFactoringPartner character(1))
+    RETURNS TABLE
+            (
+                org_name          character varying,
+                org_address1      character varying,
+                org_postal        character varying,
+                org_city          character varying,
+                org_bank_acct     character varying,
+                org_bank_name     character varying,
+                org_bank_blz      character varying,
+                org_bank_iban     character varying,
+                org_bank_swift    character varying,
+                org_bank_currency character varying,
+                org_addressline   character varying,
+                description       character varying,
+                manager           character varying,
+                vataxid           character varying,
+                phone             character varying,
+                fax               character varying,
+                email             character varying,
+                url               character varying
+            )
+    STABLE
+    LANGUAGE sql
+AS
+$$
 SELECT COALESCE(org_bp.name, '')               AS org_name,
        COALESCE(loc.address1, '')              AS org_address1,
        COALESCE(loc.postal, '')                AS org_postal,
        COALESCE(loc.city, '')                  AS org_city,
        COALESCE(
                CASE
-                   WHEN bpf.c_bpartner_id IS NOT NULL
+                   WHEN bpf.c_bpartner_id IS NOT NULL AND p_isFactoringPartner = 'Y'
                        THEN bpbf.accountno
                        ELSE bpb.accountno
                END,
@@ -41,7 +79,7 @@ SELECT COALESCE(org_bp.name, '')               AS org_name,
        )                                       AS org_bank_acct,
        COALESCE(
                CASE
-                   WHEN bpf.c_bpartner_id IS NOT NULL
+                   WHEN bpf.c_bpartner_id IS NOT NULL AND p_isFactoringPartner = 'Y'
                        THEN bankf.name
                        ELSE bank.name
                END,
@@ -49,7 +87,7 @@ SELECT COALESCE(org_bp.name, '')               AS org_name,
        )                                       AS org_bank_name,
        COALESCE(
                CASE
-                   WHEN bpf.c_bpartner_id IS NOT NULL
+                   WHEN bpf.c_bpartner_id IS NOT NULL AND p_isFactoringPartner = 'Y'
                        THEN bpbf.routingno
                        ELSE bpb.routingno
                END,
@@ -57,7 +95,7 @@ SELECT COALESCE(org_bp.name, '')               AS org_name,
        )                                       AS org_bank_blz,
        COALESCE(
                CASE
-                   WHEN bpf.c_bpartner_id IS NOT NULL
+                   WHEN bpf.c_bpartner_id IS NOT NULL AND p_isFactoringPartner = 'Y'
                        THEN bpbf.iban
                        ELSE bpb.iban
                END,
@@ -65,7 +103,7 @@ SELECT COALESCE(org_bp.name, '')               AS org_name,
        )                                       AS org_bank_iban,
        COALESCE(
                CASE
-                   WHEN bpf.c_bpartner_id IS NOT NULL
+                   WHEN bpf.c_bpartner_id IS NOT NULL AND p_isFactoringPartner = 'Y'
                        THEN bankf.swiftcode
                        ELSE bank.swiftcode
                END,
@@ -73,7 +111,7 @@ SELECT COALESCE(org_bp.name, '')               AS org_name,
        )                                       AS org_bank_swift,
        COALESCE(
                CASE
-                   WHEN bpf.c_bpartner_id IS NOT NULL
+                   WHEN bpf.c_bpartner_id IS NOT NULL AND p_isFactoringPartner = 'Y'
                        THEN curf.iso_code
                        ELSE cur.iso_code
                END,
