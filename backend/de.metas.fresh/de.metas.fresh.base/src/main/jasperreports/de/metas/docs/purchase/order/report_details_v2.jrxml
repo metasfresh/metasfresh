@@ -525,7 +525,7 @@
 		</band>
 		<band height="12">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<printWhenExpression><![CDATA[new Boolean($F{attributes} != null) 
+			<printWhenExpression><![CDATA[new Boolean($F{attributes} != null)
   ||  ( new Boolean($P{displayhu}.equals( "Y" ) && $F{lu_name} != null && !$F{lu_name}.isEmpty() ) )]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-13" mode="Transparent" x="97" y="0" width="142" height="12" forecolor="#000000" uuid="78d9f5a7-25c1-4106-ace7-c1af5c85fb3b">
