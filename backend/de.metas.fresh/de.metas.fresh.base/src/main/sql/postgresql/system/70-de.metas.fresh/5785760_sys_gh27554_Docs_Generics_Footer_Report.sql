@@ -116,6 +116,7 @@ FROM ad_org org
 
 WHERE org.ad_org_id = p_org_id
 ORDER BY bpb.isDefault DESC
+LIMIT 1
 $$
 ;
 
