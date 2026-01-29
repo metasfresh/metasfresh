@@ -1178,6 +1178,11 @@ public final class Document
 
 		if (readonlyRevaluator.isReadonly(documentField))
 		{
+			if (Objects.equals(value, documentField.getValue()))
+			{
+				return;
+			}
+
 			throw new DocumentFieldReadonlyException(fieldName, value);
 		}
 
