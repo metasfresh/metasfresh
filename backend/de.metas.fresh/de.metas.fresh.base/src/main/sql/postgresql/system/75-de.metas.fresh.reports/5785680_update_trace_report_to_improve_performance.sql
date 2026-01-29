@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.trace_report(numeric,
                                                                         numeric,
                                                                         numeric,
@@ -127,18 +149,18 @@ FROM (
            AND COALESCE(pc.M_Product_Category_ID, -1) != getSysConfigAsNumeric('PackingMaterialProductCategoryID', ol.AD_Client_ID, ol.AD_Org_ID)
            AND (CASE
                     WHEN EXISTS (SELECT 1 FROM report.fresh_Attributes WHERE M_AttributeSetInstance_ID = p_attributesetinstance_id)
-                    THEN (
+                          THEN (
                         EXISTS (SELECT 0 FROM report.fresh_Attributes_ConcreteADR a
-                                INNER JOIN report.fresh_Attributes_ConcreteADR pa ON pa.M_AttributeSetInstance_ID = p_attributesetinstance_id
-                                AND a.at_value = pa.at_value
-                                AND (CASE WHEN a.at_value = '1000015' THEN ('%' || SUBSTRING(a.ai_value FROM 5) || '%' LIKE '%' || SUBSTRING(pa.ai_value FROM 5) || '%' OR '%' || SUBSTRING(pa.ai_value FROM 5) || '%' LIKE '%' || SUBSTRING(a.ai_value FROM 5) || '%') ELSE a.ai_value = pa.ai_value END)
+                                                  INNER JOIN report.fresh_Attributes_ConcreteADR pa ON pa.M_AttributeSetInstance_ID = p_attributesetinstance_id
+                            AND a.at_value = pa.at_value
+                            AND (CASE WHEN a.at_value = '1000015' THEN ('%' || SUBSTRING(a.ai_value FROM 5) || '%' LIKE '%' || SUBSTRING(pa.ai_value FROM 5) || '%' OR '%' || SUBSTRING(pa.ai_value FROM 5) || '%' LIKE '%' || SUBSTRING(a.ai_value FROM 5) || '%') ELSE a.ai_value = pa.ai_value END)
                                 WHERE a.M_AttributeSetInstance_ID = o_iol.M_AttributeSetInstance_ID)
-                        AND NOT EXISTS (SELECT 0 FROM report.fresh_Attributes_ConcreteADR pa
-                                        LEFT JOIN report.fresh_Attributes_ConcreteADR a ON a.at_value = pa.at_value
-                                        AND (CASE WHEN a.at_value = '1000015' THEN ('%' || SUBSTRING(a.ai_value FROM 5) || '%' LIKE '%' || SUBSTRING(pa.ai_value FROM 5) || '%' OR '%' || SUBSTRING(pa.ai_value FROM 5) || '%' LIKE '%' || SUBSTRING(a.ai_value FROM 5) || '%') ELSE a.ai_value = pa.ai_value END)
-                                        AND a.M_AttributeSetInstance_ID = o_iol.M_AttributeSetInstance_ID
-                                        WHERE pa.M_AttributeSetInstance_ID = p_attributesetinstance_id AND a.M_AttributeSetInstance_ID IS NULL)
-                    ) ELSE TRUE END)
+                            AND NOT EXISTS (SELECT 0 FROM report.fresh_Attributes_ConcreteADR pa
+                                                              LEFT JOIN report.fresh_Attributes_ConcreteADR a ON a.at_value = pa.at_value
+                            AND (CASE WHEN a.at_value = '1000015' THEN ('%' || SUBSTRING(a.ai_value FROM 5) || '%' LIKE '%' || SUBSTRING(pa.ai_value FROM 5) || '%' OR '%' || SUBSTRING(pa.ai_value FROM 5) || '%' LIKE '%' || SUBSTRING(a.ai_value FROM 5) || '%') ELSE a.ai_value = pa.ai_value END)
+                            AND a.M_AttributeSetInstance_ID = o_iol.M_AttributeSetInstance_ID
+                                            WHERE pa.M_AttributeSetInstance_ID = p_attributesetinstance_id AND a.M_AttributeSetInstance_ID IS NULL)
+                        ) ELSE TRUE END)
 
          UNION ALL
 
@@ -183,22 +205,26 @@ FROM (
            AND COALESCE(pc.M_Product_Category_ID, -1) != getSysConfigAsNumeric('PackingMaterialProductCategoryID', ol.AD_Client_ID, ol.AD_Org_ID)
            AND (CASE
                     WHEN EXISTS (SELECT 1 FROM report.fresh_Attributes WHERE M_AttributeSetInstance_ID = p_attributesetinstance_id)
-                    THEN (
+                          THEN (
                         EXISTS (SELECT 0 FROM report.fresh_Attributes_ConcreteADR a
-                                INNER JOIN report.fresh_Attributes_ConcreteADR pa ON pa.M_AttributeSetInstance_ID = p_attributesetinstance_id
-                                AND a.at_value = pa.at_value
-                                AND (CASE WHEN a.at_value = '1000015' THEN ('%' || SUBSTRING(a.ai_value FROM 5) || '%' LIKE '%' || SUBSTRING(pa.ai_value FROM 5) || '%' OR '%' || SUBSTRING(pa.ai_value FROM 5) || '%' LIKE '%' || SUBSTRING(a.ai_value FROM 5) || '%') ELSE a.ai_value = pa.ai_value END)
+                                                  INNER JOIN report.fresh_Attributes_ConcreteADR pa ON pa.M_AttributeSetInstance_ID = p_attributesetinstance_id
+                            AND a.at_value = pa.at_value
+                            AND (CASE WHEN a.at_value = '1000015' THEN ('%' || SUBSTRING(a.ai_value FROM 5) || '%' LIKE '%' || SUBSTRING(pa.ai_value FROM 5) || '%' OR '%' || SUBSTRING(pa.ai_value FROM 5) || '%' LIKE '%' || SUBSTRING(a.ai_value FROM 5) || '%') ELSE a.ai_value = pa.ai_value END)
                                 WHERE a.M_AttributeSetInstance_ID = ol.M_AttributeSetInstance_ID)
-                        AND NOT EXISTS (SELECT 0 FROM report.fresh_Attributes_ConcreteADR pa
-                                        LEFT JOIN report.fresh_Attributes_ConcreteADR a ON a.at_value = pa.at_value
-                                        AND (CASE WHEN a.at_value = '1000015' THEN ('%' || SUBSTRING(a.ai_value FROM 5) || '%' LIKE '%' || SUBSTRING(pa.ai_value FROM 5) || '%' OR '%' || SUBSTRING(pa.ai_value FROM 5) || '%' LIKE '%' || SUBSTRING(a.ai_value FROM 5) || '%') ELSE a.ai_value = pa.ai_value END)
-                                        AND a.M_AttributeSetInstance_ID = ol.M_AttributeSetInstance_ID
-                                        WHERE pa.M_AttributeSetInstance_ID = p_attributesetinstance_id AND a.M_AttributeSetInstance_ID IS NULL)
-                    ) ELSE TRUE END)
-) a
+                            AND NOT EXISTS (SELECT 0 FROM report.fresh_Attributes_ConcreteADR pa
+                                                              LEFT JOIN report.fresh_Attributes_ConcreteADR a ON a.at_value = pa.at_value
+                            AND (CASE WHEN a.at_value = '1000015' THEN ('%' || SUBSTRING(a.ai_value FROM 5) || '%' LIKE '%' || SUBSTRING(pa.ai_value FROM 5) || '%' OR '%' || SUBSTRING(pa.ai_value FROM 5) || '%' LIKE '%' || SUBSTRING(a.ai_value FROM 5) || '%') ELSE a.ai_value = pa.ai_value END)
+                            AND a.M_AttributeSetInstance_ID = ol.M_AttributeSetInstance_ID
+                                            WHERE pa.M_AttributeSetInstance_ID = p_attributesetinstance_id AND a.M_AttributeSetInstance_ID IS NULL)
+                        ) ELSE TRUE END)
+     ) a
 GROUP BY a.DateOrdered, a.oDocumentNo, a.bp_value, a.bp_name, a.p_value, a.p_name, a.attributes,
          a.price, a.total, a.currency, a.uomsymbol, a.qty, a.movementdate, a.orderdocumentno,
          a.io_bp_value, a.io_bp_name, a.io_uom, a.isPOfromSO
 ORDER BY a.DateOrdered, a.oDocumentNo, a.bp_value, a.p_value, a.movementdate, a.orderdocumentno, a.io_bp_value;
 $$
     LANGUAGE sql STABLE;
+
+DROP FUNCTION IF EXISTS "de.metas.handlingunits".hu_assigment_tracking(in m_hu_assignment_id numeric);
+DROP FUNCTION IF EXISTS "de.metas.handlingunits".recursive_hu_trace(trxline integer);
+DROP FUNCTION IF EXISTS "de.metas.handlingunits".recursive_hu_trace_sub(trxline integer[]);
