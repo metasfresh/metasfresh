@@ -506,4 +506,10 @@ public class C_Invoice // 03771
 	{
 		invoiceWithDetailsService.deleteReferencingInvoiceDetails(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
 	}
+
+	@ModelChange(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
+	public void assertActiveData(@NonNull final I_C_Invoice invoice)
+	{
+		invoiceBL.assertActiveData(invoice);
+	}
 }

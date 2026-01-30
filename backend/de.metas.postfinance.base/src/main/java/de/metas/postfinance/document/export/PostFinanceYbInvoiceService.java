@@ -439,7 +439,9 @@ public class PostFinanceYbInvoiceService
 		final XMLGregorianCalendar invoiceDate = toXMLCalendar(invoiceToExport.getInvoiceDate());
 		header.setDocumentDate(invoiceDate);
 		header.setSenderParty(getSenderParty(invoiceToExport));
-		header.setReceiverParty(getReceiverParty(invoiceToExport));
+
+		final I_C_Invoice invoiceRecord = invoiceBL.getById(invoiceToExport.getId());
+		header.setReceiverParty(getReceiverParty(invoiceToExport, invoiceRecord));
 
 		final AchievementDateType achievementDateType = YB_INVOICE_OBJECT_FACTORY.createAchievementDateType();
 		achievementDateType.setStartDateAchievement(invoiceDate);
@@ -448,7 +450,7 @@ public class PostFinanceYbInvoiceService
 
 		header.setCurrency(invoiceToExport.getAmount().getCurrency());
 
-		final I_C_Invoice invoiceRecord = invoiceBL.getById(invoiceToExport.getId());
+
 		if (EmptyUtil.isNotBlank(invoiceRecord.getPOReference()))
 		{
 			final Reference orderReference = YB_INVOICE_OBJECT_FACTORY.createReference();
@@ -532,19 +534,14 @@ public class PostFinanceYbInvoiceService
 		return senderParty;
 	}
 
-	private BillHeaderType.ReceiverParty getReceiverParty(@NonNull final InvoiceToExport invoiceToExport)
+	private BillHeaderType.ReceiverParty getReceiverParty(@NonNull final InvoiceToExport invoiceToExport, @NonNull final I_C_Invoice invoiceRecord)
 	{
 		final AddressType addressType = YB_INVOICE_OBJECT_FACTORY.createAddressType();
 
 		final BPartnerId bPartnerId = invoiceToExport.getRecipient().getId();
 		addressType.setCompanyName(bPartnerBL.getBPartnerName(bPartnerId));
 
-		final IBPartnerDAO.BPartnerLocationQuery query = IBPartnerDAO.BPartnerLocationQuery.builder()
-				.type(IBPartnerDAO.BPartnerLocationQuery.Type.BILL_TO)
-				.bpartnerId(bPartnerId)
-				.build();
-
-		final LocationId locationId = bPartnerDAO.getLocationId(bPartnerDAO.retrieveBPartnerLocationId(query));
+		final LocationId locationId = LocationId.ofRepoId(invoiceRecord.getC_BPartner_Location_Value_ID());
 		final Location location = locationRepository.getByLocationId(locationId);
 
 		if (location.getStreetAddress() == null
@@ -560,10 +557,11 @@ public class PostFinanceYbInvoiceService
 		addressType.setCity(location.getCity());
 		addressType.setCountry(location.getCountryCode());
 
-		final Optional<UserId> userId = bPartnerDAO.getDefaultContactId(bPartnerId);
-		if (userId.isPresent())
+		final UserId userId = CoalesceUtil.coalesce(UserId.ofRepoIdOrNull(invoiceRecord.getAD_User_ID()), bPartnerDAO.getDefaultContactId(bPartnerId).orElse(null));
+
+		if (userId != null)
 		{
-			final I_AD_User userRecord = userBL.getById(userId.get());
+			final I_AD_User userRecord = userBL.getById(userId);
 			if (EmptyUtil.isNotBlank(userRecord.getEMail()))
 			{
 				addressType.setEmail(userRecord.getEMail());
