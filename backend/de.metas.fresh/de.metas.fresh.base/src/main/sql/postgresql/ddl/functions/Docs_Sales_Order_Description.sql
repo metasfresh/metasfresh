@@ -34,7 +34,8 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_D
                 validuntil        timestamp,
                 versionno         character varying,
                 warehouse         character varying,
-                projectno         character varying
+                projectno         character varying,
+                isdropship        character
             )
     STABLE
     LANGUAGE sql
