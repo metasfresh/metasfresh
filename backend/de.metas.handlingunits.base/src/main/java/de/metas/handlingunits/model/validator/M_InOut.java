@@ -63,6 +63,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
@@ -77,6 +78,8 @@ import java.util.TreeSet;
 @Component
 public class M_InOut
 {
+	private static final String SYSCONFIG_CustomerReturnsInOut_FailIfNoHUsAssigned = "CustomerReturnsInOut.FailIfNoHUsAssigned";
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
@@ -317,7 +320,8 @@ public class M_InOut
 	/**
 	 * Note: the reverse-timings are only fired on the M_InOut that is actually reversed (and not on the reversal).
 	 * <p>
-	 * @implSpec  <a href="http://dewiki908/mediawiki/index.php/09592_Rechnung_Gebinde_und_Packvorschrift_Detail_falsch_%28105577823398%29">issue</a>
+	 *
+	 * @implSpec <a href="http://dewiki908/mediawiki/index.php/09592_Rechnung_Gebinde_und_Packvorschrift_Detail_falsch_%28105577823398%29">issue</a>
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSECORRECT, ModelValidator.TIMING_AFTER_REVERSEACCRUAL })
 	public void updateReversedQtys(final I_M_InOut inout)
@@ -345,7 +349,7 @@ public class M_InOut
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
-	public void generateHUsForCustomerReturn(final I_M_InOut customerReturn)
+	public void validateCustomerReturns(final I_M_InOut customerReturn)
 	{
 		if (!returnsServiceFacade.isCustomerReturn(customerReturn))
 		{
@@ -363,13 +367,18 @@ public class M_InOut
 		}
 
 		final List<I_M_HU> assignedHUs = inOutDAO.retrieveHandlingUnits(customerReturn);
-		if (assignedHUs.isEmpty())
+		if (assignedHUs.isEmpty() && isCustomerReturnsInOut_FailIfNoHUsAssigned())
 		{
 			throw new AdempiereException("No HUs to return assigned");
 		}
 
 		// make sure all assigned HUs are active
 		handlingUnitsBL.setHUStatus(assignedHUs, X_M_HU.HUSTATUS_Active);
+	}
+
+	private boolean isCustomerReturnsInOut_FailIfNoHUsAssigned()
+	{
+		return sysConfigBL.getBooleanValue(SYSCONFIG_CustomerReturnsInOut_FailIfNoHUsAssigned, true);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REVERSECORRECT)
