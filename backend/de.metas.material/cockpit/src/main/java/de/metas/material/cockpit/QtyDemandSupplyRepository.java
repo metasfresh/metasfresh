@@ -91,7 +91,6 @@ public class QtyDemandSupplyRepository
 				.id(QtyDemandQtySupplyId.ofRepoId(po.getQtyDemand_QtySupply_V_ID()))
 				.productId(ProductId.ofRepoId(po.getM_Product_ID()))
 				.warehouseId(WarehouseId.ofRepoId(po.getM_Warehouse_ID()))
-				.attributesKey(AttributesKey.ofString(po.getAttributesKey()))
 				.qtyToMove(Quantitys.of(po.getQtyToMove(), uomId))
 				.qtyReserved(Quantitys.of(po.getQtyReserved(), uomId))
 				.qtyForecasted(Quantitys.of(po.getQtyForecasted(), uomId))
