@@ -53,27 +53,6 @@ public interface I_QtyDemand_QtySupply_V
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set AttributesKey (technical).
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setAttributesKey (@Nullable java.lang.String AttributesKey);
-
-	/**
-	 * Get AttributesKey (technical).
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getAttributesKey();
-
-	ModelColumn<I_QtyDemand_QtySupply_V, Object> COLUMN_AttributesKey = new ModelColumn<>(I_QtyDemand_QtySupply_V.class, "AttributesKey", null);
-	String COLUMNNAME_AttributesKey = "AttributesKey";
-
-	/**
 	 * Set UOM.
 	 * Unit of Measure
 	 *

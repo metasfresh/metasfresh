@@ -36,9 +36,9 @@ FROM m_product p
                 0::numeric          AS qtyToMove,
                 0::numeric          AS qtyToProduce,
                 0::numeric          AS qtyForecasted,
-                0::numeric                                                    AS qtyStock,
-                0::numeric                                                    AS qtyConfirmedBySupplier,
-                0::numeric                                                    AS qtyUnconfirmedBySupplier
+                0::numeric          AS qtyStock,
+                0::numeric          AS qtyConfirmedBySupplier,
+                0::numeric          AS qtyUnconfirmedBySupplier
          FROM m_shipmentschedule ss
                   INNER JOIN m_product p ON ss.m_product_id = p.m_product_id
          WHERE COALESCE(ss.qtyReserved, 0) <> 0
@@ -55,7 +55,7 @@ FROM m_product p
                 SUM(uomconvert(rs.m_product_id, rs.c_uom_id, p.c_uom_id, rs.qtyToMove))                                                          AS qtyToMove,
                 0::numeric                                                                                                                       AS qtyToProduce,
                 0::numeric                                                                                                                       AS qtyForecasted,
-                0::numeric                                                                                                                      AS qtyStock,
+                0::numeric                                                                                                                       AS qtyStock,
                 CASE WHEN rs.IsConfirmedBySupplier = 'Y' THEN SUM(uomconvert(rs.m_product_id, rs.c_uom_id, p.c_uom_id, rs.qtyToMove)) ELSE 0 END AS qtyConfirmedBySupplier,
                 CASE WHEN rs.IsConfirmedBySupplier = 'N' THEN SUM(uomconvert(rs.m_product_id, rs.c_uom_id, p.c_uom_id, rs.qtyToMove)) ELSE 0 END AS qtyUnconfirmedBySupplier
          FROM m_receiptschedule rs
@@ -125,6 +125,28 @@ FROM m_product p
          LEFT OUTER JOIN m_warehouse w ON w.m_warehouse_id = t.m_warehouse_id
 GROUP BY t.ad_client_id, t.ad_org_id, p.m_product_id, p.m_product_category_id, p.name, p.value, p.c_uom_id, t.m_warehouse_id
 ;
+
+/*
+ * #%L
+ * de.metas.ui.web.base
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
 -- default grouping by t.ad_client_id, t.ad_org_id, p.m_product_id, p.m_product_category_id, p.name, p.value, t.c_uom_id, t.m_warehouse_id
 -- grouping can be adjusted as needed
