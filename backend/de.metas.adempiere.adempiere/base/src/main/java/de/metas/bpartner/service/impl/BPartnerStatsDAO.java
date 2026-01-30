@@ -101,8 +101,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		return stat;
 	}
 
-	@Override
-	public BigDecimal retrieveOpenItems(@NonNull final BPartnerStats bpStats)
+	private BigDecimal retrieveOpenItems(@NonNull final BPartnerStats bpStats)
 	{
 		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
 
@@ -138,8 +137,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		return openItems;
 	}
 
-	@Override
-	public BigDecimal retrieveSOCreditUsed(@NonNull final BPartnerStats bpStats)
+	private BigDecimal retrieveSOCreditUsed(@NonNull final BPartnerStats bpStats)
 	{
 		final I_C_BPartner_Stats stats = loadDataRecord(bpStats);
 		final String trxName = ITrx.TRXNAME_None;
@@ -197,7 +195,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 	}
 
 	@Override
-	public void updateBPartnerStatistics(BPartnerStats bpStats)
+	public void updateBPartnerStatistics(final BPartnerStats bpStats)
 	{
 		updateOpenItems(bpStats);
 		updateActualLifeTimeValue(bpStats);
@@ -284,7 +282,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 
 		final String initialCreditStatus = bpStats.getSOCreditStatus();
 
-		String creditStatusToSet;
+		final String creditStatusToSet;
 
 		// Nothing to do
 		if (X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck.equals(initialCreditStatus)
