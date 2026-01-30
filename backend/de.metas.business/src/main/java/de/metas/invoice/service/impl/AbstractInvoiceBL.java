@@ -24,6 +24,7 @@ package de.metas.invoice.service.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
@@ -105,6 +106,7 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -146,6 +148,7 @@ import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_RMA;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_C_Tax;
@@ -181,6 +184,10 @@ import static de.metas.util.Check.assumeNotNull;
  */
 public abstract class AbstractInvoiceBL implements IInvoiceBL
 {
+	private static final AdMessageKey ERR_INACTIVE_PARTNER_ON_INVOICE_COMPLETE = AdMessageKey.of("InactivePartnerOnInvoiceComplete");
+	private static final AdMessageKey ERR_INACTIVE_ADDRESS_ON_INVOICE_COMPLETE = AdMessageKey.of("InactiveAddressOnInvoiceComplete");
+	private static final AdMessageKey ERR_INACTIVE_PRODUCT_ON_INVOICE_COMPLETE = AdMessageKey.of("InactiveProductOnInvoiceComplete");
+
 	protected final Logger log = LogManager.getLogger(getClass());
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
@@ -189,6 +196,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	/**
 	 * See {@link #setHasFixedLineNumber(I_C_InvoiceLine, boolean)}.
@@ -2134,6 +2142,35 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			return grandTotal;
 		}
 		return NumberUtils.roundTo5Cent(grandTotal);
+	}
+
+	@Override
+	public void assertActiveData(@NonNull final I_C_Invoice invoice)
+	{
+		if(!bPartnerBL.getById(BPartnerId.ofRepoId(invoice.getC_BPartner_ID())).isActive())
+		{
+			throw new AdempiereException(ERR_INACTIVE_PARTNER_ON_INVOICE_COMPLETE);
+		}
+
+		if(!bPartnerBL.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID())).isActive())
+		{
+			throw new AdempiereException(ERR_INACTIVE_ADDRESS_ON_INVOICE_COMPLETE);
+		}
+
+		final ImmutableSet<ProductId> productIds = getLines(InvoiceId.ofRepoId(invoice.getC_Invoice_ID())).stream()
+				.map(line -> ProductId.ofRepoId(line.getM_Product_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+		final ImmutableSet<String> inactiveProductValues = productDAO.getByIds(productIds).stream()
+				.filter(product -> !product.isActive())
+				.map(I_M_Product::getValue)
+				.collect(ImmutableSet.toImmutableSet());
+
+		if(!inactiveProductValues.isEmpty())
+		{
+			throw new AdempiereException(ERR_INACTIVE_PRODUCT_ON_INVOICE_COMPLETE)
+					.appendParametersToMessage()
+					.setParameter("ProductValues: ", inactiveProductValues);
+		}
 	}
 }
 

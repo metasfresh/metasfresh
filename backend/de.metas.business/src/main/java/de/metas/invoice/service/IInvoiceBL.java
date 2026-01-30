@@ -454,4 +454,6 @@ public interface IInvoiceBL extends ISingletonService {
     boolean isApply5CentCashRounding(@NonNull CurrencyId currencyId, @NonNull SOTrx soTrx);
 
     BigDecimal roundTo5CentIfNeeded(@NonNull BigDecimal grandTotal, @NonNull CurrencyId currencyId, @NonNull SOTrx soTrx);
+
+	void assertActiveData(@NonNull de.metas.adempiere.model.I_C_Invoice invoice);
 }
