@@ -1,7 +1,5 @@
 package de.metas.bpartner.service;
 
-import java.math.BigDecimal;
-
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Stats;
 
@@ -58,18 +56,9 @@ public interface IBPartnerStatsDAO extends ISingletonService
 
 
 	/**
-	 * Retrieve the total open balance value for the given stats using the old legacy sql
-	 * Note: This will have to be re-implemented in order to not search in the db each time a new document is created.
-	 */
-	BigDecimal retrieveOpenItems(BPartnerStats stats);
-
-
-	/**
 	 * Set the given soCreditStatus value to the I_C_BPartner_Stats entry linked with the stats object
 	 */
 	void setSOCreditStatus(BPartnerStats stats, String soCreditStatus);
-
-	BigDecimal retrieveSOCreditUsed(BPartnerStats bpStats);
 
 	void updateBPartnerStatistics(BPartnerStats bpStats);
 }
