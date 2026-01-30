@@ -15,14 +15,14 @@ public class BPartnerStatisticsUpdater implements IBPartnerStatisticsUpdater
 	@Override
 	public void updateBPartnerStatistics(@NonNull final BPartnerStatisticsUpdateRequest request)
 	{
-		if(isBPartnerStatsActive())
+		if(isBPartnerStatsUpdateEnabled())
 		{
 			C_BPartner_UpdateStatsFromBPartner.createWorkpackage(request);
 		}
 	}
 
-	private boolean isBPartnerStatsActive()
+	private boolean isBPartnerStatsUpdateEnabled()
 	{
-		return sysConfigBL.getBooleanValue(SYS_CONFIG_BPartnerStatisticsUpdater_ENABLED, false);
+		return sysConfigBL.getBooleanValue(SYS_CONFIG_BPartnerStatisticsUpdater_ENABLED, true);
 	}
 }
