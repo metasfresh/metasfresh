@@ -462,3 +462,217 @@ UPDATE AD_TreeNodeMM SET Parent_ID=542294, SeqNo=2, Updated=now(), UpdatedBy=100
 UPDATE AD_TreeNodeMM SET Parent_ID=542294, SeqNo=3, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541096 AND AD_Tree_ID=10
 ;
 
+-- Run mode: SWING_CLIENT
+
+-- Reordering children of `Menu`
+-- Node name: `CRM`
+-- 2026-01-30T12:33:05.957Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=0, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000008 AND AD_Tree_ID=10
+;
+
+-- Node name: `Marketing`
+-- 2026-01-30T12:33:06.020Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=1, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541091 AND AD_Tree_ID=10
+;
+
+-- Node name: `Produktverwaltung`
+-- 2026-01-30T12:33:06.092Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=2, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000009 AND AD_Tree_ID=10
+;
+
+-- Node name: `Beschaffung`
+-- 2026-01-30T12:33:06.152Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=3, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000011 AND AD_Tree_ID=10
+;
+
+-- Node name: `Preise`
+-- 2026-01-30T12:33:06.214Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=4, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540752 AND AD_Tree_ID=10
+;
+
+-- Node name: `Stücklistenverwaltung`
+-- 2026-01-30T12:33:06.276Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=5, Updated=now(), UpdatedBy=100 WHERE  Node_ID=542294 AND AD_Tree_ID=10
+;
+
+-- Node name: `Lagerverwaltung`
+-- 2026-01-30T12:33:06.336Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=6, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000012 AND AD_Tree_ID=10
+;
+
+-- Node name: `Vertragsverwaltung`
+-- 2026-01-30T12:33:06.396Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=7, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000013 AND AD_Tree_ID=10
+;
+
+-- Node name: `Produktion`
+-- 2026-01-30T12:33:06.458Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=8, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000014 AND AD_Tree_ID=10
+;
+
+-- Node name: `Wareneingang`
+-- 2026-01-30T12:33:06.517Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=9, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000017 AND AD_Tree_ID=10
+;
+
+-- Node name: `Fakturierung`
+-- 2026-01-30T12:33:06.580Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=10, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000018 AND AD_Tree_ID=10
+;
+
+-- Node name: `Finanzen`
+-- 2026-01-30T12:33:06.641Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=11, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000015 AND AD_Tree_ID=10
+;
+
+-- Node name: `Logistik`
+-- 2026-01-30T12:33:06.701Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=12, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000016 AND AD_Tree_ID=10
+;
+
+-- Node name: `Lieferung`
+-- 2026-01-30T12:33:06.768Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=13, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000019 AND AD_Tree_ID=10
+;
+
+-- Node name: `Pharma`
+-- 2026-01-30T12:33:06.828Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=14, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541012 AND AD_Tree_ID=10
+;
+
+-- Node name: `Projekt-Verwaltung`
+-- 2026-01-30T12:33:06.888Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=15, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541329 AND AD_Tree_ID=10
+;
+
+-- Node name: `Forum Datenaustausch`
+-- 2026-01-30T12:33:06.948Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=16, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541229 AND AD_Tree_ID=10
+;
+
+-- Node name: `Seminar-Verwaltung`
+-- 2026-01-30T12:33:07.011Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=17, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541340 AND AD_Tree_ID=10
+;
+
+-- Node name: `Mandant/ Organisation`
+-- 2026-01-30T12:33:07.073Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=18, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540833 AND AD_Tree_ID=10
+;
+
+-- Node name: `Dienstleistungserbringung`
+-- 2026-01-30T12:33:07.134Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=19, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541428 AND AD_Tree_ID=10
+;
+
+-- Node name: `System`
+-- 2026-01-30T12:33:07.195Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=20, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000098 AND AD_Tree_ID=10
+;
+
+-- Reordering children of `Menu`
+-- Node name: `CRM`
+-- 2026-01-30T12:33:12.817Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=0, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000008 AND AD_Tree_ID=10
+;
+
+-- Node name: `Marketing`
+-- 2026-01-30T12:33:12.878Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=1, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541091 AND AD_Tree_ID=10
+;
+
+-- Node name: `Produktverwaltung`
+-- 2026-01-30T12:33:12.942Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=2, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000009 AND AD_Tree_ID=10
+;
+
+-- Node name: `Beschaffung`
+-- 2026-01-30T12:33:13.003Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=3, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000011 AND AD_Tree_ID=10
+;
+
+-- Node name: `Stücklistenverwaltung`
+-- 2026-01-30T12:33:13.063Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=4, Updated=now(), UpdatedBy=100 WHERE  Node_ID=542294 AND AD_Tree_ID=10
+;
+
+-- Node name: `Preise`
+-- 2026-01-30T12:33:13.127Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=5, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540752 AND AD_Tree_ID=10
+;
+
+-- Node name: `Lagerverwaltung`
+-- 2026-01-30T12:33:13.187Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=6, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000012 AND AD_Tree_ID=10
+;
+
+-- Node name: `Vertragsverwaltung`
+-- 2026-01-30T12:33:13.283Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=7, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000013 AND AD_Tree_ID=10
+;
+
+-- Node name: `Produktion`
+-- 2026-01-30T12:33:13.344Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=8, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000014 AND AD_Tree_ID=10
+;
+
+-- Node name: `Wareneingang`
+-- 2026-01-30T12:33:13.411Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=9, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000017 AND AD_Tree_ID=10
+;
+
+-- Node name: `Fakturierung`
+-- 2026-01-30T12:33:13.474Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=10, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000018 AND AD_Tree_ID=10
+;
+
+-- Node name: `Finanzen`
+-- 2026-01-30T12:33:13.539Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=11, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000015 AND AD_Tree_ID=10
+;
+
+-- Node name: `Logistik`
+-- 2026-01-30T12:33:13.601Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=12, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000016 AND AD_Tree_ID=10
+;
+
+-- Node name: `Lieferung`
+-- 2026-01-30T12:33:13.663Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=13, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000019 AND AD_Tree_ID=10
+;
+
+-- Node name: `Pharma`
+-- 2026-01-30T12:33:13.732Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=14, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541012 AND AD_Tree_ID=10
+;
+
+-- Node name: `Projekt-Verwaltung`
+-- 2026-01-30T12:33:13.793Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=15, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541329 AND AD_Tree_ID=10
+;
+
+-- Node name: `Forum Datenaustausch`
+-- 2026-01-30T12:33:13.852Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=16, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541229 AND AD_Tree_ID=10
+;
+
+-- Node name: `Seminar-Verwaltung`
+-- 2026-01-30T12:33:13.914Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=17, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541340 AND AD_Tree_ID=10
+;
+
+-- Node name: `Mandant/ Organisation`
+-- 2026-01-30T12:33:13.977Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=18, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540833 AND AD_Tree_ID=10
+;
+
+-- Node name: `Dienstleistungserbringung`
+-- 2026-01-30T12:33:14.038Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=19, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541428 AND AD_Tree_ID=10
+;
+
+-- Node name: `System`
+-- 2026-01-30T12:33:14.098Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000007, SeqNo=20, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000098 AND AD_Tree_ID=10
+;
+
