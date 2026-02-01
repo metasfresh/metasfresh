@@ -198,7 +198,6 @@ describe('Tables reducer', () => {
   });
 
   // Regression tests for race condition: actions dispatched before table creation
-  // See: https://github.com/metasfresh/metasfresh/issues/XXXXX
   describe('Race condition handling - actions before table creation', () => {
     it('Should handle SET_ACTIVE_SORT gracefully when table does not exist', () => {
       const nonExistentId = '541851_541851-g';

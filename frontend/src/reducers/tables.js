@@ -443,7 +443,6 @@ const reducer = produce((draftState, action) => {
       const { id, active } = action.payload;
 
       // Guard against race condition where sort action fires before table creation
-      // See: https://github.com/metasfresh/metasfresh/issues/XXXXX
       if (draftState[id]) {
         draftState[id].activeSort = active;
       }
