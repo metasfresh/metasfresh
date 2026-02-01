@@ -3,7 +3,7 @@ import { merge } from 'merge-anything';
 import { deleteTable, updateTableSelection } from '../../actions/TableActions';
 import * as ACTION_TYPES from '../../constants/ActionTypes';
 import reducer, {
-  initialState, 
+  initialState,
   initialTableState,
 } from '../../reducers/tables';
 
@@ -194,5 +194,49 @@ describe('Tables reducer', () => {
         length: 1,
       })
     );
+  });
+
+  // Regression tests for race condition: actions dispatched before table creation
+  describe('Race condition handling - actions before table creation', () => {
+    it('Should handle SET_ACTIVE_SORT gracefully when table does not exist', () => {
+      const nonExistentId = '541851_541851-g';
+
+      const action = {
+        type: ACTION_TYPES.SET_ACTIVE_SORT,
+        payload: {
+          id: nonExistentId,
+          active: true,
+        },
+      };
+
+      // Should not throw - this was causing white-screen crashes
+      expect(() => {
+        reducer(initialState, action);
+      }).not.toThrow();
+
+      // State should remain unchanged
+      const state = reducer(initialState, action);
+      expect(state).toEqual(initialState);
+      expect(state[nonExistentId]).toBeUndefined();
+    });
+
+    it('Should still set activeSort when table exists', () => {
+      const id = '143_1000037_AD_Tab-187';
+      const initialStateData = createState({
+        [id]: { ...initialTableState, ...basicData, activeSort: false },
+        length: 1,
+      });
+
+      const action = {
+        type: ACTION_TYPES.SET_ACTIVE_SORT,
+        payload: {
+          id,
+          active: true,
+        },
+      };
+
+      const state = reducer(initialStateData, action);
+      expect(state[id].activeSort).toBe(true);
+    });
   });
 });
