@@ -55,7 +55,6 @@ import {
 import {
   formatParentUrl,
   getData,
-  getLayout,
   getTabLayoutRequest,
   getTabRequest,
   patchRequest,
