@@ -37,6 +37,7 @@ SELECT
      , t.ad_process_id
      , t.issorttab
      , t.isinsertrecord
+     , t.insertlogic
      , t.isadvancedtab
      , t.ad_columnsortorder_id
      , t.ad_columnsortyesno_id
@@ -47,6 +48,7 @@ SELECT
      , t.defaultwhereclause
      , t.issearchcollapsed
      , t.isqueryonload
+     , t.IsQueryIfNoFilters
      , t.isgridmodeonly
      , t.ad_message_id
      , t.ischeckparentschanged
@@ -60,7 +62,7 @@ SELECT
      , t.IsAutodetectDefaultDateFilter
      , t.NotFound_Message
      , t.NotFound_MessageDetail
-     , t.IncludeFiltersStrategy
+     , t.QuickInputLayout
 FROM ad_tab t
          JOIN ad_table tbl ON t.ad_table_id = tbl.ad_table_id
 WHERE t.isactive = 'Y'::bpchar
@@ -109,6 +111,7 @@ SELECT trl.ad_language
      , t.ad_process_id
      , t.issorttab
      , t.isinsertrecord
+     , t.insertlogic
      , t.isadvancedtab
      , t.ad_columnsortorder_id
      , t.ad_columnsortyesno_id
@@ -119,6 +122,7 @@ SELECT trl.ad_language
      , t.defaultwhereclause
      , t.issearchcollapsed
      , t.isqueryonload
+     , t.IsQueryIfNoFilters
      , t.isgridmodeonly
      , t.ad_message_id
      , t.ischeckparentschanged
@@ -136,7 +140,7 @@ SELECT trl.ad_language
      , t.NotFound_Message AS NotFound_Message_BaseLang
      , trl.NotFound_MessageDetail
      , t.NotFound_MessageDetail AS NotFound_MessageDetail_BaseLang
-     , t.IncludeFiltersStrategy
+     , t.QuickInputLayout
 FROM ad_tab t
          JOIN ad_table tbl ON t.ad_table_id = tbl.ad_table_id
          JOIN ad_tab_trl trl ON t.ad_tab_id = trl.ad_tab_id
