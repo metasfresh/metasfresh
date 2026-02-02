@@ -33,9 +33,13 @@ FROM (SELECT (CASE
                      ELSE SUBSTRING('#,##0.0000' FROM 0 FOR 7 + uom.StdPrecision :: integer)
              END                                                                                                       AS QtyPattern,
              de_metas_endcustomer_fresh_reports.CalculateCustom_InvoiceLine_BruttoWeight(il.C_Customs_Invoice_Line_ID) AS bruttweight,
-             COALESCE(ct.name, co.name)                                                                                AS country
+             CASE
+                 WHEN report.IsHiddenReportElement(ci.C_DocType_ID, 'Customs_Invoice_Note') = 'N' THEN
+                     COALESCE(ct.name, co.name)
+             END                                                                                                       AS country
 
       FROM C_Customs_Invoice_Line il
+               INNER JOIN C_Customs_Invoice ci ON il.c_customs_invoice_id = ci.c_customs_invoice_id
                LEFT OUTER JOIN C_UOM uom ON uom.C_UOM_ID = 540017 -- harcoded kg
                LEFT OUTER JOIN C_UOM_Trl uomt ON uomt.c_UOM_ID = uom.C_UOM_ID AND uomt.AD_Language = p_AD_Language
                LEFT OUTER JOIN M_InOutLine_To_C_Customs_Invoice_Line io_to_ci ON io_to_ci.C_Customs_Invoice_Line_ID = il.C_Customs_Invoice_Line_ID
