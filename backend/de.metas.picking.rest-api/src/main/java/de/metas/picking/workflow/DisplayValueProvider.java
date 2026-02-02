@@ -309,7 +309,7 @@ public class DisplayValueProvider
 			{
 				return getRuestplatz(pickingJob)
 						.map(value -> NumberUtils.asInteger(value, null)) // we assume Ruestplantz is number so we want to sort it as numbers
-						.orElse(null);
+						.orElse(Integer.MAX_VALUE); // i.e. nulls last
 			}
 			default:
 			{
