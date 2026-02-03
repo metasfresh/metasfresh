@@ -254,6 +254,7 @@ public class LayoutFactory
 		return DocumentLayoutSingleRow.builder()
 				.setCaption(entityDescriptor.getCaption())
 				.setDescription(entityDescriptor.getDescription())
+				.notFoundMessages(entityDescriptor.getNotFoundMessages())
 				.addSections(layoutSectionsList);
 	}
 
