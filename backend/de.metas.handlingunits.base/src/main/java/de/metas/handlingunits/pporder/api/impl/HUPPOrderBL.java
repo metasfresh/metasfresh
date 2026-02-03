@@ -12,6 +12,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.impl.DocumentLUTUConfigurationManager;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
@@ -36,6 +37,7 @@ import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
@@ -392,10 +394,19 @@ public class HUPPOrderBL implements IHUPPOrderBL
 				.receiveVHU(Quantitys.of(ppOrder.getQtyOrdered(), UomId.ofRepoId(ppOrder.getC_UOM_ID())));
 
 		attributesBL.transferAttributesForSingleProductHUs(huToBeIssued, receivedHu);
-		attributesBL.updateHUAttribute(HuId.ofRepoId(receivedHu.getM_HU_ID()), AttributeConstants.ProductionDate, SystemTime.asTimestamp());
+		final HuId receivedHuId = HuId.ofRepoId(receivedHu.getM_HU_ID());
+		attributesBL.updateHUAttribute(receivedHuId, AttributeConstants.ProductionDate, SystemTime.asTimestamp());
+		final String ageString = attributesBL.getHUAttributeValue(huToBeIssued, HUAttributeConstants.ATTR_Age);
+		if (Check.isNotBlank(ageString))
+		{
+			attributesBL.updateHUAttribute(receivedHuId, HUAttributeConstants.ATTR_AgeOffset, ageString);
+		}
 
-		final HUQRCode huqrCode = huqrCodesService.get().getQRCodeByHuId(HuId.ofRepoId(huToBeIssued.getM_HU_ID()));
-		huqrCodesService.get().assign(huqrCode, ImmutableSet.of(HuId.ofRepoId(receivedHu.getM_HU_ID())));
+		final HUQRCodesService qrCodeService = huqrCodesService.get();
+		final HuId huToBeIssuedId = HuId.ofRepoId(huToBeIssued.getM_HU_ID());
+		final HUQRCode huqrCode = qrCodeService.getQRCodeByHuId(huToBeIssuedId);
+		qrCodeService.assign(huqrCode, ImmutableSet.of(receivedHuId));
+		qrCodeService.removeAssignment(huqrCode, ImmutableSet.of(huToBeIssuedId));
 
 		processPlanning(PPOrderPlanningStatus.COMPLETE, ppOrderId);
 	}
