@@ -100,7 +100,9 @@ FROM de_metas_endcustomer_fresh_reports.docs_sales_customs_invoice_footer($P{C_C
 				<textFieldExpression><![CDATA[$R{bruttoweight}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="74" y="40" width="426" height="12" uuid="98583d75-5a66-4fb2-8a5d-e2c92452f9e2"/>
+				<reportElement x="74" y="40" width="426" height="12" uuid="98583d75-5a66-4fb2-8a5d-e2c92452f9e2">
+					<printWhenExpression><![CDATA[new Boolean ($F{country} != null && !$F{country}.isEmpty())]]></printWhenExpression>
+				</reportElement>
 				<textElement textAlignment="Left">
 					<font fontName="Arial" size="9"/>
 				</textElement>
