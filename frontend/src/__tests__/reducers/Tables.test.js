@@ -2,8 +2,9 @@ import { merge } from 'merge-anything';
 
 import { deleteTable, updateTableSelection } from '../../actions/TableActions';
 import * as ACTION_TYPES from '../../constants/ActionTypes';
+import { SORT_TAB } from '../../constants/ActionTypes';
 import reducer, {
-  initialState, 
+  initialState,
   initialTableState,
 } from '../../reducers/tables';
 
@@ -194,5 +195,112 @@ describe('Tables reducer', () => {
         length: 1,
       })
     );
+  });
+
+  // Regression tests for race condition: actions dispatched before table creation
+  describe('Race condition handling - actions before table creation', () => {
+    it('Should handle SET_ACTIVE_SORT gracefully when table does not exist', () => {
+      const nonExistentId = '541851_541851-g';
+
+      const action = {
+        type: ACTION_TYPES.SET_ACTIVE_SORT,
+        payload: {
+          id: nonExistentId,
+          active: true,
+        },
+      };
+
+      // Should not throw - this was causing white-screen crashes
+      expect(() => {
+        reducer(initialState, action);
+      }).not.toThrow();
+
+      // State should remain unchanged
+      const state = reducer(initialState, action);
+      expect(state).toEqual(initialState);
+      expect(state[nonExistentId]).toBeUndefined();
+    });
+
+    it('Should handle SORT_TAB gracefully when table does not exist', () => {
+      const action = {
+        type: SORT_TAB,
+        scope: 'master',
+        windowId: '541851',
+        docId: '1000001',
+        tabId: 'AD_Tab-999',
+        field: 'M_AttributeSetInstance_ID',
+        asc: true,
+      };
+
+      // Should not throw - this was causing white-screen crashes
+      expect(() => {
+        reducer(initialState, action);
+      }).not.toThrow();
+
+      // State should remain unchanged
+      const state = reducer(initialState, action);
+      expect(state).toEqual(initialState);
+    });
+
+    it('Should still set activeSort when table exists', () => {
+      const id = '143_1000037_AD_Tab-187';
+      const initialStateData = createState({
+        [id]: { ...initialTableState, ...basicData, activeSort: false },
+        length: 1,
+      });
+
+      const action = {
+        type: ACTION_TYPES.SET_ACTIVE_SORT,
+        payload: {
+          id,
+          active: true,
+        },
+      };
+
+      const state = reducer(initialStateData, action);
+      expect(state[id].activeSort).toBe(true);
+    });
+
+    it('Should still set orderBys via SORT_TAB when table exists', () => {
+      const id = '541851_1000001_AD_Tab-999';
+      const initialStateData = createState({
+        [id]: { ...initialTableState, windowId: '541851', docId: '1000001', tabId: 'AD_Tab-999' },
+        length: 1,
+      });
+
+      const action = {
+        type: SORT_TAB,
+        scope: 'master',
+        windowId: '541851',
+        docId: '1000001',
+        tabId: 'AD_Tab-999',
+        field: 'M_AttributeSetInstance_ID',
+        asc: true,
+      };
+
+      const state = reducer(initialStateData, action);
+      expect(state[id].orderBys).toEqual([
+        { fieldName: 'M_AttributeSetInstance_ID', ascending: true },
+      ]);
+    });
+
+    it('Should ignore SORT_TAB for non-master scope even when table does not exist', () => {
+      const action = {
+        type: SORT_TAB,
+        scope: 'included', // Not 'master'
+        windowId: '541851',
+        docId: '1000001',
+        tabId: 'AD_Tab-999',
+        field: 'SomeField',
+        asc: false,
+      };
+
+      expect(() => {
+        reducer(initialState, action);
+      }).not.toThrow();
+
+      const state = reducer(initialState, action);
+      expect(state).toEqual(initialState);
+    });
   });
 });
