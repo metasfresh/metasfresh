@@ -15,7 +15,7 @@ SELECT hu.m_hu_id                                                 AS PP_Maturing
        pp.pp_product_planning_id,
        pp.pp_product_bomversions_id,
        pp.m_attributesetinstance_id,
-       hua_ProdDate.valuedate + MAKE_INTERVAL(0, mcl.maturityage::integer) - make_interval(0, hua_AgeOffset.value::numeric::integer) AS DateStartSchedule,
+       hua_ProdDate.valuedate + MAKE_INTERVAL(0, mcl.maturityage::integer) - make_interval(0, coalesce(hua_AgeOffset.value::numeric::integer, 0)) AS DateStartSchedule,
        ppoc.pp_order_candidate_id,
        hu.ad_org_id,
        hu.ad_client_id
@@ -36,9 +36,9 @@ WHERE hu.isactive = 'Y'
   AND hu.isreserved != 'Y'
   AND hu.locked != 'Y'
   AND hus.qty > 0
+  AND hu.m_hu_item_parent_id is null
   AND (ppoc.pp_order_candidate_id IS NULL
     OR (ppoc.isclosed != 'Y' AND ppoc.processed != 'Y'))
   AND hua_ProdDate.valuedate IS NOT NULL
-  AND hua_AgeOffset.value IS NOT NULL
   AND childHu.m_hu_id IS NULL
 ;
