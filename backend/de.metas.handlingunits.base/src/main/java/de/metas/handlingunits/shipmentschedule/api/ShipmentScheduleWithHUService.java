@@ -125,6 +125,8 @@ public class ShipmentScheduleWithHUService
 
 	private static final String SYSCFG_PICK_AVAILABLE_HUS_ON_THE_FLY = "de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PickAvailableHUsOnTheFly";
 
+	private static final String SYSCFG_PICK_AVAILABLE_HUS_ON_THE_FLY_MATCH_ATTRIBS = "de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PickAvailableHUsOnTheFly.MatchAttributes";
+
 	private static final AdMessageKey MSG_NoQtyPicked = AdMessageKey.of("MSG_NoQtyPicked");
 	public static final String SYSCONFIG_PACK_CUS_TO_TU = "de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PackCUsToTU";
 
@@ -524,13 +526,17 @@ public class ShipmentScheduleWithHUService
 				}
 			}
 		}
-
+		final boolean matchAttributes = sysConfigBL.getBooleanValue(SYSCFG_PICK_AVAILABLE_HUS_ON_THE_FLY_MATCH_ATTRIBS,
+				true,
+				scheduleRecord.getAD_Client_ID(),
+				scheduleRecord.getAD_Org_ID());
+		
 		// second, get all unreserved HUs that are available for picking
 		final IHUPickingSlotBL.PickingHUsQuery pickingHUsQuery = IHUPickingSlotBL.PickingHUsQuery
 				.builder()
 				.shipmentSchedule(scheduleRecord)
 				.onlyTopLevelHUs(true)
-				.onlyIfAttributesMatchWithShipmentSchedules(true)
+				.onlyIfAttributesMatchWithShipmentSchedules(matchAttributes) // TODO make contingent on HU attribute propagation (iol-handler!)
 				.excludeAllReserved(true) // we already have the reserved HUs; make sure to not load them again.
 				.build();
 		result.addAll(huPickingSlotBL.retrieveAvailableHUsToPick(pickingHUsQuery));
