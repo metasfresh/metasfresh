@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details_footer" pageWidth="521" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="521" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/customs_invoice/report" uuid="24208fd1-eaa1-4f8e-a2aa-22ed9c4e6234">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -29,23 +29,32 @@
 		<![CDATA[SELECT nettoTotalWeight,
        UOM,
        QtyPattern,
-       bruttoTotalWeight
+       bruttoTotalWeight,
+       Country
 FROM de_metas_endcustomer_fresh_reports.docs_sales_customs_invoice_footer($P{C_Customs_Invoice_Id}, $P{ad_language});]]>
 	</queryString>
 	<field name="nettototalweight" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="nettototalweight"/>
 		<property name="com.jaspersoft.studio.field.label" value="nettototalweight"/>
 	</field>
 	<field name="uom" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="uom"/>
 		<property name="com.jaspersoft.studio.field.label" value="uom"/>
 	</field>
 	<field name="qtypattern" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="qtypattern"/>
 		<property name="com.jaspersoft.studio.field.label" value="qtypattern"/>
 	</field>
 	<field name="bruttototalweight" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="bruttototalweight"/>
 		<property name="com.jaspersoft.studio.field.label" value="bruttototalweight"/>
 	</field>
+	<field name="country" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="country"/>
+		<property name="com.jaspersoft.studio.field.label" value="country"/>
+	</field>
 	<title>
-		<band height="37">
+		<band height="54">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="136" y="7" width="54" height="12" uuid="361f1953-65b9-44cd-a4ca-f88639ed3d52"/>
 				<textElement textAlignment="Right">
@@ -89,6 +98,15 @@ FROM de_metas_endcustomer_fresh_reports.docs_sales_customs_invoice_footer($P{C_C
 					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{bruttoweight}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="74" y="40" width="426" height="12" uuid="98583d75-5a66-4fb2-8a5d-e2c92452f9e2">
+					<printWhenExpression><![CDATA[new Boolean ($F{country} != null && !$F{country}.isEmpty())]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Left">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Note1}+$F{country}+" "+$R{Note2}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
