@@ -23,7 +23,7 @@ SELECT COALESCE(
                   AND o.docstatus = 'CO'
                   AND ol.m_product_id = p_Product_ID
                   AND ol.priceactual > 0
-                ORDER BY COALESCE(o.DatePromised,o.DateOrdered), ol.C_OrderLine_ID DESC
+                ORDER BY o.DatePromised DESC, ol.C_OrderLine_ID DESC
                 LIMIT 1),
                (SELECT p.SeedCost FROM M_Product p WHERE p.M_Product_ID = p_Product_ID)
        ) AS LastCostPrice
