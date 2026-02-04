@@ -23,6 +23,7 @@ package de.metas.edi.api.impl;
  */
 
 import ch.qos.logback.classic.Level;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.aggregation.api.Aggregation;
@@ -34,7 +35,6 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.api.EDIType;
-import de.metas.edi.api.IEDIDocumentBL;
 import de.metas.edi.api.ValidationState;
 import de.metas.edi.exception.EDIFillMandatoryException;
 import de.metas.edi.exception.EDIMissingDependencyException;
@@ -72,6 +72,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
@@ -90,9 +91,11 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-public class EDIDocumentBL implements IEDIDocumentBL
+public class EDIDocumentBL
 {
 	private static final String ERR_NotExistsShipmentForOrderError = "NotExistsShipmentForOrderError";
+	private static final String MSG_Partner_ValidateIsEDIRecipient_Error = "de.metas.edi.ValidateIsEDIRecipientError";
+	private static final String MSG_Invalid_Invoice_Aggregation_Error = "de.metas.edi.InvalidInvoiceAggregationError";
 
 	@NonNull private static final Logger logger = LogManager.getLogger(EDIDocumentBL.class);
 	@NonNull private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
@@ -103,13 +106,17 @@ public class EDIDocumentBL implements IEDIDocumentBL
 	@NonNull private final EDIBPartnerConfigService ediBpartnerConfigService;
     @NonNull private final DesadvBL desadvBL;
 
-	public EDIDocumentBL()
+	@VisibleForTesting
+	public static EDIDocumentBL newInstanceForUnitTesting()
 	{
-		this(SpringContextHolder.instance.getBean(EDIBPartnerConfigService.class),
-		SpringContextHolder.instance.getBean(DesadvBL.class));
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(EDIDocumentBL.class,
+				() -> new EDIDocumentBL(EDIBPartnerConfigService.newInstanceForUnitTesting(),
+						DesadvBL.newInstanceForUnitTesting())
+				);
 	}
 
-	@Override
 	public boolean updateEdiExportStatus(@NonNull final I_M_InOut inOut)
 	{
 		try (final MDC.MDCCloseable ignored = TableRecordMDC.putTableRecordReference(inOut))
@@ -144,7 +151,6 @@ public class EDIDocumentBL implements IEDIDocumentBL
 		}
 	}
 
-	@Override
 	public boolean updateEdiExportStatus(@NonNull final I_C_Invoice invoice)
 	{
 		try (final MDC.MDCCloseable ignored = TableRecordMDC.putTableRecordReference(invoice))
@@ -239,7 +245,6 @@ public class EDIDocumentBL implements IEDIDocumentBL
 		return isBPartnerEDIConfigEnabled;
 	}
 
-	@Override
 	@NonNull
 	public List<Exception> isValidInvoice(@NonNull final I_C_Invoice invoice)
 	{
@@ -335,7 +340,6 @@ public class EDIDocumentBL implements IEDIDocumentBL
 		return feedback;
 	}
 
-	@Override
 	public List<Exception> isValidDesAdv(@NonNull final I_EDI_Desadv desadvRecord)
 	{
 		final List<Exception> feedback = new ArrayList<>();
@@ -348,7 +352,6 @@ public class EDIDocumentBL implements IEDIDocumentBL
 		return feedback;
 	}
 
-	@Override
 	public List<Exception> isValidPartner(@NonNull final org.compiere.model.I_C_BPartner bpartner)
 	{
 		return isValidPartner(bpartner, null);
@@ -381,7 +384,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 
 		if (!isBPartnerEDIConfigEnabled)
 		{
-			feedback.add(new AdempiereException(Services.get(IMsgBL.class).getMsg(InterfaceWrapperHelper.getCtx(ediPartner), IEDIDocumentBL.MSG_Partner_ValidateIsEDIRecipient_Error)));
+			feedback.add(new AdempiereException(Services.get(IMsgBL.class).getMsg(InterfaceWrapperHelper.getCtx(ediPartner), MSG_Partner_ValidateIsEDIRecipient_Error)));
 		}
 
 		if (ediPartner.isEdiDesadvRecipient() && Check.isBlank(ediPartner.getEdiDesadvRecipientGLN()))
@@ -398,7 +401,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 		{
 			//TODO check if still needed, not valid in cucumber tests atm
 			// did not work before I changed de.metas.edi.model.validator.C_BPartner from modelValidator to interceptor and moved ediDocumentBL to field
-			//feedback.add(new AdempiereException(Services.get(IMsgBL.class).getMsg(InterfaceWrapperHelper.getCtx(ediPartner), IEDIDocumentBL.MSG_Invalid_Invoice_Aggregation_Error)));
+			//feedback.add(new AdempiereException(Services.get(IMsgBL.class).getMsg(InterfaceWrapperHelper.getCtx(ediPartner), MSG_Invalid_Invoice_Aggregation_Error)));
 		}
 
 		// VATaxIDs are not needed in general, but only if the customer is in a different country or if the customer explicitly requests them to be in their INVOICs
@@ -436,7 +439,6 @@ public class EDIDocumentBL implements IEDIDocumentBL
 		return feedback;
 	}
 
-	@Override
 	public ValidationState updateInvalid(@NonNull final I_EDI_Document document,
 										 @NonNull final EDIExportStatus EDI_ExportStatus,
 										 @NonNull final List<Exception> feedback,
@@ -464,7 +466,6 @@ public class EDIDocumentBL implements IEDIDocumentBL
 		return ValidationState.UPDATED_VALID;
 	}
 
-	@Override
 	public IExport<? extends I_EDI_Document> createExport(
 			final Properties ctx,
 			final ClientId clientId,
@@ -519,7 +520,6 @@ public class EDIDocumentBL implements IEDIDocumentBL
 		}
 	}
 
-	@Override
 	public String buildFeedback(@NonNull final List<Exception> feedback)
 	{
 		final StringBuilder feedbackBuilder = new StringBuilder();

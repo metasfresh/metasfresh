@@ -26,18 +26,19 @@ import java.util.Collections;
 import java.util.List;
 
 import de.metas.edi.api.EDIExportStatus;
+import de.metas.edi.api.impl.EDIDocumentBL;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 
-import de.metas.edi.api.IEDIDocumentBL;
 import de.metas.edi.api.ValidationState;
 import de.metas.edi.model.I_C_Invoice;
 import de.metas.esb.edi.model.I_EDI_cctop_invoic_v;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.util.Services;
 
 public class C_InvoiceExport extends AbstractEdiDocExtensionExport<I_C_Invoice>
 {
@@ -45,6 +46,8 @@ public class C_InvoiceExport extends AbstractEdiDocExtensionExport<I_C_Invoice>
 	 * EXP_Format.Value for exporting Invoice EDI documents
 	 */
 	private static final String CST_INVOICE_EXP_FORMAT = "EDI_cctop_invoic_v";
+
+	@NonNull private final EDIDocumentBL ediDocumentBL = SpringContextHolder.instance.getBean(EDIDocumentBL.class);
 
 	public C_InvoiceExport(final I_C_Invoice invoice, final String tableIdentifier, final ClientId clientId)
 	{
@@ -54,8 +57,6 @@ public class C_InvoiceExport extends AbstractEdiDocExtensionExport<I_C_Invoice>
 	@Override
 	public List<Exception> doExport()
 	{
-		final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
-
 		final I_C_Invoice document = getDocument();
 
 		final List<Exception> feedback = ediDocumentBL.isValidInvoice(document);

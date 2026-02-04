@@ -68,6 +68,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -115,8 +117,19 @@ public class DesadvBL
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IHUPIItemProductBL hupiItemProductBL = Services.get(IHUPIItemProductBL.class);
 
-	private final transient EDIDesadvPackService ediDesadvPackService;
-	private final EDIDesadvInOutLineDAO desadvInOutLineDAO;
+	@NonNull private final transient EDIDesadvPackService ediDesadvPackService;
+	@NonNull private final EDIDesadvInOutLineDAO desadvInOutLineDAO;
+
+	@VisibleForTesting
+	public static DesadvBL newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(DesadvBL.class,
+				() -> new DesadvBL(EDIDesadvPackService.newInstanceForUnitTesting(),
+						EDIDesadvInOutLineDAO.newInstanceForUnitTesting())
+		);
+	}
 
 	public I_EDI_Desadv getById(@NonNull final EDIDesadvId id)
 	{

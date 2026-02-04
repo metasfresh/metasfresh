@@ -28,7 +28,7 @@ import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.edi.api.EDIExportStatus;
-import de.metas.edi.api.IEDIDocumentBL;
+import de.metas.edi.api.impl.EDIDocumentBL;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.process.export.IExport;
@@ -41,6 +41,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -54,9 +55,9 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 	public final static String SYS_CONFIG_OneDesadvPerShipment = "de.metas.edi.OneDesadvPerShipment";
 
 	// Services
-	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
-	private final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
+	@NonNull private final EDIDocumentBL ediDocumentBL = SpringContextHolder.instance.getBean(EDIDocumentBL.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	/**
 	 * TODO enqueue edi documents ordered by their POReference; use an {@link ITrxItemChunkProcessor} to aggregate the inouts to desadvs and send them when a new chunk starts. That way we can omit the
