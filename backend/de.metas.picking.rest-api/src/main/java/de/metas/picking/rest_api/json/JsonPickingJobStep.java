@@ -46,6 +46,7 @@ public class JsonPickingJobStep
 	@NonNull JsonCompleteStatus completeStatus;
 
 	@NonNull String productId;
+	@NonNull String productNo;
 	@NonNull String productName;
 	@NonNull String uom;
 	@NonNull BigDecimal qtyToPick;
@@ -73,7 +74,8 @@ public class JsonPickingJobStep
 				.pickingStepId(step.getId().getAsString())
 				.completeStatus(JsonCompleteStatus.of(step.getProgress()))
 				.productId(step.getProductId().getAsString())
-				.productName(step.getProductName().translate(adLanguage))
+				.productNo(step.getProductValueAndName().getValue())
+				.productName(step.getProductValueAndName().getNameTrl(adLanguage))
 				.uom(step.getQtyToPick().getUOMSymbol())
 				.qtyToPick(step.getQtyToPick().toBigDecimal())
 				.mainPickFrom(mainPickFrom)
