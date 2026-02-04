@@ -41,10 +41,7 @@ FROM (SELECT (CASE
                      ELSE SUBSTRING('#,##0.0000' FROM 0 FOR 7 + uom.StdPrecision :: integer)
              END                                                                                                       AS QtyPattern,
              de_metas_endcustomer_fresh_reports.CalculateCustom_InvoiceLine_BruttoWeight(il.C_Customs_Invoice_Line_ID) AS bruttweight,
-             CASE
-                 WHEN report.IsHiddenReportElement(ci.C_DocType_ID, 'Customs_Invoice_Note') = 'N' THEN
-                     COALESCE(ct.name, co.name)
-             END                                                                                                       AS country,
+             COALESCE(ct.name, co.name)                                                                                AS country,
              ci.containernumber                                                                                        AS containernumber,
              ci.sealnumber                                                                                             AS sealnumber,
              COALESCE(inc_trl.name, inc.name)                                                                          AS Incoterms,
