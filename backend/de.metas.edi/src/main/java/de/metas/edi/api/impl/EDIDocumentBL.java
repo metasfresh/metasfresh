@@ -72,6 +72,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
@@ -101,6 +102,12 @@ public class EDIDocumentBL implements IEDIDocumentBL
 
 	@NonNull private final EDIBPartnerConfigService ediBpartnerConfigService;
     @NonNull private final DesadvBL desadvBL;
+
+	public EDIDocumentBL()
+	{
+		this(SpringContextHolder.instance.getBean(EDIBPartnerConfigService.class),
+		SpringContextHolder.instance.getBean(DesadvBL.class));
+	}
 
 	@Override
 	public boolean updateEdiExportStatus(@NonNull final I_M_InOut inOut)
