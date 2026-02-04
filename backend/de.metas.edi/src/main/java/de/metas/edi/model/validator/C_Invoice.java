@@ -54,6 +54,12 @@ public class C_Invoice
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void updateEdiStatus(final I_C_Invoice invoice)
 	{
+		final EDIExportStatus ediExportStatus = EDIExportStatus.ofNullableCode(invoice.getEDI_ExportStatus());
+		if(ediExportStatus != null && ediExportStatus.isInProgressOrSend())
+		{
+			return;
+		}
+
 		ediDocumentBL.updateEdiExportStatus(invoice);
 	}
 
