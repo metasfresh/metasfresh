@@ -31,7 +31,6 @@ import de.metas.common.util.SimpleSequence;
 import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIDesadvLineId;
 import de.metas.edi.api.IDesadvDAO;
-import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_C_OrderLine;
 import de.metas.edi.model.I_M_InOutLine;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
@@ -53,6 +52,8 @@ import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderBL;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.product.ProductId;
@@ -81,6 +82,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Product;
+import org.compiere.model.I_C_Order;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -97,7 +99,6 @@ import java.util.Optional;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 import static de.metas.util.Check.isNotBlank;
-import static org.adempiere.model.InterfaceWrapperHelper.create;
 
 @Service
 @RequiredArgsConstructor
@@ -115,6 +116,7 @@ public class EDIDesadvPackService
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final IHUPIItemProductBL hupiItemProductBL = Services.get(IHUPIItemProductBL.class);
 	private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	private final HURepository huRepository;
 	private final EDIDesadvPackRepository ediDesadvPackRepository;
@@ -221,7 +223,7 @@ public class EDIDesadvPackService
 
 		final ProductId productId = ProductId.ofRepoId(inOutLineRecord.getM_Product_ID());
 
-		final I_C_Order orderRecord = create(orderLineRecord.getC_Order(), I_C_Order.class);
+		final I_C_Order orderRecord = orderBL.getById(OrderId.ofRepoId(orderLineRecord.getC_Order_ID()));
 		final I_M_HU_PI_Item_Product tuPIItemProduct = hupiItemProductBL.extractHUPIItemProduct(orderRecord, orderLineRecord);
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(orderRecord.getC_BPartner_ID());
