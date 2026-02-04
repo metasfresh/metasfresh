@@ -1,6 +1,5 @@
 package de.metas.edi.callout;
 
-import de.metas.edi.api.EDIType;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.compiere.model.CalloutEngine;
 import org.slf4j.MDC.MDCCloseable;
@@ -17,7 +16,7 @@ public class C_Invoice extends CalloutEngine
 		final I_C_Invoice invoice = calloutField.getModel(I_C_Invoice.class);
 		try (final MDCCloseable mdcCloseable = TableRecordMDC.putTableRecordReference(invoice))
 		{
-			Services.get(IEDIDocumentBL.class).updateEdiExportStatus(invoice, EDIType.INVOIC);
+			Services.get(IEDIDocumentBL.class).updateEdiExportStatus(invoice);
 			return CalloutEngine.NO_ERROR;
 		}
 	}

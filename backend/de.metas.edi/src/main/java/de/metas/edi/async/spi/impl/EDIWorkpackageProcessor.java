@@ -27,13 +27,14 @@ package de.metas.edi.async.spi.impl;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.api.IEDIDocumentBL;
 import de.metas.edi.model.I_EDI_Document;
-import de.metas.edi.model.I_EDI_Document_Extension;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.process.export.IExport;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
 import org.adempiere.exceptions.AdempiereException;
@@ -64,7 +65,7 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 	@Override
 	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
-		final List<Exception> feedback = new ArrayList<Exception>();
+		final List<Exception> feedback = new ArrayList<>();
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(workpackage);
 
@@ -104,7 +105,7 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 						ediDocument.getDocumentNo(), errorMessage);
 				feedback.addAll(exportFeedback);
 
-				ediDocument.setEDI_ExportStatus(I_EDI_Document_Extension.EDI_EXPORTSTATUS_Error);
+				ediDocument.setEDI_ExportStatus(EDIExportStatus.Invalid.getCode());
 				ediDocument.setEDIErrorMsg(errorMessage);
 				InterfaceWrapperHelper.save(ediDocument);
 			}
@@ -142,6 +143,7 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 		return new TableRecordIdPair(modelTableId, modelRecordId);
 	}
 
+	@Getter
 	private static class TableRecordIdPair
 	{
 		private final int tableId;
@@ -155,16 +157,6 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 			this.recordId = recordId;
 		}
 
-		public int getTableId()
-		{
-			return tableId;
-		}
-
-		public int getRecordId()
-		{
-			return recordId;
-		}
-
 		@Override
 		public int hashCode()
 		{
@@ -176,7 +168,7 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 		}
 
 		@Override
-		public boolean equals(Object obj)
+		public boolean equals(final Object obj)
 		{
 			if (this == obj)
 				return true;
@@ -184,7 +176,7 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 				return false;
 			if (getClass() != obj.getClass())
 				return false;
-			TableRecordIdPair other = (TableRecordIdPair)obj;
+			final TableRecordIdPair other = (TableRecordIdPair)obj;
 			if (recordId != other.recordId)
 				return false;
 			if (tableId != other.tableId)

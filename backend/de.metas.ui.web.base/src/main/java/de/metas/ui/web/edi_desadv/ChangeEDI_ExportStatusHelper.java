@@ -29,6 +29,7 @@ import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIDocOutBoundLogService;
 import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.api.IDesadvDAO;
+import de.metas.edi.api.impl.EDIDocumentBL;
 import de.metas.edi.model.I_C_Doc_Outbound_Log;
 import de.metas.edi.model.I_C_Invoice;
 import de.metas.edi.model.I_M_InOut;
@@ -53,11 +54,12 @@ import java.util.List;
 @UtilityClass
 public class ChangeEDI_ExportStatusHelper
 {
-	private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
-	private final ADReferenceService adReferenceService = ADReferenceService.get();
-	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-	private final EDIDocOutBoundLogService ediDocOutBoundLogService = SpringContextHolder.instance.getBean(EDIDocOutBoundLogService.class);
-	private static final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	@NonNull private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
+	@NonNull private final ADReferenceService adReferenceService = ADReferenceService.get();
+	@NonNull private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	@NonNull private final EDIDocOutBoundLogService ediDocOutBoundLogService = SpringContextHolder.instance.getBean(EDIDocOutBoundLogService.class);
+	@NonNull private static final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	@NonNull private final EDIDocumentBL ediDocumentBL = SpringContextHolder.instance.getBean(EDIDocumentBL.class);
 
 	@NonNull
 	public List<EDIExportStatus> getAvailableTargetExportStatuses(@NonNull final EDIExportStatus fromStatus)
@@ -83,7 +85,6 @@ public class ChangeEDI_ExportStatusHelper
 		switch (targetExportStatus)
 		{
 			case DontSend:
-			case Error:
 				return true;
 			case Pending:
 				return false;
@@ -99,7 +100,18 @@ public class ChangeEDI_ExportStatusHelper
 		final List<I_M_InOut> inOuts = desadvDAO.retrieveAllInOuts(edi);
 		for (final I_M_InOut inOut : inOuts)
 		{
-			inOut.setEDI_ExportStatus(targetExportStatus.getCode());
+			if(targetExportStatus.isPending())
+			{
+				if(EDIExportStatus.ofCode(inOut.getEDI_ExportStatus()).isInProgressOrSend())
+				{
+					inOut.setEDI_ExportStatus(targetExportStatus.getCode());
+				}
+				ediDocumentBL.updateEdiExportStatus(inOut);
+			}
+			else
+			{
+				inOut.setEDI_ExportStatus(targetExportStatus.getCode());
+			}
 			inOutDAO.save(inOut);
 		}
 
@@ -126,7 +138,18 @@ public class ChangeEDI_ExportStatusHelper
 	public void C_InvoiceDoIt(final InvoiceId invoiceId, final EDIExportStatus targetExportStatus)
 	{
 		final de.metas.edi.model.I_C_Invoice invoice = ediDocOutBoundLogService.retreiveById(invoiceId);
-		invoice.setEDI_ExportStatus(targetExportStatus.getCode());
+		if(targetExportStatus.isPending())
+		{
+			if(EDIExportStatus.ofCode(invoice.getEDI_ExportStatus()).isInProgressOrSend())
+			{
+				invoice.setEDI_ExportStatus(targetExportStatus.getCode());
+			}
+			ediDocumentBL.updateEdiExportStatus(invoice);
+		}
+		else
+		{
+			invoice.setEDI_ExportStatus(targetExportStatus.getCode());
+		}
 		invoiceDAO.save(invoice);
 	}
 

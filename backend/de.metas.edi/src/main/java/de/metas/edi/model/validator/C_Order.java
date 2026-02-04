@@ -27,7 +27,7 @@ package de.metas.edi.model.validator;
 import de.metas.bpartner.BPartnerId;
 import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIExportStatus;
-import de.metas.edi.api.IDesadvBL;
+import de.metas.edi.api.impl.DesadvBL;
 import de.metas.edi.api.impl.EDIBPartnerConfigService;
 import de.metas.edi.model.I_C_Order;
 import de.metas.order.IOrderBL;
@@ -38,7 +38,6 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -48,9 +47,8 @@ import org.springframework.stereotype.Component;
 public class C_Order
 {
 	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	@NonNull private final IDesadvBL desadvBL;
-
-	@NonNull private final EDIBPartnerConfigService ediBpartnerConfigService = SpringContextHolder.instance.getBean(EDIBPartnerConfigService.class);
+	@NonNull private final DesadvBL desadvBL;
+	@NonNull private final EDIBPartnerConfigService ediBpartnerConfigService;
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE,
 			ModelValidator.TIMING_BEFORE_REVERSEACCRUAL,
@@ -79,8 +77,6 @@ public class C_Order
 			return;
 		}
 
-		// TODO move to better place to handle this (introduce de.metas.edi.api.impl.EDIDocumentBL.isValidOrder)
-		//  I think this should result at least in invalid export status on inout, if in addition isEdiDesadvRecipient, to make this visible to the user
 		if (Check.isEmpty(order.getPOReference()))
 		{
 			return;

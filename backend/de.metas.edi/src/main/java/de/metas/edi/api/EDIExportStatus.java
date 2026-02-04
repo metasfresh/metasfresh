@@ -72,5 +72,7 @@ public enum EDIExportStatus implements ReferenceListAwareEnum
 
 	public static boolean isInProgressOrSend(@Nullable final EDIExportStatus ediExportStatus){return SENT_OR_IN_PROGRESS.contains(ediExportStatus);}
 
+	public boolean isProcessing() {return SendingStarted == this || Enqueued == this;}
 
+	public boolean isProcessed() {return Sent == this || DontSend == this;}
 }

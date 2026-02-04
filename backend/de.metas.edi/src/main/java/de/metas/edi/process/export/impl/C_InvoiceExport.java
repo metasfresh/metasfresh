@@ -25,6 +25,7 @@ package de.metas.edi.process.export.impl;
 import java.util.Collections;
 import java.util.List;
 
+import de.metas.edi.api.EDIExportStatus;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -33,9 +34,7 @@ import org.compiere.util.Env;
 import de.metas.edi.api.IEDIDocumentBL;
 import de.metas.edi.api.ValidationState;
 import de.metas.edi.model.I_C_Invoice;
-import de.metas.edi.model.I_EDI_Document_Extension;
 import de.metas.esb.edi.model.I_EDI_cctop_invoic_v;
-import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Services;
@@ -46,8 +45,6 @@ public class C_InvoiceExport extends AbstractEdiDocExtensionExport<I_C_Invoice>
 	 * EXP_Format.Value for exporting Invoice EDI documents
 	 */
 	private static final String CST_INVOICE_EXP_FORMAT = "EDI_cctop_invoic_v";
-
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	public C_InvoiceExport(final I_C_Invoice invoice, final String tableIdentifier, final ClientId clientId)
 	{
@@ -63,7 +60,7 @@ public class C_InvoiceExport extends AbstractEdiDocExtensionExport<I_C_Invoice>
 
 		final List<Exception> feedback = ediDocumentBL.isValidInvoice(document);
 
-		final String EDIStatus = document.getEDI_ExportStatus();
+		final EDIExportStatus EDIStatus = EDIExportStatus.ofCode(document.getEDI_ExportStatus());
 		final ValidationState validationState = ediDocumentBL.updateInvalid(document, EDIStatus, feedback, true); // saveLocally=true
 		if (ValidationState.ALREADY_VALID != validationState)
 		{
@@ -73,7 +70,7 @@ public class C_InvoiceExport extends AbstractEdiDocExtensionExport<I_C_Invoice>
 		assertEligible(document);
 
 		// Mark the invoice as: EDI starting
-		document.setEDI_ExportStatus(I_EDI_Document_Extension.EDI_EXPORTSTATUS_SendingStarted);
+		document.setEDI_ExportStatus(EDIExportStatus.SendingStarted.getCode());
 		InterfaceWrapperHelper.save(document);
 
 		try
@@ -82,7 +79,7 @@ public class C_InvoiceExport extends AbstractEdiDocExtensionExport<I_C_Invoice>
 		}
 		catch (final Exception e)
 		{
-			document.setEDI_ExportStatus(I_EDI_Document_Extension.EDI_EXPORTSTATUS_Error);
+			document.setEDI_ExportStatus(EDIExportStatus.Error.getCode());
 
 			final ITranslatableString errorMsgTrl = TranslatableStrings.parse(e.getLocalizedMessage());
 			document.setEDIErrorMsg(errorMsgTrl.translate(Env.getAD_Language()));

@@ -24,7 +24,7 @@ package de.metas.edi.api;
 
 import de.metas.edi.model.I_C_Invoice;
 import de.metas.edi.model.I_EDI_Document;
-import de.metas.edi.model.I_EDI_Document_Extension;
+import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.process.export.IExport;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.util.ISingletonService;
@@ -39,11 +39,11 @@ public interface IEDIDocumentBL extends ISingletonService
 	String MSG_Partner_ValidateIsEDIRecipient_Error = "de.metas.edi.ValidateIsEDIRecipientError";
 	String MSG_Invalid_Invoice_Aggregation_Error = "de.metas.edi.InvalidInvoiceAggregationError";
 
-	boolean updateEdiExportStatus(I_EDI_Document_Extension document, final EDIType ediType);
+	boolean updateEdiExportStatus(@NonNull I_M_InOut inOut);
 
-	void setEdiExportStatus(@NonNull I_EDI_Document_Extension document, boolean isEdiEnabled);
+	boolean updateEdiExportStatus(@NonNull I_C_Invoice invoice);
 
-	List<Exception> isValidInvoice(I_C_Invoice invoice);
+	@NonNull List<Exception> isValidInvoice(@NonNull I_C_Invoice invoice);
 
 	List<Exception> isValidDesAdv(I_EDI_Desadv desadv);
 
@@ -55,7 +55,7 @@ public interface IEDIDocumentBL extends ISingletonService
 	 *         {@link ValidationState#ALREADY_VALID} if document is already valid, or<br>
 	 *         {@link ValidationState#UPDATED_VALID} if document was invalid, but is now valid
 	 */
-	ValidationState updateInvalid(I_EDI_Document document, String EDI_ExportStatus, List<Exception> feedback, boolean saveLocally);
+	ValidationState updateInvalid(I_EDI_Document document, EDIExportStatus EDI_ExportStatus, List<Exception> feedback, boolean saveLocally);
 
 	/**
 	 * @return EDI export processor

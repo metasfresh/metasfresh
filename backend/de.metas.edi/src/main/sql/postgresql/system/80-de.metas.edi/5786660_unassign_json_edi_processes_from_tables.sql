@@ -20,4 +20,24 @@
  * #L%
  */
 
---TODO: unassign all json EDI processes from tables
+-- Process: C_Doc_Outbound_Log_Selection_Export_JSON(de.metas.edi.process.export.json.C_Doc_Outbound_Log_Selection_Export_JSON)
+-- Table: C_Doc_Outbound_Log
+-- EntityType: de.metas.esb.edi
+-- 2026-02-04T18:08:54.656Z
+DELETE FROM AD_Table_Process WHERE AD_Table_Process_ID=541555
+;
+
+-- Process: C_Invoice_Selection_Export_JSON(de.metas.edi.process.export.json.C_Invoice_Selection_Export_JSON)
+-- Table: C_Invoice
+-- EntityType: de.metas.esb.edi
+-- 2026-02-04T18:09:15.480Z
+DELETE FROM AD_Table_Process WHERE AD_Table_Process_ID=541556
+;
+
+-- Process: M_InOut_Selection_Export_JSON(de.metas.edi.process.export.json.M_InOut_Selection_Export_JSON)
+-- Table: M_InOut
+-- Window: Lieferung(169,D)
+-- EntityType: de.metas.esb.edi
+-- 2026-02-04T18:09:36.598Z
+DELETE FROM AD_Table_Process WHERE AD_Table_Process_ID=541558
+;

@@ -24,21 +24,22 @@ package de.metas.edi.model.validator;
 
 import java.util.List;
 
+import de.metas.edi.api.impl.EDIDocumentBL;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import de.metas.edi.api.IEDIDocumentBL;
 import de.metas.edi.model.I_C_BPartner;
-import de.metas.util.Services;
 
 @Interceptor(I_C_BPartner.class)
 @Component
+@RequiredArgsConstructor
 public class C_BPartner
 {
-	private final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
+	private final EDIDocumentBL ediDocumentBL;
 
 	@ModelChange(//
 			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //

@@ -31,7 +31,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import de.metas.edi.api.IDesadvBL;
+import de.metas.edi.api.impl.DesadvBL;
 import de.metas.edi.model.I_C_OrderLine;
 
 @Interceptor(I_C_OrderLine.class)
@@ -39,7 +39,7 @@ import de.metas.edi.model.I_C_OrderLine;
 @RequiredArgsConstructor
 public class C_OrderLine
 {
-	private final IDesadvBL desadvBL;
+	private final DesadvBL desadvBL;
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void beforeDelete(final I_C_OrderLine orderLine)

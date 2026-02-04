@@ -22,9 +22,11 @@ package de.metas.edi.process;
  * #L%
  */
 
-import java.util.Arrays;
 import java.util.Iterator;
 
+import de.metas.edi.api.EDIExportStatus;
+import de.metas.edi.api.impl.DesadvBL;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
@@ -34,10 +36,10 @@ import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutor;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.ad.trx.processor.spi.ITrxItemProcessor;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 
 import de.metas.document.engine.IDocument;
-import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.model.I_C_BPartner;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_M_InOut;
@@ -52,6 +54,7 @@ import de.metas.util.Services;
 public class EDI_Desadv_Aggregate_M_InOuts extends JavaProcess
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final DesadvBL desadvBL = SpringContextHolder.instance.getBean(DesadvBL.class);
 
 	@Override
 	protected final void prepare()
@@ -81,9 +84,8 @@ public class EDI_Desadv_Aggregate_M_InOuts extends JavaProcess
 
 		.addEqualsFilter(I_M_InOut.COLUMNNAME_EDI_Desadv_ID, null) // not yet assigned
 
-		// not yet sent
-				.addNotInArrayFilter(I_EDI_Document.COLUMNNAME_EDI_ExportStatus,
-						Arrays.asList(I_EDI_Document.EDI_EXPORTSTATUS_Sent, I_EDI_Document.EDI_EXPORTSTATUS_SendingStarted))
+		// not yet sent and valid
+		.addEqualsFilter(I_EDI_Document.COLUMNNAME_EDI_ExportStatus, EDIExportStatus.Pending.getCode())
 
 		.addEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_IsSOTrx, true)
 
@@ -91,9 +93,6 @@ public class EDI_Desadv_Aggregate_M_InOuts extends JavaProcess
 				IDocument.STATUS_Completed, IDocument.STATUS_Closed)
 
 		.addNotEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_POReference, null)
-
-		// task 08926: make sure the inout has EdiEnabled
-		.addEqualsFilter(I_M_InOut.COLUMNNAME_IsEdiEnabled, true)
 
 		.addInSubQueryFilter(org.compiere.model.I_M_InOut.COLUMNNAME_C_BPartner_ID, org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID, ediRecipient)
 
@@ -122,8 +121,6 @@ public class EDI_Desadv_Aggregate_M_InOuts extends JavaProcess
 	{
 		return new ITrxItemProcessor<I_M_InOut, Void>()
 		{
-			private final IDesadvBL desadvBL = Services.get(IDesadvBL.class);
-
 			private ITrxItemProcessorContext processorCtx;
 
 			@Override

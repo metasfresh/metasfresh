@@ -1988,9 +1988,6 @@ public interface I_C_Invoice_Candidate
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsDeliveryClosed = new ModelColumn<>(I_C_Invoice_Candidate.class, "IsDeliveryClosed", null);
 	String COLUMNNAME_IsDeliveryClosed = "IsDeliveryClosed";
 
-	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsEdiEnabled = new ModelColumn<>(I_C_Invoice_Candidate.class, "IsEdiEnabled", null);
-	String COLUMNNAME_IsEdiEnabled = "IsEdiEnabled";
-
 	/**
 	 * Set Error.
 	 * An Error occurred in the execution

@@ -22,6 +22,7 @@ package de.metas.edi.process.export.impl;
  * #L%
  */
 
+import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.api.IDesadvDAO;
 import de.metas.edi.api.ValidationState;
 import de.metas.edi.api.impl.EDIDocumentBL;
@@ -68,9 +69,9 @@ public class EDI_DESADVExport extends AbstractExport<I_EDI_Document>
 
 		final List<Exception> feedback = ediDocumentBL.isValidDesAdv(desadv);
 
-		final String EDIStatus = document.getEDI_ExportStatus();
+		final EDIExportStatus EDIStatus = EDIExportStatus.ofCode(document.getEDI_ExportStatus());
 		final ValidationState validationState = ediDocumentBL.updateInvalid(document, EDIStatus, feedback, true); // saveLocally=true
-		if (ValidationState.ALREADY_VALID != validationState)
+		if (!validationState.isAlreadyValid())
 		{
 			// otherwise, it's either INVALID, or freshly updated (which, keeping the old logic, must be dealt with in one more step)
 			return feedback;
