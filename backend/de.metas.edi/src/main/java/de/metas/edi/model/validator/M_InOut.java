@@ -1,6 +1,7 @@
 package de.metas.edi.model.validator;
 
 import de.metas.common.util.CoalesceUtil;
+import de.metas.edi.api.EDIType;
 import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.api.IEDIDocumentBL;
 import de.metas.edi.model.I_C_BPartner;
@@ -8,6 +9,7 @@ import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.logging.TableRecordMDC;
+import de.metas.order.OrderId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -39,7 +41,7 @@ public class M_InOut
 			setEdiEnabledFromOrder(document);
 
 			final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
-			ediDocumentBL.updateEdiEnabled(document);
+			ediDocumentBL.updateEdiExportStatus(document, EDIType.DESADV);
 		}
 	}
 
@@ -61,11 +63,17 @@ public class M_InOut
 		}
 
 		final I_C_Order order = InterfaceWrapperHelper.create(inout.getC_Order(), de.metas.edi.model.I_C_Order.class);
-		if (order == null || order.getC_Order_ID() <= 0)
+		if (order == null || OrderId.ofRepoIdOrNull(order.getC_Order_ID()) == null)
 		{
 			// nothing to do
 			return;
 		}
+
+		//TODO
+		// check why also handover partner?
+		// why on m_inout check order partner again, instead of checking on partner change?
+		// new order poreference should be checked too
+		// remove this after clarified, introduce logic to de.metas.edi.api.IEDIDocumentBL isValidInOut instead to make it visible
 
 		// order.isEdiEnabled might be for just DESADV or just INVOIC; so we also need to check the finalRecipient's flag
 		final int finalRecipientId = CoalesceUtil.firstGreaterThanZero(order.getDropShip_BPartner_ID(), order.getC_BPartner_ID());
@@ -74,11 +82,11 @@ public class M_InOut
 		final I_C_BPartner handOverRecipient = InterfaceWrapperHelper.load(handOverRecipientId, I_C_BPartner.class);
 		if (!finalRecipient.isEdiDesadvRecipient() && !handOverRecipient.isEdiDesadvRecipient())
 		{
-			ediDocumentBL.setEdiEnabled(inout, false);
+			ediDocumentBL.setEdiExportStatus(inout, false);
 			return;
 		}
 
-		ediDocumentBL.setEdiEnabled(inout, order.isEdiEnabled());
+		ediDocumentBL.setEdiExportStatus(inout, order.isEdiEnabled());
 	}
 
 	/**
@@ -96,7 +104,7 @@ public class M_InOut
 		}
 
 		final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
-		if (!ediDocumentBL.updateEdiEnabled(inOut))
+		if (!ediDocumentBL.updateEdiExportStatus(inOut, EDIType.DESADV))
 		{
 			return;
 		}

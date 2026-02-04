@@ -43,6 +43,8 @@ import java.util.Properties;
 
 public interface IDesadvBL extends ISingletonService
 {
+	I_EDI_Desadv getById(@NonNull EDIDesadvId id);
+
 	List<I_EDI_DesadvLine> retrieveLinesByIds(Collection<Integer> desadvLineIds);
 
 	/**

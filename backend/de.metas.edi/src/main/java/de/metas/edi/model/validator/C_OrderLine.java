@@ -37,6 +37,8 @@ import de.metas.util.Services;
 @Component
 public class C_OrderLine
 {
+	private final IDesadvBL desadvBL = Services.get(IDesadvBL.class);
+
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void beforeDelete(final I_C_OrderLine orderLine)
 	{
@@ -45,6 +47,6 @@ public class C_OrderLine
 			return;
 		}
 
-		Services.get(IDesadvBL.class).removeOrderLineFromDesadv(orderLine);
+		desadvBL.removeOrderLineFromDesadv(orderLine);
 	}
 }

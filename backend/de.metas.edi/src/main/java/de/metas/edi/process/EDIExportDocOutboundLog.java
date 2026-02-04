@@ -186,13 +186,6 @@ public class EDIExportDocOutboundLog extends JavaProcess implements IProcessPrec
 
 	private boolean filterEligibleDocument(@NonNull final I_EDI_Document_Extension ediDocument)
 	{
-		// Only EDI-enabled documents
-		if (!ediDocument.isEdiEnabled())
-		{
-			Loggables.withLogger(logger, Level.INFO).addLog("Skipping ediDocument={}, because IsEdiEnabled='N'", ediDocument);
-			return false;
-		}
-
 		//
 		// Only pending EDI documents
 		// note that there might be a problem with inouts, if we used this process: inOuts might be invalid, but still we want to aggregate them, and then fix stuff in the DESADV record itself

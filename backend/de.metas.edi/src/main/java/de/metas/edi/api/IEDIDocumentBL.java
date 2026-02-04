@@ -39,14 +39,9 @@ public interface IEDIDocumentBL extends ISingletonService
 	String MSG_Partner_ValidateIsEDIRecipient_Error = "de.metas.edi.ValidateIsEDIRecipientError";
 	String MSG_Invalid_Invoice_Aggregation_Error = "de.metas.edi.InvalidInvoiceAggregationError";
 
-	/**
-	 * Update EDI status, but do not save
-	 *
-	 * @return true if document.IsEdiEnabled=Y, false otherwise
-	 */
-	boolean updateEdiEnabled(I_EDI_Document_Extension document);
+	boolean updateEdiExportStatus(I_EDI_Document_Extension document, final EDIType ediType);
 
-	void setEdiEnabled(@NonNull I_EDI_Document_Extension document, boolean isEdiEnabled);
+	void setEdiExportStatus(@NonNull I_EDI_Document_Extension document, boolean isEdiEnabled);
 
 	List<Exception> isValidInvoice(I_C_Invoice invoice);
 

@@ -27,11 +27,13 @@ import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.aggregation.api.Aggregation;
 import de.metas.aggregation.model.X_C_Aggregation;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.edi.api.EDIExportStatus;
+import de.metas.edi.api.EDIType;
 import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.api.IDesadvDAO;
 import de.metas.edi.api.IEDIDocumentBL;
@@ -69,6 +71,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
 import org.slf4j.Logger;
@@ -86,53 +89,63 @@ public class EDIDocumentBL implements IEDIDocumentBL
 	private static final Logger logger = LogManager.getLogger(EDIDocumentBL.class);
 	private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
 
+	@NonNull private final EDIBPartnerConfigService ediBpartnerConfigService = SpringContextHolder.instance.getBean(EDIBPartnerConfigService.class);
+
 	@Override
-	public boolean updateEdiEnabled(@NonNull final I_EDI_Document_Extension document)
+	public boolean updateEdiExportStatus(@NonNull final I_EDI_Document_Extension document, final EDIType ediType)
 	{
 		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 		// EDI applies only for customer invoices and shipments
-		if (!document.isSOTrx() && document.isEdiEnabled())
+		if (!document.isSOTrx())
 		{
-			loggable.addLog("IsSoTrx=false; => update IsEdiEnabled to false");
-			setEdiEnabled(document, false); // 08619: don't assume that the flag is already false from the beginning, but make sure it is false now
-			return document.isEdiEnabled();
+			loggable.addLog("IsSoTrx=false; => update EdiExportStatus to {}", EDIExportStatus.DontSend.name());
+			setEdiExportStatus(document, false);
+			return false;
 		}
 
-		// task 05721: Set isEDIEnabled to false and disable the button for reversals
 		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(document.getDocStatus());
-		if (docStatus.isReversed() && document.isEdiEnabled())
+		final boolean isBPartnerEDIConfigEnabled;
+		if (ediType.isDesadv())
 		{
-			loggable.addLog("DocStatus={} is reversed; => update IsEdiEnabled to false", docStatus);
-			setEdiEnabled(document, false);
-			return document.isEdiEnabled();
+			isBPartnerEDIConfigEnabled = ediBpartnerConfigService.isEdiDesadvRecipient(BPartnerId.ofRepoId(document.getC_BPartner_ID()));
+		}
+		else if (ediType.isInvoic())
+		{
+			isBPartnerEDIConfigEnabled = ediBpartnerConfigService.isEdiInvoicRecipient(BPartnerId.ofRepoId(document.getC_BPartner_ID()));
+		}
+		else
+		{
+			throw new AdempiereException("Unsupported EDIType: " + ediType);
 		}
 
-		if (document.getReversal_ID() > 0 && document.isEdiEnabled())
+		if (docStatus.isReversed() && isBPartnerEDIConfigEnabled)
 		{
-			loggable.addLog("Reversal_ID={} (i.e. >0); => update IsEdiEnabled to false", docStatus);
-			setEdiEnabled(document, false);
-			return document.isEdiEnabled();
+			loggable.addLog("DocStatus={} is reversed; => update EdiExportStatus to {}", docStatus, EDIExportStatus.DontSend.name());
+			setEdiExportStatus(document, false);
+			return false;
 		}
 
-		logger.debug("return non-updated isEdiEnabled={}", document.isEdiEnabled());
-		return document.isEdiEnabled();
+		if (document.getReversal_ID() > 0 && isBPartnerEDIConfigEnabled)
+		{
+			loggable.addLog("Reversal_ID={} (i.e. >0); => update EdiExportStatus to {}", docStatus, EDIExportStatus.DontSend.name());
+			setEdiExportStatus(document, false);
+			return false;
+		}
+
+		final EDIExportStatus ediExportStatus = isBPartnerEDIConfigEnabled ? EDIExportStatus.Pending : EDIExportStatus.DontSend;
+		logger.debug("BPartnerEDIConfigEnabled={}; => update EdiExportStatus to {}", isBPartnerEDIConfigEnabled, ediExportStatus.name());
+		return isBPartnerEDIConfigEnabled;
 	}
 
 	@Override
-	public void setEdiEnabled(@NonNull final I_EDI_Document_Extension document, final boolean isEdiEnabled)
+	public void setEdiExportStatus(@NonNull final I_EDI_Document_Extension document, final boolean isBPartnerEDIConfigEnabled)
 	{
-		if(!InterfaceWrapperHelper.isNullOrEmpty(document, I_EDI_Document_Extension.COLUMNNAME_IsEdiEnabled) && document.isEdiEnabled() == isEdiEnabled)
+		if(!isBPartnerEDIConfigEnabled && EDIExportStatus.isInProgressOrSend(EDIExportStatus.ofNullableCode(document.getEDI_ExportStatus())))
 		{
-			return;
+			throw new AdempiereException("EdiExportStatus can't be changed, while export is in progress or already sent ");
 		}
 
-		if(!isEdiEnabled && EDIExportStatus.isInProgressOrSend(EDIExportStatus.ofNullableCode(document.getEDI_ExportStatus())))
-		{
-			throw new AdempiereException("EdiEnabled can't be deactivated, if export is in progress or sent ");
-		}
-
-		document.setIsEdiEnabled(isEdiEnabled);
-		document.setEDI_ExportStatus(isEdiEnabled ? EDIExportStatus.Pending.getCode() : EDIExportStatus.DontSend.getCode());
+		document.setEDI_ExportStatus(isBPartnerEDIConfigEnabled ? EDIExportStatus.Pending.getCode() : EDIExportStatus.DontSend.getCode());
 	}
 
 	@Override
@@ -140,10 +153,11 @@ public class EDIDocumentBL implements IEDIDocumentBL
 	{
 		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 		final List<Exception> feedback = new ArrayList<>();
-		final String EDIStatus = invoice.getEDI_ExportStatus();
-		if (!invoice.isEdiEnabled() && !I_EDI_Document.EDI_EXPORTSTATUS_Invalid.equals(EDIStatus))
+		final EDIExportStatus ediExportStatus = EDIExportStatus.ofCode(invoice.getEDI_ExportStatus());
+		final boolean isEdiInvoicRecipient = ediBpartnerConfigService.isEdiInvoicRecipient(BPartnerId.ofRepoId(invoice.getC_BPartner_ID()));
+		if (!isEdiInvoicRecipient && !ediExportStatus.isInvalid())
 		{
-			loggable.addLog("isValidInvoice - C_Invoice_ID={} has IsEdiEnabled={}, EDI_ExportStatus={}; return empty list", invoice.getC_Invoice_ID(), invoice.isEdiEnabled(), EDIStatus);
+			loggable.addLog("isValidInvoice - C_Invoice_ID={} has isBPartnerEDIConfigEnabled=false, EDI_ExportStatus={}; return empty list", invoice.getC_Invoice_ID(), ediExportStatus.name());
 			return feedback;
 		}
 
@@ -225,7 +239,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 	@Override
 	public List<Exception> isValidPartner(@NonNull final org.compiere.model.I_C_BPartner bpartner)
 	{
-		return isValidPartner(bpartner, false/* isPartOfInvoiceValidation */);
+		return isValidPartner(bpartner, false);
 	}
 
 	private List<Exception> isValidPartner(

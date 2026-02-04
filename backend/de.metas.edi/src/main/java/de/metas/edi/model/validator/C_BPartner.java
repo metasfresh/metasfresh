@@ -31,7 +31,6 @@ import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import de.metas.edi.api.IEDIDocumentBL;
-import de.metas.edi.api.IEDIInvoiceCandDAO;
 import de.metas.edi.model.I_C_BPartner;
 import de.metas.util.Services;
 
@@ -39,18 +38,20 @@ import de.metas.util.Services;
 @Component
 public class C_BPartner
 {
+	private final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
+
 	@ModelChange(//
 			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
 			ifColumnsChanged = { I_C_BPartner.COLUMNNAME_IsEdiDesadvRecipient, I_C_BPartner.COLUMNNAME_IsEdiInvoicRecipient })
 	public void validate(final I_C_BPartner bpartner)
 	{
-		boolean ediRecipient = bpartner.isEdiDesadvRecipient() || bpartner.isEdiInvoicRecipient();
+		final boolean ediRecipient = bpartner.isEdiDesadvRecipient() || bpartner.isEdiInvoicRecipient();
 		if (!ediRecipient)
 		{
 			return;
 		}
 
-		final List<Exception> feedback = Services.get(IEDIDocumentBL.class).isValidPartner(bpartner);
+		final List<Exception> feedback = ediDocumentBL.isValidPartner(bpartner);
 		if (feedback == null || feedback.isEmpty())
 		{
 			return;
@@ -63,27 +64,5 @@ public class C_BPartner
 		}
 
 		throw new AdempiereException("Invalid EDI partner " + causes.toString().trim());
-	}
-
-	/**
-	 * Make sure the IsEDIRecipient flag from the invoice candidates of a partner is always up to date
-	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_BPartner.COLUMNNAME_IsEdiInvoicRecipient })
-	public void updateIsEDIInvoicRecipient_InvoiceCandidates(final I_C_BPartner partner)
-	{
-		if (partner == null)
-		{
-			// nothing to do
-			return;
-		}
-		// Services
-		final IEDIInvoiceCandDAO invoiceCandidateDAO = Services.get(IEDIInvoiceCandDAO.class);
-
-		final boolean isEDIRecipient = partner.isEdiInvoicRecipient();
-
-		// update the unprocessed invoice candidates of this bpartner with the ediRecipient flag,
-		// only if the flag is not yet correctly set
-
-		invoiceCandidateDAO.updateEdiRecipientInvoiceCandidates(partner, isEDIRecipient);
 	}
 }
