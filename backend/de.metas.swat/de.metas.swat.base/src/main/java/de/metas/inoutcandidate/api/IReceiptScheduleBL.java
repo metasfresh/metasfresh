@@ -48,6 +48,7 @@ import org.compiere.model.I_M_Warehouse;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -236,5 +237,5 @@ public interface IReceiptScheduleBL extends ISingletonService
 
 	List<ReceiptScheduleId> retainLUQtySchedules(List<ReceiptScheduleId> receiptSchedules);
 
-	int updateDatePromisedOverrideAndPOReference(@NonNull PInstanceId pinstanceId, @Nullable LocalDate datePromisedOverride, @Nullable String poReference);
+	int updateDatePromisedOverrideAndPOReference(@NonNull PInstanceId pinstanceId, @Nullable LocalDateTime datePromisedOverride, @Nullable String poReference);
 }
