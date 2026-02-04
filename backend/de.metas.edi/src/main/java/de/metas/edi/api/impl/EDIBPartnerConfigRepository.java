@@ -73,6 +73,7 @@ public class EDIBPartnerConfigRepository
 
 	private EDIBPartnerConfigMap retrieveEDIBPartnerConfigMap()
 	{
+		// keep in sync with the index c_bpartner_isedidesadvrecipient_isediinvoicrecipient
 		final IQueryBuilder<I_C_BPartner> queryBuilder = queryBL.createQueryBuilder(I_C_BPartner.class)
 				.addOnlyActiveRecordsFilter();
 
