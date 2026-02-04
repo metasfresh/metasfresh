@@ -69,6 +69,7 @@ public class M_InOut_GenerateCustomerReturn extends JavaProcess implements IProc
 		customerReturn.setC_DocType_ID(docTypeId.getRepoId());
 		customerReturn.setIsSOTrx(true);
 		customerReturn.setMovementType(MovementType.CustomerReturns.getCode());
+		customerReturn.setReturn_Origin_InOut_ID(shipment.getM_InOut_ID());
 		InterfaceWrapperHelper.save(customerReturn);
 
 		for (final org.compiere.model.I_M_InOutLine shipmentLine : inoutBL.getLines(shipment))
