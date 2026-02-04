@@ -34,6 +34,7 @@ import de.metas.order.IOrderBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.AdempiereException;
@@ -43,10 +44,11 @@ import org.springframework.stereotype.Component;
 
 @Interceptor(I_C_Order.class)
 @Component
+@RequiredArgsConstructor
 public class C_Order
 {
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IDesadvBL desadvBL = Services.get(IDesadvBL.class);
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final IDesadvBL desadvBL;
 
 	@NonNull private final EDIBPartnerConfigService ediBpartnerConfigService = SpringContextHolder.instance.getBean(EDIBPartnerConfigService.class);
 

@@ -24,8 +24,8 @@ package de.metas.edi.model.validator;
 
 import java.util.List;
 
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -34,7 +34,7 @@ import de.metas.edi.api.IEDIDocumentBL;
 import de.metas.edi.model.I_C_BPartner;
 import de.metas.util.Services;
 
-@Validator(I_C_BPartner.class)
+@Interceptor(I_C_BPartner.class)
 @Component
 public class C_BPartner
 {

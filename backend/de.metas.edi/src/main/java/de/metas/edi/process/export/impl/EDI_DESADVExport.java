@@ -23,8 +23,8 @@ package de.metas.edi.process.export.impl;
  */
 
 import de.metas.edi.api.IDesadvDAO;
-import de.metas.edi.api.IEDIDocumentBL;
 import de.metas.edi.api.ValidationState;
+import de.metas.edi.api.impl.EDIDocumentBL;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_EDI_Document_Extension;
 import de.metas.esb.edi.model.I_EDI_Desadv;
@@ -32,9 +32,11 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.inout.IInOutBL;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 
 import java.util.Collections;
@@ -50,6 +52,8 @@ public class EDI_DESADVExport extends AbstractExport<I_EDI_Document>
 	private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
 	private final IInOutBL shipmentBL = Services.get(IInOutBL.class);
 
+	@NonNull private final EDIDocumentBL ediDocumentBL = SpringContextHolder.instance.getBean(EDIDocumentBL.class);
+
 	public EDI_DESADVExport(final I_EDI_Desadv desadv, final String tableIdentifier, final ClientId clientId)
 	{
 		super(InterfaceWrapperHelper.create(desadv, I_EDI_Document.class), tableIdentifier, clientId);
@@ -58,8 +62,6 @@ public class EDI_DESADVExport extends AbstractExport<I_EDI_Document>
 	@Override
 	public List<Exception> doExport()
 	{
-		final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
-
 		final I_EDI_Document document = getDocument();
 
 		final I_EDI_Desadv desadv = InterfaceWrapperHelper.create(document, I_EDI_Desadv.class);

@@ -22,3 +22,10 @@
 
 DROP FUNCTION IF EXISTS "de.metas.edi".getediexportstatus(numeric, numeric)
 ;
+
+-- 2026-02-04T10:22:03.034Z
+-- de.metas.edi.model.validator.main
+DELETE FROM AD_ModelValidator WHERE AD_ModelValidator_ID=540086
+;
+
+--TODO

@@ -27,7 +27,8 @@ public class M_InOut
 {
 	private final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_M_InOut.COLUMNNAME_C_BPartner_ID)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_M_InOut.COLUMNNAME_C_BPartner_ID, I_M_InOut.COLUMNNAME_C_Order_ID, I_M_InOut.COLUMNNAME_POReference })
 	public void updateEdiStatus(final I_M_InOut document)
 	{
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(document))
@@ -40,7 +41,6 @@ public class M_InOut
 			// make sure the inout is initialized with the ediEnabled flag from order, if the order is set
 			setEdiEnabledFromOrder(document);
 
-			final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
 			ediDocumentBL.updateEdiExportStatus(document, EDIType.DESADV);
 		}
 	}

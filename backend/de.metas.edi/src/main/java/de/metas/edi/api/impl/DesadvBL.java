@@ -61,6 +61,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -85,6 +86,7 @@ import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Service
+@RequiredArgsConstructor
 public class DesadvBL implements IDesadvBL
 {
 	private final static Logger logger = LogManager.getLogger(EDIDesadvPackService.class);
@@ -114,15 +116,6 @@ public class DesadvBL implements IDesadvBL
 
 	private final transient EDIDesadvPackService ediDesadvPackService;
 	private final EDIDesadvInOutLineDAO desadvInOutLineDAO;
-
-	// @VisibleForTesting
-	public DesadvBL(
-			@NonNull final EDIDesadvPackService ediDesadvPackService,
-			@NonNull final EDIDesadvInOutLineDAO desadvInOutLineDAO)
-	{
-		this.ediDesadvPackService = ediDesadvPackService;
-		this.desadvInOutLineDAO = desadvInOutLineDAO;
-	}
 
 	@Override
 	public I_EDI_Desadv getById(@NonNull final EDIDesadvId id)
