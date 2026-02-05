@@ -52,11 +52,9 @@ class MissingContextVariables
 			.put("C_Order/143.C_Charge_ID.DisplayLogic", "HasCharges")
 			.put("C_Order/143.C_OrderLine/187.M_Warehouse_ID.DisplayLogic", "DirectShip")
 			.put("C_Order/143.ChargeAmt.DisplayLogic", "HasCharges")
-			.put("C_Order/143.IsEdiEnabled.ReadonlyLogic", "IsEdiDesadvRecipient")
 			.put("C_Order/181.C_Charge_ID.DisplayLogic", "HasCharges")
 			.put("C_Order/181.C_OrderLine/293.M_Warehouse_ID.DisplayLogic", "DirectShip")
 			.put("C_Order/181.ChargeAmt.DisplayLogic", "HasCharges")
-			.put("C_Order/181.IsEdiEnabled.ReadonlyLogic", "IsEdiDesadvRecipient")
 			.put("C_Order/540072.C_Charge_ID.DisplayLogic", "HasCharges")
 			.put("C_Order/540072.C_OrderLine/540212.AD_OrgTrx_ID.DisplayLogic", "IsComment")
 			.put("C_Order/540072.C_OrderLine/540212.C_Activity_ID.DisplayLogic", "IsComment")
@@ -259,7 +257,7 @@ class MissingContextVariables
 		this.reportedMissingButNotUsed = TreeMultimap.create(this.all);
 	}
 
-	private static void addAll(final HashMultimap<ContextPath, String> target, @Nullable Map<String, String> source)
+	private static void addAll(final HashMultimap<ContextPath, String> target, @Nullable final Map<String, String> source)
 	{
 		if (source == null || source.isEmpty()) {return;}
 
@@ -270,7 +268,7 @@ class MissingContextVariables
 		});
 	}
 
-	public void recordContextVariableUsed(final ContextPath path, final String contextVariable, boolean wasFound)
+	public void recordContextVariableUsed(final ContextPath path, final String contextVariable, final boolean wasFound)
 	{
 		reportedMissingButNotUsed.remove(path, contextVariable);
 
@@ -291,7 +289,7 @@ class MissingContextVariables
 		}
 	}
 
-	public boolean isKnownAsMissing(final ContextPath path, String contextVariable)
+	public boolean isKnownAsMissing(final ContextPath path, final String contextVariable)
 	{
 		return all.containsEntry(path, contextVariable);
 	}

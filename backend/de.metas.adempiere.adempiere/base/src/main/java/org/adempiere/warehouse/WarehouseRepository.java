@@ -67,6 +67,7 @@ public class WarehouseRepository
 		return cache.getOrLoad(0, this::retrieveWarehouseMap);
 	}
 
+	@NonNull
 	private WarehouseMap retrieveWarehouseMap()
 	{
 		final ImmutableList<Warehouse> warehouses = queryBL.createQueryBuilder(I_M_Warehouse.class)
@@ -88,6 +89,7 @@ public class WarehouseRepository
 				.active(warehouse.isActive())
 				.build();
 	}
+
 	@NonNull
 	public ImmutableSet<WarehouseId> getAllActiveIds()
 	{

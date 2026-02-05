@@ -1,5 +1,6 @@
 package de.metas.handlingunits.generichumodel;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -36,6 +37,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.util.lang.IMutable;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
@@ -82,6 +85,14 @@ public class HURepository
 	private static final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
+	@VisibleForTesting
+	public static HURepository newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(HURepository.class, HURepository::new);
+	}
 
 	public HU getById(@NonNull final HuId id)
 	{
