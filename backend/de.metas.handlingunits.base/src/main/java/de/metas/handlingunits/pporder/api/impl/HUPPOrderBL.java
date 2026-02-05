@@ -345,6 +345,7 @@ public class HUPPOrderBL implements IHUPPOrderBL
 						.productId(maturedProductId)
 						.warehouseId(locatorId.getWarehouseId())
 						.maturingConfigLineId(maturingConfigLine.getId())
+						.orgId(maturingConfigLine.getOrgId())
 						.build())
 				.map(ProductPlanning::isMatured)
 				.orElse(false);
