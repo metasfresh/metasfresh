@@ -319,7 +319,7 @@ public class HUPPOrderBL implements IHUPPOrderBL
 			@NonNull final I_M_HU hu,
 			@NonNull final ProductId maturedProductId)
 	{
-		if (!hu.isActive() || !hu.isReserved() || !hu.isLocked() || !huStatusBL.isStatusActiveOrIssued(hu))
+		if (!hu.isActive() || hu.isReserved() || hu.isLocked() || !huStatusBL.isStatusActiveOrIssued(hu))
 		{
 			return false;
 		}
