@@ -1122,8 +1122,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | ReportDataLine                                                                                                                                    |
       | %BTW% /AF="\\\V-APSRV01\PRAGMA\ETIKETTEN\LAYOUTS\SSCC.BTW" /D="<TRIGGER FILE NAME>" /PRN="\\\V-DCSRV02\ETIKETTEN01" /R=3 /P /D                    |
       | %END%                                                                                                                                             |
-      | "1","ipaSSCC18_14092022_1","@o_1_S0316_040@","16.04.2021","","@p_1_S0316_040@","1","0","210420","lotNumber","location_gln","","","","","location_gln","","","","","",""   |
-      | "1","ipaSSCC18_14092022_2","@o_1_S0316_040@","16.04.2021","","@p_1_S0316_040@","1","0","210420","luLotNumber","location_gln","","","","","location_gln","","","","","","" |
+      | "1","ipaSSCC18_14092022_1","@o_1_S0316_040@","16.04.2021","","@p_1_S0316_040@","1","0","210420","lotNumber","location_gln","","","","","","location_gln","","","","",""   |
+      | "1","ipaSSCC18_14092022_2","@o_1_S0316_040@","16.04.2021","","@p_1_S0316_040@","1","0","210420","luLotNumber","location_gln","","","","","","location_gln","","","","","" |
 
 
   @Id:S0457_010
