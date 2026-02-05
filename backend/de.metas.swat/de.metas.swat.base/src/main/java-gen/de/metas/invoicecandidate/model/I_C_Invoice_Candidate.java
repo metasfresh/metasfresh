@@ -1989,48 +1989,6 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_IsDeliveryClosed = "IsDeliveryClosed";
 
 	/**
-	 * Set Document to be sent via EDI.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsEdiEnabled (boolean IsEdiEnabled);
-
-	/**
-	 * Get Document to be sent via EDI.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isEdiEnabled();
-
-	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsEdiEnabled = new ModelColumn<>(I_C_Invoice_Candidate.class, "IsEdiEnabled", null);
-	String COLUMNNAME_IsEdiEnabled = "IsEdiEnabled";
-
-	/**
-	 * Set EDI INVOIC Receipient.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsEdiInvoicRecipient (boolean IsEdiInvoicRecipient);
-
-	/**
-	 * Get EDI INVOIC Receipient.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isEdiInvoicRecipient();
-
-	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsEdiInvoicRecipient = new ModelColumn<>(I_C_Invoice_Candidate.class, "IsEdiInvoicRecipient", null);
-	String COLUMNNAME_IsEdiInvoicRecipient = "IsEdiInvoicRecipient";
-
-	/**
 	 * Set Error.
 	 * An Error occurred in the execution
 	 *

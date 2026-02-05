@@ -1432,30 +1432,6 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setIsEdiEnabled (final boolean IsEdiEnabled)
-	{
-		set_Value (COLUMNNAME_IsEdiEnabled, IsEdiEnabled);
-	}
-
-	@Override
-	public boolean isEdiEnabled() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsEdiEnabled);
-	}
-
-	@Override
-	public void setIsEdiInvoicRecipient (final boolean IsEdiInvoicRecipient)
-	{
-		set_ValueNoCheck (COLUMNNAME_IsEdiInvoicRecipient, IsEdiInvoicRecipient);
-	}
-
-	@Override
-	public boolean isEdiInvoicRecipient() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsEdiInvoicRecipient);
-	}
-
-	@Override
 	public void setIsError (final boolean IsError)
 	{
 		set_Value (COLUMNNAME_IsError, IsError);

@@ -84,7 +84,6 @@ public class C_Invoice_Selection_Export_JSON extends JavaProcess implements IPro
 			}
 			final I_C_Invoice invoiceRecord = invoiceDAO.getByIdOutOfTrx(invoiceId, I_C_Invoice.class);
 			final boolean singleInvoiceCanBeEdiSent = DocStatus.ofCode(invoiceRecord.getDocStatus()).isCompleted()
-					&& invoiceRecord.isEdiEnabled()
 					&& EDIExportStatus.ofCode(invoiceRecord.getEDI_ExportStatus()).isPending();
 			if (!singleInvoiceCanBeEdiSent)
 			{
@@ -161,8 +160,7 @@ public class C_Invoice_Selection_Export_JSON extends JavaProcess implements IPro
 		return createSelectedInvoicesQueryBuilder()
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(org.compiere.model.I_C_Invoice.COLUMNNAME_IsSOTrx, true)
-				.addEqualsFilter(org.compiere.model.I_C_Invoice.COLUMNNAME_DocStatus, I_C_Invoice.DOCSTATUS_Completed)
-				.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsEdiEnabled, true)
+				.addInArrayFilter(org.compiere.model.I_C_Invoice.COLUMNNAME_DocStatus, I_C_Invoice.DOCSTATUS_Completed, I_C_Invoice.DOCSTATUS_Closed)
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_EDI_ExportStatus, I_EDI_Document.EDI_EXPORTSTATUS_Pending)
 				.create()
 				.iterateAndStreamIds(InvoiceId::ofRepoId);
