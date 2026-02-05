@@ -50,8 +50,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a TU-UOM
       | pp_1_S0317_010 | plv_1_S0317_010        | p_1_S0317_010 | 10.0     | KGM               | Normal                        |
       | pp_2_S0317_010 | plv_1_S0317_010        | p_2_S0317_010 | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier              | IsVendor | OPT.IsCustomer | M_PricingSystem_ID |
-      | endcustomer_1_S0317_010 | N        | Y              | ps_1_S0317_010     |
+      | Identifier              | IsVendor | OPT.IsCustomer | M_PricingSystem_ID | GLN          |
+      | endcustomer_1_S0317_010 | N        | Y              | ps_1_S0317_010     | location_gln |
     And the following c_bpartner is changed
       | C_BPartner_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.EdiDesadvRecipientGLN  |
       | endcustomer_1_S0317_010  | true                     | bPartnerDesadvRecipientGLN |
@@ -159,8 +159,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a TU-UOM
       | pp_4_S0317_020 | plv_1_S0317_020        | p_4_S0317_020 | 10.0     | PCE               | Normal                        |
 
     And metasfresh contains C_BPartners:
-      | Identifier              | IsVendor | IsCustomer | M_PricingSystem_ID |
-      | endcustomer_1_S0317_020 | N        | Y          | ps_1_S0317_020     |
+      | Identifier              | IsVendor | IsCustomer | M_PricingSystem_ID | GLN          |
+      | endcustomer_1_S0317_020 | N        | Y          | ps_1_S0317_020     | location_gln |
 
     And the following c_bpartner is changed
       | C_BPartner_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.EdiDesadvRecipientGLN  |
@@ -342,8 +342,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a TU-UOM
       | Identifier     | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName | InvoicableQtyBasedOn |
       | pp_1_S0317_030 | plv_1_S0317_030        | p_1_S0317_030 | 10.0     | KGM               | Normal                        | CatchWeight          |
     And metasfresh contains C_BPartners:
-      | Identifier              | IsVendor | OPT.IsCustomer | M_PricingSystem_ID |
-      | endcustomer_1_S0317_030 | N        | Y              | ps_1_S0317_030     |
+      | Identifier              | IsVendor | OPT.IsCustomer | M_PricingSystem_ID | GLN          |
+      | endcustomer_1_S0317_030 | N        | Y              | ps_1_S0317_030     | location_gln |
     And the following c_bpartner is changed
       | C_BPartner_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.EdiDesadvRecipientGLN  |
       | endcustomer_1_S0317_030  | true                     | bPartnerDesadvRecipientGLN |

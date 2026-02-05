@@ -44,6 +44,8 @@ public class M_InOut
 			return;
 		}
 
+		//TODO clarify if invalid inouts should be added to desadv
+		// if no, we need to provide a way to revalidate and add it automatically after
 		if (!ediDocumentBL.updateEdiExportStatus(inOut))
 		{
 			return;

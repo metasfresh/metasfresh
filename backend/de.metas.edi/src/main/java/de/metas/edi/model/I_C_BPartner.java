@@ -73,7 +73,7 @@ public interface I_C_BPartner extends de.metas.invoicecandidate.model.I_C_BPartn
 	// @formatter:off
 	String COLUMNNAME_EdiDESADVSendingMode = "EdiDESADVSendingMode";
 	String getEdiDESADVSendingMode();
-	void setEdiDESADV_SendingMode(String EdiDESADVSendingMode);
+	void setEdiDESADVSendingMode(String EdiDESADVSendingMode);
 	// @formatter:on
 
 	// @formatter:off

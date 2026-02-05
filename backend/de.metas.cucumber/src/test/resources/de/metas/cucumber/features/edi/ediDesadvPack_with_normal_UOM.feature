@@ -55,12 +55,11 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | Identifier     | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID | C_TaxCategory_ID |
       | pp_1_S0316_010 | plv_1_S0316_010        | p_1_S0316_010 | 10.0     | PCE      | Normal           |
     And metasfresh contains C_BPartners:
-      | Identifier  | IsCustomer | M_PricingSystem_ID |
-      | endcustomer | Y          | ps_1_S0316_010     |
+      | Identifier  | IsCustomer | M_PricingSystem_ID | GLN          |
+      | endcustomer | Y          | ps_1_S0316_010     | location_gln |
     And the following c_bpartner is changed
       | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN      |
       | endcustomer   | true                 | bPartnerDesadvRecipientGLN |
-
     And metasfresh contains C_BPartner_Product
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | endcustomer              | p_1_S0316_010           |
@@ -147,8 +146,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | Identifier      | M_PriceList_Version_ID | M_Product_ID   | PriceStd | C_UOM_ID | C_TaxCategory_ID |
       | pp_1_11212023_4 | plv_1_11212023_4       | p_1_11212023_4 | 10.0     | KGM      | Normal           |
     And metasfresh contains C_BPartners:
-      | Identifier  | IsCustomer | M_PricingSystem_ID |
-      | endcustomer | Y          | ps_1_11212023_4    |
+      | Identifier  | IsCustomer | M_PricingSystem_ID | GLN          |
+      | endcustomer | Y          | ps_1_11212023_4    | location_gln |
     And the following c_bpartner is changed
       | C_BPartner_ID.Identifier | IsEdiDesadvRecipient | EdiDesadvRecipientGLN      |
       | endcustomer              | true                 | bPartnerDesadvRecipientGLN |
@@ -241,8 +240,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | Identifier      | M_PriceList_Version_ID | M_Product_ID   | PriceStd | C_UOM_ID | C_TaxCategory_ID | InvoicableQtyBasedOn |
       | pp_1_11212023_1 | plv_1_11212023_1       | p_1_11212023_1 | 10.0     | KGM      | Normal           | CatchWeight          |
     And metasfresh contains C_BPartners:
-      | Identifier  | IsCustomer | M_PricingSystem_ID |
-      | endcustomer | Y          | ps_1_11212023_1    |
+      | Identifier  | IsCustomer | M_PricingSystem_ID | GLN          |
+      | endcustomer | Y          | ps_1_11212023_1    | location_gln |
     And the following c_bpartner is changed
       | C_BPartner_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.EdiDesadvRecipientGLN  |
       | endcustomer              | true                     | bPartnerDesadvRecipientGLN |
@@ -335,8 +334,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | pp_1_S0316_020 | plv_1_S0316_020        | p_1_S0316_020 | 10.0     | PCE      | Normal           |
       | pp_2_S0316_020 | plv_1_S0316_020        | p_2_S0316_020 | 10.0     | PCE      | Normal           |
     And metasfresh contains C_BPartners:
-      | Identifier  | IsCustomer | M_PricingSystem_ID.Identifier |
-      | endcustomer | Y          | ps_1_S0316_020                |
+      | Identifier  | IsCustomer | M_PricingSystem_ID.Identifier | GLN          |
+      | endcustomer | Y          | ps_1_S0316_020                | location_gln |
     And the following c_bpartner is changed
       | C_BPartner_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.EdiDesadvRecipientGLN  |
       | endcustomer              | true                     | bPartnerDesadvRecipientGLN |
@@ -469,8 +468,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | pp_3_S0316_030 | plv_1_S0316_030        | p_3_S0316_030 | 10.0     | PCE      | Normal           |
 
     And metasfresh contains C_BPartners:
-      | Identifier  | IsCustomer | M_PricingSystem_ID |
-      | endcustomer | Y          | ps_1_S0316_030     |
+      | Identifier  | IsCustomer | M_PricingSystem_ID | GLN          |
+      | endcustomer | Y          | ps_1_S0316_030     | location_gln |
     And the following c_bpartner is changed
       | C_BPartner_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.EdiDesadvRecipientGLN  |
       | endcustomer              | true                     | bPartnerDesadvRecipientGLN |
@@ -643,8 +642,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | pp_3_11212023_2 | plv_1_11212023_2       | p_3_11212023_2 | 10.0     | PCE      | Normal           |                      |
 
     And metasfresh contains C_BPartners:
-      | Identifier  | IsCustomer | M_PricingSystem_ID |
-      | endcustomer | Y          | ps_1_11212023_2    |
+      | Identifier  | IsCustomer | M_PricingSystem_ID | GLN          |
+      | endcustomer | Y          | ps_1_11212023_2    | location_gln |
     And the following c_bpartner is changed
       | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN      |
       | endcustomer   | true                 | bPartnerDesadvRecipientGLN |
@@ -808,8 +807,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | pp_3_11212023_3 | plv_1_11212023_3       | p_3_11212023_3 | 10.0     | PCE      | Normal           |                      |
 
     And metasfresh contains C_BPartners:
-      | Identifier  | IsCustomer | M_PricingSystem_ID |
-      | endcustomer | Y          | ps_1_11212023_3    |
+      | Identifier  | IsCustomer | M_PricingSystem_ID | GLN          |
+      | endcustomer | Y          | ps_1_11212023_3    | location_gln |
     And the following c_bpartner is changed
       | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN      |
       | endcustomer   | true                 | bPartnerDesadvRecipientGLN |
@@ -976,8 +975,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | pp_4_S0316_040 | plv_1_S0316_040        | p_4_S0316_040 | 10.0     | PCE      | Normal           |
 
     And metasfresh contains C_BPartners:
-      | Identifier  | IsCustomer | M_PricingSystem_ID |
-      | endcustomer | Y          | ps_1_S0316_040     |
+      | Identifier  | IsCustomer | M_PricingSystem_ID | GLN          |
+      | endcustomer | Y          | ps_1_S0316_040     | location_gln |
 
     And the following c_bpartner is changed
       | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN      |
@@ -1166,8 +1165,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | pp_4_S0457_010_TU_packingMat | plv_1_S0457_010        | p_4_S0457_010_TU_packingMat | 10.0     | PCE      | Normal           |
 
     And metasfresh contains C_BPartners:
-      | Identifier  | IsCustomer | M_PricingSystem_ID |
-      | endcustomer | Y          | ps_1_S0457_010     |
+      | Identifier  | IsCustomer | M_PricingSystem_ID | GLN          |
+      | endcustomer | Y          | ps_1_S0457_010     | location_gln |
     And the following c_bpartner is changed
       | C_BPartner_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.EdiDesadvRecipientGLN  |
       | endcustomer              | true                     | bPartnerDesadvRecipientGLN |
@@ -1362,8 +1361,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | pp_4_S0457_020_TU_packingMat | plv_1_S0457_020        | p_4_S0457_020_TU_packingMat | 10.0     | PCE      | Normal           |
 
     And metasfresh contains C_BPartners:
-      | Identifier  | IsCustomer | M_PricingSystem_ID |
-      | endcustomer | Y          | ps_1_S0457_020     |
+      | Identifier  | IsCustomer | M_PricingSystem_ID | GLN          |
+      | endcustomer | Y          | ps_1_S0457_020     | location_gln |
     And the following c_bpartner is changed
       | C_BPartner_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.EdiDesadvRecipientGLN  |
       | endcustomer              | true                     | bPartnerDesadvRecipientGLN |

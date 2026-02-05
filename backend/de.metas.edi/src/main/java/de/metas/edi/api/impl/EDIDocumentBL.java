@@ -26,8 +26,6 @@ import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.aggregation.api.Aggregation;
-import de.metas.aggregation.model.X_C_Aggregation;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -55,8 +53,6 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.inout.InOutId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.invoicecandidate.api.IInvoiceAggregationFactory;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.order.IOrderDAO;
@@ -151,13 +147,13 @@ public class EDIDocumentBL
 		}
 	}
 
-	public boolean updateEdiExportStatus(@NonNull final I_C_Invoice invoice)
+	public void updateEdiExportStatus(@NonNull final I_C_Invoice invoice)
 	{
 		try (final MDC.MDCCloseable ignored = TableRecordMDC.putTableRecordReference(invoice))
 		{
 			if (!updateEdiExportStatus(invoice, EDIType.INVOIC, true))
 			{
-				return false;
+				return;
 			}
 
 			final List<Exception> feedback = isValidInvoice(invoice);
@@ -175,7 +171,6 @@ public class EDIDocumentBL
 				invoice.setEDI_ExportStatus(EDIExportStatus.Invalid.getCode());
 			}
 		}
-		return true;
 	}
 
 	private boolean updateEdiExportStatus(@NonNull final I_EDI_Document_Extension document,
@@ -395,14 +390,6 @@ public class EDIDocumentBL
 		{
 			missingFields.add(I_C_BPartner.COLUMNNAME_EdiInvoicRecipientGLN);
 		}
-		
-		final boolean checkForAggregationRule = ediType == null; // if we validate for an already existing invoice we don't need to bother for the partner's aggregation rule
-		if (checkForAggregationRule && !hasValidInvoiceAggregation(ediPartner))
-		{
-			//TODO check if still needed, not valid in cucumber tests atm
-			// did not work before I changed de.metas.edi.model.validator.C_BPartner from modelValidator to interceptor and moved ediDocumentBL to field
-			//feedback.add(new AdempiereException(Services.get(IMsgBL.class).getMsg(InterfaceWrapperHelper.getCtx(ediPartner), MSG_Invalid_Invoice_Aggregation_Error)));
-		}
 
 		// VATaxIDs are not needed in general, but only if the customer is in a different country or if the customer explicitly requests them to be in their INVOICs
 
@@ -412,19 +399,6 @@ public class EDIDocumentBL
 		}
 
 		return feedback;
-	}
-
-	private boolean hasValidInvoiceAggregation(final I_C_BPartner ediPartner)
-	{
-		//
-		// Get the BPartner's invoice header aggregation that will be actually used to aggregate sales invoices
-		final Properties ctx = InterfaceWrapperHelper.getCtx(ediPartner);
-		final boolean isSOTrx = true; // we are checking only Sales side because we don't EDI purchase invoices
-		final Aggregation soAggregation = Services.get(IInvoiceAggregationFactory.class).getAggregation(ctx, ediPartner, isSOTrx, X_C_Aggregation.AGGREGATIONUSAGELEVEL_Header);
-
-		// Make sure that aggregation includes C_Order_ID or POReference
-		return soAggregation.hasColumnName(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID)
-				|| soAggregation.hasColumnName(I_C_Invoice_Candidate.COLUMNNAME_POReference);
 	}
 
 	private List<Exception> isValidBPLocation(@NonNull final I_C_BPartner_Location bpLocation)
@@ -454,8 +428,9 @@ public class EDIDocumentBL
 			return ValidationState.ALREADY_VALID;
 		}
 
-		if (!EDIExportStatus.ofCode(document.getEDI_ExportStatus()).isInvalid())
+		if (!EDIExportStatus.ofCode(document.getEDI_ExportStatus()).isProcessed())
 		{
+			// If EDI status is valid, forcefully validate
 			document.setEDI_ExportStatus(EDIExportStatus.Pending.getCode());
 		}
 
