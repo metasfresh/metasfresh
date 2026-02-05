@@ -49,7 +49,7 @@ public class EDIBPartnerConfigService
 
 	public boolean isEdiDesadvRecipient(@NonNull final BPartnerId bPartnerId)
 	{
-		final EDIBPartnerConfig ediBPartnerConfig = ediBPartnerConfigRepository.getById(bPartnerId);
+		final EDIBPartnerConfig ediBPartnerConfig = ediBPartnerConfigRepository.getByIdOrNull(bPartnerId);
 		if(ediBPartnerConfig == null)
 		{
 			return false;
@@ -60,7 +60,7 @@ public class EDIBPartnerConfigService
 
 	public boolean isEdiInvoicRecipient(@NonNull final BPartnerId bPartnerId)
 	{
-		final EDIBPartnerConfig ediBPartnerConfig = ediBPartnerConfigRepository.getById(bPartnerId);
+		final EDIBPartnerConfig ediBPartnerConfig = ediBPartnerConfigRepository.getByIdOrNull(bPartnerId);
 		if(ediBPartnerConfig == null)
 		{
 			return false;

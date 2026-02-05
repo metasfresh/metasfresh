@@ -61,7 +61,7 @@ public class EDIBPartnerConfigRepository
 			.build();
 
 	@Nullable
-	public EDIBPartnerConfig getById (@NonNull final BPartnerId bPartnerId)
+	public EDIBPartnerConfig getByIdOrNull(@NonNull final BPartnerId bPartnerId)
 	{
 		return getEDIBPartnerConfigMap().getById(bPartnerId);
 	}
