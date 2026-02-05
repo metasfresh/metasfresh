@@ -455,9 +455,13 @@ public class PP_Order_StepDef
 		final PPOrderId ppOrderId = row.getAsOptionalIdentifier().flatMap(ppOrderTable::getIdOptional).orElse(null);
 		if (ppOrderId != null)
 		{
-			return queryBL.createQueryBuilder(I_PP_Order.class)
-					.addEqualsFilter(I_PP_Order.COLUMNNAME_PP_Order_ID, ppOrderId)
-					.create();
+			final IQueryBuilder<I_PP_Order> queryBuilder = queryBL.createQueryBuilder(I_PP_Order.class)
+					.addEqualsFilter(I_PP_Order.COLUMNNAME_PP_Order_ID, ppOrderId);
+
+			row.getAsOptionalEnum(I_PP_Order.COLUMNNAME_DocStatus, DocStatus.class)
+					.ifPresent(docStatus -> queryBuilder.addEqualsFilter(I_PP_Order.COLUMNNAME_DocStatus, docStatus));
+
+			return queryBuilder.create();
 		}
 
 		final ProductId productId = row.getAsIdentifier(I_PP_Order.COLUMNNAME_M_Product_ID).lookupIdIn(productTable);
