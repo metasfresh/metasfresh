@@ -79,6 +79,8 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.Env;
@@ -99,6 +101,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 import static de.metas.util.Check.isNotBlank;
 
 @Service
+@RequiredArgsConstructor
 public class EDIDesadvPackService
 {
 	private final static Logger logger = LogManager.getLogger(EDIDesadvPackService.class);
@@ -118,12 +121,15 @@ public class EDIDesadvPackService
 	private final HURepository huRepository;
 	private final EDIDesadvPackRepository ediDesadvPackRepository;
 
-	public EDIDesadvPackService(
-			@NonNull final HURepository huRepository,
-			@NonNull final EDIDesadvPackRepository ediDesadvPackRepository)
+	@VisibleForTesting
+	public static EDIDesadvPackService newInstanceForUnitTesting()
 	{
-		this.huRepository = huRepository;
-		this.ediDesadvPackRepository = ediDesadvPackRepository;
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(EDIDesadvPackService.class,
+				() -> new EDIDesadvPackService(HURepository.newInstanceForUnitTesting(),
+						EDIDesadvPackRepository.newInstanceForUnitTesting())
+		);
 	}
 
 	@NonNull

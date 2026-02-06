@@ -22,7 +22,7 @@ SELECT
 FROM report.RV_C_Order_MFGWarehouse_Report_Header r
 WHERE
   CASE
-  WHEN record_id IS NOT NULL
+  WHEN p_record_id IS NOT NULL
     THEN r.C_Order_MFGWarehouse_Report_ID = p_record_id
   WHEN bPartnerId IS NOT NULL AND DatePromised :: date IS NOT NULL
     THEN r.C_BPartner_ID = bPartnerId AND r.DatePromised :: date = p_datePromised :: date

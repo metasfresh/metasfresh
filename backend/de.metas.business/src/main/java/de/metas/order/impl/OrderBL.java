@@ -920,7 +920,7 @@ public class OrderBL implements IOrderBL
 	@Override
 	public @NonNull BPartnerId getEffectiveDropshipPartnerId(@NonNull final I_C_Order orderRecord)
 	{
-		return Check.assumeNotNull(getEffectiveDropshipPartnerIdOrNull(orderRecord), "ShipTo Partner should be present");
+		return Check.assumeNotNull(getEffectiveDropshipPartnerIdOrNull(orderRecord), "ShipTo Partner should be present in: {}", orderRecord);
 	}
 
 	@Override

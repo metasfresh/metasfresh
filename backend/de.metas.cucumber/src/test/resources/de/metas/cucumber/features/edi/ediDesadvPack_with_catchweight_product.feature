@@ -60,8 +60,11 @@ Feature: DESADV - mobileUI Picking - Pick catch weight products
       | Y                   | CREATE_COMPLETE_CLOSE | Y                                  | Y                             |
 
     And metasfresh contains C_BPartners without locations:
-      | Identifier | Name     | IsVendor | IsCustomer | M_PricingSystem_ID.Identifier | IsEdiDesadvRecipient | EdiDesadvRecipientGLN      |
-      | customer   | customer | N        | Y          | PS                            | true                 | bPartnerDesadvRecipientGLN |
+      | Identifier | Name     | IsVendor | IsCustomer | M_PricingSystem_ID.Identifier |
+      | customer   | customer | N        | Y          | PS                            |
+    And the following c_bpartner is changed
+      | Identifier | IsEdiDesadvRecipient | EdiDesadvRecipientGLN |
+      | customer   | true                 | Dummy_GLN             |
     And metasfresh contains C_BPartner_Locations:
       | Identifier       | GLN       | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
       | customerLocation | Dummy_GLN | customer                 | true                | true         |

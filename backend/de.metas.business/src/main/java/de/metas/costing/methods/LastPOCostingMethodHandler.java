@@ -110,7 +110,7 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 	}
 
 	@Override
-	public MoveCostsResult createMovementCosts(@NonNull final MoveCostsRequest request)
+	protected MoveCostsResult createMovementCostsImpl(@NonNull MoveCostsRequest request)
 	{
 		// TODO: do it right! It's copied from de.metas.costing.methods.AveragePOCostingMethodHandler.createMovementCosts
 

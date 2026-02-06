@@ -27,19 +27,21 @@ package de.metas.edi.async.spi.impl;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
-import de.metas.edi.api.IEDIDocumentBL;
+import de.metas.edi.api.EDIExportStatus;
+import de.metas.edi.api.impl.EDIDocumentBL;
 import de.metas.edi.model.I_EDI_Document;
-import de.metas.edi.model.I_EDI_Document_Extension;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.process.export.IExport;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -53,9 +55,9 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 	public final static String SYS_CONFIG_OneDesadvPerShipment = "de.metas.edi.OneDesadvPerShipment";
 
 	// Services
-	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
-	private final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
+	@NonNull private final EDIDocumentBL ediDocumentBL = SpringContextHolder.instance.getBean(EDIDocumentBL.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	/**
 	 * TODO enqueue edi documents ordered by their POReference; use an {@link ITrxItemChunkProcessor} to aggregate the inouts to desadvs and send them when a new chunk starts. That way we can omit the
@@ -64,7 +66,7 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 	@Override
 	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
-		final List<Exception> feedback = new ArrayList<Exception>();
+		final List<Exception> feedback = new ArrayList<>();
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(workpackage);
 
@@ -104,7 +106,7 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 						ediDocument.getDocumentNo(), errorMessage);
 				feedback.addAll(exportFeedback);
 
-				ediDocument.setEDI_ExportStatus(I_EDI_Document_Extension.EDI_EXPORTSTATUS_Error);
+				ediDocument.setEDI_ExportStatus(EDIExportStatus.Invalid.getCode());
 				ediDocument.setEDIErrorMsg(errorMessage);
 				InterfaceWrapperHelper.save(ediDocument);
 			}
@@ -142,6 +144,7 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 		return new TableRecordIdPair(modelTableId, modelRecordId);
 	}
 
+	@Getter
 	private static class TableRecordIdPair
 	{
 		private final int tableId;
@@ -155,16 +158,6 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 			this.recordId = recordId;
 		}
 
-		public int getTableId()
-		{
-			return tableId;
-		}
-
-		public int getRecordId()
-		{
-			return recordId;
-		}
-
 		@Override
 		public int hashCode()
 		{
@@ -176,7 +169,7 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 		}
 
 		@Override
-		public boolean equals(Object obj)
+		public boolean equals(final Object obj)
 		{
 			if (this == obj)
 				return true;
@@ -184,7 +177,7 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 				return false;
 			if (getClass() != obj.getClass())
 				return false;
-			TableRecordIdPair other = (TableRecordIdPair)obj;
+			final TableRecordIdPair other = (TableRecordIdPair)obj;
 			if (recordId != other.recordId)
 				return false;
 			if (tableId != other.tableId)

@@ -342,17 +342,6 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	}
 
 	@Override
-	public void setIsEdiEnabled (final boolean IsEdiEnabled)
-	{
-		throw new IllegalArgumentException ("IsEdiEnabled is virtual column");	}
-
-	@Override
-	public boolean isEdiEnabled() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsEdiEnabled);
-	}
-
-	@Override
 	public void setIsInvoiceEmailEnabled (final boolean IsInvoiceEmailEnabled)
 	{
 		set_Value (COLUMNNAME_IsInvoiceEmailEnabled, IsInvoiceEmailEnabled);

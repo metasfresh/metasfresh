@@ -82,6 +82,7 @@ FROM (SELECT
           --
           -- Product & ASI
           s.M_Product_ID,
+          prod.Value                                                              AS ProductValue,
           prod.Name                                                               AS ProductName,
           prod.C_UOM_ID                                                           AS C_UOM_ID, -- shipment schedule's UOM (see de.metas.inoutcandidate.api.impl.ShipmentScheduleBL.getC_UOM); IMPORTANT: before changing it, check bellow, we might use this logic to convert some Qtys to shipment schedule's UOM
           s.M_AttributeSetInstance_ID,
