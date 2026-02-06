@@ -12,6 +12,11 @@ import { convertDateToReadable } from '../../utils/dateHelpers';
 
 import WidgetWrapper from '../../containers/WidgetWrapper';
 import { updateInlineFilter } from '../../actions/FiltersActions';
+import {
+  getViewFilterParameterDropdown,
+  getViewFilterParameterTypeahead,
+} from '../../api/view';
+import { prepareParameterValueForBackend } from '../../utils/filterHelpers';
 
 class InlineFilterItem extends Component {
   state = { filter: this.props.parentFilter, searchString: '' };
@@ -86,6 +91,72 @@ class InlineFilterItem extends Component {
     clearFilters(filter);
   };
 
+  typeaheadSupplier = ({
+    docType: windowId,
+    docId: viewId, // NOTE: for some reason docId is the viewId and not the viewId which is undefined
+    subentityId: filterId,
+    propertyName: parameterName,
+    query,
+  }) => {
+    const context = this.prepareLookupContextFromState(filterId);
+    delete context[parameterName];
+
+    return getViewFilterParameterTypeahead({
+      windowId,
+      viewId,
+      filterId,
+      parameterName,
+      query,
+      context,
+    });
+  };
+
+  dropdownValuesSupplier = ({
+    docType: windowId,
+    viewId,
+    subentityId: filterId,
+    propertyName: parameterName,
+  }) => {
+    const context = this.prepareLookupContextFromState(filterId);
+    delete context[parameterName];
+
+    return getViewFilterParameterDropdown({
+      windowId,
+      viewId,
+      filterId,
+      parameterName,
+      context,
+    });
+  };
+
+  prepareLookupContextFromState = (filterId) => {
+    const { filter } = this.state;
+    console.log('prepareLookupContextFromState', { filterId, filter });
+
+    // shall not happen:
+    if (filter?.filterId !== filterId) {
+      console.warn(
+        'prepareLookupContextFromState: called with wrong filterId',
+        { filterId, filter }
+      );
+      return {};
+    }
+
+    const context = {};
+
+    if (Array.isArray(filter.parameters)) {
+      filter.parameters.forEach((parameter) => {
+        context[parameter.parameterName] = prepareParameterValueForBackend({
+          value: parameter.value,
+          defaultValue: parameter.defaultValue,
+          widgetType: parameter.widgetType,
+        });
+      });
+    }
+
+    return context;
+  };
+
   render() {
     const { data, id, windowType, onShow, onHide, viewId } = this.props;
     const { filter, searchString } = this.state;
@@ -114,6 +185,8 @@ class InlineFilterItem extends Component {
           windowType,
           onShow,
           onHide,
+          typeaheadSupplier: this.typeaheadSupplier,
+          dropdownValuesSupplier: this.dropdownValuesSupplier,
         }}
       />
     );
