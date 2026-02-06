@@ -1,5 +1,6 @@
 package de.metas.inoutcandidate.modelvalidator;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
@@ -13,6 +14,7 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 
 /*
@@ -88,6 +90,10 @@ public class C_Order
 		}
 	}
 
+	/**
+	 * Prevents altering a PO if it has receipts and has been reactivated via the `PO_AllowReactivationIfReceiptsCreated` sysconfig.
+	 * If that's the case, prevent any meaningful changes.
+	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
 			ignoreColumnsChanged = {
 					I_C_Order.COLUMNNAME_DocStatus,
@@ -107,8 +113,20 @@ public class C_Order
 					I_C_Order.COLUMNNAME_UpdatedBy })
 	public void assertChangeAllowed(@NonNull final I_C_Order order)
 	{
+		if (!InterfaceWrapperHelper.isUIAction(order))
+		{
+			// do nothing if the modification was triggered from the application, not by the user
+			return;
+		}
 		if (order.getQtyMoved().signum() == 0 || orderBL.isSalesOrder(order))
 		{
+			// not a PO or has no receipts
+			return;
+		}
+		final DocStatus docStatus = DocStatus.ofCode(order.getDocStatus());
+		if (!docStatus.isInProgress())
+		{
+			// document has not been reactivated
 			return;
 		}
 
