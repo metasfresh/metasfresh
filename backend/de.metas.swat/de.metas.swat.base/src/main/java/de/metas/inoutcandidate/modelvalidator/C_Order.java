@@ -1,5 +1,6 @@
 package de.metas.inoutcandidate.modelvalidator;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
@@ -88,6 +89,10 @@ public class C_Order
 		}
 	}
 
+	/**
+	 * Prevents altering a PO if it has receipts and has been reactivated via the `PO_AllowReactivationIfReceiptsCreated` sysconfig.
+	 * If that's the case, prevent any meaningful changes.
+	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
 			ignoreColumnsChanged = {
 					I_C_Order.COLUMNNAME_DocStatus,
@@ -108,6 +113,11 @@ public class C_Order
 	public void assertChangeAllowed(@NonNull final I_C_Order order)
 	{
 		if (order.getQtyMoved().signum() == 0 || orderBL.isSalesOrder(order))
+		{
+			return;
+		}
+		final DocStatus docStatus = DocStatus.ofCode(order.getDocStatus());
+		if (!docStatus.isInProgress())
 		{
 			return;
 		}
