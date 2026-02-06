@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2024 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,27 +23,15 @@
 package org.adempiere.warehouse;
 
 import de.metas.product.ProductCategoryId;
-import de.metas.product.ResourceId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
 @Value
 @Builder
-public class Warehouse
+public class WarehouseSourceHUConfig
 {
+	@NonNull WarehouseSourceHUConfigId id;
 	@NonNull WarehouseId warehouseId;
-	@NonNull String name;
-	@Nullable ResourceId resourceId;
-	boolean isReceiveAsSourceHU;
-	@NonNull WarehouseSourceHUConfigList warehouseSourceHUConfigs;
-	boolean active;
-
-	public boolean isConfiguredToReceiveAsSourceHU(@NonNull final ProductCategoryId productCategoryId)
-	{
-		if (!isReceiveAsSourceHU) {return false;}
-		return warehouseSourceHUConfigs.applies(productCategoryId);
-	}
+	@NonNull ProductCategoryId productCategoryId;
 }
