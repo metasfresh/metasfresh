@@ -428,7 +428,7 @@ public class ProductRepository
 		record.setGTIN(product.getGtin());
 		record.setUPC(product.getEan());
 		record.setAD_Org_ID(product.getOrgId().getRepoId());
-		record.setM_Product_Category_ID(product.getProductCategoryId() != null ? product.getProductCategoryId().getRepoId() : record.getM_Product_Category_ID());
+		record.setM_Product_Category_ID(product.getProductCategoryId().getRepoId());
 
 		return record;
 	}

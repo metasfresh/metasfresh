@@ -57,11 +57,12 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.Warehouse;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.WarehouseRepository;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
@@ -73,15 +74,16 @@ import java.util.Properties;
 
 public class HUMovementBL implements IHUMovementBL
 {
-	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
-	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
-	private final IMovementDAO movementDAO = Services.get(IMovementDAO.class);
-	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final IWarehouseDAO warehousesDAO = Services.get(IWarehouseDAO.class);
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
-	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	@NonNull private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
+	@NonNull private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+	@NonNull private final IMovementDAO movementDAO = Services.get(IMovementDAO.class);
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	@NonNull private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+
+	@NonNull private final WarehouseRepository warehouseRepository = SpringContextHolder.instance.getBean(WarehouseRepository.class);
 
 	@Override
 	public void createPackingMaterialMovementLines(final I_M_Movement movement)
@@ -277,10 +279,10 @@ public class HUMovementBL implements IHUMovementBL
 		// Save changed HU
 		handlingUnitsDAO.saveHU(hu);
 
-		final I_M_Locator locatorTo = warehousesDAO.getLocatorById(locatorToId);
+		final I_M_Locator locatorTo = warehouseBL.getLocatorById(locatorToId);
 
-		final I_M_Warehouse warehouseTo = warehousesDAO.getById(WarehouseId.ofRepoId(locatorTo.getM_Warehouse_ID()));
-		if (warehouseTo.isReceiveAsSourceHU())
+		final Warehouse warehouseTo = warehouseRepository.getById(WarehouseId.ofRepoId(locatorTo.getM_Warehouse_ID()));
+		if (sourceHuService.isEligibleFroSourceHuMarker(hu, warehouseTo))
 		{
 			sourceHuService.addSourceHuMarker(huId);
 		}
