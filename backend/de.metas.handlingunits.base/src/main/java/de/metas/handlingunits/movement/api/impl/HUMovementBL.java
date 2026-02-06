@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits.movement.api.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.common.util.time.SystemTime;
@@ -50,6 +51,7 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -61,9 +63,11 @@ import org.adempiere.warehouse.Warehouse;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.WarehouseRepository;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Locator;
 import org.compiere.util.Env;
+import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -72,6 +76,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 
+@Service
+@RequiredArgsConstructor
 public class HUMovementBL implements IHUMovementBL
 {
 	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
@@ -83,7 +89,22 @@ public class HUMovementBL implements IHUMovementBL
 	@NonNull private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	@NonNull private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
-	@NonNull private final WarehouseRepository warehouseRepository = SpringContextHolder.instance.getBean(WarehouseRepository.class);
+	@NonNull private final WarehouseRepository warehouseRepository;
+
+	@VisibleForTesting
+	public static HUMovementBL newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(HUMovementBL.class, () -> new HUMovementBL(
+				WarehouseRepository.newInstanceForUnitTesting()
+		));
+	}
+
+	public HUMovementBL()
+	{
+		this.warehouseRepository = SpringContextHolder.instance.getBean(WarehouseRepository.class);
+	}
 
 	@Override
 	public void createPackingMaterialMovementLines(final I_M_Movement movement)
