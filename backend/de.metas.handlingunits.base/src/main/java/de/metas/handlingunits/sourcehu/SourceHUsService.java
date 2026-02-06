@@ -255,12 +255,11 @@ public class SourceHUsService
 			return;
 		}
 
-		// TODO check if we need to limit it via config or if it should be all components always
-		// final ProductCategoryId productCategoryId = productRepository.getById(productId).getProductCategoryId();
-		// if (!warehouse.isConfiguredToReceiveAsSourceHU(productCategoryId))
-		// {
-		// 	return;
-		// }
+		final ProductCategoryId productCategoryId = productRepository.getById(productId).getProductCategoryId();
+		if (!warehouse.isConfiguredToReceiveAsSourceHU(productCategoryId))
+		{
+			return;
+		}
 
 		final boolean referencedInComponentOrVariant = productBOMDAO.isComponent(productId);
 		if (!referencedInComponentOrVariant)
