@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2024 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,28 +22,22 @@
 
 package org.adempiere.warehouse;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.product.ProductCategoryId;
-import de.metas.product.ResourceId;
-import lombok.Builder;
 import lombok.NonNull;
-import lombok.Value;
+import lombok.RequiredArgsConstructor;
 
-import javax.annotation.Nullable;
-
-@Value
-@Builder
-public class Warehouse
+@RequiredArgsConstructor
+public class WarehouseSourceHUConfigList
 {
-	@NonNull WarehouseId warehouseId;
-	@NonNull String name;
-	@Nullable ResourceId resourceId;
-	boolean isReceiveAsSourceHU;
-	@NonNull WarehouseSourceHUConfigList warehouseSourceHUConfigs;
-	boolean active;
+	@NonNull private final ImmutableList<WarehouseSourceHUConfig> warehouseSourceHUConfigs;
 
-	public boolean isConfiguredToReceiveAsSourceHU(@NonNull final ProductCategoryId productCategoryId)
+	public boolean applies(@NonNull final ProductCategoryId productCategoryId)
 	{
-		if (!isReceiveAsSourceHU) {return false;}
-		return warehouseSourceHUConfigs.applies(productCategoryId);
+		if (warehouseSourceHUConfigs.isEmpty()) {return true;}
+
+		return warehouseSourceHUConfigs.stream()
+				.filter(config -> config.getProductCategoryId().equals(productCategoryId))
+				.anyMatch(config -> ProductCategoryId.equals(config.getProductCategoryId(), productCategoryId));
 	}
 }
