@@ -24,6 +24,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
@@ -77,7 +78,8 @@ public class ProductRepository
 	public static ProductRepository newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
-		return new ProductRepository();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(ProductRepository.class, ProductRepository::new);
 	}
 
 	@NonNull

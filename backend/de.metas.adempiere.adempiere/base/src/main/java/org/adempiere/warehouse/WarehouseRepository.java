@@ -39,6 +39,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_M_Warehouse_SourceHUConfig;
 import org.springframework.stereotype.Repository;
@@ -54,7 +55,8 @@ public class WarehouseRepository
 	public static WarehouseRepository newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
-		return new WarehouseRepository();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(WarehouseRepository.class, WarehouseRepository::new);
 	}
 
 	private final CCache<Integer, WarehouseMap> cache = CCache.<Integer, WarehouseMap>builder()
