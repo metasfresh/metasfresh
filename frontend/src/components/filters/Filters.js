@@ -252,7 +252,7 @@ class Filters extends PureComponent {
                   dropdownToggled={this.dropdownToggled}
                   filtersWrapper={this.filtersWrapper}
                   key={item.filterId}
-                  filterId={item.filterId}
+                  filterId={filterId}
                   allChildFiltersCleared={allChildFiltersCleared}
                 />
               );
