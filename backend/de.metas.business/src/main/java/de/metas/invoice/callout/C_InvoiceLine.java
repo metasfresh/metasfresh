@@ -73,6 +73,7 @@ public class C_InvoiceLine
 		invoiceLineBL.setQtyInvoicedInPriceUOM(invoiceLine);
 
 		invoiceBL.setLineNetAmt(invoiceLine);
+		invoiceBL.setTaxAmt(invoiceLine);
 	}
 
 	/**
