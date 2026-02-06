@@ -238,3 +238,7 @@ UPDATE AD_Element base SET Description=trl.Description, Updated=trl.Updated, Upd
 /* DDL */ CREATE TABLE public.M_Warehouse_SourceHUConfig (AD_Client_ID NUMERIC(10) NOT NULL, AD_Org_ID NUMERIC(10) NOT NULL, Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, IsActive CHAR(1) CHECK (IsActive IN ('Y','N')) NOT NULL, M_Product_Category_ID NUMERIC(10) NOT NULL, M_Warehouse_ID NUMERIC(10) NOT NULL, M_Warehouse_SourceHUConfig_ID NUMERIC(10) NOT NULL, Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, CONSTRAINT MProductCategory_MWarehouseSourceHUConfig FOREIGN KEY (M_Product_Category_ID) REFERENCES public.M_Product_Category DEFERRABLE INITIALLY DEFERRED, CONSTRAINT MWarehouse_MWarehouseSourceHUConfig FOREIGN KEY (M_Warehouse_ID) REFERENCES public.M_Warehouse DEFERRABLE INITIALLY DEFERRED, CONSTRAINT M_Warehouse_SourceHUConfig_Key PRIMARY KEY (M_Warehouse_SourceHUConfig_ID))
 ;
 
+-- Column: M_Warehouse_SourceHUConfig.M_Product_Category_ID
+-- 2026-02-06T15:13:25.073Z
+UPDATE AD_Column SET AD_Reference_ID=30, AD_Reference_Value_ID=163, IsExcludeFromZoomTargets='Y',Updated=TO_TIMESTAMP('2026-02-06 15:13:25.073000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591962
+;
