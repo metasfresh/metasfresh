@@ -135,3 +135,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(584498)
 ;
 
+-- 2026-02-07T19:20:22.358Z
+/* DDL */ SELECT public.db_alter_table('C_ILCandHandler','ALTER TABLE public.C_ILCandHandler ADD COLUMN IsAllowDifferentShipmentsInSameInvoiceLine CHAR(1) DEFAULT ''N'' CHECK (IsAllowDifferentShipmentsInSameInvoiceLine IN (''Y'',''N'')) NOT NULL')
+;
+
