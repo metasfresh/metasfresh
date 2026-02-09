@@ -41,7 +41,6 @@ import de.metas.product.Product;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.shipping.CarrierProductId;
-import de.metas.util.Check;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
@@ -295,7 +294,6 @@ public class PickingJobScheduleAutoAssignCommand
 		}
 
 		final ProductCategoryId productCategoryId = productsById.get(scheduleProductId).getProductCategoryId();
-		Check.assumeNotNull(productCategoryId, "ProductCategoryId of {} is not null", scheduleProductId);
 		return !workplaceCategories.isEmpty() && workplaceCategories.contains(productCategoryId);
 	}
 

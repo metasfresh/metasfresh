@@ -60,7 +60,7 @@ public interface IInOutDAO extends ISingletonService
 
 	<T extends I_M_InOut> T getByIdOutOfTrx(@NonNull InOutId inoutId, @NonNull Class<T> modelClass);
 
-	I_M_InOutLine getLineByIdInTrx(InOutLineId inoutLineId);
+	I_M_InOutLine getLineByIdInTrx(@NonNull InOutLineId inoutLineId);
 
 	<T extends I_M_InOutLine> List<T> getLinesByIds(Set<InOutLineId> inoutLineIds, Class<T> returnType);
 

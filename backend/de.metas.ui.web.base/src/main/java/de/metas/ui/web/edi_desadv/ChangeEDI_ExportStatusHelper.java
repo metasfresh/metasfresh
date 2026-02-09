@@ -115,6 +115,7 @@ public class ChangeEDI_ExportStatusHelper
 			inOutDAO.save(inOut);
 		}
 
+		//TODO: check if we need to set different values if one inout is not matching targetExportStatus (e.g. in case of invalid)
 		edi.setEDI_ExportStatus(targetExportStatus.getCode());
 		edi.setProcessed(isProcessed);
 		desadvDAO.save(edi);
@@ -122,7 +123,6 @@ public class ChangeEDI_ExportStatusHelper
 
 	public void C_DocOutbound_LogDoIt(final EDIExportStatus targetExportStatus, final DocOutboundLogId logId)
 	{
-		// technical detail: the I_C_Doc_Outbound_Log is updated when we update the C_Invoice, via interceptor: de.metas.edi.model.validator.C_Invoice.updateDocOutBoundLog
 		final de.metas.edi.model.I_C_Doc_Outbound_Log docOutboundLog = ediDocOutBoundLogService.retreiveById(logId);
 
 		final TableRecordReference invoiceRecordReference = TableRecordReference.ofReferenced(docOutboundLog);
@@ -130,9 +130,10 @@ public class ChangeEDI_ExportStatusHelper
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoiceRecordReference.getRecord_ID());
 
 		ChangeEDI_ExportStatusHelper.C_InvoiceDoIt(invoiceId, targetExportStatus);
-
-		docOutboundLog.setEDI_ExportStatus(targetExportStatus.getCode());
-		ediDocOutBoundLogService.save(docOutboundLog);
+		// technical detail: the I_C_Doc_Outbound_Log is updated when we update the C_Invoice, via interceptor: de.metas.edi.model.validator.C_Invoice.updateDocOutBoundLog
+		// so we don't want to override it here again after, this may result in different status on invoice and docOutboundLog
+		// docOutboundLog.setEDI_ExportStatus(targetExportStatus.getCode());
+		// ediDocOutBoundLogService.save(docOutboundLog);
 	}
 
 	public void C_InvoiceDoIt(final InvoiceId invoiceId, final EDIExportStatus targetExportStatus)
