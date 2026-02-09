@@ -628,6 +628,10 @@ public class PaymentAllocationBuilder
 		final ArrayList<AllocationLineCandidate> allocationLineCandidates = new ArrayList<>();
 		for (final PayableDocument payable : payableDocuments)
 		{
+			if (payable.getAmountsToAllocate().getWriteOffAmt().isZero())
+			{
+				continue;
+			}
 			final AllocationLineCandidate allocationLine = createAllocationLineCandidate_DiscountAndWriteOff(payable);
 			if (allocationLine != null)
 			{
@@ -645,13 +649,14 @@ public class PaymentAllocationBuilder
 				.discountAmt(payable.getAmountsToAllocate().getDiscountAmt())
 				.writeOffAmt(payable.getAmountsToAllocate().getWriteOffAmt())
 				.build();
-		if (amountsToAllocate.isZero())
+		final AllocationAmounts effectiveInvoiceAmountsToAllocate = getEffectiveInvoiceAmountsToAllocate(payable.getAmountsToAllocate(), amountsToAllocate.getTotalAmt());
+		if (effectiveInvoiceAmountsToAllocate.isZero() )
 		{
 			return null;
 		}
 
 		final LocalDate dateTrx = getDefaultDateTrx();
-		final Money payableOverUnderAmt = payable.computeProjectedOverUnderAmt(amountsToAllocate);
+		final Money payableOverUnderAmt = payable.computeProjectedOverUnderAmt(effectiveInvoiceAmountsToAllocate);
 		final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
 				.type(AllocationLineCandidateType.InvoiceDiscountOrWriteOff)
 				//
@@ -665,13 +670,13 @@ public class PaymentAllocationBuilder
 				.dateAcct(dateTrx)
 				//
 				// Amounts:
-				.amounts(amountsToAllocate)
+				.amounts(effectiveInvoiceAmountsToAllocate)
 				.payableOverUnderAmt(payableOverUnderAmt)
 				// .paymentOverUnderAmt(ZERO)
 				//
 				.build();
 
-		payable.addAllocatedAmounts(amountsToAllocate);
+		payable.addAllocatedAmounts(effectiveInvoiceAmountsToAllocate);
 
 		return allocationLine;
 	}
