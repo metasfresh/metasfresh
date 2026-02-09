@@ -223,6 +223,18 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
+	public void setCSVFieldQuote (final @Nullable java.lang.String CSVFieldQuote)
+	{
+		set_Value (COLUMNNAME_CSVFieldQuote, CSVFieldQuote);
+	}
+
+	@Override
+	public java.lang.String getCSVFieldQuote()
+	{
+		return get_ValueAsString(COLUMNNAME_CSVFieldQuote);
+	}
+
+	@Override
 	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);

@@ -45,13 +45,16 @@ import java.util.List;
 
 public class CSVWriter
 {
+	public static final String DEFAULT_FIELD_QUALIFIER = "\"";
+	public static final String DEFAULT_FIELD_DELIMITER = ";";
+
 	private static final String encoding = "UTF-8";
 	private static final boolean enforceUTF8BOM = true; // #12334 to be modified accordingly if other encodings are supported in the future
-	private static final String fieldQuote = "\"";
-	private static final String lineEnding = "\n";
 
+	private final String fieldQualifier;
 	private final String fieldDelimiter;
-	public static final String DEFAULT_FieldDelimiter = ";";
+
+	private static final String lineEnding = "\n";
 
 	private final ImmutableList<String> header;
 
@@ -70,7 +73,8 @@ public class CSVWriter
 			@NonNull final File outputFile,
 			@NonNull final List<String> header,
 			@NonNull final String adLanguage,
-			@Nullable final String fieldDelimiter)
+			@Nullable final String fieldDelimiter,
+			@Nullable final String fieldQualifier)
 	{
 		Check.assume(!header.isEmpty(), "header not empty");
 
@@ -78,7 +82,8 @@ public class CSVWriter
 		this.writer = createWriter(outputFile);
 
 		this.header = ImmutableList.copyOf(header);
-		this.fieldDelimiter = fieldDelimiter != null ? fieldDelimiter : DEFAULT_FieldDelimiter;
+		this.fieldDelimiter = CoalesceUtil.coalesceNotNull(fieldDelimiter, DEFAULT_FIELD_DELIMITER);
+		this.fieldQualifier = CoalesceUtil.coalesceNotNull(fieldQualifier, DEFAULT_FIELD_QUALIFIER);
 
 		// we need to clone it because of concurrency issues
 		// see http://www.danielschneller.com/2007/04/calendar-dateformat-and-multi-threading.html
@@ -209,9 +214,9 @@ public class CSVWriter
 
 	private String quoteCsvValue(@NonNull final String valueStr)
 	{
-		return fieldQuote
-				+ valueStr.replace(fieldQuote, fieldQuote + fieldQuote)
-				+ fieldQuote;
+		return fieldQualifier
+				+ valueStr.replace(fieldQualifier, fieldQualifier + fieldQualifier)
+				+ fieldQualifier;
 	}
 
 	public void close()
