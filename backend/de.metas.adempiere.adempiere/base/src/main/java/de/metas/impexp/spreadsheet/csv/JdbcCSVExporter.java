@@ -60,7 +60,6 @@ public class JdbcCSVExporter implements DataConsumer<ResultSet>
 	private JdbcCSVExporter(
 			@NonNull final String adLanguage,
 			@Nullable final Boolean translateHeaders,
-			@Nullable final String fieldDelimiter)
 			@Nullable final String fieldDelimiter,
 			@Nullable final String fieldQualifier)
 	{

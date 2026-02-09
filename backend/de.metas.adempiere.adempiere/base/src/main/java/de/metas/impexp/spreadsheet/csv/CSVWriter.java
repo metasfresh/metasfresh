@@ -23,6 +23,7 @@
 package de.metas.impexp.spreadsheet.csv;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.Language;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -97,7 +98,7 @@ public class CSVWriter
 		{
 			final FileOutputStream out = new FileOutputStream(outputFile, false);
 
-			if(enforceUTF8BOM)
+			if (enforceUTF8BOM)
 			{
 				try
 				{
