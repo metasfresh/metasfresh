@@ -628,11 +628,6 @@ public class PaymentAllocationBuilder
 		final ArrayList<AllocationLineCandidate> allocationLineCandidates = new ArrayList<>();
 		for (final PayableDocument payable : payableDocuments)
 		{
-			if (payable.getAmountsToAllocate().getWriteOffAmt().isZero())
-			{
-				continue;
-			}
-
 			final AllocationLineCandidate allocationLine = createAllocationLineCandidate_DiscountAndWriteOff(payable);
 			if (allocationLine != null)
 			{
@@ -800,10 +795,7 @@ public class PaymentAllocationBuilder
 		final boolean positivePaymentAmtToAllocate = payment.getAmountToAllocateInitial().signum() >= 0;
 		if (positivePayableAmtToAllocate != positivePaymentAmtToAllocate)
 		{
-			if (!payable.isAllowAllocateAgainstDifferentSignumPayment())
-			{
-				return false;
-			}
+			return payable.isAllowAllocateAgainstDifferentSignumPayment();
 		}
 
 		//
