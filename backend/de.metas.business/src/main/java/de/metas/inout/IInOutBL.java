@@ -59,6 +59,9 @@ public interface IInOutBL extends ISingletonService
 {
 	I_M_InOut getById(@NonNull InOutId inoutId);
 
+	@Nullable
+	<T extends I_M_InOut> T getById(@NonNull InOutId inoutId, @NonNull Class<T> modelClass);
+
 	void save(I_M_InOut inout);
 
 	List<I_M_InOutLine> getLines(@NonNull I_M_InOut inout);
@@ -86,7 +89,13 @@ public interface IInOutBL extends ISingletonService
 
 	I_M_InOutLine getLineByIdInTrx(@NonNull InOutAndLineId inoutLineId);
 
+	<T extends I_M_InOutLine> T getLineByIdInTrx(@NonNull InOutLineId inoutLineId, Class<T> modelClass);
+
 	List<I_M_InOutLine> getLinesByIds(@NonNull Set<InOutLineId> inoutLineIds);
+
+	<T extends I_M_InOutLine> List<T> retrieveLines(I_M_InOut inOut, Class<T> inoutLineClass);
+
+	ImmutableSet<InOutLineId> retrieveActiveLineIdsByInOutIds(Set<InOutId> inoutIds);
 
 	Set<InOutAndLineId> getLineIdsByOrderLineIds(Set<OrderLineId> orderLineIds);
 
@@ -218,4 +227,12 @@ public interface IInOutBL extends ISingletonService
 	ImmutableSet<I_M_InOut> getNotVoidedNotReversedForOrderId(@NonNull OrderId orderId);
 
 	void setShipperId(@NonNull I_M_InOut inout);
+
+	boolean isCustomerReturn(@NonNull I_M_InOutLine inOutLine);
+
+	boolean isCustomerReturn(@NonNull I_M_InOut inOut);
+
+	boolean isVendorReturn(@NonNull I_M_InOut inOut);
+
+	boolean isEmptiesReturn(I_M_InOut inOut);
 }

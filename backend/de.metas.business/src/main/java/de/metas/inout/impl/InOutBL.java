@@ -16,6 +16,9 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyBL;
 import de.metas.doctype.CopyDescriptionAndDocumentNote;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
+import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.IModelTranslationMap;
@@ -78,6 +81,7 @@ import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_R_Request;
+import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
 import org.compiere.model.X_R_Request;
 import org.compiere.util.Env;
@@ -142,6 +146,13 @@ public class InOutBL implements IInOutBL
 		return inOutDAO.getById(inoutId);
 	}
 
+	@Nullable
+	@Override
+	public <T extends I_M_InOut> T getById(@NonNull final InOutId inoutId, @NonNull final Class<T> modelClass)
+	{
+	   return inOutDAO.getById(inoutId, modelClass);
+	}
+
 	@Override
 	public void save(@NonNull final I_M_InOut inout)
 	{
@@ -174,9 +185,27 @@ public class InOutBL implements IInOutBL
 	}
 
 	@Override
+	public <T extends I_M_InOutLine> T getLineByIdInTrx(@NonNull final InOutLineId inoutLineId, final Class<T> modelClass)
+	{
+		return inOutDAO.getLineByIdInTrx(inoutLineId, modelClass);
+	}
+
+	@Override
 	public List<I_M_InOutLine> getLinesByIds(@NonNull final Set<InOutLineId> inoutLineIds)
 	{
 		return inOutDAO.getLinesByIds(inoutLineIds, I_M_InOutLine.class);
+	}
+
+	@Override
+	public <T extends I_M_InOutLine> List<T> retrieveLines(final I_M_InOut inOut, final Class<T> inoutLineClass)
+	{
+		return inOutDAO.retrieveLines(inOut, inoutLineClass);
+	}
+
+	@Override
+	public ImmutableSet<InOutLineId> retrieveActiveLineIdsByInOutIds(final Set<InOutId> inoutIds)
+	{
+		return inOutDAO.retrieveActiveLineIdsByInOutIds(inoutIds);
 	}
 
 	@Override
@@ -830,5 +859,53 @@ public class InOutBL implements IInOutBL
 				() -> BPartnerId.ofRepoIdOrNull(inout.getDropShip_BPartner_ID()),
 				() -> BPartnerId.ofRepoIdOrNull(inout.getC_BPartner_ID())));
 
+	}
+
+	@Override
+	public boolean isCustomerReturn(@NonNull final I_M_InOutLine inOutLine)
+	{
+		return isCustomerReturn(getById(InOutId.ofRepoId(inOutLine.getM_InOut_ID())));
+	}
+
+	@Override
+	public boolean isCustomerReturn(@NonNull final I_M_InOut inOut)
+	{
+		final DocTypeQuery docTypeQuery = createDocTypeQueryBuilder(inOut)
+				.docBaseType(DocBaseType.MaterialReceipt)
+				.docSubTypeAny()
+				.isSOTrx(true)
+				.build();
+
+		return docTypeDAO.queryMatchesDocTypeId(docTypeQuery, inOut.getC_DocType_ID());
+	}
+
+	@Override
+	public boolean isVendorReturn(@NonNull final org.compiere.model.I_M_InOut inOut)
+	{
+		final DocTypeQuery docTypeQuery = createDocTypeQueryBuilder(inOut)
+				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialDelivery)
+				.isSOTrx(false)
+				.build();
+
+		return docTypeDAO.queryMatchesDocTypeId(docTypeQuery, inOut.getC_DocType_ID());
+	}
+
+	@Override
+	public boolean isEmptiesReturn(final I_M_InOut inOut)
+	{
+		final DocTypeQuery docTypeQuery = createDocTypeQueryBuilder(inOut)
+				.docBaseType(DocBaseType.MaterialReceipt)
+				.docSubType(DocSubType.EmptiesReceipt)
+				.build();
+
+		return docTypeDAO.queryMatchesDocTypeId(docTypeQuery, inOut.getC_DocType_ID());
+	}
+
+	private DocTypeQuery.DocTypeQueryBuilder createDocTypeQueryBuilder(@NonNull final I_M_InOut inOut)
+	{
+		return DocTypeQuery.builder()
+				.docSubTypeNone() // in the case of returns the docSubType is null
+				.adClientId(inOut.getAD_Client_ID())
+				.adOrgId(inOut.getAD_Org_ID());
 	}
 }

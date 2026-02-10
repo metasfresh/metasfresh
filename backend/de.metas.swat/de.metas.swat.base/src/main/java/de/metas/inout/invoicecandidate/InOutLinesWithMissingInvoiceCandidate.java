@@ -33,22 +33,27 @@ public class InOutLinesWithMissingInvoiceCandidate
 	/**
 	 * Add additional filters to allow other modules restricting the set of order lines for which the system automatically creates invoice candidates.
 	 */
-	public void addAdditionalFilter(IQueryFilter<I_M_InOutLine> filter)
+	public void addAdditionalFilter(final IQueryFilter<I_M_InOutLine> filter)
 	{
 		additionalFilters.add(filter);
 	}
 
 	/**
 	 * Get all {@link I_M_InOutLine}s which are not linked to an {@link I_C_OrderLine} and there is no invoice candidate already generated for them.
-	 * 
+	 * <p>
 	 * NOTE: this method will be used to identify those inout lines for which {@link M_InOutLine_Handler} will generate invoice candidates.
 	 */
 	public Iterator<I_M_InOutLine> retrieveLinesThatNeedAnInvoiceCandidate(@NonNull final QueryLimit limit)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+		final ICompositeQueryFilter<I_M_InOutLine> noOrderLineOrCustomerReturnFilter = queryBL.createCompositeQueryFilter(I_M_InOutLine.class)
+				.setJoinOr()
+				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID, null)
+		        .addNotNull(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_Return_Origin_InOutLine_ID);
+
 		final ICompositeQueryFilter<I_M_InOutLine> filters = queryBL.createCompositeQueryFilter(I_M_InOutLine.class);
-		filters.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID, null);
+		filters.addFilter(noOrderLineOrCustomerReturnFilter);
 		filters.addEqualsFilter(I_M_InOutLine.COLUMNNAME_Processed, true); // also processing e.g. closed InOuts
 		filters.addEqualsFilter(de.metas.invoicecandidate.model.I_M_InOutLine.COLUMNNAME_IsInvoiceCandidate, false); // which don't have invoice candidates already generated
 		filters.addOnlyActiveRecordsFilter();

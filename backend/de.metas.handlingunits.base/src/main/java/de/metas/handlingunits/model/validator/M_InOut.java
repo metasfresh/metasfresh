@@ -367,6 +367,9 @@ public class M_InOut
 		}
 
 		final List<I_M_HU> assignedHUs = inOutDAO.retrieveHandlingUnits(customerReturn);
+
+		//TODO add HUs with correct qty as copy of source inout hu
+
 		if (assignedHUs.isEmpty() && isCustomerReturnsInOut_FailIfNoHUsAssigned())
 		{
 			throw new AdempiereException("No HUs to return assigned");
