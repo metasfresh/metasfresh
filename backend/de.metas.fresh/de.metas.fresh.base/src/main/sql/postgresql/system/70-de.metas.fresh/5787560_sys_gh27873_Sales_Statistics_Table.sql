@@ -362,3 +362,43 @@ UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.U
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584507,'en_US')
 ;
 
+-- Column: C_Order_M_InOut_C_Invoice_Overview_V.Record_ID
+-- 2026-02-10T13:49:39.146Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,591985,538,0,30,542578,'Record_ID',TO_TIMESTAMP('2026-02-10 13:49:38.134000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Direct internal record ID','D',10,'The Record ID is the internal unique identifier of a record. Please note that zooming to the record may not be successful for Orders, Invoices and Shipment/Receipts as sometimes the Sales Order type is not known.','Y','Y','N','N','N','N','N','N','N','N','N','Datensatz-ID',TO_TIMESTAMP('2026-02-10 13:49:38.134000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0)
+;
+
+-- 2026-02-10T13:49:39.298Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=591985 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2026-02-10T13:49:39.467Z
+/* DDL */  select update_Column_Translation_From_AD_Element(538)
+;
+
+-- Column: C_Order_M_InOut_C_Invoice_Overview_V.Record_ID
+-- 2026-02-10T13:51:18.926Z
+UPDATE AD_Column SET AD_Reference_ID=28,Updated=TO_TIMESTAMP('2026-02-10 13:51:18.925000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591985
+;
+
+-- Column: C_Order_M_InOut_C_Invoice_Overview_V.AD_Table_ID
+-- 2026-02-10T14:03:15.653Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,Description,EntityType,FieldLength,Help,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,Updated,UpdatedBy,Version) VALUES (0,591986,126,0,30,542578,'AD_Table_ID',TO_TIMESTAMP('2026-02-10 14:03:15.119000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Database Table information','D',10,'The Database Table provides the information of the table definition','Y','Y','N','N','N','N','N','N','N','N','N','DB-Tabelle',TO_TIMESTAMP('2026-02-10 14:03:15.119000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0)
+;
+
+-- 2026-02-10T14:03:15.712Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=591986 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2026-02-10T14:03:15.837Z
+/* DDL */  select update_Column_Translation_From_AD_Element(126)
+;
+
+-- Column: C_Order_M_InOut_C_Invoice_Overview_V.AD_Table_ID
+-- 2026-02-10T14:04:58.430Z
+UPDATE AD_Column SET AD_Val_Rule_ID=213,Updated=TO_TIMESTAMP('2026-02-10 14:04:58.430000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591986
+;
+
+-- Column: C_Order_M_InOut_C_Invoice_Overview_V.Record_ID
+-- 2026-02-10T14:07:14.777Z
+UPDATE AD_Column SET IsAlwaysUpdateable='Y', IsUpdateable='Y',Updated=TO_TIMESTAMP('2026-02-10 14:07:14.777000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591985
+;

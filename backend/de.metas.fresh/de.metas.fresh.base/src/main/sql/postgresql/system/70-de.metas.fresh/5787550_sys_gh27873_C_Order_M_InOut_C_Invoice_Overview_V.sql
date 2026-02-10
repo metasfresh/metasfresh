@@ -25,6 +25,8 @@ DROP VIEW IF EXISTS C_Order_M_InOut_C_Invoice_Overview_V
 
 CREATE OR REPLACE VIEW C_Order_M_InOut_C_Invoice_Overview_V AS
 SELECT ROW_NUMBER() OVER (ORDER BY ad_Table_id, head_id, line_id) AS C_Order_M_InOut_C_Invoice_Overview_V_ID,
+       doc.ad_Table_id,
+       doc.Record_ID,
        doc.issotrx,
        doc.c_doctype_id,
        dt.docbasetype,
@@ -45,6 +47,7 @@ SELECT ROW_NUMBER() OVER (ORDER BY ad_Table_id, head_id, line_id) AS C_Order_M_I
        doc.createdby,
        doc.isactive
 FROM (SELECT get_table_id('C_Order')                                   AS ad_Table_id,
+             o.c_order_id                                              AS Record_ID,
              o.c_order_id                                              AS head_id,
              ol.c_orderline_id                                         AS line_id,
              ol.ad_client_id,
@@ -76,6 +79,7 @@ FROM (SELECT get_table_id('C_Order')                                   AS ad_Tab
       UNION
 
       SELECT get_table_id('M_InOut')           AS ad_Table_id,
+             io.m_inout_id                     AS Record_ID,
              io.c_order_id                     AS head_id,
              iol.c_orderline_id                AS line_id,
              iol.ad_client_id,
@@ -109,6 +113,7 @@ FROM (SELECT get_table_id('C_Order')                                   AS ad_Tab
       UNION
 
       SELECT get_table_id('C_Invoice')                                 AS ad_Table_id,
+             i.c_invoice_id                                            AS Record_ID,
              i.c_order_id                                              AS head_id,
              il.c_orderline_id                                         AS line_id,
              il.ad_client_id,

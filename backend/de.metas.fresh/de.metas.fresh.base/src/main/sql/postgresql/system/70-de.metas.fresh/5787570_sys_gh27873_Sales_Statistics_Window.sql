@@ -1243,3 +1243,66 @@ UPDATE AD_UI_Element SET WidgetSize='S',Updated=TO_TIMESTAMP('2026-02-10 11:26:3
 UPDATE AD_UI_Element SET WidgetSize='S',Updated=TO_TIMESTAMP('2026-02-10 11:27:02.978000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=646924
 ;
 
+
+-- Field: Verkaufsstatistik(542070,D) -> Verkaufsstatistik(548990,D) -> Datensatz-ID
+-- Column: C_Order_M_InOut_C_Invoice_Overview_V.Record_ID
+-- 2026-02-10T13:53:45.115Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,FacetFilterSeqNo,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,591985,772134,0,548990,0,TO_TIMESTAMP('2026-02-10 13:53:44.213000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Direct internal record ID',0,'D',0,'The Record ID is the internal unique identifier of a record. Please note that zooming to the record may not be successful for Orders, Invoices and Shipment/Receipts as sometimes the Sales Order type is not known.',0,'Y','Y','Y','N','N','N','N','N','N','N',0,'Datensatz-ID',0,0,10,0,1,1,TO_TIMESTAMP('2026-02-10 13:53:44.213000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-10T13:53:45.173Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=772134 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-10T13:53:45.234Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(538)
+;
+
+-- 2026-02-10T13:53:45.306Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=772134
+;
+
+-- 2026-02-10T13:53:45.363Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(772134)
+;
+
+-- UI Element: Verkaufsstatistik(542070,D) -> Verkaufsstatistik(548990,D) -> main -> 10 -> Document.Datensatz-ID
+-- Column: C_Order_M_InOut_C_Invoice_Overview_V.Record_ID
+-- 2026-02-10T13:54:45.716Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,772134,0,548990,554807,647015,'F',TO_TIMESTAMP('2026-02-10 13:54:44.917000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Direct internal record ID','The Record ID is the internal unique identifier of a record. Please note that zooming to the record may not be successful for Orders, Invoices and Shipment/Receipts as sometimes the Sales Order type is not known.','Y','N','N','Y','N','N','N',0,'Datensatz-ID',15,0,0,TO_TIMESTAMP('2026-02-10 13:54:44.917000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- Field: Verkaufsstatistik(542070,D) -> Verkaufsstatistik(548990,D) -> DB-Tabelle
+-- Column: C_Order_M_InOut_C_Invoice_Overview_V.AD_Table_ID
+-- 2026-02-10T14:10:10.760Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,FacetFilterSeqNo,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,591986,772135,0,548990,0,TO_TIMESTAMP('2026-02-10 14:10:09.940000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Database Table information',0,'D',0,'The Database Table provides the information of the table definition',0,'Y','Y','Y','N','N','N','N','N','N','N',0,'DB-Tabelle',0,0,20,0,1,1,TO_TIMESTAMP('2026-02-10 14:10:09.940000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-10T14:10:10.820Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=772135 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-10T14:10:10.878Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(126)
+;
+
+-- 2026-02-10T14:10:10.942Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=772135
+;
+
+-- 2026-02-10T14:10:11Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(772135)
+;
+
+-- UI Element: Verkaufsstatistik(542070,D) -> Verkaufsstatistik(548990,D) -> main -> 20 -> Status.DB-Tabelle
+-- Column: C_Order_M_InOut_C_Invoice_Overview_V.AD_Table_ID
+-- 2026-02-10T14:10:37.798Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,772135,0,548990,554810,647016,'F',TO_TIMESTAMP('2026-02-10 14:10:37.342000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Database Table information','The Database Table provides the information of the table definition','Y','N','N','Y','N','N','N',0,'DB-Tabelle',30,0,0,TO_TIMESTAMP('2026-02-10 14:10:37.342000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Verkaufsstatistik(542070,D) -> Verkaufsstatistik(548990,D) -> main -> 20 -> Status.Datensatz-ID
+-- Column: C_Order_M_InOut_C_Invoice_Overview_V.Record_ID
+-- 2026-02-10T14:11:11.464Z
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=554810, SeqNo=40,Updated=TO_TIMESTAMP('2026-02-10 14:11:11.464000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=647015
+;
+
