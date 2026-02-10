@@ -632,10 +632,6 @@ public class PaymentAllocationBuilder
 		final ArrayList<AllocationLineCandidate> allocationLineCandidates = new ArrayList<>();
 		for (final PayableDocument payable : payableDocuments)
 		{
-			if (payable.getAmountsToAllocate().getWriteOffAmt().isZero())
-			{
-				continue;
-			}
 			final AllocationLineCandidate allocationLine = createAllocationLineCandidate_DiscountAndWriteOff(payable);
 			if (allocationLine != null)
 			{
