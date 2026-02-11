@@ -3087,6 +3087,27 @@ public interface I_C_Order
 	String COLUMNNAME_SendEMail = "SendEMail";
 
 	/**
+	 * Set Gross Weight Sum (Kg).
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setTotalGrossWeightKg (BigDecimal TotalGrossWeightKg);
+
+	/**
+	 * Get Gross Weight Sum (Kg).
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getTotalGrossWeightKg();
+
+	ModelColumn<I_C_Order, Object> COLUMN_TotalGrossWeightKg = new ModelColumn<>(I_C_Order.class, "TotalGrossWeightKg", null);
+	String COLUMNNAME_TotalGrossWeightKg = "TotalGrossWeightKg";
+
+	/**
 	 * Set Total Lines.
 	 * Total of all document lines
 	 *

@@ -960,5 +960,16 @@ public class MOrderLine extends X_C_OrderLine
 				new AdempiereException("Updating GrandTotal failed for C_Order_IDs=" + orderIds);
 			}
 		}
+		// Update Order Header: TotalGrossWeightKg
+		final ArrayList<Object> sqlParams = new ArrayList<>();
+		final String sql = "UPDATE C_Order o"
+				+ " SET " + I_C_Order.COLUMNNAME_TotalGrossWeightKg + "="
+				+ "(SELECT COALESCE(SUM(ol." + I_C_OrderLine.COLUMNNAME_GrossWeightKg +"),0) FROM C_OrderLine ol WHERE ol.C_Order_ID=o.C_Order_ID) "
+				+ "WHERE " + DB.buildSqlList("C_Order_ID", orderIds, sqlParams);
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams.toArray(), ITrx.TRXNAME_ThreadInherited);
+		if (no != 1)
+		{
+			new AdempiereException("Updating TotalGrossWeightKg failed for C_Order_IDs=" + orderIds);
+		}
 	}
 }    // MOrderLine
