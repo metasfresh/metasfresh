@@ -907,6 +907,8 @@ public class DB
 			DB.close(cs);
 		}
 
+		// PostgreSQL RAISE NOTICE messages are delivered as SQLWarnings by the JDBC driver.
+		// Extract them here so callers (e.g. ExecuteUpdateSQL) can log them to AD_PInstance_Log.
 		final List<String> warningMessages = SQLUtil.extractWarningMessages(warning);
 
 		return SQLUpdateResult.builder()
