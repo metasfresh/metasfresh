@@ -84,10 +84,12 @@ import org.compiere.model.I_M_Shipper;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -133,16 +135,35 @@ public class CarrierAdviseCommand
 		try
 		{
 			final ShipperId shipperId = Check.assumeNotNull(shipmentSchedule.getShipperId(), "shipmentSchedule.shipperId should be set at this point");
-			final ShipperGatewayId shipperGatewayId = getShipperGatewayId(shipperId);
+			final ShipperGatewayId shipperGatewayId = getShipperGatewayIdOrNull(shipperId);
 
-			final ShipperGatewayClient client = shipperRegistry
-					.getClientFactory(shipperGatewayId)
-					.newClientForShipperId(shipperId);
+			final JsonDeliveryAdvisorResponse response;
+			if(shipperGatewayId != null)
+			{
+				final ShipperGatewayClient client = shipperRegistry
+						.getClientFactory(shipperGatewayId)
+						.newClientForShipperId(shipperId);
 
-			final JsonDeliveryAdvisorRequest request = createAdvisorRequest(shipperId, shipmentSchedule, client);
-			logger.debug("AdviseShipment request: {}", request);
-			final JsonDeliveryAdvisorResponse response = client.adviseShipment(request);
-			logger.debug("AdviseShipment response: {}", response);
+				final JsonDeliveryAdvisorRequest request = createAdvisorRequest(shipperId, shipmentSchedule, client);
+				logger.debug("AdviseShipment request: {}", request);
+				response = client.adviseShipment(request);
+				logger.debug("AdviseShipment response: {}", response);
+			}
+			else
+			{
+				final I_M_Shipper shipper =  shipperDAO.getById(shipperId);
+				response = JsonDeliveryAdvisorResponse.builder()
+						.requestId(UUID.randomUUID().toString())
+						.shipperProduct(JsonShipperProduct.builder()
+								.name(shipper.getName())
+								.code(shipper.getName())
+								.build())
+						.build();
+			}
+
+
+
+
 			updateShipmentFromResponse(shipmentSchedule, response);
 		}
 		catch (final Exception e)
@@ -152,9 +173,10 @@ public class CarrierAdviseCommand
 		}
 	}
 
-	private @NonNull ShipperGatewayId getShipperGatewayId(final ShipperId shipperId)
+	@Nullable
+	private ShipperGatewayId getShipperGatewayIdOrNull(final ShipperId shipperId)
 	{
-		return shipperDAO.getShipperGatewayId(shipperId).orElseThrow();
+		return shipperDAO.getShipperGatewayId(shipperId).orElse(null);
 	}
 
 	private ShipmentSchedule retrieveShipmentSchedule()
@@ -260,8 +282,11 @@ public class CarrierAdviseCommand
 				shipmentSchedule.setCarrierProductId(extractCarrierProductId(Objects.requireNonNull(shipmentSchedule.getShipperId()), shipperProduct));
 			}
 			final ShipperId shipperId = Check.assumeNotNull(shipmentSchedule.getShipperId(), "Shipment Schedule ShipperId should be set at this point");
-			final JsonGoodsType goodsType = Check.assumeNotNull(response.getGoodsType(), "response goods type should be set at not error case");
-			shipmentSchedule.setCarrierGoodsTypeId(extractCarrierGoodsTypeId(shipperId, goodsType));
+			final JsonGoodsType goodsType = response.getGoodsType();
+			if(goodsType != null)
+			{
+				shipmentSchedule.setCarrierGoodsTypeId(extractCarrierGoodsTypeId(shipperId, goodsType));
+			}
 			shipmentSchedule.setCarrierServices(extractCarrierServiceIds(shipmentSchedule.getShipperId(), response.getShipperProductServices()));
 			updateAdviseStatusAndSave(shipmentSchedule, CarrierAdviseStatus.Completed);
 		}
