@@ -33,7 +33,6 @@ import de.metas.handlingunits.document.IHUDocumentFactoryService;
 import de.metas.handlingunits.empties.IHUEmptiesService;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.inout.IHUInOutBL;
-import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.inout.IHUShipmentAssignmentBL;
 import de.metas.handlingunits.inout.impl.MInOutHUDocumentFactory;
 import de.metas.handlingunits.inout.impl.ReceiptInOutLineHUAssignmentListener;
@@ -49,8 +48,6 @@ import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
 import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.handlingunits.util.HUByIdComparator;
-import de.metas.inout.IInOutBL;
-import de.metas.inout.IInOutDAO;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.material.MovementType;
 import de.metas.util.Check;
@@ -83,13 +80,10 @@ public class M_InOut
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
-	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final IHUShipmentAssignmentBL huShipmentAssignmentBL = Services.get(IHUShipmentAssignmentBL.class);
-	private final IHUInOutDAO inOutDAO = Services.get(IHUInOutDAO.class);
 	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 	private final IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
 	private final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
-	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 	private final IHUSnapshotDAO snapshotDAO = Services.get(IHUSnapshotDAO.class);
 	private final ReturnsServiceFacade returnsServiceFacade;
@@ -162,7 +156,7 @@ public class M_InOut
 			return;
 		}
 
-		final List<I_M_HU> hus = inOutDAO.retrieveHandlingUnits(shipment);
+		final List<I_M_HU> hus = huInOutBL.retrieveHandlingUnits(shipment);
 		for (final I_M_HU hu : hus)
 		{
 			huAttributesBL.updateHUAttributeRecursive(HuId.ofRepoId(hu.getM_HU_ID()), AttributeConstants.WarrantyStartDate, shipment.getMovementDate(), null);
@@ -198,7 +192,7 @@ public class M_InOut
 		// Retrieve all HUs which we need to remove from their picking slots
 		final Set<I_M_HU> husToRemove = new TreeSet<>(HUByIdComparator.instance);
 
-		final List<I_M_HU> handlingUnits = inOutDAO.retrieveHandlingUnits(shipment);
+		final List<I_M_HU> handlingUnits = huInOutBL.retrieveHandlingUnits(shipment);
 
 		husToRemove.addAll(handlingUnits);
 
@@ -335,7 +329,7 @@ public class M_InOut
 			return;
 		}
 
-		final List<I_M_InOutLine> reversalLines = inoutDao.retrieveLines(reversal, I_M_InOutLine.class);
+		final List<I_M_InOutLine> reversalLines = huInOutBL.retrieveLines(reversal, I_M_InOutLine.class);
 		for (final I_M_InOutLine reversalLine : reversalLines)
 		{
 			final BigDecimal qtyTuReversed = reversalLine.getQtyEnteredTU().negate();
@@ -356,7 +350,7 @@ public class M_InOut
 			return; // do nothing if the inout is not a customer return
 		}
 
-		if (inOutBL.isReversal(customerReturn))
+		if (huInOutBL.isReversal(customerReturn))
 		{
 			return; // nothing to do
 		}
@@ -366,10 +360,9 @@ public class M_InOut
 			return; // no HUs to generate if the whole InOut is about HUs
 		}
 
-		final List<I_M_HU> assignedHUs = inOutDAO.retrieveHandlingUnits(customerReturn);
+		returnsServiceFacade.createReturnHandlingUnitsIfNeeded(customerReturn);
 
-		//TODO add HUs with correct qty as copy of source inout hu
-
+		final List<I_M_HU> assignedHUs = huInOutBL.retrieveHandlingUnits(customerReturn);
 		if (assignedHUs.isEmpty() && isCustomerReturnsInOut_FailIfNoHUsAssigned())
 		{
 			throw new AdempiereException("No HUs to return assigned");

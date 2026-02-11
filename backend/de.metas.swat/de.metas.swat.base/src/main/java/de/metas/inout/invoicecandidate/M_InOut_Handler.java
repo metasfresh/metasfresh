@@ -2,7 +2,6 @@ package de.metas.inout.invoicecandidate;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.inout.IInOutBL;
-import de.metas.inout.IInOutDAO;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
@@ -56,7 +55,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 public class M_InOut_Handler extends AbstractInvoiceCandidateHandler
 {
 	// services
-	private final transient IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
 
 	@Override
@@ -97,7 +95,7 @@ public class M_InOut_Handler extends AbstractInvoiceCandidateHandler
 		}
 		else
 		{
-			inoutLines = inOutDAO.retrieveLinesWithoutOrderLine(inout, I_M_InOutLine.class);
+			inoutLines = inOutBL.retrieveLinesWithoutOrderLine(inout, I_M_InOutLine.class);
 		}
 		if (inoutLines.isEmpty())
 		{
@@ -162,7 +160,7 @@ public class M_InOut_Handler extends AbstractInvoiceCandidateHandler
 
 		for (final IInvoiceCandidateHandler handler : inoutLineHandlers)
 		{
-			for (final org.compiere.model.I_M_InOutLine line : inOutDAO.retrieveLines(inout))
+			for (final org.compiere.model.I_M_InOutLine line : inOutBL.retrieveLines(inout))
 			{
 				handler.invalidateCandidatesFor(line);
 			}

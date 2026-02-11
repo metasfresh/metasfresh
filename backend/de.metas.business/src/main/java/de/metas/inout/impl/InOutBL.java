@@ -197,9 +197,21 @@ public class InOutBL implements IInOutBL
 	}
 
 	@Override
+	public List<I_M_InOutLine> retrieveLines(final I_M_InOut inOut)
+	{
+		return inOutDAO.retrieveLines(inOut);
+	}
+
+	@Override
 	public <T extends I_M_InOutLine> List<T> retrieveLines(final I_M_InOut inOut, final Class<T> inoutLineClass)
 	{
 		return inOutDAO.retrieveLines(inOut, inoutLineClass);
+	}
+
+	@Override
+	public <T extends I_M_InOutLine> List<T> retrieveLinesWithoutOrderLine(final I_M_InOut inOut, final Class<T> clazz)
+	{
+		return inOutDAO.retrieveLinesWithoutOrderLine(inOut, clazz);
 	}
 
 	@Override
@@ -796,13 +808,12 @@ public class InOutBL implements IInOutBL
 	@Override
 	public CurrencyConversionContext getCurrencyConversionContext(@NonNull final I_M_InOut inout)
 	{
-		CurrencyConversionContext conversionCtx = currencyBL.createCurrencyConversionContext(
+
+		return currencyBL.createCurrencyConversionContext(
 				inout.getDateAcct().toInstant(),
 				(CurrencyConversionTypeId)null,
 				ClientId.ofRepoId(inout.getAD_Client_ID()),
 				OrgId.ofRepoId(inout.getAD_Org_ID()));
-
-		return conversionCtx;
 	}
 
 	@Override

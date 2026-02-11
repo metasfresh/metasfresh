@@ -95,6 +95,7 @@ public class HUInOutBL implements IHUInOutBL
 	private final ISerialNoBL serialNoBL = Services.get(ISerialNoBL.class);
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
+	private final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
 
 	@Override
 	public de.metas.handlingunits.model.I_M_InOut getById(@NonNull final InOutId inoutId)
@@ -458,4 +459,22 @@ public class HUInOutBL implements IHUInOutBL
 		}
 	}
 
+	@Override
+	public boolean isReversal(final I_M_InOut inout)
+	{
+		return inOutBL.isReversal(inout);
+	}
+
+	@Override
+	public List<I_M_HU> retrieveHandlingUnits(final I_M_InOut inOut)
+	{
+		return huInOutDAO.retrieveHandlingUnits(inOut);
+	}
+
+	@Override
+	public @NonNull
+	Map<InOutLineId, List<I_M_HU>> retrieveShippedHUsByShipmentLineId(final Set<InOutLineId> shipmentLineIds)
+	{
+		return huInOutDAO.retrieveShippedHUsByShipmentLineId(shipmentLineIds);
+	}
 }
