@@ -34,6 +34,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Attachment_MultiRef;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -112,7 +113,7 @@ class AttachmentReferenceRepository
 
 	public ImmutableList<AttachmentReference> saveAll(@NonNull final Collection<AttachmentReference> attachmentReferences)
 	{
-		return attachmentReferences.stream()
+				return attachmentReferences.stream()
 				.map(this::save)
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -191,6 +192,7 @@ class AttachmentReferenceRepository
 				.delete();
 	}
 
+	@Nullable
 	private I_AD_Attachment_MultiRef getBy(@NonNull final AttachmentEntryId attachmentEntryId,
 										   @NonNull final TableRecordReference tableRecordReference)
 	{

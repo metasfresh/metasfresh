@@ -262,6 +262,11 @@ public class AttachmentService
 		referencesToSave.addAll(additionalRefs);
 
 		attachmentReferenceRepository.saveAll(referencesToSave);
+
+		for (final AttachmentReference attachmentReference : referencesToSave)
+		{
+			tableAttachmentListenerService.fireAfterRecordLinked(newEntry, attachmentReference);
+		}
 	}
 
 	private ImmutableList<AttachmentReference> createAttachmentLinksDontSave(

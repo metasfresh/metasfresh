@@ -94,7 +94,7 @@ public class ApiRequestMapper
 	private String getRequestBody(@NonNull final CachedBodyHttpServletRequest requestWrapper)
 	{
 		final String contentType = requestWrapper.getContentType();
-		if (!contentType.contains(APPLICATION_JSON_VALUE))
+		if (contentType != null && !contentType.contains(APPLICATION_JSON_VALUE))
 		{
 			return UNRECORDABLE_REQUEST_BODY;
 		}

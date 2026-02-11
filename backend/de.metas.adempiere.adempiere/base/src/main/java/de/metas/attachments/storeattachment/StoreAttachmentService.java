@@ -10,6 +10,7 @@ import lombok.NonNull;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.net.URI;
 import java.util.List;
 import java.util.Optional;
@@ -85,6 +86,7 @@ public class StoreAttachmentService
 		}
 	}
 
+	@Nullable
 	private StoreAttachmentServiceImpl extractFor(@NonNull final AttachmentEntry attachmentEntry)
 	{
 		for (final StoreAttachmentServiceImpl storeAttachmentService : storeAttachmentServices)
