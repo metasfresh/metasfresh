@@ -207,7 +207,7 @@ public class M_InOut
 	private void generateEmptiesMovementForEmptiesInOut(final I_M_InOut inout)
 	{
 		// do nothing if completing the reversal document
-		if (inout.getReversal_ID() > 0)
+		if (returnsServiceFacade.isReversal(inout))
 		{
 			return;
 		}
@@ -350,7 +350,7 @@ public class M_InOut
 			return; // do nothing if the inout is not a customer return
 		}
 
-		if (huInOutBL.isReversal(customerReturn))
+		if (returnsServiceFacade.isReversal(customerReturn))
 		{
 			return; // nothing to do
 		}

@@ -23,6 +23,11 @@
 package de.metas.handlingunits.inout.returns;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.returns.customer.CreateCustomerReturnLineReq;
 import de.metas.handlingunits.inout.returns.customer.CustomerReturnHUsCreateCommand;
@@ -35,6 +40,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
@@ -50,6 +56,8 @@ import java.util.List;
 public class ReturnsServiceFacade
 {
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
+	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final CustomerReturnsWithoutHUsProducer customerReturnsWithoutHUsProducer;
 
 	public ReturnsServiceFacade(
@@ -61,6 +69,11 @@ public class ReturnsServiceFacade
 	public boolean isCustomerReturn(@NonNull final org.compiere.model.I_M_InOut inout)
 	{
 		return huInOutBL.isCustomerReturn(inout);
+	}
+
+	public boolean isReversal(@NonNull final org.compiere.model.I_M_InOut inout)
+	{
+		return huInOutBL.isReversal(inout);
 	}
 
 	public boolean isVendorReturn(@NonNull final org.compiere.model.I_M_InOut inout)
@@ -144,6 +157,9 @@ public class ReturnsServiceFacade
 					.build()
 					.execute();
 
+			transferAttributesForSingleProductHUs(returnLine, createdHUs);
+
+
 			huInOutBL.setAssignedHandlingUnits(customerReturn, createdHUs);
 		}
 	}
@@ -151,5 +167,34 @@ public class ReturnsServiceFacade
 	private boolean isSkipReturnLine(final I_M_InOutLine returnLine)
 	{
 		return returnLine.isDescription() || returnLine.isPackagingMaterial();
+	}
+
+	private void transferAttributesForSingleProductHUs(@NonNull final I_M_InOutLine returnLine, @NonNull final List<I_M_HU> returnHus)
+	{
+		final InOutLineId originLineId = InOutLineId.ofRepoIdOrNull(returnLine.getReturn_Origin_InOutLine_ID());
+		if (originLineId == null || returnHus.size() != 1)
+		{
+			return;
+		}
+
+		final I_M_HU returnHU = returnHus.get(0);
+		if(!handlingUnitsBL.getStorageFactory().getStorage(returnHU).isSingleProductStorage())
+		{
+			return;
+		}
+
+		final ImmutableSetMultimap<InOutLineId, HuId> originHUs = huInOutBL.getHUIdsByInOutLineIds(ImmutableSet.of(originLineId));
+		if(originHUs.get(originLineId).size() != 1)
+		{
+			return;
+		}
+
+		final I_M_HU originHU = handlingUnitsBL.getById(originHUs.get(originLineId).iterator().next());
+		if(!handlingUnitsBL.getStorageFactory().getStorage(originHU).isSingleProductStorage())
+		{
+			return;
+		}
+
+		huAttributesBL.transferAttributesForSingleProductHUs(originHU, returnHU);
 	}
 }
