@@ -94,11 +94,11 @@ public class CustomerReturnHUsCreateCommand
 		final HUPIItemProductId hupiItemProductId = HUPIItemProductId.ofRepoIdOrNull(returnLine.getM_HU_PI_Item_Product_ID());
 		if (hupiItemProductId == null || hupiItemProductId.isVirtualHU())
 		{
-			createdHUs = ImmutableList.of(createCUs(returnLine));
+			createdHUs = ImmutableList.of(createCUs());
 		}
 		else
 		{
-			createdHUs = createLUTUs(returnLine);
+			createdHUs = createLUTUs();
 		}
 
 		huInOutBL.setAssignedHandlingUnits(returnLine, createdHUs);
@@ -106,7 +106,7 @@ public class CustomerReturnHUsCreateCommand
 		return createdHUs;
 	}
 
-	private List<I_M_HU> createLUTUs(@NonNull final I_M_InOutLine returnLine)
+	private List<I_M_HU> createLUTUs()
 	{
 		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(returnLine);
 		return CustomerReturnLineHUGenerator.newInstance(contextProvider)
@@ -115,7 +115,7 @@ public class CustomerReturnHUsCreateCommand
 				.generate();
 	}
 
-	private I_M_HU createCUs(@NonNull final I_M_InOutLine returnLine)
+	private I_M_HU createCUs()
 	{
 		final IContextAware contextProvider = InterfaceWrapperHelper.getContextAware(returnLine);
 		final IMutableHUContext huContext = handlingUnitsBL.createMutableHUContextForProcessing(contextProvider);
@@ -132,7 +132,7 @@ public class CustomerReturnHUsCreateCommand
 				returnLine,
 				true);
 
-		final IAllocationSource source = createAllocationSource(returnLine);
+		final IAllocationSource source = createAllocationSource();
 
 		final LocatorId locatorId = warehousesRepo.getLocatorIdByRepoId(returnLine.getM_Locator_ID());
 		final I_M_HU returnCU = initializeCU(locatorId);
@@ -160,7 +160,7 @@ public class CustomerReturnHUsCreateCommand
 						.create(huPI));
 	}
 
-	private IAllocationSource createAllocationSource(@NonNull final I_M_InOutLine returnLine)
+	private IAllocationSource createAllocationSource()
 	{
 		final ProductId productId = ProductId.ofRepoId(returnLine.getM_Product_ID());
 		final I_C_UOM uom = uomDao.getById(returnLine.getC_UOM_ID());
