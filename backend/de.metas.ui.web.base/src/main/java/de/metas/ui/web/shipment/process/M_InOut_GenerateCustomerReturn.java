@@ -1,5 +1,6 @@
 package de.metas.ui.web.shipment.process;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -70,6 +71,8 @@ public class M_InOut_GenerateCustomerReturn extends JavaProcess implements IProc
 		customerReturn.setIsSOTrx(true);
 		customerReturn.setMovementType(MovementType.CustomerReturns.getCode());
 		customerReturn.setReturn_Origin_InOut_ID(shipment.getM_InOut_ID());
+		customerReturn.setMovementDate(SystemTime.asTimestamp());
+		customerReturn.setDateAcct(SystemTime.asTimestamp());
 		InterfaceWrapperHelper.save(customerReturn);
 
 		for (final org.compiere.model.I_M_InOutLine shipmentLine : inoutBL.getLines(shipment))
