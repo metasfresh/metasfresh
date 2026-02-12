@@ -82,13 +82,13 @@ public class CustomerReturnHUsCreateCommand
 		this.returnLine = returnLine;
 	}
 
-	public void execute()
+	public List<I_M_HU> execute()
 	{
-		createHUsForReturnLine();
+		return createHUsForReturnLine();
 	}
 
 
-	private void createHUsForReturnLine()
+	private List<I_M_HU> createHUsForReturnLine()
 	{
 		final List<I_M_HU> createdHUs;
 		final HUPIItemProductId hupiItemProductId = HUPIItemProductId.ofRepoIdOrNull(returnLine.getM_HU_PI_Item_Product_ID());
@@ -102,6 +102,8 @@ public class CustomerReturnHUsCreateCommand
 		}
 
 		huInOutBL.setAssignedHandlingUnits(returnLine, createdHUs);
+
+		return createdHUs;
 	}
 
 	private List<I_M_HU> createLUTUs(@NonNull final I_M_InOutLine returnLine)

@@ -360,7 +360,7 @@ public class M_InOut
 			return; // no HUs to generate if the whole InOut is about HUs
 		}
 
-		returnsServiceFacade.createReturnHandlingUnitsIfNeeded(customerReturn);
+		returnsServiceFacade.createCustomerReturnHandlingUnitsIfNeeded(customerReturn);
 
 		final List<I_M_HU> assignedHUs = huInOutBL.retrieveHandlingUnits(customerReturn);
 		if (assignedHUs.isEmpty() && isCustomerReturnsInOut_FailIfNoHUsAssigned())

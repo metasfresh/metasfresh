@@ -35,7 +35,6 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.inout.InOutId;
-import de.metas.inout.InOutLineId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
@@ -125,7 +124,7 @@ public class ReturnsServiceFacade
 		huInOutBL.setAssignedHandlingUnits(customerReturnLine, hus);
 	}
 
-	public void createReturnHandlingUnitsIfNeeded(@NonNull final org.compiere.model.I_M_InOut customerReturn)
+	public void createCustomerReturnHandlingUnitsIfNeeded(@NonNull final org.compiere.model.I_M_InOut customerReturn)
 	{
 		if (!huInOutBL.retrieveHandlingUnits(customerReturn).isEmpty())
 		{
@@ -140,16 +139,12 @@ public class ReturnsServiceFacade
 				continue;
 			}
 
-			final InOutLineId originLineId = InOutLineId.ofRepoIdOrNull(returnLine.getReturn_Origin_InOutLine_ID());
-			if (originLineId == null)
-			{
-				continue;
-			}
-
-			CustomerReturnHUsCreateCommand.builder()
+			final List<I_M_HU> createdHUs = CustomerReturnHUsCreateCommand.builder()
 					.returnLine(returnLine)
 					.build()
 					.execute();
+
+			huInOutBL.setAssignedHandlingUnits(customerReturn, createdHUs);
 		}
 	}
 
