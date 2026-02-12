@@ -196,5 +196,6 @@ public class ReturnsServiceFacade
 		}
 
 		huAttributesBL.transferAttributesForSingleProductHUs(originHU, returnHU);
+		handlingUnitsBL.saveHU(returnHU);
 	}
 }
