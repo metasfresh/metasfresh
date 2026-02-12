@@ -3,14 +3,13 @@ package de.metas.ui.web.order.sales.hu.reservation.process;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.order.api.IHUOrderBL;
+import de.metas.handlingunits.reservation.HUReservation;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.reservation.ReserveHUsRequest;
 import de.metas.handlingunits.reservation.RetrieveHUsQtyRequest;
-import de.metas.process.IProcessDefaultParameter;
-import de.metas.process.IProcessDefaultParametersProvider;
+import de.metas.i18n.AdMessageKey;
 import de.metas.process.IProcessPrecondition;
-import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.SalesOrderLine;
@@ -18,14 +17,10 @@ import de.metas.purchasecandidate.SalesOrderLineRepository;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
-import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.UOMConversionContext;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.math.BigDecimal;
 
 /*
  * #%L
@@ -49,9 +44,9 @@ import java.math.BigDecimal;
  * #L%
  */
 
-public class WEBUI_C_OrderLineSO_Make_HUReservation
+public class WEBUI_C_OrderLineSO_Make_HUReservation_ActualHUs
 		extends HUEditorProcessTemplate
-		implements IProcessPrecondition, IProcessDefaultParametersProvider
+		implements IProcessPrecondition
 {
 	@Autowired
 	private HUReservationService huReservationService;
@@ -60,11 +55,8 @@ public class WEBUI_C_OrderLineSO_Make_HUReservation
 	private SalesOrderLineRepository salesOrderLineRepository;
 
 	private final IHUOrderBL huOrderBL = Services.get(IHUOrderBL.class);
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
-	private static final String PARAMNAME_QTY_TO_RESERVE = "QtyToReserve";
-	@Param(mandatory = true, parameterName = PARAMNAME_QTY_TO_RESERVE)
-	private BigDecimal qtyToReserveBD;
+	private final static AdMessageKey MSG_HU_CONTAINS_MORE_QUANTITY_THAN_NEEDED = AdMessageKey.of("HUContainsMoreQuantityThanNeeded");
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -82,47 +74,30 @@ public class WEBUI_C_OrderLineSO_Make_HUReservation
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("No reservable quantity for productId=" + productId);
 		}
+		//Cannot reserve HU if qty in it is greater than what's needed by the order.
+		if (salesOrderLine.getOrderedQty().compareTo(reservableQty) < 0)
+		{
+			return ProcessPreconditionsResolution.reject(MSG_HU_CONTAINS_MORE_QUANTITY_THAN_NEEDED, reservableQty, salesOrderLine.getOrderedQty());
+		}
+		//Cannot reserve HU if qty in it is greater than the unreservedQty (orderedQty - sum(reservedQty))
+		final Quantity unreservedQty = getUnreservedQty(salesOrderLine, reservableQty);
+		if (unreservedQty.isLessThan(reservableQty))
+		{
+			return ProcessPreconditionsResolution.reject(MSG_HU_CONTAINS_MORE_QUANTITY_THAN_NEEDED, reservableQty, unreservedQty);
+		}
 
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	@Override
-	public Object getParameterDefaultValue(@NonNull final IProcessDefaultParameter parameter)
+	private Quantity getUnreservedQty(final SalesOrderLine salesOrderLine, final Quantity reservableQty)
 	{
-		if (PARAMNAME_QTY_TO_RESERVE.equals(parameter.getColumnName()))
-		{
-			final SalesOrderLine salesOrderLine = WEBUI_C_OrderLineSO_Util.retrieveSalesOrderLine(getView(), salesOrderLineRepository)
-					.orElseThrow(() -> new AdempiereException("Sales order line not found"));
-			final ProductId productId = salesOrderLine.getProductId();
-
-			final Quantity orderedQty = salesOrderLine.getOrderedQty();
-
-			final Quantity reservedQty = huReservationService
-					.retrieveReservedQty(salesOrderLine.getId().getOrderLineId())
-					.orElse(orderedQty.toZero());
-
-			final Quantity reservedQtyInSalesOrderUOM = uomConversionBL.convertQuantityTo(
-					reservedQty,
-					UOMConversionContext.of(productId),
-					orderedQty.getUomId());
-
-			final Quantity requiredQty = orderedQty
-					.subtract(salesOrderLine.getDeliveredQty())
-					.subtract(reservedQtyInSalesOrderUOM);
-
-			final Quantity reservableQty = retrieveReservableQuantity(productId);
-
-			final Quantity reservableQtyInSalesOrderUOM = uomConversionBL.convertQuantityTo(
-					reservableQty,
-					UOMConversionContext.of(productId),
-					orderedQty.getUomId());
-
-			return requiredQty.min(reservableQtyInSalesOrderUOM).toBigDecimal();
-		}
-		return null;
+		final Quantity sumReservedQty = huReservationService.getByDocumentRef(HUReservationDocRef.ofSalesOrderLineId(salesOrderLine.getId().getOrderLineId()))
+				.map(HUReservation::getReservedQtySum)
+				.orElse(Quantity.zero(reservableQty.getUOM()));
+		return salesOrderLine.getOrderedQty().subtract(sumReservedQty);
 	}
 
-	private Quantity retrieveReservableQuantity(@NonNull final ProductId productId)
+	protected Quantity retrieveReservableQuantity(@NonNull final ProductId productId)
 	{
 		final RetrieveHUsQtyRequest request = WEBUI_C_OrderLineSO_Util.createHuQuantityRequest(
 				streamSelectedHUIds(Select.ALL), productId);
@@ -142,19 +117,22 @@ public class WEBUI_C_OrderLineSO_Make_HUReservation
 		{
 			throw new AdempiereException("@NoSelection@");
 		}
-
-		final Quantity qtyToReserve = Quantity.of(qtyToReserveBD, salesOrderLine.getOrderedQty().getUOM());
+		final ProductId productId = salesOrderLine.getProductId();
+		final Quantity reservableQty = retrieveReservableQuantity(productId);
 
 		final ReserveHUsRequest reservationRequest = ReserveHUsRequest
 				.builder()
 				.huIds(selectedHuIds)
-				.productId(salesOrderLine.getProductId())
-				.qtyToReserve(qtyToReserve)
+				.productId(productId)
 				.documentRef(HUReservationDocRef.ofSalesOrderLineId(salesOrderLine.getId().getOrderLineId()))
+				.qtyToReserve(getUnreservedQty(salesOrderLine, reservableQty))
+				.reserveActualHUs(true)
+				.huPIItemProductId(salesOrderLine.getHUPIItemProductId())
 				.build();
 		huReservationService.makeReservation(reservationRequest);
 		huOrderBL.updateOrderLineFromReservations(salesOrderLine.getId());
 
 		return MSG_OK;
 	}
+
 }

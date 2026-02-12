@@ -1373,6 +1373,29 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public void setReservedRecursively(@NonNull final I_M_HU hu, final boolean reserved)
+	{
+		hu.setIsReserved(reserved);
+		handlingUnitsRepo.saveHU(hu);
+		handlingUnitsRepo.retrieveIncludedHUs(hu)
+				.forEach(includedHU -> setReservedRecursively(includedHU, reserved));
+	}
+
+	@Override
+	public void setReservedByHUIds(@NonNull final Set<HuId> huIds, final boolean reserved)
+	{
+		if (huIds.isEmpty())
+		{
+			return;
+		}
+		for (final I_M_HU hu : getByIds(huIds))
+		{
+			setReservedRecursively(hu, reserved);
+		}
+	}
+
+
+	@Override
 	public boolean isHUHierarchyCleared(@NonNull final HuId huId)
 	{
 		return isWholeHierarchyCleared(getTopLevelParent(huId));

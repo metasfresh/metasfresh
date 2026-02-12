@@ -786,7 +786,7 @@ public class PickingJobPickCommand
 				.scheduleId(getScheduleId())
 				.cachedShipmentSchedule(shipmentScheduleInfo.getRecord())
 				.qtyPicked(CatchWeightHelper.extractQtys(huContext, getProductId(), qtyPicked, hu))
-				.tuOrVHU(hu)
+				.hu(hu)
 				.huContext(huContext)
 				.anonymousHuPickedOnTheFly(false)
 				.build());
