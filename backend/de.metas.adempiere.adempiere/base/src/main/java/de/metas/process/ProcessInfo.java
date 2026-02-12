@@ -1236,7 +1236,7 @@ public final class ProcessInfo implements Serializable
 						.translateHeaders(process.isTranslateExcelHeaders())
 						.excelApplyFormatting(spreadsheetFormat.isFormatExcelFile())
 						.csvFieldDelimiter(StringUtils.trimSpacesToNull(process.getCSVFieldDelimiter()))
-						.csvFieldQualifier(StringUtils.trimSpacesToNull(process.getCSVFieldQuote()))
+						.csvFieldQualifier(process.getCSVFieldQuote())
 						.build();
 			}
 		}

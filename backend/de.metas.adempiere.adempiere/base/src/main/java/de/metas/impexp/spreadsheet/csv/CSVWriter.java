@@ -215,6 +215,10 @@ public class CSVWriter
 
 	private String quoteCsvValue(@NonNull final String valueStr)
 	{
+		if (fieldQualifier.isEmpty())
+		{
+			return valueStr;
+		}
 		return fieldQualifier
 				+ valueStr.replace(fieldQualifier, fieldQualifier + fieldQualifier)
 				+ fieldQualifier;
