@@ -154,13 +154,11 @@ public class ReturnsServiceFacade
 
 			final List<I_M_HU> createdHUs = CustomerReturnHUsCreateCommand.builder()
 					.returnLine(returnLine)
+					.isOnlyCreateCUs(true)
 					.build()
 					.execute();
 
 			transferAttributesForSingleProductHUs(returnLine, createdHUs);
-
-
-			huInOutBL.setAssignedHandlingUnits(customerReturn, createdHUs);
 		}
 	}
 

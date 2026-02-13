@@ -38,6 +38,7 @@ import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
+import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -68,16 +69,20 @@ public class CustomerReturnHUsCreateCommand
 	private final IUOMDAO uomDao = Services.get(IUOMDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 
 	private final I_M_InOutLine returnLine;
+	private final boolean isOnlyCreateCUs;
 
 	@Builder
 	private CustomerReturnHUsCreateCommand(
-			@NonNull final I_M_InOutLine returnLine
+			@NonNull final I_M_InOutLine returnLine,
+			final boolean isOnlyCreateCUs
 	)
 	{
 		this.returnLine = returnLine;
+		this.isOnlyCreateCUs = isOnlyCreateCUs;
 	}
 
 	public List<I_M_HU> execute()
@@ -90,14 +95,16 @@ public class CustomerReturnHUsCreateCommand
 	{
 		final List<I_M_HU> createdHUs;
 		final HUPIItemProductId hupiItemProductId = HUPIItemProductId.ofRepoIdOrNull(returnLine.getM_HU_PI_Item_Product_ID());
-		if (hupiItemProductId == null || hupiItemProductId.isVirtualHU())
+		if (isOnlyCreateCUs || hupiItemProductId == null || hupiItemProductId.isVirtualHU())
 		{
 			createdHUs = ImmutableList.of(createCUs());
-		}
+        }
 		else
 		{
 			createdHUs = createLUTUs();
 		}
+
+		huInOutBL.setAssignedHandlingUnits(returnLine, createdHUs);
 
 		return createdHUs;
 	}
