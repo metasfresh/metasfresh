@@ -176,7 +176,7 @@ public class HUReservationService
 				.orElseThrow(() -> new AdempiereException(NO_QTY_RESERVED_ERROR_MSG)
 						.appendParametersToMessage()
 						.setParameter("request", reservationRequest));
-		if (reservationRequest.getQtyToReserve().compareTo(qtyReserved) != 0)
+		if (!reservationRequest.isReserveActualHUs() && reservationRequest.getQtyToReserve().compareTo(qtyReserved) != 0)
 		{
 			throw new AdempiereException(RESERVED_ERROR_MSG)
 					.appendParametersToMessage()
