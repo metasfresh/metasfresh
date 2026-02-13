@@ -277,6 +277,7 @@ public class InOutBL implements IInOutBL
 		pricingCtx.setPricingSystemId(pricingSystemId);
 		pricingCtx.setPriceListId(priceListId);
 		pricingCtx.setPriceDate(TimeUtil.asLocalDate(inOut.getDateOrdered()));
+		pricingCtx.setReferencedObject(inOutLine);
 
 		pricingCtx.setFailIfNotCalculated();
 
