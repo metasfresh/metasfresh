@@ -38,7 +38,6 @@ import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
-import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -69,7 +68,6 @@ public class CustomerReturnHUsCreateCommand
 	private final IUOMDAO uomDao = Services.get(IUOMDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
-	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 
 	private final I_M_InOutLine returnLine;
@@ -100,8 +98,6 @@ public class CustomerReturnHUsCreateCommand
 		{
 			createdHUs = createLUTUs();
 		}
-
-		huInOutBL.setAssignedHandlingUnits(returnLine, createdHUs);
 
 		return createdHUs;
 	}
