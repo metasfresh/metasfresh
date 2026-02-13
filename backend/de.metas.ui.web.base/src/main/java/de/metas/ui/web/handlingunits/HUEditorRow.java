@@ -241,6 +241,27 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 100, displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
 	private final JSONLookupValue clearanceStatus;
 
+	// TopLevelAggregation fields
+	public static final String FIELDNAME_LU_Count = "LU_Count";
+	@ViewColumn(fieldName = FIELDNAME_LU_Count, captionKey = "LU_Count", widgetType = DocumentFieldWidgetType.Integer,
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 15) })
+	private final Integer luCount;
+
+	public static final String FIELDNAME_TU_Count = "TU_Count";
+	@ViewColumn(fieldName = FIELDNAME_TU_Count, captionKey = "TU_Count", widgetType = DocumentFieldWidgetType.Integer,
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 16) })
+	private final Integer tuCount;
+
+	public static final String FIELDNAME_VHU_Count = "VHU_Count";
+	@ViewColumn(fieldName = FIELDNAME_VHU_Count, captionKey = "VHU_Count", widgetType = DocumentFieldWidgetType.Integer,
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 17) })
+	private final Integer vhuCount;
+
+	public static final String FIELDNAME_CU_TotalQty = "CU_TotalQty";
+	@ViewColumn(fieldName = FIELDNAME_CU_TotalQty, captionKey = "CU_TotalQty", widgetType = DocumentFieldWidgetType.Quantity,
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 18) })
+	private final BigDecimal cuTotalQty;
+
 	private final Optional<HUEditorRowAttributesSupplier> attributesSupplier;
 
 	private final List<HUEditorRow> includedRows;
@@ -280,6 +301,12 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 		bestBeforeDate = builder.getBestBeforeDate();
 
 		clearanceStatus = builder.clearanceStatus;
+
+		// TopLevelAggregation fields
+		luCount = builder.luCount;
+		tuCount = builder.tuCount;
+		vhuCount = builder.vhuCount;
+		cuTotalQty = builder.cuTotalQty;
 
 		this.locatorId = builder.locatorId;
 		this.locator = locatorId != null
@@ -505,6 +532,11 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 		return getType() == HUEditorRowType.LU;
 	}
 
+	public boolean isTopLevelAggregation()
+	{
+		return getType().isTopLevelAggregation();
+	}
+
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean hasIncludedTUs()
 	{
@@ -714,6 +746,12 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 
 		@Nullable
 		private JSONLookupValue clearanceStatus;
+
+		// TopLevelAggregation fields
+		private Integer luCount;
+		private Integer tuCount;
+		private Integer vhuCount;
+		private BigDecimal cuTotalQty;
 
 		private List<HUEditorRow> includedRows = null;
 		@Nullable
@@ -938,6 +976,31 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 		public Builder setClearanceStatus(@Nullable final JSONLookupValue clearanceStatusLookupValue)
 		{
 			clearanceStatus = clearanceStatusLookupValue;
+			return this;
+		}
+
+		// TopLevelAggregation setters
+		public Builder setLUCount(@Nullable final Integer luCount)
+		{
+			this.luCount = luCount;
+			return this;
+		}
+
+		public Builder setTUCount(@Nullable final Integer tuCount)
+		{
+			this.tuCount = tuCount;
+			return this;
+		}
+
+		public Builder setVHUCount(@Nullable final Integer vhuCount)
+		{
+			this.vhuCount = vhuCount;
+			return this;
+		}
+
+		public Builder setCUTotalQty(@Nullable final BigDecimal cuTotalQty)
+		{
+			this.cuTotalQty = cuTotalQty;
 			return this;
 		}
 

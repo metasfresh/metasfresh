@@ -52,7 +52,7 @@ public class WEBUI_M_HU_ReturnFromCustomer_Pharma extends WEBUI_M_HU_ReturnFromC
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not the HU view");
 		}
 
-		if (!streamSelectedHUIds(Select.ONLY_TOPLEVEL).findAny().isPresent())
+		if (!streamSelectedHUIds(Select.ONLY_TOPLEVEL_HUS).findAny().isPresent())
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(WEBUI_HU_Constants.MSG_WEBUI_ONLY_TOP_LEVEL_HU));
 		}
@@ -70,7 +70,7 @@ public class WEBUI_M_HU_ReturnFromCustomer_Pharma extends WEBUI_M_HU_ReturnFromC
 		final DataMatrixCode dataMatrix = getDataMatrix();
 		final SecurPharmHUAttributesScanner scanner = securPharmService.newHUScanner();
 
-		streamSelectedHUs(Select.ONLY_TOPLEVEL)
+		streamSelectedHUs(Select.ONLY_TOPLEVEL_HUS)
 				.forEach(hu -> scanner.scanAndUpdateHUAttributes(dataMatrix, hu));
 
 		return super.doIt();

@@ -66,7 +66,7 @@ public abstract class PackingHUsViewBasedProcess extends HUEditorProcessTemplate
 
 	protected final Stream<HUEditorRow> streamEligibleHURows()
 	{
-		return streamSelectedRows(HUEditorRowFilter.select(Select.ONLY_TOPLEVEL));
+		return streamSelectedRows(HUEditorRowFilter.select(Select.ONLY_TOPLEVEL_HUS));
 	}
 
 }

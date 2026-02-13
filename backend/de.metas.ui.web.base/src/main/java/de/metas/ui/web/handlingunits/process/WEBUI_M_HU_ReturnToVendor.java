@@ -57,7 +57,7 @@ public class WEBUI_M_HU_ReturnToVendor extends HUEditorProcessTemplate implement
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not the HU view");
 		}
 
-		if (!streamSelectedHUIds(Select.ONLY_TOPLEVEL).findAny().isPresent())
+		if (!streamSelectedHUIds(Select.ONLY_TOPLEVEL_HUS).findAny().isPresent())
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(WEBUI_HU_Constants.MSG_WEBUI_ONLY_TOP_LEVEL_HU));
 		}
@@ -68,7 +68,7 @@ public class WEBUI_M_HU_ReturnToVendor extends HUEditorProcessTemplate implement
 	@Override
 	protected String doIt() throws Exception
 	{
-		husToReturn = streamSelectedHUs(Select.ONLY_TOPLEVEL).collect(ImmutableList.toImmutableList());
+		husToReturn = streamSelectedHUs(Select.ONLY_TOPLEVEL_HUS).collect(ImmutableList.toImmutableList());
 		if (husToReturn.isEmpty())
 		{
 			throw new AdempiereException("@NoSelection@");

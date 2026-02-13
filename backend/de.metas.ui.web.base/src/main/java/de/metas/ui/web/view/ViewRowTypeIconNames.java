@@ -40,6 +40,7 @@ public class ViewRowTypeIconNames
 	public static final String ICONNAME_LU = "LU";
 	public static final String ICONNAME_TU = "TU";
 	public static final String ICONNAME_CU = "CU";
+	public static final String ICONNAME_AGGREGATED = "Aggregated";
 
 	// Required by issue: https://github.com/metasfresh/metasfresh-webui-frontend/issues/675#issuecomment-297016790
 	public static final String ICONNAME_PP_Order_Receive = "PP_Order_Receive";

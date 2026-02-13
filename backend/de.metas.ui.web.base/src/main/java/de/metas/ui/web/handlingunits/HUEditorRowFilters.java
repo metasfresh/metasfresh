@@ -53,7 +53,7 @@ public class HUEditorRowFilters
 		{
 			// nothing
 		}
-		else if (rowType == Select.ONLY_TOPLEVEL)
+		else if (rowType == Select.ONLY_TOPLEVEL_HUS)
 		{
 			predicate = predicate.and(HUEditorRow::isTopLevel);
 		}
@@ -119,7 +119,7 @@ public class HUEditorRowFilters
 		{
 			// nothing
 		}
-		else if (rowType == Select.ONLY_TOPLEVEL)
+		else if (rowType == Select.ONLY_TOPLEVEL_HUS)
 		{
 			huQueryBuilder.setOnlyTopLevelHUs(true);
 		}

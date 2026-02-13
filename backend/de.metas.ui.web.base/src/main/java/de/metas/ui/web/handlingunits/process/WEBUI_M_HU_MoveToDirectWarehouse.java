@@ -48,7 +48,7 @@ public class WEBUI_M_HU_MoveToDirectWarehouse extends HUEditorProcessTemplate im
 	@Autowired
 	private DocumentCollection documentsCollection;
 
-	private static final HUEditorRowFilter rowsFilter = HUEditorRowFilter.builder().select(Select.ONLY_TOPLEVEL).onlyActiveHUs().build();
+	private static final HUEditorRowFilter rowsFilter = HUEditorRowFilter.builder().select(Select.ONLY_TOPLEVEL_HUS).onlyActiveHUs().build();
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()

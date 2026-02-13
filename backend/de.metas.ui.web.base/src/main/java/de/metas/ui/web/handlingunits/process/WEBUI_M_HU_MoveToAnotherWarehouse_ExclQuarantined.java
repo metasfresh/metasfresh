@@ -46,7 +46,7 @@ public class WEBUI_M_HU_MoveToAnotherWarehouse_ExclQuarantined extends WEBUI_M_H
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
-		final boolean quarantineHUs = isQuarantineHUs(streamSelectedHUs(Select.ONLY_TOPLEVEL));
+		final boolean quarantineHUs = isQuarantineHUs(streamSelectedHUs(Select.ONLY_TOPLEVEL_HUS));
 
 		if (quarantineHUs)
 		{
@@ -73,7 +73,7 @@ public class WEBUI_M_HU_MoveToAnotherWarehouse_ExclQuarantined extends WEBUI_M_H
 	@Override
 	public ProcessPreconditionsResolution checkHUsEligible()
 	{
-		return isQuarantineHUs(streamSelectedHUs(Select.ONLY_TOPLEVEL)) ?
+		return isQuarantineHUs(streamSelectedHUs(Select.ONLY_TOPLEVEL_HUS)) ?
 		ProcessPreconditionsResolution.reject(MSG_WEBUI_HUs_IN_Quarantine)
 				: ProcessPreconditionsResolution.accept();
 	}

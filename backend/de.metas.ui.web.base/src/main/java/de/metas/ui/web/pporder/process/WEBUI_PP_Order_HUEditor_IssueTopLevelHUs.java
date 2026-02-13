@@ -69,7 +69,7 @@ public class WEBUI_PP_Order_HUEditor_IssueTopLevelHUs
 	@Override
 	protected String doIt()
 	{
-		final Stream<HUEditorRow> selectedTopLevelHuRows = streamSelectedRows(HUEditorRowFilter.select(Select.ONLY_TOPLEVEL));
+		final Stream<HUEditorRow> selectedTopLevelHuRows = streamSelectedRows(HUEditorRowFilter.select(Select.ONLY_TOPLEVEL_HUS));
 
 		final List<I_M_HU> hus = retrieveEligibleHUEditorRows(selectedTopLevelHuRows)
 				.map(HUEditorRow::getM_HU)

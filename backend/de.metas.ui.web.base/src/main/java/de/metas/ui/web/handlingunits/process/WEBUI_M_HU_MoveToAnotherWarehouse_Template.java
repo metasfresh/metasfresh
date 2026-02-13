@@ -174,7 +174,7 @@ abstract class WEBUI_M_HU_MoveToAnotherWarehouse_Template extends HUEditorProces
 
 	protected final ImmutableList<I_M_HU> getSelectedHUs()
 	{
-		return streamSelectedHUs(Select.ONLY_TOPLEVEL).collect(ImmutableList.toImmutableList());
+		return streamSelectedHUs(Select.ONLY_TOPLEVEL_HUS).collect(ImmutableList.toImmutableList());
 	}
 
 	@Override

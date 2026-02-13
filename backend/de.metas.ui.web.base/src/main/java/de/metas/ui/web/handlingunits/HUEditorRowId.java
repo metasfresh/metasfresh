@@ -53,6 +53,7 @@ public final class HUEditorRowId
 				topLevelHUId,
 				(ProductId)null, // storageProductId
 				(HuId)null, // topLevelHUId parameter
+				(String)null, // aggregationKey
 				(String)null, // json, to be computed when needed
 				(DocumentId)null  // to be computed when needed
 		);
@@ -61,16 +62,29 @@ public final class HUEditorRowId
 	public static HUEditorRowId ofHU(final HuId huId, final HuId topLevelHUId)
 	{
 		final ProductId storageProductId = null;
+		final String aggregationKey = null;
 		final String json = null; // to be computed when needed
 		final DocumentId documentId = null; // to be computed when needed
-		return new HUEditorRowId(huId, storageProductId, topLevelHUId, json, documentId);
+		return new HUEditorRowId(huId, storageProductId, topLevelHUId, aggregationKey, json, documentId);
 	}
 
 	public static HUEditorRowId ofHUStorage(final HuId huId, final HuId topLevelHUId, @NonNull final ProductId storageProductId)
 	{
 		final String json = null; // to be computed when needed
 		final DocumentId documentId = null; // to be computed when needed
-		return new HUEditorRowId(huId, storageProductId, topLevelHUId, json, documentId);
+		return new HUEditorRowId(huId, storageProductId, topLevelHUId, null, json, documentId);
+	}
+
+	public static HUEditorRowId ofTopLevelAggregation(@NonNull final String aggregationKey)
+	{
+		return new HUEditorRowId(
+				null, // huId
+				null, // storageProductId
+				null, // topLevelHUId
+				aggregationKey,
+				null, // json
+				null  // documentId
+		);
 	}
 
 	public static HUEditorRowId ofDocumentId(@NonNull final DocumentId documentId)
@@ -87,6 +101,14 @@ public final class HUEditorRowId
 
 	private static HUEditorRowId fromJson(@NonNull final String json, final DocumentId documentId)
 	{
+		//
+		// Check if it's an aggregation row ID
+		if (json.startsWith(PREFIX_AggregationKey + PARTS_SEPARATOR))
+		{
+			final String aggregationKey = json.substring((PREFIX_AggregationKey + PARTS_SEPARATOR).length());
+			return new HUEditorRowId(null, null, null, aggregationKey, json, documentId);
+		}
+
 		//
 		// Split json to parts
 		final Iterator<String> partsIterator;
@@ -139,7 +161,7 @@ public final class HUEditorRowId
 			}
 		}
 
-		return new HUEditorRowId(huId, storageProductId, topLevelHUId, json, documentId);
+		return new HUEditorRowId(huId, storageProductId, topLevelHUId, null, json, documentId);
 	}
 
 	public static DocumentIdsSelection rowIdsFromTopLevelHuIds(final Collection<HuId> huIds)
@@ -162,6 +184,7 @@ public final class HUEditorRowId
 	}
 
 	private static final String PREFIX_TopLevelHUId = "T";
+	private static final String PREFIX_AggregationKey = "AGG";
 
 	private static final String ID_SEPARATOR = "-";
 	private static final Splitter ID_SPLITTER = Splitter.on(ID_SEPARATOR).omitEmptyStrings();
@@ -173,19 +196,32 @@ public final class HUEditorRowId
 	private final HuId huId;
 	private final ProductId storageProductId;
 	private final HuId topLevelHUId;
+	private final String aggregationKey;
 	private transient String _json; // lazy
 	private transient DocumentId _documentId; // lazy
 
 	private HUEditorRowId(
-			@NonNull final HuId huId,
+			final HuId huId,
 			final ProductId storageProductId,
 			final HuId topLevelHUId,
+			final String aggregationKey,
 			final String json,
 			final DocumentId documentId)
 	{
+		// Validation: either huId OR aggregationKey must be present (but not both)
+		if (huId == null && aggregationKey == null)
+		{
+			throw new IllegalArgumentException("Either huId or aggregationKey must be provided");
+		}
+		if (huId != null && aggregationKey != null)
+		{
+			throw new IllegalArgumentException("Cannot have both huId and aggregationKey");
+		}
+
 		this.huId = huId;
 		this.storageProductId = storageProductId != null ? storageProductId : null;
-		this.topLevelHUId = topLevelHUId != null && !topLevelHUId.equals(huId) ? topLevelHUId : null;
+		this.topLevelHUId = topLevelHUId != null && !Objects.equals(topLevelHUId, huId) ? topLevelHUId : null;
+		this.aggregationKey = aggregationKey;
 
 		_json = json;
 		_documentId = documentId;
@@ -203,13 +239,19 @@ public final class HUEditorRowId
 		String json = _json;
 		if (json == null)
 		{
-			json = _json = toJson(huId, storageProductId, topLevelHUId);
+			json = _json = toJson(huId, storageProductId, topLevelHUId, aggregationKey);
 		}
 		return json;
 	}
 
-	private static String toJson(final HuId huId, final ProductId storageProductId, final HuId topLevelHUId)
+	private static String toJson(final HuId huId, final ProductId storageProductId, final HuId topLevelHUId, final String aggregationKey)
 	{
+		// Handle aggregation rows
+		if (aggregationKey != null)
+		{
+			return PREFIX_AggregationKey + PARTS_SEPARATOR + aggregationKey;
+		}
+
 		// IMPORTANT: top level row shall be perfectly convertible to integers, else, a lot of APIs could fail
 
 		final String idStrPart;
@@ -241,6 +283,11 @@ public final class HUEditorRowId
 		return huId != null && topLevelHUId == null && storageProductId == null;
 	}
 
+	public boolean isTopLevelAggregation()
+	{
+		return aggregationKey != null;
+	}
+
 	public boolean isHU()
 	{
 		return storageProductId == null;
@@ -251,9 +298,14 @@ public final class HUEditorRowId
 		return huId;
 	}
 
+	public String getAggregationKey()
+	{
+		return aggregationKey;
+	}
+
 	public HUEditorRowId toTopLevelRowId()
 	{
-		if (isTopLevel())
+		if (isTopLevel() || isTopLevelAggregation())
 		{
 			return this;
 		}
@@ -261,9 +313,10 @@ public final class HUEditorRowId
 		final HuId huId = getTopLevelHUId();
 		final ProductId storageProductId = null;
 		final HuId topLevelHUId = null;
+		final String aggregationKey = null;
 		final String json = null;
 		final DocumentId documentId = null;
-		return new HUEditorRowId(huId, storageProductId, topLevelHUId, json, documentId);
+		return new HUEditorRowId(huId, storageProductId, topLevelHUId, aggregationKey, json, documentId);
 	}
 
 	public HuId getTopLevelHUId()

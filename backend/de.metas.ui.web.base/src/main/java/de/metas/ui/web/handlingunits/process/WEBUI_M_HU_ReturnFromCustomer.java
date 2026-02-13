@@ -55,7 +55,7 @@ public class WEBUI_M_HU_ReturnFromCustomer extends HUEditorProcessTemplate imple
 	private ImmutableList<I_M_HU> _selectedHUsToReturn = null;
 	private MultiCustomerHUReturnsResult result;
 
-	private static final HUEditorRowFilter ELIGIBLE_ROWS_FILTER = HUEditorRowFilter.builder().select(Select.ONLY_TOPLEVEL).onlyHUStatus(X_M_HU.HUSTATUS_Shipped).build();
+	private static final HUEditorRowFilter ELIGIBLE_ROWS_FILTER = HUEditorRowFilter.builder().select(Select.ONLY_TOPLEVEL_HUS).onlyHUStatus(X_M_HU.HUSTATUS_Shipped).build();
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()

@@ -55,12 +55,12 @@ abstract class WEBUI_M_HU_InternalUse_Template extends HUEditorProcessTemplate i
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not the HU view");
 		}
 
-		if (!streamSelectedHUIds(HUEditorRowFilter.Select.ONLY_TOPLEVEL).findAny().isPresent())
+		if (!streamSelectedHUIds(HUEditorRowFilter.Select.ONLY_TOPLEVEL_HUS).findAny().isPresent())
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(WEBUI_HU_Constants.MSG_WEBUI_ONLY_TOP_LEVEL_HU));
 		}
 
-		if (streamSelectedHUs(HUEditorRowFilter.Select.ONLY_TOPLEVEL).noneMatch(huStatusBL::isPhysicalHU))
+		if (streamSelectedHUs(HUEditorRowFilter.Select.ONLY_TOPLEVEL_HUS).noneMatch(huStatusBL::isPhysicalHU))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("only 'physical' HUs are eligible");
 		}
@@ -81,7 +81,7 @@ abstract class WEBUI_M_HU_InternalUse_Template extends HUEditorProcessTemplate i
 	@NonNull
 	protected final List<I_M_HU> getHUsToInternalUse()
 	{
-		final List<I_M_HU> hus = streamSelectedHUs(HUEditorRowFilter.Select.ONLY_TOPLEVEL).collect(ImmutableList.toImmutableList());
+		final List<I_M_HU> hus = streamSelectedHUs(HUEditorRowFilter.Select.ONLY_TOPLEVEL_HUS).collect(ImmutableList.toImmutableList());
 		if (hus.isEmpty())
 		{
 			throw new AdempiereException("@NoSelection@");

@@ -37,6 +37,7 @@ public enum HUEditorRowType implements IViewRowType
 	, TU(ViewRowTypeIconNames.ICONNAME_TU, true) //
 	, VHU(ViewRowTypeIconNames.ICONNAME_CU, true) //
 	, HUStorage(ViewRowTypeIconNames.ICONNAME_CU, false) //
+	, TopLevelAggregation(ViewRowTypeIconNames.ICONNAME_AGGREGATED, false) //
 	;
 
 	private final String name;
@@ -61,6 +62,11 @@ public enum HUEditorRowType implements IViewRowType
 	public boolean isCU()
 	{
 		return this == VHU || this == HUStorage;
+	}
+
+	public boolean isTopLevelAggregation()
+	{
+		return this == TopLevelAggregation;
 	}
 
 	public static HUEditorRowType ofHU_UnitType(final String huUnitType)

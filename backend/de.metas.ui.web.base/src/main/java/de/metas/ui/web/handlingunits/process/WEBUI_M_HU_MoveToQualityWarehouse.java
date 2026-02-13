@@ -63,7 +63,7 @@ public class WEBUI_M_HU_MoveToQualityWarehouse extends HUEditorProcessTemplate i
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not the HU view");
 		}
 
-		if (!streamSelectedHUIds(Select.ONLY_TOPLEVEL).findAny().isPresent())
+		if (!streamSelectedHUIds(Select.ONLY_TOPLEVEL_HUS).findAny().isPresent())
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(WEBUI_HU_Constants.MSG_WEBUI_ONLY_TOP_LEVEL_HU));
 		}
@@ -76,7 +76,7 @@ public class WEBUI_M_HU_MoveToQualityWarehouse extends HUEditorProcessTemplate i
 	{
 		Check.assume(warehouse.isQualityReturnWarehouse(), "not a quality returns warehouse");
 
-		final List<I_M_HU> selectedTopLevelHUs = streamSelectedHUs(Select.ONLY_TOPLEVEL).collect(ImmutableList.toImmutableList());
+		final List<I_M_HU> selectedTopLevelHUs = streamSelectedHUs(Select.ONLY_TOPLEVEL_HUS).collect(ImmutableList.toImmutableList());
 		if (selectedTopLevelHUs.isEmpty())
 		{
 			throw new AdempiereException("@NoSelection@");
