@@ -126,6 +126,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 */
 	IHUStorageFactory getStorageFactory();
 
+	Set<ProductId> getStoredProducts(Collection<HuId> huIds);
+
 	IHUProductStorage getSingleHUProductStorage(HuId huId);
 
 	@NonNull
