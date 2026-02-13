@@ -39,6 +39,7 @@ import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.EmptyUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
@@ -107,6 +108,7 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.warehouse.LocatorId;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Locator;
@@ -164,6 +166,7 @@ public class M_HU_StepDef
 	private final ReturnsServiceFacade returnsServiceFacade = SpringContextHolder.instance.getBean(ReturnsServiceFacade.class);
 
 	private final C_BPartner_StepDefData bpartnerTable;
+	private final C_BPartner_Location_StepDefData bpLocationTable;
 	private final M_Product_StepDefData productTable;
 	private final M_HU_StepDefData huTable;
 	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
@@ -740,7 +743,8 @@ public class M_HU_StepDef
 	 *   <b>IsTopLevel</b> — (optional) true/false, whether HU has no parent<br>
 	 *   <b>Parent</b> — (optional, identifier-ref or null) expected parent HU; use "null" for no parent<br>
 	 *   <b>C_BPartner_ID</b> — (optional, identifier-ref or null) expected business partner; use "null" for no BPartner<br>
-	 * @cucumber.depends StepDefData: M_HU_StepDefData, M_Locator_StepDefData, C_BPartner_StepDefData
+	 *   <b>C_BPartner_Location_ID</b> — (optional, identifier-ref or null) expected BP location; use "null" for no location<br>
+	 * @cucumber.depends StepDefData: M_HU_StepDefData, M_Locator_StepDefData, C_BPartner_StepDefData, C_BPartner_Location_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * And M_HU are validated:
@@ -932,6 +936,20 @@ public class M_HU_StepDef
 									.map(bp -> bp.getC_BPartner_ID())
 									.orElseGet(bpartnerIdentifier::getAsInt);
 							softly.assertThat(huRecord.getC_BPartner_ID()).as("C_BPartner_ID").isEqualTo(expectedBPartnerId);
+						}
+					});
+			row.getAsOptionalIdentifier(I_M_HU.COLUMNNAME_C_BPartner_Location_ID)
+					.ifPresent(bpLocationIdentifier -> {
+						if (bpLocationIdentifier.isNullPlaceholder())
+						{
+							softly.assertThat(huRecord.getC_BPartner_Location_ID()).as("C_BPartner_Location_ID").isLessThanOrEqualTo(0);
+						}
+						else
+						{
+							final int expectedLocationId = bpLocationTable.getOptional(bpLocationIdentifier)
+									.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
+									.orElseGet(bpLocationIdentifier::getAsInt);
+							softly.assertThat(huRecord.getC_BPartner_Location_ID()).as("C_BPartner_Location_ID").isEqualTo(expectedLocationId);
 						}
 					});
 
