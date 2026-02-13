@@ -188,8 +188,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		// Retrieve VHU, TU and LU
 		final LUTUCUPair husPair;
 		{
-			@NonNull final I_M_HU tuOrVHU = request.getTuOrVHU();
-			Check.assume(handlingUnitsBL.isTransportUnitOrVirtual(tuOrVHU), "{} shall be a TU or a VirtualHU", tuOrVHU);
+			@NonNull final I_M_HU tuOrVHU = request.getHu();
 			husPair = handlingUnitsBL.getTopLevelParentAsLUTUCUPair(tuOrVHU);
 		}
 

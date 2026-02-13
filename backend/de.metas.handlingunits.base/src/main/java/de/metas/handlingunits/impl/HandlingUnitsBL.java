@@ -1373,6 +1373,58 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public boolean setReservedRecursively(@NonNull final I_M_HU hu, final boolean reserved)
+	{
+		// Validate first: check if all HUs in the hierarchy can be reserved/unreserved
+		if (reserved)
+		{
+			if (!canReserveRecursively(hu))
+			{
+				return false;
+			}
+		}
+
+		// If validation passes (or unreserving), proceed with reservation
+		setReservedRecursivelyWithoutValidation(hu, reserved);
+		return true;
+	}
+
+	private boolean canReserveRecursively(@NonNull final I_M_HU hu)
+	{
+		if (hu.isReserved())
+		{
+			return false;
+		}
+
+		// Recursively validate all children
+		return handlingUnitsRepo.retrieveIncludedHUs(hu)
+				.stream()
+				.allMatch(this::canReserveRecursively);
+	}
+
+	private void setReservedRecursivelyWithoutValidation(@NonNull final I_M_HU hu, final boolean reserved)
+	{
+		hu.setIsReserved(reserved);
+		handlingUnitsRepo.saveHU(hu);
+		handlingUnitsRepo.retrieveIncludedHUs(hu)
+				.forEach(includedHU -> setReservedRecursivelyWithoutValidation(includedHU, reserved));
+	}
+
+	@Override
+	public void setReservedByHUIds(@NonNull final Set<HuId> huIds, final boolean reserved)
+	{
+		if (huIds.isEmpty())
+		{
+			return;
+		}
+		for (final I_M_HU hu : getByIds(huIds))
+		{
+			setReservedRecursively(hu, reserved);
+		}
+	}
+
+
+	@Override
 	public boolean isHUHierarchyCleared(@NonNull final HuId huId)
 	{
 		return isWholeHierarchyCleared(getTopLevelParent(huId));

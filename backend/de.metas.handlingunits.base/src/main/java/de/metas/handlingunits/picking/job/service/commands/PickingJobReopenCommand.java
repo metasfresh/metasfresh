@@ -34,9 +34,9 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepPickFrom;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedTo;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job.service.HUWithPickOnTheFlyStatus;
+import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.handlingunits.picking.job.service.external.shipmentschedule.PickingJobShipmentScheduleService;
-import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.handlingunits.shipmentschedule.api.AddQtyPickedRequest;
 import de.metas.handlingunits.util.CatchWeightHelper;
 import de.metas.picking.api.PickingSlotId;
@@ -152,7 +152,7 @@ public class PickingJobReopenCommand
 									step.getProductId(),
 									pickStepHU.getQtyPicked(),
 									hu))
-							.tuOrVHU(hu)
+							.hu(hu)
 							.huContext(huContext)
 							.anonymousHuPickedOnTheFly(huIdsToPick.get(huId).isAnonymousHuPickedOnTheFly())
 							.build());

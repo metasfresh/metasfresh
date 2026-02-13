@@ -52,6 +52,7 @@ import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewCUsRequest;
 import de.metas.handlingunits.allocation.transfer.ReservedHUsPolicy;
 import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.generichumodel.HUType;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -430,18 +431,39 @@ public class ShipmentScheduleWithHUService
 
 		result.addAll(alreadyPickedOnTheFlyButNotDelivered);
 
-		Quantity remainingQtyToAllocate = getQtyToAllocate(alreadyPickedOnTheFlyButNotDelivered, qtyToDeliver);
+		final Quantity remainingQtyToAllocate = getQtyToAllocate(alreadyPickedOnTheFlyButNotDelivered, qtyToDeliver);
 
 		if (remainingQtyToAllocate.signum() <= 0)
 		{
 			return result.build();
 		}
 
-		boolean firstHU = true;
+		final boolean firstHU = true;
 
-		// if we have HUs on stock, get them now
-		final List<I_M_HU> husToPick = retrievePickOnTheFlySourceHUs(scheduleRecord);
+		final List<I_M_HU> reservedHUs = retrieveReservedHUs(scheduleRecord);
+		final Quantity remainingQtyToAllocateAfterReserved;
+		if (reservedHUs.isEmpty())
+		{
+			remainingQtyToAllocateAfterReserved = remainingQtyToAllocate;
+		}
+		else
+		{
+			remainingQtyToAllocateAfterReserved = processHU(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, huContext, reservedHUs, remainingQtyToAllocate, loggableWithLogger, firstHU, result, true);
+		}
 
+		if (remainingQtyToAllocateAfterReserved.isPositive())
+		{
+			// if we have HUs on stock, get them now
+			final List<I_M_HU> husToPick = retrievePickOnTheFlySourceHUs(scheduleRecord);
+
+			processHU(scheduleRecord, qtyToDeliver, pickAccordingToPackingInstruction, huContext, husToPick, remainingQtyToAllocateAfterReserved, loggableWithLogger, reservedHUs.isEmpty(), result, false);
+		}
+
+		return result.build();
+	}
+
+	private Quantity processHU(final @NonNull I_M_ShipmentSchedule scheduleRecord, final @NonNull Quantity qtyToDeliver, final boolean pickAccordingToPackingInstruction, final @NonNull IHUContext huContext, final List<I_M_HU> husToPick, Quantity remainingQtyToAllocate, final ILoggable loggableWithLogger, boolean firstHU, final ImmutableList.Builder<ShipmentScheduleWithHU> result, final boolean useExistingHUStructure)
+	{
 		for (final I_M_HU sourceHURecord : husToPick)
 		{
 			final ProductId productId = ProductId.ofRepoId(scheduleRecord.getM_Product_ID());
@@ -457,11 +479,22 @@ public class ShipmentScheduleWithHUService
 			loggableWithLogger.addLog("pickHUsOnTheFly - QtyToDeliver={}; split Qty={} from available M_HU_ID={} with Qty={}",
 					qtyToDeliver, quantityToSplit, sourceHURecord.getM_HU_ID(), qtyOfSourceHU);
 
-			final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
-			loggable.addLog("pickHUsOnTheFly - QtyToDeliver={}; split Qty={} from available M_HU_ID={} with Qty={}",
-					qtyToDeliver, quantityToSplit, sourceHURecord.getM_HU_ID(), qtyOfSourceHU);
+			final HUType huUnitType = handlingUnitsBL.getHUUnitType(sourceHURecord);
 
-			final List<I_M_HU> newHURecords = createNewlyPickedHUs(scheduleRecord, sourceHURecord, quantityToSplit, pickAccordingToPackingInstruction);
+			final List<I_M_HU> newHURecords;
+			final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
+			if (!useExistingHUStructure || (huUnitType.isVHU() && quantityToSplit.compareTo(qtyOfSourceHU) < 0))
+			{
+				loggable.addLog("pickHUsOnTheFly - QtyToDeliver={}; split Qty={} from available M_HU_ID={} with Qty={}",
+						qtyToDeliver, quantityToSplit, sourceHURecord.getM_HU_ID(), qtyOfSourceHU);
+				newHURecords = createNewlyPickedHUs(scheduleRecord, sourceHURecord, quantityToSplit, pickAccordingToPackingInstruction);
+			}
+			else
+			{
+				loggable.addLog("pickHUsOnTheFly - QtyToDeliver={}; don't split Qty={} from available M_HU_ID={} with Qty={} because it's a {}",
+						qtyToDeliver, quantityToSplit, sourceHURecord.getM_HU_ID(), qtyOfSourceHU, huUnitType.name());
+				newHURecords = ImmutableList.of(sourceHURecord);
+			}
 
 			// we stumbled over HUs with null-trx, which caused some trouble down the line
 			InterfaceWrapperHelper.setThreadInheritedTrxName(newHURecords);
@@ -488,7 +521,7 @@ public class ShipmentScheduleWithHUService
 										productId,
 										catchQtyOverride)
 						)
-						.tuOrVHU(newHURecord)
+						.hu(newHURecord)
 						.huContext(huContext)
 						.anonymousHuPickedOnTheFly(true)
 						.build()));
@@ -500,13 +533,10 @@ public class ShipmentScheduleWithHUService
 				break; // we are done here
 			}
 		}
-
-		return result.build();
+		return remainingQtyToAllocate;
 	}
 
-	// method coming from tenacious_d
-	@NonNull
-	private List<I_M_HU> retrievePickOnTheFlySourceHUs(final @NonNull I_M_ShipmentSchedule scheduleRecord)
+	private List<I_M_HU> retrieveReservedHUs(final @NonNull I_M_ShipmentSchedule scheduleRecord)
 	{
 		final ImmutableList.Builder<I_M_HU> result = ImmutableList.builder();
 
@@ -526,11 +556,18 @@ public class ShipmentScheduleWithHUService
 				}
 			}
 		}
+		return result.build();
+	}
+
+	@NonNull
+	private List<I_M_HU> retrievePickOnTheFlySourceHUs(final @NonNull I_M_ShipmentSchedule scheduleRecord)
+	{
+		final ImmutableList.Builder<I_M_HU> result = ImmutableList.builder();
 		final boolean matchAttributes = sysConfigBL.getBooleanValue(SYSCFG_PICK_AVAILABLE_HUS_ON_THE_FLY_MATCH_ATTRIBS,
 				true,
 				scheduleRecord.getAD_Client_ID(),
 				scheduleRecord.getAD_Org_ID());
-		
+
 		// second, get all unreserved HUs that are available for picking
 		final IHUPickingSlotBL.PickingHUsQuery pickingHUsQuery = IHUPickingSlotBL.PickingHUsQuery
 				.builder()
