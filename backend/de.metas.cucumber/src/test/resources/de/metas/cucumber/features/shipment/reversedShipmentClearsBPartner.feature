@@ -614,3 +614,106 @@ Feature: reversed shipment clears HU C_BPartner_ID
     Then M_HU are validated:
       | M_HU_ID.Identifier | HUStatus | IsActive | C_BPartner_ID | C_BPartner_Location_ID |
       | hu_1               | S        | Y        | endcustomer_B | loc_B                  |
+
+  @from:cucumber
+  Scenario: customer return reversal destroys auto-created HUs (PR 22317 coverage)
+    # Tests the customer return flow from PR #22317:
+    # 1. Customer return WITHOUT HUs is created from a completed shipment
+    # 2. On completion, HUs are auto-created (via CustomerReturnHUsCreateCommand)
+    # 3. On reversal, those HUs are destroyed (via HUInOutBL.destroyHandlingUnitsIfReversedInboundTransaction)
+    Given metasfresh contains M_Products:
+      | Identifier | Name                    |
+      | p_1        | hu_bpc_creturn_product  |
+    And metasfresh contains M_PricingSystems
+      | Identifier | Name                | Value               | OPT.IsActive |
+      | ps_1       | hu_bpc_creturn_ps   | hu_bpc_creturn_ps   | true         |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_1       | ps_1                          | DE                        | EUR                 | hu_bpc_creturn_pl   | null            | true  | false         | 2              | true         |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID.Identifier | Name                 | ValidFrom  |
+      | plv_1      | pl_1                      | hu_bpc_creturn_plv   | 2021-04-01 |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
+
+    And metasfresh contains C_BPartners:
+      | Identifier     | Name                    | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
+      | endcustomer_A  | hu_bpc_creturn_cust_A   | N            | Y              | ps_1                          | D               |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | loc_A      | 0123456789061 | endcustomer_A            | Y                   | Y                   |
+
+    # Create stock: 10 PCE
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | inv_1                     | 2021-04-01   | 540008         |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | inv_1                     | inv_l_1                       | p_1                     | 0       | 10       | PCE          |
+    When the inventory identified by inv_1 is completed
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
+      | inv_l_1                       | hu_1               |
+
+    And M_HU are validated:
+      | M_HU_ID.Identifier | HUStatus | IsActive | C_BPartner_ID | C_BPartner_Location_ID |
+      | hu_1               | A        | Y        | null          | null                   |
+
+    # Ship to customer
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference          |
+      | o_A        | true    | endcustomer_A            | 2021-04-17  | po_ref_creturn_A         |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_A       | o_A                   | p_1                     | 10         |
+    When the order identified by o_A is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | s_s_A      | ol_A                      | N             |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | s_s_A                            | D            | true                | false       |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
+      | s_s_A                            | ship_A                | CO            |
+
+    # Shipment is complete — HU shipped
+    And M_HU are validated:
+      | M_HU_ID.Identifier | HUStatus | IsActive | C_BPartner_ID | C_BPartner_Location_ID |
+      | hu_1               | E        | N        | endcustomer_A | loc_A                  |
+
+    # Quality return warehouse required for customer returns
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID.Identifier | Value                 | Name                  | OPT.IsQualityReturnWarehouse |
+      | returnWarehouse           | hu_bpc_creturn_ret_wh | hu_bpc_creturn_ret_wh | true                         |
+
+    # Generate customer return from the shipment (Draft — no HUs yet)
+    And generate customer return from shipment
+      | M_InOut_ID.Identifier | CustomerReturn_ID.Identifier |
+      | ship_A                | return_A                     |
+
+    # Complete the customer return — triggers auto-creation of HUs
+    And perform shipment document action
+      | M_InOut_ID.Identifier | DocAction |
+      | return_A              | CO        |
+
+    # Load the auto-created HUs from the completed customer return
+    And load HUs assigned to M_InOut
+      | M_InOut_ID.Identifier | M_HU_ID.Identifier |
+      | return_A              | return_hu_1         |
+
+    # Verify the auto-created HU is Active
+    And M_HU are validated:
+      | M_HU_ID.Identifier | HUStatus | IsActive |
+      | return_hu_1        | A        | Y        |
+
+    # Reverse the customer return — should destroy the auto-created HUs
+    And perform shipment document action
+      | M_InOut_ID.Identifier | DocAction |
+      | return_A              | RC        |
+
+    # Verify the HU is now Destroyed
+    Then M_HU are validated:
+      | M_HU_ID.Identifier | HUStatus | IsActive |
+      | return_hu_1        | D        | N        |

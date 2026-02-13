@@ -27,8 +27,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.EmptyUtil;
 import de.metas.common.util.StringUtils;
+import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
@@ -46,6 +48,9 @@ import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -53,7 +58,9 @@ import de.metas.externalsystem.ExternalSystemId;
 import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.model.I_ExternalSystem;
+import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.handlingunits.inout.IHUInOutBL;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.QtyToDeliverMap;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
@@ -64,11 +71,14 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
+import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.material.MovementType;
+import de.metas.order.OrderLineId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
@@ -90,6 +100,9 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Message;
@@ -143,6 +156,7 @@ public class M_InOut_StepDef
 	private final M_Warehouse_StepDefData warehouseTable;
 	private final AD_Message_StepDefData messageTable;
 	private final C_DocType_StepDefData docTypeTable;
+	private final M_HU_StepDefData huTable;
 	private final TestContext restTestContext;
 
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
@@ -155,6 +169,10 @@ public class M_InOut_StepDef
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
+	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IHUWarehouseDAO huWarehouseDAO = Services.get(IHUWarehouseDAO.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	/**
@@ -1017,6 +1035,74 @@ public class M_InOut_StepDef
 			endpointPath = endpointPath.replace(shipmentIdentifierGroup, String.valueOf(shipment.getM_InOut_ID()));
 
 			restTestContext.setEndpointPath(endpointPath);
+		}
+	}
+
+	@And("generate customer return from shipment")
+	public void generateCustomerReturnFromShipment(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String shipmentIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_M_InOut shipment = inoutTable.get(shipmentIdentifier);
+			assertThat(shipment).isNotNull();
+
+			final DocTypeId docTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
+					.docBaseType(DocBaseType.MaterialReceipt)
+					.isSOTrx(true)
+					.adClientId(shipment.getAD_Client_ID())
+					.adOrgId(shipment.getAD_Org_ID())
+					.build());
+
+			final WarehouseId warehouseId = huWarehouseDAO.retrieveFirstQualityReturnWarehouseId();
+			final LocatorId locatorId = warehouseBL.getOrCreateDefaultLocatorId(warehouseId);
+
+			final I_M_InOut customerReturn = InterfaceWrapperHelper.copy()
+					.setSkipCalculatedColumns(true)
+					.setFrom(shipment)
+					.copyToNew(I_M_InOut.class);
+			customerReturn.setC_DocType_ID(docTypeId.getRepoId());
+			customerReturn.setIsSOTrx(true);
+			customerReturn.setMovementType(MovementType.CustomerReturns.getCode());
+			customerReturn.setReturn_Origin_InOut_ID(shipment.getM_InOut_ID());
+			customerReturn.setMovementDate(SystemTime.asTimestamp());
+			customerReturn.setDateAcct(SystemTime.asTimestamp());
+			customerReturn.setM_Warehouse_ID(warehouseId.getRepoId());
+			InterfaceWrapperHelper.save(customerReturn);
+
+			for (final org.compiere.model.I_M_InOutLine shipmentLine : inOutBL.getLines(shipment))
+			{
+				final I_M_InOutLine returnLine = InterfaceWrapperHelper.copy()
+						.setSkipCalculatedColumns(true)
+						.setFrom(shipmentLine)
+						.copyToNew(I_M_InOutLine.class);
+				returnLine.setM_InOut_ID(customerReturn.getM_InOut_ID());
+				returnLine.setReturn_Origin_InOutLine_ID(shipmentLine.getM_InOutLine_ID());
+				returnLine.setM_Locator_ID(locatorId.getRepoId());
+				returnLine.setC_OrderLine_ID(OrderLineId.toRepoId(null));
+				InterfaceWrapperHelper.save(returnLine);
+			}
+
+			final String returnIdentifier = DataTableUtil.extractStringForColumnName(row, "CustomerReturn_ID." + TABLECOLUMN_IDENTIFIER);
+			inoutTable.putOrReplace(returnIdentifier, customerReturn);
+		}
+	}
+
+	@And("load HUs assigned to M_InOut")
+	public void loadHUsAssignedToInOut(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String inoutIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_M_InOut inout = inoutTable.get(inoutIdentifier);
+			assertThat(inout).isNotNull();
+			InterfaceWrapperHelper.refresh(inout);
+
+			final List<I_M_HU> hus = huInOutBL.retrieveHandlingUnits(inout);
+			assertThat(hus).as("HUs assigned to " + inoutIdentifier).isNotEmpty();
+
+			final String huIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU.COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
+			huTable.putOrReplace(huIdentifier, hus.get(0));
 		}
 	}
 }
