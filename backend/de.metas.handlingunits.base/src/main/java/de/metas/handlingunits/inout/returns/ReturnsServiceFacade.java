@@ -178,7 +178,11 @@ public class ReturnsServiceFacade
 		}
 
 		final I_M_HU returnHU = returnHus.get(0);
-		if(!handlingUnitsBL.getStorageFactory().getStorage(returnHU).isSingleProductStorage())
+		final boolean isSingleReturnStorage = handlingUnitsBL.getStorageFactory().getProductStorages(returnHU).stream()
+				.filter(huProductStorage -> !huProductStorage.isEmpty())
+				.collect(ImmutableList.toImmutableList())
+				.size() == 1;
+		if(!isSingleReturnStorage)
 		{
 			return;
 		}
@@ -190,7 +194,11 @@ public class ReturnsServiceFacade
 		}
 
 		final I_M_HU originHU = handlingUnitsBL.getById(originHUs.get(originLineId).iterator().next());
-		if(!handlingUnitsBL.getStorageFactory().getStorage(originHU).isSingleProductStorage())
+		final boolean isSingleOriginStorage = handlingUnitsBL.getStorageFactory().getProductStorages(originHU).stream()
+				.filter(huProductStorage -> !huProductStorage.isEmpty())
+				.collect(ImmutableList.toImmutableList())
+				.size() == 1;
+		if(isSingleOriginStorage)
 		{
 			return;
 		}
