@@ -717,3 +717,310 @@ Feature: reversed shipment clears HU C_BPartner_ID
     Then M_HU are validated:
       | M_HU_ID.Identifier | HUStatus | IsActive |
       | return_hu_1        | D        | N        |
+
+  @from:cucumber
+  Scenario: inventory adjustment on existing HU reduces stock and allows shipment of adjusted qty (path 2.6)
+    # Stock 10 PCE → Inventory adjust to 5 → Ship 5 to customer
+    # Validates that inventory correctly reduces HU storage and the reduced qty can be shipped
+    Given metasfresh contains M_Products:
+      | Identifier | Name                    |
+      | p_1        | hu_bpc_invadj_product   |
+    And metasfresh contains M_PricingSystems
+      | Identifier | Name               | Value              | OPT.IsActive |
+      | ps_1       | hu_bpc_invadj_ps   | hu_bpc_invadj_ps   | true         |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name               | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_1       | ps_1                          | DE                        | EUR                 | hu_bpc_invadj_pl   | null            | true  | false         | 2              | true         |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID.Identifier | Name                | ValidFrom  |
+      | plv_1      | pl_1                      | hu_bpc_invadj_plv   | 2021-04-01 |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
+
+    And metasfresh contains C_BPartners:
+      | Identifier     | Name                    | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
+      | endcustomer_A  | hu_bpc_invadj_cust_A    | N            | Y              | ps_1                          | D               |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | loc_A      | 0123456789071 | endcustomer_A            | Y                   | Y                   |
+
+    # Create stock: 10 PCE
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | inv_1                     | 2021-04-01   | 540008         |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | inv_1                     | inv_l_1                       | p_1                     | 0       | 10       | PCE          |
+    When the inventory identified by inv_1 is completed
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
+      | inv_l_1                       | hu_1               |
+
+    And M_HU_Storage are validated
+      | Identifier | M_HU_ID.Identifier | M_Product_ID.Identifier | Qty |
+      | hu_s_1     | hu_1               | p_1                     | 10  |
+
+    # Inventory adjustment: reduce HU from 10 to 5 (outbound — requires M_HU_ID)
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | inv_adj                   | 2021-04-02   | 540008         |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 | M_HU_ID.Identifier |
+      | inv_adj                   | inv_adj_l1                    | p_1                     | 10      | 5        | PCE          | hu_1               |
+    When the inventory identified by inv_adj is completed
+
+    # Verify HU now has only 5 PCE
+    And M_HU_Storage are validated
+      | Identifier | M_HU_ID.Identifier | M_Product_ID.Identifier | Qty |
+      | hu_s_adj   | hu_1               | p_1                     | 5   |
+    And M_HU are validated:
+      | M_HU_ID.Identifier | HUStatus | IsActive | C_BPartner_ID |
+      | hu_1               | A        | Y        | null          |
+
+    # Ship the adjusted 5 PCE to customer
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference          |
+      | o_A        | true    | endcustomer_A            | 2021-04-17  | po_ref_invadj_A          |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_A       | o_A                   | p_1                     | 5          |
+    When the order identified by o_A is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | s_s_A      | ol_A                      | N             |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | s_s_A                            | D            | true                | false       |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
+      | s_s_A                            | ship_A                | CO            |
+
+    Then M_HU are validated:
+      | M_HU_ID.Identifier | HUStatus | IsActive | C_BPartner_ID | C_BPartner_Location_ID |
+      | hu_1               | E        | N        | endcustomer_A | loc_A                  |
+
+  @from:cucumber
+  Scenario: inventory to zero destroys HU (path 2.7)
+    # Stock 10 PCE → Inventory count to 0 → HU is destroyed
+    Given metasfresh contains M_Products:
+      | Identifier | Name                    |
+      | p_1        | hu_bpc_invzero_product  |
+    And metasfresh contains M_PricingSystems
+      | Identifier | Name                | Value               | OPT.IsActive |
+      | ps_1       | hu_bpc_invzero_ps   | hu_bpc_invzero_ps   | true         |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_1       | ps_1                          | DE                        | EUR                 | hu_bpc_invzero_pl   | null            | true  | false         | 2              | true         |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID.Identifier | Name                 | ValidFrom  |
+      | plv_1      | pl_1                      | hu_bpc_invzero_plv   | 2021-04-01 |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
+
+    # Create stock: 10 PCE
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | inv_1                     | 2021-04-01   | 540008         |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | inv_1                     | inv_l_1                       | p_1                     | 0       | 10       | PCE          |
+    When the inventory identified by inv_1 is completed
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
+      | inv_l_1                       | hu_1               |
+
+    And M_HU_Storage are validated
+      | Identifier | M_HU_ID.Identifier | M_Product_ID.Identifier | Qty |
+      | hu_s_1     | hu_1               | p_1                     | 10  |
+
+    # Inventory to zero: count HU as empty (outbound — requires M_HU_ID)
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | inv_zero                  | 2021-04-02   | 540008         |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 | M_HU_ID.Identifier |
+      | inv_zero                  | inv_zero_l1                   | p_1                     | 10      | 0        | PCE          | hu_1               |
+    When the inventory identified by inv_zero is completed
+
+    # Verify HU is destroyed (empty HUs get destroyed by SyncInventoryQtyToHUsCommand)
+    Then M_HU are validated:
+      | M_HU_ID.Identifier | HUStatus | IsActive |
+      | hu_1               | D        | N        |
+
+  @from:cucumber
+  Scenario: shipment reversal then inventory adjustment then re-ship (path 2.8)
+    # Stock 10 → Ship to A → Reverse → Inventory adjust to 5 → Ship 5 to B
+    # Validates the full lifecycle with inventory adjustment between reversal and re-ship
+    Given metasfresh contains M_Products:
+      | Identifier | Name                    |
+      | p_1        | hu_bpc_revinv_product   |
+    And metasfresh contains M_PricingSystems
+      | Identifier | Name                | Value               | OPT.IsActive |
+      | ps_1       | hu_bpc_revinv_ps    | hu_bpc_revinv_ps    | true         |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_1       | ps_1                          | DE                        | EUR                 | hu_bpc_revinv_pl    | null            | true  | false         | 2              | true         |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID.Identifier | Name                 | ValidFrom  |
+      | plv_1      | pl_1                      | hu_bpc_revinv_plv    | 2021-04-01 |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
+
+    And metasfresh contains C_BPartners:
+      | Identifier     | Name                    | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
+      | endcustomer_A  | hu_bpc_revinv_cust_A    | N            | Y              | ps_1                          | D               |
+      | endcustomer_B  | hu_bpc_revinv_cust_B    | N            | Y              | ps_1                          | D               |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | loc_A      | 0123456789081 | endcustomer_A            | Y                   | Y                   |
+      | loc_B      | 0123456789082 | endcustomer_B            | Y                   | Y                   |
+
+    # Create stock: 10 PCE
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | inv_1                     | 2021-04-01   | 540008         |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | inv_1                     | inv_l_1                       | p_1                     | 0       | 10       | PCE          |
+    When the inventory identified by inv_1 is completed
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
+      | inv_l_1                       | hu_1               |
+
+    And M_HU are validated:
+      | M_HU_ID.Identifier | HUStatus | IsActive | C_BPartner_ID |
+      | hu_1               | A        | Y        | null          |
+
+    # Ship 10 to Customer A
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference          |
+      | o_A        | true    | endcustomer_A            | 2021-04-17  | po_ref_revinv_A          |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_A       | o_A                   | p_1                     | 10         |
+    When the order identified by o_A is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | s_s_A      | ol_A                      | N             |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | s_s_A                            | D            | true                | false       |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
+      | s_s_A                            | ship_A                | CO            |
+
+    And M_HU are validated:
+      | M_HU_ID.Identifier | HUStatus | IsActive | C_BPartner_ID |
+      | hu_1               | E        | N        | endcustomer_A |
+
+    # Reverse shipment to A
+    And perform shipment document action
+      | M_InOut_ID.Identifier | DocAction |
+      | ship_A                | RC        |
+
+    # After reversal: HU restored, BPartner cleared, qty=10
+    And M_HU are validated:
+      | M_HU_ID.Identifier | HUStatus | IsActive | C_BPartner_ID |
+      | hu_1               | A        | Y        | null          |
+    And M_HU_Storage are validated
+      | Identifier | M_HU_ID.Identifier | M_Product_ID.Identifier | Qty |
+      | hu_s_1     | hu_1               | p_1                     | 10  |
+
+    # Inventory adjustment: reduce from 10 to 5
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | inv_adj                   | 2021-04-18   | 540008         |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 | M_HU_ID.Identifier |
+      | inv_adj                   | inv_adj_l1                    | p_1                     | 10      | 5        | PCE          | hu_1               |
+    When the inventory identified by inv_adj is completed
+
+    And M_HU_Storage are validated
+      | Identifier | M_HU_ID.Identifier | M_Product_ID.Identifier | Qty |
+      | hu_s_adj   | hu_1               | p_1                     | 5   |
+    And M_HU are validated:
+      | M_HU_ID.Identifier | HUStatus | IsActive | C_BPartner_ID |
+      | hu_1               | A        | Y        | null          |
+
+    # Ship 5 to Customer B
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference          |
+      | o_B        | true    | endcustomer_B            | 2021-04-19  | po_ref_revinv_B          |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_B       | o_B                   | p_1                     | 5          |
+    When the order identified by o_B is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | s_s_B      | ol_B                      | N             |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | s_s_B                            | D            | true                | false       |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
+      | s_s_B                            | ship_B                | CO            |
+
+    Then M_HU are validated:
+      | M_HU_ID.Identifier | HUStatus | IsActive | C_BPartner_ID | C_BPartner_Location_ID |
+      | hu_1               | E        | N        | endcustomer_B | loc_B                  |
+
+  @from:cucumber
+  Scenario: inventory reversal restores HU qty (path 2.10)
+    # Stock 10 → Inventory adjust to 5 → Reverse inventory → Qty restored to 10
+    Given metasfresh contains M_Products:
+      | Identifier | Name                    |
+      | p_1        | hu_bpc_invrev_product   |
+    And metasfresh contains M_PricingSystems
+      | Identifier | Name                | Value               | OPT.IsActive |
+      | ps_1       | hu_bpc_invrev_ps    | hu_bpc_invrev_ps    | true         |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_1       | ps_1                          | DE                        | EUR                 | hu_bpc_invrev_pl    | null            | true  | false         | 2              | true         |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID.Identifier | Name                 | ValidFrom  |
+      | plv_1      | pl_1                      | hu_bpc_invrev_plv    | 2021-04-01 |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
+
+    # Create stock: 10 PCE
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | inv_1                     | 2021-04-01   | 540008         |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | inv_1                     | inv_l_1                       | p_1                     | 0       | 10       | PCE          |
+    When the inventory identified by inv_1 is completed
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
+      | inv_l_1                       | hu_1               |
+
+    And M_HU_Storage are validated
+      | Identifier | M_HU_ID.Identifier | M_Product_ID.Identifier | Qty |
+      | hu_s_1     | hu_1               | p_1                     | 10  |
+
+    # Inventory adjustment: reduce from 10 to 5
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | inv_adj                   | 2021-04-02   | 540008         |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 | M_HU_ID.Identifier |
+      | inv_adj                   | inv_adj_l1                    | p_1                     | 10      | 5        | PCE          | hu_1               |
+    When the inventory identified by inv_adj is completed
+
+    And M_HU_Storage are validated
+      | Identifier | M_HU_ID.Identifier | M_Product_ID.Identifier | Qty |
+      | hu_s_adj   | hu_1               | p_1                     | 5   |
+
+    # Reverse the inventory adjustment — qty should be restored to 10
+    When the inventory identified by inv_adj is reversed
+
+    And M_HU_Storage are validated
+      | Identifier | M_HU_ID.Identifier | M_Product_ID.Identifier | Qty |
+      | hu_s_rev   | hu_1               | p_1                     | 10  |
+    Then M_HU are validated:
+      | M_HU_ID.Identifier | HUStatus | IsActive | C_BPartner_ID |
+      | hu_1               | A        | Y        | null          |
