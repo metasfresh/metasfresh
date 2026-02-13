@@ -1,13 +1,16 @@
 package de.metas.ui.web.shipment.process;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.material.MovementType;
+import de.metas.order.OrderLineId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -19,12 +22,17 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_M_InOut;
 
 public class M_InOut_GenerateCustomerReturn extends JavaProcess implements IProcessPrecondition
 {
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IHUWarehouseDAO huWarehouseDAO = Services.get(IHUWarehouseDAO.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -62,6 +70,9 @@ public class M_InOut_GenerateCustomerReturn extends JavaProcess implements IProc
 				.adOrgId(shipment.getAD_Org_ID())
 				.build());
 
+		final WarehouseId warehouseId = huWarehouseDAO.retrieveFirstQualityReturnWarehouseId();
+		final LocatorId locatorId = warehouseBL.getOrCreateDefaultLocatorId(warehouseId);
+
 		final I_M_InOut customerReturn = InterfaceWrapperHelper.copy()
 				.setSkipCalculatedColumns(true)
 				.setFrom(shipment)
@@ -70,6 +81,9 @@ public class M_InOut_GenerateCustomerReturn extends JavaProcess implements IProc
 		customerReturn.setIsSOTrx(true);
 		customerReturn.setMovementType(MovementType.CustomerReturns.getCode());
 		customerReturn.setReturn_Origin_InOut_ID(shipment.getM_InOut_ID());
+		customerReturn.setMovementDate(SystemTime.asTimestamp());
+		customerReturn.setDateAcct(SystemTime.asTimestamp());
+		customerReturn.setM_Warehouse_ID(warehouseId.getRepoId());
 		InterfaceWrapperHelper.save(customerReturn);
 
 		for (final org.compiere.model.I_M_InOutLine shipmentLine : inoutBL.getLines(shipment))
@@ -80,6 +94,8 @@ public class M_InOut_GenerateCustomerReturn extends JavaProcess implements IProc
 					.copyToNew(I_M_InOutLine.class);
 			returnLine.setM_InOut_ID(customerReturn.getM_InOut_ID());
 			returnLine.setReturn_Origin_InOutLine_ID(shipmentLine.getM_InOutLine_ID());
+			returnLine.setM_Locator_ID(locatorId.getRepoId());
+			returnLine.setC_OrderLine_ID(OrderLineId.toRepoId(null));
 			InterfaceWrapperHelper.save(returnLine);
 		}
 
