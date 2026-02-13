@@ -513,3 +513,104 @@ Feature: reversed shipment clears HU C_BPartner_ID
     Then M_HU are validated:
       | M_HU_ID.Identifier | HUStatus | IsActive | C_BPartner_ID | C_BPartner_Location_ID |
       | splitVHU_A         | E        | N        | endcustomer_B | loc_B                  |
+
+  @from:cucumber
+  Scenario: picking cancellation clears BPartner on HU (Bug 2 fix)
+    # When an HU is picked for a shipment schedule, BPartner is set on the HU.
+    # Cancelling/unprocessing the picking should clear BPartner, allowing re-pick for another customer.
+    # This tests the fix in HUShipmentScheduleBL.deleteByTopLevelHUsAndShipmentScheduleId().
+    Given metasfresh contains M_Products:
+      | Identifier | Name                    |
+      | p_1        | hu_bpc_unpick_product   |
+    And metasfresh contains M_PricingSystems
+      | Identifier | Name               | Value              | OPT.IsActive |
+      | ps_1       | hu_bpc_unpick_ps   | hu_bpc_unpick_ps   | true         |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name               | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_1       | ps_1                          | DE                        | EUR                 | hu_bpc_unpick_pl   | null            | true  | false         | 2              | true         |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID.Identifier | Name                | ValidFrom  |
+      | plv_1      | pl_1                      | hu_bpc_unpick_plv   | 2021-04-01 |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
+
+    # Two customers
+    And metasfresh contains C_BPartners:
+      | Identifier     | Name                    | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
+      | endcustomer_A  | hu_bpc_unpick_cust_A    | N            | Y              | ps_1                          | D               |
+      | endcustomer_B  | hu_bpc_unpick_cust_B    | N            | Y              | ps_1                          | D               |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | loc_A      | 0123456789051 | endcustomer_A            | Y                   | Y                   |
+      | loc_B      | 0123456789052 | endcustomer_B            | Y                   | Y                   |
+
+    # Create stock: 10 PCE
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | inv_1                     | 2021-04-01   | 540008         |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | inv_1                     | inv_l_1                       | p_1                     | 0       | 10       | PCE          |
+    When the inventory identified by inv_1 is completed
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
+      | inv_l_1                       | hu_1               |
+
+    And M_HU are validated:
+      | M_HU_ID.Identifier | HUStatus | IsActive | C_BPartner_ID | C_BPartner_Location_ID |
+      | hu_1               | A        | Y        | null          | null                   |
+
+    # Create order for Customer A
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference          |
+      | o_A        | true    | endcustomer_A            | 2021-04-17  | po_ref_unpick_A          |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_A       | o_A                   | p_1                     | 10         |
+    When the order identified by o_A is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | s_s_A      | ol_A                      | N             |
+
+    # Pick the HU for Customer A's shipment schedule (sets BPartner on HU)
+    And the following qty is picked
+      | M_ShipmentSchedule_ID.Identifier | M_HU_ID.Identifier | QtyPicked |
+      | s_s_A                            | hu_1               | 10        |
+
+    # After picking: HU should have BPartner from shipment schedule
+    And M_HU are validated:
+      | M_HU_ID.Identifier | HUStatus | IsActive | C_BPartner_ID | C_BPartner_Location_ID |
+      | hu_1               | S        | Y        | endcustomer_A | loc_A                  |
+
+    # Cancel/unprocess picking — Bug 2 fix should clear BPartner
+    And unprocess picking candidates for shipment schedule
+      | M_ShipmentSchedule_ID.Identifier |
+      | s_s_A                            |
+
+    # After unprocessing: BPartner should be cleared
+    And M_HU are validated:
+      | M_HU_ID.Identifier | HUStatus | IsActive | C_BPartner_ID | C_BPartner_Location_ID |
+      | hu_1               | A        | Y        | null          | null                   |
+
+    # Create order for Customer B
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference          |
+      | o_B        | true    | endcustomer_B            | 2021-04-18  | po_ref_unpick_B          |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_B       | o_B                   | p_1                     | 10         |
+    When the order identified by o_B is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | s_s_B      | ol_B                      | N             |
+
+    # Pick the same HU for Customer B's shipment schedule
+    And the following qty is picked
+      | M_ShipmentSchedule_ID.Identifier | M_HU_ID.Identifier | QtyPicked |
+      | s_s_B                            | hu_1               | 10        |
+
+    # After re-picking: HU should now belong to Customer B
+    Then M_HU are validated:
+      | M_HU_ID.Identifier | HUStatus | IsActive | C_BPartner_ID | C_BPartner_Location_ID |
+      | hu_1               | S        | Y        | endcustomer_B | loc_B                  |
