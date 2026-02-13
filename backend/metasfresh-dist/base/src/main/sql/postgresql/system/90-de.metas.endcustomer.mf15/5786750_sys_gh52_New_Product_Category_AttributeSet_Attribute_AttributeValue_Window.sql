@@ -4750,3 +4750,2888 @@ UPDATE AD_UI_Element SET SeqNo=20,Updated=TO_TIMESTAMP('2026-02-06 12:45:16.7150
 -- 2026-02-06T12:45:57.291Z
 UPDATE AD_UI_Element SET SeqNo=30,Updated=TO_TIMESTAMP('2026-02-06 12:45:57.291000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=646761
 ;
+
+-- 2026-02-06T13:17:41.840Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,Description,EntityType,Help,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,584501,0,TO_TIMESTAMP('2026-02-06 13:17:41.602000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Produkt-Merkmal','U','Produkt-Merkmale wie Farbe, Größe, usw.','Y','Merkmal OLD','Merkmal OLD',TO_TIMESTAMP('2026-02-06 13:17:41.602000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:17:41.863Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=584501 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- Element: null
+-- 2026-02-06T13:20:30.382Z
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2026-02-06 13:20:30.382000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=574064 AND AD_Language='de_DE'
+;
+
+-- 2026-02-06T13:20:30.427Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(574064,'de_DE')
+;
+
+-- 2026-02-06T13:20:30.448Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(574064,'de_DE')
+;
+
+-- Element: null
+-- 2026-02-06T13:20:37.885Z
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2026-02-06 13:20:37.885000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584501 AND AD_Language='de_DE'
+;
+
+-- 2026-02-06T13:20:37.938Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(584501,'de_DE')
+;
+
+-- 2026-02-06T13:20:37.961Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584501,'de_DE')
+;
+
+-- Element: null
+-- 2026-02-06T13:21:27.371Z
+UPDATE AD_Element_Trl SET Description='Product Attribute', Help='Product Attribute like Color, Size, etc.', IsTranslated='Y', Name='Attribute OLD', PrintName='Attribute OLD',Updated=TO_TIMESTAMP('2026-02-06 13:21:27.371000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584501 AND AD_Language='en_US'
+;
+
+-- 2026-02-06T13:21:27.392Z
+UPDATE AD_Element base SET Description=trl.Description, Help=trl.Help, Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2026-02-06T13:22:05.130Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584501,'en_US')
+;
+
+-- Element: null
+-- 2026-02-06T13:22:05.469Z
+UPDATE AD_Element_Trl SET IsActive='N',Updated=TO_TIMESTAMP('2026-02-06 13:22:05.469000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584501 AND AD_Language='de_DE'
+;
+
+-- 2026-02-06T13:22:05.516Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(584501,'de_DE')
+;
+
+-- 2026-02-06T13:22:05.538Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584501,'de_DE')
+;
+
+-- Element: null
+-- 2026-02-06T13:23:26.640Z
+UPDATE AD_Element_Trl SET IsActive='Y',Updated=TO_TIMESTAMP('2026-02-06 13:23:26.640000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584501 AND AD_Language='de_DE'
+;
+
+-- 2026-02-06T13:23:26.704Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(584501,'de_DE')
+;
+
+-- 2026-02-06T13:23:26.742Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584501,'de_DE')
+;
+
+-- 2026-02-06T13:26:33.981Z
+UPDATE AD_Element SET EntityType='U',Updated=TO_TIMESTAMP('2026-02-06 13:26:33.909000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=574064
+;
+
+-- 2026-02-06T13:26:34.090Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(574064,'de_DE')
+;
+
+-- Window: Merkmal OLD, InternalName=260 (Todo: Set Internal Name for UI testing)
+-- 2026-02-06T13:27:51.060Z
+UPDATE AD_Window SET AD_Element_ID=584501, Description='Produkt-Merkmal', Help='Produkt-Merkmale wie Farbe, Größe, usw.', Name='Merkmal OLD',Updated=TO_TIMESTAMP('2026-02-06 13:27:50.974000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Window_ID=260
+;
+
+-- 2026-02-06T13:27:51.084Z
+UPDATE AD_Window_Trl trl SET Name='Merkmal OLD' WHERE AD_Window_ID=260 AND AD_Language='de_DE'
+;
+
+-- Name: Merkmal OLD
+-- Action Type: W
+-- Window: Merkmal OLD(260,D)
+-- 2026-02-06T13:27:56.735Z
+UPDATE AD_Menu SET Description='Produkt-Merkmal', IsActive='Y', Name='Merkmal OLD',Updated=TO_TIMESTAMP('2026-02-06 13:27:56.735000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Menu_ID=1000089
+;
+
+-- 2026-02-06T13:27:56.770Z
+UPDATE AD_Menu_Trl trl SET Name='Merkmal OLD' WHERE AD_Menu_ID=1000089 AND AD_Language='de_DE'
+;
+
+-- Name: Merkmal OLD
+-- Action Type: W
+-- Window: Merkmal OLD(260,D)
+-- 2026-02-06T13:28:29.524Z
+UPDATE AD_Menu SET Description='Produkt-Merkmal', IsActive='Y', Name='Merkmal OLD',Updated=TO_TIMESTAMP('2026-02-06 13:28:29.524000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Menu_ID=359
+;
+
+-- 2026-02-06T13:28:29.545Z
+UPDATE AD_Menu_Trl trl SET Name='Merkmal OLD' WHERE AD_Menu_ID=359 AND AD_Language='de_DE'
+;
+
+-- 2026-02-06T13:28:45.966Z
+/* DDL */  select update_window_translation_from_ad_element(584501)
+;
+
+-- 2026-02-06T13:28:45.999Z
+DELETE FROM AD_Element_Link WHERE AD_Window_ID=260
+;
+
+-- 2026-02-06T13:28:46.024Z
+/* DDL */ select AD_Element_Link_Create_Missing_Window(260)
+;
+
+-- Window: Merkmal, InternalName=
+-- 2026-02-06T13:30:47.355Z
+INSERT INTO AD_Window (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,Description,EntityType,Help,InternalName,IsActive,IsBetaFunctionality,IsDefault,IsEnableRemoteCacheInvalidation,IsExcludeFromZoomTargets,IsOneInstanceOnly,IsOverrideInMenu,IsSOTrx,Name,Processing,Updated,UpdatedBy,WindowType,ZoomIntoPriority) VALUES (0,574064,0,542068,TO_TIMESTAMP('2026-02-06 13:30:47.070000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Produkt-Merkmal','U','Produkt-Merkmale wie Farbe, Größe, usw.','','Y','N','N','Y','N','N','N','Y','Merkmal','N',TO_TIMESTAMP('2026-02-06 13:30:47.070000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'M',100)
+;
+
+-- 2026-02-06T13:30:47.375Z
+INSERT INTO AD_Window_Trl (AD_Language,AD_Window_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Window_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Window t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Window_ID=542068 AND NOT EXISTS (SELECT 1 FROM AD_Window_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Window_ID=t.AD_Window_ID)
+;
+
+-- 2026-02-06T13:30:47.426Z
+/* DDL */  select update_window_translation_from_ad_element(574064)
+;
+
+-- 2026-02-06T13:30:47.450Z
+DELETE FROM AD_Element_Link WHERE AD_Window_ID=542068
+;
+
+-- 2026-02-06T13:30:47.470Z
+/* DDL */ select AD_Element_Link_Create_Missing_Window(542068)
+;
+
+-- Window: Merkmal, InternalName=
+-- 2026-02-06T13:33:04.658Z
+UPDATE AD_Window SET AD_Client_ID=0, AD_Color_ID=NULL, AD_Image_ID=NULL, AD_Org_ID=0, EntityType='D', IsActive='Y', IsBetaFunctionality='N', IsDefault='N', IsEnableRemoteCacheInvalidation='Y', IsExcludeFromZoomTargets='N', IsOneInstanceOnly='N', IsOverrideInMenu='N', IsSOTrx='Y', Overrides_Window_ID=260, WindowType='M', WinHeight=NULL, WinWidth=NULL, ZoomIntoPriority=100,Updated=TO_TIMESTAMP('2026-02-06 13:33:04.658000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Window_ID=542068
+;
+
+-- Tab: Merkmal(542068,D) -> Merkmal
+-- Table: M_Attribute
+-- 2026-02-06T13:33:05.088Z
+INSERT INTO AD_Tab (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Tab_ID,AD_Table_ID,AD_Window_ID,AllowQuickInput,Created,CreatedBy,Description,EntityType,HasTree,Help,ImportFields,IncludedTabNewRecordInputMode,InternalName,IsActive,IsAdvancedTab,IsAutodetectDefaultDateFilter,IsCheckParentsChanged,IsGenericZoomTarget,IsGridModeOnly,IsInfoTab,IsInsertRecord,IsQueryOnLoad,IsReadOnly,IsRefreshAllOnActivate,IsRefreshViewOnChangeEvents,IsSearchActive,IsSearchCollapsed,IsSingleRow,IsSortTab,IsTranslationTab,Name,Processing,SeqNo,TabLevel,Updated,UpdatedBy) VALUES (0,573090,0,548985,562,542068,'Y',TO_TIMESTAMP('2026-02-06 13:33:04.794000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Produkt-Merkmal','D','N','Produkt-Merkmale wie Farbe, Größe, usw. If it is an Instance Attribute, all products have the same value.','N','A','M_Attribute','Y','N','Y','Y','Y','N','N','Y','Y','N','N','N','Y','Y','N','N','N','Merkmal','N',10,0,TO_TIMESTAMP('2026-02-06 13:33:04.794000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:05.111Z
+INSERT INTO AD_Tab_Trl (AD_Language,AD_Tab_ID, CommitWarning,Description,Help,Name,NotFound_Message,NotFound_MessageDetail,QuickInput_CloseButton_Caption,QuickInput_OpenButton_Caption, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Tab_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.NotFound_Message,t.NotFound_MessageDetail,t.QuickInput_CloseButton_Caption,t.QuickInput_OpenButton_Caption, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Tab t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Tab_ID=548985 AND NOT EXISTS (SELECT 1 FROM AD_Tab_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Tab_ID=t.AD_Tab_ID)
+;
+
+-- 2026-02-06T13:33:05.129Z
+/* DDL */  select update_tab_translation_from_ad_element(573090)
+;
+
+-- 2026-02-06T13:33:05.154Z
+/* DDL */ select AD_Element_Link_Create_Missing_Tab(548985)
+;
+
+-- 2026-02-06T13:33:05.199Z
+DELETE FROM AD_Tab_Trl WHERE AD_Tab_ID = 548985
+;
+
+-- 2026-02-06T13:33:05.225Z
+INSERT INTO AD_Tab_Trl (AD_Tab_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, CommitWarning, IsTranslated)  SELECT 548985, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description,  Help, CommitWarning, IsTranslated  FROM AD_Tab_Trl WHERE AD_Tab_ID = 462
+;
+
+-- Field: Merkmal(542068,D) -> Merkmal(548985,D) -> Organisation
+-- Column: M_Attribute.AD_Org_ID
+-- 2026-02-06T13:33:05.715Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,8507,771938,0,548985,85,TO_TIMESTAMP('2026-02-06 13:33:05.478000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Organisatorische Einheit des Mandanten',14,'D','Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie können Daten über Organisationen hinweg gemeinsam verwenden.',0,'Y','N','Y','Y','N','N','N','N','N','N','Y','Organisation',20,20,1,1,TO_TIMESTAMP('2026-02-06 13:33:05.478000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:05.735Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771938 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:05.758Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(113)
+;
+
+-- 2026-02-06T13:33:05.849Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771938
+;
+
+-- 2026-02-06T13:33:05.873Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771938)
+;
+
+-- 2026-02-06T13:33:05.918Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771938
+;
+
+-- 2026-02-06T13:33:05.941Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771938, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 6358
+;
+
+-- Field: Merkmal(542068,D) -> Merkmal(548985,D) -> Mandant
+-- Column: M_Attribute.AD_Client_ID
+-- 2026-02-06T13:33:06.220Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,8508,771939,0,548985,75,TO_TIMESTAMP('2026-02-06 13:33:05.973000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Mandant für diese Installation.',14,'D','Ein Mandant ist eine Firma oder eine juristische Person. Sie können keine Daten über Mandanten hinweg verwenden. .',0,'Y','N','Y','Y','N','N','N','N','N','Y','N','Mandant',10,10,1,1,TO_TIMESTAMP('2026-02-06 13:33:05.973000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:06.243Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771939 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:06.264Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(102)
+;
+
+-- 2026-02-06T13:33:06.344Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771939
+;
+
+-- 2026-02-06T13:33:06.366Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771939)
+;
+
+-- 2026-02-06T13:33:06.409Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771939
+;
+
+-- 2026-02-06T13:33:06.432Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771939, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 6359
+;
+
+-- Field: Merkmal(542068,D) -> Merkmal(548985,D) -> Instanz Merkmal
+-- Column: M_Attribute.IsInstanceAttribute
+-- 2026-02-06T13:33:06.695Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,8509,771940,0,548985,100,TO_TIMESTAMP('2026-02-06 13:33:06.453000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'The product attribute is specific to the instance (like Serial No, Lot or Guarantee Date)',1,'D','If selected, the individual instance of the product has this attribute - like the individual Serial or Lot Numbers or  Guarantee Date of a product instance.  If not selected, all instances of the product share the attribute (e.g. color=green).',0,'Y','N','Y','Y','N','N','N','N','N','N','Y','Instanz Merkmal',110,110,1,1,TO_TIMESTAMP('2026-02-06 13:33:06.453000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:06.717Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771940 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:06.742Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(2012)
+;
+
+-- 2026-02-06T13:33:06.765Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771940
+;
+
+-- 2026-02-06T13:33:06.790Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771940)
+;
+
+-- 2026-02-06T13:33:06.832Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771940
+;
+
+-- 2026-02-06T13:33:06.852Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771940, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 6360
+;
+
+-- Field: Merkmal(542068,D) -> Merkmal(548985,D) -> Merkmal
+-- Column: M_Attribute.M_Attribute_ID
+-- 2026-02-06T13:33:07.115Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,8512,771941,1002236,0,548985,0,TO_TIMESTAMP('2026-02-06 13:33:06.875000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Produkt-Merkmal',14,'D','Product Attribute like Color, Size',0,'Y','N','N','N','N','N','N','N','N','N','N','Merkmal',120,0,1,1,TO_TIMESTAMP('2026-02-06 13:33:06.875000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:07.136Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771941 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:07.159Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(1002236)
+;
+
+-- 2026-02-06T13:33:07.185Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771941
+;
+
+-- 2026-02-06T13:33:07.205Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771941)
+;
+
+-- 2026-02-06T13:33:07.253Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771941
+;
+
+-- 2026-02-06T13:33:07.275Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771941, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 6362
+;
+
+-- Field: Merkmal(542068,D) -> Merkmal(548985,D) -> Name
+-- Column: M_Attribute.Name
+-- 2026-02-06T13:33:07.562Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,8513,771942,0,548985,144,TO_TIMESTAMP('2026-02-06 13:33:07.322000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'',60,'D','',0,'Y','N','Y','Y','N','N','N','N','N','N','N','Name',40,40,1,999,1,TO_TIMESTAMP('2026-02-06 13:33:07.322000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:07.596Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771942 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:07.618Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(469)
+;
+
+-- 2026-02-06T13:33:07.654Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771942
+;
+
+-- 2026-02-06T13:33:07.689Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771942)
+;
+
+-- 2026-02-06T13:33:07.731Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771942
+;
+
+-- 2026-02-06T13:33:07.761Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771942, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 6363
+;
+
+-- Field: Merkmal(542068,D) -> Merkmal(548985,D) -> Aktiv
+-- Column: M_Attribute.IsActive
+-- 2026-02-06T13:33:08.035Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,8517,771943,0,548985,44,TO_TIMESTAMP('2026-02-06 13:33:07.784000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Der Eintrag ist im System aktiv',1,'D','Es gibt zwei Möglichkeiten, einen Datensatz nicht mehr verfügbar zu machen: einer ist, ihn zu löschen; der andere, ihn zu deaktivieren. Ein deaktivierter Eintrag ist nicht mehr für eine Auswahl verfügbar, aber verfügbar für die Verwendung in Berichten. Es gibt zwei Gründe, Datensätze zu deaktivieren und nicht zu löschen: (1) Das System braucht den Datensatz für Revisionszwecke. (2) Der Datensatz wird von anderen Datensätzen referenziert. Z.B. können Sie keinen Geschäftspartner löschen, wenn es Rechnungen für diesen Geschäftspartner gibt. Sie deaktivieren den Geschäftspartner und verhindern, dass dieser Eintrag in zukünftigen Vorgängen verwendet wird.',0,'Y','N','Y','Y','N','N','N','N','N','N','N','Aktiv',60,60,1,1,TO_TIMESTAMP('2026-02-06 13:33:07.784000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:08.069Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771943 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:08.091Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(348)
+;
+
+-- 2026-02-06T13:33:08.175Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771943
+;
+
+-- 2026-02-06T13:33:08.195Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771943)
+;
+
+-- 2026-02-06T13:33:08.243Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771943
+;
+
+-- 2026-02-06T13:33:08.266Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771943, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 6364
+;
+
+-- Field: Merkmal(542068,D) -> Merkmal(548985,D) -> Beschreibung
+-- Column: M_Attribute.Description
+-- 2026-02-06T13:33:08.520Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,8518,771944,0,548985,89,TO_TIMESTAMP('2026-02-06 13:33:08.289000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,60,'D',0,'Y','N','Y','Y','N','N','N','N','N','N','N','Beschreibung',50,50,999,1,TO_TIMESTAMP('2026-02-06 13:33:08.289000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:08.562Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771944 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:08.583Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(275)
+;
+
+-- 2026-02-06T13:33:08.616Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771944
+;
+
+-- 2026-02-06T13:33:08.642Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771944)
+;
+
+-- 2026-02-06T13:33:08.689Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771944
+;
+
+-- 2026-02-06T13:33:08.709Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771944, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 6365
+;
+
+-- Field: Merkmal(542068,D) -> Merkmal(548985,D) -> Pflichtangabe
+-- Column: M_Attribute.IsMandatory
+-- 2026-02-06T13:33:08.952Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,8519,771945,1003095,0,548985,90,TO_TIMESTAMP('2026-02-06 13:33:08.731000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Data entry is required in this column',1,'D','The field must have a value for the record to be saved to the database.',0,'Y','N','Y','Y','N','N','N','N','N','N','Y','Pflichtangabe',90,90,1,1,TO_TIMESTAMP('2026-02-06 13:33:08.731000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:08.974Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771945 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:08.997Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(1003095)
+;
+
+-- 2026-02-06T13:33:09.018Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771945
+;
+
+-- 2026-02-06T13:33:09.041Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771945)
+;
+
+-- 2026-02-06T13:33:09.083Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771945
+;
+
+-- 2026-02-06T13:33:09.106Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771945, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 6366
+;
+
+-- Field: Merkmal(542068,D) -> Merkmal(548985,D) -> Merkmal-Suche
+-- Column: M_Attribute.M_AttributeSearch_ID
+-- 2026-02-06T13:33:09.356Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,8545,771946,0,548985,101,TO_TIMESTAMP('2026-02-06 13:33:09.127000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Gemeinsames Such-Merkmal',14,'D','Attributes are specific to a Product Attribute Set (e.g. Size for T-Shirts: S,M,L). If you have multiple attributes and want to search under a common sttribute, you define a search sttribute. Example: have one Size search attribute combining the values of all different sizes (Size for Dress Shirt  XL,L,M,S,XS). The Attribute Search allows you to have all values available for selection.  This eases the maintenance of the individual product attribute.',0,'Y','N','Y','Y','N','N','N','N','N','N','N','Merkmal-Suche',100,100,1,1,TO_TIMESTAMP('2026-02-06 13:33:09.127000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:09.379Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771946 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:09.399Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(2025)
+;
+
+-- 2026-02-06T13:33:09.423Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771946
+;
+
+-- 2026-02-06T13:33:09.438Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771946)
+;
+
+-- 2026-02-06T13:33:09.498Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771946
+;
+
+-- 2026-02-06T13:33:09.523Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771946, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 6406
+;
+
+-- Field: Merkmal(542068,D) -> Merkmal(548985,D) -> Merkmals Wert Typ
+-- Column: M_Attribute.AttributeValueType
+-- 2026-02-06T13:33:09.807Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,12662,771947,0,548985,125,TO_TIMESTAMP('2026-02-06 13:33:09.542000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Type of Attribute Value',14,'D','The Attribute Value type deternines the data/validation type',0,'Y','N','Y','Y','N','N','N','N','N','N','N','Merkmals Wert Typ',70,70,1,1,TO_TIMESTAMP('2026-02-06 13:33:09.542000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:09.830Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771947 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:09.850Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(2574)
+;
+
+-- 2026-02-06T13:33:09.875Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771947
+;
+
+-- 2026-02-06T13:33:09.897Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771947)
+;
+
+-- 2026-02-06T13:33:09.948Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771947
+;
+
+-- 2026-02-06T13:33:09.970Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771947, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 10645
+;
+
+-- Field: Merkmal(542068,D) -> Merkmal(548985,D) -> Dynamische Attributvalidierungsregel
+-- Column: M_Attribute.AD_Val_Rule_ID
+-- 2026-02-06T13:33:10.228Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,DisplayLogic,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,551283,771948,575868,0,548985,0,TO_TIMESTAMP('2026-02-06 13:33:10.001000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Validierungsregel für erlaubte Attributewerte, die von der Default-AttributValueHandler Implementierung aufgerufen wird. Der Kontext enthält nur Spalten des jeweiligen M_Attribute-Datensatzes.',10,'@AttributeValueType@=L','D','Ob auch andere AttributValueHandler Implementierungen die dynamische Attributvalidierungsregel benutzen, hängt von deren Implementierung ab.',0,'Y','N','Y','Y','N','N','N','N','N','N','Y','Dynamische Attributvalidierungsregel',80,80,1,1,TO_TIMESTAMP('2026-02-06 13:33:10.001000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:10.252Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771948 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:10.272Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(575868)
+;
+
+-- 2026-02-06T13:33:10.299Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771948
+;
+
+-- 2026-02-06T13:33:10.316Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771948)
+;
+
+-- 2026-02-06T13:33:10.359Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771948
+;
+
+-- 2026-02-06T13:33:10.379Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771948, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 73427
+;
+
+-- Field: Merkmal(542068,D) -> Merkmal(548985,D) -> AttributeValueHandler Javaklasse
+-- Column: M_Attribute.AD_JavaClass_ID
+-- 2026-02-06T13:33:10.622Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,549460,771949,575867,0,548985,74,TO_TIMESTAMP('2026-02-06 13:33:10.402000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Javaklasse, die das Interface IAttributeValueHandler implementiert. Falls leer wird eine Defaultimplementierung benutzt, die die dynamische Validierungsregel aufruft.',0,'D',0,'Y','N','Y','Y','N','N','N','N','N','N','N','AttributeValueHandler Javaklasse',120,120,0,1,1,TO_TIMESTAMP('2026-02-06 13:33:10.402000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:10.644Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771949 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:10.666Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(575867)
+;
+
+-- 2026-02-06T13:33:10.690Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771949
+;
+
+-- 2026-02-06T13:33:10.722Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771949)
+;
+
+-- 2026-02-06T13:33:10.767Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771949
+;
+
+-- 2026-02-06T13:33:10.791Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771949, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 552506
+;
+
+-- Field: Merkmal(542068,D) -> Merkmal(548985,D) -> isPricingRelevant
+-- Column: M_Attribute.IsPricingRelevant
+-- 2026-02-06T13:33:11.071Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,549783,771950,0,548985,107,TO_TIMESTAMP('2026-02-06 13:33:10.819000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0,'D',0,'Y','N','Y','Y','N','N','N','N','N','N','N','isPricingRelevant',130,130,0,1,1,TO_TIMESTAMP('2026-02-06 13:33:10.819000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:11.089Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771950 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:11.112Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(542236)
+;
+
+-- 2026-02-06T13:33:11.139Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771950
+;
+
+-- 2026-02-06T13:33:11.159Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771950)
+;
+
+-- 2026-02-06T13:33:11.202Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771950
+;
+
+-- 2026-02-06T13:33:11.226Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771950, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 552994
+;
+
+-- Field: Merkmal(542068,D) -> Merkmal(548985,D) -> Suchschlüssel
+-- Column: M_Attribute.Value
+-- 2026-02-06T13:33:11.510Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,550503,771951,0,548985,142,TO_TIMESTAMP('2026-02-06 13:33:11.249000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein',0,'D','A search key allows you a fast method of finding a particular record.
+If you leave the search key empty, the system automatically creates a numeric number.  The document sequence used for this fallback number is defined in the "Maintain Sequence" window with the name "DocumentNo_<TableName>", where TableName is the actual name of the table (e.g. C_Order).',0,'Y','N','Y','Y','N','N','N','N','N','N','N','Suchschlüssel',30,30,0,1,1,TO_TIMESTAMP('2026-02-06 13:33:11.249000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:11.539Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771951 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:11.566Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(620)
+;
+
+-- 2026-02-06T13:33:11.599Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771951
+;
+
+-- 2026-02-06T13:33:11.621Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771951)
+;
+
+-- 2026-02-06T13:33:11.659Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771951
+;
+
+-- 2026-02-06T13:33:11.689Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771951, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 554048
+;
+
+-- Field: Merkmal(542068,D) -> Merkmal(548985,D) -> Maßeinheit
+-- Column: M_Attribute.C_UOM_ID
+-- 2026-02-06T13:33:11.960Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,550505,771952,0,548985,77,TO_TIMESTAMP('2026-02-06 13:33:11.709000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Maßeinheit',0,'D','Eine eindeutige (nicht monetäre) Maßeinheit',0,'Y','N','Y','Y','N','N','N','N','N','N','N','Maßeinheit',140,170,0,1,1,TO_TIMESTAMP('2026-02-06 13:33:11.709000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:11.984Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771952 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:12.009Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(215)
+;
+
+-- 2026-02-06T13:33:12.038Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771952
+;
+
+-- 2026-02-06T13:33:12.061Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771952)
+;
+
+-- 2026-02-06T13:33:12.109Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771952
+;
+
+-- 2026-02-06T13:33:12.139Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771952, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 554050
+;
+
+-- Field: Merkmal(542068,D) -> Merkmal(548985,D) -> Min. Wert
+-- Column: M_Attribute.ValueMin
+-- 2026-02-06T13:33:12.420Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,DisplayLogic,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,550627,771953,0,548985,0,TO_TIMESTAMP('2026-02-06 13:33:12.161000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Minimum Value for a field',16,'@AttributeValueType@=N','D','The Minimum Value indicates the lowest  allowable value for a field.',0,'Y','N','Y','Y','N','N','N','N','N','N','N','Min. Wert',150,210,1,1,TO_TIMESTAMP('2026-02-06 13:33:12.161000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:12.449Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771953 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:12.472Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(1060)
+;
+
+-- 2026-02-06T13:33:12.489Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771953
+;
+
+-- 2026-02-06T13:33:12.522Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771953)
+;
+
+-- 2026-02-06T13:33:12.561Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771953
+;
+
+-- 2026-02-06T13:33:12.605Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771953, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 554198
+;
+
+-- Field: Merkmal(542068,D) -> Merkmal(548985,D) -> Max. Wert
+-- Column: M_Attribute.ValueMax
+-- 2026-02-06T13:33:12.899Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,DisplayLogic,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,550628,771954,0,548985,0,TO_TIMESTAMP('2026-02-06 13:33:12.626000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Maximum Value for a field',16,'@AttributeValueType@=N','D','The Maximum Value indicates the highest allowable value for a field',0,'Y','N','Y','Y','N','N','N','N','N','N','N','Max. Wert',160,200,1,1,TO_TIMESTAMP('2026-02-06 13:33:12.626000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:12.924Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771954 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:12.945Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(1059)
+;
+
+-- 2026-02-06T13:33:12.967Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771954
+;
+
+-- 2026-02-06T13:33:12.989Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771954)
+;
+
+-- 2026-02-06T13:33:13.031Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771954
+;
+
+-- 2026-02-06T13:33:13.052Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771954, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 554199
+;
+
+-- Field: Merkmal(542068,D) -> Merkmal(548985,D) -> Ist Bestandsrelevant
+-- Column: M_Attribute.IsStorageRelevant
+-- 2026-02-06T13:33:13.309Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,550884,771955,0,548985,0,TO_TIMESTAMP('2026-02-06 13:33:13.076000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Is used to do attibute matching between storage attributes and order line attributes (ASIs).',0,'D','The flag indicates that an attribute is significant in the (HU) storage. This does not automatically imply that the attribute is actually used in any HU.
+But if HU-Attributes are flagged with this, the HU-related quantities will be shown in the MRP produkt info (maybe elsewhere too, in future) with respect to those attributes'' values.',0,'Y','N','Y','Y','N','N','N','N','N','N','Y','Ist Bestandsrelevant',150,180,0,1,1,TO_TIMESTAMP('2026-02-06 13:33:13.076000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:13.329Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771955 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:13.356Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(542475)
+;
+
+-- 2026-02-06T13:33:13.385Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771955
+;
+
+-- 2026-02-06T13:33:13.408Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771955)
+;
+
+-- 2026-02-06T13:33:13.452Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771955
+;
+
+-- 2026-02-06T13:33:13.482Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771955, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 554507
+;
+
+-- Field: Merkmal(542068,D) -> Merkmal(548985,D) -> Auf Belegen auszuweisen
+-- Column: M_Attribute.IsAttrDocumentRelevant
+-- 2026-02-06T13:33:13.748Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,551807,771956,0,548985,0,TO_TIMESTAMP('2026-02-06 13:33:13.502000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Wenn ein Attribute auf Belegen auszuweisen ist, bedeutet das, das Lieferposionen mit unterschiedlichen Attributwerten nicht zu einer Rechnungszeile zusammengefasst werden können.',0,'D',0,'Y','N','Y','Y','N','N','N','N','N','N','N','Auf Belegen auszuweisen',135,140,0,1,1,TO_TIMESTAMP('2026-02-06 13:33:13.502000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:13.771Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771956 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:13.796Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(542706)
+;
+
+-- 2026-02-06T13:33:13.820Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771956
+;
+
+-- 2026-02-06T13:33:13.843Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771956)
+;
+
+-- 2026-02-06T13:33:13.887Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771956
+;
+
+-- 2026-02-06T13:33:13.918Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771956, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 555486
+;
+
+-- Field: Merkmal(542068,D) -> Merkmal(548985,D) -> Read Only
+-- Column: M_Attribute.IsReadOnlyValues
+-- 2026-02-06T13:33:14.181Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,555451,771957,0,548985,0,TO_TIMESTAMP('2026-02-06 13:33:13.941000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0,'D',0,'Y','N','Y','Y','N','N','N','N','N','N','N','Read Only',136,150,0,1,1,TO_TIMESTAMP('2026-02-06 13:33:13.941000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:14.204Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771957 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:14.226Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(543239)
+;
+
+-- 2026-02-06T13:33:14.249Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771957
+;
+
+-- 2026-02-06T13:33:14.273Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771957)
+;
+
+-- 2026-02-06T13:33:14.318Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771957
+;
+
+-- 2026-02-06T13:33:14.340Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771957, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 557412
+;
+
+-- Field: Merkmal(542068,D) -> Merkmal(548985,D) -> Transferieren wenn null
+-- Column: M_Attribute.IsTransferWhenNull
+-- 2026-02-06T13:33:14.608Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,556047,771958,0,548985,0,TO_TIMESTAMP('2026-02-06 13:33:14.362000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0,'D','',0,'Y','N','Y','Y','N','N','N','N','N','N','N','Transferieren wenn null',137,160,0,1,1,TO_TIMESTAMP('2026-02-06 13:33:14.362000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:14.631Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771958 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:14.652Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(543272)
+;
+
+-- 2026-02-06T13:33:14.677Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771958
+;
+
+-- 2026-02-06T13:33:14.700Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771958)
+;
+
+-- 2026-02-06T13:33:14.748Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771958
+;
+
+-- 2026-02-06T13:33:14.770Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771958, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 557503
+;
+
+-- Field: Merkmal(542068,D) -> Merkmal(548985,D) -> High Volume
+-- Column: M_Attribute.IsHighVolume
+-- 2026-02-06T13:33:15.077Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,DisplayLogic,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,558262,771959,0,548985,0,TO_TIMESTAMP('2026-02-06 13:33:14.791000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Use Search instead of Pick list',1,'@AttributeValueType/-@=L','D','The High Volume Checkbox indicates if a search screen will display as opposed to a pick list for selecting records from this table.',0,'Y','N','Y','Y','N','N','N','N','N','N','N','High Volume',170,190,1,1,TO_TIMESTAMP('2026-02-06 13:33:14.791000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:15.101Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771959 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:15.127Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(1174)
+;
+
+-- 2026-02-06T13:33:15.151Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771959
+;
+
+-- 2026-02-06T13:33:15.170Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771959)
+;
+
+-- 2026-02-06T13:33:15.227Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771959
+;
+
+-- 2026-02-06T13:33:15.248Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771959, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 560803
+;
+
+-- Field: Merkmal(542068,D) -> Merkmal(548985,D) -> Description Pattern
+-- Column: M_Attribute.DescriptionPattern
+-- 2026-02-06T13:33:15.550Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,560723,771960,0,548985,0,TO_TIMESTAMP('2026-02-06 13:33:15.272000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,255,'D',0,'Y','N','Y','N','N','N','N','N','N','N','N','Description Pattern',180,0,1,1,TO_TIMESTAMP('2026-02-06 13:33:15.272000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:15.572Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771960 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:15.604Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(544191)
+;
+
+-- 2026-02-06T13:33:15.637Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771960
+;
+
+-- 2026-02-06T13:33:15.657Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771960)
+;
+
+-- 2026-02-06T13:33:15.697Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771960
+;
+
+-- 2026-02-06T13:33:15.719Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771960, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 565139
+;
+
+-- Field: Merkmal(542068,D) -> Merkmal(548985,D) -> Merkmal immer aktualisierbar
+-- Column: M_Attribute.IsAlwaysUpdateable
+-- 2026-02-06T13:33:15.966Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,574266,771961,579314,0,548985,0,TO_TIMESTAMP('2026-02-06 13:33:15.750000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Wenn die Einstellung aktiviert ist und das Merkmal für eine HU im Status "Geplant" editierbar war, dann bleibt das Merkmal editierbar, auch wenn die HU nicht mehr "Geplant" ist.',0,'D','Wenn die Einstellung aktiviert ist und das Merkmal für eine HU im Status "Geplant" editierbar war, dann bleibt das Merkmal editierbar, auch wenn die HU nicht mehr "Geplant" ist.',0,'Y','N','Y','Y','N','N','N','N','N','N','N','Merkmal immer aktualisierbar',160,220,0,1,1,TO_TIMESTAMP('2026-02-06 13:33:15.750000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:15.990Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771961 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:16.014Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(579314)
+;
+
+-- 2026-02-06T13:33:16.035Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771961
+;
+
+-- 2026-02-06T13:33:16.056Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771961)
+;
+
+-- 2026-02-06T13:33:16.099Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771961
+;
+
+-- 2026-02-06T13:33:16.123Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771961, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 647478
+;
+
+-- Field: Merkmal(542068,D) -> Merkmal(548985,D) -> Dokument gedruckt
+-- Column: M_Attribute.IsPrintedInDocument
+-- 2026-02-06T13:33:16.421Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,582466,771962,0,548985,0,TO_TIMESTAMP('2026-02-06 13:33:16.142000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Wenn angehakt, wird das Merkmal auf allen referenzierten Belegen gedruckt.',1,'D','Wenn angehakt, wird das Merkmal auf allen referenzierten Belegen gedruckt.',0,'Y','N','N','N','N','N','N','N','N','N','N','Dokument gedruckt',190,1,1,TO_TIMESTAMP('2026-02-06 13:33:16.142000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:16.450Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771962 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:16.471Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(580717)
+;
+
+-- 2026-02-06T13:33:16.490Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771962
+;
+
+-- 2026-02-06T13:33:16.529Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771962)
+;
+
+-- 2026-02-06T13:33:16.588Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771962
+;
+
+-- 2026-02-06T13:33:16.609Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771962, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 691408
+;
+
+-- Field: Merkmal(542068,D) -> Merkmal(548985,D) -> Druckwert-Überschreibung
+-- Column: M_Attribute.PrintValue_Override
+-- 2026-02-06T13:33:16.890Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,FacetFilterSeqNo,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,589831,771963,0,548985,0,TO_TIMESTAMP('2026-02-06 13:33:16.629000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Wert, der auf Dokumenten anstelle des Standardwerts gedruckt wird, falls ausgefüllt.',0,'D',0,'',0,'Y','N','Y','Y','N','N','N','N','N','N','N',0,'Druckwert-Überschreibung',0,200,230,0,1,1,TO_TIMESTAMP('2026-02-06 13:33:16.629000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:16.909Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771963 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:16.939Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(583566)
+;
+
+-- 2026-02-06T13:33:16.959Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771963
+;
+
+-- 2026-02-06T13:33:16.999Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771963)
+;
+
+-- 2026-02-06T13:33:17.041Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771963
+;
+
+-- 2026-02-06T13:33:17.066Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771963, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 741860
+;
+
+-- Field: Merkmal(542068,D) -> Merkmal(548985,D) -> Attributwerte Sortieren nach
+-- Column: M_Attribute.AttributeValuesOrderBy
+-- 2026-02-06T13:33:17.359Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,DisplayLogic,EntityType,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,590596,771964,0,548985,0,TO_TIMESTAMP('2026-02-06 13:33:17.089000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,1,'@AttributeValueType/-@=L','D',0,'Y','N','N','N','N','N','N','N','N','N','N','Attributwerte Sortieren nach',210,1,1,TO_TIMESTAMP('2026-02-06 13:33:17.089000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:17.379Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771964 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:17.405Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(583849)
+;
+
+-- 2026-02-06T13:33:17.431Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771964
+;
+
+-- 2026-02-06T13:33:17.453Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771964)
+;
+
+-- 2026-02-06T13:33:17.501Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771964
+;
+
+-- 2026-02-06T13:33:17.527Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771964, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 751764
+;
+
+-- Field: Merkmal(542068,D) -> Merkmal(548985,D) -> Standardwert-Logik (SQL)
+-- Column: M_Attribute.DefaultValueSQL
+-- 2026-02-06T13:33:17.849Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,591423,771965,0,548985,0,TO_TIMESTAMP('2026-02-06 13:33:17.551000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'SQL-Ausdruck, der verwendet wird, um den Standardwert für dieses Attribut zu berechnen. Der Ausdruck kann variable Platzhalter enthalten (z. B. @M_Product_ID@, @C_Order_ID@, @TableName@), die zur Laufzeit durch die tatsächlichen Kontextwerte ersetzt werden. Der resultierende Wert muss dem für das Attribut definierten Wertetyp entsprechen. Wenn dieses Feld leer ist, besitzt das Attribut keinen SQL-basierten Standardwert.',9999999,'D','SQL-Ausdruck, der verwendet wird, um den Standardwert für dieses Attribut zu berechnen.
+Der Ausdruck kann variable Platzhalter enthalten (z. B. @M_Product_ID@, @C_Order_ID@, @TableName@), die zur Laufzeit durch die tatsächlichen Kontextwerte ersetzt werden. Der resultierende Wert muss dem für das Attribut definierten Wertetyp entsprechen. Wenn dieses Feld leer ist, besitzt das Attribut keinen SQL-basierten Standardwert.',0,'Y','N','N','N','N','N','N','N','N','N','N','Standardwert-Logik (SQL)',220,1,1,TO_TIMESTAMP('2026-02-06 13:33:17.551000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:17.880Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771965 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:17.901Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(584138)
+;
+
+-- 2026-02-06T13:33:17.927Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771965
+;
+
+-- 2026-02-06T13:33:17.950Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771965)
+;
+
+-- 2026-02-06T13:33:18.006Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771965
+;
+
+-- 2026-02-06T13:33:18.031Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771965, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 755063
+;
+
+-- Tab: Merkmal(542068,D) -> Attribut substitute
+-- Table: M_AttributeValue_Mapping
+-- 2026-02-06T13:33:18.314Z
+INSERT INTO AD_Tab (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Tab_ID,AD_Table_ID,AD_Window_ID,AllowQuickInput,Created,CreatedBy,EntityType,HasTree,ImportFields,IncludedTabNewRecordInputMode,InternalName,IsActive,IsAdvancedTab,IsAutodetectDefaultDateFilter,IsCheckParentsChanged,IsGenericZoomTarget,IsGridModeOnly,IsInfoTab,IsInsertRecord,IsQueryOnLoad,IsReadOnly,IsRefreshAllOnActivate,IsRefreshViewOnChangeEvents,IsSearchActive,IsSearchCollapsed,IsSingleRow,IsSortTab,IsTranslationTab,Name,Parent_Column_ID,Processing,SeqNo,TabLevel,Updated,UpdatedBy) VALUES (0,551495,573722,0,548986,540631,542068,'Y',TO_TIMESTAMP('2026-02-06 13:33:18.072000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','N','N','A','M_AttributeValue_Mapping','Y','N','Y','Y','N','N','N','Y','Y','N','N','N','Y','Y','N','N','N','Attribut substitute',8469,'N',25,2,TO_TIMESTAMP('2026-02-06 13:33:18.072000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:18.340Z
+INSERT INTO AD_Tab_Trl (AD_Language,AD_Tab_ID, CommitWarning,Description,Help,Name,NotFound_Message,NotFound_MessageDetail,QuickInput_CloseButton_Caption,QuickInput_OpenButton_Caption, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Tab_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.NotFound_Message,t.NotFound_MessageDetail,t.QuickInput_CloseButton_Caption,t.QuickInput_OpenButton_Caption, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Tab t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Tab_ID=548986 AND NOT EXISTS (SELECT 1 FROM AD_Tab_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Tab_ID=t.AD_Tab_ID)
+;
+
+-- 2026-02-06T13:33:18.362Z
+/* DDL */  select update_tab_translation_from_ad_element(573722)
+;
+
+-- 2026-02-06T13:33:18.386Z
+/* DDL */ select AD_Element_Link_Create_Missing_Tab(548986)
+;
+
+-- 2026-02-06T13:33:18.431Z
+DELETE FROM AD_Tab_Trl WHERE AD_Tab_ID = 548986
+;
+
+-- 2026-02-06T13:33:18.454Z
+INSERT INTO AD_Tab_Trl (AD_Tab_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, CommitWarning, IsTranslated)  SELECT 548986, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description,  Help, CommitWarning, IsTranslated  FROM AD_Tab_Trl WHERE AD_Tab_ID = 540646
+;
+
+-- Field: Merkmal(542068,D) -> Attribut substitute(548986,D) -> Mandant
+-- Column: M_AttributeValue_Mapping.AD_Client_ID
+-- 2026-02-06T13:33:18.923Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,551487,771966,0,548986,0,TO_TIMESTAMP('2026-02-06 13:33:18.659000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Mandant für diese Installation.',10,'D','Ein Mandant ist eine Firma oder eine juristische Person. Sie können keine Daten über Mandanten hinweg verwenden. .',0,'Y','N','N','N','N','N','N','N','N','Y','N','Mandant',10,0,1,1,TO_TIMESTAMP('2026-02-06 13:33:18.659000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:18.946Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771966 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:18.980Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(102)
+;
+
+-- 2026-02-06T13:33:19.057Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771966
+;
+
+-- 2026-02-06T13:33:19.102Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771966)
+;
+
+-- 2026-02-06T13:33:19.151Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771966
+;
+
+-- 2026-02-06T13:33:19.172Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771966, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 555152
+;
+
+-- Field: Merkmal(542068,D) -> Attribut substitute(548986,D) -> Organisation
+-- Column: M_AttributeValue_Mapping.AD_Org_ID
+-- 2026-02-06T13:33:19.459Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,551488,771967,0,548986,0,TO_TIMESTAMP('2026-02-06 13:33:19.195000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Organisatorische Einheit des Mandanten',10,'D','Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie können Daten über Organisationen hinweg gemeinsam verwenden.',0,'Y','N','N','N','N','N','N','N','N','N','N','Organisation',20,0,1,1,TO_TIMESTAMP('2026-02-06 13:33:19.195000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:19.479Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771967 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:19.515Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(113)
+;
+
+-- 2026-02-06T13:33:19.599Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771967
+;
+
+-- 2026-02-06T13:33:19.622Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771967)
+;
+
+-- 2026-02-06T13:33:19.669Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771967
+;
+
+-- 2026-02-06T13:33:19.690Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771967, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 555153
+;
+
+-- Field: Merkmal(542068,D) -> Attribut substitute(548986,D) -> Aktiv
+-- Column: M_AttributeValue_Mapping.IsActive
+-- 2026-02-06T13:33:19.944Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,551491,771968,0,548986,0,TO_TIMESTAMP('2026-02-06 13:33:19.719000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Der Eintrag ist im System aktiv',1,'D','Es gibt zwei Möglichkeiten, einen Datensatz nicht mehr verfügbar zu machen: einer ist, ihn zu löschen; der andere, ihn zu deaktivieren. Ein deaktivierter Eintrag ist nicht mehr für eine Auswahl verfügbar, aber verfügbar für die Verwendung in Berichten. Es gibt zwei Gründe, Datensätze zu deaktivieren und nicht zu löschen: (1) Das System braucht den Datensatz für Revisionszwecke. (2) Der Datensatz wird von anderen Datensätzen referenziert. Z.B. können Sie keinen Geschäftspartner löschen, wenn es Rechnungen für diesen Geschäftspartner gibt. Sie deaktivieren den Geschäftspartner und verhindern, dass dieser Eintrag in zukünftigen Vorgängen verwendet wird.',0,'Y','N','Y','Y','N','N','N','N','N','N','N','Aktiv',40,40,1,1,TO_TIMESTAMP('2026-02-06 13:33:19.719000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:19.959Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771968 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:19.989Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(348)
+;
+
+-- 2026-02-06T13:33:20.071Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771968
+;
+
+-- 2026-02-06T13:33:20.089Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771968)
+;
+
+-- 2026-02-06T13:33:20.137Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771968
+;
+
+-- 2026-02-06T13:33:20.156Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771968, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 555154
+;
+
+-- Field: Merkmal(542068,D) -> Attribut substitute(548986,D) -> Attribut substitute
+-- Column: M_AttributeValue_Mapping.M_AttributeValue_Mapping_ID
+-- 2026-02-06T13:33:20.469Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,551494,771969,0,548986,0,TO_TIMESTAMP('2026-02-06 13:33:20.179000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,10,'D',0,'Y','N','N','N','N','N','N','N','N','N','N','Attribut substitute',50,0,1,1,TO_TIMESTAMP('2026-02-06 13:33:20.179000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:20.489Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771969 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:20.518Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(542625)
+;
+
+-- 2026-02-06T13:33:20.539Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771969
+;
+
+-- 2026-02-06T13:33:20.559Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771969)
+;
+
+-- 2026-02-06T13:33:20.609Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771969
+;
+
+-- 2026-02-06T13:33:20.630Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771969, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 555155
+;
+
+-- Field: Merkmal(542068,D) -> Attribut substitute(548986,D) -> Merkmals-Wert
+-- Column: M_AttributeValue_Mapping.M_AttributeValue_ID
+-- 2026-02-06T13:33:20.906Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,551495,771970,0,548986,0,TO_TIMESTAMP('2026-02-06 13:33:20.654000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Product Attribute Value',10,'D','Individual value of a product attribute (e.g. green, large, ..)',0,'Y','N','Y','Y','N','N','N','N','N','N','N','Merkmals-Wert',10,10,1,1,TO_TIMESTAMP('2026-02-06 13:33:20.654000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:20.929Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771970 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:20.955Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(2020)
+;
+
+-- 2026-02-06T13:33:20.972Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771970
+;
+
+-- 2026-02-06T13:33:20.999Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771970)
+;
+
+-- 2026-02-06T13:33:21.039Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771970
+;
+
+-- 2026-02-06T13:33:21.070Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771970, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 555156
+;
+
+-- Field: Merkmal(542068,D) -> Attribut substitute(548986,D) -> Merkmals-Wert Nach
+-- Column: M_AttributeValue_Mapping.M_AttributeValue_To_ID
+-- 2026-02-06T13:33:21.354Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,551496,771971,0,548986,0,TO_TIMESTAMP('2026-02-06 13:33:21.089000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Product Attribute Value To',10,'D',0,'Y','N','Y','Y','N','N','N','N','N','N','Y','Merkmals-Wert Nach',20,20,1,1,TO_TIMESTAMP('2026-02-06 13:33:21.089000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:21.379Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771971 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:21.410Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(542626)
+;
+
+-- 2026-02-06T13:33:21.433Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771971
+;
+
+-- 2026-02-06T13:33:21.451Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771971)
+;
+
+-- 2026-02-06T13:33:21.501Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771971
+;
+
+-- 2026-02-06T13:33:21.527Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771971, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 555157
+;
+
+-- Field: Merkmal(542068,D) -> Attribut substitute(548986,D) -> Beschreibung
+-- Column: M_AttributeValue_Mapping.Description
+-- 2026-02-06T13:33:21.783Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,551497,771972,0,548986,0,TO_TIMESTAMP('2026-02-06 13:33:21.549000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,40,'D',0,'Y','N','Y','Y','N','N','N','N','N','N','N','Beschreibung',30,30,999,1,TO_TIMESTAMP('2026-02-06 13:33:21.549000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:21.806Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771972 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:21.832Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(275)
+;
+
+-- 2026-02-06T13:33:21.884Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771972
+;
+
+-- 2026-02-06T13:33:21.905Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771972)
+;
+
+-- 2026-02-06T13:33:21.955Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771972
+;
+
+-- 2026-02-06T13:33:21.976Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771972, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 555158
+;
+
+-- Tab: Merkmal(542068,D) -> Packvorschrift
+-- Table: M_HU_PI_Attribute
+-- 2026-02-06T13:33:22.230Z
+INSERT INTO AD_Tab (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Tab_ID,AD_Table_ID,AD_Window_ID,AllowQuickInput,Created,CreatedBy,EntityType,HasTree,ImportFields,IncludedTabNewRecordInputMode,InternalName,IsActive,IsAdvancedTab,IsAutodetectDefaultDateFilter,IsCheckParentsChanged,IsGenericZoomTarget,IsGridModeOnly,IsInfoTab,IsInsertRecord,IsQueryOnLoad,IsReadOnly,IsRefreshAllOnActivate,IsRefreshViewOnChangeEvents,IsSearchActive,IsSearchCollapsed,IsSingleRow,IsSortTab,IsTranslationTab,Name,Parent_Column_ID,Processing,SeqNo,TabLevel,Updated,UpdatedBy) VALUES (0,549267,573733,0,548987,540507,542068,'Y',TO_TIMESTAMP('2026-02-06 13:33:21.997000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','N','N','A','M_HU_PI_Attribute','Y','N','Y','Y','N','N','N','N','Y','N','N','N','Y','Y','N','N','N','Packvorschrift',8512,'N',40,1,TO_TIMESTAMP('2026-02-06 13:33:21.997000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:22.253Z
+INSERT INTO AD_Tab_Trl (AD_Language,AD_Tab_ID, CommitWarning,Description,Help,Name,NotFound_Message,NotFound_MessageDetail,QuickInput_CloseButton_Caption,QuickInput_OpenButton_Caption, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Tab_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.NotFound_Message,t.NotFound_MessageDetail,t.QuickInput_CloseButton_Caption,t.QuickInput_OpenButton_Caption, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Tab t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Tab_ID=548987 AND NOT EXISTS (SELECT 1 FROM AD_Tab_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Tab_ID=t.AD_Tab_ID)
+;
+
+-- 2026-02-06T13:33:22.276Z
+/* DDL */  select update_tab_translation_from_ad_element(573733)
+;
+
+-- 2026-02-06T13:33:22.307Z
+/* DDL */ select AD_Element_Link_Create_Missing_Tab(548987)
+;
+
+-- 2026-02-06T13:33:22.353Z
+DELETE FROM AD_Tab_Trl WHERE AD_Tab_ID = 548987
+;
+
+-- 2026-02-06T13:33:22.375Z
+INSERT INTO AD_Tab_Trl (AD_Tab_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, CommitWarning, IsTranslated)  SELECT 548987, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description,  Help, CommitWarning, IsTranslated  FROM AD_Tab_Trl WHERE AD_Tab_ID = 540591
+;
+
+-- Field: Merkmal(542068,D) -> Packvorschrift(548987,D) -> Aktualisiert durch
+-- Column: M_HU_PI_Attribute.UpdatedBy
+-- 2026-02-06T13:33:22.872Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,549178,771973,0,548987,0,TO_TIMESTAMP('2026-02-06 13:33:22.583000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Nutzer, der diesen Eintrag aktualisiert hat',10,'D','Aktualisiert durch zeigt an, welcher Nutzer diesen Eintrag aktualisiert hat.',0,'Y','N','N','N','N','N','N','N','N','N','N','Aktualisiert durch',10,0,1,1,TO_TIMESTAMP('2026-02-06 13:33:22.583000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:22.895Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771973 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:22.919Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(608)
+;
+
+-- 2026-02-06T13:33:22.971Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771973
+;
+
+-- 2026-02-06T13:33:22.992Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771973)
+;
+
+-- 2026-02-06T13:33:23.039Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771973
+;
+
+-- 2026-02-06T13:33:23.064Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771973, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 554237
+;
+
+-- Field: Merkmal(542068,D) -> Packvorschrift(548987,D) -> Mandant
+-- Column: M_HU_PI_Attribute.AD_Client_ID
+-- 2026-02-06T13:33:23.364Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,549172,771974,0,548987,0,TO_TIMESTAMP('2026-02-06 13:33:23.097000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Mandant für diese Installation.',10,'D','Ein Mandant ist eine Firma oder eine juristische Person. Sie können keine Daten über Mandanten hinweg verwenden. .',0,'Y','N','N','N','N','N','N','N','N','Y','N','Mandant',20,0,1,1,TO_TIMESTAMP('2026-02-06 13:33:23.097000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:23.389Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771974 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:23.409Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(102)
+;
+
+-- 2026-02-06T13:33:23.487Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771974
+;
+
+-- 2026-02-06T13:33:23.509Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771974)
+;
+
+-- 2026-02-06T13:33:23.559Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771974
+;
+
+-- 2026-02-06T13:33:23.579Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771974, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 554238
+;
+
+-- Field: Merkmal(542068,D) -> Packvorschrift(548987,D) -> Packvorschrift Version
+-- Column: M_HU_PI_Attribute.M_HU_PI_Version_ID
+-- 2026-02-06T13:33:23.909Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,549268,771975,0,548987,0,TO_TIMESTAMP('2026-02-06 13:33:23.609000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0,'D',0,'Y','N','N','N','N','N','N','N','N','N','N','Packvorschrift Version',30,0,0,1,1,TO_TIMESTAMP('2026-02-06 13:33:23.609000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:23.932Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771975 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:23.956Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(542134)
+;
+
+-- 2026-02-06T13:33:23.979Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771975
+;
+
+-- 2026-02-06T13:33:24.009Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771975)
+;
+
+-- 2026-02-06T13:33:24.049Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771975
+;
+
+-- 2026-02-06T13:33:24.079Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771975, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 554239
+;
+
+-- Field: Merkmal(542068,D) -> Packvorschrift(548987,D) -> Erstellt
+-- Column: M_HU_PI_Attribute.Created
+-- 2026-02-06T13:33:24.349Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,549174,771976,0,548987,0,TO_TIMESTAMP('2026-02-06 13:33:24.099000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Datum, an dem dieser Eintrag erstellt wurde',29,'D','Das Feld Erstellt zeigt an, zu welchem Datum dieser Eintrag erstellt wurde.',0,'Y','N','N','N','N','N','N','N','N','N','N','Erstellt',40,0,1,1,TO_TIMESTAMP('2026-02-06 13:33:24.099000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:24.369Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771976 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:24.389Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(245)
+;
+
+-- 2026-02-06T13:33:24.449Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771976
+;
+
+-- 2026-02-06T13:33:24.471Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771976)
+;
+
+-- 2026-02-06T13:33:24.519Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771976
+;
+
+-- 2026-02-06T13:33:24.539Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771976, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 554240
+;
+
+-- Field: Merkmal(542068,D) -> Packvorschrift(548987,D) -> Erstellt durch
+-- Column: M_HU_PI_Attribute.CreatedBy
+-- 2026-02-06T13:33:24.822Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,549175,771977,0,548987,0,TO_TIMESTAMP('2026-02-06 13:33:24.564000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Nutzer, der diesen Eintrag erstellt hat',10,'D','Das Feld Erstellt durch zeigt an, welcher Nutzer diesen Eintrag erstellt hat.',0,'Y','N','N','N','N','N','N','N','N','N','N','Erstellt durch',50,0,1,1,TO_TIMESTAMP('2026-02-06 13:33:24.564000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:24.840Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771977 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:24.859Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(246)
+;
+
+-- 2026-02-06T13:33:24.921Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771977
+;
+
+-- 2026-02-06T13:33:24.940Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771977)
+;
+
+-- 2026-02-06T13:33:24.989Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771977
+;
+
+-- 2026-02-06T13:33:25.009Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771977, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 554241
+;
+
+-- Field: Merkmal(542068,D) -> Packvorschrift(548987,D) -> Aktualisiert
+-- Column: M_HU_PI_Attribute.Updated
+-- 2026-02-06T13:33:25.289Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,549177,771978,0,548987,0,TO_TIMESTAMP('2026-02-06 13:33:25.029000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Datum, an dem dieser Eintrag aktualisiert wurde',29,'D','Aktualisiert zeigt an, wann dieser Eintrag aktualisiert wurde.',0,'Y','N','N','N','N','N','N','N','N','N','N','Aktualisiert',60,0,1,1,TO_TIMESTAMP('2026-02-06 13:33:25.029000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:25.339Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771978 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:25.359Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(607)
+;
+
+-- 2026-02-06T13:33:25.421Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771978
+;
+
+-- 2026-02-06T13:33:25.440Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771978)
+;
+
+-- 2026-02-06T13:33:25.484Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771978
+;
+
+-- 2026-02-06T13:33:25.505Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771978, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 554242
+;
+
+-- Field: Merkmal(542068,D) -> Packvorschrift(548987,D) -> Organisation
+-- Column: M_HU_PI_Attribute.AD_Org_ID
+-- 2026-02-06T13:33:25.776Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,549173,771979,0,548987,0,TO_TIMESTAMP('2026-02-06 13:33:25.528000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Organisatorische Einheit des Mandanten',10,'D','Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie können Daten über Organisationen hinweg gemeinsam verwenden.',0,'Y','N','Y','Y','N','N','N','N','N','N','N','Organisation',10,10,1,1,TO_TIMESTAMP('2026-02-06 13:33:25.528000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:25.799Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771979 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:25.822Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(113)
+;
+
+-- 2026-02-06T13:33:25.899Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771979
+;
+
+-- 2026-02-06T13:33:25.927Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771979)
+;
+
+-- 2026-02-06T13:33:25.971Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771979
+;
+
+-- 2026-02-06T13:33:25.992Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771979, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 554243
+;
+
+-- Field: Merkmal(542068,D) -> Packvorschrift(548987,D) -> Merkmal
+-- Column: M_HU_PI_Attribute.M_Attribute_ID
+-- 2026-02-06T13:33:26.269Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,549267,771980,0,548987,0,TO_TIMESTAMP('2026-02-06 13:33:26.015000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Produkt-Merkmal',10,'D','Product Attribute like Color, Size',0,'Y','N','Y','Y','N','N','N','N','N','N','N','Merkmal',20,30,1,1,TO_TIMESTAMP('2026-02-06 13:33:26.015000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:26.294Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771980 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:26.319Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(2015)
+;
+
+-- 2026-02-06T13:33:26.342Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771980
+;
+
+-- 2026-02-06T13:33:26.372Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771980)
+;
+
+-- 2026-02-06T13:33:26.419Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771980
+;
+
+-- 2026-02-06T13:33:26.443Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771980, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 554244
+;
+
+-- Field: Merkmal(542068,D) -> Packvorschrift(548987,D) -> Reihenfolge
+-- Column: M_HU_PI_Attribute.SeqNo
+-- 2026-02-06T13:33:26.681Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,550572,771981,1000652,0,548987,0,TO_TIMESTAMP('2026-02-06 13:33:26.468000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst',10,'D','"Reihenfolge" bestimmt die Reihenfolge der Einträge',0,'Y','N','Y','Y','N','N','N','N','N','N','Y','Reihenfolge',30,20,1,1,1,TO_TIMESTAMP('2026-02-06 13:33:26.468000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:26.702Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771981 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:26.728Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(1000652)
+;
+
+-- 2026-02-06T13:33:26.750Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771981
+;
+
+-- 2026-02-06T13:33:26.771Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771981)
+;
+
+-- 2026-02-06T13:33:26.832Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771981
+;
+
+-- 2026-02-06T13:33:26.852Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771981, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 554245
+;
+
+-- Field: Merkmal(542068,D) -> Packvorschrift(548987,D) -> Aktiv
+-- Column: M_HU_PI_Attribute.IsActive
+-- 2026-02-06T13:33:27.114Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,549176,771982,0,548987,0,TO_TIMESTAMP('2026-02-06 13:33:26.874000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Der Eintrag ist im System aktiv',1,'D','Es gibt zwei Möglichkeiten, einen Datensatz nicht mehr verfügbar zu machen: einer ist, ihn zu löschen; der andere, ihn zu deaktivieren. Ein deaktivierter Eintrag ist nicht mehr für eine Auswahl verfügbar, aber verfügbar für die Verwendung in Berichten. Es gibt zwei Gründe, Datensätze zu deaktivieren und nicht zu löschen: (1) Das System braucht den Datensatz für Revisionszwecke. (2) Der Datensatz wird von anderen Datensätzen referenziert. Z.B. können Sie keinen Geschäftspartner löschen, wenn es Rechnungen für diesen Geschäftspartner gibt. Sie deaktivieren den Geschäftspartner und verhindern, dass dieser Eintrag in zukünftigen Vorgängen verwendet wird.',0,'Y','N','Y','Y','N','N','N','N','N','N','N','Aktiv',40,40,1,1,TO_TIMESTAMP('2026-02-06 13:33:26.874000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:27.138Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771982 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:27.159Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(348)
+;
+
+-- 2026-02-06T13:33:27.240Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771982
+;
+
+-- 2026-02-06T13:33:27.260Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771982)
+;
+
+-- 2026-02-06T13:33:27.305Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771982
+;
+
+-- 2026-02-06T13:33:27.328Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771982, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 554246
+;
+
+-- Field: Merkmal(542068,D) -> Packvorschrift(548987,D) -> Instanz Merkmal
+-- Column: M_HU_PI_Attribute.IsInstanceAttribute
+-- 2026-02-06T13:33:27.589Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,549265,771983,0,548987,0,TO_TIMESTAMP('2026-02-06 13:33:27.349000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'The product attribute is specific to the instance (like Serial No, Lot or Guarantee Date)',1,'D','If selected, the individual instance of the product has this attribute - like the individual Serial or Lot Numbers or  Guarantee Date of a product instance.  If not selected, all instances of the product share the attribute (e.g. color=green).',0,'Y','N','Y','Y','N','N','N','N','N','N','N','Instanz Merkmal',50,50,1,1,TO_TIMESTAMP('2026-02-06 13:33:27.349000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:27.609Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771983 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:27.629Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(2012)
+;
+
+-- 2026-02-06T13:33:27.659Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771983
+;
+
+-- 2026-02-06T13:33:27.679Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771983)
+;
+
+-- 2026-02-06T13:33:27.723Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771983
+;
+
+-- 2026-02-06T13:33:27.749Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771983, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 554247
+;
+
+-- Field: Merkmal(542068,D) -> Packvorschrift(548987,D) -> Pflichtangabe
+-- Column: M_HU_PI_Attribute.IsMandatory
+-- 2026-02-06T13:33:28.006Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,549266,771984,0,548987,0,TO_TIMESTAMP('2026-02-06 13:33:27.772000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Data entry is required in this column',1,'D','The field must have a value for the record to be saved to the database.',0,'Y','N','Y','Y','N','N','N','N','N','N','N','Pflichtangabe',60,60,1,1,TO_TIMESTAMP('2026-02-06 13:33:27.772000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:28.031Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771984 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:28.049Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(392)
+;
+
+-- 2026-02-06T13:33:28.076Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771984
+;
+
+-- 2026-02-06T13:33:28.099Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771984)
+;
+
+-- 2026-02-06T13:33:28.155Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771984
+;
+
+-- 2026-02-06T13:33:28.171Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771984, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 554248
+;
+
+-- Field: Merkmal(542068,D) -> Packvorschrift(548987,D) -> Propagation Type
+-- Column: M_HU_PI_Attribute.PropagationType
+-- 2026-02-06T13:33:28.440Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,549430,771985,0,548987,0,TO_TIMESTAMP('2026-02-06 13:33:28.199000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0,'D',0,'Y','N','Y','Y','N','N','N','N','N','N','N','Propagation Type',70,70,0,1,1,TO_TIMESTAMP('2026-02-06 13:33:28.199000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:28.473Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771985 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:28.489Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(542193)
+;
+
+-- 2026-02-06T13:33:28.519Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771985
+;
+
+-- 2026-02-06T13:33:28.539Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771985)
+;
+
+-- 2026-02-06T13:33:28.599Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771985
+;
+
+-- 2026-02-06T13:33:28.623Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771985, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 554249
+;
+
+-- Field: Merkmal(542068,D) -> Packvorschrift(548987,D) -> Aggregation Strategy
+-- Column: M_HU_PI_Attribute.AggregationStrategy_JavaClass_ID
+-- 2026-02-06T13:33:28.891Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,DisplayLogic,EntityType,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,549463,771986,0,548987,0,TO_TIMESTAMP('2026-02-06 13:33:28.640000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0,'@PropagationType@=''BOTU'' | @PropagationType@=''IVAL''','D',0,'Y','N','Y','Y','N','N','N','N','N','N','Y','Aggregation Strategy',80,80,0,1,1,TO_TIMESTAMP('2026-02-06 13:33:28.640000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:28.919Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771986 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:28.939Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(542198)
+;
+
+-- 2026-02-06T13:33:28.959Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771986
+;
+
+-- 2026-02-06T13:33:28.991Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771986)
+;
+
+-- 2026-02-06T13:33:29.034Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771986
+;
+
+-- 2026-02-06T13:33:29.057Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771986, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 554250
+;
+
+-- Field: Merkmal(542068,D) -> Packvorschrift(548987,D) -> Splitter Strategy
+-- Column: M_HU_PI_Attribute.SplitterStrategy_JavaClass_ID
+-- 2026-02-06T13:33:29.339Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,DisplayLogic,EntityType,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,549464,771987,0,548987,0,TO_TIMESTAMP('2026-02-06 13:33:29.079000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0,'@PropagationType@=''TOPD'' | @PropagationType@=''IVAL''','D',0,'Y','N','Y','Y','N','N','N','N','N','N','Y','Splitter Strategy',90,90,0,1,1,TO_TIMESTAMP('2026-02-06 13:33:29.079000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:29.359Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771987 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:29.379Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(542199)
+;
+
+-- 2026-02-06T13:33:29.411Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771987
+;
+
+-- 2026-02-06T13:33:29.435Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771987)
+;
+
+-- 2026-02-06T13:33:29.488Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771987
+;
+
+-- 2026-02-06T13:33:29.515Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771987, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 554251
+;
+
+-- Field: Merkmal(542068,D) -> Packvorschrift(548987,D) -> Maßeinheit
+-- Column: M_HU_PI_Attribute.C_UOM_ID
+-- 2026-02-06T13:33:29.758Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,550506,771988,0,548987,0,TO_TIMESTAMP('2026-02-06 13:33:29.536000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Maßeinheit',0,'D','Eine eindeutige (nicht monetäre) Maßeinheit',0,'Y','N','Y','Y','N','N','N','N','N','N','N','Maßeinheit',100,100,0,1,1,TO_TIMESTAMP('2026-02-06 13:33:29.536000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:29.780Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771988 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:29.802Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(215)
+;
+
+-- 2026-02-06T13:33:29.830Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771988
+;
+
+-- 2026-02-06T13:33:29.852Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771988)
+;
+
+-- 2026-02-06T13:33:29.894Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771988
+;
+
+-- 2026-02-06T13:33:29.922Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771988, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 554252
+;
+
+-- Field: Merkmal(542068,D) -> Packvorschrift(548987,D) -> Schreibgeschützt
+-- Column: M_HU_PI_Attribute.IsReadOnly
+-- 2026-02-06T13:33:30.194Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,550571,771989,0,548987,0,TO_TIMESTAMP('2026-02-06 13:33:29.955000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Feld / Eintrag / Berecih ist schreibgeschützt',1,'D','The Read Only indicates that this field may only be Read.  It may not be updated.',0,'Y','N','Y','Y','N','N','N','N','N','N','N','Schreibgeschützt',110,110,1,1,TO_TIMESTAMP('2026-02-06 13:33:29.955000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:30.215Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771989 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:30.237Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(405)
+;
+
+-- 2026-02-06T13:33:30.262Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771989
+;
+
+-- 2026-02-06T13:33:30.283Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771989)
+;
+
+-- 2026-02-06T13:33:30.327Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771989
+;
+
+-- 2026-02-06T13:33:30.348Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771989, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 554253
+;
+
+-- Field: Merkmal(542068,D) -> Packvorschrift(548987,D) -> Handling Units Packing Instructions Attribute
+-- Column: M_HU_PI_Attribute.M_HU_PI_Attribute_ID
+-- 2026-02-06T13:33:30.650Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,549179,771990,0,548987,0,TO_TIMESTAMP('2026-02-06 13:33:30.375000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,10,'D',0,'Y','N','N','N','N','N','N','N','N','N','N','Handling Units Packing Instructions Attribute',120,1,1,TO_TIMESTAMP('2026-02-06 13:33:30.375000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T13:33:30.689Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771990 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T13:33:30.710Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(542131)
+;
+
+-- 2026-02-06T13:33:30.733Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771990
+;
+
+-- 2026-02-06T13:33:30.757Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771990)
+;
+
+-- 2026-02-06T13:33:30.801Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771990
+;
+
+-- 2026-02-06T13:33:30.822Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771990, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 554254
+;
+
+-- Tab: Merkmal(542068,D) -> Merkmal(548985,D)
+-- UI Section: main
+-- 2026-02-06T13:33:31.072Z
+INSERT INTO AD_UI_Section (AD_Client_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy,Value) VALUES (0,0,548985,547507,TO_TIMESTAMP('2026-02-06 13:33:30.945000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','',10,TO_TIMESTAMP('2026-02-06 13:33:30.945000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'main')
+;
+
+-- 2026-02-06T13:33:31.094Z
+INSERT INTO AD_UI_Section_Trl (AD_Language,AD_UI_Section_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_UI_Section_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_UI_Section t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_UI_Section_ID=547507 AND NOT EXISTS (SELECT 1 FROM AD_UI_Section_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_UI_Section_ID=t.AD_UI_Section_ID)
+;
+
+-- 2026-02-06T13:33:31.145Z
+DELETE FROM AD_UI_Section_Trl WHERE AD_UI_Section_ID = 547507
+;
+
+-- 2026-02-06T13:33:31.172Z
+INSERT INTO AD_UI_Section_Trl (AD_UI_Section_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, IsTranslated)  SELECT 547507, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, IsTranslated  FROM AD_UI_Section_Trl WHERE AD_UI_Section_ID = 540102
+;
+
+-- UI Section: Merkmal(542068,D) -> Merkmal(548985,D) -> main
+-- UI Column: 10
+-- 2026-02-06T13:33:31.439Z
+INSERT INTO AD_UI_Column (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,0,549166,547507,TO_TIMESTAMP('2026-02-06 13:33:31.308000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y',10,TO_TIMESTAMP('2026-02-06 13:33:31.308000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Column: Merkmal(542068,D) -> Merkmal(548985,D) -> main -> 10
+-- UI Element Group: default
+-- 2026-02-06T13:33:31.712Z
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,UIStyle,Updated,UpdatedBy) VALUES (0,0,549166,554795,TO_TIMESTAMP('2026-02-06 13:33:31.576000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','default',10,'primary',TO_TIMESTAMP('2026-02-06 13:33:31.576000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmal(542068,D) -> Merkmal(548985,D) -> main -> 10 -> default.Name
+-- Column: M_Attribute.Name
+-- 2026-02-06T13:33:32.139Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy,WidgetSize) VALUES (0,771942,0,548985,554795,646862,'F',TO_TIMESTAMP('2026-02-06 13:33:31.799000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','Y','Y','N','Name',10,10,10,TO_TIMESTAMP('2026-02-06 13:33:31.799000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'L')
+;
+
+-- UI Element: Merkmal(542068,D) -> Merkmal(548985,D) -> main -> 10 -> default.Beschreibung
+-- Column: M_Attribute.Description
+-- 2026-02-06T13:33:32.529Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771944,0,548985,554795,646863,'F',TO_TIMESTAMP('2026-02-06 13:33:32.270000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','Y','N','N','Beschreibung',20,20,0,TO_TIMESTAMP('2026-02-06 13:33:32.270000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmal(542068,D) -> Merkmal(548985,D) -> main -> 10 -> default.Merkmal Typ
+-- Column: M_Attribute.AttributeValueType
+-- 2026-02-06T13:33:32.838Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771947,0,548985,554795,646864,'F',TO_TIMESTAMP('2026-02-06 13:33:32.627000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','Y','Y','N','Merkmal Typ',30,30,20,TO_TIMESTAMP('2026-02-06 13:33:32.627000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmal(542068,D) -> Merkmal(548985,D) -> main -> 10 -> default.High Volume
+-- Column: M_Attribute.IsHighVolume
+-- 2026-02-06T13:33:33.143Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771959,0,548985,554795,646865,'F',TO_TIMESTAMP('2026-02-06 13:33:32.931000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','N','N','N','High Volume',40,0,0,TO_TIMESTAMP('2026-02-06 13:33:32.931000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmal(542068,D) -> Merkmal(548985,D) -> main -> 10 -> default.Sortieren nach
+-- Column: M_Attribute.AttributeValuesOrderBy
+-- 2026-02-06T13:33:33.469Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771964,0,548985,554795,646866,'F',TO_TIMESTAMP('2026-02-06 13:33:33.233000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','N','N','N',0,'Sortieren nach',50,0,0,TO_TIMESTAMP('2026-02-06 13:33:33.233000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Column: Merkmal(542068,D) -> Merkmal(548985,D) -> main -> 10
+-- UI Element Group: value
+-- 2026-02-06T13:33:33.705Z
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,549166,554796,TO_TIMESTAMP('2026-02-06 13:33:33.574000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','value',15,TO_TIMESTAMP('2026-02-06 13:33:33.574000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmal(542068,D) -> Merkmal(548985,D) -> main -> 10 -> value.Suchschlüssel
+-- Column: M_Attribute.Value
+-- 2026-02-06T13:33:34.095Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy,WidgetSize) VALUES (0,771951,0,548985,554796,646867,'F',TO_TIMESTAMP('2026-02-06 13:33:33.800000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','N','N','N','Suchschlüssel',10,0,0,TO_TIMESTAMP('2026-02-06 13:33:33.800000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'S')
+;
+
+-- UI Element: Merkmal(542068,D) -> Merkmal(548985,D) -> main -> 10 -> value.Druckwert-Überschreibung
+-- Column: M_Attribute.PrintValue_Override
+-- 2026-02-06T13:33:34.436Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771963,0,548985,554796,646868,'F',TO_TIMESTAMP('2026-02-06 13:33:34.196000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Wert, der auf Dokumenten anstelle des Standardwerts gedruckt wird, falls ausgefüllt.','Y','N','N','Y','N','N','N',0,'Druckwert-Überschreibung',20,0,0,TO_TIMESTAMP('2026-02-06 13:33:34.196000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Column: Merkmal(542068,D) -> Merkmal(548985,D) -> main -> 10
+-- UI Element Group: technical
+-- 2026-02-06T13:33:34.638Z
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,549166,554797,TO_TIMESTAMP('2026-02-06 13:33:34.524000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','technical',20,TO_TIMESTAMP('2026-02-06 13:33:34.524000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmal(542068,D) -> Merkmal(548985,D) -> main -> 10 -> technical.Standardwert-Logik (SQL)
+-- Column: M_Attribute.DefaultValueSQL
+-- 2026-02-06T13:33:35.030Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771965,0,548985,554797,646869,'F',TO_TIMESTAMP('2026-02-06 13:33:34.752000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'','','Y','N','N','Y','N','N','N','Standardwert-Logik (SQL)',5,0,0,TO_TIMESTAMP('2026-02-06 13:33:34.752000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmal(542068,D) -> Merkmal(548985,D) -> main -> 10 -> technical.Merkmal Suche
+-- Column: M_Attribute.M_AttributeSearch_ID
+-- 2026-02-06T13:33:35.358Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771946,0,548985,554797,646870,'F',TO_TIMESTAMP('2026-02-06 13:33:35.118000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','N','N','N','Merkmal Suche',10,0,0,TO_TIMESTAMP('2026-02-06 13:33:35.118000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmal(542068,D) -> Merkmal(548985,D) -> main -> 10 -> technical.Java Klasse
+-- Column: M_Attribute.AD_JavaClass_ID
+-- 2026-02-06T13:33:35.680Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771949,0,548985,554797,646871,'F',TO_TIMESTAMP('2026-02-06 13:33:35.457000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','N','N','N','Java Klasse',20,0,0,TO_TIMESTAMP('2026-02-06 13:33:35.457000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmal(542068,D) -> Merkmal(548985,D) -> main -> 10 -> technical.Maßeinheit
+-- Column: M_Attribute.C_UOM_ID
+-- 2026-02-06T13:33:35.981Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy,WidgetSize) VALUES (0,771952,0,548985,554797,646872,'F',TO_TIMESTAMP('2026-02-06 13:33:35.770000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','Y','N','N','Maßeinheit',30,110,0,TO_TIMESTAMP('2026-02-06 13:33:35.770000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'S')
+;
+
+-- UI Section: Merkmal(542068,D) -> Merkmal(548985,D) -> main
+-- UI Column: 20
+-- 2026-02-06T13:33:36.198Z
+INSERT INTO AD_UI_Column (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,0,549167,547507,TO_TIMESTAMP('2026-02-06 13:33:36.070000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y',20,TO_TIMESTAMP('2026-02-06 13:33:36.070000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Column: Merkmal(542068,D) -> Merkmal(548985,D) -> main -> 20
+-- UI Element Group: flags
+-- 2026-02-06T13:33:36.438Z
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,549167,554798,TO_TIMESTAMP('2026-02-06 13:33:36.294000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','flags',10,TO_TIMESTAMP('2026-02-06 13:33:36.294000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmal(542068,D) -> Merkmal(548985,D) -> main -> 20 -> flags.Aktiv
+-- Column: M_Attribute.IsActive
+-- 2026-02-06T13:33:36.802Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771943,0,548985,554798,646873,'F',TO_TIMESTAMP('2026-02-06 13:33:36.534000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','Y','Y','N','Aktiv',10,40,30,TO_TIMESTAMP('2026-02-06 13:33:36.534000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmal(542068,D) -> Merkmal(548985,D) -> main -> 20 -> flags.Pflichtangabe
+-- Column: M_Attribute.IsMandatory
+-- 2026-02-06T13:33:37.129Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771945,0,548985,554798,646874,'F',TO_TIMESTAMP('2026-02-06 13:33:36.890000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','Y','N','N','Pflichtangabe',20,50,0,TO_TIMESTAMP('2026-02-06 13:33:36.890000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmal(542068,D) -> Merkmal(548985,D) -> main -> 20 -> flags.Instanz Merkmal
+-- Column: M_Attribute.IsInstanceAttribute
+-- 2026-02-06T13:33:37.468Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771940,0,548985,554798,646875,'F',TO_TIMESTAMP('2026-02-06 13:33:37.233000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','Y','N','N','Instanz Merkmal',30,70,0,TO_TIMESTAMP('2026-02-06 13:33:37.233000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmal(542068,D) -> Merkmal(548985,D) -> main -> 20 -> flags.Preisrelevant
+-- Column: M_Attribute.IsPricingRelevant
+-- 2026-02-06T13:33:37.802Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771950,0,548985,554798,646876,'F',TO_TIMESTAMP('2026-02-06 13:33:37.568000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','Y','N','N','Preisrelevant',40,60,0,TO_TIMESTAMP('2026-02-06 13:33:37.568000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmal(542068,D) -> Merkmal(548985,D) -> main -> 20 -> flags.HU Bestandsrelevant
+-- Column: M_Attribute.IsStorageRelevant
+-- 2026-02-06T13:33:38.122Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771955,0,548985,554798,646877,'F',TO_TIMESTAMP('2026-02-06 13:33:37.902000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','Y','N','N','HU Bestandsrelevant',50,90,0,TO_TIMESTAMP('2026-02-06 13:33:37.902000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmal(542068,D) -> Merkmal(548985,D) -> main -> 20 -> flags.Auf Belegen ausweisen
+-- Column: M_Attribute.IsAttrDocumentRelevant
+-- 2026-02-06T13:33:38.442Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771956,0,548985,554798,646878,'F',TO_TIMESTAMP('2026-02-06 13:33:38.213000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','Y','N','N','Auf Belegen ausweisen',60,100,0,TO_TIMESTAMP('2026-02-06 13:33:38.213000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmal(542068,D) -> Merkmal(548985,D) -> main -> 20 -> flags.Always Updateable
+-- Column: M_Attribute.IsAlwaysUpdateable
+-- 2026-02-06T13:33:38.754Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771961,0,548985,554798,646879,'F',TO_TIMESTAMP('2026-02-06 13:33:38.534000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'The column is always updateable, even if the record is not active or processed','If selected and if the winow / tab is not read only, you can always update the column.  This might be useful for comments, etc.','Y','N','N','Y','N','N','N',0,'Always Updateable',70,0,0,TO_TIMESTAMP('2026-02-06 13:33:38.534000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmal(542068,D) -> Merkmal(548985,D) -> main -> 20 -> flags.Dokument gedruckt
+-- Column: M_Attribute.IsPrintedInDocument
+-- 2026-02-06T13:33:39.065Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771962,0,548985,554798,646880,'F',TO_TIMESTAMP('2026-02-06 13:33:38.841000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'If this flag is set on Y, then means that the attribute will be shown in all document reports.','Y','N','N','Y','N','N','N',0,'Dokument gedruckt',80,0,0,TO_TIMESTAMP('2026-02-06 13:33:38.841000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Column: Merkmal(542068,D) -> Merkmal(548985,D) -> main -> 20
+-- UI Element Group: org
+-- 2026-02-06T13:33:39.301Z
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,549167,554799,TO_TIMESTAMP('2026-02-06 13:33:39.176000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','org',20,TO_TIMESTAMP('2026-02-06 13:33:39.176000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmal(542068,D) -> Merkmal(548985,D) -> main -> 20 -> org.Organisation
+-- Column: M_Attribute.AD_Org_ID
+-- 2026-02-06T13:33:39.672Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy,WidgetSize) VALUES (0,771938,0,548985,554799,646881,'F',TO_TIMESTAMP('2026-02-06 13:33:39.390000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','Y','Y','N','Organisation',10,120,40,TO_TIMESTAMP('2026-02-06 13:33:39.390000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'M')
+;
+
+-- UI Element: Merkmal(542068,D) -> Merkmal(548985,D) -> main -> 20 -> org.Mandant
+-- Column: M_Attribute.AD_Client_ID
+-- 2026-02-06T13:33:39.980Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy,WidgetSize) VALUES (0,771939,0,548985,554799,646882,'F',TO_TIMESTAMP('2026-02-06 13:33:39.767000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','N','N','N','Mandant',20,0,0,TO_TIMESTAMP('2026-02-06 13:33:39.767000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'M')
+;
+
+-- Tab: Merkmal(542068,D) -> Merkmal(548985,D)
+-- UI Section: advanced edit
+-- 2026-02-06T13:33:40.222Z
+INSERT INTO AD_UI_Section (AD_Client_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy,Value) VALUES (0,0,548985,547508,TO_TIMESTAMP('2026-02-06 13:33:40.085000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y',20,TO_TIMESTAMP('2026-02-06 13:33:40.085000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'advanced edit')
+;
+
+-- 2026-02-06T13:33:40.250Z
+INSERT INTO AD_UI_Section_Trl (AD_Language,AD_UI_Section_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_UI_Section_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_UI_Section t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_UI_Section_ID=547508 AND NOT EXISTS (SELECT 1 FROM AD_UI_Section_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_UI_Section_ID=t.AD_UI_Section_ID)
+;
+
+-- 2026-02-06T13:33:40.292Z
+DELETE FROM AD_UI_Section_Trl WHERE AD_UI_Section_ID = 547508
+;
+
+-- 2026-02-06T13:33:40.323Z
+INSERT INTO AD_UI_Section_Trl (AD_UI_Section_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, IsTranslated)  SELECT 547508, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, IsTranslated  FROM AD_UI_Section_Trl WHERE AD_UI_Section_ID = 540261
+;
+
+-- UI Section: Merkmal(542068,D) -> Merkmal(548985,D) -> advanced edit
+-- UI Column: 10
+-- 2026-02-06T13:33:40.512Z
+INSERT INTO AD_UI_Column (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,0,549168,547508,TO_TIMESTAMP('2026-02-06 13:33:40.389000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y',10,TO_TIMESTAMP('2026-02-06 13:33:40.389000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Column: Merkmal(542068,D) -> Merkmal(548985,D) -> advanced edit -> 10
+-- UI Element Group: advanced edit
+-- 2026-02-06T13:33:40.723Z
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,UIStyle,Updated,UpdatedBy) VALUES (0,0,549168,554800,TO_TIMESTAMP('2026-02-06 13:33:40.600000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','advanced edit',10,'primary',TO_TIMESTAMP('2026-02-06 13:33:40.600000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmal(542068,D) -> Merkmal(548985,D) -> advanced edit -> 10 -> advanced edit.Min. Wert
+-- Column: M_Attribute.ValueMin
+-- 2026-02-06T13:33:41.105Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771953,0,548985,554800,646883,'F',TO_TIMESTAMP('2026-02-06 13:33:40.823000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Minimum Value for a field','The Minimum Value indicates the lowest  allowable value for a field.','Y','Y','N','Y','N','N','N','Min. Wert',10,0,0,TO_TIMESTAMP('2026-02-06 13:33:40.823000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmal(542068,D) -> Merkmal(548985,D) -> advanced edit -> 10 -> advanced edit.Max. Wert
+-- Column: M_Attribute.ValueMax
+-- 2026-02-06T13:33:41.434Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771954,0,548985,554800,646884,'F',TO_TIMESTAMP('2026-02-06 13:33:41.191000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Maximum Value for a field','The Maximum Value indicates the highest allowable value for a field','Y','Y','N','Y','N','N','N','Max. Wert',20,0,0,TO_TIMESTAMP('2026-02-06 13:33:41.191000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmal(542068,D) -> Merkmal(548985,D) -> advanced edit -> 10 -> advanced edit.Dynamische Validierung
+-- Column: M_Attribute.AD_Val_Rule_ID
+-- 2026-02-06T13:33:41.772Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771948,0,548985,554800,646885,'F',TO_TIMESTAMP('2026-02-06 13:33:41.525000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Regel für die  dynamische Validierung','Diese Regeln bestimmen, wie ein Eintrag als gültig bewertet wird. Sie können Variablen für eine dynamische (kontextbezogene) Validierung verwenden.','Y','Y','N','Y','Y','N','N','Dynamische Validierung',100,80,0,TO_TIMESTAMP('2026-02-06 13:33:41.525000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmal(542068,D) -> Merkmal(548985,D) -> advanced edit -> 10 -> advanced edit.Read Only
+-- Column: M_Attribute.IsReadOnlyValues
+-- 2026-02-06T13:33:42.077Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771957,0,548985,554800,646886,'F',TO_TIMESTAMP('2026-02-06 13:33:41.857000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'True if the values shall only be set automatically. False if they can be also changed manually, by the user.','Y','Y','N','Y','N','N','N','Read Only',170,0,0,TO_TIMESTAMP('2026-02-06 13:33:41.857000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmal(542068,D) -> Merkmal(548985,D) -> advanced edit -> 10 -> advanced edit.Transferieren wenn null
+-- Column: M_Attribute.IsTransferWhenNull
+-- 2026-02-06T13:33:42.421Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771958,0,548985,554800,646887,'F',TO_TIMESTAMP('2026-02-06 13:33:42.169000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Transfer the attribute from Issue to Receipt even if there are other boxes without the attribute.','Y','Y','N','Y','N','N','N','Transferieren wenn null',180,0,0,TO_TIMESTAMP('2026-02-06 13:33:42.169000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmal(542068,D) -> Merkmal(548985,D) -> advanced edit -> 10 -> advanced edit.Description Pattern
+-- Column: M_Attribute.DescriptionPattern
+-- 2026-02-06T13:33:42.718Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771960,0,548985,554800,646888,'F',TO_TIMESTAMP('2026-02-06 13:33:42.512000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','Y','N','Y','N','N','N','Description Pattern',190,0,0,TO_TIMESTAMP('2026-02-06 13:33:42.512000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- Tab: Merkmal(542068,D) -> Packvorschrift(548987,D)
+-- UI Section: main
+-- 2026-02-06T13:33:43.021Z
+INSERT INTO AD_UI_Section (AD_Client_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy,Value) VALUES (0,0,548987,547509,TO_TIMESTAMP('2026-02-06 13:33:42.908000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','',10,TO_TIMESTAMP('2026-02-06 13:33:42.908000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'main')
+;
+
+-- 2026-02-06T13:33:43.056Z
+INSERT INTO AD_UI_Section_Trl (AD_Language,AD_UI_Section_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_UI_Section_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_UI_Section t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_UI_Section_ID=547509 AND NOT EXISTS (SELECT 1 FROM AD_UI_Section_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_UI_Section_ID=t.AD_UI_Section_ID)
+;
+
+-- 2026-02-06T13:33:43.106Z
+DELETE FROM AD_UI_Section_Trl WHERE AD_UI_Section_ID = 547509
+;
+
+-- 2026-02-06T13:33:43.129Z
+INSERT INTO AD_UI_Section_Trl (AD_UI_Section_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, IsTranslated)  SELECT 547509, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, IsTranslated  FROM AD_UI_Section_Trl WHERE AD_UI_Section_ID = 540104
+;
+
+-- UI Section: Merkmal(542068,D) -> Packvorschrift(548987,D) -> main
+-- UI Column: 10
+-- 2026-02-06T13:33:43.332Z
+INSERT INTO AD_UI_Column (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,0,549169,547509,TO_TIMESTAMP('2026-02-06 13:33:43.198000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y',10,TO_TIMESTAMP('2026-02-06 13:33:43.198000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Column: Merkmal(542068,D) -> Packvorschrift(548987,D) -> main -> 10
+-- UI Element Group: default
+-- 2026-02-06T13:33:43.579Z
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,UIStyle,Updated,UpdatedBy) VALUES (0,0,549169,554801,TO_TIMESTAMP('2026-02-06 13:33:43.437000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','default',10,'primary',TO_TIMESTAMP('2026-02-06 13:33:43.437000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmal(542068,D) -> Packvorschrift(548987,D) -> main -> 10 -> default.Merkmal
+-- Column: M_HU_PI_Attribute.M_Attribute_ID
+-- 2026-02-06T13:33:43.985Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771980,0,548987,554801,646889,'F',TO_TIMESTAMP('2026-02-06 13:33:43.686000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Produkt-Merkmal','Product Attribute like Color, Size','Y','N','N','N','N','N','N','Merkmal',10,0,0,TO_TIMESTAMP('2026-02-06 13:33:43.686000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmal(542068,D) -> Packvorschrift(548987,D) -> main -> 10 -> default.Reihenfolge
+-- Column: M_HU_PI_Attribute.SeqNo
+-- 2026-02-06T13:33:44.361Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy,WidgetSize) VALUES (0,771981,0,548987,554801,646890,'F',TO_TIMESTAMP('2026-02-06 13:33:44.114000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst','"Reihenfolge" bestimmt die Reihenfolge der Einträge','Y','N','N','Y','Y','N','N','Reihenfolge',10,10,0,TO_TIMESTAMP('2026-02-06 13:33:44.114000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'S')
+;
+
+-- UI Element: Merkmal(542068,D) -> Packvorschrift(548987,D) -> main -> 10 -> default.Split Strategie
+-- Column: M_HU_PI_Attribute.SplitterStrategy_JavaClass_ID
+-- 2026-02-06T13:33:44.704Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771987,0,548987,554801,646891,'F',TO_TIMESTAMP('2026-02-06 13:33:44.468000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','Y','N','N','Split Strategie',20,20,0,TO_TIMESTAMP('2026-02-06 13:33:44.468000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmal(542068,D) -> Packvorschrift(548987,D) -> main -> 10 -> default.Propagation Type
+-- Column: M_HU_PI_Attribute.PropagationType
+-- 2026-02-06T13:33:45.069Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771985,0,548987,554801,646892,'F',TO_TIMESTAMP('2026-02-06 13:33:44.791000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','Y','N','N','Propagation Type',30,30,0,TO_TIMESTAMP('2026-02-06 13:33:44.791000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmal(542068,D) -> Packvorschrift(548987,D) -> main -> 10 -> default.Maßeinheit
+-- Column: M_HU_PI_Attribute.C_UOM_ID
+-- 2026-02-06T13:33:45.434Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy,WidgetSize) VALUES (0,771988,0,548987,554801,646893,'F',TO_TIMESTAMP('2026-02-06 13:33:45.194000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Maßeinheit','Eine eindeutige (nicht monetäre) Maßeinheit','Y','N','N','Y','Y','N','N','Maßeinheit',40,40,0,TO_TIMESTAMP('2026-02-06 13:33:45.194000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'S')
+;
+
+-- UI Element: Merkmal(542068,D) -> Packvorschrift(548987,D) -> main -> 10 -> default.Aggregation Strategy
+-- Column: M_HU_PI_Attribute.AggregationStrategy_JavaClass_ID
+-- 2026-02-06T13:33:45.756Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771986,0,548987,554801,646894,'F',TO_TIMESTAMP('2026-02-06 13:33:45.522000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','Y','N','N','Aggregation Strategy',50,50,0,TO_TIMESTAMP('2026-02-06 13:33:45.522000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmal(542068,D) -> Packvorschrift(548987,D) -> main -> 10 -> default.Aktiv
+-- Column: M_HU_PI_Attribute.IsActive
+-- 2026-02-06T13:33:46.075Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771982,0,548987,554801,646895,'F',TO_TIMESTAMP('2026-02-06 13:33:45.850000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Der Eintrag ist im System aktiv','Es gibt zwei Möglichkeiten, einen Datensatz nicht mehr verfügbar zu machen: einer ist, ihn zu löschen; der andere, ihn zu deaktivieren. Ein deaktivierter Eintrag ist nicht mehr für eine Auswahl verfügbar, aber verfügbar für die Verwendung in Berichten. Es gibt zwei Gründe, Datensätze zu deaktivieren und nicht zu löschen: (1) Das System braucht den Datensatz für Revisionszwecke. (2) Der Datensatz wird von anderen Datensätzen referenziert. Z.B. können Sie keinen Geschäftspartner löschen, wenn es Rechnungen für diesen Geschäftspartner gibt. Sie deaktivieren den Geschäftspartner und verhindern, dass dieser Eintrag in zukünftigen Vorgängen verwendet wird.','Y','N','N','Y','Y','N','N','Aktiv',60,60,0,TO_TIMESTAMP('2026-02-06 13:33:45.850000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmal(542068,D) -> Packvorschrift(548987,D) -> main -> 10 -> default.Instanz-Attribut
+-- Column: M_HU_PI_Attribute.IsInstanceAttribute
+-- 2026-02-06T13:33:46.454Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771983,0,548987,554801,646896,'F',TO_TIMESTAMP('2026-02-06 13:33:46.179000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'The product attribute is specific to the instance (like Serial No, Lot or Guarantee Date)','If selected, the individual instance of the product has this attribute - like the individual Serial or Lot Numbers or  Guarantee Date of a product instance.  If not selected, all instances of the product share the attribute (e.g. color=green).','Y','N','N','Y','Y','N','N','Instanz-Attribut',70,70,0,TO_TIMESTAMP('2026-02-06 13:33:46.179000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmal(542068,D) -> Packvorschrift(548987,D) -> main -> 10 -> default.Pflichtangabe
+-- Column: M_HU_PI_Attribute.IsMandatory
+-- 2026-02-06T13:33:46.799Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771984,0,548987,554801,646897,'F',TO_TIMESTAMP('2026-02-06 13:33:46.558000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Data entry is required in this column','The field must have a value for the record to be saved to the database.','Y','N','N','Y','Y','N','N','Pflichtangabe',80,80,0,TO_TIMESTAMP('2026-02-06 13:33:46.558000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmal(542068,D) -> Packvorschrift(548987,D) -> main -> 10 -> default.Schreibgeschützt
+-- Column: M_HU_PI_Attribute.IsReadOnly
+-- 2026-02-06T13:33:47.105Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771989,0,548987,554801,646898,'F',TO_TIMESTAMP('2026-02-06 13:33:46.890000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Feld / Eintrag / Berecih ist schreibgeschützt','The Read Only indicates that this field may only be Read.  It may not be updated.','Y','N','N','Y','Y','N','N','Schreibgeschützt',90,90,0,TO_TIMESTAMP('2026-02-06 13:33:46.890000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmal(542068,D) -> Packvorschrift(548987,D) -> main -> 10 -> default.Organisation
+-- Column: M_HU_PI_Attribute.AD_Org_ID
+-- 2026-02-06T13:33:47.443Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy,WidgetSize) VALUES (0,771979,0,548987,554801,646899,'F',TO_TIMESTAMP('2026-02-06 13:33:47.200000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Organisatorische Einheit des Mandanten','Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie können Daten über Organisationen hinweg gemeinsam verwenden.','Y','N','N','Y','Y','N','N','Organisation',110,100,0,TO_TIMESTAMP('2026-02-06 13:33:47.200000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'M')
+;
+
+-- UI Element: Merkmal(542068,D) -> Packvorschrift(548987,D) -> main -> 10 -> default.Mandant
+-- Column: M_HU_PI_Attribute.AD_Client_ID
+-- 2026-02-06T13:33:47.775Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771974,0,548987,554801,646900,'F',TO_TIMESTAMP('2026-02-06 13:33:47.546000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','N','N','N','Mandant',120,0,0,TO_TIMESTAMP('2026-02-06 13:33:47.546000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- Window: Merkmal, InternalName=
+-- 2026-02-06T13:52:39.592Z
+UPDATE AD_Window SET IsOverrideInMenu='Y',Updated=TO_TIMESTAMP('2026-02-06 13:52:39.517000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Window_ID=542068
+;
+
+
+-- UI Element: Merkmal(542068,D) -> Merkmal(548985,D) -> main -> 10 -> technical.Merkmal Suche
+-- Column: M_Attribute.M_AttributeSearch_ID
+-- 2026-02-06T14:03:11.444Z
+UPDATE AD_UI_Element SET IsDisplayed='N',Updated=TO_TIMESTAMP('2026-02-06 14:03:11.444000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=646870
+;
+
+-- UI Element: Merkmal(542068,D) -> Merkmal(548985,D) -> main -> 10 -> technical.Java Klasse
+-- Column: M_Attribute.AD_JavaClass_ID
+-- 2026-02-06T14:06:23.993Z
+UPDATE AD_UI_Element SET IsDisplayed='N',Updated=TO_TIMESTAMP('2026-02-06 14:06:23.993000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=646871
+;
+
+-- UI Element: Merkmal(542068,D) -> Merkmal(548985,D) -> main -> 10 -> technical.Standardwert-Logik (SQL)
+-- Column: M_Attribute.DefaultValueSQL
+-- 2026-02-06T14:08:31.539Z
+UPDATE AD_UI_Element SET IsDisplayed='N',Updated=TO_TIMESTAMP('2026-02-06 14:08:31.538000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=646869
+;
+
+-- Element: IsPricingRelevant
+-- 2026-02-06T14:11:30.906Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Ist Preisrelevant', PrintName='Ist Preisrelevant',Updated=TO_TIMESTAMP('2026-02-06 14:11:30.906000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=542236 AND AD_Language='de_DE'
+;
+
+-- 2026-02-06T14:11:30.926Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='de_DE' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2026-02-06T14:11:50.496Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(542236,'de_DE')
+;
+
+-- 2026-02-06T14:11:50.516Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(542236,'de_DE')
+;
+
+-- UI Element: Merkmal(542068,D) -> Merkmal(548985,D) -> main -> 10 -> technical.Maßeinheit
+-- Column: M_Attribute.C_UOM_ID
+-- 2026-02-06T14:15:04.616Z
+UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2026-02-06 14:15:04.616000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=646872
+;
+
+-- 2026-02-06T14:19:00.837Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,584502,0,TO_TIMESTAMP('2026-02-06 14:19:00.629000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'','U','Y','Merkmals-Wert OLD','Merkmals-Wert OLD',TO_TIMESTAMP('2026-02-06 14:19:00.629000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T14:19:00.857Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=584502 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- Element: null
+-- 2026-02-06T14:19:58.246Z
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2026-02-06 14:19:58.246000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584502 AND AD_Language='en_US'
+;
+
+-- 2026-02-06T14:19:58.291Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584502,'en_US')
+;
+
+-- Element: null
+-- 2026-02-06T14:19:58.654Z
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2026-02-06 14:19:58.654000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584502 AND AD_Language='de_DE'
+;
+
+-- 2026-02-06T14:19:58.699Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(584502,'de_DE')
+;
+
+-- 2026-02-06T14:19:58.718Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584502,'de_DE')
+;
+
+-- Element: null
+-- 2026-02-06T14:20:05.280Z
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2026-02-06 14:20:05.280000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584502 AND AD_Language='de_CH'
+;
+
+-- 2026-02-06T14:20:05.325Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584502,'de_CH')
+;
+
+-- Element: null
+-- 2026-02-06T14:22:19.198Z
+UPDATE AD_Element_Trl SET Name='Attribute Value OLD', PrintName='Attribute Value OLD',Updated=TO_TIMESTAMP('2026-02-06 14:22:19.198000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=584502 AND AD_Language='en_US'
+;
+
+-- 2026-02-06T14:22:19.222Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2026-02-06T14:22:37.299Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584502,'en_US')
+;
+
+-- 2026-02-06T14:23:11.610Z
+UPDATE AD_Element SET EntityType='U',Updated=TO_TIMESTAMP('2026-02-06 14:23:11.543000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=577408
+;
+
+-- 2026-02-06T14:23:11.713Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(577408,'de_DE')
+;
+
+-- Window: Merkmals-Wert OLD, InternalName=null
+-- 2026-02-06T14:24:21.347Z
+UPDATE AD_Window SET AD_Element_ID=584502, Description='', Help=NULL, Name='Merkmals-Wert OLD',Updated=TO_TIMESTAMP('2026-02-06 14:24:21.278000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Window_ID=540825
+;
+
+-- 2026-02-06T14:24:21.415Z
+UPDATE AD_Window_Trl trl SET Name='Merkmals-Wert OLD' WHERE AD_Window_ID=540825 AND AD_Language='de_DE'
+;
+
+-- Name: Merkmals-Wert OLD
+-- Action Type: W
+-- Window: Merkmals-Wert OLD(540825,D)
+-- 2026-02-06T14:24:44.488Z
+UPDATE AD_Menu SET Description='', IsActive='Y', Name='Merkmals-Wert OLD',Updated=TO_TIMESTAMP('2026-02-06 14:24:44.488000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Menu_ID=541408
+;
+
+-- 2026-02-06T14:24:44.515Z
+UPDATE AD_Menu_Trl trl SET Name='Merkmals-Wert OLD' WHERE AD_Menu_ID=541408 AND AD_Language='de_DE'
+;
+
+-- 2026-02-06T14:25:00.909Z
+/* DDL */  select update_window_translation_from_ad_element(584502)
+;
+
+-- 2026-02-06T14:25:00.933Z
+DELETE FROM AD_Element_Link WHERE AD_Window_ID=540825
+;
+
+-- 2026-02-06T14:25:00.973Z
+/* DDL */ select AD_Element_Link_Create_Missing_Window(540825)
+;
+
+-- Window: Merkmals-Wert, InternalName=null
+-- 2026-02-06T14:25:57.889Z
+INSERT INTO AD_Window (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,Description,EntityType,IsActive,IsBetaFunctionality,IsDefault,IsEnableRemoteCacheInvalidation,IsExcludeFromZoomTargets,IsOneInstanceOnly,IsOverrideInMenu,IsSOTrx,Name,Processing,Updated,UpdatedBy,WindowType,WinHeight,WinWidth,ZoomIntoPriority) VALUES (0,577408,0,542069,TO_TIMESTAMP('2026-02-06 14:25:57.625000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'','U','Y','N','N','Y','N','N','N','Y','Merkmals-Wert','N',TO_TIMESTAMP('2026-02-06 14:25:57.625000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'M',0,0,100)
+;
+
+-- 2026-02-06T14:25:57.920Z
+INSERT INTO AD_Window_Trl (AD_Language,AD_Window_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Window_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Window t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Window_ID=542069 AND NOT EXISTS (SELECT 1 FROM AD_Window_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Window_ID=t.AD_Window_ID)
+;
+
+-- 2026-02-06T14:25:57.965Z
+/* DDL */  select update_window_translation_from_ad_element(577408)
+;
+
+-- 2026-02-06T14:25:57.989Z
+DELETE FROM AD_Element_Link WHERE AD_Window_ID=542069
+;
+
+-- 2026-02-06T14:25:58.010Z
+/* DDL */ select AD_Element_Link_Create_Missing_Window(542069)
+;
+
+-- Window: Merkmals-Wert, InternalName=null
+-- 2026-02-06T14:29:26.958Z
+UPDATE AD_Window SET AD_Client_ID=0, AD_Color_ID=NULL, AD_Image_ID=NULL, AD_Org_ID=0, EntityType='D', IsActive='Y', IsBetaFunctionality='N', IsDefault='N', IsEnableRemoteCacheInvalidation='Y', IsExcludeFromZoomTargets='N', IsOneInstanceOnly='N', IsOverrideInMenu='N', IsSOTrx='Y', Overrides_Window_ID=540825, WindowType='M', WinHeight=0, WinWidth=0, ZoomIntoPriority=100,Updated=TO_TIMESTAMP('2026-02-06 14:29:26.958000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Window_ID=542069
+;
+
+-- Tab: Merkmals-Wert(542069,D) -> Merkmals-Wert
+-- Table: M_AttributeValue
+-- 2026-02-06T14:29:27.394Z
+INSERT INTO AD_Tab (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Tab_ID,AD_Table_ID,AD_Window_ID,AllowQuickInput,Created,CreatedBy,Description,DisplayLogic,EntityType,HasTree,Help,ImportFields,IncludedTabNewRecordInputMode,InternalName,IsActive,IsAdvancedTab,IsAutodetectDefaultDateFilter,IsCheckParentsChanged,IsGenericZoomTarget,IsGridModeOnly,IsInfoTab,IsInsertRecord,IsQueryOnLoad,IsReadOnly,IsRefreshAllOnActivate,IsRefreshViewOnChangeEvents,IsSearchActive,IsSearchCollapsed,IsSingleRow,IsSortTab,IsTranslationTab,Name,Processing,ReadOnlyLogic,SeqNo,TabLevel,Updated,UpdatedBy) VALUES (0,573818,0,548988,558,542069,'Y',TO_TIMESTAMP('2026-02-06 14:29:27.110000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Product Attribute Value','','D','N','Individual value of a product attribute (e.g. green, large, ..)','N','A','M_AttributeValue','Y','N','Y','N','N','N','N','Y','Y','N','N','N','Y','Y','Y','N','N','Merkmals-Wert','N','',10,0,TO_TIMESTAMP('2026-02-06 14:29:27.110000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T14:29:27.416Z
+INSERT INTO AD_Tab_Trl (AD_Language,AD_Tab_ID, CommitWarning,Description,Help,Name,NotFound_Message,NotFound_MessageDetail,QuickInput_CloseButton_Caption,QuickInput_OpenButton_Caption, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Tab_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.NotFound_Message,t.NotFound_MessageDetail,t.QuickInput_CloseButton_Caption,t.QuickInput_OpenButton_Caption, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Tab t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Tab_ID=548988 AND NOT EXISTS (SELECT 1 FROM AD_Tab_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Tab_ID=t.AD_Tab_ID)
+;
+
+-- 2026-02-06T14:29:27.440Z
+/* DDL */  select update_tab_translation_from_ad_element(573818)
+;
+
+-- 2026-02-06T14:29:27.467Z
+/* DDL */ select AD_Element_Link_Create_Missing_Tab(548988)
+;
+
+-- 2026-02-06T14:29:27.526Z
+DELETE FROM AD_Tab_Trl WHERE AD_Tab_ID = 548988
+;
+
+-- 2026-02-06T14:29:27.560Z
+INSERT INTO AD_Tab_Trl (AD_Tab_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, CommitWarning, IsTranslated)  SELECT 548988, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description,  Help, CommitWarning, IsTranslated  FROM AD_Tab_Trl WHERE AD_Tab_ID = 542161
+;
+
+-- Field: Merkmals-Wert(542069,D) -> Merkmals-Wert(548988,D) -> Merkmals-Wert
+-- Column: M_AttributeValue.M_AttributeValue_ID
+-- 2026-02-06T14:29:28.016Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,8469,771991,1000079,0,548988,0,TO_TIMESTAMP('2026-02-06 14:29:27.777000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Product Attribute Value',14,'D','Individual value of a product attribute (e.g. green, large, ..)',0,'Y','N','N','N','N','N','N','N','N','N','N','Merkmals-Wert',10,0,1,1,TO_TIMESTAMP('2026-02-06 14:29:27.777000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T14:29:28.036Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771991 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T14:29:28.058Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(1000079)
+;
+
+-- 2026-02-06T14:29:28.080Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771991
+;
+
+-- 2026-02-06T14:29:28.103Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771991)
+;
+
+-- 2026-02-06T14:29:28.149Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771991
+;
+
+-- 2026-02-06T14:29:28.170Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771991, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 593447
+;
+
+-- Field: Merkmals-Wert(542069,D) -> Merkmals-Wert(548988,D) -> Mandant
+-- Column: M_AttributeValue.AD_Client_ID
+-- 2026-02-06T14:29:28.434Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DefaultValue,Description,DisplayLength,DisplayLogic,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,8464,771992,0,548988,0,TO_TIMESTAMP('2026-02-06 14:29:28.192000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'@AD_Client_ID@','Mandant für diese Installation.',14,'','D','Ein Mandant ist eine Firma oder eine juristische Person. Sie können keine Daten über Mandanten hinweg verwenden. .',0,'Y','N','Y','Y','N','N','N','N','N','Y','N','Mandant',10,10,1,1,TO_TIMESTAMP('2026-02-06 14:29:28.192000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T14:29:28.457Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771992 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T14:29:28.478Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(102)
+;
+
+-- 2026-02-06T14:29:28.561Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771992
+;
+
+-- 2026-02-06T14:29:28.585Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771992)
+;
+
+-- 2026-02-06T14:29:28.630Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771992
+;
+
+-- 2026-02-06T14:29:28.652Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771992, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 593448
+;
+
+-- Field: Merkmals-Wert(542069,D) -> Merkmals-Wert(548988,D) -> Organisation
+-- Column: M_AttributeValue.AD_Org_ID
+-- 2026-02-06T14:29:28.910Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DefaultValue,Description,DisplayLength,DisplayLogic,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,8458,771993,0,548988,78,TO_TIMESTAMP('2026-02-06 14:29:28.675000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'0','Organisatorische Einheit des Mandanten',14,'','D','Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie können Daten über Organisationen hinweg gemeinsam verwenden.',0,'Y','N','Y','Y','N','N','N','N','N','N','Y','Organisation',20,20,1,1,TO_TIMESTAMP('2026-02-06 14:29:28.675000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T14:29:28.931Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771993 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T14:29:28.952Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(113)
+;
+
+-- 2026-02-06T14:29:29.014Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771993
+;
+
+-- 2026-02-06T14:29:29.036Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771993)
+;
+
+-- 2026-02-06T14:29:29.082Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771993
+;
+
+-- 2026-02-06T14:29:29.111Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771993, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 593449
+;
+
+-- Field: Merkmals-Wert(542069,D) -> Merkmals-Wert(548988,D) -> Merkmal
+-- Column: M_AttributeValue.M_Attribute_ID
+-- 2026-02-06T14:29:29.491Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Name_ID,AD_Org_ID,AD_Reference_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,DisplayLogic,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,8466,771994,1000921,0,30,548988,113,TO_TIMESTAMP('2026-02-06 14:29:29.132000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Produkt-Merkmal',14,'','D','Product Attribute like Color, Size',0,'Y','N','Y','Y','N','N','N','N','N','Y','N','Merkmal',30,30,1,1,TO_TIMESTAMP('2026-02-06 14:29:29.132000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T14:29:29.515Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771994 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T14:29:29.537Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(1000921)
+;
+
+-- 2026-02-06T14:29:29.562Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771994
+;
+
+-- 2026-02-06T14:29:29.582Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771994)
+;
+
+-- 2026-02-06T14:29:29.627Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771994
+;
+
+-- 2026-02-06T14:29:29.648Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771994, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 593450
+;
+
+-- Field: Merkmals-Wert(542069,D) -> Merkmals-Wert(548988,D) -> Suchschlüssel
+-- Column: M_AttributeValue.Value
+-- 2026-02-06T14:29:29.904Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,DisplayLogic,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,8459,771995,0,548988,148,TO_TIMESTAMP('2026-02-06 14:29:29.671000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein',40,'','D','A search key allows you a fast method of finding a particular record.
+If you leave the search key empty, the system automatically creates a numeric number.  The document sequence used for this fallback number is defined in the "Maintain Sequence" window with the name "DocumentNo_<TableName>", where TableName is the actual name of the table (e.g. C_Order).',0,'Y','N','Y','Y','N','N','N','N','N','N','N','Suchschlüssel',40,40,999,1,TO_TIMESTAMP('2026-02-06 14:29:29.671000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T14:29:29.925Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771995 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T14:29:29.947Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(620)
+;
+
+-- 2026-02-06T14:29:29.975Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771995
+;
+
+-- 2026-02-06T14:29:29.997Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771995)
+;
+
+-- 2026-02-06T14:29:30.040Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771995
+;
+
+-- 2026-02-06T14:29:30.063Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771995, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 593451
+;
+
+-- Field: Merkmals-Wert(542069,D) -> Merkmals-Wert(548988,D) -> Name
+-- Column: M_AttributeValue.Name
+-- 2026-02-06T14:29:30.322Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,DisplayLogic,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,8468,771996,0,548988,227,TO_TIMESTAMP('2026-02-06 14:29:30.085000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'',60,'','D','',0,'Y','N','Y','Y','N','N','N','N','N','N','N','Name',50,50,1,999,1,TO_TIMESTAMP('2026-02-06 14:29:30.085000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T14:29:30.345Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771996 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T14:29:30.370Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(469)
+;
+
+-- 2026-02-06T14:29:30.409Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771996
+;
+
+-- 2026-02-06T14:29:30.430Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771996)
+;
+
+-- 2026-02-06T14:29:30.476Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771996
+;
+
+-- 2026-02-06T14:29:30.495Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771996, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 593452
+;
+
+-- Field: Merkmals-Wert(542069,D) -> Merkmals-Wert(548988,D) -> Beschreibung
+-- Column: M_AttributeValue.Description
+-- 2026-02-06T14:29:30.778Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,DisplayLogic,EntityType,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,8463,771997,0,548988,89,TO_TIMESTAMP('2026-02-06 14:29:30.518000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,60,'','D',0,'Y','N','Y','Y','N','N','N','N','N','N','N','Beschreibung',60,60,999,1,TO_TIMESTAMP('2026-02-06 14:29:30.518000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T14:29:30.800Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771997 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T14:29:30.824Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(275)
+;
+
+-- 2026-02-06T14:29:30.862Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771997
+;
+
+-- 2026-02-06T14:29:30.887Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771997)
+;
+
+-- 2026-02-06T14:29:30.931Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771997
+;
+
+-- 2026-02-06T14:29:30.952Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771997, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 593453
+;
+
+-- Field: Merkmals-Wert(542069,D) -> Merkmals-Wert(548988,D) -> Verfügbare Transaktion
+-- Column: M_AttributeValue.AvailableTrx
+-- 2026-02-06T14:29:31.234Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,550131,771998,0,548988,130,TO_TIMESTAMP('2026-02-06 14:29:30.975000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,14,'D',0,'Y','N','Y','Y','N','N','N','N','N','N','N','Verfügbare Transaktion',70,70,1,1,TO_TIMESTAMP('2026-02-06 14:29:30.975000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T14:29:31.255Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771998 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T14:29:31.275Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(542312)
+;
+
+-- 2026-02-06T14:29:31.298Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771998
+;
+
+-- 2026-02-06T14:29:31.322Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771998)
+;
+
+-- 2026-02-06T14:29:31.365Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771998
+;
+
+-- 2026-02-06T14:29:31.388Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771998, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 593454
+;
+
+-- Field: Merkmals-Wert(542069,D) -> Merkmals-Wert(548988,D) -> Aktiv
+-- Column: M_AttributeValue.IsActive
+-- 2026-02-06T14:29:31.648Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,DisplayLogic,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,8467,771999,0,548988,44,TO_TIMESTAMP('2026-02-06 14:29:31.410000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Der Eintrag ist im System aktiv',1,'','D','Es gibt zwei Möglichkeiten, einen Datensatz nicht mehr verfügbar zu machen: einer ist, ihn zu löschen; der andere, ihn zu deaktivieren. Ein deaktivierter Eintrag ist nicht mehr für eine Auswahl verfügbar, aber verfügbar für die Verwendung in Berichten. Es gibt zwei Gründe, Datensätze zu deaktivieren und nicht zu löschen: (1) Das System braucht den Datensatz für Revisionszwecke. (2) Der Datensatz wird von anderen Datensätzen referenziert. Z.B. können Sie keinen Geschäftspartner löschen, wenn es Rechnungen für diesen Geschäftspartner gibt. Sie deaktivieren den Geschäftspartner und verhindern, dass dieser Eintrag in zukünftigen Vorgängen verwendet wird.',0,'Y','N','Y','Y','N','N','N','N','N','N','N','Aktiv',80,70,1,1,TO_TIMESTAMP('2026-02-06 14:29:31.410000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T14:29:31.670Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=771999 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T14:29:31.693Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(348)
+;
+
+-- 2026-02-06T14:29:31.772Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=771999
+;
+
+-- 2026-02-06T14:29:31.792Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(771999)
+;
+
+-- 2026-02-06T14:29:31.839Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 771999
+;
+
+-- 2026-02-06T14:29:31.861Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 771999, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 593455
+;
+
+-- Field: Merkmals-Wert(542069,D) -> Merkmals-Wert(548988,D) -> Null Wert
+-- Column: M_AttributeValue.IsNullFieldValue
+-- 2026-02-06T14:29:32.154Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,550944,772000,0,548988,0,TO_TIMESTAMP('2026-02-06 14:29:31.883000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,1,'D',0,'Y','N','Y','Y','N','N','N','N','N','N','N','Null Wert',90,90,1,1,TO_TIMESTAMP('2026-02-06 14:29:31.883000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T14:29:32.177Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=772000 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T14:29:32.201Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(541311)
+;
+
+-- 2026-02-06T14:29:32.224Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=772000
+;
+
+-- 2026-02-06T14:29:32.245Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(772000)
+;
+
+-- 2026-02-06T14:29:32.288Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 772000
+;
+
+-- 2026-02-06T14:29:32.310Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 772000, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 593456
+;
+
+-- Field: Merkmals-Wert(542069,D) -> Merkmals-Wert(548988,D) -> Bild
+-- Column: M_AttributeValue.AD_Image_ID
+-- 2026-02-06T14:29:32.598Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,Name,SeqNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,579287,772001,0,548988,0,TO_TIMESTAMP('2026-02-06 14:29:32.331000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Image or Icon',10,'D','Images and Icon can be used to display supported graphic formats (gif, jpg, png).
+You can either load the image (in the database) or point to a graphic via a URI (i.e. it can point to a resource, http address)',0,'Y','N','N','N','N','N','N','N','N','N','N','Bild',100,1,1,TO_TIMESTAMP('2026-02-06 14:29:32.331000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-02-06T14:29:32.630Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=772001 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-02-06T14:29:32.652Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(1639)
+;
+
+-- 2026-02-06T14:29:32.679Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=772001
+;
+
+-- 2026-02-06T14:29:32.701Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(772001)
+;
+
+-- 2026-02-06T14:29:32.758Z
+DELETE FROM AD_Field_Trl WHERE AD_Field_ID = 772001
+;
+
+-- 2026-02-06T14:29:32.780Z
+INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, Description, Help, IsTranslated)  SELECT 772001, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, Description, Help, IsTranslated  FROM AD_Field_Trl WHERE AD_Field_ID = 680615
+;
+
+-- Tab: Merkmals-Wert(542069,D) -> Merkmals-Wert(548988,D)
+-- UI Section: main
+-- 2026-02-06T14:29:32.970Z
+INSERT INTO AD_UI_Section (AD_Client_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy,Value) VALUES (0,0,548988,547510,TO_TIMESTAMP('2026-02-06 14:29:32.846000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','main',10,TO_TIMESTAMP('2026-02-06 14:29:32.846000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'main')
+;
+
+-- 2026-02-06T14:29:32.993Z
+INSERT INTO AD_UI_Section_Trl (AD_Language,AD_UI_Section_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_UI_Section_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_UI_Section t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_UI_Section_ID=547510 AND NOT EXISTS (SELECT 1 FROM AD_UI_Section_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_UI_Section_ID=t.AD_UI_Section_ID)
+;
+
+-- 2026-02-06T14:29:33.036Z
+DELETE FROM AD_UI_Section_Trl WHERE AD_UI_Section_ID = 547510
+;
+
+-- 2026-02-06T14:29:33.061Z
+INSERT INTO AD_UI_Section_Trl (AD_UI_Section_ID, AD_Language,  AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,  Name, IsTranslated)  SELECT 547510, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy,  Updated, UpdatedBy, Name, IsTranslated  FROM AD_UI_Section_Trl WHERE AD_UI_Section_ID = 541685
+;
+
+-- UI Section: Merkmals-Wert(542069,D) -> Merkmals-Wert(548988,D) -> main
+-- UI Column: 10
+-- 2026-02-06T14:29:33.237Z
+INSERT INTO AD_UI_Column (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,0,549170,547510,TO_TIMESTAMP('2026-02-06 14:29:33.125000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y',10,TO_TIMESTAMP('2026-02-06 14:29:33.125000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Column: Merkmals-Wert(542069,D) -> Merkmals-Wert(548988,D) -> main -> 10
+-- UI Element Group: default
+-- 2026-02-06T14:29:33.471Z
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,UIStyle,Updated,UpdatedBy) VALUES (0,0,549170,554802,TO_TIMESTAMP('2026-02-06 14:29:33.354000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','default',10,'primary',TO_TIMESTAMP('2026-02-06 14:29:33.354000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmals-Wert(542069,D) -> Merkmals-Wert(548988,D) -> main -> 10 -> default.Merkmal
+-- Column: M_AttributeValue.M_Attribute_ID
+-- 2026-02-06T14:29:33.837Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771994,0,548988,554802,646901,'F',TO_TIMESTAMP('2026-02-06 14:29:33.568000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Produkt-Merkmal','Product Attribute like Color, Size','Y','N','N','Y','Y','N','N','Merkmal',10,10,0,TO_TIMESTAMP('2026-02-06 14:29:33.568000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmals-Wert(542069,D) -> Merkmals-Wert(548988,D) -> main -> 10 -> default.Suchschlüssel
+-- Column: M_AttributeValue.Value
+-- 2026-02-06T14:29:34.181Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771995,0,548988,554802,646902,'F',TO_TIMESTAMP('2026-02-06 14:29:33.937000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein','A search key allows you a fast method of finding a particular record.
+If you leave the search key empty, the system automatically creates a numeric number.  The document sequence used for this fallback number is defined in the "Maintain Sequence" window with the name "DocumentNo_<TableName>", where TableName is the actual name of the table (e.g. C_Order).','Y','N','N','Y','Y','N','N','Suchschlüssel',20,20,0,TO_TIMESTAMP('2026-02-06 14:29:33.937000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmals-Wert(542069,D) -> Merkmals-Wert(548988,D) -> main -> 10 -> default.Name
+-- Column: M_AttributeValue.Name
+-- 2026-02-06T14:29:34.561Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771996,0,548988,554802,646903,'F',TO_TIMESTAMP('2026-02-06 14:29:34.291000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'','','Y','N','N','Y','Y','N','N','Name',20,30,0,TO_TIMESTAMP('2026-02-06 14:29:34.291000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Column: Merkmals-Wert(542069,D) -> Merkmals-Wert(548988,D) -> main -> 10
+-- UI Element Group: data
+-- 2026-02-06T14:29:34.779Z
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,549170,554803,TO_TIMESTAMP('2026-02-06 14:29:34.649000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','data',20,TO_TIMESTAMP('2026-02-06 14:29:34.649000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmals-Wert(542069,D) -> Merkmals-Wert(548988,D) -> main -> 10 -> data.Beschreibung
+-- Column: M_AttributeValue.Description
+-- 2026-02-06T14:29:35.194Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771997,0,548988,554803,646904,'F',TO_TIMESTAMP('2026-02-06 14:29:34.878000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','Y','N','N','Beschreibung',20,40,0,TO_TIMESTAMP('2026-02-06 14:29:34.878000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmals-Wert(542069,D) -> Merkmals-Wert(548988,D) -> main -> 10 -> data.Bild
+-- Column: M_AttributeValue.AD_Image_ID
+-- 2026-02-06T14:29:35.499Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,772001,0,548988,554803,646905,'F',TO_TIMESTAMP('2026-02-06 14:29:35.282000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Image or Icon','Images and Icon can be used to display supported graphic formats (gif, jpg, png).
+You can either load the image (in the database) or point to a graphic via a URI (i.e. it can point to a resource, http address)','Y','N','N','Y','N','N','N',0,'Bild',30,0,0,TO_TIMESTAMP('2026-02-06 14:29:35.282000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Section: Merkmals-Wert(542069,D) -> Merkmals-Wert(548988,D) -> main
+-- UI Column: 20
+-- 2026-02-06T14:29:35.718Z
+INSERT INTO AD_UI_Column (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,0,549171,547510,TO_TIMESTAMP('2026-02-06 14:29:35.588000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y',20,TO_TIMESTAMP('2026-02-06 14:29:35.588000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Column: Merkmals-Wert(542069,D) -> Merkmals-Wert(548988,D) -> main -> 20
+-- UI Element Group: Flags
+-- 2026-02-06T14:29:35.932Z
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,549171,554804,TO_TIMESTAMP('2026-02-06 14:29:35.807000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','Flags',10,TO_TIMESTAMP('2026-02-06 14:29:35.807000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmals-Wert(542069,D) -> Merkmals-Wert(548988,D) -> main -> 20 -> Flags.Aktiv
+-- Column: M_AttributeValue.IsActive
+-- 2026-02-06T14:29:36.295Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771999,0,548988,554804,646906,'F',TO_TIMESTAMP('2026-02-06 14:29:36.028000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Der Eintrag ist im System aktiv','Es gibt zwei Möglichkeiten, einen Datensatz nicht mehr verfügbar zu machen: einer ist, ihn zu löschen; der andere, ihn zu deaktivieren. Ein deaktivierter Eintrag ist nicht mehr für eine Auswahl verfügbar, aber verfügbar für die Verwendung in Berichten. Es gibt zwei Gründe, Datensätze zu deaktivieren und nicht zu löschen: (1) Das System braucht den Datensatz für Revisionszwecke. (2) Der Datensatz wird von anderen Datensätzen referenziert. Z.B. können Sie keinen Geschäftspartner löschen, wenn es Rechnungen für diesen Geschäftspartner gibt. Sie deaktivieren den Geschäftspartner und verhindern, dass dieser Eintrag in zukünftigen Vorgängen verwendet wird.','Y','N','N','Y','Y','N','N',0,'Aktiv',10,50,0,TO_TIMESTAMP('2026-02-06 14:29:36.028000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmals-Wert(542069,D) -> Merkmals-Wert(548988,D) -> main -> 20 -> Flags.Null Wert
+-- Column: M_AttributeValue.IsNullFieldValue
+-- 2026-02-06T14:29:36.660Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,772000,0,548988,554804,646907,'F',TO_TIMESTAMP('2026-02-06 14:29:36.382000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','Y','N','N',0,'Null Wert',20,60,0,TO_TIMESTAMP('2026-02-06 14:29:36.382000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmals-Wert(542069,D) -> Merkmals-Wert(548988,D) -> main -> 20 -> Flags.Verfügbare Transaktion
+-- Column: M_AttributeValue.AvailableTrx
+-- 2026-02-06T14:29:36.976Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771998,0,548988,554804,646908,'F',TO_TIMESTAMP('2026-02-06 14:29:36.744000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','N','N','N',0,'Verfügbare Transaktion',30,0,0,TO_TIMESTAMP('2026-02-06 14:29:36.744000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Column: Merkmals-Wert(542069,D) -> Merkmals-Wert(548988,D) -> main -> 20
+-- UI Element Group: orgs
+-- 2026-02-06T14:29:37.188Z
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,549171,554805,TO_TIMESTAMP('2026-02-06 14:29:37.062000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','orgs',30,TO_TIMESTAMP('2026-02-06 14:29:37.062000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmals-Wert(542069,D) -> Merkmals-Wert(548988,D) -> main -> 20 -> orgs.Organisation
+-- Column: M_AttributeValue.AD_Org_ID
+-- 2026-02-06T14:29:37.562Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771993,0,548988,554805,646909,'F',TO_TIMESTAMP('2026-02-06 14:29:37.280000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Organisatorische Einheit des Mandanten','Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie können Daten über Organisationen hinweg gemeinsam verwenden.','Y','N','N','Y','Y','N','N',0,'Organisation',10,70,0,TO_TIMESTAMP('2026-02-06 14:29:37.280000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmals-Wert(542069,D) -> Merkmals-Wert(548988,D) -> main -> 20 -> orgs.Mandant
+-- Column: M_AttributeValue.AD_Client_ID
+-- 2026-02-06T14:29:37.865Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771992,0,548988,554805,646910,'F',TO_TIMESTAMP('2026-02-06 14:29:37.655000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Mandant für diese Installation.','Ein Mandant ist eine Firma oder eine juristische Person. Sie können keine Daten über Mandanten hinweg verwenden. .','Y','N','N','Y','N','N','N',0,'Mandant',20,0,0,TO_TIMESTAMP('2026-02-06 14:29:37.655000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmals-Wert(542069,D) -> Merkmals-Wert(548988,D) -> main -> 10 -> data.Bild
+-- Column: M_AttributeValue.AD_Image_ID
+-- 2026-02-06T15:03:11.583Z
+UPDATE AD_UI_Element SET IsDisplayed='N',Updated=TO_TIMESTAMP('2026-02-06 15:03:11.583000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=646905
+;
+
+-- Window: Merkmals-Wert, InternalName=null
+-- 2026-02-06T15:07:30.678Z
+UPDATE AD_Window SET IsOverrideInMenu='Y',Updated=TO_TIMESTAMP('2026-02-06 15:07:30.580000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Window_ID=542069
+;
+
+-- UI Element: Produkt Kategorie(542066,U) -> Produkt-Kategorie(548973,D) -> main -> 10 -> attributes.Mind. Haltbarkeit Tage
+-- Column: M_Product_Category.GuaranteeDaysMin
+-- 2026-02-10T08:35:08.115Z
+UPDATE AD_UI_Element SET IsAdvancedField='Y', IsDisplayed='Y',Updated=TO_TIMESTAMP('2026-02-10 08:35:08.115000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=646766
+;
+
+-- UI Element: Produkt Kategorie(542066,U) -> Produkt-Kategorie(548973,D) -> main -> 10 -> attributes.Mind. Haltbarkeit Tage
+-- Column: M_Product_Category.GuaranteeDaysMin
+-- 2026-02-10T11:03:05.483Z
+UPDATE AD_UI_Element SET IsActive='N', IsAdvancedField='N',Updated=TO_TIMESTAMP('2026-02-10 11:03:05.483000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=646766
+;
+
+-- UI Element: Produkt Kategorie(542066,U) -> Produkt-Kategorie(548973,D) -> advanced edit -> 10 -> advanced edit.Min. Garantie-Tage
+-- Column: M_Product_Category.GuaranteeDaysMin
+-- 2026-02-10T11:04:01.967Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771789,0,548973,554784,646932,'F',TO_TIMESTAMP('2026-02-10 11:04:01.667000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Mindestanzahl Garantie-Tage','When selecting batch/products with a guarantee date, the minimum left guarantee days for automatic picking.  You can pick any batch/product manually. ','Y','Y','N','Y','N','N','N',0,'Min. Garantie-Tage',20,0,0,TO_TIMESTAMP('2026-02-10 11:04:01.667000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmal(542068,D) -> Merkmal(548985,D) -> main -> 10 -> technical.Standardwert-Logik (SQL)
+-- Column: M_Attribute.DefaultValueSQL
+-- 2026-02-10T11:11:40.999Z
+UPDATE AD_UI_Element SET IsActive='N', IsDisplayed='Y',Updated=TO_TIMESTAMP('2026-02-10 11:11:40.999000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=646869
+;
+
+-- UI Element: Merkmal(542068,D) -> Merkmal(548985,D) -> main -> 10 -> technical.Merkmal Suche
+-- Column: M_Attribute.M_AttributeSearch_ID
+-- 2026-02-10T11:14:33.395Z
+UPDATE AD_UI_Element SET IsActive='N', IsDisplayed='Y',Updated=TO_TIMESTAMP('2026-02-10 11:14:33.395000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=646870
+;
+-- UI Element: Merkmal(542068,D) -> Merkmal(548985,D) -> main -> 10 -> technical.Java Klasse
+-- Column: M_Attribute.AD_JavaClass_ID
+-- 2026-02-10T11:16:52.148Z
+UPDATE AD_UI_Element SET IsActive='N', IsDisplayed='Y',Updated=TO_TIMESTAMP('2026-02-10 11:16:52.148000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=646871
+;
+
+-- UI Element: Merkmal(542068,D) -> Merkmal(548985,D) -> advanced edit -> 10 -> advanced edit.AttributeValueHandler Javaklasse
+-- Column: M_Attribute.AD_JavaClass_ID
+-- 2026-02-10T11:38:03.390Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771949,0,548985,554800,646936,'F',TO_TIMESTAMP('2026-02-10 11:38:03.162000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Javaklasse, die das Interface IAttributeValueHandler implementiert. Falls leer wird eine Defaultimplementierung benutzt, die die dynamische Validierungsregel aufruft.','Y','Y','N','Y','N','N','N',0,'AttributeValueHandler Javaklasse',200,0,0,TO_TIMESTAMP('2026-02-10 11:38:03.162000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmal(542068,D) -> Merkmal(548985,D) -> advanced edit -> 10 -> advanced edit.Merkmal-Suche
+-- Column: M_Attribute.M_AttributeSearch_ID
+-- 2026-02-10T11:39:41.476Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771946,0,548985,554800,646937,'F',TO_TIMESTAMP('2026-02-10 11:39:41.234000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Gemeinsames Such-Merkmal','Attributes are specific to a Product Attribute Set (e.g. Size for T-Shirts: S,M,L). If you have multiple attributes and want to search under a common sttribute, you define a search sttribute. Example: have one Size search attribute combining the values of all different sizes (Size for Dress Shirt  XL,L,M,S,XS). The Attribute Search allows you to have all values available for selection.  This eases the maintenance of the individual product attribute.','Y','Y','N','Y','N','N','N',0,'Merkmal-Suche',210,0,0,TO_TIMESTAMP('2026-02-10 11:39:41.234000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmal(542068,D) -> Merkmal(548985,D) -> advanced edit -> 10 -> advanced edit.Standardwert-Logik (SQL)
+-- Column: M_Attribute.DefaultValueSQL
+-- 2026-02-10T12:03:20.405Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,771965,0,548985,554800,646938,'F',TO_TIMESTAMP('2026-02-10 12:03:20.109000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'SQL-Ausdruck, der verwendet wird, um den Standardwert für dieses Attribut zu berechnen. Der Ausdruck kann variable Platzhalter enthalten (z. B. @M_Product_ID@, @C_Order_ID@, @TableName@), die zur Laufzeit durch die tatsächlichen Kontextwerte ersetzt werden. Der resultierende Wert muss dem für das Attribut definierten Wertetyp entsprechen. Wenn dieses Feld leer ist, besitzt das Attribut keinen SQL-basierten Standardwert.','SQL-Ausdruck, der verwendet wird, um den Standardwert für dieses Attribut zu berechnen.
+Der Ausdruck kann variable Platzhalter enthalten (z. B. @M_Product_ID@, @C_Order_ID@, @TableName@), die zur Laufzeit durch die tatsächlichen Kontextwerte ersetzt werden. Der resultierende Wert muss dem für das Attribut definierten Wertetyp entsprechen. Wenn dieses Feld leer ist, besitzt das Attribut keinen SQL-basierten Standardwert.','Y','Y','N','Y','N','N','N',0,'Standardwert-Logik (SQL)',220,0,0,TO_TIMESTAMP('2026-02-10 12:03:20.109000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Merkmals-Wert(542069,D) -> Merkmals-Wert(548988,D) -> main -> 10 -> data.Bild
+-- Column: M_AttributeValue.AD_Image_ID
+-- 2026-02-10T12:05:54.491Z
+UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2026-02-10 12:05:54.490000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=646905
+;
