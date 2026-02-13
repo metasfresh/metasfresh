@@ -169,6 +169,25 @@ public class M_ShipmentSchedule_StepDef
 	/**
 	 * Match the shipment scheds and load them with their identifier into the shipmentScheduleTable.
 	 */
+	/**
+	 * Poll for M_ShipmentSchedule records created via order completion. Waits up to N seconds.
+	 * Queries by C_OrderLine_ID and optional filters, stores found schedules in M_ShipmentSchedule_StepDefData.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required) alias to store the found schedule under<br>
+	 *   <b>C_OrderLine_ID</b> — (required, identifier-ref) order line that created this schedule<br>
+	 *   <b>Warehouse_ID</b> — (optional, identifier-ref) filter by warehouse<br>
+	 *   <b>QtyToDeliver</b> — (optional) filter by qty to deliver<br>
+	 *   <b>IsToRecompute</b> — (optional) expected recompute flag<br>
+	 * @cucumber.depends StepDefData: C_OrderLine_StepDefData, M_ShipmentSchedule_StepDefData, M_Warehouse_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then after not more than 60s, M_ShipmentSchedules are found:
+	 *   | Identifier           | C_OrderLine_ID | IsToRecompute |
+	 *   | shipmentSchedule_1   | orderLine_1    | N             |
+	 * </pre>
+	 */
 	@Then("^after not more than (.*)s, M_ShipmentSchedules are found:$")
 	public void loadShipmentSchedules(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
@@ -267,6 +286,24 @@ public class M_ShipmentSchedule_StepDef
 				.isTrue();
 	}
 
+	/**
+	 * Generate shipment(s) synchronously for the given shipment schedule. Waits until the schedule is valid, then generates.
+	 * Stores the generated M_InOut under the M_InOut_ID identifier (if provided).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_ShipmentSchedule_ID</b> — (required, identifier-ref) shipment schedule alias<br>
+	 *   <b>quantityTypeToUse</b> — (optional) D (delivery) or O (ordered); default: BOTH<br>
+	 *   <b>isCompleteShipment</b> — (optional) true/false; default: true<br>
+	 *   <b>M_InOut_ID</b> — (optional) alias to store the generated shipment; comma-separated for multiple<br>
+	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData, M_InOut_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And shipment is generated for the following shipment schedule
+	 *   | M_ShipmentSchedule_ID | M_InOut_ID |
+	 *   | shipmentSchedule_1    | shipment_1 |
+	 * </pre>
+	 */
 	@And("shipment is generated for the following shipment schedule")
 	public void generateShipmentForSchedule(@NonNull final DataTable dataTable)
 	{
@@ -295,6 +332,30 @@ public class M_ShipmentSchedule_StepDef
 		}
 	}
 
+	/**
+	 * Validate shipment schedule quantities after async recompute. Waits for the schedule to become valid (not in recompute queue).
+	 * Polls and re-reads the record, then validates quantities using SoftAssertions.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_ShipmentSchedule_ID</b> — (required, identifier-ref) alias from M_ShipmentSchedule_StepDefData<br>
+	 *   <b>QtyOrdered</b> — (optional) expected ordered quantity<br>
+	 *   <b>QtyReserved</b> — (optional) expected reserved quantity<br>
+	 *   <b>QtyToDeliver</b> — (optional) expected qty to deliver<br>
+	 *   <b>QtyToDeliver_Override</b> — (optional) expected override qty<br>
+	 *   <b>QtyPickList</b> — (optional) expected picked quantity<br>
+	 *   <b>QtyDelivered</b> — (optional) expected delivered quantity<br>
+	 *   <b>QtyOnHand</b> — (optional) expected on-hand quantity<br>
+	 *   <b>Processed</b> — (optional) true/false<br>
+	 *   <b>IsClosed</b> — (optional) true/false<br>
+	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And after not more than 60s, validate shipment schedules:
+	 *   | M_ShipmentSchedule_ID | QtyOrdered | QtyDelivered | QtyToDeliver |
+	 *   | shipmentSchedule_1    | 100        | 0            | 100          |
+	 * </pre>
+	 */
 	@And("^after not more than (.*)s, validate shipment schedules:$")
 	public void validateShipmentSchedules(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{

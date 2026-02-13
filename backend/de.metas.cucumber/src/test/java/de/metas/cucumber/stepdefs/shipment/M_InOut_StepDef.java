@@ -157,6 +157,30 @@ public class M_InOut_StepDef
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
+	/**
+	 * Validate M_InOut records (shipments or material receipts).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_InOut_ID</b> — (required, identifier-ref) alias from M_InOut_StepDefData<br>
+	 *   <b>C_BPartner_ID</b> — (required, identifier-ref) expected business partner<br>
+	 *   <b>C_BPartner_Location_ID</b> — (required, identifier-ref) expected BP location<br>
+	 *   <b>DateOrdered</b> — (required) expected date, e.g., "2022-05-17"<br>
+	 *   <b>processed</b> — (required) true/false<br>
+	 *   <b>DocStatus</b> — (required) expected doc status: DR, IP, CO, VO, RE, CL<br>
+	 *   <b>POReference</b> — (optional) expected PO reference<br>
+	 *   <b>AD_InputDataSource_ID.InternalName</b> — (optional) expected input data source internal name<br>
+	 *   <b>ExternalSystem.Value</b> — (optional) expected external system value<br>
+	 *   <b>C_DocType.DocBaseType</b> — (optional) expected doc base type + C_DocType.Name<br>
+	 *   <b>ExternalId</b> — (optional) expected external ID<br>
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData, C_BPartner_StepDefData, C_BPartner_Location_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And validate the created shipments
+	 *   | M_InOut_ID | C_BPartner_ID | C_BPartner_Location_ID | DateOrdered | processed | DocStatus |
+	 *   | shipment_1 | bpartner_1    | bpLocation_1           | 2022-05-17  | true      | CO        |
+	 * </pre>
+	 */
 	@And("^validate the created (shipments|material receipt)$")
 	public void validate_created_shipments(@NonNull final String ignoredInoutType, @NonNull final DataTable table)
 	{
@@ -230,6 +254,25 @@ public class M_InOut_StepDef
 		softly.assertAll();
 	}
 
+	/**
+	 * Invoke the "generate shipments" async workpackage for each M_ShipmentSchedule row individually.
+	 * Each row specifies its own QuantityType, IsCompleteShipments, and IsShipmentDateToday.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_ShipmentSchedule_ID</b> — (required, identifier-ref) shipment schedule alias<br>
+	 *   <b>QuantityType</b> — (required) "D" (delivery), "O" (ordered), etc.<br>
+	 *   <b>IsCompleteShipments</b> — (required) true/false — auto-complete the generated shipment<br>
+	 *   <b>IsShipmentDateToday</b> — (required) true/false — use today as shipment date<br>
+	 *   <b>QtyToDeliver_Override</b> — (optional) override quantity to deliver<br>
+	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+	 *   | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipmentDateToday |
+	 *   | shipmentSchedule_1    | D            | true                | false               |
+	 * </pre>
+	 */
 	@And("'generate shipments' process is invoked individually for each M_ShipmentSchedule")
 	public void invokeGenerateShipmentsProcessIndividually(@NonNull final DataTable table)
 	{
@@ -271,6 +314,22 @@ public class M_InOut_StepDef
 		);
 	}
 
+	/**
+	 * Invoke the "generate shipments" async workpackage with parameters in the step text.
+	 * All shipment schedules in the DataTable are enqueued together (single workpackage).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_ShipmentSchedule_ID</b> — (required, identifier-ref) shipment schedule alias<br>
+	 *   <b>QtyToDeliver_Override</b> — (optional) override quantity to deliver<br>
+	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+	 *   | M_ShipmentSchedule_ID |
+	 *   | shipmentSchedule_1    |
+	 * </pre>
+	 */
 	@And("^'generate shipments' process is invoked with QuantityType=(.*), IsCompleteShipments=(true|false) and IsShipToday=(true|false)")
 	public void invokeGenerateShipmentsProcess(
 			@NonNull final String quantityType,
@@ -324,6 +383,27 @@ public class M_InOut_StepDef
 		assertThat(result.getEnqueuedPackagesCount()).isGreaterThanOrEqualTo(1);
 	}
 
+	/**
+	 * Poll for a shipment/receipt created via async workpackage processing. Waits up to N seconds.
+	 * Finds the M_InOut via M_ShipmentSchedule_QtyPicked.M_InOutLine_ID, filters by DocStatus if given.
+	 * Stores the found M_InOut in M_InOut_StepDefData under the given identifier.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_ShipmentSchedule_ID</b> — (required, identifier-ref) the schedule that triggered the shipment<br>
+	 *   <b>M_InOut_ID</b> — (required) alias to store the found shipment under<br>
+	 *   <b>DocStatus</b> — (optional) filter by doc status (CO, DR, etc.)<br>
+	 *   <b>OPT.IgnoreCreated.M_InOut_ID.Identifier</b> — (optional) comma-separated shipment identifiers to skip<br>
+	 *   <b>REST.Context.M_InOut_ID</b> — (optional) store M_InOut_ID in REST test context variable<br>
+	 *   <b>REST.Context.DocumentNo</b> — (optional) store DocumentNo in REST test context variable<br>
+	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData, M_InOut_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And after not more than 60s, M_InOut is found:
+	 *   | M_ShipmentSchedule_ID | M_InOut_ID | DocStatus |
+	 *   | shipmentSchedule_1    | shipment_1 | CO        |
+	 * </pre>
+	 */
 	@And("^after not more than (.*)s, M_InOut is found:$")
 	public void shipmentIsFound(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
@@ -413,6 +493,18 @@ public class M_InOut_StepDef
 		StepDefUtil.tryAndWait(timeoutSec, 500, isShipmentCreated);
 	}
 
+	/**
+	 * Reverse a shipment/receipt and store the reversal under a new identifier.
+	 * Performs Reverse_Correct doc action, then loads the reversal M_InOut record via Reversal_ID.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns (none — parameters are in the step text, not a DataTable)
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And the shipment identified by shipment_1 is reversed as shipment_1_reversal
+	 * </pre>
+	 */
 	@And("^the (shipment|material receipt|return inOut) identified by (.*) is reversed as (.*)$")
 	public void reverseInOut(
 			@NonNull @SuppressWarnings("unused") final String model_UNUSED,
@@ -428,6 +520,21 @@ public class M_InOut_StepDef
 		inoutTable.put(reversalIdentifier, reversal);
 	}
 
+	/**
+	 * Process a shipment/receipt/return with a document action. No DataTable — parameters are in the step text.
+	 * Actions: completed, reactivated, reversed, voided, closed.
+	 * Note: "reversed" does NOT store the reversal; use "is reversed as &lt;reversalIdentifier&gt;" step instead if you need the reversal record.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns (none — parameters are in the step text)
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And the shipment identified by shipment_1 is completed
+	 * And the shipment identified by shipment_1 is reversed
+	 * And the material receipt identified by receipt_1 is completed
+	 * </pre>
+	 */
 	@And("^the (shipment|material receipt|return inOut) identified by (.*) is (completed|reactivated|reversed|voided|closed)$")
 	public void processInOut(
 			@NonNull @SuppressWarnings("unused") final String model_UNUSED,
@@ -575,6 +682,32 @@ public class M_InOut_StepDef
 		assertThat(inOut).isNull();
 	}
 
+	/**
+	 * Manually create M_InOut records (shipment/receipt). Primarily used for testing doc actions on manually created documents.
+	 * Uses legacy DataTableUtil (not DataTableRow). Stores created record in M_InOut_StepDefData.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_InOut_ID.Identifier</b> — (required) alias to store the created record<br>
+	 *   <b>C_BPartner_ID.Identifier</b> — (required) business partner<br>
+	 *   <b>C_BPartner_Location_ID.Identifier</b> — (required) BP location<br>
+	 *   <b>IsSOTrx</b> — (required) true=shipment, false=receipt<br>
+	 *   <b>DeliveryRule</b> — (required) delivery rule code<br>
+	 *   <b>DeliveryViaRule</b> — (required) delivery via rule code<br>
+	 *   <b>FreightCostRule</b> — (required) freight cost rule code<br>
+	 *   <b>M_Warehouse_ID.Identifier</b> — (required) warehouse<br>
+	 *   <b>MovementDate</b> — (required) movement date<br>
+	 *   <b>MovementType</b> — (required) movement type code<br>
+	 *   <b>PriorityRule</b> — (required) priority rule code<br>
+	 *   <b>OPT.DocBaseType</b> — (optional) doc base type + OPT.DocSubType for doc type lookup<br>
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData, C_BPartner_StepDefData, C_BPartner_Location_StepDefData, M_Warehouse_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And metasfresh contains M_InOut:
+	 *   | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | IsSOTrx | DeliveryRule | DeliveryViaRule | FreightCostRule | M_Warehouse_ID.Identifier | MovementDate | MovementType | PriorityRule |
+	 *   | shipment_1            | bpartner_1               | bpLocation_1                      | true    | F            | D               | I               | warehouse_1               | 2022-05-17   | C-           | 5            |
+	 * </pre>
+	 */
 	@And("metasfresh contains M_InOut:")
 	public void create_M_InOut(@NonNull final DataTable dataTable)
 	{
@@ -779,6 +912,23 @@ public class M_InOut_StepDef
 		assertThat(errorThrown).isTrue();
 	}
 
+	/**
+	 * Poll for the reversal M_InOut of a previously reversed shipment/receipt.
+	 * Looks up by Reversal_ID pointing back to the original, validates DocStatus.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_InOut_ID.Identifier</b> — (required) alias to store the reversal record<br>
+	 *   <b>Reversal_ID.Identifier</b> — (required) alias of the original (reversed) M_InOut<br>
+	 *   <b>DocStatus</b> — (optional) expected doc status of the reversal<br>
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And after not more than 60s, locate reversal M_InOut
+	 *   | M_InOut_ID.Identifier | Reversal_ID.Identifier | DocStatus |
+	 *   | shipment_1_reversal   | shipment_1             | RE        |
+	 * </pre>
+	 */
 	@And("^after not more than (.*)s, locate reversal M_InOut$")
 	public void find_reversal_M_InOut(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
