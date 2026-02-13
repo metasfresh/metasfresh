@@ -139,7 +139,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	private static final Logger logger = LogManager.getLogger(HandlingUnitsBL.class);
 
 	private static final AdMessageKey ERR_HUHasPackages = AdMessageKey.of("de.metas.handlingunits.impl.HUHasPackages");
-	private static final AdMessageKey MSG_HUAlreadyReserved = AdMessageKey.of("HUAlreadyReserved");
 
 	private final IHUStorageFactory storageFactory = new DefaultHUStorageFactory();
 	private final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
@@ -1374,28 +1373,33 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public void setReservedRecursively(@NonNull final I_M_HU hu, final boolean reserved)
+	public boolean setReservedRecursively(@NonNull final I_M_HU hu, final boolean reserved)
 	{
 		// Validate first: check if all HUs in the hierarchy can be reserved/unreserved
 		if (reserved)
 		{
-			validateCanReserveRecursively(hu);
+			if (!canReserveRecursively(hu))
+			{
+				return false;
+			}
 		}
 
-		// If validation passes, proceed with reservation
+		// If validation passes (or unreserving), proceed with reservation
 		setReservedRecursivelyWithoutValidation(hu, reserved);
+		return true;
 	}
 
-	private void validateCanReserveRecursively(@NonNull final I_M_HU hu)
+	private boolean canReserveRecursively(@NonNull final I_M_HU hu)
 	{
 		if (hu.isReserved())
 		{
-			throw new AdempiereException(MSG_HUAlreadyReserved, hu.getM_HU_ID(), hu.getHUStatus());
+			return false;
 		}
 
 		// Recursively validate all children
-		handlingUnitsRepo.retrieveIncludedHUs(hu)
-				.forEach(this::validateCanReserveRecursively);
+		return handlingUnitsRepo.retrieveIncludedHUs(hu)
+				.stream()
+				.allMatch(this::canReserveRecursively);
 	}
 
 	private void setReservedRecursivelyWithoutValidation(@NonNull final I_M_HU hu, final boolean reserved)

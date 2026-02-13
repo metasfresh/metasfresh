@@ -8,7 +8,6 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.util.Services;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -26,7 +25,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /*
  * #%L
@@ -83,9 +81,10 @@ public class HandlingUnitsBL_SetReservedRecursively_Test
 			assertThat(hu.isReserved()).isFalse();
 
 			// when
-			handlingUnitsBL.setReservedRecursively(hu, true);
+			final boolean result = handlingUnitsBL.setReservedRecursively(hu, true);
 
 			// then
+			assertThat(result).isTrue();
 			final I_M_HU updatedHU = InterfaceWrapperHelper.load(hu.getM_HU_ID(), I_M_HU.class);
 			assertThat(updatedHU.isReserved()).isTrue();
 		}
@@ -343,10 +342,10 @@ public class HandlingUnitsBL_SetReservedRecursively_Test
 		}
 
 		/**
-		 * Test that attempting to reserve an already reserved HU fails
+		 * Test that attempting to reserve an already reserved HU returns false
 		 */
 		@Test
-		void alreadyReserved_shouldThrowException()
+		void alreadyReserved_shouldReturnFalse()
 		{
 			// given: a reserved HU
 			final I_M_HU_Item huItem = createHU(null);
@@ -354,17 +353,18 @@ public class HandlingUnitsBL_SetReservedRecursively_Test
 			hu.setIsReserved(true);
 			saveRecord(hu);
 
-			// when/then: attempting to reserve again should throw exception
-			assertThatThrownBy(() -> handlingUnitsBL.setReservedRecursively(hu, true))
-					.isInstanceOf(AdempiereException.class)
-					.hasMessageContaining("HUAlreadyReserved");
+			// when: attempting to reserve again
+			final boolean result = handlingUnitsBL.setReservedRecursively(hu, true);
+
+			// then: should return false
+			assertThat(result).isFalse();
 		}
 
 		/**
-		 * Test that attempting to reserve parent fails if child is already reserved
+		 * Test that attempting to reserve parent returns false if child is already reserved
 		 */
 		@Test
-		void childAlreadyReserved_shouldThrowException()
+		void childAlreadyReserved_shouldReturnFalse()
 		{
 			// given: TU -> CU hierarchy where CU is already reserved
 			final I_M_HU_Item tu = createHU(null);
@@ -372,10 +372,11 @@ public class HandlingUnitsBL_SetReservedRecursively_Test
 			cu.getM_HU().setIsReserved(true);
 			saveRecord(cu.getM_HU());
 
-			// when/then: attempting to reserve TU should fail because CU is already reserved
-			assertThatThrownBy(() -> handlingUnitsBL.setReservedRecursively(tu.getM_HU(), true))
-					.isInstanceOf(AdempiereException.class)
-					.hasMessageContaining("HUAlreadyReserved");
+			// when: attempting to reserve TU
+			final boolean result = handlingUnitsBL.setReservedRecursively(tu.getM_HU(), true);
+
+			// then: should return false because CU is already reserved
+			assertThat(result).isFalse();
 		}
 
 		/**
@@ -391,10 +392,11 @@ public class HandlingUnitsBL_SetReservedRecursively_Test
 			cu.getM_HU().setIsReserved(true);
 			saveRecord(cu.getM_HU());
 
-			// when/then: attempting to reserve LU should fail
-			assertThatThrownBy(() -> handlingUnitsBL.setReservedRecursively(lu.getM_HU(), true))
-					.isInstanceOf(AdempiereException.class)
-					.hasMessageContaining("HUAlreadyReserved");
+			// when: attempting to reserve LU
+			final boolean result = handlingUnitsBL.setReservedRecursively(lu.getM_HU(), true);
+
+			// then: should return false
+			assertThat(result).isFalse();
 
 			// verify: LU and TU remain unreserved (validation failed before any changes)
 			final I_M_HU updatedLU = InterfaceWrapperHelper.load(lu.getM_HU_ID(), I_M_HU.class);
@@ -419,10 +421,11 @@ public class HandlingUnitsBL_SetReservedRecursively_Test
 			tu2.getM_HU().setIsReserved(true);
 			saveRecord(tu2.getM_HU());
 
-			// when/then: attempting to reserve LU should fail
-			assertThatThrownBy(() -> handlingUnitsBL.setReservedRecursively(lu.getM_HU(), true))
-					.isInstanceOf(AdempiereException.class)
-					.hasMessageContaining("HUAlreadyReserved");
+			// when: attempting to reserve LU
+			final boolean result = handlingUnitsBL.setReservedRecursively(lu.getM_HU(), true);
+
+			// then: should return false
+			assertThat(result).isFalse();
 
 			// verify: no changes were made
 			final I_M_HU updatedLU = InterfaceWrapperHelper.load(lu.getM_HU_ID(), I_M_HU.class);

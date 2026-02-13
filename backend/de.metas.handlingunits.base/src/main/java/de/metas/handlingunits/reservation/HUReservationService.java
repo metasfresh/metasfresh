@@ -189,7 +189,12 @@ public class HUReservationService
 		// note: M_HU.IsReserved is also updated via model interceptor if M_HU_Reservation changes, but for clarify and unit test purposes, we explicitly do it here as well
 		for (final I_M_HU hu : husToReserve)
 		{
-			handlingUnitsBL.setReservedRecursively(hu, true);
+			final boolean reserved = handlingUnitsBL.setReservedRecursively(hu, true);
+			if (!reserved)
+			{
+				// Could not reserve this HU (already reserved or child is reserved)
+				return Optional.empty();
+			}
 		}
 
 		//

@@ -2,7 +2,6 @@ package de.metas.handlingunits.reservation;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
-import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -49,11 +48,6 @@ public class ReserveHUsRequest
 
 	@NonNull ProductId productId;
 
-	/**
-	 * The packing item product. Only relevant if we want to reserve actual HUs.
-	 */
-	@Nullable HUPIItemProductId huPIItemProductId;
-
 	@Nullable BPartnerId customerId;
 
 	/**
@@ -73,7 +67,6 @@ public class ReserveHUsRequest
 			@NonNull final Quantity qtyToReserve,
 			@NonNull final HUReservationDocRef documentRef,
 			@NonNull final ProductId productId,
-			@Nullable final HUPIItemProductId huPIItemProductId,
 			@Nullable final BPartnerId customerId,
 			@Singular @NonNull final ImmutableSet<HuId> huIds,
 			final boolean reserveActualHUs)
@@ -84,7 +77,6 @@ public class ReserveHUsRequest
 		this.qtyToReserve = qtyToReserve;
 		this.documentRef = documentRef;
 		this.productId = productId;
-		this.huPIItemProductId = huPIItemProductId;
 		this.customerId = customerId;
 		this.huIds = huIds;
 		this.reserveActualHUs = reserveActualHUs;
