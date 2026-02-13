@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -38,7 +39,6 @@ import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
-import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -51,6 +51,7 @@ import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.LocatorId;
@@ -69,8 +70,8 @@ public class CustomerReturnHUsCreateCommand
 	private final IUOMDAO uomDao = Services.get(IUOMDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
-	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 
 	private final I_M_InOutLine returnLine;
 	private final boolean isOnlyCreateCUs;
@@ -98,13 +99,17 @@ public class CustomerReturnHUsCreateCommand
 		if (isOnlyCreateCUs || hupiItemProductId == null || hupiItemProductId.isVirtualHU())
 		{
 			createdHUs = ImmutableList.of(createCUs());
+
         }
 		else
 		{
 			createdHUs = createLUTUs();
 		}
 
-		huInOutBL.setAssignedHandlingUnits(returnLine, createdHUs);
+		// huInOutBL.setAssignedHandlingUnits(returnLine, createdHUs) sets isTransferPackingMaterials true
+		// this then fails in de.metas.handlingunits.model.validator.M_HU_Assignment.assertOnlyOneAssignmentPerInOut
+		// after HUAssignments are copied in de.metas.handlingunits.model.validator.M_InOut.destroyHandlingUnitsForReversedInboundMovements
+		createdHUs.forEach(createdHU -> huAssignmentBL.assignHU(returnLine, createdHU, false, ITrx.TRXNAME_ThreadInherited));
 
 		return createdHUs;
 	}
