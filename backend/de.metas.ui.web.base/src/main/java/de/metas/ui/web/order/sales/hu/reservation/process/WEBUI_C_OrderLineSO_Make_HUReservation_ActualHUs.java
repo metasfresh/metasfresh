@@ -127,7 +127,6 @@ public class WEBUI_C_OrderLineSO_Make_HUReservation_ActualHUs
 				.documentRef(HUReservationDocRef.ofSalesOrderLineId(salesOrderLine.getId().getOrderLineId()))
 				.qtyToReserve(getUnreservedQty(salesOrderLine, reservableQty))
 				.reserveActualHUs(true)
-				.huPIItemProductId(salesOrderLine.getHUPIItemProductId())
 				.build();
 		huReservationService.makeReservation(reservationRequest);
 		huOrderBL.updateOrderLineFromReservations(salesOrderLine.getId());
