@@ -41,6 +41,12 @@ Feature: Physical inventory tests
     And validate M_HUs:
       | M_HU_ID | M_HU_PI_ID | HUStatus | M_HU_Parent | M_Product_ID | Qty      |
       | hu1     | 101        | A        | -           | product      | 1000 PCE |
+    And M_HU are validated:
+      | M_HU_ID.Identifier | HUStatus | IsActive |
+      | hu1                | A        | Y        |
+    And after not more than 30 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | product                 | 1000      |
 
   @from:cucumber
   Scenario: Inventory+ to 2 x LU/CU
@@ -53,6 +59,13 @@ Feature: Physical inventory tests
       | lu1         | vhu     | 101        | A        | product      | 200 PCE |
       | -           | lu2     | LU         | A        | product      | 200 PCE |
       | lu2         | vhu     | 101        | A        | product      | 200 PCE |
+    And M_HU are validated:
+      | M_HU_ID.Identifier | HUStatus | IsActive |
+      | lu1                | A        | Y        |
+      | lu2                | A        | Y        |
+    And after not more than 30 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | product                 | 400       |
 
   @from:cucumber
   Scenario: Inventory+ to 2 x LU/TU/CU
@@ -63,6 +76,12 @@ Feature: Physical inventory tests
       | M_HU_Parent | M_HU_ID | M_HU_PI_ID | HUStatus | M_Product_ID | Qty     | QtyTUs | IsAggregate |
       | -           | lu1     | LU         | A        | product      | 400 PCE |        | N           |
       | lu1         | tu_agg1 | TU         | A        | product      | 400 PCE | 40     | Y           |
+    And M_HU are validated:
+      | M_HU_ID.Identifier | HUStatus | IsActive |
+      | lu1                | A        | Y        |
+    And after not more than 30 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | product                 | 800       |
 
   @from:cucumber
   Scenario: Inventory+ to 2 x TUs
@@ -72,4 +91,11 @@ Feature: Physical inventory tests
     And validate M_HUs:
       | M_HU_Parent | M_HU_ID | M_HU_PI_ID | HUStatus | M_Product_ID | Qty    |
       | -           | tu1     | TU         | A        | product      | 10 PCE |
-      | -           | tu2     | TU         | A        | product      | 9 PCE  | 
+      | -           | tu2     | TU         | A        | product      | 9 PCE  |
+    And M_HU are validated:
+      | M_HU_ID.Identifier | HUStatus | IsActive |
+      | tu1                | A        | Y        |
+      | tu2                | A        | Y        |
+    And after not more than 30 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | product                 | 19        |

@@ -59,8 +59,11 @@ Feature: Moving Average Invoice - receive and ship
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
       | acctSchema      | product      | MovingAverageInvoice | 10 CHF           | 10 PCE     | 100 CHF      |
-    
-    
+    And after not more than 30 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | product                 | 10        |
+
+
     
     
     
@@ -161,7 +164,10 @@ Feature: Moving Average Invoice - receive and ship
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
       | acctSchema      | product      | MovingAverageInvoice | 10 CHF           | 3 PCE      | 30 CHF       |
-    
+    And after not more than 30 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | product                 | 3         |
+
     #
     # Get the invoice for those 10 we purchase, but with a different price
     #
@@ -199,3 +205,6 @@ Feature: Moving Average Invoice - receive and ship
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
       | acctSchema      | product      | MovingAverageInvoice | 13 CHF           | 0 PCE      | 0 CHF        |
+    And after not more than 30 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | product                 | 0         |

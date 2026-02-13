@@ -84,9 +84,12 @@ Feature: Moving Average Invoice - Check costing when reversing a material receip
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
       | acctSchema      | product      | MovingAverageInvoice | 1000000 CHF      | 10 PCE     | 10000000 CHF |
-    
+    And after not more than 30 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | product                 | 10        |
+
     #
-    # Reverse the material receipt 
+    # Reverse the material receipt
     #
     And the material receipt identified by receipt1 is reversed as reversal1
     And validate the created material receipt lines
@@ -99,6 +102,9 @@ Feature: Moving Average Invoice - Check costing when reversing a material receip
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
       | acctSchema      | product      | MovingAverageInvoice | 0 CHF            | 0 PCE      | 0 CHF        |
+    And after not more than 30 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | product                 | 0         |
 
 
 
@@ -142,9 +148,12 @@ Feature: Moving Average Invoice - Check costing when reversing a material receip
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
       | acctSchema      | product      | MovingAverageInvoice | 10 CHF           | 100 PCE    |
+    And after not more than 30 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | product                 | 100       |
 
     #
-    # Create material receipt 
+    # Create material receipt
     #
     And for costing, create completed order with one line
       | C_OrderLine_ID | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | M_Product_ID | QtyEntered | Price   | Description                    |
@@ -159,10 +168,13 @@ Feature: Moving Average Invoice - Check costing when reversing a material receip
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
       | acctSchema      | product      | MovingAverageInvoice | 90918.1818 CHF   | 110 PCE    | 10001000 CHF |
-    
-    
+    And after not more than 30 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | product                 | 110       |
+
+
     #
-    # Reverse the material receipt 
+    # Reverse the material receipt
     #
     And the material receipt identified by receipt1 is reversed as reversal1
     And validate the created material receipt lines
@@ -176,3 +188,6 @@ Feature: Moving Average Invoice - Check costing when reversing a material receip
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty |
       | acctSchema      | product      | MovingAverageInvoice | 10 CHF           | 100 PCE    |
+    And after not more than 30 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | product                 | 100       |
