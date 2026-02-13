@@ -2,6 +2,7 @@ package de.metas.ui.web.order.sales.hu.reservation.process;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.order.api.IHUOrderBL;
 import de.metas.handlingunits.reservation.HUReservation;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
@@ -21,6 +22,9 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -55,8 +59,10 @@ public class WEBUI_C_OrderLineSO_Make_HUReservation_ActualHUs
 	private SalesOrderLineRepository salesOrderLineRepository;
 
 	private final IHUOrderBL huOrderBL = Services.get(IHUOrderBL.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	private final static AdMessageKey MSG_HU_CONTAINS_MORE_QUANTITY_THAN_NEEDED = AdMessageKey.of("HUContainsMoreQuantityThanNeeded");
+	private final static AdMessageKey MSG_SELECTED_HUS_CONTAIN_OTHER_PRODUCTS = AdMessageKey.of("SelectedHUsContainOtherProducts");
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -84,6 +90,11 @@ public class WEBUI_C_OrderLineSO_Make_HUReservation_ActualHUs
 		if (unreservedQty.isLessThan(reservableQty))
 		{
 			return ProcessPreconditionsResolution.reject(MSG_HU_CONTAINS_MORE_QUANTITY_THAN_NEEDED, reservableQty, unreservedQty);
+		}
+		final Set<ProductId> storedProducts = handlingUnitsBL.getStoredProducts(streamSelectedHUIds(Select.ALL).collect(Collectors.toList()));
+		if (storedProducts.stream().anyMatch(product -> !product.equals(productId)))
+		{
+			return ProcessPreconditionsResolution.reject(MSG_SELECTED_HUS_CONTAIN_OTHER_PRODUCTS);
 		}
 
 		return ProcessPreconditionsResolution.accept();

@@ -298,7 +298,10 @@ public class HUReservationService
 							{
 								vhuResult = vhuResult == null ? huProductStorage.getQty() : vhuResult.add(huProductStorage.getQty());
 							}
-							result.setValue(result.getValue() == null ? vhuResult : result.getValue().add(vhuResult));
+							if (vhuResult != null && !vhuResult.isZero())
+							{
+								result.setValue(result.getValue() == null ? vhuResult : result.getValue().add(vhuResult));
+							}
 						}
 						return Result.CONTINUE;
 					}

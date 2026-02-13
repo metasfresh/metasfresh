@@ -216,6 +216,15 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public Set<ProductId> getStoredProducts(final Collection<HuId> huIds)
+	{
+		final List<I_M_HU> hus = getByIds(huIds);
+		return getStorageFactory().streamHUProductStorages(hus)
+				.map(IHUProductStorage::getProductId)
+				.collect(Collectors.toSet());
+	}
+
+	@Override
 	public IHUProductStorage getSingleHUProductStorage(final HuId huId) {return getSingleHUProductStorage(getById(huId));}
 
 	@Override
