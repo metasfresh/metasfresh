@@ -47,13 +47,8 @@ public class InOutLinesWithMissingInvoiceCandidate
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		final ICompositeQueryFilter<I_M_InOutLine> noOrderLineOrCustomerReturnFilter = queryBL.createCompositeQueryFilter(I_M_InOutLine.class)
-				.setJoinOr()
-				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID, null)
-		        .addNotNull(de.metas.inout.model.I_M_InOutLine.COLUMNNAME_Return_Origin_InOutLine_ID);
-
 		final ICompositeQueryFilter<I_M_InOutLine> filters = queryBL.createCompositeQueryFilter(I_M_InOutLine.class);
-		filters.addFilter(noOrderLineOrCustomerReturnFilter);
+		filters.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID, null);
 		filters.addEqualsFilter(I_M_InOutLine.COLUMNNAME_Processed, true); // also processing e.g. closed InOuts
 		filters.addEqualsFilter(de.metas.invoicecandidate.model.I_M_InOutLine.COLUMNNAME_IsInvoiceCandidate, false); // which don't have invoice candidates already generated
 		filters.addOnlyActiveRecordsFilter();

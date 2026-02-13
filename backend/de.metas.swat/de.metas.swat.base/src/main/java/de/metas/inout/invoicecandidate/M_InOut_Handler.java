@@ -88,15 +88,7 @@ public class M_InOut_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Retrieve inout lines
-		final List<I_M_InOutLine> inoutLines;
-		if (inOutBL.isCustomerReturn(inout))
-		{
-			inoutLines = inOutBL.retrieveLines(inout, I_M_InOutLine.class);
-		}
-		else
-		{
-			inoutLines = inOutBL.retrieveLinesWithoutOrderLine(inout, I_M_InOutLine.class);
-		}
+		final List<I_M_InOutLine> inoutLines = inOutBL.retrieveLinesWithoutOrderLine(inout, I_M_InOutLine.class);
 		if (inoutLines.isEmpty())
 		{
 			return ImmutableList.of();

@@ -10,6 +10,7 @@ import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.material.MovementType;
+import de.metas.order.OrderLineId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -94,6 +95,7 @@ public class M_InOut_GenerateCustomerReturn extends JavaProcess implements IProc
 			returnLine.setM_InOut_ID(customerReturn.getM_InOut_ID());
 			returnLine.setReturn_Origin_InOutLine_ID(shipmentLine.getM_InOutLine_ID());
 			returnLine.setM_Locator_ID(locatorId.getRepoId());
+			returnLine.setC_OrderLine_ID(OrderLineId.toRepoId(null));
 			InterfaceWrapperHelper.save(returnLine);
 		}
 
