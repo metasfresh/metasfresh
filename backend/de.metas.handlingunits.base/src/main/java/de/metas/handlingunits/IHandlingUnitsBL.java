@@ -678,8 +678,39 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	ITranslatableString getClearanceStatusCaption(ClearanceStatus clearanceStatus);
 
+	/**
+	 * Sets the reservation status for the given HU and all its included HUs recursively.
+	 * <p>
+	 * When reserving (reserved=true), validates that none of the HUs in the hierarchy
+	 * are already reserved. If any HU is already reserved, throws an {@link AdempiereException}
+	 * before making any changes.
+	 * <p>
+	 * When unreserving (reserved=false), no validation is performed.
+	 * <p>
+	 * The method traverses the entire HU hierarchy using {@link IHandlingUnitsDAO#retrieveIncludedHUs(I_M_HU)}
+	 * and updates the {@code IsReserved} flag for each HU.
+	 *
+	 * @param hu       the handling unit to reserve/unreserve
+	 * @param reserved {@code true} to reserve, {@code false} to unreserve
+	 * @throws AdempiereException if {@code reserved} is {@code true} and any HU in the hierarchy is already reserved
+	 */
 	void setReservedRecursively(@NonNull I_M_HU hu, boolean reserved);
 
+	/**
+	 * Sets the reservation status for multiple HUs and their hierarchies in bulk.
+	 * <p>
+	 * For each HU ID in the provided set, calls {@link #setReservedRecursively(I_M_HU, boolean)}
+	 * which applies the reservation status recursively to the HU and all its children.
+	 * <p>
+	 * If the set is empty, this method returns immediately without any action.
+	 * <p>
+	 * When reserving (reserved=true), validation is performed for each HU hierarchy.
+	 * If any HU in any hierarchy is already reserved, an {@link AdempiereException} is thrown.
+	 *
+	 * @param huIds    set of HU IDs to reserve/unreserve; if empty, no action is taken
+	 * @param reserved {@code true} to reserve, {@code false} to unreserve
+	 * @throws AdempiereException if {@code reserved} is {@code true} and any HU in any hierarchy is already reserved
+	 */
 	void setReservedByHUIds(@NonNull Set<HuId> huIds, boolean reserved);
 
 	boolean isHUHierarchyCleared(@NonNull final HuId huId);
