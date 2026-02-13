@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.fresh.base
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,30 +20,7 @@
  * #L%
  */
 
-package de.metas.process;
-
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
-import javax.annotation.Nullable;
-
-@Value
-@Builder
-public class SpreadsheetExportOptions
-{
-	@NonNull SpreadsheetFormat format;
-
-	boolean translateHeaders;
-
-	@Builder.Default
-	boolean excelApplyFormatting = true;
-
-	@Nullable
-	@Builder.Default
-	String csvFieldDelimiter = null;
-
-	@Nullable
-	@Builder.Default
-	String csvFieldQualifier = null;
-}
+DELETE
+FROM AD_Preference
+WHERE AD_Preference_ID = 540062
+;
