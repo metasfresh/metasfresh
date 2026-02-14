@@ -22,6 +22,7 @@
 
 package de.metas.ui.web.document.filter.provider.fullTextSearch;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -41,6 +42,8 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
@@ -51,8 +54,10 @@ public class PostgresFTSDocumentFilterDescriptorsProviderFactory implements Docu
 {
 	@NonNull protected static final String FILTER_ID = "postgres-full-text-search";
 	@NonNull private static final AdMessageKey MSG_FULL_TEXT_SEARCH_CAPTION = AdMessageKey.of("Search");
-	@NonNull private static final String PARAM_SearchText = "Search";
+	@NonNull public static final String PARAM_SearchText = "Search";
+	@NonNull public static final String PARAM_TableName = "TableName";
 	@NonNull private static final String SYSCONFIG_ENABLED =  "de.metas.ui.web.document.filter.provider.fullTextSearch.PostgresFTSDocumentFilterDescriptorsProviderFactory.enabled";
+	@NonNull private static final ImmutableList<String> supportedTableNames = ImmutableList.of(I_C_BPartner.Table_Name, I_C_Invoice.Table_Name, I_M_Product.Table_Name);
 
 	// services
 	@NonNull private static final Logger logger = LogManager.getLogger(PostgresFTSDocumentFilterDescriptorsProviderFactory.class);
@@ -72,7 +77,7 @@ public class PostgresFTSDocumentFilterDescriptorsProviderFactory implements Docu
 	private DocumentFilterDescriptorsProvider createFiltersProvider(
 			@NonNull final String tableName)
 	{
-		if (!I_C_BPartner.Table_Name.equals(tableName))
+		if (!supportedTableNames.contains(tableName))
 		{
 			logger.debug("Skip creating Postgres FTS filters because table {} isn't supported", tableName);
 			return NullDocumentFilterDescriptorsProvider.instance;
@@ -97,6 +102,7 @@ public class PostgresFTSDocumentFilterDescriptorsProviderFactory implements Docu
 								.fieldName(PARAM_SearchText)
 								.displayName(caption)
 								.widgetType(DocumentFieldWidgetType.Text))
+						.addInternalParameter(PARAM_TableName, tableName)
 						.build());
 	}
 }
