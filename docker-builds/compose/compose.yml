@@ -10,7 +10,7 @@ services:
         mfversion: $mfversion
         dbqualifier: $dbqualifier
     ports:
-      - "15432:5432"
+      - "14432:5432"
     environment:
       - PGDATA=/var/lib/postgresql/data
     healthcheck:

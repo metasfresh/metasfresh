@@ -18,8 +18,11 @@ import de.metas.sscc18.SSCC18;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Package;
 import org.compiere.util.TimeUtil;
@@ -65,16 +68,6 @@ public class PurchaseOrderToShipperTransportationRepository
 		return new PurchaseOrderToShipperTransportationRepository();
 	}
 
-	public boolean purchaseOrderNotInShipperTransportation(@NonNull final OrderId purchaseOrderId)
-	{
-		return !queryBL
-				.createQueryBuilder(I_M_ShippingPackage.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_C_Order_ID, purchaseOrderId)
-				.create()
-				.anyMatch();
-	}
-
 	public void addPurchaseOrderToShipperTransportation(@NonNull final PurchaseShippingPackageCreateRequest request)
 	{
 		final I_M_Package mpackage = newInstance(I_M_Package.class);
@@ -84,6 +77,10 @@ public class PurchaseOrderToShipperTransportationRepository
 		mpackage.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(request.getBPartnerLocationId()));
 		mpackage.setAD_Org_ID(OrgId.toRepoId(request.getOrgId()));
 		mpackage.setIPA_SSCC18(SSCC18.toString(request.getSscc()));
+		if (request.getGrossWeightInKg() != null)
+		{
+			mpackage.setPackageWeight(request.getGrossWeightInKg());
+		}
 		save(mpackage);
 
 		final I_M_ShippingPackage shippingPackage = InterfaceWrapperHelper.newInstance(I_M_ShippingPackage.class, mpackage);
@@ -95,10 +92,19 @@ public class PurchaseOrderToShipperTransportationRepository
 		shippingPackage.setC_OrderLine_ID(OrderLineId.toRepoId(request.getOrderLineId()));
 		shippingPackage.setIsToBeFetched(true);
 		shippingPackage.setAD_Org_ID(OrgId.toRepoId(request.getOrgId()));
+		shippingPackage.setQtyLU(request.getLuQty());
+		if (request.getTuQty() != null)
+		{
+			shippingPackage.setQtyTU(request.getTuQty());
+		}
+		if (request.getGrossWeightInKg() != null)
+		{
+			shippingPackage.setPackageWeight(request.getGrossWeightInKg());
+		}
 		save(shippingPackage);
 	}
 
-	public void removeFromShipperTransportation(@NonNull final Collection<PackageId> packageIdsToDelete)
+	public void deleteFromShipperTransportation(@NonNull final Collection<PackageId> packageIdsToDelete)
 	{
 		queryBL.createQueryBuilder(I_M_ShippingPackage.class)
 				.addOnlyActiveRecordsFilter()
@@ -112,24 +118,17 @@ public class PurchaseOrderToShipperTransportationRepository
 				.delete();
 	}
 
-	public ImmutableList<Package> getPackagesByOrderLineIds(@NonNull final Collection<OrderLineId> orderLineIds)
+	public ImmutableList<Package> getPackagesBy(@NonNull final ShippingPackageQuery query)
 	{
-		return queryBL.createQueryBuilder(I_M_ShippingPackage.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_M_ShippingPackage.COLUMNNAME_C_OrderLine_ID, orderLineIds)
-				.andCollect(I_M_ShippingPackage.COLUMN_M_Package_ID)
-				.create()
+		return toPackageSqlQuery(query)
 				.stream()
 				.map(PurchaseOrderToShipperTransportationRepository::fromPO)
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public boolean hasPackageIdsByOrderId(@NonNull final OrderId orderId)
+	public boolean anyMatch(@NonNull final ShippingPackageQuery query)
 	{
-		return queryBL.createQueryBuilder(I_M_ShippingPackage.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_C_Order_ID, orderId)
-				.anyMatch();
+		return toPackageSqlQuery(query).anyMatch();
 	}
 
 	public Package getPackageById(@NonNull final PackageId packageId)
@@ -185,4 +184,47 @@ public class PurchaseOrderToShipperTransportationRepository
 				.build();
 	}
 
+	public Collection<I_M_ShippingPackage> getBy(final @NonNull ShippingPackageQuery query)
+	{
+		return toShippingPackageQueryBuilder(query)
+				.create()
+				.list();
+	}
+
+	private IQuery<I_M_Package> toPackageSqlQuery(final @NonNull ShippingPackageQuery query)
+	{
+		final IQueryBuilder<I_M_ShippingPackage> builder = toShippingPackageQueryBuilder(query);
+		return builder.andCollect(I_M_ShippingPackage.COLUMN_M_Package_ID)
+				.create();
+	}
+
+	private IQueryBuilder<I_M_ShippingPackage> toShippingPackageQueryBuilder(final @NonNull ShippingPackageQuery query)
+	{
+		if (query.getOrderIds().isEmpty() && query.getOrderLineIds().isEmpty())
+		{
+			return queryBL.createQueryBuilder(I_M_ShippingPackage.class)
+					.filter(ConstantQueryFilter.of(false));
+		}
+
+		final IQueryBuilder<I_M_ShippingPackage> builder = queryBL.createQueryBuilder(I_M_ShippingPackage.class)
+				.addOnlyActiveRecordsFilter();
+
+		final Collection<OrderId> orderIds = query.getOrderIds();
+		if (!orderIds.isEmpty())
+		{
+			builder.addInArrayFilter(I_M_ShippingPackage.COLUMNNAME_C_Order_ID, orderIds);
+		}
+
+		final Collection<OrderLineId> orderLineIds = query.getOrderLineIds();
+		if (!orderLineIds.isEmpty())
+		{
+			builder.addInArrayFilter(I_M_ShippingPackage.COLUMNNAME_C_OrderLine_ID, orderLineIds);
+		}
+		return builder;
+	}
+
+	public void deleteBy(@NonNull final ShippingPackageQuery query)
+	{
+		deleteFromShipperTransportation(toPackageSqlQuery(query).listIds(PackageId::ofRepoId));
+	}
 }

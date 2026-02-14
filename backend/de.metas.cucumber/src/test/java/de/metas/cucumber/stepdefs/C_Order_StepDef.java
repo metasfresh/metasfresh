@@ -386,6 +386,23 @@ public class C_Order_StepDef
 		}
 	}
 
+	@And("^the order identified by (.*) cannot be (reactivated|completed|closed|voided|reversed)$")
+	public void order_action_not_possible(@NonNull final String orderIdentifier, @NonNull final String action)
+	{
+		Exception expectedException = null;
+		try
+		{
+			order_action(orderIdentifier, action);
+		}
+		catch (final Exception e)
+		{
+			expectedException = e;
+		}
+		assertThat(expectedException)
+				.as("Order action %s is not possible for order %s", action, orderIdentifier)
+				.isNotNull();
+	}
+
 	public void completeOrder(final I_C_Order order)
 	{
 		order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it

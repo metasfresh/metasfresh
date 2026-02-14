@@ -75,11 +75,13 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
+import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.handlingunits.storage.impl.DefaultHUStorageFactory;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.material.event.commons.AttributesKey;
@@ -88,6 +90,7 @@ import de.metas.organization.InstantAndOrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -129,6 +132,8 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 {
 	private static final Logger logger = LogManager.getLogger(HandlingUnitsBL.class);
 
+	private static final AdMessageKey ERR_HUHasPackages = AdMessageKey.of("de.metas.handlingunits.impl.HUHasPackages");
+	
 	private final IHUStorageFactory storageFactory = new DefaultHUStorageFactory();
 	private final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
 	private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
@@ -141,6 +146,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	private final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
 
 	private final ThreadLocal<Boolean> loadInProgress = new ThreadLocal<>();
 
@@ -329,10 +335,21 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public void markDestroyed(@NonNull final IHUContext huContext, final I_M_HU hu)
 	{
-		if (huContext.isDontDestroyHu(HuId.ofRepoId(hu.getM_HU_ID())))
+		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
+		if (huContext.isDontDestroyHu(huId))
 		{
 			logger.info("markDestroyed - the given M_HU_ID={} is temporarily protected from destruction; -> nothing to do", hu.getM_HU_ID());
 			return;
+		}
+		final boolean isReceiptReversal = huContext.isPropertyTrue(IHUContext.PROPERTY_IsReceiptReversal);
+		if(!isReceiptReversal)
+		{
+			final List<PackageId> packageIds = huPackageBL.retrievePackageIds(huId);
+			if(!packageIds.isEmpty())
+			{
+				throw new HUException(ERR_HUHasPackages, huId.getRepoId(), packageIds.stream().map(PackageId::getRepoId).collect(ImmutableList.toImmutableList()))
+						.markAsUserValidationError();
+			}
 		}
 		huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Destroyed);
 		hu.setIsActive(false);
@@ -1416,7 +1433,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 	@Override
 	@NonNull
-	public ImmutableSet<HuPackingInstructionsIdAndCaption> retrievePIInfo(@NonNull Collection<HuPackingInstructionsItemId> piItemIds)
+	public ImmutableSet<HuPackingInstructionsIdAndCaption> retrievePIInfo(@NonNull final Collection<HuPackingInstructionsItemId> piItemIds)
 	{
 		return handlingUnitsRepo.retrievePIInfo(piItemIds);
 	}

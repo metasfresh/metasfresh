@@ -1,13 +1,16 @@
 package de.metas.order.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocSubType;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
@@ -19,15 +22,16 @@ import de.metas.product.ProductId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
-import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_PO_OrderLine_Alloc;
 import org.compiere.model.I_M_InOut;
@@ -35,6 +39,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.eevolution.api.PPCostCollectorId;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -42,6 +47,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -148,6 +154,22 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 		return loadByIds(OrderAndLineId.getOrderLineRepoIds(orderAndLineIds), I_C_OrderLine.class)
 				.stream()
 				.collect(GuavaCollectors.toImmutableMapByKey(orderLineRecord -> OrderAndLineId.ofRepoIds(orderLineRecord.getC_Order_ID(), orderLineRecord.getC_OrderLine_ID())));
+	}
+
+	@Override
+	public ImmutableListMultimap<I_C_Order, I_C_OrderLine> getOrderToLinesMap(final Collection<OrderAndLineId> orderAndLineIds)
+	{
+		if (orderAndLineIds.isEmpty())
+		{
+			return ImmutableListMultimap.of();
+		}
+		final ImmutableMap<OrderId, I_C_Order> orderIdToOrderMap = getByIds(orderAndLineIds.stream().map(OrderAndLineId::getOrderId).collect(Collectors.toSet()), I_C_Order.class)
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(o -> OrderId.ofRepoId(o.getC_Order_ID()), Function.identity()));
+
+		return loadByIds(OrderAndLineId.getOrderLineRepoIds(orderAndLineIds), I_C_OrderLine.class)
+				.stream()
+				.collect(ImmutableListMultimap.toImmutableListMultimap(orderLineRecord -> orderIdToOrderMap.get(OrderId.ofRepoId(orderLineRecord.getC_Order_ID())), Function.identity()));
 	}
 
 	@Override
@@ -352,6 +374,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 		InterfaceWrapperHelper.save(orderLine);
 	}
 
+	@NonNull
 	public Optional<I_C_Order> retrieveByOrderCriteria(@NonNull final OrderQuery query)
 	{
 		if (query.getOrderId() != null)
@@ -360,7 +383,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 		}
 		if (Check.isNotBlank(query.getDocumentNo()))
 		{
-			return Optional.ofNullable(getOrderByDocumentNumberQuery(query));
+			return Optional.ofNullable(getOrderByDocumentNumberAndDocType(query));
 		}
 		return Optional.empty();
 	}
@@ -387,17 +410,31 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 		return orderRecord;
 	}
 
-	private I_C_Order getOrderByDocumentNumberQuery(final OrderQuery query)
+	@Nullable
+	private I_C_Order getOrderByDocumentNumberAndDocType(@NonNull final OrderQuery query)
 	{
 		final String documentNo = assumeNotNull(query.getDocumentNo(), "Param query needs to have a non-null document number; query={}", query);
 		final OrgId orgId = assumeNotNull(query.getOrgId(), "Param query needs to have a non-null orgId; query={}", query);
 		final DocBaseAndSubType docType = assumeNotNull(query.getDocType(), "Param query needs to have a non-null docType; query={}", query);
+		final DocSubType docSubType = docType.getDocSubType();
 
-		final IQueryBuilder<I_C_Order> queryBuilder = createQueryBuilder()
+		final IQueryBuilder<I_C_DocType> docTypeQueryBuilder = queryBL.createQueryBuilder(I_C_DocType.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_DocType.COLUMNNAME_DocBaseType, docType.getDocBaseType());
+		if (docSubType.isNone())
+		{
+			docTypeQueryBuilder.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, null);
+		}
+		else if (!docSubType.isAny())
+		{
+			docTypeQueryBuilder.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, docSubType);
+		}
+
+		final IQueryBuilder<I_C_Order> queryBuilder = queryBL.createQueryBuilder(I_C_Order.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Order.COLUMNNAME_AD_Org_ID, orgId)
 				.addEqualsFilter(I_C_Order.COLUMNNAME_DocumentNo, documentNo)
-				.addEqualsFilter(I_C_Order.COLUMNNAME_C_DocType_ID, NumberUtils.asInt(docType.getDocBaseType(), -1));
+				.addInSubQueryFilter(I_C_Invoice.COLUMNNAME_C_DocType_ID, I_C_DocType.COLUMNNAME_C_DocType_ID, docTypeQueryBuilder.create());
 
 		return queryBuilder.create().firstOnly(I_C_Order.class);
 	}
@@ -457,5 +494,13 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 		final String sql = "SELECT " + org.compiere.model.I_C_OrderLine.COLUMNNAME_PP_Cost_Collector_ID
 				+ " FROM C_OrderLine WHERE C_OrderLine_ID=? AND PP_Cost_Collector_ID IS NOT NULL";
 		return Optional.ofNullable(PPCostCollectorId.ofRepoIdOrNull(DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql, orderLineId)));
+	}
+
+	public List<I_C_Order> getByQueryFilter(final IQueryFilter<I_C_Order> queryFilter)
+	{
+		return queryBL.createQueryBuilder(I_C_Order.class)
+				.filter(queryFilter)
+				.create()
+				.list();
 	}
 }
