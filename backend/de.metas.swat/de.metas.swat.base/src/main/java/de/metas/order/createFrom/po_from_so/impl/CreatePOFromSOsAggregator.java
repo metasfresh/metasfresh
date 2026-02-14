@@ -204,16 +204,16 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 		}
 	}
 
-	private CreatePOLineFromSOLinesAggregator getCreateLineAggregator(final I_C_Order pruchaseOrder)
+	private CreatePOLineFromSOLinesAggregator getCreateLineAggregator(final I_C_Order purchaseOrder)
 	{
-		CreatePOLineFromSOLinesAggregator orderLinesAggregator = orderKey2OrderLineAggregator.get(pruchaseOrder.getDocumentNo());
+		CreatePOLineFromSOLinesAggregator orderLinesAggregator = orderKey2OrderLineAggregator.get(purchaseOrder.getDocumentNo());
 		if (orderLinesAggregator == null)
 		{
-			orderLinesAggregator = new CreatePOLineFromSOLinesAggregator(pruchaseOrder, purchaseQtySource, p_TypeOfPurchase);
+			orderLinesAggregator = new CreatePOLineFromSOLinesAggregator(purchaseOrder, purchaseQtySource, p_TypeOfPurchase);
 			orderLinesAggregator.setItemAggregationKeyBuilder(CreatePOLineFromSOLinesAggregationKeyBuilder.INSTANCE);
 			orderLinesAggregator.setGroupsBufferSize(100);
 
-			orderKey2OrderLineAggregator.put(pruchaseOrder.getDocumentNo(), orderLinesAggregator);
+			orderKey2OrderLineAggregator.put(purchaseOrder.getDocumentNo(), orderLinesAggregator);
 		}
 		return orderLinesAggregator;
 	}

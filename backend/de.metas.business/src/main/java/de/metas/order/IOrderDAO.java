@@ -1,5 +1,6 @@
 package de.metas.order;
 
+import com.google.common.collect.ImmutableListMultimap;
 import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.interfaces.I_C_OrderLine;
@@ -8,6 +9,7 @@ import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
@@ -60,6 +62,8 @@ public interface IOrderDAO extends ISingletonService
 	{
 		return loadByIds(OrderAndLineId.getOrderLineRepoIds(orderAndLineIds), modelType);
 	}
+
+	ImmutableListMultimap<I_C_Order, I_C_OrderLine> getOrderToLinesMap(Collection<OrderAndLineId> orderAndLineIds);
 
 	/**
 	 * @return order lines for given order
@@ -145,4 +149,6 @@ public interface IOrderDAO extends ISingletonService
 
 	@NonNull
 	List<OrderId> getUnprocessedIdsBy(@NonNull ProductId productId);
+	
+	List<I_C_Order> getByQueryFilter(final IQueryFilter<I_C_Order> queryFilter);
 }

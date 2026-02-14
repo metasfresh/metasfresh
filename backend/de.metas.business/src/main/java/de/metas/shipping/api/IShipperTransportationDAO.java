@@ -2,9 +2,9 @@ package de.metas.shipping.api;
 
 /*
  * #%L
- * de.metas.swat.base
+ * de.metas.business
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,6 +23,7 @@ package de.metas.shipping.api;
  */
 
 import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
+import de.metas.handlingunits.impl.ShipperTransportationQuery;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
@@ -33,12 +34,14 @@ import org.compiere.model.I_M_Package;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 
 public interface IShipperTransportationDAO extends ISingletonService
 {
 
-	I_M_ShipperTransportation getById(ShipperTransportationId shipperItransportationId);
+	@NonNull
+	I_M_ShipperTransportation getById(@NonNull ShipperTransportationId shipperItransportationId);
 
 	List<I_M_ShippingPackage> retrieveShippingPackages(@NonNull ShipperTransportationId shipperTransportation);
 
@@ -57,4 +60,8 @@ public interface IShipperTransportationDAO extends ISingletonService
 
 	@NonNull
 	ShipperTransportationId getOrCreate(@NonNull CreateShipperTransportationRequest request);
+
+	Collection<I_M_ShipperTransportation> getByQuery(@NonNull ShipperTransportationQuery query);
+
+	boolean anyMatch(@NonNull ShipperTransportationQuery query);
 }

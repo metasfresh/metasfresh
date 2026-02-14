@@ -37,6 +37,7 @@ import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.order.DeliveryRule;
 import de.metas.order.OrderLineId;
 import de.metas.ordercandidate.api.IOLCandDAO;
@@ -55,16 +56,20 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -261,6 +266,49 @@ public class ShipmentService implements IShipmentService
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	@NonNull
+	public IQueryFilter<I_M_ShipmentSchedule> createShipmentScheduleEnqueuerQueryFilters(
+			@NonNull final IQueryFilter<I_M_ShipmentSchedule> selectionFilter)
+	{
+		return createShipmentScheduleEnqueuerQueryFilters(selectionFilter, null);
+	}
+
+	@NonNull
+	public IQueryFilter<I_M_ShipmentSchedule> createShipmentScheduleEnqueuerQueryFilters(
+			@NonNull final IQueryFilter<I_M_ShipmentSchedule> selectionFilter,
+			@Nullable final Instant nowInstant)
+	{
+		final ICompositeQueryFilter<I_M_ShipmentSchedule> filters = queryBL.createCompositeQueryFilter(I_M_ShipmentSchedule.class)
+				.addFilter(selectionFilter);
+
+		//
+		// Filter only those which are not yet processed
+		filters.addEqualsFilter(de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_Processed, false);
+
+		if (nowInstant != null)
+		{
+			final IQuery<I_M_Packageable_V> subQueryPackageable = queryBL.createQueryBuilder(I_M_Packageable_V.class)
+					.filter(queryBL.createCompositeQueryFilter(I_M_Packageable_V.class)
+							.setJoinOr()
+							.addCompareFilter(I_M_Packageable_V.COLUMNNAME_PreparationDate, CompareQueryFilter.Operator.LESS_OR_EQUAL, nowInstant)
+							.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_IsFixedPreparationDate, false)
+					)
+					.filter(queryBL.createCompositeQueryFilter(I_M_Packageable_V.class)
+							.setJoinOr()
+							.addCompareFilter(I_M_Packageable_V.COLUMNNAME_DatePromised, CompareQueryFilter.Operator.LESS_OR_EQUAL, nowInstant)
+							.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_IsFixedDatePromised, false)
+					)
+					.create();
+
+			filters.addInSubQueryFilter()
+					.matchingColumnNames(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, I_M_Packageable_V.COLUMNNAME_M_ShipmentSchedule_ID)
+					.subQuery(subQueryPackageable)
+					.end();
+		}
+
+		return filters;
+	}
+
 	private void validateAsyncBatchAssignment(@NonNull final Set<ShipmentScheduleId> ids, @NonNull final AsyncBatchId asyncBatchId)
 	{
 		final int unassignedScheduleCount = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
@@ -286,7 +334,7 @@ public class ShipmentService implements IShipmentService
 
 		final ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters workPackageParameters = ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.builder()
 				.adPInstanceId(adPInstanceDAO.createSelectionId())
-				.queryFilters(queryFilters)
+				.queryFilters(createShipmentScheduleEnqueuerQueryFilters(queryFilters))
 				.onlyLUIds(request.getOnlyLUIds())
 				.quantityType(request.getQuantityTypeToUse())
 				.onTheFlyPickToPackingInstructions(request.isOnTheFlyPickToPackingInstructions())

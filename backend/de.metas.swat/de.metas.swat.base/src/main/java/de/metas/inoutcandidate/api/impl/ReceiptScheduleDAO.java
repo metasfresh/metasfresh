@@ -338,7 +338,7 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 	}
 
 	@Override
-	public List<ReceiptScheduleId> retainLUQtySchedules(final List<ReceiptScheduleId> receiptSchedules)
+	public List<ReceiptScheduleId> retainLUQtySchedules(@NonNull final List<ReceiptScheduleId> receiptSchedules)
 	{
 		return queryBL.createQueryBuilder(I_C_OrderLine.class)
 				.addOnlyActiveRecordsFilter()

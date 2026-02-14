@@ -95,6 +95,7 @@ import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryAggregateBuilder;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -478,7 +479,6 @@ public class OrderBL implements IOrderBL
 		}
 
 		final I_C_DocType docType = docTypeBL.getById(docTypeId);
-
 
 		@Nullable
 		final CopyDescriptionAndDocumentNote copyDescriptionAndDocumentNote = CopyDescriptionAndDocumentNote.ofNullableCode(docType.getCopyDescriptionAndDocumentNote());
@@ -907,12 +907,19 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	@Nullable
-	public BPartnerId getEffectiveDropshipPartnerId(@NonNull final I_C_Order orderRecord)
+	public @NonNull BPartnerId getEffectiveDropshipPartnerId(@NonNull final I_C_Order orderRecord)
 	{
-		if (orderRecord.isDropShip() && orderRecord.getDropShip_BPartner_ID() > 0)
+		return Check.assumeNotNull(getEffectiveDropshipPartnerIdOrNull(orderRecord), "ShipTo Partner should be present");
+	}
+
+	@Override
+	@Nullable
+	public BPartnerId getEffectiveDropshipPartnerIdOrNull(@NonNull final I_C_Order orderRecord)
+	{
+		final BPartnerId dropShipPartnerId = BPartnerId.ofRepoIdOrNull(orderRecord.getDropShip_BPartner_ID());
+		if (orderRecord.isDropShip() && dropShipPartnerId != null)
 		{
-			return BPartnerId.ofRepoId(orderRecord.getDropShip_BPartner_ID());
+			return dropShipPartnerId;
 		}
 		return BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_ID());
 	}
@@ -1018,6 +1025,13 @@ public class OrderBL implements IOrderBL
 
 		final DocTypeId docTypeId = getDocTypeIdEffectiveOrNull(order);
 		return docTypeId != null && docTypeBL.isSalesProposalOrQuotation(docTypeId);
+	}
+
+	@Override
+	public boolean isSalesOrder(@NonNull final I_C_Order order)
+	{
+		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
+		return soTrx.isSales();
 	}
 
 	@Override
@@ -1242,11 +1256,7 @@ public class OrderBL implements IOrderBL
 		if (billBPLocationId != null)
 		{
 			final I_C_BPartner_Location billLocationRecord = bpartnerDAO.getBPartnerLocationById(billBPLocationId);
-			final String billLocationEmail = billLocationRecord != null ? StringUtils.trimBlankToNull(billLocationRecord.getEMail()) : null;
-			if (billLocationEmail != null)
-			{
-				return billLocationEmail;
-			}
+			return  billLocationRecord != null ? StringUtils.trimBlankToNull(billLocationRecord.getEMail()) : null;
 		}
 
 		//
@@ -1412,5 +1422,10 @@ public class OrderBL implements IOrderBL
 	private ShipperId getPartnerShipperId(@NonNull final BPartnerId partnerId)
 	{
 		return partnerDAO.getShipperId(partnerId);
+	}
+
+	public List<I_C_Order> getByQueryFilter(final IQueryFilter<I_C_Order> queryFilter)
+	{
+		return orderDAO.getByQueryFilter(queryFilter);
 	}
 }

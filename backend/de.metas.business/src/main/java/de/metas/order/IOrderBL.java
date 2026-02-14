@@ -43,6 +43,7 @@ import de.metas.tax.api.Tax;
 import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
@@ -105,9 +106,12 @@ public interface IOrderBL extends ISingletonService
 	@Nullable
 	BPartnerId getEffectiveBillPartnerId(@NonNull I_C_Order orderRecord);
 
-	@Nullable
+	@NonNull
 	BPartnerId getEffectiveDropshipPartnerId(@NonNull I_C_Order orderRecord);
-	
+
+	@Nullable
+	BPartnerId getEffectiveDropshipPartnerIdOrNull(@NonNull I_C_Order orderRecord);
+
 	/**
 	 * @return the order's bill contact <b>but</b> falls back to the "general" contact ({@code C_Order.AD_User_ID}) if possible.
 	 * Be sure to first check with {@link #hasBillToContactId(I_C_Order)}.
@@ -255,6 +259,8 @@ public interface IOrderBL extends ISingletonService
 	 */
 	boolean isSalesProposalOrQuotation(I_C_Order order);
 
+	boolean isSalesOrder(@NonNull I_C_Order order);
+
 	boolean isRequisition(@NonNull I_C_Order order);
 
 	boolean isMediated(@NonNull I_C_Order order);
@@ -320,6 +326,11 @@ public interface IOrderBL extends ISingletonService
 		return Quantitys.of(orderLine.getQtyEntered(), uomId);
 	}
 
+	default boolean isCompleted(@NonNull final I_C_Order order)
+	{
+		return DocStatus.ofCode(order.getDocStatus()).isCompleted();
+	}
+
 	DocStatus getDocStatus(OrderId orderId);
 
 	void save(I_C_OrderLine orderLine);
@@ -346,4 +357,6 @@ public interface IOrderBL extends ISingletonService
 		final BigDecimal luQty = orderLine.getQtyLU();
 		return luQty != null && luQty.signum() > 0;
 	}
+
+	List<I_C_Order> getByQueryFilter(final IQueryFilter<I_C_Order> queryFilter);
 }

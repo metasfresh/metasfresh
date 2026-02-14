@@ -3,6 +3,7 @@ package de.metas.cucumber.stepdefs;
 import com.google.common.collect.ImmutableSet;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -20,6 +21,11 @@ public interface StepDefDataGetIdAware<ID extends RepoIdAware, RecordType>
 	//
 	// Optional methods you might want to implement
 	default boolean isAllowDuplicateRecordsForSameIdentifier(ID id) {return false;}
+
+	default ID parseId(final StepDefDataIdentifier identifier)
+	{
+		throw new AdempiereException("Parsing the ID from identifier not implemented for " + getClass());
+	}
 
 	//
 	// Methods implemented by StepDefData:
@@ -63,6 +69,12 @@ public interface StepDefDataGetIdAware<ID extends RepoIdAware, RecordType>
 	default Optional<ID> getIdOptional(@NonNull final StepDefDataIdentifier identifier)
 	{
 		return getOptional(identifier).map(this::extractIdFromRecord);
+	}
+
+	default ID getIdOrParse(@NonNull final StepDefDataIdentifier identifier)
+	{
+		return getIdOptional(identifier)
+				.orElseGet(() -> parseId(identifier));
 	}
 
 	default Stream<ID> streamIds() {return getIdentifiers().stream().map(this::getId).distinct();}

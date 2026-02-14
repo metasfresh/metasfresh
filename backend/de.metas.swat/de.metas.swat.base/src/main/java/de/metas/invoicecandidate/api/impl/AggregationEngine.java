@@ -374,18 +374,7 @@ public final class AggregationEngine
 			final List<IInvoiceLineAttribute> invoiceLineAttributes = aggregationBL.extractInvoiceLineAttributes(inOutLine);
 			icAggregationRequestBuilder.addInvoiceLineAttributes(invoiceLineAttributes);
 
-			//
-			// Sales iols from different inOuts shall go into different invoice lines
-			// NOTE: this shall be configured in line aggregation definition.
-			// For legacy key builder we moved to de.metas.invoicecandidate.agg.key.impl.ICLineAggregationKeyBuilder_OLD.buildAggregationKey(I_C_Invoice_Candidate)
-			// if (ic.isSOTrx())
-			// {
-			// icAggregationRequestBuilder.addLineAggregationKeyElement(inOutLine.getM_InOut_ID());
-			// }
-
-			// this is only relevant if iciol != null. Otherwise we allocate the full invoicable Qty anyways.
-			final boolean allocateRemainingQty = isLastIcIol && (icAggregationOrNull == null || !icAggregationOrNull.hasInvoicePerShipmentAttribute());
-			icAggregationRequestBuilder.setAllocateRemainingQty(allocateRemainingQty);
+			icAggregationRequestBuilder.setAllocateRemainingQty(isLastIcIol);
 		}
 
 		//
