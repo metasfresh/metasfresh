@@ -63,6 +63,7 @@
 	<field name="param_attributes" class="java.lang.String"/>
 	<field name="currency" class="java.lang.String"/>
 	<field name="ad_org_id" class="java.math.BigDecimal"/>
+	<field name="delivery_bp_name" class="java.lang.String"/>
 	<field name="unionorder" class="java.lang.Integer"/>
 	<variable name="sameperiodtotal" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{sameperiodsum}]]></variableExpression>
@@ -134,11 +135,18 @@
 					<textFieldExpression><![CDATA[$P{IsSOTrx}.equals("N") ? $R{purchase} : ($P{IsSOTrx}.equals("Y") ? $R{sales} : $R{all} )]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="237" y="44" width="180" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<reportElement x="237" y="44" width="130" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
 						<font fontName="Arial" size="8" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{bp_name}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="367" y="44" width="50" height="12" uuid="e5f6a7b8-c9d0-1234-efab-567890123456"/>
+					<textElement>
+						<font size="6" isBold="false" isItalic="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{delivery_bp_name}]]></textFieldExpression>
 				</textField>
 				<textField>
 					<reportElement x="507" y="44" width="145" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
