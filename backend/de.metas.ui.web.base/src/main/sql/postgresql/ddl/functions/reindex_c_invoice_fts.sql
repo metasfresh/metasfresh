@@ -50,8 +50,6 @@ WITH InvoiceText AS (
                COALESCE(u.lastname, '') || ' ' ||
                COALESCE(dt.name, '') || ' ' ||
                COALESCE(wh.name, '') || ' ' ||
-               COALESCE(cal.name, '') || ' ' ||
-               COALESCE(year.fiscalyear::TEXT, '') || ' ' ||
                COALESCE((
                    SELECT STRING_AGG(ExternalReference, ' ')
                    FROM S_ExternalReference
@@ -67,8 +65,6 @@ WITH InvoiceText AS (
              LEFT JOIN AD_User u ON i.ad_user_id = u.ad_user_id
              JOIN c_doctype dt ON i.c_doctypetarget_id = dt.c_doctype_id
              LEFT JOIN m_warehouse wh ON i.m_warehouse_id = wh.m_warehouse_id
-             LEFT JOIN c_calendar cal ON i.c_harvesting_calendar_id = cal.c_calendar_id
-             LEFT JOIN c_year year ON i.harvesting_year_id = year.c_year_id
              JOIN ad_org o ON i.ad_org_id = o.ad_org_id AND o.isactive = 'Y'
     WHERE (p_c_invoice_id IS NULL OR i.c_invoice_id = p_c_invoice_id)
 )
