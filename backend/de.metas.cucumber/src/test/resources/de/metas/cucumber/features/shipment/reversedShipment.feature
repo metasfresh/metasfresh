@@ -75,9 +75,9 @@ Feature: reversed shipment
     Then M_HU are validated:
       | M_HU_ID.Identifier | HUStatus | IsActive |
       | hu_1               | A        | Y        |
-    # NOTE: MD_Stock assertion after reversal removed — event-driven MD_Stock updates
-    # after shipment reversals don't reliably propagate in CI (timeout after 60s).
-    # Forward operations (inventory, shipment) work fine; reversal path is the issue.
+    And after not more than 60 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | p_1                     | 10        |
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
@@ -90,3 +90,6 @@ Feature: reversed shipment
     And M_HU are validated:
       | M_HU_ID.Identifier | HUStatus | IsActive |
       | hu_1               | E        | N        |
+    And after not more than 60 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | p_1                     | 0         |
