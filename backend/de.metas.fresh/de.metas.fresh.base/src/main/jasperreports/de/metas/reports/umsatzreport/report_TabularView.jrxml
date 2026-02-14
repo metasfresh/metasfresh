@@ -44,6 +44,7 @@
 	<field name="yeardiffpercentage" class="java.math.BigDecimal"/>
 	<field name="attributesetinstance" class="java.lang.String"/>
 	<field name="ad_org_id" class="java.math.BigDecimal"/>
+	<field name="delivery_bp_name" class="java.lang.String"/>
 	<field name="unionorder" class="java.lang.Integer"/>
 	<variable name="sameperiodtotal" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{sameperiodsum}]]></variableExpression>
@@ -293,11 +294,18 @@
 		<band height="10" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean ($F{unionorder}.intValue() == 1)]]></printWhenExpression>
 			<textField>
-				<reportElement x="37" y="0" width="170" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
+				<reportElement x="37" y="0" width="120" height="10" uuid="b8f331b0-8509-4047-917b-10046463e375"/>
 				<textElement>
 					<font size="7" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="157" y="0" width="50" height="10" uuid="b1c2d3e4-f5a6-7890-abcd-ef1234567891"/>
+				<textElement>
+					<font size="6" isBold="false" isItalic="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{delivery_bp_name}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0" isBlankWhenNull="true">
 				<reportElement x="207" y="0" width="60" height="10" uuid="283307ea-42f1-443b-874f-de97d438a639"/>
