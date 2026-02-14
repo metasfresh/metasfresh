@@ -354,9 +354,11 @@ Feature: reversed shipment clears HU C_BPartner_ID
     Then M_HU are validated:
       | M_HU_ID.Identifier | HUStatus | IsActive | C_BPartner_ID | C_BPartner_Location_ID |
       | hu_1               | A        | Y        | null          | null                   |
-    # NOTE: MD_Stock assertion omitted here because the RA→CO→RC cycle
-    # produces a complex M_Transaction event chain that doesn't reliably
-    # update MD_Stock via the event-driven path within the timeout.
+    # RA→CO→RC creates 3 async events (delete+create+create) that must all propagate
+    # through RabbitMQ before MD_Stock reaches its final value. Use 120s for CI headroom.
+    And after not more than 120 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | p_1                     | 10        |
 
   @from:cucumber
   Scenario: LU/TU/VHU hierarchy: on-the-fly picking splits VHU from hierarchy, reversal restores the split VHU
@@ -606,10 +608,30 @@ Feature: reversed shipment clears HU C_BPartner_ID
     Then after not more than 60 seconds metasfresh has MD_Stock data
       | M_Product_ID.Identifier | QtyOnHand |
       | p_1                     | 10        |
-    # NOTE: Re-ship-to-B removed because on-the-fly picking non-deterministically
-    # picks either splitVHU_A or hu_1 (both have 5 PCE). When it picks hu_1,
-    # StepDefData.put() fails since hu_1 is already mapped. The core assertion
-    # (BPartner cleared + stock restored after reversal) is validated above.
+
+    # Re-ship 5 PCE to Customer B — validates the reversed HU is available for a different customer.
+    # NOTE: We intentionally do NOT load the picked HU via "load M_HU as pickedVHU_B" because
+    # on-the-fly picking deterministically picks hu_1 (lowest M_HU_ID), and hu_1 is already
+    # registered in StepDefData. Instead we validate via shipment creation + MD_Stock.
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference          |
+      | o_B        | true    | endcustomer_B            | 2021-04-18  | po_ref_partial_B         |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_B       | o_B                   | p_1                     | 5          |
+    When the order identified by o_B is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | s_s_B      | ol_B                      | N             |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | s_s_B                            | D            | true                | false       |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
+      | s_s_B                            | ship_B                | CO            |
+    And after not more than 60 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | p_1                     | 5         |
 
   @from:cucumber
   Scenario: picking cancellation clears BPartner on HU (Bug 2 fix)
