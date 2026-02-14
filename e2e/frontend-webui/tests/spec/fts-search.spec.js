@@ -137,10 +137,8 @@ Verifies that the FTS inline filter works in the Product window.
     console.log(`Product FTS search for "${productName}" returned ${count} results`);
   });
 
-  // TODO: Invoice FTS test skipped — openRelatedInvoiceCandidate finds 0 references in CI.
-  // The SO→Invoice Candidate link may need additional async wait time or a different approach.
-  test.fixme('Search Invoice via FTS', async ({ page }) => {
-    test.setTimeout(180000); // 3 minutes — includes SO creation, invoice generation, and FTS search
+  test('Search Invoice via FTS', async ({ page }) => {
+    test.setTimeout(240000); // 4 minutes — includes SO creation, async IC generation, invoice generation, and FTS search
     allure.epic('Full-Text Search');
     allure.story('Invoice FTS search');
     allure.severity('critical');
@@ -177,9 +175,15 @@ then verifies the FTS inline filter finds the invoice on the Sales Invoice windo
     expect(soDocumentNo).toBeTruthy();
     console.log(`Invoice FTS: SO created: ${soDocumentNo}`);
 
-    // Navigate to invoice candidates (Alt+6) and create invoice
-    await SalesOrderPage.openRelatedInvoiceCandidate({ maxRetries: 10, retryDelay: 3000 });
+    // Wait for invoice candidates to be generated asynchronously.
+    // In CI, this can take 10-15 seconds after SO completion.
+    await page.waitForTimeout(15000);
+
+    // Navigate to invoice candidates (Alt+6) and create invoice.
+    // Use refreshOnRetry to reload the page between attempts (helps with SSE loading).
+    await SalesOrderPage.openRelatedInvoiceCandidate({ maxRetries: 15, retryDelay: 5000, refreshOnRetry: true });
     await InvoiceCandidatePage.expectVisibleForSalesOrder();
+    console.log(`Invoice FTS: Invoice candidates visible`);
     await InvoiceCandidatePage.createInvoiceForSalesOrder();
 
     // Wait for async invoice generation (CI can be slow)
