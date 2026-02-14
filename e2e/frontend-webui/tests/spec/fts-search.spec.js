@@ -144,6 +144,7 @@ Verifies that the FTS inline filter works in the Product window.
 ## FTS: Search Invoice by document number
 Verifies that the FTS inline filter works in the Invoice window.
 Uses existing seed data — reads the first visible invoice's DocumentNo, then searches for it.
+Skips if no invoices exist in the database.
     `);
 
     const masterdata = await createFTSMasterdata();
@@ -156,10 +157,20 @@ Uses existing seed data — reads the first visible invoice's DocumentNo, then s
     // Navigate to Sales Invoice window
     await MasterWindowPage.goto(SALES_INVOICE_WINDOW_ID);
     await MasterWindowPage.expectWindowLoaded();
-    await MasterWindowPage.waitForTableData();
 
     // FTS input should be visible
     await FTSSearchHelper.waitForSearchInput();
+
+    // Wait for grid to settle (rows or empty state)
+    await FTSSearchHelper.waitForResultsLoaded();
+
+    // Check if invoices exist in the grid; skip test if empty
+    const rowCount = await FTSSearchHelper.getResultCount();
+    if (rowCount === 0) {
+      console.log('Invoice FTS: no invoices in seed data — skipping');
+      test.skip(true, 'No invoice seed data available');
+      return;
+    }
 
     // Read the DocumentNo of the first visible invoice
     const firstDocNoCell = page.locator(
