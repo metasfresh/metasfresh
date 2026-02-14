@@ -564,7 +564,8 @@ Feature: reversed shipment clears HU C_BPartner_ID
       | M_HU_ID.Identifier | HUStatus | IsActive | C_BPartner_ID | C_BPartner_Location_ID |
       | splitVHU_A         | A        | Y        | null          | null                   |
 
-    # Ship 5 PCE to Customer B — on-the-fly picking can pick the restored split VHU
+    # Ship 5 PCE to Customer B — on-the-fly picking picks one of the two available 5-PCE HUs
+    # (splitVHU_A or hu_1; the picker's choice is non-deterministic)
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference          |
       | o_B        | true    | endcustomer_B            | 2021-04-18  | po_ref_partial_B         |
@@ -582,10 +583,16 @@ Feature: reversed shipment clears HU C_BPartner_ID
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
       | s_s_B                            | ship_B                | CO            |
 
-    # The same split VHU (restored after reversal) is re-picked for Customer B
+    # Load whichever HU was actually picked for Customer B's shipment
+    And M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule s_s_B can be located in specified order
+      | M_ShipmentSchedule_QtyPicked_ID.Identifier |
+      | qp_B                                       |
+    And load M_HU as pickedVHU_B from M_ShipmentSchedule_QtyPicked identified by qp_B
+
+    # The picked HU is shipped with Customer B's BPartner set
     Then M_HU are validated:
       | M_HU_ID.Identifier | HUStatus | IsActive | C_BPartner_ID | C_BPartner_Location_ID |
-      | splitVHU_A         | E        | N        | endcustomer_B | loc_B                  |
+      | pickedVHU_B        | E        | N        | endcustomer_B | loc_B                  |
 
   @from:cucumber
   Scenario: picking cancellation clears BPartner on HU (Bug 2 fix)
