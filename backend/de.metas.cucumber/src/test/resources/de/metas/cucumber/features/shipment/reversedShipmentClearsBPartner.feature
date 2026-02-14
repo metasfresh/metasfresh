@@ -339,16 +339,22 @@ Feature: reversed shipment clears HU C_BPartner_ID
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
       | s_s_A                            | ship_A                | CO            |
 
+    # Log AD_EventLog count before RA→CO→RC cycle (baseline)
+    And log AD_EventLog count for product "p_1"
+
     # Reactivate the shipment (RA — puts document back to InProgress for editing)
     When the shipment identified by ship_A is reactivated
+    And log AD_EventLog count for product "p_1"
 
     # Re-complete the shipment
     And the shipment identified by ship_A is completed
+    And log AD_EventLog count for product "p_1"
 
     # Now reverse — this must clear BPartner even after the reactivation cycle
     And perform shipment document action
       | M_InOut_ID.Identifier | DocAction |
       | ship_A                | RC        |
+    And log AD_EventLog count for product "p_1"
 
     # After reversal: HU is active again, BPartner+Location cleared
     Then M_HU are validated:

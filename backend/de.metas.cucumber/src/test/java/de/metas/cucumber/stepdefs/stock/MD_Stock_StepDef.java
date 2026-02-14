@@ -107,6 +107,31 @@ public class MD_Stock_StepDef
 		assertThat(mdStock.getQtyOnHand()).isEqualTo(qtyOnHand);
 	}
 
+	@And("log AD_EventLog count for product {string}")
+	public void logAD_EventLog_count(@NonNull final String productIdentifier)
+	{
+		final I_M_Product product = productTable.get(productIdentifier);
+		final int productId = product.getM_Product_ID();
+		final String productIdPattern = "\"productId\" : " + productId;
+
+		final List<I_AD_EventLog> eventLogs = queryBL.createQueryBuilder(I_AD_EventLog.class)
+				.addStringLikeFilter(I_AD_EventLog.COLUMNNAME_EventData, "%" + productIdPattern + "%", /* ignoreCase */ false)
+				.orderBy(I_AD_EventLog.COLUMNNAME_Created)
+				.create()
+				.list();
+
+		logger.info("=== AD_EventLog count for M_Product_ID={} ({}): {} entries ===",
+				productId, product.getName(), eventLogs.size());
+		for (final I_AD_EventLog eventLog : eventLogs)
+		{
+			logger.info("  AD_EventLog_ID={}, EventName={}, IsError={}, Created={}",
+					eventLog.getAD_EventLog_ID(),
+					eventLog.getEventName(),
+					eventLog.isError(),
+					eventLog.getCreated());
+		}
+	}
+
 	private void logEventLogDiagnostics(final int productId, final BigDecimal expectedQty, final I_MD_Stock mdStock)
 	{
 		final BigDecimal actualQty = mdStock != null ? mdStock.getQtyOnHand() : null;
