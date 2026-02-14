@@ -4,11 +4,15 @@ import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { MasterWindowPage } from '../utils/pages/MasterWindowPage';
+import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
+import { InvoiceCandidatePage } from '../utils/pages/InvoiceCandidatePage';
+import { InvoicePage } from '../utils/pages/InvoicePage';
 import { FTSSearchHelper } from '../utils/pages/FTSSearchHelper';
-import { SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
 import {
   BUSINESS_PARTNER_WINDOW_ID,
   PRODUCT_WINDOW_ID,
+  SALES_ORDER_WINDOW_ID,
   SALES_INVOICE_WINDOW_ID,
 } from '../utils/WindowIds';
 
@@ -137,14 +141,14 @@ Verifies that the FTS inline filter works in the Product window.
   });
 
   test('Search Invoice by document number', async ({ page }) => {
+    test.setTimeout(120000); // 2 minutes — includes SO creation, invoice generation, and FTS search
     allure.epic('Full-Text Search');
     allure.story('Invoice FTS search');
     allure.severity('critical');
     allure.description(`
 ## FTS: Search Invoice by document number
-Verifies that the FTS inline filter works in the Invoice window.
-Uses existing seed data — reads the first visible invoice's DocumentNo, then searches for it.
-Skips if no invoices exist in the database.
+Creates a Sales Order, completes it, generates an invoice via invoice candidates,
+then verifies the FTS inline filter finds the invoice by its DocumentNo.
     `);
 
     const masterdata = await createFTSMasterdata();
@@ -154,45 +158,67 @@ Skips if no invoices exist in the database.
     await LoginPage.login(masterdata.login.user);
     await LoginPage.expectLoggedIn();
 
-    // Navigate to Sales Invoice window
+    // --- Create a Sales Order and generate an Invoice ---
+
+    // Create SO
+    await SalesOrderPage.goto();
+    await SalesOrderPage.clickNew();
+
+    const recordId = await SalesOrderPage.selectCustomer(masterdata.bpartners.FTS_ALPHA.bpartnerCode);
+
+    await SalesOrderPage.addOrderLine({
+      product: masterdata.products.FTS_PROD.productCode,
+      quantity: '1',
+      recordId,
+    });
+
+    // Complete SO
+    await SalesOrderPage.complete();
+    const soDocumentNo = await SalesOrderPage.getDocumentNo();
+    expect(soDocumentNo).toBeTruthy();
+    console.log(`Invoice FTS: SO created: ${soDocumentNo}`);
+
+    // Navigate to invoice candidates (Alt+6) and create invoice
+    await SalesOrderPage.openRelatedInvoiceCandidate({ maxRetries: 10, retryDelay: 3000 });
+    await InvoiceCandidatePage.expectVisibleForSalesOrder();
+    await InvoiceCandidatePage.createInvoiceForSalesOrder();
+
+    // Wait for async invoice generation
+    await page.waitForTimeout(5000);
+
+    // Navigate back to SO detail, then zoom to the generated invoice
+    await page.goto(`${FRONTEND_BASE_URL}/window/${SALES_ORDER_WINDOW_ID}/${recordId}`);
+    await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+    await page.waitForTimeout(1000);
+
+    await SalesOrderPage.openRelatedInvoice({ maxRetries: 10, retryDelay: 3000 });
+    await InvoicePage.expectVisible();
+
+    const invoiceDocNo = await InvoicePage.getDocumentNo();
+    expect(invoiceDocNo).toBeTruthy();
+    console.log(`Invoice FTS: Invoice created: ${invoiceDocNo}`);
+
+    // --- Now test FTS search on the Invoice window ---
+
+    // Navigate to Sales Invoice window (full list)
     await MasterWindowPage.goto(SALES_INVOICE_WINDOW_ID);
     await MasterWindowPage.expectWindowLoaded();
 
     // FTS input should be visible
     await FTSSearchHelper.waitForSearchInput();
-
-    // Wait for grid to settle (rows or empty state)
     await FTSSearchHelper.waitForResultsLoaded();
 
-    // Check if invoices exist in the grid; skip test if empty
-    const rowCount = await FTSSearchHelper.getResultCount();
-    if (rowCount === 0) {
-      console.log('Invoice FTS: no invoices in seed data — skipping');
-      test.skip(true, 'No invoice seed data available');
-      return;
-    }
-
-    // Read the DocumentNo of the first visible invoice
-    const firstDocNoCell = page.locator(
-      'tbody tr.table-row:first-child [data-cy="cell-DocumentNo"]'
-    );
-    await firstDocNoCell.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-    const documentNo = (await firstDocNoCell.textContent()).trim();
-    expect(documentNo).toBeTruthy();
-
-    console.log(`Invoice: first visible DocumentNo = "${documentNo}"`);
-
-    // Search for that document number
-    await FTSSearchHelper.search(documentNo);
+    // Search for the invoice we just created
+    await FTSSearchHelper.search(invoiceDocNo);
 
     // Should find at least one result
     const count = await FTSSearchHelper.getResultCount();
     expect(count).toBeGreaterThan(0);
 
     // The first result should contain our document number
-    await FTSSearchHelper.expectFirstResultContains('DocumentNo', documentNo);
+    await FTSSearchHelper.expectFirstResultContains('DocumentNo', invoiceDocNo);
 
-    console.log(`Invoice FTS search for "${documentNo}" returned ${count} results`);
+    console.log(`Invoice FTS search for "${invoiceDocNo}" returned ${count} results`);
   });
 
   test('Empty search returns all results', async ({ page }) => {
