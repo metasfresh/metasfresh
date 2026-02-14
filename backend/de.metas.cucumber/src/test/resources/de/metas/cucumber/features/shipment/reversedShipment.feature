@@ -5,6 +5,7 @@ Feature: reversed shipment
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And AD_Scheduler for classname 'de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs' is disabled
 
   @from:cucumber
   Scenario: we can create and complete a shipment, then reserve/correct it and check the hu's status

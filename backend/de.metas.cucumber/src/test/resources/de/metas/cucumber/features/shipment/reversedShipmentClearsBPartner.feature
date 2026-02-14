@@ -5,6 +5,7 @@ Feature: reversed shipment clears HU C_BPartner_ID
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And AD_Scheduler for classname 'de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs' is disabled
     And metasfresh has date and time 2021-12-16T13:30:13+01:00[Europe/Berlin]
 
   @from:cucumber
@@ -54,6 +55,9 @@ Feature: reversed shipment clears HU C_BPartner_ID
     And M_HU are validated:
       | M_HU_ID.Identifier | HUStatus | IsActive | C_BPartner_ID | C_BPartner_Location_ID |
       | hu_1               | A        | Y        | null          | null                   |
+    And after not more than 60 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | p_1                     | 10        |
 
     # Create order for Customer A and generate shipment
     And metasfresh contains C_Orders:
@@ -77,6 +81,9 @@ Feature: reversed shipment clears HU C_BPartner_ID
     And M_HU are validated:
       | M_HU_ID.Identifier | HUStatus | IsActive | C_BPartner_ID | C_BPartner_Location_ID |
       | hu_1               | E        | N        | endcustomer_A | loc_A                  |
+    And after not more than 60 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | p_1                     | 0         |
 
     # Reverse the shipment
     And perform shipment document action
@@ -90,6 +97,9 @@ Feature: reversed shipment clears HU C_BPartner_ID
     And M_HU_Storage are validated
       | Identifier | M_HU_ID.Identifier | M_Product_ID.Identifier | Qty |
       | hu_s_1     | hu_1               | p_1                     | 10  |
+    And after not more than 60 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | p_1                     | 10        |
 
     # Now create order for Customer B and generate shipment from the same HU
     And metasfresh contains C_Orders:
@@ -113,6 +123,9 @@ Feature: reversed shipment clears HU C_BPartner_ID
     Then M_HU are validated:
       | M_HU_ID.Identifier | HUStatus | IsActive | C_BPartner_ID | C_BPartner_Location_ID |
       | hu_1               | E        | N        | endcustomer_B | loc_B                  |
+    And after not more than 60 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | p_1                     | 0         |
 
   @from:cucumber
   Scenario: double reversal triple shipment proves fix is idempotent across multiple cycles
@@ -160,6 +173,9 @@ Feature: reversed shipment clears HU C_BPartner_ID
     And M_HU are validated:
       | M_HU_ID.Identifier | HUStatus | IsActive | C_BPartner_ID | C_BPartner_Location_ID |
       | hu_1               | A        | Y        | null          | null                   |
+    And after not more than 60 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | p_1                     | 10        |
 
     # === Cycle 1: Ship to Customer A ===
     And metasfresh contains C_Orders:
@@ -182,6 +198,9 @@ Feature: reversed shipment clears HU C_BPartner_ID
     And M_HU are validated:
       | M_HU_ID.Identifier | HUStatus | IsActive | C_BPartner_ID | C_BPartner_Location_ID |
       | hu_1               | E        | N        | endcustomer_A | loc_A                  |
+    And after not more than 60 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | p_1                     | 0         |
 
     # === Reverse shipment to A ===
     And perform shipment document action
@@ -194,6 +213,9 @@ Feature: reversed shipment clears HU C_BPartner_ID
     And M_HU_Storage are validated
       | Identifier | M_HU_ID.Identifier | M_Product_ID.Identifier | Qty |
       | hu_s_1     | hu_1               | p_1                     | 10  |
+    And after not more than 60 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | p_1                     | 10        |
 
     # === Cycle 2: Ship to Customer B ===
     And metasfresh contains C_Orders:
@@ -216,6 +238,9 @@ Feature: reversed shipment clears HU C_BPartner_ID
     And M_HU are validated:
       | M_HU_ID.Identifier | HUStatus | IsActive | C_BPartner_ID | C_BPartner_Location_ID |
       | hu_1               | E        | N        | endcustomer_B | loc_B                  |
+    And after not more than 60 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | p_1                     | 0         |
 
     # === Reverse shipment to B ===
     And perform shipment document action
@@ -228,6 +253,9 @@ Feature: reversed shipment clears HU C_BPartner_ID
     And M_HU_Storage are validated
       | Identifier | M_HU_ID.Identifier | M_Product_ID.Identifier | Qty |
       | hu_s_1     | hu_1               | p_1                     | 10  |
+    And after not more than 60 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | p_1                     | 10        |
 
     # === Cycle 3: Ship to Customer C ===
     And metasfresh contains C_Orders:
@@ -250,6 +278,9 @@ Feature: reversed shipment clears HU C_BPartner_ID
     Then M_HU are validated:
       | M_HU_ID.Identifier | HUStatus | IsActive | C_BPartner_ID | C_BPartner_Location_ID |
       | hu_1               | E        | N        | endcustomer_C | loc_C                  |
+    And after not more than 60 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | p_1                     | 0         |
 
   @from:cucumber
   Scenario: reactivate then re-complete then reverse clears BPartner (path 2.11)
@@ -323,6 +354,9 @@ Feature: reversed shipment clears HU C_BPartner_ID
     Then M_HU are validated:
       | M_HU_ID.Identifier | HUStatus | IsActive | C_BPartner_ID | C_BPartner_Location_ID |
       | hu_1               | A        | Y        | null          | null                   |
+    And after not more than 60 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | p_1                     | 10        |
 
   @from:cucumber
   Scenario: LU/TU/VHU hierarchy: on-the-fly picking splits VHU from hierarchy, reversal restores the split VHU
@@ -447,6 +481,9 @@ Feature: reversed shipment clears HU C_BPartner_ID
     And M_HU_Storage are validated
       | Identifier | M_HU_ID.Identifier | M_Product_ID.Identifier | Qty |
       | hu_s_cu    | newCreatedCU       | p_1                     | 10  |
+    And after not more than 60 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | p_1                     | 10        |
 
     # Ship the restored VHU to Customer B
     And metasfresh contains C_Orders:
@@ -470,6 +507,9 @@ Feature: reversed shipment clears HU C_BPartner_ID
     Then M_HU are validated:
       | M_HU_ID.Identifier | HUStatus | IsActive | C_BPartner_ID | C_BPartner_Location_ID |
       | newCreatedCU       | E        | N        | endcustomer_B | loc_B                  |
+    And after not more than 60 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | p_1                     | 0         |
 
   @from:cucumber
   Scenario: partial shipment reversal clears BPartner on the split VHU
@@ -563,6 +603,9 @@ Feature: reversed shipment clears HU C_BPartner_ID
     And M_HU are validated:
       | M_HU_ID.Identifier | HUStatus | IsActive | C_BPartner_ID | C_BPartner_Location_ID |
       | splitVHU_A         | A        | Y        | null          | null                   |
+    And after not more than 60 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | p_1                     | 10        |
 
     # Ship 5 PCE to Customer B — on-the-fly picking picks one of the two available 5-PCE HUs
     # (splitVHU_A or hu_1; the picker's choice is non-deterministic)
@@ -593,6 +636,9 @@ Feature: reversed shipment clears HU C_BPartner_ID
     Then M_HU are validated:
       | M_HU_ID.Identifier | HUStatus | IsActive | C_BPartner_ID | C_BPartner_Location_ID |
       | pickedVHU_B        | E        | N        | endcustomer_B | loc_B                  |
+    And after not more than 60 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | p_1                     | 5         |
 
   @from:cucumber
   Scenario: picking cancellation clears BPartner on HU (Bug 2 fix)
@@ -1008,6 +1054,9 @@ Feature: reversed shipment clears HU C_BPartner_ID
     And M_HU_Storage are validated
       | Identifier | M_HU_ID.Identifier | M_Product_ID.Identifier | Qty |
       | hu_s_1     | hu_1               | p_1                     | 10  |
+    And after not more than 60 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | p_1                     | 10        |
 
     # Inventory adjustment: reduce from 10 to 5
     And metasfresh contains M_Inventories:
@@ -1046,6 +1095,9 @@ Feature: reversed shipment clears HU C_BPartner_ID
     Then M_HU are validated:
       | M_HU_ID.Identifier | HUStatus | IsActive | C_BPartner_ID | C_BPartner_Location_ID |
       | hu_1               | E        | N        | endcustomer_B | loc_B                  |
+    And after not more than 60 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | p_1                     | 0         |
 
   @from:cucumber
   Scenario: inventory reversal restores HU qty (path 2.10)
