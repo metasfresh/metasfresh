@@ -264,6 +264,7 @@ public class M_InOut
 						.anonymousHuPickedOnTheFly(qtyPicked.isAnonymousHuPickedOnTheFly())
 						.huId(HuId.ofRepoId(qtyPicked.getVHU_ID()))
 						.build())
+				.distinct() // one HU might be in multiple qtyPicked records if inouts are completed and reversed multiple times
 				.collect(ImmutableList.toImmutableList());
 
 		final ReopenPickingJobRequest request = ReopenPickingJobRequest.builder()
