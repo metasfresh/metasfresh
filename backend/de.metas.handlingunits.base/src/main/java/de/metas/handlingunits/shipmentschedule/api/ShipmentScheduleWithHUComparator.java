@@ -44,7 +44,7 @@ import lombok.NonNull;
  *
  * M_ShipmentSchedule_ID is sorted before M_HU_ID to group all candidates for the same
  * product/order-line together, ensuring deterministic shipment line ordering regardless of
- * which HUs happen to have lower IDs (see me03#27745).
+ * which HUs happen to have lower IDs.
  *
  * @author tsa
  *
@@ -88,7 +88,7 @@ public class ShipmentScheduleWithHUComparator implements Comparator<ShipmentSche
 
 		//
 		// Sort by M_ShipmentSchedule_ID first, to group all candidates for the same
-		// product/order-line together (me03#27745)
+		// product/order-line together
 		{
 			final int shipmentScheduleId1 = getM_ShipmentSchedule_ID(o1);
 			final int shipmentScheduleId2 = getM_ShipmentSchedule_ID(o2);

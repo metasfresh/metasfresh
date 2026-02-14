@@ -16,7 +16,7 @@ SELECT backup_table('m_hu', '_stuck_bpartner');
 UPDATE m_hu
 SET c_bpartner_id         = NULL,
     c_bpartner_location_id = NULL,
-    updated                = TO_TIMESTAMP('2026-02-12 21:00:00', 'YYYY-MM-DD HH24:MI:SS'),
+    updated                = '2026-02-12 21:00'::timestamp,
     updatedby              = 99
 WHERE m_hu_id IN (
     SELECT hu.m_hu_id
