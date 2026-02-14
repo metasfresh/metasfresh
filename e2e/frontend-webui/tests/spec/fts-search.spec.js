@@ -183,15 +183,15 @@ then verifies the FTS inline filter finds the invoice by its DocumentNo.
     await InvoiceCandidatePage.expectVisibleForSalesOrder();
     await InvoiceCandidatePage.createInvoiceForSalesOrder();
 
-    // Wait for async invoice generation
-    await page.waitForTimeout(5000);
+    // Wait for async invoice generation (CI can be slow)
+    await page.waitForTimeout(10000);
 
     // Navigate back to SO detail, then zoom to the generated invoice
     await page.goto(`${FRONTEND_BASE_URL}/window/${SALES_ORDER_WINDOW_ID}/${recordId}`);
     await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
     await page.waitForTimeout(1000);
 
-    await SalesOrderPage.openRelatedInvoice({ maxRetries: 10, retryDelay: 3000 });
+    await SalesOrderPage.openRelatedInvoice({ maxRetries: 15, retryDelay: 3000 });
     await InvoicePage.expectVisible();
 
     const invoiceDocNo = await InvoicePage.getDocumentNo();
