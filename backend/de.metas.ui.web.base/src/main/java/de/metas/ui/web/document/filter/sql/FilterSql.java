@@ -23,8 +23,6 @@
 package de.metas.ui.web.document.filter.sql;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.elasticsearch.model.I_T_ES_FTS_Search_Result;
-import de.metas.fulltextsearch.config.FTSJoinColumnList;
 import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Check;
@@ -57,7 +55,6 @@ public class FilterSql
 	public static FilterSql ALLOW_NONE = builder().whereClause(SqlAndParams.of(ConstantQueryFilter.of(false).getSql())).build();
 
 	@Nullable SqlAndParams whereClause;
-	@Nullable FullTextSearchResult filterByFTS;
 
 	@Nullable RecordsToAlwaysIncludeSql alwaysIncludeSql;
 
@@ -68,13 +65,11 @@ public class FilterSql
 	@Builder(toBuilder = true)
 	private FilterSql(
 			@Nullable final SqlAndParams whereClause,
-			@Nullable final FullTextSearchResult filterByFTS,
 			@Nullable final RecordsToAlwaysIncludeSql alwaysIncludeSql,
 			@Nullable final SqlAndParams orderBy,
 			@Nullable final String sqlComment)
 	{
 		this.whereClause = SqlAndParams.emptyToNull(whereClause);
-		this.filterByFTS = filterByFTS;
 		this.alwaysIncludeSql = alwaysIncludeSql;
 		this.orderBy = SqlAndParams.emptyToNull(orderBy);
 		this.sqlComment = StringUtils.trimBlankToNull(sqlComment);
@@ -108,65 +103,9 @@ public class FilterSql
 
 	public Optional<SqlAndParams> toSqlAndParams(@NonNull final SqlOptions sqlOpts)
 	{
-		final SqlAndParams filterSql = SqlAndParams.andNullables(
-						this.whereClause,
-						this.filterByFTS != null ? this.filterByFTS.buildExistsWhereClause(sqlOpts.getTableNameOrAlias()) : null)
-				.orElse(null);
-
 		final SqlAndParams alwaysIncludeSql = this.alwaysIncludeSql != null ? this.alwaysIncludeSql.toSqlAndParams() : null;
 
-		return SqlAndParams.orNullables(filterSql, alwaysIncludeSql);
-	}
-
-	//
-	//
-	// ------------------------------
-	//
-	//
-
-	@Value
-	@Builder
-	@NonFinal // because we want to mock it while testing
-	public static class FullTextSearchResult
-	{
-		@NonNull String searchId;
-		@NonNull FTSJoinColumnList joinColumns;
-
-		public SqlAndParams buildInnerJoinClause(
-				@NonNull final String targetTableNameOrAlias,
-				@NonNull final String selectionTableAlias)
-		{
-			return SqlAndParams.builder()
-					.append("\n INNER JOIN ").append(I_T_ES_FTS_Search_Result.Table_Name).append(" ").append(selectionTableAlias).append(" ON (")
-					.append(buildJoinCondition(targetTableNameOrAlias, selectionTableAlias))
-					.append(")")
-					.build();
-		}
-
-		public SqlAndParams buildJoinCondition(
-				@NonNull final String targetTableNameOrAlias,
-				@NonNull final String selectionTableAlias)
-		{
-			return SqlAndParams.builder()
-					.append(selectionTableAlias).append(".").append(I_T_ES_FTS_Search_Result.COLUMNNAME_Search_UUID).append("=?", searchId)
-					.append(" AND ").append(joinColumns.buildJoinCondition(targetTableNameOrAlias, selectionTableAlias))
-					.build();
-		}
-
-		public SqlAndParams buildExistsWhereClause(@NonNull final String targetTableNameOrAlias)
-		{
-			return SqlAndParams.builder()
-					.append("EXISTS (SELECT 1 FROM ").append(I_T_ES_FTS_Search_Result.Table_Name).append(" fts")
-					.append(" WHERE ").append(buildJoinCondition(targetTableNameOrAlias, "fts"))
-					.append(")")
-					.build();
-		}
-
-		public SqlAndParams buildOrderBy(@NonNull final String selectionTableAlias)
-		{
-			return SqlAndParams.of(selectionTableAlias + "." + I_T_ES_FTS_Search_Result.COLUMNNAME_Line);
-		}
-
+		return SqlAndParams.orNullables(this.whereClause, alwaysIncludeSql);
 	}
 
 	//

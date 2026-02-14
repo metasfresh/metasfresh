@@ -494,12 +494,6 @@ public class SqlDocumentQueryBuilder
 				sqlWhereClauseBuilder.append(" /* filters */ (\n").append(filtersSql.getWhereClause()).append(")\n");
 			}
 
-			if(filtersSql.getFilterByFTS() != null)
-			{
-				sqlWhereClauseBuilder.appendIfNotEmpty("\n AND ");
-				sqlWhereClauseBuilder.append(" /* FTS */ (\n").append(filtersSql.getFilterByFTS().buildExistsWhereClause(entityBinding.getTableAlias())).append(")\n");
-			}
-
 			if(filtersSql.getAlwaysIncludeSql() != null)
 			{
 				// TODO implement support

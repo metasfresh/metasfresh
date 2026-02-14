@@ -4,7 +4,6 @@ import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.window.model.sql.SqlOptions;
-import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.util.DB;
@@ -70,7 +69,6 @@ public interface SqlDocumentFilterConverter
 
 		final SqlAndParams.Builder whereClauseBuilder = SqlAndParams.builder();
 		boolean whereClauseAllowNone = false;
-		final HashSet<FilterSql.FullTextSearchResult> filterByFTS = new HashSet<>();
 		final HashSet<FilterSql.RecordsToAlwaysIncludeSql> alwaysIncludeSqls = new HashSet<>();
 		final SqlAndParams.Builder orderByBuilder = SqlAndParams.builder();
 
@@ -97,8 +95,6 @@ public interface SqlDocumentFilterConverter
 						// NOTE: we cleared the code from all other filters because it makes no sense.
 						// bellow we will add the SQL code for this filter together with the filterId and sql comment if any.
 						// this will be the only filter that we will keep in the resulting where clause.
-
-						filterByFTS.clear();
 					}
 
 					whereClauseBuilder
@@ -106,16 +102,6 @@ public interface SqlDocumentFilterConverter
 							.append(DB.TO_COMMENT(filter.getFilterId()))
 							.append(filterSql.getSqlComment() != null ? DB.TO_COMMENT(filterSql.getSqlComment()) : "")
 							.append(" (").append(filterWhereClause).append(")");
-				}
-			}
-
-			//
-			// Full Text Search
-			if (!whereClauseAllowNone)
-			{
-				if (filterSql.getFilterByFTS() != null)
-				{
-					filterByFTS.add(filterSql.getFilterByFTS());
 				}
 			}
 
@@ -148,7 +134,6 @@ public interface SqlDocumentFilterConverter
 		{
 			return FilterSql.builder()
 					.whereClause(!whereClauseBuilder.isEmpty() ? whereClauseBuilder.build() : null)
-					.filterByFTS(CollectionUtils.emptyOrSingleElement(filterByFTS).orElse(null))
 					.alwaysIncludeSql(FilterSql.RecordsToAlwaysIncludeSql.mergeOrNull(alwaysIncludeSqls))
 					.orderBy(!orderByBuilder.isEmpty() ? orderByBuilder.build() : null)
 					.build();
