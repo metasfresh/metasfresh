@@ -5,6 +5,7 @@ Feature: Delivery rules with and without quantity in stock
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And AD_Scheduler for classname 'de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs' is disabled
     And metasfresh has date and time 2022-08-16T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_PricingSystems
       | Identifier | Name              | Value              | OPT.IsActive |

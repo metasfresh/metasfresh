@@ -39,6 +39,8 @@ import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.EmptyUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -106,6 +108,7 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.warehouse.LocatorId;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Locator;
@@ -162,6 +165,8 @@ public class M_HU_StepDef
 	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final ReturnsServiceFacade returnsServiceFacade = SpringContextHolder.instance.getBean(ReturnsServiceFacade.class);
 
+	private final C_BPartner_StepDefData bpartnerTable;
+	private final C_BPartner_Location_StepDefData bpLocationTable;
 	private final M_Product_StepDefData productTable;
 	private final M_HU_StepDefData huTable;
 	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
@@ -176,12 +181,49 @@ public class M_HU_StepDef
 
 	private final HandlingUnitsService handlingUnitsService = SpringContextHolder.instance.getBean(HandlingUnitsService.class);
 
+	/**
+	 * @cucumber.stepdef
+	 * @cucumber.columns (none — no DataTable)
+	 * @cucumber.example
+	 * <pre>
+	 * And all the hu data is reset
+	 * </pre>
+	 */
 	@And("all the hu data is reset")
 	public void reset_data()
 	{
 		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE m_hu cascade", ITrx.TRXNAME_None);
 	}
 
+	/**
+	 * Validate M_HU records by identifier. Uses SoftAssertions to check all columns before failing.
+	 * Also validates M_HU_Storage (product/qty) if M_Product_ID or Qty columns are present.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required) alias from M_HU_StepDefData<br>
+	 *   <b>M_HU_Parent</b> — (optional, identifier-ref) if set, loads the single child HU of this parent and re-stores it under Identifier<br>
+	 *   <b>M_HU_PI_ID</b> — (optional, identifier-ref or literal ID) expected packing instructions<br>
+	 *   <b>M_HU_PI_Version_ID</b> — (optional, identifier-ref or literal ID) expected PI version<br>
+	 *   <b>M_Locator_ID</b> — (optional, identifier-ref) expected locator<br>
+	 *   <b>M_HU_PI_Item_Product_ID</b> — (optional, identifier-ref) expected PI item product<br>
+	 *   <b>HUStatus</b> — (optional) expected HU status: P, A, D, S, E, I<br>
+	 *   <b>ClearanceStatus</b> — (optional) expected clearance status: C, L, Q, P<br>
+	 *   <b>ClearanceNote</b> — (optional) expected clearance note text<br>
+	 *   <b>C_BPartner_ID</b> — (optional, identifier-ref or null) expected business partner; use "null" for no BPartner<br>
+	 *   <b>C_BPartner_Location_ID</b> — (optional, identifier-ref or null) expected BP location; use "null" for no location<br>
+	 *   <b>M_Product_ID</b> — (optional, identifier-ref) validates M_HU_Storage product<br>
+	 *   <b>Qty</b> — (optional) validates M_HU_Storage qty with UOM, format "10 PCE"<br>
+	 *   <b>IsAggregate</b> — (optional) true/false, checks if HU is aggregate<br>
+	 *   <b>QtyTUs</b> — (optional) expected TU count (for aggregate HUs)<br>
+	 * @cucumber.depends StepDefData: M_HU_StepDefData, M_HU_PI_StepDefData, M_HU_PI_Version_StepDefData, M_HU_PI_Item_Product_StepDefData, M_Locator_StepDefData, M_Product_StepDefData, C_BPartner_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And validate M_HUs:
+	 *   | Identifier | HUStatus | M_Product_ID | Qty    | M_Locator_ID |
+	 *   | vhu_1      | A        | product_1    | 10 PCE | locator_1    |
+	 * </pre>
+	 */
 	@And("validate M_HUs:")
 	public void validate_M_HUs(@NonNull final DataTable dataTable)
 	{
@@ -244,6 +286,33 @@ public class M_HU_StepDef
 				.ifPresent(clearanceStatus -> softly.assertThat(hu.getClearanceStatus()).as("ClearanceStatus").isEqualTo(clearanceStatus));
 		row.getAsOptionalString(COLUMNNAME_ClearanceNote)
 				.ifPresent(clearanceNote -> softly.assertThat(hu.getClearanceNote()).as("ClearanceNote").isEqualTo(clearanceNote));
+
+		row.getAsOptionalIdentifier(I_M_HU.COLUMNNAME_C_BPartner_ID)
+				.ifPresent(bpartnerIdentifier -> {
+					if (bpartnerIdentifier.isNullPlaceholder())
+					{
+						softly.assertThat(hu.getC_BPartner_ID()).as("C_BPartner_ID").isLessThanOrEqualTo(0);
+					}
+					else
+					{
+						final int expectedBPartnerId = bpartnerTable.getOptional(bpartnerIdentifier)
+								.map(bp -> bp.getC_BPartner_ID())
+								.orElseGet(bpartnerIdentifier::getAsInt);
+						softly.assertThat(hu.getC_BPartner_ID()).as("C_BPartner_ID").isEqualTo(expectedBPartnerId);
+					}
+				});
+
+		row.getAsOptionalIdentifier(I_M_HU.COLUMNNAME_C_BPartner_Location_ID)
+				.ifPresent(bpLocationIdentifier -> {
+					if (bpLocationIdentifier.isNullPlaceholder())
+					{
+						softly.assertThat(hu.getC_BPartner_Location_ID()).as("C_BPartner_Location_ID").isLessThanOrEqualTo(0);
+					}
+					else
+					{
+						softly.assertThat(hu.getC_BPartner_Location_ID()).as("C_BPartner_Location_ID").isEqualTo(bpLocationIdentifier.getAsInt());
+					}
+				});
 
 		final ProductId singleProductId = row.getAsOptionalIdentifier("M_Product_ID").map(productTable::getId).orElse(null);
 		final Quantity singleQty = row.getAsOptionalQuantity("Qty", uomDAO::getByX12DE355).orElse(null);
@@ -636,6 +705,22 @@ public class M_HU_StepDef
 		validateHU(ImmutableList.of(topLevelHU), ImmutableList.of(huIdentifier), identifierToRow);
 	}
 
+	/**
+	 * Validate M_HU_Storage records (product and quantity stored in an HU). Uses legacy DataTableUtil (not DataTableRow).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_HU_ID.Identifier</b> — (required) alias from M_HU_StepDefData<br>
+	 *   <b>M_Product_ID.Identifier</b> — (required) alias from M_Product_StepDefData<br>
+	 *   <b>Qty</b> — (required) expected storage quantity as string<br>
+	 * @cucumber.depends StepDefData: M_HU_StepDefData, M_Product_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And M_HU_Storage are validated
+	 *   | M_HU_ID.Identifier | M_Product_ID.Identifier | Qty |
+	 *   | vhu_1              | product_1               | 100 |
+	 * </pre>
+	 */
 	@And("M_HU_Storage are validated")
 	public void validate_HU_Storage(@NonNull final DataTable table)
 	{
@@ -645,12 +730,49 @@ public class M_HU_StepDef
 		}
 	}
 
+	/**
+	 * Validate M_HU records — alternate step with different column set. Re-loads the HU fresh from DB before validating.
+	 * Supports comma-separated identifiers in M_HU_ID column to validate multiple HUs with same expectations.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_HU_ID</b> — (required, identifier-ref) alias(es) from M_HU_StepDefData; comma-separated for multiple<br>
+	 *   <b>HUStatus</b> — (optional) expected HU status: P, A, D, S, E, I<br>
+	 *   <b>IsActive</b> — (optional) true/false<br>
+	 *   <b>M_Locator_ID</b> — (optional, identifier-ref) expected locator<br>
+	 *   <b>IsTopLevel</b> — (optional) true/false, whether HU has no parent<br>
+	 *   <b>Parent</b> — (optional, identifier-ref or null) expected parent HU; use "null" for no parent<br>
+	 *   <b>C_BPartner_ID</b> — (optional, identifier-ref or null) expected business partner; use "null" for no BPartner<br>
+	 *   <b>C_BPartner_Location_ID</b> — (optional, identifier-ref or null) expected BP location; use "null" for no location<br>
+	 * @cucumber.depends StepDefData: M_HU_StepDefData, M_Locator_StepDefData, C_BPartner_StepDefData, C_BPartner_Location_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And M_HU are validated:
+	 *   | M_HU_ID | HUStatus | IsActive | IsTopLevel |
+	 *   | vhu_1   | A        | true     | false      |
+	 * </pre>
+	 */
 	@And("M_HU are validated:")
 	public void validateHUs(@NonNull final DataTable table)
 	{
 		DataTableRows.of(table).forEach(this::validateHU);
 	}
 
+	/**
+	 * Dispose (destroy) HUs by creating an internal-use inventory and completing it.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_HU_ID</b> — (required, identifier-ref) alias from M_HU_StepDefData<br>
+	 *   <b>MovementDate</b> — (required) disposal date, e.g., "2022-05-17"<br>
+	 * @cucumber.depends StepDefData: M_HU_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Given M_HU are disposed:
+	 *   | M_HU_ID | MovementDate |
+	 *   | vhu_1   | 2022-05-17   |
+	 * </pre>
+	 */
 	@Given("M_HU are disposed:")
 	public void disposeHUs(@NonNull final DataTable table)
 	{
@@ -801,6 +923,34 @@ public class M_HU_StepDef
 						final HuId expectedParentId = parentHUIdentifier.isNullPlaceholder() ? null : huTable.getId(parentHUIdentifier);
 						final HuId actualParentId = handlingUnitsDAO.retrieveParentId(huRecord);
 						softly.assertThat(actualParentId).as("Parent").isEqualTo(expectedParentId);
+					});
+			row.getAsOptionalIdentifier(I_M_HU.COLUMNNAME_C_BPartner_ID)
+					.ifPresent(bpartnerIdentifier -> {
+						if (bpartnerIdentifier.isNullPlaceholder())
+						{
+							softly.assertThat(huRecord.getC_BPartner_ID()).as("C_BPartner_ID").isLessThanOrEqualTo(0);
+						}
+						else
+						{
+							final int expectedBPartnerId = bpartnerTable.getOptional(bpartnerIdentifier)
+									.map(bp -> bp.getC_BPartner_ID())
+									.orElseGet(bpartnerIdentifier::getAsInt);
+							softly.assertThat(huRecord.getC_BPartner_ID()).as("C_BPartner_ID").isEqualTo(expectedBPartnerId);
+						}
+					});
+			row.getAsOptionalIdentifier(I_M_HU.COLUMNNAME_C_BPartner_Location_ID)
+					.ifPresent(bpLocationIdentifier -> {
+						if (bpLocationIdentifier.isNullPlaceholder())
+						{
+							softly.assertThat(huRecord.getC_BPartner_Location_ID()).as("C_BPartner_Location_ID").isLessThanOrEqualTo(0);
+						}
+						else
+						{
+							final int expectedLocationId = bpLocationTable.getOptional(bpLocationIdentifier)
+									.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
+									.orElseGet(bpLocationIdentifier::getAsInt);
+							softly.assertThat(huRecord.getC_BPartner_Location_ID()).as("C_BPartner_Location_ID").isEqualTo(expectedLocationId);
+						}
 					});
 
 			softly.assertAll();
