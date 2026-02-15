@@ -23,7 +23,10 @@ DELETE FROM AD_Process_Para WHERE AD_Process_Para_ID IN (
   542080   -- ColumnName: TestSearchText, Name: "Test Search Text" (Process: ES_FTS_Filter_Test)
 );
 
--- 3. Processes (2)
+-- 3a. Table-Process links (must be deleted before processes)
+DELETE FROM AD_Table_Process WHERE AD_Process_ID IN (584886, 584887);
+
+-- 3b. Processes (2)
 DELETE FROM AD_Process WHERE AD_Process_ID IN (
   584886,  -- Value: ES_FTS_Config_Sync, Name: "Sync to Elasticsearch"
   584887   -- Value: ES_FTS_Filter_Test, Name: "Search Test"
