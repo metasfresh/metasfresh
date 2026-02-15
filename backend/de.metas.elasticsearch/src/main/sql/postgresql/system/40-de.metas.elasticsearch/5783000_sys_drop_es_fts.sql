@@ -91,7 +91,18 @@ DELETE FROM AD_Column WHERE AD_Table_ID IN (
   541588   -- C_BPartner_Adv_Search_v (view)
 );
 
--- 10. AD_Tables (6 FTS + 2 BPartner Adv Search)
+-- 10a. Clean up all remaining FK references to these AD_Tables
+DELETE FROM AD_ChangeLog_Config WHERE AD_Table_ID IN (
+  541755, 541756, 541757, 541759, 541760, 541762, 541761, 541588
+);
+DELETE FROM AD_Table_ScriptValidator WHERE AD_Table_ID IN (
+  541755, 541756, 541757, 541759, 541760, 541762, 541761, 541588
+);
+DELETE FROM AD_Table_Access WHERE AD_Table_ID IN (
+  541755, 541756, 541757, 541759, 541760, 541762, 541761, 541588
+);
+
+-- 10b. AD_Tables (6 FTS + 2 BPartner Adv Search)
 DELETE FROM AD_Table WHERE AD_Table_ID IN (
   541755,  -- TableName: ES_FTS_Config
   541756,  -- TableName: ES_FTS_Config_Field
