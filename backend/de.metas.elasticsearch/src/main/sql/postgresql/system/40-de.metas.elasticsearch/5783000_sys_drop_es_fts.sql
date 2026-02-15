@@ -91,16 +91,28 @@ DELETE FROM AD_Column WHERE AD_Table_ID IN (
   541588   -- C_BPartner_Adv_Search_v (view)
 );
 
--- 10a. Clean up all remaining FK references to these AD_Tables
-DELETE FROM AD_ChangeLog_Config WHERE AD_Table_ID IN (
-  541755, 541756, 541757, 541759, 541760, 541762, 541761, 541588
-);
-DELETE FROM AD_Table_ScriptValidator WHERE AD_Table_ID IN (
-  541755, 541756, 541757, 541759, 541760, 541762, 541761, 541588
-);
-DELETE FROM AD_Table_Access WHERE AD_Table_ID IN (
-  541755, 541756, 541757, 541759, 541760, 541762, 541761, 541588
-);
+-- 10a. Clean up all FK references to these AD_Tables.
+-- Use dynamic SQL because AD_ChangeLog_Config may have dated
+-- partition tables (e.g. ad_table_changelog_config_26092025)
+-- that also hold FK refs to ad_table.
+DO $$
+DECLARE
+    v_table_name TEXT;
+    v_ids CONSTANT NUMERIC[] := ARRAY[541755, 541756, 541757, 541759, 541760, 541762, 541761, 541588];
+BEGIN
+    -- Find all tables that have an FK constraint referencing ad_table
+    FOR v_table_name IN
+        SELECT DISTINCT cl.relname
+        FROM pg_constraint con
+        JOIN pg_class cl ON cl.oid = con.conrelid
+        JOIN pg_class ref ON ref.oid = con.confrelid
+        WHERE con.contype = 'f'
+          AND ref.relname = 'ad_table'
+          AND cl.relname <> 'ad_table'
+    LOOP
+        EXECUTE format('DELETE FROM %I WHERE AD_Table_ID = ANY($1)', v_table_name) USING v_ids;
+    END LOOP;
+END $$;
 
 -- 10b. AD_Tables (6 FTS + 2 BPartner Adv Search)
 DELETE FROM AD_Table WHERE AD_Table_ID IN (
