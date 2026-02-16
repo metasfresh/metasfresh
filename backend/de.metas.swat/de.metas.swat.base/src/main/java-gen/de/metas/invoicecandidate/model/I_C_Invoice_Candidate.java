@@ -3822,4 +3822,27 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_ExternalSystem_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "ExternalSystem_ID", null);
 	String COLUMNNAME_ExternalSystem_ID = "ExternalSystem_ID";
+
+	/**
+	 * Set Grand Total.
+	 * Total amount of document
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setGrandTotal (@Nullable BigDecimal GrandTotal);
+
+	/**
+	 * Get Grand Total.
+	 * Total amount of document
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getGrandTotal();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_GrandTotal = new ModelColumn<>(I_C_Invoice_Candidate.class, "GrandTotal", null);
+	String COLUMNNAME_GrandTotal = "GrandTotal";
 }
