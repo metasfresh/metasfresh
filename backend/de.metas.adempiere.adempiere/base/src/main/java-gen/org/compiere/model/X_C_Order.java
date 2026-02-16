@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -370267365L;
+	private static final long serialVersionUID = 761250792L;
 
     /** Standard Constructor */
     public X_C_Order (final Properties ctx, final int C_Order_ID, @Nullable final String trxName)
@@ -2171,6 +2171,19 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public boolean isSendEMail() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_SendEMail);
+	}
+
+	@Override
+	public void setTotalGrossWeightKg (final BigDecimal TotalGrossWeightKg)
+	{
+		set_Value (COLUMNNAME_TotalGrossWeightKg, TotalGrossWeightKg);
+	}
+
+	@Override
+	public BigDecimal getTotalGrossWeightKg() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_TotalGrossWeightKg);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override

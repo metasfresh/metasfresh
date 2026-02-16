@@ -59,8 +59,8 @@ public class WEBUI_C_OrderLineSO_Make_HUReservation
 	@Autowired
 	private SalesOrderLineRepository salesOrderLineRepository;
 
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IHUOrderBL huOrderBL = Services.get(IHUOrderBL.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	private static final String PARAMNAME_QTY_TO_RESERVE = "QtyToReserve";
 	@Param(mandatory = true, parameterName = PARAMNAME_QTY_TO_RESERVE)
@@ -91,7 +91,8 @@ public class WEBUI_C_OrderLineSO_Make_HUReservation
 	{
 		if (PARAMNAME_QTY_TO_RESERVE.equals(parameter.getColumnName()))
 		{
-			final SalesOrderLine salesOrderLine = WEBUI_C_OrderLineSO_Util.retrieveSalesOrderLine(getView(), salesOrderLineRepository).get();
+			final SalesOrderLine salesOrderLine = WEBUI_C_OrderLineSO_Util.retrieveSalesOrderLine(getView(), salesOrderLineRepository)
+					.orElseThrow(() -> new AdempiereException("Sales order line not found"));
 			final ProductId productId = salesOrderLine.getProductId();
 
 			final Quantity orderedQty = salesOrderLine.getOrderedQty();
@@ -132,7 +133,8 @@ public class WEBUI_C_OrderLineSO_Make_HUReservation
 	@Override
 	protected String doIt()
 	{
-		final SalesOrderLine salesOrderLine = WEBUI_C_OrderLineSO_Util.retrieveSalesOrderLine(getView(), salesOrderLineRepository).get();
+		final SalesOrderLine salesOrderLine = WEBUI_C_OrderLineSO_Util.retrieveSalesOrderLine(getView(), salesOrderLineRepository)
+				.orElseThrow(() -> new AdempiereException("Sales order line not found"));
 
 		final ImmutableList<HuId> selectedHuIds = streamSelectedHUIds(Select.ALL)
 				.collect(ImmutableList.toImmutableList());

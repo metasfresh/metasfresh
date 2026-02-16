@@ -238,4 +238,6 @@ public interface IOrderLineBL extends ISingletonService
 	Optional<BPartnerId> getBPartnerId(@NonNull OrderAndLineId orderLineId);
 
 	void setTax(@NonNull org.compiere.model.I_C_OrderLine orderLine);
+
+	void setGrossWeightInKg(@NonNull I_C_OrderLine orderLine);
 }

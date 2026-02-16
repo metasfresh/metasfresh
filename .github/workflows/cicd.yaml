@@ -489,18 +489,7 @@ jobs:
           path: jest/frontend/*.xml
           retention-days: 1
           if-no-files-found: warn
-      - name: upload raw junit xml to R2
-        if: false  # DISABLED: R2 upload not working - was: always() && env.ACT != 'true'
-        uses: ./.github/actions/upload-to-r2
-        with:
-          source-dir: jest/frontend
-          r2-path: raw/junit-xml/jest/
-          branch: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
-          version: ${{ needs.init.outputs.tag-fixed }}
-          access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
-          secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          endpoint-url: ${{ vars.R2_ENDPOINT_URL }}
-          bucket-name: ${{ vars.R2_BUCKET_NAME }}
+      # TODO: Upload jest JUnit XML to HTTP report server (source: jest/frontend/*.xml)
       - name: assert success
         run: |
           if [ $(cat jest/frontend/jest.exit-code) != 0 ]; then tail -1000 jest/frontend/jest.log && exit 1; fi     # print frontend log and exit if frontend failed
@@ -998,17 +987,7 @@ jobs:
           --tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat \
           --tag metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat \
           .
-      - name: tag images
-        run: |
-          docker image inspect metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded >/dev/null 2>&1 || docker pull metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded --quiet
-          docker tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded metasfresh/metasfresh-db:${{ needs.init.outputs.tag-fixed }}-compat
-          docker image inspect metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }} >/dev/null 2>&1 || docker pull metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }} --quiet
-          docker tag metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }} metasfresh/metasfresh-db-migration-tool:${{ needs.init.outputs.tag-fixed }}-compat
-          docker image inspect metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }} >/dev/null 2>&1 || docker pull metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }} --quiet
-          docker tag metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }} metasfresh/metasfresh-edi:${{ needs.init.outputs.tag-fixed }}-compat
-          docker image inspect metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }} >/dev/null 2>&1 || docker pull metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }} --quiet
-          docker tag metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }} metasfresh/metasfresh-externalsystems:${{ needs.init.outputs.tag-fixed }}-compat
-
+      # Push built compat images BEFORE pulling more images to free disk space
       - name: push-image metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}-compat
         if: env.ACT != 'true'
         uses: nick-fields/retry@v3
@@ -1097,6 +1076,35 @@ jobs:
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat
+      - name: cleanup-before-pulling-images
+        run: |
+          echo "=== Disk space before cleanup ==="
+          df -h /
+          echo "=== Pruning Docker build cache ==="
+          docker builder prune -af
+          echo "=== Removing pushed compat images to free space ==="
+          docker image rm metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}-compat metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}-compat || true
+          docker image rm metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat || true
+          docker image rm metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}-compat metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat || true
+          docker image rm metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat || true
+          docker image rm metasfresh/metasfresh-webapi:${{ needs.init.outputs.tag-fixed }}-compat || true
+          docker image rm metasfresh/metasfresh-app:${{ needs.init.outputs.tag-fixed }}-compat || true
+          docker image rm metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat || true
+          echo "=== Removing dangling images ==="
+          docker image prune -f
+          echo "=== Disk space after cleanup ==="
+          df -h /
+      - name: tag images
+        run: |
+          docker pull metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded --quiet
+          docker tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded metasfresh/metasfresh-db:${{ needs.init.outputs.tag-fixed }}-compat
+          docker pull metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }} --quiet
+          docker tag metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }} metasfresh/metasfresh-db-migration-tool:${{ needs.init.outputs.tag-fixed }}-compat
+          docker pull metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }} --quiet
+          docker tag metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }} metasfresh/metasfresh-edi:${{ needs.init.outputs.tag-fixed }}-compat
+          docker pull metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }} --quiet
+          docker tag metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }} metasfresh/metasfresh-externalsystems:${{ needs.init.outputs.tag-fixed }}-compat
+
       - name: push-image metasfresh/metasfresh-db:${{ needs.init.outputs.tag-fixed }}-compat
         if: env.ACT != 'true'
         uses: nick-fields/retry@v3
@@ -1180,6 +1188,16 @@ jobs:
           --tag metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }} \
           .
+      - name: cleanup-after-j8
+        run: |
+          echo "=== Disk space before cleanup ==="
+          df -h /
+          echo "=== Pruning Docker build cache ==="
+          docker builder prune -af
+          echo "=== Removing dangling images ==="
+          docker image prune -f
+          echo "=== Disk space after cleanup ==="
+          df -h /
       - name: run-junit-tests-j14
         run: |
           docker buildx build \
@@ -1231,30 +1249,7 @@ jobs:
           path: junit/camel/**/*.xml
           retention-days: 1
           if-no-files-found: warn
-      - name: upload raw backend junit xml to R2
-        if: false  # DISABLED: R2 upload not working - was: always() && env.ACT != 'true'
-        uses: ./.github/actions/upload-to-r2
-        with:
-          source-dir: junit/backend
-          r2-path: raw/junit-xml/backend/
-          branch: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
-          version: ${{ needs.init.outputs.tag-fixed }}
-          access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
-          secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          endpoint-url: ${{ vars.R2_ENDPOINT_URL }}
-          bucket-name: ${{ vars.R2_BUCKET_NAME }}
-      - name: upload raw camel junit xml to R2
-        if: false  # DISABLED: R2 upload not working - was: always() && env.ACT != 'true'
-        uses: ./.github/actions/upload-to-r2
-        with:
-          source-dir: junit/camel
-          r2-path: raw/junit-xml/camel/
-          branch: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
-          version: ${{ needs.init.outputs.tag-fixed }}
-          access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
-          secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          endpoint-url: ${{ vars.R2_ENDPOINT_URL }}
-          bucket-name: ${{ vars.R2_BUCKET_NAME }}
+      # TODO: Upload backend+camel JUnit XML to HTTP report server (source: junit/backend/, junit/camel/)
       - name: assert success
         run: |
           if [ $(cat junit/commons/junit.exit-code) != 0 ] || [ $(cat junit/commons/junit.mvn.exit-code) != 0 ]; then tail -1000 junit/commons/junit.log && exit 1; fi      # print commons log and exit if commons failed
@@ -1500,7 +1495,7 @@ jobs:
       - name: Rename Cucumber JUnit for unique merge
         if: always()
         run: mv cucumber/cucumber-junit.xml cucumber/cucumber-junit-${{ matrix.profile }}.xml || true
-      - name: Upload Cucumber JUnit results for R2
+      - name: Upload Cucumber JUnit results
         uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -1508,30 +1503,9 @@ jobs:
           path: cucumber/cucumber-junit-${{ matrix.profile }}.xml
           if-no-files-found: ignore
           retention-days: 1
-      - name: upload raw cucumber allure results to R2
-        if: false  # DISABLED: R2 upload not working - was: always() && env.ACT != 'true'
-        uses: ./.github/actions/upload-to-r2
-        with:
-          source-dir: cucumber-allure-results
-          r2-path: raw/allure-results/cucumber-${{ matrix.profile }}/
-          branch: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
-          version: ${{ needs.init.outputs.tag-fixed }}
-          access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
-          secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          endpoint-url: ${{ vars.R2_ENDPOINT_URL }}
-          bucket-name: ${{ vars.R2_BUCKET_NAME }}
-      - name: upload raw cucumber junit xml to R2
-        if: false  # DISABLED: R2 upload not working - was: always() && env.ACT != 'true'
-        uses: ./.github/actions/upload-to-r2
-        with:
-          source-dir: cucumber
-          r2-path: raw/junit-xml/cucumber-${{ matrix.profile }}/
-          branch: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
-          version: ${{ needs.init.outputs.tag-fixed }}
-          access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
-          secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          endpoint-url: ${{ vars.R2_ENDPOINT_URL }}
-          bucket-name: ${{ vars.R2_BUCKET_NAME }}
+      # TODO: Upload cucumber allure results + JUnit XML to HTTP report server
+      #   Allure source: cucumber-allure-results/
+      #   JUnit source:  cucumber/cucumber-junit-${{ matrix.profile }}.xml
 
   cucumber-allure-report:
     name: Generate Cucumber Allure Report
@@ -1764,7 +1738,7 @@ jobs:
             docker-builds/e2e-tests/test-results-mobile/
             docker-builds/e2e-tests/infra.log
           retention-days: 30
-      - name: Upload Playwright Mobile JUnit results for R2
+      - name: Upload Playwright Mobile JUnit results
         uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -1772,18 +1746,8 @@ jobs:
           path: docker-builds/e2e-tests/playwright-report-mobile/junit/results.xml
           if-no-files-found: ignore
           retention-days: 1
-      - name: upload raw mobile allure results to R2
-        if: false  # DISABLED: R2 upload not working - was: always() && env.ACT != 'true'
-        uses: ./.github/actions/upload-to-r2
-        with:
-          source-dir: docker-builds/e2e-tests/allure-results-mobile
-          r2-path: raw/allure-results/mobile-webui/
-          branch: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
-          version: ${{ needs.init.outputs.tag-fixed }}
-          access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
-          secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          endpoint-url: ${{ vars.R2_ENDPOINT_URL }}
-          bucket-name: ${{ vars.R2_BUCKET_NAME }}
+      # TODO: Upload mobile allure results to HTTP report server
+      #   Source: docker-builds/e2e-tests/allure-results-mobile/
 
   frontend_webui_test:
     name: frontend webui test
@@ -1860,7 +1824,7 @@ jobs:
             docker-builds/e2e-tests/test-results-frontend/
             docker-builds/e2e-tests/infra.log
           retention-days: 30
-      - name: Upload Playwright Frontend JUnit results for R2
+      - name: Upload Playwright Frontend JUnit results
         uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -1868,35 +1832,29 @@ jobs:
           path: docker-builds/e2e-tests/playwright-report-frontend/junit/results.xml
           if-no-files-found: ignore
           retention-days: 1
-      - name: upload raw frontend allure results to R2
-        if: false  # DISABLED: R2 upload not working - was: always() && env.ACT != 'true'
-        uses: ./.github/actions/upload-to-r2
-        with:
-          source-dir: docker-builds/e2e-tests/allure-results
-          r2-path: raw/allure-results/frontend-webui/
-          branch: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
-          version: ${{ needs.init.outputs.tag-fixed }}
-          access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
-          secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          endpoint-url: ${{ vars.R2_ENDPOINT_URL }}
-          bucket-name: ${{ vars.R2_BUCKET_NAME }}
+      # TODO: Upload frontend allure results to HTTP report server
+      #   Source: docker-builds/e2e-tests/allure-results/
 
   # =============================================================================
-  # NOTE: test_reports_publish job has been removed
+  # TODO: Test Report Upload to HTTP Server
   # =============================================================================
-  # Report generation is now handled by r2-reports-generate.yml workflow which
-  # triggers automatically after this workflow completes (via workflow_run event).
+  # Each test job above collects raw test data (JUnit XML, Allure results) and
+  # uploads them as GitHub artifacts. The plan is to upload these to our own
+  # HTTP report server. When implementing, either:
   #
-  # The new approach follows the Testspace async pattern:
-  # 1. Each test job uploads raw data to R2 inline (fast, ~10-30s per job)
-  # 2. r2-reports-generate.yml triggers after cicd.yaml completes
-  # 3. That workflow generates HTML reports from raw data and uploads to R2
-  # 4. Creates a GitHub Check with report links
+  #   Option A: Add inline upload steps in each test job (see TODO markers above)
+  #   Option B: Create a post-workflow job that downloads all artifacts and uploads
   #
-  # Benefits:
-  # - cicd.yaml workflow completes faster (no waiting for report generation)
-  # - Reports are generated shortly after the workflow completes
-  # - Follows proven Testspace pattern
+  # Available test artifacts per job:
+  #   test-frontend:        jest/frontend/*.xml                          (JUnit)
+  #   junit:                junit/backend/**/*.xml, junit/camel/**/*.xml (JUnit)
+  #   cucumber-run:         cucumber-allure-results/ (Allure), cucumber/ (JUnit)
+  #   mobile_test:          allure-results-mobile/ (Allure), junit/ (JUnit)
+  #   frontend_webui_test:  allure-results/ (Allure), junit/ (JUnit)
+  #
+  # Useful inputs from init job:
+  #   needs.init.outputs.branch-sanitized-gh-pages  (branch name for paths)
+  #   needs.init.outputs.tag-fixed                  (build version tag)
   # =============================================================================
 
   cicd-dispatch:

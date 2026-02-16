@@ -76,7 +76,7 @@ BEGIN
              -- Get last period of previous year
              LEFT OUTER JOIN C_Period period_LastYearEnd ON (period_LastYearEnd.C_Period_ID = report.Get_Predecessor_Period_Recursive(p.C_Period_ID, p.PeriodNo::int)) AND period_LastYearEnd.isActive = 'Y'
              LEFT OUTER JOIN C_Period period_CurrentYearStart ON (period_CurrentYearStart.C_Period_ID = report.Get_Predecessor_Period_Recursive(p.C_Period_ID, (p.PeriodNo - 1)::int)) AND period_CurrentYearStart.isActive = 'Y'
-             LEFT OUTER JOIN C_Period period_PreviousYearStart ON (period_PreviousYearStart.C_Period_ID = report.Get_Predecessor_Period_Recursive(period_LastYearEnd.C_Period_ID, period_LastYearEnd.PeriodNo::int)) AND period_PreviousYearStart.isActive = 'Y'
+             LEFT OUTER JOIN C_Period period_PreviousYearStart ON (period_PreviousYearStart.C_Period_ID = report.Get_Predecessor_Period_Recursive(period_LastYearEnd.C_Period_ID, period_LastYearEnd.PeriodNo::int-1)) AND period_PreviousYearStart.isActive = 'Y'
     WHERE TRUE
       -- Period: determine it by DateAcct
       AND p.C_Period_ID = report.Get_Period(v_AcctSchemaInfo.C_Calendar_ID, p_datefrom);
@@ -95,7 +95,7 @@ BEGIN
                        WHERE p_c_vat_code_id IS NULL -- include NULL vatcode if no filter is applied
     )
 
-    SELECT t.vatcode,
+    SELECT COALESCE(t.vatcode, v_notax) as vatcode,
            (accountno || ' ' || accountname)::text AS AccountName,
            taxname,
            SUM(taxamt)                             AS taxamt,
@@ -358,7 +358,7 @@ BEGIN
         UPDATE tmp_final_taxaccounts_report t
         SET TaxAmt_SUM_PrevYear = (SELECT COALESCE(SUM(taxamt), 0)
                                    FROM tmp_taxaccounts_details_previous_year p
-                                   WHERE p.vatcode = t.vatcode
+                                   WHERE COALESCE(p.vatcode, v_notax)  = t.vatcode
                                      AND p.source_currency = t.source_currency)
         WHERE t.Level = '1';
     END IF;
@@ -368,7 +368,7 @@ BEGIN
         UPDATE tmp_final_taxaccounts_report t
         SET TaxAmt_SUM_PrevYear = (SELECT COALESCE(SUM(taxamt), 0)
                                    FROM tmp_taxaccounts_details_previous_year p
-                                   WHERE vatcode = t.vatcode
+                                   WHERE COALESCE(p.vatcode, v_notax)  = t.vatcode
                                      AND p.source_currency = t.source_currency
                                      AND p.AccountName = t.AccountName)
         WHERE t.Level = '2';
@@ -379,7 +379,7 @@ BEGIN
         UPDATE tmp_final_taxaccounts_report t
         SET TaxAmt_SUM_PrevYear = (SELECT COALESCE(SUM(taxamt), 0)
                                    FROM tmp_taxaccounts_details_previous_year p
-                                   WHERE vatcode = t.vatcode
+                                   WHERE COALESCE(p.vatcode, v_notax)  = t.vatcode
                                      AND p.source_currency = t.source_currency
                                      AND p.AccountName = t.AccountName
                                      AND p.Taxname = t.Taxname)
@@ -392,7 +392,7 @@ BEGIN
         UPDATE tmp_final_taxaccounts_report t
         SET TaxAmt_SUM_PrevYear = (SELECT COALESCE(SUM(taxamt), 0)
                                    FROM tmp_taxaccounts_details_previous_year p
-                                   WHERE p.vatcode = t.vatcode
+                                   WHERE COALESCE(p.vatcode, v_notax)   = t.vatcode
                                      AND p.Taxname = t.Taxname
                                      AND p.source_currency = t.source_currency)
         WHERE t.Level = 'ReCap';

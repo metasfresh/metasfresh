@@ -107,6 +107,7 @@ public final class Language implements Serializable
 	private static final String AD_Language_ar_TN = "ar_TN";
 	private static final String AD_Language_hu_HU = "hu_HU";
 	private static final String AD_Language_el_GR = "el_GR";
+	private static final String AD_Language_tr_TR = "tr_TR";
 
 	/** System Languages. */
 	private static final CopyOnWriteArrayList<Language> s_languages = new CopyOnWriteArrayList<>(new Language[] {
@@ -220,6 +221,9 @@ public final class Language implements Serializable
 					MediaSize.ISO.A4),
 			new Language("\u0e44\u0e17\u0e22 (TH)",
 					AD_Language_th_TH, new Locale("th", "TH"), Boolean.FALSE, "dd/MM/yyyy",
+					MediaSize.ISO.A4),
+			new Language("T\u00fcrk\u00e7e",
+					AD_Language_tr_TR, new Locale("tr", "TR"), Boolean.FALSE, "dd.MM.yyyy",
 					MediaSize.ISO.A4),
 			new Language("Vi\u1EC7t Nam",
 					AD_Language_vi_VN, new Locale("vi", "VN"), Boolean.FALSE, "dd-MM-yyyy",

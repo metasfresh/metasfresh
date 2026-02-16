@@ -120,7 +120,12 @@ public class FastCucumberDevRunner
 
 	private static Path createHtmlReportPathAndEnsureDirectories(@NonNull final String featureFilePath)
 	{
-		final Path featurePath = Paths.get(featureFilePath);
+		// Strip line number suffix if present (e.g., "path/file.feature:123" -> "path/file.feature")
+		final String pathWithoutLineNumber = featureFilePath.contains(":") && featureFilePath.lastIndexOf(":") > featureFilePath.lastIndexOf(File.separator)
+				? featureFilePath.substring(0, featureFilePath.lastIndexOf(":"))
+				: featureFilePath;
+
+		final Path featurePath = Paths.get(pathWithoutLineNumber);
 
 		final String featureFileName = featurePath.getFileName().toString();
 		final String baseFolderName = featureFileName.replace(".feature", "");

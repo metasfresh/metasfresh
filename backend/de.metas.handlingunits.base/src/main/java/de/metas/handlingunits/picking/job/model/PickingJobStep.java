@@ -27,11 +27,11 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PackToSpec;
-import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
-import de.metas.i18n.ITranslatableString;
 import de.metas.order.OrderAndLineId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductValueAndName;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
@@ -59,7 +59,7 @@ public class PickingJobStep
 	//
 	// What?
 	@NonNull ProductId productId;
-	@NonNull ITranslatableString productName;
+	@NonNull ProductValueAndName productValueAndName;
 	@NonNull Quantity qtyToPick;
 
 	//
@@ -82,7 +82,7 @@ public class PickingJobStep
 			//
 			// What?
 			@NonNull final ProductId productId,
-			@NonNull final ITranslatableString productName,
+			@NonNull final ProductValueAndName productValueAndName,
 			@NonNull final Quantity qtyToPick,
 			//
 			// Pick From
@@ -96,7 +96,7 @@ public class PickingJobStep
 		this.salesOrderAndLineId = salesOrderAndLineId;
 		this.scheduleId = scheduleId;
 		this.productId = productId;
-		this.productName = productName;
+		this.productValueAndName = productValueAndName;
 		this.qtyToPick = qtyToPick;
 		this.pickFroms = pickFroms;
 		this.packToSpec = packToSpec;
