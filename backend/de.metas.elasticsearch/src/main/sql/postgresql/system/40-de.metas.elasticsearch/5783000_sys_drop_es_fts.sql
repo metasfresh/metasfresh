@@ -97,20 +97,22 @@ DELETE FROM AD_Column WHERE AD_Table_ID IN (
 -- that also hold FK refs to ad_table.
 DO $$
 DECLARE
-    v_table_name TEXT;
+    v_rec RECORD;
     v_ids CONSTANT NUMERIC[] := ARRAY[541755, 541756, 541757, 541759, 541760, 541762, 541761, 541588];
 BEGIN
-    -- Find all tables that have an FK constraint referencing ad_table
-    FOR v_table_name IN
-        SELECT DISTINCT cl.relname
+    -- Find all tables that have an FK constraint referencing ad_table,
+    -- and resolve the actual column name (not all use "AD_Table_ID").
+    FOR v_rec IN
+        SELECT DISTINCT cl.relname AS table_name, att.attname AS column_name
         FROM pg_constraint con
         JOIN pg_class cl ON cl.oid = con.conrelid
         JOIN pg_class ref ON ref.oid = con.confrelid
+        JOIN pg_attribute att ON att.attrelid = con.conrelid AND att.attnum = con.conkey[1]
         WHERE con.contype = 'f'
           AND ref.relname = 'ad_table'
           AND cl.relname <> 'ad_table'
     LOOP
-        EXECUTE format('DELETE FROM %I WHERE AD_Table_ID = ANY($1)', v_table_name) USING v_ids;
+        EXECUTE format('DELETE FROM %I WHERE %I = ANY($1)', v_rec.table_name, v_rec.column_name) USING v_ids;
     END LOOP;
 END $$;
 
