@@ -3829,8 +3829,10 @@ public interface I_C_Invoice_Candidate
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	void setGrandTotal (@Nullable BigDecimal GrandTotal);
 
 	/**
@@ -3839,8 +3841,10 @@ public interface I_C_Invoice_Candidate
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	BigDecimal getGrandTotal();
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_GrandTotal = new ModelColumn<>(I_C_Invoice_Candidate.class, "GrandTotal", null);
