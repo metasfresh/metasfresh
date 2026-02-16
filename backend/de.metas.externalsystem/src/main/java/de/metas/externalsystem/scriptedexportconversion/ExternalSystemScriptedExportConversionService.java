@@ -24,6 +24,8 @@ package de.metas.externalsystem.scriptedexportconversion;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.externalsystem.outboundendpoint.ExternalSystemOutboundEndpoint;
@@ -55,7 +57,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.stream.Stream;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER;
@@ -73,35 +74,26 @@ public class ExternalSystemScriptedExportConversionService
 	private final IColumnBL columnBL = Services.get(IColumnBL.class);
 	private final ObjectMapper objectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
-	@NonNull
-	private final ExternalSystemScriptedExportConversionRepository externalSystemScriptedExportConversionRepository;
-	@NonNull
-	private final ExternalSystemOutboundEndpointRepository externalSystemOutboundEndpointRepository;
+	@NonNull private final ExternalSystemScriptedExportConversionRepository externalSystemScriptedExportConversionRepository;
+	@NonNull private final ExternalSystemOutboundEndpointRepository externalSystemOutboundEndpointRepository;
 
-	@NonNull
-	public Stream<ExternalSystemScriptedExportConversionConfig> retrieveActiveConfigs()
+	public void addCacheResetListener(@NonNull final ExternalSystemScriptedExportConversionConfigChangedListener listener)
 	{
-		return externalSystemScriptedExportConversionRepository.retrieveActiveConfigs();
+		externalSystemScriptedExportConversionRepository.addCacheResetListener(listener);
 	}
 
 	@NonNull
-	public Optional<ExternalSystemScriptedExportConversionConfig> retrieveBestMatchingConfig(
-			@NonNull final AdTableAndClientId tableAndClientId,
-			@NonNull final Integer recordId)
+	public ImmutableSet<AdTableAndClientId> getTriggerOnCompleteDistinctTableAndClientIds()
 	{
-		return externalSystemScriptedExportConversionRepository.retrieveActiveBy(tableAndClientId)
+		return externalSystemScriptedExportConversionRepository.getTriggerOnCompleteDistinctTableAndClientIds();
+	}
+
+	@NonNull
+	public ImmutableList<ExternalSystemScriptedExportConversionConfig> getMatchingTriggerOnCompleteConfigsByTableAndClientId(@NonNull final AdTableAndClientId tableAndClientId, @NonNull final Integer recordId)
+	{
+		return externalSystemScriptedExportConversionRepository.getTriggerOnCompleteConfigsByTableAndClientIds(tableAndClientId).stream()
 				.filter(config -> isConfigMatchingRecord(config, recordId))
-				.findAny();
-	}
-
-	public boolean existsActive(@NonNull final AdTableAndClientId tableAndClientId)
-	{
-		return externalSystemScriptedExportConversionRepository.existsActive(tableAndClientId);
-	}
-
-	public boolean existsActiveOutOfTrx(@NonNull final AdTableAndClientId tableAndClientId)
-	{
-		return externalSystemScriptedExportConversionRepository.existsActiveOutOfTrx(tableAndClientId);
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@NonNull
@@ -119,7 +111,7 @@ public class ExternalSystemScriptedExportConversionService
 		parameters.put(PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT, getOutboundProcessResponse(config, context, outboundDataProcessRecordId));
 		parameters.put(PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER, config.getScriptIdentifier());
 		parameters.put(PARAM_SCRIPTEDADAPTER_OUTBOUND_ENDPOINT_PARAMETERS, outboundEndpointData);
-		parameters.put(PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_TABLE_NAME, tableDAO.retrieveTableName(config.getAdTableId()));
+		parameters.put(PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_TABLE_NAME, tableDAO.retrieveTableName(config.getTableId()));
 		parameters.put(PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_ID, outboundDataProcessRecordId);
 
 		return parameters;
@@ -168,7 +160,7 @@ public class ExternalSystemScriptedExportConversionService
 	@NonNull
 	private String getSqlWithWhereClauseAndDocBaseTypeIfPresent(@NonNull final ExternalSystemScriptedExportConversionConfig config)
 	{
-		final String rootTableName = tableDAO.retrieveTableName(config.getAdTableId());
+		final String rootTableName = tableDAO.retrieveTableName(config.getTableId());
 		final String rootKeyColumnName = columnBL.getSingleKeyColumn(rootTableName);
 
 		return Optional.ofNullable(config.getDocBaseType())
@@ -193,12 +185,12 @@ public class ExternalSystemScriptedExportConversionService
 			@NonNull final Properties context,
 			@NonNull final String outboundDataProcessRecordId)
 	{
-		final String rootTableName = tableDAO.retrieveTableName(config.getAdTableId());
+		final String rootTableName = tableDAO.retrieveTableName(config.getTableId());
 		final String rootKeyColumnName = columnBL.getSingleKeyColumn(rootTableName);
 
 		final ProcessExecutor processExecutor = ProcessInfo.builder()
 				.setCtx(context)
-				.setRecord(TableRecordReference.of(config.getAdTableId(), StringUtils.toIntegerOrZero(outboundDataProcessRecordId)))
+				.setRecord(TableRecordReference.of(config.getTableId(), StringUtils.toIntegerOrZero(outboundDataProcessRecordId)))
 				.setAD_Process_ID(config.getOutboundDataProcessId())
 				.addParameter(rootKeyColumnName, outboundDataProcessRecordId)
 				.buildAndPrepareExecution()

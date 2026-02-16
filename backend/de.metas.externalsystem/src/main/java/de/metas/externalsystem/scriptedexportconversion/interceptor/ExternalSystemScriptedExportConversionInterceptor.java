@@ -148,7 +148,7 @@ import static org.compiere.util.Env.getCtx;
 
 	@Nullable
 	@Override
-	public String docValidate(final PO po, final int timing) throws Exception
+	public String docValidate(final PO po, final int timing)
 	{
 		Check.assume(isDocument(), "PO '{}' is a document", po);
 
@@ -156,9 +156,9 @@ import static org.compiere.util.Env.getCtx;
 				&& !documentBL.isReversalDocument(po))
 		{
 			externalSystemScriptedExportConversionService
-					.retrieveBestMatchingConfig(AdTableAndClientId.of(AdTableId.ofRepoId(po.get_Table_ID()),
+					.getMatchingTriggerOnCompleteConfigsByTableAndClientId(AdTableAndClientId.of(AdTableId.ofRepoId(po.get_Table_ID()),
 							ClientId.ofRepoId(getAD_Client_ID())), po.get_ID())
-					.ifPresent(config -> executeInvokeScriptedExportConversionAction(config, po.get_ID()));
+					.forEach(config -> executeInvokeScriptedExportConversionAction(config, po.get_ID()));
 		}
 
 		return null;
@@ -177,21 +177,20 @@ import static org.compiere.util.Env.getCtx;
 		final int configTableId = tableDAO.retrieveTableId(I_ExternalSystem_Config_ScriptedExportConversion.Table_Name);
 		try
 		{
-			trxManager.runAfterCommit(() -> {
-				ProcessInfo.builder()
-						.setCtx(getCtx())
-						.setRecord(configTableId, config.getId().getRepoId())
-						.setAD_ProcessByClassname(InvokeScriptedExportConversionAction.class.getName())
-						.addParameter(PARAM_EXTERNAL_REQUEST, COMMAND_CONVERT_MESSAGE_FROM_METASFRESH)
-						.addParameter(PARAM_CHILD_CONFIG_ID, config.getId().getRepoId())
-						.addParameter(PARAM_Record_ID, recordId)
-						.buildAndPrepareExecution()
-						.executeSync();
-			});
+			trxManager.runAfterCommit(() -> ProcessInfo.builder()
+					.setCtx(getCtx())
+					.setRecord(configTableId, config.getId().getRepoId())
+					.setAD_ProcessByClassname(InvokeScriptedExportConversionAction.class.getName())
+					.addParameter(PARAM_EXTERNAL_REQUEST, COMMAND_CONVERT_MESSAGE_FROM_METASFRESH)
+					.addParameter(PARAM_CHILD_CONFIG_ID, config.getId().getRepoId())
+					.addParameter(PARAM_Record_ID, recordId)
+					.buildAndPrepareExecution()
+					.executeSync());
 		}
 		catch (final Exception e)
 		{
-			log.warn(InvokeScriptedExportConversionAction.class.getName() + " process failed for Config ID {}, Record ID: {}",
+			log.warn("{} process failed for Config ID {}, Record ID: {}",
+					InvokeScriptedExportConversionAction.class.getName(),
 					config.getId(), recordId, e);
 		}
 	}
