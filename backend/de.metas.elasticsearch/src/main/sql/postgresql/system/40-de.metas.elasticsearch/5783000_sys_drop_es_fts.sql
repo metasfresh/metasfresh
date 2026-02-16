@@ -92,16 +92,33 @@ DELETE FROM AD_Column WHERE AD_Table_ID IN (
 );
 
 -- 10a. Clean up all FK references to these AD_Tables.
--- Use dynamic SQL because AD_ChangeLog_Config may have dated
--- partition tables (e.g. ad_table_changelog_config_26092025)
--- that also hold FK refs to ad_table.
+-- Two-pass approach:
+--   Pass 1: information_schema finds ALL tables with ad_table_id column
+--           (catches dated partitions like ad_table_changelog_config_26092025
+--           that pg_constraint may not list independently).
+--   Pass 2: pg_constraint finds FK refs using non-standard column names
+--           (e.g. ad_businessrule_event).
 DO $$
 DECLARE
     v_rec RECORD;
     v_ids CONSTANT NUMERIC[] := ARRAY[541755, 541756, 541757, 541759, 541760, 541762, 541761, 541588];
 BEGIN
-    -- Find all tables that have an FK constraint referencing ad_table,
-    -- and resolve the actual column name (not all use "AD_Table_ID").
+    -- Pass 1: all tables with an ad_table_id column
+    FOR v_rec IN
+        SELECT DISTINCT table_name
+        FROM information_schema.columns
+        WHERE column_name = 'ad_table_id'
+          AND table_schema = 'public'
+          AND table_name <> 'ad_table'
+    LOOP
+        BEGIN
+            EXECUTE format('DELETE FROM %I WHERE ad_table_id = ANY($1)', v_rec.table_name) USING v_ids;
+        EXCEPTION WHEN OTHERS THEN
+            NULL; -- table dropped by earlier migration, or other transient issue
+        END;
+    END LOOP;
+
+    -- Pass 2: FK refs via non-standard column names (skip ad_table_id, already handled)
     FOR v_rec IN
         SELECT DISTINCT cl.relname AS table_name, att.attname AS column_name
         FROM pg_constraint con
@@ -111,11 +128,11 @@ BEGIN
         WHERE con.contype = 'f'
           AND ref.relname = 'ad_table'
           AND cl.relname <> 'ad_table'
+          AND att.attname <> 'ad_table_id'
     LOOP
         BEGIN
             EXECUTE format('DELETE FROM %I WHERE %I = ANY($1)', v_rec.table_name, v_rec.column_name) USING v_ids;
-        EXCEPTION WHEN undefined_table THEN
-            -- Table listed in pg_constraint but already dropped by an earlier migration
+        EXCEPTION WHEN OTHERS THEN
             NULL;
         END;
     END LOOP;
