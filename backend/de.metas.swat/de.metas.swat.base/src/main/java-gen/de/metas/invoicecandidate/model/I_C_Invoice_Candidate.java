@@ -28,10 +28,10 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 /** Generated Interface for C_Invoice_Candidate
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
-public interface I_C_Invoice_Candidate 
+public interface I_C_Invoice_Candidate
 {
 
 	String Table_Name = "C_Invoice_Candidate";
@@ -3972,4 +3972,52 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_C_Invoice_Candidate.class, "UserElementString7", null);
 	String COLUMNNAME_UserElementString7 = "UserElementString7";
+
+	/**
+	 * Set External System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystem_ID (int ExternalSystem_ID);
+
+	/**
+	 * Get External System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getExternalSystem_ID();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_ExternalSystem_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "ExternalSystem_ID", null);
+	String COLUMNNAME_ExternalSystem_ID = "ExternalSystem_ID";
+
+	/**
+	 * Set Grand Total.
+	 * Total amount of document
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setGrandTotal (@Nullable BigDecimal GrandTotal);
+
+	/**
+	 * Get Grand Total.
+	 * Total amount of document
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	BigDecimal getGrandTotal();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_GrandTotal = new ModelColumn<>(I_C_Invoice_Candidate.class, "GrandTotal", null);
+	String COLUMNNAME_GrandTotal = "GrandTotal";
 }
