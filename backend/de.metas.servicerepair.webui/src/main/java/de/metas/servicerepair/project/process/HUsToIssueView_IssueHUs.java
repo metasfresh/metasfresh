@@ -129,7 +129,7 @@ public class HUsToIssueView_IssueHUs
 
 	private ImmutableSet<HuId> getSelectedTopLevelHUIds()
 	{
-		return streamSelectedHUIds(HUEditorRowFilter.Select.ONLY_TOPLEVEL).collect(ImmutableSet.toImmutableSet());
+		return streamSelectedHUIds(HUEditorRowFilter.Select.ONLY_TOPLEVEL_HUS).collect(ImmutableSet.toImmutableSet());
 	}
 
 	private HUsToIssueViewContext getHusToIssueViewContext()
