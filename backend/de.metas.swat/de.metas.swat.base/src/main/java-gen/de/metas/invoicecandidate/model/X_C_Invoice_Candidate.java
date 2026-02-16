@@ -2601,8 +2601,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setGrandTotal (final @Nullable BigDecimal GrandTotal)
 	{
-		set_Value (COLUMNNAME_GrandTotal, GrandTotal);
-	}
+		throw new IllegalArgumentException ("GrandTotal is virtual column");	}
 
 	@Override
 	public BigDecimal getGrandTotal()
