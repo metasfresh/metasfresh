@@ -112,7 +112,12 @@ BEGIN
           AND ref.relname = 'ad_table'
           AND cl.relname <> 'ad_table'
     LOOP
-        EXECUTE format('DELETE FROM %I WHERE %I = ANY($1)', v_rec.table_name, v_rec.column_name) USING v_ids;
+        BEGIN
+            EXECUTE format('DELETE FROM %I WHERE %I = ANY($1)', v_rec.table_name, v_rec.column_name) USING v_ids;
+        EXCEPTION WHEN undefined_table THEN
+            -- Table listed in pg_constraint but already dropped by an earlier migration
+            NULL;
+        END;
     END LOOP;
 END $$;
 
