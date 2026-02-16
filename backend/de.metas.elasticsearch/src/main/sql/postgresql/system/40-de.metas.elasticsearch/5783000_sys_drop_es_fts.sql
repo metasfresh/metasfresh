@@ -91,11 +91,14 @@ DELETE FROM AD_Column WHERE AD_Table_ID IN (
   541588   -- C_BPartner_Adv_Search_v (view)
 );
 
--- 10a. Drop FK constraint from fix.ad_table_changelog_config_26092025.
--- This table lives in the "fix" schema (created by migration 5771450)
--- with a DEFERRABLE INITIALLY DEFERRED FK to ad_table. AD metadata DELETEs
--- trigger changelog inserts that re-create references, causing violations
--- at COMMIT. Dropping the constraint eliminates the deferred check.
+-- 10a. Drop DEFERRABLE INITIALLY DEFERRED FK constraints on changelog tables.
+-- Two tables reference ad_table with this constraint name:
+--   1. public.ad_changelog_config (created by migration 5745550)
+--   2. fix.ad_table_changelog_config_26092025 (created by migration 5771450)
+-- AD metadata DELETEs trigger changelog inserts that re-create references.
+-- Since the FK is deferred, violations only surface at COMMIT.
+ALTER TABLE IF EXISTS public.ad_changelog_config
+    DROP CONSTRAINT IF EXISTS adtable_adchangelogconfig;
 ALTER TABLE IF EXISTS fix.ad_table_changelog_config_26092025
     DROP CONSTRAINT IF EXISTS adtable_adchangelogconfig;
 
