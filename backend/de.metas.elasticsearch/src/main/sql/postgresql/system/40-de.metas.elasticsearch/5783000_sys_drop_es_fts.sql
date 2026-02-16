@@ -91,28 +91,22 @@ DELETE FROM AD_Column WHERE AD_Table_ID IN (
   541588   -- C_BPartner_Adv_Search_v (view)
 );
 
--- 10a. Drop FK constraints from changelog tables referencing ad_table.
+-- 10a. Drop the FK constraint "adtable_adchangelogconfig" from ALL tables.
 -- AD metadata DELETEs trigger changelog inserts into dated partition tables
--- (e.g. ad_table_changelog_config_26092025) that re-create FK references
--- AFTER cleanup. Since the FK is DEFERRABLE INITIALLY DEFERRED, the
--- violation only surfaces at COMMIT. Dropping these specific constraints
--- eliminates the deferred check. This only affects changelog/audit tables.
+-- (e.g. ad_table_changelog_config_26092025). The FK constraint is DEFERRABLE
+-- INITIALLY DEFERRED, so violations only surface at COMMIT. Previous attempts
+-- to clean rows or find constraints via pg_constraint failed because the
+-- partition constraints may not be visible through standard catalog queries.
+-- Brute-force approach: try dropping the named constraint from every table.
 DO $$
 DECLARE
-    v_rec RECORD;
+    v_table TEXT;
 BEGIN
-    FOR v_rec IN
-        SELECT cl.relname AS table_name, con.conname AS constraint_name
-        FROM pg_constraint con
-        JOIN pg_class cl ON cl.oid = con.conrelid
-        JOIN pg_class ref ON ref.oid = con.confrelid
-        WHERE con.contype = 'f'
-          AND ref.relname = 'ad_table'
-          AND cl.relname <> 'ad_table'
-          AND con.condeferrable = true
+    FOR v_table IN
+        SELECT tablename FROM pg_tables WHERE schemaname = 'public'
     LOOP
         BEGIN
-            EXECUTE format('ALTER TABLE %I DROP CONSTRAINT %I', v_rec.table_name, v_rec.constraint_name);
+            EXECUTE format('ALTER TABLE %I DROP CONSTRAINT IF EXISTS adtable_adchangelogconfig', v_table);
         EXCEPTION WHEN OTHERS THEN
             NULL;
         END;
