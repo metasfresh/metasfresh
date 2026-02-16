@@ -91,47 +91,28 @@ DELETE FROM AD_Column WHERE AD_Table_ID IN (
   541588   -- C_BPartner_Adv_Search_v (view)
 );
 
--- 10a. Clean up all FK references to these AD_Tables.
--- Two-pass approach:
---   Pass 1: information_schema finds ALL tables with ad_table_id column
---           (catches dated partitions like ad_table_changelog_config_26092025
---           that pg_constraint may not list independently).
---   Pass 2: pg_constraint finds FK refs using non-standard column names
---           (e.g. ad_businessrule_event).
+-- 10a. Drop FK constraints from changelog tables referencing ad_table.
+-- AD metadata DELETEs trigger changelog inserts into dated partition tables
+-- (e.g. ad_table_changelog_config_26092025) that re-create FK references
+-- AFTER cleanup. Since the FK is DEFERRABLE INITIALLY DEFERRED, the
+-- violation only surfaces at COMMIT. Dropping these specific constraints
+-- eliminates the deferred check. This only affects changelog/audit tables.
 DO $$
 DECLARE
     v_rec RECORD;
-    v_ids CONSTANT NUMERIC[] := ARRAY[541755, 541756, 541757, 541759, 541760, 541762, 541761, 541588];
 BEGIN
-    -- Pass 1: all tables with an ad_table_id column
     FOR v_rec IN
-        SELECT DISTINCT table_name
-        FROM information_schema.columns
-        WHERE column_name = 'ad_table_id'
-          AND table_schema = 'public'
-          AND table_name <> 'ad_table'
-    LOOP
-        BEGIN
-            EXECUTE format('DELETE FROM %I WHERE ad_table_id = ANY($1)', v_rec.table_name) USING v_ids;
-        EXCEPTION WHEN OTHERS THEN
-            NULL; -- table dropped by earlier migration, or other transient issue
-        END;
-    END LOOP;
-
-    -- Pass 2: FK refs via non-standard column names (skip ad_table_id, already handled)
-    FOR v_rec IN
-        SELECT DISTINCT cl.relname AS table_name, att.attname AS column_name
+        SELECT cl.relname AS table_name, con.conname AS constraint_name
         FROM pg_constraint con
         JOIN pg_class cl ON cl.oid = con.conrelid
         JOIN pg_class ref ON ref.oid = con.confrelid
-        JOIN pg_attribute att ON att.attrelid = con.conrelid AND att.attnum = con.conkey[1]
         WHERE con.contype = 'f'
           AND ref.relname = 'ad_table'
           AND cl.relname <> 'ad_table'
-          AND att.attname <> 'ad_table_id'
+          AND con.condeferrable = true
     LOOP
         BEGIN
-            EXECUTE format('DELETE FROM %I WHERE %I = ANY($1)', v_rec.table_name, v_rec.column_name) USING v_ids;
+            EXECUTE format('ALTER TABLE %I DROP CONSTRAINT %I', v_rec.table_name, v_rec.constraint_name);
         EXCEPTION WHEN OTHERS THEN
             NULL;
         END;
@@ -175,29 +156,3 @@ DELETE FROM AD_SysConfig WHERE Name IN (
   'de.metas.elasticsearch.indexer.AutoIndexModels.orders'
 );
 -- NOTE: keeping 'de.metas.elasticsearch.enabled' (elastic_enable) — shared with KPI
-
--- 15. FINAL changelog cleanup.
--- The AD metadata DELETEs above (steps 2-14) trigger changelog inserts into
--- tables like ad_table_changelog_config_26092025. Those new rows reference
--- the AD_Table_IDs we just deleted. Since the FK is DEFERRABLE INITIALLY
--- DEFERRED, the violation only surfaces at COMMIT. This final pass removes
--- any changelog entries created during this script's execution.
-DO $$
-DECLARE
-    v_rec RECORD;
-    v_ids CONSTANT NUMERIC[] := ARRAY[541755, 541756, 541757, 541759, 541760, 541762, 541761, 541588];
-BEGIN
-    FOR v_rec IN
-        SELECT DISTINCT table_name
-        FROM information_schema.columns
-        WHERE column_name = 'ad_table_id'
-          AND table_schema = 'public'
-          AND table_name <> 'ad_table'
-    LOOP
-        BEGIN
-            EXECUTE format('DELETE FROM %I WHERE ad_table_id = ANY($1)', v_rec.table_name) USING v_ids;
-        EXCEPTION WHEN OTHERS THEN
-            NULL;
-        END;
-    END LOOP;
-END $$;
