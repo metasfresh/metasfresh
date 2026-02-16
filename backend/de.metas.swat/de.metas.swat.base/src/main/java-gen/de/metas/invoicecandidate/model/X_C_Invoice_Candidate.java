@@ -2597,4 +2597,16 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	{
 		return get_ValueAsInt(COLUMNNAME_ExternalSystem_ID);
 	}
+
+	@Override
+	public void setGrandTotal (final @Nullable BigDecimal GrandTotal)
+	{
+		throw new IllegalArgumentException ("GrandTotal is virtual column");	}
+
+	@Override
+	public BigDecimal getGrandTotal()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_GrandTotal);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
 }
