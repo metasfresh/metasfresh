@@ -1,0 +1,24 @@
+diff --git a/node_modules/bootstrap-daterangepicker/daterangepicker.js b/node_modules/bootstrap-daterangepicker/daterangepicker.js
+index 9804f27..18d375a 100644
+--- a/node_modules/bootstrap-daterangepicker/daterangepicker.js
++++ b/node_modules/bootstrap-daterangepicker/daterangepicker.js
+@@ -1197,6 +1197,9 @@
+                 this.updateView();
+             } else {
+                 var dates = this.ranges[label];
++                if (!dates || !dates[0] || !dates[1]) {
++                    return;
++                }
+                 this.container.find('input[name=daterangepicker_start]').val(dates[0].format(this.locale.format));
+                 this.container.find('input[name=daterangepicker_end]').val(dates[1].format(this.locale.format));
+             }
+@@ -1210,6 +1213,9 @@
+                 this.showCalendars();
+             } else {
+                 var dates = this.ranges[label];
++                if (!dates || !dates[0] || !dates[1]) {
++                    return;
++                }
+                 this.startDate = dates[0];
+                 this.endDate = dates[1];
+ 
