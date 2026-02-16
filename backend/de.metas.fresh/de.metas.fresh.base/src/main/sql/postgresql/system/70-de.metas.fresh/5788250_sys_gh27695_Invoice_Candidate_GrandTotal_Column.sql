@@ -13,7 +13,3 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(316)
 ;
 
--- 2026-02-13T14:50:58.308Z
-/* DDL */ SELECT public.db_alter_table('C_Invoice_Candidate','ALTER TABLE public.C_Invoice_Candidate ADD COLUMN GrandTotal NUMERIC')
-;
-
