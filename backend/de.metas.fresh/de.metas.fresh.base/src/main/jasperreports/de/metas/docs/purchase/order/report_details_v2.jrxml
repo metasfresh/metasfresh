@@ -241,7 +241,7 @@
 			</textField>
 			<textField>
 				<reportElement key="textField-20" x="545" y="7" width="34" height="12" forecolor="#000000" uuid="625a8742-ced7-4849-98ff-c3d9cd6ae817">
-					<printWhenExpression><![CDATA[$P{PRINTER_OPTS_IsPrintTotals}.equals("Y")]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean($F{isprinttax}.equals( "Y" ) && $P{PRINTER_OPTS_IsPrintTotals}.equals("Y"))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
@@ -434,7 +434,7 @@
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-33" mode="Transparent" x="545" y="0" width="26" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="1829c5be-2c08-4cb2-83bb-01090abb03f9">
-					<printWhenExpression><![CDATA[$P{PRINTER_OPTS_IsPrintTotals}.equals("Y")]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean($F{isprinttax}.equals( "Y" ) && $P{PRINTER_OPTS_IsPrintTotals}.equals("Y"))]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -467,7 +467,7 @@
 			<staticText>
 				<reportElement x="574" y="0" width="5" height="12" uuid="9b7ff4d0-6d37-437e-ba53-49fce04c2cd5">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<printWhenExpression><![CDATA[$P{PRINTER_OPTS_IsPrintTotals}.equals("Y")]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean($F{isprinttax}.equals( "Y" ) && $P{PRINTER_OPTS_IsPrintTotals}.equals("Y"))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="9"/>
