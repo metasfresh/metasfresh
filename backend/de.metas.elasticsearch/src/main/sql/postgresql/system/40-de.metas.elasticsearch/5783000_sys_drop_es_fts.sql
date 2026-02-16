@@ -175,3 +175,29 @@ DELETE FROM AD_SysConfig WHERE Name IN (
   'de.metas.elasticsearch.indexer.AutoIndexModels.orders'
 );
 -- NOTE: keeping 'de.metas.elasticsearch.enabled' (elastic_enable) — shared with KPI
+
+-- 15. FINAL changelog cleanup.
+-- The AD metadata DELETEs above (steps 2-14) trigger changelog inserts into
+-- tables like ad_table_changelog_config_26092025. Those new rows reference
+-- the AD_Table_IDs we just deleted. Since the FK is DEFERRABLE INITIALLY
+-- DEFERRED, the violation only surfaces at COMMIT. This final pass removes
+-- any changelog entries created during this script's execution.
+DO $$
+DECLARE
+    v_rec RECORD;
+    v_ids CONSTANT NUMERIC[] := ARRAY[541755, 541756, 541757, 541759, 541760, 541762, 541761, 541588];
+BEGIN
+    FOR v_rec IN
+        SELECT DISTINCT table_name
+        FROM information_schema.columns
+        WHERE column_name = 'ad_table_id'
+          AND table_schema = 'public'
+          AND table_name <> 'ad_table'
+    LOOP
+        BEGIN
+            EXECUTE format('DELETE FROM %I WHERE ad_table_id = ANY($1)', v_rec.table_name) USING v_ids;
+        EXCEPTION WHEN OTHERS THEN
+            NULL;
+        END;
+    END LOOP;
+END $$;
