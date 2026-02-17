@@ -54,7 +54,6 @@ public class ExternalSystemScriptedExportConversionConfig implements IExternalSy
 	@NonNull AdTableAndClientId tableAndClientId;
 	@Nullable DocBaseType docBaseType;
 	@NonNull String whereClause;
-	@NonNull SeqNo seqNo;
 	boolean active;
 	boolean isTriggerOnComplete;
 

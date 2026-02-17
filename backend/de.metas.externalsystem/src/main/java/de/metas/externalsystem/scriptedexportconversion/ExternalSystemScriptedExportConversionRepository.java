@@ -138,7 +138,6 @@ public class ExternalSystemScriptedExportConversionRepository
 						ClientId.ofRepoId(config.getAD_Client_ID())))
 				.docBaseType(DocBaseType.ofNullableCode(config.getDocBaseType()))
 				.whereClause(config.getWhereClause())
-				.seqNo(SeqNo.ofInt(config.getSeqNo()))
 				.active(config.isActive())
 				.isTriggerOnComplete(config.isTriggerOnComplete())
 				.build();

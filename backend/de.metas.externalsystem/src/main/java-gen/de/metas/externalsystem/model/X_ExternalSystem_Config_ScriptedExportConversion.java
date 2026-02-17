@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_ExternalSystem_Config_ScriptedExportConversion extends org.compiere.model.PO implements I_ExternalSystem_Config_ScriptedExportConversion, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 368559052L;
+	private static final long serialVersionUID = 2016930087L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config_ScriptedExportConversion (final Properties ctx, final int ExternalSystem_Config_ScriptedExportConversion_ID, @Nullable final String trxName)
@@ -254,18 +254,6 @@ public class X_ExternalSystem_Config_ScriptedExportConversion extends org.compie
 	public java.lang.String getScriptIdentifier() 
 	{
 		return get_ValueAsString(COLUMNNAME_ScriptIdentifier);
-	}
-
-	@Override
-	public void setSeqNo (final int SeqNo)
-	{
-		set_Value (COLUMNNAME_SeqNo, SeqNo);
-	}
-
-	@Override
-	public int getSeqNo() 
-	{
-		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
 
 	@Override
