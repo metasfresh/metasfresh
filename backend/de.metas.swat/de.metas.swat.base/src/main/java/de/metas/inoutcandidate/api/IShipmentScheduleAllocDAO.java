@@ -23,6 +23,7 @@ package de.metas.inoutcandidate.api;
  */
 
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -124,6 +125,17 @@ public interface IShipmentScheduleAllocDAO extends ISingletonService
 	ImmutableListMultimap<ShipmentScheduleId, I_M_ShipmentSchedule_QtyPicked> retrieveOnShipmentLineRecordsByScheduleIds(@NonNull ShipmentScheduleAndJobScheduleIdSet scheduleIds);
 
 	<T extends I_M_ShipmentSchedule_QtyPicked> List<T> retrievePickedOnTheFlyAndNotDelivered(ShipmentScheduleId shipmentScheduleId, Class<T> modelClass);
+
+	/**
+	 * Returns the subset of the given schedule IDs that have unprocessed QtyPicked records
+	 * with M_InOutLine_ID already set — i.e., draft-shipment allocations that are part of
+	 * QtyPickList but not yet reflected in the stored QtyToDeliver.
+	 *
+	 * Used to detect stale QtyToDeliver from race conditions between GenerateInOut workpackages.
+	 *
+	 * @see #retrieveQtyPickedAndUnconfirmed — QtyPickList includes these records
+	 */
+	ImmutableSet<ShipmentScheduleId> getScheduleIdsWithDraftShipmentAllocations(@NonNull Set<ShipmentScheduleId> scheduleIds);
 
 	@NonNull
 	Set<OrderId> retrieveOrderIds(@NonNull org.compiere.model.I_M_InOut inOut);
