@@ -1855,7 +1855,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 
 		final boolean processedCalc;
-		int nonReversedIlas = 0;
+		Integer nonReversedIlas = null;
 
 		// If invoice candidate has errors, don't update the Processed_Calc value until the error is solved.
 		if (ic.isError())
@@ -1867,6 +1867,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 		else
 		{
+			nonReversedIlas = 0;
 			//
 			// if qtyInvoiced is >= qtyOrdered, then there is no further Qty to be invoiced
 			final BigDecimal qtyOrdered = getQtyOrderedInStockUOM(ic);
@@ -1907,7 +1908,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 			ic.setApprovalForInvoicing(false);
 		}
-		else if (nonReversedIlas == 0)
+		else if (nonReversedIlas != null && nonReversedIlas == 0)
 		{
 			//if all ILAs were reversed, consider we have no IC->invoice allocation, so DateInvoiced/DateAcct should be unset.
 			ic.setDateInvoiced(null);
