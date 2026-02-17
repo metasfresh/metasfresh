@@ -98,6 +98,9 @@ Feature: Physical Inventory and disposal - Production dispo scenarios
     And M_HU are disposed:
       | M_HU_ID.Identifier | MovementDate |
       | hu_1               | 2021-04-16   |
+    And M_HU are validated:
+      | M_HU_ID.Identifier | HUStatus | IsActive |
+      | hu_1               | D        | N        |
 
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected | Qty | Qty_AvailableToPromise |
