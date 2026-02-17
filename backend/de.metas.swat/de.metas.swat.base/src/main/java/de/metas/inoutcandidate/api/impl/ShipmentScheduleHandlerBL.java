@@ -55,7 +55,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 {
 	private static final AdMessageKey MSG_RECORDS_CREATED_1P = AdMessageKey.of("de.metas.inoutCandidate.RECORDS_CREATED");
-	private static final AdMessageKey MSG_RECORD_CREATION_VETOED_1P =  AdMessageKey.of("de.metas.inoutCandidate.RECORD_CREATION_VETOED");
+	private static final AdMessageKey MSG_RECORD_CREATION_VETOED_1P = AdMessageKey.of("de.metas.inoutCandidate.RECORD_CREATION_VETOED");
 
 	private final static Logger logger = LogManager.getLogger(ShipmentScheduleHandlerBL.class);
 
@@ -173,6 +173,7 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 				result.addAll(invokeHandlerForModel(ctx, handler, handlerRecord, model));
 			}
 		}
+		Loggables.withLogger(logger, Level.DEBUG).addLog("ShipmentScheduleHandler {} created {} shipment schedules", handler, result.size());
 		return result;
 	}
 
