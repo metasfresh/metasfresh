@@ -232,12 +232,12 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 	{
 		final I_C_Payment payment = getModel(I_C_Payment.class);
 
-		if (!payment.isReconciled())
+		if (!isForeignCurrency())
 		{
 			return;
 		}
 
-		if (!isForeignCurrency())
+		if (!payment.isReconciled())
 		{
 			return;
 		}
@@ -246,19 +246,12 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 		final BankStatementId bankStatementId = BankStatementId.ofRepoIdOrNull(payment.getC_BankStatement_ID());
 		if (bankStatementId != null)
 		{
-			// TODO: See how else bank statements can link with payments
 			postDependingDocuments(I_C_BankStatement.Table_Name, ImmutableList.of(bankStatementId));
 		}
 	}
 
 	private boolean isForeignCurrency()
 	{
-		final CurrencyId paymentCurrencyId = getCurrencyId();
-		if (paymentCurrencyId == null)
-		{
-			return false;
-		}
-
 		return m_isForeignCurrency;
 	}
 
