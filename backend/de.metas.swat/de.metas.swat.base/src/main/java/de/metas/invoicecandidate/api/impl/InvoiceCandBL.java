@@ -1910,7 +1910,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 		else if (nonReversedIlas != null && nonReversedIlas == 0)
 		{
-			//if all ILAs were reversed, consider we have no IC->invoice allocation, so DateInvoiced/DateAcct should be unset.
+			//if unprocessed AND all ILAs were reversed, consider we have no IC->invoice allocation, so DateInvoiced/DateAcct should be unset.
 			ic.setDateInvoiced(null);
 			ic.setDateAcct(null);
 		}
