@@ -230,12 +230,12 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 
 	private void postDependingBankStatementIfNeeded()
 	{
-		final I_C_Payment payment = getModel(I_C_Payment.class);
-
 		if (!isForeignCurrency())
 		{
 			return;
 		}
+
+		final I_C_Payment payment = getModel(I_C_Payment.class);
 
 		if (!payment.isReconciled())
 		{
