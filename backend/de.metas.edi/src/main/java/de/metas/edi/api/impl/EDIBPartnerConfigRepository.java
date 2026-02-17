@@ -26,7 +26,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import de.metas.audit.data.ExternalSystemParentConfigId;
+import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.edi.api.EDIBPartnerConfig;
@@ -35,6 +35,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import de.metas.edi.model.I_C_BPartner;
@@ -42,6 +43,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class EDIBPartnerConfigRepository
@@ -64,6 +66,13 @@ public class EDIBPartnerConfigRepository
 	public EDIBPartnerConfig getByIdOrNull(@NonNull final BPartnerId bPartnerId)
 	{
 		return getEDIBPartnerConfigMap().getById(bPartnerId);
+	}
+
+	@NonNull
+	public EDIBPartnerConfig getById(@NonNull final BPartnerId bPartnerId)
+	{
+		return Optional.ofNullable(getEDIBPartnerConfigMap().getById(bPartnerId))
+				.orElseThrow(() -> new AdempiereException("No active EdiBPartnerConfig found for BPartnerId " + bPartnerId.getRepoId()));
 	}
 
 	private EDIBPartnerConfigMap getEDIBPartnerConfigMap()

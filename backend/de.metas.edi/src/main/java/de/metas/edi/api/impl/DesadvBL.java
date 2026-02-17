@@ -956,4 +956,13 @@ public class DesadvBL
 	{
 		return desadvDAO.getInOutDesadvByInOutId(shipmentId);
 	}
+
+	@NonNull
+	public  BPartnerId getEffectiveDropshipPartnerId(@NonNull final I_EDI_Desadv desadv)
+	{
+		return CoalesceUtil.coalesceSuppliersNotNull(
+				() -> BPartnerId.ofRepoIdOrNull(desadv.getDropShip_BPartner_ID()),
+				() -> BPartnerId.ofRepoIdOrNull(desadv.getC_BPartner_ID())
+		);
+	}
 }

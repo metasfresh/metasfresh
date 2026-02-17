@@ -98,6 +98,12 @@ public class ExternalSystemScriptedExportConversionRepository
 	}
 
 	@NonNull
+	public ImmutableList<ExternalSystemScriptedExportConversionConfig> getByParentConfigId(@NonNull final ExternalSystemParentConfigId parentConfigId)
+	{
+		return getMap().getByParentConfigId(parentConfigId);
+	}
+
+	@NonNull
 	private ExternalSystemScriptedExportConversionRepository.ExternalSystemScriptedExportConversionMap getMap()
 	{
 		return cache.getOrLoadNonNull(0, this::retrieveMap);

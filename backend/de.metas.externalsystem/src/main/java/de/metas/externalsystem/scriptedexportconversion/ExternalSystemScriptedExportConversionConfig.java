@@ -65,4 +65,6 @@ public class ExternalSystemScriptedExportConversionConfig implements IExternalSy
 
 	@NonNull public AdTableId getTableId() {return tableAndClientId.getTableId();}
 	@NonNull public ClientId getClientId() {return tableAndClientId.getClientId();}
+
+	public boolean isMatching(@NonNull final AdTableAndClientId tableAndClientId){return AdTableAndClientId.equals(tableAndClientId, this.tableAndClientId);}
 }

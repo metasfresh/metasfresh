@@ -22,7 +22,7 @@
 
 package de.metas.edi.api;
 
-import de.metas.audit.data.ExternalSystemParentConfigId;
+import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.bpartner.BPartnerId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -45,4 +45,14 @@ public class EDIBPartnerConfig
 	@Nullable String ediInvoicRecipientGLN;
 	@NonNull EDISendingMode ediInvoicSendingMode;
 	@Nullable ExternalSystemParentConfigId ediInvoicExternalSystemParentConfigId;
+
+	public boolean isDESADVReplicationInterfaceRecipient()
+	{
+		return isEdiDesadvRecipient && ediDesadvSendingMode.isReplicationInterface();
+	}
+
+	public boolean isDESADVExternalSystemRecipient()
+	{
+		return isEdiDesadvRecipient && ediDesadvSendingMode.isExternalSystem() && ediDesadvExternalSystemParentConfigId != null;
+	}
 }

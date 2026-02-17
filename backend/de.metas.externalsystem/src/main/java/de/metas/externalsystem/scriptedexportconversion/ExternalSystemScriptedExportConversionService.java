@@ -28,8 +28,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.adempiere.service.IColumnBL;
+import de.metas.externalsystem.ExternalSystemParentConfigId;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
 import de.metas.externalsystem.outboundendpoint.ExternalSystemOutboundEndpoint;
 import de.metas.externalsystem.outboundendpoint.ExternalSystemOutboundEndpointRepository;
+import de.metas.externalsystem.process.InvokeScriptedExportConversionAction;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutor;
@@ -40,7 +43,9 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.table.api.AdTableAndClientId;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
@@ -54,15 +59,21 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
+import static de.metas.common.externalsystem.ExternalSystemConstants.COMMAND_CONVERT_MESSAGE_FROM_METASFRESH;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_FROM_MF_METASFRESH_INPUT;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_JAVASCRIPT_IDENTIFIER;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_ENDPOINT_PARAMETERS;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_OUTBOUND_RECORD_TABLE_NAME;
+import static de.metas.externalsystem.process.InvokeExternalSystemProcess.PARAM_CHILD_CONFIG_ID;
+import static de.metas.externalsystem.process.InvokeExternalSystemProcess.PARAM_EXTERNAL_REQUEST;
+import static de.metas.externalsystem.process.InvokeScriptedExportConversionAction.PARAM_Record_ID;
+import static org.compiere.util.Env.getCtx;
 
 @Service
 @RequiredArgsConstructor
@@ -73,6 +84,7 @@ public class ExternalSystemScriptedExportConversionService
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final IColumnBL columnBL = Services.get(IColumnBL.class);
 	private final ObjectMapper objectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@NonNull private final ExternalSystemScriptedExportConversionRepository externalSystemScriptedExportConversionRepository;
 	@NonNull private final ExternalSystemOutboundEndpointRepository externalSystemOutboundEndpointRepository;
@@ -215,5 +227,40 @@ public class ExternalSystemScriptedExportConversionService
 		{
 			throw new AdempiereException("Failed to read process output Resource", ex);
 		}
+	}
+
+	public void executeInvokeScriptedExportConversionAction(
+			@NonNull final ExternalSystemScriptedExportConversionConfig config,
+			final int recordId)
+	{
+		final int configTableId = tableDAO.retrieveTableId(I_ExternalSystem_Config_ScriptedExportConversion.Table_Name);
+		try
+		{
+			trxManager.runAfterCommit(() -> ProcessInfo.builder()
+					.setCtx(getCtx())
+					.setRecord(configTableId, config.getId().getRepoId())
+					.setAD_ProcessByClassname(InvokeScriptedExportConversionAction.class.getName())
+					.addParameter(PARAM_EXTERNAL_REQUEST, COMMAND_CONVERT_MESSAGE_FROM_METASFRESH)
+					.addParameter(PARAM_CHILD_CONFIG_ID, config.getId().getRepoId())
+					.addParameter(PARAM_Record_ID, recordId)
+					.buildAndPrepareExecution()
+					.executeSync());
+		}
+		catch (final Exception e)
+		{
+			log.warn("{} process failed for Config ID {}, Record ID: {}",
+					InvokeScriptedExportConversionAction.class.getName(),
+					config.getId(), recordId, e);
+		}
+	}
+
+	public List<ExternalSystemScriptedExportConversionConfig> getByParentConfigIdAndTableAndClientId(@NonNull final ExternalSystemParentConfigId parentConfigId,
+																									 @NonNull final String tableName,
+																									 @NonNull final ClientId clientId)
+	{
+		final AdTableAndClientId tableAndClientId = AdTableAndClientId.of(tableDAO.retrieveAdTableId(tableName), clientId);
+		return externalSystemScriptedExportConversionRepository.getByParentConfigId(parentConfigId).stream()
+				.filter(config -> config.isMatching(tableAndClientId))
+				.collect(ImmutableList.toImmutableList());
 	}
 }
