@@ -59,6 +59,7 @@ import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.model.I_ExternalSystem;
 import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.handlingunits.inout.IHUInOutBL;
+import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.QtyToDeliverMap;
@@ -167,6 +168,7 @@ public class M_InOut_StepDef
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
+	private final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IHUWarehouseDAO huWarehouseDAO = Services.get(IHUWarehouseDAO.class);
@@ -1083,7 +1085,7 @@ public class M_InOut_StepDef
 			customerReturn.setC_DocType_ID(docTypeId.getRepoId());
 			customerReturn.setIsSOTrx(true);
 			customerReturn.setMovementType(MovementType.CustomerReturns.getCode());
-			customerReturn.setReturn_Origin_InOut_ID(shipment.getM_InOut_ID());
+			customerReturn.setRef_InOut_ID(shipment.getM_InOut_ID());
 			customerReturn.setMovementDate(SystemTime.asTimestamp());
 			customerReturn.setDateAcct(SystemTime.asTimestamp());
 			customerReturn.setM_Warehouse_ID(warehouseId.getRepoId());
@@ -1131,7 +1133,7 @@ public class M_InOut_StepDef
 			final I_M_InOut inout = inoutIdentifier.lookupNotNullIn(inoutTable);
 			InterfaceWrapperHelper.refresh(inout);
 
-			final List<I_M_HU> hus = huInOutBL.retrieveHandlingUnits(inout);
+			final List<I_M_HU> hus = huInOutDAO.retrieveHandlingUnits(inout);
 			assertThat(hus).as("HUs assigned to " + inoutIdentifier).isNotEmpty();
 
 			final StepDefDataIdentifier huIdentifier = row.getAsIdentifier(I_M_HU.COLUMNNAME_M_HU_ID);
