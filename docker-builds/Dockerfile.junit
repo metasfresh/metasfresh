@@ -3,7 +3,7 @@ ARG REGISTRY=
 FROM ${REGISTRY}metasfresh/metas-mvn-common:$REFNAME AS common
 FROM ${REGISTRY}metasfresh/metas-mvn-backend:$REFNAME AS backend
 
-FROM maven:3.8.4-eclipse-temurin-17 AS junit
+FROM maven:3.9.6-eclipse-temurin-17 AS junit
 
 ARG SKIP_MIGRATION_SCRIPTS_TEST=false
 
