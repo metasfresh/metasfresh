@@ -9,14 +9,17 @@ import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
+import de.metas.banking.BankStatementId;
 import de.metas.banking.accounting.BankAccountAcctType;
 import de.metas.costing.ChargeId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.document.DocBaseType;
+import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_Payment;
 
 import javax.annotation.Nullable;
@@ -39,6 +42,7 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 
 	private boolean m_Prepayment = false;
+	private boolean m_isForeignCurrency = false;
 	@Nullable private CurrencyConversionContext _currencyConversionContext; // lazy
 
 	public Doc_Payment(final AcctDocContext ctx)
@@ -101,6 +105,14 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 	@Override
 	public List<Fact> createFacts(final AcctSchema as)
 	{
+		// Check if payment currency differs from accounting currency
+		final CurrencyId paymentCurrencyId = getCurrencyId();
+		final CurrencyId acctCurrencyId = as.getCurrencyId();
+		if (paymentCurrencyId != null && !paymentCurrencyId.equals(acctCurrencyId))
+		{
+			m_isForeignCurrency = true;
+		}
+
 		// create Fact Header
 		final Fact fact = new Fact(this, as, PostingType.Actual);
 		final OrgId bankOrgId = getBankOrgId();        // Bank Account Org
@@ -209,4 +221,38 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 
 	@NonNull
 	private Account getBankInTransitAcct(final AcctSchema as) {return getBankAccountAccount(BankAccountAcctType.B_InTransit_Acct, as);}
+
+	@Override
+	protected void afterPost()
+	{
+		postDependingBankStatementIfNeeded();
+	}
+
+	private void postDependingBankStatementIfNeeded()
+	{
+		if (!isForeignCurrency())
+		{
+			return;
+		}
+
+		final I_C_Payment payment = getModel(I_C_Payment.class);
+
+		if (!payment.isReconciled())
+		{
+			return;
+		}
+
+		// Enqueue reposting of the bank statement if exists
+		final BankStatementId bankStatementId = BankStatementId.ofRepoIdOrNull(payment.getC_BankStatement_ID());
+		if (bankStatementId != null)
+		{
+			postDependingDocuments(I_C_BankStatement.Table_Name, ImmutableList.of(bankStatementId));
+		}
+	}
+
+	private boolean isForeignCurrency()
+	{
+		return m_isForeignCurrency;
+	}
+
 }   // Doc_Payment
