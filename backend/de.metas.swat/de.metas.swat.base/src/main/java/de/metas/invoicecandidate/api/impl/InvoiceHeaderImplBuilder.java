@@ -22,7 +22,6 @@ import lombok.Setter;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -280,14 +279,7 @@ public class InvoiceHeaderImplBuilder
 
 	public void setDateInvoiced(@Nullable final LocalDate dateInvoiced)
 	{
-		if (_dateInvoiced == null || dateInvoiced == null)
-		{
-			_dateInvoiced = dateInvoiced == null ? _dateInvoiced : dateInvoiced;
-		}
-		else
-		{
-			_dateInvoiced = TimeUtil.max(_dateInvoiced, dateInvoiced);
-		}
+		this._dateInvoiced = checkOverride("DateInvoiced", this._dateInvoiced, dateInvoiced);
 	}
 
 	public LocalDate getDateAcct()
@@ -308,14 +300,7 @@ public class InvoiceHeaderImplBuilder
 
 	public void setDateAcct(@Nullable final LocalDate dateAcct)
 	{
-		if (_dateAcct == null || dateAcct == null)
-		{
-			_dateAcct = dateAcct == null ? _dateAcct : dateAcct;
-		}
-		else
-		{
-			_dateAcct = TimeUtil.max(_dateAcct, dateAcct);
-		}
+		_dateAcct = checkOverride("DateAcct", this._dateAcct, dateAcct);
 	}
 
 	public void setAD_Org_ID(final int adOrgId)
@@ -612,5 +597,6 @@ public class InvoiceHeaderImplBuilder
 
 		this.externalId = externalId;
 	}
+
 
 }

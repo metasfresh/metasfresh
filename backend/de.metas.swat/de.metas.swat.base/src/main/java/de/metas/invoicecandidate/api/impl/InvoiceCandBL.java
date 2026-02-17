@@ -1855,6 +1855,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 
 		final boolean processedCalc;
+		int nonReversedIlas = 0;
 
 		// If invoice candidate has errors, don't update the Processed_Calc value until the error is solved.
 		if (ic.isError())
@@ -1874,7 +1875,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			//
 			// we need to know if there are already any invoice lines which have not been reversed
 			final List<I_C_Invoice_Line_Alloc> ilasForIc = invoiceCandDAO.retrieveIlaForIc(InvoiceCandidateIds.ofRecord(ic));
-			int nonReversedIlas = 0;
 			for (final I_C_Invoice_Line_Alloc ila : ilasForIc)
 			{
 				final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(ila.getDocStatus());
@@ -1906,6 +1906,12 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			ic.setQtyToInvoiceBeforeDiscount(ZERO);
 
 			ic.setApprovalForInvoicing(false);
+		}
+		else if (nonReversedIlas == 0)
+		{
+			//if all ILAs were reversed, consider we have no IC->invoice allocation, so DateInvoiced/DateAcct should be unset.
+			ic.setDateInvoiced(null);
+			ic.setDateAcct(null);
 		}
 	}
 

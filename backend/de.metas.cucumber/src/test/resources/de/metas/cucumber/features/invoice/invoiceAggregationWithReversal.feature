@@ -1,6 +1,6 @@
 @from:cucumber
 @ghActions:run_on_executor3
-Feature: Invoice aggregation when one IC was previously invoiced and reversed
+Feature: Invoice aggregation of 2 IC2 when one IC was previously invoiced and reversed
 
   Background:
     Given infrastructure and metasfresh are running
