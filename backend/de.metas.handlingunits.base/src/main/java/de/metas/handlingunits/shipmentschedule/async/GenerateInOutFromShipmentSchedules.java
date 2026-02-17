@@ -213,8 +213,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		final ImmutableSet<PickingJobScheduleId> jobScheduleIds = recordRefs.getRecordIdsByTableName(I_M_Picking_Job_Schedule.Table_Name, PickingJobScheduleId::ofRepoId);
 
 		// Guard against stale QtyToDeliver: check if QtyPickList already includes
-		// draft-shipment allocations from a prior workpackage.
-		// See me03#28143.
+		// draft-shipment allocations from a prior workpackage (duplicate trigger race condition).
 		final ImmutableSet<ShipmentScheduleId> schedulesWithDraftAllocations =
 				shipmentScheduleAllocDAO.getScheduleIdsWithDraftShipmentAllocations(shipmentScheduleIds);
 		if (!schedulesWithDraftAllocations.isEmpty())

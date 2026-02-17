@@ -281,14 +281,14 @@ public class M_InOut_StepDef
 	 *   <b>M_ShipmentSchedule_ID</b> — (required, identifier-ref) shipment schedule alias<br>
 	 *   <b>QuantityType</b> — (required) "D" (delivery), "O" (ordered), etc.<br>
 	 *   <b>IsCompleteShipments</b> — (required) true/false — auto-complete the generated shipment<br>
-	 *   <b>IsShipmentDateToday</b> — (required) true/false — use today as shipment date<br>
-	 *   <b>QtyToDeliver_Override</b> — (optional) override quantity to deliver<br>
+	 *   <b>IsShipToday</b> — (required) true/false — use today as shipment date<br>
+	 *   <b>QtyToDeliver_Override_For_M_ShipmentSchedule_ID</b> — (optional) override quantity to deliver<br>
 	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
-	 *   | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipmentDateToday |
-	 *   | shipmentSchedule_1    | D            | true                | false               |
+	 *   | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
+	 *   | shipmentSchedule_1    | D            | true                | false       |
 	 * </pre>
 	 */
 	@And("'generate shipments' process is invoked individually for each M_ShipmentSchedule")

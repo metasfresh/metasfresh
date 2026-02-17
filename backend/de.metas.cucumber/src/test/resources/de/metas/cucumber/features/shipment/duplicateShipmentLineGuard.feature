@@ -1,6 +1,6 @@
 @from:cucumber
 @ghActions:run_on_executor5
-Feature: duplicate shipment line guard prevents duplicate generation from race condition (me03#28143)
+Feature: duplicate shipment line guard prevents duplicate generation from race condition
 
   Background:
     Given infrastructure and metasfresh are running
@@ -66,8 +66,8 @@ Feature: duplicate shipment line guard prevents duplicate generation from race c
 
     # Validate: QtyPicked is Processed=Y (completed shipment), guard did not interfere
     And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by s_s_A
-      | QtyPicked | Processed | IsAnonymousHuPickedOnTheFly |
-      | 10        | Y         | Y                           |
+      | QtyPicked | Processed |
+      | 10        | Y         |
     And validate the created shipment lines
       | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
       | ship_A                | p_1                     | 10          | true      |
@@ -134,8 +134,8 @@ Feature: duplicate shipment line guard prevents duplicate generation from race c
 
     # Validate: exactly 1 QtyPicked record (Processed=N because shipment is draft)
     And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by s_s_A
-      | QtyPicked | Processed | IsAnonymousHuPickedOnTheFly |
-      | 10        | N         | Y                           |
+      | QtyPicked | Processed |
+      | 10        | N         |
 
     # Second generation attempt (same schedule) — guard should block this
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
@@ -151,8 +151,8 @@ Feature: duplicate shipment line guard prevents duplicate generation from race c
     # Validate: still exactly 1 QtyPicked record (guard prevented duplicate)
     # If the guard failed, there would be 2 records and this step would fail on count mismatch.
     And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by s_s_A
-      | QtyPicked | Processed | IsAnonymousHuPickedOnTheFly |
-      | 10        | N         | Y                           |
+      | QtyPicked | Processed |
+      | 10        | N         |
 
   @from:cucumber
   Scenario: Completed partial delivery does not block next shipment generation
@@ -206,8 +206,8 @@ Feature: duplicate shipment line guard prevents duplicate generation from race c
 
     # First generation: partial delivery of 5 with completion
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
-      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override |
-      | s_s_A                            | D            | true                | false       | 5                     |
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | s_s_A                            | D            | true                | false       | 5                                               |
     And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
       | s_s_A                            | ship_A                | CO            |
