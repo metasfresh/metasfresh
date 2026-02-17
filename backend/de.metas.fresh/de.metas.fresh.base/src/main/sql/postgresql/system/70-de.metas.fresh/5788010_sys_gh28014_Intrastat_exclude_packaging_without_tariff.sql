@@ -1,3 +1,14 @@
+-- gh#28014: Two fixes for the Intrastat export view M_InOut_V:
+--
+-- 1) Exclude packaging materials without customs tariff (e.g. EUR pallets added as regular
+--    shipment lines with ispackagingmaterial='N'). These have no CN8 code and zero invoice
+--    value, causing RTIC validation errors. Lines with a missing tariff but non-zero value
+--    are intentionally kept so the gap is visible, prompting the user to assign the CN8 code.
+--
+-- 2) Replace hardcoded country codes with dynamic lookup via the org's business partner
+--    location (AD_OrgInfo.OrgBP_Location_ID). Fallback chain: warehouse country first
+--    (physical dispatch location), org country as fallback if warehouse location is incomplete.
+
 DROP VIEW IF EXISTS de_metas_endcustomer_fresh_reports.M_InOut_V;
 
 CREATE OR REPLACE VIEW de_metas_endcustomer_fresh_reports.M_InOut_V AS
