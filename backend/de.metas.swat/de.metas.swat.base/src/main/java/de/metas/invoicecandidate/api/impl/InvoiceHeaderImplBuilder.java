@@ -598,5 +598,4 @@ public class InvoiceHeaderImplBuilder
 		this.externalId = externalId;
 	}
 
-
 }
