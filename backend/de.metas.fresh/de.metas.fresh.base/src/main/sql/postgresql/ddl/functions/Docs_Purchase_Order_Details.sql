@@ -59,7 +59,7 @@ SELECT ol.line,
        COALESCE(puomt.UOMSymbol, puom.UOMSymbol)                               AS UOMSymbol,
        uom.StdPrecision,
        CASE
-           WHEN report.IsHiddenReportElement(o.C_DocTypeTarget_ID, 'Net_Sum ') = 'N'
+           WHEN report.IsHiddenReportElement(o.C_DocTypeTarget_ID, 'Net_Sum') = 'N'
                THEN ol.linenetamt
        END                                                    AS linenetamt,
        CASE
