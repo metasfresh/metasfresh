@@ -24,7 +24,8 @@ package de.metas.banking.importfile.listener;
 
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentReference;
+import de.metas.attachments.AttachmentService;
 import de.metas.attachments.listener.AttachmentListener;
 import de.metas.attachments.listener.AttachmentListenerConstants;
 import de.metas.banking.importfile.BankStatementImportFileId;
@@ -46,15 +47,16 @@ public class BankStatementImportFileAttachmentListener implements AttachmentList
 	private static final Logger logger = LogManager.getLogger(BankStatementImportFileAttachmentListener.class);
 
 	private final BankStatementImportFileService bankStatementImportFileService = SpringContextHolder.instance.getBean(BankStatementImportFileService.class);
-	private final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+	private final AttachmentService attachmentService = SpringContextHolder.instance.getBean(AttachmentService.class);
 
 	@Override
 	@NonNull
 	public AttachmentListenerConstants.ListenerWorkStatus afterRecordLinked(
 			@NonNull final AttachmentEntry attachmentEntry,
-			@NonNull final TableRecordReference tableRecordReference)
+			@NonNull final AttachmentReference attachmentReference)
 	{
-		final BankStatementImportFileId bankStatementImportFileId = tableRecordReference
+		final BankStatementImportFileId bankStatementImportFileId = attachmentReference
+				.getRecordRef()
 				.getIdAssumingTableName(I_C_BankStatement_Import_File.Table_Name, BankStatementImportFileId::ofRepoId);
 
 		bankStatementImportFileService.save(bankStatementImportFileService.getById(bankStatementImportFileId)
@@ -69,11 +71,12 @@ public class BankStatementImportFileAttachmentListener implements AttachmentList
 	@NonNull
 	public AttachmentListenerConstants.ListenerWorkStatus beforeRecordLinked(
 			@NonNull final AttachmentEntry attachmentEntry,
-			@NonNull final TableRecordReference tableRecordReference)
+			@NonNull final AttachmentReference attachmentReference)
 	{
+		final TableRecordReference tableRecordReference = attachmentReference.getRecordRef();
 		Check.assume(tableRecordReference.getTableName().equals(I_C_BankStatement_Import_File.Table_Name), "This is only about C_BankStatement_Import_File!");
 
-		final boolean attachmentEntryMatch = attachmentEntryService.getByReferencedRecord(tableRecordReference)
+		final boolean attachmentEntryMatch = attachmentService.getByReferencedRecord(tableRecordReference)
 				.stream()
 				.map(AttachmentEntry::getId)
 				.allMatch(attachmentEntryId -> AttachmentEntryId.equals(attachmentEntryId, attachmentEntry.getId()));

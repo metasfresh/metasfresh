@@ -1,14 +1,16 @@
 package de.metas.inbound.mail;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.util.List;
-import java.util.Map;
-
-import javax.activation.DataSource;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
+import de.metas.attachments.AttachmentEntryCreateRequest;
+import de.metas.attachments.AttachmentService;
+import de.metas.request.RequestId;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -17,18 +19,13 @@ import org.compiere.model.I_C_Mail;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.attachments.AttachmentEntryCreateRequest;
-import de.metas.attachments.AttachmentEntryService;
-import de.metas.request.RequestId;
-import de.metas.user.UserId;
-import de.metas.user.api.IUserDAO;
-import de.metas.util.Services;
-import lombok.NonNull;
+import javax.activation.DataSource;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.util.List;
+import java.util.Map;
 
 /*
  * #%L
@@ -56,14 +53,14 @@ import lombok.NonNull;
 public class InboundEMailRepository
 {
 	private final ObjectMapper jsonObjectMapper;
-	private final AttachmentEntryService attachmentEntryService;
+	private final AttachmentService attachmentService;
 
 	public InboundEMailRepository(
 			@NonNull final ObjectMapper jsonObjectMapper,
-			@NonNull AttachmentEntryService attachmentEntryService)
+			@NonNull AttachmentService attachmentService)
 	{
 		this.jsonObjectMapper = jsonObjectMapper;
-		this.attachmentEntryService = attachmentEntryService;
+		this.attachmentService = attachmentService;
 	}
 
 	public void save(@NonNull final InboundEMail email)
@@ -83,7 +80,7 @@ public class InboundEMailRepository
 				.collect(ImmutableList.toImmutableList());
 		for (final AttachmentEntryCreateRequest request : requests)
 		{
-			attachmentEntryService.createNewAttachment(mailRecord, request);
+			attachmentService.createNewAttachment(mailRecord, request);
 		}
 	}
 

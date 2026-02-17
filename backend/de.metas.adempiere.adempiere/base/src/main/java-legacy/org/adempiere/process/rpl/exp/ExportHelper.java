@@ -32,7 +32,7 @@ package org.adempiere.process.rpl.exp;
 import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.adempiere.service.IAppDictionaryBL;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
@@ -842,8 +842,8 @@ public class ExportHelper
 			final String documentAsString = writeDocumentToString(outDocument);
 
 			final byte[] data = documentAsString.getBytes();
-			final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
-			attachmentEntryService.createNewAttachment(request.getTarget(), request.getAttachmentName(), data);
+			final AttachmentService attachmentService = SpringContextHolder.instance.getBean(AttachmentService.class);
+			attachmentService.createNewAttachment(request.getTarget(), request.getAttachmentName(), data);
 		}
 		catch (final Exception exception)
 		{

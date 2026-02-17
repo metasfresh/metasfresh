@@ -1,7 +1,7 @@
 package org.adempiere.server.rpl.api.impl;
 
 import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
@@ -119,8 +119,8 @@ public class IMPProcessorBL implements IIMPProcessorBL
 
 		if (!Check.isEmpty(text, true))
 		{
-			final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
-			attachmentEntryService.createNewAttachment(pLog, XMLATTACHMENT_NAME, text.getBytes(StandardCharsets.UTF_8));
+			final AttachmentService attachmentService = SpringContextHolder.instance.getBean(AttachmentService.class);
+			attachmentService.createNewAttachment(pLog, XMLATTACHMENT_NAME, text.getBytes(StandardCharsets.UTF_8));
 		}
 
 		return pLog;
@@ -130,14 +130,14 @@ public class IMPProcessorBL implements IIMPProcessorBL
 	@Override
 	public String getXmlMessage(@NonNull final I_IMP_ProcessorLog pLog)
 	{
-		final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
-		final AttachmentEntry entry = attachmentEntryService.getByFilenameOrNull(pLog, XMLATTACHMENT_NAME);
+		final AttachmentService attachmentService = SpringContextHolder.instance.getBean(AttachmentService.class);
+		final AttachmentEntry entry = attachmentService.getByFilenameOrNull(pLog, XMLATTACHMENT_NAME);
 		if (entry == null)
 		{
 			return null;
 		}
 
-		final byte[] data = attachmentEntryService.retrieveData(entry.getId());
+		final byte[] data = attachmentService.retrieveData(entry.getId());
 		if (data == null || data.length == 0)
 		{
 			return null;

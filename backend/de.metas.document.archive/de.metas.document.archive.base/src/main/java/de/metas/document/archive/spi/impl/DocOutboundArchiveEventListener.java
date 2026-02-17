@@ -4,8 +4,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.AttachmentEntryService;
-import de.metas.attachments.AttachmentEntryService.AttachmentEntryQuery;
+import de.metas.attachments.AttachmentService;
+import de.metas.attachments.AttachmentService.AttachmentEntryQuery;
 import de.metas.attachments.AttachmentTags;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
@@ -45,7 +45,6 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -56,17 +55,17 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 @RequiredArgsConstructor
 public class DocOutboundArchiveEventListener implements IArchiveEventListener
 {
-	@NonNull private final AttachmentEntryService attachmentEntryService;
+	@NonNull private final AttachmentService attachmentService;
 	@NonNull private final DocOutboundLogMailRecipientRegistry docOutboundLogMailRecipientRegistry;
 	@NonNull private final DocOutboundService docOutboundService;
 	@NonNull private final IDocOutboundDAO docOutboundDAO = Services.get(IDocOutboundDAO.class);
 	@NonNull private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-
+	
 	public static DocOutboundArchiveEventListener newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
 		return new DocOutboundArchiveEventListener(
-				AttachmentEntryService.createInstanceForUnitTesting(),
+				AttachmentService.createInstanceForUnitTesting(),
 				new DocOutboundLogMailRecipientRegistry(Optional.empty()),
 				DocOutboundService.newInstanceForUnitTesting());
 	}
@@ -315,8 +314,8 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 				.referencedRecord(from)
 				.tagSetToTrue(AttachmentTags.TAGNAME_IS_DOCUMENT)
 				.build();
-		final List<AttachmentEntry> attachmentsToShare = attachmentEntryService.getByQuery(query);
+		final ImmutableList<AttachmentEntry> attachmentsToShare = attachmentService.getByQuery(query);
 
-		attachmentEntryService.createAttachmentLinks(attachmentsToShare, ImmutableList.of(docOutboundLogRecord));
+		attachmentService.createAttachmentLinks(attachmentsToShare, ImmutableList.of(docOutboundLogRecord));
 	}
 }

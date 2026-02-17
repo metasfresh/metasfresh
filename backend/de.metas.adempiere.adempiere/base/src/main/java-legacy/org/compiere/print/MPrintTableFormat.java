@@ -16,21 +16,10 @@
  *****************************************************************************/
 package org.compiere.print;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Image;
-import java.awt.Stroke;
-import java.awt.Toolkit;
-import java.math.BigDecimal;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.Callable;
-
+import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentService;
+import de.metas.cache.CCache;
+import de.metas.logging.LogManager;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
@@ -40,10 +29,15 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.AttachmentEntryService;
-import de.metas.cache.CCache;
-import de.metas.logging.LogManager;
+import java.awt.*;
+import java.math.BigDecimal;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.Callable;
 
 /**
  * Table Print Format
@@ -687,15 +681,15 @@ public class MPrintTableFormat extends X_AD_PrintTableFormat
 		//
 		if (isImageIsAttached())
 		{
-			final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
-			final List<AttachmentEntry> entries = attachmentEntryService.getByReferencedRecord(TableRecordReference.of(Table_Name, getAD_PrintTableFormat_ID()));
+			final AttachmentService attachmentService = Adempiere.getBean(AttachmentService.class);
+			final List<AttachmentEntry> entries = attachmentService.getByReferencedRecord(TableRecordReference.of(Table_Name, getAD_PrintTableFormat_ID()));
 			if (entries.isEmpty())
 			{
 				log.warn("No Attachment entry - ID=" + get_ID());
 				return null;
 			}
 
-			final byte[] imageData = attachmentEntryService.retrieveData(entries.get(0).getId());
+			final byte[] imageData = attachmentService.retrieveData(entries.get(0).getId());
 			if (imageData != null)
 			{
 				m_image = Toolkit.getDefaultToolkit().createImage(imageData);

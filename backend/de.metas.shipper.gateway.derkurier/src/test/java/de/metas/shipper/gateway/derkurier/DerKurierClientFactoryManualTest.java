@@ -1,6 +1,6 @@
 package de.metas.shipper.gateway.derkurier;
 
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.shipper.gateway.derkurier.misc.Converters;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfig;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfigRepository;
@@ -48,12 +48,12 @@ public class DerKurierClientFactoryManualTest
 		final Converters converters = new Converters();
 		final DerKurierShipperConfigRepository derKurierShipperConfigRepository = new DerKurierShipperConfigRepository();
 
-		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
+		final AttachmentService attachmentService = AttachmentService.createInstanceForUnitTesting();
 
 		final DerKurierDeliveryOrderRepository derKurierDeliveryOrderRepository = new DerKurierDeliveryOrderRepository(converters);
 		final DerKurierClientFactory derKurierClientFactory = new DerKurierClientFactory(
 				derKurierShipperConfigRepository,
-				new DerKurierDeliveryOrderService(derKurierDeliveryOrderRepository, attachmentEntryService),
+				new DerKurierDeliveryOrderService(derKurierDeliveryOrderRepository, attachmentService),
 				derKurierDeliveryOrderRepository,
 				converters);
 

@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -98,8 +98,9 @@ import java.util.Optional;
 public class SalesOrderRestController
 {
 	@NonNull private static final Logger logger = LogManager.getLogger(SalesOrderRestController.class);
+
 	@NonNull private final OrderService orderService;
-	@NonNull private final AttachmentEntryService attachmentEntryService;
+	@NonNull private final AttachmentService attachmentService;
 	@NonNull private final BpartnerRestController bpartnerRestController;
 	@NonNull private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
 	@NonNull private final JsonRetrieverService jsonRetrieverService;
@@ -109,7 +110,7 @@ public class SalesOrderRestController
 
 	public SalesOrderRestController(
 			@NonNull final OrderService orderService,
-			@NonNull final AttachmentEntryService attachmentEntryService,
+			@NonNull final AttachmentService attachmentService,
 			@NonNull final JsonServiceFactory jsonServiceFactory,
 			@NonNull final BpartnerRestController bpartnerRestController,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
@@ -117,7 +118,7 @@ public class SalesOrderRestController
 			@NonNull final BPartnerMasterdataProvider bPartnerMasterdataProvider)
 	{
 		this.orderService = orderService;
-		this.attachmentEntryService = attachmentEntryService;
+		this.attachmentService = attachmentService;
 		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
 		this.bpartnerRestController = bpartnerRestController;
 		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
@@ -165,7 +166,7 @@ public class SalesOrderRestController
 		final int salesOrderId = Integer.parseInt(salesOrderIdStr);
 		final TableRecordReference salesOrderRef = TableRecordReference.of(I_C_Order.Table_Name, salesOrderId);
 
-		return attachmentEntryService.getByReferencedRecord(salesOrderRef)
+		return attachmentService.getByReferencedRecord(salesOrderRef)
 				.stream()
 				.map(entry -> toSalesOrderAttachment(salesOrderId, entry))
 				.collect(ImmutableList.toImmutableList());
@@ -183,7 +184,7 @@ public class SalesOrderRestController
 		final String name = file.getOriginalFilename();
 		final byte[] data = file.getBytes();
 
-		final AttachmentEntry entry = attachmentEntryService.createNewAttachment(salesOrderRef, name, data);
+		final AttachmentEntry entry = attachmentService.createNewAttachment(salesOrderRef, name, data);
 		return toSalesOrderAttachment(salesOrderId, entry);
 	}
 
@@ -324,7 +325,7 @@ public class SalesOrderRestController
 	{
 		return JsonSalesOrderAttachment.builder()
 				.salesOrderId(String.valueOf(salesOrderId))
-				.id(AttachmentEntryId.getRepoId(entry.getId()))
+				.id(AttachmentEntryId.toRepoId(entry.getId()))
 				.type(JsonConverters.toJsonAttachmentSourceType(entry.getType()))
 				.filename(entry.getFilename())
 				.mimeType(entry.getMimeType())

@@ -1,30 +1,24 @@
 package de.metas.attachments;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.time.ZoneId;
-
 import de.metas.CreatedUpdatedInfo;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_AttachmentEntry;
-import org.compiere.model.X_AD_AttachmentEntry;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.ImmutableBiMap;
-
-import de.metas.util.Check;
-import lombok.NonNull;
-
 import javax.annotation.Nullable;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.time.ZoneId;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -97,14 +91,14 @@ public class AttachmentEntryFactory
 		{
 			attachmentEntryRecord.setTags(null);
 		}
-		// we need to save for type=Data in order not to loose the byte[] if any.
+		// we need to save for type=Data in order not to lose the byte[] if any.
 		// we also save for type==URL so be more "predictable"
 		saveRecord(attachmentEntryRecord);
 
 		return toAttachmentEntry(attachmentEntryRecord);
 	}
 
-	public AttachmentEntry toAttachmentEntry(@NonNull final I_AD_AttachmentEntry entryRecord)
+	AttachmentEntry toAttachmentEntry(@NonNull final I_AD_AttachmentEntry entryRecord)
 	{
 		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoIdOrAny(entryRecord.getAD_Org_ID()));
 
@@ -117,8 +111,8 @@ public class AttachmentEntryFactory
 				.url(extractUriOrNull(entryRecord))
 				.tags(AttachmentTags.ofString(entryRecord.getTags()))
 				.createdUpdatedInfo(CreatedUpdatedInfo.of(
-						TimeUtil.asZonedDateTime(entryRecord.getCreated(), timeZone), UserId.ofRepoId(entryRecord.getCreatedBy()),
-						TimeUtil.asZonedDateTime(entryRecord.getUpdated(), timeZone), UserId.ofRepoId(entryRecord.getUpdatedBy())))
+						TimeUtil.asZonedDateTime(entryRecord.getCreated(), timeZone), UserId.ofRepoIdOrSystem(entryRecord.getCreatedBy()),
+						TimeUtil.asZonedDateTime(entryRecord.getUpdated(), timeZone), UserId.ofRepoIdOrSystem(entryRecord.getUpdatedBy())))
 				.build();
 	}
 
@@ -126,7 +120,7 @@ public class AttachmentEntryFactory
 	private static URI extractUriOrNull(final I_AD_AttachmentEntry entryRecord)
 	{
 		final String url = entryRecord.getURL();
-		if (Check.isEmpty(url, true))
+		if (Check.isBlank(url))
 		{
 			return null;
 		}
@@ -159,6 +153,5 @@ public class AttachmentEntryFactory
 			attachmentEntryRecord.setURL(null);
 		}
 		attachmentEntryRecord.setTags(attachmentEntry.getTags().getTagsAsString());
-
 	}
 }

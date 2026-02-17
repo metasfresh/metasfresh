@@ -1,16 +1,12 @@
 package de.metas.document.archive.spi.impl;
 
-import de.metas.async.AsyncBatchId;
 import de.metas.async.model.I_C_Async_Batch;
-import de.metas.attachments.AttachmentEntryService;
-import de.metas.document.archive.api.impl.DocOutboundService;
-import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRegistry;
 import de.metas.document.archive.model.I_AD_Archive;
-import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
-import org.compiere.model.I_AD_User;
 import de.metas.document.archive.model.I_C_BPartner;
+import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.engine.DocStatus;
+import de.metas.invoicecandidate.model.I_C_Invoice;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -18,14 +14,13 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import de.metas.invoicecandidate.model.I_C_Invoice;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_Test;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.Optional;
 import java.util.Properties;
 
 public class DocOutboundArchiveEventListenerTest

@@ -24,7 +24,7 @@ package de.metas.shipper.gateway.derkurier;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrder;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.DeliveryOrderService;
@@ -60,7 +60,7 @@ public class DerKurierDeliveryOrderService implements DeliveryOrderService
 
 	private final DerKurierDeliveryOrderRepository derKurierDeliveryOrderRepository;
 
-	private final AttachmentEntryService attachmentEntryService;
+	private final AttachmentService attachmentService;
 
 	@Override
 	@NonNull
@@ -108,7 +108,7 @@ public class DerKurierDeliveryOrderService implements DeliveryOrderService
 	{
 		final I_M_ShipperTransportation record = loadOutOfTrx(shipperTransportationId, I_M_ShipperTransportation.class);
 
-		final AttachmentEntry existingAttachment = attachmentEntryService.getByFilenameOrNull(
+		final AttachmentEntry existingAttachment = attachmentService.getByFilenameOrNull(
 				TableRecordReference.of(record),
 				SHIPPER_TRANSPORTATION_ATTACHMENT_FILENAME);
 		if (existingAttachment == null)
@@ -116,7 +116,7 @@ public class DerKurierDeliveryOrderService implements DeliveryOrderService
 			return attachCsvToRecord(csvLines, SHIPPER_TRANSPORTATION_ATTACHMENT_FILENAME, record);
 		}
 
-		final byte[] exitingEntryData = attachmentEntryService.retrieveData(existingAttachment.getId());
+		final byte[] exitingEntryData = attachmentService.retrieveData(existingAttachment.getId());
 
 		final LinkedHashSet<String> existingCsvLines = readLinesFromArray(exitingEntryData);
 		final int originalSize = existingCsvLines.size();
@@ -127,7 +127,7 @@ public class DerKurierDeliveryOrderService implements DeliveryOrderService
 			return existingAttachment; // nothing new was added
 		}
 
-		attachmentEntryService.unattach(TableRecordReference.of(record), existingAttachment);
+		attachmentService.unattach(TableRecordReference.of(record), existingAttachment);
 		return attachCsvToRecord(ImmutableList.copyOf(existingCsvLines), SHIPPER_TRANSPORTATION_ATTACHMENT_FILENAME, record);
 	}
 
@@ -146,7 +146,7 @@ public class DerKurierDeliveryOrderService implements DeliveryOrderService
 		}
 		final byte[] byteArray = baos.toByteArray();
 
-		return attachmentEntryService.createNewAttachment(
+		return attachmentService.createNewAttachment(
 				TableRecordReference.of(targetRecordModel),
 				attachmentFileName,
 				byteArray);

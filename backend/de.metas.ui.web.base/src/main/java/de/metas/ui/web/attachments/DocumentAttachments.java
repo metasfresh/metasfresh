@@ -8,8 +8,10 @@ import com.google.common.collect.ImmutableSet;
 import com.jgoodies.common.base.Objects;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.attachments.listener.TableAttachmentListenerService;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.ui.web.attachments.json.JSONAttachment;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -24,8 +26,6 @@ import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.archive.ArchiveId;
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
-import de.metas.common.util.pair.IPair;
-import de.metas.common.util.pair.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_AttachmentEntry;
@@ -77,7 +77,7 @@ final class DocumentAttachments
 	private static final Joiner ID_Joiner = Joiner.on(ID_SEPARATOR);
 	private static final DocumentId NEWEST_DOCUMENT_ID = DocumentId.of("NEWEST");
 
-	private final AttachmentEntryService attachmentEntryService;
+	private final AttachmentService attachmentService;
 
 	private final DocumentPath documentPath;
 	private final TableRecordReference recordRef;
@@ -91,14 +91,14 @@ final class DocumentAttachments
 			@NonNull final TableRecordReference recordRef,
 			@NonNull final DocumentEntityDescriptor entityDescriptor,
 			@NonNull final DocumentWebsocketPublisher websocketPublisher,
-			@NonNull final AttachmentEntryService attachmentEntryService,
+			@NonNull final AttachmentService attachmentService,
 			@NonNull final TableAttachmentListenerService tableAttachmentListenerService)
 	{
 		this.documentPath = documentPath;
 		this.recordRef = recordRef;
 		this.entityDescriptor = entityDescriptor;
 		this.websocketPublisher = websocketPublisher;
-		this.attachmentEntryService = attachmentEntryService;
+		this.attachmentService = attachmentService;
 	}
 
 	@Override
@@ -111,7 +111,7 @@ final class DocumentAttachments
 
 	public List<JSONAttachment> toJson()
 	{
-		final Stream<IDocumentAttachmentEntry> attachments = attachmentEntryService.getByReferencedRecord(recordRef)
+		final Stream<IDocumentAttachmentEntry> attachments = attachmentService.getByReferencedRecord(recordRef)
 				.stream()
 				.map(entry -> DocumentAttachmentEntry.of(buildId(ID_PREFIX_Attachment, entry.getId().getRepoId()), entry));
 
@@ -129,14 +129,14 @@ final class DocumentAttachments
 		final String name = file.getOriginalFilename();
 		final byte[] data = file.getBytes();
 
-		attachmentEntryService.createNewAttachment(recordRef, name, data);
+		attachmentService.createNewAttachment(recordRef, name, data);
 
 		notifyRelatedDocumentTabsChanged();
 	}
 
 	public void addURLEntry(final String name, final URI url)
 	{
-		attachmentEntryService.createNewAttachment(recordRef, name, url);
+		attachmentService.createNewAttachment(recordRef, name, url);
 
 		notifyRelatedDocumentTabsChanged();
 	}
@@ -168,7 +168,7 @@ final class DocumentAttachments
 	@NonNull
 	private Optional<IDocumentAttachmentEntry> getNewestAttachment()
 	{
-		return attachmentEntryService.getByReferencedRecord(recordRef)
+		return attachmentService.getByReferencedRecord(recordRef)
 				.stream()
 				.map(entry -> DocumentAttachmentEntry.of(DocumentId.of(entry.getId()), entry))
 				.map(IDocumentAttachmentEntry::cast)
@@ -195,7 +195,7 @@ final class DocumentAttachments
 
 		if (ID_PREFIX_Attachment.equals(idPrefix))
 		{
-			final AttachmentEntry entry = attachmentEntryService.getById(AttachmentEntryId.ofRepoId(entryId));
+			final AttachmentEntry entry = attachmentService.getById(AttachmentEntryId.ofRepoId(entryId));
 			if (entry == null)
 			{
 				throw new EntityNotFoundException(id.toJson());
@@ -226,8 +226,8 @@ final class DocumentAttachments
 
 		if (ID_PREFIX_Attachment.equals(idPrefix))
 		{
-			final AttachmentEntry entry = attachmentEntryService.getById(AttachmentEntryId.ofRepoId(entryId));
-			attachmentEntryService.unattach(recordRef, entry);
+			final AttachmentEntry entry = attachmentService.getById(AttachmentEntryId.ofRepoId(entryId));
+			attachmentService.unattach(recordRef, entry);
 
 			notifyRelatedDocumentTabsChanged();
 

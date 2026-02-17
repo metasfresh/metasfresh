@@ -23,8 +23,9 @@
 package de.metas.attachments.listener;
 
 import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentReference;
 import de.metas.attachments.listener.AttachmentListenerConstants.ListenerWorkStatus;
-import org.adempiere.util.lang.impl.TableRecordReference;
+import lombok.NonNull;
 import org.compiere.model.I_AD_Table_AttachmentListener;
 
 /**
@@ -33,9 +34,9 @@ import org.compiere.model.I_AD_Table_AttachmentListener;
  */
 public interface AttachmentListener
 {
-	ListenerWorkStatus afterRecordLinked(AttachmentEntry attachmentEntry, TableRecordReference tableRecordReference);
+	ListenerWorkStatus afterRecordLinked(@NonNull AttachmentEntry entry, @NonNull AttachmentReference reference);
 
-	default ListenerWorkStatus beforeRecordLinked(AttachmentEntry attachmentEntry, TableRecordReference tableRecordReference)
+	default ListenerWorkStatus beforeRecordLinked(@NonNull final AttachmentEntry attachmentEntry, @NonNull final AttachmentReference reference)
 	{
 		return ListenerWorkStatus.NOT_APPLIED;
 	}

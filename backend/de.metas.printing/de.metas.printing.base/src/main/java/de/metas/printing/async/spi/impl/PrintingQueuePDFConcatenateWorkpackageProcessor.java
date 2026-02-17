@@ -10,7 +10,7 @@ import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.printing.api.IPrintingQueueBL;
@@ -44,7 +44,7 @@ public class PrintingQueuePDFConcatenateWorkpackageProcessor implements IWorkpac
 {
 	private final Logger logger = LogManager.getLogger(PrintingQueuePDFConcatenateWorkpackageProcessor.class);
 
-	private final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+	private final AttachmentService attachmentService = SpringContextHolder.instance.getBean(AttachmentService.class);
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 	private final IPrintingQueueBL printingQueueBL = Services.get(IPrintingQueueBL.class);
 	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
@@ -57,7 +57,7 @@ public class PrintingQueuePDFConcatenateWorkpackageProcessor implements IWorkpac
 		try
 		{
 			final File outputFile = concatenateFiles(workpackage);
-			attachmentEntryService.createNewAttachment(workpackage.getC_Async_Batch(), outputFile);
+			attachmentService.createNewAttachment(workpackage.getC_Async_Batch(), outputFile);
 		}
 		catch (Exception ex)
 		{

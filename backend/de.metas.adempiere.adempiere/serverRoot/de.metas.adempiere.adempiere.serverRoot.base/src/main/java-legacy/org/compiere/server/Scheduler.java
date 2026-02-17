@@ -18,7 +18,7 @@ package org.compiere.server;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
@@ -431,8 +431,8 @@ public class Scheduler extends AdempiereServer
 			noteRecord.save();
 
 			// Attachment
-			final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
-			attachmentEntryService.createNewAttachment(noteRecord, report);
+			final AttachmentService attachmentService = Adempiere.getBean(AttachmentService.class);
+			attachmentService.createNewAttachment(noteRecord, report);
 		}
 		//
 		return result.getSummary();

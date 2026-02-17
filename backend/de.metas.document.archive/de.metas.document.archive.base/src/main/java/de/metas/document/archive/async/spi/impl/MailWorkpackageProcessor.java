@@ -4,7 +4,7 @@ import de.metas.async.api.IQueueDAO;
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
@@ -88,7 +88,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	private final transient MailService mailService = SpringContextHolder.instance.getBean(MailService.class);
 	private final transient BoilerPlateRepository boilerPlateRepository = SpringContextHolder.instance.getBean(BoilerPlateRepository.class);
 	private final transient DocOutBoundRecipientService docOutBoundRecipientService = SpringContextHolder.instance.getBean(DocOutBoundRecipientService.class);
-	private final transient AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+	private final transient AttachmentService attachmentService = SpringContextHolder.instance.getBean(AttachmentService.class);
 
 	private static final int DEFAULT_SkipTimeoutOnConnectionError = 1000 * 60 * 5; // 5min
 
@@ -215,7 +215,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	private ArrayList<EMailAttachment> extractAttachments(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord, @NonNull final I_AD_Archive archive)
 	{
 		final TableRecordReference recordRef = TableRecordReference.ofReferenced(docOutboundLogRecord);
-		final ArrayList<EMailAttachment> result = attachmentEntryService.streamEmailAttachments(recordRef, TAGNAME_SEND_VIA_EMAIL)
+		final ArrayList<EMailAttachment> result = attachmentService.streamEmailAttachments(recordRef, TAGNAME_SEND_VIA_EMAIL)
 				.map(MailWorkpackageProcessor::toEmailAttachment)
 				.collect(Collectors.toCollection(ArrayList::new));
 

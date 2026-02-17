@@ -25,6 +25,8 @@ package de.metas.attachments.listener;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentEntryWithReferences;
+import de.metas.attachments.AttachmentReference;
 import de.metas.attachments.listener.AttachmentListenerConstants.ListenerWorkStatus;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -35,6 +37,7 @@ import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Table_AttachmentListener;
@@ -44,6 +47,7 @@ import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Service;
 
+@RequiredArgsConstructor
 @Service
 public class TableAttachmentListenerService
 {
@@ -56,24 +60,20 @@ public class TableAttachmentListenerService
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final TableAttachmentListenerRepository tableAttachmentListenerRepository;
 
-	public TableAttachmentListenerService(@NonNull final TableAttachmentListenerRepository tableAttachmentListenerRepository)
-	{
-		this.tableAttachmentListenerRepository = tableAttachmentListenerRepository;
-	}
-
 	public ImmutableList<AttachmentListenerActionResult> fireAfterRecordLinked(
 			@NonNull final AttachmentEntry attachmentEntry,
-			@NonNull final TableRecordReference tableRecordReference)
+			@NonNull final AttachmentReference attachmentReference)
 	{
+		final TableRecordReference tableRecordReference = attachmentReference.getRecordRef();
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(tableRecordReference))
 		{
 			final ImmutableList<AttachmentListenerSettings> settings = tableAttachmentListenerRepository.getById(tableRecordReference.getAdTableId());
 			logger.debug("There are {} AttachmentListenerSettings for AD_Table_ID={}", settings.size(), tableRecordReference.getAD_Table_ID());
 
-			ImmutableList.Builder<AttachmentListenerActionResult> results = ImmutableList.builder();
+			final ImmutableList.Builder<AttachmentListenerActionResult> results = ImmutableList.builder();
 			for (final AttachmentListenerSettings setting : settings)
 			{
-				final AttachmentListenerActionResult result = invokeListener(setting, tableRecordReference, attachmentEntry);
+				final AttachmentListenerActionResult result = invokeListener(setting, attachmentEntry, attachmentReference);
 				results.add(result);
 			}
 
@@ -81,16 +81,17 @@ public class TableAttachmentListenerService
 		}
 	}
 
-	public void fireBeforeRecordLinked(@NonNull final AttachmentEntry attachmentEntry)
+	public void fireBeforeRecordLinked(@NonNull final AttachmentEntryWithReferences attachment)
 	{
-		for (final TableRecordReference recordReference : attachmentEntry.getLinkedRecords())
+		for (final AttachmentReference attachmentReference : attachment.getReferences())
 		{
+			final TableRecordReference recordReference = attachmentReference.getRecordRef();
 			try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(recordReference))
 			{
 				final ImmutableList<AttachmentListenerSettings> settings = tableAttachmentListenerRepository.getById(recordReference.getAdTableId());
 				logger.debug("There are {} AttachmentListenerSettings for AD_Table_ID={}", settings.size(), recordReference.getAD_Table_ID());
 
-				settings.forEach(setting -> invokeBeforeRecordLinked(setting, recordReference, attachmentEntry));
+				settings.forEach(setting -> invokeBeforeRecordLinked(setting, attachmentReference, attachment.getEntry()));
 			}
 		}
 	}
@@ -98,20 +99,20 @@ public class TableAttachmentListenerService
 	@NonNull
 	private AttachmentListenerActionResult invokeListener(
 			@NonNull final AttachmentListenerSettings listenerSettings,
-			@NonNull final TableRecordReference tableRecordReference,
-			@NonNull final AttachmentEntry attachmentEntry)
+			@NonNull final AttachmentEntry entry,
+			@NonNull final AttachmentReference reference)
 	{
 		final AttachmentListener attachmentListener = javaClassBL.newInstance(listenerSettings.getListenerJavaClassId());
 
-		try (final MDCCloseable mdc = MDC.putCloseable("attachmentListener", attachmentListener.getClass().getSimpleName()))
+		try (final MDCCloseable ignored = MDC.putCloseable("attachmentListener", attachmentListener.getClass().getSimpleName()))
 		{
-			final ListenerWorkStatus status = attachmentListener.afterRecordLinked(attachmentEntry, tableRecordReference);
+			final ListenerWorkStatus status = attachmentListener.afterRecordLinked(entry, reference);
 			logger.debug("attachmentListener returned status={}", status);
 			if (!status.equals(ListenerWorkStatus.NOT_APPLIED))
 			{
-				notifyUser(listenerSettings, tableRecordReference, status);
+				notifyUser(listenerSettings, reference.getRecordRef(), status);
 			}
-			return new AttachmentListenerActionResult(attachmentListener, status, tableRecordReference);
+			return new AttachmentListenerActionResult(attachmentListener, status, reference);
 		}
 	}
 
@@ -143,14 +144,14 @@ public class TableAttachmentListenerService
 
 	private void invokeBeforeRecordLinked(
 			@NonNull final AttachmentListenerSettings listenerSettings,
-			@NonNull final TableRecordReference tableRecordReference,
+			@NonNull final AttachmentReference attachmentReference,
 			@NonNull final AttachmentEntry attachmentEntry)
 	{
 		final AttachmentListener attachmentListener = javaClassBL.newInstance(listenerSettings.getListenerJavaClassId());
 
-		try (final MDCCloseable mdc = MDC.putCloseable("attachmentListener", attachmentListener.getClass().getSimpleName()))
+		try (final MDCCloseable ignored = MDC.putCloseable("attachmentListener", attachmentListener.getClass().getSimpleName()))
 		{
-			final ListenerWorkStatus status = attachmentListener.beforeRecordLinked(attachmentEntry, tableRecordReference);
+			final ListenerWorkStatus status = attachmentListener.beforeRecordLinked(attachmentEntry, attachmentReference);
 			logger.debug("attachmentListener returned status={}", status);
 
 			if (status.equals(ListenerWorkStatus.FAILURE))

@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteStreams;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.attachments.AttachmentEntryCreateRequest;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.attachments.AttachmentTags;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice_gateway.api.InvoiceExportServiceRegistry;
@@ -61,16 +61,16 @@ public class InvoiceExportService
 
 	private final InvoiceExportServiceRegistry invoiceExportServiceRegistry;
 
-	private final AttachmentEntryService attachmentEntryService;
+	private final AttachmentService attachmentService;
 
 	private InvoiceExportService(
 			@NonNull final InvoiceToExportFactory invoiceToExportFactory,
 			@NonNull final InvoiceExportServiceRegistry invoiceExportServiceRegistry,
-			@NonNull final AttachmentEntryService attachmentEntryService)
+			@NonNull final AttachmentService attachmentService)
 	{
 		this.invoiceToExportFactory = invoiceToExportFactory;
 		this.invoiceExportServiceRegistry = invoiceExportServiceRegistry;
-		this.attachmentEntryService = attachmentEntryService;
+		this.attachmentService = attachmentService;
 	}
 
 	public void exportInvoices(@NonNull final ImmutableList<InvoiceId> invoiceIdsToExport)
@@ -115,7 +115,7 @@ public class InvoiceExportService
 
 		for (final AttachmentEntryCreateRequest attachmentEntryCreateRequest : attachmentEntryCreateRequests)
 		{
-			attachmentEntryService.createNewAttachment(
+			attachmentService.createNewAttachment(
 					TableRecordReference.of(I_C_Invoice.Table_Name, invoiceToExport.getId()),
 					attachmentEntryCreateRequest);
 			loggable.addLog("InvoiceExportService - Attached export data to invoiceId={}; attachment={}", invoiceToExport.getId(), attachmentEntryCreateRequest);

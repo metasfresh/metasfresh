@@ -1,7 +1,7 @@
 package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.dimension.Dimension;
@@ -117,7 +117,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 		dimensionFactories.add(new OrderLineDimensionFactory());
 
 		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
-		Services.registerService(INotificationRepository.class, new NotificationRepository(AttachmentEntryService.createInstanceForUnitTesting(), NullCustomizedWindowInfoMapRepository.instance));
+		Services.registerService(INotificationRepository.class, new NotificationRepository(AttachmentService.createInstanceForUnitTesting(), NullCustomizedWindowInfoMapRepository.instance));
 		SpringContextHolder.registerJUnitBean(MailService.newInstanceForUnitTesting());
 		SpringContextHolder.registerJUnitBean(new UserGroupRepository());
 

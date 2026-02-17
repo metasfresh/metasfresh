@@ -1,7 +1,7 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.store;
 
 import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.attachments.AttachmentTags;
 import de.metas.attachments.storeattachment.StoreAttachmentServiceImpl;
 import de.metas.bpartner.service.BPartnerQuery;
@@ -60,7 +60,7 @@ import java.util.Optional;
 public class StoreForumDatenaustauschAttachmentService implements StoreAttachmentServiceImpl
 {
 	private final StoreConfigRepository configRepository;
-	private final AttachmentEntryService attachmentEntryService;
+	private final AttachmentService attachmentService;
 	private final CrossVersionServiceRegistry crossVersionServiceRegistry;
 
 	private final CCache<AttachmentEntry, Optional<StoreConfig>> cache = CCache.newCache(
@@ -70,11 +70,11 @@ public class StoreForumDatenaustauschAttachmentService implements StoreAttachmen
 
 	public StoreForumDatenaustauschAttachmentService(
 			@NonNull final StoreConfigRepository configRepository,
-			@NonNull final AttachmentEntryService attachmentEntryService,
+			@NonNull final AttachmentService attachmentService,
 			@NonNull CrossVersionServiceRegistry crossVersionServiceRegistry)
 	{
 		this.configRepository = configRepository;
-		this.attachmentEntryService = attachmentEntryService;
+		this.attachmentService = attachmentService;
 		this.crossVersionServiceRegistry = crossVersionServiceRegistry;
 	}
 
@@ -161,7 +161,7 @@ public class StoreForumDatenaustauschAttachmentService implements StoreAttachmen
 		byte[] attachmentDataToStore;
 		if (attachmentIsStoredForThefirstTime)
 		{
-			attachmentDataToStore = attachmentEntryService.retrieveData(attachmentEntry.getId());
+			attachmentDataToStore = attachmentService.retrieveData(attachmentEntry.getId());
 		}
 		else
 		{
@@ -186,7 +186,7 @@ public class StoreForumDatenaustauschAttachmentService implements StoreAttachmen
 
 	private byte[] computeDataWithCopyFlagSetToTrue(@NonNull final AttachmentEntry attachmentEntry)
 	{
-		byte[] attachmentData = attachmentEntryService.retrieveData(attachmentEntry.getId());
+		byte[] attachmentData = attachmentService.retrieveData(attachmentEntry.getId());
 
 		// get the converter to use
 		final String xsdName = XmlIntrospectionUtil.extractXsdValueOrNull(new ByteArrayInputStream(attachmentData));

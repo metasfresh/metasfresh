@@ -46,7 +46,7 @@ public final class AttachmentTags
 {
 	public static AttachmentTags ofString(@Nullable final String tagsAsString)
 	{
-		if (Check.isEmpty(tagsAsString, true))
+		if (Check.isBlank(tagsAsString))
 		{
 			return EMPTY;
 		}

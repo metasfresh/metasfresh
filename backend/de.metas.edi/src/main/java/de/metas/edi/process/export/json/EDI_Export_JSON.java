@@ -22,12 +22,11 @@
 
 package de.metas.edi.process.export.json;
 
-import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentService;
 import de.metas.common.util.Check;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_EDI_Document_Extension;
 import de.metas.postgrest.process.PostgRESTProcessExecutor;
-import de.metas.process.ProcessCalledFrom;
 import de.metas.report.ReportResultData;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -36,7 +35,7 @@ import org.compiere.SpringContextHolder;
 
 public abstract class EDI_Export_JSON extends PostgRESTProcessExecutor
 {
-	private final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+	private final AttachmentService attachmentService = SpringContextHolder.instance.getBean(AttachmentService.class);
 
 	protected abstract I_EDI_Document_Extension loadRecordOutOfTrx();
 
@@ -74,7 +73,7 @@ public abstract class EDI_Export_JSON extends PostgRESTProcessExecutor
 				recordReference.getTableName(),
 				recordReference.getRecord_ID()
 		);
-		attachmentEntryService.createNewAttachment(
+		attachmentService.createNewAttachment(
 				record,
 				reportData.getReportFilename(),
 				reportData.getReportDataByteArray());

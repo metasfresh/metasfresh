@@ -24,7 +24,8 @@ package de.metas.ui.web.order.attachmenteditor;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentEntryWithReferences;
+import de.metas.attachments.AttachmentReference;
 import de.metas.order.OrderId;
 import lombok.Builder;
 import lombok.Getter;
@@ -52,17 +53,18 @@ public class AttachmentRowBuilder
 	OrderId purchaseOrderId;
 
 	@NonNull
-	Function<AttachmentEntry, OrderAttachmentRow> purchaseOrderRowBuilder;
+	Function<AttachmentEntryWithReferences, OrderAttachmentRow> purchaseOrderRowBuilder;
 
 	@NonNull
 	Set<TableRecordReference> targetRecordReferences;
 
-	public List<OrderAttachmentRow> buildRowsFor(@NonNull final AttachmentEntry attachmentEntry)
+	public List<OrderAttachmentRow> buildRowsFor(@NonNull final AttachmentEntryWithReferences attachment)
 	{
 		final TableRecordReference purchaseOrderRecordRef = TableRecordReference.of(I_C_Order.Table_Name, purchaseOrderId.getRepoId());
 
-		final Set<TableRecordReference> matchingRecordReferences = attachmentEntry.getLinkedRecords()
+		final Set<TableRecordReference> matchingRecordReferences = attachment.getReferences()
 				.stream()
+				.map(AttachmentReference::getRecordRef)
 				.filter(tableRecordReference -> !tableRecordReference.equals(purchaseOrderRecordRef))
 				.filter(targetRecordReferences::contains)
 				.collect(ImmutableSet.toImmutableSet());
@@ -81,7 +83,7 @@ public class AttachmentRowBuilder
 		if (highestPriorityFound.equals(Priority.NO_PRIORITY))
 		{
 			return attachmentRows
-					.add(purchaseOrderRowBuilder.apply(attachmentEntry))
+					.add(purchaseOrderRowBuilder.apply(attachment))
 					.build();
 		}
 
@@ -90,7 +92,7 @@ public class AttachmentRowBuilder
 			Optional.ofNullable(tableName2PriorityRowBuilder.get(linkedRecord.getTableName()))
 					.filter(priorityRowBuilder -> priorityRowBuilder.getPriority().equals(highestPriorityFound))
 					.map(PriorityRowBuilder::getBuildRowFunction)
-					.map(buildFunction -> buildFunction.apply(linkedRecord, attachmentEntry))
+					.map(buildFunction -> buildFunction.apply(linkedRecord, attachment))
 					.ifPresent(attachmentRows::add);
 		}
 
@@ -121,9 +123,11 @@ public class AttachmentRowBuilder
 	public static class PriorityRowBuilder
 	{
 		Priority priority;
-		BiFunction<TableRecordReference, AttachmentEntry, OrderAttachmentRow> buildRowFunction;
+		BiFunction<TableRecordReference, AttachmentEntryWithReferences, OrderAttachmentRow> buildRowFunction;
 
-		public static PriorityRowBuilder of(final Priority priority, @NonNull final BiFunction<TableRecordReference, AttachmentEntry, OrderAttachmentRow> buildRowFunction)
+		public static PriorityRowBuilder of(
+				final Priority priority,
+				@NonNull final BiFunction<TableRecordReference, AttachmentEntryWithReferences, OrderAttachmentRow> buildRowFunction)
 		{
 			return new PriorityRowBuilder(priority, buildRowFunction);
 		}
