@@ -25,7 +25,6 @@ package de.metas.ui.web.pporder.process;
 import de.metas.document.engine.DocStatus;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
-import de.metas.material.planning.pporder.impl.PPOrderBOMBL;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
@@ -36,11 +35,13 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.IssuingToleranceSpec;
 import de.metas.product.IssuingToleranceValueType;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.PPOrderBOMLineId;
@@ -65,13 +66,13 @@ public class PP_Order_BOMLine_Update_Tolerance extends JavaProcess implements IP
 	private boolean isEnforceIssuingTolerance;
 
 	@Param(parameterName = I_PP_Order_BOMLine.COLUMNNAME_IssuingTolerance_ValueType)
-	private String issuingTolerance_ValueType;
+	private IssuingToleranceValueType issuingTolerance_ValueType;
 
 	@Param(parameterName = I_PP_Order_BOMLine.COLUMNNAME_IssuingTolerance_Qty)
 	private BigDecimal issuingTolerance_Qty;
 
 	@Param(parameterName = I_PP_Order_BOMLine.COLUMNNAME_IssuingTolerance_UOM_ID)
-	private int issuingTolerance_UOM_ID;
+	private UomId issuingTolerance_UOM_ID;
 
 	@Param(parameterName = I_PP_Order_BOMLine.COLUMNNAME_IssuingTolerance_Perc)
 	private BigDecimal issuingTolerance_Perc;
@@ -107,42 +108,23 @@ public class PP_Order_BOMLine_Update_Tolerance extends JavaProcess implements IP
 		// Update tolerance fields
 		bomLine.setIsEnforceIssuingTolerance(isEnforceIssuingTolerance);
 
+		IssuingToleranceSpec issuingToleranceSpec = null;
+
 		if (isEnforceIssuingTolerance)
 		{
-			validateToleranceParameters();
-
-			bomLine.setIssuingTolerance_ValueType(issuingTolerance_ValueType);
-
-			if ("Q".equals(issuingTolerance_ValueType))
+			if (issuingTolerance_ValueType.isQuantity())
 			{
-				bomLine.setIssuingTolerance_Qty(issuingTolerance_Qty);
-				bomLine.setIssuingTolerance_UOM_ID(issuingTolerance_UOM_ID);
-				bomLine.setIssuingTolerance_Perc(null);
+				issuingToleranceSpec = IssuingToleranceSpec.ofQuantity(Quantitys.of(issuingTolerance_Qty, issuingTolerance_UOM_ID));
 			}
-			else if ("P".equals(issuingTolerance_ValueType))
+			else if (issuingTolerance_ValueType.isPercentage())
 			{
-				bomLine.setIssuingTolerance_Perc(issuingTolerance_Perc);
-				bomLine.setIssuingTolerance_Qty(null);
-				bomLine.setIssuingTolerance_UOM_ID(-1);
+				issuingToleranceSpec = IssuingToleranceSpec.ofPercent(Percent.of(issuingTolerance_Perc));
 			}
 		}
-		else
-		{
-			// Clear tolerance values if enforcement is disabled
-			bomLine.setIssuingTolerance_ValueType(null);
-			bomLine.setIssuingTolerance_Qty(null);
-			bomLine.setIssuingTolerance_UOM_ID(-1);
-			bomLine.setIssuingTolerance_Perc(null);
-		}
-
-		// Update audit fields
-		bomLine.setToleranceChanged(new Timestamp(System.currentTimeMillis()));
-		bomLine.setToleranceChangedBy_ID(getAD_User_ID());
 
 		//
-		// Validate Issuing Tolerance
+		// Validate new Issuing Tolerance
 		final I_C_UOM uom = ppOrderBOMBL.getBOMLineUOM(bomLine);
-		final IssuingToleranceSpec issuingToleranceSpec = PPOrderBOMBL.extractIssuingToleranceSpec(bomLine).orElse(null);
 		if (issuingToleranceSpec != null)
 		{
 			final UOMConversionContext uomConversionContext = UOMConversionContext.of(ProductId.ofRepoId(bomLine.getM_Product_ID()));
@@ -150,41 +132,15 @@ public class PP_Order_BOMLine_Update_Tolerance extends JavaProcess implements IP
 			issuingToleranceSpec.convertQty(qty -> uomConversionService.convertQuantityTo(qty, uomConversionContext, uom));
 		}
 
+		ppOrderBOMBL.updateIssuingToleranceSpec(bomLine, issuingToleranceSpec);
+
+		// Update audit fields
+		bomLine.setToleranceChanged(new Timestamp(System.currentTimeMillis()));
+		bomLine.setToleranceChangedBy_ID(getAD_User_ID());
+
 		ppOrderBOMDAO.save(bomLine);
 
 		return MSG_OK;
-	}
-
-	private void validateToleranceParameters()
-	{
-		final IssuingToleranceValueType issuingToleranceValueType = IssuingToleranceValueType.ofNullableCode(issuingTolerance_ValueType);
-		if (issuingToleranceValueType == null)
-		{
-			throw new AdempiereException("Tolerance Value Type is required when enforcement is enabled");
-		}
-
-		if (issuingToleranceValueType.isQuantity())
-		{
-			if (issuingTolerance_Qty == null || issuingTolerance_Qty.signum() <= 0)
-			{
-				throw new AdempiereException("Tolerance Quantity must be greater than zero");
-			}
-			if (issuingTolerance_UOM_ID <= 0)
-			{
-				throw new AdempiereException("Tolerance UOM is required for Quantity type");
-			}
-		}
-		else if (issuingToleranceValueType.isPercentage())
-		{
-			if (issuingTolerance_Perc == null || issuingTolerance_Perc.signum() <= 0)
-			{
-				throw new AdempiereException("Tolerance Percentage must be greater than zero");
-			}
-			if (issuingTolerance_Perc.compareTo(new BigDecimal("100")) > 0)
-			{
-				throw new AdempiereException("Tolerance Percentage cannot exceed 100%");
-			}
-		}
 	}
 
 	@Nullable

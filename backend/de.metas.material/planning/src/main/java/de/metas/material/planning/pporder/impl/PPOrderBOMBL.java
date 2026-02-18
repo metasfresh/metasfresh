@@ -743,4 +743,13 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	{
 		return warehouseDAO.getWarehouseIdsOfSameGroup(ppOrderWarehouseId, WarehouseGroupAssignmentType.MANUFACTURING);
 	}
+
+	@Override
+	public void updateIssuingToleranceSpec(
+			@NonNull final I_PP_Order_BOMLine orderBOMLine,
+			@Nullable final IssuingToleranceSpec toleranceSpec)
+	{
+		updateOrderBOMLine_from_IssuingToleranceSpec(orderBOMLine, toleranceSpec);
+		orderBOMsRepo.save(orderBOMLine);
+	}
 }

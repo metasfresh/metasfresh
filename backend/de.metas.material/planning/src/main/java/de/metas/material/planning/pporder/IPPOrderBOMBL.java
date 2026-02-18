@@ -25,6 +25,7 @@ package de.metas.material.planning.pporder;
 import com.google.common.collect.ImmutableSet;
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.material.planning.exception.MrpException;
+import de.metas.product.IssuingToleranceSpec;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
@@ -40,6 +41,7 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -156,4 +158,8 @@ public interface IPPOrderBOMBL extends ISingletonService
 	ImmutableSet<WarehouseId> getIssueFromWarehouseIds(@NonNull final I_PP_Order ppOrder);
 
 	ImmutableSet<WarehouseId> getIssueFromWarehouseIds(WarehouseId ppOrderWarehouseId);
+
+	void updateIssuingToleranceSpec(
+			@NonNull final I_PP_Order_BOMLine orderBOMLine,
+			@Nullable IssuingToleranceSpec toleranceSpec);
 }
