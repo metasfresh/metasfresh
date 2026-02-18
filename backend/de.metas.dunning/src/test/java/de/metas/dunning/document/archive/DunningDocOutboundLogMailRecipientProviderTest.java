@@ -73,7 +73,7 @@ import static org.assertj.core.api.Assertions.*;
 public class DunningDocOutboundLogMailRecipientProviderTest extends DunningTestBase
 {
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository = new OrderEmailPropagationSysConfigRepository(sysConfigBL);
+	private final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository = new OrderEmailPropagationSysConfigRepository(sysConfigBL);
 	private final UserRepository userRepository = new UserRepository();
 	private final BPartnerBL bpartnerBL = new BPartnerBL(userRepository);
 	private final DunningDocOutboundLogMailRecipientProvider dunningDocOutboundLogMailRecipientProvider = new DunningDocOutboundLogMailRecipientProvider(
@@ -278,14 +278,14 @@ public class DunningDocOutboundLogMailRecipientProviderTest extends DunningTestB
 				.setC_BPartner_Location_ID(invoiceRecord1.getC_BPartner_Location_ID())
 				.setContact_ID(invoiceRecord1.getAD_User_ID())
 				.setC_Currency_ID(currencyEUR.getRepoId())
-				.setInDispute(false) // isInDispute
+				.setInDispute(false)
 				//
-				.setTotalAmt(BigDecimal.valueOf(100)) // totalAmt,
-				.setOpenAmt(BigDecimal.valueOf(100)) // openAmt,
+				.setTotalAmt(BigDecimal.valueOf(100))
+				.setOpenAmt(BigDecimal.valueOf(100))
 				//
-				.setDueDate(TimeUtil.getDay(2013, 01, 01)) // dueDate,
+				.setDueDate(TimeUtil.getDay(2013, 01, 01))
 				.setGraceDate(null)
-				.setDaysDue(15) // daysDue,
+				.setDaysDue(15)
 				.create();
 
 		final I_C_Dunning_Candidate candidateRecord1 = defaultDunningCandidateProducer.createDunningCandidate(context, sourceDoc);
@@ -373,7 +373,7 @@ public class DunningDocOutboundLogMailRecipientProviderTest extends DunningTestB
 	}
 
 	@SuppressWarnings("SameParameterValue")
-	private org.compiere.model.I_AD_User createUserRecord(final String eMail, boolean isDunningUser)
+	private org.compiere.model.I_AD_User createUserRecord(final String eMail, final boolean isDunningUser)
 	{
 		final org.compiere.model.I_AD_User userRecord = newInstance(I_AD_User.class);
 		userRecord.setName("userRecord");
@@ -435,7 +435,7 @@ public class DunningDocOutboundLogMailRecipientProviderTest extends DunningTestB
 	private I_AD_SysConfig createSysConfigOrderEmailPropagation(final String value)
 	{
 		final I_AD_SysConfig sysConfig = newInstance(I_AD_SysConfig.class);
-		sysConfig.setName(orderEmailPropagationSysConfigRepository.SYS_CONFIG_C_Order_Email_Propagation);
+		sysConfig.setName(OrderEmailPropagationSysConfigRepository.SYS_CONFIG_C_Order_Email_Propagation);
 		sysConfig.setValue(value);
 		saveRecord(sysConfig);
 		return sysConfig;

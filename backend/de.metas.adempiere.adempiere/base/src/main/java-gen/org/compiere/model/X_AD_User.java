@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -469375936L;
+	private static final long serialVersionUID = 1939920856L;
 
     /** Standard Constructor */
     public X_AD_User (final Properties ctx, final int AD_User_ID, @Nullable final String trxName)
@@ -597,6 +597,8 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public static final String FRESH_XMAS_GIFT_Karte = "K";
 	/** Geschenk = G */
 	public static final String FRESH_XMAS_GIFT_Geschenk = "G";
+	/** Kein Geschenk = S */
+	public static final String FRESH_XMAS_GIFT_KeinGeschenk = "S";
 	@Override
 	public void setFresh_xmas_Gift (final @Nullable java.lang.String Fresh_xmas_Gift)
 	{
@@ -701,6 +703,18 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public boolean isDunningContact() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDunningContact);
+	}
+
+	@Override
+	public void setIsDunningContact_Default (final boolean IsDunningContact_Default)
+	{
+		set_Value (COLUMNNAME_IsDunningContact_Default, IsDunningContact_Default);
+	}
+
+	@Override
+	public boolean isDunningContact_Default() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsDunningContact_Default);
 	}
 
 	@Override

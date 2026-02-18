@@ -103,7 +103,8 @@ public class DunningDocOutboundLogMailRecipientProvider
 		final List<I_C_Invoice> dunnedInvoices = dunningService.retrieveDunnedInvoices(dunningDocId);
 		final int singleCommonInvoiceContactId = CollectionUtils.extractSingleElementOrDefault(dunnedInvoices, I_C_Invoice::getAD_User_ID, -1);
 
-		final I_AD_User dunningContact = userBL.getById(UserId.ofRepoIdOrNull(dunningRecord.getC_Dunning_Contact_ID()));
+		final UserId dunningContactId = UserId.ofRepoIdOrNull(dunningRecord.getC_Dunning_Contact_ID());
+		final I_AD_User dunningContact = dunningContactId != null ? userBL.getById(dunningContactId) : null;
 
 		final boolean propagateToDocOutboundLog = orderEmailPropagationSysConfigRepository.isPropagateToDocOutboundLog(ClientAndOrgId.ofClientAndOrg(request.getClientId(), request.getOrgId()));
 
@@ -114,7 +115,7 @@ public class DunningDocOutboundLogMailRecipientProvider
 		final String locationEmail = dunningService.getLocationEmail(dunningDocId);
 
 
-		if (dunningContact!= null  && dunningContact.isDunningContact())
+		if (dunningContact != null  && dunningContact.isDunningContact())
 		{
 			final DocOutBoundRecipient dunningRecipient = recipientRepository.getById(DocOutBoundRecipientId.ofRepoId(dunningContact.getAD_User_ID()));
 

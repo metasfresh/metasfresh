@@ -64,7 +64,9 @@ public class DunnableDocBuilder
 
 	public IDunnableDoc create()
 	{
-		final IDunnableDoc dunnableDoc = new DunnableDoc(tableName, record_id,
+		// FRESH-504: DocumentNo
+
+		return new DunnableDoc(tableName, record_id,
 				documentNo, // FRESH-504: DocumentNo
 				AD_Client_ID, AD_Org_ID,
 				C_BPartner_ID, C_BPartner_Location_ID, Contact_ID,
@@ -73,115 +75,108 @@ public class DunnableDocBuilder
 				graceDate,
 				daysDue,
 				isInDispute);
-
-		return dunnableDoc;
 	}
 
-	public IDunnableDoc createAndAppend(List<IDunnableDoc> list)
+	public IDunnableDoc createAndAppend(final List<IDunnableDoc> list)
 	{
 		final IDunnableDoc dunnableDoc = create();
 		list.add(dunnableDoc);
 		return dunnableDoc;
 	}
 
-	public DunnableDocBuilder setTableName(String tableName)
+	public DunnableDocBuilder setTableName(final String tableName)
 	{
 		this.tableName = tableName;
 		return this;
 	}
 
-	public DunnableDocBuilder setRecord_ID(int record_id)
+	public DunnableDocBuilder setRecord_ID(final int record_id)
 	{
 		this.record_id = record_id;
 		return this;
 	}
 
-	public DunnableDocBuilder setRecord(Object model)
+	public DunnableDocBuilder setRecord(final Object model)
 	{
 		this.tableName = InterfaceWrapperHelper.getModelTableName(model);
 		this.record_id = InterfaceWrapperHelper.getId(model);
 		return this;
 	}
-	
-	/**
-	 * FRESH-504: DocuemntNo is also needed
-	 * @param documentNo
-	 * @return
-	 */
-	public DunnableDocBuilder setDocumentNo (String documentNo)
+
+	public DunnableDocBuilder setDocumentNo (final String documentNo)
 	{
 		this.documentNo = documentNo;
 		return this;
 	}
 	
 
-	public DunnableDocBuilder setAD_Client_ID(int adClientId)
+	public DunnableDocBuilder setAD_Client_ID(final int adClientId)
 	{
 		this.AD_Client_ID = adClientId;
 		return this;
 	}
 
-	public DunnableDocBuilder setAD_Org_ID(int adOrgId)
+	public DunnableDocBuilder setAD_Org_ID(final int adOrgId)
 	{
 		this.AD_Org_ID = adOrgId;
 		return this;
 	}
 
-	public DunnableDocBuilder setC_BPartner_ID(int c_BPartner_ID)
+	public DunnableDocBuilder setC_BPartner_ID(final int c_BPartner_ID)
 	{
 		C_BPartner_ID = c_BPartner_ID;
 		return this;
 	}
 
-	public DunnableDocBuilder setC_BPartner_Location_ID(int c_BPartner_Location_ID)
+	public DunnableDocBuilder setC_BPartner_Location_ID(final int c_BPartner_Location_ID)
 	{
 		C_BPartner_Location_ID = c_BPartner_Location_ID;
 		return this;
 	}
 
-	public DunnableDocBuilder setContact_ID(int contact_ID)
+	public DunnableDocBuilder setContact_ID(final int contact_ID)
 	{
 		Contact_ID = contact_ID;
 		return this;
 	}
 
-	public DunnableDocBuilder setC_Currency_ID(int c_Currency_ID)
+	public DunnableDocBuilder setC_Currency_ID(final int c_Currency_ID)
 	{
 		C_Currency_ID = c_Currency_ID;
 		return this;
 	}
 
-	public DunnableDocBuilder setTotalAmt(BigDecimal totalAmt)
+	public DunnableDocBuilder setTotalAmt(final BigDecimal totalAmt)
 	{
 		this.totalAmt = totalAmt;
 		return this;
 	}
 
-	public DunnableDocBuilder setOpenAmt(BigDecimal openAmt)
+	public DunnableDocBuilder setOpenAmt(final BigDecimal openAmt)
 	{
 		this.openAmt = openAmt;
 		return this;
 	}
 
-	public DunnableDocBuilder setDueDate(Date dueDate)
+	public DunnableDocBuilder setDueDate(final Date dueDate)
 	{
 		this.dueDate = dueDate;
 		return this;
 	}
 
-	public DunnableDocBuilder setGraceDate(Date graceDate)
+	public DunnableDocBuilder setGraceDate(final Date graceDate)
 	{
 		this.graceDate = graceDate;
 		return this;
 	}
 
-	public DunnableDocBuilder setDaysDue(int daysDue)
+	public DunnableDocBuilder setDaysDue(final int daysDue)
 	{
 		this.daysDue = daysDue;
 		return this;
 	}
 
-	public DunnableDocBuilder setInDispute(boolean isInDispute)
+	public DunnableDocBuilder setInDispute(final boolean isInDispute)
 	{
 		this.isInDispute = isInDispute;
 		return this;

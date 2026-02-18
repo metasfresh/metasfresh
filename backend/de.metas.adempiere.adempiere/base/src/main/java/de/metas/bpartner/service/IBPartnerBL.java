@@ -184,12 +184,14 @@ public interface IBPartnerBL extends ISingletonService
 	{
 		public enum ContactType
 		{
-			BILL_TO_DEFAULT, SHIP_TO_DEFAULT, SALES_DEFAULT, SUBJECT_MATTER
+			BILL_TO_DEFAULT, SHIP_TO_DEFAULT, DUNNING_TO_DEFAULT, SALES_DEFAULT, SUBJECT_MATTER
 		}
 
-		public enum IfNotFound
+		public enum Mode
 		{
-			RETURN_DEFAULT_CONTACT, RETURN_NULL
+			BEST_MATCH, BY_CONTACT_TYPE_OR_NULL;
+
+			public boolean isByContactTypeOrNull() { return this.equals(BY_CONTACT_TYPE_OR_NULL); }
 		}
 
 		@NonNull
@@ -225,7 +227,7 @@ public interface IBPartnerBL extends ISingletonService
 		boolean onlyActive;
 
 		@Default
-		IfNotFound ifNotFound = IfNotFound.RETURN_DEFAULT_CONTACT;
+		Mode mode = Mode.BEST_MATCH;
 	}
 
 	CountryId getCountryId(@NonNull BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId);

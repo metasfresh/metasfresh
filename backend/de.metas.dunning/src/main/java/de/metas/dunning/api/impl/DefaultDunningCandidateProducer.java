@@ -47,6 +47,7 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -75,6 +76,7 @@ public class DefaultDunningCandidateProducer implements IDunningCandidateProduce
 	}
 
 	@Override
+	@Nullable
 	public I_C_Dunning_Candidate createDunningCandidate(final IDunningContext context, final IDunnableDoc sourceDoc)
 	{
 		if (!isEligible(context, sourceDoc))
