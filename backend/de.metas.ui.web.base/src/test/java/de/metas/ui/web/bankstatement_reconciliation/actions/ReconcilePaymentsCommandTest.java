@@ -175,7 +175,7 @@ public class ReconcilePaymentsCommandTest
 
 	private void createClientInfo(@NonNull final AcctSchemaId acctSchemaId)
 	{
-		final I_AD_ClientInfo clientInfo =newInstance(I_AD_ClientInfo.class);
+		final I_AD_ClientInfo clientInfo = newInstance(I_AD_ClientInfo.class);
 		clientInfo.setC_AcctSchema1_ID(acctSchemaId.getRepoId());
 		save(clientInfo);
 	}
