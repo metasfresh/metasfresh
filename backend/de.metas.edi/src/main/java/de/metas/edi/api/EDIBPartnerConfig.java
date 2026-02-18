@@ -58,7 +58,7 @@ public class EDIBPartnerConfig
 
 	public boolean isINVOICReplicationInterfaceRecipient()
 	{
-		return isEdiInvoicRecipient && ediDesadvSendingMode.isReplicationInterface();
+		return isEdiInvoicRecipient && ediInvoicSendingMode.isReplicationInterface();
 	}
 
 	public boolean isINVOICExternalSystemRecipient()

@@ -211,8 +211,8 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 			model = ediDocument;
 		}
 
-		final int modelTableId = getRecordId(model);
-		final int modelRecordId = getTableId(model).getRepoId();
+		final int modelTableId = getTableId(model).getRepoId();
+		final int modelRecordId = getRecordId(model);
 		return new TableRecordIdPair(modelTableId, modelRecordId);
 	}
 
