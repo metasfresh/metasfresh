@@ -1017,5 +1017,4 @@ public class PaymentBL implements IPaymentBL
 		payment.setDocAction(IDocument.ACTION_Reverse_Correct);
 		documentBL.processEx(payment, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 	}
-
 }
