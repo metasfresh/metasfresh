@@ -165,6 +165,8 @@ public class ReconcilePaymentsCommandTest
 		chfCurrencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.CHF);
 		euroOrgBankAccountId = createOrgBankAccount(euroCurrencyId);
 		customerId = createCustomer();
+
+		AdempiereTestHelper.createAcctSchema(euroCurrencyId);
 	}
 
 	private void executeReconcilePaymentsCommand(final ReconcilePaymentsRequest request)

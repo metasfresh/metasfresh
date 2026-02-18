@@ -6,7 +6,6 @@ import de.metas.banking.BankId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineReference;
-import de.metas.banking.accounting.BankAccountAcctRepository;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
 import de.metas.banking.payment.impl.BankStatementPaymentBL;
@@ -29,7 +28,6 @@ import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
-import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
 import lombok.Builder;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
@@ -76,7 +74,6 @@ public class BankStatementDocumentHandlerTest
 {
 	private BankStatementDocumentHandler handler;
 
-	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private BankRepository bankRepo;
 
@@ -130,7 +127,6 @@ public class BankStatementDocumentHandlerTest
 		bankRepo = new BankRepository();
 		SpringContextHolder.registerJUnitBean(bankRepo);
 
-		final BankAccountAcctRepository bankAccountAcctRepo = new BankAccountAcctRepository();
 		final CurrencyRepository currencyRepo = new CurrencyRepository();
 		SpringContextHolder.registerJUnitBean(new BankAccountService(bankRepo, currencyRepo));
 
@@ -141,6 +137,7 @@ public class BankStatementDocumentHandlerTest
 	{
 		euroCurrencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 		euroOrgBankAccountId = createOrgBankAccount(euroCurrencyId);
+		AdempiereTestHelper.createAcctSchema(euroCurrencyId);
 	}
 
 	private BPartnerId createCustomer()

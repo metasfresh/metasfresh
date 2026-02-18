@@ -3,12 +3,15 @@ package org.adempiere.test;
 import ch.qos.logback.classic.Level;
 import com.google.common.base.Stopwatch;
 import de.metas.JsonObjectMapperHolder;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.TaxCorrectionType;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.interceptor.CacheInterceptor;
 import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.organization.StoreCreditCardNumberMode;
 import de.metas.user.UserId;
@@ -44,7 +47,14 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_AD_System;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_AcctSchema;
+import org.compiere.model.I_C_AcctSchema_Default;
+import org.compiere.model.I_C_AcctSchema_Element;
+import org.compiere.model.I_C_AcctSchema_GL;
 import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_CostType;
+import org.compiere.model.X_C_AcctSchema;
+import org.compiere.model.X_C_AcctSchema_Element;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.compiere.util.Util;
@@ -272,6 +282,67 @@ public class AdempiereTestHelper
 		final I_AD_ClientInfo clientInfo = InterfaceWrapperHelper.newInstance(I_AD_ClientInfo.class, contextProvider);
 		InterfaceWrapperHelper.setValue(clientInfo, I_AD_ClientInfo.COLUMNNAME_AD_Client_ID, clientId);
 		InterfaceWrapperHelper.save(clientInfo);
+	}
+
+	/**
+	 * Creates a complete accounting schema setup for testing, including:
+	 * - Cost type
+	 * - Accounting schema with costing configuration
+	 * - GL accounts (intercompany, income summary, retained earnings, etc.)
+	 * - Default accounts (realized/unrealized gain/loss)
+	 * - Schema element for accounts
+	 * - Links the accounting schema to ClientInfo as primary schema
+	 *
+	 * @param currencyId the currency to use for the accounting schema
+	 * @return the ID of the created accounting schema
+	 */
+	public static AcctSchemaId createAcctSchema(@NonNull final CurrencyId currencyId)
+	{
+		final I_M_CostType costTypeRecord = newInstance(I_M_CostType.class);
+		costTypeRecord.setName("Test CostType");
+		save(costTypeRecord);
+
+		final I_C_AcctSchema schema = newInstance(I_C_AcctSchema.class);
+		schema.setName("Test AcctSchema");
+		schema.setC_Currency_ID(currencyId.getRepoId());
+		schema.setM_CostType_ID(costTypeRecord.getM_CostType_ID());
+		schema.setCostingMethod(X_C_AcctSchema.COSTINGMETHOD_AveragePO);
+		schema.setCostingLevel(X_C_AcctSchema.COSTINGLEVEL_Client);
+		schema.setSeparator("-");
+		schema.setTaxCorrectionType(TaxCorrectionType.NONE.getCode());
+		saveRecord(schema);
+
+		final I_C_AcctSchema_GL acctSchemaGL = newInstance(I_C_AcctSchema_GL.class);
+		acctSchemaGL.setC_AcctSchema_ID(schema.getC_AcctSchema_ID());
+		acctSchemaGL.setIntercompanyDueFrom_Acct(1);
+		acctSchemaGL.setIntercompanyDueTo_Acct(1);
+		acctSchemaGL.setIncomeSummary_Acct(1);
+		acctSchemaGL.setRetainedEarning_Acct(1);
+		acctSchemaGL.setPPVOffset_Acct(1);
+		acctSchemaGL.setCashRounding_Acct(1);
+		saveRecord(acctSchemaGL);
+
+		final I_C_AcctSchema_Default acctSchemaDefault = newInstance(I_C_AcctSchema_Default.class);
+		acctSchemaDefault.setC_AcctSchema_ID(schema.getC_AcctSchema_ID());
+		acctSchemaDefault.setRealizedGain_Acct(1);
+		acctSchemaDefault.setRealizedLoss_Acct(1);
+		acctSchemaDefault.setUnrealizedGain_Acct(1);
+		acctSchemaDefault.setUnrealizedLoss_Acct(1);
+		saveRecord(acctSchemaDefault);
+
+		final I_C_AcctSchema_Element acctSchemaElementRecord = newInstance(I_C_AcctSchema_Element.class);
+		acctSchemaElementRecord.setC_AcctSchema_ID(schema.getC_AcctSchema_ID());
+		acctSchemaElementRecord.setElementType(X_C_AcctSchema_Element.ELEMENTTYPE_Account);
+		acctSchemaElementRecord.setName("Test");
+		save(acctSchemaElementRecord);
+
+		// Update the existing ClientInfo record to link this accounting schema as primary
+
+		final I_AD_ClientInfo clientInfoRecord = newInstance(I_AD_ClientInfo.class);
+		clientInfoRecord.setC_AcctSchema1_ID(schema.getC_AcctSchema_ID());
+		save(clientInfoRecord);
+
+		return AcctSchemaId.ofRepoId(schema.getC_AcctSchema_ID());
 	}
 
 	public static OrgId createOrgWithTimeZone(@NonNull final String nameAndValue)

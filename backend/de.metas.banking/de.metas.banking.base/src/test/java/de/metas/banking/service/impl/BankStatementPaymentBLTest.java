@@ -29,7 +29,6 @@ import de.metas.banking.BankId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineReferenceList;
-import de.metas.banking.accounting.BankAccountAcctRepository;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
 import de.metas.banking.model.BankStatementLineAmounts;
@@ -89,8 +88,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
@@ -147,7 +145,6 @@ class BankStatementPaymentBLTest
 		bankRepo = new BankRepository();
 		SpringContextHolder.registerJUnitBean(bankRepo);
 
-		final BankAccountAcctRepository bankAccountAcctRepo = new BankAccountAcctRepository();
 		final CurrencyRepository currencyRepo = new CurrencyRepository();
 		SpringContextHolder.registerJUnitBean(new BankAccountService(bankRepo, currencyRepo));
 
@@ -158,6 +155,7 @@ class BankStatementPaymentBLTest
 	{
 		euroCurrencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 		euroOrgBankAccountId = createOrgBankAccount(euroCurrencyId);
+		AdempiereTestHelper.createAcctSchema(euroCurrencyId);
 	}
 
 	private BPartnerId createCustomer()

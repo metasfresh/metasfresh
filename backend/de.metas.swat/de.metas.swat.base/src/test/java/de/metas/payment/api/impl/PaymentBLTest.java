@@ -90,6 +90,8 @@ public class PaymentBLTest
 		currencyDAO = (PlainCurrencyDAO)Services.get(ICurrencyDAO.class);
 		currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 		currencyCHF = PlainCurrencyDAO.createCurrencyId(CurrencyCode.CHF);
+
+		AdempiereTestHelper.createAcctSchema(currencyEUR);
 	}
 
 	@Nested
@@ -315,6 +317,7 @@ public class PaymentBLTest
 		public void beforeEach()
 		{
 			payment = newInstance(I_C_Payment.class);
+			payment.setC_Currency_ID(currencyEUR.getRepoId());
 		}
 
 		@Test
@@ -440,6 +443,7 @@ public class PaymentBLTest
 			public void preloaded()
 			{
 				final I_C_Payment payment = newInstance(I_C_Payment.class);
+				payment.setC_Currency_ID(currencyEUR.getRepoId());
 				saveRecord(payment);
 				assertThat(payment.isReconciled()).isFalse();
 				final PaymentId paymentId = PaymentId.ofRepoId(payment.getC_Payment_ID());
@@ -459,6 +463,7 @@ public class PaymentBLTest
 				final PaymentId paymentId;
 				{
 					final I_C_Payment payment = newInstance(I_C_Payment.class);
+					payment.setC_Currency_ID(currencyEUR.getRepoId());
 					saveRecord(payment);
 					assertThat(payment.isReconciled()).isFalse();
 					paymentId = PaymentId.ofRepoId(payment.getC_Payment_ID());
@@ -488,6 +493,7 @@ public class PaymentBLTest
 				final PaymentId paymentId1;
 				{
 					payment1 = newInstance(I_C_Payment.class);
+					payment1.setC_Currency_ID(currencyEUR.getRepoId());
 					saveRecord(payment1);
 					paymentId1 = PaymentId.ofRepoId(payment1.getC_Payment_ID());
 				}
@@ -495,6 +501,7 @@ public class PaymentBLTest
 				final PaymentId paymentId2;
 				{
 					final I_C_Payment payment2 = newInstance(I_C_Payment.class);
+					payment2.setC_Currency_ID(currencyEUR.getRepoId());
 					saveRecord(payment2);
 					paymentId2 = PaymentId.ofRepoId(payment2.getC_Payment_ID());
 				}
