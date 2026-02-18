@@ -23,6 +23,8 @@
 package de.metas.banking.service.impl;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.acct.AcctSchemaTestHelper;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankCreateRequest;
 import de.metas.banking.BankId;
@@ -69,6 +71,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BankStatement;
@@ -87,6 +90,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -155,7 +160,16 @@ class BankStatementPaymentBLTest
 	{
 		euroCurrencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 		euroOrgBankAccountId = createOrgBankAccount(euroCurrencyId);
-		AdempiereTestHelper.createAcctSchemaAndClientInfo(euroCurrencyId);
+		final AcctSchemaId acctSchemaId = AcctSchemaTestHelper.newAcctSchema().build();
+		createClientInfo(acctSchemaId);
+
+	}
+
+	private void createClientInfo(@NonNull final AcctSchemaId acctSchemaId)
+	{
+		final I_AD_ClientInfo clientInfo =newInstance(I_AD_ClientInfo.class);
+		clientInfo.setC_AcctSchema1_ID(acctSchemaId.getRepoId());
+		save(clientInfo);
 	}
 
 	private BPartnerId createCustomer()

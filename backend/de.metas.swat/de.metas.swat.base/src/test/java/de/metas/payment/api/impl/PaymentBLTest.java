@@ -1,6 +1,8 @@
 package de.metas.payment.api.impl;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.AcctSchemaTestHelper;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.gljournal_sap.SAPGLJournalLineId;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.banking.BankStatementId;
@@ -27,6 +29,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
@@ -91,7 +94,16 @@ public class PaymentBLTest
 		currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 		currencyCHF = PlainCurrencyDAO.createCurrencyId(CurrencyCode.CHF);
 
-		AdempiereTestHelper.createAcctSchemaAndClientInfo(currencyEUR);
+		final AcctSchemaId acctSchemaId = AcctSchemaTestHelper.newAcctSchema().build();
+		createClientInfo(acctSchemaId);
+
+	}
+
+	private void createClientInfo(@NonNull final AcctSchemaId acctSchemaId)
+	{
+		final I_AD_ClientInfo clientInfo =newInstance(I_AD_ClientInfo.class);
+		clientInfo.setC_AcctSchema1_ID(acctSchemaId.getRepoId());
+		save(clientInfo);
 	}
 
 	@Nested
