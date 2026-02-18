@@ -1,8 +1,13 @@
--- gh#28014: Remove thousand separator (G) from TO_CHAR patterns in Intrastat_Export.
+-- gh#28014: Two fixes for the Intrastat RTIC export:
 --
--- Austrian RTIC cannot parse numbers with period as thousand separator.
--- In German locale, TO_CHAR 'G' = period, so '1.442,500' is misinterpreted by RTIC.
--- Replacing 'FM9G999Dxxx' with 'FM9999999Dxxx' outputs '1442,500' (no thousand separator).
+-- 1) Remove thousand separator (G) from TO_CHAR patterns in Intrastat_Export.
+--    Austrian RTIC cannot parse numbers with period as thousand separator.
+--    In German locale, TO_CHAR 'G' = period, so '1.442,500' is misinterpreted by RTIC.
+--    Replacing 'FM9G999Dxxx' with 'FM9999999Dxxx' outputs '1442,500' (no thousand separator).
+--
+-- 2) Change CSV delimiter from tab to semicolon.
+--    RTIC expects semicolon-delimited input. The original migration (5787490) set tab,
+--    but the customer must use semicolon for RTIC upload.
 
 DROP FUNCTION IF EXISTS report.Intrastat_Export(p_c_year_id                 numeric,
                                                 p_C_Period_ID               numeric,
@@ -49,4 +54,11 @@ WHERE (C_Period_ID = p_C_Period_ID OR p_C_Period_ID = -1)
 
 $$
     LANGUAGE sql STABLE
+;
+
+-- Change CSV delimiter from tab to semicolon for RTIC compatibility
+UPDATE AD_Process
+SET CSVFieldDelimiter = ';'
+WHERE AD_Process_ID = 585508
+  AND CSVFieldDelimiter = E'\t'
 ;
