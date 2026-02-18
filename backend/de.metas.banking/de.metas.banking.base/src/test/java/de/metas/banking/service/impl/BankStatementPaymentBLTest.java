@@ -162,7 +162,6 @@ class BankStatementPaymentBLTest
 		euroOrgBankAccountId = createOrgBankAccount(euroCurrencyId);
 		final AcctSchemaId acctSchemaId = AcctSchemaTestHelper.newAcctSchema().build();
 		createClientInfo(acctSchemaId);
-
 	}
 
 	private void createClientInfo(@NonNull final AcctSchemaId acctSchemaId)

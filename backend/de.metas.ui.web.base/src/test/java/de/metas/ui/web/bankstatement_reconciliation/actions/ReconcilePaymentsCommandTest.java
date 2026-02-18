@@ -171,7 +171,6 @@ public class ReconcilePaymentsCommandTest
 
 		final AcctSchemaId acctSchemaId = AcctSchemaTestHelper.newAcctSchema().build();
 		createClientInfo(acctSchemaId);
-
 	}
 
 	private void createClientInfo(@NonNull final AcctSchemaId acctSchemaId)
