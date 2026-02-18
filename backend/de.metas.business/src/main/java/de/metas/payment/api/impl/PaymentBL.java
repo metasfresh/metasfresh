@@ -863,7 +863,7 @@ public class PaymentBL implements IPaymentBL
 		final AcctSchema primaryAcctSchema = acctSchemaBL.getPrimaryAcctSchema(clientId);
 		final CurrencyId acctSchemaCurrencyId = primaryAcctSchema.getCurrencyId();
 
-		if (!paymentCurrencyId.equals(acctSchemaCurrencyId))
+		if(!CurrencyId.equals(paymentCurrencyId, acctSchemaCurrencyId))
 		{
 			logger.debug("Scheduling repost for payment {} because currency {} differs from accounting schema currency {}",
 					payment.getC_Payment_ID(), paymentCurrencyId, acctSchemaCurrencyId);
