@@ -22,6 +22,7 @@
 
 package de.metas.ui.web.pporder.process;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.impl.PPOrderBOMBL;
@@ -33,6 +34,7 @@ import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.IssuingToleranceSpec;
+import de.metas.product.IssuingToleranceValueType;
 import de.metas.product.ProductId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
@@ -88,8 +90,8 @@ public class PP_Order_BOMLine_Update_Tolerance extends JavaProcess implements IP
 		final I_PP_Order ppOrder = ppOrderDAO.getById(ppOrderId);
 
 		// Check if PP_Order is Completed but not Closed
-		final String docStatus = ppOrder.getDocStatus();
-		if (!"CO".equals(docStatus))
+		final DocStatus docStatus = DocStatus.ofCode(ppOrder.getDocStatus());
+		if (!docStatus.isCompleted())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("PP_Order must be Completed");
 		}
@@ -144,6 +146,7 @@ public class PP_Order_BOMLine_Update_Tolerance extends JavaProcess implements IP
 		if (issuingToleranceSpec != null)
 		{
 			final UOMConversionContext uomConversionContext = UOMConversionContext.of(ProductId.ofRepoId(bomLine.getM_Product_ID()));
+			// this will throw an exception if the conversion is not possible
 			issuingToleranceSpec.convertQty(qty -> uomConversionService.convertQuantityTo(qty, uomConversionContext, uom));
 		}
 
@@ -154,12 +157,13 @@ public class PP_Order_BOMLine_Update_Tolerance extends JavaProcess implements IP
 
 	private void validateToleranceParameters()
 	{
-		if (issuingTolerance_ValueType == null)
+		final IssuingToleranceValueType issuingToleranceValueType = IssuingToleranceValueType.ofNullableCode(issuingTolerance_ValueType);
+		if (issuingToleranceValueType == null)
 		{
 			throw new AdempiereException("Tolerance Value Type is required when enforcement is enabled");
 		}
 
-		if ("Q".equals(issuingTolerance_ValueType))
+		if (issuingToleranceValueType.isQuantity())
 		{
 			if (issuingTolerance_Qty == null || issuingTolerance_Qty.signum() <= 0)
 			{
@@ -170,7 +174,7 @@ public class PP_Order_BOMLine_Update_Tolerance extends JavaProcess implements IP
 				throw new AdempiereException("Tolerance UOM is required for Quantity type");
 			}
 		}
-		else if ("P".equals(issuingTolerance_ValueType))
+		else if (issuingToleranceValueType.isPercentage())
 		{
 			if (issuingTolerance_Perc == null || issuingTolerance_Perc.signum() <= 0)
 			{
