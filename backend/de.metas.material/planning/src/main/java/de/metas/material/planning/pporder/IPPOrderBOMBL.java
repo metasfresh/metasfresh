@@ -154,10 +154,6 @@ public interface IPPOrderBOMBL extends ISingletonService
 	Set<ProductId> getProductIdsToIssue(PPOrderId ppOrderId);
 
 	ImmutableSet<WarehouseId> getIssueFromWarehouseIds(@NonNull final I_PP_Order ppOrder);
-<<<<<<< HEAD
-=======
-
-	ImmutableSet<WarehouseId> getIssueFromWarehouseIds(WarehouseId ppOrderWarehouseId);
 
 	/**
 	 * Updates the issuing tolerance specification for a BOM line.
@@ -169,5 +165,4 @@ public interface IPPOrderBOMBL extends ISingletonService
 	void updateIssuingToleranceSpec(
 			@NonNull I_PP_Order_BOMLine orderBOMLine,
 			@javax.annotation.Nullable de.metas.product.IssuingToleranceSpec toleranceSpec);
->>>>>>> 19843f200d (Merge pull request #22390 from metasfresh/new_dawn_uat_update_tolerance)
 }

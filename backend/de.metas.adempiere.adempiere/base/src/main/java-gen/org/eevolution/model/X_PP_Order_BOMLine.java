@@ -13,11 +13,7 @@ import java.util.Properties;
 public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Order_BOMLine, org.compiere.model.I_Persistent 
 {
 
-<<<<<<< HEAD
-	private static final long serialVersionUID = -1884950035L;
-=======
 	private static final long serialVersionUID = -921327590L;
->>>>>>> 19843f200d (Merge pull request #22390 from metasfresh/new_dawn_uat_update_tolerance)
 
     /** Standard Constructor */
     public X_PP_Order_BOMLine (final Properties ctx, final int PP_Order_BOMLine_ID, @Nullable final String trxName)
