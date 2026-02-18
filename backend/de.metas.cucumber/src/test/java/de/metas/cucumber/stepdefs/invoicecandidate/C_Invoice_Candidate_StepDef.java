@@ -749,6 +749,84 @@ public class C_Invoice_Candidate_StepDef
 				});
 	}
 
+	@And("^process invoice candidates together and wait (.*)s for C_Invoice_Candidate to be processed$")
+	public void process_invoice_cand_together(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		final List<DataTableRow> rows = DataTableRows.of(dataTable).toList();
+
+		if (rows.isEmpty())
+		{
+			return;
+		}
+
+		// Collect all invoice candidate IDs
+		final ImmutableList.Builder<InvoiceCandidateId> invoiceCandidateIdsBuilder = ImmutableList.builder();
+		final List<I_C_Invoice_Candidate> invoiceCandidates = new ArrayList<>();
+
+		for (final DataTableRow row : rows)
+		{
+			final I_C_Invoice_Candidate invoiceCandidate = row.getAsIdentifier(COLUMNNAME_C_Invoice_Candidate_ID).lookupNotNullIn(invoiceCandTable);
+			InterfaceWrapperHelper.refresh(invoiceCandidate);
+			invoiceCandidates.add(invoiceCandidate);
+			invoiceCandidateIdsBuilder.add(InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID()));
+		}
+
+		final ImmutableList<InvoiceCandidateId> invoiceCandidateIds = invoiceCandidateIdsBuilder.build();
+
+		// Use the first row to extract common invoicing parameters
+		final DataTableRow firstRow = rows.get(0);
+		final boolean isUpdateLocationAndContactForInvoice = firstRow.getAsOptionalBoolean("IsUpdateLocationAndContactForInvoice").orElse(false);
+
+		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
+		invoicingParams.setIgnoreInvoiceSchedule(false);
+		invoicingParams.setUpdateLocationAndContactForInvoice(isUpdateLocationAndContactForInvoice);
+		firstRow.getAsOptionalBoolean(PARA_IsDeliveryDateAsInvoiceDate).ifPresent(invoicingParams::setDeliveryDateAsInvoiceDate);
+		firstRow.getAsOptionalLocalDate(PARA_DateInvoiced).ifPresent(invoicingParams::setDateInvoiced);
+
+		final boolean completeInvoices = firstRow.getAsOptionalBoolean(PARA_IsCompleteInvoices).orElse(true);
+		invoicingParams.setCompleteInvoices(completeInvoices);
+
+		// Wait for all candidates to not be marked as to recompute
+		for (final I_C_Invoice_Candidate invoiceCandidate : invoiceCandidates)
+		{
+			StepDefUtil.tryAndWait(timeoutSec, 500, () -> checkNotMarkedAsToRecompute(invoiceCandidate));
+		}
+
+		// Create selection with all invoice candidate IDs
+		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(
+				invoiceCandidateIds.stream()
+						.map(InvoiceCandidateId::getRepoId)
+						.collect(ImmutableList.toImmutableList()),
+				Trx.TRXNAME_None);
+
+		try
+		{
+			invoiceCandBL.enqueueForInvoicing()
+					.setContext(Env.getCtx())
+					.setFailIfNothingEnqueued(true)
+					.setInvoicingParams(invoicingParams)
+					.prepareAndEnqueueSelection(invoiceCandidatesSelectionId);
+		}
+		catch (final AdempiereException adempiereException)
+		{
+			for (int i = 0; i < invoiceCandidates.size(); i++)
+			{
+				logCurrentContext(invoiceCandidates.get(i), rows.get(i));
+			}
+			throw adempiereException;
+		}
+
+		// Wait for all invoices to be created
+		for (int i = 0; i < invoiceCandidates.size(); i++)
+		{
+			final I_C_Invoice_Candidate invoiceCandidate = invoiceCandidates.get(i);
+			final DataTableRow row = rows.get(i);
+			StepDefUtil.tryAndWait(timeoutSec, 500, () -> isInvoiceCandidateProcessed(invoiceCandidate, row), () -> logCurrentContext(invoiceCandidate, row));
+		}
+
+		DB.deleteT_Selection(invoiceCandidatesSelectionId, Trx.TRXNAME_None);
+	}
+
 	@And("^there is no C_InvoiceCandidate_InOutLine for M_InOut_Line: (.*)$")
 	public void validate_no_C_InvoiceCandidate_InOutLine_for_M_InOut(@NonNull final String shipmentLineIdentifier)
 	{
