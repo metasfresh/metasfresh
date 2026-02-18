@@ -120,6 +120,12 @@ final class PurchaseInvoiceAsInboundPaymentDocumentWrapper implements IPaymentDo
 		purchaseInvoicePayableDoc.addAllocatedAmounts(AllocationAmounts.ofPayAmt(allocatedAmtToAdd.negate()));
 	}
 
+	@Override
+	public void addAllocatedAmt(final AllocationAmounts amount)
+	{
+		purchaseInvoicePayableDoc.addAllocatedAmounts(amount);
+	}
+
 	/**
 	 * Check only the payAmt as that's the only value we are allocating. see {@link  PurchaseInvoiceAsInboundPaymentDocumentWrapper#addAllocatedAmt(Money)}
 	 */

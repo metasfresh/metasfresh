@@ -26,14 +26,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.util.List;
 
+import de.metas.edi.api.impl.EDIDocumentBL;
 import org.adempiere.exceptions.AdempiereException;
 
-import de.metas.edi.api.IEDIDocumentBL;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.process.export.IExport;
 import de.metas.i18n.IMsgBL;
 import de.metas.process.JavaProcess;
 import de.metas.util.Services;
+import org.compiere.SpringContextHolder;
 
 /**
  * EDI-Exports a single EDI document. Locally and synchronously, i.e. without an async-workpackage.
@@ -44,7 +45,7 @@ public class EDIExport extends JavaProcess
 	private int recordId = -1;
 
 	// Services
-	private final IEDIDocumentBL ediDocumentBL = Services.get(IEDIDocumentBL.class);
+	private final EDIDocumentBL ediDocumentBL = SpringContextHolder.instance.getBean(EDIDocumentBL.class);
 
 	@Override
 	protected void prepare()

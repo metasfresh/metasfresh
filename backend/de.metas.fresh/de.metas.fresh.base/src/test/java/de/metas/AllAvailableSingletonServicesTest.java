@@ -12,6 +12,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseRepository;
 import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
@@ -74,7 +75,6 @@ public class AllAvailableSingletonServicesTest
 			.skipServiceInterface(de.metas.banking.service.IBankStatementBL.class, "spring component")
 			.skipServiceInterface(de.metas.bpartner.service.IBPartnerBL.class, "spring component")
 			.skipServiceInterface(de.metas.document.sequence.IDocumentNoBuilderFactory.class, "spring component")
-			.skipServiceInterface(de.metas.edi.api.IDesadvBL.class, "spring component")
 			.skipServiceInterface(ISSCC18CodeBL.class, "spring component")
 			.skipServiceInterface(de.metas.inoutcandidate.api.IShipmentScheduleUpdater.class, "spring component")
 			.skipServiceInterface(de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory.class, "spring component")
@@ -100,6 +100,7 @@ public class AllAvailableSingletonServicesTest
 		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
 		SpringContextHolder.registerJUnitBean(new BankAccountService(new BankRepository(), new CurrencyRepository()));
 		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
+		WarehouseRepository.newInstanceForUnitTesting();
 	}
 
 	@ParameterizedTest
