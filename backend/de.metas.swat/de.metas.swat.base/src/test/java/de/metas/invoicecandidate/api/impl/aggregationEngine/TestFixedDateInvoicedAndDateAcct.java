@@ -146,4 +146,116 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		assertThat(invoice.getDateInvoiced()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 13));
 		assertThat(invoice.getDateAcct()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 13));
 	}
+
+	/**
+	 * Regression: Verifies that dateAcctParam takes precedence over PresetDateInvoiced for DateAcct.
+	 */
+	@Test
+	public void test_dateAcctParam_overrides_presetDateInvoiced()
+	{
+		final I_C_Invoice_Candidate ic1 = prepareInvoiceCandidate()
+				.setPresetDateInvoiced(LocalDate.of(2019, Month.SEPTEMBER, 13))
+				.build();
+
+		updateInvalidCandidates();
+		InterfaceWrapperHelper.refresh(ic1);
+
+		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting()
+				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
+				.dateAcctParam(LocalDate.of(2019, Month.SEPTEMBER, 5))
+				.build();
+
+		engine.addInvoiceCandidate(ic1);
+
+		final List<IInvoiceHeader> invoices = engine.aggregate();
+		assertThat(invoices).hasSize(1);
+
+		final IInvoiceHeader invoice = invoices.get(0);
+		assertThat(invoice.getDateInvoiced()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 1));
+		assertThat(invoice.getDateAcct()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 5));
+	}
+
+	/**
+	 * Regression: Verifies that when only dateInvoicedParam is set, PresetDateInvoiced influences DateAcct.
+	 */
+	@Test
+	public void test_presetDateInvoiced_becomes_dateAcct_without_dateAcctParam()
+	{
+		final I_C_Invoice_Candidate ic1 = prepareInvoiceCandidate()
+				.setPresetDateInvoiced(LocalDate.of(2019, Month.SEPTEMBER, 13))
+				.build();
+
+		updateInvalidCandidates();
+		InterfaceWrapperHelper.refresh(ic1);
+
+		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting()
+				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
+				.build();
+
+		engine.addInvoiceCandidate(ic1);
+
+		final List<IInvoiceHeader> invoices = engine.aggregate();
+		assertThat(invoices).hasSize(1);
+
+		final IInvoiceHeader invoice = invoices.get(0);
+		assertThat(invoice.getDateInvoiced()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 1));
+		assertThat(invoice.getDateAcct()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 13));
+	}
+
+	/**
+	 * Regression: Verifies that PresetDateInvoiced affects DateAcct when IC's dateAcct is also set.
+	 */
+	@Test
+	public void test_presetDateInvoiced_overrides_ic_dateAcct()
+	{
+		final I_C_Invoice_Candidate ic1 = prepareInvoiceCandidate()
+				.setPresetDateInvoiced(LocalDate.of(2019, Month.SEPTEMBER, 13))
+				.setDateAcct(LocalDate.of(2019, Month.SEPTEMBER, 20))
+				.build();
+
+		updateInvalidCandidates();
+		InterfaceWrapperHelper.refresh(ic1);
+
+		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting()
+				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
+				.build();
+
+		engine.addInvoiceCandidate(ic1);
+
+		final List<IInvoiceHeader> invoices = engine.aggregate();
+		assertThat(invoices).hasSize(1);
+
+		final IInvoiceHeader invoice = invoices.get(0);
+		assertThat(invoice.getDateInvoiced()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 1));
+		assertThat(invoice.getDateAcct()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 13));
+	}
+
+	/**
+	 * Regression: Verifies that dateAcctParam takes ultimate precedence even with PresetDateInvoiced and IC dateAcct set.
+	 */
+	@Test
+	public void test_dateAcctParam_takes_precedence_over_all()
+	{
+		final I_C_Invoice_Candidate ic1 = prepareInvoiceCandidate()
+				.setPresetDateInvoiced(LocalDate.of(2019, Month.SEPTEMBER, 13))
+				.setDateAcct(LocalDate.of(2019, Month.SEPTEMBER, 20))
+				.build();
+
+		updateInvalidCandidates();
+		InterfaceWrapperHelper.refresh(ic1);
+
+		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting()
+				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
+				.dateAcctParam(LocalDate.of(2019, Month.SEPTEMBER, 25))
+				.build();
+
+		engine.addInvoiceCandidate(ic1);
+
+		final List<IInvoiceHeader> invoices = engine.aggregate();
+		assertThat(invoices).hasSize(1);
+
+		final IInvoiceHeader invoice = invoices.get(0);
+		assertThat(invoice.getDateInvoiced()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 1));
+		assertThat(invoice.getDateAcct()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 25));
+	}
 }
