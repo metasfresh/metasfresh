@@ -140,9 +140,10 @@ import org.jetbrains.annotations.Nullable;
 		if (timing == ModelValidator.TIMING_AFTER_COMPLETE
 				&& !documentBL.isReversalDocument(po))
 		{
+			// After commit because it might be a postgrest process that is executed here, so on complete changes need to be present in db
 			externalSystemScriptedExportConversionService
 					.getMatchingTriggerOnCompleteConfigsByTableAndClientId(AdTableAndClientId.of(AdTableId.ofRepoId(po.get_Table_ID()), ClientId.ofRepoId(getAD_Client_ID())), po.get_ID())
-					.forEach(config -> externalSystemScriptedExportConversionService.executeInvokeScriptedExportConversionAction(config, po.get_ID()));
+					.forEach(config -> externalSystemScriptedExportConversionService.executeInvokeScriptedExportConversionActionAfterCommit(config, po.get_ID()));
 		}
 
 		return null;

@@ -22,9 +22,11 @@ package de.metas.edi.process.export.impl;
  * #L%
  */
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.edi.api.EDIExportStatus;
-import de.metas.edi.api.IDesadvDAO;
+import de.metas.edi.api.EDIType;
 import de.metas.edi.api.ValidationState;
+import de.metas.edi.api.impl.DesadvBL;
 import de.metas.edi.api.impl.EDIDocumentBL;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_EDI_Document_Extension;
@@ -50,10 +52,10 @@ public class EDI_DESADVExport extends AbstractExport<I_EDI_Document>
 	 */
 	private static final String CST_DESADV_EXP_FORMAT = "EDI_Exp_Desadv";
 
-	private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
 	private final IInOutBL shipmentBL = Services.get(IInOutBL.class);
 
 	@NonNull private final EDIDocumentBL ediDocumentBL = SpringContextHolder.instance.getBean(EDIDocumentBL.class);
+	@NonNull private final DesadvBL desadvBL = SpringContextHolder.instance.getBean(DesadvBL.class);
 
 	public EDI_DESADVExport(final I_EDI_Desadv desadv, final String tableIdentifier, final ClientId clientId)
 	{
@@ -64,8 +66,7 @@ public class EDI_DESADVExport extends AbstractExport<I_EDI_Document>
 	public List<Exception> doExport()
 	{
 		final I_EDI_Document document = getDocument();
-
-		final I_EDI_Desadv desadv = InterfaceWrapperHelper.create(document, I_EDI_Desadv.class);
+		final I_EDI_Desadv desadv = getDesadvRecord();
 
 		final List<Exception> feedback = ediDocumentBL.isValidDesAdv(desadv);
 
@@ -81,7 +82,7 @@ public class EDI_DESADVExport extends AbstractExport<I_EDI_Document>
 		document.setEDI_ExportStatus(I_EDI_Document_Extension.EDI_EXPORTSTATUS_SendingStarted);
 		InterfaceWrapperHelper.save(document);
 
-		desadvDAO.retrieveAllInOuts(desadv)
+		desadvBL.retrieveAllInOuts(desadv)
 				.stream()
 				.peek(shipment -> shipment.setEDI_ExportStatus(I_EDI_Document_Extension.EDI_EXPORTSTATUS_SendingStarted))
 				.forEach(shipmentBL::save);
@@ -104,5 +105,25 @@ public class EDI_DESADVExport extends AbstractExport<I_EDI_Document>
 		}
 
 		return Collections.emptyList();
+	}
+
+	@Override
+	@NonNull
+	public BPartnerId getBPartnerId()
+	{
+		return desadvBL.getEffectiveDropshipPartnerId(getDesadvRecord());
+	}
+
+	@NonNull
+	private I_EDI_Desadv getDesadvRecord()
+	{
+		return InterfaceWrapperHelper.create(getDocument(), I_EDI_Desadv.class);
+	}
+
+	@Override
+	@NonNull
+	public EDIType getEDIType()
+	{
+		return EDIType.DESADV;
 	}
 }

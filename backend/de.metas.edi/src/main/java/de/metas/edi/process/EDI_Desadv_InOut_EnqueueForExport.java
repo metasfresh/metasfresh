@@ -27,13 +27,9 @@ import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.api.IDesadvDAO;
-import de.metas.edi.api.impl.EDIBPartnerConfigService;
 import de.metas.edi.async.spi.impl.EDIWorkpackageProcessor;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.esb.edi.model.I_EDI_Desadv;
-import de.metas.externalsystem.ExternalSystemParentConfigId;
-import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfig;
-import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -47,11 +43,8 @@ import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.SpringContextHolder;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -61,13 +54,11 @@ import java.util.Properties;
  */
 public class EDI_Desadv_InOut_EnqueueForExport extends JavaProcess implements IProcessPrecondition
 {
-	@NonNull private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
-	@NonNull private final ITrxItemProcessorExecutorService trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	@NonNull private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
-	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	@NonNull private final EDIBPartnerConfigService edibPartnerConfigService = SpringContextHolder.instance.getBean(EDIBPartnerConfigService.class);
-	@NonNull private final ExternalSystemScriptedExportConversionService externalSystemScriptedExportConversionService = SpringContextHolder.instance.getBean(ExternalSystemScriptedExportConversionService.class);
+	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
+	private final ITrxItemProcessorExecutorService trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
@@ -88,33 +79,57 @@ public class EDI_Desadv_InOut_EnqueueForExport extends JavaProcess implements IP
 	@Override
 	protected String doIt() throws Exception
 	{
-		final Iterator<I_EDI_Desadv> selectedRecords = createIterator();
-		final List<I_EDI_Desadv> replicationInterfaceDesadvs = new ArrayList<>();
-		final List<I_EDI_Desadv> externalSystemDesadvs = new ArrayList<>();
+		final Properties ctx = getCtx();
 
-		while(selectedRecords.hasNext())
-		{
-			final I_EDI_Desadv desadv = selectedRecords.next();
-			if(!EDIExportStatus.ofCode(desadv.getEDI_ExportStatus()).isPendingOrError())
-			{
-				addLog("Skipped DESADV with ID {}, because of ExportStatus not pending or error (Export Status: {})", desadv.getEDI_Desadv_ID(), desadv.getEDI_ExportStatus());
-				continue;
-			}
-			else if (edibPartnerConfigService.isDESADVReplicationInterfaceRecipient(desadv))
-			{
-				replicationInterfaceDesadvs.add(desadv);
-			}
-			else if (edibPartnerConfigService.isDESADVExternalSystemRecipient(desadv))
-			{
-				externalSystemDesadvs.add(desadv);
-			}
-			addLog("Skipped DESADV with ID {}, because of EdiBPartnerConfig not eligible", desadv.getEDI_Desadv_ID());
-		}
+		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(ctx, EDIWorkpackageProcessor.class);
 
-		enqueueReplicationInterfaceDesadvs(replicationInterfaceDesadvs);
-		executeExternalSystemDesadvs(externalSystemDesadvs);
+		trxItemProcessorExecutorService
+				.<I_EDI_Desadv, Void>createExecutor()
+				.setContext(getCtx(), ITrx.TRXNAME_None)
+				.setExceptionHandler(FailTrxItemExceptionHandler.instance)
+				.setProcessor(new TrxItemProcessorAdapter<I_EDI_Desadv, Void>()
+				{
+					@Override
+					public void process(@NonNull final I_EDI_Desadv desadv)
+					{
+						enqueueShipmentsForDesadv(queue, desadv);
+					}
+				})
+				.process(createIterator());
 
 		return MSG_OK;
+	}
+
+	private void enqueueShipmentsForDesadv(
+			final @NonNull IWorkPackageQueue queue,
+			final @NonNull I_EDI_Desadv desadv)
+	{
+		final List<I_M_InOut> shipments = desadvDAO.retrieveShipmentsWithStatus(desadv, ImmutableSet.of(EDIExportStatus.Pending, EDIExportStatus.Error));
+		final String trxName = InterfaceWrapperHelper.getTrxName(desadv);
+
+		for (final I_M_InOut shipment : shipments)
+		{
+			queue.newWorkPackage()
+					.setAD_PInstance_ID(getPinstanceId())
+					.bindToTrxName(trxName)
+					.addElement(shipment)
+					.buildAndEnqueue();
+
+			shipment.setEDI_ExportStatus(EDIExportStatus.Enqueued.getCode());
+			InterfaceWrapperHelper.save(shipment);
+
+			addLog("Enqueued M_InOut_ID={} for EDI_Desadv_ID={}", shipment.getM_InOut_ID(), desadv.getEDI_Desadv_ID());
+		}
+		
+		if(shipments.isEmpty())
+		{
+			addLog("Found no M_InOuts to enqueue for EDI_Desadv_ID={}", desadv.getEDI_Desadv_ID());
+		}
+		else
+		{
+			desadv.setEDI_ExportStatus(EDIExportStatus.Enqueued.getCode());
+			InterfaceWrapperHelper.save(desadv);
+		}
 	}
 
 	@NonNull
@@ -136,101 +151,5 @@ public class EDI_Desadv_InOut_EnqueueForExport extends JavaProcess implements IP
 			addLog("Found no EDI_Desadvs to enqueue within the current selection");
 		}
 		return iterator;
-	}
-
-	private void enqueueReplicationInterfaceDesadvs(@NonNull final List<I_EDI_Desadv> replicationInterfaceDesadvs)
-	{
-		if(replicationInterfaceDesadvs.isEmpty())
-		{
-			addLog("Found no EDI_Desadvs to enqueue via replication interface");
-			return;
-		}
-		else
-		{
-			addLog("Enqueuing {} EDI_Desadvs  via replication interface", replicationInterfaceDesadvs.size());
-		}
-
-		final Properties ctx = getCtx();
-		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(ctx, EDIWorkpackageProcessor.class);
-		trxItemProcessorExecutorService
-				.<I_EDI_Desadv, Void>createExecutor()
-				.setContext(ctx, ITrx.TRXNAME_None)
-				.setExceptionHandler(FailTrxItemExceptionHandler.instance)
-				.setProcessor(new TrxItemProcessorAdapter<I_EDI_Desadv, Void>()
-				{
-					@Override
-					public void process(@NonNull final I_EDI_Desadv desadv)
-					{
-						enqueueShipmentsForDesadv(queue, desadv);
-					}
-				})
-				.process(replicationInterfaceDesadvs.iterator());
-	}
-
-	private void enqueueShipmentsForDesadv(
-			final @NonNull IWorkPackageQueue queue,
-			final @NonNull I_EDI_Desadv desadv)
-	{
-		final List<I_M_InOut> shipments = desadvDAO.retrieveShipmentsWithStatus(desadv, ImmutableSet.of(EDIExportStatus.Pending, EDIExportStatus.Error));
-		final String trxName = InterfaceWrapperHelper.getTrxName(desadv);
-
-		for (final I_M_InOut shipment : shipments)
-		{
-			queue.newWorkPackage()
-					.setAD_PInstance_ID(getPinstanceId())
-					.bindToTrxName(trxName)
-					.addElement(shipment)
-					.buildAndEnqueue();
-
-			shipment.setEDI_ExportStatus(EDIExportStatus.Enqueued.getCode());
-			InterfaceWrapperHelper.save(shipment);
-
-			addLog("Enqueued M_InOut_ID={} via Replication Interface for EDI_Desadv_ID={}", shipment.getM_InOut_ID(), desadv.getEDI_Desadv_ID());
-		}
-		
-		if(shipments.isEmpty())
-		{
-			addLog("Found no M_InOuts to enqueue via Replication Interface for EDI_Desadv_ID={}", desadv.getEDI_Desadv_ID());
-		}
-		else
-		{
-			desadv.setEDI_ExportStatus(EDIExportStatus.Enqueued.getCode());
-			InterfaceWrapperHelper.save(desadv);
-		}
-	}
-
-	private void executeExternalSystemDesadvs(@NonNull final List<I_EDI_Desadv> externalSystemDesadvs)
-	{
-		if(externalSystemDesadvs.isEmpty())
-		{
-			addLog("Found no EDI_Desadvs to send via external system");
-			return;
-		}
-		else
-		{
-			addLog("Sending {} EDI_Desadvs  via external system", externalSystemDesadvs.size());
-		}
-
-		externalSystemDesadvs.forEach(this::executeExternalSystemDesadv);
-	}
-
-	private void executeExternalSystemDesadv(@NonNull final I_EDI_Desadv desadv)
-	{
-		final ExternalSystemParentConfigId parentConfigId = edibPartnerConfigService.getDESADVExternalSystemParentConfigId(desadv);
-		final List<ExternalSystemScriptedExportConversionConfig> configs = externalSystemScriptedExportConversionService.getByParentConfigIdAndTableAndClientId(
-				parentConfigId,
-				I_M_InOut.Table_Name,
-				ClientId.ofRepoId(desadv.getAD_Client_ID())
-		);
-		final List<I_M_InOut> shipments = desadvDAO.retrieveShipmentsWithStatus(desadv, ImmutableSet.of(EDIExportStatus.Pending, EDIExportStatus.Error));
-
-		if(shipments.isEmpty())
-		{
-			addLog("Found no M_InOuts to send via External System for EDI_Desadv_ID={}", desadv.getEDI_Desadv_ID());
-		}
-		for (final I_M_InOut shipment : shipments)
-		{
-			configs.forEach(config -> externalSystemScriptedExportConversionService.executeInvokeScriptedExportConversionAction(config, shipment.getM_InOut_ID()));
-		}
 	}
 }

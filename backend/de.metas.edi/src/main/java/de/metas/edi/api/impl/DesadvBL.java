@@ -965,4 +965,10 @@ public class DesadvBL
 				() -> BPartnerId.ofRepoIdOrNull(desadv.getC_BPartner_ID())
 		);
 	}
+
+	@NonNull
+	public List<I_M_InOut> retrieveAllInOuts(final I_EDI_Desadv desadv)
+	{
+		return desadvDAO.retrieveAllInOuts(desadv);
+	}
 }

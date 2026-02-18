@@ -45,7 +45,6 @@ import org.adempiere.ad.table.api.AdTableAndClientId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
@@ -229,14 +228,21 @@ public class ExternalSystemScriptedExportConversionService
 		}
 	}
 
-	public void executeInvokeScriptedExportConversionAction(
+	public void executeInvokeScriptedExportConversionActionAfterCommit(
+			@NonNull final ExternalSystemScriptedExportConversionConfig config,
+			final int recordId)
+	{
+		trxManager.runAfterCommit(() -> executeInvokeScriptedExportConversionAction(config, recordId));
+	}
+
+	public List<Exception> executeInvokeScriptedExportConversionAction(
 			@NonNull final ExternalSystemScriptedExportConversionConfig config,
 			final int recordId)
 	{
 		final int configTableId = tableDAO.retrieveTableId(I_ExternalSystem_Config_ScriptedExportConversion.Table_Name);
 		try
 		{
-			trxManager.runAfterCommit(() -> ProcessInfo.builder()
+			ProcessInfo.builder()
 					.setCtx(getCtx())
 					.setRecord(configTableId, config.getId().getRepoId())
 					.setAD_ProcessByClassname(InvokeScriptedExportConversionAction.class.getName())
@@ -244,21 +250,21 @@ public class ExternalSystemScriptedExportConversionService
 					.addParameter(PARAM_CHILD_CONFIG_ID, config.getId().getRepoId())
 					.addParameter(PARAM_Record_ID, recordId)
 					.buildAndPrepareExecution()
-					.executeSync());
+					.executeSync();
 		}
 		catch (final Exception e)
 		{
 			log.warn("{} process failed for Config ID {}, Record ID: {}",
 					InvokeScriptedExportConversionAction.class.getName(),
 					config.getId(), recordId, e);
+			return Collections.singletonList(e);
 		}
+		return Collections.emptyList();
 	}
 
 	public List<ExternalSystemScriptedExportConversionConfig> getByParentConfigIdAndTableAndClientId(@NonNull final ExternalSystemParentConfigId parentConfigId,
-																									 @NonNull final String tableName,
-																									 @NonNull final ClientId clientId)
+																									 @NonNull final AdTableAndClientId tableAndClientId)
 	{
-		final AdTableAndClientId tableAndClientId = AdTableAndClientId.of(tableDAO.retrieveAdTableId(tableName), clientId);
 		return externalSystemScriptedExportConversionRepository.getByParentConfigId(parentConfigId).stream()
 				.filter(config -> config.isMatching(tableAndClientId))
 				.collect(ImmutableList.toImmutableList());

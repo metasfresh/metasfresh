@@ -55,4 +55,14 @@ public class EDIBPartnerConfig
 	{
 		return isEdiDesadvRecipient && ediDesadvSendingMode.isExternalSystem() && ediDesadvExternalSystemParentConfigId != null;
 	}
+
+	public boolean isINVOICReplicationInterfaceRecipient()
+	{
+		return isEdiInvoicRecipient && ediDesadvSendingMode.isReplicationInterface();
+	}
+
+	public boolean isINVOICExternalSystemRecipient()
+	{
+		return isEdiInvoicRecipient && ediInvoicSendingMode.isExternalSystem() && ediInvoicExternalSystemParentConfigId != null;
+	}
 }
