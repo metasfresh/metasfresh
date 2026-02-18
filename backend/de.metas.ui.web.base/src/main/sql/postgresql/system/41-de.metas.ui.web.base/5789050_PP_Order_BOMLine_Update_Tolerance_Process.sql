@@ -275,3 +275,8 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,774166,0,53039,550061,648132,'F',TO_TIMESTAMP('2026-02-18 14:33:45.522000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','N','N','N',0,'Toleranz geändert von',70,0,0,TO_TIMESTAMP('2026-02-18 14:33:45.522000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
+-- Process: PP_Order_BOMLine_Update_Tolerance(de.metas.ui.web.pporder.process.PP_Order_BOMLine_Update_Tolerance)
+-- ParameterName: IssuingTolerance_ValueType
+-- 2026-02-18T14:48:38.525Z
+UPDATE AD_Process_Para SET IsMandatory='Y',Updated=TO_TIMESTAMP('2026-02-18 14:48:38.525000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_Para_ID=543118
+;
