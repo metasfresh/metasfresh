@@ -166,7 +166,7 @@ public class ReconcilePaymentsCommandTest
 		euroOrgBankAccountId = createOrgBankAccount(euroCurrencyId);
 		customerId = createCustomer();
 
-		AdempiereTestHelper.createAcctSchema(euroCurrencyId);
+		AdempiereTestHelper.createAcctSchemaAndClientInfo(euroCurrencyId);
 	}
 
 	private void executeReconcilePaymentsCommand(final ReconcilePaymentsRequest request)

@@ -137,7 +137,7 @@ public class BankStatementDocumentHandlerTest
 	{
 		euroCurrencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 		euroOrgBankAccountId = createOrgBankAccount(euroCurrencyId);
-		AdempiereTestHelper.createAcctSchema(euroCurrencyId);
+		AdempiereTestHelper.createAcctSchemaAndClientInfo(euroCurrencyId);
 	}
 
 	private BPartnerId createCustomer()

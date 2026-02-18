@@ -91,7 +91,7 @@ public class PaymentBLTest
 		currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 		currencyCHF = PlainCurrencyDAO.createCurrencyId(CurrencyCode.CHF);
 
-		AdempiereTestHelper.createAcctSchema(currencyEUR);
+		AdempiereTestHelper.createAcctSchemaAndClientInfo(currencyEUR);
 	}
 
 	@Nested

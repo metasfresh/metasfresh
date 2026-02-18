@@ -285,18 +285,20 @@ public class AdempiereTestHelper
 	}
 
 	/**
-	 * Creates a complete accounting schema setup for testing, including:
-	 * - Cost type
-	 * - Accounting schema with costing configuration
-	 * - GL accounts (intercompany, income summary, retained earnings, etc.)
-	 * - Default accounts (realized/unrealized gain/loss)
-	 * - Schema element for accounts
-	 * - Links the accounting schema to ClientInfo as primary schema
+	 * Creates a complete accounting schema setup for testing and links it to ClientInfo as the primary schema.
+	 *
+	 * This method:
+	 * - Creates a cost type
+	 * - Creates an accounting schema with costing configuration
+	 * - Sets up GL accounts (intercompany, income summary, retained earnings, etc.)
+	 * - Creates default accounts (realized/unrealized gain/loss)
+	 * - Creates schema element for accounts
+	 * - Creates ClientInfo and links this accounting schema as primary
 	 *
 	 * @param currencyId the currency to use for the accounting schema
 	 * @return the ID of the created accounting schema
 	 */
-	public static AcctSchemaId createAcctSchema(@NonNull final CurrencyId currencyId)
+	public static AcctSchemaId createAcctSchemaAndClientInfo(@NonNull final CurrencyId currencyId)
 	{
 		final I_M_CostType costTypeRecord = newInstance(I_M_CostType.class);
 		costTypeRecord.setName("Test CostType");
@@ -337,7 +339,6 @@ public class AdempiereTestHelper
 		save(acctSchemaElementRecord);
 
 		// Update the existing ClientInfo record to link this accounting schema as primary
-
 		final I_AD_ClientInfo clientInfoRecord = newInstance(I_AD_ClientInfo.class);
 		clientInfoRecord.setC_AcctSchema1_ID(schema.getC_AcctSchema_ID());
 		save(clientInfoRecord);
