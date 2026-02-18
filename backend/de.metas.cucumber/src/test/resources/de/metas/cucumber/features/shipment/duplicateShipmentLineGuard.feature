@@ -144,9 +144,11 @@ Feature: duplicate shipment line guard prevents duplicate generation from race c
 
     # Poll: find the SAME M_InOut from the first generation (no new one created).
     # If a duplicate were created, this step would throw "More than one M_InOut found".
+    # We reuse identifier ship_A because it's the same record — using a different identifier
+    # would fail with "already mapped to ship_A".
     And after not more than 30s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
-      | s_s_A                            | ship_A_check          | DR            |
+      | s_s_A                            | ship_A                | DR            |
 
     # Validate: still exactly 1 QtyPicked record (guard prevented duplicate)
     # If the guard failed, there would be 2 records and this step would fail on count mismatch.
