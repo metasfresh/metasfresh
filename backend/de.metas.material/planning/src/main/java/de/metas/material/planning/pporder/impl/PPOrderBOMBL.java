@@ -94,6 +94,11 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
+	public static PPOrderBOMBL newInstanceForUnitTesting()
+	{
+		return new PPOrderBOMBL();
+	}
+
 	@Override
 	public I_PP_Order_BOMLine getOrderBOMLineById(@NonNull final PPOrderBOMLineId orderBOMLineId)
 	{
@@ -750,6 +755,6 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 			@Nullable final IssuingToleranceSpec toleranceSpec)
 	{
 		updateOrderBOMLine_from_IssuingToleranceSpec(orderBOMLine, toleranceSpec);
-		orderBOMsRepo.save(orderBOMLine);
+		// NOTE: Does NOT save - caller is responsible for saving
 	}
 }

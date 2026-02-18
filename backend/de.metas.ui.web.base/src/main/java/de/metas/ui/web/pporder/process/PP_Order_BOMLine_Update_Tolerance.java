@@ -40,6 +40,7 @@ import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
@@ -120,12 +121,14 @@ public class PP_Order_BOMLine_Update_Tolerance extends JavaProcess implements IP
 			issuingToleranceSpec.convertQty(qty -> uomConversionService.convertQuantityTo(qty, uomConversionContext, uom));
 		}
 
+		// Update tolerance spec via BL
 		ppOrderBOMBL.updateIssuingToleranceSpec(bomLine, issuingToleranceSpec);
 
 		// Update audit fields
 		bomLine.setToleranceChanged(SystemTime.asTimestamp());
 		bomLine.setToleranceChangedBy_ID(getAD_User_ID());
 
+		// Save all changes
 		ppOrderBOMDAO.save(bomLine);
 
 		return MSG_OK;
@@ -138,6 +141,7 @@ public class PP_Order_BOMLine_Update_Tolerance extends JavaProcess implements IP
 
 		if (isEnforceIssuingTolerance)
 		{
+			Check.assumeNotNull(issuingTolerance_ValueType, "issuingTolerance_ValueType not null");
 			if (issuingTolerance_ValueType.isQuantity())
 			{
 				issuingToleranceSpec = IssuingToleranceSpec.ofQuantity(Quantitys.of(issuingTolerance_Qty, issuingTolerance_UOM_ID));

@@ -25,7 +25,6 @@ package de.metas.material.planning.pporder;
 import com.google.common.collect.ImmutableSet;
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.material.planning.exception.MrpException;
-import de.metas.product.IssuingToleranceSpec;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
@@ -41,7 +40,6 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -77,9 +75,11 @@ public interface IPPOrderBOMBL extends ISingletonService
 
 	I_C_UOM getBOMLineUOM(I_PP_Order_BOMLine bomLine);
 
-	@NonNull UomId getBOMLineUOMId(@NonNull I_PP_Order_BOMLine bomLine);
+	@NonNull
+	UomId getBOMLineUOMId(@NonNull I_PP_Order_BOMLine bomLine);
 
-	@NonNull UomId getBOMLineUOMId(PPOrderBOMLineId orderBOMLineId);
+	@NonNull
+	UomId getBOMLineUOMId(PPOrderBOMLineId orderBOMLineId);
 
 	OrderBOMLineQuantities getQuantities(I_PP_Order_BOMLine orderBOMLine);
 
@@ -159,7 +159,14 @@ public interface IPPOrderBOMBL extends ISingletonService
 
 	ImmutableSet<WarehouseId> getIssueFromWarehouseIds(WarehouseId ppOrderWarehouseId);
 
+	/**
+	 * Updates the issuing tolerance specification for a BOM line.
+	 * This method does NOT save the BOM line - caller is responsible for saving.
+	 *
+	 * @param orderBOMLine the BOM line to update
+	 * @param toleranceSpec the tolerance specification to apply, or null to clear tolerance
+	 */
 	void updateIssuingToleranceSpec(
-			@NonNull final I_PP_Order_BOMLine orderBOMLine,
-			@Nullable IssuingToleranceSpec toleranceSpec);
+			@NonNull I_PP_Order_BOMLine orderBOMLine,
+			@javax.annotation.Nullable de.metas.product.IssuingToleranceSpec toleranceSpec);
 }
