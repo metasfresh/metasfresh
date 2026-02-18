@@ -22,6 +22,7 @@
 
 package de.metas.ui.web.pporder.process;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.DocStatus;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
@@ -51,7 +52,6 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 
 import static org.eevolution.model.I_PP_Order_BOMLine.COLUMNNAME_IsEnforceIssuingTolerance;
 
@@ -108,19 +108,7 @@ public class PP_Order_BOMLine_Update_Tolerance extends JavaProcess implements IP
 		// Update tolerance fields
 		bomLine.setIsEnforceIssuingTolerance(isEnforceIssuingTolerance);
 
-		IssuingToleranceSpec issuingToleranceSpec = null;
-
-		if (isEnforceIssuingTolerance)
-		{
-			if (issuingTolerance_ValueType.isQuantity())
-			{
-				issuingToleranceSpec = IssuingToleranceSpec.ofQuantity(Quantitys.of(issuingTolerance_Qty, issuingTolerance_UOM_ID));
-			}
-			else if (issuingTolerance_ValueType.isPercentage())
-			{
-				issuingToleranceSpec = IssuingToleranceSpec.ofPercent(Percent.of(issuingTolerance_Perc));
-			}
-		}
+		final IssuingToleranceSpec issuingToleranceSpec = getIssuingToleranceSpec();
 
 		//
 		// Validate new Issuing Tolerance
@@ -135,12 +123,31 @@ public class PP_Order_BOMLine_Update_Tolerance extends JavaProcess implements IP
 		ppOrderBOMBL.updateIssuingToleranceSpec(bomLine, issuingToleranceSpec);
 
 		// Update audit fields
-		bomLine.setToleranceChanged(new Timestamp(System.currentTimeMillis()));
+		bomLine.setToleranceChanged(SystemTime.asTimestamp());
 		bomLine.setToleranceChangedBy_ID(getAD_User_ID());
 
 		ppOrderBOMDAO.save(bomLine);
 
 		return MSG_OK;
+	}
+
+	@Nullable
+	private IssuingToleranceSpec getIssuingToleranceSpec()
+	{
+		IssuingToleranceSpec issuingToleranceSpec = null;
+
+		if (isEnforceIssuingTolerance)
+		{
+			if (issuingTolerance_ValueType.isQuantity())
+			{
+				issuingToleranceSpec = IssuingToleranceSpec.ofQuantity(Quantitys.of(issuingTolerance_Qty, issuingTolerance_UOM_ID));
+			}
+			else if (issuingTolerance_ValueType.isPercentage())
+			{
+				issuingToleranceSpec = IssuingToleranceSpec.ofPercent(Percent.of(issuingTolerance_Perc));
+			}
+		}
+		return issuingToleranceSpec;
 	}
 
 	@Nullable
