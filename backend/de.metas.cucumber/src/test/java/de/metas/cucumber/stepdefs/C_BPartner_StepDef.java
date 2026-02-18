@@ -27,6 +27,8 @@ import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.BPartnerStats;
+import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
@@ -125,6 +127,7 @@ public class C_BPartner_StepDef
 	@NonNull private final C_Aggregation_StepDefData aggregationTable;
 	@NonNull private final TestContext restTestContext;
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
@@ -328,6 +331,12 @@ public class C_BPartner_StepDef
 		final boolean alsoCreateLocation = InterfaceWrapperHelper.isNew(bPartnerRecord) && addDefaultLocationIfNewBPartner;
 
 		InterfaceWrapperHelper.saveRecord(bPartnerRecord);
+
+		// Automatically set SOCreditStatus=NoCreditCheck for all test BPartners to prevent
+		// credit stop issues in CI environments where the seed DB may have strict credit settings.
+		// See me03#28143.
+		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(bPartnerRecord);
+		bpartnerStatsDAO.setSOCreditStatus(stats, "X"); // X = No Credit Check
 
 		if (alsoCreateLocation)
 		{

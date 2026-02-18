@@ -31,9 +31,6 @@ Feature: duplicate shipment line guard prevents duplicate generation from race c
     And metasfresh contains C_BPartner_Locations:
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | loc_A      | 0123456789101 | endcustomer_A            | Y                   | Y                   |
-    And upsert C_BPartner_Stats
-      | C_BPartner_ID.Identifier | SOCreditStatus.Code |
-      | endcustomer_A            | X                   |
 
     # Create stock via inventory
     And metasfresh contains M_Inventories:
@@ -101,9 +98,6 @@ Feature: duplicate shipment line guard prevents duplicate generation from race c
     And metasfresh contains C_BPartner_Locations:
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | loc_A      | 0123456789102 | endcustomer_A            | Y                   | Y                   |
-    And upsert C_BPartner_Stats
-      | C_BPartner_ID.Identifier | SOCreditStatus.Code |
-      | endcustomer_A            | X                   |
 
     # Create stock via inventory
     And metasfresh contains M_Inventories:
@@ -185,9 +179,6 @@ Feature: duplicate shipment line guard prevents duplicate generation from race c
     And metasfresh contains C_BPartner_Locations:
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | loc_A      | 0123456789103 | endcustomer_A            | Y                   | Y                   |
-    And upsert C_BPartner_Stats
-      | C_BPartner_ID.Identifier | SOCreditStatus.Code |
-      | endcustomer_A            | X                   |
 
     # Create stock via inventory
     And metasfresh contains M_Inventories:
