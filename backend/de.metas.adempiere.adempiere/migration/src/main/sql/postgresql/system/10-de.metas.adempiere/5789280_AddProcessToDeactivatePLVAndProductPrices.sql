@@ -137,6 +137,39 @@ Example: 30 means PLVs from 30 days ago or earlier will be deactivated (only if 
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(584543,'de_DE')
 ;
 
+-- Value: deactivate_old_plv_productprices
+-- Classname: de.metas.process.ExecuteUpdateSQL
+-- 2026-02-18T18:59:30.439Z
+UPDATE AD_Process SET SQLStatement='SELECT deactivate_old_plv_productprices(p_m_pricingsystem_id => @M_PricingSystem_ID/NULL@,
+                                        p_m_pricelist_id => @M_PriceList_ID/NULL@,
+                                        p_basepricelist_id => @BasePriceList_ID/NULL@,
+                                        p_base_plv_pricelist_id => @M_Pricelist_Version_Base_ID/NULL@,
+                                        p_issotrx => @IsSOTrx/NULL@,
+                                        p_valid_days_back => @ValidDaysBack/NULL@)
+;',Updated=TO_TIMESTAMP('2026-02-18 18:59:30.439000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_ID=585572
+;
+
+
+-- Value: deactivate_old_plv_productprices
+-- Classname: de.metas.process.ExecuteUpdateSQL
+-- 2026-02-18T19:15:52.191Z
+UPDATE AD_Process SET SQLStatement='SELECT deactivate_old_plv_productprices(p_m_pricingsystem_id => @M_PricingSystem_ID/NULL@, p_m_pricelist_id => @M_PriceList_ID/NULL@, p_basepricelist_id => @BasePriceList_ID/NULL@, p_base_plv_pricelist_id => @M_Pricelist_Version_Base_ID/NULL@, p_issotrx => @IsSOTrx/NULL@, p_valid_days_back => @ValidDaysBack/NULL@)
+;',Updated=TO_TIMESTAMP('2026-02-18 19:15:52.191000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_ID=585572
+;
+
+-- Process: deactivate_old_plv_productprices(de.metas.process.ExecuteUpdateSQL)
+-- ParameterName: IsSOTrx
+-- 2026-02-18T19:18:41.585Z
+UPDATE AD_Process_Para SET AD_Reference_Value_ID=NULL,Updated=TO_TIMESTAMP('2026-02-18 19:18:41.585000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_Para_ID=543126
+;
+
+-- Process: deactivate_old_plv_productprices(de.metas.process.ExecuteUpdateSQL)
+-- ParameterName: IsSOTrx
+-- 2026-02-18T19:18:44.385Z
+UPDATE AD_Process_Para SET AD_Reference_Value_ID=319,Updated=TO_TIMESTAMP('2026-02-18 19:18:44.385000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_Para_ID=543126
+;
+
+
 
 ----------------------------- Add scheduler  -----------------------
 
