@@ -55,8 +55,17 @@ DECLARE
     v_sql                TEXT;
     v_summary            TEXT;
 BEGIN
+    IF p_issotrx IS NOT NULL AND p_issotrx NOT IN ('Y', 'N') THEN
+        RAISE EXCEPTION 'Invalid p_issotrx: %. Must be Y or N', p_issotrx;
+    END IF;
+
+    IF p_valid_days_back IS NOT NULL AND p_valid_days_back < 0 THEN
+        RAISE EXCEPTION 'Invalid p_valid_days_back: %. Must be > 0', p_valid_days_back;
+    END IF;
+
     -- Calculate cutoff date (INCLUSIVE: X days ago or older)
     v_cutoff_date := NOW() - (p_valid_days_back || ' days')::INTERVAL;
+
 
     RAISE NOTICE '========================================================';
     RAISE NOTICE 'Starting PLV Deactivation Process';
@@ -141,6 +150,9 @@ BEGIN
     RAISE NOTICE 'Creating backups...';
 
     -- Backup PLVs
+    -- Ensure backup schema exists
+    CREATE SCHEMA IF NOT EXISTS backup;
+
     v_plv_backup_table := backup_records_selective(
             'public',
             'm_pricelist_version',
@@ -164,8 +176,11 @@ BEGIN
 
     UPDATE m_pricelist_version
     SET isactive = 'N',
-        updated  = NOW()
+        updated = NOW(),
+        updatedby = 99
     WHERE m_pricelist_version_id = ANY (v_plv_ids);
+
+-- Same for m_productprice UPDATE
 
     RAISE NOTICE 'Deactivated % Price List Version(s)', v_plv_count;
 
@@ -175,7 +190,8 @@ BEGIN
 
         UPDATE m_productprice
         SET isactive = 'N',
-            updated  = NOW()
+            updated  = NOW(),
+            updatedby = 99
         WHERE m_productprice_id = ANY (v_productprice_ids);
 
         RAISE NOTICE 'Deactivated % Product Price(s)', v_productprice_count;
