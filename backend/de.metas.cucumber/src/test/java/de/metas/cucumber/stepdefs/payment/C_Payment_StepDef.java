@@ -68,7 +68,7 @@ import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Payment_ID;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_C_DocType_ID;
@@ -290,7 +290,15 @@ public class C_Payment_StepDef
 		payment.setPayAmt(paymentAmount);
 		payment.setC_Currency_ID(currencyId.getRepoId());
 		payment.setC_DocType_ID(docTypeId.getRepoId());
-		payment.setDateTrx(TimeUtil.asTimestamp(LocalDate.now()));
+		final LocalDate dateTrx = DataTableUtil.extractLocalDateOrNullForColumnName(row, "OPT." + I_C_Payment.COLUMNNAME_DateTrx);
+		payment.setDateTrx(TimeUtil.asTimestamp(dateTrx != null ? dateTrx : LocalDate.now()));
+
+		final LocalDate dateAcct = DataTableUtil.extractLocalDateOrNullForColumnName(row, "OPT." + I_C_Payment.COLUMNNAME_DateAcct);
+		if (dateAcct != null)
+		{
+			payment.setDateAcct(TimeUtil.asTimestamp(dateAcct));
+		}
+
 		payment.setC_BP_BankAccount_ID(bpBankAccount.getC_BP_BankAccount_ID());
 		payment.setIsReceipt(isReceipt);
 		payment.setIsAutoAllocateAvailableAmt(false);

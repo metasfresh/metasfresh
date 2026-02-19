@@ -179,6 +179,7 @@ public class PaymentAllocationService
 				.openAmt(openAmt)
 				.amountToAllocate(openAmt)
 				.dateTrx(TimeUtil.asLocalDate(payment.getDateTrx(), timeZone))
+				.dateAcct(TimeUtil.asLocalDate(payment.getDateAcct(), timeZone))
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(payment.getAD_Client_ID(), payment.getAD_Org_ID()))
 				.paymentCurrencyContext(PaymentCurrencyContext.ofPaymentRecord(payment))
 				.build();
@@ -260,9 +261,10 @@ public class PaymentAllocationService
 										   .convertToRealAmounts(amtMultiplier))
 				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
 				.date(paymentAllocationPayableItem.getDateInvoiced())
+				.dateAcct(paymentAllocationPayableItem.getDateAcct())
 				.clientAndOrgId(paymentAllocationPayableItem.getClientAndOrgId())
 				//.creditMemo(paymentAllocationPayableItem.isInvoiceIsCreditMemo()) // we don't want the credit memo to be wrapped as IPaymentDocument
-				.allowAllocateAgainstDifferentSignumPayment(negateAmounts) // we want the invoice with negative amount to be allocated against the payment with positive amount. the credit-memo and the payment need to be added up in a way 
+				.allowAllocateAgainstDifferentSignumPayment(negateAmounts) // we want the invoice with negative amount to be allocated against the payment with positive amount. the credit-memo and the payment need to be added up in a way
 				.build();
 	}
 

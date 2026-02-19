@@ -59,7 +59,7 @@ import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Invoice_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Payment_ID;
 
@@ -169,6 +169,7 @@ public class AllocatePayments_StepDef
 				.creditMemo(invoiceToAllocate.getDocBaseType().isCreditMemo())
 				.openAmt(invoiceOpenMoneyAmt.negateIf(!invoice.isSOTrx()))
 				.date(invoiceToAllocate.getDateInvoiced())
+				.dateAcct(invoiceToAllocate.getDateAcct())
 				.clientAndOrgId(invoiceToAllocate.getClientAndOrgId())
 				.currencyConversionTypeId(invoiceToAllocate.getCurrencyConversionTypeId())
 				.amountsToAllocate(AllocationAmounts.builder()
@@ -216,6 +217,7 @@ public class AllocatePayments_StepDef
 				.openAmt(openAmt)
 				.amountToAllocate(openAmt)
 				.dateTrx(paymentToAllocate.getDateTrx())
+				.dateAcct(paymentToAllocate.getDateAcct())
 				.clientAndOrgId(paymentToAllocate.getClientAndOrgId())
 				.paymentCurrencyContext(paymentToAllocate.getPaymentCurrencyContext())
 				.build();

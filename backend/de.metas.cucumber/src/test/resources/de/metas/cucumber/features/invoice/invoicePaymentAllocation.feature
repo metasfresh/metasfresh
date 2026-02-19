@@ -690,3 +690,35 @@ Feature: invoice payment allocation
       | OPT.C_Payment_ID.Identifier | OPT.Amount | OPT.OverUnderAmt |
       | payment_210_1               | -5         | -4               |
       | payment_210_2               | 5          | 0                |
+
+  @Id:S0132_250
+  @from:cucumber
+  Scenario: allocation DateAcct uses accounting dates, not document dates
+
+    Given metasfresh contains M_Products:
+      | Identifier  | Name        |
+      | product_250 | product_250 |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_250     | paymentAllocPLV                   | product_250             | 100.00   | PCE               | Normal                        |
+
+    And metasfresh contains C_Invoice:
+      | Identifier | C_BPartner_ID.Identifier | C_DocTypeTarget_ID.Name | DateInvoiced | OPT.DateAcct | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | inv_250    | bpartner_1               | Ausgangsrechnung        | 2026-01-08   | 2025-12-31   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 |
+      | il_250     | inv_250                 | product_250             | 1           | PCE               |
+    And the invoice identified by inv_250 is completed
+
+    And metasfresh contains C_Payment
+      | Identifier | C_BPartner_ID.Identifier | PayAmt | C_Currency.ISO_Code | C_DocType_ID.Name | IsReceipt | C_BP_BankAccount.Identifier | OPT.DateTrx   | OPT.DateAcct |
+      | pay_250    | bpartner_1               | 100.00 | EUR                 | Zahlungseingang   | true      | bp_bank_account1            | 2025-12-31     | 2025-12-31   |
+    And the payment identified by pay_250 is completed
+
+    And allocate payments to invoices
+      | OPT.C_Invoice_ID.Identifier | OPT.C_Payment_ID.Identifier |
+      | inv_250                     | pay_250                     |
+
+    Then validate C_AllocationHdr for invoice and payment
+      | C_Invoice_ID.Identifier | C_Payment_ID.Identifier | DateAcct   | DateTrx    |
+      | inv_250                 | pay_250                 | 2025-12-31 | 2026-01-08 |

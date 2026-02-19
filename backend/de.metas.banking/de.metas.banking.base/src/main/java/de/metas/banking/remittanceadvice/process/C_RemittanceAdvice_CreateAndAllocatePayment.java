@@ -317,6 +317,7 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 				.documentNo(invoice.getDocumentNo())
 				.soTrx(soTrx)
 				.dateInvoiced(TimeUtil.asLocalDate(invoice.getDateInvoiced(), timeZone))
+				.dateAcct(TimeUtil.asLocalDate(invoice.getDateAcct(), timeZone))
 				.build();
 	}
 

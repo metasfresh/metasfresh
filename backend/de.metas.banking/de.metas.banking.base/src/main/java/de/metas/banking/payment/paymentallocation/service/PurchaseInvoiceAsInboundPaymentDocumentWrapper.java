@@ -162,6 +162,12 @@ final class PurchaseInvoiceAsInboundPaymentDocumentWrapper implements IPaymentDo
 	}
 
 	@Override
+	public LocalDate getDateAcct()
+	{
+		return purchaseInvoicePayableDoc.getDateAcct();
+	}
+
+	@Override
 	public PaymentCurrencyContext getPaymentCurrencyContext()
 	{
 		return PaymentCurrencyContext.builder()

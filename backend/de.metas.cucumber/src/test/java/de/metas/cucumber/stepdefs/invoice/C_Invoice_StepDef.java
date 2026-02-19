@@ -779,6 +779,13 @@ public class C_Invoice_StepDef
 		invoice.setC_DocTypeTarget_ID(docTypeId.getRepoId());
 		invoice.setC_DocType_ID(docTypeId.getRepoId());
 		invoice.setDateInvoiced(dateInvoiced);
+
+		final Timestamp dateAcct = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + COLUMNNAME_DateAcct);
+		if (dateAcct != null)
+		{
+			invoice.setDateAcct(dateAcct);
+		}
+
 		invoice.setIsSOTrx(soTrx);
 		invoice.setC_ConversionType_ID(conversionTypeId.getRepoId());
 		invoice.setC_Currency_ID(currencyId.getRepoId());

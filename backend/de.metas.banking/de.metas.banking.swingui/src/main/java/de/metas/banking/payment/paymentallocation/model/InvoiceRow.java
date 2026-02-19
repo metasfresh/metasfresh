@@ -547,6 +547,8 @@ public final class InvoiceRow extends AbstractAllocableDocRow implements IInvoic
 						.discountAmt(Money.of(invoiceRow.getDiscount_APAdjusted(), currencyId))
 						.writeOffAmt(Money.of(invoiceRow.getWriteOffAmt_APAdjusted(), currencyId))
 						.build())
+				.date(TimeUtil.asLocalDate(invoiceRow.getDocumentDate()))
+				.dateAcct(TimeUtil.asLocalDate(invoiceRow.getDateAcct()))
 				//
 				.build();
 	}
