@@ -70,6 +70,9 @@ misc/services/camel/de-metas-camel-shipping/tmp/
 .github/merge_to_master
 .github/integrate
 
+# workspace-local Maven repository
+.m2-local/
+
 # claude related
 .claude
 **/CLAUDE.md
