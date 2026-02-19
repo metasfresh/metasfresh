@@ -60,6 +60,7 @@ public class EDIBPartnerConfigRepository
 
 	private final CCache<Integer, EDIBPartnerConfigMap> cache = CCache.<Integer, EDIBPartnerConfigMap>builder()
 			.tableName(I_C_BPartner.Table_Name)
+			.maximumSize(1)
 			.build();
 
 	@Nullable

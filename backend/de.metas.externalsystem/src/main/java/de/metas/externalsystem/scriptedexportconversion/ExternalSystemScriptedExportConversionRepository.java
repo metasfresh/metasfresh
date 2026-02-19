@@ -37,7 +37,6 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConve
 import de.metas.externalsystem.outboundendpoint.ExternalSystemOutboundEndpointId;
 import de.metas.process.AdProcessId;
 import de.metas.util.Services;
-import de.metas.util.lang.SeqNo;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
