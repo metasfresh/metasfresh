@@ -708,6 +708,14 @@ public class CalloutInvoice extends CalloutEngine
 		 * /*
 		 */
 
+		if(columnName.equals(I_C_InvoiceLine.COLUMNNAME_PriceEntered)
+				|| de.metas.adempiere.model.I_C_InvoiceLine.COLUMNNAME_Discount.equals(columnName))
+		{
+			invoiceLineBL.recomputePriceActual(invoiceLine);
+			priceActual = invoiceLine.getPriceActual();
+			invoiceLine.setPriceActual(priceActual);
+		}
+
 		// Check PriceLimit
 		final boolean enforcePriceLimit = calloutField.getContextAsBoolean(CTX_EnforcePriceLimit);
 
@@ -744,14 +752,6 @@ public class CalloutInvoice extends CalloutEngine
 			// Discount = Discount.setScale(2, BigDecimal.ROUND_HALF_UP);
 			// // mTab.setValue ("Discount", Discount);
 			// }
-		}
-
-		if(columnName.equals(I_C_InvoiceLine.COLUMNNAME_PriceEntered)
-				|| de.metas.adempiere.model.I_C_InvoiceLine.COLUMNNAME_Discount.equals(columnName))
-		{
-			invoiceLineBL.recomputePriceActual(invoiceLine);
-			priceActual = invoiceLine.getPriceActual();
-			invoiceLine.setPriceActual(priceActual);
 		}
 
 		// Line Net Amt
