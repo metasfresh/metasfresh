@@ -72,6 +72,11 @@ public class C_InvoiceLine
 
 		invoiceLineBL.setQtyInvoicedInPriceUOM(invoiceLine);
 
+		if(InterfaceWrapperHelper.isValueChanged(invoiceLine, I_C_InvoiceLine.COLUMNNAME_PriceEntered))
+		{
+			invoiceLine.setPriceActual(invoiceLine.getPriceEntered());
+		}
+
 		invoiceBL.setLineNetAmt(invoiceLine);
 		invoiceBL.setTaxAmt(invoiceLine);
 	}

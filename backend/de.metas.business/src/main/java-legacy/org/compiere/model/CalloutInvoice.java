@@ -744,6 +744,12 @@ public class CalloutInvoice extends CalloutEngine
 			// }
 		}
 
+		if(columnName.equals("PriceEntered"))
+		{
+			priceActual = priceEntered;
+			invoiceLine.setPriceActual(priceActual);
+		}
+
 		// Line Net Amt
 		final CurrencyPrecision netPrecision = Services.get(IPriceListBL.class).getAmountPrecision(priceListId);
 		BigDecimal lineNetAmt = netPrecision.roundIfNeeded(qtyInvoiced.multiply(priceActual));
