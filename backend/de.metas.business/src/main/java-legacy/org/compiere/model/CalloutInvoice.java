@@ -708,7 +708,7 @@ public class CalloutInvoice extends CalloutEngine
 		 * /*
 		 */
 
-		if(columnName.equals(I_C_InvoiceLine.COLUMNNAME_PriceEntered)
+		if((I_C_InvoiceLine.COLUMNNAME_PriceEntered).equals(columnName)
 				|| de.metas.adempiere.model.I_C_InvoiceLine.COLUMNNAME_Discount.equals(columnName))
 		{
 			invoiceLineBL.recomputePriceActual(invoiceLine);
