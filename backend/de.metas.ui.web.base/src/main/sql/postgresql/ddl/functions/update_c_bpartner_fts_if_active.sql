@@ -58,8 +58,10 @@ BEGIN
         FOR EACH ROW
     EXECUTE PROCEDURE s_externalreference_fts_trigger_function();
 
-    TRUNCATE TABLE C_BPartner_FTS;
+    -- Reindex all (UPSERT handles existing records without ACCESS EXCLUSIVE lock)
     PERFORM ops.reindex_c_bpartner_fts();
+    -- Clean up stale FTS entries whose source records no longer exist
+    DELETE FROM C_BPartner_FTS WHERE NOT EXISTS (SELECT 1 FROM C_BPartner WHERE C_BPartner.C_BPartner_ID = C_BPartner_FTS.C_BPartner_ID);
     ANALYSE C_BPartner_FTS;
 END;
 $$

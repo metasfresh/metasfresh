@@ -25,9 +25,24 @@ CREATE OR REPLACE FUNCTION ops.update_all_fts_if_active()
 AS
 $$
 BEGIN
-    PERFORM ops.update_c_bpartner_fts_if_active();
-    PERFORM ops.update_c_invoice_fts_if_active();
-    PERFORM ops.update_m_product_fts_if_active();
+    -- Each entity reindex is independent; partial failure should not roll back the others.
+    BEGIN
+        PERFORM ops.update_c_bpartner_fts_if_active();
+    EXCEPTION
+        WHEN OTHERS THEN RAISE WARNING 'update_c_bpartner_fts_if_active failed: %', SQLERRM;
+    END;
+
+    BEGIN
+        PERFORM ops.update_c_invoice_fts_if_active();
+    EXCEPTION
+        WHEN OTHERS THEN RAISE WARNING 'update_c_invoice_fts_if_active failed: %', SQLERRM;
+    END;
+
+    BEGIN
+        PERFORM ops.update_m_product_fts_if_active();
+    EXCEPTION
+        WHEN OTHERS THEN RAISE WARNING 'update_m_product_fts_if_active failed: %', SQLERRM;
+    END;
 END;
 $$
     LANGUAGE plpgsql

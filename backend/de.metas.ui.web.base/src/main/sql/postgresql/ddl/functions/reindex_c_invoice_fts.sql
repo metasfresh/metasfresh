@@ -54,18 +54,18 @@ WITH InvoiceText AS (
                    SELECT STRING_AGG(ExternalReference, ' ')
                    FROM S_ExternalReference
                    WHERE Type = 'BPartner'
-                     AND referenced_ad_table_id = 291
+                     AND referenced_ad_table_id = get_table_id('C_BPartner')
                      AND record_id = bp.C_BPartner_ID
                ), '')
            ) AS aggregated_text
     FROM C_Invoice i -- Keep joins strictly 1:1 so the CTE yields one row per c_invoice_id!
              JOIN C_BPartner bp ON i.c_bpartner_id = bp.c_bpartner_id
-             JOIN c_location l ON i.c_bpartner_location_value_id = l.c_location_id
-             JOIN c_country c ON l.c_country_id = c.c_country_id
+             LEFT JOIN c_location l ON i.c_bpartner_location_value_id = l.c_location_id
+             LEFT JOIN c_country c ON l.c_country_id = c.c_country_id
              LEFT JOIN AD_User u ON i.ad_user_id = u.ad_user_id
-             JOIN c_doctype dt ON i.c_doctypetarget_id = dt.c_doctype_id
+             LEFT JOIN c_doctype dt ON i.c_doctypetarget_id = dt.c_doctype_id
              LEFT JOIN m_warehouse wh ON i.m_warehouse_id = wh.m_warehouse_id
-             JOIN ad_org o ON i.ad_org_id = o.ad_org_id AND o.isactive = 'Y'
+             JOIN ad_org o ON i.ad_org_id = o.ad_org_id
     WHERE (p_c_invoice_id IS NULL OR i.c_invoice_id = p_c_invoice_id)
 )
 

@@ -114,6 +114,16 @@ DELETE FROM AD_Table WHERE AD_Table_ID IN (
   541588   -- TableName: C_BPartner_Adv_Search_v (view)
 );
 
+-- 10c. Restore the DEFERRABLE FK constraints dropped in 10a.
+ALTER TABLE IF EXISTS public.ad_changelog_config
+    ADD CONSTRAINT adtable_adchangelogconfig
+        FOREIGN KEY (ad_table_id) REFERENCES public.ad_table(ad_table_id)
+            DEFERRABLE INITIALLY DEFERRED;
+ALTER TABLE IF EXISTS fix.ad_table_changelog_config_26092025
+    ADD CONSTRAINT adtable_adchangelogconfig
+        FOREIGN KEY (ad_table_id) REFERENCES public.ad_table(ad_table_id)
+            DEFERRABLE INITIALLY DEFERRED;
+
 -- 11. Ref_List entries (2) for ES_FTS_Index_Queue_EventType
 DELETE FROM AD_Ref_List WHERE AD_Ref_List_ID IN (
   542833,  -- Value: "Update"

@@ -37,8 +37,10 @@ BEGIN
         FOR EACH ROW
     EXECUTE PROCEDURE c_invoice_fts_trigger_function();
 
-    TRUNCATE TABLE C_Invoice_FTS;
+    -- Reindex all (UPSERT handles existing records without ACCESS EXCLUSIVE lock)
     PERFORM ops.reindex_c_invoice_fts();
+    -- Clean up stale FTS entries whose source records no longer exist
+    DELETE FROM C_Invoice_FTS WHERE NOT EXISTS (SELECT 1 FROM C_Invoice WHERE C_Invoice.C_Invoice_ID = C_Invoice_FTS.C_Invoice_ID);
     ANALYSE C_Invoice_FTS;
 END;
 $$

@@ -37,8 +37,10 @@ BEGIN
         FOR EACH ROW
     EXECUTE PROCEDURE m_product_fts_trigger_function();
 
-    TRUNCATE TABLE M_Product_FTS;
+    -- Reindex all (UPSERT handles existing records without ACCESS EXCLUSIVE lock)
     PERFORM ops.reindex_m_product_fts();
+    -- Clean up stale FTS entries whose source records no longer exist
+    DELETE FROM M_Product_FTS WHERE NOT EXISTS (SELECT 1 FROM M_Product WHERE M_Product.M_Product_ID = M_Product_FTS.M_Product_ID);
     ANALYSE M_Product_FTS;
 END;
 $$

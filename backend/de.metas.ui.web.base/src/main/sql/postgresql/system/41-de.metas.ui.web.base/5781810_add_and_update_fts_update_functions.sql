@@ -36,8 +36,10 @@ BEGIN
         FOR EACH ROW
     EXECUTE PROCEDURE s_externalreference_fts_trigger_function();
 
-    TRUNCATE TABLE C_BPartner_FTS;
+    -- Reindex all (UPSERT handles existing records without ACCESS EXCLUSIVE lock)
     PERFORM ops.reindex_c_bpartner_fts();
+    -- Clean up stale FTS entries whose source records no longer exist
+    DELETE FROM C_BPartner_FTS WHERE NOT EXISTS (SELECT 1 FROM C_BPartner WHERE C_BPartner.C_BPartner_ID = C_BPartner_FTS.C_BPartner_ID);
     ANALYSE C_BPartner_FTS;
 END;
 $$
@@ -65,8 +67,10 @@ BEGIN
         FOR EACH ROW
     EXECUTE PROCEDURE c_invoice_fts_trigger_function();
 
-    TRUNCATE TABLE C_Invoice_FTS;
+    -- Reindex all (UPSERT handles existing records without ACCESS EXCLUSIVE lock)
     PERFORM ops.reindex_c_invoice_fts();
+    -- Clean up stale FTS entries whose source records no longer exist
+    DELETE FROM C_Invoice_FTS WHERE NOT EXISTS (SELECT 1 FROM C_Invoice WHERE C_Invoice.C_Invoice_ID = C_Invoice_FTS.C_Invoice_ID);
     ANALYSE C_Invoice_FTS;
 END;
 $$
@@ -94,8 +98,10 @@ BEGIN
         FOR EACH ROW
     EXECUTE PROCEDURE m_product_fts_trigger_function();
 
-    TRUNCATE TABLE M_Product_FTS;
+    -- Reindex all (UPSERT handles existing records without ACCESS EXCLUSIVE lock)
     PERFORM ops.reindex_m_product_fts();
+    -- Clean up stale FTS entries whose source records no longer exist
+    DELETE FROM M_Product_FTS WHERE NOT EXISTS (SELECT 1 FROM M_Product WHERE M_Product.M_Product_ID = M_Product_FTS.M_Product_ID);
     ANALYSE M_Product_FTS;
 END;
 $$
@@ -111,9 +117,24 @@ CREATE OR REPLACE FUNCTION ops.update_all_fts_if_active()
 AS
 $$
 BEGIN
-    PERFORM ops.update_c_bpartner_fts_if_active();
-    PERFORM ops.update_c_invoice_fts_if_active();
-    PERFORM ops.update_m_product_fts_if_active();
+    -- Each entity reindex is independent; partial failure should not roll back the others.
+    BEGIN
+        PERFORM ops.update_c_bpartner_fts_if_active();
+    EXCEPTION
+        WHEN OTHERS THEN RAISE WARNING 'update_c_bpartner_fts_if_active failed: %', SQLERRM;
+    END;
+
+    BEGIN
+        PERFORM ops.update_c_invoice_fts_if_active();
+    EXCEPTION
+        WHEN OTHERS THEN RAISE WARNING 'update_c_invoice_fts_if_active failed: %', SQLERRM;
+    END;
+
+    BEGIN
+        PERFORM ops.update_m_product_fts_if_active();
+    EXCEPTION
+        WHEN OTHERS THEN RAISE WARNING 'update_m_product_fts_if_active failed: %', SQLERRM;
+    END;
 END;
 $$
     LANGUAGE plpgsql
