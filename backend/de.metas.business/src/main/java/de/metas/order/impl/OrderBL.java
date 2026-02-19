@@ -1448,7 +1448,7 @@ public class OrderBL implements IOrderBL
 						orderRecord.getC_BPartner_ID(),
 						orderRecord.getC_BPartner_Location_ID()));
 
-		return deliveryShipShipperId.orElse(getPartnerShipperId(BPartnerId.ofRepoId(orderRecord.getC_BPartner_ID())));
+		return deliveryShipShipperId.orElse(getPartnerShipperId(getEffectiveDropshipPartnerId(orderRecord)));
 	}
 
 	private ShipperId getPartnerShipperId(@NonNull final BPartnerId partnerId)
