@@ -25,6 +25,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.location.adapter.DocumentLocationAdaptersRegistry;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.location.CountryId;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.organization.OrgId;
@@ -80,6 +81,7 @@ public class CalloutInvoice extends CalloutEngine
 	protected static final String SYS_Config_C_Invoice_SOTrx_OnlyAllowBillToDefault_Contact = "C_Invoice.SOTrx_OnlyAllowBillToDefault_Contact";
 
 	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
+	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
 	private final DocumentLocationAdaptersRegistry documentLocationAdaptersRegistry = SpringContextHolder.instance.getBean(DocumentLocationAdaptersRegistry.class);
 	
 	/**
@@ -705,6 +707,14 @@ public class CalloutInvoice extends CalloutEngine
 		 * log.debug("amt = PriceEntered=" + PriceEntered + ", Actual" + PriceActual + ", Discount=" + Discount);
 		 * /*
 		 */
+
+		if((I_C_InvoiceLine.COLUMNNAME_PriceEntered).equals(columnName)
+				|| de.metas.adempiere.model.I_C_InvoiceLine.COLUMNNAME_Discount.equals(columnName))
+		{
+			invoiceLineBL.recomputePriceActual(invoiceLine);
+			priceActual = invoiceLine.getPriceActual();
+			invoiceLine.setPriceActual(priceActual);
+		}
 
 		// Check PriceLimit
 		final boolean enforcePriceLimit = calloutField.getContextAsBoolean(CTX_EnforcePriceLimit);
