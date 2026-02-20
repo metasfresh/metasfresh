@@ -2,6 +2,7 @@ package de.metas.inout;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
@@ -239,4 +240,7 @@ public interface IInOutBL extends ISingletonService
 	boolean isVendorReturn(@NonNull I_M_InOut inOut);
 
 	boolean isEmptiesReturn(I_M_InOut inOut);
+
+	@NonNull
+	BPartnerId getEffectiveDropshipPartnerId(@NonNull I_M_InOut inout);
 }

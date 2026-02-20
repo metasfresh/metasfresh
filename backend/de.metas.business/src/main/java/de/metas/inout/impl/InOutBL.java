@@ -846,20 +846,28 @@ public class InOutBL implements IInOutBL
 
 	private ShipperId findShipperId(@NonNull final I_M_InOut inout)
 	{
+		final BPartnerLocationId dropShipLocationId = getEffectiveDropshipBPartnerLocationId(inout);
+		final Optional<ShipperId> deliveryAddressShipperId = bpartnerDAO.getShipperIdByBPLocationId(dropShipLocationId);
 
-		if (inout.getDropShip_BPartner_ID() > 0 && inout.getDropShip_Location_ID() > 0)
-		{
-			final Optional<ShipperId> deliveryAddressShipperId = bpartnerDAO.getShipperIdByBPLocationId(BPartnerLocationId.ofRepoId(inout.getDropShip_BPartner_ID(), inout.getDropShip_Location_ID()));
-			if (deliveryAddressShipperId.isPresent())
-			{
-				return deliveryAddressShipperId.get(); // we are done
-			}
-		}
+		return deliveryAddressShipperId.orElseGet(() -> bpartnerDAO.getShipperId(getEffectiveDropshipPartnerId(inout)));
+	}
 
-		return bpartnerDAO.getShipperId(CoalesceUtil.coalesceSuppliersNotNull(
+	private BPartnerLocationId getEffectiveDropshipBPartnerLocationId(@NonNull final I_M_InOut inout)
+	{
+		return CoalesceUtil.coalesceSuppliersNotNull(
+				() -> BPartnerLocationId.ofRepoIdOrNull(inout.getDropShip_BPartner_ID(), inout.getDropShip_Location_ID()),
+				() -> BPartnerLocationId.ofRepoIdOrNull(inout.getC_BPartner_ID(), inout.getC_BPartner_Location_ID())
+		);
+	}
+
+	@Override
+	@NonNull
+	public BPartnerId getEffectiveDropshipPartnerId(@NonNull final I_M_InOut inout)
+	{
+		return CoalesceUtil.coalesceSuppliersNotNull(
 				() -> BPartnerId.ofRepoIdOrNull(inout.getDropShip_BPartner_ID()),
-				() -> BPartnerId.ofRepoIdOrNull(inout.getC_BPartner_ID())));
-
+				() -> BPartnerId.ofRepoIdOrNull(inout.getC_BPartner_ID())
+		);
 	}
 
 	@Override

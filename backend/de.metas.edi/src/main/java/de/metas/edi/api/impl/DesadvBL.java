@@ -956,4 +956,19 @@ public class DesadvBL
 	{
 		return desadvDAO.getInOutDesadvByInOutId(shipmentId);
 	}
+
+	@NonNull
+	public  BPartnerId getEffectiveDropshipPartnerId(@NonNull final I_EDI_Desadv desadv)
+	{
+		return CoalesceUtil.coalesceSuppliersNotNull(
+				() -> BPartnerId.ofRepoIdOrNull(desadv.getDropShip_BPartner_ID()),
+				() -> BPartnerId.ofRepoIdOrNull(desadv.getC_BPartner_ID())
+		);
+	}
+
+	@NonNull
+	public List<I_M_InOut> retrieveAllInOuts(final I_EDI_Desadv desadv)
+	{
+		return desadvDAO.retrieveAllInOuts(desadv);
+	}
 }
