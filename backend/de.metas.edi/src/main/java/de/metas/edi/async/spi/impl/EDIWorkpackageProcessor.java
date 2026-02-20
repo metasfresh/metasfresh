@@ -142,6 +142,12 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 						final AdTableAndClientId adTableAndClientId = AdTableAndClientId.of(getTableId(shipment), clientId);
 						exportFeedback.addAll(exportViaExternalSystem(parentConfigId, adTableAndClientId, ediDocument, shipment.getM_InOut_ID()));
 					}
+					if(exportFeedback.isEmpty())
+					{
+						Loggables.addLog("All shipments of ediDocumentNo={} have been exported successfully.", ediDocument.getDocumentNo());
+						ediDocument.setEDI_ExportStatus(EDIExportStatus.Sent.getCode());
+						InterfaceWrapperHelper.save(ediDocument);
+					}
 				}
 				else
 				{
