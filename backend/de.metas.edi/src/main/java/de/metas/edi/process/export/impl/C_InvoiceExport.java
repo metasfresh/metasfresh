@@ -25,7 +25,9 @@ package de.metas.edi.process.export.impl;
 import java.util.Collections;
 import java.util.List;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.edi.api.EDIExportStatus;
+import de.metas.edi.api.EDIType;
 import de.metas.edi.api.impl.EDIDocumentBL;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -93,5 +95,25 @@ public class C_InvoiceExport extends AbstractEdiDocExtensionExport<I_C_Invoice>
 		}
 
 		return Collections.emptyList();
+	}
+
+	@Override
+	@NonNull
+	public BPartnerId getBPartnerId()
+	{
+		return BPartnerId.ofRepoId(getInvoiceRecord().getC_BPartner_ID());
+	}
+
+	@NonNull
+	private I_C_Invoice getInvoiceRecord()
+	{
+		return getDocument();
+	}
+
+	@Override
+	@NonNull
+	public EDIType getEDIType()
+	{
+		return EDIType.INVOIC;
 	}
 }
