@@ -10,7 +10,7 @@ INSERT INTO AD_SysConfig (AD_SysConfig_ID, AD_Client_ID, AD_Org_ID, IsActive,
                           Name, Value,
                           Description, EntityType, ConfigurationLevel)
 SELECT nextval('ad_sysconfig_seq'), 0, 0, 'Y',
-       now(), 100, now(), 100,
+       TO_TIMESTAMP('2026-02-21', 'YYYY-MM-DD'), 100, TO_TIMESTAMP('2026-02-21', 'YYYY-MM-DD'), 100,
        'webui.lookup.pageLength', '15',
        'Max items returned per lookup/typeahead request. Must be at least 12 to show all periods of a year without truncation.',
        'de.metas.fresh', 'S'
