@@ -207,7 +207,7 @@ public class ProcessPickingCandidatesCommand
 		huShipmentScheduleBL.addQtyPickedAndUpdateHU(AddQtyPickedRequest.builder()
 				.shipmentSchedule(shipmentSchedule)
 				.qtyPicked(CatchWeightHelper.extractQtys(huContext, productId, qtyPicked, packedToHU))
-				.tuOrVHU(packedToHU)
+				.hu(packedToHU)
 				.huContext(huContext)
 				.anonymousHuPickedOnTheFly(false)
 				.build());

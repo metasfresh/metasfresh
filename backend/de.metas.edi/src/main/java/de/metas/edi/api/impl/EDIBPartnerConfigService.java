@@ -23,8 +23,11 @@
 package de.metas.edi.api.impl;
 
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.edi.api.EDIBPartnerConfig;
+import de.metas.esb.edi.model.I_EDI_Desadv;
+import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.compiere.Adempiere;
@@ -36,6 +39,7 @@ import org.springframework.stereotype.Service;
 public class EDIBPartnerConfigService
 {
 	@NonNull private final EDIBPartnerConfigRepository ediBPartnerConfigRepository;
+	@NonNull private final DesadvBL desadvBL;
 
 	@VisibleForTesting
 	public static EDIBPartnerConfigService newInstanceForUnitTesting()
@@ -43,7 +47,10 @@ public class EDIBPartnerConfigService
 		Adempiere.assertUnitTestMode();
 		//noinspection DataFlowIssue
 		return SpringContextHolder.getBeanOrSupply(EDIBPartnerConfigService.class,
-				() -> new EDIBPartnerConfigService(EDIBPartnerConfigRepository.newInstanceForUnitTesting())
+				() -> new EDIBPartnerConfigService(
+						EDIBPartnerConfigRepository.newInstanceForUnitTesting(),
+						DesadvBL.newInstanceForUnitTesting()
+				)
 		);
 	}
 
@@ -58,6 +65,35 @@ public class EDIBPartnerConfigService
 		return ediBPartnerConfig.isEdiDesadvRecipient();
 	}
 
+	public boolean isDESADVReplicationInterfaceRecipient(@NonNull final BPartnerId bPartnerId)
+	{
+		final EDIBPartnerConfig ediBPartnerConfig = ediBPartnerConfigRepository.getByIdOrNull(bPartnerId);
+		if(ediBPartnerConfig == null)
+		{
+			return false;
+		}
+
+		return ediBPartnerConfig.isDESADVReplicationInterfaceRecipient();
+	}
+
+	public boolean isDESADVExternalSystemRecipient(@NonNull final BPartnerId bPartnerId)
+	{
+		final EDIBPartnerConfig ediBPartnerConfig = ediBPartnerConfigRepository.getByIdOrNull(bPartnerId);
+		if(ediBPartnerConfig == null)
+		{
+			return false;
+		}
+
+		return ediBPartnerConfig.isDESADVExternalSystemRecipient();
+	}
+
+	@NonNull
+	public ExternalSystemParentConfigId getDESADVExternalSystemParentConfigId(@NonNull final BPartnerId bPartnerId)
+	{
+		return Check.assumeNotNull(ediBPartnerConfigRepository.getById(bPartnerId).getEdiDesadvExternalSystemParentConfigId(),
+				"DESADVExternalSystemParentConfigId should be present for bPartnerId {}", bPartnerId);
+	}
+
 	public boolean isEdiInvoicRecipient(@NonNull final BPartnerId bPartnerId)
 	{
 		final EDIBPartnerConfig ediBPartnerConfig = ediBPartnerConfigRepository.getByIdOrNull(bPartnerId);
@@ -67,5 +103,34 @@ public class EDIBPartnerConfigService
 		}
 
 		return ediBPartnerConfig.isEdiInvoicRecipient();
+	}
+
+	public boolean isINVOICReplicationInterfaceRecipient(@NonNull final BPartnerId bPartnerId)
+	{
+		final EDIBPartnerConfig ediBPartnerConfig = ediBPartnerConfigRepository.getByIdOrNull(bPartnerId);
+		if(ediBPartnerConfig == null)
+		{
+			return false;
+		}
+
+		return ediBPartnerConfig.isINVOICReplicationInterfaceRecipient();
+	}
+
+	public boolean isINVOICExternalSystemRecipient(@NonNull final BPartnerId bPartnerId)
+	{
+		final EDIBPartnerConfig ediBPartnerConfig = ediBPartnerConfigRepository.getByIdOrNull(bPartnerId);
+		if(ediBPartnerConfig == null)
+		{
+			return false;
+		}
+
+		return ediBPartnerConfig.isINVOICExternalSystemRecipient();
+	}
+
+	@NonNull
+	public ExternalSystemParentConfigId getINVOICExternalSystemParentConfigId(@NonNull final BPartnerId bPartnerId)
+	{
+		return Check.assumeNotNull(ediBPartnerConfigRepository.getById(bPartnerId).getEdiInvoicExternalSystemParentConfigId(),
+				"INVOICExternalSystemParentConfigId should be present for bPartnerId {}", bPartnerId);
 	}
 }

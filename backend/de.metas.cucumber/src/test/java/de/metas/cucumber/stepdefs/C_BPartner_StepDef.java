@@ -27,6 +27,8 @@ import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.BPartnerStats;
+import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
@@ -36,9 +38,11 @@ import de.metas.cucumber.stepdefs.aggregation.C_Aggregation_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.discountschema.M_DiscountSchema_StepDefData;
 import de.metas.cucumber.stepdefs.dunning.C_Dunning_StepDefData;
+import de.metas.cucumber.stepdefs.externalsystem.ExternalSystem_Config_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
+import de.metas.edi.api.EDISendingMode;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.rest.v1.ExternalReferenceRestControllerService;
@@ -128,8 +132,10 @@ public class C_BPartner_StepDef
 	@NonNull private final C_PaymentTerm_StepDefData paymentTermTable;
 	@NonNull private final AD_Org_StepDefData orgTable;
 	@NonNull private final C_Aggregation_StepDefData aggregationTable;
+	@NonNull private final ExternalSystem_Config_StepDefData externalSystemConfigTable;
 	@NonNull private final TestContext restTestContext;
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
@@ -339,6 +345,12 @@ public class C_BPartner_StepDef
 
 		InterfaceWrapperHelper.saveRecord(bPartnerRecord);
 
+		// Automatically set SOCreditStatus=NoCreditCheck for all test BPartners to prevent
+		// credit stop issues in CI environments where the seed DB may have strict credit settings.
+		// See me03#28143.
+		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(bPartnerRecord);
+		bpartnerStatsDAO.setSOCreditStatus(stats, "X"); // X = No Credit Check
+
 		if (alsoCreateLocation)
 		{
 			final I_C_Location locationRecord = InterfaceWrapperHelper.newInstance(I_C_Location.class);
@@ -401,6 +413,14 @@ public class C_BPartner_StepDef
 		row.getAsOptionalString(de.metas.edi.model.I_C_BPartner.COLUMNNAME_EdiInvoicRecipientGLN).ifPresent(ediInvoicRecipientGLN -> bPartnerRecord.setEdiInvoicRecipientGLN(DataTableUtil.nullToken2Null(ediInvoicRecipientGLN)));
 
 		bPartnerRecord.setIsEdiInvoicRecipient(row.getAsOptionalBoolean(de.metas.edi.model.I_C_BPartner.COLUMNNAME_IsEdiInvoicRecipient).orElseFalse());
+
+		bPartnerRecord.setEdiDESADVSendingMode(row.getAsOptionalEnum(de.metas.edi.model.I_C_BPartner.COLUMNNAME_EdiDESADVSendingMode, EDISendingMode.class).orElse(EDISendingMode.ReplicationInterface).getCode());
+		bPartnerRecord.setEdiINVOICSendingMode(row.getAsOptionalEnum(de.metas.edi.model.I_C_BPartner.COLUMNNAME_EdiINVOICSendingMode, EDISendingMode.class).orElse(EDISendingMode.ReplicationInterface).getCode());
+
+		row.getAsOptionalIdentifier(de.metas.edi.model.I_C_BPartner.COLUMNNAME_EdiDESADV_ExternalSystem_Config_ID)
+				.ifPresent(identifier -> bPartnerRecord.setEdiDESADV_ExternalSystem_Config_ID(identifier.lookupNotNullIdIn(externalSystemConfigTable).getRepoId()));
+		row.getAsOptionalIdentifier(de.metas.edi.model.I_C_BPartner.COLUMNNAME_EdiINVOIC_ExternalSystem_Config_ID)
+				.ifPresent(identifier -> bPartnerRecord.setEdiDESADV_ExternalSystem_Config_ID(identifier.lookupNotNullIdIn(externalSystemConfigTable).getRepoId()));
 
 		row.getAsOptionalString(de.metas.edi.model.I_C_BPartner.COLUMNNAME_DeliveryRule).ifPresent(deliveryRule -> bPartnerRecord.setDeliveryRule(DataTableUtil.nullToken2Null(deliveryRule)));
 

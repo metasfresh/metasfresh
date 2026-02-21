@@ -25,6 +25,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.location.adapter.DocumentLocationAdaptersRegistry;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.invoice.paymentschedule.service.InvoicePayScheduleService;
@@ -88,6 +89,7 @@ public class CalloutInvoice extends CalloutEngine
 	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
 	private final DocumentLocationAdaptersRegistry documentLocationAdaptersRegistry = SpringContextHolder.instance.getBean(DocumentLocationAdaptersRegistry.class);
 	private final InvoicePayScheduleService invoicePayScheduleService = SpringContextHolder.instance.getBean(InvoicePayScheduleService.class);
 
@@ -720,6 +722,14 @@ public class CalloutInvoice extends CalloutEngine
 		 * log.debug("amt = PriceEntered=" + PriceEntered + ", Actual" + PriceActual + ", Discount=" + Discount);
 		 * /*
 		 */
+
+		if((I_C_InvoiceLine.COLUMNNAME_PriceEntered).equals(columnName)
+				|| de.metas.adempiere.model.I_C_InvoiceLine.COLUMNNAME_Discount.equals(columnName))
+		{
+			invoiceLineBL.recomputePriceActual(invoiceLine);
+			priceActual = invoiceLine.getPriceActual();
+			invoiceLine.setPriceActual(priceActual);
+		}
 
 		// Check PriceLimit
 		final boolean enforcePriceLimit = calloutField.getContextAsBoolean(CTX_EnforcePriceLimit);
