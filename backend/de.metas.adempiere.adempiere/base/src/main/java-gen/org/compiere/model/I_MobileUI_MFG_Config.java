@@ -1,5 +1,6 @@
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for MobileUI_MFG_Config
@@ -161,6 +162,27 @@ public interface I_MobileUI_MFG_Config
 
 	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_MobileUI_MFG_Config_ID = new ModelColumn<>(I_MobileUI_MFG_Config.class, "MobileUI_MFG_Config_ID", null);
 	String COLUMNNAME_MobileUI_MFG_Config_ID = "MobileUI_MFG_Config_ID";
+
+	/**
+	 * Set Receive Unit Type.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setReceiveUnitType (@Nullable java.lang.String ReceiveUnitType);
+
+	/**
+	 * Get Receive Unit Type.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getReceiveUnitType();
+
+	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_ReceiveUnitType = new ModelColumn<>(I_MobileUI_MFG_Config.class, "ReceiveUnitType", null);
+	String COLUMNNAME_ReceiveUnitType = "ReceiveUnitType";
 
 	/**
 	 * Get Updated.

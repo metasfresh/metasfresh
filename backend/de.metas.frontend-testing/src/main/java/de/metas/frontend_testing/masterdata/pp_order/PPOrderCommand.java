@@ -2,6 +2,7 @@ package de.metas.frontend_testing.masterdata.pp_order;
 
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
+import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -40,6 +41,9 @@ public class PPOrderCommand
 		final ProductId productId = context.getId(request.getProduct(), ProductId.class);
 		final Quantity quantity = Quantity.of(request.getQty(), productBL.getStockUOM(productId));
 		final Instant datePromised = request.getDatePromised().toInstant();
+		final OrderLineId salesOrderLineId = request.getSalesOrderLine() != null
+				? context.getId(request.getSalesOrderLine(), OrderLineId.class)
+				: null;
 		final I_PP_Order ppOrder = ppOrderBL.createOrder(
 				PPOrderCreateRequest.builder()
 						.docBaseType(PPOrderDocBaseType.MANUFACTURING_ORDER)
@@ -52,6 +56,7 @@ public class PPOrderCommand
 						.dateOrdered(datePromised)
 						.datePromised(datePromised)
 						.dateStartSchedule(datePromised)
+						.salesOrderLineId(salesOrderLineId)
 						.completeDocument(true)
 						.build()
 		);

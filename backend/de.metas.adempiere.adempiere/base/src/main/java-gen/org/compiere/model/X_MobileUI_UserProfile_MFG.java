@@ -1,33 +1,40 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
-/** Generated Model for MobileUI_UserProfile_MFG
- *  @author metasfresh (generated) 
+/**
+ * Generated Model for MobileUI_UserProfile_MFG
+ *
+ * @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
-public class X_MobileUI_UserProfile_MFG extends org.compiere.model.PO implements I_MobileUI_UserProfile_MFG, org.compiere.model.I_Persistent 
+public class X_MobileUI_UserProfile_MFG extends org.compiere.model.PO implements I_MobileUI_UserProfile_MFG, org.compiere.model.I_Persistent
 {
 
 	private static final long serialVersionUID = -734644038L;
 
-    /** Standard Constructor */
-    public X_MobileUI_UserProfile_MFG (final Properties ctx, final int MobileUI_UserProfile_MFG_ID, @Nullable final String trxName)
-    {
-      super (ctx, MobileUI_UserProfile_MFG_ID, trxName);
-    }
+	/**
+	 * Standard Constructor
+	 */
+	public X_MobileUI_UserProfile_MFG(final Properties ctx, final int MobileUI_UserProfile_MFG_ID, @Nullable final String trxName)
+	{
+		super(ctx, MobileUI_UserProfile_MFG_ID, trxName);
+	}
 
-    /** Load Constructor */
-    public X_MobileUI_UserProfile_MFG (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
-    {
-      super (ctx, rs, trxName);
-    }
+	/**
+	 * Load Constructor
+	 */
+	public X_MobileUI_UserProfile_MFG(final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+	{
+		super(ctx, rs, trxName);
+	}
 
-
-	/** Load Meta Data */
+	/**
+	 * Load Meta Data
+	 */
 	@Override
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
@@ -35,74 +42,97 @@ public class X_MobileUI_UserProfile_MFG extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public void setAD_User_ID (final int AD_User_ID)
+	public void setAD_User_ID(final int AD_User_ID)
 	{
-		if (AD_User_ID < 0) 
-			set_ValueNoCheck (COLUMNNAME_AD_User_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_AD_User_ID, AD_User_ID);
+		if (AD_User_ID < 0)
+			set_ValueNoCheck(COLUMNNAME_AD_User_ID, null);
+		else
+			set_ValueNoCheck(COLUMNNAME_AD_User_ID, AD_User_ID);
 	}
 
 	@Override
-	public int getAD_User_ID() 
+	public int getAD_User_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_User_ID);
 	}
 
-	/** 
+	/**
 	 * IsAllowIssuingAnyHU AD_Reference_ID=319
 	 * Reference name: _YesNo
 	 */
-	public static final int ISALLOWISSUINGANYHU_AD_Reference_ID=319;
-	/** Yes = Y */
+	public static final int ISALLOWISSUINGANYHU_AD_Reference_ID = 319;
+	/**
+	 * Yes = Y
+	 */
 	public static final String ISALLOWISSUINGANYHU_Yes = "Y";
-	/** No = N */
+	/**
+	 * No = N
+	 */
 	public static final String ISALLOWISSUINGANYHU_No = "N";
+
 	@Override
-	public void setIsAllowIssuingAnyHU (final @Nullable java.lang.String IsAllowIssuingAnyHU)
+	public void setIsAllowIssuingAnyHU(final @Nullable java.lang.String IsAllowIssuingAnyHU)
 	{
-		set_Value (COLUMNNAME_IsAllowIssuingAnyHU, IsAllowIssuingAnyHU);
+		set_Value(COLUMNNAME_IsAllowIssuingAnyHU, IsAllowIssuingAnyHU);
 	}
 
 	@Override
-	public java.lang.String getIsAllowIssuingAnyHU() 
+	public java.lang.String getIsAllowIssuingAnyHU()
 	{
 		return get_ValueAsString(COLUMNNAME_IsAllowIssuingAnyHU);
 	}
 
-	/** 
+	/**
 	 * IsScanResourceRequired AD_Reference_ID=319
 	 * Reference name: _YesNo
 	 */
-	public static final int ISSCANRESOURCEREQUIRED_AD_Reference_ID=319;
-	/** Yes = Y */
+	public static final int ISSCANRESOURCEREQUIRED_AD_Reference_ID = 319;
+	/**
+	 * Yes = Y
+	 */
 	public static final String ISSCANRESOURCEREQUIRED_Yes = "Y";
-	/** No = N */
+	/**
+	 * No = N
+	 */
 	public static final String ISSCANRESOURCEREQUIRED_No = "N";
+
 	@Override
-	public void setIsScanResourceRequired (final @Nullable java.lang.String IsScanResourceRequired)
+	public void setIsScanResourceRequired(final @Nullable java.lang.String IsScanResourceRequired)
 	{
-		set_Value (COLUMNNAME_IsScanResourceRequired, IsScanResourceRequired);
+		set_Value(COLUMNNAME_IsScanResourceRequired, IsScanResourceRequired);
 	}
 
 	@Override
-	public java.lang.String getIsScanResourceRequired() 
+	public java.lang.String getIsScanResourceRequired()
 	{
 		return get_ValueAsString(COLUMNNAME_IsScanResourceRequired);
 	}
 
 	@Override
-	public void setMobileUI_UserProfile_MFG_ID (final int MobileUI_UserProfile_MFG_ID)
+	public void setMobileUI_UserProfile_MFG_ID(final int MobileUI_UserProfile_MFG_ID)
 	{
-		if (MobileUI_UserProfile_MFG_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_MobileUI_UserProfile_MFG_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_MobileUI_UserProfile_MFG_ID, MobileUI_UserProfile_MFG_ID);
+		if (MobileUI_UserProfile_MFG_ID < 1)
+			set_ValueNoCheck(COLUMNNAME_MobileUI_UserProfile_MFG_ID, null);
+		else
+			set_ValueNoCheck(COLUMNNAME_MobileUI_UserProfile_MFG_ID, MobileUI_UserProfile_MFG_ID);
 	}
 
 	@Override
-	public int getMobileUI_UserProfile_MFG_ID() 
+	public int getMobileUI_UserProfile_MFG_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_MobileUI_UserProfile_MFG_ID);
+	}
+
+	@Override
+	public void setReceiveUnitType(@Nullable final String ReceiveUnitType)
+	{
+
+	}
+
+	@Nullable
+	@Override
+	public String getReceiveUnitType()
+	{
+		return null;
 	}
 }

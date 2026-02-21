@@ -72,4 +72,23 @@ public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_Mo
 	{
 		return get_ValueAsInt(COLUMNNAME_MobileUI_MFG_Config_ID);
 	}
+
+	/** ReceiveUnitType AD_Reference_ID= */
+	/** CU = CU */
+	public static final String RECEIVEUNITTYPE_CU = "CU"; // TODO model shall be generated
+	/** TU = TU */
+	public static final String RECEIVEUNITTYPE_TU = "TU"; // TODO model shall be generated
+
+	@Override
+	public void setReceiveUnitType(@Nullable final String ReceiveUnitType)
+	{
+		set_Value (COLUMNNAME_ReceiveUnitType, ReceiveUnitType);
+	}
+
+	@Nullable
+	@Override
+	public String getReceiveUnitType()
+	{
+		return (String)get_Value(COLUMNNAME_ReceiveUnitType);
+	}
 }
