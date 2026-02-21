@@ -1,4 +1,5 @@
 import { getPage } from './common';
+import { expect } from '@playwright/test';
 
 /**
  * WebAPI Validation Utilities
@@ -6,17 +7,25 @@ import { getPage } from './common';
  * These utilities help verify record state and validation by querying the metasfresh WebAPI.
  * They're essential for ensuring records are properly saved before attempting to add child records.
  *
+ * CRITICAL: Record Validity Check
+ * ===============================
+ * The WebAPI returns a `valid` field in the response. If `valid: false`, changes made in the
+ * UI WILL NOT BE SAVED. Always call `assertRecordIsValid()` before attempting to modify records.
+ *
  * Key Concept:
+ * - Records must be VALID before changes can be saved
  * - Records must be SAVED before child records (tabs) can be added
  * - WebAPI provides complete validation status including mandatory fields
  * - Auto-fill: Some mandatory fields are auto-set when key fields (like C_BPartner) are filled
  *
  * Usage Pattern:
- * 1. Fill parent record fields (e.g., Business Partner in Sales Order)
- * 2. Check validation status via getRecordData()
- * 3. Fill any remaining mandatory fields
- * 4. Verify record is saved via waitForRecordSaved()
- * 5. Only then proceed to add child records (order lines, etc.)
+ * 1. Navigate to record
+ * 2. **MANDATORY**: Call assertRecordIsValid() - if valid=false, changes won't save!
+ * 3. Fill parent record fields (e.g., Business Partner in Sales Order)
+ * 4. Check validation status via getRecordData()
+ * 5. Fill any remaining mandatory fields
+ * 6. Verify record is saved via waitForRecordSaved()
+ * 7. Only then proceed to add child records (order lines, etc.)
  */
 
 const WEBAPI_BASE_URL = process.env.WEBAPI_BASE_URL || 'http://localhost:8080/rest/api';
@@ -57,6 +66,58 @@ export async function getRecordData(windowId, recordId) {
     console.error(`Failed to fetch record data for window ${windowId}, record ${recordId}:`, error.message);
     throw error;
   }
+}
+
+/**
+ * MANDATORY: Assert that a record is valid before attempting to modify it.
+ *
+ * CRITICAL: If `valid: false`, changes made in the UI WILL NOT BE SAVED!
+ * This is a common cause of silent failures in E2E tests.
+ *
+ * @param {string} windowId - Window ID (e.g., '123' for Business Partner)
+ * @param {string} recordId - Record ID
+ * @param {string} [context] - Optional context for error message (e.g., 'before setting PO_PaymentTerm_ID')
+ * @throws {Error} If record is not valid
+ *
+ * @example
+ * // ALWAYS call this before modifying a record via API
+ * await assertRecordIsValid('123', bpartnerId, 'before API modification');
+ * // Note: UI-based methods like BusinessPartnerPage.setPOPaymentTerm() handle this internally
+ */
+export async function assertRecordIsValid(windowId, recordId, context = '') {
+  const recordData = await getRecordData(windowId, recordId);
+
+  const isValid = recordData.valid === true || recordData.validStatus?.valid === true;
+  const reason = recordData.validStatus?.reason || 'Unknown reason';
+
+  if (!isValid) {
+    const contextMsg = context ? ` (${context})` : '';
+    const errorMsg = `Record ${windowId}/${recordId} is NOT VALID${contextMsg}. Reason: ${reason}. Changes will NOT be saved!`;
+    console.error(errorMsg);
+
+    // Log additional details for debugging
+    if (recordData.validStatus) {
+      console.error('validStatus:', JSON.stringify(recordData.validStatus, null, 2));
+    }
+
+    // Collect invalid fields for detailed error
+    const invalidFields = [];
+    if (recordData.fieldsByName) {
+      for (const [fieldName, fieldData] of Object.entries(recordData.fieldsByName)) {
+        if (fieldData.validStatus && !fieldData.validStatus.valid) {
+          invalidFields.push(`${fieldName}: ${fieldData.validStatus.reason}`);
+        }
+      }
+    }
+    if (invalidFields.length > 0) {
+      console.error('Invalid fields:', invalidFields.join(', '));
+    }
+
+    throw new Error(errorMsg);
+  }
+
+  console.log(`Record ${windowId}/${recordId} is VALID${context ? ` (${context})` : ''}`);
+  return true;
 }
 
 /**

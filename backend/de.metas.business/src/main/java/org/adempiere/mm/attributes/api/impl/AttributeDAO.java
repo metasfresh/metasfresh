@@ -591,7 +591,7 @@ public class AttributeDAO implements IAttributeDAO
 		if (attribute.isHighVolumeValuesList())
 		{
 			final I_M_AttributeValue attributeListValueRecord = queryBL
-					.createQueryBuilder(I_M_AttributeValue.class, attribute)
+					.createQueryBuilder(I_M_AttributeValue.class)
 					.addEqualsFilter(I_M_AttributeValue.COLUMN_M_Attribute_ID, attribute.getAttributeId())
 					.addEqualsFilter(I_M_AttributeValue.COLUMN_M_AttributeValue_ID, attributeValueId)
 					.create()

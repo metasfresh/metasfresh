@@ -56,32 +56,7 @@ public class MobileUIPickingUserProfile
 					.isShowLastPickedBestBeforeDateForLines(false)
 					.build())
 			.filters(PickingFiltersList.DEFAULT)
-			.fields(ImmutableList.of(
-					PickingJobField.builder()
-							.seqNo(10)
-							.field(PickingJobFieldType.DOCUMENT_NO)
-							.isShowInDetailed(true)
-							.isShowInSummary(true)
-							.build(),
-					PickingJobField.builder()
-							.seqNo(20)
-							.field(PickingJobFieldType.CUSTOMER)
-							.isShowInDetailed(true)
-							.isShowInSummary(true)
-							.build(),
-					PickingJobField.builder()
-							.seqNo(30)
-							.field(PickingJobFieldType.PRODUCT)
-							.isShowInDetailed(true)
-							.isShowInSummary(true)
-							.build(),
-					PickingJobField.builder()
-							.seqNo(40)
-							.field(PickingJobFieldType.QTY_TO_DELIVER)
-							.isShowInDetailed(true)
-							.isShowInSummary(true)
-							.build()
-			))
+			.fields(PickingJobField.DEFAULTS)
 			.build();
 
 	@NonNull String name;

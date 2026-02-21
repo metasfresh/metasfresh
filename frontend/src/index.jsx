@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 
+import './utils/diagnostics'; // White screen diagnostic logging - type hilfe() in console
 import App from './containers/App';
 import { ProvideAuth } from './hooks/useAuth';
 import { historyDoubleBackOnPopstate } from './utils';

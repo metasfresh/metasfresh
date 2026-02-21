@@ -188,8 +188,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		// Retrieve VHU, TU and LU
 		final LUTUCUPair husPair;
 		{
-			@NonNull final I_M_HU tuOrVHU = request.getTuOrVHU();
-			Check.assume(handlingUnitsBL.isTransportUnitOrVirtual(tuOrVHU), "{} shall be a TU or a VirtualHU", tuOrVHU);
+			@NonNull final I_M_HU tuOrVHU = request.getHu();
 			husPair = handlingUnitsBL.getTopLevelParentAsLUTUCUPair(tuOrVHU);
 		}
 
@@ -803,6 +802,11 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = huShipmentScheduleDAO.retrieveByTopLevelHUAndShipmentScheduleId(topLevelHU, shipmentScheduleId);
 			assertNotAlreadyShipped(qtyPickedRecords, HuId.ofRepoId(topLevelHU.getM_HU_ID()));
 			shipmentScheduleAllocBL.deleteRecords(qtyPickedRecords);
+
+			// also reset the HU's partner and location (same pattern as unallocateTU)
+			topLevelHU.setC_BPartner_ID(0);
+			topLevelHU.setC_BPartner_Location_ID(0);
+			save(topLevelHU);
 		}
 	}
 

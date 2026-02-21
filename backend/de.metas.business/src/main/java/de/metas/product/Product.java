@@ -44,7 +44,7 @@ public class Product
 	@NonNull UomId uomId;
 	@Nullable UomId packingUomId;
 	@NonNull String productNo;
-	@Nullable ProductCategoryId productCategoryId;
+	@NonNull ProductCategoryId productCategoryId;
 	@Nullable String productCategoryName;
 	@NonNull ITranslatableString name;
 	@Nullable String value;

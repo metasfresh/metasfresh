@@ -1989,48 +1989,6 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_IsDeliveryClosed = "IsDeliveryClosed";
 
 	/**
-	 * Set Document to be sent via EDI.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsEdiEnabled (boolean IsEdiEnabled);
-
-	/**
-	 * Get Document to be sent via EDI.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isEdiEnabled();
-
-	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsEdiEnabled = new ModelColumn<>(I_C_Invoice_Candidate.class, "IsEdiEnabled", null);
-	String COLUMNNAME_IsEdiEnabled = "IsEdiEnabled";
-
-	/**
-	 * Set EDI INVOIC Receipient.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsEdiInvoicRecipient (boolean IsEdiInvoicRecipient);
-
-	/**
-	 * Get EDI INVOIC Receipient.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isEdiInvoicRecipient();
-
-	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsEdiInvoicRecipient = new ModelColumn<>(I_C_Invoice_Candidate.class, "IsEdiInvoicRecipient", null);
-	String COLUMNNAME_IsEdiInvoicRecipient = "IsEdiInvoicRecipient";
-
-	/**
 	 * Set Error.
 	 * An Error occurred in the execution
 	 *
@@ -4014,4 +3972,31 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_C_Invoice_Candidate.class, "UserElementString7", null);
 	String COLUMNNAME_UserElementString7 = "UserElementString7";
+
+	/**
+	 * Set Grand Total.
+	 * Total amount of document
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setGrandTotal (@Nullable BigDecimal GrandTotal);
+
+	/**
+	 * Get Grand Total.
+	 * Total amount of document
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	BigDecimal getGrandTotal();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_GrandTotal = new ModelColumn<>(I_C_Invoice_Candidate.class, "GrandTotal", null);
+	String COLUMNNAME_GrandTotal = "GrandTotal";
 }

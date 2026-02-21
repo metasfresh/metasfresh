@@ -118,6 +118,27 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_BPartnerName = "BPartnerName";
 
 	/**
+	 * Set Name of BPartner 2.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBPartnerName2 (@Nullable java.lang.String BPartnerName2);
+
+	/**
+	 * Get Name of BPartner 2.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getBPartnerName2();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_BPartnerName2 = new ModelColumn<>(I_C_BPartner_Location.class, "BPartnerName2", null);
+	String COLUMNNAME_BPartnerName2 = "BPartnerName2";
+
+	/**
 	 * Set Business Partner.
 	 *
 	 * <br>Type: Search

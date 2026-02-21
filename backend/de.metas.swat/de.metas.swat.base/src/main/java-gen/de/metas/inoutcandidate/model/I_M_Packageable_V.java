@@ -1,9 +1,8 @@
 package de.metas.inoutcandidate.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_Packageable_V
  *  @author metasfresh (generated) 
@@ -567,7 +566,7 @@ public interface I_M_Packageable_V
 	String COLUMNNAME_IsDisplayed = "IsDisplayed";
 
 	/**
-	 * Set Ship After Date.
+	 * Set Ship after above date.
 	 * Ensures that shipping does not occur before the promised date. Used when strict delivery timing is required by the customer.
 	 *
 	 * <br>Type: YesNo
@@ -577,7 +576,7 @@ public interface I_M_Packageable_V
 	void setIsFixedDatePromised (boolean IsFixedDatePromised);
 
 	/**
-	 * Get Ship After Date.
+	 * Get Ship after above date.
 	 * Ensures that shipping does not occur before the promised date. Used when strict delivery timing is required by the customer.
 	 *
 	 * <br>Type: YesNo
@@ -955,6 +954,31 @@ public interface I_M_Packageable_V
 
 	ModelColumn<I_M_Packageable_V, Object> COLUMN_ProductName = new ModelColumn<>(I_M_Packageable_V.class, "ProductName", null);
 	String COLUMNNAME_ProductName = "ProductName";
+
+	/**
+	 * Set Product Value.
+	 * Product identifier;
+ "val-<search key>", "ext-<external id>" or internal M_Product_ID
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setProductValue (@Nullable java.lang.String ProductValue);
+
+	/**
+	 * Get Product Value.
+	 * Product identifier;
+ "val-<search key>", "ext-<external id>" or internal M_Product_ID
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getProductValue();
+
+	ModelColumn<I_M_Packageable_V, Object> COLUMN_ProductValue = new ModelColumn<>(I_M_Packageable_V.class, "ProductValue", null);
+	String COLUMNNAME_ProductValue = "ProductValue";
 
 	/**
 	 * Set Shipped Qty.

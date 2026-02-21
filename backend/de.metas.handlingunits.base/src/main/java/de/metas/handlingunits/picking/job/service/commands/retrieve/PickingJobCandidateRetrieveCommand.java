@@ -80,7 +80,7 @@ public class PickingJobCandidateRetrieveCommand
 	}
 
 	@Nullable
-	private ScheduledPackageable toScheduledPackageable(@NonNull Packageable packageable)
+	private ScheduledPackageable toScheduledPackageable(@NonNull final Packageable packageable)
 	{
 		if (query.isScheduledForWorkplaceOnly())
 		{
@@ -95,7 +95,7 @@ public class PickingJobCandidateRetrieveCommand
 		}
 	}
 
-	private Optional<PickingJobSchedule> getJobSchedule(ShipmentScheduleId shipmentScheduleId)
+	private Optional<PickingJobSchedule> getJobSchedule(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
 		return getJobSchedules().getSingleScheduleByShipmentScheduleId(shipmentScheduleId);
 	}

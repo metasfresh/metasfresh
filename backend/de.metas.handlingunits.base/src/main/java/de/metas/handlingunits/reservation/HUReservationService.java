@@ -124,18 +124,27 @@ public class HUReservationService
 
 	private Optional<HUReservation> makeReservationInTrx(@NonNull final ReserveHUsRequest reservationRequest)
 	{
-		//
-		// Separate the VHUs that we are going to reserve
-		final List<I_M_HU> newCUs = huTransformServiceSupplier.get().husToNewCUs(
-						HUsToNewCUsRequest.builder()
-								.sourceHUs(handlingUnitsBL.getByIds(reservationRequest.getHuIds()))
-								.qtyCU(reservationRequest.getQtyToReserve())
-								.reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
-								.keepNewCUsUnderSameParent(true)
-								.productId(reservationRequest.getProductId())
-								.build())
-				.getNewCUs();
-		if (newCUs.isEmpty())
+		final List<I_M_HU> husToReserve;
+		if (reservationRequest.isReserveActualHUs())
+		{
+			husToReserve = getHUsToReserve(reservationRequest);
+		}
+		else
+		{
+			//
+			// Separate the VHUs that we are going to reserve
+			husToReserve = huTransformServiceSupplier.get().husToNewCUs(
+							HUsToNewCUsRequest.builder()
+									.sourceHUs(handlingUnitsBL.getByIds(reservationRequest.getHuIds()))
+									.qtyCU(reservationRequest.getQtyToReserve())
+									.reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
+									.keepNewCUsUnderSameParent(true)
+									.productId(reservationRequest.getProductId())
+									.build())
+					.getNewCUs();
+		}
+
+		if (husToReserve.isEmpty())
 		{
 			return Optional.empty();
 		}
@@ -145,7 +154,7 @@ public class HUReservationService
 		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
 		final I_C_UOM uomRecord = reservationRequest.getQtyToReserve().getUOM();
 		final ArrayList<HUReservationEntryUpdateRepoRequest> repoRequests = new ArrayList<>();
-		for (final I_M_HU newCU : newCUs)
+		for (final I_M_HU newCU : husToReserve)
 		{
 			final Quantity qty = storageFactory
 					.getStorage(newCU)
@@ -167,7 +176,7 @@ public class HUReservationService
 				.orElseThrow(() -> new AdempiereException(NO_QTY_RESERVED_ERROR_MSG)
 						.appendParametersToMessage()
 						.setParameter("request", reservationRequest));
-		if (reservationRequest.getQtyToReserve().compareTo(qtyReserved) != 0)
+		if (!reservationRequest.isReserveActualHUs() && reservationRequest.getQtyToReserve().compareTo(qtyReserved) != 0)
 		{
 			throw new AdempiereException(RESERVED_ERROR_MSG)
 					.appendParametersToMessage()
@@ -178,16 +187,28 @@ public class HUReservationService
 		//
 		// set M_HU.IsReserved=Y
 		// note: M_HU.IsReserved is also updated via model interceptor if M_HU_Reservation changes, but for clarify and unit test purposes, we explicitly do it here as well
-		for (final I_M_HU newCU : newCUs)
+		for (final I_M_HU hu : husToReserve)
 		{
-			newCU.setIsReserved(true);
-			handlingUnitsDAO.saveHU(newCU);
+			final boolean reserved = handlingUnitsBL.setReservedRecursively(hu, true);
+			if (!reserved)
+			{
+				// Could not reserve this HU (already reserved or child is reserved)
+				return Optional.empty();
+			}
 		}
 
 		//
 		// Create the reservation records and return
 		final ImmutableList<HUReservationEntry> entries = huReservationRepository.createOrUpdateEntries(repoRequests);
 		return Optional.of(HUReservation.ofEntries(entries));
+	}
+
+	private ImmutableList<I_M_HU> getHUsToReserve(final @NonNull ReserveHUsRequest reservationRequest)
+	{
+		return handlingUnitsDAO.getByIds(reservationRequest.getHuIds())
+				.stream()
+				.filter(hu -> !hu.isReserved())
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	/**
@@ -204,7 +225,7 @@ public class HUReservationService
 	private void deleteReservationsByVHUIdsInTrx(@NonNull final Set<HuId> vhuIds)
 	{
 		huReservationRepository.deleteReservationsByVhuIds(vhuIds);
-		handlingUnitsDAO.setReservedByHUIds(vhuIds, false);
+		handlingUnitsBL.setReservedByHUIds(vhuIds, false);
 	}
 
 	public void deleteReservationsByDocumentRefs(@NonNull final Set<HUReservationDocRef> documentRefs)
@@ -277,7 +298,10 @@ public class HUReservationService
 							{
 								vhuResult = vhuResult == null ? huProductStorage.getQty() : vhuResult.add(huProductStorage.getQty());
 							}
-							result.setValue(result.getValue() == null ? vhuResult : result.getValue().add(vhuResult));
+							if (vhuResult != null && !vhuResult.isZero())
+							{
+								result.setValue(result.getValue() == null ? vhuResult : result.getValue().add(vhuResult));
+							}
 						}
 						return Result.CONTINUE;
 					}

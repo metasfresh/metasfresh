@@ -21,6 +21,7 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
@@ -43,6 +44,7 @@ public class AssertExpectationsCommandServices
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	@NonNull private final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
 	@NonNull private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+	@NonNull private final IShipmentScheduleInvalidateRepository invalidationRepository = Services.get(IShipmentScheduleInvalidateRepository.class);
 	@NonNull public final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
@@ -80,7 +82,7 @@ public class AssertExpectationsCommandServices
 		return huQRCodeService.getHuIdByQRCode(qrCode);
 	}
 
-	public HUType getHUUnitType(@NonNull I_M_HU hu)
+	public HUType getHUUnitType(@NonNull final I_M_HU hu)
 	{
 		return handlingUnitsBL.getHUUnitType(hu);
 	}
@@ -116,4 +118,9 @@ public class AssertExpectationsCommandServices
 	}
 
 	public List<I_M_HU> getCUs(final HuId huId) {return handlingUnitsBL.getVHUs(huId);}
+
+	public boolean isAllValid(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		return invalidationRepository.isAllValid(shipmentScheduleIds);
+	}
 }

@@ -8,6 +8,7 @@ import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.document.DocumentNoFilter;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -24,6 +25,7 @@ import de.metas.picking.api.Packageable;
 import de.metas.picking.api.Packageable.PackageableBuilder;
 import de.metas.picking.api.PackageableQuery;
 import de.metas.product.ProductId;
+import de.metas.product.ProductValueAndName;
 import de.metas.product.ResolvedScannedProductCode;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
@@ -345,7 +347,7 @@ public class PackagingDAO implements IPackagingDAO
 		packageable.warehouseTypeId(WarehouseTypeId.ofRepoIdOrNull(record.getM_Warehouse_Type_ID()));
 
 		packageable.productId(ProductId.ofRepoId(record.getM_Product_ID()));
-		packageable.productName(record.getProductName());
+		packageable.productValueAndName(extractProductValueAndName(record));
 		packageable.asiId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()));
 
 		packageable.deliveryViaRule(DeliveryViaRule.ofNullableCode(record.getDeliveryViaRule()));
@@ -387,6 +389,14 @@ public class PackagingDAO implements IPackagingDAO
 		packageable.lockedBy(lockedBy);
 
 		return packageable.build();
+	}
+
+	private static ProductValueAndName extractProductValueAndName(@NonNull final I_M_Packageable_V record)
+	{
+		return ProductValueAndName.of(
+				record.getProductValue(),
+				TranslatableStrings.anyLanguage(record.getProductName())
+		);
 	}
 
 	@Override

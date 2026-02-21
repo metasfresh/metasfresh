@@ -2,7 +2,6 @@ package de.metas.handlingunits.picking.job_schedule.service;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import de.metas.handlingunits.picking.job.service.external.product.PickingJobProductService;
 import de.metas.handlingunits.picking.job.service.external.shipmentschedule.PickingJobShipmentScheduleService;
@@ -32,9 +31,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -61,6 +58,11 @@ public class PickingJobScheduleService
 						PickingJobShipmentScheduleService.newInstanceForUnitTesting()
 				)
 		);
+	}
+
+	public PickingJobSchedule getById(@NonNull final PickingJobScheduleId id)
+	{
+		return pickingJobScheduleRepository.getById(id);
 	}
 
 	public List<PickingJobSchedule> getByIds(@NonNull final Set<PickingJobScheduleId> ids)
@@ -128,26 +130,6 @@ public class PickingJobScheduleService
 	public void markAsProcessed(final Set<PickingJobScheduleId> ids)
 	{
 		pickingJobScheduleRepository.updateByIds(ids, jobSchedule -> jobSchedule.toBuilder().processed(true).build());
-	}
-
-	public Set<ShipmentScheduleId> getShipmentScheduleIdsWithAllJobSchedulesProcessedOrMissing(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
-	{
-		if (shipmentScheduleIds.isEmpty()) {return ImmutableSet.of();}
-
-		final Map<ShipmentScheduleId, PickingJobScheduleCollection> jobSchedulesByShipmentScheduleId = stream(PickingJobScheduleQuery.builder().onlyShipmentScheduleIds(shipmentScheduleIds).build())
-				.collect(Collectors.groupingBy(PickingJobSchedule::getShipmentScheduleId, PickingJobScheduleCollection.collect()));
-
-		final HashSet<ShipmentScheduleId> result = new HashSet<>();
-		for (final ShipmentScheduleId shipmentScheduleId : shipmentScheduleIds)
-		{
-			final PickingJobScheduleCollection jobSchedules = jobSchedulesByShipmentScheduleId.get(shipmentScheduleId);
-			if (jobSchedules == null || jobSchedules.isAllProcessed())
-			{
-				result.add(shipmentScheduleId);
-			}
-		}
-
-		return result;
 	}
 
 	public Quantity getQtyRemainingToScheduleForPicking(@NonNull final ShipmentScheduleId shipmentScheduleId)

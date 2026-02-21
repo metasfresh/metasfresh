@@ -1111,4 +1111,24 @@ public class OrderLineBL implements IOrderLineBL
 		orderLine.setC_Tax_ID(tax.getTaxId().getRepoId());
 		orderLine.setC_TaxCategory_ID(tax.getTaxCategoryId().getRepoId());
 	}
+
+	@Override
+	public void setGrossWeightInKg(@NonNull final I_C_OrderLine orderLine)
+	{
+		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+		final UomId stockUomId = productBL.getStockUOMId(productId);
+		final Quantity qtyOrdered = Quantitys.of(orderLine.getQtyOrdered(), stockUomId);
+
+		final Quantity grossWeight = productBL.computeGrossWeight(productId, qtyOrdered).orElse(null);
+
+		if(grossWeight == null)
+		{
+			orderLine.setGrossWeightKg(BigDecimal.ZERO);
+		}
+		else
+		{
+			final Quantity grossWeightInKg = uomConversionBL.convertToKilogram(grossWeight, productId);
+			orderLine.setGrossWeightKg(grossWeightInKg.toBigDecimal());
+		}
+	}
 }

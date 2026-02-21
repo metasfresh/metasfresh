@@ -81,11 +81,11 @@ FROM C_Invoice i
     -- Get Product and its translation
          LEFT OUTER JOIN M_Product p ON il.M_Product_ID = p.M_Product_ID
          LEFT OUTER JOIN M_Product_Trl pt ON il.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = p_ad_language
-         LEFT OUTER JOIN C_BPartner_Product bpp ON bp.C_BPartner_ID = bpp.C_BPartner_ID
+         LEFT OUTER JOIN C_BPartner_Product bpp ON bp.C_BPartner_ID = bpp.C_BPartner_ID AND bpp.m_product_id = p.m_product_id
 
     -- Get Product category and its translation
          LEFT OUTER JOIN m_product_category pc ON pc.m_product_category_id = p.m_product_category_id
-         LEFT OUTER JOIN m_product_category_trl pct ON pct.m_product_category_id = p.m_product_category_id
+         LEFT OUTER JOIN m_product_category_trl pct ON pct.m_product_category_id = p.m_product_category_id AND pct.AD_Language = p_ad_language
 
     -- Get Unit of measurement and its translation
          LEFT OUTER JOIN C_UOM uom ON il.C_UOM_ID = uom.C_UOM_ID
@@ -97,6 +97,7 @@ FROM C_Invoice i
     -- Tax Currency
          LEFT OUTER JOIN C_Currency c ON i.C_Currency_ID = c.C_Currency_ID
 WHERE i.dateinvoiced BETWEEN p_Date_From AND p_Date_To
+  AND i.docstatus IN ('CO', 'CL')  -- Completed / Closed only
 ORDER BY i.documentno
     ;
 $$

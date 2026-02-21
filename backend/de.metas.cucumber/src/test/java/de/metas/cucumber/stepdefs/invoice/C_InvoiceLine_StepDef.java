@@ -362,7 +362,7 @@ public class C_InvoiceLine_StepDef
 
 		row.getAsOptionalString(I_C_InvoiceLine.COLUMNNAME_ExternalIds)
 				.ifPresent(externalIds -> softly.assertThat(invoiceLine.getExternalIds()).as(I_C_InvoiceLine.COLUMNNAME_ExternalIds).isEqualTo(externalIds));
-		
+
 		softly.assertAll();
 
 		row.getAsOptionalIdentifier().ifPresent(identifier -> invoiceLineTable.putOrReplace(identifier, invoiceLine));
@@ -408,6 +408,12 @@ public class C_InvoiceLine_StepDef
 					invoiceLine.setIsManualPrice(true);
 					invoiceLine.setPriceEntered(price);
 					invoiceLine.setPriceActual(price);
+				});
+
+		row.getAsOptionalIdentifier("C_Tax_ID$set")
+				.ifPresent(taxIdentifier -> {
+					final TaxId taxId = taxTable.getId(taxIdentifier);
+					invoiceLine.setC_Tax_ID(taxId.getRepoId());
 				});
 
 		invoiceLineBL.updatePrices(invoiceLine);

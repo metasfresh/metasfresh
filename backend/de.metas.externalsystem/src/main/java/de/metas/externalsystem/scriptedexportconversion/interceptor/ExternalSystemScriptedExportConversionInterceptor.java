@@ -24,18 +24,13 @@ package de.metas.externalsystem.scriptedexportconversion.interceptor;
 
 import de.metas.document.engine.IDocumentBL;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
-import de.metas.externalsystem.process.InvokeScriptedExportConversionAction;
-import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfig;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionService;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfo;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.table.api.AdTableAndClientId;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.compiere.model.I_AD_Client;
@@ -44,28 +39,18 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-
-import static de.metas.common.externalsystem.ExternalSystemConstants.COMMAND_CONVERT_MESSAGE_FROM_METASFRESH;
-import static de.metas.externalsystem.process.InvokeExternalSystemProcess.PARAM_CHILD_CONFIG_ID;
-import static de.metas.externalsystem.process.InvokeExternalSystemProcess.PARAM_EXTERNAL_REQUEST;
-import static de.metas.externalsystem.process.InvokeScriptedExportConversionAction.PARAM_Record_ID;
-import static org.compiere.util.Env.getCtx;
 
 /**
  * Interceptor which listens to a table specified in {@link I_ExternalSystem_Config_ScriptedExportConversion}.
  */
 /* package */ class ExternalSystemScriptedExportConversionInterceptor implements ModelValidator
 {
-	private final Logger log = LogManager.getLogger(getClass());
-
 	private final transient IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final transient IClientDAO clientDAO = Services.get(IClientDAO.class);
 	private final transient IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 
 	private final ModelValidationEngine modelValidationEngine;
 	private final ExternalSystemScriptedExportConversionService externalSystemScriptedExportConversionService;
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private int m_AD_Client_ID;
 	private final AdTableId adTableId;
 	private final String tableName;
@@ -148,17 +133,17 @@ import static org.compiere.util.Env.getCtx;
 
 	@Nullable
 	@Override
-	public String docValidate(final PO po, final int timing) throws Exception
+	public String docValidate(final PO po, final int timing)
 	{
 		Check.assume(isDocument(), "PO '{}' is a document", po);
 
 		if (timing == ModelValidator.TIMING_AFTER_COMPLETE
 				&& !documentBL.isReversalDocument(po))
 		{
+			// After commit because it might be a postgrest process that is executed here, so on complete changes need to be present in db
 			externalSystemScriptedExportConversionService
-					.retrieveBestMatchingConfig(AdTableAndClientId.of(AdTableId.ofRepoId(po.get_Table_ID()),
-							ClientId.ofRepoId(getAD_Client_ID())), po.get_ID())
-					.ifPresent(config -> executeInvokeScriptedExportConversionAction(config, po.get_ID()));
+					.getMatchingTriggerOnCompleteConfigsByTableAndClientId(AdTableAndClientId.of(AdTableId.ofRepoId(po.get_Table_ID()), ClientId.ofRepoId(getAD_Client_ID())), po.get_ID())
+					.forEach(config -> externalSystemScriptedExportConversionService.executeInvokeScriptedExportConversionActionAfterCommit(config, po.get_ID()));
 		}
 
 		return null;
@@ -168,32 +153,6 @@ import static org.compiere.util.Env.getCtx;
 	public AdTableId getTableId()
 	{
 		return adTableId;
-	}
-
-	private void executeInvokeScriptedExportConversionAction(
-			@NonNull final ExternalSystemScriptedExportConversionConfig config,
-			final int recordId)
-	{
-		final int configTableId = tableDAO.retrieveTableId(I_ExternalSystem_Config_ScriptedExportConversion.Table_Name);
-		try
-		{
-			trxManager.runAfterCommit(() -> {
-				ProcessInfo.builder()
-						.setCtx(getCtx())
-						.setRecord(configTableId, config.getId().getRepoId())
-						.setAD_ProcessByClassname(InvokeScriptedExportConversionAction.class.getName())
-						.addParameter(PARAM_EXTERNAL_REQUEST, COMMAND_CONVERT_MESSAGE_FROM_METASFRESH)
-						.addParameter(PARAM_CHILD_CONFIG_ID, config.getId().getRepoId())
-						.addParameter(PARAM_Record_ID, recordId)
-						.buildAndPrepareExecution()
-						.executeSync();
-			});
-		}
-		catch (final Exception e)
-		{
-			log.warn(InvokeScriptedExportConversionAction.class.getName() + " process failed for Config ID {}, Record ID: {}",
-					config.getId(), recordId, e);
-		}
 	}
 
 	private String getTableName()

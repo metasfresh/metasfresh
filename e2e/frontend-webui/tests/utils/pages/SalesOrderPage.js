@@ -2,6 +2,8 @@ import { test } from '../../../playwright.config';
 import { FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../common';
 import { SALES_ORDER_WINDOW_ID } from '../WindowIds';
 import { waitForRecordSaved, waitForTabAllowsNew } from '../WebAPIValidation';
+import { PdfDownloader } from '../PdfDownloader';
+import { openRelatedDocument, REFERENCE_DATA_CY } from '../DocumentReferences';
 
 /**
  * Page object for Sales Order window (ID: 143).
@@ -49,7 +51,8 @@ export class SalesOrderPage {
 
       await page.keyboard.press('Alt+N');
 
-      await page.waitForURL(/\/window\/143\/\d+/, {
+      // Use flexible window ID pattern - custom projects may override window 143
+      await page.waitForURL(/\/window\/\d+\/\d+/, {
         timeout: SLOW_ACTION_TIMEOUT,
       });
 
@@ -347,129 +350,53 @@ export class SalesOrderPage {
   }
 
   /**
-   * Open the related Shipment Candidate using Alt+6.
-   * @param {number} waitTime - Time to wait for candidates to be created (default: 5000ms)
+   * Open the related Shipment Candidate (Shipment Schedule) using Alt+6.
+   *
+   * @param {Object} options - Configuration options
+   * @param {number} options.maxRetries - Maximum retry attempts (default: 5)
+   * @param {number} options.retryDelay - Delay between retries in ms (default: 2000)
    */
-  static async openRelatedShipmentCandidate(waitTime = 5000) {
-    return await test.step('SalesOrderPage - Open related shipment candidate (Alt+6)', async () => {
-      const page = getPage();
-
-      await page.waitForTimeout(waitTime);
-
-      await page.locator('body').click();
-      await page.waitForTimeout(200);
-
-      await page.keyboard.press('Alt+6');
-      await page.waitForTimeout(1000);
-
-      await page.locator('.rotating, .spinner').waitFor({
-        state: 'detached',
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {});
-
-      // Click on Shipment Schedule link using data-cy attribute (language-independent)
-      // This corresponds to the M_ShipmentSchedule reference
-      await page.locator('[data-cy="reference-M_ShipmentSchedule"]').click();
-
-      await page.waitForURL(/\/window\/500221/, {
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
-
-      await page.waitForLoadState('networkidle', {
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {});
-
-      await page.locator('.rotating, .panel-spaced-lg').waitFor({
-        state: 'detached',
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {});
-
-      await page.waitForTimeout(500);
+  static async openRelatedShipmentCandidate({ maxRetries = 5, retryDelay = 2000 } = {}) {
+    await openRelatedDocument({
+      dataCy: REFERENCE_DATA_CY.SO_TO_SHIPMENT_SCHEDULE,
+      stepName: 'SalesOrderPage - Open related shipment candidate (Alt+6)',
+      maxRetries,
+      retryDelay,
+      navigateToDetail: false, // Opens as list view
     });
   }
 
   /**
    * Open the related Shipment using Alt+6.
-   * @param {number} waitTime - Time to wait for shipment to be created (default: 5000ms)
+   *
+   * @param {Object} options - Configuration options
+   * @param {number} options.maxRetries - Maximum retry attempts (default: 5)
+   * @param {number} options.retryDelay - Delay between retries in ms (default: 2000)
    */
-  static async openRelatedShipment(waitTime = 5000) {
-    return await test.step('SalesOrderPage - Open related shipment (Alt+6)', async () => {
-      const page = getPage();
-
-      await page.waitForTimeout(waitTime);
-
-      await page.locator('body').click();
-      await page.waitForTimeout(200);
-
-      await page.keyboard.press('Alt+6');
-      await page.waitForTimeout(1000);
-
-      await page.locator('.rotating, .spinner').waitFor({
-        state: 'detached',
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {});
-
-      // Click on Shipment link using data-cy attribute (language-independent)
-      // AD_RelationType_ID 540159 = "Shipment (Customer)" relation
-      await page.locator('[data-cy="reference-AD_RelationType_ID-540159"]').click();
-
-      await page.waitForURL(/\/window\/169/, {
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
-
-      await page.waitForLoadState('networkidle', {
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {});
-
-      await page.locator('.rotating, .panel-spaced-lg').waitFor({
-        state: 'detached',
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {});
-
-      await page.waitForTimeout(500);
+  static async openRelatedShipment({ maxRetries = 5, retryDelay = 2000 } = {}) {
+    await openRelatedDocument({
+      dataCy: REFERENCE_DATA_CY.SO_TO_SHIPMENT,
+      stepName: 'SalesOrderPage - Open related shipment (Alt+6)',
+      maxRetries,
+      retryDelay,
+      navigateToDetail: false, // Stay on list view - test will call ShipmentPage.openDetailView() explicitly
     });
   }
 
   /**
    * Open the related Invoice Candidate using Alt+6.
-   * @param {number} waitTime - Time to wait for candidates to be created (default: 5000ms)
+   *
+   * @param {Object} options - Configuration options
+   * @param {number} options.maxRetries - Maximum retry attempts (default: 5)
+   * @param {number} options.retryDelay - Delay between retries in ms (default: 2000)
    */
-  static async openRelatedInvoiceCandidate(waitTime = 5000) {
-    return await test.step('SalesOrderPage - Open related invoice candidate (Alt+6)', async () => {
-      const page = getPage();
-
-      await page.waitForTimeout(waitTime);
-
-      await page.locator('body').click();
-      await page.waitForTimeout(200);
-
-      await page.keyboard.press('Alt+6');
-      await page.waitForTimeout(1000);
-
-      await page.locator('.rotating, .spinner').waitFor({
-        state: 'detached',
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {});
-
-      // Click on Invoice Candidate link using data-cy attribute (language-independent)
-      // The reference is: reference-C_Invoice_Candidate_Sales (not just C_Invoice_Candidate)
-      await page.locator('[data-cy="reference-C_Invoice_Candidate_Sales"]').click();
-
-      // Sales IC window is 540092, not 540983 (purchase)
-      await page.waitForURL(/\/window\/540092/, {
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
-
-      await page.waitForLoadState('networkidle', {
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {});
-
-      await page.locator('.rotating, .panel-spaced-lg').waitFor({
-        state: 'detached',
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {});
-
-      await page.waitForTimeout(500);
+  static async openRelatedInvoiceCandidate({ maxRetries = 5, retryDelay = 2000 } = {}) {
+    await openRelatedDocument({
+      dataCy: REFERENCE_DATA_CY.SO_TO_INVOICE_CANDIDATES,
+      stepName: 'SalesOrderPage - Open related invoice candidate (Alt+6)',
+      maxRetries,
+      retryDelay,
+      navigateToDetail: false, // Opens as list view
     });
   }
 
@@ -478,29 +405,7 @@ export class SalesOrderPage {
    * This opens the PDF generation modal for the sales order.
    */
   static async openPrintModal() {
-    return await test.step('SalesOrderPage - Open print modal (Alt+P)', async () => {
-      const page = getPage();
-
-      // Focus page first
-      await page.locator('body').click();
-      await page.waitForTimeout(200);
-
-      // Press Alt+P to open print modal
-      await page.keyboard.press('Alt+P');
-
-      // Two-step wait pattern: Wait for modal container first
-      await page
-        .locator('.modal-content, .modal, .panel-modal')
-        .waitFor({
-          state: 'visible',
-          timeout: SLOW_ACTION_TIMEOUT,
-        });
-
-      // Wait for modal content to load
-      await page.waitForTimeout(500);
-
-      console.log('Print modal opened successfully');
-    });
+    return await PdfDownloader.openPrintModal('SalesOrderPage');
   }
 
   /**
@@ -509,89 +414,7 @@ export class SalesOrderPage {
    * @returns {Promise<Download>} Playwright download object
    */
   static async downloadPDF() {
-    return await test.step('SalesOrderPage - Download PDF', async () => {
-      const page = getPage();
-      const fs = require('fs');
-      const path = require('path');
-
-      // Wait for modal to be fully loaded and buttons to be ready
-      await page.waitForTimeout(1000);
-
-      // Find the Print button using data-testid (language-independent)
-      const printButton = page.getByTestId('print-modal-button');
-
-      await printButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-
-      // Set up both download and popup listeners BEFORE clicking
-      const downloadPromise = page.waitForEvent('download', {
-        timeout: VERY_SLOW_ACTION_TIMEOUT,
-      }).catch(() => null); // Don't fail if download doesn't happen
-
-      const popupPromise = page.waitForEvent('popup', {
-        timeout: VERY_SLOW_ACTION_TIMEOUT,
-      }).catch(() => null); // Don't fail if popup doesn't happen
-
-      console.log('Clicking Print button...');
-      await printButton.click();
-
-      // Wait for either download OR popup
-      const result = await Promise.race([
-        downloadPromise.then(d => d ? { type: 'download', data: d } : null),
-        popupPromise.then(p => p ? { type: 'popup', data: p } : null),
-      ]);
-
-      if (!result || !result.data) {
-        throw new Error('Neither download nor popup occurred after clicking print button');
-      }
-
-      if (result.type === 'download') {
-        console.log('PDF download started:', result.data.suggestedFilename());
-        return result.data;
-      } else {
-        // Handle popup - PDF opened in new tab
-        console.log('PDF opened in new tab');
-        const popup = result.data;
-
-        // Wait for popup to load the PDF
-        await popup.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
-
-        const pdfUrl = popup.url();
-        console.log('PDF URL:', pdfUrl);
-
-        // Download PDF directly from the URL using fetch
-        const axios = require('axios');
-        const response = await axios.get(pdfUrl, {
-          responseType: 'arraybuffer',
-          headers: {
-            // Forward cookies from the browser context
-            Cookie: (await page.context().cookies()).map(c => `${c.name}=${c.value}`).join('; '),
-          },
-        });
-
-        const buffer = Buffer.from(response.data);
-
-        // Save to temp file
-        const tempDir = path.join(process.cwd(), 'test-results', 'temp-pdfs');
-        if (!fs.existsSync(tempDir)) {
-          fs.mkdirSync(tempDir, { recursive: true });
-        }
-
-        const timestamp = Date.now();
-        const tempPath = path.join(tempDir, `sales-order-${timestamp}.pdf`);
-        fs.writeFileSync(tempPath, buffer);
-
-        console.log('PDF downloaded from popup:', tempPath);
-
-        // Close the popup
-        await popup.close().catch(() => {});
-
-        // Return a mock download object with path() method
-        return {
-          suggestedFilename: () => `sales-order-${timestamp}.pdf`,
-          path: async () => tempPath,
-        };
-      }
-    });
+    return await PdfDownloader.downloadPdf('sales-order', 'SalesOrderPage');
   }
 
   /**
@@ -659,54 +482,20 @@ export class SalesOrderPage {
   }
 
   /**
-   * Open the related Invoice using Alt+6.
+   * Open the related Invoice (Customer Invoice) using Alt+6.
    * This navigates to the invoice created from the invoice candidates.
-   * @param {number} waitTime - Time to wait for invoice to be created (default: 5000ms)
+   *
+   * @param {Object} options - Configuration options
+   * @param {number} options.maxRetries - Maximum retry attempts (default: 5)
+   * @param {number} options.retryDelay - Delay between retries in ms (default: 2000)
    */
-  static async openRelatedInvoice(waitTime = 5000) {
-    return await test.step('SalesOrderPage - Open related invoice (Alt+6)', async () => {
-      const page = getPage();
-
-      await page.waitForTimeout(waitTime);
-
-      await page.locator('body').click();
-      await page.waitForTimeout(200);
-
-      await page.keyboard.press('Alt+6');
-      await page.waitForTimeout(1000);
-
-      await page.locator('.rotating, .spinner').waitFor({
-        state: 'detached',
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {});
-
-      // Click on Invoice link
-      // CRITICAL: Correct selector discovered through debugging
-      // Pattern: reference-AD_RelationType_ID-{ID} for relation-type-based references
-      // Invoice (Customer) uses AD_RelationType_ID-540160 (not a table-based pattern)
-      const invoiceLink = page.locator('[data-cy="reference-AD_RelationType_ID-540160"]').first();
-
-      await invoiceLink.waitFor({
-        state: 'visible',
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
-
-      await invoiceLink.click();
-
-      await page.waitForURL(/\/window\/167/, {
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
-
-      await page.waitForLoadState('networkidle', {
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {});
-
-      await page.locator('.rotating, .panel-spaced-lg').waitFor({
-        state: 'detached',
-        timeout: SLOW_ACTION_TIMEOUT,
-      }).catch(() => {});
-
-      await page.waitForTimeout(500);
+  static async openRelatedInvoice({ maxRetries = 5, retryDelay = 2000 } = {}) {
+    await openRelatedDocument({
+      dataCy: REFERENCE_DATA_CY.SO_TO_CUSTOMER_INVOICE,
+      stepName: 'SalesOrderPage - Open related invoice (Alt+6)',
+      maxRetries,
+      retryDelay,
+      navigateToDetail: false, // Stay on list view - test will call InvoicePage.openDetailView() explicitly
     });
   }
 }

@@ -74,6 +74,9 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	 * NOTE: this ordering is VERY important because that's the order in which the available QtyOnHand will be allocated.
 	 */
 	private static final String ORDER_CLAUSE = "\n ORDER BY " //
+ 			// If the qty was actively scheduled for picking, the qtyToDeliver should have the highest priority
+			// as this qty is fix planned and this should prevent it from decreasing because of other changes
+			+ "\n " + I_M_ShipmentSchedule.COLUMNNAME_IsScheduledForPicking + " DESC,"
 			//
 			// Priority
 			+ "\n   COALESCE(" + I_M_ShipmentSchedule.COLUMNNAME_PriorityRule_Override + ", " + I_M_ShipmentSchedule.COLUMNNAME_PriorityRule + ")," //

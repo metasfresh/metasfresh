@@ -11,11 +11,9 @@ import org.springframework.core.io.ByteArrayResource;
 
 public final class QRCodePDFResource extends ByteArrayResource
 {
-	private final String filename;
-	@Getter
-	private final PInstanceId pinstanceId;
-	@Getter
-	private final AdProcessId processId;
+	@NonNull private final String filename;
+	@NonNull @Getter private final PInstanceId pinstanceId;
+	@NonNull @Getter private final AdProcessId processId;
 
 	@Builder
 	private QRCodePDFResource(
@@ -39,6 +37,7 @@ public final class QRCodePDFResource extends ByteArrayResource
 	}
 
 	@Override
+	@NonNull
 	public String getFilename()
 	{
 		return filename;

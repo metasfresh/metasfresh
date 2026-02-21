@@ -105,3 +105,55 @@ export const SALES_INVOICE_WINDOW_ID = 167;
  * Description: Wareneingangsdisposition verwalten
  */
 export const RECEIPT_CANDIDATES_WINDOW_ID = 540196;
+
+// ============================================================================
+// PAYMENT WINDOWS
+// ============================================================================
+
+/**
+ * Payment Term window (Zahlungsbedingung)
+ * Table: C_PaymentTerm
+ * Window ID: 141
+ * Description: Define payment terms including discount days and percentages
+ */
+export const PAYMENT_TERM_WINDOW_ID = 141;
+
+/**
+ * Payment window (Zahlung)
+ * Table: C_Payment
+ * Window ID: 195
+ * Description: Payments to vendors and from customers
+ */
+export const PAYMENT_WINDOW_ID = 195;
+
+// ============================================================================
+// SYSTEM/TEST WINDOWS
+// ============================================================================
+
+/**
+ * Test Window - Contains all supported widget types for E2E testing
+ * Table: Test (AD_Table_ID=291)
+ * Window ID: 127
+ * Description: Test window with all widget types for comprehensive testing
+ *
+ * Widget types available:
+ * - Text: Name, Description
+ * - LongText: Help (Comment/Help), CharacterData, C_BPartner_Memo
+ * - Quantity: T_Qty
+ * - Amount: T_Amount
+ * - Number: T_Number
+ * - Integer: T_Integer, Test_ID
+ * - Date: T_Date
+ * - ZonedDateTime: T_DateTime
+ * - Time: T_Time
+ * - Timestamp: Created, Updated
+ * - Switch: IsActive
+ * - YesNo: Processed
+ * - Button: Processing (Process Now)
+ * - List: AD_Client_ID, C_Currency_ID, C_UOM_ID, M_HU_PI_Item_Product_ID
+ * - Lookup: AD_Org_ID, C_BPartner_ID, M_Product_ID, M_Locator_ID, etc.
+ * - Address: C_Location_ID
+ * - Image: BinaryData
+ * - ProductAttributes: M_AttributeSetInstance_ID
+ */
+export const TEST_WINDOW_ID = 127;

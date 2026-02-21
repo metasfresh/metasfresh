@@ -135,7 +135,7 @@ jobs:
       - name: build-migration-cli
         run: |
           docker buildx build \
-            --progress=plain \
+            --progress=auto \
             --file docker-builds/Dockerfile.migration-cli \
             --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
             --output type=local,dest=./artifacts \
@@ -173,7 +173,7 @@ jobs:
       - name: build-commons
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.common \
           --cache-to type=inline \
           --cache-from metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }} \
@@ -184,7 +184,7 @@ jobs:
       - name: build-backend
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.backend \
           --cache-to type=inline \
           --cache-from metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-floating }} \
@@ -211,7 +211,7 @@ jobs:
       - name: build-backend-dist
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.backend.dist \
           --cache-to type=inline \
           --cache-from metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-floating }} \
@@ -223,7 +223,7 @@ jobs:
       - name: build-camel
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.camel \
           --cache-to type=inline \
           --cache-from metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-floating }} \
@@ -235,7 +235,7 @@ jobs:
       - name: build-camel-dist
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.camel.dist \
           --cache-to type=inline \
           --cache-from metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-floating }} \
@@ -345,7 +345,7 @@ jobs:
       - name: build-frontend
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.frontend \
           --cache-to type=inline \
           --cache-from metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }} \
@@ -355,7 +355,7 @@ jobs:
       - name: build-mobile
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.mobile \
           --cache-to type=inline \
           --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }} \
@@ -365,7 +365,7 @@ jobs:
       - name: build-mobile-test
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.mobile.test \
           --cache-to type=inline \
           --cache-from metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-floating }} \
@@ -375,7 +375,7 @@ jobs:
       - name: build-frontend-test
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.frontend.test \
           --cache-to type=inline \
           --cache-from metasfresh/metas-frontend-test:${{ needs.init.outputs.tag-floating }} \
@@ -468,7 +468,7 @@ jobs:
       - name: run-tests
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.frontend \
           --target test \
           --tag metas-frontend:test \
@@ -489,6 +489,7 @@ jobs:
           path: jest/frontend/*.xml
           retention-days: 1
           if-no-files-found: warn
+      # TODO: Upload jest JUnit XML to HTTP report server (source: jest/frontend/*.xml)
       - name: assert success
         run: |
           if [ $(cat jest/frontend/jest.exit-code) != 0 ]; then tail -1000 jest/frontend/jest.log && exit 1; fi     # print frontend log and exit if frontend failed
@@ -517,7 +518,7 @@ jobs:
       - name: build-api
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.backend.api \
           --cache-to type=inline \
           --cache-from metasfresh/metas-api:${{ needs.init.outputs.tag-floating }} \
@@ -528,7 +529,7 @@ jobs:
       - name: build-app
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.backend.app \
           --cache-to type=inline \
           --cache-from metasfresh/metas-app:${{ needs.init.outputs.tag-floating }} \
@@ -539,7 +540,7 @@ jobs:
       - name: build-externalsystems
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.camel.externalsystems \
           --cache-to type=inline \
           --cache-from metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-floating }} \
@@ -550,7 +551,7 @@ jobs:
       - name: build-edi
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.camel.edi \
           --cache-to type=inline \
           --cache-from metasfresh/metas-edi:${{ needs.init.outputs.tag-floating }} \
@@ -679,7 +680,7 @@ jobs:
       - name: build-db-init
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.db-init \
           --cache-to type=inline \
           --cache-from metasfresh/metas-db:${{ needs.init.outputs.tag-floating }} \
@@ -690,7 +691,7 @@ jobs:
       - name: build-db-migration-tool
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.db-migration-tool-lite \
           --cache-to type=inline \
           --cache-from metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-floating }} \
@@ -749,7 +750,7 @@ jobs:
       - name: build-db-preloaded
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.db-preloaded \
           --cache-to type=inline \
           --cache-from metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded \
@@ -811,7 +812,7 @@ jobs:
       - name: build-procurement-backend
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.procurement.backend \
           --cache-to type=inline \
           --cache-from metasfresh/metas-procurement-backend:${{ needs.init.outputs.tag-floating }} \
@@ -823,7 +824,7 @@ jobs:
       - name: build-procurement-nginx
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.procurement.nginx \
           --cache-to type=inline \
           --cache-from metasfresh/metas-procurement-nginx:${{ needs.init.outputs.tag-floating }} \
@@ -833,7 +834,7 @@ jobs:
       - name: build-procurement-rabbitmq
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.procurement.rabbitmq \
           --cache-to type=inline \
           --cache-from metasfresh/metas-procurement-rabbitmq:${{ needs.init.outputs.tag-floating }} \
@@ -843,7 +844,7 @@ jobs:
       - name: build-procurement-frontend
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.procurement.frontend \
           --cache-to type=inline \
           --cache-from metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-floating }} \
@@ -942,7 +943,7 @@ jobs:
       - name: build-api-compat
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.backend.api.compat \
           --cache-to type=inline \
           --cache-from metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}-compat \
@@ -954,7 +955,7 @@ jobs:
       - name: build-app-compat
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.backend.app.compat \
           --cache-to type=inline \
           --cache-from metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat \
@@ -966,7 +967,7 @@ jobs:
       - name: build-mobile-compat
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.mobile.compat \
           --cache-to type=inline \
           --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat \
@@ -977,7 +978,7 @@ jobs:
       - name: build-frontend-compat
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.frontend.compat \
           --cache-to type=inline \
           --cache-from metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}-compat \
@@ -986,17 +987,7 @@ jobs:
           --tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat \
           --tag metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat \
           .
-      - name: tag images
-        run: |
-          docker image inspect metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded >/dev/null 2>&1 || docker pull metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded --quiet
-          docker tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded metasfresh/metasfresh-db:${{ needs.init.outputs.tag-fixed }}-compat
-          docker image inspect metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }} >/dev/null 2>&1 || docker pull metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }} --quiet
-          docker tag metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }} metasfresh/metasfresh-db-migration-tool:${{ needs.init.outputs.tag-fixed }}-compat
-          docker image inspect metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }} >/dev/null 2>&1 || docker pull metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }} --quiet
-          docker tag metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }} metasfresh/metasfresh-edi:${{ needs.init.outputs.tag-fixed }}-compat
-          docker image inspect metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }} >/dev/null 2>&1 || docker pull metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }} --quiet
-          docker tag metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }} metasfresh/metasfresh-externalsystems:${{ needs.init.outputs.tag-fixed }}-compat
-
+      # Push built compat images BEFORE pulling more images to free disk space
       - name: push-image metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}-compat
         if: env.ACT != 'true'
         uses: nick-fields/retry@v3
@@ -1085,6 +1076,35 @@ jobs:
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push --quiet metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat
+      - name: cleanup-before-pulling-images
+        run: |
+          echo "=== Disk space before cleanup ==="
+          df -h /
+          echo "=== Pruning Docker build cache ==="
+          docker builder prune -af
+          echo "=== Removing pushed compat images to free space ==="
+          docker image rm metasfresh/metas-api:${{ needs.init.outputs.tag-floating }}-compat metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}-compat || true
+          docker image rm metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat || true
+          docker image rm metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}-compat metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat || true
+          docker image rm metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}-compat metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}-compat || true
+          docker image rm metasfresh/metasfresh-webapi:${{ needs.init.outputs.tag-fixed }}-compat || true
+          docker image rm metasfresh/metasfresh-app:${{ needs.init.outputs.tag-fixed }}-compat || true
+          docker image rm metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat || true
+          echo "=== Removing dangling images ==="
+          docker image prune -f
+          echo "=== Disk space after cleanup ==="
+          df -h /
+      - name: tag images
+        run: |
+          docker pull metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded --quiet
+          docker tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded metasfresh/metasfresh-db:${{ needs.init.outputs.tag-fixed }}-compat
+          docker pull metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }} --quiet
+          docker tag metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }} metasfresh/metasfresh-db-migration-tool:${{ needs.init.outputs.tag-fixed }}-compat
+          docker pull metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }} --quiet
+          docker tag metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }} metasfresh/metasfresh-edi:${{ needs.init.outputs.tag-fixed }}-compat
+          docker pull metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }} --quiet
+          docker tag metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }} metasfresh/metasfresh-externalsystems:${{ needs.init.outputs.tag-fixed }}-compat
+
       - name: push-image metasfresh/metasfresh-db:${{ needs.init.outputs.tag-fixed }}-compat
         if: env.ACT != 'true'
         uses: nick-fields/retry@v3
@@ -1158,7 +1178,7 @@ jobs:
       - name: run-junit-tests-j8
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.junit \
           --cache-to type=inline \
           --cache-from metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }} \
@@ -1168,10 +1188,20 @@ jobs:
           --tag metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }} \
           .
+      - name: cleanup-after-j8
+        run: |
+          echo "=== Disk space before cleanup ==="
+          df -h /
+          echo "=== Pruning Docker build cache ==="
+          docker builder prune -af
+          echo "=== Removing dangling images ==="
+          docker image prune -f
+          echo "=== Disk space after cleanup ==="
+          df -h /
       - name: run-junit-tests-j14
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.camel.junit \
           --cache-to type=inline \
           --cache-from metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14 \
@@ -1219,6 +1249,7 @@ jobs:
           path: junit/camel/**/*.xml
           retention-days: 1
           if-no-files-found: warn
+      # TODO: Upload backend+camel JUnit XML to HTTP report server (source: junit/backend/, junit/camel/)
       - name: assert success
         run: |
           if [ $(cat junit/commons/junit.exit-code) != 0 ] || [ $(cat junit/commons/junit.mvn.exit-code) != 0 ]; then tail -1000 junit/commons/junit.log && exit 1; fi      # print commons log and exit if commons failed
@@ -1252,7 +1283,7 @@ jobs:
       - name: build-cucumber
         run: |
           docker buildx build \
-          --progress=plain \
+          --progress=auto \
           --file docker-builds/Dockerfile.cucumber \
           --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
@@ -1464,7 +1495,7 @@ jobs:
       - name: Rename Cucumber JUnit for unique merge
         if: always()
         run: mv cucumber/cucumber-junit.xml cucumber/cucumber-junit-${{ matrix.profile }}.xml || true
-      - name: Upload Cucumber JUnit results for R2
+      - name: Upload Cucumber JUnit results
         uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -1472,6 +1503,9 @@ jobs:
           path: cucumber/cucumber-junit-${{ matrix.profile }}.xml
           if-no-files-found: ignore
           retention-days: 1
+      # TODO: Upload cucumber allure results + JUnit XML to HTTP report server
+      #   Allure source: cucumber-allure-results/
+      #   JUnit source:  cucumber/cucumber-junit-${{ matrix.profile }}.xml
 
   cucumber-allure-report:
     name: Generate Cucumber Allure Report
@@ -1652,7 +1686,10 @@ jobs:
           mfregistry: metasfresh
           dbqualifier: preloaded
         run: |
-          docker compose --profile mobile up --abort-on-container-exit --exit-code-from playwright-mobile 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
+          # Start stack and attach only to playwright container for clean logs
+          docker compose --profile mobile up --attach playwright-mobile --abort-on-container-exit --exit-code-from playwright-mobile 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
+          # Capture infrastructure logs separately for debugging
+          docker compose --profile mobile logs --no-log-prefix db rabbitmq search app mobile > infra.log 2>&1 || true
           docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest
           docker compose --profile mobile down
       - name: push-results to testspace
@@ -1699,8 +1736,9 @@ jobs:
           path: |
             docker-builds/e2e-tests/playwright-report-mobile/
             docker-builds/e2e-tests/test-results-mobile/
+            docker-builds/e2e-tests/infra.log
           retention-days: 30
-      - name: Upload Playwright Mobile JUnit results for R2
+      - name: Upload Playwright Mobile JUnit results
         uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -1708,6 +1746,8 @@ jobs:
           path: docker-builds/e2e-tests/playwright-report-mobile/junit/results.xml
           if-no-files-found: ignore
           retention-days: 1
+      # TODO: Upload mobile allure results to HTTP report server
+      #   Source: docker-builds/e2e-tests/allure-results-mobile/
 
   frontend_webui_test:
     name: frontend webui test
@@ -1732,7 +1772,10 @@ jobs:
           mfregistry: metasfresh
           dbqualifier: preloaded
         run: |
-          docker compose --profile frontend up --abort-on-container-exit --exit-code-from playwright-frontend 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
+          # Start stack and attach only to playwright container for clean logs
+          docker compose --profile frontend up --attach playwright-frontend --abort-on-container-exit --exit-code-from playwright-frontend 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
+          # Capture infrastructure logs separately for debugging
+          docker compose --profile frontend logs --no-log-prefix db rabbitmq search app webapi webui > infra.log 2>&1 || true
           docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest
           docker compose --profile frontend down
       - name: push-results to testspace
@@ -1779,8 +1822,9 @@ jobs:
           path: |
             docker-builds/e2e-tests/playwright-report-frontend/
             docker-builds/e2e-tests/test-results-frontend/
+            docker-builds/e2e-tests/infra.log
           retention-days: 30
-      - name: Upload Playwright Frontend JUnit results for R2
+      - name: Upload Playwright Frontend JUnit results
         uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -1788,302 +1832,30 @@ jobs:
           path: docker-builds/e2e-tests/playwright-report-frontend/junit/results.xml
           if-no-files-found: ignore
           retention-days: 1
+      # TODO: Upload frontend allure results to HTTP report server
+      #   Source: docker-builds/e2e-tests/allure-results/
 
-  test_reports_publish:
-    name: Publish Test Reports to R2
-    runs-on: ubuntu-latest
-    needs: [ init, test-frontend, junit, frontend_webui_test, mobile_test, cucumber-run, cucumber-allure-report ]
-    if: always()  # Run even if tests failed
-    permissions: {}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup directory structure
-        run: |
-          BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
-          BUILD_DIR="reports/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}"
-
-          # Create directory structure for Allure reports
-          mkdir -p "${BUILD_DIR}/allure/frontend-webui"
-          mkdir -p "${BUILD_DIR}/allure/mobile-webui"
-          mkdir -p "${BUILD_DIR}/allure/cucumber"
-
-          # Create directory structure for JUnit HTML reports
-          mkdir -p "${BUILD_DIR}/junit/jest"
-          mkdir -p "${BUILD_DIR}/junit/backend"
-          mkdir -p "${BUILD_DIR}/junit/camel"
-          mkdir -p "${BUILD_DIR}/junit/cucumber"
-
-          echo "Created directory structure for branch: ${BRANCH_SANITIZED}, build: ${{ needs.init.outputs.tag-fixed }}"
-
-      # ===== DOWNLOAD ALLURE REPORTS =====
-      - name: Download Frontend Allure report
-        if: needs.frontend_webui_test.result == 'success' || needs.frontend_webui_test.result == 'failure'
-        uses: actions/download-artifact@v4
-        with:
-          name: allure-report-frontend-webui
-          path: reports/branches/${{ needs.init.outputs.branch-sanitized-gh-pages }}/builds/${{ needs.init.outputs.tag-fixed }}/allure/frontend-webui/
-        continue-on-error: true
-
-      - name: Download Mobile Allure report
-        if: needs.mobile_test.result == 'success' || needs.mobile_test.result == 'failure'
-        uses: actions/download-artifact@v4
-        with:
-          name: allure-report-mobile-webui
-          path: reports/branches/${{ needs.init.outputs.branch-sanitized-gh-pages }}/builds/${{ needs.init.outputs.tag-fixed }}/allure/mobile-webui/
-        continue-on-error: true
-
-      - name: Download Cucumber Allure report
-        if: needs.cucumber-allure-report.result == 'success'
-        uses: actions/download-artifact@v4
-        with:
-          name: allure-report-cucumber
-          path: reports/branches/${{ needs.init.outputs.branch-sanitized-gh-pages }}/builds/${{ needs.init.outputs.tag-fixed }}/allure/cucumber/
-        continue-on-error: true
-
-      # ===== DOWNLOAD JUNIT XML RESULTS =====
-      - name: Download Jest JUnit results
-        if: needs.test-frontend.result == 'success' || needs.test-frontend.result == 'failure'
-        uses: actions/download-artifact@v4
-        with:
-          name: junit-results-jest
-          path: junit-raw/jest/
-        continue-on-error: true
-
-      - name: Download Backend JUnit results
-        if: needs.junit.result == 'success' || needs.junit.result == 'failure'
-        uses: actions/download-artifact@v4
-        with:
-          name: junit-results-backend
-          path: junit-raw/backend/
-        continue-on-error: true
-
-      - name: Download Camel JUnit results
-        if: needs.junit.result == 'success' || needs.junit.result == 'failure'
-        uses: actions/download-artifact@v4
-        with:
-          name: junit-results-camel
-          path: junit-raw/camel/
-        continue-on-error: true
-
-      # ===== GENERATE JUNIT HTML REPORTS =====
-      # Note: Playwright tests use Allure reports (richer visualization) instead of JUnit HTML
-      # Paths account for directory structure preserved by upload-artifact:
-      #   - jest/frontend/*.xml downloaded to junit-raw/jest/ → junit-raw/jest/jest/frontend/*.xml
-      #   - junit/{commons,backend}/**/*.xml downloaded to junit-raw/backend/ → junit-raw/backend/junit/{commons,backend}/**/*.xml
-      #   - junit/camel/**/*.xml downloaded to junit-raw/camel/ → junit-raw/camel/junit/camel/**/*.xml
-      - name: Generate Jest HTML report
-        uses: ./.github/actions/generate-junit-html
-        with:
-          xml-path: junit-raw/jest/**/*.xml
-          output-dir: reports/branches/${{ needs.init.outputs.branch-sanitized-gh-pages }}/builds/${{ needs.init.outputs.tag-fixed }}/junit/jest
-          artifact-name: junit-report-jest
-          history-artifact-name: junit-history-jest
-          report-title: 'Jest (Frontend Unit Tests)'
-        continue-on-error: true
-
-      - name: Generate Backend JUnit HTML report
-        uses: ./.github/actions/generate-junit-html
-        with:
-          xml-path: junit-raw/backend/**/*.xml
-          output-dir: reports/branches/${{ needs.init.outputs.branch-sanitized-gh-pages }}/builds/${{ needs.init.outputs.tag-fixed }}/junit/backend
-          artifact-name: junit-report-backend
-          history-artifact-name: junit-history-backend
-          report-title: 'Backend Unit Tests'
-        continue-on-error: true
-
-      - name: Generate Camel JUnit HTML report
-        uses: ./.github/actions/generate-junit-html
-        with:
-          xml-path: junit-raw/camel/**/*.xml
-          output-dir: reports/branches/${{ needs.init.outputs.branch-sanitized-gh-pages }}/builds/${{ needs.init.outputs.tag-fixed }}/junit/camel
-          artifact-name: junit-report-camel
-          history-artifact-name: junit-history-camel
-          report-title: 'Camel Unit and Integration Tests'
-        continue-on-error: true
-
-      - name: Verify reports exist
-        id: verify_reports
-        run: |
-          BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
-          BUILD_DIR="reports/branches/${BRANCH_SANITIZED}/builds/${{ needs.init.outputs.tag-fixed }}"
-
-          ALLURE_FOUND=0
-          JUNIT_FOUND=0
-
-          # Check Allure reports
-          for report in frontend-webui mobile-webui cucumber; do
-            if [ -f "${BUILD_DIR}/allure/${report}/index.html" ]; then
-              echo "✓ Allure ${report} report found"
-              ALLURE_FOUND=$((ALLURE_FOUND + 1))
-            fi
-          done
-
-          # Check JUnit reports (Playwright uses Allure instead)
-          for report in jest backend camel cucumber; do
-            if [ -f "${BUILD_DIR}/junit/${report}/index.html" ]; then
-              echo "✓ JUnit ${report} report found"
-              JUNIT_FOUND=$((JUNIT_FOUND + 1))
-            fi
-          done
-
-          echo "allure_found=${ALLURE_FOUND}" >> $GITHUB_OUTPUT
-          echo "junit_found=${JUNIT_FOUND}" >> $GITHUB_OUTPUT
-
-          TOTAL=$((ALLURE_FOUND + JUNIT_FOUND))
-          if [ "$TOTAL" -eq 0 ]; then
-            echo "::warning::No reports found to publish - this may be expected if all tests were skipped"
-          else
-            echo "Found ${ALLURE_FOUND} Allure and ${JUNIT_FOUND} JUnit report(s) to publish"
-          fi
-
-      # ===== CLOUDFLARE R2 UPLOAD =====
-      - name: Validate R2 configuration
-        run: |
-          MISSING=""
-          if [ -z "${{ secrets.R2_ACCESS_KEY_ID }}" ]; then MISSING="${MISSING} R2_ACCESS_KEY_ID"; fi
-          if [ -z "${{ secrets.R2_SECRET_ACCESS_KEY }}" ]; then MISSING="${MISSING} R2_SECRET_ACCESS_KEY"; fi
-          if [ -z "${{ vars.R2_ENDPOINT_URL }}" ]; then MISSING="${MISSING} R2_ENDPOINT_URL"; fi
-          if [ -z "${{ vars.R2_BUCKET_NAME }}" ]; then MISSING="${MISSING} R2_BUCKET_NAME"; fi
-          if [ -z "${{ vars.R2_PUBLIC_URL }}" ]; then MISSING="${MISSING} R2_PUBLIC_URL"; fi
-
-          if [ -n "$MISSING" ]; then
-            echo "::error::Missing required R2 configuration:${MISSING}"
-            exit 1
-          fi
-          echo "✓ R2 configuration validated"
-
-      - name: Configure AWS CLI for R2
-        run: |
-          if ! command -v aws &> /dev/null; then
-            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-            unzip -q awscliv2.zip
-            sudo ./aws/install
-          fi
-
-      - name: Sync reports to Cloudflare R2
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: auto
-        run: |
-          # Configure AWS CLI for 50 concurrent uploads (default is 10)
-          aws configure set default.s3.max_concurrent_requests 50
-
-          echo "Syncing reports to R2 (50 concurrent uploads)..."
-          aws s3 sync reports/ s3://${{ vars.R2_BUCKET_NAME }}/ \
-            --endpoint-url ${{ vars.R2_ENDPOINT_URL }} \
-            --no-progress
-
-          echo "✓ Reports synced to R2"
-          echo "Total size: $(du -sh reports | cut -f1)"
-
-      # ===== GENERATE AND UPLOAD LANDING PAGE =====
-      - name: Generate landing page
-        uses: ./.github/actions/generate-r2-landing-page
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: auto
-        with:
-          r2-endpoint: ${{ vars.R2_ENDPOINT_URL }}
-          r2-bucket: ${{ vars.R2_BUCKET_NAME }}
-          r2-public-url: ${{ vars.R2_PUBLIC_URL }}
-
-      - name: Upload landing page to R2
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: auto
-        run: |
-          aws s3 sync landing-page/ s3://${{ vars.R2_BUCKET_NAME }}/ \
-            --endpoint-url ${{ vars.R2_ENDPOINT_URL }} \
-            --no-progress
-          echo "✓ Landing page uploaded"
-
-      - name: Cleanup old builds from R2
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: auto
-        run: |
-          BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
-          MAX_BUILDS_PER_BRANCH=10
-
-          echo "Cleaning up old builds for branch: ${BRANCH_SANITIZED}"
-          echo "Keeping only the ${MAX_BUILDS_PER_BRANCH} most recent builds"
-
-          > builds_with_time.txt
-
-          aws s3api list-objects-v2 \
-            --endpoint-url ${{ vars.R2_ENDPOINT_URL }} \
-            --bucket ${{ vars.R2_BUCKET_NAME }} \
-            --prefix "branches/${BRANCH_SANITIZED}/builds/" \
-            --delimiter "/" \
-            --query 'CommonPrefixes[].Prefix' \
-            --output text | tr '\t' '\n' > all_prefixes.txt
-
-          while read -r prefix; do
-            [ -z "$prefix" ] && continue
-            LAST_MODIFIED=$(aws s3api list-objects-v2 \
-              --endpoint-url ${{ vars.R2_ENDPOINT_URL }} \
-              --bucket ${{ vars.R2_BUCKET_NAME }} \
-              --prefix "${prefix}" \
-              --query 'sort_by(Contents, &LastModified)[-1].LastModified' \
-              --output text 2>/dev/null || echo "1970-01-01T00:00:00Z")
-            [ "$LAST_MODIFIED" == "None" ] && LAST_MODIFIED="1970-01-01T00:00:00Z"
-            echo "${LAST_MODIFIED} ${prefix}" >> builds_with_time.txt
-          done < all_prefixes.txt
-
-          sort -r builds_with_time.txt | awk '{print $2}' > all_builds.txt
-
-          BUILD_COUNT=$(wc -l < all_builds.txt | tr -d ' ')
-          echo "Found ${BUILD_COUNT} builds"
-
-          if [ "$BUILD_COUNT" -gt "$MAX_BUILDS_PER_BRANCH" ]; then
-            BUILDS_TO_DELETE=$((BUILD_COUNT - MAX_BUILDS_PER_BRANCH))
-            echo "Deleting ${BUILDS_TO_DELETE} old build(s)"
-
-            tail -n "$BUILDS_TO_DELETE" all_builds.txt | while read -r build_prefix; do
-              [ -z "$build_prefix" ] && continue
-              echo "Deleting: ${build_prefix}"
-              aws s3 rm "s3://${{ vars.R2_BUCKET_NAME }}/${build_prefix}" \
-                --endpoint-url ${{ vars.R2_ENDPOINT_URL }} \
-                --recursive 2>/dev/null || true
-            done
-            echo "CLEANUP_INFO=🧹 Deleted ${BUILDS_TO_DELETE} old build(s), keeping ${MAX_BUILDS_PER_BRANCH} most recent" >> $GITHUB_ENV
-          else
-            echo "No cleanup needed (${BUILD_COUNT} <= ${MAX_BUILDS_PER_BRANCH})"
-            echo "CLEANUP_INFO=🧹 No cleanup needed (${BUILD_COUNT}/${MAX_BUILDS_PER_BRANCH} builds)" >> $GITHUB_ENV
-          fi
-
-      - name: produce-summary
-        run: |
-          BRANCH_SANITIZED="${{ needs.init.outputs.branch-sanitized-gh-pages }}"
-          VERSION="${{ needs.init.outputs.tag-fixed }}"
-          R2_BASE_URL="${{ vars.R2_PUBLIC_URL }}/branches/${BRANCH_SANITIZED}/builds/${VERSION}"
-          LANDING_URL="${{ vars.R2_PUBLIC_URL }}/index.html"
-
-          echo '#### 📊 Test Reports' >> $GITHUB_STEP_SUMMARY
-          echo '' >> $GITHUB_STEP_SUMMARY
-          echo "**[Browse All Reports](${LANDING_URL})**" >> $GITHUB_STEP_SUMMARY
-          echo '' >> $GITHUB_STEP_SUMMARY
-          echo '##### Allure Reports' >> $GITHUB_STEP_SUMMARY
-          echo "| Report | Link |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------|------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Frontend WebUI | [View](${R2_BASE_URL}/allure/frontend-webui/index.html) |" >> $GITHUB_STEP_SUMMARY
-          echo "| Mobile WebUI | [View](${R2_BASE_URL}/allure/mobile-webui/index.html) |" >> $GITHUB_STEP_SUMMARY
-          echo "| Cucumber | [View](${R2_BASE_URL}/allure/cucumber/index.html) |" >> $GITHUB_STEP_SUMMARY
-          echo '' >> $GITHUB_STEP_SUMMARY
-          echo '##### JUnit Reports' >> $GITHUB_STEP_SUMMARY
-          echo "| Report | Link |" >> $GITHUB_STEP_SUMMARY
-          echo "|--------|------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Jest (Frontend) | [View](${R2_BASE_URL}/junit/jest/index.html) |" >> $GITHUB_STEP_SUMMARY
-          echo "| Backend | [View](${R2_BASE_URL}/junit/backend/index.html) |" >> $GITHUB_STEP_SUMMARY
-          echo "| Camel | [View](${R2_BASE_URL}/junit/camel/index.html) |" >> $GITHUB_STEP_SUMMARY
-          echo '' >> $GITHUB_STEP_SUMMARY
-          echo "$CLEANUP_INFO" >> $GITHUB_STEP_SUMMARY
-
+  # =============================================================================
+  # TODO: Test Report Upload to HTTP Server
+  # =============================================================================
+  # Each test job above collects raw test data (JUnit XML, Allure results) and
+  # uploads them as GitHub artifacts. The plan is to upload these to our own
+  # HTTP report server. When implementing, either:
+  #
+  #   Option A: Add inline upload steps in each test job (see TODO markers above)
+  #   Option B: Create a post-workflow job that downloads all artifacts and uploads
+  #
+  # Available test artifacts per job:
+  #   test-frontend:        jest/frontend/*.xml                          (JUnit)
+  #   junit:                junit/backend/**/*.xml, junit/camel/**/*.xml (JUnit)
+  #   cucumber-run:         cucumber-allure-results/ (Allure), cucumber/ (JUnit)
+  #   mobile_test:          allure-results-mobile/ (Allure), junit/ (JUnit)
+  #   frontend_webui_test:  allure-results/ (Allure), junit/ (JUnit)
+  #
+  # Useful inputs from init job:
+  #   needs.init.outputs.branch-sanitized-gh-pages  (branch name for paths)
+  #   needs.init.outputs.tag-fixed                  (build version tag)
+  # =============================================================================
 
   cicd-dispatch:
     if: contains(fromJson(vars.CICD_BRANCH_MAP), github.ref_name) == true

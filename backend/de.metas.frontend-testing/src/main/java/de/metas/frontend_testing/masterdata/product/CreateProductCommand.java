@@ -39,6 +39,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.TimeUtil;
@@ -131,6 +132,26 @@ public class CreateProductCommand
 		productRecord.setM_Product_Category_ID(productCategoryId.getRepoId());
 		productRecord.setIsSold(true);
 		productRecord.setIsPurchased(true);
+
+		// Set M_AttributeSet_ID if attributeSetName is provided
+		final String attributeSetName = StringUtils.trimBlankToNull(request.getAttributeSetName());
+		if (attributeSetName != null)
+		{
+			final I_M_AttributeSet attributeSet = queryBL.createQueryBuilder(I_M_AttributeSet.class)
+					.addEqualsFilter(I_M_AttributeSet.COLUMNNAME_Name, attributeSetName)
+					.addOnlyActiveRecordsFilter()
+					.create()
+					.firstOnly(I_M_AttributeSet.class);
+
+			if (attributeSet == null)
+			{
+				throw new AdempiereException("M_AttributeSet with name `" + attributeSetName + "` not found");
+			}
+
+			productRecord.setM_AttributeSet_ID(attributeSet.getM_AttributeSet_ID());
+			logger.info("Set M_AttributeSet_ID={} (name={}) for product {}", attributeSet.getM_AttributeSet_ID(), attributeSetName, productRecord.getValue());
+		}
+
 		InterfaceWrapperHelper.saveRecord(productRecord);
 
 		final ProductId productId = ProductId.ofRepoId(productRecord.getM_Product_ID());
@@ -401,6 +422,11 @@ public class CreateProductCommand
 		{
 			lineRecord.setIsQtyPercentage(false);
 			lineRecord.setQtyBOM(line.getQty());
+		}
+
+		if (line.getPickingInstruction() != null)
+		{
+			lineRecord.setPickingInstruction(line.getPickingInstruction());
 		}
 
 		saveRecord(lineRecord);

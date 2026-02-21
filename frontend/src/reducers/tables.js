@@ -478,7 +478,10 @@ const reducer = produce((draftState, action) => {
       }
 
       const tableId = getTableId({ windowId, docId, tabId });
-      draftState[tableId].orderBys = [{ fieldName, ascending }];
+      // Guard against race condition where sort action fires before table creation
+      if (draftState[tableId]) {
+        draftState[tableId].orderBys = [{ fieldName, ascending }];
+      }
 
       return;
     }
