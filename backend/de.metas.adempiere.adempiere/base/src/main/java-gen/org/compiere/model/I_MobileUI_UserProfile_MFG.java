@@ -188,7 +188,7 @@ public interface I_MobileUI_UserProfile_MFG
 	/**
 	 * Set Receive Unit Type.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -197,7 +197,7 @@ public interface I_MobileUI_UserProfile_MFG
 	/**
 	 * Get Receive Unit Type.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
