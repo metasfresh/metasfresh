@@ -280,9 +280,15 @@ final class MInventoryImportTableSqlUpdater
 
 	private void dbUpdateSubProducer(@NonNull final ImportRecordsSelection selection)
 	{
-		// Set M_Warehouse_ID
+		// Sub-producers are always vendors; add Client, Org, IsVendor, and IsActive filters
 		final StringBuilder sql = new StringBuilder("UPDATE I_Inventory i ")
-				.append("SET SubProducer_BPartner_ID=(SELECT C_BPartner_ID FROM C_BPartner bp WHERE i.SubProducerBPartner_Value=bp.value) ")
+				.append("SET SubProducer_BPartner_ID=(SELECT bp.C_BPartner_ID FROM C_BPartner bp")
+				.append(" WHERE i.SubProducerBPartner_Value=bp.value")
+				.append(" AND bp.AD_Client_ID=i.AD_Client_ID")
+				.append(" AND bp.AD_Org_ID IN (i.AD_Org_ID, 0)")
+				.append(" AND bp.IsVendor='Y'")
+				.append(" AND bp.IsActive='Y'")
+				.append(" ORDER BY bp.AD_Org_ID DESC LIMIT 1) ")
 				.append("WHERE SubProducer_BPartner_ID IS NULL ")
 				.append("AND I_IsImported<>'Y' ")
 				.append(selection.toSqlWhereClause("i"));

@@ -76,10 +76,14 @@ public class CampaignPriceImportTableSqlUpdater
 
 	private static void dbUpdateBPartner(final ImportRecordsSelection selection)
 	{
+		// Campaign prices are sales-only; prefer IsCustomer='Y' as tie-breaker
 		StringBuilder sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
 				.append(" SET C_BPartner_ID=(SELECT C_BPartner_ID FROM C_BPartner p")
-				.append(" WHERE p.isActive='Y' AND i.BPartner_Value=p.Value AND p.AD_Client_ID in (i.AD_Client_ID, 0) AND p.AD_Org_ID IN (0, i.AD_Org_ID) ORDER BY p.AD_Client_ID DESC, p.AD_Org_ID DESC LIMIT 1) ")
+				.append(" WHERE p.isActive='Y' AND i.BPartner_Value=p.Value AND p.AD_Client_ID in (i.AD_Client_ID, 0) AND p.AD_Org_ID IN (0, i.AD_Org_ID)")
+				.append(" ORDER BY p.AD_Client_ID DESC, p.AD_Org_ID DESC,")
+				.append(" CASE WHEN p.IsCustomer='Y' THEN 0 ELSE 1 END,")
+				.append(" p.C_BPartner_ID DESC LIMIT 1) ")
 				.append("WHERE C_BPartner_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));

@@ -127,10 +127,18 @@ public class ImportPriceList extends JavaProcess
 		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.info("Reset=" + no);
 
-		// Set Optional BPartner
-		sql = new StringBuffer("UPDATE I_PriceList "
-				+ "SET C_BPartner_ID=(SELECT C_BPartner_ID FROM C_BPartner p"
-				+ " WHERE I_PriceList.BPartner_Value=p.Value AND I_PriceList.AD_Client_ID=p.AD_Client_ID) "
+		// Set Optional BPartner — use IsSOPriceList as tie-breaker: SO=customer, PO=vendor
+		sql = new StringBuffer("UPDATE I_PriceList i "
+				+ "SET C_BPartner_ID=(SELECT bp.C_BPartner_ID FROM C_BPartner bp"
+				+ " WHERE i.BPartner_Value=bp.Value AND i.AD_Client_ID=bp.AD_Client_ID"
+				+ " AND bp.IsActive='Y'"
+				+ " ORDER BY"
+				+ " CASE WHEN i.IsSOPriceList='Y' AND bp.IsCustomer='Y' THEN 0"
+				+ "      WHEN i.IsSOPriceList='N' AND bp.IsVendor='Y' THEN 0"
+				+ "      ELSE 1 END,"
+				+ " bp.C_BPartner_ID DESC"
+				+ " LIMIT 1"
+				+ " ) "
 				+ "WHERE C_BPartner_ID IS NULL AND BPartner_Value IS NOT NULL"
 				+ " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());

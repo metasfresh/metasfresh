@@ -139,7 +139,18 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 
 		final I_C_Order salesOrder = salesOrderLine.getC_Order();
 
-		final I_C_BPartner vendor = bpartnerDAO.retrieveBPartnerByValue(context.getCtx(), (String)vendorBPartnerValue);
+		final I_C_BPartner vendor;
+		try
+		{
+			vendor = bpartnerDAO.retrieveBPartnerByValue(context.getCtx(), (String)vendorBPartnerValue);
+		}
+		catch (final org.adempiere.exceptions.DBMoreThanOneRecordsFoundException e)
+		{
+			throw new AdempiereException(
+					de.metas.bpartner.service.impl.BPartnerDAO.MSG_BPARTNER_VALUE_NOT_UNIQUE,
+					vendorBPartnerValue, ">1")
+					.markAsUserValidationError();
+		}
 		if (vendor == null)
 		{
 			throw new AdempiereException("No vendor found for Value=" + vendorBPartnerValue + " or vendor is not active.");

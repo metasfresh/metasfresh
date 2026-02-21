@@ -258,6 +258,14 @@ public class BPartnerCompositeRepository
 		final ImmutableList<BPartnerComposite> byQuery = getByQuery(query);
 		if (byQuery.size() > 1)
 		{
+			if (query.getBpartnerValue() != null)
+			{
+				throw new AdempiereException(
+						de.metas.bpartner.service.impl.BPartnerDAO.MSG_BPARTNER_VALUE_NOT_UNIQUE_REST,
+						query.getBpartnerValue(), byQuery.size())
+						.markAsUserValidationError()
+						.setParameter("query", query);
+			}
 			throw new AdempiereException("The given query needs to yield max one BPartnerComposite; items yielded instead: " + byQuery.size())
 					.appendParametersToMessage()
 					.setParameter("query", query);

@@ -347,8 +347,16 @@ public class ImportInvoice extends JavaProcess
 		log.debug("Set BP from ContactName=" + no);
 		//	BP from Value
 		sql = new StringBuffer("UPDATE I_Invoice o "
-									   + "SET C_BPartner_ID=(SELECT MAX(C_BPartner_ID) FROM C_BPartner bp"
-									   + " WHERE o.BPartnerValue=bp.Value AND o.AD_Client_ID=bp.AD_Client_ID) "
+									   + "SET C_BPartner_ID=(SELECT bp.C_BPartner_ID FROM C_BPartner bp"
+									   + " WHERE o.BPartnerValue=bp.Value AND o.AD_Client_ID=bp.AD_Client_ID"
+									   + " AND bp.IsActive='Y'"
+									   + " ORDER BY"
+									   + " CASE WHEN o.IsSOTrx='Y' AND bp.IsCustomer='Y' THEN 0"
+									   + "      WHEN o.IsSOTrx='N' AND bp.IsVendor='Y' THEN 0"
+									   + "      ELSE 1 END,"
+									   + " bp.C_BPartner_ID DESC"
+									   + " LIMIT 1"
+									   + " ) "
 									   + "WHERE C_BPartner_ID IS NULL AND BPartnerValue IS NOT NULL"
 									   + " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
@@ -539,8 +547,19 @@ public class ImportInvoice extends JavaProcess
 					else
 						imp.setName(imp.getBPartnerValue());
 				}
-				//	BPartner
-				I_C_BPartner bp = MBPartner.get(getCtx(), imp.getBPartnerValue());
+				//	BPartner — use retrieveBPartnerByValue with try-catch for duplicate Value
+				I_C_BPartner bp;
+				try
+				{
+					bp = Services.get(IBPartnerDAO.class).retrieveBPartnerByValue(getCtx(), imp.getBPartnerValue());
+				}
+				catch (final org.adempiere.exceptions.DBMoreThanOneRecordsFoundException e)
+				{
+					throw new org.adempiere.exceptions.AdempiereException(
+							de.metas.bpartner.service.impl.BPartnerDAO.MSG_BPARTNER_VALUE_NOT_UNIQUE,
+							imp.getBPartnerValue(), ">1")
+							.markAsUserValidationError();
+				}
 				if (bp == null)
 				{
 					bp = MBPartner.newFromTemplate();

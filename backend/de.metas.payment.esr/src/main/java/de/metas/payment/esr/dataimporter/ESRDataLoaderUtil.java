@@ -236,7 +236,17 @@ public class ESRDataLoaderUtil
 		I_C_BPartner bpartner = null;
 		if (!Check.isEmpty(formattedBPValue, true))
 		{
-			bpartner = Services.get(IBPartnerDAO.class).retrieveBPartnerByValue(Env.getCtx(), formattedBPValue);
+			try
+			{
+				bpartner = Services.get(IBPartnerDAO.class).retrieveBPartnerByValue(Env.getCtx(), formattedBPValue);
+			}
+			catch (final org.adempiere.exceptions.DBMoreThanOneRecordsFoundException e)
+			{
+				throw new org.adempiere.exceptions.AdempiereException(
+						de.metas.bpartner.service.impl.BPartnerDAO.MSG_BPARTNER_VALUE_NOT_UNIQUE,
+						formattedBPValue, ">1")
+						.markAsUserValidationError();
+			}
 		}
 
 		importLine.setBPartner_Value(bpValue);

@@ -344,16 +344,24 @@ public class BPartnerImportTableSqlUpdater
 
 	private void dbUpdateCbPartnerIdsFromValue(final ImportRecordsSelection selection)
 	{
-
+		// Use subquery with LIMIT 1 and IsCustomer/IsVendor tie-breaker to avoid non-deterministic UPDATE FROM with multiple matches
 		final StringBuilder sql = new StringBuilder("UPDATE " + I_I_BPartner.Table_Name + " i " + "SET "
-				+ COLUMNNAME_C_BPartner_ID + " = bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID
+				+ COLUMNNAME_C_BPartner_ID + " = ("
+				+ "SELECT bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID
 				+ " FROM " + I_C_BPartner.Table_Name + " bp"
-				+ " WHERE i." + COLUMNNAME_C_BPartner_ID + " IS NULL "
-				+ " AND i." + I_I_BPartner.COLUMNNAME_BPValue + " IS NOT NULL "
-				+ " AND bp." + I_C_BPartner.COLUMNNAME_Value + " = i." + I_I_BPartner.COLUMNNAME_BPValue
+				+ " WHERE bp." + I_C_BPartner.COLUMNNAME_Value + " = i." + I_I_BPartner.COLUMNNAME_BPValue
 				+ " AND bp." + I_C_BPartner.COLUMNNAME_AD_Client_ID + " = i." + I_I_BPartner.COLUMNNAME_AD_Client_ID
 				+ " AND bp." + I_C_BPartner.COLUMNNAME_AD_Org_ID + " = i." + I_I_BPartner.COLUMNNAME_AD_Org_ID
 				+ " AND bp." + I_C_BPartner.COLUMNNAME_IsActive + " = 'Y'"
+				+ " ORDER BY"
+				+ " CASE WHEN i.IsCustomer = 'Y' AND bp.IsCustomer = 'Y' THEN 0"
+				+ "      WHEN i.IsVendor = 'Y' AND bp.IsVendor = 'Y' THEN 0"
+				+ "      ELSE 1 END,"
+				+ " bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID
+				+ " LIMIT 1"
+				+ ")"
+				+ " WHERE i." + COLUMNNAME_C_BPartner_ID + " IS NULL "
+				+ " AND i." + I_I_BPartner.COLUMNNAME_BPValue + " IS NOT NULL "
 				+ " AND i." + I_I_BPartner.COLUMNNAME_I_IsImported + " <> 'Y'")
 
 						.append(selection.toSqlWhereClause("i"));
