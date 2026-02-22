@@ -21,6 +21,8 @@ public class JsonPPOrderRequest
 	@NonNull BigDecimal qty;
 	@NonNull ZonedDateTime datePromised;
 	@Nullable Identifier salesOrderLine;
+	@Nullable Identifier lutuConfigurationTU;
+	@Nullable Identifier piItemProduct;
 
 	@Nullable Map<String, Line> lines;
 
