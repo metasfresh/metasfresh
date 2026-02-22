@@ -70,6 +70,22 @@ public class I_Order_StepDef
 	@Given("metasfresh contains C_BPartners with duplicate Values allowed:")
 	public void metasfresh_contains_c_bpartners_with_duplicate_values(@NonNull final DataTable dataTable)
 	{
+		// First pass: deactivate stale BPartners with matching Values from previous test runs.
+		// Must happen BEFORE the creation loop to avoid deactivating BPartners created within
+		// the same DataTable (multiple rows can share the same Value).
+		final java.util.Set<String> deactivatedValues = new java.util.HashSet<>();
+		DataTableRows.of(dataTable).forEach(row -> {
+			final String value = row.getAsString(I_C_BPartner.COLUMNNAME_Value);
+			if (deactivatedValues.add(value))
+			{
+				DB.executeUpdateAndSaveErrorOnFail(
+						"UPDATE C_BPartner SET IsActive='N' WHERE Value=" + DB.TO_STRING(value)
+								+ " AND AD_Client_ID=" + StepDefConstants.CLIENT_ID.getRepoId(),
+						ITrx.TRXNAME_None);
+			}
+		});
+
+		// Second pass: create the BPartners
 		DataTableRows.of(dataTable).forEach(row -> {
 			final I_C_BPartner bp = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
 			bp.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
