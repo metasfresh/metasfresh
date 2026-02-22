@@ -203,6 +203,7 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-20" x="500" y="7" width="45" height="12" forecolor="#000000" uuid="6effa006-4875-4c7c-aaa4-74c13901df07">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<printWhenExpression><![CDATA[$F{linenetamt}!= null]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
@@ -230,7 +231,7 @@
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-20" x="545" y="7" width="32" height="12" forecolor="#000000" uuid="d156fd13-49c2-46ab-ab32-21cacbb79398">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
-					<printWhenExpression><![CDATA[new Boolean($F{isprinttax}.equals( "Y" ))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean($F{isprinttax}.equals( "Y" ) && $F{linenetamt}!= null)]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>

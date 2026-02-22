@@ -220,6 +220,8 @@ public class HUShipmentAssignmentBL implements IHUShipmentAssignmentBL
 		{
 			huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Active);
 			hu.setIsActive(true);
+			hu.setC_BPartner_ID(-1);
+			hu.setC_BPartner_Location_ID(-1);
 
 			final I_M_Locator locator = InterfaceWrapperHelper.create(warehouseBL.getLocatorByRepoId(hu.getM_Locator_ID()), I_M_Locator.class);
 

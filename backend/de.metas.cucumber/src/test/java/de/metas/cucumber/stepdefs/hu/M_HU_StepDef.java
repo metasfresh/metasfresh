@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs.hu;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -38,6 +39,8 @@ import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.EmptyUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -79,7 +82,6 @@ import de.metas.handlingunits.model.I_M_HU_QRCode;
 import de.metas.handlingunits.model.I_M_HU_QRCode_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_HU_Trace;
-import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.rest_api.HandlingUnitsService;
@@ -106,10 +108,13 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.warehouse.LocatorId;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_M_InventoryLine;
 import org.compiere.util.DB;
 import org.jetbrains.annotations.NotNull;
 
@@ -118,6 +123,7 @@ import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -159,6 +165,8 @@ public class M_HU_StepDef
 	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final ReturnsServiceFacade returnsServiceFacade = SpringContextHolder.instance.getBean(ReturnsServiceFacade.class);
 
+	private final C_BPartner_StepDefData bpartnerTable;
+	private final C_BPartner_Location_StepDefData bpLocationTable;
 	private final M_Product_StepDefData productTable;
 	private final M_HU_StepDefData huTable;
 	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
@@ -173,12 +181,49 @@ public class M_HU_StepDef
 
 	private final HandlingUnitsService handlingUnitsService = SpringContextHolder.instance.getBean(HandlingUnitsService.class);
 
+	/**
+	 * @cucumber.stepdef
+	 * @cucumber.columns (none — no DataTable)
+	 * @cucumber.example
+	 * <pre>
+	 * And all the hu data is reset
+	 * </pre>
+	 */
 	@And("all the hu data is reset")
 	public void reset_data()
 	{
 		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE m_hu cascade", ITrx.TRXNAME_None);
 	}
 
+	/**
+	 * Validate M_HU records by identifier. Uses SoftAssertions to check all columns before failing.
+	 * Also validates M_HU_Storage (product/qty) if M_Product_ID or Qty columns are present.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required) alias from M_HU_StepDefData<br>
+	 *   <b>M_HU_Parent</b> — (optional, identifier-ref) if set, loads the single child HU of this parent and re-stores it under Identifier<br>
+	 *   <b>M_HU_PI_ID</b> — (optional, identifier-ref or literal ID) expected packing instructions<br>
+	 *   <b>M_HU_PI_Version_ID</b> — (optional, identifier-ref or literal ID) expected PI version<br>
+	 *   <b>M_Locator_ID</b> — (optional, identifier-ref) expected locator<br>
+	 *   <b>M_HU_PI_Item_Product_ID</b> — (optional, identifier-ref) expected PI item product<br>
+	 *   <b>HUStatus</b> — (optional) expected HU status: P, A, D, S, E, I<br>
+	 *   <b>ClearanceStatus</b> — (optional) expected clearance status: C, L, Q, P<br>
+	 *   <b>ClearanceNote</b> — (optional) expected clearance note text<br>
+	 *   <b>C_BPartner_ID</b> — (optional, identifier-ref or null) expected business partner; use "null" for no BPartner<br>
+	 *   <b>C_BPartner_Location_ID</b> — (optional, identifier-ref or null) expected BP location; use "null" for no location<br>
+	 *   <b>M_Product_ID</b> — (optional, identifier-ref) validates M_HU_Storage product<br>
+	 *   <b>Qty</b> — (optional) validates M_HU_Storage qty with UOM, format "10 PCE"<br>
+	 *   <b>IsAggregate</b> — (optional) true/false, checks if HU is aggregate<br>
+	 *   <b>QtyTUs</b> — (optional) expected TU count (for aggregate HUs)<br>
+	 * @cucumber.depends StepDefData: M_HU_StepDefData, M_HU_PI_StepDefData, M_HU_PI_Version_StepDefData, M_HU_PI_Item_Product_StepDefData, M_Locator_StepDefData, M_Product_StepDefData, C_BPartner_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And validate M_HUs:
+	 *   | Identifier | HUStatus | M_Product_ID | Qty    | M_Locator_ID |
+	 *   | vhu_1      | A        | product_1    | 10 PCE | locator_1    |
+	 * </pre>
+	 */
 	@And("validate M_HUs:")
 	public void validate_M_HUs(@NonNull final DataTable dataTable)
 	{
@@ -242,6 +287,33 @@ public class M_HU_StepDef
 		row.getAsOptionalString(COLUMNNAME_ClearanceNote)
 				.ifPresent(clearanceNote -> softly.assertThat(hu.getClearanceNote()).as("ClearanceNote").isEqualTo(clearanceNote));
 
+		row.getAsOptionalIdentifier(I_M_HU.COLUMNNAME_C_BPartner_ID)
+				.ifPresent(bpartnerIdentifier -> {
+					if (bpartnerIdentifier.isNullPlaceholder())
+					{
+						softly.assertThat(hu.getC_BPartner_ID()).as("C_BPartner_ID").isLessThanOrEqualTo(0);
+					}
+					else
+					{
+						final int expectedBPartnerId = bpartnerTable.getOptional(bpartnerIdentifier)
+								.map(bp -> bp.getC_BPartner_ID())
+								.orElseGet(bpartnerIdentifier::getAsInt);
+						softly.assertThat(hu.getC_BPartner_ID()).as("C_BPartner_ID").isEqualTo(expectedBPartnerId);
+					}
+				});
+
+		row.getAsOptionalIdentifier(I_M_HU.COLUMNNAME_C_BPartner_Location_ID)
+				.ifPresent(bpLocationIdentifier -> {
+					if (bpLocationIdentifier.isNullPlaceholder())
+					{
+						softly.assertThat(hu.getC_BPartner_Location_ID()).as("C_BPartner_Location_ID").isLessThanOrEqualTo(0);
+					}
+					else
+					{
+						softly.assertThat(hu.getC_BPartner_Location_ID()).as("C_BPartner_Location_ID").isEqualTo(bpLocationIdentifier.getAsInt());
+					}
+				});
+
 		final ProductId singleProductId = row.getAsOptionalIdentifier("M_Product_ID").map(productTable::getId).orElse(null);
 		final Quantity singleQty = row.getAsOptionalQuantity("Qty", uomDAO::getByX12DE355).orElse(null);
 		if (singleProductId != null || singleQty != null)
@@ -289,16 +361,57 @@ public class M_HU_StepDef
 	}
 
 	@And("^after not more than (.*)s, there are added M_HUs for inventory$")
-	public void find_HUs(final int timeoutSec, @NonNull final DataTable dataTable)
+	public void find_HUs(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
-		DataTableRows.of(dataTable).forEach((row) -> {
-			final InventoryLineId inventoryLineId = inventoryLineTable.getId(row.getAsIdentifier(I_M_InventoryLine.COLUMNNAME_M_InventoryLine_ID));
-			final StepDefDataIdentifier huIdentifier = row.getAsIdentifier(COLUMNNAME_M_HU_ID);
+		// Group rows by inventory line identifier to handle multiple HUs per line
+		final ImmutableListMultimap<StepDefDataIdentifier, DataTableRow> rowsByInventoryLine = DataTableRows.of(dataTable)
+				.stream()
+				.collect(ImmutableListMultimap.toImmutableListMultimap(row -> row.getAsIdentifier(I_M_InventoryLine.COLUMNNAME_M_InventoryLine_ID), Function.identity()));
 
-			final I_M_InventoryLine inventoryLine = inventoryDAO.getLineById(inventoryLineId, I_M_InventoryLine.class);
+		// Process each inventory line and its associated rows
+		for (final StepDefDataIdentifier inventoryLineIdentifier : rowsByInventoryLine.keySet())
+		{
+			final List<DataTableRow> rows = rowsByInventoryLine.get(inventoryLineIdentifier);
+			final InventoryLineId inventoryLineId = inventoryLineTable.getId(inventoryLineIdentifier);
+			final I_M_InventoryLine inventoryLine = inventoryLineTable.get(inventoryLineIdentifier);
 			assertThat(inventoryLine).isNotNull();
-			final HuId huId = HuId.ofRepoIdOrNull(inventoryLine.getM_HU_ID());
-			assertThat(huId).as("inventory line has HU set").isNotNull();
+			if (Objects.equals(inventoryLine.getHUAggregationType(), X_M_InventoryLine.HUAGGREGATIONTYPE_SINGLE_HU) && rows.size() == 1)
+			{
+				findSingleHUForInventoryLine(timeoutSec, rows.get(0), inventoryLineId);
+			}
+			else
+			{
+				// Get all assigned HU IDs for this inventory line via the M_InventoryLine_HU table
+				findMultipleHUsForInventoryLine(timeoutSec, inventoryLineIdentifier, inventoryLineId, rows);
+			}
+		}
+	}
+
+	private void findMultipleHUsForInventoryLine(final int timeoutSec, final StepDefDataIdentifier inventoryLineIdentifier, final InventoryLineId inventoryLineId, final List<DataTableRow> rows) throws InterruptedException
+	{
+		final Set<HuId> assignedHuIds = StepDefUtil.tryAndWaitForItem(
+				timeoutSec,
+				500,
+				() -> {
+					final Set<HuId> huIds = inventoryService.getAssignedHUIds(inventoryLineId);
+					// Wait until we have the expected number of HUs
+					return huIds.size() >= rows.size() ? Optional.of(huIds) : Optional.empty();
+				}
+		);
+
+		assertThat(assignedHuIds)
+				.as("Expected at least %d HU(s) for inventory line %s", rows.size(), inventoryLineIdentifier)
+				.hasSizeGreaterThanOrEqualTo(rows.size());
+
+		// Convert Set to List for indexed access
+		final List<HuId> huIdsList = assignedHuIds.stream().sorted().collect(Collectors.toList());
+
+		// Map each row to an HU ID and load the HU
+		for (int i = 0; i < rows.size(); i++)
+		{
+			final DataTableRow row = rows.get(i);
+			final StepDefDataIdentifier huIdentifier = row.getAsIdentifier(COLUMNNAME_M_HU_ID);
+			final HuId huId = huIdsList.get(i);
 
 			StepDefUtil.tryAndWait(timeoutSec, 500, () -> loadHU(LoadHURequest.builder()
 					.huId(huId)
@@ -306,7 +419,20 @@ public class M_HU_StepDef
 					.build()));
 
 			restTestContext.setIdVariableFromRow(row, huId);
-		});
+		}
+	}
+
+	private void findSingleHUForInventoryLine(final int timeoutSec, final DataTableRow row, final InventoryLineId inventoryLineId) throws InterruptedException
+	{
+		final HuId huId = HuId.ofRepoIdOrNull(inventoryDAO.getLineById(inventoryLineId, de.metas.handlingunits.model.I_M_InventoryLine.class).getM_HU_ID());
+		assertThat(huId).as("inventory line has HU set").isNotNull();
+		final StepDefDataIdentifier huIdentifier = row.getAsIdentifier(COLUMNNAME_M_HU_ID);
+		StepDefUtil.tryAndWait(timeoutSec, 500, () -> loadHU(LoadHURequest.builder()
+				.huId(huId)
+				.huIdentifier(huIdentifier)
+				.build()));
+
+		restTestContext.setIdVariableFromRow(row, huId);
 	}
 
 	@And("^after not more than (.*)s, M_HUs should have$")
@@ -579,6 +705,22 @@ public class M_HU_StepDef
 		validateHU(ImmutableList.of(topLevelHU), ImmutableList.of(huIdentifier), identifierToRow);
 	}
 
+	/**
+	 * Validate M_HU_Storage records (product and quantity stored in an HU). Uses legacy DataTableUtil (not DataTableRow).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_HU_ID.Identifier</b> — (required) alias from M_HU_StepDefData<br>
+	 *   <b>M_Product_ID.Identifier</b> — (required) alias from M_Product_StepDefData<br>
+	 *   <b>Qty</b> — (required) expected storage quantity as string<br>
+	 * @cucumber.depends StepDefData: M_HU_StepDefData, M_Product_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And M_HU_Storage are validated
+	 *   | M_HU_ID.Identifier | M_Product_ID.Identifier | Qty |
+	 *   | vhu_1              | product_1               | 100 |
+	 * </pre>
+	 */
 	@And("M_HU_Storage are validated")
 	public void validate_HU_Storage(@NonNull final DataTable table)
 	{
@@ -588,12 +730,49 @@ public class M_HU_StepDef
 		}
 	}
 
+	/**
+	 * Validate M_HU records — alternate step with different column set. Re-loads the HU fresh from DB before validating.
+	 * Supports comma-separated identifiers in M_HU_ID column to validate multiple HUs with same expectations.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_HU_ID</b> — (required, identifier-ref) alias(es) from M_HU_StepDefData; comma-separated for multiple<br>
+	 *   <b>HUStatus</b> — (optional) expected HU status: P, A, D, S, E, I<br>
+	 *   <b>IsActive</b> — (optional) true/false<br>
+	 *   <b>M_Locator_ID</b> — (optional, identifier-ref) expected locator<br>
+	 *   <b>IsTopLevel</b> — (optional) true/false, whether HU has no parent<br>
+	 *   <b>Parent</b> — (optional, identifier-ref or null) expected parent HU; use "null" for no parent<br>
+	 *   <b>C_BPartner_ID</b> — (optional, identifier-ref or null) expected business partner; use "null" for no BPartner<br>
+	 *   <b>C_BPartner_Location_ID</b> — (optional, identifier-ref or null) expected BP location; use "null" for no location<br>
+	 * @cucumber.depends StepDefData: M_HU_StepDefData, M_Locator_StepDefData, C_BPartner_StepDefData, C_BPartner_Location_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And M_HU are validated:
+	 *   | M_HU_ID | HUStatus | IsActive | IsTopLevel |
+	 *   | vhu_1   | A        | true     | false      |
+	 * </pre>
+	 */
 	@And("M_HU are validated:")
 	public void validateHUs(@NonNull final DataTable table)
 	{
 		DataTableRows.of(table).forEach(this::validateHU);
 	}
 
+	/**
+	 * Dispose (destroy) HUs by creating an internal-use inventory and completing it.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_HU_ID</b> — (required, identifier-ref) alias from M_HU_StepDefData<br>
+	 *   <b>MovementDate</b> — (required) disposal date, e.g., "2022-05-17"<br>
+	 * @cucumber.depends StepDefData: M_HU_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Given M_HU are disposed:
+	 *   | M_HU_ID | MovementDate |
+	 *   | vhu_1   | 2022-05-17   |
+	 * </pre>
+	 */
 	@Given("M_HU are disposed:")
 	public void disposeHUs(@NonNull final DataTable table)
 	{
@@ -744,6 +923,34 @@ public class M_HU_StepDef
 						final HuId expectedParentId = parentHUIdentifier.isNullPlaceholder() ? null : huTable.getId(parentHUIdentifier);
 						final HuId actualParentId = handlingUnitsDAO.retrieveParentId(huRecord);
 						softly.assertThat(actualParentId).as("Parent").isEqualTo(expectedParentId);
+					});
+			row.getAsOptionalIdentifier(I_M_HU.COLUMNNAME_C_BPartner_ID)
+					.ifPresent(bpartnerIdentifier -> {
+						if (bpartnerIdentifier.isNullPlaceholder())
+						{
+							softly.assertThat(huRecord.getC_BPartner_ID()).as("C_BPartner_ID").isLessThanOrEqualTo(0);
+						}
+						else
+						{
+							final int expectedBPartnerId = bpartnerTable.getOptional(bpartnerIdentifier)
+									.map(bp -> bp.getC_BPartner_ID())
+									.orElseGet(bpartnerIdentifier::getAsInt);
+							softly.assertThat(huRecord.getC_BPartner_ID()).as("C_BPartner_ID").isEqualTo(expectedBPartnerId);
+						}
+					});
+			row.getAsOptionalIdentifier(I_M_HU.COLUMNNAME_C_BPartner_Location_ID)
+					.ifPresent(bpLocationIdentifier -> {
+						if (bpLocationIdentifier.isNullPlaceholder())
+						{
+							softly.assertThat(huRecord.getC_BPartner_Location_ID()).as("C_BPartner_Location_ID").isLessThanOrEqualTo(0);
+						}
+						else
+						{
+							final int expectedLocationId = bpLocationTable.getOptional(bpLocationIdentifier)
+									.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
+									.orElseGet(bpLocationIdentifier::getAsInt);
+							softly.assertThat(huRecord.getC_BPartner_Location_ID()).as("C_BPartner_Location_ID").isEqualTo(expectedLocationId);
+						}
 					});
 
 			softly.assertAll();

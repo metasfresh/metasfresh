@@ -314,6 +314,29 @@ public interface I_AD_Process
 	String COLUMNNAME_CSVFieldDelimiter = "CSVFieldDelimiter";
 
 	/**
+	 * Set CSV Text Qualifier.
+	 * Character used to enclose field values in CSV export (e.g. double quote). Leave empty to export values without text qualification.
+	 * 
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCSVFieldQuote (@Nullable java.lang.String CSVFieldQuote);
+
+	/**
+	 * Get CSV Text Qualifier.
+	 * Character used to enclose field values in CSV export (e.g. double quote). Leave empty to export values without text qualification.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCSVFieldQuote();
+
+	ModelColumn<I_AD_Process, Object> COLUMN_CSVFieldQuote = new ModelColumn<>(I_AD_Process.class, "CSVFieldQuote", null);
+	String COLUMNNAME_CSVFieldQuote = "CSVFieldQuote";
+
+	/**
 	 * Set Description.
 	 *
 	 * <br>Type: Text

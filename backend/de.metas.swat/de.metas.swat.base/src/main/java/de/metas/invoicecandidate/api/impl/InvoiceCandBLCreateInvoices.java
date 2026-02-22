@@ -948,6 +948,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				.dateAcctParam(invoicingParams != null ? invoicingParams.getDateAcct() : null)
 				.useDefaultBillLocationAndContactIfNotOverride(invoicingParams != null && invoicingParams.isUpdateLocationAndContactForInvoice())
 				.docTypeInvoicingPoolService(docTypeInvoicingPoolService)
+				.deliveryDateAsInvoiceDate(invoicingParams != null && invoicingParams.isDeliveryDateAsInvoiceDate())
 				.build();
 	}
 

@@ -25,10 +25,11 @@ package de.metas.cucumber.stepdefs.shipment;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import de.metas.common.util.EmptyUtil;
 import de.metas.common.util.StringUtils;
+import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
@@ -46,6 +47,9 @@ import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -53,7 +57,9 @@ import de.metas.externalsystem.ExternalSystemId;
 import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.model.I_ExternalSystem;
+import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.handlingunits.inout.IHUInOutBL;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.QtyToDeliverMap;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
@@ -64,11 +70,14 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
+import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.material.MovementType;
+import de.metas.order.OrderLineId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
@@ -90,6 +99,9 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Message;
@@ -109,7 +121,6 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -143,6 +154,7 @@ public class M_InOut_StepDef
 	private final M_Warehouse_StepDefData warehouseTable;
 	private final AD_Message_StepDefData messageTable;
 	private final C_DocType_StepDefData docTypeTable;
+	private final M_HU_StepDefData huTable;
 	private final TestContext restTestContext;
 
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
@@ -155,8 +167,36 @@ public class M_InOut_StepDef
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
+	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IHUWarehouseDAO huWarehouseDAO = Services.get(IHUWarehouseDAO.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
+	/**
+	 * Validate M_InOut records (shipments or material receipts).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_InOut_ID</b> — (required, identifier-ref) alias from M_InOut_StepDefData<br>
+	 *   <b>C_BPartner_ID</b> — (required, identifier-ref) expected business partner<br>
+	 *   <b>C_BPartner_Location_ID</b> — (required, identifier-ref) expected BP location<br>
+	 *   <b>DateOrdered</b> — (required) expected date, e.g., "2022-05-17"<br>
+	 *   <b>processed</b> — (required) true/false<br>
+	 *   <b>DocStatus</b> — (required) expected doc status: DR, IP, CO, VO, RE, CL<br>
+	 *   <b>POReference</b> — (optional) expected PO reference<br>
+	 *   <b>AD_InputDataSource_ID.InternalName</b> — (optional) expected input data source internal name<br>
+	 *   <b>ExternalSystem.Value</b> — (optional) expected external system value<br>
+	 *   <b>C_DocType.DocBaseType</b> — (optional) expected doc base type + C_DocType.Name<br>
+	 *   <b>ExternalId</b> — (optional) expected external ID<br>
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData, C_BPartner_StepDefData, C_BPartner_Location_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And validate the created shipments
+	 *   | M_InOut_ID | C_BPartner_ID | C_BPartner_Location_ID | DateOrdered | processed | DocStatus |
+	 *   | shipment_1 | bpartner_1    | bpLocation_1           | 2022-05-17  | true      | CO        |
+	 * </pre>
+	 */
 	@And("^validate the created (shipments|material receipt)$")
 	public void validate_created_shipments(@NonNull final String ignoredInoutType, @NonNull final DataTable table)
 	{
@@ -230,6 +270,25 @@ public class M_InOut_StepDef
 		softly.assertAll();
 	}
 
+	/**
+	 * Invoke the "generate shipments" async workpackage for each M_ShipmentSchedule row individually.
+	 * Each row specifies its own QuantityType, IsCompleteShipments, and IsShipmentDateToday.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_ShipmentSchedule_ID</b> — (required, identifier-ref) shipment schedule alias<br>
+	 *   <b>QuantityType</b> — (required) "D" (delivery), "O" (ordered), etc.<br>
+	 *   <b>IsCompleteShipments</b> — (required) true/false — auto-complete the generated shipment<br>
+	 *   <b>IsShipmentDateToday</b> — (required) true/false — use today as shipment date<br>
+	 *   <b>QtyToDeliver_Override</b> — (optional) override quantity to deliver<br>
+	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+	 *   | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipmentDateToday |
+	 *   | shipmentSchedule_1    | D            | true                | false               |
+	 * </pre>
+	 */
 	@And("'generate shipments' process is invoked individually for each M_ShipmentSchedule")
 	public void invokeGenerateShipmentsProcessIndividually(@NonNull final DataTable table)
 	{
@@ -271,6 +330,22 @@ public class M_InOut_StepDef
 		);
 	}
 
+	/**
+	 * Invoke the "generate shipments" async workpackage with parameters in the step text.
+	 * All shipment schedules in the DataTable are enqueued together (single workpackage).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_ShipmentSchedule_ID</b> — (required, identifier-ref) shipment schedule alias<br>
+	 *   <b>QtyToDeliver_Override</b> — (optional) override quantity to deliver<br>
+	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And 'generate shipments' process is invoked with QuantityType=D, IsCompleteShipments=true and IsShipToday=false
+	 *   | M_ShipmentSchedule_ID |
+	 *   | shipmentSchedule_1    |
+	 * </pre>
+	 */
 	@And("^'generate shipments' process is invoked with QuantityType=(.*), IsCompleteShipments=(true|false) and IsShipToday=(true|false)")
 	public void invokeGenerateShipmentsProcess(
 			@NonNull final String quantityType,
@@ -324,6 +399,27 @@ public class M_InOut_StepDef
 		assertThat(result.getEnqueuedPackagesCount()).isGreaterThanOrEqualTo(1);
 	}
 
+	/**
+	 * Poll for a shipment/receipt created via async workpackage processing. Waits up to N seconds.
+	 * Finds the M_InOut via M_ShipmentSchedule_QtyPicked.M_InOutLine_ID, filters by DocStatus if given.
+	 * Stores the found M_InOut in M_InOut_StepDefData under the given identifier.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_ShipmentSchedule_ID</b> — (required, identifier-ref) the schedule that triggered the shipment<br>
+	 *   <b>M_InOut_ID</b> — (required) alias to store the found shipment under<br>
+	 *   <b>DocStatus</b> — (optional) filter by doc status (CO, DR, etc.)<br>
+	 *   <b>OPT.IgnoreCreated.M_InOut_ID.Identifier</b> — (optional) comma-separated shipment identifiers to skip<br>
+	 *   <b>REST.Context.M_InOut_ID</b> — (optional) store M_InOut_ID in REST test context variable<br>
+	 *   <b>REST.Context.DocumentNo</b> — (optional) store DocumentNo in REST test context variable<br>
+	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData, M_InOut_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And after not more than 60s, M_InOut is found:
+	 *   | M_ShipmentSchedule_ID | M_InOut_ID | DocStatus |
+	 *   | shipmentSchedule_1    | shipment_1 | CO        |
+	 * </pre>
+	 */
 	@And("^after not more than (.*)s, M_InOut is found:$")
 	public void shipmentIsFound(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
@@ -413,6 +509,18 @@ public class M_InOut_StepDef
 		StepDefUtil.tryAndWait(timeoutSec, 500, isShipmentCreated);
 	}
 
+	/**
+	 * Reverse a shipment/receipt and store the reversal under a new identifier.
+	 * Performs Reverse_Correct doc action, then loads the reversal M_InOut record via Reversal_ID.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns (none — parameters are in the step text, not a DataTable)
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And the shipment identified by shipment_1 is reversed as shipment_1_reversal
+	 * </pre>
+	 */
 	@And("^the (shipment|material receipt|return inOut) identified by (.*) is reversed as (.*)$")
 	public void reverseInOut(
 			@NonNull @SuppressWarnings("unused") final String model_UNUSED,
@@ -428,6 +536,21 @@ public class M_InOut_StepDef
 		inoutTable.put(reversalIdentifier, reversal);
 	}
 
+	/**
+	 * Process a shipment/receipt/return with a document action. No DataTable — parameters are in the step text.
+	 * Actions: completed, reactivated, reversed, voided, closed.
+	 * Note: "reversed" does NOT store the reversal; use "is reversed as &lt;reversalIdentifier&gt;" step instead if you need the reversal record.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns (none — parameters are in the step text)
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And the shipment identified by shipment_1 is completed
+	 * And the shipment identified by shipment_1 is reversed
+	 * And the material receipt identified by receipt_1 is completed
+	 * </pre>
+	 */
 	@And("^the (shipment|material receipt|return inOut) identified by (.*) is (completed|reactivated|reversed|voided|closed)$")
 	public void processInOut(
 			@NonNull @SuppressWarnings("unused") final String model_UNUSED,
@@ -466,71 +589,98 @@ public class M_InOut_StepDef
 		}
 	}
 
+	/**
+	 * Load an existing M_InOut by matching on M_InOutLine.QtyEntered (and optionally C_OrderLine_ID).
+	 * Validates DocStatus and optionally C_Order_ID. Stores both the line and header in StepDefData.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>QtyEntered</b> — (required) quantity to match the M_InOutLine by<br>
+	 *   <b>M_InOutLine_ID</b> — (required, identifier) alias to store the found shipment line<br>
+	 *   <b>M_InOut_ID</b> — (required, identifier) alias to store the found shipment header<br>
+	 *   <b>DocStatus</b> — (required) expected document status (CO, DR, etc.)<br>
+	 *   <b>C_OrderLine_ID</b> — (optional, identifier-ref) narrow search to lines for a specific order line<br>
+	 *   <b>C_Order_ID</b> — (optional, identifier-ref) assert the shipment belongs to a specific order<br>
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData, M_InOutLine_StepDefData, C_OrderLine_StepDefData, C_Order_StepDefData
+	 */
 	@And("load M_InOut:")
 	public void loadM_InOut(@NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
+		DataTableRows.of(dataTable).forEach(row ->
 		{
-			final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalForColumnName(row, I_M_InOutLine.COLUMNNAME_QtyEntered);
+			final BigDecimal qtyEntered = row.getAsBigDecimal(I_M_InOutLine.COLUMNNAME_QtyEntered);
 
 			final IQueryBuilder<I_M_InOutLine> shipmentLineBuilder = queryBL.createQueryBuilder(I_M_InOutLine.class)
 					.addEqualsFilter(I_M_InOutLine.COLUMNNAME_QtyEntered, qtyEntered);
 
-			final String orderLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_InOutLine.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(orderLineIdentifier))
-			{
-				final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
-				shipmentLineBuilder.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID, orderLine.getC_OrderLine_ID());
-			}
+			row.getAsOptionalIdentifier(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID)
+					.ifPresent(orderLineIdentifier -> {
+						final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
+						shipmentLineBuilder.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID, orderLine.getC_OrderLine_ID());
+					});
 
 			final I_M_InOutLine shipmentLine = shipmentLineBuilder.create()
 					.firstOnlyNotNull(I_M_InOutLine.class);
 
-			final String shipmentLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOutLine.COLUMNNAME_M_InOutLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final StepDefDataIdentifier shipmentLineIdentifier = row.getAsIdentifier(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID);
 			inoutLineTable.putOrReplace(shipmentLineIdentifier, shipmentLine);
 
 			final I_M_InOut shipment = InterfaceWrapperHelper.load(shipmentLine.getM_InOut_ID(), I_M_InOut.class);
 			assertThat(shipment).isNotNull();
 
-			final String docStatus = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_DocStatus);
+			final String docStatus = row.getAsString(I_M_InOut.COLUMNNAME_DocStatus);
 			assertThat(shipment.getDocStatus()).isEqualTo(docStatus);
 
-			final String orderIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(orderIdentifier))
-			{
-				final I_C_Order order = orderTable.get(orderIdentifier);
-				assertThat(shipment.getC_Order_ID()).isEqualTo(order.getC_Order_ID());
-			}
+			row.getAsOptionalIdentifier(COLUMNNAME_C_Order_ID)
+					.ifPresent(orderIdentifier -> {
+						final I_C_Order order = orderTable.get(orderIdentifier);
+						assertThat(shipment.getC_Order_ID()).isEqualTo(order.getC_Order_ID());
+					});
 
-			final String shipmentIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final StepDefDataIdentifier shipmentIdentifier = row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID);
 			inoutTable.putOrReplace(shipmentIdentifier, shipment);
-		}
+		});
 	}
 
+	/**
+	 * Perform an arbitrary document action on a shipment/receipt. Uses DocAction codes directly (CO, RC, RA, VO, CL).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_InOut_ID</b> — (required, identifier-ref) the shipment to process<br>
+	 *   <b>DocAction</b> — (required) document action code: CO, RC, RA, VO, CL<br>
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And perform shipment document action
+	 *   | M_InOut_ID | DocAction |
+	 *   | shipment_1 | RC        |
+	 * </pre>
+	 */
 	@And("perform shipment document action")
 	public void reverseShipment(@NonNull final DataTable table)
 	{
-		final List<Map<String, String>> dataTable = table.asMaps();
-		for (final Map<String, String> row : dataTable)
+		DataTableRows.of(table).forEach(row ->
 		{
-			final String shipmentIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_InOut_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-
-			final String docAction = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_DocAction);
-
-			final I_M_InOut shipment = inoutTable.get(shipmentIdentifier);
-
+			final I_M_InOut shipment = row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID).lookupNotNullIn(inoutTable);
+			final String docAction = row.getAsString(I_M_InOut.COLUMNNAME_DocAction);
 			documentBL.processEx(shipment, docAction);
-		}
+		});
 	}
 
+	/**
+	 * Locate M_InOut via M_ShipmentSchedule_QtyPicked and store it in StepDefData.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_ShipmentSchedule_ID</b> — (required, identifier-ref) the schedule that triggered the shipment<br>
+	 *   <b>M_InOut_ID</b> — (required, identifier) alias to store the found shipment<br>
+	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData, M_InOut_StepDefData
+	 */
 	@Then("locate M_InOut by shipment schedule Id")
 	public void locate_shipment_by_scheduleId(@NonNull final DataTable table)
 	{
-		final List<Map<String, String>> dataTable = table.asMaps();
-		for (final Map<String, String> row : dataTable)
-		{
-			locateShipmentByScheduleId(row);
-		}
+		DataTableRows.of(table).forEach(this::locateShipmentByScheduleId);
 	}
 
 	@And("validate M_In_Out status")
@@ -575,30 +725,49 @@ public class M_InOut_StepDef
 		assertThat(inOut).isNull();
 	}
 
+	/**
+	 * Manually create M_InOut records (shipment/receipt). Primarily used for testing doc actions on manually created documents.
+	 * Uses legacy DataTableUtil (not DataTableRow). Stores created record in M_InOut_StepDefData.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_InOut_ID.Identifier</b> — (required) alias to store the created record<br>
+	 *   <b>C_BPartner_ID.Identifier</b> — (required) business partner<br>
+	 *   <b>C_BPartner_Location_ID.Identifier</b> — (required) BP location<br>
+	 *   <b>IsSOTrx</b> — (required) true=shipment, false=receipt<br>
+	 *   <b>DeliveryRule</b> — (required) delivery rule code<br>
+	 *   <b>DeliveryViaRule</b> — (required) delivery via rule code<br>
+	 *   <b>FreightCostRule</b> — (required) freight cost rule code<br>
+	 *   <b>M_Warehouse_ID.Identifier</b> — (required) warehouse<br>
+	 *   <b>MovementDate</b> — (required) movement date<br>
+	 *   <b>MovementType</b> — (required) movement type code<br>
+	 *   <b>PriorityRule</b> — (required) priority rule code<br>
+	 *   <b>OPT.DocBaseType</b> — (optional) doc base type + OPT.DocSubType for doc type lookup<br>
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData, C_BPartner_StepDefData, C_BPartner_Location_StepDefData, M_Warehouse_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And metasfresh contains M_InOut:
+	 *   | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | IsSOTrx | DeliveryRule | DeliveryViaRule | FreightCostRule | M_Warehouse_ID.Identifier | MovementDate | MovementType | PriorityRule |
+	 *   | shipment_1            | bpartner_1               | bpLocation_1                      | true    | F            | D               | I               | warehouse_1               | 2022-05-17   | C-           | 5            |
+	 * </pre>
+	 */
 	@And("metasfresh contains M_InOut:")
 	public void create_M_InOut(@NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
+		DataTableRows.of(dataTable).forEach(row ->
 		{
 			final I_M_InOut inOut = InterfaceWrapperHelper.newInstance(I_M_InOut.class);
 
-			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_BPartner bPartner = bpartnerTable.get(bpartnerIdentifier);
-			assertThat(bPartner).isNotNull();
+			final I_C_BPartner bPartner = row.getAsIdentifier(I_M_InOut.COLUMNNAME_C_BPartner_ID).lookupNotNullIn(bpartnerTable);
 			inOut.setC_BPartner_ID(bPartner.getC_BPartner_ID());
 
-			final String bpartnerLocationIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_BPartner_Location bPartnerLocation = bpartnerLocationTable.get(bpartnerLocationIdentifier);
-			assertThat(bpartnerIdentifier).isNotNull();
+			final I_C_BPartner_Location bPartnerLocation = row.getAsIdentifier(I_M_InOut.COLUMNNAME_C_BPartner_Location_ID).lookupNotNullIn(bpartnerLocationTable);
 			inOut.setC_BPartner_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
 
-			final boolean isSOTrx = DataTableUtil.extractBooleanForColumnName(row, COLUMNNAME_IsSOTrx);
-			inOut.setIsSOTrx(isSOTrx);
+			inOut.setIsSOTrx(row.getAsBoolean(COLUMNNAME_IsSOTrx));
 
-			final String docBaseType = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_DocBaseType);
-			if (EmptyUtil.isNotBlank(docBaseType))
-			{
-				final String docSubType = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_DocSubType);
+			row.getAsOptionalString(COLUMNNAME_DocBaseType).ifPresent(docBaseType -> {
+				final String docSubType = row.getAsOptionalString(COLUMNNAME_DocSubType).orElse(null);
 
 				final I_C_DocType docType = queryBL.createQueryBuilder(I_C_DocType.class)
 						.addEqualsFilter(COLUMNNAME_DocBaseType, docBaseType)
@@ -606,74 +775,68 @@ public class M_InOut_StepDef
 						.create()
 						.firstOnlyNotNull(I_C_DocType.class);
 
-				assertThat(docType).isNotNull();
-
 				inOut.setC_DocType_ID(docType.getC_DocType_ID());
-			}
+			});
 
-			final String deliveryRule = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_DeliveryRule);
-			inOut.setDeliveryRule(deliveryRule);
+			inOut.setDeliveryRule(row.getAsString(I_M_InOut.COLUMNNAME_DeliveryRule));
+			inOut.setDeliveryViaRule(row.getAsString(I_M_InOut.COLUMNNAME_DeliveryViaRule));
+			inOut.setFreightCostRule(row.getAsString(I_M_InOut.COLUMNNAME_FreightCostRule));
 
-			final String deliveryViaRule = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_DeliveryViaRule);
-			inOut.setDeliveryViaRule(deliveryViaRule);
+			row.getAsOptionalIdentifier(I_M_InOut.COLUMNNAME_M_Warehouse_ID)
+					.ifPresent(warehouseIdentifier -> {
+						final int warehouseId = warehouseIdentifier.lookupNotNullIn(warehouseTable).getM_Warehouse_ID();
+						inOut.setM_Warehouse_ID(warehouseId);
+					});
 
-			final String freightCostRule = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_FreightCostRule);
-			inOut.setFreightCostRule(freightCostRule);
-
-			final String warehouseIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(warehouseIdentifier))
-			{
-				final int warehouseId = warehouseTable.get(warehouseIdentifier).getM_Warehouse_ID();
-				inOut.setM_Warehouse_ID(warehouseId);
-			}
-
-			final Timestamp movementDate = DataTableUtil.extractDateTimestampForColumnName(row, I_M_InOut.COLUMNNAME_MovementDate);
-			inOut.setMovementDate(movementDate);
-
-			final String movementType = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_MovementType);
-			inOut.setMovementType(movementType);
-
-			final String priorityRule = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_PriorityRule);
-			inOut.setPriorityRule(priorityRule);
+			inOut.setMovementDate(row.getAsLocalDateTimestamp(I_M_InOut.COLUMNNAME_MovementDate));
+			inOut.setMovementType(row.getAsString(I_M_InOut.COLUMNNAME_MovementType));
+			inOut.setPriorityRule(row.getAsString(I_M_InOut.COLUMNNAME_PriorityRule));
 
 			InterfaceWrapperHelper.saveRecord(inOut);
 
-			final String inOutIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final StepDefDataIdentifier inOutIdentifier = row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID);
 			inoutTable.putOrReplace(inOutIdentifier, inOut);
-		}
+		});
 	}
 
-	private void locateShipmentByScheduleId(@NonNull final Map<String, String> row)
+	private void locateShipmentByScheduleId(@NonNull final DataTableRow row)
 	{
-		final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ".Identifier");
-		final I_M_ShipmentSchedule shipmentSchedule = InterfaceWrapperHelper.create(shipmentScheduleTable.get(shipmentScheduleIdentifier), I_M_ShipmentSchedule.class);
+		final I_M_ShipmentSchedule shipmentSchedule = InterfaceWrapperHelper.create(
+				row.getAsIdentifier(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID).lookupIn(shipmentScheduleTable),
+				I_M_ShipmentSchedule.class);
 
 		final List<I_M_ShipmentSchedule_QtyPicked> shipmentScheduleQtyPickedRecords = shipmentScheduleAllocDAO.retrieveAllQtyPickedRecords(shipmentSchedule, I_M_ShipmentSchedule_QtyPicked.class);
 		final InOutLineId lineId = InOutLineId.ofRepoId(shipmentScheduleQtyPickedRecords.get(0).getM_InOutLine_ID());
 
 		final I_M_InOut shipmentRecord = inOutDAO.retrieveInOutByLineIds(ImmutableSet.of(lineId)).get(lineId);
 
-		final String shipmentIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_InOut_ID + ".Identifier");
+		final StepDefDataIdentifier shipmentIdentifier = row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID);
 		inoutTable.put(shipmentIdentifier, shipmentRecord);
 	}
 
+	/**
+	 * Poll for a customer return M_InOut matching a C_Order and C_DocType.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_Order_ID</b> — (required, identifier-ref) the order the return is linked to<br>
+	 *   <b>C_DocType_ID</b> — (required, identifier-ref) the expected doc type<br>
+	 *   <b>M_InOut_ID</b> — (required, identifier) alias to store the found customer return<br>
+	 * @cucumber.depends StepDefData: C_Order_StepDefData, C_DocType_StepDefData, M_InOut_StepDefData
+	 */
 	@And("^after not more than (.*)s, Customer Return is found:$")
 	public void customerReturnIsFound(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
-		final List<Map<String, String>> rows = dataTable.asMaps();
-		for (final Map<String, String> row : rows)
-		{
-			findCustomerReturn(timeoutSec, row);
-		}
+		DataTableRows.of(dataTable).forEach(row -> findCustomerReturn(timeoutSec, row));
 	}
 
 	private void findCustomerReturn(
 			final int timeoutSec,
-			@NonNull final Map<String, String> row) throws InterruptedException
+			@NonNull final DataTableRow row) throws InterruptedException
 	{
 		final I_M_InOut customerReturnRecord = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> isCustomerReturnFound(row));
 
-		final String customerReturnIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final StepDefDataIdentifier customerReturnIdentifier = row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID);
 		inoutTable.put(customerReturnIdentifier, customerReturnRecord);
 	}
 
@@ -696,15 +859,10 @@ public class M_InOut_StepDef
 	}
 
 	@NonNull
-	private ItemProvider.ProviderResult<I_M_InOut> isCustomerReturnFound(@NonNull final Map<String, String> row)
+	private ItemProvider.ProviderResult<I_M_InOut> isCustomerReturnFound(@NonNull final DataTableRow row)
 	{
-		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final String docTypeIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_C_DocType_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-		final I_C_Order orderRecord = orderTable.get(orderIdentifier);
-		assertThat(orderRecord).isNotNull();
-		final I_C_DocType docTypeRecord = docTypeTable.get(docTypeIdentifier);
-		assertThat(docTypeRecord).isNotNull();
+		final I_C_Order orderRecord = row.getAsIdentifier(I_M_InOut.COLUMNNAME_C_Order_ID).lookupNotNullIn(orderTable);
+		final I_C_DocType docTypeRecord = row.getAsIdentifier(I_M_InOut.COLUMNNAME_C_DocType_ID).lookupNotNullIn(docTypeTable);
 
 		final Optional<I_M_InOut> customerReturnRecord = queryBL
 				.createQueryBuilder(I_M_InOut.class)
@@ -715,21 +873,13 @@ public class M_InOut_StepDef
 				.firstOnlyOptional(I_M_InOut.class);
 
 		return customerReturnRecord.map(ItemProvider.ProviderResult::resultWasFound)
-				.orElseGet(() -> ItemProvider.ProviderResult.resultWasNotFound(getCurrentCustomerReturnContext(row)));
+				.orElseGet(() -> ItemProvider.ProviderResult.resultWasNotFound(getCurrentCustomerReturnContext(orderRecord, docTypeRecord)));
 	}
 
 	@NonNull
-	private String getCurrentCustomerReturnContext(@NonNull final Map<String, String> row)
+	private String getCurrentCustomerReturnContext(@NonNull final I_C_Order orderRecord, @NonNull final I_C_DocType docTypeRecord)
 	{
 		final StringBuilder message = new StringBuilder();
-
-		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final String docTypeIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_C_DocType_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-		final I_C_Order orderRecord = orderTable.get(orderIdentifier);
-		assertThat(orderRecord).isNotNull();
-		final I_C_DocType docTypeRecord = docTypeTable.get(docTypeIdentifier);
-		assertThat(docTypeRecord).isNotNull();
 
 		message.append("Looking for customer return instance with:").append("\n")
 				.append(I_M_InOut.COLUMNNAME_C_Order_ID).append(" : ").append(orderRecord.getC_Order_ID()).append("\n")
@@ -752,10 +902,19 @@ public class M_InOut_StepDef
 		return message.toString();
 	}
 
+	/**
+	 * Process a document action on a shipment/receipt and expect it to throw an error.
+	 * Optionally validates the error message against an AD_Message record.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>AD_Message_ID</b> — (optional, identifier-ref) expected error message from AD_Message<br>
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData, AD_Message_StepDefData
+	 */
 	@And("^the (shipment|material receipt|return inOut) identified by (.*) is (completed|reactivated|reversed|voided|closed) expecting error$")
 	public void shipment_action_expecting_error(@NonNull final String model_UNUSED, @NonNull final String shipmentIdentifier, @NonNull final String action, @NonNull final DataTable dataTable)
 	{
-		final Map<String, String> row = dataTable.asMaps().get(0);
+		final DataTableRow row = DataTableRows.of(dataTable).getFirstRow();
 
 		boolean errorThrown = false;
 
@@ -767,32 +926,47 @@ public class M_InOut_StepDef
 		{
 			errorThrown = true;
 
-			final String errorMessageIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_AD_Message_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-			if (errorMessageIdentifier != null)
-			{
-				final I_AD_Message errorMessage = messageTable.get(errorMessageIdentifier);
-				assertThat(e.getMessage()).contains(msgBL.getMsg(Env.getCtx(), AdMessageKey.of(errorMessage.getValue())));
-			}
+			row.getAsOptionalIdentifier(COLUMNNAME_AD_Message_ID)
+					.ifPresent(errorMessageIdentifier -> {
+						final I_AD_Message errorMessage = messageTable.get(errorMessageIdentifier);
+						assertThat(e.getMessage()).contains(msgBL.getMsg(Env.getCtx(), AdMessageKey.of(errorMessage.getValue())));
+					});
 		}
 
 		assertThat(errorThrown).isTrue();
 	}
 
+	/**
+	 * Poll for the reversal M_InOut of a previously reversed shipment/receipt.
+	 * Looks up by Reversal_ID pointing back to the original, validates DocStatus.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_InOut_ID.Identifier</b> — (required) alias to store the reversal record<br>
+	 *   <b>Reversal_ID.Identifier</b> — (required) alias of the original (reversed) M_InOut<br>
+	 *   <b>DocStatus</b> — (optional) expected doc status of the reversal<br>
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And after not more than 60s, locate reversal M_InOut
+	 *   | M_InOut_ID.Identifier | Reversal_ID.Identifier | DocStatus |
+	 *   | shipment_1_reversal   | shipment_1             | RE        |
+	 * </pre>
+	 */
 	@And("^after not more than (.*)s, locate reversal M_InOut$")
 	public void find_reversal_M_InOut(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
 		final SoftAssertions softly = new SoftAssertions();
 
-		for (final Map<String, String> row : dataTable.asMaps())
+		DataTableRows.of(dataTable).forEach(row ->
 		{
 			final I_M_InOut reversalInOut = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> load_reversal_InOut(row));
 
 			softly.assertThat(reversalInOut).isNotNull();
 
-			final String reversalInOutIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final StepDefDataIdentifier reversalInOutIdentifier = row.getAsIdentifier(COLUMNNAME_M_InOut_ID);
 			inoutTable.putOrReplace(reversalInOutIdentifier, reversalInOut);
-		}
+		});
 		softly.assertAll();
 	}
 
@@ -815,10 +989,9 @@ public class M_InOut_StepDef
 	}
 
 	@NonNull
-	private ItemProvider.ProviderResult<I_M_InOut> load_reversal_InOut(@NonNull final Map<String, String> row)
+	private ItemProvider.ProviderResult<I_M_InOut> load_reversal_InOut(@NonNull final DataTableRow row)
 	{
-		final String inOutToReverseIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_Reversal_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_M_InOut inOutToReverse = inoutTable.get(inOutToReverseIdentifier);
+		final I_M_InOut inOutToReverse = row.getAsIdentifier(I_M_InOut.COLUMNNAME_Reversal_ID).lookupNotNullIn(inoutTable);
 
 		final I_M_InOut reversalInOutRecord = queryBL.createQueryBuilder(I_M_InOut.class)
 				.addEqualsFilter(I_M_InOut.COLUMNNAME_Reversal_ID, inOutToReverse.getM_InOut_ID())
@@ -827,7 +1000,7 @@ public class M_InOut_StepDef
 
 		if (reversalInOutRecord == null)
 		{
-			return ItemProvider.ProviderResult.resultWasNotFound("No reversal I_M_InOut found for row=" + row);
+			return ItemProvider.ProviderResult.resultWasNotFound("No reversal I_M_InOut found for Reversal_ID=" + inOutToReverse.getM_InOut_ID());
 		}
 
 		return ItemProvider.ProviderResult.resultWasFound(reversalInOutRecord);
@@ -868,5 +1041,101 @@ public class M_InOut_StepDef
 
 			restTestContext.setEndpointPath(endpointPath);
 		}
+	}
+
+	/**
+	 * Create a customer return M_InOut by copying from an existing shipment.
+	 * Copies lines with Return_Origin_InOutLine_ID and sets the return warehouse/locator.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_InOut_ID</b> — (required, identifier-ref) source shipment to create return from<br>
+	 *   <b>CustomerReturn_ID</b> — (required, identifier) alias to store the created customer return<br>
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And generate customer return from shipment
+	 *   | M_InOut_ID | CustomerReturn_ID |
+	 *   | shipment_1 | customerReturn_1  |
+	 * </pre>
+	 */
+	@And("generate customer return from shipment")
+	public void generateCustomerReturnFromShipment(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row ->
+		{
+			final I_M_InOut shipment = row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID).lookupNotNullIn(inoutTable);
+
+			final DocTypeId docTypeId = docTypeDAO.getDocTypeId(DocTypeQuery.builder()
+					.docBaseType(DocBaseType.MaterialReceipt)
+					.isSOTrx(true)
+					.adClientId(shipment.getAD_Client_ID())
+					.adOrgId(shipment.getAD_Org_ID())
+					.build());
+
+			final WarehouseId warehouseId = huWarehouseDAO.retrieveFirstQualityReturnWarehouseId();
+			final LocatorId locatorId = warehouseBL.getOrCreateDefaultLocatorId(warehouseId);
+
+			final I_M_InOut customerReturn = InterfaceWrapperHelper.copy()
+					.setSkipCalculatedColumns(true)
+					.setFrom(shipment)
+					.copyToNew(I_M_InOut.class);
+			customerReturn.setC_DocType_ID(docTypeId.getRepoId());
+			customerReturn.setIsSOTrx(true);
+			customerReturn.setMovementType(MovementType.CustomerReturns.getCode());
+			customerReturn.setReturn_Origin_InOut_ID(shipment.getM_InOut_ID());
+			customerReturn.setMovementDate(SystemTime.asTimestamp());
+			customerReturn.setDateAcct(SystemTime.asTimestamp());
+			customerReturn.setM_Warehouse_ID(warehouseId.getRepoId());
+			InterfaceWrapperHelper.save(customerReturn);
+
+			for (final org.compiere.model.I_M_InOutLine shipmentLine : inOutBL.getLines(shipment))
+			{
+				final I_M_InOutLine returnLine = InterfaceWrapperHelper.copy()
+						.setSkipCalculatedColumns(true)
+						.setFrom(shipmentLine)
+						.copyToNew(I_M_InOutLine.class);
+				returnLine.setM_InOut_ID(customerReturn.getM_InOut_ID());
+				returnLine.setReturn_Origin_InOutLine_ID(shipmentLine.getM_InOutLine_ID());
+				returnLine.setM_Locator_ID(locatorId.getRepoId());
+				returnLine.setC_OrderLine_ID(OrderLineId.toRepoId(null));
+				InterfaceWrapperHelper.save(returnLine);
+			}
+
+			final StepDefDataIdentifier returnIdentifier = row.getAsIdentifier("CustomerReturn_ID");
+			inoutTable.putOrReplace(returnIdentifier, customerReturn);
+		});
+	}
+
+	/**
+	 * Load the first HU assigned to an M_InOut and store it in M_HU_StepDefData.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_InOut_ID</b> — (required, identifier-ref) shipment/receipt to look up HUs for<br>
+	 *   <b>M_HU_ID</b> — (required, identifier) alias to store the first assigned HU<br>
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData, M_HU_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And load HUs assigned to M_InOut
+	 *   | M_InOut_ID | M_HU_ID          |
+	 *   | shipment_1 | shipment_1_hu    |
+	 * </pre>
+	 */
+	@And("load HUs assigned to M_InOut")
+	public void loadHUsAssignedToInOut(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row ->
+		{
+			final StepDefDataIdentifier inoutIdentifier = row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID);
+			final I_M_InOut inout = inoutIdentifier.lookupNotNullIn(inoutTable);
+			InterfaceWrapperHelper.refresh(inout);
+
+			final List<I_M_HU> hus = huInOutBL.retrieveHandlingUnits(inout);
+			assertThat(hus).as("HUs assigned to " + inoutIdentifier).isNotEmpty();
+
+			final StepDefDataIdentifier huIdentifier = row.getAsIdentifier(I_M_HU.COLUMNNAME_M_HU_ID);
+			huTable.putOrReplace(huIdentifier, hus.get(0));
+		});
 	}
 }
