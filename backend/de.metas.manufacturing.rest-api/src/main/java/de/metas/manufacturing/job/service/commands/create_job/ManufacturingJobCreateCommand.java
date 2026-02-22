@@ -2,6 +2,8 @@ package de.metas.manufacturing.job.service.commands.create_job;
 
 import com.google.common.collect.ArrayListMultimap;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleCreateRequest;
@@ -16,8 +18,6 @@ import de.metas.manufacturing.issue.plan.PPOrderIssuePlanStep;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.service.ManufacturingJobLoaderAndSaver;
 import de.metas.manufacturing.job.service.ManufacturingJobLoaderAndSaverSupportingServices;
-import de.metas.order.OrderLineId;
-import de.metas.product.ProductId;
 import de.metas.user.UserId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.lang.SeqNoProvider;
@@ -29,8 +29,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
-import org.eevolution.model.I_PP_Order;
-
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -134,23 +132,11 @@ public class ManufacturingJobCreateCommand
 	@Nullable
 	private HUPIItemProductId suggestReceivingTUPIItemProductId()
 	{
-		// Try from order line's packing instructions
-		HUPIItemProductId tuPIItemProductId = null;
-		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(ppOrder.getC_OrderLine_ID());
-		if (orderLineId != null)
-		{
-			tuPIItemProductId = loadingSupportServices.getSalesOrderTUPIItemProductId(orderLineId).orElse(null);
-		}
+		final I_M_HU_PI_Item_Product pip = ppOrderBL.createReceiptLUTUConfigurationManager(ppOrder)
+				.getM_HU_PI_Item_Product();
 
-		// Fallback: default for product
-		if (tuPIItemProductId == null)
-		{
-			tuPIItemProductId = this.loadingSupportServices.getDefaultTUPIItemProductId(
-					ProductId.ofRepoId(ppOrder.getM_Product_ID()),
-					ppOrder.getDateStartSchedule().toInstant()
-			).orElse(null);
-		}
-		return tuPIItemProductId;
+		final HUPIItemProductId id = HUPIItemProductId.ofRepoId(pip.getM_HU_PI_Item_Product_ID());
+		return id.isVirtualHU() ? null : id;
 	}
 
 	private void setResponsible()
