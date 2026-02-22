@@ -76,6 +76,11 @@ public class PPOrderCommand
 			setLUTUConfiguration(ppOrder, productId, quantity.getUomId());
 		}
 
+		if (request.getPiItemProduct() != null)
+		{
+			setPIItemProduct(ppOrder);
+		}
+
 		checkBOMLines(ppOrderId);
 
 		return JsonPPOrderResponse.builder()
@@ -103,6 +108,13 @@ public class PPOrderCommand
 		final de.metas.handlingunits.model.I_PP_Order huPPOrder = InterfaceWrapperHelper.create(ppOrder, de.metas.handlingunits.model.I_PP_Order.class);
 		huPPOrder.setM_HU_LUTU_Configuration(lutuConfiguration);
 		InterfaceWrapperHelper.save(huPPOrder);
+	}
+
+	private void setPIItemProduct(@NonNull final I_PP_Order ppOrder)
+	{
+		final HUPIItemProductId piItemProductId = context.getId(request.getPiItemProduct(), HUPIItemProductId.class);
+		ppOrder.setM_HU_PI_Item_Product_ID(piItemProductId.getRepoId());
+		InterfaceWrapperHelper.save(ppOrder);
 	}
 
 	private void checkBOMLines(final PPOrderId ppOrderId)
