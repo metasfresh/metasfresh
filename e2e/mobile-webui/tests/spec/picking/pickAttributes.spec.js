@@ -1,5 +1,4 @@
 import { test } from "../../../playwright.config";
-import { expect } from '@playwright/test';
 import { allure } from 'allure-playwright';
 import { Backend } from '../../utils/screens/Backend';
 import { LoginScreen } from '../../utils/screens/LoginScreen';
@@ -9,7 +8,6 @@ import { PickingJobScreen } from '../../utils/screens/picking/PickingJobScreen';
 import { GetQuantityDialog } from '../../utils/screens/picking/GetQuantityDialog';
 import { BarcodeScannerComponent } from '../../utils/components/BarcodeScannerComponent';
 import { generateEAN13 } from '../../utils/ean13';
-import { page } from '../../utils/common';
 
 const createMasterdata = async ({ readAttributes, qty }) => {
     return await Backend.createMasterdata({
@@ -52,7 +50,7 @@ test('Expect picking directly without dialog', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
-        allure.tag('F00230');  // Standalone tag for Tags section;
+    allure.tag('F00230');  // Standalone tag for Tags section;
     allure.story('Pick attributes behavior');
     allure.severity('normal');
 
@@ -133,19 +131,20 @@ test('Expect read qty dialog with only LotNo attribute', async ({ page: _page })
     await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode, expectNextScreen: 'PickLineScanScreen', gotoPickingJobScreen: true });
     // NO target to be set => pick to top level CUs
 
-    await test.step("Pick and expect only LotNo in read qty dialog", async () => {
+    const testLotNo = `LOT-${Date.now()}`;
+
+    await test.step("Pick with LotNo and expect only LotNo in read qty dialog", async () => {
         await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '1 Stk', qtyPicked: '0 Stk', color: 'red' });
 
         // Scan the product - should open GetQuantityDialog because readAttributes contains LotNo
         await BarcodeScannerComponent.type(masterdata.products.P1.gtin);
         await GetQuantityDialog.waitForDialog();
 
-        // Expect LotNo field is visible
-        await expect(page.getByTestId('lotNo')).toBeVisible();
-        // Expect BestBeforeDate field is NOT visible
-        await expect(page.getByTestId('bestBeforeDate')).not.toBeVisible();
+        // Expect only LotNo field is visible, BestBeforeDate is not
+        await GetQuantityDialog.expectLotNoVisible();
+        await GetQuantityDialog.expectBestBeforeDateNotVisible();
 
-        await GetQuantityDialog.fillAndPressDone({});
+        await GetQuantityDialog.fillAndPressDone({ lotNo: testLotNo });
         await PickingJobScreen.waitForScreen();
         await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '1 Stk', qtyPicked: '1 Stk', waitForColor: 'green' });
 
@@ -161,7 +160,7 @@ test('Expect read qty dialog with only LotNo attribute', async ({ page: _page })
             },
             hus: {
                 [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '999 PCE' } },
-                vhu1: { huStatus: 'S', storages: { P1: '1 PCE' } },
+                vhu1: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { 'Lot-Nummer': testLotNo } },
             }
         });
     });
@@ -179,7 +178,7 @@ test('Expect read qty dialog with only LotNo attribute', async ({ page: _page })
         },
         hus: {
             [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '999 PCE' } },
-            vhu1: { huStatus: 'E', storages: { P1: '1 PCE' } },
+            vhu1: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { 'Lot-Nummer': testLotNo } },
         }
     });
 });
