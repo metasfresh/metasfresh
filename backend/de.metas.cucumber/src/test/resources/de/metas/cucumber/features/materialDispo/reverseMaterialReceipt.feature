@@ -5,6 +5,7 @@ Feature: Reversal of material receipt
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And AD_Scheduler for classname 'de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs' is disabled
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
     And metasfresh has date and time 2021-04-14T11:30:13Z
@@ -59,18 +60,32 @@ Feature: Reversal of material receipt
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | hu1                | rs1                             | receipt1              |
+    # Validate HU state after receipt — HU should be Active in warehouse
+    And M_HU are validated:
+      | M_HU_ID.Identifier | HUStatus | IsActive |
+      | hu1                | A        | Y        |
     # the receipt with qty=10 came before it was expected; c_1 now has Qty=0; c_2 has the value that was set in the timesource
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type   | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP |
       | c_1        | SUPPLY              | PURCHASE                  | product      | 2021-04-15T15:00:00  | 0   | 10  |
       | c_2        | UNEXPECTED_INCREASE | PURCHASE                  | product      | 2021-04-14T11:30:13Z | 10  | 10  |
+    And after not more than 30 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | product                 | 10        |
     And the material receipt identified by receipt1 is reversed
+    # Validate HU state after reversal — HU should be Destroyed
+    And M_HU are validated:
+      | M_HU_ID.Identifier | HUStatus | IsActive |
+      | hu1                | D        | N        |
     # i'm not sure it's right that c_1 did not get its Qty=10 back. So if you think i's wrong => maybe it is.
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type   | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP |
       | c_1        | SUPPLY              | PURCHASE                  | product      | 2021-04-15T15:00:00  | 0   | 0   |
       | c_2        | UNEXPECTED_INCREASE | PURCHASE                  | product      | 2021-04-14T11:30:13Z | 10  | 10  |
       | c_3        | UNEXPECTED_DECREASE | PURCHASE                  | product      | 2021-04-14T11:30:13Z | 10  | 0   |
+    And after not more than 30 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | product                 | 0         |
 # cleanup
     And metasfresh has current date and time
     

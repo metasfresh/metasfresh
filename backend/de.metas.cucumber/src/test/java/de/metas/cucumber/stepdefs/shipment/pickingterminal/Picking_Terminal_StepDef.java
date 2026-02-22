@@ -31,9 +31,11 @@ import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.handlingunits.picking.candidate.commands.ProcessPickingCandidatesCommand;
 import de.metas.handlingunits.picking.candidate.commands.ProcessPickingCandidatesRequest;
 import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
@@ -219,5 +221,32 @@ public class Picking_Terminal_StepDef
 
 		final List<I_M_HU> availableHUsToPick = huPickingSlotBL.retrieveAvailableHUsToPick(query);
 		assertThat(availableHUsToPick).isEmpty();
+	}
+
+	@And("unprocess picking candidates for shipment schedule")
+	public void unprocess_picking_candidates(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> rows = dataTable.asMaps();
+		for (final Map<String, String> row : rows)
+		{
+			final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
+
+			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
+
+			final List<PickingCandidate> pickingCandidates = pickingCandidateRepository.getByShipmentScheduleIdsAndStatus(
+					ImmutableSet.of(shipmentScheduleId),
+					PickingCandidateStatus.Processed);
+
+			assertThat(pickingCandidates)
+					.as("Expected processed picking candidates for shipment schedule " + shipmentScheduleIdentifier)
+					.isNotEmpty();
+
+			final ImmutableSet<PickingCandidateId> pickingCandidateIds = pickingCandidates.stream()
+					.map(PickingCandidate::getId)
+					.collect(ImmutableSet.toImmutableSet());
+
+			pickingCandidateService.unprocess(pickingCandidateIds);
+		}
 	}
 }
