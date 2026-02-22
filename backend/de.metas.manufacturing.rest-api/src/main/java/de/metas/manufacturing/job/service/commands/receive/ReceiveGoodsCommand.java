@@ -1,6 +1,7 @@
 package de.metas.manufacturing.job.service.commands.receive;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
@@ -19,6 +20,7 @@ import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.i18n.AdMessageKey;
+import de.metas.manufacturing.config.ReceiveUnitType;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLine;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLineId;
 import de.metas.manufacturing.job.model.ManufacturingJob;
@@ -86,6 +88,10 @@ public class ReceiveGoodsCommand
 	@Nullable private final String lotNo;
 	@Nullable private final Quantity catchWeight;
 	@Nullable private final ScannedCode barcode;
+	/** Unit type for receiving goods (CU or TU). Determines how quantities are interpreted and displayed. */
+	@NonNull private final ReceiveUnitType receiveUnitType;
+	/** Required when {@link #receiveUnitType} is TU. If null in TU mode, falls back to CU qty calculation. */
+	@Nullable private final HUPIItemProductId tuPIItemProductIdForTUMode;
 
 	//
 	// State
@@ -116,7 +122,9 @@ public class ReceiveGoodsCommand
 			@Nullable final LocalDate productionDate,
 			@Nullable final String lotNo,
 			@Nullable final Quantity catchWeight,
-			@Nullable final ScannedCode barcode)
+			@Nullable final ScannedCode barcode,
+			@Nullable final ReceiveUnitType receiveUnitType,
+			@Nullable final HUPIItemProductId tuPIItemProductIdForTUMode)
 	{
 		this.trxManager = trxManager;
 		this.handlingUnitsBL = handlingUnitsBL;
@@ -136,6 +144,8 @@ public class ReceiveGoodsCommand
 		this.lotNo = StringUtils.trimBlankToNull(lotNo);
 		this.catchWeight = catchWeight;
 		this.barcode = barcode;
+		this.receiveUnitType = receiveUnitType != null ? receiveUnitType : ReceiveUnitType.CU;
+		this.tuPIItemProductIdForTUMode = tuPIItemProductIdForTUMode;
 
 		// state
 		this.job = job;
@@ -154,7 +164,7 @@ public class ReceiveGoodsCommand
 	{
 		job = job.withChangedReceiveLine(finishedGoodsReceiveLineId, this::receiveLine);
 		save();
-		
+
 		autoIssueForWhatWasReceived();
 	}
 
@@ -394,7 +404,16 @@ public class ReceiveGoodsCommand
 			uomId = UomId.ofRepoId(ppOrder.getC_UOM_ID());
 		}
 
-		return Quantitys.of(qtyToReceiveBD, uomId);
+		if (receiveUnitType.isTU() && tuPIItemProductIdForTUMode != null)
+		{
+			final HUPIItemProduct huPIItemProduct = loadingAndSavingSupportServices.getTUPIItemProduct(tuPIItemProductIdForTUMode);
+			final QtyTU qtyTU = QtyTU.ofBigDecimal(qtyToReceiveBD);
+			return huPIItemProduct.computeQtyCUsOfQtyTUs(qtyTU);
+		}
+		else
+		{
+			return Quantitys.of(qtyToReceiveBD, uomId);
+		}
 	}
 
 	private ReceivingTarget getPreviousReceivingTarget()

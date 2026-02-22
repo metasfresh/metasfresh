@@ -20,6 +20,7 @@ public class JsonPPOrderRequest
 	@NonNull Identifier product;
 	@NonNull BigDecimal qty;
 	@NonNull ZonedDateTime datePromised;
+	@Nullable Identifier salesOrderLine;
 
 	@Nullable Map<String, Line> lines;
 

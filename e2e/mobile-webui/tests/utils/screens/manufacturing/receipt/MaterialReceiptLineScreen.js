@@ -72,4 +72,11 @@ export const MaterialReceiptLineScreen = {
         await page.locator(ID_BACK_BUTTON).tap();
         await ManufacturingJobScreen.waitForScreen();
     }),
+
+    expectHeaderProperty:  async ({ caption, value }) => await test.step(`${NAME} - Check header property "${caption}" = "${value}"`, async () => {
+        const row = await page.locator(
+            `tr:has(th:text-is("${caption}")):has(td:has-text("${value}"))`
+        );
+        await expect(row).toHaveCount(1)
+    }),
 };
