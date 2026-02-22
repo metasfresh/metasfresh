@@ -5,7 +5,7 @@ INSERT INTO AD_Message (AD_Message_ID, AD_Client_ID, AD_Org_ID, IsActive, Create
 VALUES (545631, 0, 0, 'Y', '2026-02-21 10:00', 100, '2026-02-21 10:00', 100,
         'BPartner_Value_NotUnique',
         'More than one Business Partner found with search key "{0}" (found {1}). Please use a unique search key or resolve the ambiguity.',
-        'E', 'de.metas.adempiere');
+        'E', 'D');
 
 UPDATE AD_Message SET ErrorCode='BPARTNER_VALUE_NOT_UNIQUE' WHERE AD_Message_ID=545631;
 
@@ -30,7 +30,7 @@ INSERT INTO AD_Message (AD_Message_ID, AD_Client_ID, AD_Org_ID, IsActive, Create
 VALUES (545632, 0, 0, 'Y', '2026-02-21 10:00', 100, '2026-02-21 10:00', 100,
         'BPartner_Value_NotUnique_REST',
         'The identifier "val-{0}" matched {1} Business Partners. The "val-" prefix requires a unique Value within the Org. Use "ext-" or a metasfresh-ID instead.',
-        'E', 'de.metas.adempiere');
+        'E', 'D');
 
 UPDATE AD_Message SET ErrorCode='BPARTNER_VALUE_NOT_UNIQUE_REST' WHERE AD_Message_ID=545632;
 
