@@ -88,7 +88,9 @@ public class ReceiveGoodsCommand
 	@Nullable private final String lotNo;
 	@Nullable private final Quantity catchWeight;
 	@Nullable private final ScannedCode barcode;
+	/** Unit type for receiving goods (CU or TU). Determines how quantities are interpreted and displayed. */
 	@NonNull private final ReceiveUnitType receiveUnitType;
+	/** Required when {@link #receiveUnitType} is TU. If null in TU mode, falls back to CU qty calculation. */
 	@Nullable private final HUPIItemProductId tuPIItemProductIdForTUMode;
 
 	//
