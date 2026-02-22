@@ -1,24 +1,13 @@
-/*
- * #%L
- * de.metas.fresh.base
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+-- gh#28014: Two fixes for the Intrastat RTIC export:
+--
+-- 1) Remove thousand separator (G) from TO_CHAR patterns in Intrastat_Export.
+--    Austrian RTIC cannot parse numbers with period as thousand separator.
+--    In German locale, TO_CHAR 'G' = period, so '1.442,500' is misinterpreted by RTIC.
+--    Replacing 'FM9G999Dxxx' with 'FM9999999Dxxx' outputs '1442,500' (no thousand separator).
+--
+-- 2) Change CSV delimiter from tab to semicolon.
+--    RTIC expects semicolon-delimited input. The original migration (5787490) set tab,
+--    but the customer must use semicolon for RTIC upload.
 
 DROP FUNCTION IF EXISTS report.Intrastat_Export(p_c_year_id                 numeric,
                                                 p_C_Period_ID               numeric,
@@ -65,4 +54,11 @@ WHERE (C_Period_ID = p_C_Period_ID OR p_C_Period_ID = -1)
 
 $$
     LANGUAGE sql STABLE
+;
+
+-- Change CSV delimiter from tab to semicolon for RTIC compatibility
+UPDATE AD_Process
+SET CSVFieldDelimiter = ';'
+WHERE AD_Process_ID = 585508
+  AND CSVFieldDelimiter = E'\t'
 ;
