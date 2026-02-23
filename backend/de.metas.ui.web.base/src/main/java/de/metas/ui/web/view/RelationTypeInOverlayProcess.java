@@ -51,14 +51,14 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Process implementation for opening related documents in an overlay window.
+ * Process implementation for opening related documents in an overlay window (as grid view).
  * <p>
  * This process is automatically assigned when a process has Type = 'RelationTypeInOverlay'.
  * It retrieves related documents based on the configured AD_RelationType_ID and displays them in a modal overlay.
  */
 public class RelationTypeInOverlayProcess extends JavaProcess implements IProcessPrecondition
 {
-	private static final AdMessageKey MSG_NoRelatedDocumentsFound = AdMessageKey.of("de.metas.ui.web.view.RelationTypeInOverlayProcess.NoRelatedDocuments");
+	private final static AdMessageKey MSG_NO_RELATED_DOCS_FOUND = AdMessageKey.of("NO_RELATED_DOCS_FOUND");
 
 	@NonNull private final RelationTypeRelatedDocumentsProvidersFactory relationTypeProvidersFactory = SpringContextHolder.instance.getBean(RelationTypeRelatedDocumentsProvidersFactory.class);
 	@NonNull private final IViewsRepository viewsRepo = SpringContextHolder.instance.getBean(ViewsRepository.class);
@@ -69,10 +69,6 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 		final TableRecordReference recordRef = getRecordRef();
 
 		final RelationTypeId relationTypeId = getRelationTypeId();
-		if (relationTypeId == null)
-		{
-			throw new AdempiereException("AD_RelationType_ID must be configured for this process");
-		}
 
 		// Load the source record as a PO
 		final PO sourcePO = new GenericPO(recordRef.getTableName(), getCtx(), recordRef.getRecord_ID(), get_TrxName());
@@ -92,7 +88,7 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 
 		if (relatedDocumentGroups.isEmpty())
 		{
-			throw new AdempiereException(msgBL.getTranslatableMsgText(MSG_NoRelatedDocumentsFound));
+			throw new AdempiereException(MSG_NO_RELATED_DOCS_FOUND);
 		}
 
 		// Get the first group and create a view from it. We're expecting exactly one group.
@@ -115,8 +111,9 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 
 		final RelatedDocumentsId relatedDocumentsId = RelatedDocumentsId.ofString("AD_RelationType_ID-" + getRelationTypeId().getRepoId());
 
-		final WindowId targetWindowId = WindowId.of(firstGroup.getTargetWindowId());
 		final WindowId srcWindowId = WindowId.of(getProcessInfo().getAdWindowId());
+		final WindowId targetWindowId = WindowId.of(firstGroup.getTargetWindowId());
+
 		final DocumentPath srcDocument = DocumentPath.rootDocumentPath(srcWindowId, recordReference.getRecord_ID());
 		final CreateViewRequest request = CreateViewRequest.builder(targetWindowId, JSONViewDataType.grid)
 				.setReferencingDocumentPaths(ImmutableSet.of(srcDocument))
