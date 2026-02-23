@@ -23,7 +23,7 @@
 package de.metas.ui.process.model.interceptor;
 
 import de.metas.process.ProcessType;
-import de.metas.ui.web.view.RelationTypeInOverlayProcess;
+import de.metas.ui.web.view.process.RelationTypeInOverlayProcess;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;

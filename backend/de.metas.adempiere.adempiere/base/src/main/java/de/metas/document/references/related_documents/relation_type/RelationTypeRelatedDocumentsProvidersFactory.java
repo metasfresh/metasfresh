@@ -69,7 +69,7 @@ import static org.compiere.model.I_AD_Ref_Table.COLUMNNAME_OrderByClause;
 import static org.compiere.model.I_AD_Ref_Table.COLUMNNAME_WhereClause;
 
 @Component
-public final class RelationTypeRelatedDocumentsProvidersFactory implements IRelatedDocumentsProvider
+public class RelationTypeRelatedDocumentsProvidersFactory implements IRelatedDocumentsProvider
 {
 	private static final Logger logger = LogManager.getLogger(RelationTypeRelatedDocumentsProvidersFactory.class);
 	private final ADReferenceService adReferenceService;

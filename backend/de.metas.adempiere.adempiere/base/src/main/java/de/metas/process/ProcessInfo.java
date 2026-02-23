@@ -1144,9 +1144,15 @@ public final class ProcessInfo implements Serializable
 			this._adProcess = InterfaceWrapperHelper.create(adProcess, I_AD_Process.class);
 
 			setAD_Process_ID(_adProcess.getAD_Process_ID());
-			adRelationTypeId = RelationTypeId.ofRepoIdOrNull(_adProcess.getAD_RelationType_ID());
+			setAdRelationTypeId(RelationTypeId.ofRepoIdOrNull(_adProcess.getAD_RelationType_ID()));
 			setNotifyUserAfterExecution(adProcess.isNotifyUserAfterExecution());
 			setLogWarning(adProcess.isLogWarning());
+			return this;
+		}
+
+		public ProcessInfoBuilder setAdRelationTypeId(@Nullable final RelationTypeId adRelationTypeId)
+		{
+			this.adRelationTypeId = adRelationTypeId;
 			return this;
 		}
 

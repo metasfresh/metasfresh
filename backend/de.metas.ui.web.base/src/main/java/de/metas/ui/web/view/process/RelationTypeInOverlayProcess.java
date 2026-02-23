@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.ui.web.view;
+package de.metas.ui.web.view.process;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.document.references.related_documents.IZoomSource;
@@ -36,6 +36,10 @@ import de.metas.process.JavaProcess;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.document.references.WebuiDocumentReferenceId;
+import de.metas.ui.web.view.CreateViewRequest;
+import de.metas.ui.web.view.IView;
+import de.metas.ui.web.view.IViewsRepository;
+import de.metas.ui.web.view.ViewsRepository;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -60,8 +64,41 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 {
 	private final static AdMessageKey MSG_NO_RELATED_DOCS_FOUND = AdMessageKey.of("NO_RELATED_DOCS_FOUND");
 
-	@NonNull private final RelationTypeRelatedDocumentsProvidersFactory relationTypeProvidersFactory = SpringContextHolder.instance.getBean(RelationTypeRelatedDocumentsProvidersFactory.class);
-	@NonNull private final IViewsRepository viewsRepo = SpringContextHolder.instance.getBean(ViewsRepository.class);
+	@NonNull private final RelationTypeRelatedDocumentsProvidersFactory relationTypeProvidersFactory;
+	@NonNull private final IViewsRepository viewsRepo;
+
+	public RelationTypeInOverlayProcess()
+	{
+		this.relationTypeProvidersFactory = SpringContextHolder.instance.getBean(RelationTypeRelatedDocumentsProvidersFactory.class);
+		this.viewsRepo = SpringContextHolder.instance.getBean(ViewsRepository.class);
+	}
+
+	// Constructor for testing
+	private RelationTypeInOverlayProcess(
+			@NonNull final RelationTypeRelatedDocumentsProvidersFactory relationTypeProvidersFactory,
+			@NonNull final IViewsRepository viewsRepo)
+	{
+		this.relationTypeProvidersFactory = relationTypeProvidersFactory;
+		this.viewsRepo = viewsRepo;
+	}
+
+	public static RelationTypeInOverlayProcess newInstanceForUnitTesting(
+			@NonNull final RelationTypeRelatedDocumentsProvidersFactory relationTypeProvidersFactory,
+			@NonNull final IViewsRepository viewsRepo,
+			@NonNull final de.metas.process.ProcessInfo processInfo,
+			@NonNull final IZoomSource zoomSource)
+	{
+		final RelationTypeInOverlayProcess process = new RelationTypeInOverlayProcess(relationTypeProvidersFactory, viewsRepo)
+		{
+			@Override
+			protected IZoomSource createZoomSource(@NonNull final TableRecordReference recordRef)
+			{
+				return zoomSource;
+			}
+		};
+		process.init(processInfo);
+		return process;
+	}
 
 	@Override
 	protected String doIt()
@@ -70,15 +107,8 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 
 		final RelationTypeId relationTypeId = getRelationTypeId();
 
-		// Load the source record as a PO
-		final PO sourcePO = new GenericPO(recordRef.getTableName(), getCtx(), recordRef.getRecord_ID(), get_TrxName());
-		if (sourcePO.get_ID() <= 0)
-		{
-			throw new AdempiereException("Cannot load source record: " + recordRef);
-		}
-
 		// Create zoom source from the current record
-		final IZoomSource zoomSource = POZoomSource.of(sourcePO, getProcessInfo().getAdWindowId());
+		final IZoomSource zoomSource = createZoomSource(recordRef);
 
 		// Get the specific provider for this relation type and retrieve related documents
 		final List<RelatedDocumentsCandidateGroup> relatedDocumentGroups = relationTypeProvidersFactory
@@ -94,7 +124,7 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 		// Get the first group and create a view from it. We're expecting exactly one group.
 		final RelatedDocumentsCandidateGroup firstGroup = relatedDocumentGroups.get(0);
 
-		final IView popupView = createView(recordRef, firstGroup);
+		final IView popupView = createView(recordRef, WindowId.of(firstGroup.getTargetWindowId()));
 
 		getResult().setWebuiViewToOpen(
 				ProcessExecutionResult.WebuiViewToOpen.modalOverlay(popupView.getViewId().getViewId()));
@@ -102,17 +132,24 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 		return MSG_OK;
 	}
 
-	private IView createView(@NonNull final TableRecordReference recordReference, @NonNull final RelatedDocumentsCandidateGroup firstGroup)
+	protected IZoomSource createZoomSource(@NonNull final TableRecordReference recordRef)
 	{
-		if (firstGroup.getCandidates().isEmpty())
+		// Load the source record as a PO
+		final PO sourcePO = new GenericPO(recordRef.getTableName(), getCtx(), recordRef.getRecord_ID(), get_TrxName());
+		if (sourcePO.get_ID() <= 0)
 		{
-			throw new AdempiereException("Relation group contains no candidates");
+			throw new AdempiereException("Cannot load source record: " + recordRef);
 		}
+
+		return POZoomSource.of(sourcePO, getProcessInfo().getAdWindowId());
+	}
+
+	private IView createView(@NonNull final TableRecordReference recordReference, @NonNull final WindowId targetWindowId)
+	{
 
 		final RelatedDocumentsId relatedDocumentsId = RelatedDocumentsId.ofString("AD_RelationType_ID-" + getRelationTypeId().getRepoId());
 
 		final WindowId srcWindowId = WindowId.of(getProcessInfo().getAdWindowId());
-		final WindowId targetWindowId = WindowId.of(firstGroup.getTargetWindowId());
 
 		final DocumentPath srcDocument = DocumentPath.rootDocumentPath(srcWindowId, recordReference.getRecord_ID());
 		final CreateViewRequest request = CreateViewRequest.builder(targetWindowId, JSONViewDataType.grid)

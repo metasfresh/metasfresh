@@ -31,6 +31,12 @@ import org.compiere.model.I_AD_RelationType;
 
 import javax.annotation.Nullable;
 
+/**
+ * Value object representing a Relation Type ID (AD_RelationType).
+ * Used to type-safely pass relation type references throughout the system.
+ *
+ * @see I_AD_RelationType
+ */
 @Value
 public class RelationTypeId implements RepoIdAware
 {
