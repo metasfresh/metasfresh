@@ -564,19 +564,23 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 
 	public Optional<Account> getBankFeeAccount(final AcctSchemaId acctSchemaId)
 	{
+		// Try payment's bank account first
 		final I_C_Payment payment = getC_Payment();
-		if (payment == null)
+		if (payment != null)
 		{
-			return Optional.empty();
+			final BankAccountId bankAccountId = BankAccountId.ofRepoIdOrNull(payment.getC_BP_BankAccount_ID());
+			if (bankAccountId != null)
+			{
+				final Optional<Account> acct = getAccountProvider().getBankAccountAccountIfSet(acctSchemaId, bankAccountId, BankAccountAcctType.PayBankFee_Acct);
+				if (acct.isPresent())
+				{
+					return acct;
+				}
+			}
 		}
 
-		final BankAccountId bankAccountId = BankAccountId.ofRepoIdOrNull(payment.getC_BP_BankAccount_ID());
-		if (bankAccountId == null)
-		{
-			return Optional.empty();
-		}
-
-		return getAccountProvider().getBankAccountAccountIfSet(acctSchemaId, bankAccountId, BankAccountAcctType.PayBankFee_Acct);
+		// Fallback: schema default
+		return getAccountProvider().getAcctSchemaDefaultPayBankFeeAccount(acctSchemaId);
 	}
 
 	public final CurrencyConversionContext getInvoiceCurrencyConversionCtx()

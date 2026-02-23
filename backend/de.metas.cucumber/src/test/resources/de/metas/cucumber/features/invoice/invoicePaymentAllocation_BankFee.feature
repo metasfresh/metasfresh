@@ -319,8 +319,8 @@ Feature: payment allocation - bank fee posting
       | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | processed | DocStatus | IsPaid | OpenAmt | IsPartiallyPaid |
       | inv_bf_140   | customer1     | bpartner_location_1    | true      | CO        | false  | 0.20    | true            |
 
-    # Reversal posting must mirror the original: DR C_Receivable, CR PayBankFee_Acct
+    # Reversal posting negates amounts on the same side (ADempiere convention)
     And Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID              |
-      | PayBankFee_Acct       |             | 0.20 EUR    |          | alloc_bf_140.reversed  |
-      | C_Receivable_Acct     | 0.20 EUR    |             |          | alloc_bf_140.reversed  |
+      | PayBankFee_Acct       | -0.20 EUR   |             |          | alloc_bf_140.reversed  |
+      | C_Receivable_Acct     |             | -0.20 EUR   |          | alloc_bf_140.reversed  |

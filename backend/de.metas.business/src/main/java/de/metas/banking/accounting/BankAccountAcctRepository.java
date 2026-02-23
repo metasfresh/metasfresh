@@ -14,12 +14,14 @@ import lombok.ToString;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_AcctSchema_Default;
 import org.compiere.model.I_C_BP_BankAccount_Acct;
 import org.compiere.util.DB;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -152,6 +154,28 @@ public class BankAccountAcctRepository
 				sql,
 				new Object[] { acctSchemaId },
 				ITrx.TRXNAME_ThreadInherited);
+	}
+
+	@NonNull
+	public Optional<Account> getAcctSchemaDefaultPayBankFeeAccount(@NonNull final AcctSchemaId acctSchemaId)
+	{
+		final I_C_AcctSchema_Default schemaDefault = queryBL.createQueryBuilderOutOfTrx(I_C_AcctSchema_Default.class)
+				.addEqualsFilter(I_C_AcctSchema_Default.COLUMN_C_AcctSchema_ID, acctSchemaId)
+				.create()
+				.firstOnly(I_C_AcctSchema_Default.class);
+
+		if (schemaDefault == null)
+		{
+			return Optional.empty();
+		}
+
+		final Integer payBankFeeAcctId = InterfaceWrapperHelper.getValueOrNull(schemaDefault, I_C_BP_BankAccount_Acct.COLUMNNAME_PayBankFee_Acct);
+		if (payBankFeeAcctId == null || payBankFeeAcctId <= 0)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(Account.of(AccountId.ofRepoId(payBankFeeAcctId), BankAccountAcctType.PayBankFee_Acct));
 	}
 
 	//
