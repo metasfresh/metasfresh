@@ -131,10 +131,7 @@ public class C_AllocationLine_Builder
 
 	public C_AllocationLine_Builder writeOffType(@Nullable final WriteOffType writeOffType)
 	{
-		if (writeOffType != null)
-		{
-			allocLine.setWriteOffType(writeOffType.getCode());
-		}
+		allocLine.setWriteOffType(writeOffType != null ? writeOffType.getCode() : null);
 		return this;
 	}
 

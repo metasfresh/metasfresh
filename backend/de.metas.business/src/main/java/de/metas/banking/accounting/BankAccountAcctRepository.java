@@ -6,6 +6,7 @@ import com.google.common.collect.Maps;
 import de.metas.acct.Account;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.banking.BankAccountId;
 import de.metas.cache.CCache;
 import de.metas.util.Services;
@@ -159,11 +160,7 @@ public class BankAccountAcctRepository
 	@NonNull
 	public Optional<Account> getAcctSchemaDefaultPayBankFeeAccount(@NonNull final AcctSchemaId acctSchemaId)
 	{
-		final I_C_AcctSchema_Default schemaDefault = queryBL.createQueryBuilderOutOfTrx(I_C_AcctSchema_Default.class)
-				.addEqualsFilter(I_C_AcctSchema_Default.COLUMN_C_AcctSchema_ID, acctSchemaId)
-				.create()
-				.firstOnly(I_C_AcctSchema_Default.class);
-
+		final I_C_AcctSchema_Default schemaDefault = Services.get(IAcctSchemaDAO.class).retrieveAcctSchemaDefaultsRecordOrNull(acctSchemaId);
 		if (schemaDefault == null)
 		{
 			return Optional.empty();
