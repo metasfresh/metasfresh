@@ -58,6 +58,7 @@ public class AD_Process
 					throw new FillMandatoryException(I_AD_Process.COLUMNNAME_JSONPath);
 				}
 				break;
+			// the `RelationTypeInOverlay` type is handled in de.metas.ui.process.model.interceptor.AD_Process.setClassnameForProcessType, because the RelationTypeInOverlayProcess class is not visible here
 		}
 	}
 

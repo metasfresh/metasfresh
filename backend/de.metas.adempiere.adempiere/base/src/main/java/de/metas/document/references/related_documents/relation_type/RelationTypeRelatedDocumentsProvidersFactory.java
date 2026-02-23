@@ -59,6 +59,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -260,6 +261,11 @@ public final class RelationTypeRelatedDocumentsProvidersFactory implements IRela
 		}
 
 		return result;
+	}
+
+	public Optional<SpecificRelationTypeRelatedDocumentsProvider> findRelatedDocumentsProvider(@NonNull final RelationTypeId relationTypeId)
+	{
+		return Optional.ofNullable(findRelatedDocumentsProvider(loadOutOfTrx(relationTypeId.getRepoId(), I_AD_RelationType.class)));
 	}
 
 	@VisibleForTesting
