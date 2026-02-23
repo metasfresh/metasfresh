@@ -3,6 +3,7 @@ package de.metas.cucumber.stepdefs.allocation;
 import de.metas.allocation.api.C_AllocationHdr_Builder;
 import de.metas.allocation.api.C_AllocationLine_Builder;
 import de.metas.allocation.api.IAllocationBL;
+import de.metas.allocation.api.WriteOffType;
 import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
@@ -108,6 +109,10 @@ public class C_AllocationHdr_StepDef
 			{
 				lineBuilder.overUnderAmt(overUnderAmt.toBigDecimal());
 			}
+
+			row.getAsOptionalString("WriteOffType")
+					.map(WriteOffType::ofCode)
+					.ifPresent(lineBuilder::writeOffType);
 
 			row.getAsOptionalIdentifier("C_BPartner_ID")
 					.map(bpartnerTable::getId)

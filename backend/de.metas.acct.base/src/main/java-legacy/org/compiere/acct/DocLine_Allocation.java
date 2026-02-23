@@ -22,6 +22,7 @@ import de.metas.acct.accounts.BPartnerVendorAccountType;
 import de.metas.acct.accounts.CashAccountType;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.allocation.api.WriteOffType;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.accounting.BankAccountAcctType;
 import de.metas.bpartner.BPartnerId;
@@ -122,6 +123,8 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		m_WriteOffAmt = Money.of(line.getWriteOffAmt(), doc.getCurrencyId());
 		m_OverUnderAmt = line.getOverUnderAmt();
 		m_PaymentWriteOffAmt = line.getPaymentWriteOffAmt();
+
+		this.writeOffType = WriteOffType.ofNullableCodeOrWriteOff(line.getWriteOffType());
 	}    // DocLine_Allocation
 
 	private final int m_C_Invoice_ID;
@@ -147,6 +150,9 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 	private final Money m_WriteOffAmt;
 	private final BigDecimal m_OverUnderAmt;
 	private final BigDecimal m_PaymentWriteOffAmt;
+
+	@NonNull
+	private final WriteOffType writeOffType;
 
 	/**
 	 * String Representation
@@ -543,6 +549,34 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		}
 
 		return getAccountProvider().getBankAccountAccountIfSet(acctSchemaId, bankAccountId, BankAccountAcctType.Payment_WriteOff_Acct);
+	}
+
+	@NonNull
+	public WriteOffType getWriteOffType()
+	{
+		return writeOffType;
+	}
+
+	public boolean isBankFeeWriteOff()
+	{
+		return writeOffType.isBankFee();
+	}
+
+	public Optional<Account> getBankFeeAccount(final AcctSchemaId acctSchemaId)
+	{
+		final I_C_Payment payment = getC_Payment();
+		if (payment == null)
+		{
+			return Optional.empty();
+		}
+
+		final BankAccountId bankAccountId = BankAccountId.ofRepoIdOrNull(payment.getC_BP_BankAccount_ID());
+		if (bankAccountId == null)
+		{
+			return Optional.empty();
+		}
+
+		return getAccountProvider().getBankAccountAccountIfSet(acctSchemaId, bankAccountId, BankAccountAcctType.PayBankFee_Acct);
 	}
 
 	public final CurrencyConversionContext getInvoiceCurrencyConversionCtx()

@@ -129,6 +129,15 @@ public class C_AllocationLine_Builder
 		return this;
 	}
 
+	public C_AllocationLine_Builder writeOffType(@Nullable final WriteOffType writeOffType)
+	{
+		if (writeOffType != null)
+		{
+			allocLine.setWriteOffType(writeOffType.getCode());
+		}
+		return this;
+	}
+
 	public final C_AllocationLine_Builder skipIfAllAmountsAreZero()
 	{
 		this.skipIfAllAmountsAreZero = true;
