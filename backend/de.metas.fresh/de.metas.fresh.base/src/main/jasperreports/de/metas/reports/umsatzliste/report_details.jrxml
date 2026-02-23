@@ -162,13 +162,6 @@
 					</textElement>
 					<textFieldExpression><![CDATA[$F{bp_name}]]></textFieldExpression>
 				</textField>
-				<textField isBlankWhenNull="true">
-					<reportElement x="185" y="0" width="80" height="12" uuid="b8c9d0e1-f2a3-4567-bcde-890123456789"/>
-					<textElement>
-						<font size="6" isBold="false" isItalic="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{delivery_bp_name}]]></textFieldExpression>
-				</textField>
 				<textField evaluationTime="Group" evaluationGroup="BPartner" pattern="#,##0.00" isBlankWhenNull="false">
 					<reportElement key="textField-107" x="267" y="0" width="70" height="12" uuid="6c91c96e-7d38-4fa2-853d-a6546f6c906c"/>
 					<box>

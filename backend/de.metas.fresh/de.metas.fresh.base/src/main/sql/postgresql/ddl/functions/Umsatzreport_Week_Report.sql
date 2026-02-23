@@ -56,7 +56,7 @@ RETURNS TABLE
 AS
 $$
 SELECT
-	CASE WHEN Length(name) <= 45 THEN name ELSE substring(name FOR 43 ) || '...' END AS name,
+	report._merge_bp_name(name, delivery_bp_name) AS name,
 	Base_Week,
 	Comp_Week,
 	Base_Year,

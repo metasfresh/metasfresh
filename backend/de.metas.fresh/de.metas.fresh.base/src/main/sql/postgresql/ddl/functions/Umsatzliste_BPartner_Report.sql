@@ -95,7 +95,7 @@ CREATE FUNCTION report.umsatzliste_bpartner_report_sub
 	RETURNS SETOF report.umsatzliste_bpartner_report_sub AS
 $BODY$
 SELECT
-	bp.Name AS bp_name,
+	report._merge_bp_name(bp.Name, a.delivery_bp_name) AS bp_name,
 	pc.Name AS pc_name, 
 	COALESCE(pt.Name, p.Name) AS P_name,
 	SamePeriodSum,

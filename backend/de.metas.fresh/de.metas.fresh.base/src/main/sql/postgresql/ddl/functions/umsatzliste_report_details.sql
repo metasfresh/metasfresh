@@ -20,7 +20,7 @@ AS
 $$
 SELECT
 	bp.Value AS BP_Value,
-	bp.Name AS BP_Name,
+	report._merge_bp_name(bp.Name, COALESCE(CASE WHEN ord.IsDropShip = 'Y' THEN bp_dropship.Name END, bp_orderer.Name)) AS BP_Name,
 	p.value AS P_Value,
 	p.Name AS P_Name,
 	SUM( ic.QtyInvoiced * ic.PriceActual ) AS TotalInvoiced,
