@@ -192,10 +192,11 @@ public class ImportPriceListSchemaLinesFromAttachment extends JavaProcess implem
 		}
 		catch (final org.adempiere.exceptions.DBMoreThanOneRecordsFoundException e)
 		{
-			throw new AdempiereException(
+			final AdempiereException ex = new AdempiereException(
 					de.metas.bpartner.service.impl.BPartnerDAO.MSG_BPARTNER_VALUE_NOT_UNIQUE,
-					value, ">1")
-					.markAsUserValidationError();
+					value, e.getMessage());
+			ex.initCause(e);
+			throw ex.markAsUserValidationError();
 		}
 	}
 

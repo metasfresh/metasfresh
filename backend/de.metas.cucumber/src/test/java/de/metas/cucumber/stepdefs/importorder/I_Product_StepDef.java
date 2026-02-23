@@ -3,6 +3,10 @@ package de.metas.cucumber.stepdefs.importorder;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.process.AdProcessId;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.ProcessInfo;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -11,19 +15,21 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_I_Product;
+import org.compiere.process.ImportProduct;
 import org.compiere.util.DB;
+
+import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.*;
 
 /**
- * Step definitions for I_Product staging table.
- * Tests the BPartner resolution SQL from MProductImportTableSqlUpdater:
- * when multiple BPartners share the same Value, the row should get
- * C_BPartner_ID=NULL and I_IsImported='E' with an error message.
+ * Step definitions for I_Product staging table operations and ImportProduct process execution.
+ * Used to test BPartner Value ambiguity detection during product import.
  */
 public class I_Product_StepDef
 {
 	private final I_Product_StepDefData iProductTable;
+	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
 	public I_Product_StepDef(@NonNull final I_Product_StepDefData iProductTable)
 	{
@@ -52,35 +58,23 @@ public class I_Product_StepDef
 	}
 
 	/**
-	 * Executes the BPartner resolution SQL from MProductImportTableSqlUpdater:
-	 * CASE WHEN count > 1 → NULL, ELSE MAX(C_BPartner_ID).
-	 * Then marks ambiguous rows with I_IsImported='E'.
+	 * Runs the ImportProduct process with the current client context.
+	 * This executes MProductImportTableSqlUpdater which resolves
+	 * foreign keys and marks ambiguous BPartner Values as errors.
 	 */
-	@When("the MProductImportTableSqlUpdater BPartner resolution SQL is executed")
-	public void the_MProductImportTableSqlUpdater_bpartner_resolution_sql_is_executed()
+	@When("the ImportProduct process is invoked")
+	public void the_ImportProduct_process_is_invoked()
 	{
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(ImportProduct.class);
+
 		final int adClientId = StepDefConstants.CLIENT_ID.getRepoId();
 
-		// Phase 1: Set C_BPartner_ID (NULL if ambiguous)
-		final String sql = "UPDATE I_Product i "
-				+ "SET C_BPartner_ID=CASE WHEN (SELECT count(*) FROM C_BPartner p"
-				+ " WHERE i.BPartner_Value=p.Value AND i.AD_Client_ID=p.AD_Client_ID AND p.IsActive='Y') > 1 THEN NULL"
-				+ " ELSE (SELECT MAX(C_BPartner_ID) FROM C_BPartner p"
-				+ " WHERE i.BPartner_Value=p.Value AND i.AD_Client_ID=p.AD_Client_ID AND p.IsActive='Y') END "
-				+ "WHERE C_BPartner_ID IS NULL"
-				+ " AND I_IsImported<>'Y'"
-				+ " AND AD_Client_ID=" + adClientId;
-		DB.executeUpdateAndSaveErrorOnFail(sql, ITrx.TRXNAME_None);
-
-		// Phase 2: Mark ambiguous rows as errors
-		final String sqlError = "UPDATE I_Product i "
-				+ "SET I_IsImported='E', I_ErrorMsg=COALESCE(I_ErrorMsg,'')"
-				+ "||'ERR: Multiple BPartners found for BPartner_Value=\"'||i.BPartner_Value||'\"' "
-				+ "WHERE C_BPartner_ID IS NULL AND i.BPartner_Value IS NOT NULL"
-				+ " AND I_IsImported<>'Y'"
-				+ " AND (SELECT count(*) FROM C_BPartner p WHERE i.BPartner_Value=p.Value AND i.AD_Client_ID=p.AD_Client_ID AND p.IsActive='Y') > 1"
-				+ " AND AD_Client_ID=" + adClientId;
-		DB.executeUpdateAndSaveErrorOnFail(sqlError, ITrx.TRXNAME_None);
+		ProcessInfo.builder()
+				.setAD_Process_ID(processId.getRepoId())
+				.addParameter("AD_Client_ID", BigDecimal.valueOf(adClientId))
+				.buildAndPrepareExecution()
+				.executeSync()
+				.getResult();
 	}
 
 	@Then("validate I_Product:")

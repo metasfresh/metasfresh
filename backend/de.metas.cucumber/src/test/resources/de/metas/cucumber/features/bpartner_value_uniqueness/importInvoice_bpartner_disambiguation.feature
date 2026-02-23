@@ -19,7 +19,7 @@ Feature: ImportInvoice BPartner Value disambiguation
     And metasfresh contains I_Invoice:
       | Identifier     | BPartnerValue     | IsSOTrx |
       | iInv_sales_1   | SHARED_INV_BP_VAL | Y       |
-    When the ImportInvoice BPartner resolution SQL is executed
+    When the ImportInvoice process is invoked
     Then validate I_Invoice:
       | Identifier   | C_BPartner_ID |
       | iInv_sales_1 | bp_cust_inv   |
@@ -33,7 +33,7 @@ Feature: ImportInvoice BPartner Value disambiguation
     And metasfresh contains I_Invoice:
       | Identifier       | BPartnerValue      | IsSOTrx |
       | iInv_purchase_1  | SHARED_INV_BP_VAL2 | N       |
-    When the ImportInvoice BPartner resolution SQL is executed
+    When the ImportInvoice process is invoked
     Then validate I_Invoice:
       | Identifier      | C_BPartner_ID  |
       | iInv_purchase_1 | bp_vendor_inv2 |

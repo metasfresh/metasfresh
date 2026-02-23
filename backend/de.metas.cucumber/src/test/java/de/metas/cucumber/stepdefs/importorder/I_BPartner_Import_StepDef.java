@@ -1,9 +1,11 @@
 package de.metas.cucumber.stepdefs.importorder;
 
+import de.metas.bpartner.impexp.BPartnerImportTableSqlUpdater;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.impexp.processing.ImportRecordsSelection;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -11,6 +13,7 @@ import io.cucumber.java.en.When;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_I_BPartner;
 import org.compiere.util.DB;
@@ -18,9 +21,8 @@ import org.compiere.util.DB;
 import static org.assertj.core.api.Assertions.*;
 
 /**
- * Step definitions for I_BPartner staging table (BPartner Import).
- * Tests the BPartner resolution SQL from BPartnerImportTableSqlUpdater:
- * ORDER BY with IsCustomer/IsVendor tie-breaker + LIMIT 1.
+ * Step definitions for I_BPartner staging table operations and BPartnerImportProcess execution.
+ * Used to test BPartner Value disambiguation during BPartner import.
  */
 public class I_BPartner_Import_StepDef
 {
@@ -60,38 +62,62 @@ public class I_BPartner_Import_StepDef
 	}
 
 	/**
-	 * Executes the BPartner resolution SQL from BPartnerImportTableSqlUpdater.
-	 * Uses ORDER BY with IsCustomer/IsVendor tie-breaker + LIMIT 1.
+	 * Runs BPartnerImportTableSqlUpdater directly (synchronous) to resolve
+	 * foreign keys (including C_BPartner_ID from BPValue) on staging rows.
+	 *
+	 * We call the SQL updater directly instead of the full ImportBPartner process
+	 * because the process runs asynchronously via workpackage scheduling,
+	 * making it impossible to validate results immediately.
+	 * The SQL updater is the component that performs the BPValue→C_BPartner_ID
+	 * disambiguation we need to test.
 	 */
-	@When("the BPartnerImportTableSqlUpdater BPartner resolution SQL is executed")
-	public void the_BPartnerImportTableSqlUpdater_bpartner_resolution_sql_is_executed()
+	@When("the BPartnerImportProcess is invoked")
+	public void the_BPartnerImportProcess_is_invoked()
 	{
-		final int adClientId = StepDefConstants.CLIENT_ID.getRepoId();
-		final int adOrgId = StepDefConstants.ORG_ID.getRepoId();
+		// Mark stale I_BPartner rows from previous test runs as imported
+		// so the SQL updater only processes our test rows
+		final String currentIdList = iBPartnerTable.streamRecords()
+				.map(r -> String.valueOf(r.getI_BPartner_ID()))
+				.collect(java.util.stream.Collectors.joining(","));
 
-		final String sql = "UPDATE I_BPartner i "
-				+ "SET C_BPartner_ID = ("
-				+ "SELECT bp.C_BPartner_ID FROM C_BPartner bp"
-				+ " WHERE bp.Value = i.BPValue"
-				+ " AND bp.AD_Client_ID = i.AD_Client_ID"
-				+ " AND bp.AD_Org_ID = i.AD_Org_ID"
-				+ " AND bp.IsActive = 'Y'"
-				+ " ORDER BY"
-				+ " CASE WHEN i.IsCustomer = 'Y' AND bp.IsCustomer = 'Y' THEN 0"
-				+ "      WHEN i.IsVendor = 'Y' AND bp.IsVendor = 'Y' THEN 0"
-				+ "      ELSE 1 END,"
-				+ " bp.C_BPartner_ID"
-				+ " LIMIT 1"
-				+ ") "
-				+ "WHERE i.C_BPartner_ID IS NULL"
-				+ " AND i.BPValue IS NOT NULL"
-				+ " AND i.I_IsImported <> 'Y'"
-				+ " AND i.AD_Client_ID=" + adClientId;
+		if (!currentIdList.isEmpty())
+		{
+			DB.executeUpdateAndSaveErrorOnFail(
+					"UPDATE I_BPartner SET I_IsImported='Y' WHERE I_IsImported<>'Y' AND I_BPartner_ID NOT IN (" + currentIdList + ")",
+					ITrx.TRXNAME_None);
+		}
 
-		final int rowsAffected = DB.executeUpdateAndSaveErrorOnFail(sql, ITrx.TRXNAME_None);
-		assertThat(rowsAffected)
-				.as("BPartner resolution SQL should affect at least one I_BPartner row")
-				.isGreaterThan(0);
+		// Deactivate old C_BPartners with the same Values created by previous
+		// test runs so the HAVING count(*)=1 disambiguation can work.
+		final String currentBPIdList = bPartnerTable.streamRecords()
+				.map(r -> String.valueOf(r.getC_BPartner_ID()))
+				.collect(java.util.stream.Collectors.joining(","));
+
+		if (!currentBPIdList.isEmpty())
+		{
+			final String bpValues = iBPartnerTable.streamRecords()
+					.map(I_I_BPartner::getBPValue)
+					.filter(java.util.Objects::nonNull)
+					.distinct()
+					.map(v -> "'" + v.replace("'", "''") + "'")
+					.collect(java.util.stream.Collectors.joining(","));
+
+			if (!bpValues.isEmpty())
+			{
+				DB.executeUpdateAndSaveErrorOnFail(
+						"UPDATE C_BPartner SET IsActive='N' WHERE Value IN (" + bpValues + ") AND C_BPartner_ID NOT IN (" + currentBPIdList + ")",
+						ITrx.TRXNAME_None);
+			}
+		}
+
+		// Call the SQL updater directly — synchronous, no async workpackage
+		final ImportRecordsSelection selection = ImportRecordsSelection.builder()
+				.importTableName(I_I_BPartner.Table_Name)
+				.importKeyColumnName(I_I_BPartner.COLUMNNAME_I_BPartner_ID)
+				.clientId(ClientId.ofRepoId(StepDefConstants.CLIENT_ID.getRepoId()))
+				.build();
+
+		BPartnerImportTableSqlUpdater.updateBPartnerImportTable(selection);
 	}
 
 	@Then("validate I_BPartner:")
@@ -99,13 +125,21 @@ public class I_BPartner_Import_StepDef
 	{
 		DataTableRows.of(dataTable).forEach(row -> {
 			final StepDefDataIdentifier rowIdentifier = row.getAsIdentifier();
-			final I_I_BPartner record = rowIdentifier.lookupNotNullIn(iBPartnerTable);
-			InterfaceWrapperHelper.refresh(record);
+			final I_I_BPartner storedRecord = rowIdentifier.lookupNotNullIn(iBPartnerTable);
+			final int iBPartnerId = storedRecord.getI_BPartner_ID();
 
 			row.getAsOptionalIdentifier(I_I_BPartner.COLUMNNAME_C_BPartner_ID).ifPresent(bpIdentifier -> {
 				final I_C_BPartner expectedBP = bpIdentifier.lookupNotNullIn(bPartnerTable);
-				assertThat(record.getC_BPartner_ID())
-						.as("I_BPartner[%s].C_BPartner_ID should match %s", rowIdentifier, bpIdentifier)
+
+				// Use direct SQL to bypass PO caching — the import process commits
+				// in its own transaction and InterfaceWrapperHelper may return stale data.
+				final int actualBPartnerId = DB.getSQLValueEx(
+						ITrx.TRXNAME_None,
+						"SELECT COALESCE(C_BPartner_ID, 0) FROM I_BPartner WHERE I_BPartner_ID = ?",
+						iBPartnerId);
+
+				assertThat(actualBPartnerId)
+						.as("I_BPartner[%s].C_BPartner_ID should match %s (I_BPartner_ID=%d)", rowIdentifier, bpIdentifier, iBPartnerId)
 						.isEqualTo(expectedBP.getC_BPartner_ID());
 			});
 		});

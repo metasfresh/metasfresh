@@ -3,6 +3,10 @@ package de.metas.cucumber.stepdefs.importorder;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.process.AdProcessId;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.ProcessInfo;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -11,18 +15,21 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_I_DiscountSchema;
+import org.compiere.process.ImportDiscountSchema;
 import org.compiere.util.DB;
+
+import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.*;
 
 /**
- * Step definitions for I_DiscountSchema staging table.
- * Tests the BPartner resolution SQL from MDiscountSchemaImportTableSqlUpdater:
- * same CASE WHEN count > 1 pattern as MProductImportTableSqlUpdater.
+ * Step definitions for I_DiscountSchema staging table operations and ImportDiscountSchema process execution.
+ * Used to test BPartner Value ambiguity detection during discount schema import.
  */
 public class I_DiscountSchema_StepDef
 {
 	private final I_DiscountSchema_StepDefData iDiscountSchemaTable;
+	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
 	public I_DiscountSchema_StepDef(@NonNull final I_DiscountSchema_StepDefData iDiscountSchemaTable)
 	{
@@ -50,29 +57,24 @@ public class I_DiscountSchema_StepDef
 		});
 	}
 
-	@When("the MDiscountSchemaImportTableSqlUpdater BPartner resolution SQL is executed")
-	public void the_MDiscountSchemaImportTableSqlUpdater_bpartner_resolution_sql_is_executed()
+	/**
+	 * Runs the ImportDiscountSchema process with the current client context.
+	 * This executes MDiscountSchemaImportTableSqlUpdater which resolves
+	 * foreign keys and marks ambiguous BPartner Values as errors.
+	 */
+	@When("the ImportDiscountSchema process is invoked")
+	public void the_ImportDiscountSchema_process_is_invoked()
 	{
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(ImportDiscountSchema.class);
+
 		final int adClientId = StepDefConstants.CLIENT_ID.getRepoId();
 
-		final String sql = "UPDATE I_DiscountSchema i "
-				+ "SET C_BPartner_ID=CASE WHEN (SELECT count(*) FROM C_BPartner bp"
-				+ " WHERE i.BPartner_Value=bp.Value AND i.AD_Client_ID=bp.AD_Client_ID AND bp.IsActive='Y') > 1 THEN NULL"
-				+ " ELSE (SELECT MAX(C_BPartner_ID) FROM C_BPartner bp"
-				+ " WHERE i.BPartner_Value=bp.Value AND i.AD_Client_ID=bp.AD_Client_ID AND bp.IsActive='Y') END "
-				+ "WHERE C_BPartner_ID IS NULL AND BPartner_Value IS NOT NULL "
-				+ "AND I_IsImported<>'Y' "
-				+ "AND AD_Client_ID=" + adClientId;
-		DB.executeUpdateAndSaveErrorOnFail(sql, ITrx.TRXNAME_None);
-
-		final String sqlError = "UPDATE I_DiscountSchema i "
-				+ "SET I_IsImported='E', I_ErrorMsg=COALESCE(I_ErrorMsg,'')"
-				+ "||'ERR: Multiple BPartners found for BPartner_Value=\"'||i.BPartner_Value||'\"' "
-				+ "WHERE C_BPartner_ID IS NULL AND BPartner_Value IS NOT NULL "
-				+ "AND I_IsImported<>'Y' "
-				+ "AND (SELECT count(*) FROM C_BPartner bp WHERE i.BPartner_Value=bp.Value AND i.AD_Client_ID=bp.AD_Client_ID AND bp.IsActive='Y') > 1 "
-				+ "AND AD_Client_ID=" + adClientId;
-		DB.executeUpdateAndSaveErrorOnFail(sqlError, ITrx.TRXNAME_None);
+		ProcessInfo.builder()
+				.setAD_Process_ID(processId.getRepoId())
+				.addParameter("AD_Client_ID", BigDecimal.valueOf(adClientId))
+				.buildAndPrepareExecution()
+				.executeSync()
+				.getResult();
 	}
 
 	@Then("validate I_DiscountSchema:")

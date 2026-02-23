@@ -20,7 +20,7 @@ Feature: Import staging table BPartner ambiguity detection
     And metasfresh contains I_Product:
       | Identifier   | BPartner_Value     |
       | iProd_1      | SHARED_PROD_BP_VAL |
-    When the MProductImportTableSqlUpdater BPartner resolution SQL is executed
+    When the ImportProduct process is invoked
     Then validate I_Product:
       | Identifier | ExpectError                |
       | iProd_1    | Multiple BPartners found   |

@@ -19,7 +19,7 @@ Feature: I_Campaign_Price BPartner Value disambiguation
     And metasfresh contains I_Campaign_Price:
       | Identifier    | BPartner_Value      |
       | iCP_1         | SHARED_CP_BP_VAL    |
-    When the CampaignPriceImportTableSqlUpdater BPartner resolution SQL is executed
+    When the CampaignPriceImportProcess is invoked
     Then validate I_Campaign_Price:
       | Identifier  | C_BPartner_ID  |
       | iCP_1       | bp_cp_cust     |

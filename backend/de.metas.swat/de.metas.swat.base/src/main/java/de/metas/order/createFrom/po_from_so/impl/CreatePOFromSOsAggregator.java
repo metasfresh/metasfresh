@@ -146,10 +146,11 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 		}
 		catch (final org.adempiere.exceptions.DBMoreThanOneRecordsFoundException e)
 		{
-			throw new AdempiereException(
+			final AdempiereException ex = new AdempiereException(
 					de.metas.bpartner.service.impl.BPartnerDAO.MSG_BPARTNER_VALUE_NOT_UNIQUE,
-					vendorBPartnerValue, ">1")
-					.markAsUserValidationError();
+					vendorBPartnerValue, e.getMessage());
+			ex.initCause(e);
+			throw ex.markAsUserValidationError();
 		}
 		if (vendor == null)
 		{

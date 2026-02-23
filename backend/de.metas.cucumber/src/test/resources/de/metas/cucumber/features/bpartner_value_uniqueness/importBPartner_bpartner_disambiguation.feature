@@ -20,7 +20,7 @@ Feature: I_BPartner import BPartner Value disambiguation
     And metasfresh contains I_BPartner:
       | Identifier    | BPValue              | IsCustomer | IsVendor |
       | iBP_cust_1    | SHARED_IMP_BP_VAL    | Y          | N        |
-    When the BPartnerImportTableSqlUpdater BPartner resolution SQL is executed
+    When the BPartnerImportProcess is invoked
     Then validate I_BPartner:
       | Identifier  | C_BPartner_ID  |
       | iBP_cust_1  | bp_imp_cust    |
@@ -34,7 +34,7 @@ Feature: I_BPartner import BPartner Value disambiguation
     And metasfresh contains I_BPartner:
       | Identifier     | BPValue               | IsCustomer | IsVendor |
       | iBP_vendor_1   | SHARED_IMP_BP_VAL2    | N          | Y        |
-    When the BPartnerImportTableSqlUpdater BPartner resolution SQL is executed
+    When the BPartnerImportProcess is invoked
     Then validate I_BPartner:
       | Identifier    | C_BPartner_ID    |
       | iBP_vendor_1  | bp_imp_vendor2   |

@@ -4,6 +4,10 @@ import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.process.AdProcessId;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.ProcessInfo;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -13,19 +17,22 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_I_Inventory;
+import org.compiere.process.ImportInventory;
 import org.compiere.util.DB;
+
+import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.*;
 
 /**
- * Step definitions for I_Inventory staging table.
- * Tests the SubProducer BPartner resolution SQL from MInventoryImportTableSqlUpdater:
- * requires IsVendor='Y', filters by Client/Org, uses ORDER BY + LIMIT 1.
+ * Step definitions for I_Inventory staging table operations and ImportInventory process execution.
+ * Used to test SubProducer BPartner Value disambiguation during inventory import.
  */
 public class I_Inventory_StepDef
 {
 	private final I_Inventory_StepDefData iInventoryTable;
 	private final C_BPartner_StepDefData bPartnerTable;
+	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
 	public I_Inventory_StepDef(
 			@NonNull final I_Inventory_StepDefData iInventoryTable,
@@ -57,27 +64,23 @@ public class I_Inventory_StepDef
 	}
 
 	/**
-	 * Executes the SubProducer BPartner resolution SQL from MInventoryImportTableSqlUpdater.
-	 * Requires IsVendor='Y', filters by Client/Org, uses ORDER BY AD_Org_ID DESC LIMIT 1.
+	 * Runs the ImportInventory process with the current client context.
+	 * This executes MInventoryImportTableSqlUpdater which resolves
+	 * foreign keys (including SubProducer_BPartner_ID from SubProducerBPartner_Value) from staging values.
 	 */
-	@When("the MInventoryImportTableSqlUpdater SubProducer BPartner resolution SQL is executed")
-	public void the_MInventoryImportTableSqlUpdater_subproducer_bpartner_resolution_sql_is_executed()
+	@When("the ImportInventory process is invoked")
+	public void the_ImportInventory_process_is_invoked()
 	{
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(ImportInventory.class);
+
 		final int adClientId = StepDefConstants.CLIENT_ID.getRepoId();
 
-		final String sql = "UPDATE I_Inventory i "
-				+ "SET SubProducer_BPartner_ID=(SELECT bp.C_BPartner_ID FROM C_BPartner bp"
-				+ " WHERE i.SubProducerBPartner_Value=bp.value"
-				+ " AND bp.AD_Client_ID=i.AD_Client_ID"
-				+ " AND bp.AD_Org_ID IN (i.AD_Org_ID, 0)"
-				+ " AND bp.IsVendor='Y'"
-				+ " AND bp.IsActive='Y'"
-				+ " ORDER BY bp.AD_Org_ID DESC LIMIT 1) "
-				+ "WHERE SubProducer_BPartner_ID IS NULL AND SubProducerBPartner_Value IS NOT NULL"
-				+ " AND I_IsImported<>'Y'"
-				+ " AND AD_Client_ID=" + adClientId;
-
-		DB.executeUpdateAndSaveErrorOnFail(sql, ITrx.TRXNAME_None);
+		ProcessInfo.builder()
+				.setAD_Process_ID(processId.getRepoId())
+				.addParameter("AD_Client_ID", BigDecimal.valueOf(adClientId))
+				.buildAndPrepareExecution()
+				.executeSync()
+				.getResult();
 	}
 
 	@Then("validate I_Inventory:")

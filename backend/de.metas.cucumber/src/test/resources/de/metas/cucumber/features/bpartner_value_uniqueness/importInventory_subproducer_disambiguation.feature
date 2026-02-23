@@ -19,7 +19,7 @@ Feature: I_Inventory SubProducer BPartner disambiguation
     And metasfresh contains I_Inventory:
       | Identifier     | SubProducerBPartner_Value  |
       | iInv_1         | SHARED_INV_SUB_VAL         |
-    When the MInventoryImportTableSqlUpdater SubProducer BPartner resolution SQL is executed
+    When the ImportInventory process is invoked
     Then validate I_Inventory:
       | Identifier  | SubProducer_BPartner_ID  |
       | iInv_1      | bp_inv_vendor            |
@@ -32,7 +32,7 @@ Feature: I_Inventory SubProducer BPartner disambiguation
     And metasfresh contains I_Inventory:
       | Identifier      | SubProducerBPartner_Value  |
       | iInv_cust_only  | CUST_ONLY_INV_VAL          |
-    When the MInventoryImportTableSqlUpdater SubProducer BPartner resolution SQL is executed
+    When the ImportInventory process is invoked
     Then validate I_Inventory:
       | Identifier      | IsUnresolved |
       | iInv_cust_only  | true         |

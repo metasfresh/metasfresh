@@ -127,22 +127,42 @@ public class ImportPriceList extends JavaProcess
 		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.info("Reset=" + no);
 
-		// Set Optional BPartner — use IsSOPriceList as tie-breaker: SO=customer, PO=vendor
+		// Set Optional BPartner — Step 1: resolve where exactly one BPartner matches
 		sql = new StringBuffer("UPDATE I_PriceList i "
-				+ "SET C_BPartner_ID=(SELECT bp.C_BPartner_ID FROM C_BPartner bp"
+				+ "SET C_BPartner_ID=(SELECT MAX(bp.C_BPartner_ID) FROM C_BPartner bp"
 				+ " WHERE i.BPartner_Value=bp.Value AND i.AD_Client_ID=bp.AD_Client_ID"
 				+ " AND bp.IsActive='Y'"
-				+ " ORDER BY"
-				+ " CASE WHEN i.IsSOPriceList='Y' AND bp.IsCustomer='Y' THEN 0"
-				+ "      WHEN i.IsSOPriceList='N' AND bp.IsVendor='Y' THEN 0"
-				+ "      ELSE 1 END,"
-				+ " bp.C_BPartner_ID DESC"
-				+ " LIMIT 1"
+				+ " HAVING count(*)=1"
 				+ " ) "
 				+ "WHERE C_BPartner_ID IS NULL AND BPartner_Value IS NOT NULL"
 				+ " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
-		log.info("BPartner=" + no);
+		log.info("BPartner (unique)=" + no);
+		// Step 2: disambiguate using IsSOPriceList -> IsCustomer/IsVendor
+		sql = new StringBuffer("UPDATE I_PriceList i "
+				+ "SET C_BPartner_ID=(SELECT MAX(bp.C_BPartner_ID) FROM C_BPartner bp"
+				+ " WHERE i.BPartner_Value=bp.Value AND i.AD_Client_ID=bp.AD_Client_ID"
+				+ " AND bp.IsActive='Y'"
+				+ " AND ((i.IsSOPriceList='Y' AND bp.IsCustomer='Y') OR (i.IsSOPriceList='N' AND bp.IsVendor='Y'))"
+				+ " HAVING count(*)=1"
+				+ " ) "
+				+ "WHERE C_BPartner_ID IS NULL AND BPartner_Value IS NOT NULL"
+				+ " AND I_IsImported<>'Y'").append(clientCheck);
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
+		log.info("BPartner (disambiguated)=" + no);
+		// Step 3: mark remaining ambiguous rows as errors
+		sql = new StringBuffer("UPDATE I_PriceList i "
+				+ "SET I_IsImported='E',"
+				+ " I_ErrorMsg=COALESCE(I_ErrorMsg,'')||'ERR: Multiple BPartners found for Value=\"'||i.BPartner_Value||'\"' "
+				+ "WHERE C_BPartner_ID IS NULL AND BPartner_Value IS NOT NULL"
+				+ " AND I_IsImported<>'Y'"
+				+ " AND (SELECT count(*) FROM C_BPartner bp WHERE i.BPartner_Value=bp.Value AND i.AD_Client_ID=bp.AD_Client_ID AND bp.IsActive='Y') > 1"
+				).append(clientCheck);
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
+		if (no > 0)
+		{
+			log.warn("Marked " + no + " I_PriceList rows as error due to ambiguous BPartner Value");
+		}
 		//
 		sql = new StringBuffer("UPDATE I_PriceList "
 				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid BPartner,' "

@@ -345,22 +345,42 @@ public class ImportInvoice extends JavaProcess
 									   + " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdateAndSaveErrorOnFail(DB.convertSqlToNative(sql.toString()), get_TrxName());
 		log.debug("Set BP from ContactName=" + no);
-		//	BP from Value
+		//	BP from Value — Step 1: resolve where exactly one BPartner matches
 		sql = new StringBuffer("UPDATE I_Invoice o "
-									   + "SET C_BPartner_ID=(SELECT bp.C_BPartner_ID FROM C_BPartner bp"
+									   + "SET C_BPartner_ID=(SELECT MAX(bp.C_BPartner_ID) FROM C_BPartner bp"
 									   + " WHERE o.BPartnerValue=bp.Value AND o.AD_Client_ID=bp.AD_Client_ID"
 									   + " AND bp.IsActive='Y'"
-									   + " ORDER BY"
-									   + " CASE WHEN o.IsSOTrx='Y' AND bp.IsCustomer='Y' THEN 0"
-									   + "      WHEN o.IsSOTrx='N' AND bp.IsVendor='Y' THEN 0"
-									   + "      ELSE 1 END,"
-									   + " bp.C_BPartner_ID DESC"
-									   + " LIMIT 1"
+									   + " HAVING count(*)=1"
 									   + " ) "
 									   + "WHERE C_BPartner_ID IS NULL AND BPartnerValue IS NOT NULL"
 									   + " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
-		log.debug("Set BP from Value=" + no);
+		log.debug("Set BP from Value (unique)=" + no);
+		//	BP from Value — Step 2: disambiguate using IsSOTrx -> IsCustomer/IsVendor
+		sql = new StringBuffer("UPDATE I_Invoice o "
+									   + "SET C_BPartner_ID=(SELECT MAX(bp.C_BPartner_ID) FROM C_BPartner bp"
+									   + " WHERE o.BPartnerValue=bp.Value AND o.AD_Client_ID=bp.AD_Client_ID"
+									   + " AND bp.IsActive='Y'"
+									   + " AND ((o.IsSOTrx='Y' AND bp.IsCustomer='Y') OR (o.IsSOTrx='N' AND bp.IsVendor='Y'))"
+									   + " HAVING count(*)=1"
+									   + " ) "
+									   + "WHERE C_BPartner_ID IS NULL AND BPartnerValue IS NOT NULL"
+									   + " AND I_IsImported<>'Y'").append(clientCheck);
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
+		log.debug("Set BP from Value (disambiguated)=" + no);
+		//	BP from Value — Step 3: mark remaining ambiguous rows as errors
+		sql = new StringBuffer("UPDATE I_Invoice o "
+									   + "SET I_IsImported='E',"
+									   + " I_ErrorMsg=COALESCE(I_ErrorMsg,'')||'ERR: Multiple BPartners found for Value=\"'||o.BPartnerValue||'\"' "
+									   + "WHERE C_BPartner_ID IS NULL AND BPartnerValue IS NOT NULL"
+									   + " AND I_IsImported<>'Y'"
+									   + " AND (SELECT count(*) FROM C_BPartner bp WHERE o.BPartnerValue=bp.Value AND o.AD_Client_ID=bp.AD_Client_ID AND bp.IsActive='Y') > 1"
+									   ).append(clientCheck);
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
+		if (no > 0)
+		{
+			log.warn("Marked " + no + " I_Invoice rows as error due to ambiguous BPartner Value");
+		}
 		//	Default BP
 		sql = new StringBuffer("UPDATE I_Invoice o "
 									   + "SET C_BPartner_ID=(SELECT C_BPartnerCashTrx_ID FROM AD_ClientInfo c"
@@ -383,7 +403,7 @@ public class ImportInvoice extends JavaProcess
 									   + " AND o.C_Region_ID=l.C_Region_ID AND o.C_Country_ID=l.C_Country_ID) "
 									   + "WHERE C_BPartner_ID IS NOT NULL AND C_BPartner_Location_ID IS NULL"
 									   + " AND I_IsImported='N'").append(clientCheck);
-		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(DB.convertSqlToNative(sql.toString()), get_TrxName());
 		log.debug("Found Location=" + no);
 		//	Set Location from BPartner
 		sql = new StringBuffer("UPDATE I_Invoice o "
@@ -555,10 +575,11 @@ public class ImportInvoice extends JavaProcess
 				}
 				catch (final org.adempiere.exceptions.DBMoreThanOneRecordsFoundException e)
 				{
-					throw new org.adempiere.exceptions.AdempiereException(
+					final org.adempiere.exceptions.AdempiereException ex = new org.adempiere.exceptions.AdempiereException(
 							de.metas.bpartner.service.impl.BPartnerDAO.MSG_BPARTNER_VALUE_NOT_UNIQUE,
-							imp.getBPartnerValue(), ">1")
-							.markAsUserValidationError();
+							imp.getBPartnerValue(), e.getMessage());
+					ex.initCause(e);
+					throw ex.markAsUserValidationError();
 				}
 				if (bp == null)
 				{

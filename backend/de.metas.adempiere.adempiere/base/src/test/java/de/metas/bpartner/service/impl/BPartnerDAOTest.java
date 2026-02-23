@@ -7,6 +7,7 @@ import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.AbstractComparableAssert;
@@ -14,7 +15,6 @@ import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -164,9 +164,9 @@ public class BPartnerDAOTest
 	}
 
 	@Test
-	public void getBPartnerIdByValue_duplicateWithNoFilter_returnsFirst()
+	public void getBPartnerIdByValue_duplicateWithNoFilter_throwsException()
 	{
-		// Two BPartners with same Value, no filter — should return first (preserving existing behavior)
+		// Two BPartners with same Value, no filter — should throw because disambiguation is not possible
 		createBPartnerWithValueAndFlags("DUP_VAL", true, false);
 		createBPartnerWithValueAndFlags("DUP_VAL", false, true);
 
@@ -174,9 +174,10 @@ public class BPartnerDAOTest
 				.bpartnerValue("DUP_VAL")
 				.onlyOrgId(OrgId.ANY)
 				.build();
-		// Should not throw, returns one of the two
-		assertThat(bpartnerDAO.retrieveBPartnerIdBy(query).orElse(null))
-				.isNotNull();
+
+		assertThatThrownBy(() -> bpartnerDAO.retrieveBPartnerIdBy(query))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("DUP_VAL");
 	}
 
 	@Test
@@ -268,7 +269,7 @@ public class BPartnerDAOTest
 	}
 
 	@Test
-	public void getBPartnerIdByValue_disambiguationFailsGracefully()
+	public void getBPartnerIdByValue_disambiguationFailsGracefully_throwsException()
 	{
 		// Given: two BPartners both marked as customer
 		createBPartnerWithValueAndFlags("AMBIG", true, false);
@@ -281,13 +282,14 @@ public class BPartnerDAOTest
 				.isCustomerFilter(true)
 				.build();
 
-		// Then: returns first (doesn't throw), because disambiguation yields >1 result
-		assertThat(bpartnerDAO.retrieveBPartnerIdBy(query).orElse(null))
-				.isNotNull();
+		// Then: throws because disambiguation still yields >1 result
+		assertThatThrownBy(() -> bpartnerDAO.retrieveBPartnerIdBy(query))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("AMBIG");
 	}
 
 	@Test
-	public void getBPartnerIdByValue_filterForVendor_noMatchReturnsFirst()
+	public void getBPartnerIdByValue_filterForVendor_noMatchThrowsException()
 	{
 		// Given: two BPartners, both customers (no vendor)
 		createBPartnerWithValueAndFlags("CUST_ONLY", true, false);
@@ -300,9 +302,10 @@ public class BPartnerDAOTest
 				.isVendorFilter(true)
 				.build();
 
-		// Then: disambiguation returns empty, falls back to first candidate
-		assertThat(bpartnerDAO.retrieveBPartnerIdBy(query).orElse(null))
-				.isNotNull();
+		// Then: disambiguation returns empty, but still ambiguous — throws
+		assertThatThrownBy(() -> bpartnerDAO.retrieveBPartnerIdBy(query))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("CUST_ONLY");
 	}
 
 	@Test

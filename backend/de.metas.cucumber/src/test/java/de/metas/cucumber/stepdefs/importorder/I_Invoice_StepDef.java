@@ -4,6 +4,10 @@ import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.process.AdProcessId;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.ProcessInfo;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -13,20 +17,22 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_I_Invoice;
+import org.compiere.process.ImportInvoice;
 import org.compiere.util.DB;
+
+import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.*;
 
 /**
- * Step definitions for I_Invoice staging table operations.
- * Tests the BPartner resolution SQL from ImportInvoice directly,
- * without running the full process (which has a second pass that
- * can roll back the first pass's SQL changes).
+ * Step definitions for I_Invoice staging table operations and ImportInvoice process execution.
+ * Used to test BPartner Value disambiguation and other import-related scenarios.
  */
 public class I_Invoice_StepDef
 {
 	private final I_Invoice_StepDefData iInvoiceTable;
 	private final C_BPartner_StepDefData bPartnerTable;
+	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
 	public I_Invoice_StepDef(
 			@NonNull final I_Invoice_StepDefData iInvoiceTable,
@@ -65,34 +71,39 @@ public class I_Invoice_StepDef
 	}
 
 	/**
-	 * Executes the BPartner resolution SQL from ImportInvoice directly.
-	 * This is the exact SQL that ImportInvoice.java uses in its first pass
-	 * (with our ORDER BY + LIMIT 1 fix for duplicate-Value disambiguation),
-	 * but without the full process overhead that can roll back on unrelated errors.
+	 * Runs the ImportInvoice process with the current client context.
+	 * This executes all the SQL updates that resolve
+	 * foreign keys (BPartner, Product, DocType, etc.) from staging values.
+	 *
+	 * <p>Before invoking, marks stale unimported I_Invoice rows from previous
+	 * test runs as 'Y' so they don't interfere with the current test.</p>
 	 */
-	@When("the ImportInvoice BPartner resolution SQL is executed")
-	public void the_ImportInvoice_bpartner_resolution_sql_is_executed()
+	@When("the ImportInvoice process is invoked")
+	public void the_ImportInvoice_process_is_invoked()
 	{
+		// Mark stale rows from previous test runs as imported so they don't
+		// interfere. Only keep rows we explicitly created in this scenario.
+		final String currentIdList = iInvoiceTable.streamRecords()
+				.map(r -> String.valueOf(r.getI_Invoice_ID()))
+				.collect(java.util.stream.Collectors.joining(","));
+
+		if (!currentIdList.isEmpty())
+		{
+			DB.executeUpdateAndSaveErrorOnFail(
+					"UPDATE I_Invoice SET I_IsImported='Y' WHERE I_IsImported<>'Y' AND I_Invoice_ID NOT IN (" + currentIdList + ")",
+					ITrx.TRXNAME_None);
+		}
+
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(ImportInvoice.class);
+
 		final int adClientId = StepDefConstants.CLIENT_ID.getRepoId();
 
-		final String bpResolutionSql = "UPDATE I_Invoice o "
-				+ "SET C_BPartner_ID=(SELECT bp.C_BPartner_ID FROM C_BPartner bp"
-				+ " WHERE o.BPartnerValue=bp.Value AND o.AD_Client_ID=bp.AD_Client_ID"
-				+ " AND bp.IsActive='Y'"
-				+ " ORDER BY"
-				+ " CASE WHEN o.IsSOTrx='Y' AND bp.IsCustomer='Y' THEN 0"
-				+ "      WHEN o.IsSOTrx='N' AND bp.IsVendor='Y' THEN 0"
-				+ "      ELSE 1 END,"
-				+ " bp.C_BPartner_ID DESC"
-				+ " LIMIT 1"
-				+ " ) "
-				+ "WHERE C_BPartner_ID IS NULL AND BPartnerValue IS NOT NULL"
-				+ " AND I_IsImported<>'Y' AND AD_Client_ID=" + adClientId;
-
-		final int rowsAffected = DB.executeUpdateAndSaveErrorOnFail(bpResolutionSql, ITrx.TRXNAME_None);
-		assertThat(rowsAffected)
-				.as("BPartner resolution SQL should affect at least one I_Invoice row")
-				.isGreaterThan(0);
+		ProcessInfo.builder()
+				.setAD_Process_ID(processId.getRepoId())
+				.addParameter("AD_Client_ID", BigDecimal.valueOf(adClientId))
+				.buildAndPrepareExecution()
+				.executeSync()
+				.getResult();
 	}
 
 	@Then("validate I_Invoice:")

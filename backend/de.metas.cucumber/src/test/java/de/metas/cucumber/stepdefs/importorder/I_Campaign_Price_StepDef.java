@@ -4,6 +4,11 @@ import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.pricing.rules.campaign_price.process.C_Campaign_Price_Import;
+import de.metas.process.AdProcessId;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.ProcessInfo;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -15,17 +20,19 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_I_Campaign_Price;
 import org.compiere.util.DB;
 
+import java.math.BigDecimal;
+
 import static org.assertj.core.api.Assertions.*;
 
 /**
- * Step definitions for I_Campaign_Price staging table.
- * Tests the BPartner resolution SQL from CampaignPriceImportTableSqlUpdater:
- * ORDER BY with IsCustomer='Y' tie-breaker + LIMIT 1.
+ * Step definitions for I_Campaign_Price staging table operations and CampaignPriceImportProcess execution.
+ * Used to test BPartner Value disambiguation during campaign price import.
  */
 public class I_Campaign_Price_StepDef
 {
 	private final I_Campaign_Price_StepDefData iCampaignPriceTable;
 	private final C_BPartner_StepDefData bPartnerTable;
+	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
 	public I_Campaign_Price_StepDef(
 			@NonNull final I_Campaign_Price_StepDefData iCampaignPriceTable,
@@ -63,30 +70,36 @@ public class I_Campaign_Price_StepDef
 	}
 
 	/**
-	 * Executes the BPartner resolution SQL from CampaignPriceImportTableSqlUpdater.
-	 * Uses ORDER BY with IsCustomer='Y' preference + LIMIT 1.
+	 * Runs the CampaignPriceImportProcess with the current client context.
+	 * This executes CampaignPriceImportTableSqlUpdater which resolves
+	 * foreign keys (including C_BPartner_ID from BPartner_Value) from staging values.
 	 */
-	@When("the CampaignPriceImportTableSqlUpdater BPartner resolution SQL is executed")
-	public void the_CampaignPriceImportTableSqlUpdater_bpartner_resolution_sql_is_executed()
+	@When("the CampaignPriceImportProcess is invoked")
+	public void the_CampaignPriceImportProcess_is_invoked()
 	{
+		// Mark stale rows from previous test runs as imported so they don't
+		// interfere. Only keep rows we explicitly created in this scenario.
+		final String currentIdList = iCampaignPriceTable.streamRecords()
+				.map(r -> String.valueOf(r.getI_Campaign_Price_ID()))
+				.collect(java.util.stream.Collectors.joining(","));
+
+		if (!currentIdList.isEmpty())
+		{
+			DB.executeUpdateAndSaveErrorOnFail(
+					"UPDATE I_Campaign_Price SET I_IsImported='Y' WHERE I_IsImported<>'Y' AND I_Campaign_Price_ID NOT IN (" + currentIdList + ")",
+					ITrx.TRXNAME_None);
+		}
+
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(C_Campaign_Price_Import.class);
+
 		final int adClientId = StepDefConstants.CLIENT_ID.getRepoId();
 
-		final String sql = "UPDATE I_Campaign_Price i "
-				+ "SET C_BPartner_ID=(SELECT C_BPartner_ID FROM C_BPartner p"
-				+ " WHERE p.isActive='Y' AND i.BPartner_Value=p.Value"
-				+ " AND p.AD_Client_ID IN (i.AD_Client_ID, 0)"
-				+ " AND p.AD_Org_ID IN (0, i.AD_Org_ID)"
-				+ " ORDER BY p.AD_Client_ID DESC, p.AD_Org_ID DESC,"
-				+ " CASE WHEN p.IsCustomer='Y' THEN 0 ELSE 1 END,"
-				+ " p.C_BPartner_ID DESC LIMIT 1) "
-				+ "WHERE C_BPartner_ID IS NULL"
-				+ " AND I_IsImported<>'Y'"
-				+ " AND AD_Client_ID=" + adClientId;
-
-		final int rowsAffected = DB.executeUpdateAndSaveErrorOnFail(sql, ITrx.TRXNAME_None);
-		assertThat(rowsAffected)
-				.as("BPartner resolution SQL should affect at least one I_Campaign_Price row")
-				.isGreaterThan(0);
+		ProcessInfo.builder()
+				.setAD_Process_ID(processId.getRepoId())
+				.addParameter("AD_Client_ID", BigDecimal.valueOf(adClientId))
+				.buildAndPrepareExecution()
+				.executeSync()
+				.getResult();
 	}
 
 	@Then("validate I_Campaign_Price:")

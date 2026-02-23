@@ -19,7 +19,7 @@ Feature: I_Flatrate_Term BPartner ambiguity detection
     And metasfresh contains I_Flatrate_Term:
       | Identifier   | BPartnerValue      |
       | iFT_1        | SHARED_FT_BP_VAL   |
-    When the FlatrateTermImportTableSqlUpdater BPartner resolution SQL is executed
+    When the FlatrateTermImportProcess is invoked
     Then validate I_Flatrate_Term:
       | Identifier | ExpectError                |
       | iFT_1      | Multiple BPartners found   |

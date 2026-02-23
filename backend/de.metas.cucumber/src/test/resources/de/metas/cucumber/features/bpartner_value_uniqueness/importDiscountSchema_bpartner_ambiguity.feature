@@ -19,7 +19,7 @@ Feature: I_DiscountSchema BPartner ambiguity detection
     And metasfresh contains I_DiscountSchema:
       | Identifier   | BPartner_Value     |
       | iDS_1        | SHARED_DS_BP_VAL   |
-    When the MDiscountSchemaImportTableSqlUpdater BPartner resolution SQL is executed
+    When the ImportDiscountSchema process is invoked
     Then validate I_DiscountSchema:
       | Identifier | ExpectError                |
       | iDS_1      | Multiple BPartners found   |

@@ -1,5 +1,6 @@
 package de.metas.cucumber.stepdefs.importorder;
 
+import de.metas.cucumber.stepdefs.C_BPartner_StepDef;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefConstants;
@@ -94,7 +95,7 @@ public class I_Order_StepDef
 			bp.setIsCustomer(row.getAsOptionalBoolean(I_C_BPartner.COLUMNNAME_IsCustomer).orElseFalse());
 			bp.setIsVendor(row.getAsOptionalBoolean(I_C_BPartner.COLUMNNAME_IsVendor).orElseFalse());
 
-			bp.setC_BP_Group_ID(1000000); // Default BP Group from seed data
+			bp.setC_BP_Group_ID(C_BPartner_StepDef.BP_GROUP_ID);
 
 			InterfaceWrapperHelper.saveRecord(bp);
 

@@ -242,10 +242,11 @@ public class ESRDataLoaderUtil
 			}
 			catch (final org.adempiere.exceptions.DBMoreThanOneRecordsFoundException e)
 			{
-				throw new org.adempiere.exceptions.AdempiereException(
+				final org.adempiere.exceptions.AdempiereException ex = new org.adempiere.exceptions.AdempiereException(
 						de.metas.bpartner.service.impl.BPartnerDAO.MSG_BPARTNER_VALUE_NOT_UNIQUE,
-						formattedBPValue, ">1")
-						.markAsUserValidationError();
+						formattedBPValue, e.getMessage());
+				ex.initCause(e);
+				throw ex.markAsUserValidationError();
 			}
 		}
 

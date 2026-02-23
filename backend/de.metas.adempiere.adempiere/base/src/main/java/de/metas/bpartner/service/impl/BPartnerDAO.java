@@ -1607,11 +1607,18 @@ public class BPartnerDAO implements IBPartnerDAO
 		final ImmutableList<BPartnerId> candidates = queryBuilder.create()
 				.listIds(BPartnerId::ofRepoId);
 
-		return disambiguateOrPickSingle(candidates, query.getIsCustomerFilter(), query.getIsVendorFilter());
+		return disambiguateOrThrow(candidates, query.getBpartnerValue(), query.getIsCustomerFilter(), query.getIsVendorFilter());
 	}
 
-	private Optional<BPartnerId> disambiguateOrPickSingle(
+	/**
+	 * Given a list of BPartner candidates, returns the single match or tries to disambiguate using IsCustomer/IsVendor flags.
+	 * Throws a user-friendly error if disambiguation fails (still ambiguous or no match after filtering).
+	 *
+	 * @param lookupKey the Value or Name used for the lookup (for error messages)
+	 */
+	private Optional<BPartnerId> disambiguateOrThrow(
 			@NonNull final ImmutableList<BPartnerId> candidates,
+			@Nullable final String lookupKey,
 			@Nullable final Boolean isCustomerFilter,
 			@Nullable final Boolean isVendorFilter)
 	{
@@ -1634,8 +1641,9 @@ public class BPartnerDAO implements IBPartnerDAO
 			}
 		}
 
-		// Still ambiguous: return first (preserving existing firstId() behavior)
-		return Optional.of(candidates.get(0));
+		// Still ambiguous: throw user-friendly error
+		throw new AdempiereException(MSG_BPARTNER_VALUE_NOT_UNIQUE, lookupKey, candidates.size())
+				.markAsUserValidationError();
 	}
 
 	private Optional<BPartnerId> disambiguateByCustomerVendorFlag(
@@ -1681,7 +1689,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		final ImmutableList<BPartnerId> candidates = queryBuilder.create()
 				.listIds(BPartnerId::ofRepoId);
 
-		return disambiguateOrPickSingle(candidates, query.getIsCustomerFilter(), query.getIsVendorFilter());
+		return disambiguateOrThrow(candidates, query.getBpartnerName(), query.getIsCustomerFilter(), query.getIsVendorFilter());
 	}
 
 	private <T> IQueryBuilder<T> createQueryBuilder(

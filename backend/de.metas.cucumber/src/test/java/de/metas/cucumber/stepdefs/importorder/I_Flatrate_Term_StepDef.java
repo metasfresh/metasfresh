@@ -1,9 +1,14 @@
 package de.metas.cucumber.stepdefs.importorder;
 
+import de.metas.contracts.flatrate.process.C_Flatrate_Term_Import;
 import de.metas.contracts.model.I_I_Flatrate_Term;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.process.AdProcessId;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.ProcessInfo;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -13,16 +18,18 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.DB;
 
+import java.math.BigDecimal;
+
 import static org.assertj.core.api.Assertions.*;
 
 /**
- * Step definitions for I_Flatrate_Term staging table.
- * Tests the BPartner resolution SQL from FlatrateTermImportTableSqlUpdater:
- * same CASE WHEN count > 1 pattern (error-marking for ambiguity).
+ * Step definitions for I_Flatrate_Term staging table operations and FlatrateTermImportProcess execution.
+ * Used to test BPartner Value ambiguity detection during flatrate term import.
  */
 public class I_Flatrate_Term_StepDef
 {
 	private final I_Flatrate_Term_StepDefData iFlatrateTermTable;
+	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
 	public I_Flatrate_Term_StepDef(@NonNull final I_Flatrate_Term_StepDefData iFlatrateTermTable)
 	{
@@ -50,27 +57,37 @@ public class I_Flatrate_Term_StepDef
 		});
 	}
 
-	@When("the FlatrateTermImportTableSqlUpdater BPartner resolution SQL is executed")
-	public void the_FlatrateTermImportTableSqlUpdater_bpartner_resolution_sql_is_executed()
+	/**
+	 * Runs the FlatrateTermImportProcess with the current client context.
+	 * This executes FlatrateTermImportTableSqlUpdater which resolves
+	 * foreign keys and marks ambiguous BPartner Values as errors.
+	 */
+	@When("the FlatrateTermImportProcess is invoked")
+	public void the_FlatrateTermImportProcess_is_invoked()
 	{
+		// Mark stale rows from previous test runs as imported so they don't
+		// interfere. Only keep rows we explicitly created in this scenario.
+		final String currentIdList = iFlatrateTermTable.streamRecords()
+				.map(r -> String.valueOf(r.getI_Flatrate_Term_ID()))
+				.collect(java.util.stream.Collectors.joining(","));
+
+		if (!currentIdList.isEmpty())
+		{
+			DB.executeUpdateAndSaveErrorOnFail(
+					"UPDATE I_Flatrate_Term SET I_IsImported='Y' WHERE I_IsImported<>'Y' AND I_Flatrate_Term_ID NOT IN (" + currentIdList + ")",
+					ITrx.TRXNAME_None);
+		}
+
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(C_Flatrate_Term_Import.class);
+
 		final int adClientId = StepDefConstants.CLIENT_ID.getRepoId();
 
-		final String sql = "UPDATE I_Flatrate_Term i "
-				+ "SET C_BPartner_ID=CASE WHEN "
-				+ "(SELECT count(*) FROM C_BPartner bp WHERE bp.Value=i.BPartnerValue AND bp.AD_Client_ID=i.AD_Client_ID AND bp.IsActive='Y') > 1 "
-				+ "THEN NULL "
-				+ "ELSE (SELECT MAX(bp.C_BPartner_ID) FROM C_BPartner bp WHERE bp.Value=i.BPartnerValue AND bp.AD_Client_ID=i.AD_Client_ID AND bp.IsActive='Y') END "
-				+ "WHERE i.C_BPartner_ID IS NULL"
-				+ " AND AD_Client_ID=" + adClientId;
-		DB.executeUpdateAndSaveErrorOnFail(sql, ITrx.TRXNAME_None);
-
-		final String sqlError = "UPDATE I_Flatrate_Term i "
-				+ "SET I_IsImported='E', I_ErrorMsg=COALESCE(I_ErrorMsg,'')||'ERR: Multiple BPartners found for BPartnerValue' "
-				+ "WHERE i.C_BPartner_ID IS NULL AND i.BPartnerValue IS NOT NULL"
-				+ " AND I_IsImported<>'Y'"
-				+ " AND (SELECT count(*) FROM C_BPartner bp WHERE bp.Value=i.BPartnerValue AND bp.AD_Client_ID=i.AD_Client_ID AND bp.IsActive='Y') > 1"
-				+ " AND AD_Client_ID=" + adClientId;
-		DB.executeUpdateAndSaveErrorOnFail(sqlError, ITrx.TRXNAME_None);
+		ProcessInfo.builder()
+				.setAD_Process_ID(processId.getRepoId())
+				.addParameter("AD_Client_ID", BigDecimal.valueOf(adClientId))
+				.buildAndPrepareExecution()
+				.executeSync()
+				.getResult();
 	}
 
 	@Then("validate I_Flatrate_Term:")
