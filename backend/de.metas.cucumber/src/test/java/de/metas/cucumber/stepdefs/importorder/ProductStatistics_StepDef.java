@@ -46,7 +46,7 @@ public class ProductStatistics_StepDef
 		// Parameters: (C_Period_ID, IsSOTrx, C_BPartner_ID, C_BP_Group_ID, C_Activity_ID,
 		//              M_Product_ID, M_Product_Category_ID, M_AttributeSetInstance_ID, AD_Org_ID, AD_Language)
 		final String sql = "SELECT * FROM report.fresh_product_statistics_non0_report("
-				+ periodId + ", 'Y', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'en_US') LIMIT 100";
+				+ periodId + "::numeric, 'Y'::varchar, NULL::numeric, NULL::numeric, NULL::numeric, NULL::numeric, NULL::numeric, NULL::numeric, NULL::numeric, 'en_US'::varchar) LIMIT 100";
 
 		// Verify column existence by querying metadata
 		final boolean[] hasCBPartnerIdColumn = { false };
