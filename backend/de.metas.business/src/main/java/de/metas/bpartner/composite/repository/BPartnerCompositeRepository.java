@@ -36,6 +36,7 @@ import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerDAO;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.organization.OrgId;
@@ -261,7 +262,7 @@ public class BPartnerCompositeRepository
 			if (query.getBpartnerValue() != null)
 			{
 				throw new AdempiereException(
-						de.metas.bpartner.service.impl.BPartnerDAO.MSG_BPARTNER_VALUE_NOT_UNIQUE_REST,
+						BPartnerDAO.MSG_BPARTNER_VALUE_NOT_UNIQUE_REST,
 						query.getBpartnerValue(), byQuery.size())
 						.markAsUserValidationError()
 						.setParameter("query", query);

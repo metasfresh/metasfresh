@@ -42,6 +42,20 @@ public class I_Inventory_StepDef
 		this.bPartnerTable = bPartnerTable;
 	}
 
+	/**
+	 * Creates I_Inventory staging records for import testing.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required) alias for cross-step reference<br>
+	 *   <b>SubProducerBPartner_Value</b> — (optional) SubProducer BPartner search key to resolve<br>
+	 * @cucumber.example
+	 * <pre>
+	 * Given metasfresh contains I_Inventory:
+	 *   | Identifier | SubProducerBPartner_Value |
+	 *   | iInv_1     | SHARED_INV_SUB_VAL       |
+	 * </pre>
+	 */
 	@Given("metasfresh contains I_Inventory:")
 	public void metasfresh_contains_I_Inventory(@NonNull final DataTable dataTable)
 	{
@@ -83,6 +97,22 @@ public class I_Inventory_StepDef
 				.getResult();
 	}
 
+	/**
+	 * Validates I_Inventory staging records after import process execution.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required) alias referencing a previously created I_Inventory record<br>
+	 *   <b>SubProducer_BPartner_ID</b> — (optional, identifier-ref) expected resolved SubProducer BPartner<br>
+	 *   <b>IsUnresolved</b> — (optional, boolean) if true, asserts SubProducer_BPartner_ID = 0 (unresolved)<br>
+	 * @cucumber.depends StepDefData: I_Inventory_StepDefData, C_BPartner_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then validate I_Inventory:
+	 *   | Identifier | SubProducer_BPartner_ID |
+	 *   | iInv_1     | bp_inv_vendor           |
+	 * </pre>
+	 */
 	@Then("validate I_Inventory:")
 	public void validate_I_Inventory(@NonNull final DataTable dataTable)
 	{

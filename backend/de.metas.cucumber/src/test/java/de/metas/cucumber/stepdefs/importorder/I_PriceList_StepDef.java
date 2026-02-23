@@ -24,6 +24,10 @@ import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.*;
 
+/**
+ * Step definitions for I_PriceList staging table operations and ImportPriceList process execution.
+ * Used to test BPartner Value disambiguation during price list import (IsSOPriceList-based tie-breaker).
+ */
 public class I_PriceList_StepDef
 {
 	private final I_PriceList_StepDefData iPriceListTable;
@@ -38,6 +42,21 @@ public class I_PriceList_StepDef
 		this.bPartnerTable = bPartnerTable;
 	}
 
+	/**
+	 * Creates I_PriceList staging records for import testing.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required) alias for cross-step reference<br>
+	 *   <b>BPartner_Value</b> — (optional) BPartner search key to resolve<br>
+	 *   <b>IsSOPriceList</b> — (optional) Sales price list flag (Y/N), defaults to Y<br>
+	 * @cucumber.example
+	 * <pre>
+	 * Given metasfresh contains I_PriceList:
+	 *   | Identifier | BPartner_Value | IsSOPriceList |
+	 *   | iPL_1      | BP_VALUE_1     | Y             |
+	 * </pre>
+	 */
 	@Given("metasfresh contains I_PriceList:")
 	public void metasfresh_contains_I_PriceList(@NonNull final DataTable dataTable)
 	{
@@ -64,6 +83,11 @@ public class I_PriceList_StepDef
 		});
 	}
 
+	/**
+	 * Runs the ImportPriceList process with the current client context.
+	 * This executes the SQL updates that resolve foreign keys
+	 * (including C_BPartner_ID from BPartner_Value with IsSOPriceList tie-breaker).
+	 */
 	@When("the ImportPriceList process is invoked")
 	public void the_ImportPriceList_process_is_invoked()
 	{
@@ -79,6 +103,22 @@ public class I_PriceList_StepDef
 				.getResult();
 	}
 
+	/**
+	 * Validates I_PriceList staging records after import process execution.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required) alias referencing a previously created I_PriceList record<br>
+	 *   <b>C_BPartner_ID</b> — (optional, identifier-ref) expected resolved BPartner<br>
+	 *   <b>I_ErrorMsg</b> — (optional) expected error message substring<br>
+	 * @cucumber.depends StepDefData: I_PriceList_StepDefData, C_BPartner_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then validate I_PriceList:
+	 *   | Identifier | C_BPartner_ID |
+	 *   | iPL_1      | bpartner_cust |
+	 * </pre>
+	 */
 	@Then("validate I_PriceList:")
 	public void validate_I_PriceList(@NonNull final DataTable dataTable)
 	{

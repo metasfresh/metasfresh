@@ -36,6 +36,20 @@ public class I_Product_StepDef
 		this.iProductTable = iProductTable;
 	}
 
+	/**
+	 * Creates I_Product staging records for import testing.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required) alias for cross-step reference<br>
+	 *   <b>BPartner_Value</b> — (optional) BPartner search key to resolve<br>
+	 * @cucumber.example
+	 * <pre>
+	 * Given metasfresh contains I_Product:
+	 *   | Identifier | BPartner_Value     |
+	 *   | iProd_1    | SHARED_PROD_BP_VAL |
+	 * </pre>
+	 */
 	@Given("metasfresh contains I_Product:")
 	public void metasfresh_contains_I_Product(@NonNull final DataTable dataTable)
 	{
@@ -77,6 +91,24 @@ public class I_Product_StepDef
 				.getResult();
 	}
 
+	/**
+	 * Validates I_Product staging records after import process execution.
+	 * Uses direct SQL to read I_ErrorMsg and I_IsImported because the
+	 * import process commits in its own transaction and PO caching may return stale data.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required) alias referencing a previously created I_Product record<br>
+	 *   <b>I_ErrorMsg</b> — (optional) expected error message substring; also asserts I_IsImported='E' and C_BPartner_ID=0<br>
+	 *   <b>IsResolved</b> — (optional, boolean) if true, asserts C_BPartner_ID &gt; 0<br>
+	 * @cucumber.depends StepDefData: I_Product_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then validate I_Product:
+	 *   | Identifier | I_ErrorMsg               |
+	 *   | iProd_1    | Multiple BPartners found |
+	 * </pre>
+	 */
 	@Then("validate I_Product:")
 	public void validate_I_Product(@NonNull final DataTable dataTable)
 	{
@@ -85,7 +117,7 @@ public class I_Product_StepDef
 			final I_I_Product record = rowIdentifier.lookupNotNullIn(iProductTable);
 			InterfaceWrapperHelper.refresh(record);
 
-			row.getAsOptionalString("ExpectError").ifPresent(expectedErr -> {
+			row.getAsOptionalString(I_I_Product.COLUMNNAME_I_ErrorMsg).ifPresent(expectedErr -> {
 				final String dbErrorMsg = DB.getSQLValueStringEx(ITrx.TRXNAME_None,
 						"SELECT I_ErrorMsg FROM I_Product WHERE I_Product_ID=?", record.getI_Product_ID());
 				final String dbImported = DB.getSQLValueStringEx(ITrx.TRXNAME_None,

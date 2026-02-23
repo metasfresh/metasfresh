@@ -36,6 +36,20 @@ public class I_Flatrate_Term_StepDef
 		this.iFlatrateTermTable = iFlatrateTermTable;
 	}
 
+	/**
+	 * Creates I_Flatrate_Term staging records for import testing.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required) alias for cross-step reference<br>
+	 *   <b>BPartnerValue</b> — (optional) BPartner search key to resolve<br>
+	 * @cucumber.example
+	 * <pre>
+	 * Given metasfresh contains I_Flatrate_Term:
+	 *   | Identifier | BPartnerValue    |
+	 *   | iFT_1      | SHARED_FT_BP_VAL |
+	 * </pre>
+	 */
 	@Given("metasfresh contains I_Flatrate_Term:")
 	public void metasfresh_contains_I_Flatrate_Term(@NonNull final DataTable dataTable)
 	{
@@ -90,6 +104,22 @@ public class I_Flatrate_Term_StepDef
 				.getResult();
 	}
 
+	/**
+	 * Validates I_Flatrate_Term staging records after import process execution.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required) alias referencing a previously created I_Flatrate_Term record<br>
+	 *   <b>I_ErrorMsg</b> — (optional) expected error message substring; also asserts I_IsImported='E'<br>
+	 *   <b>IsResolved</b> — (optional, boolean) if true, asserts C_BPartner_ID &gt; 0<br>
+	 * @cucumber.depends StepDefData: I_Flatrate_Term_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then validate I_Flatrate_Term:
+	 *   | Identifier | I_ErrorMsg               |
+	 *   | iFT_1      | Multiple BPartners found |
+	 * </pre>
+	 */
 	@Then("validate I_Flatrate_Term:")
 	public void validate_I_Flatrate_Term(@NonNull final DataTable dataTable)
 	{
@@ -98,7 +128,7 @@ public class I_Flatrate_Term_StepDef
 			final I_I_Flatrate_Term record = rowIdentifier.lookupNotNullIn(iFlatrateTermTable);
 			InterfaceWrapperHelper.refresh(record);
 
-			row.getAsOptionalString("ExpectError").ifPresent(expectedErr -> {
+			row.getAsOptionalString(I_I_Flatrate_Term.COLUMNNAME_I_ErrorMsg).ifPresent(expectedErr -> {
 				assertThat(record.getI_ErrorMsg())
 						.as("I_Flatrate_Term[%s].I_ErrorMsg should contain '%s'", rowIdentifier, expectedErr)
 						.contains(expectedErr);

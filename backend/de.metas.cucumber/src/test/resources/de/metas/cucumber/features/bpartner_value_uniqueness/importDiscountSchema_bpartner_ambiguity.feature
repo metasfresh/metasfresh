@@ -21,5 +21,5 @@ Feature: I_DiscountSchema BPartner ambiguity detection
       | iDS_1        | SHARED_DS_BP_VAL   |
     When the ImportDiscountSchema process is invoked
     Then validate I_DiscountSchema:
-      | Identifier | ExpectError                |
+      | Identifier | I_ErrorMsg                 |
       | iDS_1      | Multiple BPartners found   |

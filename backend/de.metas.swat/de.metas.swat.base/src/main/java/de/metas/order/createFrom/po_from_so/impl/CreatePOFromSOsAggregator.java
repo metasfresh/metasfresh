@@ -2,6 +2,7 @@ package de.metas.order.createFrom.po_from_so.impl;
 
 import ch.qos.logback.classic.Level;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.impl.BPartnerDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
@@ -15,6 +16,7 @@ import de.metas.util.Services;
 import de.metas.util.collections.MapReduceAggregator;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ObjectUtils;
@@ -144,10 +146,10 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 		{
 			vendor = bpartnerDAO.retrieveBPartnerByValue(context.getCtx(), (String)vendorBPartnerValue);
 		}
-		catch (final org.adempiere.exceptions.DBMoreThanOneRecordsFoundException e)
+		catch (final DBMoreThanOneRecordsFoundException e)
 		{
 			final AdempiereException ex = new AdempiereException(
-					de.metas.bpartner.service.impl.BPartnerDAO.MSG_BPARTNER_VALUE_NOT_UNIQUE,
+					BPartnerDAO.MSG_BPARTNER_VALUE_NOT_UNIQUE,
 					vendorBPartnerValue, e.getMessage());
 			ex.initCause(e);
 			throw ex.markAsUserValidationError();

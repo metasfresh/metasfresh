@@ -42,6 +42,21 @@ public class I_Invoice_StepDef
 		this.bPartnerTable = bPartnerTable;
 	}
 
+	/**
+	 * Creates I_Invoice staging records for import testing.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required) alias for cross-step reference<br>
+	 *   <b>BPartnerValue</b> — (optional) BPartner search key to resolve<br>
+	 *   <b>IsSOTrx</b> — (optional) Sales transaction flag (Y/N), defaults to Y<br>
+	 * @cucumber.example
+	 * <pre>
+	 * Given metasfresh contains I_Invoice:
+	 *   | Identifier | BPartnerValue | IsSOTrx |
+	 *   | iInv_1     | BP_VALUE_1    | Y       |
+	 * </pre>
+	 */
 	@Given("metasfresh contains I_Invoice:")
 	public void metasfresh_contains_I_Invoice(@NonNull final DataTable dataTable)
 	{
@@ -106,6 +121,22 @@ public class I_Invoice_StepDef
 				.getResult();
 	}
 
+	/**
+	 * Validates I_Invoice staging records after import process execution.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required) alias referencing a previously created I_Invoice record<br>
+	 *   <b>C_BPartner_ID</b> — (optional, identifier-ref) expected resolved BPartner<br>
+	 *   <b>I_ErrorMsg</b> — (optional) expected error message substring<br>
+	 * @cucumber.depends StepDefData: I_Invoice_StepDefData, C_BPartner_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then validate I_Invoice:
+	 *   | Identifier | C_BPartner_ID |
+	 *   | iInv_1     | bpartner_cust |
+	 * </pre>
+	 */
 	@Then("validate I_Invoice:")
 	public void validate_I_Invoice(@NonNull final DataTable dataTable)
 	{

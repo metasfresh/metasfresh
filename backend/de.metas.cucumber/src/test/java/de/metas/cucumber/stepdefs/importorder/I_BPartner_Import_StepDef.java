@@ -37,6 +37,22 @@ public class I_BPartner_Import_StepDef
 		this.bPartnerTable = bPartnerTable;
 	}
 
+	/**
+	 * Creates I_BPartner staging records for import testing.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required) alias for cross-step reference<br>
+	 *   <b>BPValue</b> — (optional) BPartner search key to resolve<br>
+	 *   <b>IsCustomer</b> — (optional) Customer flag (Y/N), defaults to N<br>
+	 *   <b>IsVendor</b> — (optional) Vendor flag (Y/N), defaults to N<br>
+	 * @cucumber.example
+	 * <pre>
+	 * Given metasfresh contains I_BPartner:
+	 *   | Identifier | BPValue     | IsCustomer | IsVendor |
+	 *   | iBP_1      | BP_VALUE_1  | Y          | N        |
+	 * </pre>
+	 */
 	@Given("metasfresh contains I_BPartner:")
 	public void metasfresh_contains_I_BPartner(@NonNull final DataTable dataTable)
 	{
@@ -120,6 +136,21 @@ public class I_BPartner_Import_StepDef
 		BPartnerImportTableSqlUpdater.updateBPartnerImportTable(selection);
 	}
 
+	/**
+	 * Validates I_BPartner staging records after import process execution.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required) alias referencing a previously created I_BPartner record<br>
+	 *   <b>C_BPartner_ID</b> — (optional, identifier-ref) expected resolved BPartner<br>
+	 * @cucumber.depends StepDefData: I_BPartner_Import_StepDefData, C_BPartner_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then validate I_BPartner:
+	 *   | Identifier | C_BPartner_ID |
+	 *   | iBP_1      | bpartner_cust |
+	 * </pre>
+	 */
 	@Then("validate I_BPartner:")
 	public void validate_I_BPartner(@NonNull final DataTable dataTable)
 	{

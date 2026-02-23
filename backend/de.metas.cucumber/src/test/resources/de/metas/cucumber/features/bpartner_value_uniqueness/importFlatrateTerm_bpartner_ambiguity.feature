@@ -21,5 +21,5 @@ Feature: I_Flatrate_Term BPartner ambiguity detection
       | iFT_1        | SHARED_FT_BP_VAL   |
     When the FlatrateTermImportProcess is invoked
     Then validate I_Flatrate_Term:
-      | Identifier | ExpectError                |
+      | Identifier | I_ErrorMsg                 |
       | iFT_1      | Multiple BPartners found   |

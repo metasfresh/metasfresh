@@ -36,6 +36,20 @@ public class I_DiscountSchema_StepDef
 		this.iDiscountSchemaTable = iDiscountSchemaTable;
 	}
 
+	/**
+	 * Creates I_DiscountSchema staging records for import testing.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required) alias for cross-step reference<br>
+	 *   <b>BPartner_Value</b> — (optional) BPartner search key to resolve<br>
+	 * @cucumber.example
+	 * <pre>
+	 * Given metasfresh contains I_DiscountSchema:
+	 *   | Identifier | BPartner_Value     |
+	 *   | iDS_1      | SHARED_DS_BP_VAL   |
+	 * </pre>
+	 */
 	@Given("metasfresh contains I_DiscountSchema:")
 	public void metasfresh_contains_I_DiscountSchema(@NonNull final DataTable dataTable)
 	{
@@ -77,6 +91,22 @@ public class I_DiscountSchema_StepDef
 				.getResult();
 	}
 
+	/**
+	 * Validates I_DiscountSchema staging records after import process execution.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required) alias referencing a previously created I_DiscountSchema record<br>
+	 *   <b>I_ErrorMsg</b> — (optional) expected error message substring; also asserts I_IsImported='E'<br>
+	 *   <b>IsResolved</b> — (optional, boolean) if true, asserts C_BPartner_ID &gt; 0<br>
+	 * @cucumber.depends StepDefData: I_DiscountSchema_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then validate I_DiscountSchema:
+	 *   | Identifier | I_ErrorMsg               |
+	 *   | iDS_1      | Multiple BPartners found |
+	 * </pre>
+	 */
 	@Then("validate I_DiscountSchema:")
 	public void validate_I_DiscountSchema(@NonNull final DataTable dataTable)
 	{
@@ -85,7 +115,7 @@ public class I_DiscountSchema_StepDef
 			final I_I_DiscountSchema record = rowIdentifier.lookupNotNullIn(iDiscountSchemaTable);
 			InterfaceWrapperHelper.refresh(record);
 
-			row.getAsOptionalString("ExpectError").ifPresent(expectedErr -> {
+			row.getAsOptionalString(I_I_DiscountSchema.COLUMNNAME_I_ErrorMsg).ifPresent(expectedErr -> {
 				assertThat(record.getI_ErrorMsg())
 						.as("I_DiscountSchema[%s].I_ErrorMsg should contain '%s'", rowIdentifier, expectedErr)
 						.contains(expectedErr);

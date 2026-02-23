@@ -42,6 +42,21 @@ public class I_Campaign_Price_StepDef
 		this.bPartnerTable = bPartnerTable;
 	}
 
+	/**
+	 * Creates I_Campaign_Price staging records for import testing.
+	 * Sets mandatory defaults (ISO_Code=EUR, InvoicableQtyBasedOn=Nominal, CountryCode=DE, UOM=PCE).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required) alias for cross-step reference<br>
+	 *   <b>BPartner_Value</b> — (optional) BPartner search key to resolve<br>
+	 * @cucumber.example
+	 * <pre>
+	 * Given metasfresh contains I_Campaign_Price:
+	 *   | Identifier | BPartner_Value |
+	 *   | iCP_1      | BP_VALUE_1     |
+	 * </pre>
+	 */
 	@Given("metasfresh contains I_Campaign_Price:")
 	public void metasfresh_contains_I_Campaign_Price(@NonNull final DataTable dataTable)
 	{
@@ -102,6 +117,21 @@ public class I_Campaign_Price_StepDef
 				.getResult();
 	}
 
+	/**
+	 * Validates I_Campaign_Price staging records after import process execution.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required) alias referencing a previously created I_Campaign_Price record<br>
+	 *   <b>C_BPartner_ID</b> — (optional, identifier-ref) expected resolved BPartner<br>
+	 * @cucumber.depends StepDefData: I_Campaign_Price_StepDefData, C_BPartner_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then validate I_Campaign_Price:
+	 *   | Identifier | C_BPartner_ID |
+	 *   | iCP_1      | bpartner_cust |
+	 * </pre>
+	 */
 	@Then("validate I_Campaign_Price:")
 	public void validate_I_Campaign_Price(@NonNull final DataTable dataTable)
 	{

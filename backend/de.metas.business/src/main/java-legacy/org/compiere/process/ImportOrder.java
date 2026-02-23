@@ -21,6 +21,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.impl.BPartnerDAO;
 import de.metas.document.location.DocumentLocation;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
@@ -30,6 +31,8 @@ import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -640,10 +643,10 @@ public class ImportOrder extends JavaProcess
 				{
 					bp = Services.get(IBPartnerDAO.class).retrieveBPartnerByValue(getCtx(), imp.getBPartnerValue());
 				}
-				catch (final org.adempiere.exceptions.DBMoreThanOneRecordsFoundException e)
+				catch (final DBMoreThanOneRecordsFoundException e)
 				{
-					final org.adempiere.exceptions.AdempiereException ex = new org.adempiere.exceptions.AdempiereException(
-							de.metas.bpartner.service.impl.BPartnerDAO.MSG_BPARTNER_VALUE_NOT_UNIQUE,
+					final AdempiereException ex = new AdempiereException(
+							BPartnerDAO.MSG_BPARTNER_VALUE_NOT_UNIQUE,
 							imp.getBPartnerValue(), e.getMessage());
 					ex.initCause(e);
 					throw ex.markAsUserValidationError();

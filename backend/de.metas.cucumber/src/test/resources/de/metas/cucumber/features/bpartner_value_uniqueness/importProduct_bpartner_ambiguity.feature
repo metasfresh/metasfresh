@@ -22,5 +22,5 @@ Feature: Import staging table BPartner ambiguity detection
       | iProd_1      | SHARED_PROD_BP_VAL |
     When the ImportProduct process is invoked
     Then validate I_Product:
-      | Identifier | ExpectError                |
+      | Identifier | I_ErrorMsg                 |
       | iProd_1    | Multiple BPartners found   |
