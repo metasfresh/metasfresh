@@ -42,6 +42,7 @@ import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
@@ -151,8 +152,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 	private final BigDecimal m_OverUnderAmt;
 	private final BigDecimal m_PaymentWriteOffAmt;
 
-	@NonNull
-	private final WriteOffType writeOffType;
+	@NonNull @Getter private final WriteOffType writeOffType;
 
 	/**
 	 * String Representation
@@ -549,12 +549,6 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		}
 
 		return getAccountProvider().getBankAccountAccountIfSet(acctSchemaId, bankAccountId, BankAccountAcctType.Payment_WriteOff_Acct);
-	}
-
-	@NonNull
-	public WriteOffType getWriteOffType()
-	{
-		return writeOffType;
 	}
 
 	public boolean isBankFeeWriteOff()

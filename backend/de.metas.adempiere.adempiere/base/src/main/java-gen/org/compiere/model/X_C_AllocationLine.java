@@ -459,6 +459,11 @@ public class X_C_AllocationLine extends org.compiere.model.PO implements I_C_All
 		return bd;
 	}
 
+	/** WriteOffType AD_Reference_ID=542053 */
+	public static final String WRITEOFFTYPE_StandardWriteOff = "WO";
+	/** WriteOffType AD_Reference_ID=542053 */
+	public static final String WRITEOFFTYPE_BankFee = "BF";
+
 	/** Set Write-Off Type.
 		@param WriteOffType
 		Discriminates standard write-off (WO) from bank fee (BF)

@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -40,4 +42,7 @@ public class AcctSchemaDefaultAccounts
 	Account unrealizedGainAcct;
 	@NonNull
 	Account unrealizedLossAcct;
+
+	@Nullable
+	Account payBankFeeAcct;
 }

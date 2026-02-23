@@ -324,3 +324,9 @@ Feature: payment allocation - bank fee posting
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID              |
       | PayBankFee_Acct       | -0.20 EUR   |             |          | alloc_bf_140.reversed  |
       | C_Receivable_Acct     |             | -0.20 EUR   |          | alloc_bf_140.reversed  |
+
+    # Verify that after allocation + reversal, account balances are zero
+    And Fact_Acct records balances for documents alloc_bf_140,alloc_bf_140.reversed are matching
+      | AccountConceptualName | SourceBalance |
+      | PayBankFee_Acct       | 0 EUR         |
+      | C_Receivable_Acct     | 0 EUR         |

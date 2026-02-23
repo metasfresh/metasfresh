@@ -55,8 +55,7 @@ public class AllocationLineCandidate
 	Money paymentOverUnderAmt;
 	InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation;
 
-	@NonNull
-	WriteOffType writeOffType;
+	@NonNull WriteOffType writeOffType;
 
 	/**
 	 *  This is about the paymentTerm invoice discount when used as payment. (i.e. CreditMemo or PurchaseInvoice allocated against a SalesInvoice)

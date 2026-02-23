@@ -5,8 +5,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.acct.Account;
 import de.metas.acct.api.AccountId;
+import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.acct.api.IAcctSchemaBL;
 import de.metas.banking.BankAccountId;
 import de.metas.cache.CCache;
 import de.metas.util.Services;
@@ -15,7 +16,6 @@ import lombok.ToString;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_AcctSchema_Default;
 import org.compiere.model.I_C_BP_BankAccount_Acct;
 import org.compiere.util.DB;
@@ -50,6 +50,7 @@ import java.util.Optional;
 public class BankAccountAcctRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
 	private final CCache<BankAccountId, BPBankAccountAcctBySchemasMap> cache = CCache.<BankAccountId, BPBankAccountAcctBySchemasMap>builder()
 			.tableName(I_C_BP_BankAccount_Acct.Table_Name)
 			.cacheMapType(CCache.CacheMapType.LRU)
@@ -160,19 +161,8 @@ public class BankAccountAcctRepository
 	@NonNull
 	public Optional<Account> getAcctSchemaDefaultPayBankFeeAccount(@NonNull final AcctSchemaId acctSchemaId)
 	{
-		final I_C_AcctSchema_Default schemaDefault = Services.get(IAcctSchemaDAO.class).retrieveAcctSchemaDefaultsRecordOrNull(acctSchemaId);
-		if (schemaDefault == null)
-		{
-			return Optional.empty();
-		}
-
-		final Integer payBankFeeAcctId = InterfaceWrapperHelper.getValueOrNull(schemaDefault, I_C_BP_BankAccount_Acct.COLUMNNAME_PayBankFee_Acct);
-		if (payBankFeeAcctId == null || payBankFeeAcctId <= 0)
-		{
-			return Optional.empty();
-		}
-
-		return Optional.of(Account.of(AccountId.ofRepoId(payBankFeeAcctId), BankAccountAcctType.PayBankFee_Acct));
+		final AcctSchema acctSchema = acctSchemaBL.getById(acctSchemaId);
+		return Optional.ofNullable(acctSchema.getDefaultAccounts().getPayBankFeeAcct());
 	}
 
 	//

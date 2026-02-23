@@ -3,6 +3,7 @@ package de.metas.cucumber.stepdefs.allocation;
 import de.metas.allocation.api.C_AllocationHdr_Builder;
 import de.metas.allocation.api.C_AllocationLine_Builder;
 import de.metas.allocation.api.IAllocationBL;
+import de.metas.allocation.api.IAllocationDAO;
 import de.metas.allocation.api.PaymentAllocationId;
 import de.metas.allocation.api.WriteOffType;
 import de.metas.common.util.time.SystemTime;
@@ -25,7 +26,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
@@ -37,6 +37,7 @@ import java.util.List;
 public class C_AllocationHdr_StepDef
 {
 	@NonNull private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
+	@NonNull private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
@@ -114,8 +115,7 @@ public class C_AllocationHdr_StepDef
 				lineBuilder.overUnderAmt(overUnderAmt.toBigDecimal());
 			}
 
-			row.getAsOptionalString("WriteOffType")
-					.map(WriteOffType::ofCode)
+			row.getAsOptionalEnum("WriteOffType", WriteOffType.class)
 					.ifPresent(lineBuilder::writeOffType);
 
 			row.getAsOptionalIdentifier("C_BPartner_ID")
@@ -145,7 +145,7 @@ public class C_AllocationHdr_StepDef
 		final int reversalId = allocationHdr.getReversal_ID();
 		if (reversalId > 0)
 		{
-			final I_C_AllocationHdr reversal = InterfaceWrapperHelper.load(reversalId, I_C_AllocationHdr.class);
+			final I_C_AllocationHdr reversal = allocationDAO.getById(PaymentAllocationId.ofRepoId(reversalId));
 			final StepDefDataIdentifier reversalIdentifier = StepDefDataIdentifier.ofString(allocationIdentifierStr + ".reversed");
 			allocationTable.putOrReplace(reversalIdentifier, reversal);
 		}

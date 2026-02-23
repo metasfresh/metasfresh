@@ -5,18 +5,19 @@ import de.metas.util.lang.ReferenceListAwareEnums;
 import de.metas.util.lang.ReferenceListAwareEnums.ValuesIndex;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.compiere.model.X_C_AllocationLine;
 
 import javax.annotation.Nullable;
 
+@RequiredArgsConstructor
+@Getter
 public enum WriteOffType implements ReferenceListAwareEnum
 {
-	WriteOff("WO"),
-	BankFee("BF");
+	WriteOff(X_C_AllocationLine.WRITEOFFTYPE_StandardWriteOff),
+	BankFee(X_C_AllocationLine.WRITEOFFTYPE_BankFee);
 
-	@Getter
-	private final String code;
-
-	WriteOffType(@NonNull final String code) {this.code = code;}
+	@NonNull private final String code;
 
 	public static WriteOffType ofCode(@NonNull final String code) {return index.ofCode(code);}
 
