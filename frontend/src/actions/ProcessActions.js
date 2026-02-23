@@ -306,11 +306,6 @@ export const createProcess = ({
             })
           );
         } catch (error) {
-          const errorMessage =
-            error.response?.data?.message || error.message || 'Process error';
-          await dispatch(
-            addNotification('Process error', errorMessage, 5000, 'error')
-          );
           await dispatch(closeModal());
           await dispatch(setProcessSaved());
 
