@@ -35,7 +35,7 @@ WITH (
 CREATE FUNCTION report.Umsatzreport_Report_Sub(IN c_period_id numeric, IN issotrx character varying, IN M_AttributeSetInstance_ID numeric, IN AD_Org_ID numeric) RETURNS SETOF report.Umsatzreport_Report_Sub AS
 $BODY$
 SELECT
-	CASE WHEN Length(name) <= 45 THEN name ELSE substring(name FOR 43 ) || '...' END AS name,
+	report._merge_bp_name(name, delivery_bp_name) AS name,
 	PeriodEnd,
 	LastYearPeriodEnd,
 	Year,

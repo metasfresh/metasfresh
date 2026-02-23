@@ -303,13 +303,6 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement x="157" y="0" width="50" height="10" uuid="c3d4e5f6-a7b8-9012-cdef-345678901234"/>
-				<textElement>
-					<font size="6" isBold="false" isItalic="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{delivery_bp_name}]]></textFieldExpression>
-			</textField>
 			<textField pattern="#,##0" isBlankWhenNull="true">
 				<reportElement x="207" y="0" width="60" height="10" uuid="283307ea-42f1-443b-874f-de97d438a639"/>
 				<textElement textAlignment="Right">

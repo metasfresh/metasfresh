@@ -283,13 +283,6 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement x="157" y="0" width="50" height="10" uuid="a2b3c4d5-e6f7-8901-bcde-f23456789012"/>
-				<textElement>
-					<font size="6" isBold="false" isItalic="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{delivery_bp_name}]]></textFieldExpression>
-			</textField>
 			<textField pattern="#,##0" isBlankWhenNull="true">
 				<reportElement x="206" y="0" width="40" height="10" uuid="283307ea-42f1-443b-874f-de97d438a639"/>
 				<textElement textAlignment="Right">
