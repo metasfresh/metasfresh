@@ -207,6 +207,7 @@ public class PaymentsViewAllocateCommand
 										   .convertToRealAmounts(row.getInvoiceAmtMultiplier()))
 				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
 				.date(row.getDateInvoiced())
+				.dateAcct(row.getDateAcct())
 				.clientAndOrgId(row.getClientAndOrgId())
 				.currencyConversionTypeId(row.getCurrencyConversionTypeId())
 				.build();
@@ -286,6 +287,7 @@ public class PaymentsViewAllocateCommand
 				.openAmt(openAmt)
 				.amountToAllocate(openAmt)
 				.dateTrx(row.getDateTrx())
+				.dateAcct(row.getDateAcct())
 				.clientAndOrgId(row.getClientAndOrgId())
 				.paymentCurrencyContext(row.getPaymentCurrencyContext())
 				.build();

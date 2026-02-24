@@ -311,6 +311,7 @@ public class PaymentAllocationBuilder
 
 				// Create new Allocation Line
 				final LocalDate dateTrx = TimeUtil.max(payable.getDate(), payment.getDate());
+				final LocalDate dateAcct = TimeUtil.max(payable.getDateAcct(), payment.getDateAcct());
 				final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
 						.type(type)
 						//
@@ -321,7 +322,7 @@ public class PaymentAllocationBuilder
 						.paymentDocumentRef(payment.getReference())
 						//
 						.dateTrx(dateTrx)
-						.dateAcct(dateTrx)
+						.dateAcct(dateAcct)
 						//
 						// Amounts:
 						.amounts(amountsToAllocate.getInvoiceAmountsToAllocateInInvoiceCurrency())
@@ -498,6 +499,7 @@ public class PaymentAllocationBuilder
 
 				// Create new Allocation Line
 				final LocalDate dateTrx = TimeUtil.max(paymentOut.getDate(), paymentIn.getDate());
+				final LocalDate dateAcct = TimeUtil.max(paymentOut.getDateAcct(), paymentIn.getDateAcct());
 				final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
 						.type(AllocationLineCandidateType.InboundPaymentToOutboundPayment)
 						//
@@ -508,7 +510,7 @@ public class PaymentAllocationBuilder
 						.paymentDocumentRef(paymentIn.getReference())
 						//
 						.dateTrx(dateTrx)
-						.dateAcct(dateTrx)
+						.dateAcct(dateAcct)
 						//
 						// Amounts:
 						.amounts(AllocationAmounts.ofPayAmt(amtToAllocate))
@@ -565,6 +567,7 @@ public class PaymentAllocationBuilder
 		}
 
 		final LocalDate dateTrx = getDefaultDateTrx();
+		final LocalDate dateAcct = payable.getDateAcct();
 		final Money payableOverUnderAmt = payable.computeProjectedOverUnderAmt(amountsToAllocate);
 		final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
 				.type(AllocationLineCandidateType.InvoiceDiscountOrWriteOff)
@@ -576,7 +579,7 @@ public class PaymentAllocationBuilder
 				.paymentDocumentRef(null) // nop
 				//
 				.dateTrx(dateTrx)
-				.dateAcct(dateTrx)
+				.dateAcct(dateAcct)
 				//
 				// Amounts:
 				.amounts(amountsToAllocate)

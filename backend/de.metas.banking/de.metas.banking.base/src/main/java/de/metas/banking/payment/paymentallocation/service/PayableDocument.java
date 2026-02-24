@@ -112,6 +112,9 @@ public class PayableDocument
 	private final LocalDate date;
 
 	@Getter
+	private final LocalDate dateAcct;
+
+	@Getter
 	private final CurrencyConversionTypeId currencyConversionTypeId;
 
 	@Builder
@@ -129,6 +132,7 @@ public class PayableDocument
 			@Nullable final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation,
 			@NonNull final ClientAndOrgId clientAndOrgId,
 			@NonNull final LocalDate date,
+			@NonNull final LocalDate dateAcct,
 			@Nullable final CurrencyConversionTypeId currencyConversionTypeId
 	)
 	{
@@ -181,6 +185,7 @@ public class PayableDocument
 
 		this.clientAndOrgId = clientAndOrgId;
 		this.date = date;
+		this.dateAcct = dateAcct;
 		this.currencyConversionTypeId = currencyConversionTypeId;
 	}
 

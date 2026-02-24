@@ -22,12 +22,12 @@
 
 package de.metas.banking.payment.paymentallocation.service;
 
-import de.metas.payment.PaymentCurrencyContext;
 import de.metas.banking.payment.paymentallocation.service.PayableDocument.PayableDocumentType;
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentDirection;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
@@ -160,6 +160,12 @@ final class CreditMemoInvoiceAsPaymentDocumentWrapper implements IPaymentDocumen
 	public LocalDate getDate()
 	{
 		return creditMemoPayableDoc.getDate();
+	}
+
+	@Override
+	public LocalDate getDateAcct()
+	{
+		return creditMemoPayableDoc.getDateAcct();
 	}
 
 	@Override
