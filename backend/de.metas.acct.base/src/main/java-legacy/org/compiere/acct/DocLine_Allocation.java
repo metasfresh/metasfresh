@@ -565,10 +565,10 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 			final BankAccountId bankAccountId = BankAccountId.ofRepoIdOrNull(payment.getC_BP_BankAccount_ID());
 			if (bankAccountId != null)
 			{
-				final Optional<Account> acct = getAccountProvider().getBankAccountAccountIfSet(acctSchemaId, bankAccountId, BankAccountAcctType.PayBankFee_Acct);
-				if (acct.isPresent())
+				final Account acct = getAccountProvider().getBankAccountAccountIfSet(acctSchemaId, bankAccountId, BankAccountAcctType.PayBankFee_Acct).orElse(null);
+				if (acct != null)
 				{
-					return acct;
+					return Optional.of(acct);
 				}
 			}
 		}
