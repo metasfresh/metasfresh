@@ -148,6 +148,12 @@ export const PickingJobScreen = {
         }
     }),
 
+    expectLineCaption: async ({ index, caption }) => await step(`${NAME} - Expect line ${index} caption '${caption}'`, async () => {
+        const lineButton = locateLineButton({ index });
+        const captionElement = lineButton.locator('.caption-btn .row span').first();
+        await expect(captionElement).toContainText(caption);
+    }),
+
     clickLineButton: async ({ index }) => await step(`${NAME} - Click line ${index}`, async () => {
         await locateLineButton({ index }).tap();
         //await PickingJobLineScreen.waitForScreen();
