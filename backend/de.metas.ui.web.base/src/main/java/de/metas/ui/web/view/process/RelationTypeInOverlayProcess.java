@@ -128,7 +128,7 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 		final RelatedDocumentsCandidateGroup firstGroup = relatedDocumentGroups.get(0);
 		if (relatedDocumentGroups.size() > 1)
 		{
-			Loggables.withLogger(log, Level.WARN).addLog(("RelationType {} returned {} groups; using only the first. RelationType may be misconfigured.",
+			Loggables.withLogger(log, Level.WARN).addLog("RelationType {} returned {} groups; using only the first. RelationType may be misconfigured.",
 					relationTypeId, relatedDocumentGroups.size());
 		}
 
