@@ -203,11 +203,19 @@ public class PackageLicensingProductReport_StepDef
 
 		final SoftAssertions softly = new SoftAssertions();
 
+		final java.util.Set<String> expectedProductNames = expectedRows.stream()
+				.map(r -> r.get("ProductName"))
+				.collect(java.util.stream.Collectors.toSet());
+
+		final List<Map<String, String>> matchingResults = reportResults.stream()
+				.filter(r -> expectedProductNames.contains(r.get("ProductName")))
+				.collect(java.util.stream.Collectors.toList());
+
 		for (final Map<String, String> expectedRow : expectedRows)
 		{
 			final String expectedProductName = expectedRow.get("ProductName");
 
-			final Map<String, String> actualRow = reportResults.stream()
+			final Map<String, String> actualRow = matchingResults.stream()
 					.filter(r -> expectedProductName.equals(r.get("ProductName")))
 					.findFirst()
 					.orElse(null);
@@ -228,11 +236,22 @@ public class PackageLicensingProductReport_StepDef
 			assertOptionalBigDecimalColumn(softly, expectedRow, actualRow, "OverpackWeight");
 		}
 
-		softly.assertThat(reportResults)
-				.as("Report should contain exactly " + expectedRows.size() + " rows matching the expected products")
-				.hasSizeGreaterThanOrEqualTo(expectedRows.size());
+		softly.assertThat(matchingResults)
+				.as("Report should contain exactly one row per expected product (no row multiplication)")
+				.hasSize(expectedRows.size());
 
 		softly.assertAll();
+	}
+
+	@Then("the Package Licensing Product Report result does not contain product {string}")
+	public void verifyReportDoesNotContainProduct(@NonNull final String productName)
+	{
+		final boolean found = reportResults.stream()
+				.anyMatch(r -> productName.equals(r.get("ProductName")));
+
+		org.assertj.core.api.Assertions.assertThat(found)
+				.as("Report should NOT contain product " + productName)
+				.isFalse();
 	}
 
 	private static void assertOptionalColumn(
