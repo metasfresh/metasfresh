@@ -26,31 +26,39 @@ VALUES (774700, 0, 0, 'Y', TO_TIMESTAMP('2026-02-24 08:00','YYYY-MM-DD HH24:MI')
         686, 592061, 'Abschreibungsart', 'Y', 'Y', 'N', 120, 'D');
 
 -- 5. AD_UI_Element on tab 349 (UI group 540098, max seqno was 150 → use 160)
-INSERT INTO AD_UI_Element (AD_UI_Element_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
-                           AD_UI_ElementGroup_ID, AD_Field_ID, Name, SeqNo, IsDisplayed, IsDisplayedGrid, IsDisplayed_SideList, EntityType, WidgetSize)
-VALUES (648396, 0, 0, 'Y', TO_TIMESTAMP('2026-02-24 08:00','YYYY-MM-DD HH24:MI'), 99, TO_TIMESTAMP('2026-02-24 08:00','YYYY-MM-DD HH24:MI'), 99,
-        540098, 774697, 'Abschreibungsart', 160, 'Y', 'Y', 'N', 'D', 'S');
+INSERT INTO AD_UI_Element (AD_Client_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, AD_UI_ElementGroup_ID, AD_UI_Element_ID, AD_UI_ElementType,
+                           Created, CreatedBy, IsActive, IsAdvancedField, IsDisplayed, IsDisplayedGrid, IsDisplayed_SideList,
+                           Name, SeqNo, SeqNoGrid, SeqNo_SideList, Updated, UpdatedBy)
+VALUES (0, 774697, 0, 349, 540098, 648396, 'F',
+        TO_TIMESTAMP('2026-02-24 08:00','YYYY-MM-DD HH24:MI'), 99, 'Y', 'N', 'Y', 'Y', 'N',
+        'Abschreibungsart', 160, 160, 0, TO_TIMESTAMP('2026-02-24 08:00','YYYY-MM-DD HH24:MI'), 99);
 
 -- 6. AD_UI_Element on tab 686 (UI group 540062, max seqno was 120 → use 130)
-INSERT INTO AD_UI_Element (AD_UI_Element_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
-                           AD_UI_ElementGroup_ID, AD_Field_ID, Name, SeqNo, IsDisplayed, IsDisplayedGrid, IsDisplayed_SideList, EntityType, WidgetSize)
-VALUES (648397, 0, 0, 'Y', TO_TIMESTAMP('2026-02-24 08:00','YYYY-MM-DD HH24:MI'), 99, TO_TIMESTAMP('2026-02-24 08:00','YYYY-MM-DD HH24:MI'), 99,
-        540062, 774700, 'Abschreibungsart', 130, 'Y', 'Y', 'N', 'D', 'S');
+INSERT INTO AD_UI_Element (AD_Client_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, AD_UI_ElementGroup_ID, AD_UI_Element_ID, AD_UI_ElementType,
+                           Created, CreatedBy, IsActive, IsAdvancedField, IsDisplayed, IsDisplayedGrid, IsDisplayed_SideList,
+                           Name, SeqNo, SeqNoGrid, SeqNo_SideList, Updated, UpdatedBy)
+VALUES (0, 774700, 0, 686, 540062, 648397, 'F',
+        TO_TIMESTAMP('2026-02-24 08:00','YYYY-MM-DD HH24:MI'), 99, 'Y', 'N', 'Y', 'Y', 'N',
+        'Abschreibungsart', 130, 130, 0, TO_TIMESTAMP('2026-02-24 08:00','YYYY-MM-DD HH24:MI'), 99);
 
 -- Note: Tabs 684 and 685 have UI element groups (540026, 540222) with max_seqno=0 (no existing UI elements).
 -- Adding UI elements there since the field is relevant for users to see the write-off type.
 
 -- 7. AD_UI_Element on tab 684 (UI group 540026, no existing elements → use 10)
-INSERT INTO AD_UI_Element (AD_UI_Element_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
-                           AD_UI_ElementGroup_ID, AD_Field_ID, Name, SeqNo, IsDisplayed, IsDisplayedGrid, IsDisplayed_SideList, EntityType, WidgetSize)
-VALUES (648398, 0, 0, 'Y', TO_TIMESTAMP('2026-02-24 08:00','YYYY-MM-DD HH24:MI'), 99, TO_TIMESTAMP('2026-02-24 08:00','YYYY-MM-DD HH24:MI'), 99,
-        540026, 774698, 'Abschreibungsart', 10, 'Y', 'Y', 'N', 'D', 'S');
+INSERT INTO AD_UI_Element (AD_Client_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, AD_UI_ElementGroup_ID, AD_UI_Element_ID, AD_UI_ElementType,
+                           Created, CreatedBy, IsActive, IsAdvancedField, IsDisplayed, IsDisplayedGrid, IsDisplayed_SideList,
+                           Name, SeqNo, SeqNoGrid, SeqNo_SideList, Updated, UpdatedBy)
+VALUES (0, 774698, 0, 684, 540026, 648398, 'F',
+        TO_TIMESTAMP('2026-02-24 08:00','YYYY-MM-DD HH24:MI'), 99, 'Y', 'N', 'Y', 'Y', 'N',
+        'Abschreibungsart', 10, 10, 0, TO_TIMESTAMP('2026-02-24 08:00','YYYY-MM-DD HH24:MI'), 99);
 
 -- 8. AD_UI_Element on tab 685 (UI group 540222, no existing elements → use 10)
-INSERT INTO AD_UI_Element (AD_UI_Element_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
-                           AD_UI_ElementGroup_ID, AD_Field_ID, Name, SeqNo, IsDisplayed, IsDisplayedGrid, IsDisplayed_SideList, EntityType, WidgetSize)
-VALUES (648399, 0, 0, 'Y', TO_TIMESTAMP('2026-02-24 08:00','YYYY-MM-DD HH24:MI'), 99, TO_TIMESTAMP('2026-02-24 08:00','YYYY-MM-DD HH24:MI'), 99,
-        540222, 774699, 'Abschreibungsart', 10, 'Y', 'Y', 'N', 'D', 'S');
+INSERT INTO AD_UI_Element (AD_Client_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, AD_UI_ElementGroup_ID, AD_UI_Element_ID, AD_UI_ElementType,
+                           Created, CreatedBy, IsActive, IsAdvancedField, IsDisplayed, IsDisplayedGrid, IsDisplayed_SideList,
+                           Name, SeqNo, SeqNoGrid, SeqNo_SideList, Updated, UpdatedBy)
+VALUES (0, 774699, 0, 685, 540222, 648399, 'F',
+        TO_TIMESTAMP('2026-02-24 08:00','YYYY-MM-DD HH24:MI'), 99, 'Y', 'N', 'Y', 'Y', 'N',
+        'Abschreibungsart', 10, 10, 0, TO_TIMESTAMP('2026-02-24 08:00','YYYY-MM-DD HH24:MI'), 99);
 
 -- 9. AD_Field_Trl — skeleton rows for each new field (one per system language)
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Name,Description,Help, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy)
