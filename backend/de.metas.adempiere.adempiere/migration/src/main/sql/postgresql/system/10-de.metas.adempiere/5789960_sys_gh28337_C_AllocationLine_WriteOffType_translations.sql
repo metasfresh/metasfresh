@@ -40,7 +40,15 @@ WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y')
   AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
 ;
 
--- 5. Set German translations (de_DE, de_CH)
+-- 5. AD_Column_Trl (ID=592061, "WriteOffType") — skeleton rows for each system language
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive)
+SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y'
+FROM AD_Language l, AD_Column t
+WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Column_ID=592061
+AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 6. Set German translations (de_DE, de_CH)
 -- AD_Reference base record: Name is already in English ("C_AllocationLine WriteOffType") — that's fine, it's a technical name
 -- AD_Ref_List: set German names
 UPDATE AD_Ref_List SET Name='Standardabschreibung', Updated=TO_TIMESTAMP('2026-02-24 08:00','YYYY-MM-DD HH24:MI'), UpdatedBy=99 WHERE AD_Ref_List_ID=544125;
@@ -68,6 +76,6 @@ WHERE AD_Element_ID=584561 AND AD_Language IN ('de_DE','de_CH');
 UPDATE AD_Element_Trl SET Name='Write-Off Type', PrintName='Write-Off Type', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-02-24 08:00','YYYY-MM-DD HH24:MI'), UpdatedBy=99
 WHERE AD_Element_ID=584561 AND AD_Language='en_US';
 
--- 6. Propagate all translations (syncs to AD_Column_Trl, AD_Field_Trl, etc.)
+-- 7. Propagate translations from AD_Element_Trl into AD_Column_Trl, AD_Field_Trl, etc.
 SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584561);
 SELECT update_Column_Translation_From_AD_Element(584561);
