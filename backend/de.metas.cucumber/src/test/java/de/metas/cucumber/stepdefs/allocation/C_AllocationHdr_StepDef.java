@@ -142,10 +142,10 @@ public class C_AllocationHdr_StepDef
 		allocationHdr.setDocAction(IDocument.ACTION_Reverse_Correct);
 		documentBL.processEx(allocationHdr, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 
-		final int reversalId = allocationHdr.getReversal_ID();
-		if (reversalId > 0)
+		final PaymentAllocationId reversalId = PaymentAllocationId.ofRepoIdOrNull(allocationHdr.getReversal_ID());
+		if (reversalId != null)
 		{
-			final I_C_AllocationHdr reversal = allocationDAO.getById(PaymentAllocationId.ofRepoId(reversalId));
+			final I_C_AllocationHdr reversal = allocationDAO.getById(reversalId);
 			final StepDefDataIdentifier reversalIdentifier = StepDefDataIdentifier.ofString(allocationIdentifierStr + ".reversed");
 			allocationTable.putOrReplace(reversalIdentifier, reversal);
 		}

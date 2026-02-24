@@ -17,6 +17,8 @@ public enum WriteOffType implements ReferenceListAwareEnum
 	WriteOff(X_C_AllocationLine.WRITEOFFTYPE_StandardWriteOff),
 	BankFee(X_C_AllocationLine.WRITEOFFTYPE_BankFee);
 
+	private static final ValuesIndex<WriteOffType> index = ReferenceListAwareEnums.index(values());
+
 	@NonNull private final String code;
 
 	public static WriteOffType ofCode(@NonNull final String code) {return index.ofCode(code);}
@@ -34,6 +36,4 @@ public enum WriteOffType implements ReferenceListAwareEnum
 	public boolean isBankFee() {return this == BankFee;}
 
 	public boolean isWriteOff() {return this == WriteOff;}
-
-	private static final ValuesIndex<WriteOffType> index = ReferenceListAwareEnums.index(values());
 }

@@ -33,16 +33,11 @@ import javax.annotation.Nullable;
 @Builder
 public class AcctSchemaDefaultAccounts
 {
-	@NonNull
-	Account realizedGainAcct;
-	@NonNull
-	Account realizedLossAcct;
+	@NonNull Account realizedGainAcct;
+	@NonNull Account realizedLossAcct;
 
-	@NonNull
-	Account unrealizedGainAcct;
-	@NonNull
-	Account unrealizedLossAcct;
+	@NonNull Account unrealizedGainAcct;
+	@NonNull Account unrealizedLossAcct;
 
-	@Nullable
-	Account payBankFeeAcct;
+	@Nullable Account payBankFeeAcct;
 }
