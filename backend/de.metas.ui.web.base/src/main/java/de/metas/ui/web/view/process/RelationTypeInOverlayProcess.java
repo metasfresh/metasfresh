@@ -121,14 +121,13 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 		{
 			throw new AdempiereException(MSG_NO_RELATED_DOCS_FOUND);
 		}
-
-		// Get the first group and create a view from it. We're expecting exactly one group.
-		final RelatedDocumentsCandidateGroup firstGroup = relatedDocumentGroups.get(0);
-		if (relatedDocumentGroups.size() > 1)
+		else if (relatedDocumentGroups.size() > 1)
 		{
 			addLog("RelationType {} returned {} groups; using only the first. RelationType may be misconfigured.",
 					relationTypeId, relatedDocumentGroups.size());
 		}
+
+		final RelatedDocumentsCandidateGroup firstGroup = relatedDocumentGroups.get(0);
 
 		final IView popupView = createView(recordRef, WindowId.of(firstGroup.getTargetWindowId()));
 
