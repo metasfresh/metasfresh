@@ -33,6 +33,8 @@ import static de.metas.process.ProcessType.POSTGREST;
 public class AD_Process
 {
 	public static final AD_Process instance = new AD_Process();
+	//Declared like this because the process needs to be in the web.base project
+	public static final String RELATION_TYPE_IN_OVERLAY_PROCESS_CLASSNAME = "de.metas.ui.web.view.process.RelationTypeInOverlayProcess";
 
 	private AD_Process()
 	{
@@ -58,7 +60,9 @@ public class AD_Process
 					throw new FillMandatoryException(I_AD_Process.COLUMNNAME_JSONPath);
 				}
 				break;
-			// the `RelationTypeInOverlay` type is handled in de.metas.ui.process.model.interceptor.AD_Process.setClassnameForProcessType, because the RelationTypeInOverlayProcess class is not visible here
+			case RelationTypeInOverlay:
+				process.setClassname(RELATION_TYPE_IN_OVERLAY_PROCESS_CLASSNAME);
+				break;
 		}
 	}
 

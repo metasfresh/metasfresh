@@ -20,6 +20,7 @@
  * #L%
  */
 
+//please keep package in sync with de.metas.process.model.interceptor.AD_Process.RELATION_TYPE_IN_OVERLAY_PROCESS_CLASSNAME
 package de.metas.ui.web.view.process;
 
 import com.google.common.collect.ImmutableSet;
