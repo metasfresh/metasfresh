@@ -1,5 +1,7 @@
 package de.metas.allocation.api;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import de.metas.util.lang.ReferenceListAwareEnums.ValuesIndex;
@@ -21,6 +23,7 @@ public enum WriteOffType implements ReferenceListAwareEnum
 
 	@NonNull private final String code;
 
+	@JsonCreator
 	public static WriteOffType ofCode(@NonNull final String code) {return index.ofCode(code);}
 
 	@Nullable
@@ -32,6 +35,9 @@ public enum WriteOffType implements ReferenceListAwareEnum
 		final WriteOffType result = ofNullableCode(code);
 		return result != null ? result : WriteOff;
 	}
+
+	@JsonValue
+	public String toJson() {return code;}
 
 	public boolean isBankFee() {return this == BankFee;}
 
