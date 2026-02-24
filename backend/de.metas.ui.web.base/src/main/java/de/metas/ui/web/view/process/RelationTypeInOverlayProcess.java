@@ -23,7 +23,6 @@
 //please keep package in sync with de.metas.process.model.interceptor.AD_Process.RELATION_TYPE_IN_OVERLAY_PROCESS_CLASSNAME
 package de.metas.ui.web.view.process;
 
-import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableSet;
 import de.metas.document.references.related_documents.IZoomSource;
 import de.metas.document.references.related_documents.POZoomSource;
@@ -45,7 +44,6 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
-import de.metas.util.Loggables;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
@@ -128,7 +126,7 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 		final RelatedDocumentsCandidateGroup firstGroup = relatedDocumentGroups.get(0);
 		if (relatedDocumentGroups.size() > 1)
 		{
-			Loggables.withLogger(log, Level.WARN).addLog("RelationType {} returned {} groups; using only the first. RelationType may be misconfigured.",
+			addLog("RelationType {} returned {} groups; using only the first. RelationType may be misconfigured.",
 					relationTypeId, relatedDocumentGroups.size());
 		}
 
