@@ -1,84 +1,143 @@
--- Migration: Create M_MaterialCockpit_Base_V and the rebuild function
--- Part of: Material Cockpit V2 (Increment 1) -- se203#252
+-- M_MaterialCockpit_Base_V: Base view for Material Cockpit V2
+-- 5 data sources: Shipment Schedules, Receipt Schedules, Production Candidates, Forecasts, Current Stock
+-- Uses db_alter_view pattern for safe dependency handling
 
---
--- 1. Create the base view using db_alter_view pattern to handle dependencies
---
 DROP VIEW IF EXISTS M_MaterialCockpit_Base_V$new
 ;
 
 CREATE OR REPLACE VIEW M_MaterialCockpit_Base_V$new AS
-
-    -- On-hand stock from md_stock
-SELECT s.ad_client_id,
-       s.ad_org_id,
-       s.m_product_id,
-       p.m_product_category_id,
-       p.value                                                                                          AS ProductValue,
+-- IMPORTANT: PLEASE DO NOT CHANGE THIS VIEW, but
+-- * create a new view called CUS123_MaterialCockpit_V
+-- * run 
+SELECT t.ad_client_id,
+       t.ad_org_id,
        p.name                                                                                           AS ProductName,
-       p.c_uom_id,
-       s.m_warehouse_id,
-       s.attributeskey                                                                                  AS AttributesKey,
-       'OH'::varchar(2)                                                                                 AS SupplyType,
-       NULL::numeric(10, 0)                                                                             AS C_BPartner_Vendor_ID,
-       NOW()::timestamp without time zone                                                               AS DatePromised,
-       s.qtyonhand                                                                                      AS QtyOnHand,
-       0::numeric                                                                                       AS QtyTU,
-       0::numeric                                                                                       AS QtyLU,
-       COALESCE(s.qtyonhand * NULLIF(p.weight, 0), 0)                                                   AS WeightNet,
-       getLastCostPrice(p.m_product_id)                                                                 AS LastCostPrice,
-       ABS((('x' || SUBSTR(MD5(CONCAT_WS('#',
-                                         'OH',
-                                         s.ad_client_id::text,
-                                         s.ad_org_id::text,
-                                         s.m_product_id::text,
-                                         COALESCE(s.attributeskey, '')::text,
-                                         COALESCE(s.m_warehouse_id, 0)::text)), 1, 10))::bit(32)::int)) AS QtyDemand_QtySupply_V_ID
-FROM md_stock s
-         INNER JOIN m_product p ON s.m_product_id = p.m_product_id
-WHERE s.isactive = 'Y'
-  AND COALESCE(s.qtyonhand, 0) <> 0
-
-UNION ALL
-
--- Planned supply from M_ReceiptSchedule
-SELECT rs.ad_client_id,
-       rs.ad_org_id,
-       rs.m_product_id,
+       p.value                                                                                          AS ProductValue,
+       p.m_product_id,
        p.m_product_category_id,
-       p.value                                                                                                    AS ProductValue,
-       p.name                                                                                                     AS ProductName,
        p.c_uom_id,
-       rs.m_warehouse_id,
-       generateasistorageattributeskey(rs.m_attributesetinstance_id)                                              AS AttributesKey,
-       'PS'::varchar(2)                                                                                           AS SupplyType,
-       rs.c_bpartner_id                                                                                           AS C_BPartner_Vendor_ID,
-       rs.DatePromised                                                                                            AS DatePromised,
-       SUM(uomconvert(rs.m_product_id, rs.c_uom_id, p.c_uom_id, rs.qtytomove))                                    AS QtyOnHand,
-       0::numeric                                                                                                 AS QtyTU,
-       0::numeric                                                                                                 AS QtyLU,
-       COALESCE(SUM(uomconvert(rs.m_product_id, rs.c_uom_id, p.c_uom_id, rs.qtytomove) * NULLIF(p.weight, 0)), 0) AS WeightNet,
-       getLastCostPrice(p.m_product_id)                                                                           AS LastCostPrice,
+       t.attributesKey,
+       t.m_warehouse_id,
+       SUM(qtyReserved)                                                                                 AS qtyReserved,
+       SUM(qtyToMove)                                                                                   AS qtyToMove,
+       SUM(qtyToProduce)                                                                                AS qtyToProduce,
+       SUM(qtyForecasted)                                                                               AS qtyForecasted,
+       SUM(qtyStock)                                                                                    AS qtyStock,
+       SUM(qtyConfirmedBySupplier)                                                                      AS qtyConfirmedBySupplier,
+       SUM(qtyUnconfirmedBySupplier)                                                                    AS qtyUnconfirmedBySupplier,
        ABS((('x' || SUBSTR(MD5(CONCAT_WS('#',
-                                         'PS',
-                                         rs.ad_client_id::text,
-                                         rs.ad_org_id::text,
-                                         rs.m_product_id::text,
-                                         COALESCE(generateasistorageattributeskey(rs.m_attributesetinstance_id), '')::text,
-                                         COALESCE(rs.m_warehouse_id, 0)::text,
-                                         COALESCE(rs.c_bpartner_id, 0)::text,
-                                         COALESCE(rs.datepromised::text, ''))), 1, 10))::bit(32)::int))           AS QtyDemand_QtySupply_V_ID
-FROM (SELECT rs.*,
-             COALESCE(rs.DatePromised_Override, rs.MovementDate) AS DatePromised
-      FROM m_receiptschedule rs) rs
-         INNER JOIN m_product p ON rs.m_product_id = p.m_product_id
-WHERE rs.processed = 'N'
-  AND rs.isactive = 'Y'
-  AND COALESCE(rs.qtytomove, 0) <> 0
-GROUP BY rs.ad_client_id, rs.ad_org_id, rs.m_product_id, p.m_product_category_id,
-         p.value, p.name, p.c_uom_id, rs.m_warehouse_id,
-         generateasistorageattributeskey(rs.m_attributesetinstance_id),
-         rs.c_bpartner_id, rs.datepromised, p.weight, p.m_product_id
+                                         t.ad_client_id::text,
+                                         t.ad_org_id::text,
+                                         p.m_product_id::text,
+                                         p.c_uom_id::text,
+                                         COALESCE(t.attributesKey, '')::text,
+                                         COALESCE(t.m_warehouse_id, 0)::text)), 1, 10))::bit(32)::int)) AS QtyDemand_QtySupply_V_ID,
+       getLastCostPrice(p.M_Product_ID) AS LastCostPrice
+FROM m_product p
+         INNER JOIN
+     (
+         -- Shipment Schedules (Demand)
+         SELECT ss.ad_client_id,
+                ss.ad_org_id,
+                ss.m_warehouse_id,
+                ss.m_product_id,
+                generateasistorageattributeskey(ss.m_attributesetinstance_id) AS attributesKey,
+                SUM(ss.qtyReserved)                                           AS qtyReserved,
+                0::numeric                                                    AS qtyToMove,
+                0::numeric                                                    AS qtyToProduce,
+                0::numeric                                                    AS qtyForecasted,
+                0::numeric                                                    AS qtyStock,
+                0::numeric                                                    AS qtyConfirmedBySupplier,
+                0::numeric                                                    AS qtyUnconfirmedBySupplier
+         FROM m_shipmentschedule ss
+                  INNER JOIN m_product p ON ss.m_product_id = p.m_product_id
+         WHERE COALESCE(ss.qtyReserved, 0) <> 0
+         GROUP BY ss.ad_client_id, ss.ad_org_id, ss.m_warehouse_id, ss.m_product_id, p.c_uom_id, attributesKey
+
+         UNION ALL
+
+         -- Receipt Schedules (Supply to move)
+         SELECT rs.ad_client_id,
+                rs.ad_org_id,
+                rs.m_warehouse_id,
+                rs.m_product_id,
+                generateasistorageattributeskey(rs.m_attributesetinstance_id)                                                                   AS attributesKey,
+                0::numeric                                                                                                                      AS qtyReserved,
+                SUM(uomconvert(rs.m_product_id, rs.c_uom_id, p.c_uom_id, rs.qtyToMove))                                                         AS qtyToMove,
+                0::numeric                                                                                                                      AS qtyToProduce,
+                0::numeric                                                                                                                      AS qtyForecasted,
+                0::numeric                                                                                                                      AS qtyStock,
+                CASE WHEN rs.IsConfirmedBySupplier = 'Y' THEN SUM(uomconvert(rs.m_product_id, rs.c_uom_id, p.c_uom_id, rs.qtyToMove)) ELSE 0 END AS qtyConfirmedBySupplier,
+                CASE WHEN rs.IsConfirmedBySupplier = 'N' THEN SUM(uomconvert(rs.m_product_id, rs.c_uom_id, p.c_uom_id, rs.qtyToMove)) ELSE 0 END AS qtyUnconfirmedBySupplier
+         FROM m_receiptschedule rs
+                  INNER JOIN m_product p ON rs.m_product_id = p.m_product_id
+         WHERE COALESCE(rs.qtyToMove, 0) <> 0
+         GROUP BY rs.ad_client_id, rs.ad_org_id, rs.m_warehouse_id, rs.m_product_id, p.c_uom_id, attributesKey, rs.IsConfirmedBySupplier
+
+         UNION ALL
+
+         -- Production Candidates (Qty to Produce)
+         SELECT poc.ad_client_id,
+                poc.ad_org_id,
+                poc.m_warehouse_id,
+                poc.m_product_id,
+                generateasistorageattributeskey(poc.m_attributesetinstance_id)                AS attributesKey,
+                0::numeric                                                                    AS qtyReserved,
+                0::numeric                                                                    AS qtyToMove,
+                SUM(uomconvert(poc.m_product_id, poc.c_uom_id, p.c_uom_id, poc.qtyToProcess)) AS qtyToProduce,
+                0::numeric                                                                    AS qtyForecasted,
+                0::numeric                                                                    AS qtyStock,
+                0::numeric                                                                    AS qtyConfirmedBySupplier,
+                0::numeric                                                                    AS qtyUnconfirmedBySupplier
+         FROM pp_order_candidate poc
+                  INNER JOIN m_product p ON poc.m_product_id = p.m_product_id
+         WHERE COALESCE(poc.qtyToProcess, 0) <> 0
+         GROUP BY poc.ad_client_id, poc.ad_org_id, poc.m_warehouse_id, poc.m_product_id, p.c_uom_id, attributesKey
+
+         UNION ALL
+
+         -- Forecasts (Qty Forecasted)
+         SELECT f.ad_client_id,
+                f.ad_org_id,
+                fl.m_warehouse_id                                                 AS m_warehouse_id,
+                fl.m_product_id,
+                generateasistorageattributeskey(fl.m_attributesetinstance_id)     AS attributesKey,
+                0::numeric                                                        AS qtyReserved,
+                0::numeric                                                        AS qtyToMove,
+                0::numeric                                                        AS qtyToProduce,
+                SUM(uomconvert(fl.m_product_id, fl.c_uom_id, p.c_uom_id, fl.qty)) AS qtyForecasted,
+                0::numeric                                                        AS qtyStock,
+                0::numeric                                                        AS qtyConfirmedBySupplier,
+                0::numeric                                                        AS qtyUnconfirmedBySupplier
+         FROM m_forecastline fl
+                  INNER JOIN m_forecast f ON f.m_forecast_id = fl.m_forecast_id
+                  INNER JOIN m_product p ON fl.m_product_id = p.m_product_id
+         WHERE COALESCE(fl.qty, 0) <> 0
+         GROUP BY f.ad_client_id, f.ad_org_id, fl.m_warehouse_id, fl.m_product_id, p.c_uom_id, attributesKey
+
+         UNION ALL
+
+         -- Current Stock (Qty On Hand)
+         SELECT s.ad_client_id,
+                s.ad_org_id,
+                s.m_warehouse_id,
+                s.m_product_id,
+                s.attributeskey  AS attributesKey,
+                0::numeric       AS qtyReserved,
+                0::numeric       AS qtyToMove,
+                0::numeric       AS qtyToProduce,
+                0::numeric       AS qtyForecasted,
+                SUM(s.qtyOnHand) AS qtyStock, --already in product UOM
+                0::numeric       AS qtyConfirmedBySupplier,
+                0::numeric       AS qtyUnconfirmedBySupplier
+         FROM md_stock s
+                  INNER JOIN m_product p ON s.m_product_id = p.m_product_id
+         WHERE s.IsActive = 'Y'
+           AND COALESCE(s.qtyOnHand, 0) <> 0
+         GROUP BY s.ad_client_id, s.ad_org_id, s.m_warehouse_id, s.m_product_id, p.c_uom_id, s.attributeskey) AS t
+     ON p.m_product_id = t.m_product_id
+         LEFT OUTER JOIN m_warehouse w ON w.m_warehouse_id = t.m_warehouse_id
+GROUP BY t.ad_client_id, t.ad_org_id, p.m_product_id, p.m_product_category_id, p.name, p.value, p.c_uom_id, t.attributesKey, t.m_warehouse_id
 ;
 
 SELECT db_alter_view(
