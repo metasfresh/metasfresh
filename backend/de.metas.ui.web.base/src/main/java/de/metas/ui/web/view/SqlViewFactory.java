@@ -76,7 +76,7 @@ import java.util.function.Supplier;
 @Service
 public class SqlViewFactory implements IViewFactory
 {
-	private final static AdMessageKey MSG_NO_RELATED_DOCS_FOUND = AdMessageKey.of("NO_RELATED_DOCS_FOUND");
+	public final static AdMessageKey MSG_NO_RELATED_DOCS_FOUND = AdMessageKey.of("NO_RELATED_DOCS_FOUND");
 
 	private static final Logger logger = LogManager.getLogger(SqlViewFactory.class);
 	private final WebuiDocumentReferencesService webuiDocumentReferencesService;

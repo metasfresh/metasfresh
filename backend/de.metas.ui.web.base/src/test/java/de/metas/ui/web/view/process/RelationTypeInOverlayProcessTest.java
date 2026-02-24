@@ -29,7 +29,6 @@ import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Collections;
@@ -50,15 +49,13 @@ class RelationTypeInOverlayProcessTest
 		MockitoAnnotations.initMocks(this);
 		AdempiereTestHelper.get().init();
 		Services.registerService(IADProcessDAO.class, mock(IADProcessDAO.class));
-		Env.setLoggedUserId(Env.getCtx(),UserId.ofRepoId(100));
+		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(100));
 	}
 
 	@Nested
 	class CheckPreconditionsApplicable
 	{
-		@Mock
 		RelationTypeRelatedDocumentsProvidersFactory providerFactory = mock(RelationTypeRelatedDocumentsProvidersFactory.class);
-		@Mock
 		IViewsRepository viewsRepo = mock(IViewsRepository.class);
 
 		@Test
@@ -103,9 +100,7 @@ class RelationTypeInOverlayProcessTest
 	@Nested
 	class DoIt
 	{
-		@Mock
 		RelationTypeRelatedDocumentsProvidersFactory providerFactory = mock(RelationTypeRelatedDocumentsProvidersFactory.class);
-		@Mock
 		IViewsRepository viewsRepo = mock(IViewsRepository.class);
 
 		@Test

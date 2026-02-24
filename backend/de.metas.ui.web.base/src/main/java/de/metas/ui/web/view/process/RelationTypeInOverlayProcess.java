@@ -30,7 +30,6 @@ import de.metas.document.references.related_documents.RelatedDocumentsCandidateG
 import de.metas.document.references.related_documents.RelatedDocumentsId;
 import de.metas.document.references.related_documents.relation_type.RelationTypeId;
 import de.metas.document.references.related_documents.relation_type.RelationTypeRelatedDocumentsProvidersFactory;
-import de.metas.i18n.AdMessageKey;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -46,6 +45,7 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.GenericPO;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -55,6 +55,8 @@ import org.compiere.model.PO;
 import java.util.Collections;
 import java.util.List;
 
+import static de.metas.ui.web.view.SqlViewFactory.MSG_NO_RELATED_DOCS_FOUND;
+
 /**
  * Process implementation for opening related documents in an overlay window (as grid view).
  * <p>
@@ -63,8 +65,6 @@ import java.util.List;
  */
 public class RelationTypeInOverlayProcess extends JavaProcess implements IProcessPrecondition
 {
-	private final static AdMessageKey MSG_NO_RELATED_DOCS_FOUND = AdMessageKey.of("NO_RELATED_DOCS_FOUND");
-
 	@NonNull private final RelationTypeRelatedDocumentsProvidersFactory relationTypeProvidersFactory;
 	@NonNull private final IViewsRepository viewsRepo;
 
@@ -124,6 +124,11 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 
 		// Get the first group and create a view from it. We're expecting exactly one group.
 		final RelatedDocumentsCandidateGroup firstGroup = relatedDocumentGroups.get(0);
+		if (relatedDocumentGroups.size() > 1)
+		{
+			log.warn("RelationType {} returned {} groups; using only the first. RelationType may be misconfigured.",
+					relationTypeId, relatedDocumentGroups.size());
+		}
 
 		final IView popupView = createView(recordRef, WindowId.of(firstGroup.getTargetWindowId()));
 
@@ -150,7 +155,10 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 
 		final RelatedDocumentsId relatedDocumentsId = RelatedDocumentsId.ofString("AD_RelationType_ID-" + getRelationTypeId().getRepoId());
 
-		final WindowId srcWindowId = WindowId.of(getProcessInfo().getAdWindowId());
+		final AdWindowId adWindowId = Check.assumeNotNull(
+				getProcessInfo().getAdWindowId(),
+				"AD_Window_ID is required for process {}", getProcessInfo().getAdProcessId());
+		final WindowId srcWindowId = WindowId.of(adWindowId);
 
 		final DocumentPath srcDocument = DocumentPath.rootDocumentPath(srcWindowId, recordReference.getRecord_ID());
 		final CreateViewRequest request = CreateViewRequest.builder(targetWindowId, JSONViewDataType.grid)
