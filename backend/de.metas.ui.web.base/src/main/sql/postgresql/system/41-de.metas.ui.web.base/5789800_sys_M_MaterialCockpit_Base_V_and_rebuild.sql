@@ -4,35 +4,36 @@
 --
 -- 1. Create the base view
 --
-DROP VIEW IF EXISTS M_MaterialCockpit_Base_V;
+DROP VIEW IF EXISTS M_MaterialCockpit_Base_V
+;
 
 CREATE OR REPLACE VIEW M_MaterialCockpit_Base_V AS
 
--- On-hand stock from md_stock
+    -- On-hand stock from md_stock
 SELECT s.ad_client_id,
        s.ad_org_id,
        s.m_product_id,
        p.m_product_category_id,
-       p.value                                                                           AS ProductValue,
-       p.name                                                                            AS ProductName,
+       p.value                                                                                          AS ProductValue,
+       p.name                                                                                           AS ProductName,
        p.c_uom_id,
        s.m_warehouse_id,
-       s.attributeskey                                                                   AS AttributesKey,
-       'OH'::varchar(2)                                                                  AS SupplyType,
-       NULL::numeric(10, 0)                                                              AS C_BPartner_Vendor_ID,
-       now()::timestamp without time zone                                                AS DatePromised,
-       s.qtyonhand                                                                       AS QtyOnHand,
-       0::numeric                                                                        AS QtyTU,
-       0::numeric                                                                        AS QtyLU,
-       COALESCE(s.qtyonhand * NULLIF(p.weight, 0), 0)                                   AS WeightNet,
-       getLastCostPrice(p.m_product_id)                                                  AS LastCostPrice,
+       s.attributeskey                                                                                  AS AttributesKey,
+       'OH'::varchar(2)                                                                                 AS SupplyType,
+       NULL::numeric(10, 0)                                                                             AS C_BPartner_Vendor_ID,
+       NOW()::timestamp without time zone                                                               AS DatePromised,
+       s.qtyonhand                                                                                      AS QtyOnHand,
+       0::numeric                                                                                       AS QtyTU,
+       0::numeric                                                                                       AS QtyLU,
+       COALESCE(s.qtyonhand * NULLIF(p.weight, 0), 0)                                                   AS WeightNet,
+       getLastCostPrice(p.m_product_id)                                                                 AS LastCostPrice,
        ABS((('x' || SUBSTR(MD5(CONCAT_WS('#',
-                                          'OH',
-                                          s.ad_client_id::text,
-                                          s.ad_org_id::text,
-                                          s.m_product_id::text,
-                                          COALESCE(s.attributeskey, '')::text,
-                                          COALESCE(s.m_warehouse_id, 0)::text)), 1, 10))::bit(32)::int)) AS QtyDemand_QtySupply_V_ID
+                                         'OH',
+                                         s.ad_client_id::text,
+                                         s.ad_org_id::text,
+                                         s.m_product_id::text,
+                                         COALESCE(s.attributeskey, '')::text,
+                                         COALESCE(s.m_warehouse_id, 0)::text)), 1, 10))::bit(32)::int)) AS QtyDemand_QtySupply_V_ID
 FROM md_stock s
          INNER JOIN m_product p ON s.m_product_id = p.m_product_id
 WHERE s.isactive = 'Y'
@@ -45,29 +46,31 @@ SELECT rs.ad_client_id,
        rs.ad_org_id,
        rs.m_product_id,
        p.m_product_category_id,
-       p.value                                                                            AS ProductValue,
-       p.name                                                                             AS ProductName,
+       p.value                                                                                                    AS ProductValue,
+       p.name                                                                                                     AS ProductName,
        p.c_uom_id,
        rs.m_warehouse_id,
-       generateasistorageattributeskey(rs.m_attributesetinstance_id)                      AS AttributesKey,
-       'PS'::varchar(2)                                                                   AS SupplyType,
-       rs.c_bpartner_id                                                                   AS C_BPartner_Vendor_ID,
-       rs.datepromised::timestamp without time zone                                       AS DatePromised,
-       SUM(uomconvert(rs.m_product_id, rs.c_uom_id, p.c_uom_id, rs.qtytomove))          AS QtyOnHand,
-       0::numeric                                                                         AS QtyTU,
-       0::numeric                                                                         AS QtyLU,
+       generateasistorageattributeskey(rs.m_attributesetinstance_id)                                              AS AttributesKey,
+       'PS'::varchar(2)                                                                                           AS SupplyType,
+       rs.c_bpartner_id                                                                                           AS C_BPartner_Vendor_ID,
+       rs.DatePromised                                                                                            AS DatePromised,
+       SUM(uomconvert(rs.m_product_id, rs.c_uom_id, p.c_uom_id, rs.qtytomove))                                    AS QtyOnHand,
+       0::numeric                                                                                                 AS QtyTU,
+       0::numeric                                                                                                 AS QtyLU,
        COALESCE(SUM(uomconvert(rs.m_product_id, rs.c_uom_id, p.c_uom_id, rs.qtytomove) * NULLIF(p.weight, 0)), 0) AS WeightNet,
-       getLastCostPrice(p.m_product_id)                                                   AS LastCostPrice,
+       getLastCostPrice(p.m_product_id)                                                                           AS LastCostPrice,
        ABS((('x' || SUBSTR(MD5(CONCAT_WS('#',
-                                          'PS',
-                                          rs.ad_client_id::text,
-                                          rs.ad_org_id::text,
-                                          rs.m_product_id::text,
-                                          COALESCE(generateasistorageattributeskey(rs.m_attributesetinstance_id), '')::text,
-                                          COALESCE(rs.m_warehouse_id, 0)::text,
-                                          COALESCE(rs.c_bpartner_id, 0)::text,
-                                          COALESCE(rs.datepromised::text, ''))), 1, 10))::bit(32)::int)) AS QtyDemand_QtySupply_V_ID
-FROM m_receiptschedule rs
+                                         'PS',
+                                         rs.ad_client_id::text,
+                                         rs.ad_org_id::text,
+                                         rs.m_product_id::text,
+                                         COALESCE(generateasistorageattributeskey(rs.m_attributesetinstance_id), '')::text,
+                                         COALESCE(rs.m_warehouse_id, 0)::text,
+                                         COALESCE(rs.c_bpartner_id, 0)::text,
+                                         COALESCE(rs.datepromised::text, ''))), 1, 10))::bit(32)::int))           AS QtyDemand_QtySupply_V_ID
+FROM (SELECT rs.*,
+             COALESCE(rs.DatePromised_Override, rs.MovementDate) AS DatePromised
+      FROM m_receiptschedule rs) rs
          INNER JOIN m_product p ON rs.m_product_id = p.m_product_id
 WHERE rs.processed = 'N'
   AND rs.isactive = 'Y'
@@ -88,9 +91,9 @@ CREATE OR REPLACE FUNCTION after_migration_M_MaterialCockpit_rebuild()
 AS
 $$
 DECLARE
-    v_source_view   TEXT;
-    v_count         INTEGER;
-    v_missing_cols  TEXT;
+    v_source_view  TEXT;
+    v_count        INTEGER;
+    v_missing_cols TEXT;
 BEGIN
     -- Step 1: Find customer/override views matching '%_MaterialCockpit_V' excluding the base view
     SELECT COUNT(*), MAX(viewname)
@@ -111,7 +114,7 @@ BEGIN
     END IF;
 
     -- Step 3: Validate that the chosen source has all required base columns
-    SELECT string_agg(bc.column_name, ', ')
+    SELECT STRING_AGG(bc.column_name, ', ')
     INTO v_missing_cols
     FROM information_schema.columns bc
     WHERE bc.table_name = 'm_materialcockpit_base_v'
@@ -132,10 +135,12 @@ BEGIN
 
     RAISE NOTICE 'after_migration_M_MaterialCockpit_rebuild: Successfully created QtyDemand_QtySupply_V from %', v_source_view;
 END;
-$$;
+$$
+;
 
 
 --
 -- 3. Call the rebuild function
 --
-SELECT after_migration_M_MaterialCockpit_rebuild();
+SELECT after_migration_M_MaterialCockpit_rebuild()
+;
