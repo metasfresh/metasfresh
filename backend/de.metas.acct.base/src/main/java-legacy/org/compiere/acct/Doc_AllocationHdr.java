@@ -764,9 +764,25 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		}
 
 		final AcctSchema as = fact.getAcctSchema();
+
+		// Determine account based on WriteOffType: bank fee uses PayBankFee_Acct, standard write-off uses WriteOff_Acct
+		final Account writeOffAcct;
+		if (line.isBankFeeWriteOff())
+		{
+			writeOffAcct = line.getBankFeeAccount(as.getId())
+					.orElseThrow(() -> newPostingException()
+							.setDocLine(line)
+							.setAcctSchema(as)
+							.setDetailMessage("PayBankFee_Acct not configured for the payment's bank account"));
+		}
+		else
+		{
+			writeOffAcct = getBPGroupAccount(BPartnerGroupAccountType.WriteOff, as);
+		}
+
 		final FactLineBuilder factLineBuilder = fact.createLine()
 				.setDocLine(line)
-				.setAccount(getBPGroupAccount(BPartnerGroupAccountType.WriteOff, as))
+				.setAccount(writeOffAcct)
 				.setCurrencyId(getCurrencyId())
 				.orgId(line.getPaymentOrgId())
 				.bPartnerAndLocationId(line.getPaymentBPartnerId(), line.getPaymentBPartnerLocationId())
@@ -1091,7 +1107,16 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		//
 		// Get discount and write off amounts to be corrected
 		final Money discountAmt = taxCorrectionType.isDiscount() ? line.getDiscountAmt() : line.getDiscountAmt().toZero();
-		final Money writeOffAmt = taxCorrectionType.isWriteOff() ? line.getWriteOffAmt() : line.getWriteOffAmt().toZero();
+		// Bank fees are VAT-neutral — skip tax correction regardless of schema's TaxCorrectionType
+		final Money writeOffAmt;
+		if (line.isBankFeeWriteOff())
+		{
+			writeOffAmt = line.getWriteOffAmt().toZero();
+		}
+		else
+		{
+			writeOffAmt = taxCorrectionType.isWriteOff() ? line.getWriteOffAmt() : line.getWriteOffAmt().toZero();
+		}
 		if (discountAmt.signum() == 0 && writeOffAmt.signum() == 0)
 		{
 			// no amounts => nothing to do

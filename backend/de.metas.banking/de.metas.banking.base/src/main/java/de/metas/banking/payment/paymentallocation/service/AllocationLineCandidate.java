@@ -1,5 +1,6 @@
 package de.metas.banking.payment.paymentallocation.service;
 
+import de.metas.allocation.api.WriteOffType;
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.money.CurrencyId;
@@ -54,6 +55,8 @@ public class AllocationLineCandidate
 	Money paymentOverUnderAmt;
 	InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation;
 
+	@NonNull WriteOffType writeOffType;
+
 	/**
 	 *  This is about the paymentTerm invoice discount when used as payment. (i.e. CreditMemo or PurchaseInvoice allocated against a SalesInvoice)
 	 */
@@ -79,7 +82,8 @@ public class AllocationLineCandidate
 			@Nullable final Money payableOverUnderAmt,
 			@Nullable final Money paymentOverUnderAmt,
 			@Nullable final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation,
-			@Nullable final Money payAmtDiscountInInvoiceCurrency)
+			@Nullable final Money payAmtDiscountInInvoiceCurrency,
+			@Nullable final WriteOffType writeOffType)
 	{
 		if (!orgId.isRegular())
 		{
@@ -125,7 +129,8 @@ public class AllocationLineCandidate
 		this.payableOverUnderAmt = payableOverUnderAmt != null ? payableOverUnderAmt : Money.zero(amounts.getCurrencyId());
 		this.paymentOverUnderAmt = paymentOverUnderAmt != null ? paymentOverUnderAmt : Money.zero(amounts.getCurrencyId());
 		this.invoiceProcessingFeeCalculation = invoiceProcessingFeeCalculation;
-		this.payAmtDiscountInInvoiceCurrency = payAmtDiscountInInvoiceCurrency != null ? payAmtDiscountInInvoiceCurrency : Money.zero(amounts.getCurrencyId()); 
+		this.payAmtDiscountInInvoiceCurrency = payAmtDiscountInInvoiceCurrency != null ? payAmtDiscountInInvoiceCurrency : Money.zero(amounts.getCurrencyId());
+		this.writeOffType = writeOffType != null ? writeOffType : WriteOffType.WriteOff;
 	}
 
 	public static class AllocationLineCandidateBuilder
@@ -134,6 +139,7 @@ public class AllocationLineCandidate
 		{
 			payableDocumentRef(payableDocument.getReference());
 			payableDocumentIsCreditMemo(payableDocument.isCreditMemo());
+			writeOffType(payableDocument.getWriteOffType());
 			return this;
 		}
 	}
