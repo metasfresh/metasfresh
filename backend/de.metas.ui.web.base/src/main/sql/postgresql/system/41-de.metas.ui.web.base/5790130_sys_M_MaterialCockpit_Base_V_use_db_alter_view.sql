@@ -1,9 +1,6 @@
--- Migration: Create M_MaterialCockpit_Base_V and the rebuild function
--- Part of: Material Cockpit V2 (Increment 1) -- se203#252
+-- Migration: Switch M_MaterialCockpit_Base_V to db_alter_view pattern
+-- This avoids dependency errors when dependent views (SE203_MaterialCockpit_V, QtyDemand_QtySupply_V) exist.
 
---
--- 1. Create the base view using db_alter_view pattern to handle dependencies
---
 DROP VIEW IF EXISTS M_MaterialCockpit_Base_V$new
 ;
 
