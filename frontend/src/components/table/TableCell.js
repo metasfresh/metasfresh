@@ -183,6 +183,7 @@ class TableCell extends PureComponent {
       tableCellData,
       colIndex,
       updateRow,
+      columnWidth,
     } = this.props;
     const docId = `${this.props.docId}`;
     const { tooltipToggled } = this.state;
@@ -191,6 +192,14 @@ class TableCell extends PureComponent {
     const isOpenDatePicker = isEdited && item.widgetType === 'Date';
     const isDateField = checkIfDateField({ item });
     let style = cellExtended ? { height: extendLongText * 20 } : {};
+    if (columnWidth) {
+      style = {
+        ...style,
+        width: `${columnWidth}px`,
+        minWidth: `${columnWidth}px`,
+        maxWidth: `${columnWidth}px`,
+      };
+    }
 
     return (
       <td
@@ -207,13 +216,14 @@ class TableCell extends PureComponent {
             'cell-disabled': isReadonly,
             'cell-mandatory': isMandatory,
           },
-          getSizeClass(item),
+          { [getSizeClass(item)]: !columnWidth },
           item.widgetType,
           {
             'pulse-on': updatedRow,
             'pulse-off': !updatedRow,
           }
         )}
+        style={style}
         data-cy={`cell-${property}`}
       >
         {hasComments && (
@@ -335,6 +345,7 @@ TableCell.propTypes = {
   handleFocusAction: PropTypes.func,
   tableCellData: PropTypes.object,
   tableId: PropTypes.string.isRequired,
+  columnWidth: PropTypes.number,
 };
 
 export default TableCell;
