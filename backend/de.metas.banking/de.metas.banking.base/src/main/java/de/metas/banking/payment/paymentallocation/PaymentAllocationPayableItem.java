@@ -66,6 +66,7 @@ public class PaymentAllocationPayableItem
 	SOTrx soTrx;
 	
 	LocalDate dateInvoiced;
+	LocalDate dateAcct;
 
 	@Builder
 	private PaymentAllocationPayableItem(
@@ -82,7 +83,8 @@ public class PaymentAllocationPayableItem
 			@NonNull final BPartnerId invoiceBPartnerId,
 			@NonNull final String documentNo,
 			@NonNull final SOTrx soTrx,
-			@NonNull final LocalDate dateInvoiced)
+			@NonNull final LocalDate dateInvoiced,
+			@Nullable final LocalDate dateAcct)
 	{
 		this.amtMultiplier = amtMultiplier;
 		this.openAmt = openAmt;
@@ -97,5 +99,6 @@ public class PaymentAllocationPayableItem
 		this.documentNo = documentNo;
 		this.soTrx = soTrx;
 		this.dateInvoiced = dateInvoiced;
+		this.dateAcct = dateAcct != null ? dateAcct : dateInvoiced;
 	}
 }
