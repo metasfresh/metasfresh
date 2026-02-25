@@ -2,6 +2,9 @@
 -- 5 data sources: Shipment Schedules, Receipt Schedules, Production Candidates, Forecasts, Current Stock
 -- Uses db_alter_view pattern for safe dependency handling
 
+DROP VIEW IF EXISTS QtyDemand_QtySupply_V
+;
+
 DROP VIEW IF EXISTS M_MaterialCockpit_Base_V$new
 ;
 
@@ -32,7 +35,7 @@ SELECT t.ad_client_id,
                                          p.c_uom_id::text,
                                          COALESCE(t.attributesKey, '')::text,
                                          COALESCE(t.m_warehouse_id, 0)::text)), 1, 10))::bit(32)::int)) AS QtyDemand_QtySupply_V_ID,
-       getLastCostPrice(p.M_Product_ID) AS LastCostPrice
+       getLastCostPrice(p.M_Product_ID)                                                                 AS LastCostPrice
 FROM m_product p
          INNER JOIN
      (
@@ -61,12 +64,12 @@ FROM m_product p
                 rs.ad_org_id,
                 rs.m_warehouse_id,
                 rs.m_product_id,
-                generateasistorageattributeskey(rs.m_attributesetinstance_id)                                                                   AS attributesKey,
-                0::numeric                                                                                                                      AS qtyReserved,
-                SUM(uomconvert(rs.m_product_id, rs.c_uom_id, p.c_uom_id, rs.qtyToMove))                                                         AS qtyToMove,
-                0::numeric                                                                                                                      AS qtyToProduce,
-                0::numeric                                                                                                                      AS qtyForecasted,
-                0::numeric                                                                                                                      AS qtyStock,
+                generateasistorageattributeskey(rs.m_attributesetinstance_id)                                                                    AS attributesKey,
+                0::numeric                                                                                                                       AS qtyReserved,
+                SUM(uomconvert(rs.m_product_id, rs.c_uom_id, p.c_uom_id, rs.qtyToMove))                                                          AS qtyToMove,
+                0::numeric                                                                                                                       AS qtyToProduce,
+                0::numeric                                                                                                                       AS qtyForecasted,
+                0::numeric                                                                                                                       AS qtyStock,
                 CASE WHEN rs.IsConfirmedBySupplier = 'Y' THEN SUM(uomconvert(rs.m_product_id, rs.c_uom_id, p.c_uom_id, rs.qtyToMove)) ELSE 0 END AS qtyConfirmedBySupplier,
                 CASE WHEN rs.IsConfirmedBySupplier = 'N' THEN SUM(uomconvert(rs.m_product_id, rs.c_uom_id, p.c_uom_id, rs.qtyToMove)) ELSE 0 END AS qtyUnconfirmedBySupplier
          FROM m_receiptschedule rs
@@ -144,10 +147,13 @@ SELECT db_alter_view(
                'M_MaterialCockpit_Base_V',
                (SELECT view_definition
                 FROM information_schema.views
-                WHERE lower(views.table_name) = lower('m_materialcockpit_base_v$new'))
+                WHERE LOWER(views.table_name) = LOWER('m_materialcockpit_base_v$new'))
        )
 ;
 
 DROP VIEW IF EXISTS M_MaterialCockpit_Base_V$new
 ;
 
+
+SELECT after_migration_M_MaterialCockpit_rebuild()
+;
