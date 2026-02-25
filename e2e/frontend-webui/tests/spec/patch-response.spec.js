@@ -424,4 +424,112 @@ test.describe('PATCH Response Handling', () => {
       expect(finalName).toBe('Edited On Master After Modal');
     });
   });
+
+  // =========================================================================
+  // Test 4: Modal edit → close → revert to original value on master
+  // =========================================================================
+  test('Modal edit then revert to original value on master', async ({
+    page,
+  }) => {
+    allure.severity('critical');
+    allure.description(
+      'After editing a field in the advanced edit modal and closing it, ' +
+        'the user sets the same field on the master back to its ORIGINAL value ' +
+        '(before the modal edit). Without the fix, the widget\'s cachedValue was ' +
+        'never updated from the full server response, so shouldPatch() saw the ' +
+        '"new" value as equal to the stale cachedValue and refused to fire the ' +
+        'PATCH — the field appeared to accept input but nothing was saved.'
+    );
+
+    const recordId = await createTestRecord(page);
+    console.log(`Created Test record: ${recordId}`);
+
+    await test.step('Set initial Name on master', async () => {
+      const nameInput = getNameInput(page);
+      await setTextField(page, nameInput, 'Original Name');
+      await waitForSave(page);
+    });
+
+    await test.step('Open advanced edit modal (Alt+E)', async () => {
+      await page.keyboard.press('Alt+e');
+
+      await page
+        .locator('.panel-modal')
+        .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      console.log('Advanced edit modal opened');
+    });
+
+    await test.step('Edit Name field in the modal to a different value', async () => {
+      const modalNameInput = getNameInput(page, '.panel-modal-content');
+      await setTextField(page, modalNameInput, 'Changed In Modal');
+
+      await waitForSave(page);
+      console.log('Name changed in modal to "Changed In Modal"');
+    });
+
+    await test.step('Close the modal', async () => {
+      await page.keyboard.press('Escape');
+
+      await page
+        .locator('.panel-modal')
+        .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
+        .catch(() => {
+          return page
+            .locator('.panel-modal')
+            .waitFor({ state: 'hidden', timeout: FAST_ACTION_TIMEOUT })
+            .catch(() => {});
+        });
+      await page.waitForTimeout(1000);
+      console.log('Modal closed');
+    });
+
+    await test.step(
+      'Verify Name on master shows the modal edit value',
+      async () => {
+        const nameInput = getNameInput(page);
+        const nameValue = await nameInput.inputValue();
+        console.log(`Name on master after modal close: "${nameValue}"`);
+        expect(nameValue).toBe('Changed In Modal');
+      }
+    );
+
+    await test.step(
+      'Set Name back to original value (must trigger PATCH)',
+      async () => {
+        // KEY ASSERTION: setting the field back to "Original Name"
+        // must fire a PATCH. Without the fix, cachedValue was still
+        // "Original Name" (never updated by the full server response),
+        // so shouldPatch() returned false and no PATCH was sent.
+        const nameInput = getNameInput(page);
+
+        const patchPromise = page.waitForResponse(
+          (response) =>
+            response.url().includes('/rest/api/window') &&
+            response.request().method() === 'PATCH' &&
+            response.status() === 200,
+          { timeout: SLOW_ACTION_TIMEOUT }
+        );
+
+        await setTextField(page, nameInput, 'Original Name');
+
+        const patchResponse = await patchPromise;
+        console.log(
+          'PATCH fired and returned 200 when reverting to original value'
+        );
+
+        await waitForSave(page);
+      }
+    );
+
+    await test.step('Reload and verify original value persisted', async () => {
+      await page.keyboard.press('F5');
+      await page.waitForLoadState('networkidle').catch(() => {});
+      await page.waitForTimeout(1000);
+
+      const nameInput = getNameInput(page);
+      const finalName = await nameInput.inputValue();
+      console.log(`Name after reload: "${finalName}"`);
+      expect(finalName).toBe('Original Name');
+    });
+  });
 });
