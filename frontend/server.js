@@ -125,6 +125,26 @@ const devServer = new WebpackDevServer(
     },
     hot: true,
     historyApiFallback: true,
+    proxy: [
+      {
+        context: ['/rest', '/stomp'],
+        target: 'http://localhost:8080',
+        changeOrigin: false,
+        ws: true,
+        cookieDomainRewrite: '',
+        cookiePathRewrite: '/',
+        onProxyRes: function (proxyRes) {
+          var setCookie = proxyRes.headers['set-cookie'];
+          if (setCookie) {
+            proxyRes.headers['set-cookie'] = setCookie.map(function (cookie) {
+              return cookie
+                .replace(/;\s*SameSite=[^;]*/gi, '')
+                .replace(/;\s*Secure/gi, '');
+            });
+          }
+        },
+      },
+    ],
 
     // Enhanced dev middleware options
     devMiddleware: {
