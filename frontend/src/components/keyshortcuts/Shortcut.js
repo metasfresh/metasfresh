@@ -22,11 +22,16 @@ class Shortcut extends PureComponent {
     subscribe(name, handler);
   }
 
-  /**
-   * @method componentWillUnmount
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
-   */
+  componentDidUpdate(prevProps) {
+    if (prevProps.handler !== this.props.handler) {
+      const { unsubscribe, subscribe } = this.context.shortcuts;
+
+      unsubscribe(this.name, this.handler);
+      this.handler = this.props.handler;
+      subscribe(this.name, this.handler);
+    }
+  }
+
   componentWillUnmount() {
     const { unsubscribe } = this.context.shortcuts;
     const { name, handler } = this;
