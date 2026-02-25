@@ -243,17 +243,6 @@ public class PackageLicensingProductReport_StepDef
 		softly.assertAll();
 	}
 
-	@Then("the Package Licensing Product Report result does not contain product {string}")
-	public void verifyReportDoesNotContainProduct(@NonNull final String productName)
-	{
-		final boolean found = reportResults.stream()
-				.anyMatch(r -> productName.equals(r.get("ProductName")));
-
-		org.assertj.core.api.Assertions.assertThat(found)
-				.as("Report should NOT contain product " + productName)
-				.isFalse();
-	}
-
 	private static void assertOptionalColumn(
 			@NonNull final SoftAssertions softly,
 			@NonNull final Map<String, String> expectedRow,

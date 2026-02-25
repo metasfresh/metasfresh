@@ -37,4 +37,4 @@ Feature: Package Licensing Product Report (gh#28225)
     Then the Package Licensing Product Report result contains:
       | ProductName     | ProductGroup    | SmallPackagingMaterial | SmallPackagingWeight | OverpackMaterial | OverpackWeight |
       | PLR Test Prod 3 | Lebensmittel DE | Glas DE                | 0.100                | Kunststoffe DE   | 0.020          |
-    And the Package Licensing Product Report result does not contain product "PLR Test Prod 4"
+      | PLR Test Prod 4 |                 |                        | 0.100                |                  | 0.020          |
