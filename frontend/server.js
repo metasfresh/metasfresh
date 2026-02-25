@@ -141,13 +141,13 @@ const devServer = new WebpackDevServer(
               onProxyRes: function (proxyRes) {
                 var setCookie = proxyRes.headers['set-cookie'];
                 if (setCookie) {
-                  proxyRes.headers['set-cookie'] = setCookie.map(
-                    function (cookie) {
-                      return cookie
-                        .replace(/;\s*SameSite=[^;]*/gi, '')
-                        .replace(/;\s*Secure/gi, '');
-                    }
-                  );
+                  proxyRes.headers['set-cookie'] = setCookie.map(function (
+                    cookie
+                  ) {
+                    return cookie
+                      .replace(/;\s*SameSite=[^;]*/gi, '')
+                      .replace(/;\s*Secure/gi, '');
+                  });
                 }
               },
             },
