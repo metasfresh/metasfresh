@@ -984,6 +984,29 @@ export function patch(
         })
       );
 
+      // Also sync the PATCH response to master when editing from a modal
+      // (e.g. advanced edit). updatePropertyValue already sets the field value
+      // optimistically on master, but the full server response (dependent field
+      // changes, readonly flags, etc.) is only applied to the modal scope above.
+      // Without this, the master's field data stays partially stale which can
+      // block subsequent edits of the same field after the modal is closed.
+      if (isModal && entity === 'window' && !tabId) {
+        const currentDocId = getState().windowHandler.master.docId;
+        if (currentDocId !== undefined && String(id) === String(currentDocId)) {
+          await dispatch(
+            mapDataToState({
+              data,
+              isModal: false,
+              rowId,
+              id,
+              windowType,
+              isAdvanced: false,
+              disconnected,
+            })
+          );
+        }
+      }
+
       // update the inlineTabsInfo if such information is present
       includedTabsInfo &&
         dispatch(updateDataIncludedTabsInfo('master', includedTabsInfo));
