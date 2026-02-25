@@ -159,13 +159,13 @@ Users type article number → Enter → quantity → Enter without looking at th
         // Press Enter — should resolve the product and advance focus to quantity
         await page.keyboard.press('Enter');
 
-        // Wait for product to be resolved and focus to advance
-        await page.waitForTimeout(1000);
+        // Wait for product to be resolved (PATCH + re-render) and focus to advance
+        await page.waitForTimeout(2000);
 
         // Verify: quantity field (spinbutton) should now have focus
         const quantityInput = page.getByRole('spinbutton');
         await quantityInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-        await expect(quantityInput).toBeFocused({ timeout: 5000 });
+        await expect(quantityInput).toBeFocused({ timeout: SLOW_ACTION_TIMEOUT });
 
         console.log(`[${language}] Enter on valid product: focus moved to quantity field`);
       });
@@ -206,10 +206,10 @@ Users type article number → Enter → quantity → Enter without looking at th
         await page.keyboard.press('Enter');
 
         // Wait for the resolution attempt
-        await page.waitForTimeout(1000);
+        await page.waitForTimeout(2000);
 
         // Verify: product input should still be focused (did not advance)
-        await expect(productInput).toBeFocused({ timeout: 5000 });
+        await expect(productInput).toBeFocused({ timeout: SLOW_ACTION_TIMEOUT });
 
         // Verify: quantity field should NOT be focused
         const quantityInput = page.getByRole('spinbutton');

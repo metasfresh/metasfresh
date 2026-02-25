@@ -497,21 +497,12 @@ export class RawLookup extends Component {
    * Unlike handleSelect_RegularItem, this does NOT refocus the current lookup input.
    */
   handleAutoSelectAndAdvance = (selectedItem) => {
-    const {
-      onChange,
-      handleInputEmptyStatus,
-      mainProperty,
-      setNextProperty,
-      filterWidget,
-    } = this.props;
+    const { onChange, handleInputEmptyStatus, mainProperty, filterWidget } =
+      this.props;
 
     const fieldName = filterWidget
       ? mainProperty.parameterName
       : mainProperty.field;
-
-    executeAfterPromise(onChange(fieldName, selectedItem), () =>
-      setNextProperty(fieldName)
-    );
 
     this.inputSearch.value = computeInputTextFromSelectedItem(selectedItem);
     this.setState({ inputTextOnFocus: this.inputSearch.value });
@@ -520,8 +511,19 @@ export class RawLookup extends Component {
 
     this.handleDropdownBlur();
 
-    // Advance focus to the next field in the quick input form
-    this.focusNextFieldInForm();
+    // Call onChange (PATCH) and advance focus AFTER the server responds
+    // and React re-renders. We intentionally skip setNextProperty here
+    // because it manages focus within composed lookups (e.g. BPartner →
+    // Location → Contact) and would call onBlurWidget, stealing focus.
+    const promise = onChange(fieldName, selectedItem);
+    if (promise && promise.then) {
+      promise.then(() => {
+        // Small delay to let React re-render after PATCH response
+        setTimeout(() => this.focusNextFieldInForm(), 100);
+      });
+    } else {
+      this.focusNextFieldInForm();
+    }
   };
 
   /**
@@ -530,26 +532,24 @@ export class RawLookup extends Component {
    * Used after auto-selecting a product in quick input to advance to the quantity field.
    */
   focusNextFieldInForm = () => {
-    setTimeout(() => {
-      if (!this.inputSearch) {
-        return;
-      }
+    if (!this.inputSearch) {
+      return;
+    }
 
-      const form = this.inputSearch.closest('form');
-      if (!form) {
-        return;
-      }
+    const form = this.inputSearch.closest('form');
+    if (!form) {
+      return;
+    }
 
-      const inputs = Array.from(
-        form.querySelectorAll(
-          'input:not([disabled]):not([type="hidden"]):not([readonly])'
-        )
-      );
-      const idx = inputs.indexOf(this.inputSearch);
-      if (idx >= 0 && idx < inputs.length - 1) {
-        inputs[idx + 1].focus();
-      }
-    }, 50);
+    const inputs = Array.from(
+      form.querySelectorAll(
+        'input:not([disabled]):not([type="hidden"]):not([readonly])'
+      )
+    );
+    const idx = inputs.indexOf(this.inputSearch);
+    if (idx >= 0 && idx < inputs.length - 1) {
+      inputs[idx + 1].focus();
+    }
   };
 
   fireOnDropdownListToggle = (isDropdownListOpen, isMouseEvent = false) => {
