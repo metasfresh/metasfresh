@@ -24,7 +24,7 @@ Feature: Package Licensing Product Report (gh#28225)
       | PLR Test Prod 2 | Tiernahrung  | PPK                    | 0.200                |                  |                |
 
   @Id:S28225_20
-  Scenario: S28225_20 - Report filters by country
+  Scenario: S28225_20 - Country filter resolves only matching material/group names
     Given metasfresh contains M_Products:
       | Identifier | Name            |
       | p_plr_3    | PLR Test Prod 3 |

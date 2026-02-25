@@ -24,7 +24,22 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+/**
+ * Step definitions for testing {@code report.Package_Licensing_Product_Report(p_C_Country_ID)}.
+ * <p>
+ * Uses raw SQL for test data setup because no Java model classes (I_/X_) exist
+ * for the packaging licensing tables (M_PackageLicensing_MaterialGroup,
+ * M_Product_SmallPackagingMaterial, M_Product_OuterPackagingMaterial, etc.).
+ * <p>
+ * The SQL function is called directly via JDBC rather than through ExportToSpreadsheetProcess,
+ * because the process just wraps the function + Excel export, and testing the function
+ * directly covers the actual business logic without needing to parse Excel output.
+ *
+ * @see <a href="https://github.com/metasfresh/metasfresh/issues/28225">gh#28225</a>
+ */
 @RequiredArgsConstructor
 public class PackageLicensingProductReport_StepDef
 {
@@ -203,13 +218,13 @@ public class PackageLicensingProductReport_StepDef
 
 		final SoftAssertions softly = new SoftAssertions();
 
-		final java.util.Set<String> expectedProductNames = expectedRows.stream()
+		final Set<String> expectedProductNames = expectedRows.stream()
 				.map(r -> r.get("ProductName"))
-				.collect(java.util.stream.Collectors.toSet());
+				.collect(Collectors.toSet());
 
 		final List<Map<String, String>> matchingResults = reportResults.stream()
 				.filter(r -> expectedProductNames.contains(r.get("ProductName")))
-				.collect(java.util.stream.Collectors.toList());
+				.collect(Collectors.toList());
 
 		for (final Map<String, String> expectedRow : expectedRows)
 		{
