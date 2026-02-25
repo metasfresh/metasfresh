@@ -963,12 +963,50 @@ export function patch(
         data.documents.documents &&
         delete data.documents.documents;
 
-      // Guard: discard PATCH response if user navigated to a different record
-      if (!isModal && entity === 'window' && !tabId) {
-        const currentDocId = getState().windowHandler.master.docId;
-        if (currentDocId !== undefined && String(id) !== String(currentDocId)) {
-          await dispatch({ type: PATCH_SUCCESS, symbol });
-          return;
+      // Guard: discard stale PATCH responses.
+      // The PATCH request was sent for a specific record (identified by `id`),
+      // but by the time the response arrives the user may have navigated away
+      // or closed/switched the modal. Applying the response to the wrong
+      // context would corrupt the displayed data.
+      if (entity === 'window' && !tabId) {
+        if (!isModal) {
+          // Master record: discard if user navigated to a different document
+          const currentDocId = getState().windowHandler.master.docId;
+          if (
+            currentDocId !== undefined &&
+            String(id) !== String(currentDocId)
+          ) {
+            await dispatch({ type: PATCH_SUCCESS, symbol });
+            return;
+          }
+        } else {
+          // Modal: discard if the modal was closed or switched to a different
+          // document since the PATCH was sent
+          const modal = getState().windowHandler.modal;
+          if (!modal.visible || String(id) !== String(modal.dataId)) {
+            await dispatch({ type: PATCH_SUCCESS, symbol });
+            // Still sync to master if it shows the same document — the field
+            // value was already optimistically applied by updatePropertyValue,
+            // so the full server response should follow through.
+            const currentDocId = getState().windowHandler.master.docId;
+            if (
+              currentDocId !== undefined &&
+              String(id) === String(currentDocId)
+            ) {
+              await dispatch(
+                mapDataToState({
+                  data,
+                  isModal: false,
+                  rowId,
+                  id,
+                  windowType,
+                  isAdvanced: false,
+                  disconnected,
+                })
+              );
+            }
+            return;
+          }
         }
       }
 
