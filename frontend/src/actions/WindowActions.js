@@ -906,7 +906,7 @@ export function patch(
     });
   }
 
-  return async (dispatch) => {
+  return async (dispatch, getState) => {
     const symbol = Symbol();
 
     const options = {
@@ -962,6 +962,15 @@ export function patch(
       data.documents &&
         data.documents.documents &&
         delete data.documents.documents;
+
+      // Guard: discard PATCH response if user navigated to a different record
+      if (!isModal && entity === 'window' && !tabId) {
+        const currentDocId = getState().windowHandler.master.docId;
+        if (currentDocId !== undefined && String(id) !== String(currentDocId)) {
+          await dispatch({ type: PATCH_SUCCESS, symbol });
+          return;
+        }
+      }
 
       await dispatch(
         mapDataToState({
