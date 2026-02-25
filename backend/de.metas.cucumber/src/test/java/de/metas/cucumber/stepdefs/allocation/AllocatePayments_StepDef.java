@@ -282,6 +282,7 @@ public class AllocatePayments_StepDef
 				.creditMemo(invoiceToAllocate.getDocBaseType().isCreditMemo())
 				.openAmt(invoiceOpenMoneyAmt.negateIf(!invoice.isSOTrx()))
 				.date(invoiceToAllocate.getDateInvoiced())
+				.dateAcct(invoiceToAllocate.getDateAcct())
 				.clientAndOrgId(invoiceToAllocate.getClientAndOrgId())
 				.currencyConversionTypeId(invoiceToAllocate.getCurrencyConversionTypeId())
 				.amountsToAllocate(amounts.convertToRealAmounts(invoiceToAllocate.getMultiplier()));
@@ -328,6 +329,7 @@ public class AllocatePayments_StepDef
 				.openAmt(openAmt)
 				.amountToAllocate(openAmt)
 				.dateTrx(paymentToAllocate.getDateTrx())
+				.dateAcct(paymentToAllocate.getDateAcct())
 				.clientAndOrgId(paymentToAllocate.getClientAndOrgId())
 				.paymentCurrencyContext(paymentToAllocate.getPaymentCurrencyContext())
 				.build();
