@@ -216,13 +216,15 @@ public class HUReservationService
 		// Step 3: Filter out HUs whose ancestors are in the Set
 		// Step 4: Filter out already reserved HUs
 		// Step 5: Filter out HUs whose ancestors are already reserved (even if ancestor not in input list)
+		// Step 6: Filter out HUs that have any reserved descendants
 		final ImmutableList<I_M_HU> toReserveHUs = allHUs.stream()
 				.filter(hu -> !hasAncestorInList(hu, allHuIds))
 				.filter(hu -> !hu.isReserved())
 				.filter(hu -> !hasReservedAncestor(hu))
+				.filter(hu -> !hasReservedDescendant(hu))
 				.collect(ImmutableList.toImmutableList());
 
-		// Step 6: Before filtering, delete any existing child reservations for HUs we're about to reserve
+		// Step 7: After filtering, delete any existing child reservations for HUs we're about to reserve
 		deleteChildReservations(toReserveHUs);
 
 		return toReserveHUs;
@@ -326,6 +328,37 @@ public class HUReservationService
 		}
 
 		return false; // No reserved ancestor found
+	}
+
+	/**
+	 * Checks if the given HU has any descendant (child, grandchild, etc.) that is already reserved.
+	 * This prevents creating a reservation for a parent HU when any of its children are already reserved.
+	 * <p>
+	 * This is a critical business rule: if a child HU is reserved, we should not allow
+	 * reserving its parent, as that would create a conflict with the existing child reservation.
+	 *
+	 * @param hu The HU to check
+	 * @return true if any descendant is already reserved, false otherwise
+	 */
+	@VisibleForTesting
+	boolean hasReservedDescendant(final @NonNull I_M_HU hu)
+	{
+		final List<I_M_HU> children = handlingUnitsDAO.retrieveIncludedHUs(hu);
+
+		for (final I_M_HU child : children)
+		{
+			if (child.isReserved())
+			{
+				return true; // Found a reserved child
+			}
+			// Recursively check grandchildren
+			if (hasReservedDescendant(child))
+			{
+				return true; // Found a reserved grandchild
+			}
+		}
+
+		return false; // No reserved descendants found
 	}
 
 	/**

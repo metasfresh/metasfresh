@@ -287,6 +287,29 @@ public class HUReservationService_ParentChildFiltering_Test
 			assertThat(descendantIds).contains(tuId);
 			assertThat(descendantIds).hasSize(1);
 		}
+
+		@Test
+		@DisplayName("Test 32: Parent HU with Reserved Child - Parent Cannot Be Reserved")
+		public void test_parentHU_withReservedChild_cannotBeReserved()
+		{
+			// Create LU with aggregate TU
+			final I_M_HU lu = createLU();
+
+			// Get the aggregate TU
+			final List<I_M_HU> includedHUs = handlingUnitsDAO.retrieveIncludedHUs(lu);
+			assertThat(includedHUs).hasSize(1);
+			final I_M_HU aggregateTU = includedHUs.get(0);
+
+			// Mark the TU as reserved (simulating prior reservation)
+			aggregateTU.setIsReserved(true);
+			handlingUnitsDAO.saveHU(aggregateTU);
+
+			// Test: Check if LU has reserved descendant
+			final boolean hasReservedDescendant = huReservationService.hasReservedDescendant(lu);
+
+			// Assert: LU should be filtered out because child TU is reserved
+			assertThat(hasReservedDescendant).isTrue();
+		}
 	}
 
 	/**
