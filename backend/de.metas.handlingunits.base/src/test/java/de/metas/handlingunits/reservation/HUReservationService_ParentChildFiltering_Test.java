@@ -249,7 +249,7 @@ public class HUReservationService_ParentChildFiltering_Test
 		}
 
 		@Test
-		@DisplayName("Test 31: Parent Reservation Deletes Child Reservations")
+		@DisplayName("Test 31: Simulate Parent Reservation Deletes Child Reservations - Verify child reservations would be deleted when parent is reserved")
 		public void test_parentReservation_deletesChildReservations()
 		{
 			// Create LU with aggregate TU
