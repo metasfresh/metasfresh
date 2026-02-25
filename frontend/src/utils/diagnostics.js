@@ -1,17 +1,37 @@
 /**
  * Diagnostic error logging for white screen issues.
  *
- * Captures JavaScript errors and unhandled promise rejections.
+ * Captures JavaScript errors, unhandled promise rejections,
+ * navigation events, and process actions.
  * Customer can type hilfe() in browser console to download a diagnostic report.
  *
  * Usage:
  *   1. Import this file in index.jsx: import './utils/diagnostics';
  *   2. When white screen occurs, customer opens console (F12) and types: hilfe()
- *   3. A JSON file is downloaded containing error logs and browser info
+ *   3. A JSON file is downloaded containing error logs, navigation events, and browser info
  */
 
 const MAX_ENTRIES = 100;
 const errors = [];
+
+const MAX_EVENTS = 200;
+const events = [];
+
+/**
+ * Log a diagnostic event (navigation, process action, redirect, etc.).
+ * Other modules import this to record events for the hilfe() report.
+ */
+export function logDiagEvent(type, data) {
+  events.push({
+    timestamp: new Date().toISOString(),
+    type,
+    url: window.location.href,
+    ...data,
+  });
+  if (events.length > MAX_EVENTS) {
+    events.shift();
+  }
+}
 
 // Capture JavaScript errors
 window.onerror = (message, source, lineno, colno, error) => {
@@ -61,6 +81,7 @@ window.hilfe = () => {
       window: `${window.innerWidth}x${window.innerHeight}`,
     },
     errors: errors,
+    events: events,
   };
 
   const blob = new Blob([JSON.stringify(report, null, 2)], {

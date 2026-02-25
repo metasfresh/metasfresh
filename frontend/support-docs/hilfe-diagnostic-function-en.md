@@ -65,6 +65,16 @@ The file contains technical information for troubleshooting:
 | **buildHash** | Application version identifier |
 | **browserInfo** | Browser type, language, screen size |
 | **errors** | List of captured JavaScript errors |
+| **events** | Log of navigation and process events (up to 200 entries) |
+
+The **events** list records which page changes and actions took place in the application. This is especially helpful for support when analyzing unexpected redirects or page changes.
+
+| Event Type | Description |
+|------------|-------------|
+| **navigation** | Every URL change (page navigation) |
+| **processAction** | Result of a process execution (e.g., open document, open view) |
+| **redirect** | Application-triggered redirect (e.g., automatic redirection, discard-changes dialog) |
+| **popstate** | Browser back/forward navigation |
 
 ### Example Diagnostic File
 
@@ -88,13 +98,30 @@ The file contains technical information for troubleshooting:
       "lineno": 12345,
       "stack": "Error: Cannot read property..."
     }
+  ],
+  "events": [
+    {
+      "timestamp": "2026-01-16T14:30:01.123Z",
+      "type": "navigation",
+      "action": "push",
+      "to": "/window/143/1000000",
+      "url": "http://localhost/window/143"
+    },
+    {
+      "timestamp": "2026-01-16T14:30:15.456Z",
+      "type": "processAction",
+      "processId": "WEBUI_Shipment_Schedule",
+      "actionType": "openView",
+      "action": { "type": "openView", "windowId": "540674", "viewId": "..." },
+      "url": "http://localhost/window/143/1000000"
+    }
   ]
 }
 ```
 
 ## Privacy
 
-The diagnostic file does **not** contain any personal data, passwords, or business data. Only technical information about the browser and occurred errors is captured.
+The diagnostic file does **not** contain any personal data, passwords, or business data. Only technical information about the browser, occurred errors, and navigation/process events is captured. The events contain only URL paths and process IDs, not document contents.
 
 ## FAQ
 
@@ -104,7 +131,7 @@ Make sure you have the console open in the correct browser tab (where metasfresh
 
 ### No errors are shown in the file?
 
-If no errors were captured, the "errors" field will be empty. In this case, please describe the problem as detailed as possible in your support ticket.
+If no errors were captured, the "errors" field will be empty. Even in this case, the file contains valuable information in the "events" section, which logs all page changes and actions. Please still send the file to support and describe the problem as detailed as possible in your support ticket.
 
 ### Where can I find the downloaded file?
 
