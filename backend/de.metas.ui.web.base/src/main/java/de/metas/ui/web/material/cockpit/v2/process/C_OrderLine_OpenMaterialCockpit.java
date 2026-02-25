@@ -1,5 +1,6 @@
 package de.metas.ui.web.material.cockpit.v2.process;
 
+import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
 import de.metas.order.IOrderLineBL;
@@ -13,13 +14,15 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.product.ProductId;
 import de.metas.ui.web.document.filter.DocumentFilter;
-import de.metas.ui.web.material.cockpit.v2.MaterialCockpitV2Util;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 
@@ -45,8 +48,11 @@ public class C_OrderLine_OpenMaterialCockpit extends JavaProcess implements IPro
 		final OrderLineId orderLineId = CollectionUtils.singleElement(getSelectedIncludedRecordIds(I_C_OrderLine.class, OrderLineId::ofRepoId));
 		final I_C_OrderLine orderLine = orderLineBL.getOrderLineById(orderLineId);
 
+		final AdWindowId adWindowId = RecordWindowFinder.findAdWindowId(I_QtyDemand_QtySupply_V.Table_Name)
+				.orElseThrow(() -> new AdempiereException("No window found for " + I_QtyDemand_QtySupply_V.Table_Name));
+
 		final CreateViewRequest viewRequest = CreateViewRequest
-				.builder(MaterialCockpitV2Util.WINDOWID_MaterialCockpitV2)
+				.builder(WindowId.of(adWindowId))
 				.addStickyFilters(extractCockpitFilter(orderLine))
 				.build();
 
