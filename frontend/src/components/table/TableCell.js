@@ -191,15 +191,15 @@ class TableCell extends PureComponent {
     const tdTitle = getTdTitle({ item, description });
     const isOpenDatePicker = isEdited && item.widgetType === 'Date';
     const isDateField = checkIfDateField({ item });
-    let style = cellExtended ? { height: extendLongText * 20 } : {};
-    if (columnWidth) {
-      style = {
-        ...style,
-        width: `${columnWidth}px`,
-        minWidth: `${columnWidth}px`,
-        maxWidth: `${columnWidth}px`,
-      };
-    }
+    const style = cellExtended ? { height: extendLongText * 20 } : {};
+    const tdStyle = columnWidth
+      ? {
+          ...style,
+          width: `${columnWidth}px`,
+          minWidth: `${columnWidth}px`,
+          maxWidth: `${columnWidth}px`,
+        }
+      : undefined;
 
     return (
       <td
@@ -223,7 +223,7 @@ class TableCell extends PureComponent {
             'pulse-off': !updatedRow,
           }
         )}
-        style={style}
+        style={tdStyle}
         data-cy={`cell-${property}`}
       >
         {hasComments && (
