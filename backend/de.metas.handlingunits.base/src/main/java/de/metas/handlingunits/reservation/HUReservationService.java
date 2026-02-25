@@ -213,17 +213,19 @@ public class HUReservationService
 				.map(hu -> HuId.ofRepoId(hu.getM_HU_ID()))
 				.collect(ImmutableSet.toImmutableSet());
 
-		// Step 3: Before filtering, delete any existing child reservations for HUs we're about to reserve
-		deleteChildReservations(allHUs);
-
-		// Step 4: Filter out HUs whose ancestors are in the Set
-		// Step 5: Filter out already reserved HUs
-		// Step 6: Filter out HUs whose ancestors are already reserved (even if ancestor not in input list)
-		return allHUs.stream()
+		// Step 3: Filter out HUs whose ancestors are in the Set
+		// Step 4: Filter out already reserved HUs
+		// Step 5: Filter out HUs whose ancestors are already reserved (even if ancestor not in input list)
+		final ImmutableList<I_M_HU> toReserveHUs = allHUs.stream()
 				.filter(hu -> !hasAncestorInList(hu, allHuIds))
 				.filter(hu -> !hu.isReserved())
 				.filter(hu -> !hasReservedAncestor(hu))
 				.collect(ImmutableList.toImmutableList());
+
+		// Step 6: Before filtering, delete any existing child reservations for HUs we're about to reserve
+		deleteChildReservations(toReserveHUs);
+
+		return toReserveHUs;
 	}
 
 	/**
@@ -241,7 +243,7 @@ public class HUReservationService
 
 		if (!childHuIds.isEmpty())
 		{
-			deleteReservationsByVHUIds(childHuIds);
+			deleteReservationsByVHUIdsInTrx(childHuIds);
 		}
 	}
 
@@ -285,9 +287,8 @@ public class HUReservationService
 	boolean hasAncestorInList(final @NonNull I_M_HU hu, final @NonNull Set<HuId> huIds)
 	{
 		I_M_HU parent = handlingUnitsDAO.retrieveParent(hu);
-		int maxDepth = 3; // Safety counter (HU hierarchy is max 3 levels)
 
-		while (parent != null && maxDepth > 0)
+		while (parent != null)
 		{
 			final HuId parentId = HuId.ofRepoId(parent.getM_HU_ID());
 			if (huIds.contains(parentId))
@@ -295,7 +296,6 @@ public class HUReservationService
 				return true; // Found an ancestor in the input list
 			}
 			parent = handlingUnitsDAO.retrieveParent(parent);
-			maxDepth--;
 		}
 
 		return false; // No ancestor found in the input list
@@ -315,16 +315,14 @@ public class HUReservationService
 	boolean hasReservedAncestor(final @NonNull I_M_HU hu)
 	{
 		I_M_HU parent = handlingUnitsDAO.retrieveParent(hu);
-		int maxDepth = 3; // Safety counter (HU hierarchy is max 3 levels)
 
-		while (parent != null && maxDepth > 0)
+		while (parent != null)
 		{
 			if (parent.isReserved())
 			{
 				return true; // Found a reserved ancestor
 			}
 			parent = handlingUnitsDAO.retrieveParent(parent);
-			maxDepth--;
 		}
 
 		return false; // No reserved ancestor found
@@ -464,15 +462,6 @@ public class HUReservationService
 			return false;
 		}
 		return huStatusBL.isStatusActive(huRecord) && !huRecord.isReserved();
-	}
-
-	private boolean isHuUnreservable(@NonNull final I_M_HU huRecord)
-	{
-		if (!handlingUnitsBL.isVirtual(huRecord))
-		{
-			return false;
-		}
-		return huStatusBL.isStatusActive(huRecord) && huRecord.isReserved();
 	}
 
 	public Optional<Quantity> retrieveReservedQty(@NonNull final OrderLineId orderLineId)
