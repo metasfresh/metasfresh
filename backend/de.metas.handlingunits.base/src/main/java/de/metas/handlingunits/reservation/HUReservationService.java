@@ -205,10 +205,51 @@ public class HUReservationService
 
 	private ImmutableList<I_M_HU> getHUsToReserve(final @NonNull ReserveHUsRequest reservationRequest)
 	{
-		return handlingUnitsDAO.getByIds(reservationRequest.getHuIds())
-				.stream()
+		// Step 1: Load all HUs from the request
+		final List<I_M_HU> allHUs = handlingUnitsDAO.getByIds(reservationRequest.getHuIds());
+
+		// Step 2: Build the complete Set of input HU IDs FIRST (order-independent)
+		final Set<HuId> allHuIds = allHUs.stream()
+				.map(hu -> HuId.ofRepoId(hu.getM_HU_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+
+		// Step 3: Filter out HUs whose ancestors are in the Set
+		// Step 4: Then filter out already reserved HUs
+		return allHUs.stream()
+				.filter(hu -> !hasAncestorInList(hu, allHuIds))
 				.filter(hu -> !hu.isReserved())
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	/**
+	 * Checks if the given HU has any ancestor (parent, grandparent, etc.) in the provided Set.
+	 * This method walks up the hierarchy until it finds an ancestor in the Set or reaches the root.
+	 * <p>
+	 * This ensures order-independent filtering: whether the input is [parent, child] or [child, parent],
+	 * the result will be the same - only the parent will be kept.
+	 *
+	 * @param hu The HU to check
+	 * @param huIds The Set of HU IDs from the original input (for O(1) lookup)
+	 * @return true if any ancestor is found in the Set, false otherwise
+	 */
+	@VisibleForTesting
+	boolean hasAncestorInList(final @NonNull I_M_HU hu, final @NonNull Set<HuId> huIds)
+	{
+		I_M_HU parent = handlingUnitsDAO.retrieveParent(hu);
+		int maxDepth = 3; // Safety counter (HU hierarchy is max 3 levels)
+
+		while (parent != null && maxDepth > 0)
+		{
+			final HuId parentId = HuId.ofRepoId(parent.getM_HU_ID());
+			if (huIds.contains(parentId))
+			{
+				return true; // Found an ancestor in the input list
+			}
+			parent = handlingUnitsDAO.retrieveParent(parent);
+			maxDepth--;
+		}
+
+		return false; // No ancestor found in the input list
 	}
 
 	/**
