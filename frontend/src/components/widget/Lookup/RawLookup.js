@@ -516,13 +516,11 @@ export class RawLookup extends Component {
     // because it manages focus within composed lookups (e.g. BPartner →
     // Location → Contact) and would call onBlurWidget, stealing focus.
     const promise = onChange(fieldName, selectedItem);
-    if (promise && promise.then) {
-      promise.then(() => {
-        // Small delay to let React re-render after PATCH response
-        setTimeout(() => this.focusNextFieldInForm(), 100);
-      });
+    const doFocus = () => this.focusNextFieldInForm();
+    if (promise && typeof promise.then === 'function') {
+      promise.then(doFocus, doFocus);
     } else {
-      this.focusNextFieldInForm();
+      doFocus();
     }
   };
 
@@ -530,8 +528,10 @@ export class RawLookup extends Component {
    * @method focusNextFieldInForm
    * @summary Find the next focusable input in the parent form and focus it.
    * Used after auto-selecting a product in quick input to advance to the quantity field.
+   * Retries up to 10 times (every 100ms) because the PATCH response triggers a React
+   * re-render that may make the next field focusable asynchronously.
    */
-  focusNextFieldInForm = () => {
+  focusNextFieldInForm = (retriesLeft = 10) => {
     if (!this.inputSearch) {
       return;
     }
@@ -548,7 +548,17 @@ export class RawLookup extends Component {
     );
     const idx = inputs.indexOf(this.inputSearch);
     if (idx >= 0 && idx < inputs.length - 1) {
-      inputs[idx + 1].focus();
+      const nextInput = inputs[idx + 1];
+      nextInput.focus();
+
+      if (document.activeElement === nextInput) {
+        return;
+      }
+    }
+
+    // Retry: the next field may not be focusable yet (React re-render pending)
+    if (retriesLeft > 0) {
+      setTimeout(() => this.focusNextFieldInForm(retriesLeft - 1), 100);
     }
   };
 

@@ -122,6 +122,8 @@ class TableQuickInput extends PureComponent {
         resolve();
       });
     });
+
+    return this.patchPromise;
   };
 
   onSubmit = (e) => {
