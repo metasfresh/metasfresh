@@ -35,7 +35,7 @@ import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
-import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecorator;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecoratorsProvider;
 import de.metas.ui.web.document.geo_location.GeoLocationDocumentService;
 import de.metas.ui.web.document.references.WebuiDocumentReferenceId;
 import de.metas.ui.web.document.references.service.WebuiDocumentReferencesService;
@@ -88,7 +88,7 @@ public class SqlViewFactory implements IViewFactory
 			@NonNull final List<DefaultViewProfileIdProvider> defaultViewProfileIdProviders,
 			@NonNull final Optional<List<ViewHeaderPropertiesProvider>> headerPropertiesProvider,
 			@NonNull final Optional<List<SqlDocumentFilterConverter>> filterConverters,
-			@NonNull final Optional<List<SqlDocumentFilterConverterDecorator>> filterConverterDecorators,
+			@NonNull final SqlDocumentFilterConverterDecoratorsProvider filterConverterDecoratorsProvider,
 			@NonNull final List<IViewInvalidationAdvisor> viewInvalidationAdvisors,
 			@NonNull final GeoLocationDocumentService geoLocationDocumentService)
 	{
@@ -104,7 +104,7 @@ public class SqlViewFactory implements IViewFactory
 				.documentDescriptorFactory(documentDescriptorFactory)
 				.viewCustomizers(viewCustomizers)
 				.filterConverters(filterConverters.orElseGet(ImmutableList::of))
-				.filterConverterDecorators(filterConverterDecorators.orElseGet(ImmutableList::of))
+				.filterConverterDecoratorsProvider(filterConverterDecoratorsProvider)
 				.viewInvalidationAdvisors(viewInvalidationAdvisors)
 				.build();
 
