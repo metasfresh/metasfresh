@@ -1147,25 +1147,21 @@ public class FlatrateBL implements IFlatrateBL
 	}
 
 	/**
-	 * Update <code>masterenddate</code> only for contract of which we know the entire period
+	 * Update <code>masterenddate</code> for all contracts in the chain.
+	 * MasterEndDate is the EndDate of the last term in the chain.
 	 */
 	private void updateMasterEndDateIfNeeded(final List<I_C_Flatrate_Term> contracts, final I_C_Flatrate_Term initialContract)
 	{
-		final I_C_Flatrate_Conditions initialConditions = initialContract.getC_Flatrate_Conditions();
-		final I_C_Flatrate_Transition initialTransition = initialConditions.getC_Flatrate_Transition();
-		if (X_C_Flatrate_Transition.EXTENSIONTYPE_ExtendAll.equals(initialTransition.getExtensionType()))
-		{
-			final Timestamp endDate = contracts.stream()
-					.sorted(Comparator.comparing(I_C_Flatrate_Term::getEndDate).reversed())
-					.findFirst()
-					.map(I_C_Flatrate_Term::getEndDate)
-					.orElse(null);
+		final Timestamp endDate = contracts.stream()
+				.sorted(Comparator.comparing(I_C_Flatrate_Term::getEndDate).reversed())
+				.findFirst()
+				.map(I_C_Flatrate_Term::getEndDate)
+				.orElse(null);
 
-			contracts.forEach(contract -> {
-				contract.setMasterEndDate(endDate);
-				save(contract);
-			});
-		}
+		contracts.forEach(contract -> {
+			contract.setMasterEndDate(endDate);
+			save(contract);
+		});
 	}
 
 	private void extendContractAndNotifyUserIfRequired(final @NonNull ContractExtendingRequest request)
