@@ -516,6 +516,11 @@ export class RawLookup extends Component {
     // because it manages focus within composed lookups (e.g. BPartner →
     // Location → Contact) and would call onBlurWidget, stealing focus.
     const promise = onChange(fieldName, selectedItem);
+    // eslint-disable-next-line no-console
+    console.log(
+      '[QuickInput] onChange returned:',
+      promise ? 'promise' : typeof promise
+    );
     const doFocus = () => this.focusNextFieldInForm();
     if (promise && typeof promise.then === 'function') {
       promise.then(doFocus, doFocus);
@@ -533,23 +538,51 @@ export class RawLookup extends Component {
    */
   focusNextFieldInForm = (retriesLeft = 10) => {
     if (!this.inputSearch) {
+      // eslint-disable-next-line no-console
+      console.log('[QuickInput] focusNext: inputSearch is null');
       return;
     }
 
     const form = this.inputSearch.closest('form');
     if (!form) {
+      // eslint-disable-next-line no-console
+      console.log('[QuickInput] focusNext: no form found');
       return;
     }
 
+    const allInputs = Array.from(form.querySelectorAll('input'));
     const inputs = Array.from(
       form.querySelectorAll(
         'input:not([disabled]):not([type="hidden"]):not([readonly])'
       )
     );
     const idx = inputs.indexOf(this.inputSearch);
+    // eslint-disable-next-line no-console
+    console.log('[QuickInput] focusNext:', {
+      retriesLeft,
+      allInputsCount: allInputs.length,
+      focusableInputsCount: inputs.length,
+      currentIdx: idx,
+      allInputTypes: allInputs.map(
+        (i) =>
+          `${i.type}[${i.className}]${i.disabled ? ':disabled' : ''}${
+            i.readOnly ? ':readonly' : ''
+          }`
+      ),
+      activeElement: document.activeElement?.tagName,
+      activeElementClass: document.activeElement?.className,
+    });
     if (idx >= 0 && idx < inputs.length - 1) {
       const nextInput = inputs[idx + 1];
       nextInput.focus();
+
+      // eslint-disable-next-line no-console
+      console.log('[QuickInput] focusNext: called focus(), activeElement:', {
+        isNextInput: document.activeElement === nextInput,
+        activeTag: document.activeElement?.tagName,
+        activeClass: document.activeElement?.className,
+        nextInputType: nextInput.type,
+      });
 
       if (document.activeElement === nextInput) {
         return;
