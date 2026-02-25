@@ -47,6 +47,25 @@ public class PackageLicensingProductReport_StepDef
 
 	private final List<Map<String, String>> reportResults = new ArrayList<>();
 
+	/**
+	 * Sets up packaging licensing master data for the given products.
+	 * Each row creates country-specific group/material records and links them to the product.
+	 *
+	 * <pre>
+	 * | M_Product_ID.Identifier | C_Country_ID | ProductGroupName           | SmallPackagingMaterialName | SmallPackagingWeight | OuterPackagingMaterialName | OuterPackagingWeight |
+	 * | p_1                     | 101          | Lebensmittel               | Glas                       | 0.150                | Kunststoffe                | 0.030                |
+	 * </pre>
+	 *
+	 * <ul>
+	 *   <li>{@code M_Product_ID.Identifier} — references a product created by {@code metasfresh contains M_Products}</li>
+	 *   <li>{@code C_Country_ID} — country for the material/product group records (e.g. 101=DE, 108=AT)</li>
+	 *   <li>{@code ProductGroupName} (optional) — creates M_PackageLicensing_ProductGroup and links it to the product</li>
+	 *   <li>{@code SmallPackagingMaterialName} (optional) — creates M_PackageLicensing_MaterialGroup and links via M_Product_SmallPackagingMaterial</li>
+	 *   <li>{@code SmallPackagingWeight} (optional) — sets M_Product.SmallPackagingWeight</li>
+	 *   <li>{@code OuterPackagingMaterialName} (optional) — creates M_PackageLicensing_MaterialGroup and links via M_Product_OuterPackagingMaterial</li>
+	 *   <li>{@code OuterPackagingWeight} (optional) — sets M_Product.OuterPackagingWeight</li>
+	 * </ul>
+	 */
 	@And("package licensing test data is set up:")
 	public void setupPackageLicensingTestData(@NonNull final DataTable dataTable)
 	{
@@ -211,6 +230,27 @@ public class PackageLicensingProductReport_StepDef
 		return value != null ? value.stripTrailingZeros().toPlainString() : null;
 	}
 
+	/**
+	 * Verifies the report results contain exactly the expected rows (matched by ProductName).
+	 * Empty cells in the expected table assert that the actual value is null/empty.
+	 *
+	 * <pre>
+	 * | ProductName     | ProductGroup | SmallPackagingMaterial | SmallPackagingWeight | OverpackMaterial | OverpackWeight |
+	 * | PLR Test Prod 1 | Lebensmittel | Glas                   | 0.150                | Kunststoffe      | 0.030          |
+	 * | PLR Test Prod 2 |              |                        | 0.200                |                  |                |
+	 * </pre>
+	 *
+	 * <ul>
+	 *   <li>{@code ProductName} — required; used to match actual report rows</li>
+	 *   <li>{@code ProductGroup} (optional) — expected M_PackageLicensing_ProductGroup name; empty = assert null</li>
+	 *   <li>{@code SmallPackagingMaterial} (optional) — expected small packaging material name; empty = assert null</li>
+	 *   <li>{@code SmallPackagingWeight} (optional) — expected weight as decimal; empty = assert null</li>
+	 *   <li>{@code OverpackMaterial} (optional) — expected outer packaging material name; empty = assert null</li>
+	 *   <li>{@code OverpackWeight} (optional) — expected weight as decimal; empty = assert null</li>
+	 * </ul>
+	 *
+	 * Also asserts that no row multiplication occurred (exactly one result row per expected product).
+	 */
 	@Then("the Package Licensing Product Report result contains:")
 	public void verifyReportResults(@NonNull final DataTable dataTable)
 	{
