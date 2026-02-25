@@ -1,6 +1,6 @@
 # Frontend Web UI E2E Test Coverage
 
-**Last Updated**: 2026-01-23
+**Last Updated**: 2026-02-25
 
 This document provides a complete overview of E2E test coverage for the metasfresh desktop web UI.
 
@@ -258,6 +258,37 @@ npm run test:report
 
 ---
 
+### 8. Bookmark Star (SubHeader)
+**File**: `tests/spec/bookmark-star.spec.js`
+**Status**: ✅ Passing
+**Duration**: ~8 seconds
+
+**Features Tested**:
+- Bookmark star always visible in SubHeader (no hover required)
+- Bookmark toggle via PATCH API (`/rest/api/menu/node/{nodeId}`)
+
+**Epic**: E0193: System Authentication
+
+**Workflow**:
+1. Login with default credentials (handles role selection)
+2. Navigate to Organisation window (`/window/110`)
+3. Open SubHeader panel (click actions/more button)
+4. Verify bookmark star is visible
+5. Click star to bookmark — verify PATCH API call and `active` class
+6. Click star again to un-bookmark — verify PATCH API and class removed
+
+**Key Validations**:
+- Star always visible in SubHeader when viewing a window (not hidden until hover)
+- CSS class `active` toggled on bookmark/un-bookmark
+- PATCH API call to `/rest/api/menu/node/{nodeId}` succeeds with status 200
+
+**Components Tested**:
+- SubHeader panel (`.subheader-column`)
+- BookmarkButton component (`.btn-bookmark-icon`)
+- Actions/more button (`.meta-icon-more`)
+
+---
+
 ## Test Architecture
 
 ### Page Objects
@@ -316,11 +347,12 @@ Areas **NOT yet covered** by E2E tests:
 - Document reversal/void actions
 - Error handling scenarios
 - Permission-based UI changes
+- Menu search mode bookmark behavior
 
 ## Test Quality Metrics
 
-- **Total test specs**: 6 files
-- **Total test cases**: 11 (6 specs, some with 2 languages × 2 tests, receipt.spec.js has 2 tests per language)
+- **Total test specs**: 7 files
+- **Total test cases**: 12 (7 specs, some with 2 languages × 2 tests, receipt.spec.js has 2 tests per language)
 - **Language coverage**: en_US, de_DE
 - **Success rate**: 100% passing
 - **Average execution time**: ~40 seconds per test

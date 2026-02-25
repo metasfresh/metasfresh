@@ -42,6 +42,7 @@ public enum ProcessType implements ReferenceListAwareEnum
 	JasperReportsJSON(X_AD_Process.TYPE_JasperReportsJSON),
 	JasperReportsSQL(X_AD_Process.TYPE_JasperReportsSQL),
 	Excel(X_AD_Process.TYPE_Excel),
+	RelationTypeInOverlay(X_AD_Process.TYPE_RelationTypeInOverlay),
 	;
 
 	private static final ReferenceListAwareEnums.ValuesIndex<ProcessType> index = ReferenceListAwareEnums.index(values());

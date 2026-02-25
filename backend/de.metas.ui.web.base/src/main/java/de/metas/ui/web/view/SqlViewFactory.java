@@ -25,6 +25,7 @@ package de.metas.ui.web.view;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.references.related_documents.RelatedDocumentsPermissionsFactory;
+import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilter.DocumentFilterBuilder;
@@ -75,6 +76,8 @@ import java.util.function.Supplier;
 @Service
 public class SqlViewFactory implements IViewFactory
 {
+	public final static AdMessageKey MSG_NO_RELATED_DOCS_FOUND = AdMessageKey.of("NO_RELATED_DOCS_FOUND");
+
 	private static final Logger logger = LogManager.getLogger(SqlViewFactory.class);
 	private final WebuiDocumentReferencesService webuiDocumentReferencesService;
 	private final ViewLayoutFactory viewLayouts;
@@ -211,7 +214,7 @@ public class SqlViewFactory implements IViewFactory
 							targetWindowId,
 							documentReferenceId,
 							RelatedDocumentsPermissionsFactory.allowAll())
-					.orElseThrow(() -> new AdempiereException("No related documents found")
+					.orElseThrow(() -> new AdempiereException(MSG_NO_RELATED_DOCS_FOUND)
 							.setParameter("targetWindowId", targetWindowId)
 							.setParameter("referencedDocumentPath", referencedDocumentPath)
 							.setParameter("documentReferenceId", documentReferenceId));
