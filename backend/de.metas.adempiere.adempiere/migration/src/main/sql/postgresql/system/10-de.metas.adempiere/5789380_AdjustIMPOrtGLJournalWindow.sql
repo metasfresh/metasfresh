@@ -5,6 +5,7 @@
 -- Window: Import - Hauptbuchjournal(278,D)
 -- 2026-02-19T15:31:17.355Z
 INSERT INTO AD_Menu (Action,AD_Client_ID,AD_Element_ID,AD_Menu_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,Description,EntityType,InternalName,IsActive,IsCreateNew,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy) VALUES ('W',0,574197,542298,0,278,TO_TIMESTAMP('2026-02-19 15:31:16.860000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Import von Hauptbuch-Journalen','D','Import GL Journal','Y','N','N','N','N','Import - Hauptbuchjournal',TO_TIMESTAMP('2026-02-19 15:31:16.860000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+ON CONFLICT DO NOTHING
 ;
 
 -- 2026-02-19T15:31:17.730Z
