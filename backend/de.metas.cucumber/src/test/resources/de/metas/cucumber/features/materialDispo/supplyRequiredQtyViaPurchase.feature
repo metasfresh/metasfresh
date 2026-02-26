@@ -58,8 +58,8 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | dsb_1      | ds_1                           | p_1                     | ps_1                             | 10    | Y                          | P             | 10             | 0                 |
 
     And metasfresh contains PP_Product_Plannings
-      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.IsPurchased |
-      | ppln_1     | p_1                     |                                          | true         | Y               |
+      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.IsDocComplete | OPT.IsPurchased |
+      | ppln_1     | p_1                     |                                          | true         | true              | Y               |
     And metasfresh contains C_BPartners without locations:
       | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.PO_DiscountSchema_ID.Identifier |
       | endcustomer_1 | EndCustomer_01042022_1 | N            | Y              | ps_1                          |                                     |
@@ -136,10 +136,6 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
-    And the following C_PurchaseCandidates are enqueued for generating C_Orders
-      | C_PurchaseCandidate_ID.Identifier |
-      | pc_1                              |
-
     And after not more than 60s, C_PurchaseCandidate_Alloc are found
       | C_PurchaseCandidate_ID.Identifier | C_PurchaseCandidate_Alloc_ID.Identifier |
       | pc_1                              | pca_1                                   |
@@ -208,8 +204,8 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | dsb_1      | ds_1                           | p_1                     | ps_1                             | 10    | Y                          | P             | 10             | 0                 |
 
     And metasfresh contains PP_Product_Plannings
-      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.IsPurchased |
-      | ppln_1     | p_1                     |                                          | true         | Y               |
+      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.IsDocComplete | OPT.IsPurchased |
+      | ppln_1     | p_1                     |                                          | true         | true              | Y               |
     And metasfresh contains C_BPartners without locations:
       | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.PO_DiscountSchema_ID.Identifier |
       | endcustomer_1 | EndCustomer_01042022_2 | N            | Y              | ps_1                          |                                     |
@@ -290,10 +286,6 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
     And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
       | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
-
-    And the following C_PurchaseCandidates are enqueued for generating C_Orders
-      | C_PurchaseCandidate_ID.Identifier |
-      | pc_1                              |
 
     And after not more than 60s, C_PurchaseCandidate_Alloc are found
       | C_PurchaseCandidate_ID.Identifier | C_PurchaseCandidate_Alloc_ID.Identifier |

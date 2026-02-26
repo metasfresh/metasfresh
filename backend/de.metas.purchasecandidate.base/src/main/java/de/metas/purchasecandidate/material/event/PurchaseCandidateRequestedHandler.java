@@ -33,7 +33,9 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateCreatedEvent;
 import de.metas.material.event.purchase.PurchaseCandidateRequestedEvent;
 import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
+import de.metas.purchasecandidate.async.C_PurchaseCandidates_GeneratePurchaseOrders;
 import de.metas.mforecast.impl.ForecastLineId;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
@@ -170,6 +172,20 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 					newPurchaseCandidate.getVendorId(),
 					newPurchaseCandidateId);
 			postMaterialEventService.enqueueEventAfterNextCommit(purchaseCandidateCreatedEvent);
+
+			// If PP_Product_Planning.IsCreatePlan=Y, auto-enqueue the candidate for C_Order generation.
+			// IsDocComplete controls whether the generated C_Order is also completed (CO) or left as draft (DR).
+			if (!requestedEvent.isSimulated() && requestedEvent.getProductPlanningId() != null)
+			{
+				final ProductPlanning productPlanning = productPlanningDAO.getById(requestedEvent.getProductPlanningId());
+				if (productPlanning.isCreatePlan())
+				{
+					C_PurchaseCandidates_GeneratePurchaseOrders.enqueue(
+							ImmutableList.of(newPurchaseCandidateId),
+							/* docTypeId= */ null,
+							productPlanning.isDocComplete());
+				}
+			}
 		}
 		finally
 		{

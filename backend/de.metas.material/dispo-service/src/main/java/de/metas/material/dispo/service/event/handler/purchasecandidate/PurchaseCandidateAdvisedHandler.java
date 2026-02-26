@@ -128,15 +128,14 @@ public final class PurchaseCandidateAdvisedHandler
 				.build();
 
 		final MaterialDispoGroupId groupId = candidateChangeHandler.onCandidateNewOrChange(supplyCandidate).getGroupId().orElse(null);
-		if (event.isDirectlyCreatePurchaseCandidate())
+		if (groupId == null)
 		{
-			if (groupId == null)
-			{
-				throw new AdempiereException("No groupId");
-			}
-			
-			// the group contains just one item, i.e. the supplyCandidate, but for the same of generic-ness we use that same interface that's also used for production and distribution
-			requestMaterialOrderService.requestMaterialOrderForCandidates(groupId, event.getEventDescriptor());
+			throw new AdempiereException("No groupId");
 		}
+
+		// the group contains just one item, i.e. the supplyCandidate, but for the sake of generic-ness we use that same interface that's also used for production and distribution
+		// Always request a purchase candidate — whether to also auto-create/complete a C_Order is controlled by PP_Product_Planning.IsCreatePlan and IsDocComplete,
+		// and is handled downstream in PurchaseCandidateRequestedHandler.
+		requestMaterialOrderService.requestMaterialOrderForCandidates(groupId, event.getEventDescriptor());
 	}
 }

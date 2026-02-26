@@ -46,6 +46,14 @@ public class PurchaseCandidateAdvisedEvent implements MaterialEvent
 
 	int productPlanningId;
 
+	/**
+	 * @deprecated This field is no longer used to gate purchase candidate creation.
+	 * All advised events now unconditionally create a {@code C_PurchaseCandidate}.
+	 * Whether to auto-create/complete a {@code C_Order} is controlled by
+	 * {@code PP_Product_Planning.IsCreatePlan} and {@code IsDocComplete} downstream.
+	 * Kept in the constructor for backward JSON deserialization compatibility during rolling deploys.
+	 */
+	@Deprecated
 	boolean directlyCreatePurchaseCandidate;
 
 	int vendorId;
