@@ -52,10 +52,10 @@ BEGIN
     END IF;
 
     --
-    -- Step 4: Recreate the API view QtyDemand_QtySupply_V
+    -- Step 4: Recreate the API view QtyDemand_QtySupply_V using db_alter_view
+    -- (handles dependent views like rv_purchasecockpit automatically)
     --
-    EXECUTE 'DROP VIEW IF EXISTS QtyDemand_QtySupply_V';
-    EXECUTE 'CREATE OR REPLACE VIEW QtyDemand_QtySupply_V AS SELECT * FROM ' || v_source_view;
+    PERFORM db_alter_view('QtyDemand_QtySupply_V', 'SELECT * FROM ' || v_source_view);
 
     RAISE NOTICE 'M_MaterialCockpit_rebuild: Successfully created QtyDemand_QtySupply_V from %', v_source_view;
 END;
