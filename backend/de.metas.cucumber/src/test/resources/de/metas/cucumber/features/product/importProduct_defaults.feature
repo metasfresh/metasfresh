@@ -12,8 +12,8 @@ Feature: Product Import default values and inactive product reactivation
   @from:cucumber
   Scenario: Product import defaults IsStocked=Y and ProductType=Item
     Given metasfresh contains I_Product:
-      | Identifier | X12DE355 |
-      | iProd_1    | PCE      |
+      | Identifier | X12DE355 | ProductCategory_Value |
+      | iProd_1    | PCE      | Standard              |
     When the ImportProduct process is invoked
     Then validate M_Product for I_Product:
       | I_Product_Identifier | IsStocked | ProductType | IsActive |
@@ -22,8 +22,8 @@ Feature: Product Import default values and inactive product reactivation
   @from:cucumber
   Scenario: Product import respects explicit IsStocked=N
     Given metasfresh contains I_Product:
-      | Identifier | X12DE355 | IsStocked |
-      | iProd_2    | PCE      | N         |
+      | Identifier | X12DE355 | IsStocked | ProductCategory_Value |
+      | iProd_2    | PCE      | N         | Standard              |
     When the ImportProduct process is invoked
     Then validate M_Product for I_Product:
       | I_Product_Identifier | IsStocked | ProductType |
@@ -32,8 +32,8 @@ Feature: Product Import default values and inactive product reactivation
   @from:cucumber
   Scenario: Product import defaults IsStocked=N for Service products
     Given metasfresh contains I_Product:
-      | Identifier | X12DE355 | ProductType |
-      | iProd_4    | PCE      | S           |
+      | Identifier | X12DE355 | ProductType | ProductCategory_Value |
+      | iProd_4    | PCE      | S           | Standard              |
     When the ImportProduct process is invoked
     Then validate M_Product for I_Product:
       | I_Product_Identifier | IsStocked | ProductType |
