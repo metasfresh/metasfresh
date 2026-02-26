@@ -22,18 +22,28 @@ Feature: Product Import default values and inactive product reactivation
   @from:cucumber
   Scenario: Product import respects explicit IsStocked=N
     Given metasfresh contains I_Product:
-      | Identifier | Value                   | Name                 | X12DE355 | IsStocked |
-      | iProd_2    | IMPORT_DEFAULTS_TEST_02 | Not Stocked Product  | PCE      | N         |
+      | Identifier | Value                   | Name                | X12DE355 | IsStocked |
+      | iProd_2    | IMPORT_DEFAULTS_TEST_02 | Not Stocked Product | PCE      | N         |
     When the ImportProduct process is invoked
     Then validate M_Product for I_Product:
       | I_Product_Identifier | IsStocked | ProductType |
       | iProd_2              | N         | I           |
 
   @from:cucumber
+  Scenario: Product import defaults IsStocked=N for Service products
+    Given metasfresh contains I_Product:
+      | Identifier | Value                   | Name              | X12DE355 | ProductType |
+      | iProd_4    | IMPORT_DEFAULTS_TEST_04 | Service Test Prod | PCE      | S           |
+    When the ImportProduct process is invoked
+    Then validate M_Product for I_Product:
+      | I_Product_Identifier | IsStocked | ProductType |
+      | iProd_4              | N         | S           |
+
+  @from:cucumber
   Scenario: Product import reactivates inactive product on upsert
     Given metasfresh contains M_Products:
-      | Identifier | Value                   | Name                 |
-      | prod_exist | IMPORT_DEFAULTS_TEST_03 | Existing Product     |
+      | Identifier | Value                   | Name             |
+      | prod_exist | IMPORT_DEFAULTS_TEST_03 | Existing Product |
     And update M_Product:
       | M_Product_ID.Identifier | IsActive |
       | prod_exist              | N        |
