@@ -472,9 +472,10 @@ Continuous keyboard entry: line1 → line2 → ... without reopening batch entry
 
 ### Test Scenario
 Validates that pressing Enter with a non-existent product code:
-1. Does NOT advance focus to the quantity field
-2. The product field retains the invalid text (not resolved)
-3. No order line is created
+1. Triggers an audible beep (verified via Web Audio API spy on OscillatorNode.start)
+2. Does NOT advance focus to the quantity field
+3. The product field retains the invalid text (not resolved)
+4. No order line is created
 
 ### Business Value
 Audio beep feedback for blind entry — user knows the product was not found.
@@ -488,6 +489,16 @@ Audio beep feedback for blind entry — user knows the product was not found.
         JSON.stringify(masterdata, null, 2),
         'application/json'
       );
+
+      // Spy on Web Audio API to detect beep (headless browsers produce no audio)
+      await page.addInitScript(() => {
+        window.__beepCount = 0;
+        const origStart = OscillatorNode.prototype.start;
+        OscillatorNode.prototype.start = function (...args) {
+          window.__beepCount++;
+          return origStart.apply(this, args);
+        };
+      });
 
       const { batchEntryButton } = await setupOrderWithBatchEntry(
         page,
@@ -522,6 +533,13 @@ Audio beep feedback for blind entry — user knows the product was not found.
       // Press Enter — should beep and NOT advance focus
       await page.keyboard.press('Enter');
       await page.waitForTimeout(2000);
+
+      // Verify: beep was initiated via Web Audio API
+      const beepCount = await page.evaluate(() => window.__beepCount);
+      expect(beepCount).toBeGreaterThan(0);
+      console.log(
+        `[${language}] Invalid product: beep initiated (${beepCount} OscillatorNode.start() calls)`
+      );
 
       // Verify: product input should still contain the invalid text
       // (not cleared, not resolved to a real product)
