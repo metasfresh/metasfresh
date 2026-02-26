@@ -70,17 +70,19 @@ public class I_Product_StepDef
 		record.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 
 		// Value/Name: copy from referenced M_Product, or use explicit value, or auto-generate
-		row.getAsOptionalIdentifier("M_Product_Identifier").ifPresentOrElse(
-				productIdentifier -> {
-					final I_M_Product product = productIdentifier.lookupNotNullIn(productTable);
-					record.setValue(product.getValue());
-					record.setName(product.getName());
-				},
-				() -> {
-					final ValueAndName valueAndName = row.suggestValueAndName();
-					record.setValue(valueAndName.getValue());
-					record.setName(valueAndName.getName());
-				});
+		final StepDefDataIdentifier mProductIdentifier = row.getAsOptionalIdentifier("M_Product_Identifier").orElse(null);
+		if (mProductIdentifier != null)
+		{
+			final I_M_Product product = mProductIdentifier.lookupNotNullIn(productTable);
+			record.setValue(product.getValue());
+			record.setName(product.getName());
+		}
+		else
+		{
+			final ValueAndName valueAndName = row.suggestValueAndName();
+			record.setValue(valueAndName.getValue());
+			record.setName(valueAndName.getName());
+		}
 
 		row.getAsOptionalString(I_I_Product.COLUMNNAME_ProductType)
 				.ifPresent(record::setProductType);
