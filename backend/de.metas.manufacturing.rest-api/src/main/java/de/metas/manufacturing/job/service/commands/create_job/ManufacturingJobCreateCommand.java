@@ -1,6 +1,9 @@
 package de.metas.manufacturing.job.service.commands.create_job;
 
 import com.google.common.collect.ArrayListMultimap;
+import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleCreateRequest;
@@ -20,16 +23,17 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.lang.SeqNoProvider;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
-import org.eevolution.model.I_PP_Order;
-
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
 
+@Slf4j
 public class ManufacturingJobCreateCommand
 {
 	@NonNull private final ITrxManager trxManager;
@@ -96,7 +100,43 @@ public class ManufacturingJobCreateCommand
 			createIssueSchedules(plan);
 		}
 
+		if (config.getReceiveUnitTypeEffective().isTU())
+		{
+			setReceivingTUPIItemProduct();
+		}
+
 		return loader.load(ppOrderId);
+	}
+
+	private void setReceivingTUPIItemProduct()
+	{
+		// Already set (e.g., from a previous job creation)
+		if (ppOrder.getCurrent_Receiving_TU_PI_Item_Product_ID() > 0)
+		{
+			return;
+		}
+
+		final HUPIItemProductId tuPIItemProductId = suggestReceivingTUPIItemProductId();
+
+		if (tuPIItemProductId != null)
+		{
+			ppOrder.setCurrent_Receiving_TU_PI_Item_Product_ID(tuPIItemProductId.getRepoId());
+			ppOrderBL.save(ppOrder);
+		}
+		else
+		{
+			log.warn("Cannot determine TU PI Item Product for PP_Order_ID={}. TU receiving mode will not work properly.", ppOrderId);
+		}
+	}
+
+	@Nullable
+	private HUPIItemProductId suggestReceivingTUPIItemProductId()
+	{
+		final I_M_HU_PI_Item_Product pip = ppOrderBL.createReceiptLUTUConfigurationManager(ppOrder)
+				.getM_HU_PI_Item_Product();
+
+		final HUPIItemProductId id = HUPIItemProductId.ofRepoId(pip.getM_HU_PI_Item_Product_ID());
+		return id.isVirtualHU() ? null : id;
 	}
 
 	private void setResponsible()

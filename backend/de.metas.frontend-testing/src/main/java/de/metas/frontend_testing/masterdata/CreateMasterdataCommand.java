@@ -317,6 +317,7 @@ public class CreateMasterdataCommand
 		return SalesOrderCreateCommand.builder()
 				.pickingJobScheduleService(services.pickingJobScheduleService)
 				.context(context)
+				.identifier(Identifier.ofString(identifier))
 				.request(request)
 				.build()
 				.execute();
