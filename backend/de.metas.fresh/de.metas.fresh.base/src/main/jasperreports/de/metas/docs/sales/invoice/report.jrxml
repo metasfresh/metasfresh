@@ -27,30 +27,43 @@ JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
 ;]]>
 	</queryString>
 	<field name="ad_org_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="ad_org_id"/>
 		<property name="com.jaspersoft.studio.field.label" value="ad_org_id"/>
 	</field>
 	<field name="docstatus" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="docstatus"/>
 		<property name="com.jaspersoft.studio.field.label" value="docstatus"/>
 	</field>
 	<field name="printname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="printname"/>
 		<property name="com.jaspersoft.studio.field.label" value="printname"/>
 	</field>
 	<field name="countrycode" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="countrycode"/>
 		<property name="com.jaspersoft.studio.field.label" value="countrycode"/>
 	</field>
 	<field name="c_currency_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="c_currency_id"/>
 		<property name="com.jaspersoft.studio.field.label" value="c_currency_id"/>
 	</field>
 	<field name="displayhu" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="displayhu"/>
 		<property name="com.jaspersoft.studio.field.label" value="displayhu"/>
 	</field>
 	<field name="iscreditmemo" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="iscreditmemo"/>
 		<property name="com.jaspersoft.studio.field.label" value="iscreditmemo"/>
 	</field>
+	<field name="isheaderqrhidden" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="isheaderqrhidden"/>
+		<property name="com.jaspersoft.studio.field.label" value="isheaderqrhidden"/>
+	</field>
 	<field name="showqrbill" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="showqrbill"/>
 		<property name="com.jaspersoft.studio.field.label" value="showqrbill"/>
 	</field>
 	<field name="showesr_qr" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="showesr_qr"/>
 		<property name="com.jaspersoft.studio.field.label" value="showesr_qr"/>
 	</field>
 	<background>
@@ -120,6 +133,20 @@ JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_bp_org_block_left.jasper"]]></subreportExpression>
+			</subreport>
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-3" x="0" y="0" width="120" height="120" uuid="fef138a5-b06c-4040-8b17-103af26df602">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<printWhenExpression><![CDATA[new Boolean($F{isheaderqrhidden}.equals( "N" ))]]></printWhenExpression>
+				</reportElement>
+				<subreportParameter name="c_invoice_id">
+					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/sales/invoice/report_header_qr.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 	</title>
