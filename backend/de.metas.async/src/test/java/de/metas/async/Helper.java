@@ -1,26 +1,26 @@
-package de.metas.async;
-
 /*
  * #%L
  * de.metas.async
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.async;
 
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.api.NOPWorkpackageLogsRepository;
@@ -38,14 +38,17 @@ import de.metas.lock.spi.impl.PlainLockDatabase;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.Getter;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -67,17 +70,12 @@ public class Helper
 	private final Logger logger = LogManager.getLogger(getClass());
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private Properties ctx;
+	@Getter private final Properties ctx;
 
 	public Helper()
 	{
 		super();
 		this.ctx = Env.getCtx();
-	}
-
-	public Properties getCtx()
-	{
-		return ctx;
 	}
 
 	public void assertNothingLocked()
@@ -87,7 +85,7 @@ public class Helper
 		if (!lockDatabase.getLocks().isEmpty())
 		{
 			lockDatabase.dump();
-			Assert.fail("No locks were expected but we found some."
+			Assertions.fail("No locks were expected but we found some."
 					+ "\n Locked objects info: " + lockDatabase.getLockedObjectsInfo());
 		}
 	}
@@ -111,7 +109,10 @@ public class Helper
 		return queueProcessorDef;
 	}
 
-	public I_C_Queue_PackageProcessor createPackageProcessor(Properties ctx, Class<? extends IWorkpackageProcessor> packageProcessorClass, String trxName)
+	public I_C_Queue_PackageProcessor createPackageProcessor(
+			final Properties ctx,
+			@NonNull final Class<? extends IWorkpackageProcessor> packageProcessorClass, 
+			@Nullable final String trxName)
 	{
 		final I_C_Queue_PackageProcessor packageProcessorDef = InterfaceWrapperHelper.create(ctx, I_C_Queue_PackageProcessor.class, trxName);
 		packageProcessorDef.setClassname(packageProcessorClass.getCanonicalName());
@@ -120,12 +121,14 @@ public class Helper
 		return packageProcessorDef;
 	}
 
-	public I_C_Queue_PackageProcessor createPackageProcessor(Properties ctx, Class<? extends IWorkpackageProcessor> packageProcessorClass)
+	public I_C_Queue_PackageProcessor createPackageProcessor(
+			final Properties ctx, 
+			final Class<? extends IWorkpackageProcessor> packageProcessorClass)
 	{
 		return createPackageProcessor(ctx, packageProcessorClass, ITrx.TRXNAME_None);
 	}
 
-	public I_C_Queue_PackageProcessor assignPackageProcessor(I_C_Queue_Processor queueProcessorDef, Class<? extends IWorkpackageProcessor> packageProcessorClass)
+	public I_C_Queue_PackageProcessor assignPackageProcessor(final I_C_Queue_Processor queueProcessorDef, final Class<? extends IWorkpackageProcessor> packageProcessorClass)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(queueProcessorDef);
 		final String trxName = InterfaceWrapperHelper.getTrxName(queueProcessorDef);
@@ -179,16 +182,16 @@ public class Helper
 		return workpackages;
 	}
 
-	public void markReadyForProcessing(List<I_C_Queue_WorkPackage> workpackages)
+	public void markReadyForProcessing(final List<I_C_Queue_WorkPackage> workpackages)
 	{
-		for (I_C_Queue_WorkPackage wp : workpackages)
+		for (final I_C_Queue_WorkPackage wp : workpackages)
 		{
 			wp.setIsReadyForProcessing(true);
 			InterfaceWrapperHelper.save(wp);
 		}
 	}
 
-	public void markReadyForProcessing(I_C_Queue_WorkPackage... workpackages)
+	public void markReadyForProcessing(final I_C_Queue_WorkPackage... workpackages)
 	{
 		Check.assumeNotNull(workpackages, "workpackages not null");
 		if (workpackages.length == 0)
@@ -204,7 +207,7 @@ public class Helper
 	 */
 	public void markReadyForProcessingAndWait(final IWorkPackageQueue workpackageQueue, final I_C_Queue_WorkPackage workpackage) throws InterruptedException, ExecutionException, TimeoutException
 	{
-		Future<IWorkpackageProcessorExecutionResult> futureResult = workpackageQueue.markReadyForProcessingAndReturn(workpackage);
+		final Future<IWorkpackageProcessorExecutionResult> futureResult = workpackageQueue.markReadyForProcessingAndReturn(workpackage);
 
 		futureResult.get(1, TimeUnit.MINUTES);
 	}
@@ -217,7 +220,7 @@ public class Helper
 		workpackage.setProcessed(false);
 		workpackage.setIsError(false);
 		workpackage.setSkippedAt(null);
-		workpackage.setAD_Issue(null);
+		workpackage.setAD_Issue_ID(0);
 
 		InterfaceWrapperHelper.save(workpackage);
 	}
@@ -242,7 +245,7 @@ public class Helper
 
 		while (size < targetSize)
 		{
-			long currentTS = de.metas.common.util.time.SystemTime.millis();
+			final long currentTS = de.metas.common.util.time.SystemTime.millis();
 			if (lastSize != -1 && timeoutMillis > 0)
 			{
 				final long elapsedMillis = currentTS - beginTS;

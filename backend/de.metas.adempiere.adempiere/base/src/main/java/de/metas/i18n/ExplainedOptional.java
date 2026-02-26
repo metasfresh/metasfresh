@@ -41,6 +41,11 @@ public final class ExplainedOptional<T>
 		return emptyBecause(TranslatableStrings.anyLanguage(explanation));
 	}
 
+	public static <T> ExplainedOptional<T> emptyBecause(@NonNull final AdMessageKey explanation)
+	{
+		return emptyBecause(TranslatableStrings.adMessage(explanation));
+	}
+
 	public static <T> ExplainedOptional<T> emptyBecause(@NonNull final ITranslatableString explanation)
 	{
 		return new ExplainedOptional<>(null, explanation);
@@ -79,6 +84,11 @@ public final class ExplainedOptional<T>
 		return explanation != null ? explanation : TranslatableStrings.empty();
 	}
 
+	public String getExplanationAsString()
+	{
+		return explanation != null ? explanation.getDefaultValue() : null;
+	}
+
 	@Nullable
 	public T orElse(@Nullable final T other)
 	{
@@ -93,6 +103,11 @@ public final class ExplainedOptional<T>
 	public T orElseThrow()
 	{
 		return orElseThrow(AdempiereException::new);
+	}
+
+	public T orElseThrow(@NonNull final AdMessageKey adMessageKey)
+	{
+		return orElseThrow(message -> new AdempiereException(adMessageKey).setParameter("detail", message));
 	}
 
 	public T orElseThrow(@NonNull final Function<ITranslatableString, RuntimeException> exceptionFactory)

@@ -1,14 +1,14 @@
 package org.adempiere.ad.callout.api.impl;
 
-import java.util.UUID;
-import java.util.function.Supplier;
-
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.api.ICalloutInstance;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 
-@Ignore
+import java.util.UUID;
+import java.util.function.Supplier;
+
+@Disabled
 public class MockedCallout implements ICalloutInstance
 {
 	private String id = "MockedCallout-" + UUID.randomUUID();

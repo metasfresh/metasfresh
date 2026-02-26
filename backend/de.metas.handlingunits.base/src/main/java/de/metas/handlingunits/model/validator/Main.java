@@ -191,7 +191,7 @@ public final class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(new PP_Cost_Collector());
 
 		// https://github.com/metasfresh/metasfresh/issues/2298
-		engine.addModelValidator(de.metas.handlingunits.picking.interceptor.M_HU.INSTANCE);
+		engine.addModelValidator(new de.metas.handlingunits.picking.interceptor.M_HU());
 
 		engine.addImportInterceptor(I_I_Product.Table_Name, new ImportProductInterceptor());
 	}

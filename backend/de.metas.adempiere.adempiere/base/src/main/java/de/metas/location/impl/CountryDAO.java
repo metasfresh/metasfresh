@@ -10,6 +10,7 @@ import de.metas.i18n.ILanguageDAO;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.location.AddressDisplaySequence;
+import de.metas.location.CountryCode;
 import de.metas.location.CountryCustomInfo;
 import de.metas.location.CountryId;
 import de.metas.location.CountrySequences;
@@ -90,7 +91,7 @@ public class CountryDAO implements ICountryDAO
 	{
 		final List<I_C_Country> countries = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Country.class)
-				.addOnlyActiveRecordsFilter()
+				// .addOnlyActiveRecordsFilter() also include inactive-countries, in case they are sought for by C_Country_ID
 				.create()
 				.list(I_C_Country.class);
 
@@ -137,7 +138,6 @@ public class CountryDAO implements ICountryDAO
 
 		final I_AD_User_SaveCustomInfo info = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_User_SaveCustomInfo.class, Env.getCtx(), trxName)
-				.addOnlyContextClient()
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_User_SaveCustomInfo.COLUMNNAME_C_Country_ID, country.getC_Country_ID())
 				.orderByDescending(I_AD_User_SaveCustomInfo.COLUMNNAME_Created)
@@ -197,7 +197,7 @@ public class CountryDAO implements ICountryDAO
 	@NonNull
 	private IndexedCountries getIndexedCountries()
 	{
-		return Check.assumeNotNull(countriesCache.getOrLoad(0, CountryDAO::retrieveIndexedCountries),"retrieveIndexedCountries doesn't return null");
+		return Check.assumeNotNull(countriesCache.getOrLoad(0, CountryDAO::retrieveIndexedCountries), "retrieveIndexedCountries doesn't return null");
 	}
 
 	private String getCountryCodeByADClientId(final Properties ctx)
@@ -266,6 +266,12 @@ public class CountryDAO implements ICountryDAO
 		return getIndexedCountries().getIdByCountryCode(countryCode);
 	}
 
+	@Override
+	public CountryId getCountryIdByCountryCode(@NonNull final CountryCode countryCode)
+	{
+		return getIndexedCountries().getIdByCountryCode(countryCode);
+	}
+
 	@Nullable
 	@Override
 	public CountryId getCountryIdByCountryCodeOrNull(@Nullable final String countryCode)
@@ -321,16 +327,28 @@ public class CountryDAO implements ICountryDAO
 
 	private static final class IndexedCountries
 	{
+		/**
+		 * contains also inactive countries
+		 */
 		private final ImmutableList<I_C_Country> countries;
+
+		/**
+		 * contains also inactive countries
+		 */
 		private final ImmutableMap<CountryId, I_C_Country> countriesById;
+
+		/**
+		 * contains only active countries
+		 */
 		private final ImmutableMap<String, I_C_Country> countriesByCountryCode;
 
 		private IndexedCountries(final List<I_C_Country> countries)
 		{
 			this.countries = ImmutableList.copyOf(countries);
-			countriesById = Maps.uniqueIndex(countries, c -> CountryId.ofRepoId(c.getC_Country_ID()));
-			countriesByCountryCode = countries.stream()
-					.filter(country -> !Check.isEmpty(country.getCountryCode(), true)) // NOTE: in DB the CountryCode is mandatory but not in some unit tests
+			this.countriesById = Maps.uniqueIndex(countries, c -> CountryId.ofRepoId(c.getC_Country_ID()));
+			this.countriesByCountryCode = countries.stream()
+					.filter(I_C_Country::isActive)
+					.filter(country -> Check.isNotBlank(country.getCountryCode())) // NOTE: in DB the CountryCode is mandatory but not in some unit tests
 					.collect(GuavaCollectors.toImmutableMapByKey(I_C_Country::getCountryCode));
 		}
 
@@ -339,11 +357,17 @@ public class CountryDAO implements ICountryDAO
 			return countries;
 		}
 
+		/**
+		 * @return the country with the given ID, even if the `C_Country` record is not active.
+		 */
 		public I_C_Country getByIdOrNull(final CountryId countryId)
 		{
 			return countriesById.get(countryId);
 		}
 
+		/**
+		 * @return the country with the given ID, even if the `C_Country` record is not active.
+		 */
 		public I_C_Country getById(final CountryId countryId)
 		{
 			final I_C_Country country = getByIdOrNull(countryId);
@@ -354,26 +378,41 @@ public class CountryDAO implements ICountryDAO
 			return country;
 		}
 
+		/**
+		 * @return the country with the given code, unless the `C_Country` record is inactive.
+		 */
 		public I_C_Country getByCountryCodeOrNull(@Nullable final String countryCode)
 		{
 			return countriesByCountryCode.get(countryCode);
 		}
 
+		/**
+		 * @return the country with the given code, unless the `C_Country` record is inactive.
+		 */
 		public I_C_Country getByCountryCode(final String countryCode)
 		{
 			final I_C_Country country = getByCountryCodeOrNull(countryCode);
 			if (country == null)
 			{
-				throw new AdempiereException("No country found for countryCode=" + countryCode);
+				throw new AdempiereException("No active country found for countryCode=" + countryCode);
 			}
 			return country;
 		}
 
+		/**
+		 * @return the country with the given code, unless the `C_Country` record is inactive.
+		 */
 		@NonNull
 		public CountryId getIdByCountryCode(@NonNull final String countryCode)
 		{
 			final I_C_Country country = getByCountryCode(countryCode);
 			return CountryId.ofRepoId(country.getC_Country_ID());
+		}
+
+		@NonNull
+		public CountryId getIdByCountryCode(@NonNull final CountryCode countryCode)
+		{
+			return getIdByCountryCode(countryCode.getAlpha2());
 		}
 
 		@Nullable

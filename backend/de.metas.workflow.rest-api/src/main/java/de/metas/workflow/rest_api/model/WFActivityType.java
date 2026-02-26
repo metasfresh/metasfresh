@@ -39,9 +39,11 @@ public class WFActivityType
 	@JsonCreator
 	public static WFActivityType ofString(@NonNull final String value)
 	{
+		//noinspection UnstableApiUsage
 		return interner.intern(new WFActivityType(value));
 	}
 
+	@SuppressWarnings("UnstableApiUsage")
 	private static final Interner<WFActivityType> interner = Interners.newStrongInterner();
 
 	private final String value;

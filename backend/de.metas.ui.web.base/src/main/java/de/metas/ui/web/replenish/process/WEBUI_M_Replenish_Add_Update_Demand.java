@@ -62,7 +62,7 @@ public class WEBUI_M_Replenish_Add_Update_Demand extends ViewBasedProcessTemplat
 	private BigDecimal levelMin;
 
 	private static final String PARAM_Level_Max = I_M_Material_Needs_Planner_V.COLUMNNAME_Level_Max;
-	@Param(parameterName = PARAM_Level_Max, mandatory = true)
+	@Param(parameterName = PARAM_Level_Max)
 	private BigDecimal levelMax;
 
 	@Override
@@ -85,7 +85,7 @@ public class WEBUI_M_Replenish_Add_Update_Demand extends ViewBasedProcessTemplat
 	{
 		final UomId uomId = productBL.getStockUOMId(productId);
 		final StockQtyAndUOMQty levelMin = StockQtyAndUOMQtys.createConvert(this.levelMin, productId, uomId);
-		final StockQtyAndUOMQty levelMax = StockQtyAndUOMQtys.createConvert(this.levelMax, productId, uomId);
+		final StockQtyAndUOMQty levelMax = this.levelMax == null ? levelMin : StockQtyAndUOMQtys.createConvert(this.levelMax, productId, uomId);
 
 		replenishInfoRepository.save(ReplenishInfo.builder()
 				.identifier(ReplenishInfo.Identifier.builder()
@@ -103,7 +103,7 @@ public class WEBUI_M_Replenish_Add_Update_Demand extends ViewBasedProcessTemplat
 	@Override
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
-		final MaterialNeedsPlannerRow materialNeedsPlannerRow = MaterialNeedsPlannerRow.ofRow(getSingleSelectedRow());
+		final MaterialNeedsPlannerRow materialNeedsPlannerRow = MaterialNeedsPlannerRow.ofViewRow(getSingleSelectedRow());
 
 		if (PARAM_M_Product_ID.equals(parameter.getColumnName()))
 		{

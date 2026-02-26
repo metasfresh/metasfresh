@@ -22,21 +22,6 @@ package de.metas.handlingunits.tourplanning.spi.impl;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.util.Random;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.compiere.util.Env;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
 import de.metas.handlingunits.model.IHUDeliveryQuantities;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.tourplanning.model.I_M_DeliveryDay;
@@ -44,6 +29,19 @@ import de.metas.handlingunits.tourplanning.model.I_M_DeliveryDay_Alloc;
 import de.metas.handlingunits.tourplanning.model.I_M_Tour_Instance;
 import de.metas.tourplanning.api.IDeliveryDayAllocable;
 import de.metas.tourplanning.api.impl.ShipmentScheduleDeliveryDayHandler;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.util.Env;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.util.Random;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class HUShipmentScheduleDeliveryDayHandlerTest
 {
@@ -58,7 +56,7 @@ public class HUShipmentScheduleDeliveryDayHandlerTest
 	private I_M_DeliveryDay deliveryDay;
 	private I_M_Tour_Instance tourInstance;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -112,37 +110,22 @@ public class HUShipmentScheduleDeliveryDayHandlerTest
 			final IHUDeliveryQuantities expected,
 			final IHUDeliveryQuantities actual)
 	{
-		Assert.assertThat("Invalid QtyOrdered_LU",
-				actual.getQtyOrdered_LU(),
-				Matchers.comparesEqualTo(expected.getQtyOrdered_LU())
-				);
-		Assert.assertThat("Invalid QtyOrdered_TU",
-				actual.getQtyOrdered_TU(),
-				Matchers.comparesEqualTo(expected.getQtyOrdered_TU())
-				);
+		assertThat(actual.getQtyOrdered_LU()).as("Invalid QtyOrdered_LU").isEqualByComparingTo(expected.getQtyOrdered_LU());
 
-		Assert.assertThat("Invalid QtyDelivered_LU",
-				actual.getQtyDelivered_LU(),
-				Matchers.comparesEqualTo(expected.getQtyDelivered_LU())
-				);
-		Assert.assertThat("Invalid QtyDelivered_TU",
-				actual.getQtyDelivered_TU(),
-				Matchers.comparesEqualTo(expected.getQtyDelivered_TU())
-				);
+		assertThat(actual.getQtyOrdered_TU()).as("Invalid QtyOrdered_TU").isEqualByComparingTo(expected.getQtyOrdered_TU());
+
+		assertThat(actual.getQtyDelivered_LU()).as("Invalid QtyDelivered_LU").isEqualByComparingTo(expected.getQtyDelivered_LU());
+
+		assertThat(actual.getQtyDelivered_TU()).as("Invalid QtyDelivered_TU").isEqualByComparingTo(expected.getQtyDelivered_TU());
 	}
 
 	public static void assertEquals(
 			final I_M_ShipmentSchedule expected,
 			final IHUDeliveryQuantities actual)
 	{
-		Assert.assertThat("Invalid QtyOrdered_LU",
-				actual.getQtyOrdered_LU(),
-				Matchers.comparesEqualTo(expected.getQtyOrdered_LU())
-				);
-		Assert.assertThat("Invalid QtyOrdered_TU",
-				actual.getQtyOrdered_TU(),
-				Matchers.comparesEqualTo(expected.getQtyOrdered_TU())
-				);
+		assertThat(actual.getQtyOrdered_LU()).as("Invalid QtyOrdered_LU").isEqualByComparingTo(expected.getQtyOrdered_LU());
+
+		assertThat(actual.getQtyOrdered_TU()).as("Invalid QtyOrdered_TU").isEqualByComparingTo(expected.getQtyOrdered_TU());
 	}
 
 	private void setRandomQtys(final I_M_ShipmentSchedule record)

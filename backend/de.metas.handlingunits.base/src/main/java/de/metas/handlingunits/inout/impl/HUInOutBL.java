@@ -22,6 +22,7 @@ package de.metas.handlingunits.inout.impl;
  * #L%
  */
 
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.document.DocBaseType;
@@ -52,6 +53,7 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
@@ -62,6 +64,7 @@ import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeId;
@@ -71,6 +74,7 @@ import org.adempiere.mm.attributes.api.ISerialNoBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
@@ -97,6 +101,7 @@ public class HUInOutBL implements IHUInOutBL
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final ISerialNoBL serialNoBL = Services.get(ISerialNoBL.class);
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
+	private final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
 
 	@Override
 	public de.metas.handlingunits.model.I_M_InOut getById(@NonNull final InOutId inoutId)
@@ -212,16 +217,32 @@ public class HUInOutBL implements IHUInOutBL
 	}
 
 	@Override
-	public void destroyHUs(@NonNull final org.compiere.model.I_M_InOut inout)
+	public void destroyHandlingUnitsIfReversedInboundTransaction(@NonNull final org.compiere.model.I_M_InOut reversalInout)
 	{
+		if(reversalInout.getReversal_ID() <= 0)
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Skip destroying HUs as we not dealing with a reversal!");
+			return;
+		}
+
+		final MovementType movementType = MovementType.ofCode(reversalInout.getMovementType());
+		if (movementType.isOutboundTransaction())
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Skip destroying HUs as we are dealing with an outbound transaction!");
+			return;
+		}
+
+		// the incoming HU created from this M_InOut needs to be destroyed
+		copyAssignmentsToReversal(reversalInout);
+
 		// services
 		final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 
 		//
-		// Get inout's assigned HUs
-		final List<I_M_HU> hus = huInOutDAO.retrieveHandlingUnits(inout);
+		// Get reversalInout's assigned HUs
+		final List<I_M_HU> hus = huInOutDAO.retrieveHandlingUnits(reversalInout);
 		if (hus.isEmpty())
 		{
 			return;
@@ -231,17 +252,25 @@ public class HUInOutBL implements IHUInOutBL
 
 		//
 		// Create and configure the huContext for destroying the HUs
-		final IContextAware context = InterfaceWrapperHelper.getContextAware(inout);
+		final IContextAware context = InterfaceWrapperHelper.getContextAware(reversalInout);
 		final IHUContext huContext = huContextFactory.createMutableHUContextForProcessing(context);
 		// If we deal with a receipt, we shall collect (and move back to Gebinde lager), only those packing materials that we own.
-		if (!MovementType.ofCode(inout.getMovementType()).isOutboundTransaction())
+		if (!MovementType.ofCode(reversalInout.getMovementType()).isOutboundTransaction())
 		{
 			huContext.getHUPackingMaterialsCollector().setCollectIfOwnPackingMaterialsOnly(true);
 		}
 
+		huContext.setProperty(IHUContext.PROPERTY_IsReceiptReversal, true);
 		//
 		// Mark assigned HUs as destroyed
 		handlingUnitsBL.markDestroyed(huContext, hus);
+
+		// If the HUs were linked to M_Package_HU entries, delete them too
+
+		final Set<HuId> huIds = hus.stream()
+				.map(hu -> HuId.ofRepoId(hu.getM_HU_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+		huPackageBL.destroyHUPackages(huIds);
 	}
 
 	@Override
@@ -378,9 +407,7 @@ public class HUInOutBL implements IHUInOutBL
 			return ImmutableSetMultimap.of();
 		}
 
-		final ImmutableSet<TableRecordReference> recordRefs = inoutLineIds.stream()
-				.map(inoutLineId -> TableRecordReference.of(I_M_InOutLine.Table_Name, inoutLineId))
-				.collect(ImmutableSet.toImmutableSet());
+		final TableRecordReferenceSet recordRefs = TableRecordReferenceSet.of(I_M_InOutLine.Table_Name, inoutLineIds);
 
 		final ImmutableSetMultimap<TableRecordReference, HuId> huIdsByRecordRefs = huAssignmentBL.getHUsByRecordRefs(recordRefs);
 

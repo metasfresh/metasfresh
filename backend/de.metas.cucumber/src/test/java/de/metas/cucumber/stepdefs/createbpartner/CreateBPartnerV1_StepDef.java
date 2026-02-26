@@ -40,10 +40,10 @@ import de.metas.common.bpartner.v1.request.JsonRequestLocationUpsert;
 import de.metas.common.bpartner.v1.request.JsonRequestLocationUpsertItem;
 import de.metas.common.bpartner.v1.response.JsonResponseBPartnerCompositeUpsert;
 import de.metas.common.bpartner.v1.response.JsonResponseBPartnerCompositeUpsertItem;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.common.JsonExternalId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.RESTUtil;
+import de.metas.cucumber.stepdefs.api.RESTUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.i18n.Language;
 import io.cucumber.datatable.DataTable;
@@ -60,7 +60,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class CreateBPartnerV1_StepDef
 {

@@ -29,7 +29,7 @@ import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.impl.TableIdsCache;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeValueType;
-import org.adempiere.mm.attributes.api.impl.AttributesBL;
+import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.compiere.model.I_AD_UI_Element;
 import org.compiere.model.I_Record_Attribute;
@@ -194,7 +194,7 @@ public class AttributesUIElementTypeFactory
 		{
 			attributeValueColumnName = I_Record_Attribute.COLUMNNAME_ValueNumber;
 			lookupDescriptor = null;
-			if (AttributesBL.isInteger(attributeFieldDescriptor.getUomId()))
+			if (Attribute.isInteger(attributeFieldDescriptor.getUomId()))
 			{
 				valueClass = Integer.class;
 				sqlValueClass = Integer.class;
@@ -256,7 +256,7 @@ public class AttributesUIElementTypeFactory
 				.setWidgetType(fieldBinding.getWidgetType())
 				.setValueClass(fieldBinding.getValueClass())
 				.setLookupDescriptorProvider(LookupDescriptorProviders.ofNullableInstance(fieldBinding.getLookupDescriptor()))
-				.setReadonlyLogic(false)
+				.setReadonlyLogic(true)
 				.setVirtualField(fieldBinding.isVirtualColumn())
 				.setDataBinding(fieldBinding)
 				.setDefaultFilterInfo(DocumentFieldDefaultFilterDescriptor.builder()

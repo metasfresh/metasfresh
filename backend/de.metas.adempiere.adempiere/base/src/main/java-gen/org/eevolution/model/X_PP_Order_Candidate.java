@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_Order_Candidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1432734380L;
+	private static final long serialVersionUID = 63995316L;
 
     /** Standard Constructor */
     public X_PP_Order_Candidate (final Properties ctx, final int PP_Order_Candidate_ID, @Nullable final String trxName)
@@ -193,14 +193,14 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	@Override
 	public void setM_HU_PI_Item_Product_ID (final int M_HU_PI_Item_Product_ID)
 	{
-		if (M_HU_PI_Item_Product_ID < 1) 
+		if (M_HU_PI_Item_Product_ID < 1)
 			set_Value (COLUMNNAME_M_HU_PI_Item_Product_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_M_HU_PI_Item_Product_ID, M_HU_PI_Item_Product_ID);
 	}
 
 	@Override
-	public int getM_HU_PI_Item_Product_ID() 
+	public int getM_HU_PI_Item_Product_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_HU_PI_Item_Product_ID);
 	}
@@ -331,33 +331,6 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
-	public org.eevolution.model.I_PP_Order_Candidate getPP_Order_Candidate_Parent()
-	{
-		return get_ValueAsPO(COLUMNNAME_PP_Order_Candidate_Parent_ID, org.eevolution.model.I_PP_Order_Candidate.class);
-	}
-
-	@Override
-	public void setPP_Order_Candidate_Parent(final org.eevolution.model.I_PP_Order_Candidate PP_Order_Candidate_Parent)
-	{
-		set_ValueFromPO(COLUMNNAME_PP_Order_Candidate_Parent_ID, org.eevolution.model.I_PP_Order_Candidate.class, PP_Order_Candidate_Parent);
-	}
-
-	@Override
-	public void setPP_Order_Candidate_Parent_ID (final int PP_Order_Candidate_Parent_ID)
-	{
-		if (PP_Order_Candidate_Parent_ID < 1) 
-			set_Value (COLUMNNAME_PP_Order_Candidate_Parent_ID, null);
-		else 
-			set_Value (COLUMNNAME_PP_Order_Candidate_Parent_ID, PP_Order_Candidate_Parent_ID);
-	}
-
-	@Override
-	public int getPP_Order_Candidate_Parent_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_PP_Order_Candidate_Parent_ID);
-	}
-
-	@Override
 	public org.eevolution.model.I_PP_Product_BOM getPP_Product_BOM()
 	{
 		return get_ValueAsPO(COLUMNNAME_PP_Product_BOM_ID, org.eevolution.model.I_PP_Product_BOM.class);
@@ -434,6 +407,19 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	public BigDecimal getQtyProcessed() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyProcessed);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyProcessed_OnDate (final @Nullable BigDecimal QtyProcessed_OnDate)
+	{
+		set_Value (COLUMNNAME_QtyProcessed_OnDate, QtyProcessed_OnDate);
+	}
+
+	@Override
+	public BigDecimal getQtyProcessed_OnDate()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyProcessed_OnDate);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 

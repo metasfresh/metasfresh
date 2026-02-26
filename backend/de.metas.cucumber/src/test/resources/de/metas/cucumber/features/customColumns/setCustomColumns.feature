@@ -1,7 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0180_System_Administration
+@allure.label.feature:F00180
 @flaky
 @ghActions:run_on_executor5
 Feature: Setting customColumns via SetCustomColumns method
+## F00180: Custom Columns
 
   Background:
     Given infrastructure and metasfresh are running

@@ -1,11 +1,10 @@
 package de.metas.costing;
 
-import java.math.BigDecimal;
-
-import org.junit.Assert;
-import org.junit.Test;
-
 import de.metas.money.CurrencyId;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -36,8 +35,8 @@ public class CostAmountTest
 	@Test
 	public void testEquals()
 	{
-		Assert.assertEquals(newCostAmount("10"), newCostAmount("10.000000"));
-		Assert.assertEquals(newCostAmount("10.00001"), newCostAmount("10.00001000000"));
+		Assertions.assertEquals(newCostAmount("10"), newCostAmount("10.000000"));
+		Assertions.assertEquals(newCostAmount("10.00001"), newCostAmount("10.00001000000"));
 	}
 
 	private CostAmount newCostAmount(final String amountStr)

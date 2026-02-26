@@ -1,10 +1,8 @@
-package de.metas.invoicecandidate.api;
-
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -13,26 +11,27 @@ package de.metas.invoicecandidate.api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+package de.metas.invoicecandidate.api;
 
-import java.math.BigDecimal;
-import java.util.Properties;
-import java.util.Set;
-
-import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.AsyncBatchId;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.process.PInstanceId;
 import lombok.NonNull;
+
+import java.math.BigDecimal;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * Helper interface to mass-enqueue {@link I_C_Invoice_Candidate}s to be invoiced.
@@ -96,9 +95,9 @@ public interface IInvoiceCandidateEnqueuer
 	IInvoiceCandidateEnqueuer setTotalNetAmtToInvoiceChecksum(BigDecimal totalNetAmtToInvoiceChecksum);
 
 	/**
-	 * Sets the asyncBatch that will be used for grouping
+	 * Sets the asyncBatch that the workpackages will be assigned to.
 	 */
-	IInvoiceCandidateEnqueuer setC_Async_Batch(I_C_Async_Batch asyncBatch);
+	IInvoiceCandidateEnqueuer setAsyncBatchId(AsyncBatchId asyncBatchId);
 
 	/**
 	 * Sets the priority to be used when processing the WPs

@@ -22,15 +22,7 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.process.PInstanceId;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -42,14 +34,20 @@ import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.metas.process.PInstanceId;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class QueryBuilderTests
 {
 	private I_M_Product product0;
 	private I_M_Product product1_NotActive;
 	private I_M_Product product2;
-	/** all products */
+	/**
+	 * all products
+	 */
 	private List<I_M_Product> products;
 	private Properties ctx;
 
@@ -77,9 +75,9 @@ public class QueryBuilderTests
 		product2 = createProduct(true);
 		products.add(product2);
 
-		assertThat(product0.getAD_Client_ID(), is(99));
-		assertThat(product1_NotActive.getAD_Client_ID(), is(100));
-		assertThat(product2.getAD_Client_ID(), is(100));
+		assertThat(product0.getAD_Client_ID()).isEqualTo(99);
+		assertThat(product1_NotActive.getAD_Client_ID()).isEqualTo(100);
+		assertThat(product2.getAD_Client_ID()).isEqualTo(100);
 	}
 
 	private I_M_Product createProduct(final boolean active)
@@ -93,7 +91,7 @@ public class QueryBuilderTests
 	@Test
 	public void testFilterByClientId_setCtx_First()
 	{
-		assertThat(product1_NotActive, notNullValue()); // simple guard;
+		assertThat(product1_NotActive).isNotNull(); // simple guard;
 
 		// Configure the products
 		for (I_M_Product p : products)
@@ -113,13 +111,13 @@ public class QueryBuilderTests
 
 		final IQuery<I_M_Product> query = builder.create();
 
-		assertThat(query.firstOnly(I_M_Product.class), is(product1_NotActive));
+		assertThat(query.firstOnly(I_M_Product.class)).isEqualTo(product1_NotActive);
 	}
 
 	@Test
 	public void testFilterByClientId_setCtx_Last()
 	{
-		assertThat(product1_NotActive, notNullValue()); // simple guard;
+		assertThat(product1_NotActive).isNotNull(); // simple guard;
 
 		// Configure the products
 		for (I_M_Product p : products)
@@ -139,7 +137,7 @@ public class QueryBuilderTests
 
 		final IQuery<I_M_Product> query = builder.create();
 
-		assertThat(query.firstOnly(I_M_Product.class), is(product1_NotActive));
+		assertThat(query.firstOnly(I_M_Product.class)).isEqualTo(product1_NotActive);
 	}
 
 	/**
@@ -148,7 +146,7 @@ public class QueryBuilderTests
 	@Test
 	public void testFilter_with_ClientID_Filter()
 	{
-		assertThat(product1_NotActive, notNullValue()); // simple guard;
+		assertThat(product1_NotActive).isNotNull(); // simple guard;
 
 		// Configure the products
 		for (I_M_Product p : products)
@@ -168,15 +166,15 @@ public class QueryBuilderTests
 
 		final IQuery<I_M_Product> query = builder.create();
 
-		assertThat(query.firstOnly(I_M_Product.class), is(product1_NotActive));
+		assertThat(query.firstOnly(I_M_Product.class)).isEqualTo(product1_NotActive);
 	}
 
 	@Test
 	public void testSetOnlyActiveRecords()
 	{
-		assertThat(product0, notNullValue()); // simple guard;
-		assertThat(product1_NotActive, notNullValue()); // simple guard;
-		assertThat(product2, notNullValue()); // simple guard;
+		assertThat(product0).isNotNull(); // simple guard;
+		assertThat(product1_NotActive).isNotNull(); // simple guard;
+		assertThat(product2).isNotNull(); // simple guard;
 
 		final IQueryBuilder<I_M_Product> builder = new QueryBuilder<>(I_M_Product.class, null); // tableName=null
 
@@ -186,13 +184,13 @@ public class QueryBuilderTests
 				.setOnlyActiveRecords(true);
 		{
 			final List<I_M_Product> list = query.list(I_M_Product.class);
-			assertThat(list.size(), is(2));
+			assertThat(list).hasSize(2);
 
-			assertThat(list.get(0), is(product0));
-			assertThat(product0.isActive(), is(true));
+			assertThat(list.get(0)).isEqualTo(product0);
+			assertThat(product0.isActive()).isTrue();
 
-			assertThat(list.get(1), is(product2));
-			assertThat(product2.isActive(), is(true));
+			assertThat(list.get(1)).isEqualTo(product2);
+			assertThat(product2.isActive()).isTrue();
 		}
 
 		//
@@ -201,25 +199,25 @@ public class QueryBuilderTests
 			final List<I_M_Product> list = query
 					.setOnlyActiveRecords(false)
 					.list(I_M_Product.class);
-			assertThat(list.size(), is(3));
+			assertThat(list).hasSize(3);
 
-			assertThat(list.get(0), is(product0));
-			assertThat(product0.isActive(), is(true));
+			assertThat(list.get(0)).isEqualTo(product0);
+			assertThat(product0.isActive()).isTrue();
 
-			assertThat(list.get(1), is(product1_NotActive));
-			assertThat(product1_NotActive.isActive(), is(false));
+			assertThat(list.get(1)).isEqualTo(product1_NotActive);
+			assertThat(product1_NotActive.isActive()).isFalse();
 
-			assertThat(list.get(2), is(product2));
-			assertThat(product2.isActive(), is(true));
+			assertThat(list.get(2)).isEqualTo(product2);
+			assertThat(product2.isActive()).isTrue();
 		}
 	}
 
 	@Test
 	public void test_Query_SetOnlySelection()
 	{
-		assertThat(product0, notNullValue()); // simple guard;
-		assertThat(product1_NotActive, notNullValue()); // simple guard;
-		assertThat(product2, notNullValue()); // simple guard;
+		assertThat(product0).isNotNull(); // simple guard;
+		assertThat(product1_NotActive).isNotNull(); // simple guard;
+		assertThat(product2).isNotNull(); // simple guard;
 
 		// Create selection containing product1 and product2
 		final PInstanceId selectionId = POJOLookupMap.get().createSelectionFromModels(product1_NotActive, product2);
@@ -232,10 +230,10 @@ public class QueryBuilderTests
 		{
 			query.setOnlySelection(selectionId);
 			final List<I_M_Product> list = query.list();
-			assertThat(list.size(), is(2));
+			assertThat(list).hasSize(2);
 
-			assertThat(list.get(0), is(product1_NotActive));
-			assertThat(list.get(1), is(product2));
+			assertThat(list.get(0)).isEqualTo(product1_NotActive);
+			assertThat(list.get(1)).isEqualTo(product2);
 		}
 
 		//
@@ -243,20 +241,20 @@ public class QueryBuilderTests
 		{
 			query.setOnlySelection(null);
 			final List<I_M_Product> list = query.list();
-			assertThat(list.size(), is(3));
+			assertThat(list).hasSize(3);
 
-			assertThat(list.get(0), is(product0));
-			assertThat(list.get(1), is(product1_NotActive));
-			assertThat(list.get(2), is(product2));
+			assertThat(list.get(0)).isEqualTo(product0);
+			assertThat(list.get(1)).isEqualTo(product1_NotActive);
+			assertThat(list.get(2)).isEqualTo(product2);
 		}
 	}
 
 	@Test
 	public void test_SetOnlySelection()
 	{
-		assertThat(product0, notNullValue()); // simple guard;
-		assertThat(product1_NotActive, notNullValue()); // simple guard;
-		assertThat(product2, notNullValue()); // simple guard;
+		assertThat(product0).isNotNull(); // simple guard;
+		assertThat(product1_NotActive).isNotNull(); // simple guard;
+		assertThat(product2).isNotNull(); // simple guard;
 
 		// Create selection containing product1 and product2
 		final PInstanceId selectionId = POJOLookupMap.get().createSelectionFromModels(product1_NotActive, product2);
@@ -266,9 +264,9 @@ public class QueryBuilderTests
 				.setOnlySelection(selectionId)
 				.create()
 				.list();
-		assertThat(list.size(), is(2));
-		assertThat(list.get(0), is(product1_NotActive));
-		assertThat(list.get(1), is(product2));
+		assertThat(list).hasSize(2);
+		assertThat(list.get(0)).isEqualTo(product1_NotActive);
+		assertThat(list.get(1)).isEqualTo(product2);
 	}
 
 	/**
@@ -315,7 +313,7 @@ public class QueryBuilderTests
 		final IQueryBuilder<I_M_Product> queryBuilder = new QueryBuilder<>(I_M_Product.class, null) // tableName=null
 				.setJoinAnd()
 				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions)
-				.filter(new CompositeQueryFilter<>(I_M_Product.class)
+				.filter(CompositeQueryFilter.newInstance(I_M_Product.class)
 						.setJoinOr()
 						.addEqualsFilter(I_M_Product.COLUMN_M_Product_ID, product0.getM_Product_ID())
 						.addEqualsFilter(I_M_Product.COLUMN_M_Product_ID, product1.getM_Product_ID())

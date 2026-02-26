@@ -33,6 +33,7 @@ import de.metas.material.event.pporder.PPOrderCandidate;
 import de.metas.material.event.pporder.PPOrderCandidateCreatedEvent;
 import de.metas.material.event.pporder.PPOrderCandidateDeletedEvent;
 import de.metas.material.event.pporder.PPOrderCandidateUpdatedEvent;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -85,12 +86,17 @@ public class PP_Order_Candidate
 			ifColumnsChanged = { I_PP_Order_Candidate.COLUMNNAME_QtyEntered, I_PP_Order_Candidate.COLUMNNAME_QtyToProcess, I_PP_Order_Candidate.COLUMNNAME_QtyProcessed })
 	public void syncLinesAndMaterialDisposition(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
 	{
+		if (ppOrderCandidateRecord.isClosed())
+		{
+			return;
+		}
 		final I_PP_Order_Candidate oldRecord = InterfaceWrapperHelper.createOld(ppOrderCandidateRecord, I_PP_Order_Candidate.class);
 
 		final boolean qtyEnteredOrProcessedChanged = !oldRecord.getQtyEntered().equals(ppOrderCandidateRecord.getQtyEntered())
 				|| !oldRecord.getQtyProcessed().equals(ppOrderCandidateRecord.getQtyProcessed());
+		final boolean isUIAction = InterfaceWrapperHelper.isUIAction(ppOrderCandidateRecord);
 
-		if (qtyEnteredOrProcessedChanged)
+		if (qtyEnteredOrProcessedChanged && isUIAction)
 		{
 			ppOrderCandidateRecord.setQtyToProcess(ppOrderCandidateRecord.getQtyEntered().subtract(ppOrderCandidateRecord.getQtyProcessed()));
 		}
@@ -102,6 +108,11 @@ public class PP_Order_Candidate
 			ppOrderCandidateService.syncLines(ppOrderCandidateRecord);
 
 			syncUpdatesToMaterialDispo(ppOrderCandidateRecord);
+
+			if (isUIAction)
+			{
+				ppOrderCandidateRecord.setProcessed(ppOrderCandidateRecord.getQtyToProcess().signum() == 0);
+			}
 		}
 	}
 
@@ -174,9 +185,9 @@ public class PP_Order_Candidate
 	private void syncUpdatesToMaterialDispo(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
 	{
 		ddOrderCandidateRepository.delete(DDOrderCandidateQuery.builder()
-												  .ppOrderCandidateId(PPOrderCandidateId.ofRepoId(ppOrderCandidateRecord.getPP_Order_Candidate_ID()))
-												  .processed(false)
-												  .build());
+				.ppOrderCandidateId(PPOrderCandidateId.ofRepoId(ppOrderCandidateRecord.getPP_Order_Candidate_ID()))
+				.processed(false)
+				.build());
 
 		final PPOrderCandidate ppOrderCandidatePojo = ppOrderCandidateConverter.toPPOrderCandidate(ppOrderCandidateRecord);
 
@@ -191,9 +202,12 @@ public class PP_Order_Candidate
 	private void fireMaterialCreatedEvent(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
 	{
 		final PPOrderCandidate ppOrderCandidatePojo = ppOrderCandidateConverter.toPPOrderCandidate(ppOrderCandidateRecord);
-
-		final EventDescriptor eventDescriptor = EventDescriptor.ofClientOrgAndTraceId(ppOrderCandidatePojo.getPpOrderData().getClientAndOrgId(),
-																					  getMaterialDispoTraceId(ppOrderCandidateRecord));
+		final UserId userId = UserId.ofRepoId(ppOrderCandidateRecord.getUpdatedBy());
+		
+		final EventDescriptor eventDescriptor = EventDescriptor.ofClientOrgUserIdAndTraceId(
+				ppOrderCandidatePojo.getPpOrderData().getClientAndOrgId(),
+				userId,
+				getMaterialDispoTraceId(ppOrderCandidateRecord));
 
 		final PPOrderCandidateCreatedEvent ppOrderCandidateCreatedEvent = PPOrderCandidateCreatedEvent.builder()
 				.eventDescriptor(eventDescriptor)

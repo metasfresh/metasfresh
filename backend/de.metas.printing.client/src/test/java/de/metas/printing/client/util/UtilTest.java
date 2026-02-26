@@ -22,27 +22,27 @@ package de.metas.printing.client.util;
  * #L%
  */
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class UtilTest
 {
 	@Test
 	public void test_changeFileExtension() throws Exception
 	{
-		Assert.assertEquals("test.pdf", Util.changeFileExtension("test.json", "pdf"));
-		Assert.assertEquals("test-no-extension.pdf", Util.changeFileExtension("test-no-extension", "pdf"));
-		Assert.assertEquals("test", Util.changeFileExtension("test.json", null));
-		Assert.assertEquals("test", Util.changeFileExtension("test.json", ""));
-		Assert.assertEquals("test", Util.changeFileExtension("test.json", "    "));
-		Assert.assertEquals(".test.pdf", Util.changeFileExtension(".test", "pdf"));
+		Assertions.assertEquals("test.pdf", Util.changeFileExtension("test.json", "pdf"));
+		Assertions.assertEquals("test-no-extension.pdf", Util.changeFileExtension("test-no-extension", "pdf"));
+		Assertions.assertEquals("test", Util.changeFileExtension("test.json", null));
+		Assertions.assertEquals("test", Util.changeFileExtension("test.json", ""));
+		Assertions.assertEquals("test", Util.changeFileExtension("test.json", "    "));
+		Assertions.assertEquals(".test.pdf", Util.changeFileExtension(".test", "pdf"));
 	}
 
 	@Test
 	public void test_getFileExtension() throws Exception
 	{
-		Assert.assertEquals("pdf", Util.getFileExtension("test.pdf"));
-		Assert.assertEquals("pdf", Util.getFileExtension("test.json.pdf"));
-		Assert.assertEquals(null, Util.getFileExtension("test"));
+		Assertions.assertEquals("pdf", Util.getFileExtension("test.pdf"));
+		Assertions.assertEquals("pdf", Util.getFileExtension("test.json.pdf"));
+		Assertions.assertEquals(null, Util.getFileExtension("test"));
 	}
 }

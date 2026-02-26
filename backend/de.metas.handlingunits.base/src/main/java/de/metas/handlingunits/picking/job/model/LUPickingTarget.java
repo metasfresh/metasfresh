@@ -17,7 +17,6 @@ import java.util.Objects;
 public class LUPickingTarget
 {
 	@NonNull String id;
-
 	@NonNull String caption;
 
 	//

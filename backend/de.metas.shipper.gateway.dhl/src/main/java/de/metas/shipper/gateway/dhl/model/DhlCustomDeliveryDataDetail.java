@@ -22,7 +22,7 @@
 
 package de.metas.shipper.gateway.dhl.model;
 
-import de.metas.mpackage.PackageId;
+import de.metas.shipping.mpackage.PackageId;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NonNull;

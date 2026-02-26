@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="2.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="uat.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\uat.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -19,7 +19,15 @@
 	</parameter>
 	<queryString>
 		<![CDATA[SELECT
-* from de_metas_endcustomer_fresh_reports.Docs_Sales_TransportOrder_Details( $P{RECORD_ID});]]>
+name,
+       address,
+       istobefetched,
+       DeliveryDateTimeMax,
+       isPallet,
+       QtyTU,
+       QtyLU,
+       notes
+from de_metas_endcustomer_fresh_reports.Docs_Sales_TransportOrder_Details( $P{RECORD_ID});]]>
 	</queryString>
 	<field name="name" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="name"/>
@@ -30,6 +38,10 @@
 		<property name="com.jaspersoft.studio.field.name" value="address"/>
 		<property name="com.jaspersoft.studio.field.label" value="address"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="c_bpartner_location"/>
+	</field>
+	<field name="istobefetched" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="istobefetched"/>
+		<property name="com.jaspersoft.studio.field.label" value="istobefetched"/>
 	</field>
 	<field name="deliverydatetimemax" class="java.sql.Timestamp">
 		<property name="com.jaspersoft.studio.field.name" value="deliverydatetimemax"/>
@@ -58,7 +70,7 @@
 		<band splitType="Stretch"/>
 	</title>
 	<pageHeader>
-		<band height="12" splitType="Stretch">
+		<band height="20" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-16" stretchType="ContainerHeight" x="37" y="0" width="115" height="12" forecolor="#000000" uuid="eb476af4-b073-4070-9a1a-c2c973a60b7e"/>
@@ -75,7 +87,7 @@
 				<textFieldExpression><![CDATA[$R{BPAddress}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-16" stretchType="ContainerHeight" x="266" y="0" width="60" height="12" forecolor="#000000" uuid="f43638ed-8f3f-49ac-878e-7f6761b08abb">
+				<reportElement key="textField-16" stretchType="ContainerHeight" x="314" y="0" width="50" height="12" forecolor="#000000" uuid="f43638ed-8f3f-49ac-878e-7f6761b08abb">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
 				<textElement markup="none">
@@ -84,77 +96,103 @@
 				<textFieldExpression><![CDATA[$R{Time}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-16" stretchType="ContainerHeight" x="436" y="0" width="150" height="12" forecolor="#000000" uuid="67f56434-f07d-4084-a473-3d829e5e4940"/>
+				<reportElement key="textField-16" stretchType="ContainerHeight" x="450" y="0" width="140" height="12" forecolor="#000000" uuid="67f56434-f07d-4084-a473-3d829e5e4940"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Notes}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" evaluationTime="Auto" isBlankWhenNull="true">
-				<reportElement key="textField-16" stretchType="ContainerHeight" x="326" y="0" width="49" height="12" forecolor="#000000" uuid="d7b0b45b-414a-4168-afde-b26a1728aeb3"/>
+				<reportElement key="textField-16" stretchType="ContainerHeight" x="365" y="0" width="40" height="12" forecolor="#000000" uuid="d7b0b45b-414a-4168-afde-b26a1728aeb3"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{QtyTU}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" evaluationTime="Auto" isBlankWhenNull="true">
-				<reportElement key="textField-16" stretchType="ContainerHeight" x="374" y="0" width="60" height="12" forecolor="#000000" uuid="5b9d534e-70d3-42f5-975f-1c727d42eda6"/>
+				<reportElement key="textField-16" stretchType="ContainerHeight" x="406" y="0" width="42" height="12" forecolor="#000000" uuid="5b9d534e-70d3-42f5-975f-1c727d42eda6"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{QtyLU}]]></textFieldExpression>
 			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-16" stretchType="ContainerHeight" x="266" y="0" width="48" height="12" forecolor="#000000" uuid="a797d798-096b-4f98-af2a-eeee43b0f85f">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement markup="none">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{IsPickupLocation}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="33" y="16" width="560" height="1" uuid="a19cf48a-bf70-4b4c-be7a-fd8478e54651">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+			</line>
 		</band>
 	</pageHeader>
 	<detail>
-		<band height="12" splitType="Stretch">
+		<band height="13" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-16" x="37" y="0" width="115" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" uuid="1b4cc2a7-14ad-4b21-8275-fda17943337b"/>
 				<textElement markup="none">
-					<font size="9" isBold="false"/>
+					<font fontName="Arial" size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-16" x="151" y="0" width="115" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" uuid="149a75da-bec3-4688-8c75-bf3603956ed6"/>
 				<textElement markup="none">
-					<font size="9" isBold="false"/>
+					<font fontName="Arial" size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{address}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-16" x="436" y="0" width="150" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" uuid="be68a796-ba69-4dbd-927e-5c7f231caf20"/>
+				<reportElement key="textField-16" x="450" y="0" width="140" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" uuid="be68a796-ba69-4dbd-927e-5c7f231caf20"/>
 				<textElement markup="none">
-					<font size="9" isBold="false"/>
+					<font fontName="Arial" size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{notes}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy, HH.mm" isBlankWhenNull="true">
-				<reportElement key="textField-16" x="266" y="0" width="60" height="12" forecolor="#000000" uuid="fa602562-4a5e-4857-95ce-af3a4777aa8f">
+				<reportElement key="textField-16" x="314" y="0" width="50" height="12" forecolor="#000000" uuid="fa602562-4a5e-4857-95ce-af3a4777aa8f">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
 				<textElement markup="none">
-					<font size="9" isBold="false"/>
+					<font fontName="Arial" size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{deliverydatetimemax}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="textField-16" x="326" y="0" width="49" height="12" forecolor="#000000" uuid="ee2465c3-266e-4c5a-b6e7-0729de5e332c"/>
+				<reportElement key="textField-16" x="365" y="0" width="40" height="12" forecolor="#000000" uuid="ee2465c3-266e-4c5a-b6e7-0729de5e332c"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="false"/>
+					<font fontName="Arial" size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qtytu}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="textField-16" x="374" y="0" width="60" height="12" forecolor="#000000" uuid="38994f49-d015-4101-b8ea-2fc91b7d095c"/>
+				<reportElement key="textField-16" x="406" y="0" width="42" height="12" forecolor="#000000" uuid="38994f49-d015-4101-b8ea-2fc91b7d095c"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" isBold="false"/>
+					<font fontName="Arial" size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qtylu}]]></textFieldExpression>
 			</textField>
+			<textField pattern="dd.MM.yyyy, HH.mm" isBlankWhenNull="true">
+				<reportElement key="textField-16" x="266" y="0" width="48" height="12" forecolor="#000000" uuid="f452b1e2-9e6b-4e40-9aad-d4ccc9b42860">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement markup="none">
+					<font fontName="Arial" size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($P{ad_language}.equals("de_DE") || $P{ad_language}.equals("de_CH")) 
+? ( $F{istobefetched}.equals("Y") ? "Ja" : "Nein") 
+: $F{istobefetched}]]></textFieldExpression>
+			</textField>
 		</band>
-		<band height="5"/>
+		<band/>
 	</detail>
 	<pageFooter>
 		<band splitType="Stretch"/>

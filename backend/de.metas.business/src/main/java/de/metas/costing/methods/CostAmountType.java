@@ -22,6 +22,8 @@ public enum CostAmountType implements ReferenceListAwareEnum
 
 	public static CostAmountType ofCode(@NonNull final String code) {return index.ofCode(code);}
 
+	public static CostAmountType ofCodeOrName(@NonNull final String code) {return index.ofCodeOrName(code);}
+
 	public boolean isMain() {return MAIN.equals(this);}
 
 	public boolean isAdjustment() {return ADJUSTMENT.equals(this);}

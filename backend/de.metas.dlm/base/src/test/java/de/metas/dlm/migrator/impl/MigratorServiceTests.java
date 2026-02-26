@@ -1,20 +1,18 @@
 package de.metas.dlm.migrator.impl;
 
-import java.util.Collection;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import de.metas.dlm.Partition;
+import de.metas.dlm.model.IDLMAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Payment;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.dlm.Partition;
-import de.metas.dlm.model.IDLMAware;
+import java.util.Collection;
 
 /*
  * #%L
@@ -40,7 +38,7 @@ import de.metas.dlm.model.IDLMAware;
 
 public class MigratorServiceTests
 {
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

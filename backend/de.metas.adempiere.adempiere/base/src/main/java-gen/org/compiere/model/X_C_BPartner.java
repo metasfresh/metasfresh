@@ -1,10 +1,32 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_BPartner
  *  @author metasfresh (generated) 
@@ -13,7 +35,7 @@ import javax.annotation.Nullable;
 public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1416296865L;
+	private static final long serialVersionUID = 509436002L;
 
     /** Standard Constructor */
     public X_C_BPartner (final Properties ctx, final int C_BPartner_ID, @Nullable final String trxName)
@@ -415,6 +437,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
+	public void setCommercialRegisterNumber (final @Nullable java.lang.String CommercialRegisterNumber)
+	{
+		set_Value (COLUMNNAME_CommercialRegisterNumber, CommercialRegisterNumber);
+	}
+
+	@Override
+	public java.lang.String getCommercialRegisterNumber() 
+	{
+		return get_ValueAsString(COLUMNNAME_CommercialRegisterNumber);
+	}
+
+	@Override
 	public void setCompanyName (final @Nullable java.lang.String CompanyName)
 	{
 		set_Value (COLUMNNAME_CompanyName, CompanyName);
@@ -680,6 +714,41 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
+	public void setEInvoice_BuyerReference (final @Nullable java.lang.String EInvoice_BuyerReference)
+	{
+		set_Value (COLUMNNAME_EInvoice_BuyerReference, EInvoice_BuyerReference);
+	}
+
+	@Override
+	public java.lang.String getEInvoice_BuyerReference() 
+	{
+		return get_ValueAsString(COLUMNNAME_EInvoice_BuyerReference);
+	}
+
+	/** 
+	 * EInvoiceType AD_Reference_ID=541990
+	 * Reference name: EInvoiceType
+	 */
+	public static final int EINVOICETYPE_AD_Reference_ID=541990;
+	/** XRechnung = X */
+	public static final String EINVOICETYPE_XRechnung = "X";
+	/** ZUGFeRD = Z */
+	public static final String EINVOICETYPE_ZUGFeRD = "Z";
+	/** PEPPOL = P */
+	public static final String EINVOICETYPE_PEPPOL = "P";
+	@Override
+	public void setEInvoiceType (final @Nullable java.lang.String EInvoiceType)
+	{
+		set_Value (COLUMNNAME_EInvoiceType, EInvoiceType);
+	}
+
+	@Override
+	public java.lang.String getEInvoiceType() 
+	{
+		return get_ValueAsString(COLUMNNAME_EInvoiceType);
+	}
+
+	@Override
 	public void setEMail (final @Nullable java.lang.String EMail)
 	{
 		throw new IllegalArgumentException ("EMail is virtual column");	}
@@ -839,6 +908,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
+	public void setIncotermLocation (final @Nullable java.lang.String IncotermLocation)
+	{
+		set_Value (COLUMNNAME_IncotermLocation, IncotermLocation);
+	}
+
+	@Override
+	public java.lang.String getIncotermLocation() 
+	{
+		return get_ValueAsString(COLUMNNAME_IncotermLocation);
+	}
+
+	@Override
 	public void setInternalName (final @Nullable java.lang.String InternalName)
 	{
 		set_Value (COLUMNNAME_InternalName, InternalName);
@@ -964,6 +1045,27 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return get_ValueAsBoolean(COLUMNNAME_IsArchived);
 	}
 
+	/** 
+	 * IsAutoInvoice AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISAUTOINVOICE_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISAUTOINVOICE_Yes = "Y";
+	/** No = N */
+	public static final String ISAUTOINVOICE_No = "N";
+	@Override
+	public void setIsAutoInvoice (final @Nullable java.lang.String IsAutoInvoice)
+	{
+		set_Value (COLUMNNAME_IsAutoInvoice, IsAutoInvoice);
+	}
+
+	@Override
+	public java.lang.String getIsAutoInvoice() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsAutoInvoice);
+	}
+
 	@Override
 	public void setIsCompany (final boolean IsCompany)
 	{
@@ -1025,6 +1127,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
+	public void setIsEInvoiceRecipeint (final boolean IsEInvoiceRecipeint)
+	{
+		set_Value (COLUMNNAME_IsEInvoiceRecipeint, IsEInvoiceRecipeint);
+	}
+
+	@Override
+	public boolean isEInvoiceRecipeint() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsEInvoiceRecipeint);
+	}
+
+	@Override
 	public void setIsEmployee (final boolean IsEmployee)
 	{
 		set_Value (COLUMNNAME_IsEmployee, IsEmployee);
@@ -1037,6 +1151,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
+	public void setIsFullLURequired (final boolean IsFullLURequired)
+	{
+		set_Value (COLUMNNAME_IsFullLURequired, IsFullLURequired);
+	}
+
+	@Override
+	public boolean isFullLURequired() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsFullLURequired);
+	}
+
+	@Override
 	public void setIsHaddexCheck (final boolean IsHaddexCheck)
 	{
 		set_Value (COLUMNNAME_IsHaddexCheck, IsHaddexCheck);
@@ -1046,6 +1172,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public boolean isHaddexCheck() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsHaddexCheck);
+	}
+
+	@Override
+	public void setIsInvoiceEmailCcToMember (final boolean IsInvoiceEmailCcToMember)
+	{
+		set_Value (COLUMNNAME_IsInvoiceEmailCcToMember, IsInvoiceEmailCcToMember);
+	}
+
+	@Override
+	public boolean isInvoiceEmailCcToMember() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsInvoiceEmailCcToMember);
 	}
 
 	@Override
@@ -1130,6 +1268,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public boolean isSEPASigned() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsSEPASigned);
+	}
+
+	@Override
+	public void setIsShipmentPricePrinted (final boolean IsShipmentPricePrinted)
+	{
+		set_Value (COLUMNNAME_IsShipmentPricePrinted, IsShipmentPricePrinted);
+	}
+
+	@Override
+	public boolean isShipmentPricePrinted() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsShipmentPricePrinted);
 	}
 
 	@Override
@@ -1253,6 +1403,30 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public int getLogo_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Logo_ID);
+	}
+
+	@Override
+	public void setLookup_Label (final @Nullable java.lang.String Lookup_Label)
+	{
+		set_Value (COLUMNNAME_Lookup_Label, Lookup_Label);
+	}
+
+	@Override
+	public java.lang.String getLookup_Label() 
+	{
+		return get_ValueAsString(COLUMNNAME_Lookup_Label);
+	}
+
+	@Override
+	public void setMaterialReceiptInfo (final @Nullable java.lang.String MaterialReceiptInfo)
+	{
+		set_Value (COLUMNNAME_MaterialReceiptInfo, MaterialReceiptInfo);
+	}
+
+	@Override
+	public java.lang.String getMaterialReceiptInfo() 
+	{
+		return get_ValueAsString(COLUMNNAME_MaterialReceiptInfo);
 	}
 
 	@Override
@@ -1565,9 +1739,9 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	/** Sofortüberweisung = R */
 	public static final String PAYMENTRULE_Sofortueberweisung = "R";
 	/** Rückerstattung = E */
-	public static final String PAYMENTRULE_Reimbursement = "E";
+	public static final String PAYMENTRULE_Rueckerstattung = "E";
 	/** Verrechnung = F */
-	public static final String PAYMENTRULE_Settlement = "F";
+	public static final String PAYMENTRULE_Verrechnung = "F";
 	@Override
 	public void setPaymentRule (final java.lang.String PaymentRule)
 	{
@@ -1578,6 +1752,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getPaymentRule() 
 	{
 		return get_ValueAsString(COLUMNNAME_PaymentRule);
+	}
+
+	@Override
+	public void setPaymentRuleInfo (final @Nullable java.lang.String PaymentRuleInfo)
+	{
+		set_Value (COLUMNNAME_PaymentRuleInfo, PaymentRuleInfo);
+	}
+
+	@Override
+	public java.lang.String getPaymentRuleInfo() 
+	{
+		return get_ValueAsString(COLUMNNAME_PaymentRuleInfo);
 	}
 
 	/** 
@@ -1607,6 +1793,10 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public static final String PAYMENTRULEPO_KreditkarteExtern = "U";
 	/** Sofortüberweisung = R */
 	public static final String PAYMENTRULEPO_Sofortueberweisung = "R";
+	/** Rückerstattung = E */
+	public static final String PAYMENTRULEPO_Rueckerstattung = "E";
+	/** Verrechnung = F */
+	public static final String PAYMENTRULEPO_Verrechnung = "F";
 	@Override
 	public void setPaymentRulePO (final java.lang.String PaymentRulePO)
 	{
@@ -1617,6 +1807,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getPaymentRulePO() 
 	{
 		return get_ValueAsString(COLUMNNAME_PaymentRulePO);
+	}
+
+	@Override
+	public void setPaymentRulePOInfo (final @Nullable java.lang.String PaymentRulePOInfo)
+	{
+		set_Value (COLUMNNAME_PaymentRulePOInfo, PaymentRulePOInfo);
+	}
+
+	@Override
+	public java.lang.String getPaymentRulePOInfo() 
+	{
+		return get_ValueAsString(COLUMNNAME_PaymentRulePOInfo);
 	}
 
 	@Override
@@ -1730,6 +1932,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getPO_Incoterm() 
 	{
 		return get_ValueAsString(COLUMNNAME_PO_Incoterm);
+	}
+
+	@Override
+	public void setPO_IncotermLocation (final @Nullable java.lang.String PO_IncotermLocation)
+	{
+		set_Value (COLUMNNAME_PO_IncotermLocation, PO_IncotermLocation);
+	}
+
+	@Override
+	public java.lang.String getPO_IncotermLocation() 
+	{
+		return get_ValueAsString(COLUMNNAME_PO_IncotermLocation);
 	}
 
 	/** 

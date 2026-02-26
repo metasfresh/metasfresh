@@ -24,7 +24,9 @@ import {
   ATTR_barcodeType,
   ATTR_bestBeforeDate,
   ATTR_displayable,
+  ATTR_HUUnitType,
   ATTR_isTUToBePickedAsWhole,
+  ATTR_isUnique,
   ATTR_lotNo,
   ATTR_productId,
   ATTR_productNo,
@@ -32,6 +34,7 @@ import {
   ATTR_weightNetUOM,
   BARCODE_TYPE_HU,
   BARCODE_TYPE_LMQ,
+  parseQRCodeType,
   QRCODE_SEPARATOR,
   toLocalDateString,
 } from './common';
@@ -39,11 +42,25 @@ import { trl } from '../translations';
 import { HU_ATTRIBUTE_BestBeforeDate, HU_ATTRIBUTE_LotNo, HU_ATTRIBUTE_WeightNet } from '../../constants/HUAttributes';
 import { parseGS1CodeString } from './gs1';
 import { parseEAN13CodeString } from './ean13';
+import { parseCustomQRCode } from './parseCustomQRCode';
 import { ContextualError } from '../ContextualError';
 import { errorToString } from '../toast';
 
 export const QRCODE_TYPE_HU = 'HU';
 export const QRCODE_TYPE_LEICH_UND_MEHL = 'LMQ';
+
+export const isHUQRCode = (string) => {
+  return parseQRCodeType(string) === QRCODE_TYPE_HU;
+};
+
+export const toQRCodeDisplayableNoFail = (qrCode) => {
+  try {
+    return toQRCodeDisplayable(qrCode);
+  } catch (error) {
+    console.debug('toQRCodeDisplayableNoFail: got error', error);
+    return `${qrCode}`;
+  }
+};
 
 export const toQRCodeDisplayable = (qrCode) => {
   //
@@ -123,7 +140,7 @@ export const toQRCodeObject = (qrCode) => {
     const code = `${qrCode}`;
     return {
       code,
-      displayable: toQRCodeDisplayable(code),
+      displayable: toQRCodeDisplayableNoFail(code),
     };
   }
 
@@ -136,14 +153,42 @@ export const toQRCodeObject = (qrCode) => {
 // de.metas.global_qrcodes.GlobalQRCode.ofString
 // de.metas.handlingunits.qrcodes.model.HUQRCode
 // de.metas.handlingunits.qrcodes.model.json.HUQRCodeJsonConverter.fromGlobalQRCode
-export const parseQRCodeString = (string, returnFalseOnError) => {
-  //console.trace('parseQRCodeString', { string, returnFalseOnError });
-  const allResults = {};
+export const parseQRCodeString = (param1_string, param2_returnFalseOnError) => {
+  let string;
+  let returnFalseOnError;
+  let customQRCodeFormats = [];
+  let checkOnlyPreciseFormats = false;
+  if (typeof param1_string === 'object' && param1_string !== null) {
+    const obj = param1_string;
+    string = obj.string;
+    returnFalseOnError = obj.returnFalseOnError ?? false;
+    customQRCodeFormats = obj.customQRCodeFormats ?? [];
+    checkOnlyPreciseFormats = obj.checkOnlyPreciseFormats ?? false;
+  } else {
+    string = param1_string;
+    returnFalseOnError = param2_returnFalseOnError;
+  }
+  // console.trace('parseQRCodeString', { string, returnFalseOnError, customQRCodeFormats });
 
-  let result = parseGS1CodeString(string);
+  const allResults = {};
+  let result = { error: 'initial' };
 
   try {
-    allResults['gs1'] = result;
+    if (customQRCodeFormats?.length > 0) {
+      for (const format of customQRCodeFormats) {
+        result = parseCustomQRCode({ string, format });
+        allResults['custom - ' + format.name] = result;
+        if (!result?.error) {
+          break;
+        }
+      }
+    }
+
+    if (result?.error && !checkOnlyPreciseFormats) {
+      // NOTE: GS1 is considered not a precise format because it might match a simple M_HU_ID/Value code as a LotNo GS1.
+      result = parseGS1CodeString(string);
+      allResults['gs1'] = result;
+    }
 
     if (result?.error) {
       result = parseEAN13CodeString(string);
@@ -157,7 +202,7 @@ export const parseQRCodeString = (string, returnFalseOnError) => {
 
     // console.log('allResults: ' + JSON.stringify(allResults, null, 2));
   } catch (error) {
-    console.trace('Got error while parsing QR code string: %s', string, { error });
+    console.trace('Got error while parsing QR code string:', string, { error });
     result.error = trl('error.qrCode.invalid');
     delete result.errorDetail;
     result.errorCause = errorToString(error);
@@ -171,7 +216,7 @@ export const parseQRCodeString = (string, returnFalseOnError) => {
   } else {
     const errorMsg = result?.error ? result.error : trl('error.qrCode.invalid');
     const errorContext = { ...result, string, allResults, errorCause: result?.errorCause };
-    console.trace('parseQRCodeString: %s', errorMsg, errorContext);
+    console.trace('parseQRCodeString:', errorMsg, errorContext);
     throw new ContextualError(errorMsg, errorContext);
   }
 };
@@ -247,6 +292,8 @@ const parseQRCodePayload_HU_v1 = (payload) => {
 
   const result = { displayable };
   result[ATTR_barcodeType] = BARCODE_TYPE_HU;
+  result[ATTR_isUnique] = true;
+  result[ATTR_HUUnitType] = payload?.packingInfo?.huUnitType;
 
   if (payload?.product?.id) {
     // IMPORTANT: convert it to string because all over in our code we assume IDs are strings.
@@ -278,6 +325,7 @@ const LMQ_BEST_BEFORE_DATE_FORMAT = /^(\d{2}).(\d{2}).(\d{4})$/;
 const parseQRCodePayload_LeichMehl_v1 = (payload) => {
   const result = { displayable: payload };
   result[ATTR_barcodeType] = BARCODE_TYPE_LMQ;
+  result[ATTR_isUnique] = false;
 
   const parts = payload.split('#');
   if (parts.length >= 1 && parts[0] != null) {

@@ -52,8 +52,8 @@ import org.compiere.model.I_C_Conversion_Rate;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -80,7 +80,7 @@ public class RemittanceAdviceServiceTest
 	private CurrencyId euroCurrencyId;
 	private CurrencyId chfCurrencyId;
 
-	@Before
+	@BeforeEach
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();

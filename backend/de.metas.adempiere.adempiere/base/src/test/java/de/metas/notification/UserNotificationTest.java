@@ -7,8 +7,8 @@ import de.metas.notification.impl.NotificationSeverity;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -41,7 +41,7 @@ public class UserNotificationTest
 {
 	private ObjectMapper jsonMapper;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

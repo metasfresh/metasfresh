@@ -25,7 +25,6 @@ package de.metas.report.jasper.class_loader;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableSet;
-import de.metas.cache.CCache;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.logging.LogManager;
 import de.metas.report.jasper.JasperEngine;
@@ -34,6 +33,7 @@ import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
+import lombok.ToString;
 import lombok.Value;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -43,20 +43,22 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import javax.xml.bind.DatatypeConverter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * Alternative class loader to be used when doing dev-tests on a local machine.<br>
@@ -75,8 +77,7 @@ public class JasperCompileClassLoader extends ClassLoader
 
 	private final ImmutableSet<File> additionalResourceDirNames;
 
-	private static final CCache<String, Optional<JasperEntry>> jasperEntriesByJrxmlPathCache = CCache.<String, Optional<JasperEntry>>builder()
-			.build();
+	@NonNull private final CompliedJaspersCacheFileSystem cacheFileSystem = new CompliedJaspersCacheFileSystem();
 
 	@Builder
 	private JasperCompileClassLoader(
@@ -84,7 +85,6 @@ public class JasperCompileClassLoader extends ClassLoader
 			@NonNull @Singular final List<File> additionalResourceDirNames)
 	{
 		super(parentClassLoader);
-
 		this.additionalResourceDirNames = ImmutableSet.copyOf(additionalResourceDirNames);
 	}
 
@@ -97,8 +97,9 @@ public class JasperCompileClassLoader extends ClassLoader
 				.toString();
 	}
 
+	@Nullable
 	@Override
-	protected URL findResource(final String name)
+	protected URL findResource(@NonNull final String name)
 	{
 		final String nameNormalized = StringUtils.trimBlankToNull(name.trim());
 		if (nameNormalized == null)
@@ -125,28 +126,28 @@ public class JasperCompileClassLoader extends ClassLoader
 	}
 
 	@Nullable
-	private URL getJasperResource(final String name)
+	private URL getJasperResource(final String resourceName)
 	{
-		final String jrxmlPath = toLocalPath(name, jrxmlExtension);
-		JasperEntry entry = jasperEntriesByJrxmlPathCache.getOrLoad(jrxmlPath, this::computeJasperEntry).orElse(null);
-		if (entry != null)
+		final String jrxmlPath = toLocalPath(resourceName, jrxmlExtension);
+		final File jrxmlFile = toJrxmlLocalFile(jrxmlPath);
+		if (jrxmlFile == null)
 		{
-			final BooleanWithReason recompileRequired = checkRecompileRequired(entry);
-			if (recompileRequired.isTrue())
-			{
-				logger.info("Recompiling `{}` because {}", jrxmlPath, recompileRequired.getReason());
-				jasperEntriesByJrxmlPathCache.remove(jrxmlPath);
-				entry = jasperEntriesByJrxmlPathCache.getOrLoad(jrxmlPath, this::computeJasperEntry).orElse(null);
-			}
+			return null;
 		}
 
-		return entry != null ? entry.getJasperUrl() : null;
+		final JasperEntry entry = cacheFileSystem.getByJrxmlFile(jrxmlFile);
+		checkRecompileRequired(entry)
+				.ifTrue(recompileReason -> {
+					logger.info("Recompiling `{}` because {}", jrxmlPath, recompileReason);
+					compile(entry);
+				});
+
+		return entry.getJasperUrl();
 	}
 
-	private Optional<JasperEntry> computeJasperEntry(@NonNull final String jrxmlPath)
+	@Nullable
+	private File toJrxmlLocalFile(@NonNull final String jrxmlPath)
 	{
-		logger.trace("Computing jasper report for {}", jrxmlPath);
-
 		//
 		// Get resource's input stream
 		String jrxmlPathNorm = jrxmlPath;
@@ -162,17 +163,17 @@ public class JasperCompileClassLoader extends ClassLoader
 		if (jrxmlUrl == null)
 		{
 			logger.trace("No JRXML resource found for {}", jrxmlPath);
-			return Optional.empty();
+			return null;
 		}
 
-		final File jrxmlFile = toLocalFile(jrxmlUrl);
-		final File jasperFile = compileJrxml(jrxmlFile);
-
-		return Optional.of(JasperEntry.builder()
-				.jrxmlFile(jrxmlFile)
-				.jrxmlFileHash(computeHash(jrxmlFile))
-				.jasperFile(jasperFile)
-				.build());
+		try
+		{
+			return new File(jrxmlUrl.toURI());
+		}
+		catch (final URISyntaxException ex)
+		{
+			throw new AdempiereException("Cannot convert URL to local File: " + jrxmlUrl, ex);
+		}
 	}
 
 	private static BooleanWithReason checkRecompileRequired(@NonNull final JasperEntry entry)
@@ -180,29 +181,49 @@ public class JasperCompileClassLoader extends ClassLoader
 		final File jrxmlFile = entry.getJrxmlFile();
 		if (!jrxmlFile.exists() || !jrxmlFile.canRead())
 		{
-			return BooleanWithReason.trueBecause("" + jrxmlFile + " is missing or it cannot be read");
+			return BooleanWithReason.trueBecause(jrxmlFile + " is missing or it cannot be read");
 		}
 
 		final File jasperFile = entry.getJasperFile();
 		if (!jasperFile.exists() || !jasperFile.canRead())
 		{
-			return BooleanWithReason.trueBecause("" + jasperFile + " is missing or it cannot be read");
+			return BooleanWithReason.trueBecause(jasperFile + " is missing or it cannot be read");
 		}
 
-		final String jrxmlFileHashNow = computeHash(jrxmlFile);
-		if (!Objects.equals(entry.getJrxmlFileHash(), jrxmlFileHashNow))
+		final File hashFile = entry.getHashFile();
+		if (!hashFile.exists() || !hashFile.canRead())
 		{
-			return BooleanWithReason.trueBecause("" + jrxmlFile + " has changed");
+			return BooleanWithReason.trueBecause(hashFile + " is missing or it cannot be read");
+		}
+
+		final String jrxmlFileHashCurrent = hashFileContent(jrxmlFile);
+		final String jrxmlFileHashSaved = readFileToString(hashFile);
+
+		if (!Objects.equals(jrxmlFileHashSaved, jrxmlFileHashCurrent))
+		{
+			return BooleanWithReason.trueBecause(jrxmlFile + " has changed");
 		}
 
 		return BooleanWithReason.FALSE;
 	}
 
-	private static String computeHash(final File file)
+	private static String readFileToString(final File file)
 	{
 		try
 		{
-			final MessageDigest md = MessageDigest.getInstance("MD5");
+			return new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
+		}
+		catch (final IOException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
+		}
+	}
+
+	private static String hashFileContent(final File file)
+	{
+		try
+		{
+			final MessageDigest md = MessageDigest.getInstance("SHA-256");
 			final byte[] fileContent = Util.readBytes(file);
 			md.update(fileContent);
 
@@ -213,9 +234,9 @@ public class JasperCompileClassLoader extends ClassLoader
 		{
 			throw AdempiereException.wrapIfNeeded(e);
 		}
-
 	}
 
+	@Nullable
 	private URL findMiscResource(final String name)
 	{
 		final String resourcePath = toLocalPath(name, FileUtil.getFileExtension(name));
@@ -241,6 +262,7 @@ public class JasperCompileClassLoader extends ClassLoader
 		return url;
 	}
 
+	@Nullable
 	private URL findResourceInAdditionalPathsOrNull(final String resourceName)
 	{
 		for (final File resourceDir : additionalResourceDirNames)
@@ -262,18 +284,6 @@ public class JasperCompileClassLoader extends ClassLoader
 		return null;
 	}
 
-	private static File toLocalFile(@NonNull final URL url)
-	{
-		try
-		{
-			return new File(url.toURI());
-		}
-		catch (URISyntaxException ex)
-		{
-			throw new AdempiereException("Cannot convert URL to local File: " + url, ex);
-		}
-	}
-
 	private static String toLocalPath(@NonNull final String resourceName, @Nullable final String fileExtension)
 	{
 		String resourcePath = resourceName.trim()
@@ -288,29 +298,36 @@ public class JasperCompileClassLoader extends ClassLoader
 		return FileUtil.changeFileExtension(resourcePath, fileExtension);
 	}
 
-	private static File compileJrxml(final File jrxmlFile)
+	private void compile(@NonNull final JasperEntry entry)
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
-		try (final InputStream jrxmlStream = new FileInputStream(jrxmlFile))
+		final File jasperFile = entry.getJasperFile();
+		final File hashFile = entry.getHashFile();
+		final File jrxmlFile = entry.getJrxmlFile();
+		try (final InputStream jrxmlStream = Files.newInputStream(jrxmlFile.toPath()))
 		{
-			final File jasperFile = File.createTempFile(
-					FileUtil.getFileBaseName(jrxmlFile.getName()),
-					jasperExtension);
+			Files.createDirectories(jasperFile.getParentFile().toPath());
 
 			try (final FileOutputStream jasperStream = new FileOutputStream(jasperFile))
 			{
 				JasperCompileManager.compileReportToStream(jrxmlStream, jasperStream);
 			}
 
+			createHashFile(hashFile, jrxmlFile);
+
 			stopwatch.stop();
 			logger.info("Compiled jasper report: {} <- {} and it took {}", jasperFile, jrxmlFile, stopwatch);
-
-			return jasperFile;
 		}
 		catch (final Exception ex)
 		{
 			throw new AdempiereException("Failed compiling jasper report: " + jrxmlFile, ex);
 		}
+	}
+
+	private static void createHashFile(final File hashFile, final File jrxmlFile) throws IOException
+	{
+		final String jrxmlFileHash = hashFileContent(jrxmlFile);
+		Files.write(hashFile.toPath(), jrxmlFileHash.getBytes(StandardCharsets.UTF_8));
 	}
 
 	@Override
@@ -325,13 +342,19 @@ public class JasperCompileClassLoader extends ClassLoader
 		return Collections.enumeration(Collections.singletonList(url));
 	}
 
+	//
+	//
+	//
+	//
+	//
+
 	@Value
 	@Builder
 	private static class JasperEntry
 	{
 		@NonNull File jrxmlFile;
-		@NonNull String jrxmlFileHash;
 		@NonNull File jasperFile;
+		@NonNull File hashFile;
 
 		public URL getJasperUrl()
 		{
@@ -344,5 +367,67 @@ public class JasperCompileClassLoader extends ClassLoader
 				throw new AdempiereException("Cannot convert " + jasperFile + " to URL", e);
 			}
 		}
+	}
+
+	//
+	//
+	//
+	//
+	//
+
+	@ToString(of = "compiledJaspersDir")
+	private static class CompliedJaspersCacheFileSystem
+	{
+		@NonNull private final Path compiledJaspersDir;
+
+		public CompliedJaspersCacheFileSystem()
+		{
+			try
+			{
+				final Path basePath = Paths.get(FileUtil.getTempDir(), "compiled_jaspers");
+				this.compiledJaspersDir = Files.createDirectories(basePath);
+				logger.info("Using compiled reports cache directory: {}", this.compiledJaspersDir);
+			}
+			catch (IOException e)
+			{
+				throw new AdempiereException("Failed to create the base temporary directory for compiled reports.", e);
+			}
+		}
+
+		public JasperEntry getByJrxmlFile(@NonNull final File jrxmlFile)
+		{
+			return JasperEntry.builder()
+					.jrxmlFile(jrxmlFile)
+					.jasperFile(getCompiledAssetFile(jrxmlFile, jasperExtension))
+					.hashFile(getCompiledAssetFile(jrxmlFile, ".hash"))
+					.build();
+
+		}
+
+		private File getCompiledAssetFile(@NonNull final File jrxmlFile, @NonNull final String extension)
+		{
+			final Path jrxmlPath = jrxmlFile.toPath().toAbsolutePath();
+
+			// 1. Get the path *relative* to the drive/volume root.
+			// Example: For C:\workspaces\...\report.jrxml, this isolates:
+			// "workspaces\dt204\metasfresh\backend\de.metas.fresh\...\report_lu.jrxml"
+			// We use the full relative path to ensure no collisions.
+			final Path relativePath = jrxmlPath.getRoot().relativize(jrxmlPath);
+
+			// 2. Separate the directory structure (parent) from the file name.
+			final Path relativeDirPath = relativePath.getParent();
+
+			// 3. Resolve the cache directory path: compiledJaspersDir + relativeDirPath
+			final Path cacheDir = compiledJaspersDir.resolve(relativeDirPath);
+
+			// 4. Create the final compiled file name (only changes extension).
+			final String compiledFileName = FileUtil.changeFileExtension(jrxmlFile.getName(), extension);
+
+			// 5. Resolve the final cached path.
+			final Path cachedPath = cacheDir.resolve(compiledFileName);
+
+			return cachedPath.toFile();
+		}
+
 	}
 }

@@ -3,7 +3,10 @@ package de.metas.workflow.rest_api.controller.v2.json;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.mobile.application.MobileApplicationAction;
 import de.metas.mobile.application.MobileApplicationInfo;
+import de.metas.security.mobile_application.MobileApplicationPermissions;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -20,25 +23,42 @@ public class JsonMobileApplication
 {
 	@NonNull String id;
 	@NonNull String caption;
+	@NonNull ImmutableSet<String> actions;
+	int maxStartedLaunchers;
+	boolean allowStartNextJobOnly;
 	boolean requiresWorkstation;
 	boolean requiresWorkplace;
-	boolean requiresLaunchersQRCodeFilter;
+	boolean requiresTrolley;
+	boolean showFilterByQRCode;
 	boolean showFilters;
 	boolean showFilterByDocumentNo;
+	boolean showFilterByQtyAvailableAtPickFromLocator;
 	boolean showInMainMenu;
 	int sortNo;
 	@Nullable ImmutableMap<String, Object> applicationParameters;
 
-	public static JsonMobileApplication of(final MobileApplicationInfo appInfo, final JsonOpts jsonOpts)
+	public static JsonMobileApplication of(
+			final MobileApplicationInfo appInfo,
+			final JsonOpts jsonOpts,
+			final MobileApplicationPermissions mobileApplicationPermissions)
 	{
 		return builder()
 				.id(appInfo.getId().getAsString())
 				.caption(appInfo.getCaption().translate(jsonOpts.getAdLanguage()))
+				.actions(appInfo.getActions()
+						.stream()
+						.filter(action -> mobileApplicationPermissions.isAllowAction(appInfo.getRepoId(), action.getId()))
+						.map(MobileApplicationAction::getInternalName)
+						.collect(ImmutableSet.toImmutableSet()))
+				.maxStartedLaunchers(appInfo.getMaxStartedLaunchers().toIntOrZero())
+				.allowStartNextJobOnly(appInfo.isAllowStartNextJobOnly())
 				.requiresWorkstation(appInfo.isRequiresWorkstation())
 				.requiresWorkplace(appInfo.isRequiresWorkplace())
-				.requiresLaunchersQRCodeFilter(appInfo.isRequiresLaunchersQRCodeFilter())
+				.requiresTrolley(appInfo.isRequiresTrolley())
+				.showFilterByQRCode(appInfo.isShowFilterByQRCode())
 				.showFilters(appInfo.isShowFilters())
 				.showFilterByDocumentNo(appInfo.isShowFilterByDocumentNo())
+				.showFilterByQtyAvailableAtPickFromLocator(appInfo.isShowFilterByQtyAvailableAtPickFromLocator())
 				.showInMainMenu(appInfo.isShowInMainMenu())
 				.sortNo(appInfo.getSortNo())
 				.applicationParameters(toJsonApplicationParameters(appInfo.getApplicationParameters()))

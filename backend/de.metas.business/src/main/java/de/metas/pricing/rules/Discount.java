@@ -44,8 +44,8 @@ import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.TimeUtil;
@@ -196,7 +196,7 @@ public class Discount implements IPricingRule
 		}
 
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(asiAware.getM_AttributeSetInstance_ID());
-		return Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asiId);
+		return Services.get(IAttributeSetInstanceBL.class).getImmutableAttributeSetById(asiId);
 	}
 
 	private static void updatePricingResultFromPricingConditionsResult(

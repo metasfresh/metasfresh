@@ -7,7 +7,7 @@ import { useMobileLocation } from './useMobileLocation';
 
 export const useScreenDefinition = ({ screenId, captionKey, values, isHomeStop, back } = {}) => {
   const dispatch = useDispatch();
-  const { url, applicationId, wfProcessId, activityId, lineId, stepId, altStepId, ...otherParams } =
+  const { url, applicationId, wfProcessId, activityId, lineId, stepId, altStepId, id, ...otherParams } =
     useMobileLocation();
 
   const backLocation = computeBackLocation({
@@ -18,6 +18,7 @@ export const useScreenDefinition = ({ screenId, captionKey, values, isHomeStop, 
     lineId,
     stepId,
     altStepId,
+    id,
     ...otherParams,
   });
 
@@ -45,6 +46,7 @@ export const useScreenDefinition = ({ screenId, captionKey, values, isHomeStop, 
     lineId,
     stepId,
     altStepId,
+    id,
     //
     history,
   };

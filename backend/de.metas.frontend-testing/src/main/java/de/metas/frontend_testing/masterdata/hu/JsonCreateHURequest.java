@@ -1,8 +1,8 @@
 package de.metas.frontend_testing.masterdata.hu;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.metas.frontend_testing.masterdata.Identifier;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
@@ -14,8 +14,20 @@ import java.math.BigDecimal;
 @Jacksonized
 public class JsonCreateHURequest
 {
-	@NonNull Identifier product;
-	@NonNull Identifier warehouse;
+	@Nullable Identifier product;
+	@Nullable Identifier warehouse;
 	@Nullable BigDecimal qty;
 	@Nullable Identifier packingInstructions;
+	@Nullable Boolean generateHUQRCode;
+	@Nullable Boolean sourceHU;
+	@Nullable BigDecimal weightNet;
+	@Nullable String lotNo;
+	@Nullable String bestBeforeDate;
+	@Nullable String externalBarcode;
+
+	@JsonIgnore
+	public boolean isGenerateHUQRCode() {return generateHUQRCode != null ? generateHUQRCode : true;}
+
+	@JsonIgnore
+	public boolean isSourceHU() { return sourceHU != null && sourceHU;}
 }

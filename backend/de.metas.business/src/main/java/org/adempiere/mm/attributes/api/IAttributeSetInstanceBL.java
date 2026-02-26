@@ -9,11 +9,18 @@ import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.impl.AddAttributesRequest;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.asi_aware.factory.IAttributeSetInstanceAwareFactoryService;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.util.Evaluatee;
 
 import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 import java.util.function.Predicate;
 
 /**
@@ -23,6 +30,23 @@ import java.util.function.Predicate;
  */
 public interface IAttributeSetInstanceBL extends ISingletonService
 {
+	I_M_AttributeSetInstance getById(@NonNull AttributeSetInstanceId asiId);
+
+	/**
+	 * Creates a new {@link I_M_AttributeSetInstance} (including it's {@link I_M_AttributeInstance}s) by copying given <code>asi</code>
+	 *
+	 * @return asi copy
+	 */
+	I_M_AttributeSetInstance copy(@NonNull I_M_AttributeSetInstance fromASI);
+
+	ASICopy prepareCopy(I_M_AttributeSetInstance fromASI);
+
+	AttributeSetInstanceId copy(@NonNull AttributeSetInstanceId asiSourceId);
+
+	boolean nullSafeASIEquals(
+			@Nullable AttributeSetInstanceId firstASIId,
+			@Nullable AttributeSetInstanceId secondASIId);
+
 	/**
 	 * Call {@link #buildDescription(I_M_AttributeSetInstance, boolean)} with verbose = false.
 	 */
@@ -31,7 +55,7 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	/**
 	 * Build ASI Description
 	 * <p>
-	 * e.g. - Product Values - Instance Values - SerNo = #123 - Lot = \u00ab123\u00bb - GuaranteeDate = 10/25/2003
+	 * e.g. - Product Values - Instance Values - SerNo = #123 - Lot = «123» - GuaranteeDate = 10/25/2003
 	 *
 	 * @param asi may be {@code null}; in that case, an empty string is returned
 	 */
@@ -85,7 +109,7 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	 */
 	void cloneASI(Object to, Object from);
 
-	default I_M_AttributeSetInstance createASIFromAttributeSet(IAttributeSet attributeSet)
+	default I_M_AttributeSetInstance createASIFromAttributeSet(@NonNull final IAttributeSet attributeSet)
 	{
 		return createASIFromAttributeSet(attributeSet, Predicates.alwaysTrue());
 	}
@@ -95,7 +119,7 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	 */
 	void cloneOrCreateASI(@Nullable Object to, @Nullable Object from);
 
-	I_M_AttributeSetInstance createASIFromAttributeSet(IAttributeSet attributeSet, Predicate<I_M_Attribute> filter);
+	I_M_AttributeSetInstance createASIFromAttributeSet(@NonNull IAttributeSet attributeSet, Predicate<I_M_Attribute> filter);
 
 	I_M_AttributeSetInstance createASIWithASFromProductAndInsertAttributeSet(ProductId productId, IAttributeSet attributeSet);
 
@@ -120,6 +144,37 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 
 	ImmutableAttributeSet getImmutableAttributeSetById(AttributeSetInstanceId asiId);
 
+	Map<AttributeSetInstanceId, ImmutableAttributeSet> getAttributesForASIs(@NonNull Set<AttributeSetInstanceId> asiIds);
+
+	List<I_M_AttributeInstance> getAttributeInstances(AttributeSetInstanceId attributeSetInstanceId);
+
+	/**
+	 * Retrieves all attribute instances associated with an attribute instance set.
+	 *
+	 * @param attributeSetInstance may be {@code null}, in which case an empty list is returned.
+	 * @return a list of the given {@code attributeSetInstance}'s attribute instances, ordered by M_AttributeUse.SeqNo
+	 */
+	List<I_M_AttributeInstance> getAttributeInstances(I_M_AttributeSetInstance attributeSetInstance);
+
+	/**
+	 * @param attributeSetInstanceId may be {@code null} or "none". In that case, always {@code null} is returned.
+	 * @return the attribute instance with the given {@code attributeSetInstanceId} and {@code attributeId}, or {@code null}.
+	 */
+	@Nullable
+	I_M_AttributeInstance getAttributeInstance(
+			@Nullable AttributeSetInstanceId attributeSetInstanceId,
+			@NonNull AttributeId attributeId);
+
+	/**
+	 * Creates a new {@link I_M_AttributeInstance}.
+	 * NOTE: it is not saving it
+	 */
+	I_M_AttributeInstance createNewAttributeInstance(
+			Properties ctx,
+			I_M_AttributeSetInstance asi,
+			@NonNull AttributeId attributeId,
+			String trxName);
+
 	/**
 	 * Synchs the given {@code attributeSet}  to the given {@code asiAware}.
 	 * <p/>
@@ -131,4 +186,18 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	void syncAttributesToASIAware(IAttributeSet attributeSet, IAttributeSetInstanceAware asiAware);
 
 	AttributeSetInstanceId addAttributes(AddAttributesRequest addAttributesRequest);
+
+	void save(@NonNull I_M_AttributeSetInstance asi);
+
+	void save(@NonNull I_M_AttributeInstance ai);
+
+	/**
+	 * @return attributeIds ordered by M_AttributeUse.SeqNo
+	 */
+	Set<AttributeId> getAttributeIdsByAttributeSetInstanceId(@NonNull AttributeSetInstanceId attributeSetInstanceId);
+
+	AttributeSetInstanceId setInitialAttributes(
+			@NonNull ProductId productId,
+			@NonNull AttributeSetInstanceId asiId,
+			@NonNull Evaluatee evalCtx);
 }

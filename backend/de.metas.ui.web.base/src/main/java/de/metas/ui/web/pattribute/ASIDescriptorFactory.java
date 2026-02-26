@@ -22,16 +22,18 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeValueId;
+import org.adempiere.mm.attributes.AttributeValueType;
+import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -131,7 +133,7 @@ public class ASIDescriptorFactory
 			final DocumentId asiDescriptorId,
 			final String name,
 			final String description,
-			final List<I_M_Attribute> attributes)
+			final List<Attribute> attributes)
 	{
 		if (attributes.isEmpty())
 		{
@@ -150,7 +152,7 @@ public class ASIDescriptorFactory
 				//
 				;
 
-		for (final I_M_Attribute attribute : attributes)
+		for (final Attribute attribute : attributes)
 		{
 			final DocumentFieldDescriptor.Builder fieldDescriptor = createDocumentFieldDescriptor(attribute);
 			attributeSetDescriptor.addField(fieldDescriptor);
@@ -160,11 +162,11 @@ public class ASIDescriptorFactory
 	}
 
 	@VisibleForTesting
-	DocumentFieldDescriptor.Builder createDocumentFieldDescriptor(final I_M_Attribute attribute)
+	DocumentFieldDescriptor.Builder createDocumentFieldDescriptor(final Attribute attribute)
 	{
-		final int attributeId = attribute.getM_Attribute_ID();
-		final String fieldName = attribute.getValue();
-		final String attributeValueType = attribute.getAttributeValueType();
+		// final AttributeId attributeId = attribute.getAttributeId();
+		final String fieldName = attribute.getAttributeCode().getCode();
+		final AttributeValueType valueType = attribute.getValueType();
 
 		final Class<?> valueClass;
 		final DocumentFieldWidgetType widgetType;
@@ -172,14 +174,14 @@ public class ASIDescriptorFactory
 		final BiConsumer<I_M_AttributeInstance, IDocumentFieldView> writeMethod;
 		LookupDescriptor lookupDescriptor = null;
 
-		if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
+		if (AttributeValueType.DATE.equals(valueType))
 		{
 			valueClass = LocalDate.class;
 			widgetType = DocumentFieldWidgetType.LocalDate;
 			readMethod = ai -> TimeUtil.asLocalDate(ai.getValueDate());
 			writeMethod = (aiRecord, field) -> aiRecord.setValueDate(TimeUtil.asTimestamp(field.getValueAs(LocalDate.class)));
 		}
-		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
+		else if (AttributeValueType.LIST.equals(valueType))
 		{
 			// NOTE: keep in sync with the BL of de.metas.handlingunits.attribute.impl.AbstractAttributeValue.valueType and de.metas.handlingunits.attribute.impl.AbstractAttributeValue.setValue
 			final IAttributeValuesProvider attributeValuesProvider = attributesBL.createAttributeValuesProvider(attribute);
@@ -187,7 +189,10 @@ public class ASIDescriptorFactory
 					? attributeValuesProvider.getAttributeValueType()
 					: X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40;
 
-			widgetType = DocumentFieldWidgetType.List;
+			widgetType = attributeValuesProvider != null && attributeValuesProvider.isHighVolume()
+					? DocumentFieldWidgetType.Lookup
+					: DocumentFieldWidgetType.List;
+
 			lookupDescriptor = getLookupDescriptor(attribute);
 
 			if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(keyValueType))
@@ -210,9 +215,9 @@ public class ASIDescriptorFactory
 						.appendParametersToMessage();
 			}
 		}
-		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
+		else if (AttributeValueType.NUMBER.equals(valueType))
 		{
-			final int displayType = attributesBL.getNumberDisplayType(attribute);
+			final int displayType = attribute.getNumberDisplayType();
 			if (displayType == DisplayType.Integer)
 			{
 				valueClass = Integer.class;
@@ -228,7 +233,7 @@ public class ASIDescriptorFactory
 				writeMethod = (aiRecord, field) -> aiRecord.setValueNumber(field.getValueAs(BigDecimal.class));
 			}
 		}
-		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(attributeValueType))
+		else if (AttributeValueType.STRING.equals(valueType))
 		{
 			valueClass = String.class;
 			widgetType = DocumentFieldWidgetType.Text;
@@ -237,7 +242,7 @@ public class ASIDescriptorFactory
 		}
 		else
 		{
-			throw new IllegalArgumentException("@NotSupported@ @AttributeValueType@=" + attributeValueType + ", @M_Attribute_ID@=" + attribute);
+			throw new IllegalArgumentException("@NotSupported@ @AttributeValueType@=" + valueType + ", @M_Attribute_ID@=" + attribute);
 		}
 
 		final ILogicExpression readonlyLogic = ConstantLogicExpression.of(attribute.isReadOnlyValues());
@@ -247,7 +252,7 @@ public class ASIDescriptorFactory
 		final Optional<IExpression<?>> defaultValueExpr = Optional.empty();
 
 		return DocumentFieldDescriptor.builder(fieldName)
-				.setCaption(attribute.getName())
+				.setCaption(attribute.getDisplayName())
 				.setDescription(attribute.getDescription())
 				//
 				.setValueClass(valueClass)
@@ -261,14 +266,14 @@ public class ASIDescriptorFactory
 				//
 				.addCharacteristic(Characteristic.PublicField)
 				//
-				.setDataBinding(new ASIAttributeFieldBinding(attributeId, fieldName, attribute.isMandatory(), readMethod, writeMethod))
+				.setDataBinding(new ASIAttributeFieldBinding(attribute.getAttributeId(), fieldName, attribute.isMandatory(), readMethod, writeMethod))
 				//
 				;
 	}
 
-	private LookupDescriptor getLookupDescriptor(final I_M_Attribute attribute)
+	private LookupDescriptor getLookupDescriptor(final Attribute attribute)
 	{
-		final AttributeId attributeId = AttributeId.ofRepoId(attribute.getM_Attribute_ID());
+		final AttributeId attributeId = attribute.getAttributeId();
 		return asiLookupDescriptorsByAttributeId.getOrLoad(attributeId, () -> ASILookupDescriptor.of(attribute));
 	}
 
@@ -321,20 +326,19 @@ public class ASIDescriptorFactory
 
 	public static final class ASIAttributeFieldBinding implements DocumentFieldDataBindingDescriptor
 	{
-		private final int attributeId;
+		private final AttributeId attributeId;
 		private final String attributeName;
 		private final boolean mandatory;
 		private final Function<I_M_AttributeInstance, Object> readMethod;
 		private final BiConsumer<I_M_AttributeInstance, IDocumentFieldView> writeMethod;
 
-		private ASIAttributeFieldBinding( //
-										  final int attributeId, final String attributeName //
-				, final boolean mandatory //
-				, final Function<I_M_AttributeInstance, Object> readMethod //
-				, final BiConsumer<I_M_AttributeInstance, IDocumentFieldView> writeMethod //
-		)
+		private ASIAttributeFieldBinding(
+				@NonNull final AttributeId attributeId,
+				final String attributeName,
+				final boolean mandatory,
+				final Function<I_M_AttributeInstance, Object> readMethod,
+				final BiConsumer<I_M_AttributeInstance, IDocumentFieldView> writeMethod)
 		{
-			Check.assume(attributeId > 0, "attributeId > 0");
 			this.attributeId = attributeId;
 
 			Check.assumeNotEmpty(attributeName, "attributeName is not empty");
@@ -391,7 +395,7 @@ public class ASIDescriptorFactory
 		{
 			final I_M_AttributeInstance aiRecord = InterfaceWrapperHelper.newInstance(I_M_AttributeInstance.class, asiRecord);
 			aiRecord.setM_AttributeSetInstance(asiRecord);
-			aiRecord.setM_Attribute_ID(attributeId);
+			aiRecord.setM_Attribute_ID(attributeId.getRepoId());
 			writeValue(aiRecord, asiField);
 			InterfaceWrapperHelper.save(aiRecord);
 			return aiRecord;

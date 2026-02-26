@@ -46,8 +46,8 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_RemittanceAdvice;
 import org.compiere.model.I_C_RemittanceAdvice_Line;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -65,7 +65,7 @@ public class RemittanceAdviceRepositoryTest
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	RemittanceAdviceRepository remittanceAdviceRepository;
 
-	@Before
+	@BeforeEach
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();

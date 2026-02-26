@@ -16,7 +16,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_Fact_Acct;
-import org.compiere.model.I_M_SectionCode;
 
 @UtilityClass
 class OIViewFilterHelper
@@ -28,7 +27,6 @@ class OIViewFilterHelper
 	static String PARAM_DateAcct = I_Fact_Acct.COLUMNNAME_DateAcct;
 	static String PARAM_DocumentNo = I_Fact_Acct.COLUMNNAME_DocumentNo;
 	static String PARAM_Description = I_Fact_Acct.COLUMNNAME_Description;
-	static String PARAM_M_SectionCode_ID = I_Fact_Acct.COLUMNNAME_M_SectionCode_ID;
 	static String PARAM_DocStatus = I_Fact_Acct.COLUMNNAME_DocStatus;
 	static String PARAM_POReference = I_Fact_Acct.COLUMNNAME_POReference;
 	static String PARAM_UserElementString1 = I_Fact_Acct.COLUMNNAME_UserElementString1;
@@ -64,9 +62,6 @@ class OIViewFilterHelper
 						.widgetType(DocumentFieldWidgetType.Text))
 				.addParameter(newParamDescriptor(PARAM_Description)
 						.widgetType(DocumentFieldWidgetType.Text))
-				.addParameter(newParamDescriptor(PARAM_M_SectionCode_ID)
-						.widgetType(DocumentFieldWidgetType.Lookup)
-						.lookupDescriptor(lookupDescriptorProviders.searchInTable(I_M_SectionCode.Table_Name).provideForFilter()))
 				.addParameter(newParamDescriptor(PARAM_DocStatus)
 						.widgetType(DocumentFieldWidgetType.List)
 						.lookupDescriptor(lookupDescriptorProviders.listByAD_Reference_Value_ID(DocStatus.AD_REFERENCE_ID).provideForFilter()))

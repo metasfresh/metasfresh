@@ -9,6 +9,8 @@ import de.metas.elementvalue.ChartOfAccountsRepository;
 import de.metas.elementvalue.ChartOfAccountsService;
 import de.metas.elementvalue.ElementValueRepository;
 import de.metas.elementvalue.ElementValueService;
+import de.metas.impexp.ImportRecordsAsyncExecutor;
+import de.metas.impexp.MockedImportRecordsAsyncExecutor;
 import de.metas.impexp.format.ImportTableDescriptorRepository;
 import de.metas.impexp.processing.DBFunctionsRepository;
 import de.metas.treenode.TreeNodeRepository;
@@ -68,6 +70,7 @@ public class AccountImportProcess_Test
 
 		SpringContextHolder.registerJUnitBean(new DBFunctionsRepository());
 		SpringContextHolder.registerJUnitBean(new ImportTableDescriptorRepository());
+		SpringContextHolder.registerJUnitBean(ImportRecordsAsyncExecutor.class, new MockedImportRecordsAsyncExecutor());
 
 		this.chartOfAccountsService = new ChartOfAccountsService(new ChartOfAccountsRepository());
 		final TreeNodeRepository treeNodeRepository = new TreeNodeRepository();

@@ -1,13 +1,17 @@
 @from:cucumber
+@allure.label.epic:E0350_Warehouse_Managment
+@allure.label.feature:F5020
 @topic:stock
 @ghActions:run_on_executor7
 Feature: stock changes accordingly
+## F5020: Stock
   As a user
   I want stock to be updated properly if inventory is changed
   So that the QTY is always correct
 
   Background:
     Given infrastructure and metasfresh are running
+    And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 	And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
     And no product with value 'product_value222' exists

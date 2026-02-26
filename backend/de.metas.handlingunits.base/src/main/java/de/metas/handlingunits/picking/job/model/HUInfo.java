@@ -17,6 +17,14 @@ public class HUInfo
 	@NonNull HuId id;
 	@NonNull HUQRCode qrCode;
 
+	public static HUInfo ofHuIdAndQRCode(@NonNull final HuId huId, @NonNull HUQRCode qrCode)
+	{
+		return builder()
+				.id(huId)
+				.qrCode(qrCode)
+				.build();
+	}
+
 	public static boolean equals(final HUInfo obj1, final HUInfo obj2) {return Objects.equals(obj1, obj2);}
 
 	public HUIdAndQRCode toHUIdAndQRCode()

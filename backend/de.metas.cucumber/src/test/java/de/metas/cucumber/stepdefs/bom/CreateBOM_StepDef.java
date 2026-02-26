@@ -51,7 +51,7 @@ import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
@@ -90,7 +90,7 @@ public class CreateBOM_StepDef
 	private final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
 	private final IProductBOMDAO productBOMDAO = Services.get(IProductBOMDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final ProductBOMVersionsDAO productBOMVersionsDAO = SpringContextHolder.instance.getBean(ProductBOMVersionsDAO.class);
 
 	private final PP_Product_BOMVersions_StepDefData productBOMVersionsTable;
@@ -174,7 +174,7 @@ public class CreateBOM_StepDef
 			row.getAsOptionalIdentifier(COLUMNNAME_M_AttributeSetInstance_ID)
 					.ifPresent((asiIdentifier) -> {
 						final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(bom.getM_AttributeSetInstance_ID());
-						final I_M_AttributeSetInstance asi = attributeDAO.getAttributeSetInstanceById(asiId);
+						final I_M_AttributeSetInstance asi = asiBL.getById(asiId);
 						attributeSetInstanceTable.put(asiIdentifier, asi);
 					});
 		});
@@ -222,7 +222,7 @@ public class CreateBOM_StepDef
 			row.getAsOptionalIdentifier(COLUMNNAME_M_AttributeSetInstance_ID)
 					.ifPresent(asiIdentifier -> {
 						final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(bomLine.getM_AttributeSetInstance_ID());
-						final I_M_AttributeSetInstance asi = attributeDAO.getAttributeSetInstanceById(asiId);
+						final I_M_AttributeSetInstance asi = asiBL.getById(asiId);
 						assertThat(asi).isNotNull();
 						attributeSetInstanceTable.put(asiIdentifier, asi);
 					});
@@ -243,7 +243,7 @@ public class CreateBOM_StepDef
 			final I_M_Product product = productTable.get(productIdentifier);
 			assertThat(product).isNotNull();
 
-			updateProductLLCAndMarkAsVerified(product);
+			checkProductBOMCyclesAndMarkAsVerified(product);
 
 			final I_PP_Product_BOM bom = productBOMDAO.getDefaultBOMByProductId(ProductId.ofRepoId(product.getM_Product_ID()))
 					.orElse(null);
@@ -254,15 +254,14 @@ public class CreateBOM_StepDef
 			{
 				final ProductId productId = ProductId.ofRepoId(tbomline.getM_Product_ID());
 				final I_M_Product bomLineProduct = productBL.getById(productId);
-				updateProductLLCAndMarkAsVerified(bomLineProduct);
+				checkProductBOMCyclesAndMarkAsVerified(bomLineProduct);
 			}
 		}
 	}
 
-	private void updateProductLLCAndMarkAsVerified(final I_M_Product product)
+	private void checkProductBOMCyclesAndMarkAsVerified(final I_M_Product product)
 	{
-		final int lowLevelCode = productBOMBL.calculateProductLowestLevel(ProductId.ofRepoId(product.getM_Product_ID()));
-		product.setLowLevel(lowLevelCode);
+		productBOMBL.checkCycles(ProductId.ofRepoId(product.getM_Product_ID()));
 		product.setIsVerified(true);
 		InterfaceWrapperHelper.save(product);
 	}

@@ -31,6 +31,7 @@ import de.metas.acct.AccountConceptualName;
 import de.metas.acct.api.ChartOfAccountsId;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.cache.CCache;
+import de.metas.cost.classification.CostClassificationId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
@@ -42,9 +43,12 @@ import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.RPadQueryFilterModifier;
 import org.adempiere.ad.dao.impl.StringToNumericModifier;
+import org.adempiere.ad.validationRule.IValidationRule;
+import org.adempiere.ad.validationRule.impl.SQLValidationRule;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_ElementValue;
+import org.compiere.util.DB;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
@@ -67,6 +71,8 @@ public class ElementValueRepository
 	{
 		return getMap().getById(id);
 	}
+
+	ImmutableSet<ElementValueId> getOpenItemIds() {return getMap().getOpenItemIds();}
 
 	private ElementValuesMap getMap() {return cache.getOrLoad(0, this::retrieveMap);}
 
@@ -134,6 +140,8 @@ public class ElementValueRepository
 				.seqNo(record.getSeqNo())
 				.defaultAccountName(record.getDefault_Account())
 				.accountConceptualName(AccountConceptualName.ofNullableString(record.getAccountConceptualName()))
+				.costClassificationId(CostClassificationId.ofRepoIdOrNull(record.getC_CostClassification_ID()))
+				.isOpenItem(record.isOpenItem())
 				.build();
 	}
 
@@ -244,7 +252,7 @@ public class ElementValueRepository
 				.addOnlyActiveRecordsFilter()
 				.addBetweenFilter(I_C_ElementValue.COLUMNNAME_Value, fromValue, toValue, rpad)
 				.create()
-				.listIds(ElementValueId::ofRepoId);
+				.idsAsSet(ElementValueId::ofRepoId);
 	}
 
 	private ImmutableSet<ElementValueId> getElementValueIdsBetween_NUMERIC(final String accountValueFrom, final String accountValueTo)
@@ -258,7 +266,7 @@ public class ElementValueRepository
 				.addOnlyActiveRecordsFilter()
 				.addBetweenFilter(I_C_ElementValue.COLUMNNAME_Value, from, to, stringToNumericModifier)
 				.create()
-				.listIds(ElementValueId::ofRepoId);
+				.idsAsSet(ElementValueId::ofRepoId);
 	}
 
 	@VisibleForTesting
@@ -269,6 +277,11 @@ public class ElementValueRepository
 				.addEqualsFilter(I_C_ElementValue.COLUMNNAME_C_Element_ID, chartOfAccountsId)
 				.create()
 				.list();
+	}
+
+	public IValidationRule isOpenItemRule()
+	{
+		return SQLValidationRule.ofSqlWhereClause(I_C_ElementValue.COLUMNNAME_IsOpenItem + "=" + DB.TO_BOOLEAN(true));
 	}
 
 	//
@@ -297,5 +310,18 @@ public class ElementValueRepository
 			return elementValue;
 		}
 
+		public ImmutableSet<ElementValueId> getOpenItemIds()
+		{
+			ImmutableSet<ElementValueId> openItemIds = this._openItemIds;
+			if (openItemIds == null)
+			{
+				openItemIds = this._openItemIds = byId.values()
+						.stream()
+						.filter(ElementValue::isOpenItem)
+						.map(ElementValue::getId)
+						.collect(ImmutableSet.toImmutableSet());
+			}
+			return openItemIds;
+		}
 	}
 }

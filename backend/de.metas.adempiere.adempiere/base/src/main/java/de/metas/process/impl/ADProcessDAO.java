@@ -77,6 +77,7 @@ public class ADProcessDAO implements IADProcessDAO
 		return InterfaceWrapperHelper.loadOutOfTrx(processId, I_AD_Process.class);
 	}
 
+	@NonNull
 	@Override
 	public AdProcessId retrieveProcessIdByClass(final Class<?> processClass)
 	{
@@ -94,14 +95,17 @@ public class ADProcessDAO implements IADProcessDAO
 
 	@Override
 	@Cached(cacheName = I_AD_Process.Table_Name + "#by#Classname", expireMinutes = Cached.EXPIREMINUTES_Never)
-	public AdProcessId retrieveProcessIdByClassIfUnique(final String processClassname)
+	@Nullable
+	public AdProcessId retrieveProcessIdByClassIfUnique(@NonNull final String processClassname)
 	{
+		Check.assumeNotEmpty(processClassname, "processClassname is not empty");
+		
 		final Set<AdProcessId> processIds = queryBL
 				.createQueryBuilderOutOfTrx(I_AD_Process.class)
 				.addEqualsFilter(I_AD_Process.COLUMN_Classname, processClassname)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.listIds(AdProcessId::ofRepoId);
+				.idsAsSet(AdProcessId::ofRepoId);
 
 		if (processIds.isEmpty())
 		{
@@ -641,7 +645,7 @@ public class ADProcessDAO implements IADProcessDAO
 				.addOnlyActiveRecordsFilter()
 				.orderBy(I_AD_Process.COLUMNNAME_AD_Process_ID)
 				.create()
-				.listIds(AdProcessId::ofRepoId);
+				.idsAsSet(AdProcessId::ofRepoId);
 	}
 
 	@NonNull

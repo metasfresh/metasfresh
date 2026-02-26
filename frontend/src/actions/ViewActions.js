@@ -47,6 +47,7 @@ import { createFilter, deleteFilter } from './FiltersActions';
 import { deleteQuickActions, fetchQuickActions } from './Actions';
 import { closeModal, closeRawModal, setRawModalTitle } from './WindowActions';
 import { patchModalView } from '../api/view';
+import { addNotification } from './AppActions';
 
 /**
  * @method resetView
@@ -651,6 +652,19 @@ export function patchViewAction({ windowId, viewId, rowId, fieldName, value }) {
             rowsToUpdate: [row],
           })
         );
+
+        const error = row.error;
+        if (error?.userFriendlyError) {
+          const message = error.message ?? '';
+          dispatch(
+            addNotification(
+              'Error: ' + message.split(' ', 4).join(' ') + '...',
+              message,
+              5000,
+              'error'
+            )
+          );
+        }
       }
     );
   };

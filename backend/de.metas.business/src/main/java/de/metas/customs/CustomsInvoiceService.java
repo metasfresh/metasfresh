@@ -405,7 +405,7 @@ public class CustomsInvoiceService
 				.createQueryBuilder(I_M_InOut.class)
 				.filter(queryFilter)
 				.create()
-				.listIds(InOutId::ofRepoId)
+				.idsAsSet(InOutId::ofRepoId)
 				.stream()
 				.collect(ImmutableList.toImmutableList());
 

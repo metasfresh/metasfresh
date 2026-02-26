@@ -1,12 +1,11 @@
 package de.metas.dlm.partitioner.config;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Optional;
 
-import org.junit.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -34,7 +33,6 @@ import org.junit.Test;
  * If tests fail in here, i recommend to first make sure all tests in {@link PartitionerConfigBuilderTest} succeed.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class ConfigTests
 {
@@ -56,16 +54,16 @@ public class ConfigTests
 
 		final List<PartitionerConfigReference> referencingLines = config.getReferences("MNO");
 
-		assertThat(referencingLines.size(), is(2));
+		assertThat(referencingLines).hasSize(2);
 
 		final Optional<PartitionerConfigReference> refLine1 = referencingLines.stream().filter(r -> r.getReferencingColumnName().equals("ABC_columnName")).findFirst();
-		assertThat(refLine1.isPresent(), is(true));
-		assertThat(refLine1.get().getParent().getTableName(), is("ABC"));
-		assertThat(refLine1.get().getReferencedTableName(), is("MNO"));
+		assertThat(refLine1).isPresent();
+		assertThat(refLine1.get().getParent().getTableName()).isEqualTo("ABC");
+		assertThat(refLine1.get().getReferencedTableName()).isEqualTo("MNO");
 
 		final Optional<PartitionerConfigReference> refLine2 = referencingLines.stream().filter(r -> r.getReferencingColumnName().equals("XYZ_columnName")).findFirst();
-		assertThat(refLine2.isPresent(), is(true));
-		assertThat(refLine2.get().getParent().getTableName(), is("XYZ"));
-		assertThat(refLine2.get().getReferencedTableName(), is("MNO"));
+		assertThat(refLine2).isPresent();
+		assertThat(refLine2.get().getParent().getTableName()).isEqualTo("XYZ");
+		assertThat(refLine2.get().getReferencedTableName()).isEqualTo("MNO");
 	}
 }

@@ -160,8 +160,7 @@ public class LayoutFactory
 				.attributesUIElements(this._windowUIElementsProviderEffective.getUIElementsOfType(templateTabId, LayoutElementType.Attributes))
 				.build();
 		descriptorsFactory = GridTabVOBasedDocumentEntityDescriptorFactory.builder()
-				.lookupDataSourceFactory(services.getLookupDataSourceFactory())
-				.documentDecorators(services.getDocumentDecorators())
+				.services(services)
 				.gridTabVO(gridTabVO)
 				.parentTabVO(parentTab)
 				.isSOTrx(gridWindowVO.isSOTrx())

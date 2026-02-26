@@ -16,18 +16,20 @@
  *****************************************************************************/
 package org.compiere.process;
 
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.location.DocumentLocation;
+import de.metas.order.IOrderLineBL;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.util.Services;
-import de.metas.bpartner.BPartnerContactId;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.document.location.DocumentLocation;
-import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -57,7 +59,8 @@ import java.util.List;
  */
 public class ImportOrder extends JavaProcess
 {
-	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+	@NonNull private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+	@NonNull private final IOrderLineBL orderLineBL =Services.get(IOrderLineBL.class);
 
 	/**
 	 * Client to be imported to
@@ -882,7 +885,7 @@ public class ImportOrder extends JavaProcess
 				}
 				else
 				{
-					line.setTax();
+					orderLineBL.setTax(line);
 					imp.setC_Tax_ID(line.getC_Tax_ID());
 				}
 

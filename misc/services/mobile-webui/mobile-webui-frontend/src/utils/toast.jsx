@@ -136,6 +136,18 @@ export const errorToString = (error) => {
   }
 };
 
+export const is404 = (axiosError) => {
+  return axiosError?.response?.status === 404;
+};
+
+//
+//
+//
+//
+//
+//
+//
+
 const ToastMessage = ({ message, code }) => {
   if (!code) return message;
 

@@ -48,6 +48,8 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 	private final IGLJournalLineBL glJournalLineBL = Services.get(IGLJournalLineBL.class);
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
+	private static final String SYSCONFIG_DisableFactAcctTrxChecking = "org.compiere.acct.Doc_GLJournal.DisableFactAcctTrxChecking";
+
 	public Doc_GLJournal(final AcctDocContext ctx)
 	{
 		super(ctx);
@@ -271,7 +273,15 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 
 		// create Fact Header
 		final Fact fact = new Fact(this, as, postingType);
-		fact.setFactTrxLinesStrategy(Doc_GLJournal_FactTrxStrategy.instance);
+
+		if (services.getSysConfigBooleanValue(SYSCONFIG_DisableFactAcctTrxChecking, false))
+		{
+			fact.setFactTrxLinesStrategy(null);
+		}
+		else
+		{
+			fact.setFactTrxLinesStrategy(Doc_GLJournal_FactTrxStrategy.instance);
+		}
 
 		// GLJ
 		if (DocBaseType.GLJournal.equals(getDocBaseType()))

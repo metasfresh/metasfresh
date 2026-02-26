@@ -29,6 +29,7 @@ import de.metas.callcenter.model.MRGroupProspect;
 import de.metas.email.EMail;
 import de.metas.email.EMailRequest;
 import de.metas.email.MailService;
+import de.metas.email.mailboxes.Mailbox;
 import de.metas.email.mailboxes.MailboxQuery;
 import de.metas.letters.model.IEMailEditor;
 import de.metas.letters.model.MADBoilerPlate;
@@ -170,13 +171,15 @@ public class AD_BoilderPlate_SendToGroup extends JavaProcess
 			@Override
 			public EMail sendEMail(I_AD_User from, String toEmail, String subject, final BoilerPlateContext attributes)
 			{
+				final Mailbox mailbox = mailService.findMailbox(MailboxQuery.builder()
+						.clientId(getClientId())
+						.orgId(getOrgId())
+						.adProcessId(getProcessInfo().getAdProcessId())
+						.fromUserId(UserId.ofRepoId(from.getAD_User_ID()))
+						.build());
+
 				return mailService.sendEMail(EMailRequest.builder()
-						.mailboxQuery(MailboxQuery.builder()
-								.clientId(getClientId())
-								.orgId(getOrgId())
-								.adProcessId(getProcessInfo().getAdProcessId())
-								.fromUserId(UserId.ofRepoId(from.getAD_User_ID()))
-								.build())
+						.mailbox(mailbox)
 						.toList(toEMailAddresses(toEmail))
 						.subject(text.getSubject())
 						.message(text.getTextSnippetParsed(attributes))

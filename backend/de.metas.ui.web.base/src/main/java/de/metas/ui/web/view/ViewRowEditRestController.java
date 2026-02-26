@@ -22,6 +22,7 @@
 
 package de.metas.ui.web.view;
 
+import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.ui.web.comments.CommentsService;
 import de.metas.ui.web.comments.ViewRowCommentsSummary;
 import de.metas.ui.web.session.UserSession;
@@ -37,6 +38,7 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.DocumentCollection;
 import lombok.NonNull;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -112,17 +114,28 @@ public class ViewRowEditRestController
 
 		final ViewId viewId = ViewId.of(windowIdStr, viewIdStr);
 		final DocumentId rowId = DocumentId.of(rowIdStr);
-
 		final IEditableView view = getEditableView(viewId);
+		final JSONOptions jsonOpts = newJSONOptions();
+
 		try (final IAutoCloseable ignored = ViewChangesCollector.currentOrNewThreadLocalCollector(viewId))
 		{
 			final RowEditingContext editingCtx = createRowEditingContext(viewId, rowId);
 			view.patchViewRow(editingCtx, fieldChangeRequests);
+			return getRowById(view, rowId, jsonOpts);
 		}
+		catch (final Exception ex)
+		{
+			final JSONViewRow row = getRowById(view, rowId, jsonOpts);
+			row.setError(JsonErrors.ofThrowable(ex, jsonOpts.getAdLanguage()));
+			return row;
+		}
+	}
 
+	@NotNull
+	private JSONViewRow getRowById(final IEditableView view, final DocumentId rowId, final JSONOptions jsonOpts)
+	{
 		final IViewRow row = view.getById(rowId);
 		final IViewRowOverrides rowOverrides = ViewRowOverridesHelper.getViewRowOverrides(view);
-		final JSONOptions jsonOpts = newJSONOptions();
 
 		final ViewRowCommentsSummary viewRowCommentsSummary = commentsService.getRowCommentsSummary(row);
 

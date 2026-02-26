@@ -1,10 +1,8 @@
-package de.metas.invoicecandidate.api.impl;
-
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,7 +20,10 @@ package de.metas.invoicecandidate.api.impl;
  * #L%
  */
 
+package de.metas.invoicecandidate.api.impl;
+
 import de.metas.invoicecandidate.api.IInvoicingParams;
+import lombok.Setter;
 import lombok.ToString;
 
 import javax.annotation.Nullable;
@@ -36,17 +37,17 @@ public class PlainInvoicingParams implements IInvoicingParams
 	private Boolean onlyApprovedForInvoicing = null;
 	private Boolean consolidateApprovedICs = null;
 	private Boolean ignoreInvoiceSchedule = null;
-	private Boolean supplementMissingPaymentTermIds = null;
 	private Boolean storeInvoicesInResult = null;
 	private Boolean assumeOneInvoice = null;
 	private LocalDate dateInvoiced;
 	private boolean dateInvoicedSet = false;
 	private LocalDate dateAcct;
 	private boolean dateAcctSet = false;
-	private String poReference;
+	@Nullable private String poReference;
 	private boolean poReferenceSet = false;
-	private BigDecimal check_NetAmtToInvoice = null;
+	@Setter private BigDecimal check_NetAmtToInvoice = null;
 	private boolean updateLocationAndContactForInvoice = false;
+	private boolean completeInvoices = true; // default=true for backwards-compantibility
 
 	public PlainInvoicingParams()
 	{
@@ -128,6 +129,7 @@ public class PlainInvoicingParams implements IInvoicingParams
 		this.ignoreInvoiceSchedule = ignoreInvoiceSchedule;
 	}
 
+	@Nullable
 	@Override
 	public LocalDate getDateInvoiced()
 	{
@@ -150,7 +152,8 @@ public class PlainInvoicingParams implements IInvoicingParams
 		this.dateInvoiced = dateInvoiced;
 		dateInvoicedSet = true;
 	}
-
+	
+	@Nullable
 	@Override
 	public LocalDate getDateAcct()
 	{
@@ -174,6 +177,7 @@ public class PlainInvoicingParams implements IInvoicingParams
 		dateAcctSet = true;
 	}
 
+	@Nullable
 	@Override
 	public String getPOReference()
 	{
@@ -197,25 +201,8 @@ public class PlainInvoicingParams implements IInvoicingParams
 		poReferenceSet = true;
 	}
 
-	@Override
-	public boolean isSupplementMissingPaymentTermIds()
-	{
-		if (supplementMissingPaymentTermIds != null)
-		{
-			return supplementMissingPaymentTermIds;
-		}
-		else if (defaults != null)
-		{
-			return defaults.isSupplementMissingPaymentTermIds();
-		}
-		return false;
-	}
 
-	public void setSupplementMissingPaymentTermIds(final boolean supplementMissingPaymentTermIds)
-	{
-		this.supplementMissingPaymentTermIds = supplementMissingPaymentTermIds;
-	}
-
+	@Nullable
 	@Override
 	public BigDecimal getCheck_NetAmtToInvoice()
 	{
@@ -229,11 +216,6 @@ public class PlainInvoicingParams implements IInvoicingParams
 		}
 
 		return null;
-	}
-
-	public void setCheck_NetAmtToInvoice(final BigDecimal check_NetAmtToInvoice)
-	{
-		this.check_NetAmtToInvoice = check_NetAmtToInvoice;
 	}
 
 	@Override
@@ -290,5 +272,17 @@ public class PlainInvoicingParams implements IInvoicingParams
 	public void setUpdateLocationAndContactForInvoice(boolean updateLocationAndContactForInvoice)
 	{
 		this.updateLocationAndContactForInvoice = updateLocationAndContactForInvoice;
+	}
+
+	public PlainInvoicingParams setCompleteInvoices(final boolean completeInvoices)
+	{
+		this.completeInvoices = completeInvoices;
+		return this;
+	}
+	
+	@Override
+	public boolean isCompleteInvoices()
+	{
+		return completeInvoices;
 	}
 }

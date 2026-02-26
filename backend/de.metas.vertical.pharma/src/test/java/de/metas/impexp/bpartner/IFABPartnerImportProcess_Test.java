@@ -1,23 +1,20 @@
 package de.metas.impexp.bpartner;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.lang.Mutable;
-import org.compiere.util.Env;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
-
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
+import de.metas.impexp.ImportRecordsAsyncExecutor;
+import de.metas.impexp.MockedImportRecordsAsyncExecutor;
 import de.metas.impexp.format.ImportTableDescriptorRepository;
 import de.metas.impexp.processing.DBFunctionsRepository;
 import de.metas.vertical.pharma.model.I_I_Pharma_BPartner;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.Mutable;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.Env;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 /*
  * #%L
@@ -41,23 +38,18 @@ import de.metas.vertical.pharma.model.I_I_Pharma_BPartner;
  * #L%
  */
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = {
-		// needed to register the spring context with the Adempiere main class
-		StartupListener.class, ShutdownListener.class,
-
-		// needed so that the spring context can discover those components
-		DBFunctionsRepository.class,
-		ImportTableDescriptorRepository.class
-})
 public class IFABPartnerImportProcess_Test
 {
 	private Properties ctx;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		SpringContextHolder.registerJUnitBean(new DBFunctionsRepository());
+		SpringContextHolder.registerJUnitBean(new ImportTableDescriptorRepository());
+		SpringContextHolder.registerJUnitBean(ImportRecordsAsyncExecutor.class, new MockedImportRecordsAsyncExecutor());
+
 		ctx = Env.getCtx();
 		IIFABPartnerFactory.createCountry("DE");
 	}
@@ -72,7 +64,7 @@ public class IFABPartnerImportProcess_Test
 
 		importRecords.forEach(record -> importProcess.importRecord(new Mutable<>(), record, false /* isInsertOnly */));
 
-		importRecords.forEach(record -> IFABPartnerImportTestHelper.assertIFABPartnerImported(record));
+		importRecords.forEach(IFABPartnerImportTestHelper::assertIFABPartnerImported);
 
 
 	}
@@ -83,8 +75,6 @@ public class IFABPartnerImportProcess_Test
 	 * <code>B00SSATZ	B00ADRNR	B00NAME1	B00NAME2	B00NAME3	B00LAND	B00PLZZU1	B00ORTZU	B00STR	B00HNRV	B00HNRVZ	B00HNRB	B00HNRBZ	B00PLZPF1	B00ORTPF	B00PF1		B00TEL1	B00TEL2	B00FAX1	B00FAX2	B00EMAIL	B00EMAIL2	B00HOMEPAG</code><br>
 	 * <code>1			9528		testco1		test1		name1		DE			45721	City1		Street1	 12		23			34		45												1234	2343	3453	3432	te@test.com	te1@test.com	www.test.com	</code><br>
 	 * <code>1			20		 	testco2		test2		name2		DE			41564	City2		Street2	 12		23			34		45			41553		POBOxCity	20 22 25	1234	2343	3453	3432	te@test.com	te1@test.com	www.test.com	</code><br>
-	 *
-	 * @param lines
 	 */
 	private List<I_I_Pharma_BPartner> prepareImportRecords()
 	{

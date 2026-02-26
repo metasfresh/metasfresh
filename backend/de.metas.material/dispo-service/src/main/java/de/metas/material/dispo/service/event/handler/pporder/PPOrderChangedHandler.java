@@ -76,7 +76,7 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 	@Override
 	public void handleEvent(@NonNull final PPOrderChangedEvent event)
 	{
-		final PPOrderId ppOrderId = PPOrderId.ofRepoId(event.getPpOrderId());
+		final PPOrderId ppOrderId = event.getPpOrderId();
 		final List<Candidate> candidatesToUpdate = candidateRepositoryRetrieval.retrieveCandidatesForPPOrderId(ppOrderId);
 		Check.errorIf(candidatesToUpdate.isEmpty(), "No Candidates found for PP_Order_ID={}", ppOrderId);
 

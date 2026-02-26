@@ -22,26 +22,32 @@ package org.adempiere.ad.dao;
  * #L%
  */
 
-
 import java.util.Comparator;
 
 public interface IQueryOrderBy
 {
-	public enum Direction
+	enum Direction
 	{
 		Ascending,
 		Descending,
+		;
+
+		public static Direction ofIsAscendingFlag(final boolean isAscending) {return isAscending ? Ascending : Descending;}
+
+		public boolean isAscending() {return this.equals(Ascending);}
 	}
 
-	public enum Nulls
-	{
-		First,
-		Last,
-	};
+	enum Nulls
+	{First, Last}
 
 	String getSql();
 
 	Comparator<Object> getComparator();
 
-	<T> Comparator<T> getComparator(Class<T> modelClass);
+	default <T> Comparator<T> getComparator(@SuppressWarnings("unused") Class<T> modelClass)
+	{
+		//noinspection unchecked
+		return (Comparator<T>)getComparator();
+	}
+
 }

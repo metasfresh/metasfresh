@@ -1,12 +1,17 @@
 package de.metas.frontend_testing.masterdata.product;
 
 import de.metas.frontend_testing.masterdata.Identifier;
+import de.metas.gs1.GTIN;
+import de.metas.gs1.ean13.EAN13;
+import de.metas.gs1.ean13.EAN13ProductCode;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.uom.X12DE355;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
+import org.eevolution.api.BOMComponentIssueMethod;
+import org.eevolution.api.BOMComponentType;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -17,19 +22,37 @@ import java.util.List;
 @Jacksonized
 public class JsonCreateProductRequest
 {
+	// Allow exact value/name (if both null, use valuePrefix or timestamp)
+	@Nullable String value;
+	@Nullable String name;
+
 	@Nullable String valuePrefix;
-	@Nullable String gtin;
-	@Nullable String ean13ProductCode;
+	@Nullable RandomValueSpec randomValue;
+	@Nullable GTIN gtin;
+	@Nullable EAN13ProductCode ean13ProductCode;
 	@Nullable X12DE355 uom;
 	@Nullable List<UOMConversion> uomConversions;
 
+	@Nullable BigDecimal price;
 	@Nullable List<Price> prices;
+
+	@Nullable List<BPartner> bpartners;
 
 	@Nullable BOM bom;
 
 	//
 	//
 	//
+
+	@Value
+	@Builder
+	@Jacksonized
+	public static class RandomValueSpec
+	{
+		int size;
+		boolean isIncludeDigits;
+		boolean isIncludeLetters;
+	}
 
 	@Value
 	@Builder
@@ -55,6 +78,15 @@ public class JsonCreateProductRequest
 	@Value
 	@Builder
 	@Jacksonized
+	public static class BPartner
+	{
+		@NonNull Identifier bpartner;
+		@Nullable EAN13 ean13;
+	}
+
+	@Value
+	@Builder
+	@Jacksonized
 	public static class BOM
 	{
 		@NonNull List<BOMLine> lines;
@@ -69,5 +101,8 @@ public class JsonCreateProductRequest
 		@NonNull BigDecimal qty;
 		boolean percentage;
 		@Nullable X12DE355 uom;
+		@Nullable BOMComponentType componentType;
+		@Nullable BOMComponentIssueMethod issueMethod;
+		@Nullable String pickingInstruction;
 	}
 }

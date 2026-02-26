@@ -1,7 +1,7 @@
 package de.metas.cucumber.stepdefs.mobileui.picking;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.cucumber.stepdefs.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
@@ -167,7 +167,7 @@ public class MobileUI_Picking_StepDef
 		}
 
 		//
-		final IHUQRCode itemQRCode = row.getAsOptionalString("QRCode").map(HUQRCodesService::toHUQRCode).orElse(null);
+		final IHUQRCode itemQRCode = row.getAsOptionalString("QRCode").map(huQRCodesService::parse).orElse(null);
 		if (itemQRCode != null)
 		{
 			requestBuilder

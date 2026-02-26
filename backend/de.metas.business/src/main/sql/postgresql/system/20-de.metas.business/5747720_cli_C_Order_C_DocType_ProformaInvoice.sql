@@ -23,7 +23,7 @@
 
 
 -- 2025-02-25T16:08:47.050Z
-INSERT INTO C_DocType (AD_Client_ID,AD_Org_ID,C_DocType_ID,Created,CreatedBy,DocBaseType,DocumentCopies,EntityType,GL_Category_ID,HasCharges,HasProforma,IsActive,IsCopyDescriptionToDocument,IsCreateCounter,IsDefault,IsDefaultCounterDoc,IsDocNoControlled,IsExcludeFromCommision,IsIndexed,IsInTransit,IsOverwriteDateOnComplete,IsOverwriteSeqOnComplete,IsPickQAConfirm,IsShipConfirm,IsSOTrx,IsSplitWhenDifference,Name,PrintName,Updated,UpdatedBy) VALUES (1000000,0,541131,TO_TIMESTAMP('2025-02-25 17:08:47','YYYY-MM-DD HH24:MI:SS'),100,'SOO',1,'D',1000001,'N','N','Y','Y','Y','N','N','Y','N','N','N','N','N','N','N','N','N','Proforma Rechnung','Proforma Rechnung',TO_TIMESTAMP('2025-02-25 17:08:47','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_DocType (AD_Client_ID,AD_Org_ID,C_DocType_ID,Created,CreatedBy,DocBaseType,DocumentCopies,EntityType,GL_Category_ID,HasCharges,HasProforma,IsActive,IsCreateCounter,IsDefault,IsDefaultCounterDoc,IsDocNoControlled,IsExcludeFromCommision,IsIndexed,IsInTransit,IsOverwriteDateOnComplete,IsOverwriteSeqOnComplete,IsPickQAConfirm,IsShipConfirm,IsSOTrx,IsSplitWhenDifference,Name,PrintName,Updated,UpdatedBy) VALUES (1000000,0,541131,TO_TIMESTAMP('2025-02-25 17:08:47','YYYY-MM-DD HH24:MI:SS'),100,'SOO',1,'D',1000001,'N','N','Y','Y','N','N','Y','N','N','N','N','N','N','N','N','N','Proforma Rechnung','Proforma Rechnung',TO_TIMESTAMP('2025-02-25 17:08:47','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2025-02-25T16:08:47.055Z

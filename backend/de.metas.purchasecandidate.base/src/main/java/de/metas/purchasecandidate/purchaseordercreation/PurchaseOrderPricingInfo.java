@@ -24,14 +24,17 @@ package de.metas.purchasecandidate.purchaseordercreation;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.location.CountryId;
+import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
@@ -46,5 +49,9 @@ public class PurchaseOrderPricingInfo
 	@NonNull ProductId productId;
 	@Nullable CountryId countryId;
 	@NonNull Quantity quantity;
+	@NonNull Boolean isManualPrice;
+	@Nullable BigDecimal priceEntered;
+	@Nullable UomId priceEnteredUomId;
+	@Nullable CurrencyId currencyId;
 	boolean convertPriceToContextUOM;
 }

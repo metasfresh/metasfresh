@@ -69,7 +69,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
@@ -354,7 +354,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		//
 		// Pricing Informations
 		final org.compiere.model.I_M_InOutLine inOutLineRecordToUse = inOutLineRecord.getReturn_Origin_InOutLine_ID() > 0 ? inOutLineRecord.getReturn_Origin_InOutLine() : inOutLineRecord;
-		calculatePriceAndQuantityAndUpdate(icRecord, inOutLineRecordToUse);
+		calculatePriceAndTaxAndUpdate(icRecord, inOutLineRecordToUse);
 
 		//
 		// Description
@@ -423,7 +423,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		// set Quality Issue Percentage Override
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(inOutLineRecord.getM_AttributeSetInstance_ID());
-		final ImmutableAttributeSet attributes = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asiId);
+		final ImmutableAttributeSet attributes = Services.get(IAttributeSetInstanceBL.class).getImmutableAttributeSetById(asiId);
 
 		Services.get(IInvoiceCandBL.class).setQualityDiscountPercent_Override(icRecord, attributes);
 
@@ -991,7 +991,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Nullable
-	public static PriceAndTax calculatePriceAndQuantityAndUpdate(
+	public static PriceAndTax calculatePriceAndTaxAndUpdate(
 			@NonNull final I_C_Invoice_Candidate icRecord,
 			final org.compiere.model.I_M_InOutLine fromInOutLine)
 	{

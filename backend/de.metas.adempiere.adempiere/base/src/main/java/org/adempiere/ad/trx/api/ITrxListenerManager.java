@@ -5,6 +5,7 @@ import com.google.common.base.MoreObjects.ToStringHelper;
 import lombok.Getter;
 import lombok.NonNull;
 
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -193,11 +194,25 @@ public interface ITrxListenerManager
 				.registerHandlingMethod(trx -> runnable.run());
 	}
 
+	default void runBeforeCommit(@NonNull final Runnable runnable)
+	{
+		newEventListener(TrxEventTiming.BEFORE_COMMIT)
+				.invokeMethodJustOnce(true)
+				.registerHandlingMethod(trx -> runnable.run());
+	}
+
 	default void runAfterRollback(@NonNull final Runnable runnable)
 	{
 		newEventListener(TrxEventTiming.AFTER_ROLLBACK)
 				.invokeMethodJustOnce(true)
 				.registerHandlingMethod(trx -> runnable.run());
+	}
+
+	default void runAfterClose(@NonNull final Consumer<ITrx> runnable)
+	{
+		newEventListener(TrxEventTiming.AFTER_CLOSE)
+				.invokeMethodJustOnce(true)
+				.registerHandlingMethod(runnable::accept);
 	}
 
 	/**

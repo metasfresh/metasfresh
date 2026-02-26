@@ -27,7 +27,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIDesadvLineId;
-import de.metas.edi.api.IDesadvBL;
+import de.metas.edi.api.impl.DesadvBL;
 import de.metas.edi.api.impl.pack.CreateEDIDesadvPackItemRequest;
 import de.metas.edi.api.impl.pack.CreateEDIDesadvPackRequest;
 import de.metas.edi.api.impl.pack.EDIDesadvPack;
@@ -37,8 +37,6 @@ import de.metas.edi.model.I_M_InOutLine;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.handlingunits.allocation.impl.TotalQtyCUBreakdownCalculator;
 import de.metas.handlingunits.allocation.impl.TotalQtyCUBreakdownCalculator.LUQtys;
-import de.metas.handlingunits.attributes.sscc18.SSCC18;
-import de.metas.handlingunits.attributes.sscc18.impl.SSCC18CodeBL;
 import de.metas.handlingunits.generichumodel.PackagingCodeId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.inout.IInOutBL;
@@ -49,6 +47,8 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.sscc18.SSCC18;
+import de.metas.sscc18.impl.SSCC18CodeBL;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
@@ -82,7 +82,7 @@ public class DesadvLineSSCC18Generator
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final SSCC18CodeBL sscc18CodeBL;
-	private final IDesadvBL desadvBL;
+	private final DesadvBL desadvBL;
 	private final EDIDesadvPackService ediDesadvPackService;
 
 	//
@@ -108,7 +108,7 @@ public class DesadvLineSSCC18Generator
 	@Builder
 	private DesadvLineSSCC18Generator(
 			@NonNull final SSCC18CodeBL sscc18CodeService,
-			@NonNull final IDesadvBL desadvBL,
+			@NonNull final DesadvBL desadvBL,
 			final boolean printExistingLabels,
 			@NonNull final BPartnerId bpartnerId,
 			@NonNull final EDIDesadvPackService ediDesadvPackService)

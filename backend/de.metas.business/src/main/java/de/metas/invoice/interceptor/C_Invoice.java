@@ -17,6 +17,7 @@ import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -32,6 +33,7 @@ import de.metas.pricing.service.ProductPrices;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -52,28 +54,22 @@ import java.util.List;
 
 @Interceptor(I_C_Invoice.class)
 @Component
+@RequiredArgsConstructor
 public class C_Invoice // 03771
 {
-	private final PaymentReservationService paymentReservationService;
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	@NonNull private final PaymentReservationService paymentReservationService;
+	@NonNull private final IDocumentLocationBL documentLocationBL;
 
-	private final IDocumentLocationBL documentLocationBL;
-	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
-	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
-	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
-	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
-
-	public C_Invoice(
-			@NonNull final PaymentReservationService paymentReservationService,
-			@NonNull final IDocumentLocationBL documentLocationBL)
-	{
-		this.paymentReservationService = paymentReservationService;
-		this.documentLocationBL = documentLocationBL;
-	}
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	@NonNull private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
+	@NonNull private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+	@NonNull private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
+	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	@NonNull private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	@NonNull private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void onAfterComplete(final I_C_Invoice invoice)
@@ -153,8 +149,7 @@ public class C_Invoice // 03771
 
 		final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
 
-		@SuppressWarnings("ConstantConditions")
-		final I_M_PriceList_Version priceListVersion = priceListDAO
+		@SuppressWarnings("ConstantConditions") final I_M_PriceList_Version priceListVersion = priceListDAO
 				.retrievePriceListVersionOrNull(PriceListId.ofRepoId(invoice.getM_PriceList_ID()), invoiceDate, processedPLVFiltering); // can be null
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
@@ -268,8 +263,8 @@ public class C_Invoice // 03771
 		if (creditMemo.getRef_Invoice_ID() > 0)
 		{
 			final I_C_Invoice parentInvoice = InterfaceWrapperHelper.create(creditMemo.getRef_Invoice(), I_C_Invoice.class);
-			final BigDecimal invoiceOpenAmt = allocationDAO.retrieveOpenAmt(parentInvoice,
-																			false); // creditMemoAdjusted = false
+			final BigDecimal invoiceOpenAmt = allocationDAO.retrieveOpenAmtInInvoiceCurrency(parentInvoice,
+					false).toBigDecimal(); // creditMemoAdjusted = false
 
 			final BigDecimal amtToAllocate = invoiceOpenAmt.min(creditMemoLeft);
 
@@ -390,12 +385,12 @@ public class C_Invoice // 03771
 		final Money grandTotal = extractGrandTotal(salesInvoice);
 
 		paymentReservationService.captureAmount(PaymentReservationCaptureRequest.builder()
-														.salesOrderId(salesOrderId)
-														.salesInvoiceId(InvoiceId.ofRepoId(salesInvoice.getC_Invoice_ID()))
-														.customerId(BPartnerId.ofRepoId(salesInvoice.getC_BPartner_ID()))
-														.dateTrx(dateTrx)
-														.amount(grandTotal)
-														.build());
+				.salesOrderId(salesOrderId)
+				.salesInvoiceId(InvoiceId.ofRepoId(salesInvoice.getC_Invoice_ID()))
+				.customerId(BPartnerId.ofRepoId(salesInvoice.getC_BPartner_ID()))
+				.dateTrx(dateTrx)
+				.amount(grandTotal)
+				.build());
 	}
 
 	private static Money extractGrandTotal(@NonNull final I_C_Invoice salesInvoice)
@@ -407,5 +402,15 @@ public class C_Invoice // 03771
 	public void updateInvoiceLinesTax(@NonNull final I_C_Invoice invoice)
 	{
 		invoiceBL.setInvoiceLineTaxes(invoice);
+	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
+	public void updateOrderPaySchedules(@NonNull final I_C_Invoice invoice)
+	{
+		final OrderId orderId = OrderId.ofRepoIdOrNull(invoice.getC_Order_ID());
+		if (orderId != null && invoice.getDateInvoiced() != null)
+		{
+			orderBL.syncDateInvoicedFromInvoice(orderId, invoice);
+		}
 	}
 }

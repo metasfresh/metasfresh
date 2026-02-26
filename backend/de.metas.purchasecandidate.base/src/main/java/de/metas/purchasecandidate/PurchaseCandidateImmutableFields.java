@@ -2,6 +2,7 @@ package de.metas.purchasecandidate;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.dimension.Dimension;
+import de.metas.externalsystem.ExternalSystemId;
 import de.metas.mforecast.impl.ForecastLineId;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
@@ -41,6 +42,9 @@ import javax.annotation.Nullable;
 @Builder
 class PurchaseCandidateImmutableFields
 {
+	@Nullable
+	ExternalSystemId externalSystemId;
+	
 	@Nullable
 	ExternalId externalHeaderId;
 

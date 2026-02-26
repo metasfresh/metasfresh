@@ -44,6 +44,8 @@ import java.util.Set;
  */
 public interface ISourceHuDAO extends ISingletonService
 {
+	void addSourceHuMarker(@NonNull HuId huId);
+
 	/**
 	 * Return {@code true} if the given HU is referenced by an active {@link I_M_Source_HU}.<br>
 	 * Note that we use the ID for performance reasons.

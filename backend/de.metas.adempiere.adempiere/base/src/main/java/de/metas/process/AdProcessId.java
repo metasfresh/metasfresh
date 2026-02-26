@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -35,11 +36,13 @@ import java.util.Objects;
 public class AdProcessId implements RepoIdAware
 {
 	@JsonCreator
+	@NonNull
 	public static AdProcessId ofRepoId(final int repoId)
 	{
 		return new AdProcessId(repoId);
 	}
 
+	@Nullable
 	public static AdProcessId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new AdProcessId(repoId) : null;

@@ -167,7 +167,9 @@ public class BPartnerEndpointService
 	{
 		final SinceQuery sinceQuery = SinceQuery.anyEntity(
 				extractInstant(epochMilli),
-				getPageSize());
+				getPageSize(),
+				null,
+				null);
 
 		final NextPageQuery nextPageQuery = NextPageQuery.anyEntityOrNull(nextPageId);
 

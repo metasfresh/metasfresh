@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.product.impexp;
 
 import de.metas.common.util.CoalesceUtil;
@@ -24,28 +46,6 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 @Builder
 		/* package */ class ProductImportHelper
@@ -87,7 +87,10 @@ import java.math.BigDecimal;
 											  @NonNull final I_I_Product from)
 	{
 		product.setValue(from.getValue());
-		product.setName(CoalesceUtil.coalesce(from.getName(), from.getValue()));
+		if (from.isUpdateName())
+		{
+			product.setName(CoalesceUtil.coalesce(from.getName(), from.getValue()));
+		}
 
 		if (from.getDescription() != null)
 		{
@@ -102,6 +105,7 @@ import java.math.BigDecimal;
 			product.setPackageSize(from.getPackageSize());
 		}
 		product.setIsSold(from.isSold());
+		product.setIsPurchased(from.isPurchased());
 		product.setIsStocked(from.isStocked());
 		if (from.getUPC() != null)
 		{
@@ -112,9 +116,14 @@ import java.math.BigDecimal;
 			product.setSKU(from.getSKU());
 		}
 
-		// Set UOM, product category, and classification
+		// set product category is wanted
+		if (from.isUpdateProductCategory())
+		{
+			product.setM_Product_Category_ID(from.getM_Product_Category_ID());
+		}
+
+		// Set UOM and classification
 		product.setC_UOM_ID(from.getC_UOM_ID());
-		product.setM_Product_Category_ID(from.getM_Product_Category_ID());
 		product.setClassification(from.getClassification());
 
 		// Set product type
@@ -127,11 +136,15 @@ import java.math.BigDecimal;
 		}
 		if (from.getWeight() != null)
 		{
-			product.setWeight(from.getWeight());
+			product.setGrossWeight(from.getWeight());
+		}
+		if (UomId.ofRepoIdOrNull(from.getWeight_UOM_ID()) != null)
+		{
+			product.setGrossWeight_UOM_ID(from.getWeight_UOM_ID());
 		}
 		if (from.getNetWeight() != null)
 		{
-			product.setNetWeight(from.getNetWeight());
+			product.setWeight(from.getNetWeight());
 		}
 		if (from.getShelfWidth() != null)
 		{
@@ -148,6 +161,20 @@ import java.math.BigDecimal;
 		if (from.getUnitsPerPallet() > 0)
 		{
 			product.setUnitsPerPallet(BigDecimal.valueOf(from.getUnitsPerPallet()));
+		}
+
+		product.setIsSelfPacked(from.isSelfPacked());
+		if (from.getHeightInCm() > 0)
+		{
+			product.setHeightInCm(from.getHeightInCm());
+		}
+		if (from.getWidthInCm() > 0)
+		{
+			product.setWidthInCm(from.getWidthInCm());
+		}
+		if (from.getLengthInCm() > 0)
+		{
+			product.setLengthInCm(from.getLengthInCm());
 		}
 
 		product.setDiscontinued(from.isDiscontinued());
@@ -172,6 +199,7 @@ import java.math.BigDecimal;
 			product.setM_ProductPlanningSchema_Selector(from.getM_ProductPlanningSchema_Selector());
 		}
 
+		product.setGuaranteeDaysMin(from.getGuaranteeDaysMin());
 	}
 
 	private de.metas.adempiere.model.I_M_Product createProductRecordNoSave(@NonNull final I_I_Product importRecord)
@@ -196,15 +224,22 @@ import java.math.BigDecimal;
 		product.setImageURL(importRecord.getImageURL());
 		product.setDescriptionURL(importRecord.getDescriptionURL());
 		product.setIsSold(importRecord.isSold());
+		product.setIsPurchased(importRecord.isPurchased());
 		product.setIsStocked(importRecord.isStocked());
-		product.setNetWeight(importRecord.getNetWeight());
+		product.setWeight(importRecord.getNetWeight());
+		product.setGrossWeight(importRecord.getWeight());
+		product.setGrossWeight_UOM_ID(importRecord.getWeight_UOM_ID());
 		product.setM_CustomsTariff_ID(importRecord.getM_CustomsTariff_ID());
 		product.setRawMaterialOrigin_ID(importRecord.getRawMaterialOrigin_ID());
-		product.setWeight(importRecord.getWeight());
 		product.setM_ProductPlanningSchema_Selector(importRecord.getM_ProductPlanningSchema_Selector()); // #3406
 		product.setTrademark(importRecord.getTrademark());
 		product.setPZN(importRecord.getPZN());
 		product.setIsCommissioned(importRecord.isCommissioned());
+		product.setGuaranteeDaysMin(importRecord.getGuaranteeDaysMin());
+		product.setIsSelfPacked(importRecord.isSelfPacked());
+		product.setHeightInCm(importRecord.getHeightInCm());
+		product.setWidthInCm(importRecord.getWidthInCm());
+		product.setLengthInCm(importRecord.getLengthInCm());
 
 		return product;
 	}    // MProduct

@@ -2,15 +2,16 @@ import React from 'react';
 import { shallowEqual, useSelector } from 'react-redux';
 
 import { trl } from '../../../utils/translations';
-import { computeQtyToPickRemaining, getLineById, getStepsArrayFromLine } from '../../../reducers/wfProcesses';
+import { getLineById, getStepsArrayFromLine } from '../../../reducers/wfProcesses';
 
 import DistributionStepButton from './DistributionStepButton';
 import { formatQtyToHumanReadableStr } from '../../../utils/qtys';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
-import { distributionLinePickFromScreenLocation } from '../../../routes/distribution';
+import { distributionPickFromScreenLocation } from '../../../routes/distribution';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { getWFProcessScreenLocation } from '../../../routes/workflow_locations';
 import { useMobileLocation } from '../../../hooks/useMobileLocation';
+import { computeQtyToPickRemaining } from '../../../reducers/wfProcesses/distribution/computeQtyToPickRemaining';
 
 const DistributionLineScreen = () => {
   const { history, applicationId, wfProcessId, activityId, lineId } = useDistributionScreenDefinition({
@@ -25,7 +26,7 @@ const DistributionLineScreen = () => {
   });
 
   const onScanButtonClick = () => {
-    history.push(distributionLinePickFromScreenLocation({ applicationId, wfProcessId, activityId, lineId }));
+    history.push(distributionPickFromScreenLocation({ applicationId, wfProcessId, activityId, lineId }));
   };
 
   return (

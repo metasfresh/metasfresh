@@ -22,16 +22,15 @@ package de.metas.handlingunits.shipping.process;
  * #L%
  */
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.handlingunits.shipping.CreatePackageForHURequest;
-import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.IHUPackageDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_PickingSlot;
-import de.metas.handlingunits.picking.IHUPickingSlotBL;
-import de.metas.handlingunits.picking.IHUPickingSlotBL.IQueueActionResult;
-import de.metas.handlingunits.picking.IHUPickingSlotDAO;
+import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
+import de.metas.handlingunits.picking.slot.IHUPickingSlotBL.IQueueActionResult;
+import de.metas.handlingunits.picking.slot.IHUPickingSlotDAO;
+import de.metas.handlingunits.shipping.CreatePackageForHURequest;
+import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
@@ -46,6 +45,7 @@ import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
+import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -138,8 +138,7 @@ public class M_ShippingPackage_CreateFromPickingSlots extends JavaProcess implem
 			throw new AdempiereException(msgBL.getMsg(getCtx(), AdMessageKey.of(CreateFromPickingSlots_MSG_DOC_PROCESSED)));
 		}
 
-		final BPartnerId shipperPartnerId = BPartnerId.ofRepoId(shipperTransportation.getShipper_BPartner_ID());
-		shipperId = shipperDAO.getShipperIdByShipperPartnerId(shipperPartnerId);
+		shipperId = ShipperId.ofRepoId(shipperTransportation.getM_Shipper_ID());
 
 		// ts: not brilliant, but note there aren't that many picking slots to i guess it's OK to iterate them all
 		final List<I_M_PickingSlot> pickingSlots = InterfaceWrapperHelper.createList(
@@ -160,7 +159,7 @@ public class M_ShippingPackage_CreateFromPickingSlots extends JavaProcess implem
 			anyMatchingPickingSlot = true;
 			createShippingPackages(pickingSlot);
 		}
-		if(!anyMatchingPickingSlot)
+		if (!anyMatchingPickingSlot)
 		{
 			addLog("Found no M_PickingSlots that match C_BPartner_ID={}; => nothing to do", p_C_BPartner_ID);
 		}
@@ -171,7 +170,7 @@ public class M_ShippingPackage_CreateFromPickingSlots extends JavaProcess implem
 	{
 		final List<I_M_HU> huRecords = huPickingSlotDAO.retrieveAllHUs(pickingSlot);
 		addLog("Found {} M_HUs in M_PickingSlot {}", huRecords.size(), pickingSlot.getPickingSlot());
-		
+
 		for (final I_M_HU hu : huRecords)
 		{
 			// tasks 09033: take care of the HU that might still be open in the picking terminal
@@ -208,7 +207,7 @@ public class M_ShippingPackage_CreateFromPickingSlots extends JavaProcess implem
 						.build()
 		);
 
-		final I_M_ShippingPackage shippingPackage = shipperTransportationBL.createShippingPackage(shipperTransportation, mpackage);
+		final I_M_ShippingPackage shippingPackage = shipperTransportationBL.createShippingPackage(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), mpackage);
 		if (shippingPackage == null)
 		{
 			addLog("Unable to create a M_ShippingPackage for M_ShipperTransportation {} and the newly created M_Package {}; => nothing to do",

@@ -20,6 +20,8 @@ import DialogButton from './DialogButton';
 import Dialog from './Dialog';
 import * as uiTrace from './../../utils/ui_trace';
 import Spinner from '../Spinner';
+import { QTY_REJECTED_REASON_TO_IGNORE_KEY } from '../../reducers/wfProcesses';
+import { PickAttribute } from '../../reducers/wfProcesses/picking/PickAttribute';
 
 const GetQuantityDialog = ({
   readOnly: readOnlyParam = false,
@@ -31,6 +33,7 @@ const GetQuantityDialog = ({
   totalQty,
   qtyAlreadyOnScale,
   qtyCaption,
+  qtyInitial,
   packingItemName,
   uom,
   qtyRejectedReasons,
@@ -39,10 +42,10 @@ const GetQuantityDialog = ({
   //
   catchWeight: catchWeightParam,
   catchWeightUom,
+  customQRCodeFormats,
   //
-  isShowBestBeforeDate = false,
+  readAttributes = [],
   bestBeforeDate: bestBeforeDateParam = '',
-  isShowLotNo = false,
   lotNo: lotNoParam = '',
   isShowCloseTargetButton = false,
   //
@@ -51,6 +54,9 @@ const GetQuantityDialog = ({
   onQtyChange,
   onCloseDialog,
 }) => {
+  const isShowBestBeforeDate = readAttributes.includes(PickAttribute.BestBeforeDate);
+  const isShowLotNo = readAttributes.includes(PickAttribute.LotNo);
+
   const [isProcessing, setProcessing] = useState(false);
   const [confirmationDialogProps, setConfirmationDialogProps] = useState({
     promptQuestion: '',
@@ -61,8 +67,10 @@ const GetQuantityDialog = ({
   const doNotValidateQty = useBooleanSetting('qtyInput.DoNotValidate');
   const useZeroAsInitialValue = useBooleanSetting('qtyInput.useZeroAsInitialValue');
 
-  const [qtyInfo, setQtyInfo] = useState(qtyInfos.invalidOfNumber(useZeroAsInitialValue ? 0 : qtyTarget));
-  const [rejectedReason, setRejectedReason] = useState(null);
+  const [qtyInfo, setQtyInfo] = useState(
+    qtyInfos.invalidOfNumber((useZeroAsInitialValue ? 0 : null) ?? qtyInitial ?? qtyTarget)
+  );
+  const [rejectedReason, setRejectedReason] = useState(computeDefaultQtyRejectedReason(qtyRejectedReasons));
   const [useScaleDevice, setUseScaleDevice] = useState(!!scaleDevice);
 
   const useCatchWeight = !scaleDevice && catchWeightUom;
@@ -162,7 +170,7 @@ const GetQuantityDialog = ({
 
   const readQtyFromQrCode = useCallback(
     async (result) => {
-      const qrCode = parseQRCodeString(result.scannedBarcode);
+      const qrCode = parseQRCodeString({ string: result.scannedBarcode, customQRCodeFormats });
       if (!qrCode.weightNet || !qrCode.weightNetUOM) {
         throw { messageKey: 'activities.picking.qrcode.missingQty' };
       }
@@ -175,11 +183,14 @@ const GetQuantityDialog = ({
         catchWeight: qrCode.weightNet,
         catchWeightUom: catchWeightUom,
         bestBeforeDate: qrCode.bestBeforeDate,
+        productionDate: qrCode.productionDate,
         lotNo: qrCode.lotNo,
         productNo: qrCode.productNo,
         barcodeType: qrCode.barcodeType,
+        barcode: result.scannedBarcode, // i.e. the catch weight QR code
         isDone: false,
       };
+      uiTrace.putContext(onQtyChangePayload);
 
       const confirmationPrompt = await getConfirmationPrompt(1);
 
@@ -271,7 +282,11 @@ const GetQuantityDialog = ({
               ))}
             <tr>
               <td colSpan="2">
-                <BarcodeScannerComponent continuousRunning={true} onResolvedResult={readQtyFromQrCode} />
+                <BarcodeScannerComponent
+                  continuousRunning={true}
+                  customQRCodeFormats={customQRCodeFormats}
+                  onResolvedResult={readQtyFromQrCode}
+                />
               </td>
             </tr>
           </tbody>
@@ -312,7 +327,7 @@ const GetQuantityDialog = ({
       <Dialog className="get-qty-dialog">
         {isCustomView() && getCustomView()}
         {!isCustomView() && (
-          <>
+          <form onSubmit={() => onDialogYes({ isCloseTarget: false })}>
             <div className="table-container">
               <table className="table">
                 <tbody>
@@ -485,7 +500,7 @@ const GetQuantityDialog = ({
                 testId="cancel-button"
               />
             </div>
-          </>
+          </form>
         )}
       </Dialog>
     </div>
@@ -507,6 +522,15 @@ const computeCaptionFromUserInfoItem = ({ caption = null, captionKey = null }) =
   }
 };
 
+const computeDefaultQtyRejectedReason = (qtyRejectedReasons) => {
+  if (!Array.isArray(qtyRejectedReasons) || qtyRejectedReasons.length <= 0) {
+    return null;
+  }
+
+  const defaultReason = qtyRejectedReasons.find((reason) => reason.key === QTY_REJECTED_REASON_TO_IGNORE_KEY);
+  return defaultReason?.key ?? null;
+};
+
 GetQuantityDialog.propTypes = {
   // Properties
   hideQtyInput: PropTypes.bool,
@@ -517,6 +541,7 @@ GetQuantityDialog.propTypes = {
   totalQty: PropTypes.number,
   qtyAlreadyOnScale: PropTypes.number,
   qtyCaption: PropTypes.string,
+  qtyInitial: PropTypes.number,
   packingItemName: PropTypes.string,
   uom: PropTypes.string.isRequired,
   qtyRejectedReasons: PropTypes.arrayOf(PropTypes.object),
@@ -524,11 +549,11 @@ GetQuantityDialog.propTypes = {
   scaleTolerance: PropTypes.object,
   catchWeight: PropTypes.number,
   catchWeightUom: PropTypes.string,
-  isShowBestBeforeDate: PropTypes.bool,
+  readAttributes: PropTypes.array,
   bestBeforeDate: PropTypes.string,
-  isShowLotNo: PropTypes.bool,
   lotNo: PropTypes.string,
   isShowCloseTargetButton: PropTypes.bool,
+  customQRCodeFormats: PropTypes.array,
 
   // Callbacks
   validateQtyEntered: PropTypes.func,

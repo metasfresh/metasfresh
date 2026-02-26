@@ -32,16 +32,16 @@ import de.metas.externalreference.productprice.ProductPriceExternalReferenceType
 import de.metas.externalreference.shipper.ShipperExternalReferenceType;
 import de.metas.externalreference.warehouse.WarehouseExternalReferenceType;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class ExternalReferenceTypes
 {
-	private final Map<String, IExternalReferenceType> typesByCode = new HashMap<>();
+	private final ConcurrentHashMap<String, IExternalReferenceType> typesByCode = new ConcurrentHashMap<>();
 
 	public ExternalReferenceTypes()
 	{
@@ -70,4 +70,16 @@ public class ExternalReferenceTypes
 		final IExternalReferenceType externalReferenceType = typesByCode.get(code);
 		return Optional.ofNullable(externalReferenceType);
 	}
+
+	@NonNull
+	public IExternalReferenceType ofCodeNotNull(@NonNull final String code)
+	{
+		final IExternalReferenceType type = typesByCode.get(code);
+		if (type == null)
+		{
+			throw new AdempiereException("Unknown Type: " + code);
+		}
+		return type;
+	}
+
 }

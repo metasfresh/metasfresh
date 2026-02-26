@@ -30,6 +30,94 @@ public interface I_I_BPartner
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
+	 * Set Street & House No..
+	 * Address line 1 for this location
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAddress1 (@Nullable java.lang.String Address1);
+
+	/**
+	 * Get Street & House No..
+	 * Address line 1 for this location
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getAddress1();
+
+	ModelColumn<I_I_BPartner, Object> COLUMN_Address1 = new ModelColumn<>(I_I_BPartner.class, "Address1", null);
+	String COLUMNNAME_Address1 = "Address1";
+
+	/**
+	 * Set Address 2.
+	 * Address line 2 for this location
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAddress2 (@Nullable java.lang.String Address2);
+
+	/**
+	 * Get Address 2.
+	 * Address line 2 for this location
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getAddress2();
+
+	ModelColumn<I_I_BPartner, Object> COLUMN_Address2 = new ModelColumn<>(I_I_BPartner.class, "Address2", null);
+	String COLUMNNAME_Address2 = "Address2";
+
+	/**
+	 * Set Adress 3.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAddress3 (@Nullable java.lang.String Address3);
+
+	/**
+	 * Get Adress 3.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getAddress3();
+
+	ModelColumn<I_I_BPartner, Object> COLUMN_Address3 = new ModelColumn<>(I_I_BPartner.class, "Address3", null);
+	String COLUMNNAME_Address3 = "Address3";
+
+	/**
+	 * Set Adress 4.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAddress4 (@Nullable java.lang.String Address4);
+
+	/**
+	 * Get Adress 4.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getAddress4();
+
+	ModelColumn<I_I_BPartner, Object> COLUMN_Address4 = new ModelColumn<>(I_I_BPartner.class, "Address4", null);
+	String COLUMNNAME_Address4 = "Address4";
+
+	/**
 	 * Set Issues.
 	 *
 	 * <br>Type: Search
@@ -257,98 +345,6 @@ public interface I_I_BPartner
 	String COLUMNNAME_AD_User_Memo4 = "AD_User_Memo4";
 
 	/**
-	 * Set Straße und Nr..
-	 * Adresszeile 1 für diesen Standort
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setAddress1 (@Nullable java.lang.String Address1);
-
-	/**
-	 * Get Straße und Nr..
-	 * Adresszeile 1 für diesen Standort
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getAddress1();
-
-	ModelColumn<I_I_BPartner, Object> COLUMN_Address1 = new ModelColumn<>(I_I_BPartner.class, "Address1", null);
-	String COLUMNNAME_Address1 = "Address1";
-
-	/**
-	 * Set Adresszusatz.
-	 * Adresszeile 2 für diesen Standort
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setAddress2 (@Nullable java.lang.String Address2);
-
-	/**
-	 * Get Adresszusatz.
-	 * Adresszeile 2 für diesen Standort
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getAddress2();
-
-	ModelColumn<I_I_BPartner, Object> COLUMN_Address2 = new ModelColumn<>(I_I_BPartner.class, "Address2", null);
-	String COLUMNNAME_Address2 = "Address2";
-
-	/**
-	 * Set Adresszeile 3.
-	 * Adresszeilee 3 für diesen Standort
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setAddress3 (@Nullable java.lang.String Address3);
-
-	/**
-	 * Get Adresszeile 3.
-	 * Adresszeilee 3 für diesen Standort
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getAddress3();
-
-	ModelColumn<I_I_BPartner, Object> COLUMN_Address3 = new ModelColumn<>(I_I_BPartner.class, "Address3", null);
-	String COLUMNNAME_Address3 = "Address3";
-
-	/**
-	 * Set Adresszusatz.
-	 * Adresszeile 4 für diesen Standort
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setAddress4 (@Nullable java.lang.String Address4);
-
-	/**
-	 * Get Adresszusatz.
-	 * Adresszeile 4 für diesen Standort
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getAddress4();
-
-	ModelColumn<I_I_BPartner, Object> COLUMN_Address4 = new ModelColumn<>(I_I_BPartner.class, "Address4", null);
-	String COLUMNNAME_Address4 = "Address4";
-
-	/**
 	 * Set Aggregation Name.
 	 *
 	 * <br>Type: String
@@ -370,7 +366,7 @@ public interface I_I_BPartner
 	String COLUMNNAME_AggregationName = "AggregationName";
 
 	/**
-	 * Set Geburtstag.
+	 * Set Birthday.
 	 * Birthday or Anniversary day
 	 *
 	 * <br>Type: Date
@@ -380,7 +376,7 @@ public interface I_I_BPartner
 	void setBirthday (@Nullable java.sql.Timestamp Birthday);
 
 	/**
-	 * Get Geburtstag.
+	 * Get Birthday.
 	 * Birthday or Anniversary day
 	 *
 	 * <br>Type: Date
@@ -393,7 +389,7 @@ public interface I_I_BPartner
 	String COLUMNNAME_Birthday = "Birthday";
 
 	/**
-	 * Set Kontakt-Anrede.
+	 * Set BP Contact Greeting.
 	 * Greeting for Business Partner Contact
 	 *
 	 * <br>Type: String
@@ -403,7 +399,7 @@ public interface I_I_BPartner
 	void setBPContactGreeting (@Nullable java.lang.String BPContactGreeting);
 
 	/**
-	 * Get Kontakt-Anrede.
+	 * Get BP Contact Greeting.
 	 * Greeting for Business Partner Contact
 	 *
 	 * <br>Type: String
@@ -416,8 +412,7 @@ public interface I_I_BPartner
 	String COLUMNNAME_BPContactGreeting = "BPContactGreeting";
 
 	/**
-	 * Set Suchschlüssel.
-	 * Sponsor-Nr.
+	 * Set Partner Value.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -426,8 +421,7 @@ public interface I_I_BPartner
 	void setBPValue (@Nullable java.lang.String BPValue);
 
 	/**
-	 * Get Suchschlüssel.
-	 * Sponsor-Nr.
+	 * Get Partner Value.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -458,80 +452,6 @@ public interface I_I_BPartner
 
 	ModelColumn<I_I_BPartner, Object> COLUMN_C_Aggregation_ID = new ModelColumn<>(I_I_BPartner.class, "C_Aggregation_ID", null);
 	String COLUMNNAME_C_Aggregation_ID = "C_Aggregation_ID";
-
-	/**
-	 * Set Partner Bank Account.
-	 * Bank Account of the Business Partner
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID);
-
-	/**
-	 * Get Partner Bank Account.
-	 * Bank Account of the Business Partner
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_BP_BankAccount_ID();
-
-	String COLUMNNAME_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
-
-	/**
-	 * Set Business Partner Group.
-	 * Business Partner Group
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_BP_Group_ID (int C_BP_Group_ID);
-
-	/**
-	 * Get Business Partner Group.
-	 * Business Partner Group
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_BP_Group_ID();
-
-	@Nullable org.compiere.model.I_C_BP_Group getC_BP_Group();
-
-	void setC_BP_Group(@Nullable org.compiere.model.I_C_BP_Group C_BP_Group);
-
-	ModelColumn<I_I_BPartner, org.compiere.model.I_C_BP_Group> COLUMN_C_BP_Group_ID = new ModelColumn<>(I_I_BPartner.class, "C_BP_Group_ID", org.compiere.model.I_C_BP_Group.class);
-	String COLUMNNAME_C_BP_Group_ID = "C_BP_Group_ID";
-
-	/**
-	 * Set Geschäftspartner - Druck - Format.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_BP_PrintFormat_ID (int C_BP_PrintFormat_ID);
-
-	/**
-	 * Get Geschäftspartner - Druck - Format.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_BP_PrintFormat_ID();
-
-	@Nullable org.compiere.model.I_C_BP_PrintFormat getC_BP_PrintFormat();
-
-	void setC_BP_PrintFormat(@Nullable org.compiere.model.I_C_BP_PrintFormat C_BP_PrintFormat);
-
-	ModelColumn<I_I_BPartner, org.compiere.model.I_C_BP_PrintFormat> COLUMN_C_BP_PrintFormat_ID = new ModelColumn<>(I_I_BPartner.class, "C_BP_PrintFormat_ID", org.compiere.model.I_C_BP_PrintFormat.class);
-	String COLUMNNAME_C_BP_PrintFormat_ID = "C_BP_PrintFormat_ID";
 
 	/**
 	 * Set Partner ExternalId.
@@ -639,6 +559,80 @@ public interface I_I_BPartner
 	String COLUMNNAME_C_BPartner_Memo = "C_BPartner_Memo";
 
 	/**
+	 * Set Partner Bank Account.
+	 * Bank Account of the Business Partner
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID);
+
+	/**
+	 * Get Partner Bank Account.
+	 * Bank Account of the Business Partner
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BP_BankAccount_ID();
+
+	String COLUMNNAME_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
+
+	/**
+	 * Set Business Partner Group.
+	 * Business Partner Group
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BP_Group_ID (int C_BP_Group_ID);
+
+	/**
+	 * Get Business Partner Group.
+	 * Business Partner Group
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BP_Group_ID();
+
+	@Nullable org.compiere.model.I_C_BP_Group getC_BP_Group();
+
+	void setC_BP_Group(@Nullable org.compiere.model.I_C_BP_Group C_BP_Group);
+
+	ModelColumn<I_I_BPartner, org.compiere.model.I_C_BP_Group> COLUMN_C_BP_Group_ID = new ModelColumn<>(I_I_BPartner.class, "C_BP_Group_ID", org.compiere.model.I_C_BP_Group.class);
+	String COLUMNNAME_C_BP_Group_ID = "C_BP_Group_ID";
+
+	/**
+	 * Set Geschäftspartner - Druck - Format.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BP_PrintFormat_ID (int C_BP_PrintFormat_ID);
+
+	/**
+	 * Get Geschäftspartner - Druck - Format.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BP_PrintFormat_ID();
+
+	@Nullable org.compiere.model.I_C_BP_PrintFormat getC_BP_PrintFormat();
+
+	void setC_BP_PrintFormat(@Nullable org.compiere.model.I_C_BP_PrintFormat C_BP_PrintFormat);
+
+	ModelColumn<I_I_BPartner, org.compiere.model.I_C_BP_PrintFormat> COLUMN_C_BP_PrintFormat_ID = new ModelColumn<>(I_I_BPartner.class, "C_BP_PrintFormat_ID", org.compiere.model.I_C_BP_PrintFormat.class);
+	String COLUMNNAME_C_BP_PrintFormat_ID = "C_BP_PrintFormat_ID";
+
+	/**
 	 * Set Country.
 	 * Country
 	 *
@@ -738,8 +732,8 @@ public interface I_I_BPartner
 	String COLUMNNAME_C_Greeting_ID = "C_Greeting_ID";
 
 	/**
-	 * Set Terminplan Rechnung.
-	 * Plan für die Rechnungsstellung
+	 * Set Invoice Schedule.
+	 * Schedule for generating Invoices
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -748,8 +742,8 @@ public interface I_I_BPartner
 	void setC_InvoiceSchedule_ID (int C_InvoiceSchedule_ID);
 
 	/**
-	 * Get Terminplan Rechnung.
-	 * Plan für die Rechnungsstellung
+	 * Get Invoice Schedule.
+	 * Schedule for generating Invoices
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -763,82 +757,6 @@ public interface I_I_BPartner
 
 	ModelColumn<I_I_BPartner, org.compiere.model.I_C_InvoiceSchedule> COLUMN_C_InvoiceSchedule_ID = new ModelColumn<>(I_I_BPartner.class, "C_InvoiceSchedule_ID", org.compiere.model.I_C_InvoiceSchedule.class);
 	String COLUMNNAME_C_InvoiceSchedule_ID = "C_InvoiceSchedule_ID";
-
-	/**
-	 * Set Position.
-	 * Position in der Firma
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Job_ID (int C_Job_ID);
-
-	/**
-	 * Get Position.
-	 * Position in der Firma
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Job_ID();
-
-	@Nullable org.compiere.model.I_C_Job getC_Job();
-
-	void setC_Job(@Nullable org.compiere.model.I_C_Job C_Job);
-
-	ModelColumn<I_I_BPartner, org.compiere.model.I_C_Job> COLUMN_C_Job_ID = new ModelColumn<>(I_I_BPartner.class, "C_Job_ID", org.compiere.model.I_C_Job.class);
-	String COLUMNNAME_C_Job_ID = "C_Job_ID";
-
-	/**
-	 * Set Payment Term.
-	 * The terms of Payment (timing, discount)
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_PaymentTerm_ID (int C_PaymentTerm_ID);
-
-	/**
-	 * Get Payment Term.
-	 * The terms of Payment (timing, discount)
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_PaymentTerm_ID();
-
-	String COLUMNNAME_C_PaymentTerm_ID = "C_PaymentTerm_ID";
-
-	/**
-	 * Set Region.
-	 * Identifies a geographical Region
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Region_ID (int C_Region_ID);
-
-	/**
-	 * Get Region.
-	 * Identifies a geographical Region
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Region_ID();
-
-	@Nullable org.compiere.model.I_C_Region getC_Region();
-
-	void setC_Region(@Nullable org.compiere.model.I_C_Region C_Region);
-
-	ModelColumn<I_I_BPartner, org.compiere.model.I_C_Region> COLUMN_C_Region_ID = new ModelColumn<>(I_I_BPartner.class, "C_Region_ID", org.compiere.model.I_C_Region.class);
-	String COLUMNNAME_C_Region_ID = "C_Region_ID";
 
 	/**
 	 * Set City Name.
@@ -860,6 +778,33 @@ public interface I_I_BPartner
 
 	ModelColumn<I_I_BPartner, Object> COLUMN_City = new ModelColumn<>(I_I_BPartner.class, "City", null);
 	String COLUMNNAME_City = "City";
+
+	/**
+	 * Set Position.
+	 * Job Position
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Job_ID (int C_Job_ID);
+
+	/**
+	 * Get Position.
+	 * Job Position
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Job_ID();
+
+	@Nullable org.compiere.model.I_C_Job getC_Job();
+
+	void setC_Job(@Nullable org.compiere.model.I_C_Job C_Job);
+
+	ModelColumn<I_I_BPartner, org.compiere.model.I_C_Job> COLUMN_C_Job_ID = new ModelColumn<>(I_I_BPartner.class, "C_Job_ID", org.compiere.model.I_C_Job.class);
+	String COLUMNNAME_C_Job_ID = "C_Job_ID";
 
 	/**
 	 * Set Comments.
@@ -906,7 +851,7 @@ public interface I_I_BPartner
 	String COLUMNNAME_Companyname = "Companyname";
 
 	/**
-	 * Set Kontakt-Beschreibung.
+	 * Set Contact Description.
 	 * Description of Contact
 	 *
 	 * <br>Type: String
@@ -916,7 +861,7 @@ public interface I_I_BPartner
 	void setContactDescription (@Nullable java.lang.String ContactDescription);
 
 	/**
-	 * Get Kontakt-Beschreibung.
+	 * Get Contact Description.
 	 * Description of Contact
 	 *
 	 * <br>Type: String
@@ -929,7 +874,7 @@ public interface I_I_BPartner
 	String COLUMNNAME_ContactDescription = "ContactDescription";
 
 	/**
-	 * Set Kontakt-Name.
+	 * Set Contact Name.
 	 * Business Partner Contact Name
 	 *
 	 * <br>Type: String
@@ -939,7 +884,7 @@ public interface I_I_BPartner
 	void setContactName (@Nullable java.lang.String ContactName);
 
 	/**
-	 * Get Kontakt-Name.
+	 * Get Contact Name.
 	 * Business Partner Contact Name
 	 *
 	 * <br>Type: String
@@ -975,8 +920,8 @@ public interface I_I_BPartner
 	String COLUMNNAME_CountryCode = "CountryCode";
 
 	/**
-	 * Set Land.
-	 * Land
+	 * Set Country.
+	 * Country Name
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -985,8 +930,8 @@ public interface I_I_BPartner
 	void setCountryName (@Nullable java.lang.String CountryName);
 
 	/**
-	 * Get Land.
-	 * Land
+	 * Get Country.
+	 * Country Name
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -996,6 +941,28 @@ public interface I_I_BPartner
 
 	ModelColumn<I_I_BPartner, Object> COLUMN_CountryName = new ModelColumn<>(I_I_BPartner.class, "CountryName", null);
 	String COLUMNNAME_CountryName = "CountryName";
+
+	/**
+	 * Set Payment Term.
+	 * The terms of Payment (timing, discount)
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_PaymentTerm_ID (int C_PaymentTerm_ID);
+
+	/**
+	 * Get Payment Term.
+	 * The terms of Payment (timing, discount)
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_PaymentTerm_ID();
+
+	String COLUMNNAME_C_PaymentTerm_ID = "C_PaymentTerm_ID";
 
 	/**
 	 * Get Created.
@@ -1069,7 +1036,7 @@ public interface I_I_BPartner
 	String COLUMNNAME_CreditLimit2 = "CreditLimit2";
 
 	/**
-	 * Set Kreditoren-Nr.
+	 * Set Creditor ID.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -1078,7 +1045,7 @@ public interface I_I_BPartner
 	void setCreditorId (int CreditorId);
 
 	/**
-	 * Get Kreditoren-Nr.
+	 * Get Creditor ID.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -1090,7 +1057,34 @@ public interface I_I_BPartner
 	String COLUMNNAME_CreditorId = "CreditorId";
 
 	/**
-	 * Set Eigene-Kd. Nr. .
+	 * Set Region.
+	 * Identifies a geographical Region
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Region_ID (int C_Region_ID);
+
+	/**
+	 * Get Region.
+	 * Identifies a geographical Region
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Region_ID();
+
+	@Nullable org.compiere.model.I_C_Region getC_Region();
+
+	void setC_Region(@Nullable org.compiere.model.I_C_Region C_Region);
+
+	ModelColumn<I_I_BPartner, org.compiere.model.I_C_Region> COLUMN_C_Region_ID = new ModelColumn<>(I_I_BPartner.class, "C_Region_ID", org.compiere.model.I_C_Region.class);
+	String COLUMNNAME_C_Region_ID = "C_Region_ID";
+
+	/**
+	 * Set Customer No At Vendor.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1099,7 +1093,7 @@ public interface I_I_BPartner
 	void setCustomerNoAtVendor (@Nullable java.lang.String CustomerNoAtVendor);
 
 	/**
-	 * Get Eigene-Kd. Nr. .
+	 * Get Customer No At Vendor.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1111,7 +1105,7 @@ public interface I_I_BPartner
 	String COLUMNNAME_CustomerNoAtVendor = "CustomerNoAtVendor";
 
 	/**
-	 * Set Debitoren-Nr.
+	 * Set Debtor ID.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -1120,7 +1114,7 @@ public interface I_I_BPartner
 	void setDebtorId (int DebtorId);
 
 	/**
-	 * Get Debitoren-Nr.
+	 * Get Debtor ID.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -1132,8 +1126,8 @@ public interface I_I_BPartner
 	String COLUMNNAME_DebtorId = "DebtorId";
 
 	/**
-	 * Set Lieferung.
-	 * Wie der Auftrag geliefert wird
+	 * Set Delivery Via.
+	 * How the order will be delivered
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1142,8 +1136,8 @@ public interface I_I_BPartner
 	void setDeliveryViaRule (@Nullable java.lang.String DeliveryViaRule);
 
 	/**
-	 * Get Lieferung.
-	 * Wie der Auftrag geliefert wird
+	 * Get Delivery Via.
+	 * How the order will be delivered
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1266,8 +1260,8 @@ public interface I_I_BPartner
 	String COLUMNNAME_Firstname = "Firstname";
 
 	/**
-	 * Set Erster Verkauf.
-	 * Datum des Ersten Verkaufs
+	 * Set First Sale.
+	 * Date of First Sale
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1276,8 +1270,8 @@ public interface I_I_BPartner
 	void setFirstSale (@Nullable java.sql.Timestamp FirstSale);
 
 	/**
-	 * Get Erster Verkauf.
-	 * Datum des Ersten Verkaufs
+	 * Get First Sale.
+	 * Date of First Sale
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1331,7 +1325,7 @@ public interface I_I_BPartner
 	String COLUMNNAME_GlobalId = "GlobalId";
 
 	/**
-	 * Set Gruppen-Schlüssel.
+	 * Set Group Key.
 	 * Business Partner Group Key
 	 *
 	 * <br>Type: String
@@ -1341,7 +1335,7 @@ public interface I_I_BPartner
 	void setGroupValue (@Nullable java.lang.String GroupValue);
 
 	/**
-	 * Get Gruppen-Schlüssel.
+	 * Get Group Key.
 	 * Business Partner Group Key
 	 *
 	 * <br>Type: String
@@ -1354,7 +1348,30 @@ public interface I_I_BPartner
 	String COLUMNNAME_GroupValue = "GroupValue";
 
 	/**
-	 * Set Import - Geschäftspartner.
+	 * Set IBAN.
+	 * International Bank Account Number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIBAN (@Nullable java.lang.String IBAN);
+
+	/**
+	 * Get IBAN.
+	 * International Bank Account Number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIBAN();
+
+	ModelColumn<I_I_BPartner, Object> COLUMN_IBAN = new ModelColumn<>(I_I_BPartner.class, "IBAN", null);
+	String COLUMNNAME_IBAN = "IBAN";
+
+	/**
+	 * Set Import Business Partner.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -1363,7 +1380,7 @@ public interface I_I_BPartner
 	void setI_BPartner_ID (int I_BPartner_ID);
 
 	/**
-	 * Get Import - Geschäftspartner.
+	 * Get Import Business Partner.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -1463,30 +1480,7 @@ public interface I_I_BPartner
 	String COLUMNNAME_I_LineNo = "I_LineNo";
 
 	/**
-	 * Set IBAN.
-	 * International Bank Account Number
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setIBAN (@Nullable java.lang.String IBAN);
-
-	/**
-	 * Get IBAN.
-	 * International Bank Account Number
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getIBAN();
-
-	ModelColumn<I_I_BPartner, Object> COLUMN_IBAN = new ModelColumn<>(I_I_BPartner.class, "IBAN", null);
-	String COLUMNNAME_IBAN = "IBAN";
-
-	/**
-	 * Set Interessengebiet.
+	 * Set Interest Area Name.
 	 * Name of the Interest Area
 	 *
 	 * <br>Type: String
@@ -1496,7 +1490,7 @@ public interface I_I_BPartner
 	void setInterestAreaName (@Nullable java.lang.String InterestAreaName);
 
 	/**
-	 * Get Interessengebiet.
+	 * Get Interest Area Name.
 	 * Name of the Interest Area
 	 *
 	 * <br>Type: String
@@ -1509,7 +1503,7 @@ public interface I_I_BPartner
 	String COLUMNNAME_InterestAreaName = "InterestAreaName";
 
 	/**
-	 * Set Terminplan Rechnung.
+	 * Set Invoice Schedule Name.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1518,7 +1512,7 @@ public interface I_I_BPartner
 	void setInvoiceSchedule (@Nullable java.lang.String InvoiceSchedule);
 
 	/**
-	 * Get Terminplan Rechnung.
+	 * Get Invoice Schedule Name.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1553,7 +1547,7 @@ public interface I_I_BPartner
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Status.
+	 * Set Active Status.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1562,7 +1556,7 @@ public interface I_I_BPartner
 	void setIsActiveStatus (boolean IsActiveStatus);
 
 	/**
-	 * Get Status.
+	 * Get Active Status.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1574,8 +1568,8 @@ public interface I_I_BPartner
 	String COLUMNNAME_IsActiveStatus = "IsActiveStatus";
 
 	/**
-	 * Set Vorbelegung Rechnung.
-	 * Rechnungs-Adresse für diesen Geschäftspartner
+	 * Set Invoice Address.
+	 * Business Partner Invoice/Bill Address
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1584,8 +1578,8 @@ public interface I_I_BPartner
 	void setIsBillTo (boolean IsBillTo);
 
 	/**
-	 * Get Vorbelegung Rechnung.
-	 * Rechnungs-Adresse für diesen Geschäftspartner
+	 * Get Invoice Address.
+	 * Business Partner Invoice/Bill Address
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1597,7 +1591,7 @@ public interface I_I_BPartner
 	String COLUMNNAME_IsBillTo = "IsBillTo";
 
 	/**
-	 * Set Rechnungskontakt.
+	 * Set Invoice Contact Default.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1606,7 +1600,7 @@ public interface I_I_BPartner
 	void setIsBillToContact_Default (boolean IsBillToContact_Default);
 
 	/**
-	 * Get Rechnungskontakt.
+	 * Get Invoice Contact Default.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1727,8 +1721,29 @@ public interface I_I_BPartner
 	String COLUMNNAME_IsSEPASigned = "IsSEPASigned";
 
 	/**
-	 * Set Lieferstandard.
-	 * Liefer-Adresse für den Geschäftspartner
+	 * Set Set Print Format location.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSetPrintFormat_C_BPartner_Location (boolean IsSetPrintFormat_C_BPartner_Location);
+
+	/**
+	 * Get Set Print Format location.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSetPrintFormat_C_BPartner_Location();
+
+	ModelColumn<I_I_BPartner, Object> COLUMN_IsSetPrintFormat_C_BPartner_Location = new ModelColumn<>(I_I_BPartner.class, "IsSetPrintFormat_C_BPartner_Location", null);
+	String COLUMNNAME_IsSetPrintFormat_C_BPartner_Location = "IsSetPrintFormat_C_BPartner_Location";
+
+	/**
+	 * Set Ship Address.
+	 * Business Partner Shipment Address
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1737,8 +1752,8 @@ public interface I_I_BPartner
 	void setIsShipTo (boolean IsShipTo);
 
 	/**
-	 * Get Lieferstandard.
-	 * Liefer-Adresse für den Geschäftspartner
+	 * Get Ship Address.
+	 * Business Partner Shipment Address
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1750,7 +1765,7 @@ public interface I_I_BPartner
 	String COLUMNNAME_IsShipTo = "IsShipTo";
 
 	/**
-	 * Set Lieferkontakt.
+	 * Set ShipTo Contact Default.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1759,7 +1774,7 @@ public interface I_I_BPartner
 	void setIsShipToContact_Default (boolean IsShipToContact_Default);
 
 	/**
-	 * Get Lieferkontakt.
+	 * Get ShipTo Contact Default.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1790,6 +1805,48 @@ public interface I_I_BPartner
 
 	ModelColumn<I_I_BPartner, Object> COLUMN_IsShipToDefault = new ModelColumn<>(I_I_BPartner.class, "IsShipToDefault", null);
 	String COLUMNNAME_IsShipToDefault = "IsShipToDefault";
+
+	/**
+	 * Set Adressnamen aktualisieren.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsUpdateLocationName (boolean IsUpdateLocationName);
+
+	/**
+	 * Get Adressnamen aktualisieren.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isUpdateLocationName();
+
+	ModelColumn<I_I_BPartner, Object> COLUMN_IsUpdateLocationName = new ModelColumn<>(I_I_BPartner.class, "IsUpdateLocationName", null);
+	String COLUMNNAME_IsUpdateLocationName = "IsUpdateLocationName";
+
+	/**
+	 * Set Invoice via eMail (User).
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsUserInvoiceEmailEnabled (@Nullable java.lang.String IsUserInvoiceEmailEnabled);
+
+	/**
+	 * Get Invoice via eMail (User).
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsUserInvoiceEmailEnabled();
+
+	ModelColumn<I_I_BPartner, Object> COLUMN_IsUserInvoiceEmailEnabled = new ModelColumn<>(I_I_BPartner.class, "IsUserInvoiceEmailEnabled", null);
+	String COLUMNNAME_IsUserInvoiceEmailEnabled = "IsUserInvoiceEmailEnabled";
 
 	/**
 	 * Set Vendor.
@@ -1859,27 +1916,94 @@ public interface I_I_BPartner
 	String COLUMNNAME_Lastname = "Lastname";
 
 	/**
-	 * Set Lead Time Offset.
-	 * Optional Lead Time offest before starting production
+	 * Set Delivery route for address.
+	 * Method or type of delivery of goods
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setLeadTimeOffset (int LeadTimeOffset);
+	void setLocation_M_Shipper_ID (int Location_M_Shipper_ID);
 
 	/**
-	 * Get Lead Time Offset.
-	 * Optional Lead Time offest before starting production
+	 * Get Delivery route for address.
+	 * Method or type of delivery of goods
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getLeadTimeOffset();
+	int getLocation_M_Shipper_ID();
 
-	ModelColumn<I_I_BPartner, Object> COLUMN_LeadTimeOffset = new ModelColumn<>(I_I_BPartner.class, "LeadTimeOffset", null);
-	String COLUMNNAME_LeadTimeOffset = "LeadTimeOffset";
+	@Nullable org.compiere.model.I_M_Shipper getLocation_M_Shipper();
+
+	void setLocation_M_Shipper(@Nullable org.compiere.model.I_M_Shipper Location_M_Shipper);
+
+	ModelColumn<I_I_BPartner, org.compiere.model.I_M_Shipper> COLUMN_Location_M_Shipper_ID = new ModelColumn<>(I_I_BPartner.class, "Location_M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
+	String COLUMNNAME_Location_M_Shipper_ID = "Location_M_Shipper_ID";
+
+	/**
+	 * Set Shipper name for adress.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLocationShipperName (@Nullable java.lang.String LocationShipperName);
+
+	/**
+	 * Get Shipper name for adress.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getLocationShipperName();
+
+	ModelColumn<I_I_BPartner, Object> COLUMN_LocationShipperName = new ModelColumn<>(I_I_BPartner.class, "LocationShipperName", null);
+	String COLUMNNAME_LocationShipperName = "LocationShipperName";
+
+	/**
+	 * Set Memo Shipment.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMemo_Delivery (@Nullable java.lang.String Memo_Delivery);
+
+	/**
+	 * Get Memo Shipment.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getMemo_Delivery();
+
+	ModelColumn<I_I_BPartner, Object> COLUMN_Memo_Delivery = new ModelColumn<>(I_I_BPartner.class, "Memo_Delivery", null);
+	String COLUMNNAME_Memo_Delivery = "Memo_Delivery";
+
+	/**
+	 * Set Memo Invoicing.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMemo_Invoicing (@Nullable java.lang.String Memo_Invoicing);
+
+	/**
+	 * Get Memo Invoicing.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getMemo_Invoicing();
+
+	ModelColumn<I_I_BPartner, Object> COLUMN_Memo_Invoicing = new ModelColumn<>(I_I_BPartner.class, "Memo_Invoicing", null);
+	String COLUMNNAME_Memo_Invoicing = "Memo_Invoicing";
 
 	/**
 	 * Set Pricing System.
@@ -1929,50 +2053,29 @@ public interface I_I_BPartner
 	String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
 
 	/**
-	 * Set Memo_Delivery.
-	 * Memo Lieferung
+	 * Set Routingcode.
 	 *
-	 * <br>Type: Text
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setMemo_Delivery (@Nullable java.lang.String Memo_Delivery);
+	void setM_Shipper_RoutingCode_ID (int M_Shipper_RoutingCode_ID);
 
 	/**
-	 * Get Memo_Delivery.
-	 * Memo Lieferung
+	 * Get Routingcode.
 	 *
-	 * <br>Type: Text
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getMemo_Delivery();
+	int getM_Shipper_RoutingCode_ID();
 
-	ModelColumn<I_I_BPartner, Object> COLUMN_Memo_Delivery = new ModelColumn<>(I_I_BPartner.class, "Memo_Delivery", null);
-	String COLUMNNAME_Memo_Delivery = "Memo_Delivery";
+	@Nullable org.compiere.model.I_M_Shipper_RoutingCode getM_Shipper_RoutingCode();
 
-	/**
-	 * Set Memo_Invoicing.
-	 * Memo Abrechnung
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setMemo_Invoicing (@Nullable java.lang.String Memo_Invoicing);
+	void setM_Shipper_RoutingCode(@Nullable org.compiere.model.I_M_Shipper_RoutingCode M_Shipper_RoutingCode);
 
-	/**
-	 * Get Memo_Invoicing.
-	 * Memo Abrechnung
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getMemo_Invoicing();
-
-	ModelColumn<I_I_BPartner, Object> COLUMN_Memo_Invoicing = new ModelColumn<>(I_I_BPartner.class, "Memo_Invoicing", null);
-	String COLUMNNAME_Memo_Invoicing = "Memo_Invoicing";
+	ModelColumn<I_I_BPartner, org.compiere.model.I_M_Shipper_RoutingCode> COLUMN_M_Shipper_RoutingCode_ID = new ModelColumn<>(I_I_BPartner.class, "M_Shipper_RoutingCode_ID", org.compiere.model.I_M_Shipper_RoutingCode.class);
+	String COLUMNNAME_M_Shipper_RoutingCode_ID = "M_Shipper_RoutingCode_ID";
 
 	/**
 	 * Set NAICS/SIC.
@@ -2020,7 +2123,7 @@ public interface I_I_BPartner
 
 	/**
 	 * Set Name 2.
-	 * Zusätzliche Bezeichnung
+	 * Additional Name
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2030,7 +2133,7 @@ public interface I_I_BPartner
 
 	/**
 	 * Get Name 2.
-	 * Zusätzliche Bezeichnung
+	 * Additional Name
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2132,8 +2235,29 @@ public interface I_I_BPartner
 	String COLUMNNAME_PaymentRule = "PaymentRule";
 
 	/**
-	 * Set Zahlungsweise.
-	 * Möglichkeiten der Bezahlung einer Bestellung
+	 * Set Payment Rule Info.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPaymentRuleInfo (@Nullable java.lang.String PaymentRuleInfo);
+
+	/**
+	 * Get Payment Rule Info.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPaymentRuleInfo();
+
+	ModelColumn<I_I_BPartner, Object> COLUMN_PaymentRuleInfo = new ModelColumn<>(I_I_BPartner.class, "PaymentRuleInfo", null);
+	String COLUMNNAME_PaymentRuleInfo = "PaymentRuleInfo";
+
+	/**
+	 * Set Payment Rule.
+	 * Purchase payment option
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -2142,8 +2266,8 @@ public interface I_I_BPartner
 	void setPaymentRulePO (@Nullable java.lang.String PaymentRulePO);
 
 	/**
-	 * Get Zahlungsweise.
-	 * Möglichkeiten der Bezahlung einer Bestellung
+	 * Get Payment Rule.
+	 * Purchase payment option
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -2155,8 +2279,28 @@ public interface I_I_BPartner
 	String COLUMNNAME_PaymentRulePO = "PaymentRulePO";
 
 	/**
-	 * Set Zahlungskondition.
-	 * Zahlungskondition
+	 * Set Payment Rule Info.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPaymentRulePOInfo (@Nullable java.lang.String PaymentRulePOInfo);
+
+	/**
+	 * Get Payment Rule Info.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPaymentRulePOInfo();
+
+	ModelColumn<I_I_BPartner, Object> COLUMN_PaymentRulePOInfo = new ModelColumn<>(I_I_BPartner.class, "PaymentRulePOInfo", null);
+	String COLUMNNAME_PaymentRulePOInfo = "PaymentRulePOInfo";
+
+	/**
+	 * Set Payment Term Customer.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2165,8 +2309,7 @@ public interface I_I_BPartner
 	void setPaymentTerm (@Nullable java.lang.String PaymentTerm);
 
 	/**
-	 * Get Zahlungskondition.
-	 * Zahlungskondition
+	 * Get Payment Term Customer.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2178,8 +2321,8 @@ public interface I_I_BPartner
 	String COLUMNNAME_PaymentTerm = "PaymentTerm";
 
 	/**
-	 * Set Zahlungskonditions-Schlüssel.
-	 * Suchschlüssel für die Zahlungskondition
+	 * Set Payment Term Key.
+	 * Key of the Payment Term
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2188,8 +2331,8 @@ public interface I_I_BPartner
 	void setPaymentTermValue (@Nullable java.lang.String PaymentTermValue);
 
 	/**
-	 * Get Zahlungskonditions-Schlüssel.
-	 * Suchschlüssel für die Zahlungskondition
+	 * Get Payment Term Key.
+	 * Key of the Payment Term
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2245,8 +2388,29 @@ public interface I_I_BPartner
 	String COLUMNNAME_Phone2 = "Phone2";
 
 	/**
-	 * Set Zahlungskondition.
-	 * Zahlungskondition für die Bestellung
+	 * Set P.O. box number.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPOBox (@Nullable java.lang.String POBox);
+
+	/**
+	 * Get P.O. box number.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPOBox();
+
+	ModelColumn<I_I_BPartner, Object> COLUMN_POBox = new ModelColumn<>(I_I_BPartner.class, "POBox", null);
+	String COLUMNNAME_POBox = "POBox";
+
+	/**
+	 * Set PO Payment Term.
+	 * Payment rules for a purchase order
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -2255,8 +2419,8 @@ public interface I_I_BPartner
 	void setPO_PaymentTerm_ID (int PO_PaymentTerm_ID);
 
 	/**
-	 * Get Zahlungskondition.
-	 * Zahlungskondition für die Bestellung
+	 * Get PO Payment Term.
+	 * Payment rules for a purchase order
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -2267,7 +2431,7 @@ public interface I_I_BPartner
 	String COLUMNNAME_PO_PaymentTerm_ID = "PO_PaymentTerm_ID";
 
 	/**
-	 * Set Einkaufspreissystem.
+	 * Set Purchase Pricing System.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -2276,7 +2440,7 @@ public interface I_I_BPartner
 	void setPO_PricingSystem_ID (int PO_PricingSystem_ID);
 
 	/**
-	 * Get Einkaufspreissystem.
+	 * Get Purchase Pricing System.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -2308,27 +2472,6 @@ public interface I_I_BPartner
 	String COLUMNNAME_PO_PricingSystem_Value = "PO_PricingSystem_Value";
 
 	/**
-	 * Set Postfach.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPOBox (@Nullable java.lang.String POBox);
-
-	/**
-	 * Get Postfach.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getPOBox();
-
-	ModelColumn<I_I_BPartner, Object> COLUMN_POBox = new ModelColumn<>(I_I_BPartner.class, "POBox", null);
-	String COLUMNNAME_POBox = "POBox";
-
-	/**
 	 * Set Postal.
 	 *
 	 * <br>Type: String
@@ -2350,7 +2493,7 @@ public interface I_I_BPartner
 	String COLUMNNAME_Postal = "Postal";
 
 	/**
-	 * Set -.
+	 * Set Additional Postal.
 	 * Additional ZIP or Postal code
 	 *
 	 * <br>Type: String
@@ -2360,7 +2503,7 @@ public interface I_I_BPartner
 	void setPostal_Add (@Nullable java.lang.String Postal_Add);
 
 	/**
-	 * Get -.
+	 * Get Additional Postal.
 	 * Additional ZIP or Postal code
 	 *
 	 * <br>Type: String
@@ -2392,6 +2535,50 @@ public interface I_I_BPartner
 
 	ModelColumn<I_I_BPartner, Object> COLUMN_PricingSystem_Value = new ModelColumn<>(I_I_BPartner.class, "PricingSystem_Value", null);
 	String COLUMNNAME_PricingSystem_Value = "PricingSystem_Value";
+
+	/**
+	 * Set Print Format - Document Base Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPrintFormat_DocBaseType (@Nullable java.lang.String PrintFormat_DocBaseType);
+
+	/**
+	 * Get Print Format - Document Base Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPrintFormat_DocBaseType();
+
+	ModelColumn<I_I_BPartner, Object> COLUMN_PrintFormat_DocBaseType = new ModelColumn<>(I_I_BPartner.class, "PrintFormat_DocBaseType", null);
+	String COLUMNNAME_PrintFormat_DocBaseType = "PrintFormat_DocBaseType";
+
+	/**
+	 * Set Print Format - Copies.
+	 * Overwrites the number of copies set in the document type. (Value 0 is ignored)
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPrintFormat_DocumentCopies_Override (int PrintFormat_DocumentCopies_Override);
+
+	/**
+	 * Get Print Format - Copies.
+	 * Overwrites the number of copies set in the document type. (Value 0 is ignored)
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getPrintFormat_DocumentCopies_Override();
+
+	ModelColumn<I_I_BPartner, Object> COLUMN_PrintFormat_DocumentCopies_Override = new ModelColumn<>(I_I_BPartner.class, "PrintFormat_DocumentCopies_Override", null);
+	String COLUMNNAME_PrintFormat_DocumentCopies_Override = "PrintFormat_DocumentCopies_Override";
 
 	/**
 	 * Set PrintForma_Name.
@@ -2478,33 +2665,6 @@ public interface I_I_BPartner
 	String COLUMNNAME_Qualification = "Qualification";
 
 	/**
-	 * Set Interessengebiet.
-	 * Interest Area or Topic
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setR_InterestArea_ID (int R_InterestArea_ID);
-
-	/**
-	 * Get Interessengebiet.
-	 * Interest Area or Topic
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getR_InterestArea_ID();
-
-	@Nullable org.compiere.model.I_R_InterestArea getR_InterestArea();
-
-	void setR_InterestArea(@Nullable org.compiere.model.I_R_InterestArea R_InterestArea);
-
-	ModelColumn<I_I_BPartner, org.compiere.model.I_R_InterestArea> COLUMN_R_InterestArea_ID = new ModelColumn<>(I_I_BPartner.class, "R_InterestArea_ID", org.compiere.model.I_R_InterestArea.class);
-	String COLUMNNAME_R_InterestArea_ID = "R_InterestArea_ID";
-
-	/**
 	 * Set Region Name.
 	 * Name of the Region
 	 *
@@ -2528,7 +2688,34 @@ public interface I_I_BPartner
 	String COLUMNNAME_RegionName = "RegionName";
 
 	/**
-	 * Set Statistik Gruppe.
+	 * Set Interest Area.
+	 * Interest Area or Topic
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setR_InterestArea_ID (int R_InterestArea_ID);
+
+	/**
+	 * Get Interest Area.
+	 * Interest Area or Topic
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getR_InterestArea_ID();
+
+	@Nullable org.compiere.model.I_R_InterestArea getR_InterestArea();
+
+	void setR_InterestArea(@Nullable org.compiere.model.I_R_InterestArea R_InterestArea);
+
+	ModelColumn<I_I_BPartner, org.compiere.model.I_R_InterestArea> COLUMN_R_InterestArea_ID = new ModelColumn<>(I_I_BPartner.class, "R_InterestArea_ID", org.compiere.model.I_R_InterestArea.class);
+	String COLUMNNAME_R_InterestArea_ID = "R_InterestArea_ID";
+
+	/**
+	 * Set Statistic Group.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2537,7 +2724,7 @@ public interface I_I_BPartner
 	void setSalesgroup (@Nullable java.lang.String Salesgroup);
 
 	/**
-	 * Get Statistik Gruppe.
+	 * Get Statistic Group.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2549,8 +2736,8 @@ public interface I_I_BPartner
 	String COLUMNNAME_Salesgroup = "Salesgroup";
 
 	/**
-	 * Set Mindesthaltbarkeit Tage.
-	 * Mindesthaltbarkeit in Tagen, bezogen auf das Mindesthaltbarkeitsdatum einer Produktinstanz
+	 * Set Min Shelf Life Days.
+	 * Minimum Shelf Life in days based on Product Instance Guarantee Date
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -2559,8 +2746,8 @@ public interface I_I_BPartner
 	void setShelfLifeMinDays (int ShelfLifeMinDays);
 
 	/**
-	 * Get Mindesthaltbarkeit Tage.
-	 * Mindesthaltbarkeit in Tagen, bezogen auf das Mindesthaltbarkeitsdatum einer Produktinstanz
+	 * Get Min Shelf Life Days.
+	 * Minimum Shelf Life in days based on Product Instance Guarantee Date
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -2572,7 +2759,7 @@ public interface I_I_BPartner
 	String COLUMNNAME_ShelfLifeMinDays = "ShelfLifeMinDays";
 
 	/**
-	 * Set Lieferung.
+	 * Set Shipper name.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2581,7 +2768,7 @@ public interface I_I_BPartner
 	void setShipperName (@Nullable java.lang.String ShipperName);
 
 	/**
-	 * Get Lieferung.
+	 * Get Shipper name.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2591,6 +2778,27 @@ public interface I_I_BPartner
 
 	ModelColumn<I_I_BPartner, Object> COLUMN_ShipperName = new ModelColumn<>(I_I_BPartner.class, "ShipperName", null);
 	String COLUMNNAME_ShipperName = "ShipperName";
+
+	/**
+	 * Set Shipper - Routingcode.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setShipperRouteCodeName (@Nullable java.lang.String ShipperRouteCodeName);
+
+	/**
+	 * Get Shipper - Routingcode.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getShipperRouteCodeName();
+
+	ModelColumn<I_I_BPartner, Object> COLUMN_ShipperRouteCodeName = new ModelColumn<>(I_I_BPartner.class, "ShipperRouteCodeName", null);
+	String COLUMNNAME_ShipperRouteCodeName = "ShipperRouteCodeName";
 
 	/**
 	 * Set Short Description.
@@ -2753,7 +2961,7 @@ public interface I_I_BPartner
 
 	/**
 	 * Set Vendor Category.
-	 * Lieferanten Kategorie
+	 * Vendor Category
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2763,7 +2971,7 @@ public interface I_I_BPartner
 
 	/**
 	 * Get Vendor Category.
-	 * Lieferanten Kategorie
+	 * Vendor Category
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

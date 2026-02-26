@@ -12,19 +12,18 @@ import de.metas.money.CurrencyId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.productprice.ProductPrice;
 import de.metas.pricing.service.PriceListsCollection;
 import de.metas.product.ProductId;
 import de.metas.rest_api.bpartner_pricelist.BpartnerPriceListServicesFacade;
 import de.metas.rest_api.bpartner_pricelist.response.JsonResponsePrice;
 import de.metas.rest_api.bpartner_pricelist.response.JsonResponsePriceList;
 import de.metas.rest_api.utils.IdentifierString;
-import de.metas.tax.api.TaxCategoryId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_ProductPrice;
 import org.compiere.util.TimeUtil;
 
 import java.time.LocalDate;
@@ -144,10 +143,10 @@ public class GetPriceListCommand
 		priceListId = PriceListId.ofRepoId(priceList.getM_PriceList_ID());
 		final PriceListVersionId priceListVersionId = servicesFacade.getPriceListVersionId(priceListId, TimeUtil.asZonedDateTime(date, SystemTime.zoneId()));
 
-		final ImmutableList<I_M_ProductPrice> productPriceRecords = servicesFacade.getProductPrices(priceListVersionId);
+		final ImmutableList<ProductPrice> productPriceRecords = servicesFacade.getProductPrices(priceListVersionId);
 
 		final ImmutableSet<ProductId> productIds = productPriceRecords.stream()
-				.map(productPrice -> ProductId.ofRepoId(productPrice.getM_Product_ID()))
+				.map(ProductPrice::getProductId)
 				.collect(ImmutableSet.toImmutableSet());
 
 		final ImmutableMap<ProductId, String> productValues = servicesFacade.getProductValues(productIds);
@@ -162,20 +161,18 @@ public class GetPriceListCommand
 	}
 
 	private JsonResponsePrice toJsonResponsePrice(
-			@NonNull final I_M_ProductPrice productPrice,
+			@NonNull final ProductPrice productPrice,
 			@NonNull final ImmutableMap<ProductId, String> productValues,
 			@NonNull final CurrencyCode currencyCode)
 	{
-		final ProductId productId = ProductId.ofRepoId(productPrice.getM_Product_ID());
-
-		final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoId(productPrice.getC_TaxCategory_ID());
+		final ProductId productId = productPrice.getProductId();
 
 		return JsonResponsePrice.builder()
 				.productId(productId)
 				.productCode(productValues.get(productId))
 				.price(productPrice.getPriceStd())
 				.currencyCode(currencyCode)
-				.taxCategoryId(taxCategoryId)
+				.taxCategoryId(productPrice.getTaxCategoryId())
 				.build();
 	}
 

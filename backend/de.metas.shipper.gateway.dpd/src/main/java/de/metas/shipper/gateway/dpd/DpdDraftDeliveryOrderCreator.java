@@ -26,9 +26,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
-import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
-import de.metas.mpackage.PackageId;
 import de.metas.organization.OrgId;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.dpd.model.DpdClientConfigRepository;
@@ -40,22 +37,20 @@ import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
-import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
-import de.metas.shipper.gateway.spi.model.PackageDimensions;
+import de.metas.shipper.gateway.spi.model.DeliveryOrderParcel;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipper.gateway.spi.model.ShipperProduct;
+import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
-import de.metas.uom.IUOMDAO;
-import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -73,7 +68,7 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 	@NonNull private final DpdClientConfigRepository clientConfigRepository;
 
 	@Override
-	public String getShipperGatewayId()
+	public ShipperGatewayId getShipperGatewayId()
 	{
 		return DpdConstants.SHIPPER_GATEWAY_ID;
 	}
@@ -83,7 +78,7 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 	 */
 	@NonNull
 	@Override
-	public DeliveryOrder createDraftDeliveryOrder(@NonNull final CreateDraftDeliveryOrderRequest request)
+	public @NotNull DeliveryOrder createDraftDeliveryOrder(@NonNull final CreateDraftDeliveryOrderRequest request)
 	{
 		final DeliveryOrderKey deliveryOrderKey = request.getDeliveryOrderKey();
 
@@ -125,19 +120,19 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				.build();
 
 		// Order lines
-		final ImmutableList.Builder<DeliveryOrderLine> deliveryOrderLinesBuilder = ImmutableList.builder();
+		final ImmutableList.Builder<DeliveryOrderParcel> deliveryOrderLinesBuilder = ImmutableList.builder();
 		for (final CreateDraftDeliveryOrderRequest.PackageInfo packageInfo : request.getPackageInfos())
 		{
-			final DeliveryOrderLine deliveryOrderLine = DeliveryOrderLine.builder()
+			final DeliveryOrderParcel deliveryOrderParcel = DeliveryOrderParcel.builder()
 					// .repoId()
 					.content(packageInfo.getDescription())
 					.grossWeightKg(packageInfo.getWeightInKgOr(DEFAULT_PackageWeightInKg))
-					.packageDimensions(getPackageDimensions(packageInfo.getPackageId()))
+					.packageDimensions(packageInfo.getPackageDimension())
 					// .customDeliveryData()
 					.packageId(packageInfo.getPackageId())
 					.build();
 
-			deliveryOrderLinesBuilder.add(deliveryOrderLine);
+			deliveryOrderLinesBuilder.add(deliveryOrderParcel);
 		}
 
 		return createDeliveryOrderFromParams(
@@ -172,7 +167,7 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 			@NonNull final ShipperTransportationId shipperTransportationId,
 			@Nullable final String customerReference,
 			@NonNull final DpdOrderCustomDeliveryData customDeliveryData,
-			@NonNull final List<DeliveryOrderLine> deliveryOrderLines)
+			@NonNull final List<DeliveryOrderParcel> deliveryOrderParcels)
 	{
 
 		return DeliveryOrder.builder()
@@ -186,9 +181,7 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 
 				//
 				// Pickup aka Sender
-				.pickupAddress(DeliveryOrderUtil.prepareAddressFromLocation(pickupFromLocation)
-						.companyName1(pickupFromBPartner.getName())
-						.companyName2(pickupFromBPartner.getName2())
+				.pickupAddress(DeliveryOrderUtil.prepareAddressFromLocationBP(pickupFromLocation,pickupFromBPartner)
 						.build())
 				.pickupDate(PickupDate.builder()
 						.date(pickupDate)
@@ -197,33 +190,17 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 						.build())
 				//
 				// Delivery aka Recipient
-				.deliveryAddress(DeliveryOrderUtil.prepareAddressFromLocation(deliverToLocation)
-						.companyName1(deliverToBPartner.getName())
-						.companyName2(deliverToBPartner.getName2())
+				.deliveryAddress(DeliveryOrderUtil.prepareAddressFromLocationBP(deliverToLocation,deliverToBPartner)
 						.bpartnerId(deliverToBPartner.getC_BPartner_ID()) // afaics used only for logging
 						.build())
 				.deliveryContact(ContactPerson.builder()
+						.name(deliverToBPartner.getName())
 						.emailAddress(deliverToBPartner.getEMail())
 						.simplePhoneNumber(deliverToPhoneNumber)
 						.build())
 				//
 				// Delivery content
-				.deliveryOrderLines(deliveryOrderLines)
+				.deliveryOrderParcels(deliveryOrderParcels)
 				.build();
-	}
-
-	@NonNull
-	private PackageDimensions getPackageDimensions(@NonNull final PackageId packageId)
-	{
-		final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
-		final I_M_HU_PackingMaterial packingMaterial = packingMaterialDAO.retrievePackingMaterialOrNull(packageId);
-
-		if (packingMaterial == null)
-		{
-			throw new AdempiereException("There is no packing material for the package: " + packageId + ". Please create a packing material and set its correct dimensions.");
-		}
-
-		final UomId toUomId = Services.get(IUOMDAO.class).getUomIdByX12DE355(DpdConstants.DEFAULT_PACKAGE_DIMENSIONS_UOM);
-		return packingMaterialDAO.retrievePackageDimensions(packingMaterial, toUomId);
 	}
 }

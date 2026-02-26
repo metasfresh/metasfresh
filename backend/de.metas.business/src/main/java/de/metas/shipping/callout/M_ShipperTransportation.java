@@ -29,6 +29,7 @@ import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
@@ -37,9 +38,16 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Inventory;
 
+import javax.annotation.Nullable;
+
 @Callout(I_M_ShipperTransportation.class)
 public class M_ShipperTransportation
 {
+
+	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
+	private final IShipperTransportationBL shipperTransportationBL = Services.get(IShipperTransportationBL.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+
 	/**
 	 * Sets the {@link I_M_ShipperTransportation}'s M_Shipper_ID accordingly to {@link I_M_ShipperTransportation}'s Shipper_BPartner_ID
 	 *
@@ -62,18 +70,28 @@ public class M_ShipperTransportation
 			return;
 		}
 
-		final ShipperId shipperId = Services.get(IShipperDAO.class).getShipperIdByShipperPartnerId(shipperPartnerId);
-		shipperTransportation.setM_Shipper_ID(shipperId.getRepoId());
+		shipperDAO.getShipperIdByShipperPartnerId(shipperPartnerId)
+				.ifPresent(shipperId -> shipperTransportationBL.setShipper(shipperTransportation, shipperId));
+	}
+
+	@CalloutMethod(columnNames = { I_M_ShipperTransportation.COLUMNNAME_M_Shipper_ID })
+	public void onShipper(final I_M_ShipperTransportation shipperTransportation, final ICalloutField field)
+	{
+		final ShipperId shipperId = ShipperId.ofRepoIdOrNull(shipperTransportation.getM_Shipper_ID());
+		if (shipperId != null)
+		{
+			shipperTransportationBL.setShipper(shipperTransportation, shipperId);
+		}
 	}
 
 	@CalloutMethod(columnNames = I_M_Inventory.COLUMNNAME_C_DocType_ID)
-	public void updateFromDocType(final I_M_ShipperTransportation shipperTransporationRecord, final ICalloutField field)
+	public void updateFromDocType(final I_M_ShipperTransportation shipperTransportationRecord, final ICalloutField field)
 	{
 		final IDocumentNoInfo documentNoInfo = Services.get(IDocumentNoBuilderFactory.class)
 				.createPreliminaryDocumentNoBuilder()
-				.setNewDocType(getDocTypeOrNull(shipperTransporationRecord))
-				.setOldDocumentNo(shipperTransporationRecord.getDocumentNo())
-				.setDocumentModel(shipperTransporationRecord)
+				.setNewDocType(getDocTypeOrNull(shipperTransportationRecord))
+				.setOldDocumentNo(shipperTransportationRecord.getDocumentNo())
+				.setDocumentModel(shipperTransportationRecord)
 				.buildOrNull();
 		if (documentNoInfo == null)
 		{
@@ -83,15 +101,16 @@ public class M_ShipperTransportation
 		// DocumentNo
 		if (documentNoInfo.isDocNoControlled())
 		{
-			shipperTransporationRecord.setDocumentNo(documentNoInfo.getDocumentNo());
+			shipperTransportationRecord.setDocumentNo(documentNoInfo.getDocumentNo());
 		}
 	}
 
-	private I_C_DocType getDocTypeOrNull(final I_M_ShipperTransportation shipperTransporationRecord)
+	@Nullable
+	private I_C_DocType getDocTypeOrNull(final I_M_ShipperTransportation shipperTransportationRecord)
 	{
-		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(shipperTransporationRecord.getC_DocType_ID());
+		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(shipperTransportationRecord.getC_DocType_ID());
 		return docTypeId != null
-				? Services.get(IDocTypeDAO.class).getById(docTypeId)
+				? docTypeDAO.getById(docTypeId)
 				: null;
 	}
 }

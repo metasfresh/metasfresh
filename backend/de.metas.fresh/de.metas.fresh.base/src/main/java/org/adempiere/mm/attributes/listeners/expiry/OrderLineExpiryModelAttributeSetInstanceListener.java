@@ -1,13 +1,13 @@
 package org.adempiere.mm.attributes.listeners.expiry;
 
-import java.util.List;
-
-import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
-import org.adempiere.mm.attributes.api.impl.ExpiryAttributeUpdater;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.order.grossprofit.model.I_C_OrderLine;
+import lombok.NonNull;
+import org.adempiere.mm.attributes.asi_aware.listener.IModelAttributeSetInstanceListener;
+import org.adempiere.mm.attributes.api.impl.ExpiryAttributeUpdater;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 /*
  * #%L
@@ -37,14 +37,14 @@ import de.metas.order.grossprofit.model.I_C_OrderLine;
  * TODO: Solve this problem from the root and get rid of these particular listeners
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
+@Component
 public class OrderLineExpiryModelAttributeSetInstanceListener implements IModelAttributeSetInstanceListener
 {
 	private static final ImmutableList<String> SOURCE_COLUMN_NAMES = ImmutableList.of(I_C_OrderLine.COLUMNNAME_M_Product_ID);
 
 	@Override
-	public String getSourceTableName()
+	public @NonNull String getSourceTableName()
 	{
 		return I_C_OrderLine.Table_Name;
 	}

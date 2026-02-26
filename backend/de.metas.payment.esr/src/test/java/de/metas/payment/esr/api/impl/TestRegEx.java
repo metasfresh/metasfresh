@@ -23,19 +23,18 @@ package de.metas.payment.esr.api.impl;
  */
 
 
+import org.junit.jupiter.api.Disabled;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.junit.Ignore;
 
-@Ignore
+
+@Disabled
 public class TestRegEx
 {
 
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args)
+	public static void main(final String[] args)
 	{
 		final Pattern esrReferenceNumberPattern = Pattern.compile("[0-9]{6}([0-9]*)[0-9]{1}");
 

@@ -92,7 +92,7 @@ public class LeichUndMehlExportPPOrderRouteBuilder extends RouteBuilder
 		from(direct(EXPORT_PPORDER_ROUTE_ID))
 				.routeId(EXPORT_PPORDER_ROUTE_ID)
 				.log("Route invoked!")
-				.streamCaching()
+				.streamCache("true")
 				.process(this::buildAndAttachContext)
 
 				// get the PP_Order

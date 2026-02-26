@@ -22,7 +22,8 @@ package de.metas.materialtracking.impl;
  * #L%
  */
 
-
+import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -30,12 +31,9 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.eevolution.model.I_PP_Order;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
-import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
-import de.metas.util.Services;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /**
  * From {@link MaterialTrackingPPOrderBL} service, tests methods which are about checking if a manufacturing order is Quality Inspection or not.
@@ -49,7 +47,7 @@ public class MaterialTrackingPPOrderBL_IsQualityInspectionOrder_Test
 	/** Service under test */
 	private MaterialTrackingPPOrderBL materialTrackingPPOrderBL;
 
-	@Before
+	@BeforeEach
 	public final void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -79,16 +77,16 @@ public class MaterialTrackingPPOrderBL_IsQualityInspectionOrder_Test
 	{
 		//
 		// Check isQualityInspection() method
-		Assert.assertEquals("Invalid isQualityInspection() result",
-				isQualityInspectionOrderExpected,
-				materialTrackingPPOrderBL.isQualityInspection(ppOrder));
+		Assertions.assertEquals(
+				isQualityInspectionOrderExpected, 
+				materialTrackingPPOrderBL.isQualityInspection(ppOrder), "Invalid isQualityInspection() result");
 
 		//
 		// Checks qualityInspectionFilter return
 		final IQueryFilter<I_PP_Order> qualityInspectionFilter = materialTrackingPPOrderBL.getQualityInspectionFilter();
-		Assert.assertEquals("Invalid qualityInspectionFilter.accept() result",
-				isQualityInspectionOrderExpected,
-				qualityInspectionFilter.accept(ppOrder));
+		Assertions.assertEquals(
+				isQualityInspectionOrderExpected, 
+				qualityInspectionFilter.accept(ppOrder), "Invalid qualityInspectionFilter.accept() result");
 
 		//
 		// Checks qualityInspectionFilter in a query result
@@ -101,7 +99,7 @@ public class MaterialTrackingPPOrderBL_IsQualityInspectionOrder_Test
 					.create()
 					.firstOnly(I_PP_Order.class);
 
-			Assert.assertEquals("Invalid PP_Order retrieved by query using qualityInspectionFilter", ppOrderExpected, ppOrderActual);
+			Assertions.assertEquals( ppOrderExpected,  ppOrderActual, "Invalid PP_Order retrieved by query using qualityInspectionFilter");
 		}
 
 		//
@@ -119,11 +117,11 @@ public class MaterialTrackingPPOrderBL_IsQualityInspectionOrder_Test
 
 			if (isQualityInspectionOrderExpected)
 			{
-				Assert.assertNull("No exception shall be thrown by assertQualityInspectionOrder()", assertException);
+				Assertions.assertNull(assertException,"No exception shall be thrown by assertQualityInspectionOrder()");
 			}
 			else
 			{
-				Assert.assertNotNull("Exception shall be thrown by assertQualityInspectionOrder()", assertException);
+				Assertions.assertNotNull(assertException, "Exception shall be thrown by assertQualityInspectionOrder()");
 			}
 		}
 	}

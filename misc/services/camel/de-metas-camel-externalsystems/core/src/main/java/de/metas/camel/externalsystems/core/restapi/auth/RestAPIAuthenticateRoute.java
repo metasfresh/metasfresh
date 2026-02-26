@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-externalsystems-core
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -57,14 +57,14 @@ public class RestAPIAuthenticateRoute extends RouteBuilder
 		//@formatter:off
 		from(direct(REST_API_AUTHENTICATE_TOKEN))
 				.routeId(REST_API_AUTHENTICATE_TOKEN)
-				.streamCaching()
+				.streamCache("true")
 				.log("Route invoked!")
 				.process(this::processorRegisterRoute)
 				.end();
 
 		from(direct(REST_API_EXPIRE_TOKEN))
 				.routeId(REST_API_EXPIRE_TOKEN)
-				.streamCaching()
+				.streamCache("true")
 				.log("Route invoked!")
 				.process(this::processorExpireRoute)
 				.end();

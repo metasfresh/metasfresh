@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" whenNoDataType="BlankPage" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/manufacturingorderdoc/report" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.6963904734899482"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="uat.xml"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<parameter name="RECORD_ID" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="ad_language" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{ad_language}]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select * from de_metas_endcustomer_fresh_reports.Docs_Manufacturing_Order_Details($P{RECORD_ID}, 540034, $P{ad_language} )
+;]]>
+	</queryString>
+	<field name="line" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="line"/>
+		<property name="com.jaspersoft.studio.field.label" value="line"/>
+	</field>
+	<field name="qtyrequiered" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="qtyrequiered"/>
+		<property name="com.jaspersoft.studio.field.label" value="qtyrequiered"/>
+	</field>
+	<field name="uomsymbol" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="uomsymbol"/>
+		<property name="com.jaspersoft.studio.field.label" value="uomsymbol"/>
+	</field>
+	<field name="value" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="value"/>
+		<property name="com.jaspersoft.studio.field.label" value="value"/>
+	</field>
+	<field name="vendorproductno" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="vendorproductno"/>
+		<property name="com.jaspersoft.studio.field.label" value="vendorproductno"/>
+	</field>
+	<field name="description" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="description"/>
+		<property name="com.jaspersoft.studio.field.label" value="description"/>
+	</field>
+	<field name="productname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="productname"/>
+		<property name="com.jaspersoft.studio.field.label" value="productname"/>
+	</field>
+	<field name="attributes" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="attributes"/>
+		<property name="com.jaspersoft.studio.field.label" value="attributes"/>
+	</field>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band height="25" splitType="Stretch">
+			<textField evaluationTime="Report">
+				<reportElement key="textField-13" x="50" y="6" width="28" height="12" forecolor="#000000" uuid="9cbd4164-b480-46fb-901c-49400cbdc755">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Left" markup="none">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{pos}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement key="textField-13" x="79" y="6" width="58" height="12" forecolor="#000000" uuid="e190a488-0c22-4a49-a6c1-2f48ebb57887">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Left" markup="none">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Qty}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-20" x="138" y="6" width="44" height="12" forecolor="#000000" uuid="5a927599-1b02-4bd2-976c-f0875b097cee">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement markup="none">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{UOM}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-20" x="182" y="6" width="70" height="12" forecolor="#000000" uuid="0d931043-b6c1-4a6d-80a1-3c6254fac957">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Left" markup="none">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{value}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-20" x="351" y="6" width="216" height="12" forecolor="#000000" uuid="ef59c3a3-4c16-431c-bc49-c3ed6c0523a4">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Left" markup="none">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{description}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="48" y="20" width="523" height="1" uuid="5692135a-7493-4821-a445-da3c59840068"/>
+			</line>
+			<textField>
+				<reportElement key="textField-20" x="259" y="6" width="92" height="12" forecolor="#000000" uuid="f4edebff-ecae-4d35-b15c-a97475da332b">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Left" markup="none">
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Attributes}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<detail>
+		<band height="16" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-13" x="50" y="0" width="28" height="10" forecolor="#000000" uuid="8116de2e-1117-44e4-a0f3-6141183c1156">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Left" markup="none">
+					<font fontName="Arial" size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{line}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-13" x="79" y="0" width="58" height="10" forecolor="#000000" uuid="8f0c3cb6-d5e5-42a8-995c-b1629efecb91">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Left" markup="none">
+					<font fontName="Arial" size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new java.text.DecimalFormat("#,##0.00", new java.text.DecimalFormatSymbols(new Locale("de", "DE")))
+	.format($F{qtyrequiered})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-20" x="138" y="0" width="44" height="10" forecolor="#000000" uuid="074640b6-4b5d-4544-a3ac-d5e6fc23f63f">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement markup="none">
+					<font fontName="Arial" size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{uomsymbol}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-20" x="182" y="0" width="70" height="10" forecolor="#000000" uuid="e47ad253-f141-4d15-a6d0-b732c1f46a10">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Left" markup="none">
+					<font fontName="Arial" size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{value}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-20" x="351" y="0" width="216" height="10" forecolor="#000000" uuid="83e896c2-903e-433a-ac1e-e31ee1b7bcbb">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Left" markup="none">
+					<font fontName="Arial" size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{productname}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-20" x="259" y="0" width="92" height="10" forecolor="#000000" uuid="9ec9dfe8-a5fd-4950-8e55-1f1dddda0be6">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Left" markup="none">
+					<font fontName="Arial" size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{attributes}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

@@ -1,5 +1,7 @@
 package org.adempiere.util.lang;
 
+import lombok.NonNull;
+
 /**
  * Table record reference.
  * <p>
@@ -18,6 +20,7 @@ public interface ITableRecordReference
 	/**
 	 * @return referenced model's TableName
 	 */
+	@NonNull
 	String getTableName();
 
 	/**

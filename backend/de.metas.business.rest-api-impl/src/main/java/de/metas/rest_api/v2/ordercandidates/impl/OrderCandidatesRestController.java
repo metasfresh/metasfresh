@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.business.rest-api-impl
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.rest_api.v2.ordercandidates.impl;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -6,9 +28,12 @@ import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandProcessRequest;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
+import de.metas.common.util.Check;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.logging.LogManager;
-import de.metas.rest_api.utils.JsonErrors;
+import de.metas.rest_api.utils.v2.JsonErrors;
+import de.metas.rest_api.v2.bpartner.BPartnerMasterdataProvider;
 import de.metas.rest_api.v2.bpartner.BpartnerRestController;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
@@ -29,27 +54,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/*
- * #%L
- * de.metas.ordercandidate.rest-api
- * %%
- * Copyright (C) 2018 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 @RestController
 @RequestMapping(value = {
 		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/orders/sales/candidates" })
@@ -61,24 +65,29 @@ public class OrderCandidatesRestController
 
 	private static final Logger logger = LogManager.getLogger(OrderCandidatesRestController.class);
 
-	private final BpartnerRestController bpartnerRestController;
-	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
-	private final OrderCandidateRestControllerService orderCandidateRestControllerService;
-	private final JsonRetrieverService jsonRetrieverService;
-
-	private PermissionServiceFactory permissionServiceFactory;
+	@NonNull private final BpartnerRestController bpartnerRestController;
+	@NonNull private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
+	@NonNull private final OrderCandidateRestControllerService orderCandidateRestControllerService;
+	@NonNull private final JsonRetrieverService jsonRetrieverService;
+	@NonNull private final ExternalSystemRepository externalSystemRepository;
+	@NonNull private PermissionServiceFactory permissionServiceFactory;
+	@NonNull private final BPartnerMasterdataProvider bPartnerMasterdataProvider;
 
 	public OrderCandidatesRestController(
 			@NonNull final JsonServiceFactory jsonServiceFactory,
 			@NonNull final BpartnerRestController bpartnerRestController,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
-			@NonNull final OrderCandidateRestControllerService orderCandidateRestControllerService)
+			@NonNull final OrderCandidateRestControllerService orderCandidateRestControllerService,
+			@NonNull final ExternalSystemRepository externalSystemRepository,
+			@NonNull final BPartnerMasterdataProvider bPartnerMasterdataProvider)
 	{
 		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
 		this.bpartnerRestController = bpartnerRestController;
 		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
 		this.orderCandidateRestControllerService = orderCandidateRestControllerService;
 		this.permissionServiceFactory = PermissionServiceFactories.currentContext();
+		this.externalSystemRepository = externalSystemRepository;
+		this.bPartnerMasterdataProvider = bPartnerMasterdataProvider;
 	}
 
 	@VisibleForTesting
@@ -105,6 +114,8 @@ public class OrderCandidatesRestController
 					.bpartnerRestController(bpartnerRestController)
 					.externalReferenceRestControllerService(externalReferenceRestControllerService)
 					.jsonRetrieverService(jsonRetrieverService)
+					.externalSystemRepository(externalSystemRepository)
+					.bPartnerMasterdataProvider(bPartnerMasterdataProvider)
 					.build();
 
 			final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -112,7 +123,9 @@ public class OrderCandidatesRestController
 			final JsonOLCandCreateBulkResponse response = trxManager
 					.callInNewTrx(() -> orderCandidateRestControllerService.creatOrderLineCandidatesBulk(bulkRequest, masterdataProvider));
 
-			return new ResponseEntity<>(response, HttpStatus.CREATED);
+			return Check.isEmpty(response.getErrors())
+					? new ResponseEntity<>(response, HttpStatus.CREATED)
+					: new ResponseEntity<>(response, HttpStatus.MULTI_STATUS);
 		}
 		catch (final Exception ex)
 		{

@@ -134,4 +134,10 @@ public class HUTraceEventQuery
 	int huTrxLineId;
 
 	@Nullable String lotNumber;
+
+	/**
+	 * In case it is not specified, only the active records are considered when querying for other criteria
+	 */
+	@Nullable
+	Boolean isActive;
 }

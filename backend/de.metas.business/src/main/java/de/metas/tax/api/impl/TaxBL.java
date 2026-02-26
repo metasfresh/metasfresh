@@ -68,9 +68,9 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		if (taxCategoryId != null)
 		{
 			final CountryId countryFromId = Optional.ofNullable(warehouseId)
-				.map(warehouseBL::getCountryId)
-				.orElseGet(() -> Optional.ofNullable(bPartnerOrgBL.getOrgCountryId(orgId))
-						.orElseGet(countryDAO::getDefaultCountryId));
+					.map(warehouseBL::getCountryId)
+					.orElseGet(() -> Optional.ofNullable(bPartnerOrgBL.getOrgCountryId(orgId))
+							.orElseGet(countryDAO::getDefaultCountryId));
 
 			final Tax tax = taxDAO.getBy(TaxQuery.builder()
 					.fromCountryId(countryFromId)
@@ -171,4 +171,11 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 				.map(I_C_TaxCategory::getC_TaxCategory_ID)
 				.map(TaxCategoryId::ofRepoId);
 	}
+
+	@Override
+	public Tax getDefaultTax(final TaxCategoryId taxCategoryId)
+	{
+		return taxDAO.getDefaultTax(taxCategoryId);
+	}
+
 }

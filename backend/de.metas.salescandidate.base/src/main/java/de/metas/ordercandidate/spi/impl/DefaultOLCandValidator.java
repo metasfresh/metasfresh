@@ -4,7 +4,6 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.ordercandidate.api.IOLCandBL;
@@ -18,7 +17,6 @@ import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
@@ -89,6 +87,11 @@ public class DefaultOLCandValidator implements IOLCandValidator
 	private static final AdMessageKey ERR_C_BPartner_Location_Effective_Inactive = AdMessageKey.of("ERR_C_BPartner_Location_Effective_Inactive");
 	private static final AdMessageKey ERR_DropShip_Location_Inactive = AdMessageKey.of("ERR_DropShip_Location_Inactive");
 	private static final AdMessageKey ERR_HandOver_Location_Inactive = AdMessageKey.of("ERR_HandOver_Location_Inactive");
+	private static final AdMessageKey ERR_MISSING_PRODUCT = AdMessageKey.of("ERR_MISSING_PRODUCT");
+	private static final AdMessageKey ERR_CURRENCY_NOT_FOUND = AdMessageKey.of("ERR_CURRENCY_NOT_FOUND");
+	private static final AdMessageKey ERR_PRICING_SYSTEM_NOT_FOUND = AdMessageKey.of("ERR_PRICING_SYSTEM_NOT_FOUND");
+	private static final AdMessageKey ERR_TAX_CATEGORY_NOT_FOUND = AdMessageKey.of("ERR_TAX_CATEGORY_NOT_FOUND");
+	private static final AdMessageKey ERR_ITEM_CAPACITY_NOT_FOUND = AdMessageKey.of("ERR_ITEM_CAPACITY_NOT_FOUND");
 
 	/**
 	 * Dynamic attribute name used to pass on the pricing result obtained by this class to potential listeners like {@link OLCandPricingASIListener}.
@@ -119,8 +122,7 @@ public class DefaultOLCandValidator implements IOLCandValidator
 	{
 		if (firstGreaterThanZero(olCand.getM_Product_Override_ID(), olCand.getM_Product_ID()) <= 0)
 		{
-			final String msg = "@FillMandatory@ @M_Product_ID@";
-			throw new AdempiereException(TranslatableStrings.parse(msg));
+			throw new AdempiereException(ERR_MISSING_PRODUCT);
 		}
 
 		validateAndSetPriceInformation(olCand);
@@ -210,15 +212,13 @@ public class DefaultOLCandValidator implements IOLCandValidator
 			// still, make sure that we have a currency set
 			if (olCand.getC_Currency_ID() <= 0)
 			{
-				final String msg = "@NotFound@ @C_Currency@";
-				throw new AdempiereException(TranslatableStrings.parse(msg));
+				throw new AdempiereException(ERR_CURRENCY_NOT_FOUND);
 			}
 
 			final IPricingResult pricingResult = getPricingResult(olCand);
 			if (pricingResult == null || pricingResult.getPricingSystemId() == null || pricingResult.getPricingSystemId().isNone())
 			{
-				final String msg = "@NotFound@ @M_PricingSystem_ID@";
-				throw new AdempiereException(TranslatableStrings.parse(msg));
+				throw new AdempiereException(ERR_PRICING_SYSTEM_NOT_FOUND);
 			}
 			olCand.setM_PricingSystem_ID(pricingResult.getPricingSystemId().getRepoId());
 
@@ -244,8 +244,7 @@ public class DefaultOLCandValidator implements IOLCandValidator
 
 			if (pricingResult.getTaxCategoryId() == null)
 			{
-				final String msg = "@NotFound@ @C_TaxCategory_ID@";
-				throw new AdempiereException(TranslatableStrings.parse(msg));
+				throw new AdempiereException(ERR_TAX_CATEGORY_NOT_FOUND);
 			}
 			else
 			{
@@ -341,8 +340,7 @@ public class DefaultOLCandValidator implements IOLCandValidator
 		{
 			if (olCandEffectiveValuesBL.getQtyItemCapacity_Effective(olCand).signum() <= 0)
 			{
-				final String msg = "@NotFound@ @QtyItemCapacity@";
-				throw new AdempiereException(TranslatableStrings.parse(msg));
+				throw new AdempiereException(ERR_ITEM_CAPACITY_NOT_FOUND);
 			}
 			return;
 		}
@@ -359,8 +357,7 @@ public class DefaultOLCandValidator implements IOLCandValidator
 			final String productX12de355 = productBL.getStockUOM(productId).getX12DE355();
 			final String targetX12de355 = targetUOMRecord.getX12DE355();
 
-			final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_NO_UOM_CONVERSION, productValue + "_" + productName, productX12de355, targetX12de355);
-			throw new AdempiereException(msg).markAsUserValidationError();
+			throw new AdempiereException(MSG_NO_UOM_CONVERSION, productValue + "_" + productName, productX12de355, targetX12de355).markAsUserValidationError();
 		}
 	}
 }

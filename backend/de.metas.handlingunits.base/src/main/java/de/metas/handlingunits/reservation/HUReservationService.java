@@ -33,7 +33,7 @@ import lombok.Setter;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IMutable;
@@ -83,7 +83,7 @@ public class HUReservationService
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
-	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
@@ -127,13 +127,14 @@ public class HUReservationService
 		//
 		// Separate the VHUs that we are going to reserve
 		final List<I_M_HU> newCUs = huTransformServiceSupplier.get().husToNewCUs(
-				HUsToNewCUsRequest.builder()
-						.sourceHUs(handlingUnitsBL.getByIds(reservationRequest.getHuIds()))
-						.qtyCU(reservationRequest.getQtyToReserve())
-						.reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
-						.keepNewCUsUnderSameParent(true)
-						.productId(reservationRequest.getProductId())
-						.build());
+						HUsToNewCUsRequest.builder()
+								.sourceHUs(handlingUnitsBL.getByIds(reservationRequest.getHuIds()))
+								.qtyCU(reservationRequest.getQtyToReserve())
+								.reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
+								.keepNewCUsUnderSameParent(true)
+								.productId(reservationRequest.getProductId())
+								.build())
+				.getNewCUs();
 		if (newCUs.isEmpty())
 		{
 			return Optional.empty();
@@ -168,7 +169,7 @@ public class HUReservationService
 						.setParameter("request", reservationRequest));
 		if (reservationRequest.getQtyToReserve().compareTo(qtyReserved) != 0)
 		{
-			throw new AdempiereException(RESERVED_ERROR_MSG) 
+			throw new AdempiereException(RESERVED_ERROR_MSG)
 					.appendParametersToMessage()
 					.setParameter("reservationRequest", reservationRequest)
 					.setParameter("reservations", repoRequests);
@@ -368,7 +369,7 @@ public class HUReservationService
 		// ASI
 		if (asiId != null)
 		{
-			final ImmutableAttributeSet attributeSet = attributesRepo.getImmutableAttributeSetById(asiId);
+			final ImmutableAttributeSet attributeSet = asiBL.getImmutableAttributeSetById(asiId);
 
 			huQuery.addOnlyWithAttributeValuesMatchingPartnerAndProduct(bpartnerId, productId, attributeSet);
 			huQuery.allowSqlWhenFilteringAttributes(isAllowSqlWhenFilteringHUAttributes());

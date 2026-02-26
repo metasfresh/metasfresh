@@ -27,13 +27,15 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
+import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
+import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
-import de.metas.mpackage.PackageId;
+import de.metas.product.PackageDimensions;
 import de.metas.shipper.gateway.dhl.json.JSONDhlCreateOrderRequest;
 import de.metas.shipper.gateway.dhl.json.JSONDhlCreateOrderResponse;
 import de.metas.shipper.gateway.dhl.json.JsonDHLItem;
-import de.metas.shipper.gateway.dhl.json.JsonDhlAddress;
 import de.metas.shipper.gateway.dhl.json.JsonDhlAmount;
 import de.metas.shipper.gateway.dhl.json.JsonDhlCustomsDeclaration;
 import de.metas.shipper.gateway.dhl.json.JsonDhlDimension;
@@ -49,18 +51,19 @@ import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
 import de.metas.shipper.gateway.dhl.model.DhlCustomsDocument;
 import de.metas.shipper.gateway.dhl.model.DhlCustomsItem;
 import de.metas.shipper.gateway.dhl.model.DhlPackageLabelType;
+import de.metas.shipper.gateway.dhl.model.DhlShipperProduct;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
-import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
-import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
+import de.metas.shipper.gateway.spi.model.DeliveryOrderParcel;
 import de.metas.shipper.gateway.spi.model.OrderId;
-import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
+import de.metas.shipping.ShipperGatewayId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
@@ -88,6 +91,8 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static de.metas.shipper.gateway.dhl.DhlConstants.PARAM_RESPONSE_BODY_AS_STRING;
+
 public class DhlShipperGatewayClient implements ShipperGatewayClient
 {
 	private static final Logger logger = LoggerFactory.getLogger(DhlShipperGatewayClient.class);
@@ -111,15 +116,9 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 
 	@NonNull
 	@Override
-	public String getShipperGatewayId()
+	public ShipperGatewayId getShipperGatewayId()
 	{
 		return DhlConstants.SHIPPER_GATEWAY_ID;
-	}
-
-	@Override
-	public DeliveryOrder createDeliveryOrder(final DeliveryOrder draftDeliveryOrder) throws ShipperGatewayException
-	{
-		throw new ShipperGatewayException("(DRAFT) Delivery Orders shall never be created.");
 	}
 
 	@NonNull
@@ -200,7 +199,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 
 		return AdempiereException.wrapIfNeeded(shipperGatewayException)
 				.appendParametersToMessage()
-				.setParameter("responseBodyAsString", responseBodyAsString)
+				.setParameter(PARAM_RESPONSE_BODY_AS_STRING, responseBodyAsString)
 				.setParameter("routingRequest", dhlOrderRequest);
 	}
 
@@ -211,17 +210,17 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 				.profile(DhlConstants.STANDARD_GRUPPENPROFIL);
 		final ImmutableList.Builder<JsonDhlShipment> shipments = ImmutableList.builder();
 		final ContactPerson deliveryContact = deliveryOrder.getDeliveryContact();
-		for (final DeliveryOrderLine deliveryOrderLine : deliveryOrder.getDeliveryOrderLines())
+		for (final DeliveryOrderParcel deliveryOrderParcel : deliveryOrder.getDeliveryOrderParcels())
 		{
 			final String customerReference = getCustomerReference(deliveryOrder);
 			final JsonDhlShipment.JsonDhlShipmentBuilder shipmentBuilder = JsonDhlShipment.builder()
 					.billingNumber(config.getAccountNumber())
-					.product(deliveryOrder.getShipperProduct().getCode())
+					.product(deliveryOrder.getShipperProduct() != null ? deliveryOrder.getShipperProduct().getCode() : null)
 					.shipDate(deliveryOrder.getPickupDate().getDate().format(DateTimeFormatter.ISO_LOCAL_DATE))
-					.shipper(getJsonDhlAddress(deliveryOrder.getPickupAddress(), null))
-					.consignee(getJsonDhlAddress(deliveryOrder.getDeliveryAddress(), deliveryContact))
-					.details(getJsonDhlDetails(deliveryOrderLine))
-					.customs(getJsonCustomsDeclaration(deliveryOrder.getCustomDeliveryData(), deliveryOrderLine.getPackageId()));
+					.shipper(DhlAddressMapper.getShipperAddress(deliveryOrder.getPickupAddress()))
+					.consignee(DhlAddressMapper.getConsigneeAddress(deliveryOrder.getDeliveryAddress(), deliveryContact))
+					.details(getJsonDhlDetails(deliveryOrderParcel))
+					.customs(getJsonCustomsDeclaration(deliveryOrder.getCustomDeliveryData(), deliveryOrderParcel.getPackageId()));
 			if (customerReference != null)
 			{
 				shipmentBuilder.refNo(customerReference);
@@ -309,39 +308,18 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 				.build();
 	}
 
-	private JsonDhlPackageDetails getJsonDhlDetails(@NonNull final DeliveryOrderLine deliveryOrderLine)
+	private JsonDhlPackageDetails getJsonDhlDetails(@NonNull final DeliveryOrderParcel deliveryOrderParcel)
 	{
-		final PackageDimensions packageDimensions = deliveryOrderLine.getPackageDimensions();
+		final PackageDimensions packageDimensions = deliveryOrderParcel.getPackageDimensions();
 		return JsonDhlPackageDetails.builder()
 				.weight(JsonDhlWeight._inKg()
-						.qtyInKg(deliveryOrderLine.getGrossWeightKg())
+						.qtyInKg(deliveryOrderParcel.getGrossWeightKg())
 						.weightInKg())
 				.dim(JsonDhlDimension._inCM()
 						.heightInCM(BigDecimal.valueOf(packageDimensions.getHeightInCM()))
 						.widthInCM(BigDecimal.valueOf(packageDimensions.getWidthInCM()))
 						.lengthInCM(BigDecimal.valueOf(packageDimensions.getLengthInCM()))
 						.weightInCM())
-				.build();
-	}
-
-	private JsonDhlAddress getJsonDhlAddress(final @NonNull Address address, @Nullable final ContactPerson deliveryContact)
-	{
-		final JsonDhlAddress.JsonDhlAddressBuilder addressBuilder = JsonDhlAddress.builder()
-				.name1(address.getCompanyName1())
-				.name2(address.getCompanyName2())
-				.addressStreet(address.getStreet1())
-				.addressHouse(address.getHouseNo())
-				.additionalAddressInformation1(address.getStreet2())
-				.postalCode(address.getZipCode())
-				.city(address.getCity())
-				.country(address.getCountry().getAlpha3());
-		if (deliveryContact != null)
-		{
-			addressBuilder.email(deliveryContact.getEmailAddress())
-					.phone(deliveryContact.getPhoneAsStringOrNull())
-			;
-		}
-		return addressBuilder
 				.build();
 	}
 
@@ -365,7 +343,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 
 		//noinspection ConstantConditions
 		final ImmutableList<PackageLabels> packageLabels = customDeliveryData.getDetails().stream()
-				.map(detail -> createPackageLabel(detail.getPdfLabelData(), detail.getAwb(), String.valueOf(deliveryOrder.getId().getRepoId())))
+				.map(detail -> createPackageLabel(detail.getPdfLabelData(), detail.getAwb(), deliveryOrder.getId()))
 				.collect(ImmutableList.toImmutableList());
 
 		epicLogger.addLog("getPackageLabelsList: labels are {}", packageLabels);
@@ -374,10 +352,10 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 	}
 
 	@NonNull
-	private static PackageLabels createPackageLabel(final byte[] labelData, @NonNull final String awb, @NonNull final String deliveryOrderIdAsString)
+	private static PackageLabels createPackageLabel(final byte[] labelData, @NonNull final String awb, @NonNull final DeliveryOrderId deliveryOrderId)
 	{
 		return PackageLabels.builder()
-				.orderId(OrderId.of(DhlConstants.SHIPPER_GATEWAY_ID, deliveryOrderIdAsString))
+				.orderId(OrderId.of(DhlConstants.SHIPPER_GATEWAY_ID, deliveryOrderId))
 				.defaultLabelType(DhlPackageLabelType.GUI)
 				.label(PackageLabel.builder()
 						.type(DhlPackageLabelType.GUI)
@@ -394,7 +372,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 		final DhlCustomDeliveryData initialCustomDeliveryData = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
 
 		final ImmutableList.Builder<DhlCustomDeliveryDataDetail> updatedCustomDeliveryData = ImmutableList.builder();
-		final int deliveryOrderLineCount = deliveryOrder.getDeliveryOrderLines().size();
+		final int deliveryOrderLineCount = deliveryOrder.getDeliveryOrderParcels().size();
 		final int responseItemsCount = response.getItems().size();
 		if (deliveryOrderLineCount != responseItemsCount)
 		{
@@ -430,5 +408,19 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 
 		return deliveryOrder.withCustomDeliveryData(initialCustomDeliveryData
 				.withDhlCustomDeliveryDataDetails(updatedCustomDeliveryData.build()));
+	}
+
+	@Override
+	public @NonNull JsonDeliveryAdvisorResponse adviseShipment(final @NonNull JsonDeliveryAdvisorRequest request)
+	{
+		final boolean isDomesticShipping = request.getPickupAddress().getCountry().equals(request.getDeliveryAddress().getCountry());
+		final DhlShipperProduct codeToUse = isDomesticShipping ? DhlShipperProduct.Dhl_Paket : DhlShipperProduct.Dhl_PaketInternational;
+
+		return JsonDeliveryAdvisorResponse.builder()
+				.requestId(request.getId())
+				.shipperProduct(JsonShipperProduct.builder()
+						.code(codeToUse.getCode())
+						.build())
+				.build();
 	}
 }
