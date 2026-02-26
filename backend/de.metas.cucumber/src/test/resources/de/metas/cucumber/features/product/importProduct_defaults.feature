@@ -12,8 +12,8 @@ Feature: Product Import default values and inactive product reactivation
   @from:cucumber
   Scenario: Product import defaults IsStocked=Y and ProductType=Item
     Given metasfresh contains I_Product:
-      | Identifier | Value                   | Name              | X12DE355 |
-      | iProd_1    | IMPORT_DEFAULTS_TEST_01 | Default Test Prod | PCE      |
+      | Identifier | X12DE355 |
+      | iProd_1    | PCE      |
     When the ImportProduct process is invoked
     Then validate M_Product for I_Product:
       | I_Product_Identifier | IsStocked | ProductType | IsActive |
@@ -22,8 +22,8 @@ Feature: Product Import default values and inactive product reactivation
   @from:cucumber
   Scenario: Product import respects explicit IsStocked=N
     Given metasfresh contains I_Product:
-      | Identifier | Value                   | Name                | X12DE355 | IsStocked |
-      | iProd_2    | IMPORT_DEFAULTS_TEST_02 | Not Stocked Product | PCE      | N         |
+      | Identifier | X12DE355 | IsStocked |
+      | iProd_2    | PCE      | N         |
     When the ImportProduct process is invoked
     Then validate M_Product for I_Product:
       | I_Product_Identifier | IsStocked | ProductType |
@@ -32,8 +32,8 @@ Feature: Product Import default values and inactive product reactivation
   @from:cucumber
   Scenario: Product import defaults IsStocked=N for Service products
     Given metasfresh contains I_Product:
-      | Identifier | Value                   | Name              | X12DE355 | ProductType |
-      | iProd_4    | IMPORT_DEFAULTS_TEST_04 | Service Test Prod | PCE      | S           |
+      | Identifier | X12DE355 | ProductType |
+      | iProd_4    | PCE      | S           |
     When the ImportProduct process is invoked
     Then validate M_Product for I_Product:
       | I_Product_Identifier | IsStocked | ProductType |
@@ -42,14 +42,14 @@ Feature: Product Import default values and inactive product reactivation
   @from:cucumber
   Scenario: Product import reactivates inactive product on upsert
     Given metasfresh contains M_Products:
-      | Identifier | Value                   | Name             |
-      | prod_exist | IMPORT_DEFAULTS_TEST_03 | Existing Product |
+      | Identifier |
+      | prod_exist |
     And update M_Product:
       | M_Product_ID.Identifier | IsActive |
       | prod_exist              | N        |
     And metasfresh contains I_Product:
-      | Identifier | Value                   | Name                      | X12DE355 |
-      | iProd_3    | IMPORT_DEFAULTS_TEST_03 | Existing Product Reimport | PCE      |
+      | Identifier | M_Product_Identifier | X12DE355 |
+      | iProd_3    | prod_exist           | PCE      |
     When the ImportProduct process is invoked
     Then validate M_Product for I_Product:
       | I_Product_Identifier | IsActive | IsStocked |
