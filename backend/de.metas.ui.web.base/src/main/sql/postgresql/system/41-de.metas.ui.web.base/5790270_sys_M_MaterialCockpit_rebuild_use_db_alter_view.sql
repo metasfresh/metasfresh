@@ -1,3 +1,7 @@
+-- Fix M_MaterialCockpit_rebuild() to use db_alter_view instead of DROP/CREATE.
+-- This prevents failures when other views (e.g. rv_purchasecockpit) depend on QtyDemand_QtySupply_V.
+-- db_alter_view automatically handles dependent views by saving, dropping, and recreating them.
+
 CREATE OR REPLACE FUNCTION M_MaterialCockpit_rebuild()
     RETURNS void
     LANGUAGE plpgsql
