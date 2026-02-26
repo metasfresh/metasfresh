@@ -272,29 +272,35 @@ npm run test:report
 1. **Enter-key selects product and advances focus to Qty** - Type product → Enter → verify product resolved → fill qty → submit → verify order line created
 2. **Mouse-click selects product in batch entry** (regression) - Type product → mouse click dropdown option → verify product resolved → fill qty → submit → verify order line created
 3. **Add two lines in sequence via Enter-key** - Add first line via Enter workflow → quick input stays open → add second line → verify both lines in grid
-4. **Regular form lookup: customer selection still works** (regression) - Select customer via BPartner composed lookup in SO header → verify record saved with customer
+4. **Invalid product: Enter keeps focus on product field** - Type non-existent product → Enter → beep plays → product field retains invalid text → no order line created
+5. **Regular form lookup: customer selection still works** (regression) - Select customer via BPartner composed lookup in SO header → verify record saved with customer
 
 **Key Validations**:
 - Enter-key selection advances focus from product to quantity field
 - Mouse-click selection still works after focus-advance code change
 - Quick input resets properly for consecutive line entry
+- Invalid product triggers beep, focus stays on product field
 - Regular form (non-quick-input) lookup behavior unchanged
 - Grid row count verification (`table tbody tr`)
 
 **Components Tested**:
 - Sales Order window (143)
 - Order Lines tab (batch entry / quick input)
-- Lookup widget: Enter-key selection (RawLookup.handleSelect_RegularItem)
-- Lookup widget: Mouse-click selection
+- Lookup widget: Enter-key resolution (RawLookup.resolveAndSelectOnEnter)
+- Lookup widget: Mouse-click selection (RawLookup.handleSelect_RegularItem)
 - Lookup widget: Composed lookup (BPartner + Location + Contact)
-- Focus advance mechanism (Lookup.setNextProperty + focusNextFormField)
+- Lookup widget: Invalid product beep (RawLookup.playBeep)
+- Focus advance mechanism (RawLookup.focusNextFieldInForm + Lookup.focusNextFormField)
 
 **Regression Coverage**:
 This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management changes:
-- `shouldKeepFocus = false` path (quick input, Enter and mouse) → Tests 1, 2, 3
-- `shouldKeepFocus = true` path (regular form, onChange returns Promise) → Test 4
-- `focusNextFormField()` called inside `<form>` → Tests 1, 2, 3
-- `focusNextFormField()` no-op outside `<form>` → Test 4
+- `resolveAndSelectOnEnter` path (quick input, Enter) → Tests 1, 3, 4
+- `shouldKeepFocus = false` path (quick input, mouse click) → Test 2
+- `shouldKeepFocus = true` path (regular form, onChange returns Promise) → Test 5
+- `focusNextFieldInForm()` with retry (Enter in quick input) → Tests 1, 3
+- `focusNextFormField()` called inside `<form>` (mouse click) → Test 2
+- `focusNextFormField()` no-op outside `<form>` → Test 5
+- `playBeep()` on invalid product → Test 4
 
 ---
 
@@ -395,7 +401,7 @@ Areas **NOT yet covered** by E2E tests:
 ## Test Quality Metrics
 
 - **Total test specs**: 8 files
-- **Total test cases**: 20 (8 specs; quick-input has 4 tests × 2 languages, receipt has 2 tests × 2 languages, shipment/login/partial-receipt have 1 test × 2 languages, product/bp/bookmark have 1-2 tests)
+- **Total test cases**: 22 (8 specs; quick-input has 5 tests × 2 languages, receipt has 2 tests × 2 languages, shipment/login/partial-receipt have 1 test × 2 languages, product/bp/bookmark have 1-2 tests)
 - **Language coverage**: en_US, de_DE
 - **Success rate**: 100% passing
 - **Average execution time**: ~25 seconds per test

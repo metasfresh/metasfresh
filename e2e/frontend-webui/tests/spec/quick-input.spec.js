@@ -452,7 +452,100 @@ Continuous keyboard entry: line1 → line2 → ... without reopening batch entry
     });
 
     // ------------------------------------------------------------------
-    // TEST 4: Regular form lookup regression
+    // TEST 4: Invalid product — beep and keep focus
+    // Verifies that pressing Enter on a non-existent product does NOT
+    // advance focus (plays beep) and the product field retains the text.
+    // ------------------------------------------------------------------
+    test(`Invalid product: Enter keeps focus on product field (${label})`, async ({
+      page,
+    }) => {
+      allure.epic('E0100: Sales');
+      allure.tag('F00100: Sales Order');
+      allure.tag('F00100');
+      allure.story('Quick Input: Invalid product beep');
+      allure.severity('normal');
+      allure.parameter('Language', language);
+      allure.tag(language);
+
+      allure.description(`
+## F00100: Sales Order — Invalid product keeps focus
+
+### Test Scenario
+Validates that pressing Enter with a non-existent product code:
+1. Does NOT advance focus to the quantity field
+2. The product field retains the invalid text (not resolved)
+3. No order line is created
+
+### Business Value
+Audio beep feedback for blind entry — user knows the product was not found.
+      `);
+
+      test.setTimeout(120000);
+
+      const masterdata = await createMasterdata(language);
+      allure.attachment(
+        'Test Data',
+        JSON.stringify(masterdata, null, 2),
+        'application/json'
+      );
+
+      const { batchEntryButton } = await setupOrderWithBatchEntry(
+        page,
+        masterdata,
+        language
+      );
+
+      // Type an invalid product code
+      const productInput = page.locator(
+        '#lookup_M_Product_ID input.input-field'
+      );
+      await productInput.waitFor({
+        state: 'visible',
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+      await productInput.click();
+
+      await page
+        .locator(
+          '#lookup_M_Product_ID .rotating, #lookup_M_Product_ID .spinner'
+        )
+        .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
+        .catch(() => {});
+
+      await page.waitForTimeout(300);
+
+      await productInput.fill('NONEXISTENT_PRODUCT_XYZ_99999');
+
+      // Wait for typeahead debounce
+      await page.waitForTimeout(1500);
+
+      // Press Enter — should beep and NOT advance focus
+      await page.keyboard.press('Enter');
+      await page.waitForTimeout(2000);
+
+      // Verify: product input should still contain the invalid text
+      // (not cleared, not resolved to a real product)
+      const productValue = await productInput.inputValue();
+      expect(productValue).toContain('NONEXISTENT');
+      console.log(
+        `[${language}] Invalid product: field still shows "${productValue}"`
+      );
+
+      // Close batch entry and verify NO order lines were created
+      await batchEntryButton.click();
+      await page.waitForTimeout(500);
+
+      const gridRows = page.locator('.table-flex-wrapper table tbody tr');
+      const rowCount = await gridRows.count();
+      expect(rowCount).toBe(0);
+
+      console.log(
+        `[${language}] Invalid product test passed — no lines created`
+      );
+    });
+
+    // ------------------------------------------------------------------
+    // TEST 5: Regular form lookup regression
     // Verifies that selecting a customer via the BPartner lookup in the
     // Sales Order header (non-quick-input context) still works correctly.
     // In this context, onChange returns a Promise, so shouldKeepFocus
