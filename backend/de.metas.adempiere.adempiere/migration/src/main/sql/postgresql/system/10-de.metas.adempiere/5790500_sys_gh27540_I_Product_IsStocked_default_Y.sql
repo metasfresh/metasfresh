@@ -3,13 +3,13 @@
 --   Item (I) -> Y (stocked), all others (S, E, R) -> N (not stocked)
 -- Explicit values (Y/N) from the import file are preserved.
 --
--- We keep AD_Reference_ID=20 (YesNo) so the generated setter setIsStocked(boolean)
--- continues to work. Only make the column non-mandatory and nullable.
+-- Change to List type with _YesNo reference so NULL is a valid state
+-- (YesNo columns get coerced to 'N' by the PO framework).
 
--- Step 1: Make non-mandatory, remove default, explicitly keep YesNo type
+-- Step 1: Change to List type, make non-mandatory, remove default
 UPDATE AD_Column
-SET AD_Reference_ID       = 20, -- YesNo (keep as-is; explicit for clarity)
-    AD_Reference_Value_ID = NULL,
+SET AD_Reference_ID       = 17,  -- List
+    AD_Reference_Value_ID = 319, -- _YesNo
     IsMandatory           = 'N',
     DefaultValue          = NULL,
     Updated               = now(),

@@ -92,8 +92,9 @@ public class I_Product_StepDef
 				.ifPresent(record::setX12DE355);
 		row.getAsOptionalString(I_I_Product.COLUMNNAME_BPartner_Value)
 				.ifPresent(record::setBPartner_Value);
-		row.getAsOptionalBoolean(I_I_Product.COLUMNNAME_IsStocked)
-				.ifPresent(record::setIsStocked);
+		// IsStocked is a List column (not YesNo) so we must set it as a String, not Boolean.
+		row.getAsOptionalString(I_I_Product.COLUMNNAME_IsStocked)
+				.ifPresent(value -> InterfaceWrapperHelper.setValue(record, I_I_Product.COLUMNNAME_IsStocked, value));
 
 		record.setI_IsImported(false);
 		InterfaceWrapperHelper.saveRecord(record);
