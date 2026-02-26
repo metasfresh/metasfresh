@@ -199,6 +199,120 @@ test.describe('Keyboard Shortcuts — Regression Tests (me03#27082)', () => {
     expect(await dropdown.isVisible()).toBe(true);
   });
 
+  test('Shortcuts work after table filter interaction (UPDATE_HOTKEYS regression)', async ({
+    page,
+  }) => {
+    // We're on the Organisation list view from beforeEach.
+    // Click on a column header to trigger table sort — this causes a re-render
+    // cycle where Shortcut components unmount/remount, firing UPDATE_HOTKEYS.
+    // This was the specific Redux action whose reducer had the spread-operator bug.
+    const headerCell = page
+      .locator('.table-flex-wrapper thead th')
+      .nth(1); // Skip first column (row selection checkbox)
+    await headerCell.waitFor({
+      state: 'visible',
+      timeout: FAST_ACTION_TIMEOUT,
+    });
+    await headerCell.click();
+
+    // Wait for sort re-render + Redux UPDATE_HOTKEYS dispatch
+    await page.waitForTimeout(1000);
+
+    // Now navigate to a single record
+    await navigateToSingleDocument(page);
+
+    // Press ALT+E to open Advanced Edit overlay
+    await page.keyboard.press('Alt+e');
+
+    // Verify the modal overlay appeared
+    const modal = page.locator('.panel-modal');
+    await modal.waitFor({ state: 'visible', timeout: FAST_ACTION_TIMEOUT });
+    expect(await modal.isVisible()).toBe(true);
+
+    // Press ALT+ENTER to confirm — the exact shortcut that was broken by the bug
+    await page.keyboard.press('Alt+Enter');
+
+    // Verify the modal closed — proves shortcuts survived UPDATE_HOTKEYS
+    await modal.waitFor({ state: 'hidden', timeout: FAST_ACTION_TIMEOUT });
+    expect(await modal.isVisible()).toBe(false);
+  });
+
+  test('PageDown/PageUp navigate between pages in list view', async ({
+    page,
+  }) => {
+    // Navigate to Products list (772 records — enough for multiple pages)
+    // Window 140 may redirect to override window 541690 on this branch
+    await page.goto('/window/140', { waitUntil: 'load' });
+
+    // Wait for the document list and pagination to load
+    await page
+      .locator('.document-list-wrapper')
+      .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    await page
+      .locator('.pagination-wrapper')
+      .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+    // Wait for table rows to appear
+    const rows = page.locator('.table-flex-wrapper table tbody tr');
+    await rows.first().waitFor({
+      state: 'visible',
+      timeout: SLOW_ACTION_TIMEOUT,
+    });
+
+    // Get the active page number before navigation
+    const activePage = page.locator('.pagination .page-item.active .page-link');
+    await activePage.waitFor({
+      state: 'visible',
+      timeout: FAST_ACTION_TIMEOUT,
+    });
+    const initialPageText = await activePage.textContent();
+
+    // Click on the table area to ensure it has focus (PageDown needs focus)
+    await rows.first().click();
+    await page.waitForTimeout(300);
+
+    // Press PageDown to go to the next page
+    await page.keyboard.press('PageDown');
+
+    // Wait for the page to change — the active page number should update
+    await page.waitForFunction(
+      (initialText) => {
+        const active = document.querySelector(
+          '.pagination .page-item.active .page-link'
+        );
+        return active && active.textContent !== initialText;
+      },
+      initialPageText,
+      { timeout: SLOW_ACTION_TIMEOUT }
+    );
+
+    // Verify we moved forward (page number should be greater)
+    const nextPageText = await activePage.textContent();
+    expect(Number(nextPageText)).toBeGreaterThan(Number(initialPageText));
+
+    // Brief pause to let the page fully render
+    await page.waitForTimeout(500);
+
+    // Press PageUp to go back
+    await page.keyboard.press('PageUp');
+
+    // Wait for the page to return to original
+    await page.waitForFunction(
+      (originalText) => {
+        const active = document.querySelector(
+          '.pagination .page-item.active .page-link'
+        );
+        return active && active.textContent === originalText;
+      },
+      initialPageText,
+      { timeout: SLOW_ACTION_TIMEOUT }
+    );
+
+    // Verify we're back on the original page
+    const finalPageText = await activePage.textContent();
+    expect(finalPageText).toBe(initialPageText);
+  });
+
   test('Escape closes each menu after opening', async ({ page }) => {
     // --- ALT+1 → Escape ---
     await page.keyboard.press('Alt+1');
