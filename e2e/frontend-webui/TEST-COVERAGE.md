@@ -1,6 +1,6 @@
 # Frontend Web UI E2E Test Coverage
 
-**Last Updated**: 2026-02-25
+**Last Updated**: 2026-02-26
 
 This document provides a complete overview of E2E test coverage for the metasfresh desktop web UI.
 
@@ -258,7 +258,47 @@ npm run test:report
 
 ---
 
-### 8. Bookmark Star (SubHeader)
+### 8. Quick Input (Batch Entry) Focus & Selection
+**File**: `tests/spec/quick-input.spec.js`
+**Status**: ✅ Passing (English, German)
+**Duration**: ~20 seconds per test per language
+
+**Features Tested**:
+- F00100: Sales Order
+
+**Epic**: E0100: Sales
+
+**Tests**:
+1. **Enter-key selects product and advances focus to Qty** - Type product → Enter → verify product resolved → fill qty → submit → verify order line created
+2. **Mouse-click selects product in batch entry** (regression) - Type product → mouse click dropdown option → verify product resolved → fill qty → submit → verify order line created
+3. **Add two lines in sequence via Enter-key** - Add first line via Enter workflow → quick input stays open → add second line → verify both lines in grid
+4. **Regular form lookup: customer selection still works** (regression) - Select customer via BPartner composed lookup in SO header → verify record saved with customer
+
+**Key Validations**:
+- Enter-key selection advances focus from product to quantity field
+- Mouse-click selection still works after focus-advance code change
+- Quick input resets properly for consecutive line entry
+- Regular form (non-quick-input) lookup behavior unchanged
+- Grid row count verification (`table tbody tr`)
+
+**Components Tested**:
+- Sales Order window (143)
+- Order Lines tab (batch entry / quick input)
+- Lookup widget: Enter-key selection (RawLookup.handleSelect_RegularItem)
+- Lookup widget: Mouse-click selection
+- Lookup widget: Composed lookup (BPartner + Location + Contact)
+- Focus advance mechanism (Lookup.setNextProperty + focusNextFormField)
+
+**Regression Coverage**:
+This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management changes:
+- `shouldKeepFocus = false` path (quick input, Enter and mouse) → Tests 1, 2, 3
+- `shouldKeepFocus = true` path (regular form, onChange returns Promise) → Test 4
+- `focusNextFormField()` called inside `<form>` → Tests 1, 2, 3
+- `focusNextFormField()` no-op outside `<form>` → Test 4
+
+---
+
+### 9. Bookmark Star (SubHeader)
 **File**: `tests/spec/bookmark-star.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~8 seconds
@@ -314,6 +354,9 @@ npm run test:report
 - **common.js** - Shared timeouts and helpers
 - **WindowIds.js** - Window ID constants
 
+### Inline Test Helpers
+- **quick-input.spec.js** uses inline helpers (`createMasterdata`, `setupOrderWithBatchEntry`, `typeProductAndWaitForDropdown`, `expectOrderLineInGrid`) instead of a dedicated Page Object, since the test-specific batch entry interactions (Enter-key vs mouse-click, grid row counting) are specialized and not reusable across other test suites.
+
 ### Test Data Strategy
 - All test data created via Backend API
 - Unique identifiers per test run (timestamps)
@@ -351,12 +394,12 @@ Areas **NOT yet covered** by E2E tests:
 
 ## Test Quality Metrics
 
-- **Total test specs**: 7 files
-- **Total test cases**: 12 (7 specs, some with 2 languages × 2 tests, receipt.spec.js has 2 tests per language)
+- **Total test specs**: 8 files
+- **Total test cases**: 20 (8 specs; quick-input has 4 tests × 2 languages, receipt has 2 tests × 2 languages, shipment/login/partial-receipt have 1 test × 2 languages, product/bp/bookmark have 1-2 tests)
 - **Language coverage**: en_US, de_DE
 - **Success rate**: 100% passing
-- **Average execution time**: ~40 seconds per test
-- **Total suite time**: ~8 minutes (sequential execution)
+- **Average execution time**: ~25 seconds per test
+- **Total suite time**: ~11 minutes (sequential execution)
 
 ## CI/CD Integration
 

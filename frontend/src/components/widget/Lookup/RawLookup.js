@@ -249,9 +249,16 @@ export class RawLookup extends Component {
       ? mainProperty.parameterName
       : mainProperty.field;
 
+    let shouldKeepFocus = true;
+
     executeAfterPromise(
       onChange(fieldName, selectedItemNorm), //
-      () => setNextProperty(fieldName)
+      () => {
+        const hasNextSubField = setNextProperty(fieldName);
+        if (!hasNextSubField) {
+          shouldKeepFocus = false;
+        }
+      }
     );
 
     // see FiltersItem.updateItems
@@ -266,7 +273,9 @@ export class RawLookup extends Component {
 
     handleInputEmptyStatus && handleInputEmptyStatus(false);
 
-    this.focus();
+    if (shouldKeepFocus) {
+      this.focus();
+    }
 
     this.handleDropdownBlur(isMouseEvent);
   };
