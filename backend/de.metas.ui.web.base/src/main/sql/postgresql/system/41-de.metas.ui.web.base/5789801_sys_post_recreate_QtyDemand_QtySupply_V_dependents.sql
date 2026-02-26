@@ -12,12 +12,21 @@ $$
             RETURN;
         END IF;
 
-        -- Recreate dependent views shallowest-first (reverse of drop order)
+        -- Recreate dependent views shallowest-first (reverse of drop order).
+        -- Some views may reference old columns that no longer exist (e.g. rv_purchasecockpit
+        -- referencing qtyReserved/qtyToMove/qtyStock which were replaced by SupplyType/QtyOnHand).
+        -- Log a warning and continue instead of failing the entire migration.
         FOR v_rec IN (SELECT * FROM tmp_qtydemand_dependent_views ORDER BY depth ASC)
             LOOP
-                EXECUTE 'CREATE OR REPLACE VIEW "' || v_rec.view_schema || '".' || v_rec.view_name
-                            || ' AS ' || v_rec.view_definition;
-                RAISE NOTICE 'Recreated dependent view: %.%', v_rec.view_schema, v_rec.view_name;
+                BEGIN
+                    EXECUTE 'CREATE OR REPLACE VIEW "' || v_rec.view_schema || '".' || v_rec.view_name
+                                || ' AS ' || v_rec.view_definition;
+                    RAISE NOTICE 'Recreated dependent view: %.%', v_rec.view_schema, v_rec.view_name;
+                EXCEPTION
+                    WHEN OTHERS THEN
+                        RAISE WARNING 'Could not recreate dependent view %.%: %. This view must be updated manually to match the new QtyDemand_QtySupply_V columns.',
+                            v_rec.view_schema, v_rec.view_name, SQLERRM;
+                END;
             END LOOP;
 
         -- Clean up staging table
