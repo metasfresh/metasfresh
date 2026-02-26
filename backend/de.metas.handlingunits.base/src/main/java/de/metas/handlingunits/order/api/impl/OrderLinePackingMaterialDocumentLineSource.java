@@ -32,6 +32,7 @@ import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -125,6 +126,10 @@ import java.util.List;
 	{
 		return orderLine.getQtyLU();
 	}
+
+	@Override
+	@Nullable
+	public ProjectId getProjectId() { return ProjectId.ofRepoIdOrNull(orderLine.getC_Project_ID());}
 
 	@Override
 	public String toString()

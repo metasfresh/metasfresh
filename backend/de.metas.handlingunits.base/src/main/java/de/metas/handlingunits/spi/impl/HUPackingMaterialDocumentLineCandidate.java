@@ -22,30 +22,32 @@ package de.metas.handlingunits.spi.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Comparator;
-import java.util.LinkedHashSet;
-import java.util.Objects;
-import java.util.Set;
-
-import org.adempiere.util.comparator.NullComparator;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
+import org.adempiere.util.comparator.NullComparator;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Product;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Comparator;
+import java.util.LinkedHashSet;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Packing Material Document Line candidate.
@@ -181,14 +183,23 @@ public final class HUPackingMaterialDocumentLineCandidate
 		return getQty(uomTo);
 	}
 
-	protected void addQty(final int qtyToAdd)
+	void addQty(final int qtyToAdd)
 	{
 		qty = qty.add(BigDecimal.valueOf(qtyToAdd));
 	}
 
-	protected void subtractQty(final int qtyToSubtract)
+	void subtractQty(final int qtyToSubtract)
 	{
 		qty = qty.subtract(BigDecimal.valueOf(qtyToSubtract));
+	}
+
+	@Nullable
+	public ProjectId getUniqueProjectIdOrNull()
+	{
+		return CollectionUtils.singleElementOrNull(sources.stream()
+				.map(IHUPackingMaterialCollectorSource::getProjectId)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList()));
 	}
 
 	/**
@@ -228,7 +239,7 @@ public final class HUPackingMaterialDocumentLineCandidate
 		return materialTrackingId > 0 ? materialTrackingId : -1;
 	}
 
-	protected void add(@NonNull final HUPackingMaterialDocumentLineCandidate candidateToAdd)
+	void add(@NonNull final HUPackingMaterialDocumentLineCandidate candidateToAdd)
 	{
 		if (this == candidateToAdd)
 		{
