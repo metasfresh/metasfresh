@@ -33,8 +33,12 @@ export const useKeyboardBarcodeReader = ({
         }
       }
 
-      // Ignore key events with Ctrl, Alt or Meta modifiers
-      if (event.ctrlKey || event.altKey || event.metaKey) {
+      // Ignore key events with Ctrl or Meta modifiers
+      if (event.ctrlKey || event.metaKey) {
+        return;
+      }
+      // Allow altKey for printable characters (Zebra MC3300x firmware sets altKey=true on scanner keystrokes)
+      if (event.altKey && event.key.length !== 1) {
         return;
       }
 

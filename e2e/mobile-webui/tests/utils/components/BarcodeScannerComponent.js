@@ -45,6 +45,38 @@ export const BarcodeScannerComponent = {
         }, scannedCode);
     }),
 
+    typeViaIME: async (params) => await test.step(`${NAME} - Type scanned code via IME`, async () => {
+        let scannedCode;
+        let testId;
+        if (typeof params === 'string') {
+            scannedCode = params;
+            testId = undefined;
+        } else if (params && typeof params === 'object') {
+            scannedCode = params.scannedCode;
+            testId = params.testId;
+        } else {
+            throw new Error("Invalid argument provided to the 'typeViaIME' function. Must be a string or an object with { scannedCode }.");
+        }
+
+        if (!scannedCode) {
+            throw new Error("Invalid scannedCode provided. Must not be empty.");
+        }
+
+        console.log('Scanning scanned code via IME:\n' + scannedCode);
+
+        await BarcodeScannerComponent.waitToAttach({ testId });
+
+        let selector = '#input-text';
+        if (testId) {
+            selector += `[data-testid="${testId}"]`;
+        }
+
+        // Simulate DataWedge IME text injection: sets value + fires input/change events, no keydown events
+        await page.locator(selector).fill(scannedCode);
+        // DataWedge appends Enter after text injection to trigger submission
+        await page.keyboard.press('Enter');
+    }),
+
     waitForInputFieldToGetEmpty: async () => await test.step(`${NAME} - Wait for input field to get empty`, async () => {
         await expect(page.locator('#input-text')).toHaveValue('');
     }),
