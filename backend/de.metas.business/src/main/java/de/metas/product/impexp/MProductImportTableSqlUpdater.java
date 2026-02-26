@@ -313,10 +313,17 @@ public class MProductImportTableSqlUpdater
 		}
 	}
 
+	/**
+	 * gh#27540: Default IsStocked based on ProductType where not explicitly provided.
+	 * Only Item (I) is considered stocked; all other types (S, E, R, F, N, O) are not.
+	 * <p>
+	 * This is kept in sync with {@link de.metas.product.impl.ProductBL#isStocked(org.compiere.model.I_M_Product)}
+	 * which returns {@code product.isStocked() && productType.isItem()}.
+	 *
+	 * @see de.metas.product.ProductType#isItem()
+	 */
 	private void dbUpdateIsStockedDefault(@NonNull final ImportRecordsSelection selection)
 	{
-		// gh#27540: Default IsStocked based on ProductType where not explicitly provided.
-		// Item (I) -> Y (stocked), all others (S, E, R) -> N (not stocked).
 		final String sql = "UPDATE " + targetTableName + " i"
 				+ " SET IsStocked = CASE WHEN ProductType = 'I' THEN 'Y' ELSE 'N' END"
 				+ " WHERE IsStocked IS NULL"
