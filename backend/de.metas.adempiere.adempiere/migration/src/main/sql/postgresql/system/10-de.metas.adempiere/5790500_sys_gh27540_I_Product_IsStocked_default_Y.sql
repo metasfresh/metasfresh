@@ -6,12 +6,14 @@
 -- We keep AD_Reference_ID=20 (YesNo) so the generated setter setIsStocked(boolean)
 -- continues to work. Only make the column non-mandatory and nullable.
 
--- Step 1: Make non-mandatory, remove default (keep YesNo type)
+-- Step 1: Make non-mandatory, remove default, explicitly keep YesNo type
 UPDATE AD_Column
-SET IsMandatory        = 'N',
-    DefaultValue       = NULL,
-    Updated            = now(),
-    UpdatedBy          = 99
+SET AD_Reference_ID       = 20, -- YesNo (keep as-is; explicit for clarity)
+    AD_Reference_Value_ID = NULL,
+    IsMandatory           = 'N',
+    DefaultValue          = NULL,
+    Updated               = now(),
+    UpdatedBy             = 99
 WHERE AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'I_Product')
   AND ColumnName = 'IsStocked';
 
