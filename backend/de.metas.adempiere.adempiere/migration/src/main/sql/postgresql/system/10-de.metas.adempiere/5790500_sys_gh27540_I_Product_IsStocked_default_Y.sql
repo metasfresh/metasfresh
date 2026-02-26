@@ -2,13 +2,13 @@
 -- The import process will derive IsStocked from ProductType:
 --   Item (I) -> Y (stocked), all others (S, E, R) -> N (not stocked)
 -- Explicit values (Y/N) from the import file are preserved.
+--
+-- We keep AD_Reference_ID=20 (YesNo) so the generated setter setIsStocked(boolean)
+-- continues to work. Only make the column non-mandatory and nullable.
 
--- Step 1: Change AD_Column from YesNo (AD_Reference_ID=20) to List (AD_Reference_ID=17)
--- with _YesNo reference (AD_Reference_Value_ID=319), make non-mandatory, remove default
+-- Step 1: Make non-mandatory, remove default (keep YesNo type)
 UPDATE AD_Column
-SET AD_Reference_ID    = 17,  -- List
-    AD_Reference_Value_ID = 319, -- _YesNo
-    IsMandatory        = 'N',
+SET IsMandatory        = 'N',
     DefaultValue       = NULL,
     Updated            = now(),
     UpdatedBy          = 99
