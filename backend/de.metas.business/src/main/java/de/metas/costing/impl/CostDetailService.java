@@ -3,6 +3,7 @@ package de.metas.costing.impl;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetail.CostDetailBuilder;
 import de.metas.costing.CostDetailCreateRequest;
@@ -24,11 +25,13 @@ import de.metas.costing.MoveCostsRequest;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 /*
@@ -127,6 +130,23 @@ public class CostDetailService implements ICostDetailService
 				// .productId(request.getProductId())
 				// .attributeSetInstanceId(request.getAttributeSetInstanceId())
 				.build());
+	}
+
+	@Override
+	public AggregatedCostAmount toAggregatedCostAmount(final List<CostDetail> costDetails)
+	{
+		return costDetails.stream()
+				.map(this::toAggregatedCostAmount)
+				.reduce(AggregatedCostAmount::add)
+				.orElseThrow(() -> new AdempiereException("No cost details"));
+	}
+
+	private AggregatedCostAmount toAggregatedCostAmount(final CostDetail costDetail)
+	{
+		return AggregatedCostAmount.builder()
+				.costSegment(extractCostSegment(costDetail))
+				.amount(costElementRepo.getById(costDetail.getCostElementId()), costDetail.getAmtAndQtyDetailed().getAmt())
+				.build();
 	}
 
 	@Override
@@ -245,6 +265,12 @@ public class CostDetailService implements ICostDetailService
 	public Stream<CostDetail> stream(@NonNull final CostDetailQuery query)
 	{
 		return costDetailsRepo.stream(query);
+	}
+
+	@Override
+	public Optional<CostDetail> firstOnly(@NonNull final CostDetailQuery query)
+	{
+		return costDetailsRepo.firstOnly(query);
 	}
 
 }

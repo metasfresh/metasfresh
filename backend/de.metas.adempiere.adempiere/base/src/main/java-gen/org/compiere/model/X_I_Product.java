@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
@@ -13,7 +35,7 @@ import javax.annotation.Nullable;
 public class X_I_Product extends org.compiere.model.PO implements I_I_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 232226665L;
+	private static final long serialVersionUID = -323807653L;
 
     /** Standard Constructor */
     public X_I_Product (final Properties ctx, final int I_Product_ID, @Nullable final String trxName)
@@ -371,6 +393,30 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	}
 
 	@Override
+	public void setGuaranteeDaysMin (final int GuaranteeDaysMin)
+	{
+		set_Value (COLUMNNAME_GuaranteeDaysMin, GuaranteeDaysMin);
+	}
+
+	@Override
+	public int getGuaranteeDaysMin() 
+	{
+		return get_ValueAsInt(COLUMNNAME_GuaranteeDaysMin);
+	}
+
+	@Override
+	public void setHeightInCm (final int HeightInCm)
+	{
+		set_Value (COLUMNNAME_HeightInCm, HeightInCm);
+	}
+
+	@Override
+	public int getHeightInCm() 
+	{
+		return get_ValueAsInt(COLUMNNAME_HeightInCm);
+	}
+
+	@Override
 	public void setHelp (final @Nullable java.lang.String Help)
 	{
 		set_Value (COLUMNNAME_Help, Help);
@@ -515,6 +561,18 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	}
 
 	@Override
+	public void setIsPurchased (final boolean IsPurchased)
+	{
+		set_Value (COLUMNNAME_IsPurchased, IsPurchased);
+	}
+
+	@Override
+	public boolean isPurchased() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsPurchased);
+	}
+
+	@Override
 	public void setIsScalePrice (final boolean IsScalePrice)
 	{
 		set_Value (COLUMNNAME_IsScalePrice, IsScalePrice);
@@ -524,6 +582,18 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	public boolean isScalePrice() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsScalePrice);
+	}
+
+	@Override
+	public void setIsSelfPacked (final boolean IsSelfPacked)
+	{
+		set_Value (COLUMNNAME_IsSelfPacked, IsSelfPacked);
+	}
+
+	@Override
+	public boolean isSelfPacked() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSelfPacked);
 	}
 
 	@Override
@@ -548,6 +618,42 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	public boolean isStocked() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsStocked);
+	}
+
+	@Override
+	public void setIsUpdateName (final boolean IsUpdateName)
+	{
+		set_Value (COLUMNNAME_IsUpdateName, IsUpdateName);
+	}
+
+	@Override
+	public boolean isUpdateName() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsUpdateName);
+	}
+
+	@Override
+	public void setIsUpdateProductCategory (final boolean IsUpdateProductCategory)
+	{
+		set_Value (COLUMNNAME_IsUpdateProductCategory, IsUpdateProductCategory);
+	}
+
+	@Override
+	public boolean isUpdateProductCategory() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsUpdateProductCategory);
+	}
+
+	@Override
+	public void setLengthInCm (final int LengthInCm)
+	{
+		set_Value (COLUMNNAME_LengthInCm, LengthInCm);
+	}
+
+	@Override
+	public int getLengthInCm() 
+	{
+		return get_ValueAsInt(COLUMNNAME_LengthInCm);
 	}
 
 	@Override
@@ -986,6 +1092,18 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	}
 
 	@Override
+	public void setQtyCU_UOM_Code (final @Nullable java.lang.String QtyCU_UOM_Code)
+	{
+		set_Value (COLUMNNAME_QtyCU_UOM_Code, QtyCU_UOM_Code);
+	}
+
+	@Override
+	public java.lang.String getQtyCU_UOM_Code() 
+	{
+		return get_ValueAsString(COLUMNNAME_QtyCU_UOM_Code);
+	}
+
+	@Override
 	public void setQtyCU_UOM_ID (final int QtyCU_UOM_ID)
 	{
 		if (QtyCU_UOM_ID < 1) 
@@ -1224,6 +1342,33 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	public java.lang.String getWeightUOM() 
 	{
 		return get_ValueAsString(COLUMNNAME_WeightUOM);
+	}
+
+	@Override
+	public void setWeight_UOM_ID (final int Weight_UOM_ID)
+	{
+		if (Weight_UOM_ID < 1) 
+			set_Value (COLUMNNAME_Weight_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_Weight_UOM_ID, Weight_UOM_ID);
+	}
+
+	@Override
+	public int getWeight_UOM_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Weight_UOM_ID);
+	}
+
+	@Override
+	public void setWidthInCm (final int WidthInCm)
+	{
+		set_Value (COLUMNNAME_WidthInCm, WidthInCm);
+	}
+
+	@Override
+	public int getWidthInCm() 
+	{
+		return get_ValueAsInt(COLUMNNAME_WidthInCm);
 	}
 
 	@Override

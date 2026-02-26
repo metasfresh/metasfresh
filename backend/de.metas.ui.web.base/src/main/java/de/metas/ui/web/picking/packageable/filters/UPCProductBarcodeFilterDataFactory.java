@@ -23,7 +23,7 @@
 package de.metas.ui.web.picking.packageable.filters;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.handlingunits.edi.EDIProductLookup;
+import de.metas.product.ResolvedScannedProductCode;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.product.ProductId;
 import de.metas.ui.web.view.descriptor.SqlAndParams;
@@ -50,7 +50,7 @@ class UPCProductBarcodeFilterDataFactory implements ProductBarcodeFilterDataFact
 
 		final String barcodeNorm = barcodeParam.trim();
 
-		final ImmutableList<EDIProductLookup> ediProductLookupList = services.getEDIProductLookupByUPC(barcodeNorm);
+		final ImmutableList<ResolvedScannedProductCode> ediProductLookupList = services.getEDIProductLookupByUPC(barcodeNorm);
 		final ProductId productId = services.getProductIdByBarcode(barcodeNorm, clientId).orElse(null);
 		final SqlAndParams sqlWhereClause = createSqlWhereClause(services, ediProductLookupList, productId).orElse(null);
 		if (sqlWhereClause == null)
@@ -66,7 +66,7 @@ class UPCProductBarcodeFilterDataFactory implements ProductBarcodeFilterDataFact
 
 	private static Optional<SqlAndParams> createSqlWhereClause(
 			@NonNull final ProductBarcodeFilterServicesFacade services,
-			@NonNull final ImmutableList<EDIProductLookup> ediProductLookupList,
+			@NonNull final ImmutableList<ResolvedScannedProductCode> ediProductLookupList,
 			@Nullable final ProductId productId)
 	{
 		if (productId == null && ediProductLookupList.isEmpty())
@@ -79,7 +79,7 @@ class UPCProductBarcodeFilterDataFactory implements ProductBarcodeFilterDataFact
 
 		if (!ediProductLookupList.isEmpty())
 		{
-			for (final EDIProductLookup ediProductLookup : ediProductLookupList)
+			for (final ResolvedScannedProductCode ediProductLookup : ediProductLookupList)
 			{
 				final ICompositeQueryFilter<I_M_Packageable_V> filter = resultFilter.addCompositeQueryFilter()
 						.setJoinAnd()

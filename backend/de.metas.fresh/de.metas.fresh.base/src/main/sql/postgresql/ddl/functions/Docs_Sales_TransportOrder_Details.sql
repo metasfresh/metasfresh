@@ -29,6 +29,7 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Transpo
             (
                 name                text,
                 address             text,
+                istobefetched       char(1),
                 DeliveryDateTimeMax Timestamp WITH TIME ZONE,
                 isPallet            char(1),
                 QtyTU               numeric,
@@ -39,6 +40,7 @@ AS
 $$
 SELECT name,
        address,
+       istobefetched,
        DeliveryDateTimeMax,
        isPallet,
        QtyTU,
@@ -46,6 +48,7 @@ SELECT name,
        STRING_AGG(note, E'\n') AS notes
 FROM (SELECT name,
              address,
+             istobefetched,
              DeliveryDateTimeMax,
              isPallet,
              QtyTU,
@@ -53,6 +56,7 @@ FROM (SELECT name,
              note
       FROM (SELECT bp.name,
                    bpl.address,
+                   sp.istobefetched,
                    CASE WHEN hupm.name ILIKE '%pal%' THEN 'Y' ELSE 'N' END     AS isPallet,
                    hu.M_HU_ID,
                    dd.DeliveryDateTimeMax,
@@ -91,7 +95,7 @@ FROM (SELECT name,
                                       GROUP BY m_hu_ID) AS hu_qty
                                      ON hu.m_hu_id = hu_qty.m_hu_id
             WHERE sp.M_ShipperTransportation_ID = p_M_ShipperTransportation_ID) foo) bar
-GROUP BY name, address, DeliveryDateTimeMax, isPallet, QtyTU, QtyLU
+GROUP BY name, address, istobefetched, DeliveryDateTimeMax, isPallet, QtyTU, QtyLU
 
 $$
     LANGUAGE sql

@@ -30,7 +30,6 @@ import de.metas.allocation.api.IAllocationDAO;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
-import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
@@ -117,8 +116,7 @@ public class C_Invoice_MassDiscountOrWriteOff extends JavaProcess
 
 	private void invoiceDiscount(@NonNull final I_C_Invoice invoice)
 	{
-		final CurrencyId currencyId = CurrencyId.ofRepoId(invoice.getC_Currency_ID());
-		final Money invoiceOpenAmt = Money.of(allocationDAO.retrieveOpenAmt(invoice, true), currencyId);
+		final Money invoiceOpenAmt = allocationDAO.retrieveOpenAmtInInvoiceCurrency(invoice, true);
 		if (invoiceOpenAmt.signum() == 0)
 		{
 			addLog("Skip C_Invoice_ID=" + invoice.getC_Invoice_ID() + ": " + "Has OpenAmt=0 but IsPaid=N.");
@@ -127,7 +125,7 @@ public class C_Invoice_MassDiscountOrWriteOff extends JavaProcess
 		}
 
 		// skip the invoice if there is nothing allocated yet! We only want to complete *partial* allocations
-		final BigDecimal allocatedAmt = allocationDAO.retrieveAllocatedAmt(invoice);
+		final Money allocatedAmt = allocationDAO.retrieveAllocatedAmt(invoice);
 		if (allocatedAmt == null || allocatedAmt.signum() == 0)
 		{
 			addLog("Skip C_Invoice_ID=" + invoice.getC_Invoice_ID() + ": " + "Has allocatedAmt=0.");

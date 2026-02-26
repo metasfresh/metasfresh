@@ -1,0 +1,16 @@
+package de.metas.frontend_testing.expectations.request;
+
+import lombok.Builder;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
+
+import javax.annotation.Nullable;
+import java.util.List;
+
+@Value
+@Builder
+@Jacksonized
+public class JsonPickingSlotExpectation
+{
+	@Nullable List<JsonPickingSlotQueueItemExpectation> queue;
+}

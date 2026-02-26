@@ -1,10 +1,8 @@
-package de.metas.invoicecandidate.api.impl.aggregationEngine;
-
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.invoicecandidate.api.impl.aggregationEngine;
 
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
@@ -45,18 +45,15 @@ import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
 
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * This abstract class implements one generic test-scenario (see method {@link #testStandardScenario()}) and declared a number of methods that need to be implemented by the actual test cases.
@@ -80,6 +77,7 @@ public abstract class AbstractNewAggregationEngineTests extends AbstractAggregat
 	protected static final BigDecimal FIVE_HUNDRET = new BigDecimal("500");
 	protected static final BigDecimal THOUSAND = new BigDecimal("1000");
 
+	@BeforeEach
 	@Override
 	public void init()
 	{
@@ -171,18 +169,17 @@ public abstract class AbstractNewAggregationEngineTests extends AbstractAggregat
 		{
 			if (aggregate.getLinesFor(ic).contains(invoiceLine))
 			{
-				assertThat("This verification code can handle only one aggregate for ic=" + ic + " and invoiceLine=" + invoiceLine,
-						aggregateForLine, nullValue());
+				assertThat(aggregateForLine).as("This verification code can handle only one aggregate for ic=" + ic + " and invoiceLine=" + invoiceLine).isNull();
 				aggregateForLine = aggregate;
 			}
 		}
-		assertThat(aggregateForLine, notNullValue());
+		assertThat(aggregateForLine).isNotNull();
 
 		final List<I_C_Invoice_Candidate> candsForInvoiceLine1 = aggregateForLine.getCandsFor(invoiceLine);
-		assertThat(candsForInvoiceLine1.size(), is(1));
-		assertThat(candsForInvoiceLine1.get(0), is(ic));
+		assertThat(candsForInvoiceLine1).hasSize(1);
+		assertThat(candsForInvoiceLine1.get(0)).isEqualTo(ic);
 
 		final StockQtyAndUOMQty qtyInvoiced = aggregateForLine.getAllocatedQty(ic, invoiceLine);
-		assertThat(qtyInvoiced.getStockQty().toBigDecimal(), comparesEqualTo(expectedAllocatedQty));
+		assertThat(qtyInvoiced.getStockQty().toBigDecimal()).isEqualByComparingTo(expectedAllocatedQty);
 	}
 }

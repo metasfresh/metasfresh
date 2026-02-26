@@ -22,11 +22,10 @@ package de.metas.handlingunits;
  * #L%
  */
 
+import de.metas.product.ProductId;
 
 import java.math.BigDecimal;
 import java.util.Set;
-
-import de.metas.product.ProductId;
 
 /**
  * Implementations of this interface are handling document lines which are about packing materials
@@ -52,9 +51,9 @@ public interface IPackingMaterialDocumentLine
 	/**
 	 * Add a source document line.
 	 *
-	 * Its quantity will be used to increase this line's qty.
+	 * The given quantity will be used to increase this line's qty.
 	 */
-	void addSourceOrderLine(IPackingMaterialDocumentLineSource source);
+	void addSourceOrderLine(IPackingMaterialDocumentLineSource source, BigDecimal qtyToAdd);
 
 	/**
 	 *

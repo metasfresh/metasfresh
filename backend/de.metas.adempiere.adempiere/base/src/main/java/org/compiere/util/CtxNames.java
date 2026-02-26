@@ -8,6 +8,7 @@ import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
+import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -85,6 +86,7 @@ public class CtxNames
 	 * @param ctxNames may be {@code null}.
 	 */
 	@Nullable
+	@Contract("!null -> !null")
 	public Set<String> toNames(@Nullable final Collection<CtxName> ctxNames)
 	{
 		if (ctxNames == null)
@@ -125,6 +127,7 @@ public class CtxNames
 	}
 
 	@Nullable
+	@Contract("null -> null; !null -> !null")
 	public static CtxName parse(@Nullable final String contextWithoutMarkers)
 	{
 		if (contextWithoutMarkers == null)

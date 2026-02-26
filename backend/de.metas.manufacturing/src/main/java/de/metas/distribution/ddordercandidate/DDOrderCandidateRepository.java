@@ -23,10 +23,12 @@ import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_DD_Order_Candidate;
+import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
@@ -68,7 +70,7 @@ public class DDOrderCandidateRepository
 		candidate.setId(DDOrderCandidateId.ofRepoId(record.getDD_Order_Candidate_ID()));
 	}
 
-	private static void updateRecord(final I_DD_Order_Candidate record, DDOrderCandidate from)
+	private static void updateRecord(final I_DD_Order_Candidate record, final DDOrderCandidate from)
 	{
 		record.setAD_Org_ID(from.getOrgId().getRepoId());
 		record.setDateOrdered(Timestamp.from(from.getDateOrdered()));
@@ -83,9 +85,9 @@ public class DDOrderCandidateRepository
 		// Product, ASI, UOM, Qty
 		record.setM_Product_ID(from.getProductId().getRepoId());
 		record.setM_HU_PI_Item_Product_ID(from.getHupiItemProductId().getRepoId());
-		record.setC_UOM_ID(from.getQty().getUomId().getRepoId());
-		record.setQtyOrdered(from.getQty().toBigDecimal());
-		record.setQtyEntered(from.getQty().toBigDecimal());
+		record.setC_UOM_ID(from.getQtyEntered().getUomId().getRepoId());
+		record.setQtyOrdered(from.getQtyEntered().toBigDecimal());
+		record.setQtyEntered(from.getQtyEntered().toBigDecimal());
 		record.setQtyEnteredTU(BigDecimal.valueOf(from.getQtyTUs()));
 		record.setQtyProcessed(from.getQtyProcessed().toBigDecimal());
 		record.setQtyToProcess(from.getQtyToProcess().toBigDecimal());
@@ -126,7 +128,7 @@ public class DDOrderCandidateRepository
 	{
 		record.setForward_PP_Order_ID(from != null ? PPOrderId.toRepoId(from.getPpOrderId()) : -1);
 		record.setForward_PP_Order_BOMLine_ID(from != null ? PPOrderBOMLineId.toRepoId(from.getPpOrderBOMLineId()) : -1);
-		record.setForward_PP_Order_Candidate_ID(from != null ? from.getPpOrderCandidateId() : -1);
+		record.setForward_PP_Order_Candidate_ID(from != null ? PPOrderCandidateId.toRepoId(from.getPpOrderCandidateId()) : -1);
 		record.setForward_PP_OrderLine_Candidate_ID(from != null ? from.getPpOrderLineCandidateId() : -1);
 	}
 
@@ -144,7 +146,7 @@ public class DDOrderCandidateRepository
 				//
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.hupiItemProductId(HUPIItemProductId.ofRepoIdOrNone(record.getM_HU_PI_Item_Product_ID()))
-				.qty(Quantitys.of(record.getQtyEntered(), uomId))
+				.qtyEntered(Quantitys.of(record.getQtyEntered(), uomId))
 				.qtyTUs(record.getQtyEnteredTU().intValueExact())
 				.qtyProcessed(Quantitys.of(record.getQtyProcessed(), uomId))
 				//
@@ -152,6 +154,8 @@ public class DDOrderCandidateRepository
 				//
 				.sourceWarehouseId(WarehouseId.ofRepoId(record.getM_Warehouse_From_ID()))
 				.targetWarehouseId(WarehouseId.ofRepoId(record.getM_WarehouseTo_ID()))
+				.sourceLocatorId(LocatorId.ofRepoIdOrNull(record.getM_Warehouse_From_ID(), record.getM_LocatorFrom_ID()))
+				.targetLocatorId(LocatorId.ofRepoIdOrNull(record.getM_WarehouseTo_ID(), record.getM_LocatorTo_ID()))
 				.targetPlantId(ResourceId.ofRepoIdOrNull(record.getPP_Plant_To_ID()))
 				.shipperId(ShipperId.ofRepoId(record.getM_Shipper_ID()))
 				//
@@ -176,9 +180,9 @@ public class DDOrderCandidateRepository
 	@Nullable
 	private static PPOrderRef extractForwardPPOrderRef(final I_DD_Order_Candidate record)
 	{
-		final int ppOrderCandidateId = record.getForward_PP_Order_Candidate_ID();
+		final PPOrderCandidateId ppOrderCandidateId = PPOrderCandidateId.ofRepoIdOrNull(record.getForward_PP_Order_Candidate_ID());
 		final PPOrderId ppOrderId = PPOrderId.ofRepoIdOrNull(record.getForward_PP_Order_ID());
-		if (ppOrderCandidateId <= 0 && ppOrderId == null)
+		if (ppOrderCandidateId == null && ppOrderId == null)
 		{
 			return null;
 		}
@@ -262,7 +266,7 @@ public class DDOrderCandidateRepository
 		return queryBuilder;
 	}
 
-	public void updateByQuery(@NonNull final DDOrderCandidateQuery query, @NonNull UnaryOperator<DDOrderCandidate> updater)
+	public void updateByQuery(@NonNull final DDOrderCandidateQuery query, @NonNull final UnaryOperator<DDOrderCandidate> updater)
 	{
 		final List<I_DD_Order_Candidate> records = toSqlQuery(query).create().list();
 		for (final I_DD_Order_Candidate record : records)

@@ -6,7 +6,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ILotNumberBL;
 import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
 import org.adempiere.mm.attributes.api.LotNoContext;
@@ -90,10 +90,10 @@ public class LotNumberBL implements ILotNumberBL
 			return null;
 		}
 
-		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+		final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(asi.getM_AttributeSetInstance_ID());
-		final I_M_AttributeInstance lotNumberAI = attributeDAO.retrieveAttributeInstance(asiId, lotNumberAttrId);
+		final I_M_AttributeInstance lotNumberAI = asiBL.getAttributeInstance(asiId, lotNumberAttrId);
 
 		if (lotNumberAI == null)
 		{

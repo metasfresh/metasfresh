@@ -8,6 +8,7 @@ import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.document.DocumentNoFilter;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -24,6 +25,8 @@ import de.metas.picking.api.Packageable;
 import de.metas.picking.api.Packageable.PackageableBuilder;
 import de.metas.picking.api.PackageableQuery;
 import de.metas.product.ProductId;
+import de.metas.product.ProductValueAndName;
+import de.metas.product.ResolvedScannedProductCode;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.IUOMDAO;
@@ -35,6 +38,7 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -47,6 +51,7 @@ import org.compiere.model.I_C_UOM;
 import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -132,7 +137,31 @@ public class PackagingDAO implements IPackagingDAO
 		// Filter: PreparationDate
 		if (query.getPreparationDate() != null)
 		{
-			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMN_PreparationDate, query.getPreparationDate(), DateTruncQueryFilterModifier.DAY);
+			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_PreparationDate, query.getPreparationDate(), DateTruncQueryFilterModifier.DAY);
+		}
+
+		//
+		// Filter: IsFixedPreparationDate
+		final ZonedDateTime maximumFixedPreparationDate = query.getMaximumFixedPreparationDate();
+		if (maximumFixedPreparationDate != null)
+		{
+			queryBuilder.addFilter(queryBL.createCompositeQueryFilter(I_M_Packageable_V.class)
+					.setJoinOr()
+					.addCompareFilter(I_M_Packageable_V.COLUMNNAME_PreparationDate, CompareQueryFilter.Operator.LESS_OR_EQUAL, maximumFixedPreparationDate.toInstant())
+					.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_IsFixedPreparationDate, false)
+			);
+		}
+
+		//
+		// Filter: IsFixedDatePromised
+		final ZonedDateTime maximumFixedPromisedDate = query.getMaximumFixedPromisedDate();
+		if (maximumFixedPromisedDate != null)
+		{
+			queryBuilder.addFilter(queryBL.createCompositeQueryFilter(I_M_Packageable_V.class)
+					.setJoinOr()
+					.addCompareFilter(I_M_Packageable_V.COLUMNNAME_DatePromised, CompareQueryFilter.Operator.LESS_OR_EQUAL, maximumFixedPromisedDate.toInstant())
+					.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_IsFixedDatePromised, false)
+			);
 		}
 
 		if (query.getShipperId() != null)
@@ -205,6 +234,22 @@ public class PackagingDAO implements IPackagingDAO
 			queryBuilder.addInArrayFilter(I_M_Packageable_V.COLUMNNAME_HandOver_Location_ID, query.getHandoverLocationIds());
 		}
 
+		//
+		if (query.getScannedProductCodes() != null)
+		{
+			final ICompositeQueryFilter<I_M_Packageable_V> productCodesFilter = queryBuilder.addCompositeQueryFilter().setJoinOr();
+			for (final ResolvedScannedProductCode scannedProductCode : query.getScannedProductCodes())
+			{
+				final ICompositeQueryFilter<I_M_Packageable_V> currentProductCodeFilter = productCodesFilter.addCompositeQueryFilter()
+						.setJoinAnd()
+						.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_M_Product_ID, scannedProductCode.getProductId());
+				if (scannedProductCode.getBpartnerId() != null)
+				{
+					currentProductCodeFilter.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_C_BPartner_Customer_ID, scannedProductCode.getBpartnerId());
+				}
+			}
+		}
+
 		return queryBuilder.create();
 	}
 
@@ -273,7 +318,7 @@ public class PackagingDAO implements IPackagingDAO
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private Packageable toPackageable(@NonNull final I_M_Packageable_V record)
+	public Packageable toPackageable(@NonNull final I_M_Packageable_V record)
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(record.getC_BPartner_Customer_ID());
 		final I_C_UOM uom = uomsRepo.getById(record.getC_UOM_ID());
@@ -302,7 +347,7 @@ public class PackagingDAO implements IPackagingDAO
 		packageable.warehouseTypeId(WarehouseTypeId.ofRepoIdOrNull(record.getM_Warehouse_Type_ID()));
 
 		packageable.productId(ProductId.ofRepoId(record.getM_Product_ID()));
-		packageable.productName(record.getProductName());
+		packageable.productValueAndName(extractProductValueAndName(record));
 		packageable.asiId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()));
 
 		packageable.deliveryViaRule(DeliveryViaRule.ofNullableCode(record.getDeliveryViaRule()));
@@ -344,6 +389,14 @@ public class PackagingDAO implements IPackagingDAO
 		packageable.lockedBy(lockedBy);
 
 		return packageable.build();
+	}
+
+	private static ProductValueAndName extractProductValueAndName(@NonNull final I_M_Packageable_V record)
+	{
+		return ProductValueAndName.of(
+				record.getProductValue(),
+				TranslatableStrings.anyLanguage(record.getProductName())
+		);
 	}
 
 	@Override

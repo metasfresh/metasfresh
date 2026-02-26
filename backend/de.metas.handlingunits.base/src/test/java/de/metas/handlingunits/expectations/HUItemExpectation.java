@@ -10,29 +10,17 @@ package de.metas.handlingunits.expectations;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.Env;
-import org.junit.Assert;
 
 import de.metas.handlingunits.HUItemType;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -48,6 +36,13 @@ import de.metas.quantity.QuantityTU;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Env;
+import org.junit.jupiter.api.Assertions;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class HUItemExpectation<ParentExpectationType> extends AbstractHUExpectation<ParentExpectationType>
 {
@@ -74,7 +69,7 @@ public class HUItemExpectation<ParentExpectationType> extends AbstractHUExpectat
 		final String prefix = (message == null ? "" : message)
 				+ "\n HU Item: " + huItem
 				+ "\n\nInvalid: ";
-		Assert.assertNotNull(prefix + "HU Item not null", huItem);
+		Assertions.assertNotNull(huItem, prefix + "HU Item not null");
 
 		if (_piItem != null)
 		{
@@ -84,17 +79,17 @@ public class HUItemExpectation<ParentExpectationType> extends AbstractHUExpectat
 		if (itemType != null)
 		{
 			final HUItemType actual_ItemType = HUItemType.ofNullableCode(huItem.getItemType());
-			Assert.assertEquals(prefix + "ItemType", itemType, actual_ItemType);
+			Assertions.assertEquals(itemType, actual_ItemType, prefix + "ItemType");
 		}
 
 		if (qtyTUs != null)
 		{
-			assertThat(prefix + "Qty", huItem.getQty(), comparesEqualTo(qtyTUs.toBigDecimal()));
+			Assertions.assertEquals(0, qtyTUs.toBigDecimal().compareTo(huItem.getQty()), prefix + "Qty");
 		}
 
 		if (_packingMaterial != null)
 		{
-			assertThat(prefix + "PackingMaterial", _packingMaterial, is(Services.get(IHUPackingMaterialDAO.class).retrieveHUPackingMaterialOrNull(huItem)));
+			Assertions.assertEquals(_packingMaterial, Services.get(IHUPackingMaterialDAO.class).retrieveHUPackingMaterialOrNull(huItem), prefix + "PackingMaterial");
 		}
 
 		if (includedHUExpectations != null)
@@ -117,7 +112,7 @@ public class HUItemExpectation<ParentExpectationType> extends AbstractHUExpectat
 		final int count = includedHUs.size();
 		final int expectedCount = includedHUExpectations.size();
 
-		Assert.assertEquals(message + " included HUs count", expectedCount, count);
+		Assertions.assertEquals(expectedCount, count, message + " included HUs count");
 
 		for (int i = 0; i < count; i++)
 		{
@@ -135,7 +130,7 @@ public class HUItemExpectation<ParentExpectationType> extends AbstractHUExpectat
 		final int count = storages.size();
 		final int expectedCount = itemStorageExpectations.size();
 
-		Assert.assertEquals(message + " included M_HU_Item_Storages count", expectedCount, count);
+		Assertions.assertEquals(expectedCount, count, message + " included M_HU_Item_Storages count");
 
 		for (int i = 0; i < count; i++)
 		{
@@ -239,13 +234,13 @@ public class HUItemExpectation<ParentExpectationType> extends AbstractHUExpectat
 
 	/**
 	 * Convenience method that does
-	 * 
+	 *
 	 * <pre>
 	 * newIncludedHUExpectation().huPI(virtualPI);
 	 * </pre>
-	 * 
+	 * <p>
 	 * i.e. creates an new included-HU-expectation and directly expects that HU to have the "virtual" packing instruction.
-	 * 
+	 *
 	 * @return
 	 */
 	public HUExpectation<HUItemExpectation<ParentExpectationType>> includedVirtualHU()

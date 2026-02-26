@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.salescandidate.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ordercandidate.api;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -16,6 +38,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
+import de.metas.externalsystem.ExternalSystemId;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -67,10 +90,11 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.asi_aware.factory.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
@@ -106,28 +130,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 class OLCandOrderFactory
 {
 	private static final Logger logger = LogManager.getLogger(OLCandOrderFactory.class);
@@ -149,6 +151,7 @@ class OLCandOrderFactory
 	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final OrderGroupRepository orderGroupsRepository = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 	private final OLCandValidatorService olCandValidatorService = SpringContextHolder.instance.getBean(OLCandValidatorService.class);
@@ -156,6 +159,7 @@ class OLCandOrderFactory
 	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_DESC_1P = AdMessageKey.of("OLCandProcessor.ProcessingError_Desc");
 	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_ORDER_COMPLETION_FAILED_2P = AdMessageKey.of("OLCandProcessor.Order_Completion_Failed");
 	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_OLCAND_GROUPING_ERROR = AdMessageKey.of("OLCandProcessor.OLCandGroupingError");
+	private static final String SYSCONFIG_USE_QTY_UOM_ON_MANUAL_PRICE = "de.metas.ordercandidate.api.OLCandOrderFactory.UseQtyUOMOnManualPrice";
 
 	//
 	// Parameters
@@ -175,15 +179,22 @@ class OLCandOrderFactory
 	private final ListMultimap<String, OrderLineId> groupsToOrderLines = ArrayListMultimap.create();
 	private final Map<OrderLineId, OrderLineGroup> primaryOrderLineToGroup = new HashMap<>();
 
+	/**
+	 * If {@code true} and the {@link OLCand} used as parameter in {@link #newOrder(OLCand)} has an asyncBatchId, then propagate it to the C_Order record.
+	 */
+	private final boolean propagateAsyncBatchIdToOrderRecord;
+
 	@Builder
 	private OLCandOrderFactory(
 			@NonNull final OLCandOrderDefaults orderDefaults,
+			final boolean propagateAsyncBatchIdToOrderRecord,
 			final int olCandProcessorId,
 			final UserId userInChargeId,
 			final ILoggable loggable,
 			final IOLCandListener olCandListeners)
 	{
 		this.orderDefaults = orderDefaults;
+		this.propagateAsyncBatchIdToOrderRecord = propagateAsyncBatchIdToOrderRecord;
 		ctx = Env.getCtx();
 		this.userInChargeId = userInChargeId != null ? userInChargeId : UserId.SYSTEM;
 		this.loggable = loggable != null ? loggable : Loggables.nop();
@@ -271,6 +282,7 @@ class OLCandOrderFactory
 		order.setDeliveryViaRule(DeliveryViaRule.toCodeOrNull(candidateOfGroup.getDeliveryViaRule()));
 		order.setFreightCostRule(FreightCostRule.toCodeOrNull(candidateOfGroup.getFreightCostRule()));
 		order.setInvoiceRule(InvoiceRule.toCodeOrNull(candidateOfGroup.getInvoiceRule()));
+		order.setIsAutoInvoice(candidateOfGroup.isAutoInvoice());
 		order.setPaymentRule(PaymentRule.toCodeOrNull(candidateOfGroup.getPaymentRule()));
 		order.setC_PaymentTerm_ID(PaymentTermId.toRepoId(candidateOfGroup.getPaymentTermId()));
 		order.setM_PricingSystem_ID(PricingSystemId.toRepoId(candidateOfGroup.getPricingSystemId()));
@@ -293,15 +305,15 @@ class OLCandOrderFactory
 			order.setSalesPartnerCode(salesPartner.getSalesPartnerCode());
 		}
 
-		if (candidateOfGroup.getAsyncBatchId() != null)
+		if (candidateOfGroup.getAsyncBatchId() != null && propagateAsyncBatchIdToOrderRecord)
 		{
 			order.setC_Async_Batch_ID(candidateOfGroup.getAsyncBatchId().getRepoId());
 		}
 
 		// Save to SO the external header id, so that on completion it can be linked with its payment
 		order.setExternalId(candidateOfGroup.getExternalHeaderId());
+		order.setExternalSystem_ID(ExternalSystemId.toRepoId(candidateOfGroup.getExternalSystemId()));
 
-		// task 08926: set the data source; this shall trigger IsEdiEnabled to be set to true, if the data source is "EDI"
 		final de.metas.order.model.I_C_Order orderWithDataSource = InterfaceWrapperHelper.create(order, de.metas.order.model.I_C_Order.class);
 		orderWithDataSource.setAD_InputDataSource_ID(candidateOfGroup.getAD_InputDataSource_ID());
 
@@ -310,6 +322,12 @@ class OLCandOrderFactory
 		order.setBPartnerName(candidateOfGroup.getBpartnerName());
 		order.setEMail(candidateOfGroup.getEmail());
 		order.setPhone(candidateOfGroup.getPhone());
+
+		if (candidateOfGroup.getIncotermsId() != null)
+		{
+			order.setC_Incoterms_ID(candidateOfGroup.getIncotermsId().getRepoId());
+			order.setIncotermLocation(candidateOfGroup.getIncotermLocation());
+		}
 
 		save(order);
 		return order;
@@ -431,9 +449,9 @@ class OLCandOrderFactory
 		orderDAO.save(mainOrderLineInGroup);
 
 		orderGroupsRepository.retrieveOrCreateGroup(GroupRepository.RetrieveOrCreateGroupRequest.builder()
-															.orderLineIds(orderLineIds)
-															.newGroupTemplate(createNewGroupTemplate(productId))
-															.build());
+				.orderLineIds(orderLineIds)
+				.newGroupTemplate(createNewGroupTemplate(productId))
+				.build());
 	}
 
 	@NonNull
@@ -549,6 +567,10 @@ class OLCandOrderFactory
 			if (candidate.isManualPrice())
 			{
 				currentOrderLine.setPriceEntered(candidate.getPriceActual());
+				if (sysConfigBL.getBooleanValue(SYSCONFIG_USE_QTY_UOM_ON_MANUAL_PRICE, false))
+				{
+					currentOrderLine.setPrice_UOM_ID(candidate.getQty().getUomId().getRepoId());
+				}
 			}
 			else
 			{

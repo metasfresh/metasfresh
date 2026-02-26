@@ -1,7 +1,6 @@
 package de.metas.contracts.impl;
 
 import de.metas.acct.GLCategoryRepository;
-import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.contracts.callorder.CallOrderContractService;
 import de.metas.contracts.inoutcandidate.SubscriptionShipmentScheduleHandler;
 import de.metas.contracts.interceptor.MainValidator;
@@ -26,7 +25,6 @@ import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfoUpdateRequest;
 import de.metas.pricing.rules.Discount;
 import de.metas.pricing.rules.price_list_version.PriceListVersionPricingRule;
-import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrx;
@@ -195,7 +193,7 @@ public class FlatrateTermTestHelper
 	{
 		final ContractOrderService contractOrderService = new ContractOrderService();
 
-		final IDocumentLocationBL documentLocationBL = new DummyDocumentLocationBL(new BPartnerBL(new UserRepository()));
+		final IDocumentLocationBL documentLocationBL = DummyDocumentLocationBL.newInstanceForUnitTesting();
 
 		final OrderGroupCompensationChangesHandler groupChangesHandler = new OrderGroupCompensationChangesHandler(
 				new OrderGroupRepository(

@@ -41,7 +41,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.I_M_ProductScalePrice;
 import org.adempiere.util.lang.IMutable;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_I_Product;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
@@ -106,7 +105,7 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 	}
 
 	@Override
-	protected void updateAndValidateImportRecords()
+	protected void updateAndValidateImportRecordsImpl()
 	{
 		final ImportRecordsSelection selection = getImportRecordsSelection();
 
@@ -126,7 +125,7 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 	}
 
 	@Override
-	protected I_I_Product retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
+	public I_I_Product retrieveImportRecord(final Properties ctx, final ResultSet rs) throws SQLException
 	{
 		return new X_I_Product(ctx, rs, ITrx.TRXNAME_ThreadInherited);
 	}
@@ -265,6 +264,7 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 		pp.setM_Product_ID(productId.getRepoId()); // FK
 		pp.setC_TaxCategory_ID(taxCategoryId);
 		pp.setC_UOM_ID(uomId);
+		pp.setAD_Org_ID(plv.getAD_Org_ID());
 
 		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.ofNullableCodeOrNominal(imp.getInvoicableQtyBasedOn());
 		pp.setInvoicableQtyBasedOn(invoicableQtyBasedOn.getCode());

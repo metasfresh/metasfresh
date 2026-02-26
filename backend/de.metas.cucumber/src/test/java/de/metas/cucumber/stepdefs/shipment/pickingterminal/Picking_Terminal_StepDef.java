@@ -31,12 +31,12 @@ import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
-import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.candidate.commands.ProcessPickingCandidatesCommand;
 import de.metas.handlingunits.picking.candidate.commands.ProcessPickingCandidatesRequest;
+import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -44,7 +44,6 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.assertj.core.api.Assertions;
 import org.compiere.SpringContextHolder;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableSet;
 
@@ -59,7 +58,7 @@ import static de.metas.handlingunits.model.X_M_Picking_Candidate.APPROVALSTATUS_
 import static de.metas.handlingunits.model.X_M_Picking_Candidate.PICKSTATUS_Picked;
 import static de.metas.handlingunits.model.X_M_Picking_Candidate.STATUS_InProgress;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class Picking_Terminal_StepDef
 {
@@ -116,7 +115,7 @@ public class Picking_Terminal_StepDef
 	}
 
 	@And("create M_PickingCandidate for M_HU")
-	public void create_M_PickingCand_for_M_HU(@NonNull final DataTable dataTable)
+	public void create_M_PickingCandidate_for_M_HU(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> rows = dataTable.asMaps();
 		for (final Map<String, String> row : rows)
@@ -166,7 +165,7 @@ public class Picking_Terminal_StepDef
 			{
 				pickingCandidateService.processForHUIds(ImmutableSet.of(HuId.ofRepoId(hu.getM_HU_ID())), ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID()));
 
-				Assertions.assertThat(errorMessage).as("ErrorMessage should be null if pickingCandidateService.processForHUIds() finished with no error!").isNull();
+				assertThat(errorMessage).as("ErrorMessage should be null if pickingCandidateService.processForHUIds() finished with no error!").isNull();
 			}
 			catch (final Exception e)
 			{
@@ -191,7 +190,7 @@ public class Picking_Terminal_StepDef
 		assertThat(availableHUsToPick).isNotNull();
 
 		final List<Map<String, String>> rows = table.asMaps();
-		assertThat(availableHUsToPick.size()).isEqualTo(rows.size());
+		assertThat(availableHUsToPick).hasSameSizeAs(rows);
 
 		for (int huIndex = 0; huIndex < availableHUsToPick.size(); huIndex++)
 		{
@@ -207,7 +206,7 @@ public class Picking_Terminal_StepDef
 	}
 
 	@And("^validate that there are no M_HUs available to pick for shipmentSchedule identified by (.*)$")
-	public void validate_no_M_HUs_available_to_pick_for_ShipmentSched(@NonNull final String shipmentScheduleIdentifier)
+	public void validate_no_M_HUs_available_to_pick_for_ShipmentSchedule(@NonNull final String shipmentScheduleIdentifier)
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = InterfaceWrapperHelper.create(shipmentScheduleTable.get(shipmentScheduleIdentifier), I_M_ShipmentSchedule.class);
 		assertThat(shipmentSchedule).isNotNull();
@@ -219,6 +218,6 @@ public class Picking_Terminal_StepDef
 				.build();
 
 		final List<I_M_HU> availableHUsToPick = huPickingSlotBL.retrieveAvailableHUsToPick(query);
-		assertThat(availableHUsToPick.size()).isEqualTo(0);
+		assertThat(availableHUsToPick).isEmpty();
 	}
 }

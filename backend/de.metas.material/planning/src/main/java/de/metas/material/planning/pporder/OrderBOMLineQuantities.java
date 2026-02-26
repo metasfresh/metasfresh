@@ -36,6 +36,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
+import java.util.function.UnaryOperator;
 
 @Value
 public class OrderBOMLineQuantities
@@ -253,4 +254,19 @@ public class OrderBOMLineQuantities
 		}
 	}
 
+	@NonNull
+	public OrderBOMLineQuantities convertQuantities(@NonNull final UnaryOperator<Quantity> converter)
+	{
+		return toBuilder()
+				.qtyRequired(converter.apply(qtyRequired))
+				.qtyRequiredBeforeClose(converter.apply(qtyRequiredBeforeClose))
+				.qtyIssuedOrReceived(converter.apply(qtyIssuedOrReceived))
+				.qtyIssuedOrReceivedActual(converter.apply(qtyIssuedOrReceivedActual))
+				.qtyReject(converter.apply(qtyReject))
+				.qtyScrap(converter.apply(qtyScrap))
+				.qtyUsageVariance(converter.apply(qtyUsageVariance))
+				.qtyPost(converter.apply(qtyPost))
+				.qtyReserved(converter.apply(qtyReserved))
+				.build();
+	}
 }

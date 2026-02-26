@@ -31,8 +31,7 @@ import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Transaction;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
+import static org.assertj.core.api.Assertions.*;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -62,7 +61,9 @@ public final class StaticHUAssert
 		for (final I_M_HU hu : hus)
 		{
 			final IHUStorage huStorage = storageFactory.getStorage(hu);
-			Assert.assertTrue("Storage shall be empty for " + hu, huStorage.isEmpty());
+			assertThat(huStorage.isEmpty())
+				.as("Storage shall be empty for " + hu)
+				.isTrue();
 		}
 	}
 
@@ -73,13 +74,17 @@ public final class StaticHUAssert
 		for (final I_M_HU_Item item : POJOLookupMap.get().getRecords(I_M_HU_Item.class))
 		{
 			final IHUItemStorage itemStorage = storageFactory.getStorage(item);
-			Assert.assertTrue("Item storage shall be empty: " + itemStorage, itemStorage.isEmpty());
+			assertThat(itemStorage.isEmpty())
+				.as("Item storage shall be empty: " + itemStorage)
+				.isTrue();
 
 			// Check also parent storages
 			IGenericHUStorage huStorage = itemStorage.getParentStorage();
 			while (huStorage != null)
 			{
-				Assert.assertTrue("HU storage shall be empty: " + huStorage, huStorage.isEmpty());
+				assertThat(huStorage.isEmpty())
+					.as("HU storage shall be empty: " + huStorage)
+					.isTrue();
 				huStorage = huStorage.getParentStorage();
 			}
 		}
@@ -94,12 +99,16 @@ public final class StaticHUAssert
 			if (storage.isReversal())
 			{
 				final boolean full = storage.isFull();
-				Assert.assertTrue("Storage shall be full: " + storage, full);
+				assertThat(full)
+					.as("Storage shall be full: " + storage)
+					.isTrue();
 			}
 			else
 			{
 				final boolean empty = storage.isEmpty();
-				Assert.assertTrue("Storage shall be empty: " + storage, empty);
+				assertThat(empty)
+					.as("Storage shall be empty: " + storage)
+					.isTrue();
 			}
 		}
 	}
@@ -119,7 +128,9 @@ public final class StaticHUAssert
 		final String message = "Invalid HU Storage Qty: "
 				+ "\nproduct=" + productId
 				+ "\nHU=" + hu;
-		Assert.assertThat(message, qtyActual, Matchers.comparesEqualTo(qtyExpected));
+		assertThat(qtyActual)
+			.as(message)
+			.isEqualByComparingTo(qtyExpected);
 	}
 
 	/**
@@ -129,10 +140,11 @@ public final class StaticHUAssert
 	public static void assertHUDestroyed(final I_M_HU hu)
 	{
 		final boolean destroyed = Services.get(IHandlingUnitsBL.class).isDestroyed(hu);
-		Assert.assertTrue("HU shall be destroyed"
+		assertThat(destroyed)
+			.as("HU shall be destroyed"
 				+ "\nPI:" + Services.get(IHandlingUnitsBL.class).getPI(hu).getName()
-				+ "\nHU:" + hu,
-				destroyed);
+				+ "\nHU:" + hu)
+			.isTrue();
 	}
 
 	public static void assertHUDestroyed(final List<I_M_HU> hus)
@@ -148,17 +160,21 @@ public final class StaticHUAssert
 			final String qtyStr,
 			final String qtyFreeStr)
 	{
-		Assert.assertNotNull("storage shall not be null", storage);
+		assertThat(storage)
+			.as("storage shall not be null")
+			.isNotNull();
 
-		Assert.assertThat("Invalid storage total qty: " + storage,
-				storage.getQtyCapacity(),
-				Matchers.comparesEqualTo(new BigDecimal(qtyTotalStr)));
-		Assert.assertThat("Invalid storage free qty: " + storage,
-				storage.getQtyFree(),
-				Matchers.comparesEqualTo(new BigDecimal(qtyFreeStr)));
-		Assert.assertThat("Invalid storage qty: " + storage,
-				storage.getQty().toBigDecimal(),
-				Matchers.comparesEqualTo(new BigDecimal(qtyStr)));
+		assertThat(storage.getQtyCapacity())
+			.as("Invalid storage total qty: " + storage)
+			.isEqualByComparingTo(new BigDecimal(qtyTotalStr));
+		
+		assertThat(storage.getQtyFree())
+			.as("Invalid storage free qty: " + storage)
+			.isEqualByComparingTo(new BigDecimal(qtyFreeStr));
+		
+		assertThat(storage.getQty().toBigDecimal())
+			.as("Invalid storage qty: " + storage)
+			.isEqualByComparingTo(new BigDecimal(qtyStr));
 	}
 
 	@Deprecated
@@ -190,26 +206,29 @@ public final class StaticHUAssert
 				.getQty()
 				.toBigDecimal();
 
-		Assert.assertThat("Invalid storage qty for HU=" + hu + ", product=" + productId,
-				qtyActual,
-				Matchers.comparesEqualTo(qtyExpected));
+		assertThat(qtyActual)
+			.as("Invalid storage qty for HU=" + hu + ", product=" + productId)
+			.isEqualByComparingTo(qtyExpected);
 	}
 
 	/**
 	 * Asserts that given HU has given {@link I_M_HU_PI}
-	 *
-	 * @param i_M_HU
-	 * @param huDefPalet
 	 */
 	public static void assertHU_PI(final I_M_HU hu, final I_M_HU_PI expectedPI)
 	{
-		Assert.assertNotNull("hu shall not be null", hu);
+		assertThat(hu)
+			.as("hu shall not be null")
+			.isNotNull();
 
 		final I_M_HU_PI_Version huPiVersion = Services.get(IHandlingUnitsBL.class).getPIVersion(hu);
-		Assert.assertNotNull("HU_PI_Version shall not be null for " + hu, huPiVersion);
+		assertThat(huPiVersion)
+			.as("HU_PI_Version shall not be null for " + hu)
+			.isNotNull();
 
 		final I_M_HU_PI huPI = huPiVersion.getM_HU_PI();
-		Assert.assertEquals("Invalid HU_PI for " + hu, expectedPI, huPI);
+		assertThat(huPI)
+			.as("Invalid HU_PI for " + hu)
+			.isEqualTo(expectedPI);
 	}
 
 	public static void assertAllStoragesAreValid()
@@ -222,7 +241,9 @@ public final class StaticHUAssert
 
 	public static void assertStorageValid(final I_M_HU hu)
 	{
-		Assert.assertNotNull("HU shall not be null", hu);
+		assertThat(hu)
+			.as("HU shall not be null")
+			.isNotNull();
 
 		final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
 
@@ -235,7 +256,10 @@ public final class StaticHUAssert
 
 	public static void assertStorageValid(final IHUItemStorage itemStorage)
 	{
-		Assert.assertNotNull("itemStorage shall not be null", itemStorage);
+		assertThat(itemStorage)
+			.as("itemStorage shall not be null")
+			.isNotNull();
+		
 		if (itemStorage.isVirtual())
 		{
 			assertStorageValid_Virtual(itemStorage);
@@ -248,22 +272,23 @@ public final class StaticHUAssert
 
 	private static void assertStorageValid_NonVirtual(final IHUItemStorage itemStorage)
 	{
-		Assert.assertNotNull("itemStorage shall not be null", itemStorage);
+		assertThat(itemStorage)
+			.as("itemStorage shall not be null")
+			.isNotNull();
 
 		// TODO: retrieve included storages and make sure their SUM is same with this storage
 	}
 
 	private static void assertStorageValid_Virtual(final IHUItemStorage itemStorage)
 	{
-		Assert.assertNotNull("itemStorage shall not be null", itemStorage);
+		assertThat(itemStorage)
+			.as("itemStorage shall not be null")
+			.isNotNull();
 		// NOTE: nothing to validate here. In the past we had M_HU_Item_Storage_Detail but we removed because it was useless and overhead.
 	}
 
 	/***
 	 * Do nothing. Used only if you have no assert methods in your test and want to avoid PMD warning.
-	 *
-	 * @param msg
-	 * @return
 	 */
 	public static boolean assertMock(final String msg)
 	{
@@ -278,8 +303,13 @@ public final class StaticHUAssert
 
 	public static void assertEqualsOrParentOf(final String message, final I_M_HU hu, final I_M_HU huParentExpected)
 	{
-		Assert.assertNotNull("hu shall not be null", hu);
-		Assert.assertNotNull("huParentExpected shall not be null", huParentExpected);
+		assertThat(hu)
+			.as("hu shall not be null")
+			.isNotNull();
+		
+		assertThat(huParentExpected)
+			.as("huParentExpected shall not be null")
+			.isNotNull();
 
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
@@ -316,6 +346,6 @@ public final class StaticHUAssert
 			errorMsg.insert(0, " - ");
 			errorMsg.insert(0, message);
 		}
-		Assert.fail(errorMsg.toString());
+		fail(errorMsg.toString());
 	}
 }

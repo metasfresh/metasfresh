@@ -97,7 +97,6 @@ public class PaymentAllocationBuilder
 	private boolean allocatePayableAmountsAsIs = false;
 	private boolean allowInvoiceToCreditMemoAllocation = true;
 
-
 	// Status
 	private boolean _built = false;
 
@@ -205,9 +204,9 @@ public class PaymentAllocationBuilder
 			return candidate.toBuilder()
 					.type(AllocationLineCandidateType.SalesCreditMemoToPurchaseInvoice)
 					.amounts(amounts.toBuilder()
-									 .payAmt(amounts.getInvoiceProcessingFee().negate())
-									 .invoiceProcessingFee(null)
-									 .build())
+							.payAmt(amounts.getInvoiceProcessingFee().negate())
+							.invoiceProcessingFee(null)
+							.build())
 					.paymentDocumentRef(TableRecordReference.of(I_C_Invoice.Table_Name, serviceVendorInvoiceId))
 					.build();
 		}
@@ -252,7 +251,7 @@ public class PaymentAllocationBuilder
 
 		//
 		// Try to allocate credit memos to regular invoices
-		if(allowInvoiceToCreditMemoAllocation)
+		if (allowInvoiceToCreditMemoAllocation)
 		{
 			allocationCandidates.addAll(createAllocationLineCandidates_CreditMemosToInvoices(payableDocuments));
 		}
@@ -266,7 +265,7 @@ public class PaymentAllocationBuilder
 
 		//
 		// Try to allocate sales credit memo invoices to purchase invoices
-			allocationCandidates.addAll(createAllocationLineCandidates_SalesCreditMemoToPurchaseInvoice(payableDocuments));
+		allocationCandidates.addAll(createAllocationLineCandidates_SalesCreditMemoToPurchaseInvoice(payableDocuments));
 
 		//
 		// Allocate payments to invoices
@@ -279,8 +278,8 @@ public class PaymentAllocationBuilder
 		// Try allocate payment reversals to payments
 		allocationCandidates.addAll(createAllocationLineCandidates_InboundPaymentToOutboundPayment(paymentDocuments));
 
-		// Try allocate the payable remaining Discounts and WriteOffs.
-		allocationCandidates.addAll(createAllocationLineCandidates_DiscountAndWriteOffs(payableDocuments));
+		// Try allocate the payable remaining WriteOffs.
+		allocationCandidates.addAll(createAllocationLineCandidates_WriteOffs(payableDocuments));
 
 		return allocationCandidates.build();
 	}
@@ -310,8 +309,8 @@ public class PaymentAllocationBuilder
 			return ImmutableList.of();
 		}
 
-		// it's very important to sort, because if 
-		// - everything would add up 
+		// it's very important to sort, because if
+		// - everything would add up
 		// - but some payables are negative and come last
 		// then the for-loop would stop creating candidates prematurely
 		final ImmutableList<PayableDocument> sortedPayableDocuments = payableDocuments.stream()
@@ -347,6 +346,13 @@ public class PaymentAllocationBuilder
 				final Money payableOverUnderAmt = payable.computeProjectedOverUnderAmt(amountsToAllocate.getInvoiceAmountsToAllocateInInvoiceCurrency());
 				final Money paymentOverUnderAmt = computePaymentOverUnderAmtInInvoiceCurrency(payment, amountsToAllocate);
 
+				// Update how much was allocated on current invoice and payment.
+				payable.addAllocatedAmounts(amountsToAllocate.getInvoiceAmountsToAllocateInInvoiceCurrency());
+				payment.addAllocatedAmt(amountsToAllocate.getPayAmtInPaymentCurrency());
+
+				//dev-note: register payment discount when fully allocated
+				final Money paymentDiscountAmtInInvoiceCurrency = computeAndAllocatePaymentDiscountAmtInInvoiceCurrency(payment, amountsToAllocate);
+
 				// Create new Allocation Line
 				final LocalDate dateTrx = TimeUtil.max(payable.getDate(), payment.getDate());
 				final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
@@ -365,13 +371,11 @@ public class PaymentAllocationBuilder
 						.amounts(amountsToAllocate.getInvoiceAmountsToAllocateInInvoiceCurrency())
 						.payableOverUnderAmt(payableOverUnderAmt)
 						.paymentOverUnderAmt(paymentOverUnderAmt)
+						.payAmtDiscountInInvoiceCurrency(paymentDiscountAmtInInvoiceCurrency)
 						//
 						.build();
 				allocationLineCandidates.add(allocationLine);
 
-				// Update how much was allocated on current invoice and payment.
-				payable.addAllocatedAmounts(amountsToAllocate.getInvoiceAmountsToAllocateInInvoiceCurrency());
-				payment.addAllocatedAmt(amountsToAllocate.getPayAmtInPaymentCurrency());
 			}    // loop through payments for current payable (aka invoice or prepay order)
 
 			if (!payable.isFullyAllocated())
@@ -388,10 +392,28 @@ public class PaymentAllocationBuilder
 	}
 
 	@NonNull
-	private Money computePaymentOverUnderAmtInInvoiceCurrency(@NonNull final IPaymentDocument payment, @NonNull final InvoiceAndPaymentAmountsToAllocate amountsToAllocate)
+	private static Money computePaymentOverUnderAmtInInvoiceCurrency(@NonNull final IPaymentDocument payment, @NonNull final InvoiceAndPaymentAmountsToAllocate amountsToAllocate)
 	{
 		final Money paymentOverUnderAmtInPaymentCurrency = payment.calculateProjectedOverUnderAmt(amountsToAllocate.getPayAmtInPaymentCurrency());
 		return amountsToAllocate.currencyRate.convertAmount(paymentOverUnderAmtInPaymentCurrency);
+	}
+
+	@NonNull
+	private static Money computeAndAllocatePaymentDiscountAmtInInvoiceCurrency(
+			@NonNull final IPaymentDocument payment,
+			@NonNull final InvoiceAndPaymentAmountsToAllocate amountsToAllocate)
+	{
+		final Money paymentDiscountAmtInPaymentCurrency = payment.isFullyAllocated()
+				? payment.getPaymentDiscountAmt()
+				: payment.getPaymentDiscountAmt().toZero();
+
+		if (!paymentDiscountAmtInPaymentCurrency.isZero())
+		{
+			payment.addAllocatedAmt(AllocationAmounts.builder()
+					.discountAmt(paymentDiscountAmtInPaymentCurrency)
+					.build());
+		}
+		return amountsToAllocate.currencyRate.convertAmount(paymentDiscountAmtInPaymentCurrency);
 	}
 
 	@Nullable
@@ -485,7 +507,6 @@ public class PaymentAllocationBuilder
 				purchaseInvoices);
 	}
 
-
 	private List<AllocationLineCandidate> createAllocationLineCandidates_SalesCreditMemoToPurchaseInvoice(
 			@NonNull final List<PayableDocument> payableDocuments)
 	{
@@ -502,7 +523,7 @@ public class PaymentAllocationBuilder
 			{
 				arcs.add(payable);
 			}
-			else if(payable.isAPI())
+			else if (payable.isAPI())
 			{
 				apis.add(PurchaseInvoiceAsInboundPaymentDocumentWrapper.wrap(payable));
 			}
@@ -597,11 +618,11 @@ public class PaymentAllocationBuilder
 	}
 
 	/**
-	 * Iterate all given payable documents and create an allocation only for Discount and WriteOff amounts.
+	 * Iterate all given payable documents and create an allocation only for WriteOff amounts.
 	 *
 	 * @return created allocation candidates.
 	 */
-	private List<AllocationLineCandidate> createAllocationLineCandidates_DiscountAndWriteOffs(final List<PayableDocument> payableDocuments)
+	private List<AllocationLineCandidate> createAllocationLineCandidates_WriteOffs(final List<PayableDocument> payableDocuments)
 	{
 		if (payableDocuments.isEmpty())
 		{
@@ -635,6 +656,10 @@ public class PaymentAllocationBuilder
 
 		final LocalDate dateTrx = getDefaultDateTrx();
 		final Money payableOverUnderAmt = payable.computeProjectedOverUnderAmt(amountsToAllocate);
+		if (amountsToAllocate.getTotalAmt().isEqualByComparingTo(amountsToAllocate.getDiscountAmt()) && payableOverUnderAmt.signum() != 0)
+		{
+			return null;
+		}
 		final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
 				.type(AllocationLineCandidateType.InvoiceDiscountOrWriteOff)
 				//
@@ -778,10 +803,7 @@ public class PaymentAllocationBuilder
 		final boolean positivePaymentAmtToAllocate = payment.getAmountToAllocateInitial().signum() >= 0;
 		if (positivePayableAmtToAllocate != positivePaymentAmtToAllocate)
 		{
-			if (!payable.isAllowAllocateAgainstDifferentSignumPayment())
-			{
-				return false;
-			}
+			return payable.isAllowAllocateAgainstDifferentSignumPayment();
 		}
 
 		//
@@ -852,7 +874,7 @@ public class PaymentAllocationBuilder
 				final Money payAmtInPaymentCurrency = currencyRate.reverseConvertAmount(payAmtInInvoiceCurrency);
 
 				return InvoiceAndPaymentAmountsToAllocate.builder()
-						.invoiceAmountsToAllocateInInvoiceCurrency(invoiceAmountsToAllocate.withPayAmt(payAmtInInvoiceCurrency))
+						.invoiceAmountsToAllocateInInvoiceCurrency(getEffectiveInvoiceAmountsToAllocate(invoiceAmountsToAllocate, payAmtInInvoiceCurrency))
 						.payAmtInPaymentCurrency(payAmtInPaymentCurrency)
 						.currencyRate(currencyRate)
 						.build();
@@ -878,7 +900,7 @@ public class PaymentAllocationBuilder
 				final Money payAmtInPaymentCurrency = currencyRate.reverseConvertAmount(payAmtInInvoiceCurrency);
 
 				return InvoiceAndPaymentAmountsToAllocate.builder()
-						.invoiceAmountsToAllocateInInvoiceCurrency(invoiceAmountsToAllocate.withPayAmt(payAmtInInvoiceCurrency))
+						.invoiceAmountsToAllocateInInvoiceCurrency(getEffectiveInvoiceAmountsToAllocate(invoiceAmountsToAllocate, payAmtInInvoiceCurrency))
 						.payAmtInPaymentCurrency(payAmtInPaymentCurrency)
 						.currencyRate(currencyRate)
 						.build();
@@ -890,12 +912,28 @@ public class PaymentAllocationBuilder
 				final Money payAmtInPaymentCurrency = currencyRate.reverseConvertAmount(payAmtInInvoiceCurrency);
 
 				return InvoiceAndPaymentAmountsToAllocate.builder()
-						.invoiceAmountsToAllocateInInvoiceCurrency(invoiceAmountsToAllocate.withPayAmt(payAmtInInvoiceCurrency))
+						.invoiceAmountsToAllocateInInvoiceCurrency(getEffectiveInvoiceAmountsToAllocate(invoiceAmountsToAllocate, payAmtInInvoiceCurrency))
 						.payAmtInPaymentCurrency(payAmtInPaymentCurrency)
 						.currencyRate(currencyRate)
 						.build();
 			}
 		}
+	}
+
+	/**
+	 * Payable discount is granted only when payable is fully paid.
+	 */
+	@NonNull
+	private static AllocationAmounts getEffectiveInvoiceAmountsToAllocate(
+			@NonNull final AllocationAmounts invoiceAmountsToAllocate,
+			@NonNull final Money payAmtInInvoiceCurrency)
+	{
+		return invoiceAmountsToAllocate.getPayAmt().isEqualByComparingTo(payAmtInInvoiceCurrency)
+				? invoiceAmountsToAllocate
+				: invoiceAmountsToAllocate.toBuilder()
+				.discountAmt(invoiceAmountsToAllocate.getDiscountAmt().toZero())
+				.payAmt(payAmtInInvoiceCurrency)
+				.build();
 	}
 
 	private CurrencyConversionContext getCurrencyConversionContext(@NonNull final IPaymentDocument payment)

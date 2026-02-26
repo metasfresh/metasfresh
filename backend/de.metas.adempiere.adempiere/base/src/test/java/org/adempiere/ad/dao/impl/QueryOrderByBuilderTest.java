@@ -10,29 +10,28 @@ package org.adempiere.ad.dao.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 public class QueryOrderByBuilderTest
 {
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -48,14 +47,14 @@ public class QueryOrderByBuilderTest
 	}
 
 	private void testWithOneColumn(final String expectedSql,
-			final String columnName, final Direction direction, final Nulls nulls)
+								   final String columnName, final Direction direction, final Nulls nulls)
 	{
 		final QueryOrderByBuilder<?> builder = new QueryOrderByBuilder<>();
 		builder.addColumn(columnName, direction, nulls);
 
 		final String actualSql = builder.createQueryOrderBy().getSql();
 
-		Assert.assertEquals("Invalid order by SQL", expectedSql, actualSql);
+		Assertions.assertEquals(expectedSql, actualSql, "Invalid order by SQL");
 	}
 
 	@Test
@@ -73,7 +72,7 @@ public class QueryOrderByBuilderTest
 		//
 		// see http://www.postgresql.org/docs/9.1/static/queries-order.html
 		final String expectedSql = "MyColumnName ASC NULLS LAST";
-		Assert.assertEquals("Invalid order by SQL", expectedSql, actualSql);
+		Assertions.assertEquals(expectedSql, actualSql, "Invalid order by SQL");
 	}
 
 	/**
@@ -94,14 +93,14 @@ public class QueryOrderByBuilderTest
 	}
 
 	private void testBackwardCompatibility_addColumn(final String expectedSql,
-			String columnName, boolean asc)
+													 String columnName, boolean asc)
 	{
 		final String actualSql = new QueryOrderByBuilder<Object>()
 				.addColumn("MyColumnName", asc)
 				.createQueryOrderBy()
 				.getSql();
 
-		Assert.assertEquals("Invalid order by SQL", expectedSql, actualSql);
+		Assertions.assertEquals(expectedSql, actualSql, "Invalid order by SQL");
 	}
 
 }

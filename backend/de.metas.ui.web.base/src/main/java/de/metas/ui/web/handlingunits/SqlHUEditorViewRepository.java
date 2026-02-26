@@ -53,6 +53,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.sql.SqlOptions;
+import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -190,10 +191,10 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	{
 		huReservationService.warmup(huIds);
 
-		final HuId topLevelHUId = null;
 		return retrieveTopLevelHUs(huIds, filter)
 				.stream()
-				.map(hu -> createHUEditorRow(hu, topLevelHUId))
+				.map(hu -> createHUEditorRow(hu, null))
+				.filter(Objects::nonNull)
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
@@ -208,8 +209,9 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		// TODO: check if the huId is part of our collection
 
 		final I_M_HU hu = handlingUnitsDAO.getByIdOutOfTrx(huId);
-		final HuId topLevelHUId = null; // assume given huId is a top level HU
-		return createHUEditorRow(hu, topLevelHUId);
+		// assume given huId is a top level HU
+		final HUEditorRow row = createHUEditorRow(hu, null);
+		return Check.assumeNotNull(row, "row is not null");
 	}
 
 	private static List<I_M_HU> retrieveTopLevelHUs(@NonNull final Collection<HuId> huIds, @NonNull final HUEditorRowFilter filter)
@@ -235,6 +237,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 				.list();
 	}
 
+	@Nullable
 	private HUEditorRow createHUEditorRow(
 			@NonNull final I_M_HU hu,
 			@Nullable final HuId topLevelHUId)
@@ -316,9 +319,13 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		if (aggregatedTU)
 		{
 			final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
-			storageFactory
-					.getStorage(hu)
-					.getProductStorages()
+			final List<IHUProductStorage> productStorages = storageFactory.getStorage(hu).getProductStorages();
+			if (productStorages.isEmpty())
+			{
+				return null;
+			}
+
+			productStorages
 					.stream()
 					.map(huStorage -> createHUEditorRow(huId, topLevelHUIdEffective, huStorage, processed))
 					.forEach(huEditorRow::addIncludedRow);
@@ -329,6 +336,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 			handlingUnitsDAO.retrieveIncludedHUs(hu)
 					.stream()
 					.map(includedHU -> createHUEditorRow(includedHU, topLevelHUIdEffective))
+					.filter(Objects::nonNull)
 					.forEach(huEditorRow::addIncludedRow);
 		}
 		else if (X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit.equals(huUnitTypeCode))
@@ -336,7 +344,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 			final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
 			handlingUnitsDAO.retrieveIncludedHUs(hu)
 					.stream()
-					.map(includedVHU -> storageFactory.getStorage(includedVHU))
+					.map(storageFactory::getStorage)
 					.flatMap(vhuStorage -> vhuStorage.getProductStorages().stream())
 					.map(vhuProductStorage -> createHUEditorRow(huId, topLevelHUIdEffective, vhuProductStorage, processed))
 					.forEach(huEditorRow::addIncludedRow);
@@ -350,6 +358,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 			throw new HUException("Unknown HU_UnitType=" + huUnitTypeCode + " for " + hu);
 		}
 
+		//noinspection UnnecessaryLocalVariable
 		final HUEditorRow huEditorRowBuilt = huEditorRow.build();
 
 		// stopwatch.stop();
@@ -487,7 +496,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
 
 		return Stream.of(warehouse.getName(), locator.getValue(), locator.getX(), locator.getX1(), locator.getY(), locator.getZ())
-				.map(part -> StringUtils.trimBlankToNull(part))
+				.map(StringUtils::trimBlankToNull)
 				.filter(Objects::nonNull)
 				.collect(Collectors.joining("_"));
 	}
@@ -569,7 +578,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 								SqlOptions.usingTableAlias(sqlViewBinding.getTableAlias()),
 								context))
 				.create()
-				.listIds(HuId::ofRepoId);
+				.idsAsSet(HuId::ofRepoId);
 	}
 
 	@Override

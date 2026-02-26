@@ -12,7 +12,6 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
 import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocBaseAndSubType;
@@ -36,6 +35,8 @@ import de.metas.invoice_gateway.spi.model.export.InvoiceToExport;
 import de.metas.lang.ExternalIdsUtil;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.Tax;
 import de.metas.util.Check;
 import de.metas.util.Check.ExceptionWithOwnHeaderMessage;
 import de.metas.util.Loggables;
@@ -56,7 +57,6 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Optional;
 
-import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
@@ -86,6 +86,7 @@ public class InvoiceToExportFactory
 {
 	private static final Logger logger = LogManager.getLogger(InvoiceToExportFactory.class);
 
+	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	private final AttachmentEntryService attachmentEntryService;
 	private final ESRPaymentInfoProvider esrPaymentInfoProvider;
 	private final CurrencyRepository currenciesRepo;
@@ -125,7 +126,7 @@ public class InvoiceToExportFactory
 		final CurrencyCode currencyCode = extractCurrencyCode(invoiceRecord);
 		final Money grandTotal = Money.of(invoiceRecord.getGrandTotal(), currencyCode.toThreeLetterCode());
 
-		final BigDecimal allocatedAmt = CoalesceUtil.coalesce(allocationDAO.retrieveAllocatedAmt(invoiceRecord), ZERO);
+		final BigDecimal allocatedAmt = allocationDAO.retrieveAllocatedAmt(invoiceRecord).toBigDecimal();
 		final Money allocatedMoney = Money.of(allocatedAmt, currencyCode.toThreeLetterCode());
 
 		final DocBaseAndSubType docBaseAndSubType = Services.get(IDocTypeDAO.class).getDocBaseAndSubTypeById(DocTypeId.ofRepoId(invoiceRecord.getC_DocType_ID()));
@@ -200,9 +201,10 @@ public class InvoiceToExportFactory
 
 		for (final I_C_InvoiceTax invoiceTaxRecord : invoiceTaxRecords)
 		{
+			final Tax tax = taxDAO.getTaxById(invoiceTaxRecord.getC_Tax_ID());
 			final InvoiceTax invoiceTax = InvoiceTax.builder()
 					.baseAmount(invoiceTaxRecord.getTaxBaseAmt())
-					.ratePercent(invoiceTaxRecord.getC_Tax().getRate())
+					.ratePercent(tax.getRate())
 					.vatAmount(invoiceTaxRecord.getTaxAmt())
 					.build();
 			invoiceTaxes.add(invoiceTax);

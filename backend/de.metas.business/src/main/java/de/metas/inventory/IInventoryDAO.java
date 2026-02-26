@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -60,5 +61,11 @@ public interface IInventoryDAO extends ISingletonService
 
 	Optional<Instant> getMinInventoryDate(@NonNull Collection<InventoryId> inventoryIds);
 
+	void save(I_M_Inventory inventory);
+
 	void save(I_M_InventoryLine inventoryLine);
+
+	List<I_M_Inventory> list(@NonNull InventoryQuery query);
+
+	Stream<I_M_Inventory> stream(@NonNull InventoryQuery query);
 }

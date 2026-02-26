@@ -29,7 +29,6 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
-import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.ValueAndName;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
@@ -77,13 +76,15 @@ import org.compiere.model.I_M_ProductPrice;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.DEFAULT_TaxCategory_InternalName;
+import static de.metas.cucumber.stepdefs.StepDefConstants.DEFAULT_ValidFrom;
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -107,9 +108,6 @@ public class M_PriceList_StepDef
 	@NonNull private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
 	@NonNull private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 	@NonNull private final AD_Org_StepDefData orgTable;
-
-	private static final LocalDate DEFAULT_ValidFrom = LocalDate.parse("2000-01-01");
-	private static final String DEFAULT_TaxCategory_InternalName = "Normal";
 
 	@And("metasfresh contains M_PricingSystems")
 	public void add_M_PricingSystem(@NonNull final DataTable dataTable)
@@ -148,7 +146,7 @@ public class M_PriceList_StepDef
 	{
 		I_M_PriceList priceList = null;
 
-		final I_M_PricingSystem pricingSystem = row.getAsIdentifier(COLUMNNAME_M_PricingSystem_ID).lookupIn(pricingSystemTable);
+		final I_M_PricingSystem pricingSystem = row.getAsIdentifier(COLUMNNAME_M_PricingSystem_ID).lookupNotNullIn(pricingSystemTable);
 		final PricingSystemId pricingSystemId = PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID());
 		final I_C_Country country = extractOptionalCountry(row).orElse(null);
 		final SOTrx soTrx = SOTrx.ofBoolean(row.getAsBoolean("SOTrx"));
@@ -163,7 +161,7 @@ public class M_PriceList_StepDef
 			priceList = InterfaceWrapperHelper.newInstance(I_M_PriceList.class);
 		}
 
-		final OrgId orgId = row.getAsOptionalIdentifier("AD_Org_ID").map(orgTable::getId).orElse(StepDefConstants.ORG_ID);
+		final OrgId orgId = row.getAsOptionalIdentifier("AD_Org_ID").map(orgTable::getId).orElse(ORG_ID);
 		final String name = row.getAsOptionalName("Name").orElseGet(() -> pricingSystem.getName() + "_" + (country != null ? country.getCountryCode() : "-") + "_" + soTrx);
 
 		priceList.setAD_Org_ID(orgId.getRepoId());
@@ -184,7 +182,7 @@ public class M_PriceList_StepDef
 
 	private Optional<I_M_PriceList> getExistingPriceList(@NonNull final SOTrx soTrx, @NonNull final PricingSystemId pricingSystemId, final CountryId countryId)
 	{
-		final List<I_M_PriceList> existingPriceLists = priceListDAO.retrievePriceLists(pricingSystemId, countryId, soTrx);
+		final List<I_M_PriceList> existingPriceLists = priceListDAO.retrievePriceLists(pricingSystemId, countryId, soTrx, null);
 		return existingPriceLists.isEmpty()
 				? Optional.empty()
 				: Optional.of(existingPriceLists.get(0));
@@ -266,7 +264,7 @@ public class M_PriceList_StepDef
 
 	private void updateMasterDataM_ProductPrice(@NonNull final Map<String, String> tableRow)
 	{
-		final int productPriceId = DataTableUtil.extractIntForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_M_ProductPrice_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final int productPriceId = DataTableUtil.extractIntForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_M_ProductPrice_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 		final I_M_ProductPrice productPriceRecord = InterfaceWrapperHelper.load(productPriceId, I_M_ProductPrice.class);
 
@@ -284,7 +282,7 @@ public class M_PriceList_StepDef
 		final List<Map<String, String>> tableRows = dataTable.asMaps();
 		for (final Map<String, String> tableRow : tableRows)
 		{
-			final String productPriceIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_M_ProductPrice_ID + ".Identifier");
+			final String productPriceIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, I_M_ProductPrice.COLUMNNAME_M_ProductPrice_ID, "M_ProductPrice");
 			final Integer productPriceID = productPriceTable.getOptional(productPriceIdentifier)
 					.map(I_M_ProductPrice::getM_ProductPrice_ID)
 					.orElseGet(() -> Integer.parseInt(productPriceIdentifier));

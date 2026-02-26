@@ -22,12 +22,12 @@
 
 package de.metas.banking.payment.paymentallocation.service;
 
-import de.metas.payment.PaymentCurrencyContext;
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
 import de.metas.util.Check;
@@ -152,6 +152,13 @@ public class PaymentDocument implements IPaymentDocument
 	}
 
 	@Override
+	public void addAllocatedAmt(final AllocationAmounts amount)
+	{
+		final Money totalAmt = amount.getTotalAmt();
+		addAllocatedAmt(totalAmt);
+	}
+
+	@Override
 	public LocalDate getDate()
 	{
 		return dateTrx;
@@ -179,5 +186,11 @@ public class PaymentDocument implements IPaymentDocument
 	public boolean canPay(@NonNull final PayableDocument payable)
 	{
 		return true;
+	}
+
+	@Override
+	public Money getPaymentDiscountAmt()
+	{
+		return amountToAllocate.toZero();
 	}
 }

@@ -211,12 +211,17 @@ public final class Quantity implements Comparable<Quantity>
 		if (uom.getC_UOM_ID() == sourceUom.getC_UOM_ID()
 				&& qty.compareTo(sourceQty) == 0)
 		{
-			return qty + " " + uom.getUOMSymbol();
+			return toShortString();
 		}
 		else
 		{
-			return qty + " " + uom.getUOMSymbol() + " (source: " + sourceQty + " " + sourceUom.getUOMSymbol() + ")";
+			return toShortString() + " (source: " + sourceQty + " " + sourceUom.getUOMSymbol() + ")";
 		}
+	}
+
+	public String toShortString()
+	{
+		return qty + " " + uom.getUOMSymbol();
 	}
 
 	@Override
@@ -309,6 +314,9 @@ public final class Quantity implements Comparable<Quantity>
 		return qty;
 	}
 
+	// intorduced because we cannot use Quantity::toBigDecimal (we have 2 methods)
+	public BigDecimal getAsBigDecimal() {return toBigDecimal();}
+
 	/**
 	 * @deprecated Please use {@link #toBigDecimal()}
 	 */
@@ -380,7 +388,7 @@ public final class Quantity implements Comparable<Quantity>
 	 * @return source quatity's C_UOM_ID
 	 */
 	@Deprecated
-	public int getSource_UOM_ID()
+	int getSource_UOM_ID()
 	{
 		return sourceUom.getC_UOM_ID();
 	}
@@ -741,10 +749,13 @@ public final class Quantity implements Comparable<Quantity>
 		return diff.signum();
 	}
 
-	public boolean isGreaterThan(@NonNull final Quantity other)
-	{
-		return this.compareTo(other) > 0;
-	}
+	public boolean isGreaterThan(@NonNull final Quantity other) {return this.compareTo(other) > 0;}
+
+	public boolean isGreaterThanOrEqualTo(@NonNull final Quantity other) {return this.compareTo(other) >= 0;}
+
+	public boolean isLessThan(@NonNull final Quantity other) {return this.compareTo(other) < 0;}
+
+	public boolean isLessThanOrEqualTo(@NonNull final Quantity other) {return this.compareTo(other) <= 0;}
 
 	public Quantity divide(@NonNull final BigDecimal divisor)
 	{
@@ -829,6 +840,11 @@ public final class Quantity implements Comparable<Quantity>
 	private UOMPrecision getUOMPrecision()
 	{
 		return UOMPrecision.ofInt(uom.getStdPrecision());
+	}
+
+	public Quantity setScale(@NonNull final UOMPrecision newScale)
+	{
+		return setScale(newScale, newScale.getRoundingMode());
 	}
 
 	public Quantity setScale(final UOMPrecision newScale, @NonNull final RoundingMode roundingMode)

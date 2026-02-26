@@ -24,7 +24,7 @@ package de.metas.edi.esb.xls;
 
 import de.metas.edi.esb.excelimport.Excel_OLCand_Row;
 import de.metas.edi.esb.jaxb.metasfreshinhousev2.XLSImpCOLCandType;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +54,7 @@ public class XLS_OLCand_Row_Expectations
 			}
 		}
 
-		Assert.assertFalse("We have at least one expectation defined", rowExpectations.isEmpty());
+		Assertions.assertFalse(rowExpectations.isEmpty(),"We have at least one expectation defined");
 		for (XLS_OLCand_Row_Expectation expectation : rowExpectations)
 		{
 			final int lineNo = expectation.getLineNo();
@@ -77,7 +77,7 @@ public class XLS_OLCand_Row_Expectations
 			}
 		}
 
-		Assert.assertFalse("We have at least one expectation defined", rowExpectations.isEmpty());
+		Assertions.assertFalse(rowExpectations.isEmpty(), "We have at least one expectation defined");
 		for (XLS_OLCand_Row_Expectation expectation : rowExpectations)
 		{
 			final int lineNo = expectation.getLineNo();

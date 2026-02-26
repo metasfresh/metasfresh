@@ -355,14 +355,7 @@ public class DocumentCollection
 
 	private void assertNewDocumentAllowed(final DocumentEntityDescriptor entityDescriptor)
 	{
-		if (!DocumentPermissionsHelper.checkWindowAccess(entityDescriptor, userSession.getUserRolePermissions()).hasWriteAccess())
-		{
-			throw new AdempiereException(MSG_CREATE_NOT_ALLOWED);
-		}
-
-		final ILogicExpression allowExpr = entityDescriptor.getAllowCreateNewLogic();
-		final LogicExpressionResult allow = allowExpr.evaluateToResult(userSession.toEvaluatee(), OnVariableNotFound.ReturnNoResult);
-		if (allow.isFalse())
+		if(!DocumentPermissionsHelper.isNewDocumentAllowed(entityDescriptor, userSession))
 		{
 			throw new AdempiereException(MSG_CREATE_NOT_ALLOWED);
 		}

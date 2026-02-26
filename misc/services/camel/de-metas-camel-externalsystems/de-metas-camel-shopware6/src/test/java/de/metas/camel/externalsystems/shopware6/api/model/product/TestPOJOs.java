@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-shopware6
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,14 +28,15 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.shopware6.api.model.JsonTax;
 import de.metas.camel.externalsystems.shopware6.api.model.product.price.JsonPrice;
-import org.junit.Test;
+import lombok.NonNull;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TestPOJOs
 {
@@ -49,7 +50,7 @@ public class TestPOJOs
 		testSerializeDeserializeObject(getMockJsonProducts());
 	}
 
-	private void testSerializeDeserializeObject(final Object value) throws IOException
+	private void testSerializeDeserializeObject(@NonNull final Object value) throws IOException
 	{
 		final Class<?> valueClass = value.getClass();
 		final String json = objectMapper.writeValueAsString(value);
@@ -70,8 +71,8 @@ public class TestPOJOs
 												 .taxRate(BigDecimal.TEN)
 												 .build())
 								.productNumber("productNumber")
-								.createdAt(ZonedDateTime.now(ZoneId.of("UTC")))
-								.updatedAt(ZonedDateTime.now(ZoneId.of("UTC")))
+								.createdAt(ZonedDateTime.now(ZoneId.of("Z")))
+								.updatedAt(ZonedDateTime.now(ZoneId.of("Z")))
 								.prices(ImmutableList.of(
 										JsonPrice.builder()
 												.currencyId("currencyId1")

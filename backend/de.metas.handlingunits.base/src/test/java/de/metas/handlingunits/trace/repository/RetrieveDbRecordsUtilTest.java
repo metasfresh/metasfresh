@@ -16,9 +16,9 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.time.Instant;
 import java.util.Date;
@@ -48,18 +48,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+@ExtendWith(AdempiereTestWatcher.class)
 public class RetrieveDbRecordsUtilTest
 {
-
-	@Rule
-	public AdempiereTestWatcher adempiereTestWatcher = new AdempiereTestWatcher();
-
 	private final Instant eventTime = Instant.now();
 
 	private HUTraceRepository huTraceRepository;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

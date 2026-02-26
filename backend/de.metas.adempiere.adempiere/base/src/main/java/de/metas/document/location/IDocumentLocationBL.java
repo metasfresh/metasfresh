@@ -22,6 +22,7 @@
 
 package de.metas.document.location;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.location.adapter.IDocumentBillLocationAdapter;
 import de.metas.document.location.adapter.IDocumentDeliveryLocationAdapter;
 import de.metas.document.location.adapter.IDocumentHandOverLocationAdapter;
@@ -31,6 +32,7 @@ import lombok.NonNull;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * @author tsa
@@ -38,6 +40,8 @@ import java.util.Optional;
  */
 public interface IDocumentLocationBL
 {
+	RenderedAddressProvider newRenderedAddressProvider();
+	
 	RenderedAddressAndCapturedLocation computeRenderedAddress(@NonNull DocumentLocation location);
 
 	RenderedAddressAndCapturedLocation computeRenderedAddress(@NonNull DocumentLocation location, @Nullable AddressDisplaySequence displaySequence);
@@ -52,17 +56,21 @@ public interface IDocumentLocationBL
 
 	void updateRenderedAddressAndCapturedLocation(IDocumentLocationAdapter locationAdapter);
 
-	void updateCapturedLocation(IDocumentLocationAdapter locationAdapter);
-
-	void updateCapturedLocation(IDocumentBillLocationAdapter locationAdapter);
+	void updateRenderedAddress(IDocumentLocationAdapter locationAdapter);
 
 	void updateRenderedAddressAndCapturedLocation(IDocumentBillLocationAdapter locationAdapter);
 
+	void updateRenderedAddress(IDocumentBillLocationAdapter locationAdapter);
+
 	void updateRenderedAddressAndCapturedLocation(IDocumentDeliveryLocationAdapter locationAdapter);
 
-	void updateCapturedLocation(IDocumentDeliveryLocationAdapter locationAdapter);
+	void updateRenderedAddress(IDocumentDeliveryLocationAdapter locationAdapter);
 
 	void updateRenderedAddressAndCapturedLocation(IDocumentHandOverLocationAdapter locationAdapter);
 
-	void updateCapturedLocation(IDocumentHandOverLocationAdapter locationAdapter);
+	void updateRenderedAddress(IDocumentHandOverLocationAdapter locationAdapter);
+
+	Set<DocumentLocation> getDocumentLocations(@NonNull Set<BPartnerLocationId> bpartnerLocationIds);
+
+	DocumentLocation getDocumentLocation(@NonNull BPartnerLocationId bpartnerLocationId);
 }

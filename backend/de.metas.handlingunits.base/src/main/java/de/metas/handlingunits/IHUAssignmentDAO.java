@@ -37,12 +37,12 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
 
 public interface IHUAssignmentDAO extends ISingletonService
 {
@@ -150,7 +150,7 @@ public interface IHUAssignmentDAO extends ISingletonService
 
 	IQueryBuilder<I_M_HU_Assignment> retrieveHUAssignmentsForModelQuery(Object model);
 
-	ImmutableSetMultimap<TableRecordReference, HuId> retrieveHUsByRecordRefs(@NonNull Set<TableRecordReference> recordRefs);
+	ImmutableSetMultimap<TableRecordReference, HuId> retrieveHUsByRecordRefs(@NonNull TableRecordReferenceSet recordRefs);
 
 	/**
 	 * @see #retrieveTopLevelHUsForModel(Object, String)

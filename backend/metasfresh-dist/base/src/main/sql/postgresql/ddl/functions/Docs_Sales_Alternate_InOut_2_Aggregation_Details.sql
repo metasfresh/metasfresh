@@ -1,23 +1,22 @@
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Alternate_InOut_2_Aggregation_Details (IN p_Record_ID   numeric,
+                                                                                                             IN p_AD_Language Character Varying(6))
+;
 
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Alternate_InOut_2_Aggregation_Details ( IN Record_ID numeric, IN AD_Language Character Varying (6) );
-DROP TABLE IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Alternate_InOut_2_Aggregation_Details;
-
-CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_Sales_Alternate_InOut_2_Aggregation_Details
-(
-	CustomerArticleNumber Character Varying,
-	Name Character Varying,
-	Attributes Text,
-	HUQty Numeric,
-	HUName Text,
-	qtyEntered Numeric,
-	UOMSymbol Character Varying (10),
-	QtyPattern text,
-	Transp bigint
-);
-
-
-CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Alternate_InOut_2_Aggregation_Details ( IN Record_ID numeric, IN AD_Language Character Varying (6) )
-RETURNS SETOF de_metas_endcustomer_fresh_reports.Docs_Sales_Alternate_InOut_2_Aggregation_Details AS
+CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Alternate_InOut_2_Aggregation_Details(IN p_Record_ID   numeric,
+                                                                                                    IN p_AD_Language Character Varying(6))
+    RETURNS TABLE
+            (
+                CustomerArticleNumber Character Varying,
+                Name                  Character Varying,
+                Attributes            Text,
+                HUQty                 Numeric,
+                HUName                Text,
+                qtyEntered            Numeric,
+                UOMSymbol             Character Varying(10),
+                QtyPattern            text,
+                Transp                bigint
+            )
+AS
 $$
 SELECT
 	CustomerArticleNumber, name, attributes, SUM(HUQty), HUName, SUM(QtyEntered), UOMSymbol, QtyPattern, transp
@@ -40,9 +39,9 @@ FROM
 		SELECT	*, rank() OVER ( PARTITION BY '' ORDER BY MovementDate, M_InOut_ID ) as transp
 		FROM	M_InOut io 
 		WHERE 	io.DocStatus = 'CO' 
-			AND POReference = ( SELECT POReference FROM M_InOut WHERE M_InOut_ID = $1)
-			AND AD_Org_ID = ( SELECT AD_Org_ID FROM M_InOut WHERE M_InOut_ID = $1)
-			AND C_BPartner_ID = ( SELECT C_BPartner_ID FROM M_InOut WHERE M_InOut_ID = $1) 
+			AND POReference = ( SELECT POReference FROM M_InOut WHERE M_InOut_ID = p_Record_ID)
+			AND AD_Org_ID = ( SELECT AD_Org_ID FROM M_InOut WHERE M_InOut_ID = p_Record_ID)
+			AND C_BPartner_ID = ( SELECT C_BPartner_ID FROM M_InOut WHERE M_InOut_ID = p_Record_ID) 
 			AND io.isActive = 'Y' 
 	) io
 	LEFT OUTER JOIN M_InOutLine iol	ON io.M_InOut_ID = iol.M_InOut_ID AND iol.isActive = 'Y'
@@ -53,9 +52,9 @@ FROM
 			AVG(ic.Discount_Override) AS Discount_Override, AVG(ic.Discount) AS Discount, ic.Price_UOM_ID, iol.M_InOutLine_ID
 		FROM 	
 			(SELECT * FROM M_InOut io WHERE io.DocStatus = 'CO' 
-										AND POReference = ( SELECT POReference FROM M_InOut WHERE M_InOut_ID = $1 )  
-										AND AD_Org_ID = ( SELECT AD_Org_ID FROM M_InOut WHERE M_InOut_ID = $1 )
-										AND C_BPartner_ID = ( SELECT C_BPartner_ID FROM M_InOut WHERE M_InOut_ID = $1 )
+										AND POReference = ( SELECT POReference FROM M_InOut WHERE M_InOut_ID = p_Record_ID )  
+										AND AD_Org_ID = ( SELECT AD_Org_ID FROM M_InOut WHERE M_InOut_ID = p_Record_ID )
+										AND C_BPartner_ID = ( SELECT C_BPartner_ID FROM M_InOut WHERE M_InOut_ID = p_Record_ID )
 										AND io.isActive = 'Y') io
 			LEFT OUTER JOIN M_InOutLine iol	ON io.M_InOut_ID = iol.M_InOut_ID AND iol.isActive = 'Y'
 			INNER JOIN C_InvoiceCandidate_InOutLine iciol ON iol.M_InOutLine_ID = iciol.M_InOutLine_ID AND iciol.isActive = 'Y'
@@ -78,9 +77,9 @@ FROM
 					iol.M_InOutLine_ID
 				FROM
 					(SELECT * FROM M_InOut io WHERE io.DocStatus = 'CO' 
-													AND POReference = ( SELECT POReference FROM M_InOut WHERE M_InOut_ID = $1)  
-													AND AD_Org_ID = ( SELECT AD_Org_ID FROM M_InOut WHERE M_InOut_ID = $1)  
-													AND C_BPartner_ID = ( SELECT C_BPartner_ID FROM M_InOut WHERE M_InOut_ID = $1)  
+													AND POReference = ( SELECT POReference FROM M_InOut WHERE M_InOut_ID = p_Record_ID)  
+													AND AD_Org_ID = ( SELECT AD_Org_ID FROM M_InOut WHERE M_InOut_ID = p_Record_ID)  
+													AND C_BPartner_ID = ( SELECT C_BPartner_ID FROM M_InOut WHERE M_InOut_ID = p_Record_ID)  
 													AND io.isActive = 'Y') io
 					LEFT OUTER JOIN M_InOutLine iol	ON io.M_InOut_ID = iol.M_InOut_ID AND iol.isActive = 'Y'
 					-- Get PI directly from InOutLine (1 to 1) 
@@ -101,14 +100,14 @@ FROM
 	) pi ON iol.M_InOutLine_ID = pi.M_InOutLine_ID
 	-- Product and its translation
 	LEFT OUTER JOIN M_Product p 			ON iol.M_Product_ID = p.M_Product_ID AND p.isActive = 'Y'
-	LEFT OUTER JOIN M_Product_Trl pt 		ON iol.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = $2 AND pt.isActive = 'Y'
+	LEFT OUTER JOIN M_Product_Trl pt 		ON iol.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = p_AD_Language AND pt.isActive = 'Y'
 	LEFT OUTER JOIN C_BPartner_Product bpp		ON bp.C_BPartner_ID = bpp.C_BPartner_ID AND p.M_Product_ID = bpp.M_Product_ID AND bpp.isActive = 'Y'
 	LEFT OUTER JOIN M_Product_Category pc 		ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
 	-- Unit of measurement and its translation
-	LEFT OUTER JOIN C_UOM uom			ON ic.Price_UOM_ID = uom.C_UOM_ID AND uom.isActive = 'Y'
-	LEFT OUTER JOIN C_UOM_Trl uomt			ON ic.Price_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = $2 AND uomt.isActive = 'Y'
+	LEFT OUTER JOIN C_UOM uom			ON COALESCE(ic.Price_UOM_ID, iol.C_UOM_ID) = uom.C_UOM_ID
+	LEFT OUTER JOIN C_UOM_Trl uomt			ON uom.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = p_AD_Language AND uomt.isActive = 'Y'
 	LEFT OUTER JOIN C_UOM_Conversion conv		ON conv.C_UOM_ID = iol.C_UOM_ID
-		AND conv.C_UOM_To_ID = ic.Price_UOM_ID
+		AND conv.C_UOM_To_ID = COALESCE(ic.Price_UOM_ID, iol.C_UOM_ID)
 		AND iol.M_Product_ID = conv.M_Product_ID
 		AND conv.isActive = 'Y'
 	-- Attributes

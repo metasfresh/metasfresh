@@ -5,7 +5,6 @@ import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.model.C_Aggregation_Builder;
 import de.metas.aggregation.model.X_C_Aggregation;
 import de.metas.aggregation.model.X_C_AggregationItem;
-import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IContractChangeBL.ContractChangeParameters;
@@ -37,8 +36,9 @@ import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
 import de.metas.location.impl.DummyDocumentLocationBL;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.process.PInstanceId;
-import de.metas.user.UserRepository;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -74,7 +74,7 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 	{
 		SpringContextHolder.registerJUnitBean(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
 
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Flatrate_Term(new ContractOrderService(),new DummyDocumentLocationBL(new BPartnerBL(new UserRepository())), new GLCategoryRepository()));
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Flatrate_Term(new ContractOrderService(), DummyDocumentLocationBL.newInstanceForUnitTesting(), new GLCategoryRepository()));
 
 		final IInvoiceCandidateListeners invoiceCandidateListeners = Services.get(IInvoiceCandidateListeners.class);
 		invoiceCandidateListeners.addListener(OrderAndInOutInvoiceCandidateListener.instance);
@@ -102,6 +102,7 @@ public class TerminateSingleContractTest extends AbstractFlatrateTermTest
 		}
 
 		de.metas.common.util.time.SystemTime.setTimeSource(today);
+		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 	}
 
 	@Test

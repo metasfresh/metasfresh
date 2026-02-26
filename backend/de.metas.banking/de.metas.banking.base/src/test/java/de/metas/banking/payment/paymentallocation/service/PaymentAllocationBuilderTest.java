@@ -61,7 +61,9 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_Conversion_Rate;
@@ -73,6 +75,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -99,6 +102,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SuppressWarnings({ "NestedAssignment", "SameParameterValue" })
+@ExtendWith(AdempiereTestWatcher.class)
 public class PaymentAllocationBuilderTest
 {
 	// services
@@ -232,7 +236,7 @@ public class PaymentAllocationBuilderTest
 		{
 			final Money invoiceGrandTotal = openAmt
 					.negateIf(type.isCreditMemo())
-					.negateIf(!type.isSales());
+					.negateIf(type.isPurchase());
 
 			final int invoiceId = nextInvoiceId++;
 			final I_C_DocType docType = getInvoiceDocType(type);
@@ -347,11 +351,11 @@ public class PaymentAllocationBuilderTest
 				.dateAcct(LocalDate.parse(date))
 				//
 				.amounts(AllocationAmounts.builder()
-						.payAmt(money(allocatedAmt, currency))
-						.discountAmt(money(discountAmt, currency))
-						.writeOffAmt(money(writeOffAmt, currency))
-						.invoiceProcessingFee(money(invoiceProcessingFee, currency))
-						.build())
+								 .payAmt(money(allocatedAmt, currency))
+								 .discountAmt(money(discountAmt, currency))
+								 .writeOffAmt(money(writeOffAmt, currency))
+								 .invoiceProcessingFee(money(invoiceProcessingFee, currency))
+								 .build())
 				.payableOverUnderAmt(money(overUnderAmt, currency))
 				.paymentOverUnderAmt(money(paymentOverUnderAmt, currency))
 				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
@@ -375,7 +379,7 @@ public class PaymentAllocationBuilderTest
 		final I_C_Invoice invoice = invoicesDAO.getByIdInTrx(invoiceId);
 		final Money expectedAllocatedAmt = expectedAllocatedAmtBD != null ? Money.of(expectedAllocatedAmtBD, CurrencyId.ofRepoId(invoice.getC_Currency_ID())) : null;
 
-		final Money actualAllocatedAmt = allocationDAO.retrieveAllocatedAmtAsMoney(invoiceId).orElse(null);
+		final Money actualAllocatedAmt = allocationDAO.retrieveAllocatedAmt(invoice);
 
 		assertThat(actualAllocatedAmt)
 				.as("Allocated amount for invoice " + invoiceId)
@@ -398,9 +402,11 @@ public class PaymentAllocationBuilderTest
 		final boolean ignoreProcessed = false;
 		invoiceBL.testAllocation(invoice, ignoreProcessed);
 
-		assertThat(invoice.isPaid()).isEqualTo(expectedPaymentStatus.isFullyPaid());
-		assertThat(invoice.isPartiallyPaid()).isEqualTo(expectedPaymentStatus.isPartiallyPaid());
-		assertThat(invoice.getOpenAmt()).isEqualTo(expectedOpenAmt);
+		final SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(invoice.isPaid()).as("IsPaid").isEqualTo(expectedPaymentStatus.isFullyPaid());
+		softly.assertThat(invoice.isPartiallyPaid()).as("IsPartiallyPaid").isEqualTo(expectedPaymentStatus.isPartiallyPaid());
+		softly.assertThat(invoice.getOpenAmt()).as("OpenAmt").isEqualTo(expectedOpenAmt);
+		softly.assertAll();
 	}
 
 	private void assertPaymentAllocatedAmt(final PaymentId paymentId, final BigDecimal expectedAllocatedAmt)
@@ -883,13 +889,13 @@ public class PaymentAllocationBuilderTest
 				allocation().type(InvoiceToCreditMemo)
 						.payableRef(customerInvoice3.getReference()) // smallest invoice first
 						.paymentRef(customerCreditMemo1.getReference()) // prefer allocating against creditMemos over allocating against payments
-						.allocatedAmt("500").discountAmt("100").writeOffAmt("0").overUnderAmt("1000")
+						.allocatedAmt("500").discountAmt("0").writeOffAmt("0").overUnderAmt("1100")
 						.date("2021-01-14")
 						.build(),
-				allocation().type(InvoiceToPayment) // what's lef to allocate is allocated against payment1
+				allocation().type(InvoiceToPayment) // what's left to allocate is allocated against payment1
 						.payableRef(customerInvoice3.getReference())
 						.paymentRef(inboundPayment1.getReference())
-						.allocatedAmt("1000").discountAmt("0").writeOffAmt("0").overUnderAmt("0").paymentOverUnderAmt("4000")
+						.allocatedAmt("1000").discountAmt("100").writeOffAmt("0").overUnderAmt("0").paymentOverUnderAmt("4000")
 						.date("2021-01-21")
 						.build(),
 				allocation().type(InvoiceToPayment)
@@ -901,13 +907,13 @@ public class PaymentAllocationBuilderTest
 				allocation().type(InvoiceToPayment)
 						.payableRef(customerInvoice1.getReference())
 						.paymentRef(inboundPayment1.getReference())
-						.allocatedAmt("1000").discountAmt("1599").writeOffAmt("1").overUnderAmt("5400").paymentOverUnderAmt("0")
+						.allocatedAmt("1000").discountAmt("0").writeOffAmt("1").overUnderAmt("6999").paymentOverUnderAmt("0")
 						.date("2021-01-21")
 						.build(),
 				allocation().type(InvoiceToPayment)
 						.payableRef(customerInvoice1.getReference())
 						.paymentRef(inboundPayment2.getReference())
-						.allocatedAmt("5000").discountAmt("0").writeOffAmt("0").overUnderAmt("400").paymentOverUnderAmt("0")
+						.allocatedAmt("5000").discountAmt("1599").writeOffAmt("0").overUnderAmt("400").paymentOverUnderAmt("0")
 						.date("2021-01-22")
 						.build());
 
@@ -988,13 +994,13 @@ public class PaymentAllocationBuilderTest
 				allocation().type(InvoiceToCreditMemo)
 						.payableRef(vendorInvoice1.getReference())
 						.paymentRef(vendorCreditMemo1.getReference())
-						.allocatedAmt("-80").discountAmt("-10").writeOffAmt("-5").overUnderAmt("-70")
+						.allocatedAmt("-80").writeOffAmt("-5").overUnderAmt("-80")
 						.date("2021-02-11")
 						.build(),
 				allocation().type(InvoiceToPayment)
 						.payableRef(vendorInvoice1.getReference())
 						.paymentRef(outboundPayment1.getReference())
-						.allocatedAmt("-20").overUnderAmt("-50")
+						.allocatedAmt("-20").discountAmt("-10").overUnderAmt("-50")
 						.date("2021-02-12")
 						.build());
 
@@ -1034,19 +1040,19 @@ public class PaymentAllocationBuilderTest
 				allocation().type(InvoiceToCreditMemo)
 						.payableRef(invoice1.getReference())
 						.paymentRef(invoice2.getReference())
-						.allocatedAmt("-80").discountAmt("-10").writeOffAmt("-5").overUnderAmt("-70")
+						.allocatedAmt("-80").writeOffAmt("-5").overUnderAmt("-80")
 						.date("2021-02-11")
 						.build(),
 				allocation().type(InvoiceToCreditMemo)
 						.payableRef(invoice1.getReference())
 						.paymentRef(invoice3.getReference())
-						.allocatedAmt("-10").discountAmt("0").writeOffAmt("0").overUnderAmt("-60")
+						.allocatedAmt("-10").discountAmt("0").writeOffAmt("0").overUnderAmt("-70")
 						.date("2021-02-12")
 						.build(),
 				allocation().type(InvoiceToPayment)
 						.payableRef(invoice1.getReference())
 						.paymentRef(payment1.getReference())
-						.allocatedAmt("-10").overUnderAmt("-50")
+						.allocatedAmt("-10").discountAmt("-10").overUnderAmt("-50")
 						.date("2021-02-13")
 						.build());
 

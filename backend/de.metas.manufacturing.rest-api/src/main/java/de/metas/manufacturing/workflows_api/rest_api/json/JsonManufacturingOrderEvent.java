@@ -5,6 +5,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLineId;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonLUReceivingTarget;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonTUReceivingTarget;
+import de.metas.scannable_code.ScannedCode;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -45,9 +46,11 @@ public class JsonManufacturingOrderEvent
 		@NonNull String lineId;
 		@NonNull BigDecimal qtyReceived;
 		@Nullable String bestBeforeDate;
+		@Nullable String productionDate;
 		@Nullable String lotNo;
 		@Nullable BigDecimal catchWeight;
 		@Nullable String catchWeightUomSymbol;
+		@Nullable ScannedCode barcode;
 		@Nullable JsonLUReceivingTarget aggregateToLU;
 		@Nullable JsonTUReceivingTarget aggregateToTU;
 

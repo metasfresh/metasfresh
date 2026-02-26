@@ -22,13 +22,11 @@ package de.metas.adempiere.addon.impl;
  * #L%
  */
 
-import static org.junit.Assert.assertEquals;
+import de.metas.adempiere.addon.IAddOn;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.Properties;
-
-import org.junit.Test;
-
-import de.metas.adempiere.addon.IAddOn;
 
 public class AddonStarterTest
 {
@@ -44,7 +42,7 @@ public class AddonStarterTest
 
 		starter.startAddons();
 
-		assertEquals(TestAddon.invokationCount, 1);
+		Assertions.assertEquals(1, TestAddon.invokationCount);
 	}
 
 	public static class TestAddon implements IAddOn

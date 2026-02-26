@@ -41,7 +41,7 @@ public interface IUOMDAO extends ISingletonService
 	@Nullable
 	I_C_UOM getByIdOrNull(int uomId);
 
-	I_C_UOM getById(UomId uomId);
+	I_C_UOM getById(@org.jetbrains.annotations.Nullable UomId uomId);
 
 	ITranslatableString getName(@NonNull UomId uomId);
 
@@ -57,6 +57,9 @@ public interface IUOMDAO extends ISingletonService
 
 	Optional<I_C_UOM> getByX12DE355IfExists(X12DE355 x12de355);
 
+	@NonNull
+	Optional<UomId> getIdByX12DE355IfExists(@NonNull X12DE355 x12de355);
+	
 	/**
 	 * Gets UOM for Each/Stuck.
 	 */

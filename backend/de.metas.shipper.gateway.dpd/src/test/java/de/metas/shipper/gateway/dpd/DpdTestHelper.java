@@ -25,7 +25,7 @@ package de.metas.shipper.gateway.dpd;
 import com.google.common.collect.ImmutableList;
 import com.jgoodies.common.base.Strings;
 import de.metas.location.CountryCode;
-import de.metas.mpackage.PackageId;
+import de.metas.product.PackageDimensions;
 import de.metas.shipper.gateway.commons.ShipperTestHelper;
 import de.metas.shipper.gateway.dpd.logger.DpdDatabaseClientLogger;
 import de.metas.shipper.gateway.dpd.model.DpdClientConfig;
@@ -40,27 +40,25 @@ import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
-import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
-import de.metas.shipper.gateway.spi.model.PackageDimensions;
+import de.metas.shipper.gateway.spi.model.DeliveryOrderParcel;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipper.gateway.spi.model.ShipperProduct;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Location;
+import org.junit.jupiter.api.Assertions;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 @UtilityClass
 class DpdTestHelper
@@ -122,7 +120,7 @@ class DpdTestHelper
 						.emailAddress("cristian.pasat@metasfresh.com")
 						.simplePhoneNumber("+10-012-345689")
 						.build())
-				.deliveryOrderLines(createDeliveryOrderLines(ImmutableList.of(11, 22, 33, 44, 55)))
+				.deliveryOrderParcels(createDeliveryOrderLines(ImmutableList.of(11, 22, 33, 44, 55)))
 				.customerReference(null)
 				.shipperProduct(serviceType)
 				.shipperId(ShipperId.ofRepoId(1))
@@ -170,7 +168,7 @@ class DpdTestHelper
 						.emailAddress("cristian.pasat@metasfresh.com")
 						.simplePhoneNumber("+10-012-345689")
 						.build())
-				.deliveryOrderLines(createDeliveryOrderLines(ImmutableList.of(11, 22, 33, 44, 55)))
+				.deliveryOrderParcels(createDeliveryOrderLines(ImmutableList.of(11, 22, 33, 44, 55)))
 				.customerReference(null)
 				.shipperProduct(serviceType)
 				.shipperId(ShipperId.ofRepoId(1))
@@ -218,7 +216,7 @@ class DpdTestHelper
 						.emailAddress("cristian.pasat@metasfresh.com")
 						.simplePhoneNumber("+10-012-345689")
 						.build())
-				.deliveryOrderLines(createDeliveryOrderLines(ImmutableList.of(11, 22, 33, 44, 55)))
+				.deliveryOrderParcels(createDeliveryOrderLines(ImmutableList.of(11, 22, 33, 44, 55)))
 				.customerReference(null)
 				.shipperProduct(serviceType)
 				.shipperId(ShipperId.ofRepoId(1))
@@ -266,7 +264,7 @@ class DpdTestHelper
 						.emailAddress("cristian.pasat@metasfresh.com")
 						.simplePhoneNumber("+10-012-345689")
 						.build())
-				.deliveryOrderLines(createDeliveryOrderLines(ImmutableList.of(11, 22, 33, 44, 55)))
+				.deliveryOrderParcels(createDeliveryOrderLines(ImmutableList.of(11, 22, 33, 44, 55)))
 				.customerReference(null)
 				.shipperProduct(DpdShipperProduct.DPD_CLASSIC)
 				.shipperId(ShipperId.ofRepoId(1))
@@ -282,12 +280,12 @@ class DpdTestHelper
 	}
 
 	@NonNull
-	private static List<DeliveryOrderLine> createDeliveryOrderLines(@NonNull final ImmutableList<Integer> packageIds)
+	private static List<DeliveryOrderParcel> createDeliveryOrderLines(@NonNull final ImmutableList<Integer> packageIds)
 	{
-		final ImmutableList.Builder<DeliveryOrderLine> deliveryOrderLinesBuilder = ImmutableList.builder();
+		final ImmutableList.Builder<DeliveryOrderParcel> deliveryOrderLinesBuilder = ImmutableList.builder();
 		for (final Integer packageId : packageIds)
 		{
-			final DeliveryOrderLine deliveryOrderLine = DeliveryOrderLine.builder()
+			final DeliveryOrderParcel deliveryOrderParcel = DeliveryOrderParcel.builder()
 					// .repoId()
 					.content("the epic package " + packageId + " description")
 					.grossWeightKg(BigDecimal.ONE) // same as in de.metas.shipper.gateway.commons.ShipperGatewayFacade.computeGrossWeightInKg: we assume it's in Kg
@@ -300,7 +298,7 @@ class DpdTestHelper
 					.packageId(PackageId.ofRepoId(packageId))
 					.build();
 
-			deliveryOrderLinesBuilder.add(deliveryOrderLine);
+			deliveryOrderLinesBuilder.add(deliveryOrderParcel);
 		}
 		return deliveryOrderLinesBuilder.build();
 	}
@@ -310,8 +308,8 @@ class DpdTestHelper
 	{
 		// check 1: draft DO <->> initial dummy DO
 		final DeliveryOrder draftDeliveryOrder = createDraftDeliveryOrderFromDummy(initialDeliveryOrder);
-		assertEquals("nothing should be changed", initialDeliveryOrder, draftDeliveryOrder);
-		assertEquals(5, draftDeliveryOrder.getDeliveryOrderLines().size());
+		Assertions.assertEquals( initialDeliveryOrder,  draftDeliveryOrder, "nothing should be changed");
+		Assertions.assertEquals(5, draftDeliveryOrder.getDeliveryOrderParcels().size());
 
 		//
 		// check 2: persisted DO <-> initial dummy DO => create updatedDummy DO
@@ -319,21 +317,21 @@ class DpdTestHelper
 		DeliveryOrder updatedDummyDeliveryOrder = initialDeliveryOrder.toBuilder()
 				.id(persistedDeliveryOrder.getId())
 				.build();
-		assertNotNull(updatedDummyDeliveryOrder.getCustomDeliveryData());
-		assertEquals("only the repoId should change after the first persistence", updatedDummyDeliveryOrder, persistedDeliveryOrder);
-		assertEquals(5, persistedDeliveryOrder.getDeliveryOrderLines().size());
-		assertEquals(5, updatedDummyDeliveryOrder.getDeliveryOrderLines().size());
+		Assertions.assertNotNull(updatedDummyDeliveryOrder.getCustomDeliveryData());
+		Assertions.assertEquals(updatedDummyDeliveryOrder, persistedDeliveryOrder,"only the repoId should change after the first persistence");
+		Assertions.assertEquals(5, persistedDeliveryOrder.getDeliveryOrderParcels().size());
+		Assertions.assertEquals(5, updatedDummyDeliveryOrder.getDeliveryOrderParcels().size());
 
 		//
 		// check 3: updated Dummy DO <-> retrieved DO from persistence
 		final DeliveryOrder deserialisedDO = orderRepository.getByRepoId(updatedDummyDeliveryOrder.getId());
-		assertEquals("nothing should be changed", updatedDummyDeliveryOrder, deserialisedDO);
-		assertEquals(5, deserialisedDO.getDeliveryOrderLines().size());
+		Assertions.assertEquals( updatedDummyDeliveryOrder,  deserialisedDO, "nothing should be changed");
+		Assertions.assertEquals(5, deserialisedDO.getDeliveryOrderParcels().size());
 
 		//
 		// check 4: run Client.completeDeliveryOrder
 		final DeliveryOrder completedDeliveryOrder = client.completeDeliveryOrder(deserialisedDO);
-		assertNotNull(completedDeliveryOrder.getCustomDeliveryData());
+		Assertions.assertNotNull(completedDeliveryOrder.getCustomDeliveryData());
 
 		final DpdOrderCustomDeliveryData customDeliveryData = DpdOrderCustomDeliveryData.cast(updatedDummyDeliveryOrder.getCustomDeliveryData())
 				.toBuilder()
@@ -344,35 +342,35 @@ class DpdTestHelper
 				.trackingUrl(completedDeliveryOrder.getTrackingUrl())
 				.customDeliveryData(customDeliveryData)
 				.build();
-		assertEquals("only awb, pdf label data and tracking url should be modified", updatedDummyDeliveryOrder, completedDeliveryOrder);
-		assertEquals(5, completedDeliveryOrder.getDeliveryOrderLines().size());
-		assertEquals(5, updatedDummyDeliveryOrder.getDeliveryOrderLines().size());
-		assertTrue(Strings.isNotBlank(completedDeliveryOrder.getTrackingNumber()));
+		Assertions.assertEquals(updatedDummyDeliveryOrder, completedDeliveryOrder,"only awb, pdf label data and tracking url should be modified");
+		Assertions.assertEquals(5, completedDeliveryOrder.getDeliveryOrderParcels().size());
+		Assertions.assertEquals(5, updatedDummyDeliveryOrder.getDeliveryOrderParcels().size());
+		Assertions.assertTrue(Strings.isNotBlank(completedDeliveryOrder.getTrackingNumber()));
 		//noinspection ConstantConditions
-		assertTrue(DpdOrderCustomDeliveryData.cast(completedDeliveryOrder.getCustomDeliveryData()).getPdfData().length > 1);
+		Assertions.assertTrue(DpdOrderCustomDeliveryData.cast(completedDeliveryOrder.getCustomDeliveryData()).getPdfData().length > 1);
 
 		//
 		// check 5: persist the completed delivery order: nothing should be modified
 		final DeliveryOrder savedCompletedDeliveryOrder = orderRepository.save(completedDeliveryOrder);
-		assertEquals("nothing should be modified", updatedDummyDeliveryOrder, savedCompletedDeliveryOrder);
-		assertEquals(5, savedCompletedDeliveryOrder.getDeliveryOrderLines().size());
+		Assertions.assertEquals(updatedDummyDeliveryOrder, savedCompletedDeliveryOrder,"nothing should be modified");
+		Assertions.assertEquals(5, savedCompletedDeliveryOrder.getDeliveryOrderParcels().size());
 
 		//
 		// check 6: retrieve the persisted completed DO. nothing should be modified
 		final DeliveryOrder deserialisedCompletedDeliveryOrder = orderRepository.getByRepoId(updatedDummyDeliveryOrder.getId());
-		assertEquals(5, updatedDummyDeliveryOrder.getDeliveryOrderLines().size());
-		assertEquals(5, deserialisedCompletedDeliveryOrder.getDeliveryOrderLines().size());
-		assertEquals("nothing should be modified", updatedDummyDeliveryOrder, deserialisedCompletedDeliveryOrder);
-		assertTrue(Strings.isNotBlank(deserialisedCompletedDeliveryOrder.getTrackingNumber()));
+		Assertions.assertEquals(5,  updatedDummyDeliveryOrder.getDeliveryOrderParcels().size(), 5);
+		Assertions.assertEquals(5, deserialisedCompletedDeliveryOrder.getDeliveryOrderParcels().size());
+		Assertions.assertEquals( updatedDummyDeliveryOrder,  deserialisedCompletedDeliveryOrder, "nothing should be modified");
+		Assertions.assertTrue(Strings.isNotBlank(deserialisedCompletedDeliveryOrder.getTrackingNumber()));
 		//noinspection ConstantConditions
-		assertTrue(DpdOrderCustomDeliveryData.cast(deserialisedCompletedDeliveryOrder.getCustomDeliveryData()).getPdfData().length > 1);
+		Assertions.assertTrue(DpdOrderCustomDeliveryData.cast(deserialisedCompletedDeliveryOrder.getCustomDeliveryData()).getPdfData().length > 1);
 
 		//
 		// check 7: expect 2 database logs: 1 for login and 2 for createShipment
-		assertEquals("there should be 2 database request logs", 2, Services.get(IQueryBL.class)
+		Assertions.assertEquals( 2,  Services.get(IQueryBL.class)
 				.createQueryBuilder(I_DPD_StoreOrder_Log.class)
 				.create()
-				.count());
+				.count(), "there should be 2 database request logs");
 
 		//
 		// check 8: there's no way to test that label printing => create attachment works. :(
@@ -403,13 +401,13 @@ class DpdTestHelper
 		final ShipperTransportationId shipperTransportationId = deliveryOrder.getShipperTransportationId();
 
 		//
-		final ImmutableList<DeliveryOrderLine> deliveryOrderLines = deliveryOrder.getDeliveryOrderLines();
+		final ImmutableList<DeliveryOrderParcel> deliveryOrderParcels = deliveryOrder.getDeliveryOrderParcels();
 
 		//
 		final String customerReference = deliveryOrder.getCustomerReference();
 
 		final CustomDeliveryData customDeliveryData = deliveryOrder.getCustomDeliveryData();
-		assertNotNull(customDeliveryData);
+		Assertions.assertNotNull(customDeliveryData);
 
 		return draftDeliveryOrderCreator.createDeliveryOrderFromParams(
 				pickupFromBPartner,
@@ -425,7 +423,7 @@ class DpdTestHelper
 				shipperTransportationId,
 				customerReference,
 				DpdOrderCustomDeliveryData.cast(customDeliveryData),
-				deliveryOrderLines
+				deliveryOrderParcels
 		);
 	}
 

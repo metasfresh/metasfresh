@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
 @ghActions:run_on_executor2
 Feature: Group invoices and credit memos into a single document
+## F00701: Invoice Candidates
 
   Background:
     Given infrastructure and metasfresh are running
@@ -12,38 +16,40 @@ Feature: Group invoices and credit memos into a single document
       | warehouseStd   | StdWarehouse |
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   @Id:S0242_100
   Scenario: 2 invoice candidates (both sales); 1 x credit memo; 1 x invoice candidate; invoicing pool setup active, credit memo amt > invoice amt => one invoice with 2 lines, DocType=CreditMemo
     Given metasfresh contains M_Products:
-      | Identifier | Value                 | Name                  |
-      | product_SO | product_SO_12012023_1 | product_SO_12012023_1 |
+      | Identifier |
+      | product_SO |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name             | Value            |
-      | ps_SO      | ps_SO_12012023_1 | ps_SO_12012023_1 |
+      | Identifier |
+      | ps_SO      |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                  | SOTrx | IsTaxIncluded | PricePrecision |
-      | pl_SO      | ps_SO                         | DE                        | EUR                 | pl_SO_name_12012023_1 | true  | false         | 2              |
+      | Identifier | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx |
+      | pl_SO      | ps_SO              | DE           | EUR           | true  |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name              | ValidFrom  |
-      | plv_SO     | pl_SO                     | plv_SO_12012023_1 | 2022-03-01 |
+      | Identifier | M_PriceList_ID |
+      | plv_SO     | pl_SO          |
     And metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_SO      | plv_SO                            | product_SO              | 2.0      | PCE               | Normal                        |
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 |
+      | plv_SO                 | product_SO   | 2.0      | PCE               |
 
     And metasfresh contains C_BPartners:
-      | Identifier  | Name                   | Value                  | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | customer_SO | customer_SO_12012023_1 | customer_SO_12012023_1 | N            | Y              | ps_SO                         |
+      | Identifier  | IsVendor | IsCustomer | M_PricingSystem_ID |
+      | customer_SO | N        | Y          | ps_SO              |
     And metasfresh contains C_BPartner_Locations:
       | Identifier          | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | customerLocation_SO | 2006202222221 | customer_SO              | Y                   | Y                   |
 
     And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID.Identifier | Value                      | Name                       | OPT.IsIssueWarehouse | OPT.IsQuarantineWarehouse | OPT.IsQualityReturnWarehouse |
-      | returnWarehouse           | returnWarehouse_12012023_1 | returnWarehouse_12012023_1 | true                 | true                      | true                         |
-
+      | M_Warehouse_ID  | IsIssueWarehouse | IsQuarantineWarehouse | IsQualityReturnWarehouse |
+      | returnWarehouse | true             | true                  | true                     |
     And metasfresh contains M_Locator:
-      | M_Locator_ID.Identifier | Value                    | M_Warehouse_ID.Identifier |
-      | returnLocator           | returnLocator_12012023_1 | returnWarehouse           |
+      | M_Locator_ID  | M_Warehouse_ID  |
+      | returnLocator | returnWarehouse |
 
     And load C_DocType:
       | C_DocType_ID.Identifier | Name                |
@@ -51,11 +57,9 @@ Feature: Group invoices and credit memos into a single document
       | dt_cm                   | Gutschrift          |
       | dt_cr                   | Kundenwarenrückgabe |
       | dt_so                   | Standardauftrag     |
-
     And metasfresh contains C_DocType_Invoicing_Pool:
       | C_DocType_Invoicing_Pool_ID.Identifier | Name            | Positive_Amt_C_DocType_ID.Identifier | Negative_Amt_C_DocType_ID.Identifier | IsSOTrx | IsOnDistinctICTypes |
       | ip_1                                   | test_12012023_1 | dt_si                                | dt_cm                                | true    | true                |
-
     And update C_DocType:
       | C_DocType_ID.Identifier | OPT.C_DocType_Invoicing_Pool_ID.Identifier | OPT.C_DocTypeInvoice_ID.Identifier |
       | dt_si                   | ip_1                                       | null                               |
@@ -63,12 +67,11 @@ Feature: Group invoices and credit memos into a single document
       | dt_so                   | null                                       | dt_si                              |
 
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference   | OPT.M_PricingSystem_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.DeliveryRule | OPT.DeliveryViaRule |
-      | order_SO   | true    | customer_SO              | 2022-06-17  | po_ref_12012023_1 | ps_SO                             | customerLocation_SO                   | F                | S                   |
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | POReference       | M_PricingSystem_ID | C_BPartner_Location_ID | DeliveryRule | DeliveryViaRule |
+      | order_SO   | true    | customer_SO   | 2022-06-17  | po_ref_12012023_1 | ps_SO              | customerLocation_SO    | F            | S               |
     And metasfresh contains C_OrderLines:
-      | Identifier   | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | orderLine_SO | order_SO              | product_SO              | 8          |
-
+      | Identifier   | C_Order_ID | M_Product_ID | QtyEntered |
+      | orderLine_SO | order_SO   | product_SO   | 8          |
     When the order identified by order_SO is completed
 
     And after not more than 60s, M_ShipmentSchedules are found:
@@ -90,7 +93,6 @@ Feature: Group invoices and credit memos into a single document
     And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | schedule_SO                      | shipment_SO           |
-
     And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute | OPT.QtyDelivered |
       | schedule_SO | orderLine_SO              | N             | 8                |
@@ -101,9 +103,7 @@ Feature: Group invoices and credit memos into a single document
     And metasfresh contains M_InventoriesLines:
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
       | inventory                 | inventoryLine                 | product_SO              | 0       | 10       | PCE          |
-
     And complete inventory with inventoryIdentifier 'inventory'
-
     And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | inventoryLine                 | createdCU          |
@@ -114,7 +114,6 @@ Feature: Group invoices and credit memos into a single document
     And metasfresh contains C_OrderLines:
       | Identifier   | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | orderLine_CM | order_CM              | product_SO              | 10         |
-
     When the order identified by order_CM is completed
 
     And after not more than 60s, M_ShipmentSchedules are found:
@@ -137,7 +136,6 @@ Feature: Group invoices and credit memos into a single document
     When create M_PickingCandidate for M_HU
       | M_HU_ID.Identifier | M_ShipmentSchedule_ID.Identifier | QtyPicked | Status | PickStatus | ApprovalStatus |
       | createdCU          | schedule_CM                      | 10        | IP     | P          | ?              |
-
     And process picking
       | M_HU_ID.Identifier | M_ShipmentSchedule_ID.Identifier |
       | createdCU          | schedule_CM                      |
@@ -178,15 +176,18 @@ Feature: Group invoices and credit memos into a single document
       | invoice_1               | creditMemo                        |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | DocStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
       | invoice_1               | customer_SO              | customerLocation_SO               | po_ref_12012023_1 | 30 Tage netto | true      | CO        | 4.76 EUR       | dt_cm                       |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.QtyEntered |
-      | invoiceLine_1               | invoice_1               | product_SO              | 8           | true      | 8              |
-      | invoiceLine_2               | invoice_1               | product_SO              | -10         | true      | -10            |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyEntered | QtyInvoiced | Processed |
+      | invoiceLine_1               | invoice_1               | product_SO              | -8         | -8          | true      |
+      | invoiceLine_2               | invoice_1               | product_SO              | 10         | 10          | true      |
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   @Id:S0242_200
   Scenario: 2 invoice candidates (both sales); 1 x credit memo; 1 x invoice candidate; invoicing pool setup active, credit memo < invoice => one invoice with 2 lines, DocType=SalesInvoice
     Given metasfresh contains M_Products:
@@ -353,7 +354,7 @@ Feature: Group invoices and credit memos into a single document
       | invoice_1               | creditMemo                        |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | DocStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
       | invoice_1               | customer_SO              | customerLocation_SO               | po_ref_12012023_2 | 30 Tage netto | true      | CO        | 4.76 EUR       | dt_si                       |
 
     And validate created invoice lines
@@ -363,6 +364,9 @@ Feature: Group invoices and credit memos into a single document
 
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   @Id:S0242_300
   Scenario: 2 invoice candidates(both sales); 1 x credit memo; 1 x invoice candidate; no invoicing pool setup => 2 invoices
     Given metasfresh contains M_Products:
@@ -524,16 +528,19 @@ Feature: Group invoices and credit memos into a single document
       | invoice_2               | creditMemo                        |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
-      | invoice_1               | customer_SO              | customerLocation_SO               | po_ref_12012023_3 | 30 Tage netto | true      | CO        | 28.56 EUR      | dt_si                       |
-      | invoice_2               | customer_SO              | customerLocation_SO               | po_ref_12012023_3 | 30 Tage netto | true      | CO        | 23.8 EUR       | dt_cm                       |
+      | C_Invoice_ID | OPT.C_DocType_ID.Identifier | C_BPartner_ID | C_BPartner_Location_ID | POReference       | paymentTerm   | processed | DocStatus | GrandTotal |
+      | invoice_1    | dt_si                       | customer_SO   | customerLocation_SO    | po_ref_12012023_3 | 30 Tage netto | true      | CO        | 28.56 EUR  |
+      | invoice_2    | dt_cm                       | customer_SO   | customerLocation_SO    | po_ref_12012023_3 | 30 Tage netto | true      | CO        | 23.8 EUR   |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.QtyEntered |
-      | invoiceLine_1               | invoice_1               | product_SO              | 12          | true      | 12             |
-      | invoiceLine_2               | invoice_2               | product_SO              | -10         | true      | -10            |
+      | C_InvoiceLine_ID | C_Invoice_ID | M_Product_ID | QtyEntered | QtyInvoiced | Processed |
+      | invoiceLine_1    | invoice_1    | product_SO   | 12         | 12          | true      |
+      | invoiceLine_2    | invoice_2    | product_SO   | 10         | 10          | true      |
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   @Id:S0242_400
   Scenario: 2 invoice candidates(both sales); 2 x invoice candidate; no invoicing pool setup => 1 invoice with 2 lines, DocType=SalesInvoice
     Given metasfresh contains M_Products:
@@ -642,7 +649,7 @@ Feature: Group invoices and credit memos into a single document
       | invoice_1               | invoiceCand_SO_2                  |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | DocStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
       | invoice_1               | customer_SO              | customerLocation_SO               | po_ref_12012023_4 | 30 Tage netto | true      | CO        | 52.36 EUR      | dt_si                       |
 
     And validate created invoice lines
@@ -651,6 +658,9 @@ Feature: Group invoices and credit memos into a single document
       | invoiceLine_2               | invoice_1               | product_SO              | 10          | true      | 10             |
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   @Id:S0242_510
   Scenario: 1 invoice candidates(sales); 1 x invoice candidate; no invoicing pool setup, IC has docTypeInvoiceID = A => 1 invoice with 1 line, DocType=A
     Given metasfresh contains M_Products:
@@ -734,7 +744,7 @@ Feature: Group invoices and credit memos into a single document
       | invoice_1               | invoiceCand_SO                    |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | DocStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
       | invoice_1               | customer_SO              | customerLocation_SO               | po_ref_12012023_4 | 30 Tage netto | true      | CO        | 23.80 EUR      | A                           |
 
     And validate created invoice lines
@@ -743,6 +753,9 @@ Feature: Group invoices and credit memos into a single document
 
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   @Id:S0242_520
   Scenario: 1 invoice candidates(sales); 1 x invoice candidate; invoice pool exists, ic and invoice pool have the same invoiceDocTypeId = A => 1 invoice with 1 line, DocType=A
     Given metasfresh contains M_Products:
@@ -830,7 +843,7 @@ Feature: Group invoices and credit memos into a single document
       | invoice_1               | invoiceCand_SO                    |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | DocStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
       | invoice_1               | customer_SO              | customerLocation_SO               | po_ref_12012023_4 | 30 Tage netto | true      | CO        | 23.80 EUR      | A                           |
 
     And validate created invoice lines
@@ -839,6 +852,9 @@ Feature: Group invoices and credit memos into a single document
 
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   @Id:S0242_530
   Scenario: 1 invoice candidates(sales); 1 x invoice candidate;  IC has invoiceDocTypeID =C; invoicing pool is set, it has doctypeId = D, => 1 invoice with 1 line, DocType=C
     Given metasfresh contains M_Products:
@@ -927,7 +943,7 @@ Feature: Group invoices and credit memos into a single document
       | invoice_1               | invoiceCand_SO                    |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | DocStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
       | invoice_1               | customer_SO              | customerLocation_SO               | po_ref_12012023_4 | 30 Tage netto | true      | CO        | 23.80 EUR      | C                           |
 
     And validate created invoice lines
@@ -936,6 +952,9 @@ Feature: Group invoices and credit memos into a single document
 
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   @Id:S0242_540
   Scenario: 2 invoice candidates(both sales); 2 x invoice candidate; both ICs have invoiceDocType = A , A has pool with invoiceDocType = B, IsOnDistinctICTypes = true => 1 invoice with 2 lines, DocType=A
     Given metasfresh contains M_Products:
@@ -1059,7 +1078,7 @@ Feature: Group invoices and credit memos into a single document
       | invoice_1               | invoiceCand_SO_2                  |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | DocStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
       | invoice_1               | customer_SO              | customerLocation_SO               | po_ref_12012023_4 | 30 Tage netto | true      | CO        | 52.36 EUR      | A                           |
 
     And validate created invoice lines
@@ -1069,6 +1088,9 @@ Feature: Group invoices and credit memos into a single document
 
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00701_Sales_Invoice_Candidates
+@F00701
   @Id:S0242_550
   Scenario: 2 invoice candidates(both sales); 2 x invoice candidate; both ICs have invoiceDocType = A , A has pool with invoiceDocType = B, IsOnDistinctICTypes = false => 1 invoice with 2 lines, DocType=B
     Given metasfresh contains M_Products:
@@ -1192,7 +1214,7 @@ Feature: Group invoices and credit memos into a single document
       | invoice_1               | invoiceCand_SO_2                  |
 
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference   | paymentTerm   | processed | DocStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
       | invoice_1               | customer_SO              | customerLocation_SO               | po_ref_12012023_4 | 30 Tage netto | true      | CO        | 52.36 EUR      | B                           |
 
     And validate created invoice lines

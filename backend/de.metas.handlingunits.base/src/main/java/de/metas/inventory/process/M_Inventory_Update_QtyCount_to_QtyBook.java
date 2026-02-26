@@ -22,7 +22,7 @@
 
 package de.metas.inventory.process;
 
-import de.metas.handlingunits.inventory.InventoryRepository;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inventory.InventoryId;
 import de.metas.process.IProcessPrecondition;
@@ -36,7 +36,7 @@ public class M_Inventory_Update_QtyCount_to_QtyBook extends JavaProcess implemen
 {
 	@NonNull private static final AdMessageKey MSG_M_INVENTORY_UPDATE_QTYCOUNT_TO_QTYBOOK_ProcessedDoc = AdMessageKey.of("M_Inventory_Update_CountQty_to_BookQty_ProcessedDoc");
 
-	@NonNull final InventoryRepository inventoryRepository = SpringContextHolder.instance.getBean(InventoryRepository.class);
+	@NonNull private final InventoryService inventoryService = SpringContextHolder.instance.getBean(InventoryService.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -63,7 +63,7 @@ public class M_Inventory_Update_QtyCount_to_QtyBook extends JavaProcess implemen
 	protected String doIt() throws Exception
 	{
 		final InventoryId inventoryId = InventoryId.ofRepoId(getRecord_ID());
-		inventoryRepository.setQtyCountToQtyBookForInventory(inventoryId);
+		inventoryService.setQtyCountToQtyBookForInventory(inventoryId);
 
 		return MSG_OK;
 	}

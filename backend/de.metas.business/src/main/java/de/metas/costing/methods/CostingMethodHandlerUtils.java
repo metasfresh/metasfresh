@@ -1,15 +1,18 @@
 package de.metas.costing.methods;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostDetailPreviousAmounts;
+import de.metas.costing.CostDetailQuery;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostDetailService;
@@ -31,6 +34,7 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -164,6 +168,17 @@ public class CostingMethodHandlerUtils
 		return costDetailsService.getExistingCostDetails(request);
 	}
 
+	public List<CostDetail> getExistingCostDetails(@NonNull final CostDetailQuery query)
+	{
+		return costDetailsService.stream(query).collect(ImmutableList.toImmutableList());
+	}
+
+	public CostDetail getSingleCostDetail(@NonNull final CostDetailQuery query)
+	{
+		return costDetailsService.firstOnly(query)
+				.orElseThrow(() -> new AdempiereException("No cost detail found for " + query));
+	}
+
 	public List<CostDetail> updateDateAcct(@NonNull final Collection<CostDetail> costDetails, @NonNull final Instant newDateAcct)
 	{
 		return costDetails.stream()
@@ -248,4 +263,10 @@ public class CostingMethodHandlerUtils
 						request.getClientId(),
 						request.getOrgId()));
 	}
+
+	public AggregatedCostAmount toAggregatedCostAmount(final List<CostDetail> costDetails)
+	{
+		return costDetailsService.toAggregatedCostAmount(costDetails);
+	}
+
 }

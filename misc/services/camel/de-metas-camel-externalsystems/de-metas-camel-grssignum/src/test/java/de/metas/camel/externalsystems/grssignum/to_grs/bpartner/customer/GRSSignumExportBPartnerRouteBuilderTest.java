@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-grssignum
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -147,7 +147,7 @@ public class GRSSignumExportBPartnerRouteBuilderTest extends CamelTestSupport
 		assertThat(mockRetrieveBPartnerProcessor.called).isEqualTo(1);
 		assertThat(mockRetrieveBPartnerProductProcessor.called).isEqualTo(1);
 		assertThat(mockLookupExternalReferenceProcessor.called).isEqualTo(1);
-		assertMockEndpointsSatisfied();
+		MockEndpoint.assertIsSatisfied(context);
 
 		final String directorySettingsString = invokeExternalSystemRequest.getParameters().get(ExternalSystemConstants.PARAM_JSON_EXPORT_DIRECTORY_SETTINGS);
 		final JsonExportDirectorySettings directorySettings = objectMapper.readValue(directorySettingsString, JsonExportDirectorySettings.class);

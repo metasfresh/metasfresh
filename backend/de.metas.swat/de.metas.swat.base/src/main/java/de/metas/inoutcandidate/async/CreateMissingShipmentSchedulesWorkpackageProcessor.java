@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.inoutcandidate.async;
 
 import de.metas.async.AsyncBatchId;
@@ -62,7 +84,7 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 	 * Schedules a new "create missing shipment schedules" run, <b>unless</b> the processor is disabled or all scheds would be created later.<br>
 	 * See {@link IShipmentScheduleBL#allMissingSchedsWillBeCreatedLater()}.
 	 *
-	 * @param ctxAware if it has a not-null trxName, then the workpackage will be marked as ready for processing when given transaction is committed.
+	 * @param ctxAware if it has a not-null trxName, then the workpackage will be marked as ready for processing when the given transaction is committed.
 	 */
 	private static boolean _scheduleIfNotPostponed(final IContextAware ctxAware, @Nullable final AsyncBatchId asyncBatchId)
 	{
@@ -83,7 +105,7 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 
 		workPackageQueueFactory.getQueueForEnqueuing(ctx, CreateMissingShipmentSchedulesWorkpackageProcessor.class)
 				.newWorkPackage()
-				.setC_Async_Batch_ID(asyncBatchId)
+				.setAsyncBatchId(asyncBatchId)
 				.bindToTrxName(ctxAware.getTrxName())
 				.buildAndEnqueue();
 		return true;

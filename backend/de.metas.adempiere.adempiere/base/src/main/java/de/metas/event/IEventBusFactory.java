@@ -56,11 +56,4 @@ public interface IEventBusFactory extends ISingletonService
 	void registerUserNotificationsListener(final IEventListener listener);
 
 	void unregisterUserNotificationsListener(final IEventListener listener);
-
-	/**
-	 * Check remote endpoint connection status and send notifications in case it's down.
-	 *
-	 * @return true if remote endpoint connection is up
-	 */
-	boolean checkRemoteEndpointStatus();
 }

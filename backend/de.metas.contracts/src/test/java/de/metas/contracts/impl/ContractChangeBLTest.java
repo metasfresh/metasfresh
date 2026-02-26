@@ -1,7 +1,6 @@
 package de.metas.contracts.impl;
 
 import de.metas.acct.GLCategoryRepository;
-import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IContractChangeBL.ContractChangeParameters;
@@ -19,7 +18,6 @@ import de.metas.contracts.order.ContractOrderService;
 import de.metas.contracts.order.model.I_C_Order;
 import de.metas.location.impl.DummyDocumentLocationBL;
 import de.metas.process.PInstanceId;
-import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
@@ -51,7 +49,7 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 	@Override
 	public void initialize()
 	{
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Flatrate_Term(new ContractOrderService(),new DummyDocumentLocationBL(new BPartnerBL(new UserRepository())), new GLCategoryRepository()));
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Flatrate_Term(new ContractOrderService(), DummyDocumentLocationBL.newInstanceForUnitTesting(), new GLCategoryRepository()));
 		SystemTime.setTimeSource(today);
 	}
 

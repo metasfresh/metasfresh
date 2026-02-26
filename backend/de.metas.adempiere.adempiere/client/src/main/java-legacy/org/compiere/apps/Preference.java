@@ -17,12 +17,10 @@
 package org.compiere.apps;
 
 import ch.qos.logback.classic.Level;
-import de.metas.acct.api.IPostingService;
 import de.metas.common.util.pair.IPair;
 import de.metas.common.util.pair.ImmutablePair;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
-import de.metas.security.IUserRolePermissions;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
@@ -86,64 +84,63 @@ public final class Preference extends CDialog
 	private static final long serialVersionUID = -8923143271736597338L;
 
 	// services
-	private static final transient Logger log = LogManager.getLogger(Preference.class);
+	private static final Logger log = LogManager.getLogger(Preference.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 
-	private CPanel panel = new CPanel();
-	private BorderLayout panelLayout = new BorderLayout();
-	private CTabbedPane tabPane = new CTabbedPane();
-	private CPanel customizePane = new CPanel();
-	private CPanel contextPane = new CPanel();
-	private GridBagLayout customizeLayout = new GridBagLayout();
-	private CCheckBox autoCommit = new CCheckBox();
-	private CCheckBox autoNew = new CCheckBox();
-	private CCheckBox printPreview = new CCheckBox();
-	private CCheckBox validateConnectionOnStartup = new CCheckBox();
-	private CCheckBox singleInstancePerWindow = new CCheckBox();
-	private CCheckBox openWindowMaximized = new CCheckBox();
-	private CPanel southPanel = new CPanel();
-	private BorderLayout southLayout = new BorderLayout();
-	private BorderLayout icontextLayout = new BorderLayout();
-	private JList<String> infoList = new JList<>();
-	private JScrollPane contextListScrollPane = new JScrollPane(infoList);
-	private CPanel contextSouthPanel = new CPanel();
-	private CTextArea contextHeader = new CTextArea(4, 15);
-	private CTextArea contextDetail = new CTextArea(4, 35);
-	private CTextArea infoArea = new CTextArea(5, 30);
-	private BorderLayout contextSouthLayout = new BorderLayout();
-	private StatusBar statusBar = new StatusBar();
-	private ConfirmPanel confirm = ConfirmPanel.builder()
+	private final CPanel panel = new CPanel();
+	private final BorderLayout panelLayout = new BorderLayout();
+	private final CTabbedPane tabPane = new CTabbedPane();
+	private final CPanel customizePane = new CPanel();
+	private final CPanel contextPane = new CPanel();
+	private final GridBagLayout customizeLayout = new GridBagLayout();
+	private final CCheckBox autoCommit = new CCheckBox();
+	private final CCheckBox autoNew = new CCheckBox();
+	private final CCheckBox printPreview = new CCheckBox();
+	private final CCheckBox validateConnectionOnStartup = new CCheckBox();
+	private final CCheckBox singleInstancePerWindow = new CCheckBox();
+	private final CCheckBox openWindowMaximized = new CCheckBox();
+	private final CPanel southPanel = new CPanel();
+	private final BorderLayout southLayout = new BorderLayout();
+	private final BorderLayout icontextLayout = new BorderLayout();
+	private final JList<String> infoList = new JList<>();
+	private final JScrollPane contextListScrollPane = new JScrollPane(infoList);
+	private final CPanel contextSouthPanel = new CPanel();
+	private final CTextArea contextHeader = new CTextArea(4, 15);
+	private final CTextArea contextDetail = new CTextArea(4, 35);
+	private final CTextArea infoArea = new CTextArea(5, 30);
+	private final BorderLayout contextSouthLayout = new BorderLayout();
+	private final StatusBar statusBar = new StatusBar();
+	private final ConfirmPanel confirm = ConfirmPanel.builder()
 			.withCancelButton(true)
 			.build();
-	private CComboBox<Level> traceLevel = new CComboBox<>(LogManager.getAvailableLoggingLevels());
-	private CLabel traceLabel = new CLabel();
-	private CCheckBox traceFile = new CCheckBox();
-	private CCheckBox autoLogin = new CCheckBox();
-	private CCheckBox adempiereSys = new CCheckBox();
-	private CCheckBox logMigrationScript = new CCheckBox();
-	private CCheckBox storePassword = new CCheckBox();
-	private CCheckBox showTrl = new CCheckBox();
-	private CCheckBox showAcct = null;
-	private CCheckBox showAdvanced = new CCheckBox();
-	private CCheckBox cacheWindow = new CCheckBox();
-	private CLabel lPrinter = new CLabel();
-	private CPrinter fPrinter = new CPrinter();
+	private final CComboBox<Level> traceLevel = new CComboBox<>(LogManager.getAvailableLoggingLevels());
+	private final CLabel traceLabel = new CLabel();
+	private final CCheckBox traceFile = new CCheckBox();
+	private final CCheckBox autoLogin = new CCheckBox();
+	private final CCheckBox adempiereSys = new CCheckBox();
+	private final CCheckBox logMigrationScript = new CCheckBox();
+	private final CCheckBox storePassword = new CCheckBox();
+	private final CCheckBox showTrl = new CCheckBox();
+	private final CCheckBox showAdvanced = new CCheckBox();
+	private final CCheckBox cacheWindow = new CCheckBox();
+	private final CLabel lPrinter = new CLabel();
+	private final CPrinter fPrinter = new CPrinter();
 
 	// metas: adding support for an additional label printer
-	private CLabel lLabelPrinter = new CLabel();
-	private CPrinter fLabelPrinter = new CPrinter();
+	private final CLabel lLabelPrinter = new CLabel();
+	private final CPrinter fLabelPrinter = new CPrinter();
 	// metas end
 
-	private CLabel lDate = new CLabel();
-	private VDate fDate = new VDate();
-	private CButton bRoleInfo = new CButton(msgBL.translate(Env.getCtx(), "AD_Role_ID"));
+	private final CLabel lDate = new CLabel();
+	private final VDate fDate = new VDate();
+	private final CButton bRoleInfo = new CButton(msgBL.translate(Env.getCtx(), "AD_Role_ID"));
 	// Charset:
-	private CLabel lCharset = new CLabel();
-	private CComboBox<Charset> fCharset = new CComboBox<>(Ini.getAvailableCharsets());
+	private final CLabel lCharset = new CLabel();
+	private final CComboBox<Charset> fCharset = new CComboBox<>(Ini.getAvailableCharsets());
 
-	private CPanel configPanel = new CPanel();
+	private final CPanel configPanel = new CPanel();
 
-	private PLAFEditorPanel plafEditor = new PLAFEditorPanel()
+	private final PLAFEditorPanel plafEditor = new PLAFEditorPanel()
 			.setOnEditUIDefaultsActionListener(new ActionListener()
 			{
 				@Override
@@ -207,9 +204,8 @@ public final class Preference extends CDialog
 	 *      - southPanel
 	 * </pre>
 	 *
-	 * @throws Exception
 	 */
-	private void jbInit() throws Exception
+	private void jbInit()
 	{
 		traceLabel.setRequestFocusEnabled(false);
 		traceLabel.setText(msgBL.getMsg(Env.getCtx(), "TraceLevel", true));
@@ -239,13 +235,6 @@ public final class Preference extends CDialog
 		storePassword.setToolTipText(msgBL.getMsg(Env.getCtx(), "StorePassword", false));
 		showTrl.setText(msgBL.getMsg(Env.getCtx(), "ShowTrlTab", true));
 		showTrl.setToolTipText(msgBL.getMsg(Env.getCtx(), "ShowTrlTab", false));
-
-		if (Services.get(IPostingService.class).isEnabled())
-		{
-			showAcct = new CCheckBox();
-			showAcct.setText(msgBL.getMsg(Env.getCtx(), "ShowAcctTab", true));
-			showAcct.setToolTipText(msgBL.getMsg(Env.getCtx(), "ShowAcctTab", false));
-		}
 
 		showAdvanced.setText(msgBL.getMsg(Env.getCtx(), "ShowAdvancedTab", true));
 		showAdvanced.setToolTipText(msgBL.getMsg(Env.getCtx(), "ShowAdvancedTab", false));
@@ -285,12 +274,6 @@ public final class Preference extends CDialog
 		CPanel windowPanel = new CPanel();
 		windowPanel.setBorder(BorderFactory.createTitledBorder(msgBL.getMsg(Env.getCtx(), "Window")));
 		windowPanel.setLayout(new GridLayout(4, 2));
-
-		if (showAcct != null)
-		{
-			windowPanel.add(showAcct);
-			showAcct.setBorder(insetBorder);
-		}
 
 		windowPanel.add(showTrl);
 		showTrl.setBorder(insetBorder);
@@ -530,20 +513,6 @@ public final class Preference extends CDialog
 		// Save Password
 		storePassword.setSelected(Ini.isPropertyBool(Ini.P_STORE_PWD));
 
-		// Show Acct Tab
-		if (showAcct != null)
-		{
-			if (Env.getUserRolePermissions().hasPermission(IUserRolePermissions.PERMISSION_ShowAcct))
-			{
-				showAcct.setSelected(Ini.isPropertyBool(Ini.P_SHOW_ACCT));
-			}
-			else
-			{
-				showAcct.setSelected(false);
-				showAcct.setReadWrite(false);
-			}
-		}
-
 		// Show Trl/Advanced Tab
 		showTrl.setSelected(Ini.isPropertyBool(Ini.P_SHOW_TRL));
 		showAdvanced.setSelected(Ini.isPropertyBool(Ini.P_SHOW_ADVANCED));
@@ -644,13 +613,6 @@ public final class Preference extends CDialog
 		// Save Password
 		Ini.setProperty(Ini.P_STORE_PWD, (storePassword.isSelected()));
 
-		// Show Acct Tab
-		if (showAcct != null)
-		{
-			Ini.setProperty(Ini.P_SHOW_ACCT, (showAcct.isSelected()));
-			Env.setContext(Env.getCtx(), Env.CTXNAME_ShowAcct, (showAcct.isSelected()));
-		}
-
 		// Show Trl Tab
 		Ini.setProperty(Ini.P_SHOW_TRL, (showTrl.isSelected()));
 		Env.setContext(Env.getCtx(), "#ShowTrl", (showTrl.isSelected()));
@@ -710,7 +672,7 @@ public final class Preference extends CDialog
 		{
 			String clazz = laf.getValue();
 			String currentLaf = UIManager.getLookAndFeel().getClass().getName();
-			if (clazz != null && clazz.length() > 0 && !currentLaf.equals(clazz))
+			if (clazz != null && !clazz.isEmpty() && !currentLaf.equals(clazz))
 			{
 				// laf changed
 				AdempierePLAF.setPLAF(laf, theme, true);
@@ -723,7 +685,7 @@ public final class Preference extends CDialog
 					MetalTheme currentTheme = MetalLookAndFeel.getCurrentTheme();
 					String themeClass = currentTheme.getClass().getName();
 					String sTheme = theme.getValue();
-					if (sTheme != null && sTheme.length() > 0 && !sTheme.equals(themeClass))
+					if (sTheme != null && !sTheme.isEmpty() && !sTheme.equals(themeClass))
 					{
 						ValueNamePair plaf = ValueNamePair.of(
 								UIManager.getLookAndFeel().getClass().getName(),
@@ -747,7 +709,6 @@ public final class Preference extends CDialog
 
 	/**
 	 *
-	 * @param panel
 	 * @param onLoad will be applied then this instance is loaded. Should contain code to load initial values into the given {@code panel}.
 	 * @param onSave will be applied when this instance is stored, right before {@link Ini#saveProperties()} is invoked.
 	 *            Should contain code to persist the values of the given {@code panel}.

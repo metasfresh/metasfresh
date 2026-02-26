@@ -1,4 +1,4 @@
-FROM node:20 as build
+FROM node:20 AS build
 
 RUN npm install -g webpack webpack-cli
 
@@ -19,7 +19,7 @@ ENV NODE_OPTIONS=--openssl-legacy-provider
 RUN webpack --config webpack.docker.js
 
 
-FROM build as test
+FROM build AS test
 
 SHELL ["/bin/bash", "-c"]
 
@@ -33,7 +33,7 @@ WORKDIR /reports/frontend
 CMD cp /webui/jest.* .
 
 
-FROM nginx:1.21.6 as runtime
+FROM nginx:1.21.6 AS runtime
 WORKDIR /usr/share/nginx/html
 COPY docker-builds/nginx/default.conf /etc/nginx/conf.d
 COPY --from=build /webui/dist/ .

@@ -3,10 +3,14 @@ package de.metas.cucumber.stepdefs;
 import com.google.common.collect.ImmutableSet;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
 
 public interface StepDefDataGetIdAware<ID extends RepoIdAware, RecordType>
 {
@@ -17,6 +21,11 @@ public interface StepDefDataGetIdAware<ID extends RepoIdAware, RecordType>
 	//
 	// Optional methods you might want to implement
 	default boolean isAllowDuplicateRecordsForSameIdentifier(ID id) {return false;}
+
+	default ID parseId(final StepDefDataIdentifier identifier)
+	{
+		throw new AdempiereException("Parsing the ID from identifier not implemented for " + getClass());
+	}
 
 	//
 	// Methods implemented by StepDefData:
@@ -38,6 +47,14 @@ public interface StepDefDataGetIdAware<ID extends RepoIdAware, RecordType>
 		return extractIdFromRecord(get(identifier));
 	}
 
+	default Set<ID> getIds(@NonNull final Collection<StepDefDataIdentifier> identifiers)
+	{
+		return identifiers.stream()
+				.distinct()
+				.map(this::getId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 	@Nullable
 	default ID getIdOfNullable(@Nullable final StepDefDataIdentifier identifier)
 	{
@@ -53,6 +70,14 @@ public interface StepDefDataGetIdAware<ID extends RepoIdAware, RecordType>
 	{
 		return getOptional(identifier).map(this::extractIdFromRecord);
 	}
+
+	default ID getIdOrParse(@NonNull final StepDefDataIdentifier identifier)
+	{
+		return getIdOptional(identifier)
+				.orElseGet(() -> parseId(identifier));
+	}
+
+	default Stream<ID> streamIds() {return getIdentifiers().stream().map(this::getId).distinct();}
 
 	default Optional<StepDefDataIdentifier> getFirstIdentifierById(@NonNull final ID id) {return getFirstIdentifierById(id, null);}
 
@@ -79,6 +104,8 @@ public interface StepDefDataGetIdAware<ID extends RepoIdAware, RecordType>
 	{
 		return getFirstIdentifierById(extractIdFromRecord(record));
 	}
+
+	default Optional<RecordType> getFirstById(@NonNull final ID id) {return getFirstIdentifierById(id, null).map(this::get);}
 
 	default void putOrReplaceIfSameId(final StepDefDataIdentifier identifier, final RecordType newRecord)
 	{

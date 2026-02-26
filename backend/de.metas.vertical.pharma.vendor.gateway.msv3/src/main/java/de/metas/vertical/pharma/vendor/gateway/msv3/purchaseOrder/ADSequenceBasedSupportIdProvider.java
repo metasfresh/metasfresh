@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import java.util.Properties;
 
 import org.adempiere.ad.service.ISequenceDAO;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_Sequence;
 import org.compiere.model.MSequence;
 import org.compiere.util.Env;
@@ -43,7 +44,7 @@ public class ADSequenceBasedSupportIdProvider implements SupportIdProvider
 	@Override
 	public SupportIDType getNextSupportId()
 	{
-		final int supportId = MSequence.getNextID(Env.CTXVALUE_AD_Client_ID_System, MSV3_SUPPORT_ID_SEQUENCE);
+		final int supportId = MSequence.getNextID(ClientId.SYSTEM.getRepoId(), MSV3_SUPPORT_ID_SEQUENCE);
 		if (supportId <= SupportIDType.MAX_VALUE)
 		{
 			return SupportIDType.of(supportId);

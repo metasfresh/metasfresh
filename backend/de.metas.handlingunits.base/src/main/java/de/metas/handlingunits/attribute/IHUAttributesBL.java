@@ -34,8 +34,7 @@ import org.compiere.model.I_M_Attribute;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.Map;
-import java.util.Set;
+import java.util.Optional;
 
 public interface IHUAttributesBL extends ISingletonService
 {
@@ -75,7 +74,6 @@ public interface IHUAttributesBL extends ISingletonService
 
 	void updateHUAttribute(@NonNull final I_M_HU destHU, @NonNull final I_M_HU sourceHU, @NonNull final AttributeCode attributeCode);
 
-
 	void updateHUAttribute(@NonNull final IHUContext huContext, @NonNull final I_M_HU destHU, @NonNull final I_M_HU sourceHU, @NonNull final AttributeCode attributeCode);
 
 	/**
@@ -105,7 +103,7 @@ public interface IHUAttributesBL extends ISingletonService
 	void validateMandatoryPickingAttributes(HuId huId, ProductId productId);
 
 	boolean areMandatoryPickingAttributesFulfilled(@NonNull HuId huId,
-			@NonNull ProductId productId);
+												   @NonNull ProductId productId);
 
 	void transferAttributesForSingleProductHUs(@NonNull I_M_HU huFrom, @NonNull I_M_HU huTo);
 
@@ -116,4 +114,6 @@ public interface IHUAttributesBL extends ISingletonService
 
 	@Nullable
 	IAttributeValue getAttributeValue(@NonNull I_M_HU hu, @NonNull AttributeCode attributeCode);
+
+	Optional<IAttributeValue> getAttributeValueIfExists(@NonNull I_M_HU hu, @NonNull AttributeCode attributeCode);
 }

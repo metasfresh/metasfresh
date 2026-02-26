@@ -40,7 +40,6 @@ import org.adempiere.util.lang.Mutable;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
-import org.junit.Assert;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -50,6 +49,7 @@ import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.util.Services;
+import org.junit.jupiter.api.Assertions;
 
 import java.math.BigDecimal;
 
@@ -78,7 +78,7 @@ public class ShipmentScheduleQtyPickedExpectation<ParentExpectationType> extends
 
 		prefix += "\n Alloc: " + alloc;
 
-		Assert.assertNotNull(prefix + " alloc null", alloc);
+		Assertions.assertNotNull(alloc, prefix + " alloc null");
 
 		prefix += "\n\nInvalid ";
 
@@ -142,7 +142,7 @@ public class ShipmentScheduleQtyPickedExpectation<ParentExpectationType> extends
 		final String prefix = (message == null ? "" : message)
 				+ "\nQuery: " + query
 				+ "\n\n Error: ";
-		Assert.assertNotNull(prefix + "M_ShipmentSchedule_QtyPicked shall exist", alloc);
+		Assertions.assertNotNull(alloc, prefix + "M_ShipmentSchedule_QtyPicked shall exist");
 
 		return alloc;
 	}
@@ -171,7 +171,7 @@ public class ShipmentScheduleQtyPickedExpectation<ParentExpectationType> extends
 				+ "\n Candidate: " + candidate
 				+ "\n\nInvalid ";
 
-		Assert.assertNotNull(prefix + " candidate not null", candidate);
+		Assertions.assertNotNull(candidate, prefix + " candidate not null");
 
 		if (shipmentScheduleId != null)
 		{

@@ -10,7 +10,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.NoSuchElementException;
 import java.util.function.Supplier;

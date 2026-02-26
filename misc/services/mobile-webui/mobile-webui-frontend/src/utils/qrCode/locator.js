@@ -3,6 +3,19 @@ import { QRCODE_SEPARATOR } from './common';
 
 export const QRCODE_TYPE_LOCATOR = 'LOC'; // keep in sync with org.adempiere.warehouse.qrcode.LocatorQRCodeJsonConverter.GLOBAL_QRCODE_TYPE
 
+export const isLocatorQRCodeString = (string) => {
+  if (!string) {
+    return false;
+  }
+  const idx = string.indexOf(QRCODE_SEPARATOR);
+  if (idx <= 0) {
+    return false;
+  }
+
+  const type = string.substring(0, idx);
+  return type === QRCODE_TYPE_LOCATOR;
+};
+
 export const parseLocatorQRCodeString = (string) => {
   let remainingString = string;
   //

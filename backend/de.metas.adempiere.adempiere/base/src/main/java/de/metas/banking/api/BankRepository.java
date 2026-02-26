@@ -171,6 +171,6 @@ public class BankRepository
 				.addOnlyActiveRecordsFilter()
 				.addStringLikeFilter(I_C_Bank.COLUMNNAME_Name, bankName, true)
 				.create()
-				.listIds(BankId::ofRepoId);
+				.idsAsSet(BankId::ofRepoId);
 	}
 }

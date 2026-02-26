@@ -400,6 +400,18 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
+	public void setIsAdvancedText (final boolean IsAdvancedText)
+	{
+		set_Value (COLUMNNAME_IsAdvancedText, IsAdvancedText);
+	}
+
+	@Override
+	public boolean isAdvancedText()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAdvancedText);
+	}
+
+	@Override
 	public void setIsAllowLogging (final boolean IsAllowLogging)
 	{
 		set_Value (COLUMNNAME_IsAllowLogging, IsAllowLogging);
@@ -459,7 +471,19 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 		return get_ValueAsBoolean(COLUMNNAME_IsCalculated);
 	}
 
-	/** 
+	@Override
+	public void setIsDLMPartitionBoundary (final boolean IsDLMPartitionBoundary)
+	{
+		set_Value (COLUMNNAME_IsDLMPartitionBoundary, IsDLMPartitionBoundary);
+	}
+
+	@Override
+	public boolean isDLMPartitionBoundary()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsDLMPartitionBoundary);
+	}
+
+	/**
 	 * IsEncrypted AD_Reference_ID=354
 	 * Reference name: AD_Column Encrypted
 	 */
@@ -619,7 +643,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public boolean isShowFilterInactiveValues() 
+	public boolean isShowFilterInactiveValues()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsShowFilterInactiveValues);
 	}

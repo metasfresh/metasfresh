@@ -21,7 +21,7 @@
  */
 
 CREATE OR REPLACE VIEW "de.metas.edi".c_remittanceadvice_diag_I_to_P_allocs_v AS
-SELECT 'invoice-to-payment'                                                                                                AS allocation_type,
+SELECT 'invoice-to-payment'::text                                                                                          AS allocation_type,
        ral.created                                                                                                         AS ral_created,
        ral.c_remittanceadvice_id,
        ral.c_remittanceadvice_line_id,

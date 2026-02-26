@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2024 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -29,6 +29,7 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
+import org.jetbrains.annotations.Contract;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
@@ -39,6 +40,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.function.Supplier;
 
 public final class SpringContextHolder
 {
@@ -166,21 +168,37 @@ public final class SpringContextHolder
 	/**
 	 * can be used if a service might be retrieved before the spring application context is up
 	 */
+	@Contract("_, !null -> !null")
 	@Nullable
 	public <T> T getBeanOr(@NonNull final Class<T> requiredType, @Nullable final T defaultImplementation)
 	{
-		if (Adempiere.isUnitTestMode())
+		return getBeanOrSupply(requiredType, () -> defaultImplementation);
+	}
+
+	/**
+	 * can be used if a service might be retrieved before the spring application context is up
+	 */
+	@Nullable
+	public static <T> T getBeanOrSupply(@NonNull final Class<T> requiredType, @NonNull final Supplier<T> defaultImplementationSupplier)
+	{
+		final boolean unitTestMode = Adempiere.isUnitTestMode();
+		if (unitTestMode)
 		{
-			final T beanImpl = junitRegisteredBeans.getBeanOrNull(requiredType);
+			final T beanImpl = instance.junitRegisteredBeans.getBeanOrNull(requiredType);
 			if (beanImpl != null)
 			{
 				return beanImpl;
 			}
 		}
 
-		final ApplicationContext springApplicationContext = getApplicationContext();
+		final ApplicationContext springApplicationContext = instance.getApplicationContext();
 		if (springApplicationContext == null)
 		{
+			final T defaultImplementation = defaultImplementationSupplier.get();
+			if (unitTestMode && defaultImplementation != null)
+			{
+				registerJUnitBean(requiredType, defaultImplementation);
+			}
 			return defaultImplementation;
 		}
 
@@ -190,10 +208,18 @@ public final class SpringContextHolder
 		}
 		catch (final NoSuchBeanDefinitionException | IllegalStateException e)
 		{
-			if (Adempiere.isUnitTestMode())
+			if (unitTestMode)
 			{
-				return defaultImplementation; // otherwise we would need to register NoopPerformanceMonitoringService for >800 unit tests
+				// otherwise we would need to register NoopPerformanceMonitoringService for >800 unit tests
+
+				final T defaultImplementation = defaultImplementationSupplier.get();
+				if (defaultImplementation != null)
+				{
+					registerJUnitBean(requiredType, defaultImplementation);
+				}
+				return defaultImplementation;
 			}
+			
 			throw e;
 		}
 	}
@@ -258,6 +284,8 @@ public final class SpringContextHolder
 				.stream(activeProfiles)
 				.anyMatch(env -> env.equalsIgnoreCase(profileName));
 	}
+
+	public static void assertUnitTestMode() {Adempiere.assertUnitTestMode();}
 
 	public static <T> void registerJUnitBean(@NonNull final T beanImpl)
 	{

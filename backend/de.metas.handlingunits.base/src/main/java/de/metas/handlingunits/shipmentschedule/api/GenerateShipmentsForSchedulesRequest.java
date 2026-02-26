@@ -23,34 +23,34 @@
 package de.metas.handlingunits.shipmentschedule.api;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.HuId;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.checkerframework.checker.nullness.qual.Nullable;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
 
 @Value
 @Builder
 public class GenerateShipmentsForSchedulesRequest
 {
-	@NonNull
-	ImmutableSet<ShipmentScheduleId> scheduleIds;
-
-	@NonNull
-	M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse;
+	@NonNull M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse;
+	@Nullable ShipmentScheduleAndJobScheduleIdSet scheduleIds;
+	@Nullable ImmutableSet<HuId> onlyLUIds;
 
 	/**
 	 * If {@code false} and HUs are picked on-the-fly, then those HUs are created as CUs that are taken from bigger LUs, TUs or CUs (the default).
 	 * If {@code true}, then the on-the-fly picked HUs are in addition created as TUs, using the respective shipment schedules' packing instructions.
 	 */
-	@Builder.Default
-	boolean onTheFlyPickToPackingInstructions = false;
+	@Builder.Default boolean onTheFlyPickToPackingInstructions = false;
 
 	@NonNull Boolean isCompleteShipment;
 	boolean isCloseShipmentSchedules;
 
-	@Nullable
-	Boolean isShipDateToday;
+	@Nullable Boolean isShipDateToday;
 
 	/**
 	 * The shipments are generally created via async-workpackage and this flag decides if the caller wants to wait for it.
@@ -58,6 +58,14 @@ public class GenerateShipmentsForSchedulesRequest
 	 *
 	 * @see ShipmentService#generateShipmentsForScheduleIds(GenerateShipmentsForSchedulesRequest)
 	 */
-	@Builder.Default
-	boolean waitForShipments = true;
+	@Builder.Default boolean waitForShipments = true;
+
+	@SuppressWarnings("unused")
+	public static class GenerateShipmentsForSchedulesRequestBuilder
+	{
+		public GenerateShipmentsForSchedulesRequestBuilder shipmentScheduleIds(@Nullable final Collection<ShipmentScheduleId> shipmentScheduleIds)
+		{
+			return scheduleIds(shipmentScheduleIds != null ? ShipmentScheduleAndJobScheduleIdSet.ofShipmentScheduleIds(shipmentScheduleIds) : null);
+		}
+	}
 }

@@ -107,7 +107,7 @@ public class ProductionSimulationService
 			log.error("Error encountered while awaiting processing for traceId:" + traceId, exception);
 
 			postMaterialEventService.enqueueEventNow(DeactivateAllSimulatedCandidatesEvent.builder()
-					.eventDescriptor(EventDescriptor.ofClientAndOrg(Env.getClientId(), Env.getOrgId()))
+					.eventDescriptor(EventDescriptor.ofClientAndOrg(Env.getClientAndOrgId()))
 					.build());
 		}
 	}

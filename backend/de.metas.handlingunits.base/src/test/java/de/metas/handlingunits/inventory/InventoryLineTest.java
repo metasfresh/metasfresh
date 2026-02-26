@@ -1,26 +1,26 @@
 package de.metas.handlingunits.inventory;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
-
-import java.math.BigDecimal;
-
+import de.metas.handlingunits.HuId;
+import de.metas.inventory.HUAggregationType;
+import de.metas.inventory.InventoryLineId;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import de.metas.handlingunits.HuId;
-import de.metas.inventory.HUAggregationType;
-import de.metas.inventory.InventoryLineId;
-import de.metas.material.event.commons.AttributesKey;
-import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
+import java.math.BigDecimal;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 /*
  * #%L
@@ -64,63 +64,16 @@ class InventoryLineTest
 		return Quantity.of(BigDecimal.valueOf(qtyInt), uomRecord);
 	}
 
-	@Test
-	void distributeQtyCountToHUs_3_to_19()
+	private InventoryLineHU zeroPhysicalInventoryLineHU()
 	{
-		final InventoryLine inventoryLine = createInventoryLine();
-		assertThat(inventoryLine.getInventoryLineHUs()) // guard
-				.extracting("huId", "qtyBook", "qtyCount")
-				.containsOnly(
-						tuple(HuId.ofRepoId(100), qty(10), qty(1)),
-						tuple(HuId.ofRepoId(200), qty(20), qty(2)));
-
-		// invoke the method under test
-		final InventoryLine result = inventoryLine.distributeQtyCountToHUs(qty(19));
-
-		assertThat(result.getInventoryLineHUs())
-				.extracting("huId", "qtyBook", "qtyCount")
-				.containsOnly(
-						tuple(HuId.ofRepoId(100), qty(10), qty(17)),
-						tuple(HuId.ofRepoId(200), qty(20), qty(2)));
-	}
-
-	@Test
-	void distributeQtyCountToHUs_3_to_1()
-	{
-		final InventoryLine inventoryLine = createInventoryLine();
-		assertThat(inventoryLine.getInventoryLineHUs()) // guard
-				.extracting("huId", "qtyBook", "qtyCount")
-				.containsOnly(
-						tuple(HuId.ofRepoId(100), qty(10), qty(1)),
-						tuple(HuId.ofRepoId(200), qty(20), qty(2)));
-
-		// invoke the method under test
-		final InventoryLine result = inventoryLine.distributeQtyCountToHUs(qty(1));
-
-		assertThat(result.getInventoryLineHUs())
-				.extracting("huId", "qtyBook", "qtyCount")
-				.containsOnly(
-						tuple(HuId.ofRepoId(100), qty(10), qty(0)),
-						tuple(HuId.ofRepoId(200), qty(20), qty(1)));
-	}
-
-	@Test
-	void distributeQtyCountToHUs_empty_to_19()
-	{
-		final InventoryLine inventoryLine = createInventoryLine()
-				.toBuilder()
-				.clearInventoryLineHUs()
-				.inventoryLineHU(InventoryLineHU.zeroPhysicalInventory(uomRecord))
+		final Quantity zero = Quantity.zero(uomRecord);
+		return InventoryLineHU.builder()
+				.asiId(AttributeSetInstanceId.NONE)
+				.huId(null)
+				.qtyInternalUse(null)
+				.qtyBook(zero)
+				.qtyCount(zero)
 				.build();
-		assertThat(inventoryLine.getInventoryLineHUs())
-				.containsExactly(InventoryLineHU.zeroPhysicalInventory(uomRecord));
-
-		// invoke the method under test
-		final InventoryLine result = inventoryLine.distributeQtyCountToHUs(qty(19));
-
-		assertThat(result.getInventoryLineHUs())
-				.extracting("huId", "qtyBook", "qtyCount")
-				.containsOnly(tuple(null, qty(0), qty(19)));
 	}
 
 	private InventoryLine createInventoryLine()
@@ -130,14 +83,16 @@ class InventoryLineTest
 				.id(InventoryLineId.ofRepoId(20))
 				.locatorId(LocatorId.ofRepoId(WarehouseId.ofRepoId(30), 35))
 				.productId(ProductId.ofRepoId(40))
-				.storageAttributesKey(AttributesKey.ofAttributeValueIds(10000, 10001, 10002))
+				.asiId(AttributeSetInstanceId.ofRepoId(1234))
 				.huAggregationType(HUAggregationType.MULTI_HU)
 				.inventoryLineHU(InventoryLineHU.builder()
+						.asiId(AttributeSetInstanceId.ofRepoId(1235))
 						.huId(HuId.ofRepoId(100))
 						.qtyBook(qty(10))
 						.qtyCount(qty(1))
 						.build())
 				.inventoryLineHU(InventoryLineHU.builder()
+						.asiId(AttributeSetInstanceId.ofRepoId(1236))
 						.huId(HuId.ofRepoId(200))
 						.qtyBook(qty(20))
 						.qtyCount(qty(2))
@@ -145,4 +100,66 @@ class InventoryLineTest
 				.build();
 	}
 
+	@Nested
+	class distributeQtyCountToHUs
+	{
+		@Test
+		void from_3_to_19()
+		{
+			final InventoryLine inventoryLine = createInventoryLine();
+			assertThat(inventoryLine.getInventoryLineHUs()) // guard
+					.extracting("huId", "qtyBook", "qtyCount")
+					.containsOnly(
+							tuple(HuId.ofRepoId(100), qty(10), qty(1)),
+							tuple(HuId.ofRepoId(200), qty(20), qty(2)));
+
+			// invoke the method under test
+			final InventoryLine result = inventoryLine.distributeQtyCountToHUs(qty(19));
+
+			assertThat(result.getInventoryLineHUs())
+					.extracting("huId", "qtyBook", "qtyCount")
+					.containsOnly(
+							tuple(HuId.ofRepoId(100), qty(10), qty(17)),
+							tuple(HuId.ofRepoId(200), qty(20), qty(2)));
+		}
+
+		@Test
+		void from_3_to_1()
+		{
+			final InventoryLine inventoryLine = createInventoryLine();
+			assertThat(inventoryLine.getInventoryLineHUs()) // guard
+					.extracting("huId", "qtyBook", "qtyCount")
+					.containsOnly(
+							tuple(HuId.ofRepoId(100), qty(10), qty(1)),
+							tuple(HuId.ofRepoId(200), qty(20), qty(2)));
+
+			// invoke the method under test
+			final InventoryLine result = inventoryLine.distributeQtyCountToHUs(qty(1));
+
+			assertThat(result.getInventoryLineHUs())
+					.extracting("huId", "qtyBook", "qtyCount")
+					.containsOnly(
+							tuple(HuId.ofRepoId(100), qty(10), qty(0)),
+							tuple(HuId.ofRepoId(200), qty(20), qty(1)));
+		}
+
+		@Test
+		void from_empty_to_19()
+		{
+			final InventoryLine inventoryLine = createInventoryLine()
+					.toBuilder()
+					.clearInventoryLineHUs()
+					.inventoryLineHU(zeroPhysicalInventoryLineHU())
+					.build();
+			assertThat(inventoryLine.getInventoryLineHUs())
+					.containsExactly(zeroPhysicalInventoryLineHU());
+
+			// invoke the method under test
+			final InventoryLine result = inventoryLine.distributeQtyCountToHUs(qty(19));
+
+			assertThat(result.getInventoryLineHUs())
+					.extracting("huId", "qtyBook", "qtyCount")
+					.containsOnly(tuple(null, qty(0), qty(19)));
+		}
+	}
 }

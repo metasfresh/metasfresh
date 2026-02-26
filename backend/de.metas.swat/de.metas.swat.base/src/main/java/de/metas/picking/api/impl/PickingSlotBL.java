@@ -19,6 +19,7 @@ import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Set;
 
 public class PickingSlotBL implements IPickingSlotBL
@@ -28,55 +29,13 @@ public class PickingSlotBL implements IPickingSlotBL
 	@Override
 	public boolean isAvailableForAnyBPartner(@NonNull final I_M_PickingSlot pickingSlot)
 	{
-		final BPartnerId pickingSlotBPartnerId = extractBPartnerId(pickingSlot);
-		return pickingSlotBPartnerId == null
-				&& pickingSlot.getM_Picking_Job_ID() <= 0;
-	}
-
-	@Nullable
-	private static BPartnerId extractBPartnerId(final @NonNull I_M_PickingSlot pickingSlot)
-	{
-		return BPartnerId.ofRepoIdOrNull(pickingSlot.getC_BPartner_ID());
+		return PickingSlotUtils.isAvailableForAnyBPartner(pickingSlot);
 	}
 
 	@Override
 	public boolean isAvailableForBPartnerId(@NonNull final I_M_PickingSlot pickingSlot, @Nullable final BPartnerId bpartnerId)
 	{
-		//
-		// General use Picking Slot, accept it right away
-		if (isAvailableForAnyBPartner(pickingSlot))
-		{
-			return true;
-		}
-
-		//
-		// Check BPartner
-		final BPartnerId pickingSlotBPartnerId = extractBPartnerId(pickingSlot);
-		// Any BPartner Picking Slot
-		if (pickingSlotBPartnerId == null)
-		{
-			// accept any partner
-		}
-		// Picking slot specific for BP
-		else
-		{
-			if (bpartnerId == null)
-			{
-				// no particular partner was requested, (i.e. M_HU_PI_Item_Product does not have a BP set), accept it
-			}
-			else if (BPartnerId.equals(bpartnerId, pickingSlotBPartnerId))
-			{
-				// same BP, accept it
-			}
-			else
-			{
-				// not same BP, don't accept it
-				return false;
-			}
-		}
-
-		// If we reach this point, we passed all validation rules
-		return true;
+		return PickingSlotUtils.isAvailableForBPartnerId(pickingSlot, bpartnerId);
 	}
 
 	@Override
@@ -85,49 +44,7 @@ public class PickingSlotBL implements IPickingSlotBL
 			final BPartnerId bpartnerId,
 			@Nullable final BPartnerLocationId bpartnerLocationId)
 	{
-		//
-		// General use Picking Slot, accept it right away
-		if (isAvailableForAnyBPartner(pickingSlot))
-		{
-			return true;
-		}
-
-		//
-		// Check if is available for BPartner
-		if (!isAvailableForBPartnerId(pickingSlot, bpartnerId))
-		{
-			return false;
-		}
-
-		//
-		// Check BPartner Location
-		final BPartnerLocationId pickingSlotBPartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(pickingSlot.getC_BPartner_ID(), pickingSlot.getC_BPartner_Location_ID());
-
-		// Any BP Location Picking Slot
-		if (pickingSlotBPartnerLocationId == null)
-		{
-			// accept any location
-		}
-		// Picking slot specific for BP Location
-		else
-		{
-			if (bpartnerLocationId == null)
-			{
-				// no particular location was requested, accept it
-			}
-			else if (BPartnerLocationId.equals(bpartnerLocationId, pickingSlotBPartnerLocationId))
-			{
-				// same BP Location, accept it
-			}
-			else
-			{
-				// not same BP Location, don't accept it
-				return false;
-			}
-		}
-
-		// If we reach this point, we passed all validation rules
-		return true;
+		return PickingSlotUtils.isAvailableForBPartnerAndLocation(pickingSlot, bpartnerId, bpartnerLocationId);
 	}
 
 	@Override
@@ -143,6 +60,12 @@ public class PickingSlotBL implements IPickingSlotBL
 	}
 
 	@Override
+	public Set<PickingSlotIdAndCaption> getPickingSlotIdAndCaptions(@NonNull final Set<PickingSlotId> pickingSlotIds)
+	{
+		return pickingSlotDAO.getPickingSlotIdAndCaptions(pickingSlotIds);
+	}
+
+	@Override
 	public QRCodePDFResource createQRCodesPDF(@NonNull final Set<PickingSlotIdAndCaption> pickingSlotIdAndCaptions)
 	{
 		Check.assumeNotEmpty(pickingSlotIdAndCaptions, "pickingSlotIdAndCaptions is not empty");
@@ -152,6 +75,24 @@ public class PickingSlotBL implements IPickingSlotBL
 				.map(PickingSlotQRCode::toPrintableQRCode)
 				.collect(ImmutableList.toImmutableList());
 
+		return createPDF(qrCodes);
+	}
+
+	@Override
+	public PickingSlotQRCode getPickingSlotQRCode(final PickingSlotId pickingSlotId)
+	{
+		final PickingSlotIdAndCaption pickingSlotIdAndCaption = getPickingSlotIdAndCaption(pickingSlotId);
+		return PickingSlotQRCode.ofPickingSlotIdAndCaption(pickingSlotIdAndCaption);
+	}
+
+	@Override
+	public QRCodePDFResource createPDF(@NonNull final PickingSlotQRCode qrCode)
+	{
+		return createPDF(ImmutableList.of(qrCode.toPrintableQRCode()));
+	}
+
+	private QRCodePDFResource createPDF(final List<PrintableQRCode> qrCodes)
+	{
 		final GlobalQRCodeService globalQRCodeService = SpringContextHolder.instance.getBean(GlobalQRCodeService.class);
 		return globalQRCodeService.createPDF(qrCodes);
 	}
@@ -168,4 +109,9 @@ public class PickingSlotBL implements IPickingSlotBL
 		return pickingSlotDAO.getById(pickingSlotId);
 	}
 
+	@Override
+	public boolean isPickingRackSystem(@NonNull final PickingSlotId pickingSlotId)
+	{
+		return pickingSlotDAO.isPickingRackSystem(pickingSlotId);
+	}
 }

@@ -1,0 +1,95 @@
+// @ts-check
+import { defineConfig, devices, test as testOrig } from '@playwright/test';
+import { setCurrentPage } from "./tests/utils/common";
+import os from 'os';
+
+/**
+ * @see https://playwright.dev/docs/test-configuration
+ */
+export default defineConfig({
+    testDir: './tests',
+    workers: 1, // Runs test files sequentially
+    fullyParallel: false, // Run tests in files in parallel
+    forbidOnly: !!process.env.CI, // Fail the build on CI if you accidentally left test.only in the source code.
+    retries: process.env.CI ? 2 : 0, // Retry on CI only
+    reporter: [ // See https://playwright.dev/docs/test-reporters
+        ['list'],
+        ['html', { outputFolder: 'playwright-report/html', open: 'never' }],
+        ['junit', { outputFile: 'playwright-report/junit/results.xml' }],
+        ['allure-playwright', {
+            resultsDir: 'allure-results',
+            detail: true,
+            suiteTitle: true,
+            links: {
+                issue: {
+                    nameTemplate: 'GitHub Issue #%s',
+                    urlTemplate: 'https://github.com/metasfresh/metasfresh/issues/%s',
+                },
+                tms: {
+                    nameTemplate: 'Feature %s',
+                    urlTemplate: 'https://docs.google.com/spreadsheets/d/1HYDaiNZVseCg4WtIaxJQ-LLclNl7vkHXp6WsMEaKK9A/edit#gid=1284833774',
+                },
+            },
+            categories: [
+                { name: 'Timing/Timeout issues', messageRegex: '.*timeout.*|.*timed out.*|.*waiting.*' },
+                { name: 'Backend API errors', messageRegex: '.*Backend API error.*|.*500.*|.*503.*' },
+                { name: 'Network errors', messageRegex: '.*network.*|.*connection.*|.*ECONNREFUSED.*' },
+            ],
+            environmentInfo: {
+                os_platform: os.platform(),
+                os_release: os.release(),
+                node_version: process.version,
+                test_environment: process.env.CI ? 'CI' : 'Local',
+            },
+        }],
+    ],
+    timeout: 120000, // Set global timeout
+    /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
+    use: {
+        /* Base URL to use in actions like `await page.goto('/')`. */
+        // baseURL: 'http://127.0.0.1:3000',
+
+        /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
+        //trace: 'on-first-retry',
+        trace: 'on',
+
+        react: true,  // Enables React component detection
+
+        // actionTimeout: 60000, // per action timeout
+
+        video: 'on',
+    },
+
+    projects: [
+        {
+            name: 'Mobile Chrome',
+            use: {
+                ...devices['Pixel 5'],
+                launchOptions: {
+                    args: [
+                        '--no-sandbox', // Avoids sandboxing issues inside Docker
+                        '--unsafely-treat-insecure-origin-as-secure=http://app-test:8282', // Treats it as a secure origin
+                        '--disable-features=StrictOriginPolicy,HttpsOnlyMode,BlockInsecurePrivateNetworkRequests', // Disables HSTS enforcement
+                        '--disable-site-isolation-trials', // Helps disable security sandboxing
+                        '--disable-web-security', // Disables web security (CORS, mixed content, etc.)
+                        '--ignore-certificate-errors', // Ignores SSL certificate errors
+                        '--allow-insecure-localhost', // Allows HTTP on local addresses
+                        '--allow-running-insecure-content', // Allows mixed content (HTTP on HTTPS)
+                        // '--user-data-dir=/tmp/chrome-test-profile' // Ensures fresh profile each time (prevents stored HSTS rules)
+                    ],
+                },
+            },
+        },
+    ],
+});
+
+export const testContext = {};
+
+export const test = testOrig.extend({
+    page: async ({ page }, use) => {
+        setCurrentPage(page);
+        Object.keys(testContext).forEach(key => delete testContext[key]);
+
+        await use(page);
+    },
+});

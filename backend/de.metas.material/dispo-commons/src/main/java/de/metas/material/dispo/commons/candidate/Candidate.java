@@ -355,7 +355,7 @@ public class Candidate
 		}
 	}
 
-	public <T extends BusinessCaseDetail> Candidate withBusinessCaseDetail(@NonNull final Class<T> type, @NonNull UnaryOperator<T> mapper)
+	public <T extends BusinessCaseDetail> Candidate withBusinessCaseDetail(@NonNull final Class<T> type, @NonNull final UnaryOperator<T> mapper)
 	{
 		final T businessCaseDetail = getBusinessCaseDetailNotNull(type);
 		final T businessCaseDetailChanged = mapper.apply(businessCaseDetail);
@@ -372,5 +372,41 @@ public class Candidate
 	{
 		final DemandDetail demandDetail = getDemandDetail();
 		return demandDetail != null ? demandDetail.getTraceId() : null;
+	}
+
+	/**
+	 * This is enabled by the current usage of {@link #parentId}
+	 */
+	public boolean isStockCandidateOfThisCandidate(@NonNull final Candidate potentialStockCandidate)
+	{
+		if (potentialStockCandidate.type != CandidateType.STOCK)
+		{
+			return false;
+		}
+		switch (type)
+		{
+			case DEMAND:
+				return potentialStockCandidate.getParentId().equals(id);
+			case SUPPLY:
+				return potentialStockCandidate.getId().equals(parentId);
+			default:
+				return false;
+		}
+	}
+
+	/**
+	 * The qty is always stored as an absolute value on the candidate, but we're interested if the candidate is adding or subtracting qty to the stock.
+	 */
+	public BigDecimal getStockImpactPlannedQuantity()
+	{
+		switch (getType())
+		{
+			case DEMAND:
+			case UNEXPECTED_DECREASE:
+			case INVENTORY_DOWN:
+				return getQuantity().negate();
+			default:
+				return getQuantity();
+		}
 	}
 }

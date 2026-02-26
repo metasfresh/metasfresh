@@ -213,19 +213,11 @@ public class DocLine_Invoice extends DocLine<Doc_Invoice>
 	}
 
 	/**
-	 * @return quantity invoiced but not received
-	 */
-	public final Quantity getQtyNotReceived()
-	{
-		return getQtyInvoiced().subtract(getQtyReceivedInStockUOM());
-	}
-
-	/**
 	 * @return quantity invoiced but not received (absolute value)
 	 */
 	final Quantity getQtyNotReceivedAbs()
 	{
-		return adjustQtySignByCreditMemoAndSOTrx(getQtyNotReceived());
+		return getQtyInvoiced().subtract(getQtyReceivedAbs());
 	}
 
 	/**

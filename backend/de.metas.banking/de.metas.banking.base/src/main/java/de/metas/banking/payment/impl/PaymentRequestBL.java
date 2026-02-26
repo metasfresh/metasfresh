@@ -68,7 +68,7 @@ public class PaymentRequestBL implements IPaymentRequestBL
 		}
 
 		final Boolean updated = InterfaceWrapperHelper.getDynAttribute(paySelectionLine, DYNATTR_UpdatedFromPaymentRequest);
-		return updated == null ? false : updated;
+		return updated != null && updated;
 	}
 
 	@Override
@@ -107,8 +107,7 @@ public class PaymentRequestBL implements IPaymentRequestBL
 		if (requestAmount.signum() != 0)
 		{
 			// task 09698: don't apply more than the amount which is actually still open, even if the paymentRequest's amount is bigger.
-			final boolean creditMemoAdjusted = true;
-			final BigDecimal openAmt = allocationDAO.retrieveOpenAmt(invoice, creditMemoAdjusted);
+			final BigDecimal openAmt = allocationDAO.retrieveOpenAmtInInvoiceCurrency(invoice, true).toBigDecimal();
 
 			// make sure to also subtract the discount (that's coming from the payment-term)
 			final BigDecimal payAmt = requestAmount.min(openAmt.subtract(paySelectionLine.getDiscountAmt()));

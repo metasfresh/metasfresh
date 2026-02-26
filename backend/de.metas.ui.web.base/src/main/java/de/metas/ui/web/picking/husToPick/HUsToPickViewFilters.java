@@ -3,7 +3,7 @@ package de.metas.ui.web.picking.husToPick;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.picking.IHUPickingSlotBL;
+import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.requests.RetrieveAvailableHUIdsToPickRequest;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -94,7 +94,7 @@ class HUsToPickViewFilters
 
 	private static class LocatorBarcodeFilterConverter implements SqlDocumentFilterConverter
 	{
-		public static final transient LocatorBarcodeFilterConverter instance = new LocatorBarcodeFilterConverter();
+		public static final LocatorBarcodeFilterConverter instance = new LocatorBarcodeFilterConverter();
 
 		@Override
 		public boolean canConvert(final String filterId)
@@ -141,7 +141,7 @@ class HUsToPickViewFilters
 
 	private static class HUIdsFilterConverter implements SqlDocumentFilterConverter
 	{
-		public static final transient HUIdsFilterConverter instance = new HUIdsFilterConverter();
+		public static final HUIdsFilterConverter instance = new HUIdsFilterConverter();
 
 		@Override
 		public boolean canConvert(final String filterId)

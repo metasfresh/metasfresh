@@ -23,8 +23,9 @@
 package de.metas.cucumber.stepdefs.org;
 
 import de.metas.cucumber.stepdefs.AD_ReplicationStrategy_StepDefData;
-import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
@@ -32,13 +33,14 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_ReplicationStrategy;
 
-import java.util.List;
-import java.util.Map;
-
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.compiere.model.X_AD_Client.AUTOARCHIVE_AllReportsDocuments;
+import static org.compiere.model.X_AD_Client.AUTOARCHIVE_Documents;
 
 public class AD_Client_StepDef
 {
+	private static final String CUCUMBER_UNIX_ARCHIVE_PATH = "/reports/metasfreshArchives";
+
 	private final AD_Client_StepDefData adClientTable;
 	private final AD_ReplicationStrategy_StepDefData adReplicationStrategyTable;
 
@@ -53,30 +55,46 @@ public class AD_Client_StepDef
 	@Given("update AD_Client")
 	public void update_AD_Client(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			updateClient(tableRow);
-		}
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_AD_Client.COLUMNNAME_AD_Client_ID)
+				.forEach(this::updateClient);
 	}
 
-	private void updateClient(@NonNull final Map<String, String> row)
+	private void updateClient(@NonNull final DataTableRow row)
 	{
-		final String clientIdentifier = DataTableUtil.extractStringForColumnName(row, I_AD_Client.COLUMNNAME_AD_Client_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final StepDefDataIdentifier clientIdentifier = row.getAsIdentifier();
 
 		final Integer clientId = adClientTable.getOptional(clientIdentifier)
 				.map(I_AD_Client::getAD_Client_ID)
-				.orElseGet(() -> Integer.parseInt(clientIdentifier));
+				.orElseGet(clientIdentifier::getAsInt);
 
 		final I_AD_Client clientRecord = InterfaceWrapperHelper.load(clientId, I_AD_Client.class);
 
-		final String replicationStrategyIdentifier = DataTableUtil.extractStringForColumnName(row, I_AD_Client.COLUMNNAME_AD_ReplicationStrategy_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		row.getAsOptionalIdentifier(I_AD_Client.COLUMNNAME_AD_ReplicationStrategy_ID)
+				.ifPresent(replicationStrategyIdentifier ->
+						{
+							final Integer replicationStrategyID = adReplicationStrategyTable.getOptional(replicationStrategyIdentifier)
+									.map(I_AD_ReplicationStrategy::getAD_ReplicationStrategy_ID)
+									.orElseGet(replicationStrategyIdentifier::getAsInt);
+							clientRecord.setAD_ReplicationStrategy_ID(replicationStrategyID);
+						}
+				);
 
-		final Integer replicationStrategyID = adReplicationStrategyTable.getOptional(replicationStrategyIdentifier)
-				.map(I_AD_ReplicationStrategy::getAD_ReplicationStrategy_ID)
-				.orElseGet(() -> Integer.parseInt(replicationStrategyIdentifier));
-
-		clientRecord.setAD_ReplicationStrategy_ID(replicationStrategyID);
+		row.getAsOptionalBoolean(I_AD_Client.COLUMNNAME_StoreArchiveOnFileSystem)
+				.ifPresent(isStoreArchiveOnFileSystem ->
+						{
+							if (isStoreArchiveOnFileSystem)
+							{
+								clientRecord.setUnixArchivePath(CUCUMBER_UNIX_ARCHIVE_PATH);
+								clientRecord.setAutoArchive(AUTOARCHIVE_AllReportsDocuments);
+							}
+							else
+							{
+								clientRecord.setAutoArchive(AUTOARCHIVE_Documents);
+							}
+							clientRecord.setStoreArchiveOnFileSystem(isStoreArchiveOnFileSystem);
+						}
+				);
 
 		saveRecord(clientRecord);
 	}

@@ -11,12 +11,14 @@ import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateCreatedEvent;
 import de.metas.material.event.purchase.PurchaseCandidateUpdatedEvent;
 import de.metas.material.replenish.ReplenishInfoRepository;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.material.event.PurchaseCandidateRequestedHandler;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
@@ -88,11 +90,13 @@ public class C_PurchaseCandidate_PostMaterialEvent
 		{
 			return;
 		}
-
+		
 		final MaterialDescriptor materialDescriptor = createMaterialDescriptor(purchaseCandidateRecord);
-
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(purchaseCandidateRecord.getAD_Client_ID(), purchaseCandidateRecord.getAD_Org_ID());
+		final UserId userId = UserId.ofRepoId(purchaseCandidateRecord.getUpdatedBy());
+		
 		final PurchaseCandidateCreatedEvent purchaseCandidateCreatedEvent = PurchaseCandidateCreatedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(purchaseCandidateRecord.getAD_Client_ID(), purchaseCandidateRecord.getAD_Org_ID()))
+				.eventDescriptor(EventDescriptor.ofClientOrgAndUserId(clientAndOrgId, userId))
 				.purchaseCandidateRepoId(purchaseCandidateRecord.getC_PurchaseCandidate_ID())
 				.purchaseMaterialDescriptor(materialDescriptor)
 				.supplyRequiredDescriptor(createSupplyRequiredDescritproOrNull(purchaseCandidateRecord))
@@ -137,14 +141,13 @@ public class C_PurchaseCandidate_PostMaterialEvent
 
 		final MinMaxDescriptor minMaxDescriptor = replenishInfoRepository.getBy(materialDescriptor).toMinMaxDescriptor();
 
-		final PurchaseCandidateUpdatedEvent purchaseCandidateUpdatedEvent = PurchaseCandidateUpdatedEvent.builder()
+		return PurchaseCandidateUpdatedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(purchaseCandidateRecord.getAD_Client_ID(), purchaseCandidateRecord.getAD_Org_ID()))
 				.purchaseCandidateRepoId(purchaseCandidateRecord.getC_PurchaseCandidate_ID())
 				.vendorId(purchaseCandidateRecord.getVendor_ID())
 				.purchaseMaterialDescriptor(materialDescriptor)
 				.minMaxDescriptor(minMaxDescriptor)
 				.build();
-		return purchaseCandidateUpdatedEvent;
 	}
 
 	private MaterialDescriptor createMaterialDescriptor(@NonNull final I_C_PurchaseCandidate purchaseCandidateRecord)
@@ -159,13 +162,13 @@ public class C_PurchaseCandidate_PostMaterialEvent
 						Quantity.of(purchaseCandidateRecord.getQtyToPurchase(), uom),
 						productId);
 
-		final MaterialDescriptor materialDescriptor = MaterialDescriptor.builder()
+		// .customerId() we don't have a customer
+		return MaterialDescriptor.builder()
 				.date(TimeUtil.asInstant(purchaseCandidateRecord.getPurchaseDatePromised()))
 				.warehouseId(WarehouseId.ofRepoId(purchaseCandidateRecord.getM_WarehousePO_ID()))
 				.productDescriptor(productDescriptor)
 				// .customerId() we don't have a customer
 				.quantity(purchaseQty.toBigDecimal())
 				.build();
-		return materialDescriptor;
 	}
 }

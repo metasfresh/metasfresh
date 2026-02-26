@@ -9,21 +9,17 @@ import de.metas.document.dimension.InOutLineDimensionFactory;
 import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.document.references.zoom_into.NullCustomizedWindowInfoMapRepository;
 import de.metas.email.MailService;
-import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_Locator;
-import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationRepository;
-import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleUpdater;
 import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
 import de.metas.notification.INotificationRepository;
 import de.metas.notification.impl.NotificationRepository;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
-import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.product.ProductId;
+import de.metas.shipping.PurchaseOrderToShipperTransportationRepository;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import org.adempiere.ad.wrapper.POJOWrapper;
@@ -37,7 +33,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.junit.Before;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -113,8 +108,6 @@ public abstract class AbstractHUTest
 	 */
 	protected I_M_Attribute attr_WeightTareAdjust;
 
-	protected I_M_Attribute attr_AttributeNotFound;
-
 	/**
 	 * See {@link de.metas.handlingunits.HUTestHelper#attr_QualityDiscountPercent}
 	 */
@@ -142,7 +135,9 @@ public abstract class AbstractHUTest
 		POJOWrapper.setDefaultStrictValues(false);
 	}
 
-	/** HU Test helper */
+	/**
+	 * HU Test helper
+	 */
 	public HUTestHelper helper;
 
 	@BeforeEach
@@ -154,6 +149,7 @@ public abstract class AbstractHUTest
 		dimensionFactories.add(new InOutLineDimensionFactory());
 
 		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
+		SpringContextHolder.registerJUnitBean(PurchaseOrderToShipperTransportationRepository.newInstanceForUnitTesting());
 
 		setupMasterData();
 
@@ -168,16 +164,13 @@ public abstract class AbstractHUTest
 
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
-
-		final QRCodeConfigurationService qrCodeConfigurationService = new QRCodeConfigurationService(new QRCodeConfigurationRepository());
-		SpringContextHolder.registerJUnitBean(qrCodeConfigurationService);
-		SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService(DoNothingMassPrintingService.instance), qrCodeConfigurationService));
+		SpringContextHolder.registerJUnitBean(HUQRCodesService.newInstanceForUnitTesting());
 
 		initialize();
 	}
 
 	/**
-	 * Balled by the test's {@link Before} method, after the basic master data was set up.
+	 * Balled by the test's {@link BeforeEach} method, after the basic master data was set up.
 	 */
 	abstract protected void initialize();
 

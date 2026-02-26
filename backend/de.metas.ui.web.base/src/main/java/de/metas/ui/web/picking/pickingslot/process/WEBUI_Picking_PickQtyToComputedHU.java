@@ -117,7 +117,7 @@ public class WEBUI_Picking_PickQtyToComputedHU extends WEBUI_Picking_PickQtyToNe
 		return MSG_OK;
 	}
 
-	protected void pickQtyToNewHUs(@NonNull final Consumer<Quantity> pickQtyConsumer)
+	protected final void pickQtyToNewHUs(@NonNull final Consumer<Quantity> pickQtyConsumer)
 	{
 		Quantity qtyToPack = getQtyToPack();
 		if (qtyToPack.signum() <= 0)
@@ -156,7 +156,7 @@ public class WEBUI_Picking_PickQtyToComputedHU extends WEBUI_Picking_PickQtyToNe
 	}
 
 	@NonNull
-	protected Capacity getPIIPCapacity()
+	protected final Capacity getPIIPCapacity()
 	{
 		final I_M_ShipmentSchedule currentShipmentSchedule = getCurrentShipmentSchedule();
 

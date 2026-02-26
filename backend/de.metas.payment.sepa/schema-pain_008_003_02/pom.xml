@@ -13,11 +13,6 @@
 
 	<description>SEPA Payments - schema - pain_008_003_02 (Direct Debit)</description>
 
-	<properties>
-		<migration-sql-basedir></migration-sql-basedir>
-	</properties>
-
-
 	<build>
 		<plugins>
 			<plugin>

@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-externalsystems-core
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -31,7 +31,7 @@ import de.metas.common.externalreference.v1.JsonRequestExternalReferenceUpsert;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
+import org.apache.camel.http.common.HttpMethods;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -53,7 +53,7 @@ public class ExternalReferenceRouteBuilder extends RouteBuilder
 
 		from("{{" + ExternalSystemCamelConstants.MF_CREATE_EXTERNALREFERENCE_CAMEL_URI + "}}")
 				.routeId(CREATE_ROUTE_ID)
-				.streamCaching()
+				.streamCache("true")
 				.process(exchange -> {
 					final var lookupRequest = exchange.getIn().getBody();
 					if (!(lookupRequest instanceof JsonExternalReferenceCreateRequest))
@@ -66,12 +66,12 @@ public class ExternalReferenceRouteBuilder extends RouteBuilder
 				})
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonExternalReferenceCreateRequest.class))
 				.removeHeaders("CamelHttp*")
-				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
+				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.POST))
 				.to("{{metasfresh.create-externalreference.api.uri}}");
 
 		from("{{" + ExternalSystemCamelConstants.MF_LOOKUP_EXTERNALREFERENCE_CAMEL_URI + "}}")
 				.routeId(LOOKUP_ROUTE_ID)
-				.streamCaching()
+				.streamCache("true")
 				.process(exchange -> {
 					final Object lookupRequest = exchange.getIn().getBody();
 					if (!(lookupRequest instanceof JsonExternalReferenceLookupRequest))
@@ -84,12 +84,12 @@ public class ExternalReferenceRouteBuilder extends RouteBuilder
 				})
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonExternalReferenceLookupRequest.class))
 				.removeHeaders("CamelHttp*")
-				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
+				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.PUT))
 				.toD("{{metasfresh.lookup-externalreference.api.uri}}/${header.orgCode}");
 
 		from("{{" + ExternalSystemCamelConstants.MF_UPSERT_EXTERNALREFERENCE_CAMEL_URI + "}}")
 				.routeId(UPSERT_ROUTE_ID)
-				.streamCaching()
+				.streamCache("true")
 				.process(exchange -> {
 					final Object request = exchange.getIn().getBody();
 					if (!(request instanceof JsonRequestExternalReferenceUpsert))
@@ -103,7 +103,7 @@ public class ExternalReferenceRouteBuilder extends RouteBuilder
 				})
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonRequestExternalReferenceUpsert.class))
 				.removeHeaders("CamelHttp*")
-				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
+				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.PUT))
 				.toD("{{metasfresh.upsert-externalreference.api.uri}}/${header.orgCode}");
 	}
 }

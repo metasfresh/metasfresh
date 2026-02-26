@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-externalsystems-core
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -32,7 +32,7 @@ import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
+import org.apache.camel.http.common.HttpMethods;
 import org.springframework.stereotype.Component;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_EXTERNAL_SERVICE_VALUE;
@@ -52,22 +52,22 @@ public class ExternalStatusRouteBuilder extends RouteBuilder
 
 		from("{{" + ExternalSystemCamelConstants.MF_CREATE_EXTERNAL_SYSTEM_STATUS_V2_CAMEL_URI + "}}")
 				.routeId(ExternalSystemCamelConstants.MF_CREATE_EXTERNAL_SYSTEM_STATUS_V2_CAMEL_URI)
-				.streamCaching()
+				.streamCache("true")
 				.log("Route invoked!")
 				.process(this::processCreateRequest)
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonStatusRequest.class))
 				.removeHeaders("CamelHttp*")
-				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
+				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.POST))
 				.toD("{{" + MF_EXTERNAL_SYSTEM_V2_URI + "}}/service/${header." + HEADER_EXTERNAL_SYSTEM_CONFIG_TYPE + "}/${header." + HEADER_EXTERNAL_SYSTEM_CHILD_CONFIG_VALUE + "}/${header." + HEADER_EXTERNAL_SERVICE_VALUE + "}/status");
 
 
 		from("{{" + ExternalSystemCamelConstants.MF_GET_SERVICE_STATUS_V2_CAMEL_URI + "}}")
 				.routeId(ExternalSystemCamelConstants.MF_GET_SERVICE_STATUS_V2_CAMEL_URI)
-				.streamCaching()
+				.streamCache("true")
 				.log("Route invoked!")
 				.process(this::processRetrieveRequest)
 				.removeHeaders("CamelHttp*")
-				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.GET))
+				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.GET))
 				.toD("{{" + MF_EXTERNAL_SYSTEM_V2_URI + "}}/service/${header." + HEADER_EXTERNAL_SYSTEM_CONFIG_TYPE + "}/status")
 
 				.to(direct(UNPACK_V2_API_RESPONSE))

@@ -26,7 +26,6 @@ import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.event.SupplyProposalEvaluator;
 import de.metas.material.event.PostMaterialEventService;
-import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.ddordercandidate.AbstractDDOrderCandidateEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateAdvisedEvent;
@@ -43,6 +42,7 @@ import org.eevolution.api.PPOrderId;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Optional;
 
@@ -146,6 +146,14 @@ public class DDOrderCandidateAdvisedHandler
 			throw new AdempiereException("supplyRequiredDescriptor shall be set for " + event);
 		}
 
+		if (CandidateType.DEMAND.equals(candidateType))
+		{
+			//The order of events is Advised -> Requested -> Created.
+			// The DD_Order_Candidate (and its MD_Candidates) will be created in the Requested event.
+			// So we can safely return FALSE here.
+			return CandidatesQuery.FALSE;
+		}
+
 		return CandidatesQuery.builder()
 				.type(candidateType)
 				.businessCase(CandidateBusinessCase.DISTRIBUTION)
@@ -182,7 +190,7 @@ public class DDOrderCandidateAdvisedHandler
 			return Optional.of(ppOrderRef.getPpOrderId());
 		}
 
-		if (ppOrderRef.getPpOrderCandidateId() <= 0)
+		if (ppOrderRef.getPpOrderCandidateId() == null)
 		{
 			return Optional.empty();
 		}
@@ -218,10 +226,8 @@ public class DDOrderCandidateAdvisedHandler
 			@NonNull final CandidatesGroup group,
 			@NonNull final DDOrderCandidateAdvisedEvent event)
 	{
-		final String traceId = event.getTraceId();
-
 		return DDOrderCandidateRequestedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientOrgAndTraceId(group.getClientAndOrgId(), traceId))
+				.eventDescriptor(event.getEventDescriptor().withClientAndOrg(group.getClientAndOrgId()))
 				.dateOrdered(SystemTime.asInstant())
 				.ddOrderCandidateData(toDDOrderCandidateData(group))
 				.createDDOrder(event.isAdvisedToCreateDDOrder())
@@ -264,6 +270,7 @@ public class DDOrderCandidateAdvisedHandler
 				.build();
 	}
 
+	@Nullable
 	private static PPOrderRef getPpOrderRef(final Candidate candidate)
 	{
 		final ProductionDetail productionDetail = candidate.getBusinessCaseDetail(ProductionDetail.class).orElse(null);

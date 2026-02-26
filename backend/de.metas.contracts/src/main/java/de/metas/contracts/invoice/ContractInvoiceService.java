@@ -96,7 +96,7 @@ public class ContractInvoiceService
 				.addInArrayFilter(I_C_Invoice.COLUMN_DocStatus, DocStatus.completedOrClosedStatuses())
 				.orderByDescending(I_C_Invoice.COLUMNNAME_DateInvoiced)
 				.create()
-				.listIds(InvoiceId::ofRepoId)
+				.idsAsSet(InvoiceId::ofRepoId)
 				.stream()
 				.filter(this::isContractSalesInvoice)
 				.findFirst();
@@ -111,7 +111,7 @@ public class ContractInvoiceService
 				.addInArrayFilter(I_C_Invoice.COLUMN_DocStatus, DocStatus.completedOrClosedStatuses())
 				.orderByDescending(I_C_Invoice.COLUMNNAME_DateInvoiced)
 				.create()
-				.listIds(InvoiceId::ofRepoId)
+				.idsAsSet(InvoiceId::ofRepoId)
 				.stream()
 				.filter(this::isContractSalesInvoice)
 				.findFirst();

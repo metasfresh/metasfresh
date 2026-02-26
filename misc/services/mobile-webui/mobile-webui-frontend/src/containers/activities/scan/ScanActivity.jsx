@@ -8,6 +8,7 @@ import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator
 import YesNoDialog from '../../../components/dialogs/YesNoDialog';
 import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
 
+// keep in sync with de.metas.workflow.rest_api.model.UIComponentType.SCAN_BARCODE
 export const COMPONENTTYPE_ScanBarcode = 'common/scanBarcode';
 
 const ScanActivity = (props) => {

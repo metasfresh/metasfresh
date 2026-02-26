@@ -58,7 +58,7 @@ public class Util
 	/**
 	 * Logger
 	 */
-	private static Logger log = LogManager.getLogger(Util.class.getName());
+	private static final Logger log = LogManager.getLogger(Util.class.getName());
 
 	/**
 	 * Clean Ampersand (used to indicate shortcut)
@@ -68,7 +68,7 @@ public class Util
 	 */
 	public static String cleanAmp(String in)
 	{
-		if (in == null || in.length() == 0)
+		if (Check.isBlank(in))
 		{
 			return in;
 		}
@@ -132,8 +132,6 @@ public class Util
 	/**
 	 * Sets an alternative {@link IClassInstanceProvider} implementation. Intended use is for testing. This method is called by {@link org.adempiere.test.AdempiereTestHelper#init()}.
 	 * Also see {@link org.adempiere.util.reflect.TestingClassInstanceProvider}.
-	 *
-	 * @param classInstanceProvider
 	 */
 	public static void setClassInstanceProvider(final IClassInstanceProvider classInstanceProvider)
 	{
@@ -143,12 +141,10 @@ public class Util
 	/**
 	 * Loads the class with <code>classname</code> and makes sure that it's implementing given <code>interfaceClazz</code>.
 	 *
-	 * @param interfaceClazz
-	 * @param classname
 	 * @return loaded class
 	 * @see #setClassInstanceProvider(IClassInstanceProvider)
 	 */
-	public static final <T> Class<? extends T> loadClass(final Class<T> interfaceClazz, final String classname)
+	public static <T> Class<? extends T> loadClass(final Class<T> interfaceClazz, final String classname)
 	{
 		Check.assumeNotNull(classname, "className is not null");
 		try
@@ -170,12 +166,10 @@ public class Util
 	 * Creates a new instance of given <code>instanceClazz</code>.
 	 * Also it makes sure that it's implementing given <code>interfaceClass</code>.
 	 *
-	 * @param interfaceClazz
-	 * @param instanceClazz
 	 * @return instance
 	 * @see #setClassInstanceProvider(IClassInstanceProvider)
 	 */
-	public static final <T> T newInstance(final Class<T> interfaceClazz, final Class<?> instanceClazz)
+	public static <T> T newInstance(final Class<T> interfaceClazz, final Class<?> instanceClazz)
 	{
 		try
 		{
@@ -230,7 +224,7 @@ public class Util
 	 * <p>
 	 * This method works exactly like {@link #getInstanceOrNull(Class, String)} but it also throws and {@link AdempiereException} if class was not found.
 	 * <p>
-	 * For unit testing, see {@link org.adempiere.util.reflect.TestingClassInstanceProvider#throwExceptionForClassName(String, RuntimeException)}.
+	 * For unit testing, see {@link org.adempiere.util.reflect.TestingClassInstanceProvider#throwExceptionForClassName(String, ReflectiveOperationException)}.
 	 *
 	 * @param interfaceClazz interface class or super class that needs to be implemented by class. May be <code>NULL</code>. If set, then the method will check if the given class name extends this
 	 *                       param value.
@@ -265,7 +259,7 @@ public class Util
 	/**
 	 * Create an instance of given className.
 	 * <p>
-	 * For unit testing, see {@link org.adempiere.util.reflect.TestingClassInstanceProvider#throwExceptionForClassName(String, RuntimeException)}.
+	 * For unit testing, see {@link org.adempiere.util.reflect.TestingClassInstanceProvider#throwExceptionForClassName(String, ReflectiveOperationException)}.
 	 *
 	 * @param interfaceClazz interface class that needs to be implemented by class
 	 * @param className      class name

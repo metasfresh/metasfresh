@@ -33,7 +33,8 @@ import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
@@ -54,6 +55,7 @@ class BOMPriceCalculator
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
 	private final IProductBOMBL bomsBL = Services.get(IProductBOMBL.class);
 	private final IProductBOMDAO bomsRepo = Services.get(IProductBOMDAO.class);
+	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 
 	private final ProductId bomProductId;
@@ -131,7 +133,7 @@ class BOMPriceCalculator
 			return defaultValue;
 		}
 
-		final ImmutableAttributeSet asi = attributesRepo.getImmutableAttributeSetById(asiId);
+		final ImmutableAttributeSet asi = asiBL.getImmutableAttributeSetById(asiId);
 		if (!asi.hasAttribute(attributeCode))
 		{
 			return defaultValue;

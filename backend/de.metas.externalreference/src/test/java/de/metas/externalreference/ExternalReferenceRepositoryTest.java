@@ -2,7 +2,7 @@
  * #%L
  * de.metas.externalreference
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,26 +23,23 @@
 package de.metas.externalreference;
 
 import de.metas.externalreference.model.I_S_ExternalReference;
-import de.metas.util.Services;
-import org.adempiere.ad.dao.IQueryBL;
+import de.metas.externalsystem.ExternalSystem;
+import de.metas.externalsystem.ExternalSystemTestHelper;
+import de.metas.externalsystem.ExternalSystemType;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ExternalReferenceRepositoryTest
 {
 	private ExternalReferenceRepository externalReferenceRepository;
+	private ExternalSystem github;
 
-	@Rule
-	public ExpectedException exceptionRule = ExpectedException.none();
-
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -50,11 +47,9 @@ public class ExternalReferenceRepositoryTest
 		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
 		externalReferenceTypes.registerType(TestConstants.MOCK_EXTERNAL_REFERENCE_TYPE);
 
-		final ExternalSystems externalSystems = new ExternalSystems();
-		externalSystems.registerExternalSystem(TestConstants.MOCK_EXTERNAL_SYSTEM);
-		externalSystems.registerExternalSystem(TestConstants.MOCK_EXTERNAL_SYSTEM_1);
+		github = ExternalSystemTestHelper.createExternalSystemIfNotExists(ExternalSystemType.Github);
 
-		externalReferenceRepository = new ExternalReferenceRepository(Services.get(IQueryBL.class), externalSystems, externalReferenceTypes);
+		externalReferenceRepository = ExternalReferenceRepository.newInstanceForUnitTesting(externalReferenceTypes);
 	}
 
 	@Test
@@ -91,7 +86,7 @@ public class ExternalReferenceRepositoryTest
 		final Integer recordID = externalReferenceRepository.getReferencedRecordIdOrNullBy(externalReferenceQuery);
 
 		//then
-		Assert.assertNotNull(recordID);
+		Assertions.assertNotNull(recordID);
 		assertEquals(recordID.intValue(), mockExternalReference.getRecordId());
 	}
 
@@ -103,13 +98,11 @@ public class ExternalReferenceRepositoryTest
 
 		final ExternalReferenceId externalReferenceId = externalReferenceRepository.save(mockExternalReference);
 
-		exceptionRule.expect(RuntimeException.class);
-		exceptionRule.expectMessage("de.metas.externalreference.model.I_S_ExternalReference, id=" + externalReferenceId.getRepoId());
 		//when
 		externalReferenceRepository.deleteByRecordIdAndType(mockExternalReference.getRecordId(), mockExternalReference.getExternalReferenceType());
 
 		//then
-		InterfaceWrapperHelper.load(externalReferenceId, I_S_ExternalReference.class);
+		Assertions.assertThrows(RuntimeException.class, () -> InterfaceWrapperHelper.load(externalReferenceId, I_S_ExternalReference.class));
 	}
 
 	private ExternalReference getMockExternalReference()
@@ -118,7 +111,7 @@ public class ExternalReferenceRepositoryTest
 				.orgId(TestConstants.MOCK_ORG_ID)
 				.externalReference(TestConstants.MOCK_EXTERNAL_REFERENCE)
 				.externalReferenceType(TestConstants.MOCK_EXTERNAL_REFERENCE_TYPE)
-				.externalSystem(TestConstants.MOCK_EXTERNAL_SYSTEM)
+				.externalSystem(github)
 				.recordId(TestConstants.MOCK_RECORD_ID)
 				.version(TestConstants.MOCK_EXTERNAL_REFERENCE_VERSION)
 				.build();
@@ -129,7 +122,7 @@ public class ExternalReferenceRepositoryTest
 		assertEquals(externalReference.getRecordId(), record.getRecord_ID());
 		assertEquals(externalReference.getExternalReference(), record.getExternalReference());
 		assertEquals(externalReference.getExternalReferenceType().getCode(), record.getType());
-		assertEquals(externalReference.getExternalSystem().getCode(), record.getExternalSystem());
+		assertEquals(externalReference.getExternalSystem().getId().getRepoId(), record.getExternalSystem_ID());
 		assertEquals(externalReference.getVersion(), record.getVersion());
 	}
 }

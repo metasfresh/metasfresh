@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0105_Picking
+@allure.label.feature:F00230_MobileUI_Picking
+@F00230
 @ghActions:run_on_executor7
 Feature: mobileUI Picking - Pick multiple products to LU
+## F00230: MobileUI Picking
 
   Background:
     Given infrastructure and metasfresh are running
@@ -84,6 +88,9 @@ Feature: mobileUI Picking - Pick multiple products to LU
 # ######################################################################################################################
 # ######################################################################################################################
   @from:cucumber
+@allure.label.epic:E0105_Picking
+@allure.label.feature:F00230_MobileUI_Picking
+@F00230
   Scenario: Pick TUs from LU with aggregated TUs - into a new LU
     When transform CU to new LU
       | sourceCU    | newLU                 | TU_PI_ID | QtyCUsPerTU | QtyTUsPerLU |
@@ -181,6 +188,9 @@ Feature: mobileUI Picking - Pick multiple products to LU
 # ######################################################################################################################
 # ######################################################################################################################
   @from:cucumber
+@allure.label.epic:E0105_Picking
+@allure.label.feature:F00230_MobileUI_Picking
+@F00230
   Scenario: Pick from CUs into a new LU
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
@@ -219,7 +229,7 @@ Feature: mobileUI Picking - Pick multiple products to LU
 
     And complete picking job
 
-    Then after not more than 99960s, M_InOut is found:
+    Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
       | shipmentSchedule1                | shipment              | CO            |
       | shipmentSchedule2                | shipment              | CO            |

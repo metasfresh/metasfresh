@@ -25,10 +25,9 @@ package de.metas.serviceprovider.configuration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.externalreference.ExternalReferenceTypes;
-import de.metas.externalreference.ExternalSystems;
+import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.i18n.IMsgBL;
 import de.metas.serviceprovider.ImportQueue;
-import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.serviceprovider.external.reference.ExternalServiceReferenceType;
 import de.metas.serviceprovider.issue.importer.info.ImportIssueInfo;
 import de.metas.serviceprovider.timebooking.importer.ImportTimeBookingInfo;
@@ -50,14 +49,11 @@ public class ApplicationConfiguration
 {
 	public ApplicationConfiguration(
 			@NonNull final ExternalReferenceTypes externalReferenceTypes,
-			@NonNull final ExternalSystems externalSystems)
+			@NonNull final ExternalSystemRepository externalSystemRepository)
 	{
 		externalReferenceTypes.registerType(ExternalServiceReferenceType.ISSUE_ID);
 		externalReferenceTypes.registerType(ExternalServiceReferenceType.TIME_BOOKING_ID);
 		externalReferenceTypes.registerType(ExternalServiceReferenceType.MILESTONE_ID);
-
-		externalSystems.registerExternalSystem(ExternalSystem.EVERHOUR);
-		externalSystems.registerExternalSystem(ExternalSystem.GITHUB);
 	}
 
 	@Bean

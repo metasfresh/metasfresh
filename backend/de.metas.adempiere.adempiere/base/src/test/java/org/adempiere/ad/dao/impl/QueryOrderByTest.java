@@ -11,10 +11,10 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_User;
-import org.junit.Before;
-import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L
@@ -46,7 +46,7 @@ public class QueryOrderByTest
 	private I_AD_User user_20;
 	private I_AD_User user_10;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();

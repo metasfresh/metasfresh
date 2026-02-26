@@ -116,9 +116,9 @@ public class DDOrderCandidateRequestedEventHandler
 			return forwardPPOrderRef.getPpOrderId();
 		}
 
-		if (forwardPPOrderRef.getPpOrderCandidateId() > 0)
+		if (forwardPPOrderRef.getPpOrderCandidateId() != null)
 		{
-			final PPOrderCandidateId ppOrderCandidateId = PPOrderCandidateId.ofRepoId(forwardPPOrderRef.getPpOrderCandidateId());
+			final PPOrderCandidateId ppOrderCandidateId = forwardPPOrderRef.getPpOrderCandidateId();
 			final ImmutableSet<PPOrderId> forwardPPOrderIds = ppOrderCandidateDAO.getPPOrderIds(ppOrderCandidateId);
 			return forwardPPOrderIds.size() == 1 ? forwardPPOrderIds.iterator().next() : null;
 		}

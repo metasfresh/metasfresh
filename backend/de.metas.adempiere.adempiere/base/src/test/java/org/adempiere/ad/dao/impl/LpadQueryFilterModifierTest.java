@@ -22,7 +22,7 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class LpadQueryFilterModifierTest
@@ -60,7 +60,6 @@ public class LpadQueryFilterModifierTest
 		final String columnName = "Dummy"; // N/A
 		final Object model = null; // N/A
 		String resultActual = (String)modifier.convertValue(columnName, value, model);
-		Assert.assertEquals("Invalid result for: " + value, resultExpected, resultActual);
-
+		Assertions.assertEquals(resultExpected, resultActual, "Invalid result for: " + value);
 	}
 }

@@ -22,25 +22,23 @@ package de.metas.handlingunits.impl;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.util.Properties;
-
+import de.metas.handlingunits.model.I_M_HU_PI;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.util.Check;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import de.metas.handlingunits.model.I_M_HU_PI;
-import de.metas.handlingunits.model.I_M_HU_PI_Item;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.handlingunits.model.I_M_HU_PI_Version;
-import de.metas.util.Check;
+import java.math.BigDecimal;
+import java.util.Properties;
 
 /**
  * Test {@link HUPIItemProductDisplayNameBuilder}
@@ -52,7 +50,7 @@ public class HUPIItemProductDisplayNameBuilderTest
 {
 	private PlainContextAware context;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -72,7 +70,7 @@ public class HUPIItemProductDisplayNameBuilderTest
 				.build();
 
 		final String displayNameExpected = "IFCO x 10 Kg";
-		Assert.assertEquals(displayNameExpected, displayNameActual);
+		Assertions.assertEquals(displayNameExpected, displayNameActual);
 	}
 
 	@Test
@@ -87,7 +85,7 @@ public class HUPIItemProductDisplayNameBuilderTest
 				.build();
 
 		final String displayNameExpected = "33 x [IFCO x 10 Kg]";
-		Assert.assertEquals(displayNameExpected, displayNameActual);
+		Assertions.assertEquals(displayNameExpected, displayNameActual);
 	}
 
 	@Test
@@ -103,7 +101,7 @@ public class HUPIItemProductDisplayNameBuilderTest
 				.build();
 
 		final String displayNameExpected = "22 / 33 x [IFCO x 10 Kg]";
-		Assert.assertEquals(displayNameExpected, displayNameActual);
+		Assertions.assertEquals(displayNameExpected, displayNameActual);
 	}
 
 	@Test
@@ -118,7 +116,7 @@ public class HUPIItemProductDisplayNameBuilderTest
 				.build();
 
 		final String displayNameExpected = "22 / ? x [IFCO x 10 Kg]";
-		Assert.assertEquals(displayNameExpected, displayNameActual);
+		Assertions.assertEquals(displayNameExpected, displayNameActual);
 	}
 
 	@Test
@@ -132,7 +130,7 @@ public class HUPIItemProductDisplayNameBuilderTest
 				.build();
 
 		final String displayNameExpected = "IFCO";
-		Assert.assertEquals(displayNameExpected, displayNameActual);
+		Assertions.assertEquals(displayNameExpected, displayNameActual);
 	}
 
 	private I_M_HU_PI_Item_Product createM_HU_PI_Item_Product(final String huPIName, final String qtyStr, final boolean isInfiniteCapacity, final String uomSymbol)

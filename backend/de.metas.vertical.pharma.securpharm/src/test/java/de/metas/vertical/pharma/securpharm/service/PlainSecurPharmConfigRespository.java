@@ -1,21 +1,19 @@
 package de.metas.vertical.pharma.securpharm.service;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Optional;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.junit.Ignore;
-
 import de.metas.user.UserId;
 import de.metas.vertical.pharma.securpharm.config.SecurPharmConfig;
 import de.metas.vertical.pharma.securpharm.config.SecurPharmConfigId;
 import de.metas.vertical.pharma.securpharm.config.SecurPharmConfigRespository;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
+import org.junit.jupiter.api.Disabled;
+
+import javax.annotation.Nullable;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Optional;
+import java.util.Properties;
 
 /*
  * #%L
@@ -40,7 +38,7 @@ import lombok.ToString;
  */
 
 @ToString
-@Ignore
+@Disabled
 public class PlainSecurPharmConfigRespository implements SecurPharmConfigRespository
 {
 	public static PlainSecurPharmConfigRespository ofDefaultSandboxProperties()

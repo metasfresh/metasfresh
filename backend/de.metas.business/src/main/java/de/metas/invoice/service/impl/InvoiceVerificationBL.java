@@ -229,7 +229,7 @@ public class InvoiceVerificationBL implements IInvoiceVerificationBL
 									   .addEqualsFilter(I_C_Invoice_Verification_SetLine.COLUMNNAME_C_Invoice_Verification_Set_ID, verificationSetId)
 									   .andCollect(I_C_Invoice_Verification_SetLine.COLUMN_C_Invoice_ID)
 									   .create()
-									   .listIds(InvoiceId::ofRepoId));
+									   .idsAsSet(InvoiceId::ofRepoId));
 	}
 
 	@NonNull

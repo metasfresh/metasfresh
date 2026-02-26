@@ -1,19 +1,17 @@
 package de.metas.vertical.pharma.securpharm.client.schema;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Charsets;
+import de.metas.JsonObjectMapperHolder;
+import org.adempiere.exceptions.AdempiereException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.stream.Collectors;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.junit.Before;
-import org.junit.Test;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Charsets;
-
-import de.metas.JsonObjectMapperHolder;
 
 /*
  * #%L
@@ -41,7 +39,7 @@ public class JsonAPIResponseTest
 {
 	private ObjectMapper jsonObjectMapper;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();

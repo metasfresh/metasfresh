@@ -28,7 +28,10 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
+
+import javax.annotation.Nullable;
 
 @Value
 @Builder
@@ -43,11 +46,14 @@ public class ReplenishInfo
 	@NonNull
 	StockQtyAndUOMQty max;
 
+	Boolean highPriority;
+
 	public MinMaxDescriptor toMinMaxDescriptor()
 	{
 		return MinMaxDescriptor.builder()
 				.min(min.getStockQty().toBigDecimal())
 				.max(max.getStockQty().toBigDecimal())
+				.highPriority(highPriority)
 				.build();
 	}
 
@@ -60,5 +66,25 @@ public class ReplenishInfo
 
 		@NonNull
 		WarehouseId warehouseId;
+
+		@Nullable
+		LocatorId locatorId;
+
+		public static Identifier of(@NonNull final WarehouseId warehouseId, @Nullable final LocatorId locatorId, @NonNull final ProductId productId)
+		{
+			return builder()
+					.warehouseId(warehouseId)
+					.locatorId(locatorId)
+					.productId(productId)
+					.build();
+		}
+
+		public static Identifier of(@NonNull final WarehouseId warehouseId, @NonNull final ProductId productId)
+		{
+			return builder()
+					.warehouseId(warehouseId)
+					.productId(productId)
+					.build();
+		}
 	}
 }

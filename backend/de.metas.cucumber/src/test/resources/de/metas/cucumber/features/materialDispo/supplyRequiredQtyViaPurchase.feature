@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
 @ghActions:run_on_executor6
 Feature: Disposal is correctly considered in Material Dispo; Stock shortage solved via purchase
+## F5100: Material Disposition
 
   Background:
     Given infrastructure and metasfresh are running
@@ -20,6 +23,8 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | standard_category                | attributeSet_convenienceSalate   |
 
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
   @Id:S0124_130
   @Id:S0222_100
   @Id:S0223_300
@@ -63,7 +68,7 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | Identifier             | GLN           | C_BPartner_ID.Identifier | OPT.Name             | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | endvendor_location_1   | 2311202200000 | endvendor_1              | EndVendor_01042022_1 | Y                   | Y                   |
       | endcustomer_location_1 | 2311202200001 | endcustomer_1            | EndVendor_01042022_1 | Y                   | Y                   |
-    And metasfresh contains C_BPartner_Products:
+    And metasfresh contains C_BPartner_Product
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | endvendor_1              | p_1                     |
     And metasfresh contains M_Inventories:
@@ -148,12 +153,12 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | po_1                  | pol_1                     |
 
     Then validate the created orders
-      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | processed | docStatus |
-      | po_1                  | endvendor_1              | endvendor_location_1              | 2021-04-11  | POO         | EUR          | F            | P               | true      | CO        |
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | processed | DocStatus |
+      | po_1                  | endvendor_1              | endvendor_location_1              | 2021-04-16  | POO         | EUR          | F            | P               | true      | CO        |
 
     And validate C_OrderLine:
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
-      | pol_1                     | po_1                  | 2021-04-11      | p_1                     | 10         | 0            | 0           | 10    | 0        | EUR          | true      |
+      | pol_1                     | po_1                  | 2021-04-16      | p_1                     | 10         | 0            | 0           | 10    | 0        | EUR          | true      |
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
@@ -168,6 +173,8 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
 
 
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
   @Id:S0124_130
   @Id:S0222_200
   @Id:S0264_1500
@@ -211,7 +218,7 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | Identifier             | GLN           | C_BPartner_ID.Identifier | OPT.Name             | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | endvendor_location_1   | 2311202200002 | endvendor_1              | EndVendor_01042022_2 | Y                   | Y                   |
       | endcustomer_location_1 | 2311202200003 | endcustomer_1            | EndVendor_01042022_2 | Y                   | Y                   |
-    And metasfresh contains C_BPartner_Products:
+    And metasfresh contains C_BPartner_Product
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | endvendor_1              | p_1                     |
     And metasfresh contains M_Inventories:
@@ -301,12 +308,12 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | po_1                  | pol_1                     |
 
     Then validate the created orders
-      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | processed | docStatus |
-      | po_1                  | endvendor_1              | endvendor_location_1              | 2021-04-11  | POO         | EUR          | F            | P               | true      | CO        |
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | processed | DocStatus |
+      | po_1                  | endvendor_1              | endvendor_location_1              | 2021-04-16  | POO         | EUR          | F            | P               | true      | CO        |
 
     And validate C_OrderLine:
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed |
-      | pol_1                     | po_1                  | 2021-04-11      | p_1                     | 5          | 0            | 0           | 10    | 0        | EUR          | true      |
+      | pol_1                     | po_1                  | 2021-04-16      | p_1                     | 5          | 0            | 0           | 10    | 0        | EUR          | true      |
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
@@ -322,6 +329,8 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
   @Id:S0222_300
   @Id:S0264_1600
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
   @Id:S0124_130
   Scenario: Disposal is correctly considered in Material Dispo when the product is both Sold and Purchased
   Stock available at demand time, no supply needed
@@ -358,7 +367,7 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.PO_DiscountSchema_ID.Identifier |
       | endcustomer_1 | EndCustomer_01042022_3 | N            | Y              | ps_1                          |                                     |
       | endvendor_1   | EndVendor_01042022_3   | Y            | N              | ps_1                          | ds_1                                |
-    And metasfresh contains C_BPartner_Products:
+    And metasfresh contains C_BPartner_Product
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | endvendor_1              | p_1                     |
     And metasfresh contains M_Inventories:

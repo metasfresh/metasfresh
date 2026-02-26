@@ -14,6 +14,7 @@ import { huManagerLocation } from '../routes';
 
 const HUDisposalScreen = () => {
   const { history } = useScreenDefinition({
+    screenId: 'HUDisposalScreen',
     captionKey: 'huManager.action.dispose.buttonCaption',
     back: huManagerLocation,
   });
@@ -65,6 +66,7 @@ const HUDisposalScreen = () => {
         caption={trl('huManager.action.dispose.buttonCaption')}
         disabled={!selectedDisposalReasonKey}
         onClick={onDisposeClick}
+        testId="dispose-button"
       />
     </>
   );

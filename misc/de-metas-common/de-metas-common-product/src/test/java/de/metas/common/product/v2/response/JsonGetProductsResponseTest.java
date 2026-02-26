@@ -32,7 +32,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.math.BigDecimal;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class JsonGetProductsResponseTest
 {
@@ -52,6 +52,7 @@ public class JsonGetProductsResponseTest
 								 .ean("ean")
 								 .name("name")
 								 .uom("uom")
+						         .uomX12DE355("uomX12DE355")
 								 .albertaProductInfo(JsonAlbertaProductInfo.builder()
 															 .albertaProductId("albertaProductId")
 															 .additionalDescription("additionalDescription")

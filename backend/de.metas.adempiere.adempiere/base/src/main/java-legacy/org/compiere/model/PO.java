@@ -1,19 +1,24 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
- * For the text or an alternative of this public license, you may reach us *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
- * or via info@compiere.org or http://www.compiere.org/license.html *
- *****************************************************************************/
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 package org.compiere.model;
 
 import de.metas.ad_reference.ADRefList;
@@ -22,6 +27,7 @@ import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheSourceModelFactory;
 import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.SequenceUtil;
@@ -70,7 +76,6 @@ import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatee2;
 import org.compiere.util.ISqlUpdateReturnProcessor;
-import org.compiere.util.Ini;
 import org.compiere.util.SecureEngine;
 import org.compiere.util.Trace;
 import org.compiere.util.TrxRunnable2;
@@ -1963,7 +1968,7 @@ public abstract class PO
 	{
 		final Properties ctx = getCtx();
 		final UserId loggedUserId = Env.getLoggedUserIdIfExists(ctx).orElse(UserId.SYSTEM);
-		final Timestamp now = new Timestamp(System.currentTimeMillis());
+		final Timestamp now = new Timestamp(SystemTime.millis()); // putting the time under control of SystemTime to facilitate testing
 		final int adClientId = Env.getAD_Client_ID(ctx);
 		final int adOrgId = Env.getAD_Org_ID(ctx);
 
@@ -2517,11 +2522,11 @@ public abstract class PO
 		}
 		else
 		{
-			services.performanceMonitoringServiceSaveEx(() -> saveEx0());
+			services.performanceMonitoringServiceSaveEx(this::saveEx0);
 		}
 	}
 
-	private final void saveEx0() throws AdempiereException
+	private void saveEx0() throws AdempiereException
 	{
 		//
 		// Check and prepare the saving
@@ -2856,11 +2861,7 @@ public abstract class PO
 				return true;
 			}
 		}
-		if (m_custom != null && m_custom.size() > 0)
-		{
-			return true; // there are custom columns modified
-		}
-		return false;
+		return m_custom != null && m_custom.size() > 0; // there are custom columns modified
 	}    // is_Change
 
 	/**
@@ -3170,7 +3171,7 @@ public abstract class PO
 		}
 		else if (idNew <= 0)
 		{
-			idNew = DB.getNextID(getAD_Client_ID(), p_info.getTableName(), m_trxName);
+			idNew = DB.getNextID(getAD_Client_ID(), p_info.getTableName());
 			if (idNew <= 0)
 			{
 				final AdempiereException ex = new AdempiereException("No NextID (" + idNew + ") for " + p_info.getTableName());
@@ -3231,11 +3232,11 @@ public abstract class PO
 			if (index != -1 && p_info.isUseDocSequence(index))
 			{
 				String value = (String)get_Value(index);
-				if (value != null && IPreliminaryDocumentNoBuilder.hasPreliminaryMarkers(value))
+				if (IPreliminaryDocumentNoBuilder.hasPreliminaryMarkers(value))
 				{
 					value = null;
 				}
-				if (Check.isEmpty(value, true))
+				if (Check.isBlank(value))
 				{
 					value = null; // metas: tsa: seq is not automatically fetched on tables with no docType if value is ""
 					int docTypeIndex = p_info.getColumnIndex("C_DocTypeTarget_ID");
@@ -3480,7 +3481,7 @@ public abstract class PO
 		//
 		// Execute actual database INSERT
 		final int no = DB.executeUpdateAndThrowExceptionOnFail(sqlInsert.toString(),
-				(Object[])null,  // params,
+				null,  // params,
 				m_trxName,
 				0,  // timeOut,
 				loadAfterInsertProcessor);
@@ -3625,6 +3626,7 @@ public abstract class PO
 	 * @param xx    data
 	 * @return xx
 	 */
+	@Nullable
 	private Object encrypt(final int index, final Object xx)
 	{
 		if (xx == null)
@@ -4946,7 +4948,7 @@ public abstract class PO
 	}
 
 	/**
-	 * Mark this PO as beeing created, updated or deleted by an manual user action (from window).
+	 * Mark this PO as being created, updated or deleted by a manual user action (from a window).
 	 */
 	public final void set_ManualUserAction(final int windowNo)
 	{
@@ -4960,6 +4962,15 @@ public abstract class PO
 
 		this.m_isManualUserAction = true;
 		this.m_windowNo = windowNo;
+	}
+
+	/**
+	 * Mark this PO as not being created, updated or deleted by a manual user action (from a window).
+	 */
+	public final void unset_ManualUserAction()
+	{
+		this.m_isManualUserAction = false;
+		this.m_windowNo = 0;
 	}
 
 	@Override
@@ -5153,7 +5164,7 @@ public abstract class PO
 
 	public boolean isCopiedFromOtherRecord() {return getDynAttribute(DYNATTR_CopiedFromRecordId) != null;}
 
-	public void setCopiedFromRecordId(int fromRecordId) {setDynAttribute(DYNATTR_CopiedFromRecordId, fromRecordId);}
+	public void setCopiedFromRecordId(final int fromRecordId) {setDynAttribute(DYNATTR_CopiedFromRecordId, fromRecordId);}
 
 	private class POReturningAfterInsertLoader implements ISqlUpdateReturnProcessor
 	{

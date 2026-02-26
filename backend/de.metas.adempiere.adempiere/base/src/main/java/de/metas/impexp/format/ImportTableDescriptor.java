@@ -1,10 +1,9 @@
 package de.metas.impexp.format;
 
-import org.compiere.model.I_C_DataImport_Run;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.compiere.model.I_C_DataImport_Run;
 
 /*
  * #%L
@@ -16,12 +15,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -37,11 +36,12 @@ public class ImportTableDescriptor
 	public static final String COLUMNNAME_I_IsImported = "I_IsImported";
 	public static final String COLUMNNAME_Processed = "Processed";
 	public static final String COLUMNNAME_Processing = "Processing";
+	public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	public static final String COLUMNNAME_IsActive = "IsActive";
 
-	@NonNull
-	String tableName;
-	@NonNull
-	String keyColumnName;
+	@NonNull String tableName;
+	@NonNull String keyColumnName;
 
 	String dataImportConfigIdColumnName;
 	String adIssueIdColumnName;

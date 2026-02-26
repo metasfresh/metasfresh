@@ -32,7 +32,6 @@ import de.metas.costing.CostAmountAndQty;
 import de.metas.costing.CostElement;
 import de.metas.costing.ShipmentCosts;
 import de.metas.currency.CurrencyConversionContext;
-import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocBaseType;
 import de.metas.document.engine.DocStatus;
 import de.metas.inout.IInOutBL;
@@ -48,6 +47,7 @@ import de.metas.order.costs.inout.InOutCost;
 import de.metas.quantity.Quantity;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
+import lombok.Value;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
@@ -181,37 +181,34 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 	{
 		setC_Currency_ID(as.getCurrencyId());
 
-		final DocBaseAndSubType docBaseAndSubType = getDocBaseAndSubType();
-		final DocBaseType docBaseType = docBaseAndSubType.getDocBaseType();
-
-		//
-		// *** Sales - Shipment
-		if (docBaseType.isShipment() && isSOTrx())
+		final InOutDocBaseType docBaseType = getInOutDocBaseType();
+		if (docBaseType.isCustomerShipment())
 		{
 			return createFacts_SalesShipment(as);
 		}
-		//
-		// *** Sales - Return
-		else if (docBaseType.isReceipt() && isSOTrx())
+		else if (docBaseType.isCustomerReturn())
 		{
 			return createFacts_SalesReturn(as);
 		}
-		//
-		// *** Purchasing - Receipt
-		else if (docBaseType.isReceipt() && !isSOTrx())
+		else if (docBaseType.isVendorReceipt())
 		{
 			return createFacts_PurchasingReceipt(as);
 		}
-		// *** Purchasing - return
-		else if (docBaseType.isShipment() && !isSOTrx())
+		else if (docBaseType.isVendorReturn())
 		{
 			return createFacts_PurchasingReturn(as);
 		}
 		else
 		{
 			throw newPostingException()
-					.setDetailMessage("DocumentType unknown: " + docBaseAndSubType);
+					.setDetailMessage("DocumentType unknown: " + docBaseType);
 		}
+	}
+
+	@NonNull
+	final InOutDocBaseType getInOutDocBaseType()
+	{
+		return new InOutDocBaseType(getDocBaseType(), isSOTrx());
 	}
 
 	@NonNull
@@ -468,7 +465,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 		}
 
 		final AcctSchema as = fact.getAcctSchema();
-		final CostAmount costs = line.getCreateReceiptCosts(as).getTotalAmountToPost(as).getMainAmt();
+		final CostAmount costs = line.getCreateReceiptCosts(as).getTotalAmountToPost(as).getMainAmt().negate();
 
 		//
 		// NotInvoicedReceipt DR
@@ -476,7 +473,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 				.setDocLine(line)
 				.setAccount(getBPGroupAccount(BPartnerGroupAccountType.NotInvoicedReceipts, as))
 				.setAmt(roundToStdPrecision(costs), null)
-				.setQty(line.getQty().negate())
+				.setQty(line.getQty())
 				.locatorId(line.getM_Locator_ID())
 				.fromLocationOfBPartner(getBPartnerLocationId())
 				.toLocationOfLocator(line.getM_Locator_ID())
@@ -500,7 +497,7 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 				.setDocLine(line)
 				.setAccount(line.getProductAssetAccount(as))
 				.setAmt(null, roundToStdPrecision(costs))
-				.setQty(line.getQty())
+				.setQty(line.getQty().negate())
 				.locatorId(line.getM_Locator_ID())
 				.fromLocationOfBPartner(getBPartnerLocationId())
 				.toLocationOfLocator(line.getM_Locator_ID())
@@ -568,5 +565,28 @@ public class Doc_InOut extends Doc<DocLine_InOut>
 
 		//noinspection DataFlowIssue
 		return optionalSalesOrderId.orElse(null);
+	}
+
+	//
+	//
+	//
+	//
+	//
+
+	@Value
+	static class InOutDocBaseType
+	{
+		@NonNull DocBaseType docBaseType;
+		boolean isSOTrx;
+
+		public boolean isCustomerShipment() {return isSOTrx && docBaseType.isShipment();}
+
+		public boolean isCustomerReturn() {return isSOTrx && docBaseType.isReceipt();}
+
+		public boolean isVendorReceipt() {return !isSOTrx && docBaseType.isReceipt();}
+
+		public boolean isVendorReturn() {return !isSOTrx && docBaseType.isShipment();}
+
+		public boolean isReturn() {return isCustomerReturn() || isVendorReturn();}
 	}
 }   // Doc_InOut

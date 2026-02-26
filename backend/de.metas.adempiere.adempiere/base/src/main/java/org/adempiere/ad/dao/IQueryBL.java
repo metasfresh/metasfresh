@@ -22,27 +22,26 @@ package org.adempiere.ad.dao;
  * #L%
  */
 
-import java.util.Properties;
-
+import de.metas.dao.selection.pagination.QueryResultPage;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.compiere.util.Env;
 
-import de.metas.dao.selection.pagination.QueryResultPage;
-import de.metas.util.ISingletonService;
-
 import javax.annotation.Nullable;
+import java.util.Properties;
 
 public interface IQueryBL extends ISingletonService
 {
-	<T> IQueryBuilder<T> createQueryBuilder(Class<T> modelClass, Properties ctx, @Nullable String trxName);
-
 	/**
 	 * @param next identifier of the next page, as taken from the previous page's {@link QueryResultPage#getNextPageDescriptor()}.
 	 * @see IQuery#paginate(Class, int)
 	 */
 	<T> QueryResultPage<T> retrieveNextPage(Class<T> clazz, String next);
+
+	<T> IQueryBuilder<T> createQueryBuilder(Class<T> modelClass, Properties ctx, @Nullable String trxName);
 
 	<T> IQueryBuilder<T> createQueryBuilder(Class<T> modelClass, Object contextProvider);
 
@@ -53,7 +52,7 @@ public interface IQueryBL extends ISingletonService
 	/**
 	 * @return query builder using current context and thread inherited transaction
 	 */
-	default IQueryBuilder<Object> createQueryBuilder(String modelTableName)
+	default IQueryBuilder<Object> createQueryBuilder(final String modelTableName)
 	{
 		return createQueryBuilder(modelTableName, Env.getCtx(), ITrx.TRXNAME_ThreadInherited);
 	}
@@ -61,7 +60,7 @@ public interface IQueryBL extends ISingletonService
 	/**
 	 * @return query builder using current context and thread inherited transaction
 	 */
-	default <T> IQueryBuilder<T> createQueryBuilder(Class<T> modelClass)
+	default <T> IQueryBuilder<T> createQueryBuilder(final Class<T> modelClass)
 	{
 		return createQueryBuilder(modelClass, Env.getCtx(), ITrx.TRXNAME_ThreadInherited);
 	}
@@ -69,7 +68,7 @@ public interface IQueryBL extends ISingletonService
 	/**
 	 * @return query builder using current context and out of transaction
 	 */
-	default <T> IQueryBuilder<T> createQueryBuilderOutOfTrx(Class<T> modelClass)
+	default <T> IQueryBuilder<T> createQueryBuilderOutOfTrx(final Class<T> modelClass)
 	{
 		return createQueryBuilder(modelClass, Env.getCtx(), ITrx.TRXNAME_None);
 	}
@@ -77,7 +76,7 @@ public interface IQueryBL extends ISingletonService
 	/**
 	 * @return query builder using current context and out of transaction
 	 */
-	default IQueryBuilder<Object> createQueryBuilderOutOfTrx(String modelTableName)
+	default IQueryBuilder<Object> createQueryBuilderOutOfTrx(@NonNull final String modelTableName)
 	{
 		return createQueryBuilder(modelTableName, Env.getCtx(), ITrx.TRXNAME_None);
 	}
@@ -106,7 +105,7 @@ public interface IQueryBL extends ISingletonService
 
 	/**
 	 * @param tableName name of the table in question. <b>Can</b> be null
- */
+	 */
 	<T> ICompositeQueryFilter<T> createCompositeQueryFilter(@Nullable String tableName);
 
 	<T> ICompositeQueryUpdater<T> createCompositeQueryUpdater(Class<T> modelClass);

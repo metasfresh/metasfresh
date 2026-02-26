@@ -3,6 +3,7 @@ package de.metas.costing;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.methods.CostAmountAndQtyDetailed;
 import de.metas.costing.methods.CostAmountType;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -127,4 +128,22 @@ public class CostDetail
 	}
 
 	public CostAmountAndQtyDetailed getAmtAndQtyDetailed() {return CostAmountAndQtyDetailed.of(amt, qty, amtType);}
+
+	public CostAmount computePartialCostAmount(@NonNull final Quantity qty, @NonNull final CurrencyPrecision precision)
+	{
+		if (qty.equalsIgnoreSource(this.qty))
+		{
+			return amt;
+		}
+		else if (qty.isZero())
+		{
+			return amt.toZero();
+		}
+		else
+		{
+			final CostAmount price = amt.divide(this.qty, CurrencyPrecision.ofInt(12));
+			return price.multiply(qty.toBigDecimal()).roundToPrecisionIfNeeded(precision);
+		}
+	}
+
 }

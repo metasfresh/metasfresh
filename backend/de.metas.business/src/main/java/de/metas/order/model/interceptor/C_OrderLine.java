@@ -41,6 +41,7 @@ import org.compiere.model.I_C_PO_OrderLine_Alloc;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.ZoneId;
@@ -72,6 +73,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Interceptor(I_C_OrderLine.class)
 @Callout(I_C_OrderLine.class)
+@Component
 public class C_OrderLine
 {
 	public static final AdMessageKey ERR_NEGATIVE_QTY_RESERVED = AdMessageKey.of("MSG_NegativeQtyReserved");
@@ -431,5 +433,35 @@ public class C_OrderLine
 		orderBL.setWeightFromLines(order);
 
 		saveRecord(order);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_IsWithoutCharge, I_C_OrderLine.COLUMNNAME_PriceActual, I_C_OrderLine.COLUMNNAME_PriceEntered })
+	public void updatePriceToZero(final I_C_OrderLine orderLine)
+	{
+		if (orderLine.isWithoutCharge())
+		{
+			orderLine.setPriceActual(BigDecimal.ZERO);
+			orderLine.setPriceEntered(BigDecimal.ZERO);
+			orderLine.setIsManualPrice(true);
+
+			final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+			orderLineBL.updateLineNetAmtFromQtyEntered(orderLine);
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_IsWithoutCharge})
+	public void updatePriceToStd(final I_C_OrderLine orderLine)
+	{
+		if (!orderLine.isWithoutCharge())
+		{
+			orderLine.setPriceActual(orderLine.getPriceStd());
+			orderLine.setPriceEntered(orderLine.getPriceStd());
+			orderLine.setIsManualPrice(false);
+
+			final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+			orderLineBL.updateLineNetAmtFromQtyEntered(orderLine);
+		}
 	}
 }
