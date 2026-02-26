@@ -111,8 +111,10 @@ The **events** list records which page changes and actions took place in the app
       "timestamp": "2026-01-16T14:30:15.456Z",
       "type": "processAction",
       "processId": "WEBUI_Shipment_Schedule",
+      "pinstanceId": "12345",
       "actionType": "openView",
-      "action": { "type": "openView", "windowId": "540674", "viewId": "..." },
+      "windowId": "540674",
+      "viewId": "540674-aabbcc",
       "url": "http://localhost/window/143/1000000"
     }
   ]
@@ -121,7 +123,7 @@ The **events** list records which page changes and actions took place in the app
 
 ## Privacy
 
-The diagnostic file does **not** contain any personal data, passwords, or business data. Only technical information about the browser, occurred errors, and navigation/process events is captured. The events contain only URL paths and process IDs, not document contents.
+The diagnostic file does **not** contain any personal data, passwords, or business data. Only technical information about the browser, occurred errors, and navigation/process events is captured. The events contain URL paths, process IDs, and window/view identifiers — no document contents or business data.
 
 ## FAQ
 

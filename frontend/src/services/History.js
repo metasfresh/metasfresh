@@ -14,17 +14,26 @@ const wrappedHistory = qhistory(
   queryString.parse
 );
 
-// Wrap push/replace to log all route changes for diagnostics
+// Wrap push/replace to log programmatic route changes for diagnostics
+// (direct window.location changes are not captured here)
 const originalPush = wrappedHistory.push.bind(wrappedHistory);
 const originalReplace = wrappedHistory.replace.bind(wrappedHistory);
 
 wrappedHistory.push = (...args) => {
-  logDiagEvent('navigation', { action: 'push', to: args[0] });
+  try {
+    logDiagEvent('navigation', { action: 'push', to: args[0] });
+  } catch (e) {
+    // Never let diagnostic logging break navigation
+  }
   return originalPush(...args);
 };
 
 wrappedHistory.replace = (...args) => {
-  logDiagEvent('navigation', { action: 'replace', to: args[0] });
+  try {
+    logDiagEvent('navigation', { action: 'replace', to: args[0] });
+  } catch (e) {
+    // Never let diagnostic logging break navigation
+  }
   return originalReplace(...args);
 };
 

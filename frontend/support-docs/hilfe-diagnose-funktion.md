@@ -109,8 +109,10 @@ Die **events**-Liste zeichnet auf, welche Seitenwechsel und Aktionen in der Anwe
       "timestamp": "2026-01-16T14:30:15.456Z",
       "type": "processAction",
       "processId": "WEBUI_Shipment_Schedule",
+      "pinstanceId": "12345",
       "actionType": "openView",
-      "action": { "type": "openView", "windowId": "540674", "viewId": "..." },
+      "windowId": "540674",
+      "viewId": "540674-aabbcc",
       "url": "http://localhost/window/143/1000000"
     }
   ]
@@ -119,7 +121,7 @@ Die **events**-Liste zeichnet auf, welche Seitenwechsel und Aktionen in der Anwe
 
 ## Datenschutz
 
-Die Diagnosedatei enthält **keine** persönlichen Daten, Passwörter oder Geschäftsdaten. Es werden ausschließlich technische Informationen über den Browser, aufgetretene Fehler und Navigations-/Prozessereignisse erfasst. Die Ereignisse enthalten nur URL-Pfade und Prozess-IDs, keine Dokumentinhalte.
+Die Diagnosedatei enthält **keine** persönlichen Daten, Passwörter oder Geschäftsdaten. Es werden ausschließlich technische Informationen über den Browser, aufgetretene Fehler und Navigations-/Prozessereignisse erfasst. Die Ereignisse enthalten URL-Pfade, Prozess-IDs und Fenster-/Ansichts-Kennungen — keine Dokumentinhalte oder Geschäftsdaten.
 
 ## Häufige Fragen
 

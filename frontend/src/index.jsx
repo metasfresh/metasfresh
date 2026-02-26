@@ -45,6 +45,6 @@ ReactDOM.render(
 // to deal with this case we added a `popstate` listener that will go to the correct page in history skipping
 // the case when the URL and the view are the same when the back button is pressed
 window.addEventListener('popstate', () => {
-  logDiagEvent('popstate', { href: document.location.href });
+  logDiagEvent('popstate', {});
   historyDoubleBackOnPopstate(store);
 });

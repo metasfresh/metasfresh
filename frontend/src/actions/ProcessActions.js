@@ -56,7 +56,10 @@ export const handleProcessResponse = ({
           processId,
           pinstanceId,
           actionType: action.type,
-          action,
+          windowId: action.windowId,
+          viewId: action.viewId,
+          documentId: action.documentId,
+          targetTab: action.targetTab,
         });
 
         switch (action.type) {
