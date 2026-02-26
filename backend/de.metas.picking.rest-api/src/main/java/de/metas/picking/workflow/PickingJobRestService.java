@@ -28,6 +28,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
@@ -225,6 +226,12 @@ public class PickingJobRestService
 			@Nullable final PickingJobLineId lineId)
 	{
 		return pickingJobService.closeTUPickingTarget(pickingJob, lineId);
+	}
+
+	@NonNull
+	public MobileUIPickingUserProfile getProfile()
+	{
+		return configService.getProfile();
 	}
 
 	@NonNull
