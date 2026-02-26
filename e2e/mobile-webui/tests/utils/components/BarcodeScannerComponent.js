@@ -71,10 +71,22 @@ export const BarcodeScannerComponent = {
             selector += `[data-testid="${testId}"]`;
         }
 
-        // Simulate DataWedge IME text injection: sets value + fires input/change events, no keydown events
-        await page.locator(selector).fill(scannedCode);
+        // Simulate DataWedge IME text injection: sets value + fires input/change events, no keydown events.
+        // Uses evaluate() because the input may be type="hidden" (when isShowInputText=false),
+        // and Playwright's fill() requires visible elements. DataWedge injects via InputConnection
+        // regardless of visibility.
+        await page.evaluate(({ selector, value }) => {
+            const el = document.querySelector(selector);
+            const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+            nativeInputValueSetter.call(el, value);
+            el.dispatchEvent(new Event('input', { bubbles: true }));
+            el.dispatchEvent(new Event('change', { bubbles: true }));
+        }, { selector, value: scannedCode });
         // DataWedge appends Enter after text injection to trigger submission
-        await page.keyboard.press('Enter');
+        await page.evaluate((selector) => {
+            const el = document.querySelector(selector);
+            el.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true }));
+        }, selector);
     }),
 
     waitForInputFieldToGetEmpty: async () => await test.step(`${NAME} - Wait for input field to get empty`, async () => {
