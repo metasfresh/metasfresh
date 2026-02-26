@@ -15,10 +15,12 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_I_Product;
 import org.compiere.model.I_M_Product;
 import org.compiere.process.ImportProduct;
+import org.compiere.util.DB;
 
 import java.math.BigDecimal;
 
@@ -123,6 +125,52 @@ public class I_Product_StepDef
 				.buildAndPrepareExecution()
 				.executeSync()
 				.getResult();
+	}
+
+	/**
+	 * Validates I_Product staging records after import process execution.
+	 * Uses direct SQL to read I_ErrorMsg and I_IsImported because the
+	 * import process commits in its own transaction.
+	 *
+	 * @cucumber.columns
+	 * <b>Identifier</b> — (required) alias referencing a previously created I_Product record<br>
+	 * <b>I_ErrorMsg</b> — (optional) expected error message substring; also asserts I_IsImported='E' and C_BPartner_ID=0<br>
+	 * <b>IsResolved</b> — (optional, boolean) if true, asserts C_BPartner_ID &gt; 0<br>
+	 */
+	@Then("validate I_Product:")
+	public void validate_I_Product(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::validateIProduct);
+	}
+
+	private void validateIProduct(@NonNull final DataTableRow row)
+	{
+		final StepDefDataIdentifier rowIdentifier = row.getAsIdentifier();
+		final I_I_Product record = rowIdentifier.lookupNotNullIn(iProductTable);
+
+		row.getAsOptionalString(I_I_Product.COLUMNNAME_I_ErrorMsg).ifPresent(expectedErr -> {
+			// Use direct SQL because the import process commits in its own transaction
+			final String dbErrorMsg = DB.getSQLValueStringEx(ITrx.TRXNAME_None,
+					"SELECT I_ErrorMsg FROM I_Product WHERE I_Product_ID=?", record.getI_Product_ID());
+			final String dbImported = DB.getSQLValueStringEx(ITrx.TRXNAME_None,
+					"SELECT I_IsImported FROM I_Product WHERE I_Product_ID=?", record.getI_Product_ID());
+			assertThat(dbErrorMsg)
+					.as("I_Product[%s].I_ErrorMsg should contain '%s'", rowIdentifier, expectedErr)
+					.contains(expectedErr);
+			assertThat(dbImported)
+					.as("I_Product[%s].I_IsImported should be 'E'", rowIdentifier)
+					.isEqualTo("E");
+			assertThat(record.getC_BPartner_ID())
+					.as("I_Product[%s].C_BPartner_ID should be 0 (NULL)", rowIdentifier)
+					.isEqualTo(0);
+		});
+
+		if (row.getAsOptionalBoolean("IsResolved").orElseFalse())
+		{
+			assertThat(record.getC_BPartner_ID())
+					.as("I_Product[%s].C_BPartner_ID should be resolved (non-zero)", rowIdentifier)
+					.isGreaterThan(0);
+		}
 	}
 
 	/**
