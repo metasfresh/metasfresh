@@ -175,7 +175,7 @@ Feature: EDI DESADV export via External System
 
     And M_InOut is enqueued for EDI export
       | M_InOut_ID |
-      | d_2        |
+      | s_2        |
 
     Then after not more than 60s, M_InOut records have the following export status
       | M_InOut_ID | EDI_ExportStatus |
