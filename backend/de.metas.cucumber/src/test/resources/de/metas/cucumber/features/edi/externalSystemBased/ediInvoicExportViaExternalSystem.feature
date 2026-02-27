@@ -43,7 +43,7 @@ Feature: EDI INVOIC export via External System
       | customer1  | true                 | 12345678              | E                    | externalSystemConfig_1             |
     And metasfresh contains C_BPartner_Locations:
       | Identifier          | C_BPartner_ID | IsShipToDefault | IsBillToDefault | GLN           |
-      | bpartner_location_1 | customer1     | Y               | Y               | 12345678      |
+      | bpartner_location_1 | customer1     | Y               | Y               | 1234567890123 |
 
     And RabbitMQ MF_TO_ExternalSystem queue is purged
 
@@ -78,7 +78,7 @@ Feature: EDI INVOIC export via External System
     And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | ic1                               | ol_1                      | 100          |
-    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+    When process invoice candidates
       | C_Invoice_Candidate_ID |
       | ic1                    |
     Then after not more than 60s, C_Invoice are found:
