@@ -509,8 +509,9 @@ export class RawWidget extends PureComponent {
    * @param {string} qrCode
    */
   onDetectedQR = (qrCode) => {
-    const { widgetField, handleChange } = this.props;
+    const { widgetField, handleChange, handlePatch } = this.props;
     handleChange(widgetField, qrCode);
+    handlePatch(widgetField, qrCode);
   };
 
   render() {
@@ -683,7 +684,12 @@ export class RawWidget extends PureComponent {
         </div>
         {/* this is a special case for displaying the scan button on the right side of the field */}
         {this.isScanQRbuttonPanel() && (
-          <BarcodeScannerBtn postDetectionExec={this.onDetectedQR} />
+          <BarcodeScannerBtn
+            postDetectionExec={this.onDetectedQR}
+            layout={{
+              barcodeScannerType: this.props.barcodeScannerType,
+            }}
+          />
         )}
       </div>
     );

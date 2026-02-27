@@ -41,7 +41,7 @@ function addBarcodeScanner(WrappedComponent) {
           ? props.layout.barcodeScannerType
           : null;
 
-      const scanning = barcodeScannerType && currentDevice.type === 'mobile';
+      const scanning = !!barcodeScannerType;
 
       this.state = {
         barcodeScannerType: barcodeScannerType,
