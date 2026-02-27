@@ -196,6 +196,20 @@ public class EDIDocumentBL
 		}
 
 		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(document.getDocStatus());
+		if (docStatus.isReversed())
+		{
+			loggable.addLog("DocStatus={} is reversed; => update EdiExportStatus to {}", docStatus, EDIExportStatus.DontSend.name());
+			setEdiExportStatus(document, false);
+			return false;
+		}
+
+		if (document.getReversal_ID() > 0)
+		{
+			loggable.addLog("Reversal_ID={} (i.e. >0); => update EdiExportStatus to {}", docStatus, EDIExportStatus.DontSend.name());
+			setEdiExportStatus(document, false);
+			return false;
+		}
+
 		final boolean isBPartnerEDIConfigEnabled;
 		if (ediType.isDesadv())
 		{
@@ -208,20 +222,6 @@ public class EDIDocumentBL
 		else
 		{
 			throw new AdempiereException("Unsupported EDIType: " + ediType);
-		}
-
-		if (docStatus.isReversed() && isBPartnerEDIConfigEnabled)
-		{
-			loggable.addLog("DocStatus={} is reversed; => update EdiExportStatus to {}", docStatus, EDIExportStatus.DontSend.name());
-			setEdiExportStatus(document, false);
-			return false;
-		}
-
-		if (document.getReversal_ID() > 0 && isBPartnerEDIConfigEnabled)
-		{
-			loggable.addLog("Reversal_ID={} (i.e. >0); => update EdiExportStatus to {}", docStatus, EDIExportStatus.DontSend.name());
-			setEdiExportStatus(document, false);
-			return false;
 		}
 
 		final EDIExportStatus ediExportStatus = isBPartnerEDIConfigEnabled ? EDIExportStatus.Pending : EDIExportStatus.DontSend;
