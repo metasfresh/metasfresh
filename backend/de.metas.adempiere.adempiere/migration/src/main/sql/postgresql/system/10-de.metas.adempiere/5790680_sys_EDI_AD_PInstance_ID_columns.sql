@@ -94,3 +94,13 @@ CREATE INDEX IF NOT EXISTS c_invoice_ediadpinstance_id
     ON c_invoice (EDI_AD_PInstance_ID)
 WHERE isActive = 'Y'
 ;
+
+-- Column: C_Invoice.EDI_AD_PInstance_ID
+-- 2026-02-27T12:51:29.644Z
+UPDATE AD_Column SET PersonalDataCategory='NP',Updated=TO_TIMESTAMP('2026-02-27 12:51:29.644000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=592093
+;
+
+-- Column: M_InOut.EDI_AD_PInstance_ID
+-- 2026-02-27T12:52:08.706Z
+UPDATE AD_Column SET PersonalDataCategory='NP',Updated=TO_TIMESTAMP('2026-02-27 12:52:08.706000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=592092
+;

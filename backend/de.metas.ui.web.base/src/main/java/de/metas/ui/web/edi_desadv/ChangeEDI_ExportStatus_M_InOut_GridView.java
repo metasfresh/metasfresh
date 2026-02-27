@@ -93,8 +93,10 @@ public class ChangeEDI_ExportStatus_M_InOut_GridView
 	protected String doIt() throws Exception
 	{
 		final EDIExportStatus targetExportStatus = EDIExportStatus.ofCode(p_TargetExportStatus);
+		final ImmutableSet<InOutId> selectedIds = getSelectedInOutIds();
+		if (selectedIds.isEmpty()) return MSG_OK;
 
-		inOutDAO.getByIds(getSelectedInOutIds(), I_M_InOut.class).forEach(inOut -> ChangeEDI_ExportStatusHelper.M_InOutDoIt(inOut, targetExportStatus));
+		inOutDAO.getByIds(selectedIds, I_M_InOut.class).forEach(inOut -> ChangeEDI_ExportStatusHelper.M_InOutDoIt(inOut, targetExportStatus));
 
 		return MSG_OK;
 	}

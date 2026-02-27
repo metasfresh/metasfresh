@@ -62,7 +62,7 @@ public class ChangeEDI_ExportStatus_M_InOut_SingleView
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 
 	protected static final String PARAM_TargetExportStatus = I_M_InOut.COLUMNNAME_EDI_ExportStatus;
-	@Param(parameterName = PARAM_TargetExportStatus)
+	@Param(parameterName = PARAM_TargetExportStatus, mandatory = true)
 	private String p_TargetExportStatus;
 
 	@Override

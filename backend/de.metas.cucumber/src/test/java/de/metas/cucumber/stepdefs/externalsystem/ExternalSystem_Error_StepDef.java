@@ -137,10 +137,10 @@ public class ExternalSystem_Error_StepDef
 		final StepDefDataIdentifier invoiceIdentifier = row.getAsIdentifier(I_C_Invoice.COLUMNNAME_C_Invoice_ID);
 
 
-		final org.compiere.model.I_C_Invoice inout = invoiceTable.get(invoiceIdentifier);
-		assertThat(invoiceIdentifier).isNotNull();
+		final org.compiere.model.I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
+		assertThat(invoice).isNotNull();
 
-		final I_C_Invoice ediInvoice = InterfaceWrapperHelper.create(inout, I_C_Invoice.class);
+		final I_C_Invoice ediInvoice = InterfaceWrapperHelper.create(invoice, I_C_Invoice.class);
 		final PInstanceId pInstanceId = PInstanceId.ofRepoIdOrNull(ediInvoice.getEDI_AD_PInstance_ID());
 
 		assertThat(pInstanceId)

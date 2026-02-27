@@ -84,6 +84,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import static de.metas.edi.async.spi.impl.EDIWorkpackageProcessor.SYS_CONFIG_OneDesadvPerShipment;
 import static java.math.BigDecimal.ZERO;
@@ -737,6 +738,12 @@ public class DesadvBL
 
 	public void propagateEDIStatus(@NonNull final I_EDI_Desadv desadv)
 	{
+		// should always be opposite of recomputeDesadvStatusFromInOuts
+		if (isOneDesadvPerShipment(desadv))
+		{
+			return;
+		}
+
 		final String ediExportStatus = Check.assumeNotNull(desadv.getEDI_ExportStatus(), "EDI_ExportStatus is not null; EDI_DesadvID={}", desadv.getEDI_Desadv_ID());
 		desadvDAO.retrieveShipmentsWithStatus(desadv, ImmutableSet.of(EDIExportStatus.SendingStarted))
 				.stream()
@@ -1029,6 +1036,7 @@ public class DesadvBL
 	{
 		final I_EDI_Desadv desadv = desadvDAO.retrieveById(desadvId);
 
+		// should always be opposite of propagateEDIStatus
 		if (!isOneDesadvPerShipment(desadv))
 		{
 			logger.debug("Skipping recompute for DESADV {} (not in per-shipment mode)", desadvId);
@@ -1110,10 +1118,7 @@ public class DesadvBL
 								: inOut.getEDIErrorMsg();
 						return "Shipment " + docNo + ": " + errorMsg;
 					})
-					.collect(ImmutableList.toImmutableList())
-					.stream()
-					.reduce((a, b) -> a + "; " + b)
-					.orElse("");
+					.collect(Collectors.joining("; "));
 	}
 
 	/**

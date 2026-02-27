@@ -59,6 +59,7 @@ public class EDIExternalSystemErrorListener implements IExternalSystemInvocation
 			@NonNull final ExternalSystemErrorContext errorContext,
 			@NonNull final String errorMessage)
 	{
+		//safety check
 		if (!applies(errorContext))
 		{
 			logger.debug("Error context '{}' does not match EDI, skipping", errorContext.getCode());

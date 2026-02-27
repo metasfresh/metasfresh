@@ -96,6 +96,7 @@ public class M_InOut_EnqueueForExport_ExternalSystem extends JavaProcess impleme
 
 		queue.newWorkPackage()
 				.setAD_PInstance_ID(getPinstanceId())
+				.setPriority(IWorkPackageQueue.PRIORITY_AUTO)
 				.bindToTrxName(get_TrxName())
 				.addElement(inOut)
 				.buildAndEnqueue();

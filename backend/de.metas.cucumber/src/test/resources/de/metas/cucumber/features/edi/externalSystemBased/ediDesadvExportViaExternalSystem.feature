@@ -50,7 +50,6 @@ Feature: EDI DESADV export via External System
     And RabbitMQ MF_TO_ExternalSystem queue is purged
 
 
-
   @from:cucumber
   @allure.label.epic:E0292_EDI
   @allure.label.feature:F00350_EDI
@@ -175,8 +174,8 @@ Feature: EDI DESADV export via External System
       | d_2                      | E                |
 
     And M_InOut is enqueued for EDI export
-      | EDI_Desadv_ID.Identifier |
-      | d_2                      |
+      | M_InOut.Identifier |
+      | d_2                |
 
     Then after not more than 60s, M_InOut records have the following export status
       | M_InOut_ID | EDI_ExportStatus |

@@ -1,3 +1,4 @@
+-- Run mode: SWING_CLIENT
 
 -- Value: M_InOut_EnqueueForExport_ExternalSystem
 -- Classname: de.metas.edi.process.M_InOut_EnqueueForExport_ExternalSystem

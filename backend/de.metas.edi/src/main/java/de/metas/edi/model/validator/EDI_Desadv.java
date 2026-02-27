@@ -91,11 +91,6 @@ public class EDI_Desadv
 		desadv.setProcessing(exportStatus.isProcessing());
 		desadv.setProcessed(exportStatus.isProcessed());
 
-		if (desadvBL.isOneDesadvPerShipment(desadv))
-		{
-			return;
-		}
-
 		desadvBL.propagateEDIStatus(desadv);
 	}
 

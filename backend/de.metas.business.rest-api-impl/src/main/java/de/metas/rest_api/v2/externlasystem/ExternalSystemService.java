@@ -106,7 +106,7 @@ public class ExternalSystemService
 	@NonNull private final ExternalServices externalServices;
 	@NonNull private final JsonExternalSystemRetriever jsonRetriever;
 	@NonNull private final ExternalSystemRepository externalSystemRepository;
-	@NonNull private final List<IExternalSystemInvocationErrorListener> IExternalSystemInvocationErrorListeners;
+	@NonNull private final List<IExternalSystemInvocationErrorListener> externalSystemInvocationErrorListeners;
 
 	@VisibleForTesting
 	public static ExternalSystemService newInstanceForUnitTesting()
@@ -225,7 +225,7 @@ public class ExternalSystemService
 	{
 		try
 		{
-			for (final IExternalSystemInvocationErrorListener listener : IExternalSystemInvocationErrorListeners)
+			for (final IExternalSystemInvocationErrorListener listener : externalSystemInvocationErrorListeners)
 			{
 				if (!listener.applies(errorContext))
 				{
