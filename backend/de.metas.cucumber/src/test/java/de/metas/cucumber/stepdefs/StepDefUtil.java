@@ -323,10 +323,12 @@ public class StepDefUtil
 	}
 
 	@NonNull
-	public ImmutableList<String> extractIdentifiers(@NonNull final String identifier)
+	public ImmutableList<StepDefDataIdentifier> extractIdentifiers(@NonNull final String identifier)
 	{
 		return Arrays.stream(identifier.split(","))
 				.map(StringUtils::trim)
+				.filter(Check::isNotBlank)
+				.map(StepDefDataIdentifier::ofString)
 				.collect(ImmutableList.toImmutableList());
 	}
 

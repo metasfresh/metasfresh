@@ -123,7 +123,7 @@ public class C_InvoiceLine_StepDef
 		DataTableRows.of(table)
 				.setAdditionalRowIdentifierColumnName(I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID)
 				.forEach(row -> {
-					I_C_InvoiceLine invoiceLineRecord = findInvoiceLineRecord(row);
+					final I_C_InvoiceLine invoiceLineRecord = findInvoiceLineRecord(row);
 					final I_C_Invoice invoice = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID).lookupNotNullIn(invoiceTable);
 					validateInvoiceLine(invoiceLineRecord, invoice, row);
 				});
@@ -148,7 +148,10 @@ public class C_InvoiceLine_StepDef
 		final List<I_C_InvoiceLine> invoiceLineRecords = queryBuilder.create().list(I_C_InvoiceLine.class);
 		if (invoiceLineRecords.isEmpty())
 		{
-			throw new AdempiereException("No invoice line found for " + queryBuilder);
+			throw new AdempiereException("Not a single invoice line found")
+					.setParameter("query", queryBuilder.toString())
+					.setParameter("expected_qty", qtyInvoiced)
+					.setParameter("candidates", invoiceLineRecords.size());
 		}
 		else if (invoiceLineRecords.size() == 1)
 		{
@@ -164,9 +167,11 @@ public class C_InvoiceLine_StepDef
 		}
 		else
 		{
-			throw new AdempiereException("Not a single invoice line found for " + queryBuilder)
-					.setParameter("invoiceLineRecords", invoiceLineRecords)
-					.appendParametersToMessage();
+			throw new AdempiereException("Not a single invoice line found")
+					.setParameter("query", queryBuilder.toString())
+					.setParameter("expected_qty", qtyInvoiced)
+					.setParameter("candidates", invoiceLineRecords.size())
+					.setParameter("candidates_with_matching_qty", invoiceLineRecordsFiltered.size());
 		}
 	}
 
@@ -347,12 +352,6 @@ public class C_InvoiceLine_StepDef
 		{
 			softly.assertThat(invoiceLine.getDescription()).isEqualTo(description);
 		}
-
-		// final Boolean isHidePriceAndAmountOnPrint = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + COLUMNNAME_IsHidePriceAndAmountOnPrint);
-		// if (isHidePriceAndAmountOnPrint != null)
-		// {
-		// 	softly.assertThat(invoiceLine.isHidePriceAndAmountOnPrint()).as(COLUMNNAME_IsHidePriceAndAmountOnPrint).isEqualTo(isHidePriceAndAmountOnPrint);
-		// }
 
 		row.getAsOptionalQuantity("QtyMatched", uomDAO::getByX12DE355)
 				.ifPresent(qtyMatchedExpected -> {
