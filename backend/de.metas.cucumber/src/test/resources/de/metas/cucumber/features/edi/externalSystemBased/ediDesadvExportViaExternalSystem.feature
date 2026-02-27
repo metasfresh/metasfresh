@@ -150,8 +150,8 @@ Feature: EDI DESADV export via External System
       | d_2                      | customer1                | o_2                   | P                |
 
     And M_InOut is enqueued for EDI export
-      | M_InOut.Identifier |
-      | s_2                |
+      | M_InOut_ID |
+      | s_2        |
 
     Then after not more than 60s, M_InOut records have the following export status
       | M_InOut_ID.Identifier | EDI_ExportStatus |
@@ -162,20 +162,20 @@ Feature: EDI DESADV export via External System
       | externalSystemConfig_1              | true         |
 
     And the external system sends an error response for the shipment
-      | M_InOut_ID.Identifier | ErrorMessage                              |
-      | s_2                   | External system export failed: Test error |
+      | M_InOut_ID | ErrorMessage                              |
+      | s_2        | External system export failed: Test error |
 
     Then after not more than 60s, M_InOut records have the following export status
-      | M_InOut_ID.Identifier | EDI_ExportStatus |
-      | s_2                   | E                |
+      | M_InOut_ID | EDI_ExportStatus |
+      | s_2        | E                |
 
     And after not more than 60s, EDI_Desadv records have the following export status
-      | EDI_Desadv_ID.Identifier | EDI_ExportStatus |
-      | d_2                      | E                |
+      | EDI_Desadv_ID | EDI_ExportStatus |
+      | d_2           | E                |
 
     And M_InOut is enqueued for EDI export
-      | M_InOut.Identifier |
-      | d_2                |
+      | M_InOut_ID |
+      | d_2        |
 
     Then after not more than 60s, M_InOut records have the following export status
       | M_InOut_ID | EDI_ExportStatus |

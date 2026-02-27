@@ -64,3 +64,7 @@ UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2026-02-27 08:5
 UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2026-02-27 08:50:42.557000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545637
 ;
 
+-- Value: EDI_Desadv_Close_UnresolvedInOuts
+-- 2026-02-27T13:12:55.004Z
+UPDATE AD_Message SET ErrorCode='EDI_Desadv_Close_UnresolvedInOuts',Updated=TO_TIMESTAMP('2026-02-27 13:12:55.002000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Message_ID=545637
+;
