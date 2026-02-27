@@ -104,13 +104,16 @@ public class EDI_cctop_invoic_v_StepDef
 
 	private void enqueue_edi_export_invoice(@NonNull final DataTableRow row)
 	{
-		final I_C_Invoice invoice = row.getAsIdentifier(I_C_Invoice.COLUMNNAME_C_Invoice_ID).lookupNotNullIn(invoiceTable);
+		final de.metas.edi.model.I_C_Invoice ediInvoiceRecord =
+				InterfaceWrapperHelper.create(
+						row.getAsIdentifier(I_C_Invoice.COLUMNNAME_C_Invoice_ID).lookupNotNullIn(invoiceTable),
+						de.metas.edi.model.I_C_Invoice.class);
 
 		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(Env.getCtx(), EDIWorkpackageProcessor.class);
 
 		queue.newWorkPackage()
 				.setPriority(IWorkPackageQueue.PRIORITY_AUTO)
-				.addElement(invoice)
+				.addElement(ediInvoiceRecord)
 				.bindToThreadInheritedTrx()
 				.buildAndEnqueue();
 	}
@@ -125,12 +128,10 @@ public class EDI_cctop_invoic_v_StepDef
 			final int timeoutSec,
 			@NonNull final DataTableRow tableRow) throws InterruptedException
 	{
-		final I_C_Invoice invoiceRecord =
+		final de.metas.edi.model.I_C_Invoice ediInvoiceRecord =
 				InterfaceWrapperHelper.create(
 						tableRow.getAsIdentifier(I_C_Invoice.COLUMNNAME_C_Invoice_ID).lookupNotNullIn(invoiceTable),
-						I_C_Invoice.class);
-
-		final de.metas.edi.model.I_C_Invoice ediInvoiceRecord = InterfaceWrapperHelper.create(invoiceRecord, de.metas.edi.model.I_C_Invoice.class);
+						de.metas.edi.model.I_C_Invoice.class);
 
 		final String exportStatus = tableRow.getAsString(I_EDI_Desadv.COLUMNNAME_EDI_ExportStatus);
 

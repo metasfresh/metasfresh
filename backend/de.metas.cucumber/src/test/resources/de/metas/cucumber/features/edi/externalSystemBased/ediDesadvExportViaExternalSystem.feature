@@ -151,8 +151,8 @@ Feature: EDI DESADV export via External System
       | d_2                      | customer1                | o_2                   | P                |
 
     And M_InOut is enqueued for EDI export
-      | EDI_Desadv_ID.Identifier |
-      | d_2                      |
+      | M_InOut.Identifier |
+      | s_2                |
 
     Then after not more than 60s, M_InOut records have the following export status
       | M_InOut_ID.Identifier | EDI_ExportStatus |

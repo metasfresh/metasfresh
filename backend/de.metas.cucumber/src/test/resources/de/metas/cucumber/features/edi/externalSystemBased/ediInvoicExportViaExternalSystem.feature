@@ -77,7 +77,7 @@ Feature: EDI INVOIC export via External System
 
     And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
-      | ic1                               | ol_1                      | 100           |
+      | ic1                               | ol_1                      | 100          |
     When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
       | C_Invoice_Candidate_ID |
       | ic1                    |
