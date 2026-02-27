@@ -22,8 +22,11 @@
 
 package de.metas.rest_api.v2.externlasystem;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.RestUtils;
 import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import de.metas.common.externalsystem.JsonExternalSystemInfo;
 import de.metas.common.externalsystem.JsonInvokeExternalSystemParams;
 import de.metas.common.externalsystem.JsonRuntimeParameterUpsertItem;
@@ -76,6 +79,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -103,6 +107,21 @@ public class ExternalSystemService
 	@NonNull private final JsonExternalSystemRetriever jsonRetriever;
 	@NonNull private final ExternalSystemRepository externalSystemRepository;
 	@NonNull private final List<IExternalSystemInvocationErrorListener> IExternalSystemInvocationErrorListeners;
+
+	@VisibleForTesting
+	public static ExternalSystemService newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(ExternalSystemService.class, () -> new ExternalSystemService(
+				ExternalSystemConfigRepo.newInstanceForUnitTesting(),
+				ExternalSystemExportAuditRepo.newInstanceForUnitTesting(),
+				new RuntimeParametersRepository(),
+				ExternalServices.newInstanceForUnitTesting(),
+				new JsonExternalSystemRetriever(),
+				new ExternalSystemRepository(),
+				Collections.emptyList()));
+	}
 
 	@NonNull
 	public ProcessExecutionResult invokeExternalSystem(@NonNull final InvokeExternalSystemProcessRequest invokeExternalSystemProcessRequest)
