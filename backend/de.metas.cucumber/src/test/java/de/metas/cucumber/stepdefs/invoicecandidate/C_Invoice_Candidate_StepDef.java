@@ -25,7 +25,6 @@ package de.metas.cucumber.stepdefs.invoicecandidate;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.async.api.IAsyncBatchBL;
 import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
@@ -59,6 +58,7 @@ import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
 import de.metas.logging.LogManager;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
@@ -160,7 +160,6 @@ public class C_Invoice_Candidate_StepDef
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 
 	private final C_Invoice_Candidate_StepDefData invoiceCandTable;
@@ -938,9 +937,10 @@ public class C_Invoice_Candidate_StepDef
 
 		final StepDefDataIdentifier orderIdentifier = row.getAsIdentifier(I_C_Order.COLUMNNAME_C_Order_ID);
 
-		final Integer orderId = orderTable.getOptional(orderIdentifier)
+		final OrderId orderId = orderTable.getOptional(orderIdentifier)
 				.map(I_C_Order::getC_Order_ID)
-				.orElseGet(() -> Integer.parseInt(orderIdentifier.getAsString()));
+				.map(OrderId::ofRepoId)
+				.orElseGet(() -> orderIdentifier.getAsId(OrderId.class));
 
 		final Supplier<ImmutableList<I_C_Invoice_Candidate>> candidatesSupplier = () -> queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addOnlyActiveRecordsFilter()
@@ -1300,7 +1300,7 @@ public class C_Invoice_Candidate_StepDef
 
 	private void logCurrentContext(
 			@NonNull final Supplier<ImmutableList<I_C_Invoice_Candidate>> candidatesSupplier,
-			@NonNull final Integer orderId)
+			@NonNull final OrderId orderId)
 	{
 		final StringBuilder message = new StringBuilder();
 
