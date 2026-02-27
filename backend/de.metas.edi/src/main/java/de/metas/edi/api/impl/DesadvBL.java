@@ -84,7 +84,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 import static de.metas.edi.async.spi.impl.EDIWorkpackageProcessor.SYS_CONFIG_OneDesadvPerShipment;
 import static java.math.BigDecimal.ZERO;
@@ -991,6 +990,11 @@ public class DesadvBL
 	public List<I_C_Order> retrieveAllOrders(final I_EDI_Desadv desadv)
 	{
 		return desadvDAO.retrieveAllOrders(desadv);
+	}
+
+	public boolean isOneDesadvPerShipment(@NonNull final EDIDesadvId desadvId)
+	{
+		return isOneDesadvPerShipment(getById(desadvId));
 	}
 
 	public boolean isOneDesadvPerShipment(@NonNull final I_EDI_Desadv desadv)

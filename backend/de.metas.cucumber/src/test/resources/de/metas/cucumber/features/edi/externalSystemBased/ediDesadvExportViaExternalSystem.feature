@@ -148,7 +148,7 @@ Feature: EDI DESADV export via External System
 
     And EDI_Desadv is found:
       | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_ExportStatus |
-      | d_2                      | customer1                | o_2_1                 | P                |
+      | d_2                      | customer1                | o_2                   | P                |
 
     And M_InOut is enqueued for EDI export
       | EDI_Desadv_ID.Identifier |
