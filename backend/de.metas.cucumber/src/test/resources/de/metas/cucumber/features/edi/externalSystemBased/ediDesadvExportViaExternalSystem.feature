@@ -117,3 +117,71 @@ Feature: EDI DESADV export via External System
     And after not more than 60s, EDI_Desadv records have the following export status
       | EDI_Desadv_ID.Identifier | EDI_ExportStatus |
       | d_1                      | S                |
+
+
+  @from:cucumber
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00350_EDI
+  @F00350
+  Scenario: create a shipment and enqueue single shipment to export DESADV via external system
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised | POReference    |
+      | o_2        | true    | customer1     | 2025-04-17  | 2025-04-18Z  | testReference2 |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID | QtyEntered |
+      | ol_2_1     | o_2                   | product      | 10         |
+
+    And the order identified by o_2 is completed
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | s_s_2      | ol_2_1                    | N             |
+
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | s_s_2                            | D            | true                | false       |
+
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | s_s_2                            | s_2                   |
+
+    And EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_ExportStatus |
+      | d_2                      | customer1                | o_2_1                 | P                |
+
+    And M_InOut is enqueued for EDI export
+      | EDI_Desadv_ID.Identifier |
+      | d_2                      |
+
+    Then after not more than 60s, M_InOut records have the following export status
+      | M_InOut_ID.Identifier | EDI_ExportStatus |
+      | s_2                   | S                |
+
+    Then RabbitMQ receives a JsonExternalSystemRequest with the following external system config and parameter:
+      | ExternalSystem_Config_ID.Identifier | ConfigIDOnly |
+      | externalSystemConfig_1              | true         |
+
+    And the external system sends an error response for the shipment
+      | M_InOut_ID.Identifier | ErrorMessage                              |
+      | s_2                   | External system export failed: Test error |
+
+    Then after not more than 60s, M_InOut records have the following export status
+      | M_InOut_ID.Identifier | EDI_ExportStatus |
+      | s_2                   | E                |
+
+    And after not more than 60s, EDI_Desadv records have the following export status
+      | EDI_Desadv_ID.Identifier | EDI_ExportStatus |
+      | d_2                      | E                |
+
+    And M_InOut is enqueued for EDI export
+      | EDI_Desadv_ID.Identifier |
+      | d_2                      |
+
+    Then after not more than 60s, M_InOut records have the following export status
+      | M_InOut_ID.Identifier | EDI_ExportStatus |
+      | s_2                   | S                |
+
+    And after not more than 60s, EDI_Desadv records have the following export status
+      | EDI_Desadv_ID.Identifier | EDI_ExportStatus |
+      | d_2                      | S                |
