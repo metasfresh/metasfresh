@@ -157,6 +157,7 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 					{
 						final AdTableAndClientId adTableAndClientId = AdTableAndClientId.of(getTableId(shipment), clientId);
 						final ExternalSystemInvocationResult result = exportViaExternalSystem(parentConfigId, adTableAndClientId, ediDocument, shipment.getM_InOut_ID());
+						InterfaceWrapperHelper.refresh(shipment);
 						if(result.getPInstanceId() != null)
 						{
 							shipment.setEDI_AD_PInstance_ID(result.getPInstanceId().getRepoId());
@@ -189,6 +190,7 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 				final I_C_Invoice invoice = InterfaceWrapperHelper.create(ediDocument, I_C_Invoice.class);
 				final ExternalSystemParentConfigId parentConfigId = edibPartnerConfigService.getINVOICExternalSystemParentConfigId(bPartnerId);
 				final ExternalSystemInvocationResult result = exportViaExternalSystem(parentConfigId, AdTableAndClientId.of(AdTableId.ofRepoId(documentTableId), clientId), ediDocument, invoice.getC_Invoice_ID());
+				InterfaceWrapperHelper.refresh(invoice);
 				if(result.getPInstanceId() != null)
 				{
 					invoice.setEDI_AD_PInstance_ID(result.getPInstanceId().getRepoId());

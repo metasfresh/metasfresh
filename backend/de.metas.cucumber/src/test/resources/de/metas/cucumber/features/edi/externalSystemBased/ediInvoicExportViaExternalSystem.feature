@@ -76,8 +76,8 @@ Feature: EDI INVOIC export via External System
       | s_s_1                            | s_1                   |
 
     And after not more than 60s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
-      | ic1                               | ol_1                      | 100          |
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice | QtyDelivered |
+      | ic1                               | ol_1                      | 100          | 100          |
     When process invoice candidates
       | C_Invoice_Candidate_ID |
       | ic1                    |
@@ -98,8 +98,8 @@ Feature: EDI INVOIC export via External System
       | externalSystemConfig_1              | true         |
 
     And the external system sends an error response for the invoice
-      | M_InOut_ID.Identifier | ErrorMessage                              |
-      | salesInvoice          | External system export failed: Test error |
+      | C_Invoice_ID | ErrorMessage                              |
+      | salesInvoice | External system export failed: Test error |
 
     Then after not more than 60s, C_Invoice records have the following export status
       | C_Invoice_ID | EDI_ExportStatus |
