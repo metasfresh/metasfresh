@@ -44,14 +44,14 @@ SELECT COALESCE(bpb.accountno, '')  AS org_bank_acct,
 
 FROM ad_org org
          INNER JOIN c_bpartner org_bp ON org.ad_org_id = org_bp.ad_orgbp_id
-         LEFT OUTER JOIN c_bp_bankaccount bpb ON org_bp.c_bpartner_id = bpb.c_bpartner_id AND bpb.IsActive = 'Y' AND bpb.bankaccounttype = 'C'
+         LEFT OUTER JOIN c_bp_bankaccount bpb ON org_bp.c_bpartner_id = bpb.c_bpartner_id AND bpb.IsActive = 'Y' AND (bpb.bankaccounttype = 'C' OR bpb.bankaccounttype IS NULL)
          LEFT OUTER JOIN c_bank bank ON bpb.c_bank_id = bank.c_bank_id
 
 WHERE org.ad_org_id = p_Org_ID
 
--- Ensure the 'Default' account is at the top, followed by the newest/highest ID
-ORDER BY bpb.IsDefault DESC,
-         bpb.C_BP_BankAccount_ID DESC
+ORDER BY (bpb.bankaccounttype = 'C') DESC, -- Prefer 'C' accounts over others (including NULL)
+         (bpb.IsDefault = 'Y') DESC,       -- Prefer default accounts
+         bpb.C_BP_BankAccount_ID DESC      -- Prefer newest / highest ID
 LIMIT 1
 $$
 ;
