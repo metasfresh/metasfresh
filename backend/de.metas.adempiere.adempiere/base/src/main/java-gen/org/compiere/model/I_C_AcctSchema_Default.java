@@ -1648,6 +1648,29 @@ public interface I_C_AcctSchema_Default
     public static final String COLUMNNAME_PayDiscount_Rev_Acct = "PayDiscount_Rev_Acct";
 
 	/**
+	 * Set Bank Fee Account.
+	 *
+	 * <br>Type: Account
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPayBankFee_Acct (int PayBankFee_Acct);
+
+	/**
+	 * Get Bank Fee Account.
+	 *
+	 * <br>Type: Account
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getPayBankFee_Acct();
+
+    /** Column definition for PayBankFee_Acct */
+    public static final org.adempiere.model.ModelColumn<I_C_AcctSchema_Default, org.compiere.model.I_C_ValidCombination> COLUMN_PayBankFee_Acct = new org.adempiere.model.ModelColumn<>(I_C_AcctSchema_Default.class, "PayBankFee_Acct", org.compiere.model.I_C_ValidCombination.class);
+    /** Column name PayBankFee_Acct */
+    public static final String COLUMNNAME_PayBankFee_Acct = "PayBankFee_Acct";
+
+	/**
 	 * Set Project Asset.
 	 * Project Asset Account
 	 *
