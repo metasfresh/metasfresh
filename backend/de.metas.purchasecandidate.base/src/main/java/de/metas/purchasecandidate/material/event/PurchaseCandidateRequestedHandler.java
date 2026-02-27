@@ -24,6 +24,7 @@ package de.metas.purchasecandidate.material.event;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.Profiles;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.dimension.Dimension;
@@ -33,6 +34,7 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateCreatedEvent;
 import de.metas.material.event.purchase.PurchaseCandidateRequestedEvent;
 import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.mforecast.impl.ForecastLineId;
 import de.metas.order.OrderAndLineId;
@@ -51,6 +53,7 @@ import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.PurchaseCandidateSource;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.VendorProductInfoService;
+import de.metas.purchasecandidate.async.C_PurchaseCandidates_GeneratePurchaseOrders;
 import de.metas.quantity.Quantitys;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -170,11 +173,32 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 					newPurchaseCandidate.getVendorId(),
 					newPurchaseCandidateId);
 			postMaterialEventService.enqueueEventAfterNextCommit(purchaseCandidateCreatedEvent);
+
+			if (!newPurchaseCandidate.isSimulated())
+			{
+				scheduleGeneratePurchaseOrderIfDocComplete(requestedEvent.getProductPlanningId(), newPurchaseCandidateId);
+			}
 		}
 		finally
 		{
 			INTERCEPTOR_SHALL_POST_EVENT_FOR_PURCHASE_CANDIDATE_RECORD.set(true);
 		}
+	}
+
+	private void scheduleGeneratePurchaseOrderIfDocComplete(
+			@Nullable final ProductPlanningId productPlanningId,
+			@NonNull final PurchaseCandidateId purchaseCandidateId)
+	{
+		if (productPlanningId == null)
+		{
+			return;
+		}
+		final ProductPlanning productPlanning = productPlanningDAO.getById(productPlanningId);
+		if (!productPlanning.isDocComplete())
+		{
+			return;
+		}
+		C_PurchaseCandidates_GeneratePurchaseOrders.enqueue(ImmutableSet.of(purchaseCandidateId));
 	}
 
 	@VisibleForTesting
