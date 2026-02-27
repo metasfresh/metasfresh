@@ -13,7 +13,94 @@ Feature: Product Import via full CSV pipeline
     And all I_Product staging records are deleted
 
   @from:cucumber
-  Scenario: CSV import creates products with correct IsStocked/ProductType defaults
+  Scenario: CSV import defaults IsStocked=Y and ProductType=Item
+    Given AD_ImpFormat "DefCSV1" for table "I_Product" with columns:
+      | ColumnName            | DataType |
+      | Value                 | S        |
+      | Name                  | S        |
+      | ProductCategory_Value | S        |
+      | X12DE355              | S        |
+    And C_DataImport config "DefCSV1" using AD_ImpFormat "DefCSV1"
+    When the following CSV is imported via data import config "DefCSV1":
+      """
+      defProd001,Default Widget,Standard,PCE
+      """
+    Then load imported I_Product records by Value:
+      | Identifier | Value      |
+      | iProd_1    | defProd001 |
+    And validate M_Product for I_Product:
+      | I_Product_Identifier | IsStocked | ProductType | IsActive |
+      | iProd_1              | Y         | I           | Y        |
+
+  @from:cucumber
+  Scenario: CSV import respects explicit IsStocked=N
+    Given AD_ImpFormat "DefCSV2" for table "I_Product" with columns:
+      | ColumnName            | DataType |
+      | Value                 | S        |
+      | Name                  | S        |
+      | IsStocked             | S        |
+      | ProductCategory_Value | S        |
+      | X12DE355              | S        |
+    And C_DataImport config "DefCSV2" using AD_ImpFormat "DefCSV2"
+    When the following CSV is imported via data import config "DefCSV2":
+      """
+      defProd002,Unstocked Widget,N,Standard,PCE
+      """
+    Then load imported I_Product records by Value:
+      | Identifier | Value      |
+      | iProd_1    | defProd002 |
+    And validate M_Product for I_Product:
+      | I_Product_Identifier | IsStocked | ProductType |
+      | iProd_1              | N         | I           |
+
+  @from:cucumber
+  Scenario: CSV import defaults IsStocked=N for Service products
+    Given AD_ImpFormat "DefCSV3" for table "I_Product" with columns:
+      | ColumnName            | DataType |
+      | Value                 | S        |
+      | Name                  | S        |
+      | ProductType           | S        |
+      | ProductCategory_Value | S        |
+      | X12DE355              | S        |
+    And C_DataImport config "DefCSV3" using AD_ImpFormat "DefCSV3"
+    When the following CSV is imported via data import config "DefCSV3":
+      """
+      defProd003,Consulting Service,S,Standard,PCE
+      """
+    Then load imported I_Product records by Value:
+      | Identifier | Value      |
+      | iProd_1    | defProd003 |
+    And validate M_Product for I_Product:
+      | I_Product_Identifier | IsStocked | ProductType |
+      | iProd_1              | N         | S           |
+
+  @from:cucumber
+  Scenario: CSV import reactivates inactive product on upsert
+    Given no product with value 'defProd004' exists
+    And metasfresh contains M_Products:
+      | Identifier | Value      | Name          |
+      | prod_exist | defProd004 | Existing Prod |
+    And update M_Product:
+      | M_Product_ID.Identifier | IsActive |
+      | prod_exist              | N        |
+    And AD_ImpFormat "DefCSV4" for table "I_Product" with columns:
+      | ColumnName | DataType |
+      | Value      | S        |
+      | Name       | S        |
+    And C_DataImport config "DefCSV4" using AD_ImpFormat "DefCSV4"
+    When the following CSV is imported via data import config "DefCSV4":
+      """
+      defProd004,Existing Prod
+      """
+    Then load imported I_Product records by Value:
+      | Identifier | Value      |
+      | iProd_1    | defProd004 |
+    And validate M_Product for I_Product:
+      | I_Product_Identifier | IsActive | IsStocked |
+      | iProd_1              | Y        | Y         |
+
+  @from:cucumber
+  Scenario: CSV import creates multiple products with correct IsStocked/ProductType defaults
     Given AD_ImpFormat "ProductCSV" for table "I_Product" with columns:
       | ColumnName            | DataType |
       | Value                 | S        |
