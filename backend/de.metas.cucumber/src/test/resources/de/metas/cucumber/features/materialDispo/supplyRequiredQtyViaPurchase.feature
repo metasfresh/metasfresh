@@ -33,18 +33,18 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
   No stock available at demand time, supplied via purchased
     Given metasfresh contains M_Products:
       | Identifier | Name               | OPT.M_Product_Category_ID.Identifier | OPT.IsSold | OPT.IsPurchased |
-      | p_1        | product_01042022_1 | standard_category                    | Y          | Y               |
+      | p_1        | product_supRqPo_1 | standard_category                    | Y          | Y               |
     And metasfresh contains M_PricingSystems
       | Identifier | Name                           | Value                           | OPT.Description                       | OPT.IsActive |
-      | ps_1       | pricing_system_name_01042022_1 | pricing_system_value_01042022_1 | pricing_system_description_01042022_1 | true         |
+      | ps_1       | pricing_system_name_supRqPo_1 | pricing_system_value_supRqPo_1 | pricing_system_description_supRqPo_1 | true         |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                         | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1       | ps_1                          | DE                        | EUR                 | s_price_list_name_01042022_1 | null            | true  | false         | 2              | true         |
-      | pl_2       | ps_1                          | DE                        | EUR                 | p_price_list_name_01042022_1 | null            | false | false         | 2              | true         |
+      | pl_1       | ps_1                          | DE                        | EUR                 | s_price_list_name_supRqPo_1 | null            | true  | false         | 2              | true         |
+      | pl_2       | ps_1                          | DE                        | EUR                 | p_price_list_name_supRqPo_1 | null            | false | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID.Identifier | Name                           | ValidFrom  |
-      | plv_1      | pl_1                      | s_trackedProduct-PLV01042022_1 | 2021-04-01 |
-      | plv_2      | pl_2                      | p_trackedProduct-PLV01042022_1 | 2021-04-01 |
+      | plv_1      | pl_1                      | s_trackedProduct-PLVsupRqPo_1 | 2021-04-01 |
+      | plv_2      | pl_2                      | p_trackedProduct-PLVsupRqPo_1 | 2021-04-01 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
@@ -52,7 +52,7 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
 
     And metasfresh contains M_DiscountSchemas:
       | Identifier | Name              | DiscountType | ValidFrom  |
-      | ds_1       | discount_schema_1 | F            | 2021-04-01 |
+      | ds_1       | discount_schema_supRqPo_1 | F            | 2021-04-01 |
     And metasfresh contains M_DiscountSchemaBreaks:
       | Identifier | M_DiscountSchema_ID.Identifier | M_Product_ID.Identifier | Base_PricingSystem_ID.Identifier | SeqNo | OPT.IsBPartnerFlatDiscount | OPT.PriceBase | OPT.BreakValue | OPT.BreakDiscount |
       | dsb_1      | ds_1                           | p_1                     | ps_1                             | 10    | Y                          | P             | 10             | 0                 |
@@ -62,12 +62,12 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | ppln_1     | p_1                     |                                          | true         | true              | Y               |
     And metasfresh contains C_BPartners without locations:
       | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.PO_DiscountSchema_ID.Identifier |
-      | endcustomer_1 | EndCustomer_01042022_1 | N            | Y              | ps_1                          |                                     |
-      | endvendor_1   | EndVendor_01042022_1   | Y            | N              | ps_1                          | ds_1                                |
+      | endcustomer_1 | EndCustomer_supRqPo_1 | N            | Y              | ps_1                          |                                     |
+      | endvendor_1   | EndVendor_supRqPo_1   | Y            | N              | ps_1                          | ds_1                                |
     And metasfresh contains C_BPartner_Locations:
       | Identifier             | GLN           | C_BPartner_ID.Identifier | OPT.Name             | OPT.IsShipToDefault | OPT.IsBillToDefault |
-      | endvendor_location_1   | 2311202200000 | endvendor_1              | EndVendor_01042022_1 | Y                   | Y                   |
-      | endcustomer_location_1 | 2311202200001 | endcustomer_1            | EndVendor_01042022_1 | Y                   | Y                   |
+      | endvendor_location_1   | 2311202200000 | endvendor_1              | EndVendor_supRqPo_1 | Y                   | Y                   |
+      | endcustomer_location_1 | 2311202200001 | endcustomer_1            | EndVendor_supRqPo_1 | Y                   | Y                   |
     And metasfresh contains C_BPartner_Product
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | endvendor_1              | p_1                     |
@@ -179,18 +179,18 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
   Partial stock available at demand time, supplied via purchased
     Given metasfresh contains M_Products:
       | Identifier | Name               | OPT.M_Product_Category_ID.Identifier | OPT.IsSold | OPT.IsPurchased |
-      | p_1        | product_01042022_2 | standard_category                    | Y          | Y               |
+      | p_1        | product_supRqPo_2 | standard_category                    | Y          | Y               |
     And metasfresh contains M_PricingSystems
       | Identifier | Name                           | Value                           | OPT.Description                       | OPT.IsActive |
-      | ps_1       | pricing_system_name_01042022_2 | pricing_system_value_01042022_2 | pricing_system_description_01042022_2 | true         |
+      | ps_1       | pricing_system_name_supRqPo_2 | pricing_system_value_supRqPo_2 | pricing_system_description_supRqPo_2 | true         |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                         | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1       | ps_1                          | DE                        | EUR                 | s_price_list_name_01042022_2 | null            | true  | false         | 2              | true         |
-      | pl_2       | ps_1                          | DE                        | EUR                 | p_price_list_name_01042022_2 | null            | false | false         | 2              | true         |
+      | pl_1       | ps_1                          | DE                        | EUR                 | s_price_list_name_supRqPo_2 | null            | true  | false         | 2              | true         |
+      | pl_2       | ps_1                          | DE                        | EUR                 | p_price_list_name_supRqPo_2 | null            | false | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID.Identifier | Name                           | ValidFrom  |
-      | plv_1      | pl_1                      | s_trackedProduct-PLV01042022_2 | 2021-04-01 |
-      | plv_2      | pl_2                      | p_trackedProduct-PLV01042022_2 | 2021-04-01 |
+      | plv_1      | pl_1                      | s_trackedProduct-PLVsupRqPo_2 | 2021-04-01 |
+      | plv_2      | pl_2                      | p_trackedProduct-PLVsupRqPo_2 | 2021-04-01 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
@@ -198,7 +198,7 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
 
     And metasfresh contains M_DiscountSchemas:
       | Identifier | Name                       | DiscountType | ValidFrom  |
-      | ds_1       | discount_schema_01042022_2 | F            | 2021-04-01 |
+      | ds_1       | discount_schema_supRqPo_2 | F            | 2021-04-01 |
     And metasfresh contains M_DiscountSchemaBreaks:
       | Identifier | M_DiscountSchema_ID.Identifier | M_Product_ID.Identifier | Base_PricingSystem_ID.Identifier | SeqNo | OPT.IsBPartnerFlatDiscount | OPT.PriceBase | OPT.BreakValue | OPT.BreakDiscount |
       | dsb_1      | ds_1                           | p_1                     | ps_1                             | 10    | Y                          | P             | 10             | 0                 |
@@ -208,12 +208,12 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | ppln_1     | p_1                     |                                          | true         | true              | Y               |
     And metasfresh contains C_BPartners without locations:
       | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.PO_DiscountSchema_ID.Identifier |
-      | endcustomer_1 | EndCustomer_01042022_2 | N            | Y              | ps_1                          |                                     |
-      | endvendor_1   | EndVendor_01042022_2   | Y            | N              | ps_1                          | ds_1                                |
+      | endcustomer_1 | EndCustomer_supRqPo_2 | N            | Y              | ps_1                          |                                     |
+      | endvendor_1   | EndVendor_supRqPo_2   | Y            | N              | ps_1                          | ds_1                                |
     And metasfresh contains C_BPartner_Locations:
       | Identifier             | GLN           | C_BPartner_ID.Identifier | OPT.Name             | OPT.IsShipToDefault | OPT.IsBillToDefault |
-      | endvendor_location_1   | 2311202200002 | endvendor_1              | EndVendor_01042022_2 | Y                   | Y                   |
-      | endcustomer_location_1 | 2311202200003 | endcustomer_1            | EndVendor_01042022_2 | Y                   | Y                   |
+      | endvendor_location_1   | 2311202200002 | endvendor_1              | EndVendor_supRqPo_2 | Y                   | Y                   |
+      | endcustomer_location_1 | 2311202200003 | endcustomer_1            | EndVendor_supRqPo_2 | Y                   | Y                   |
     And metasfresh contains C_BPartner_Product
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | endvendor_1              | p_1                     |
@@ -328,18 +328,18 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
   Stock available at demand time, no supply needed
     Given metasfresh contains M_Products:
       | Identifier | Name               | OPT.M_Product_Category_ID.Identifier | OPT.IsSold | OPT.IsPurchased |
-      | p_1        | product_01042022_3 | standard_category                    | Y          | Y               |
+      | p_1        | product_supRqPo_3 | standard_category                    | Y          | Y               |
     And metasfresh contains M_PricingSystems
       | Identifier | Name                           | Value                           | OPT.Description                       | OPT.IsActive |
-      | ps_1       | pricing_system_name_01042022_3 | pricing_system_value_01042022_3 | pricing_system_description_01042022_3 | true         |
+      | ps_1       | pricing_system_name_supRqPo_3 | pricing_system_value_supRqPo_3 | pricing_system_description_supRqPo_3 | true         |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                         | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1       | ps_1                          | DE                        | EUR                 | s_price_list_name_01042022_3 | null            | true  | false         | 2              | true         |
-      | pl_2       | ps_1                          | DE                        | EUR                 | p_price_list_name_01042022_3 | null            | false | false         | 2              | true         |
+      | pl_1       | ps_1                          | DE                        | EUR                 | s_price_list_name_supRqPo_3 | null            | true  | false         | 2              | true         |
+      | pl_2       | ps_1                          | DE                        | EUR                 | p_price_list_name_supRqPo_3 | null            | false | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID.Identifier | Name                           | ValidFrom  |
-      | plv_1      | pl_1                      | s_trackedProduct-PLV01042022_3 | 2021-04-01 |
-      | plv_2      | pl_2                      | p_trackedProduct-PLV01042022_3 | 2021-04-01 |
+      | plv_1      | pl_1                      | s_trackedProduct-PLVsupRqPo_3 | 2021-04-01 |
+      | plv_2      | pl_2                      | p_trackedProduct-PLVsupRqPo_3 | 2021-04-01 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
@@ -347,7 +347,7 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
 
     And metasfresh contains M_DiscountSchemas:
       | Identifier | Name                       | DiscountType | ValidFrom  |
-      | ds_1       | discount_schema_01042022_3 | F            | 2021-04-01 |
+      | ds_1       | discount_schema_supRqPo_3 | F            | 2021-04-01 |
     And metasfresh contains M_DiscountSchemaBreaks:
       | Identifier | M_DiscountSchema_ID.Identifier | M_Product_ID.Identifier | Base_PricingSystem_ID.Identifier | SeqNo | OPT.IsBPartnerFlatDiscount | OPT.PriceBase | OPT.BreakValue | OPT.BreakDiscount |
       | dsb_1      | ds_1                           | p_1                     | ps_1                             | 10    | Y                          | P             | 10             | 0                 |
@@ -357,8 +357,8 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | ppln_1     | p_1                     |                                          | true         | Y               |
     And metasfresh contains C_BPartners:
       | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.PO_DiscountSchema_ID.Identifier |
-      | endcustomer_1 | EndCustomer_01042022_3 | N            | Y              | ps_1                          |                                     |
-      | endvendor_1   | EndVendor_01042022_3   | Y            | N              | ps_1                          | ds_1                                |
+      | endcustomer_1 | EndCustomer_supRqPo_3 | N            | Y              | ps_1                          |                                     |
+      | endvendor_1   | EndVendor_supRqPo_3   | Y            | N              | ps_1                          | ds_1                                |
     And metasfresh contains C_BPartner_Product
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | endvendor_1              | p_1                     |
