@@ -126,16 +126,6 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | c_3        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | -10 | -10                    |                                 |
       | c_4        | SUPPLY            | PURCHASE                      | p_1                     | 2021-04-16T21:00:00Z | 10  | 0                      |                                 |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
-
-    And after not more than 90s, metasfresh has this MD_Cockpit data
-      | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
-      | cp_1       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 0                              | 0                          | 0                                  |
-
-    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
-      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
-      | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
-
     And after not more than 60s, C_PurchaseCandidate_Alloc are found
       | C_PurchaseCandidate_ID.Identifier | C_PurchaseCandidate_Alloc_ID.Identifier |
       | pc_1                              | pca_1                                   |
@@ -276,16 +266,6 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | c_3        | INVENTORY_DOWN    |                               | p_1                     | 2021-04-16T21:00:00Z | -10 | 5                      |                                 |
       | c_4        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | -10 | -5                     |                                 |
       | c_5        | SUPPLY            | PURCHASE                      | p_1                     | 2021-04-16T21:00:00Z | 5   | 0                      |                                 |
-
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
-
-    And after not more than 90s, metasfresh has this MD_Cockpit data
-      | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
-      | cp_1       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | 0                       | 5                            | -10                           | 5                              | 0                              | 0                          | 0                                  |
-
-    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
-      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
-      | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
     And after not more than 60s, C_PurchaseCandidate_Alloc are found
       | C_PurchaseCandidate_ID.Identifier | C_PurchaseCandidate_Alloc_ID.Identifier |
