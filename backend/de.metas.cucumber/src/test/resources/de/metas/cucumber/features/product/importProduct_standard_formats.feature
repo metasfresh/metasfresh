@@ -43,10 +43,10 @@ Feature: Product Import via standard AD_ImpFormat configurations
       | iProd_2    | stdProd002 |
       | iProd_3    | stdProd003 |
     And validate M_Product for I_Product:
-      | I_Product_Identifier | IsStocked | ProductType | IsActive |
-      | iProd_1              | Y         | I           | Y        |
-      | iProd_2              | N         | S           | Y        |
-      | iProd_3              | Y         | I           | Y        |
+      | I_Product_Identifier | Value      | Name           | IsStocked | ProductType | IsActive |
+      | iProd_1              | stdProd001 | Widget Alpha   | Y         | I           | Y        |
+      | iProd_2              | stdProd002 | Consulting Svc | N         | S           | Y        |
+      | iProd_3              | stdProd003 | Basic Product  | Y         | I           | Y        |
 
   @from:cucumber
   Scenario: Standard format "Product Prices Standard" (540062) with header row skip and product reactivation
@@ -75,6 +75,6 @@ Feature: Product Import via standard AD_ImpFormat configurations
       | iProd_1    | prcProd001 |
       | iProd_2    | prcProd002 |
     And validate M_Product for I_Product:
-      | I_Product_Identifier | IsStocked | ProductType | IsActive |
-      | iProd_1              | Y         | I           | Y        |
-      | iProd_2              | Y         | I           | Y        |
+      | I_Product_Identifier | Value      | Name            | IsStocked | ProductType | IsActive |
+      | iProd_1              | prcProd001 | Price Product 1 | Y         | I           | Y        |
+      | iProd_2              | prcProd002 | Price Product 2 | Y         | I           | Y        |

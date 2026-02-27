@@ -29,8 +29,8 @@ Feature: Product Import via full CSV pipeline
       | Identifier | Value      |
       | iProd_1    | defProd001 |
     And validate M_Product for I_Product:
-      | I_Product_Identifier | IsStocked | ProductType | IsActive |
-      | iProd_1              | Y         | I           | Y        |
+      | I_Product_Identifier | Value      | Name           | IsStocked | ProductType | IsActive |
+      | iProd_1              | defProd001 | Default Widget | Y         | I           | Y        |
 
   @from:cucumber
   Scenario: CSV import respects explicit IsStocked=N
@@ -50,8 +50,8 @@ Feature: Product Import via full CSV pipeline
       | Identifier | Value      |
       | iProd_1    | defProd002 |
     And validate M_Product for I_Product:
-      | I_Product_Identifier | IsStocked | ProductType |
-      | iProd_1              | N         | I           |
+      | I_Product_Identifier | Value      | Name             | IsStocked | ProductType |
+      | iProd_1              | defProd002 | Unstocked Widget | N         | I           |
 
   @from:cucumber
   Scenario: CSV import defaults IsStocked=N for Service products
@@ -71,8 +71,8 @@ Feature: Product Import via full CSV pipeline
       | Identifier | Value      |
       | iProd_1    | defProd003 |
     And validate M_Product for I_Product:
-      | I_Product_Identifier | IsStocked | ProductType |
-      | iProd_1              | N         | S           |
+      | I_Product_Identifier | Value      | Name                | IsStocked | ProductType |
+      | iProd_1              | defProd003 | Consulting Service  | N         | S           |
 
   @from:cucumber
   Scenario: CSV import reactivates inactive product on upsert
@@ -96,8 +96,8 @@ Feature: Product Import via full CSV pipeline
       | Identifier | Value      |
       | iProd_1    | defProd004 |
     And validate M_Product for I_Product:
-      | I_Product_Identifier | IsActive | IsStocked |
-      | iProd_1              | Y        | Y         |
+      | I_Product_Identifier | Value      | Name          | IsActive | IsStocked |
+      | iProd_1              | defProd004 | Existing Prod | Y        | Y         |
 
   @from:cucumber
   Scenario: CSV import creates multiple products with correct IsStocked/ProductType defaults
@@ -122,7 +122,7 @@ Feature: Product Import via full CSV pipeline
       | iProd_2    | csvProd002 |
       | iProd_3    | csvProd003 |
     And validate M_Product for I_Product:
-      | I_Product_Identifier | IsStocked | ProductType | IsActive |
-      | iProd_1              | Y         | I           | Y        |
-      | iProd_2              | N         | S           | Y        |
-      | iProd_3              | Y         | I           | Y        |
+      | I_Product_Identifier | Value      | Name                | IsStocked | ProductType | IsActive |
+      | iProd_1              | csvProd001 | Widget Alpha        | Y         | I           | Y        |
+      | iProd_2              | csvProd002 | Consulting Service  | N         | S           | Y        |
+      | iProd_3              | csvProd003 | Basic Item          | Y         | I           | Y        |

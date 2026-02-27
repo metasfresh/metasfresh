@@ -186,6 +186,8 @@ public class I_Product_StepDef
 	 *
 	 * @cucumber.columns
 	 * <b>I_Product_Identifier</b> — (required) alias referencing I_Product staging record<br>
+	 * <b>Value</b> — (optional) expected M_Product.Value<br>
+	 * <b>Name</b> — (optional) expected M_Product.Name<br>
 	 * <b>IsStocked</b> — (optional) expected IsStocked value (Y/N)<br>
 	 * <b>IsActive</b> — (optional) expected IsActive value (Y/N)<br>
 	 * <b>ProductType</b> — (optional) expected ProductType (I/S/R/E)<br>
@@ -211,6 +213,16 @@ public class I_Product_StepDef
 				.isGreaterThan(0);
 
 		final I_M_Product product = InterfaceWrapperHelper.loadOutOfTrx(mProductId, I_M_Product.class);
+
+		row.getAsOptionalString("Value").ifPresent(expected ->
+				assertThat(product.getValue())
+						.as("M_Product.Value for I_Product[%s]", iProductIdentifier)
+						.isEqualTo(expected));
+
+		row.getAsOptionalString("Name").ifPresent(expected ->
+				assertThat(product.getName())
+						.as("M_Product.Name for I_Product[%s]", iProductIdentifier)
+						.isEqualTo(expected));
 
 		row.getAsOptionalBoolean("IsStocked").ifPresent(expected ->
 				assertThat(product.isStocked())
