@@ -4,6 +4,7 @@ import de.metas.cucumber.stepdefs.C_DataImport_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.impexp.DataImportRequest;
 import de.metas.impexp.DataImportResult;
 import de.metas.impexp.DataImportService;
@@ -15,6 +16,7 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -29,6 +31,7 @@ import org.compiere.util.DB;
 import org.springframework.core.io.ByteArrayResource;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,21 +40,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Step definitions for creating AD_ImpFormat + C_DataImport configs and importing CSV data
  * through the full {@link DataImportService} pipeline.
  */
+@RequiredArgsConstructor
 public class DataImport_StepDef
 {
-	@NonNull private final DataImportService dataImportService = SpringContextHolder.instance.getBean(DataImportService.class);
-	@NonNull private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+	private final DataImportService dataImportService = SpringContextHolder.instance.getBean(DataImportService.class);
+	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
-	private final AD_ImpFormat_StepDefData impFormatTable;
-	private final C_DataImport_StepDefData dataImportTable;
-
-	public DataImport_StepDef(
-			@NonNull final AD_ImpFormat_StepDefData impFormatTable,
-			@NonNull final C_DataImport_StepDefData dataImportTable)
-	{
-		this.impFormatTable = impFormatTable;
-		this.dataImportTable = dataImportTable;
-	}
+	@NonNull private final AD_ImpFormat_StepDefData impFormatTable;
+	@NonNull private final C_DataImport_StepDefData dataImportTable;
 
 	/**
 	 * Creates an AD_ImpFormat record (comma-separated, UTF-8) and its column rows.
@@ -62,11 +58,11 @@ public class DataImport_StepDef
 	 */
 	@Given("AD_ImpFormat {string} for table {string} with columns:")
 	public void ad_ImpFormat_for_table_with_columns(
-			@NonNull final String formatName,
+			@NonNull final String formatIdentifierStr,
 			@NonNull final String tableName,
 			@NonNull final DataTable dataTable)
 	{
-		createImpFormat(formatName, tableName, X_AD_ImpFormat.FORMATTYPE_CommaSeparated, 0, dataTable);
+		createImpFormat(formatIdentifierStr, tableName, X_AD_ImpFormat.FORMATTYPE_CommaSeparated, 0, dataTable);
 	}
 
 	/**
@@ -80,28 +76,30 @@ public class DataImport_StepDef
 	 */
 	@Given("AD_ImpFormat {string} for table {string} with format {string} and skipFirstNRows {int} and columns:")
 	public void ad_ImpFormat_for_table_with_format_and_skip(
-			@NonNull final String formatName,
+			@NonNull final String formatIdentifierStr,
 			@NonNull final String tableName,
 			@NonNull final String formatType,
 			final int skipFirstNRows,
 			@NonNull final DataTable dataTable)
 	{
-		createImpFormat(formatName, tableName, formatType, skipFirstNRows, dataTable);
+		createImpFormat(formatIdentifierStr, tableName, formatType, skipFirstNRows, dataTable);
 	}
 
 	private void createImpFormat(
-			@NonNull final String formatName,
+			@NonNull final String identifierStr,
 			@NonNull final String tableName,
 			@NonNull final String formatType,
 			final int skipFirstNRows,
 			@NonNull final DataTable dataTable)
 	{
+		final StepDefDataIdentifier identifier = StepDefDataIdentifier.ofString(identifierStr);
+
 		final I_AD_ImpFormat format = InterfaceWrapperHelper.newInstance(I_AD_ImpFormat.class);
 		format.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
-		format.setName(formatName);
+		format.setName(identifierStr + "_" + Instant.now());
 		format.setAD_Table_ID(adTableDAO.retrieveTableId(tableName));
 		format.setFormatType(formatType);
-		format.setFileCharset("utf-8");
+		format.setFileCharset(StandardCharsets.UTF_8.name().toLowerCase());
 		format.setSkipFirstNRows(skipFirstNRows);
 		format.setIsMultiLine(false);
 		format.setIsManualImport(false);
@@ -117,7 +115,7 @@ public class DataImport_StepDef
 		final AtomicInteger csvColumnNo = new AtomicInteger(1);
 		DataTableRows.of(dataTable).forEach(row -> createImpFormatRow(format, tableName, row, seqNo.getAndAdd(10), csvColumnNo.getAndIncrement()));
 
-		impFormatTable.putOrReplace(formatName, format);
+		impFormatTable.putOrReplace(identifier, format);
 	}
 
 	private void createImpFormatRow(
@@ -151,19 +149,22 @@ public class DataImport_StepDef
 	 */
 	@And("C_DataImport config {string} using AD_ImpFormat {string}")
 	public void c_DataImport_config_using_AD_ImpFormat(
-			@NonNull final String configName,
-			@NonNull final String formatName)
+			@NonNull final String configIdentifierStr,
+			@NonNull final String formatIdentifierStr)
 	{
-		final I_AD_ImpFormat format = impFormatTable.get(formatName);
+		final StepDefDataIdentifier formatIdentifier = StepDefDataIdentifier.ofString(formatIdentifierStr);
+		final I_AD_ImpFormat format = formatIdentifier.lookupNotNullIn(impFormatTable);
+
+		final StepDefDataIdentifier configIdentifier = StepDefDataIdentifier.ofString(configIdentifierStr);
 
 		final I_C_DataImport config = InterfaceWrapperHelper.newInstance(I_C_DataImport.class);
 		config.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 		config.setAD_ImpFormat_ID(format.getAD_ImpFormat_ID());
 		config.setDataImport_ConfigType(X_C_DataImport.DATAIMPORT_CONFIGTYPE_Standard);
-		config.setInternalName(configName);
+		config.setInternalName(configIdentifierStr + "_" + Instant.now());
 		InterfaceWrapperHelper.saveRecord(config);
 
-		dataImportTable.putOrReplace(configName, config);
+		dataImportTable.putOrReplace(configIdentifier, config);
 	}
 
 	/**
@@ -174,10 +175,11 @@ public class DataImport_StepDef
 	@When("the following CSV is imported via data import config {string}:")
 	@When("the following data is imported via data import config {string}:")
 	public void the_following_CSV_is_imported_via_data_import_config(
-			@NonNull final String configName,
+			@NonNull final String configIdentifierStr,
 			@NonNull final String csvContent)
 	{
-		final I_C_DataImport config = dataImportTable.get(configName);
+		final StepDefDataIdentifier configIdentifier = StepDefDataIdentifier.ofString(configIdentifierStr);
+		final I_C_DataImport config = configIdentifier.lookupNotNullIn(dataImportTable);
 		final DataImportConfigId configId = DataImportConfigId.ofRepoId(config.getC_DataImport_ID());
 
 		final ByteArrayResource csvResource = new ByteArrayResource(csvContent.getBytes(StandardCharsets.UTF_8));
@@ -194,7 +196,7 @@ public class DataImport_StepDef
 				.build());
 
 		assertThat(result.hasErrors())
-				.as("CSV import via config '%s' should complete without errors", configName)
+				.as("CSV import via config '%s' should complete without errors", configIdentifierStr)
 				.isFalse();
 	}
 }

@@ -15,6 +15,7 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -30,19 +31,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Step definitions for I_Product staging table operations and ImportProduct process execution.
  */
+@RequiredArgsConstructor
 public class I_Product_StepDef
 {
-	private final I_Product_StepDefData iProductTable;
-	private final M_Product_StepDefData productTable;
+	@NonNull private final I_Product_StepDefData iProductTable;
+	@NonNull private final M_Product_StepDefData productTable;
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-
-	public I_Product_StepDef(
-			@NonNull final I_Product_StepDefData iProductTable,
-			@NonNull final M_Product_StepDefData productTable)
-	{
-		this.iProductTable = iProductTable;
-		this.productTable = productTable;
-	}
 
 	/**
 	 * Deletes all I_Product staging records for the test client.
