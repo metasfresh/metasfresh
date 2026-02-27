@@ -22,6 +22,7 @@
 
 package de.metas.externalsystem.outboundendpoint;
 
+import de.metas.audit.apirequest.HttpMethod;
 import de.metas.cache.CCache;
 import de.metas.externalsystem.model.I_ExternalSystem_Outbound_Endpoint;
 import lombok.NonNull;
@@ -59,7 +60,7 @@ public class ExternalSystemOutboundEndpointRepository
 				.id(ExternalSystemOutboundEndpointId.ofRepoId(endpointRecord.getExternalSystem_Outbound_Endpoint_ID()))
 				.value(endpointRecord.getValue())
 				.endpointUrl(endpointRecord.getOutboundHttpEP())
-				.method(endpointRecord.getOutboundHttpMethod())
+				.method(HttpMethod.ofCode(endpointRecord.getOutboundHttpMethod()))
 				.authType(OutboundEndpointAuthType.ofCode(endpointRecord.getAuthType()))
 				.clientId(endpointRecord.getClientId())
 				.clientSecret(endpointRecord.getClientSecret())

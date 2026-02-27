@@ -142,6 +142,13 @@ public class InOutBL implements IInOutBL
 		return inOutDAO.getById(inoutId);
 	}
 
+	@Nullable
+	@Override
+	public <T extends I_M_InOut> T getById(@NonNull final InOutId inoutId, @NonNull final Class<T> modelClass)
+	{
+		return inOutDAO.getById(inoutId, modelClass);
+	}
+
 	@Override
 	public void save(@NonNull final I_M_InOut inout)
 	{

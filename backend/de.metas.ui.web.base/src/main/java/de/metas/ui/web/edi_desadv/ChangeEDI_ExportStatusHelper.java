@@ -154,6 +154,35 @@ public class ChangeEDI_ExportStatusHelper
 		invoiceDAO.save(invoice);
 	}
 
+	/**
+	 * Changes the EDI export status of a single M_InOut and triggers DESADV status recomputation.
+	 * <p>
+	 * If {@code targetExportStatus = Pending}, re-runs validation via {@link EDIDocumentBL#updateEdiExportStatus(I_M_InOut)}.
+	 * If validation fails, the status is set to {@code Invalid} with {@code EDIErrorMsg} populated.
+	 * <p>
+	 * After the InOut status is changed, the linked DESADV status is recomputed bottom-up
+	 * (automatically triggered by the M_InOut model validator).
+	 *
+	 * @param inOut the InOut to update
+	 * @param targetExportStatus the new status (Pending or DontSend)
+	 */
+	public void M_InOutDoIt(@NonNull final I_M_InOut inOut, @NonNull final EDIExportStatus targetExportStatus)
+	{
+		if (targetExportStatus.isPending())
+		{
+			// Re-validate the InOut; if invalid, updateEdiExportStatus sets status to Invalid + populates EDIErrorMsg
+			ediDocumentBL.updateEdiExportStatus(inOut);
+		}
+		else
+		{
+			// Directly set the new status (e.g. DontSend)
+			inOut.setEDI_ExportStatus(targetExportStatus.getCode());
+		}
+
+		inOutDAO.save(inOut);
+		// Note: DESADV status recomputation is automatically triggered by M_InOut.recomputeDesadvStatusOnInOutStatusChange
+	}
+
 	@NonNull
 	public LookupValuesList computeTargetExportStatusLookupValues(final EDIExportStatus fromExportStatus)
 	{
