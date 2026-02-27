@@ -65,6 +65,8 @@ import java.util.Map;
 
 import static de.metas.invoice.InvoiceDocBaseType.CustomerInvoice;
 import static de.metas.invoice.InvoiceDocBaseType.VendorCreditMemo;
+import static de.metas.invoice.InvoiceDocBaseType.VendorInvoice;
+import static de.metas.invoice.InvoiceDocBaseType.CustomerCreditMemo;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -195,9 +197,9 @@ public class RemittanceAdviceServiceTest
 
 		final I_C_Invoice invoice;
 
-		final Money invoiceGrandTotal = openAmt
-				.negateIf(type.isCreditMemo())
-				.negateIf(!type.isSales());
+		// In production, GrandTotal is always stored as positive.
+		// The sign is determined by the doc type at read-time via InvoiceAmtMultiplier.
+		final Money invoiceGrandTotal = openAmt;
 
 		final LocalDate invoicedDateToUse = invoicedDate != null
 				? invoicedDate
@@ -414,7 +416,96 @@ public class RemittanceAdviceServiceTest
 		assertThat(remittanceAdviceLine.isServiceFeeResolved()).isFalse();
 
 		// ..because the amounts are the same, but the doctype doesn't match our invoice
-		assertThat(remittanceAdviceLine.isInvoiceDocTypeValid()).isFalse(); 
+		assertThat(remittanceAdviceLine.isInvoiceDocTypeValid()).isFalse();
+	}
+
+	@Test
+	public void testResolveRemittanceAdviceLineWithVendorInvoice_MatchingDocType()
+	{
+		//given - debit REMADV line (API) linked to a matching Vendor Invoice (API)
+		final I_C_Invoice invoice = invoice().type(VendorInvoice).open(BigDecimal.valueOf(100)).currency(euroCurrencyId).build();
+		final RemittanceAdvice remittanceAdvice = remittance().build();
+		final RemittanceAdviceLine remittanceAdviceLine = remittanceLine()
+				.invoiceId(invoice.getC_Invoice_ID())
+				.invoiceDocBaseType(VendorInvoice)
+				.remittanceAmt(new BigDecimal(100))
+				.build();
+
+		//when
+		remittanceAdviceService.resolveRemittanceAdviceLine(remittanceAdvice, remittanceAdviceLine);
+
+		//then
+		assertThat(remittanceAdviceLine.isInvoiceResolved()).isTrue();
+		assertThat(remittanceAdviceLine.isAmountValid()).isTrue();
+		assertThat(remittanceAdviceLine.isInvoiceDocTypeValid()).isTrue();
+		assertThat(remittanceAdviceLine.getOverUnderAmtInREMADVCurrency()).isEqualTo(Amount.zero(CurrencyCode.EUR));
+	}
+
+	@Test
+	public void testResolveRemittanceAdviceLineWithVendorInvoice_DocTypeMismatch_AmountsMatch()
+	{
+		//given - debit REMADV line (API) linked to a Customer Invoice (ARI) with same amount
+		// This is the scenario from gh#28443: customer manually creates wrong invoice type for a debit REMADV line
+		final I_C_Invoice invoice = invoice().type(CustomerInvoice).open(BigDecimal.valueOf(100)).currency(euroCurrencyId).build();
+		final RemittanceAdvice remittanceAdvice = remittance().build();
+		final RemittanceAdviceLine remittanceAdviceLine = remittanceLine()
+				.invoiceId(invoice.getC_Invoice_ID())
+				.invoiceDocBaseType(VendorInvoice)
+				.remittanceAmt(new BigDecimal(100))
+				.build();
+
+		//when
+		remittanceAdviceService.resolveRemittanceAdviceLine(remittanceAdvice, remittanceAdviceLine);
+
+		//then - amounts should be valid (numerically equal), but doc type should be flagged as mismatched
+		assertThat(remittanceAdviceLine.isInvoiceResolved()).isTrue();
+		assertThat(remittanceAdviceLine.isAmountValid()).as("amounts match numerically, overUnder should be zero").isTrue();
+		assertThat(remittanceAdviceLine.isInvoiceDocTypeValid()).as("API != ARI").isFalse();
+		assertThat(remittanceAdviceLine.getOverUnderAmtInREMADVCurrency()).isEqualTo(Amount.zero(CurrencyCode.EUR));
+	}
+
+	@Test
+	public void testResolveRemittanceAdviceLineWithCustomerCreditMemo_MatchingDocType()
+	{
+		//given - REMADV line (ARC) linked to a Customer Credit Memo (ARC)
+		final I_C_Invoice invoice = invoice().type(CustomerCreditMemo).open(BigDecimal.valueOf(100)).currency(euroCurrencyId).build();
+		final RemittanceAdvice remittanceAdvice = remittance().build();
+		final RemittanceAdviceLine remittanceAdviceLine = remittanceLine()
+				.invoiceId(invoice.getC_Invoice_ID())
+				.invoiceDocBaseType(CustomerCreditMemo)
+				.remittanceAmt(new BigDecimal(100))
+				.build();
+
+		//when
+		remittanceAdviceService.resolveRemittanceAdviceLine(remittanceAdvice, remittanceAdviceLine);
+
+		//then
+		assertThat(remittanceAdviceLine.isInvoiceResolved()).isTrue();
+		assertThat(remittanceAdviceLine.isAmountValid()).isTrue();
+		assertThat(remittanceAdviceLine.isInvoiceDocTypeValid()).isTrue();
+		assertThat(remittanceAdviceLine.getOverUnderAmtInREMADVCurrency()).isEqualTo(Amount.zero(CurrencyCode.EUR));
+	}
+
+	@Test
+	public void testResolveRemittanceAdviceLineWithVendorCreditMemo_MatchingDocType()
+	{
+		//given - REMADV line (APC) linked to a Vendor Credit Memo (APC)
+		final I_C_Invoice invoice = invoice().type(VendorCreditMemo).open(BigDecimal.valueOf(100)).currency(euroCurrencyId).build();
+		final RemittanceAdvice remittanceAdvice = remittance().build();
+		final RemittanceAdviceLine remittanceAdviceLine = remittanceLine()
+				.invoiceId(invoice.getC_Invoice_ID())
+				.invoiceDocBaseType(VendorCreditMemo)
+				.remittanceAmt(new BigDecimal(100))
+				.build();
+
+		//when
+		remittanceAdviceService.resolveRemittanceAdviceLine(remittanceAdvice, remittanceAdviceLine);
+
+		//then
+		assertThat(remittanceAdviceLine.isInvoiceResolved()).isTrue();
+		assertThat(remittanceAdviceLine.isAmountValid()).isTrue();
+		assertThat(remittanceAdviceLine.isInvoiceDocTypeValid()).isTrue();
+		assertThat(remittanceAdviceLine.getOverUnderAmtInREMADVCurrency()).isEqualTo(Amount.zero(CurrencyCode.EUR));
 	}
 
 }

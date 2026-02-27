@@ -35,7 +35,6 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
@@ -70,7 +69,6 @@ public class RemittanceAdviceService
 	private final MoneyService moneyService;
 	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 
@@ -172,10 +170,13 @@ public class RemittanceAdviceService
 			@NonNull final RemittanceAdvice remittanceAdvice,
 			@NonNull final RemittanceAdviceLine remittanceAdviceLine)
 	{
-		final InvoiceAmtMultiplier invoiceAmtMultiplier = invoiceBL.getInvoiceAmtMultiplier(invoice);
+		// Use the REMADV line's externalInvoiceDocBaseType multiplier for BOTH amounts
+		// so that overUnderAmt correctly reflects the numeric difference.
+		// The actual invoice doc type mismatch is handled by isInvoiceDocTypeValid.
+		final InvoiceAmtMultiplier lineMultiplier = InvoiceAmtMultiplier.nonAdjustedFor(remittanceAdviceLine.getExternalInvoiceDocBaseType());
 
 		final Amount invoiceAmt = getInvoiceAmountInRemAdvCurrency(remittanceAdvice.getRemittedAmountCurrencyId(), invoice);
-		final Amount invoiceAmtAdjusted = invoiceAmtMultiplier.convertToRealValue(invoiceAmt);
+		final Amount invoiceAmtAdjusted = lineMultiplier.convertToRealValue(invoiceAmt);
 
 		final Amount remittedAmountAdjusted = remittanceAdviceLine.getRemittedAmountAdjusted();
 
