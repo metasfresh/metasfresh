@@ -452,33 +452,33 @@ Continuous keyboard entry: line1 → line2 → ... without reopening batch entry
     });
 
     // ------------------------------------------------------------------
-    // TEST 4: Invalid product — beep and keep focus
+    // TEST 4: Invalid product — no beep when sysconfig disabled (default)
     // Verifies that pressing Enter on a non-existent product does NOT
-    // advance focus (plays beep) and the product field retains the text.
+    // advance focus and does NOT beep when sysconfig is off (default).
     // ------------------------------------------------------------------
-    test(`Invalid product: Enter keeps focus on product field (${label})`, async ({
+    test(`Invalid product: no beep when sysconfig disabled (${label})`, async ({
       page,
     }) => {
       allure.epic('E0100: Sales');
       allure.tag('F00100: Sales Order');
       allure.tag('F00100');
-      allure.story('Quick Input: Invalid product beep');
+      allure.story('Quick Input: Invalid product no beep (default)');
       allure.severity('normal');
       allure.parameter('Language', language);
       allure.tag(language);
 
       allure.description(`
-## F00100: Sales Order — Invalid product keeps focus
+## F00100: Sales Order — Invalid product no beep (sysconfig disabled)
 
 ### Test Scenario
 Validates that pressing Enter with a non-existent product code:
-1. Triggers an audible beep (verified via Web Audio API spy on OscillatorNode.start)
+1. Does NOT trigger an audible beep (sysconfig beepOnInvalidProduct defaults to N)
 2. Does NOT advance focus to the quantity field
 3. The product field retains the invalid text (not resolved)
 4. No order line is created
 
 ### Business Value
-Audio beep feedback for blind entry — user knows the product was not found.
+Default behavior: no beep. Beep must be explicitly enabled via SysConfig.
       `);
 
       test.setTimeout(120000);
@@ -534,11 +534,11 @@ Audio beep feedback for blind entry — user knows the product was not found.
       await page.keyboard.press('Enter');
       await page.waitForTimeout(2000);
 
-      // Verify: beep was initiated via Web Audio API
+      // Verify: NO beep was initiated (sysconfig default is N)
       const beepCount = await page.evaluate(() => window.__beepCount);
-      expect(beepCount).toBeGreaterThan(0);
+      expect(beepCount).toBe(0);
       console.log(
-        `[${language}] Invalid product: beep initiated (${beepCount} OscillatorNode.start() calls)`
+        `[${language}] Invalid product: no beep (sysconfig disabled, beepCount=${beepCount})`
       );
 
       // Verify: product input should still contain the invalid text

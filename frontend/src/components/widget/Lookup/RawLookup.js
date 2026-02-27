@@ -17,6 +17,7 @@ import { openModal } from '../../../actions/WindowActions';
 import SelectionDropdown from '../SelectionDropdown';
 import { isBlank } from '../../../utils';
 import { getViewFieldTypeahead } from '../../../api/view';
+import { getSettingFromStateAsBoolean } from '../../../utils/settings';
 
 const KEY_None = null;
 const KEY_New = 'NEW';
@@ -407,7 +408,9 @@ export class RawLookup extends Component {
       if (regularItems.length > 0) {
         this.handleAutoSelectAndAdvance(regularItems[0]);
       } else {
-        playBeep();
+        if (this.props.beepOnInvalidProduct) {
+          playBeep();
+        }
       }
       return;
     }
@@ -419,11 +422,15 @@ export class RawLookup extends Component {
         if (values.length > 0) {
           this.handleAutoSelectAndAdvance(values[0]);
         } else {
-          playBeep();
+          if (this.props.beepOnInvalidProduct) {
+            playBeep();
+          }
         }
       })
       .catch(() => {
-        playBeep();
+        if (this.props.beepOnInvalidProduct) {
+          playBeep();
+        }
       });
   };
 
@@ -916,6 +923,11 @@ export class RawLookup extends Component {
 
 const mapStateToProps = (state) => ({
   filter: state.windowHandler.filter,
+  beepOnInvalidProduct: getSettingFromStateAsBoolean(
+    state,
+    'quickinput.beepOnInvalidProduct',
+    false
+  ),
 });
 
 RawLookup.propTypes = {
@@ -973,6 +985,7 @@ RawLookup.propTypes = {
     visible: PropTypes.bool,
     boundingRect: PropTypes.object,
   }),
+  beepOnInvalidProduct: PropTypes.bool,
 };
 
 export default connect(mapStateToProps, null, null, { forwardRef: true })(
