@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.fresh.base
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.docs_sales_customs_invoice_details(numeric,
                                                                                               character varying)
 ;
@@ -34,8 +56,7 @@ SELECT data.Name,
        data.Description,
        data.SSCC18,
        ROUND(SUM(data.linenetamt) / NULLIF(SUM(data.InvoicedQty), 0), 2)
-FROM (SELECT il.lineno,
-             COALESCE(ct.Name, ct.Value, p.Value)                                                                      AS Name,
+FROM (SELECT COALESCE(ct.Name, ct.Value, p.Value)                                                                      AS Name,
              il.InvoicedQty,
              COALESCE(uomt.UOMSymbol, uom.UOMSymbol)                                                                   AS UOM,
              il.linenetamt,
@@ -49,8 +70,7 @@ FROM (SELECT il.lineno,
              END                                                                                                       AS QtyPattern,
              de_metas_endcustomer_fresh_reports.CalculateCustom_InvoiceLine_BruttoWeight(il.c_customs_invoice_line_id) AS bruttoweight,
              ct.description                                                                                            AS Description,
-             COALESCE(il.SSCC18_Override, getCustoms_Invoice_Line_SSCC18(il.C_Customs_Invoice_Line_ID))                AS SSCC18,
-             getCustoms_Invoice_Line_PriceActual(il.C_Customs_Invoice_Line_ID)                                         AS PriceActual
+             COALESCE(il.SSCC18_Override, getCustoms_Invoice_Line_SSCC18(il.C_Customs_Invoice_Line_ID))                AS SSCC18
 
       FROM C_Customs_Invoice_Line il
                INNER JOIN C_Customs_Invoice i ON il.C_Customs_Invoice_ID = i.C_Customs_Invoice_ID
