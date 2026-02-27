@@ -31,7 +31,9 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.api.APIRequest;
 import de.metas.cucumber.stepdefs.api.RESTUtil;
+import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
+import de.metas.edi.model.I_C_Invoice;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.externalsystem.ExternalSystemErrorContext;
 import de.metas.process.PInstanceId;
@@ -53,9 +55,10 @@ import static org.assertj.core.api.Assertions.*;
 public class ExternalSystem_Error_StepDef
 {
 	@NonNull private final M_InOut_StepDefData inoutTable;
+	@NonNull private final C_Invoice_StepDefData invoiceTable;
 
 	@And("the external system sends an error response for the shipment")
-	public void sendErrorResponseForShipments(@NonNull final DataTable dataTable) throws IOException
+	public void sendErrorResponseForShipments(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(this::sendErrorResponseForShipment);
 	}
@@ -93,7 +96,7 @@ public class ExternalSystem_Error_StepDef
 		final String jsonPayload = serializeToJson(jsonError);
 
 		// Send error to metasfresh REST API endpoint
-		final String endpointPath = "/api/v2/externalstatus/" + pInstanceId.getRepoId() + "/error";
+		final String endpointPath = "/api/v2/externalsystem/externalstatus/" + pInstanceId.getRepoId() + "/error";
 
 		// Get auth token (assumes test setup has already created a token via "receives a random a API token" step)
 		final String authToken = RESTUtil.getAuthToken("metasfresh", "WebUI");
@@ -121,5 +124,29 @@ public class ExternalSystem_Error_StepDef
 		{
 			throw new RuntimeException("Failed to serialize JsonError to JSON", e);
 		}
+	}
+
+	@And("the external system sends an error response for the invoice")
+	public void sendErrorResponseForInvoices(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::sendErrorResponseForInvoice);
+	}
+
+	private void sendErrorResponseForInvoice(@NonNull final DataTableRow row) throws IOException
+	{
+		final StepDefDataIdentifier invoiceIdentifier = row.getAsIdentifier(I_C_Invoice.COLUMNNAME_C_Invoice_ID);
+
+
+		final org.compiere.model.I_C_Invoice inout = invoiceTable.get(invoiceIdentifier);
+		assertThat(invoiceIdentifier).isNotNull();
+
+		final I_C_Invoice ediInvoice = InterfaceWrapperHelper.create(inout, I_C_Invoice.class);
+		final PInstanceId pInstanceId = PInstanceId.ofRepoIdOrNull(ediInvoice.getEDI_AD_PInstance_ID());
+
+		assertThat(pInstanceId)
+				.as("EDI_AD_PInstance_ID should be set on C_Invoice %s", invoiceIdentifier)
+				.isNotNull();
+
+		sendErrorResponse(row, pInstanceId);
 	}
 }

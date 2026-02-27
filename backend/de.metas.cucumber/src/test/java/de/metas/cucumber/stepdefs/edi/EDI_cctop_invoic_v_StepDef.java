@@ -23,12 +23,12 @@
 package de.metas.cucumber.stepdefs.edi;
 
 import de.metas.async.api.IWorkPackageQueue;
-import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.edi.async.spi.impl.EDIWorkpackageProcessor;
 import de.metas.edi.model.I_EDI_Document;
@@ -108,12 +108,36 @@ public class EDI_cctop_invoic_v_StepDef
 
 		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(Env.getCtx(), EDIWorkpackageProcessor.class);
 
-		final I_C_Queue_WorkPackage workpackage = queue
-				.newWorkPackage()
+		queue.newWorkPackage()
 				.setPriority(IWorkPackageQueue.PRIORITY_AUTO)
 				.addElement(invoice)
 				.bindToThreadInheritedTrx()
 				.buildAndEnqueue();
+	}
+
+	@Then("^after not more than (.*)s, C_Invoice records have the following export status$")
+	public void validate_export_status(final int timeoutSec, @NonNull final DataTable table) throws InterruptedException
+	{
+		DataTableRows.of(table).forEach(row -> validateExportStatus(timeoutSec, row));
+	}
+
+	private void validateExportStatus(
+			final int timeoutSec,
+			@NonNull final DataTableRow tableRow) throws InterruptedException
+	{
+		final I_C_Invoice invoiceRecord =
+				InterfaceWrapperHelper.create(
+						tableRow.getAsIdentifier(I_C_Invoice.COLUMNNAME_C_Invoice_ID).lookupNotNullIn(invoiceTable),
+						I_C_Invoice.class);
+
+		final de.metas.edi.model.I_C_Invoice ediInvoiceRecord = InterfaceWrapperHelper.create(invoiceRecord, de.metas.edi.model.I_C_Invoice.class);
+
+		final String exportStatus = tableRow.getAsString(I_EDI_Desadv.COLUMNNAME_EDI_ExportStatus);
+
+		StepDefUtil.tryAndWait(timeoutSec, 1000, () -> {
+			InterfaceWrapperHelper.refresh(ediInvoiceRecord);
+			return exportStatus.equals(ediInvoiceRecord.getEDI_ExportStatus());
+		});
 	}
 
 	@Then("EDI_cctop_invoic_500_v of the following EDI_cctop_invoic_v is validated")

@@ -3,13 +3,14 @@
 @allure.label.feature:F00350_EDI
 @F00350
 @ghActions:run_on_executor3
-Feature: EDI DESADV export via External System
+Feature: EDI INVOIC export via External System
 
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
-    And metasfresh has date and time 2025-05-15T16:30:17+02:00[Europe/Berlin]
+    And metasfresh has date and time 2025-05-01T16:30:17+02:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    And documents are accounted immediately
 
     And metasfresh contains M_PricingSystems
       | Identifier    |
@@ -22,7 +23,7 @@ Feature: EDI DESADV export via External System
       | Identifier | M_PriceList_ID |
       | salesPLV   | salesPriceList |
 
-    Given metasfresh contains M_Products:
+    And metasfresh contains M_Products:
       | Identifier | GTIN        |
       | product    | productGTIN |
 
@@ -32,30 +33,26 @@ Feature: EDI DESADV export via External System
 
     And metasfresh contains ExternalSystem_Config with ScriptedExportConversion
       | ExternalSystem_Config_ID | ExternalSystem_Config_ScriptedExportConversion_ID | AD_Process_OutboundData_ID.Value | TableName |
-      | externalSystemConfig_1   | scriptedExportConversion_1                        | M_InOut_EDI_Export_JSON          | M_InOut   |
+      | externalSystemConfig_1   | scriptedExportConversion_1                        | C_Invoice_EDI_Export_JSON        | C_Invoice |
 
     And metasfresh contains C_BPartners without locations:
-      | Identifier | Value               | Name               | IsCustomer | IsVendor | M_PricingSystem_ID |
-      | customer1  | desadvReceiverValue | desadvReceiverName | Y          | N        | pricingSystem      |
+      | Identifier | IsCustomer | IsVendor | M_PricingSystem_ID |
+      | customer1  | Y          | N        | pricingSystem      |
     And the following c_bpartner is changed
-      | Identifier | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | EdiDESADVSendingMode | EdiDESADV_ExternalSystem_Config_ID |
-      | customer1  | true                 | 1234567890            | E                    | externalSystemConfig_1             |
+      | Identifier | IsEdiInvoicRecipient | EdiInvoicRecipientGLN | EdiINVOICSendingMode | EdiINVOIC_ExternalSystem_Config_ID |
+      | customer1  | true                 | 12345678              | E                    | externalSystemConfig_1             |
     And metasfresh contains C_BPartner_Locations:
       | Identifier          | C_BPartner_ID | IsShipToDefault | IsBillToDefault | GLN           |
-      | bpartner_location_1 | customer1     | Y               | Y               | 1234567890123 |
-    And metasfresh contains C_BPartner_Product
-      | C_BPartner_Product_ID | C_BPartner_ID | M_Product_ID | GTIN          |
-      | bp_1                  | customer1     | product      | 0575095404663 |
+      | bpartner_location_1 | customer1     | Y               | Y               | 12345678      |
 
     And RabbitMQ MF_TO_ExternalSystem queue is purged
-
 
 
   @from:cucumber
   @allure.label.epic:E0292_EDI
   @allure.label.feature:F00350_EDI
   @F00350
-  Scenario: create a shipment and export DESADV via external system
+  Scenario: create an invoice and export INVOIC via external system
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised | POReference   |
@@ -78,42 +75,33 @@ Feature: EDI DESADV export via External System
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_1                            | s_1                   |
 
-    And EDI_Desadv is found:
-      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_ExportStatus |
-      | d_1                      | customer1                | o_1                   | P                |
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | ic1                               | ol_1                      | 100           |
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
+      | C_Invoice_Candidate_ID |
+      | ic1                    |
+    Then after not more than 60s, C_Invoice are found:
+      | C_Invoice_Candidate_ID | C_Invoice_ID  |
+      | ic1                    | salesInvoice  |
 
-    And EDI_Desadv is enqueued for export
-      | EDI_Desadv_ID.Identifier |
-      | d_1                      |
+    And invoice is enqueued for EDI export
+      | C_Invoice_ID |
+      | salesInvoice |
 
-    Then after not more than 60s, M_InOut records have the following export status
-      | M_InOut_ID.Identifier | EDI_ExportStatus |
-      | s_1                   | S                |
+    Then after not more than 60s, C_Invoice records have the following export status
+      | C_Invoice_ID | EDI_ExportStatus |
+      | salesInvoice | S                |
 
     Then RabbitMQ receives a JsonExternalSystemRequest with the following external system config and parameter:
       | ExternalSystem_Config_ID.Identifier | ConfigIDOnly |
       | externalSystemConfig_1              | true         |
 
-    And the external system sends an error response for the shipment
+    And the external system sends an error response for the invoice
       | M_InOut_ID.Identifier | ErrorMessage                              |
-      | s_1                   | External system export failed: Test error |
+      | salesInvoice          | External system export failed: Test error |
 
-    Then after not more than 60s, M_InOut records have the following export status
-      | M_InOut_ID.Identifier | EDI_ExportStatus |
-      | s_1                   | E                |
+    Then after not more than 60s, C_Invoice records have the following export status
+      | C_Invoice_ID | EDI_ExportStatus |
+      | salesInvoice | E                |
 
-    And after not more than 60s, EDI_Desadv records have the following export status
-      | EDI_Desadv_ID.Identifier | EDI_ExportStatus |
-      | d_1                      | E                |
-
-    And EDI_Desadv is enqueued for export
-      | EDI_Desadv_ID.Identifier |
-      | d_1                      |
-
-    Then after not more than 60s, M_InOut records have the following export status
-      | M_InOut_ID.Identifier | EDI_ExportStatus |
-      | s_1                   | S                |
-
-    And after not more than 60s, EDI_Desadv records have the following export status
-      | EDI_Desadv_ID.Identifier | EDI_ExportStatus |
-      | d_1                      | S                |

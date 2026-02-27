@@ -37,10 +37,7 @@ import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
-
-import java.util.Properties;
 
 /**
  * Enqueues a single M_InOut for DESADV export via ExternalSystem.
@@ -80,7 +77,7 @@ public class M_InOut_EnqueueForExport_ExternalSystem extends JavaProcess impleme
 			return ProcessPreconditionsResolution.rejectWithInternalReason("InOut must be in Pending or Error status (current: " + exportStatus + ")");
 		}
 
-		final BPartnerId bPartnerId = BPartnerId.ofRepoId(inOut.getC_BPartner_ID());
+		final BPartnerId bPartnerId = inOutBL.getEffectiveDropshipPartnerId(inOut);
 		if (!ediBPartnerConfigService.isDESADVExternalSystemRecipient(bPartnerId))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("BPartner is not configured for ExternalSystem DESADV export");
@@ -93,9 +90,8 @@ public class M_InOut_EnqueueForExport_ExternalSystem extends JavaProcess impleme
 	protected String doIt() throws Exception
 	{
 		final I_M_InOut inOut = inOutBL.getById(InOutId.ofRepoId(getRecord_ID()), I_M_InOut.class);
-		final Properties ctx = getCtx();
 
-		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(ctx, EDIWorkpackageProcessor.class);
+		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(getCtx(), EDIWorkpackageProcessor.class);
 
 
 		queue.newWorkPackage()
@@ -105,7 +101,7 @@ public class M_InOut_EnqueueForExport_ExternalSystem extends JavaProcess impleme
 				.buildAndEnqueue();
 
 		inOut.setEDI_ExportStatus(EDIExportStatus.Enqueued.getCode());
-		InterfaceWrapperHelper.save(inOut);
+		inOutBL.save(inOut);
 
 		addLog("Enqueued InOut {} for EDI export via ExternalSystem", inOut.getDocumentNo());
 

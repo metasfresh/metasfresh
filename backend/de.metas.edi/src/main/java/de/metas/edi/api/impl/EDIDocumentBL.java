@@ -329,9 +329,8 @@ public class EDIDocumentBL
 
 		feedback.addAll(isValidPartner(shipment.getC_BPartner(), EDIType.DESADV));
 
-		// TODO add again after there is a way for the user to recover from this without reverting inout and ship again to add it to deasdv
-		// final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(shipment.getC_BPartner_ID(), shipment.getC_BPartner_Location_ID()));
-		// feedback.addAll(isValidBPLocation(bPartnerLocationRecord));
+		final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(shipment.getC_BPartner_ID(), shipment.getC_BPartner_Location_ID()));
+		feedback.addAll(isValidBPLocation(bPartnerLocationRecord));
 
 		return feedback;
 	}
