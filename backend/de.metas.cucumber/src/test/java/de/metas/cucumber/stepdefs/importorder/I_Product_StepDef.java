@@ -45,6 +45,18 @@ public class I_Product_StepDef
 	}
 
 	/**
+	 * Deletes all I_Product staging records for the test client.
+	 * Use at the start of import scenarios to ensure a clean staging table.
+	 */
+	@Given("all I_Product staging records are deleted")
+	public void all_I_Product_staging_records_are_deleted()
+	{
+		DB.executeUpdateAndThrowExceptionOnFail(
+				"DELETE FROM I_Product WHERE AD_Client_ID=" + StepDefConstants.CLIENT_ID.getRepoId(),
+				ITrx.TRXNAME_None);
+	}
+
+	/**
 	 * Creates I_Product staging records for import testing.
 	 * <p>
 	 * Value and Name are auto-generated from the Identifier when not provided,

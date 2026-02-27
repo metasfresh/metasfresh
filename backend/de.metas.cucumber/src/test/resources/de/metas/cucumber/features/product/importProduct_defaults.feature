@@ -8,6 +8,7 @@ Feature: Product Import default values and inactive product reactivation
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-05-17T13:30:13+01:00[Europe/Berlin]
+    And all I_Product staging records are deleted
 
   @from:cucumber
   Scenario: Product import defaults IsStocked=Y and ProductType=Item

@@ -15,6 +15,7 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -24,6 +25,7 @@ import org.compiere.model.I_AD_ImpFormat_Row;
 import org.compiere.model.I_C_DataImport;
 import org.compiere.model.X_AD_ImpFormat;
 import org.compiere.model.X_C_DataImport;
+import org.compiere.util.DB;
 import org.springframework.core.io.ByteArrayResource;
 
 import java.nio.charset.StandardCharsets;
@@ -64,16 +66,52 @@ public class DataImport_StepDef
 			@NonNull final String tableName,
 			@NonNull final DataTable dataTable)
 	{
+		createImpFormat(formatName, tableName, X_AD_ImpFormat.FORMATTYPE_CommaSeparated, 0, dataTable);
+	}
+
+	/**
+	 * Creates an AD_ImpFormat record with configurable format type and header skip.
+	 * <p>
+	 * Format types: C=Comma, T=Tab, S=Semicolon, F=Fixed, X=XML
+	 *
+	 * @cucumber.columns
+	 * <b>ColumnName</b> — column name in the target import table (e.g. Value, Name, ProductType)<br>
+	 * <b>DataType</b> — data type code: S=String, N=Number, D=Date, C=Constant, B=YesNo
+	 */
+	@Given("AD_ImpFormat {string} for table {string} with format {string} and skipFirstNRows {int} and columns:")
+	public void ad_ImpFormat_for_table_with_format_and_skip(
+			@NonNull final String formatName,
+			@NonNull final String tableName,
+			@NonNull final String formatType,
+			final int skipFirstNRows,
+			@NonNull final DataTable dataTable)
+	{
+		createImpFormat(formatName, tableName, formatType, skipFirstNRows, dataTable);
+	}
+
+	private void createImpFormat(
+			@NonNull final String formatName,
+			@NonNull final String tableName,
+			@NonNull final String formatType,
+			final int skipFirstNRows,
+			@NonNull final DataTable dataTable)
+	{
 		final I_AD_ImpFormat format = InterfaceWrapperHelper.newInstance(I_AD_ImpFormat.class);
 		format.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 		format.setName(formatName);
 		format.setAD_Table_ID(adTableDAO.retrieveTableId(tableName));
-		format.setFormatType(X_AD_ImpFormat.FORMATTYPE_CommaSeparated);
+		format.setFormatType(formatType);
 		format.setFileCharset("utf-8");
-		format.setSkipFirstNRows(0);
+		format.setSkipFirstNRows(skipFirstNRows);
 		format.setIsMultiLine(false);
 		format.setIsManualImport(false);
 		InterfaceWrapperHelper.saveRecord(format);
+
+		// Clean up any auto-created or orphaned AD_ImpFormat_Row records for this format
+		// before adding our specific column definitions
+		DB.executeUpdateAndThrowExceptionOnFail(
+				"DELETE FROM AD_ImpFormat_Row WHERE AD_ImpFormat_ID=" + format.getAD_ImpFormat_ID(),
+				ITrx.TRXNAME_None);
 
 		final AtomicInteger seqNo = new AtomicInteger(10);
 		final AtomicInteger csvColumnNo = new AtomicInteger(1);
@@ -129,11 +167,12 @@ public class DataImport_StepDef
 	}
 
 	/**
-	 * Imports CSV content through the full DataImportService pipeline.
-	 * The CSV is parsed using the AD_ImpFormat, loaded into the import staging table,
+	 * Imports data content through the full DataImportService pipeline.
+	 * The content is parsed using the AD_ImpFormat (CSV, TSV, etc.), loaded into the import staging table,
 	 * validated, and then processed into target tables — all synchronously.
 	 */
 	@When("the following CSV is imported via data import config {string}:")
+	@When("the following data is imported via data import config {string}:")
 	public void the_following_CSV_is_imported_via_data_import_config(
 			@NonNull final String configName,
 			@NonNull final String csvContent)
