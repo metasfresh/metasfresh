@@ -69,7 +69,7 @@ public class DataImport_StepDef
 		format.setName(formatName);
 		format.setAD_Table_ID(adTableDAO.retrieveTableId(tableName));
 		format.setFormatType(X_AD_ImpFormat.FORMATTYPE_CommaSeparated);
-		format.setFileCharset("UTF-8");
+		format.setFileCharset("utf-8");
 		format.setSkipFirstNRows(0);
 		format.setIsMultiLine(false);
 		format.setIsManualImport(false);
