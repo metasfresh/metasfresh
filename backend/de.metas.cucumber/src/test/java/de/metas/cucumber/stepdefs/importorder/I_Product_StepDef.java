@@ -15,6 +15,7 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_I_Product;
@@ -223,5 +224,39 @@ public class I_Product_StepDef
 		// Optionally store the M_Product for later reference
 		row.getAsOptionalIdentifier("M_Product_Identifier").ifPresent(productIdentifier ->
 				productTable.putOrReplace(productIdentifier, product));
+	}
+
+	/**
+	 * Loads I_Product staging records by their Value column (used after CSV pipeline import).
+	 * Uses {@link InterfaceWrapperHelper#loadOutOfTrx} because the import commits in its own transaction.
+	 *
+	 * @cucumber.columns
+	 * <b>Identifier</b> — (required) alias for cross-step reference<br>
+	 * <b>Value</b> — (required) product search key to look up in I_Product<br>
+	 */
+	@Then("load imported I_Product records by Value:")
+	public void load_imported_I_Product_records_by_Value(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::loadIProductByValue);
+	}
+
+	private void loadIProductByValue(@NonNull final DataTableRow row)
+	{
+		final StepDefDataIdentifier identifier = row.getAsIdentifier();
+		final String value = row.getAsString("Value");
+
+		final I_I_Product record = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_I_Product.class)
+				.addEqualsFilter(I_I_Product.COLUMNNAME_Value, value)
+				.addEqualsFilter(I_I_Product.COLUMNNAME_AD_Client_ID, StepDefConstants.CLIENT_ID)
+				.orderByDescending(I_I_Product.COLUMNNAME_I_Product_ID)
+				.create()
+				.first(I_I_Product.class);
+
+		assertThat(record)
+				.as("I_Product with Value='%s' should exist", value)
+				.isNotNull();
+
+		iProductTable.putOrReplace(identifier, record);
 	}
 }
