@@ -76,7 +76,8 @@ public class DataImport_StepDef
 		InterfaceWrapperHelper.saveRecord(format);
 
 		final AtomicInteger seqNo = new AtomicInteger(10);
-		DataTableRows.of(dataTable).forEach(row -> createImpFormatRow(format, tableName, row, seqNo.getAndAdd(10)));
+		final AtomicInteger csvColumnNo = new AtomicInteger(1);
+		DataTableRows.of(dataTable).forEach(row -> createImpFormatRow(format, tableName, row, seqNo.getAndAdd(10), csvColumnNo.getAndIncrement()));
 
 		impFormatTable.putOrReplace(formatName, format);
 	}
@@ -85,7 +86,8 @@ public class DataImport_StepDef
 			@NonNull final I_AD_ImpFormat format,
 			@NonNull final String tableName,
 			@NonNull final DataTableRow row,
-			final int seqNo)
+			final int seqNo,
+			final int csvColumnNo)
 	{
 		final String columnName = row.getAsString("ColumnName");
 		final String dataType = row.getAsString("DataType");
@@ -101,7 +103,7 @@ public class DataImport_StepDef
 		formatRow.setDataType(dataType);
 		formatRow.setDecimalPoint(".");
 		formatRow.setDivideBy100(false);
-		formatRow.setStartNo(0);
+		formatRow.setStartNo(csvColumnNo);
 		formatRow.setEndNo(0);
 		InterfaceWrapperHelper.saveRecord(formatRow);
 	}
