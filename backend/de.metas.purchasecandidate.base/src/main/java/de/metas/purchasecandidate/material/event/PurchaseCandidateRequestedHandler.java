@@ -173,24 +173,38 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 					newPurchaseCandidateId);
 			postMaterialEventService.enqueueEventAfterNextCommit(purchaseCandidateCreatedEvent);
 
-			// If PP_Product_Planning.IsCreatePlan=Y, auto-enqueue the candidate for C_Order generation.
-			// IsDocComplete controls whether the generated C_Order is also completed (CO) or left as draft (DR).
-			if (!requestedEvent.isSimulated() && requestedEvent.getProductPlanningId() != null)
+			if (!newPurchaseCandidate.isSimulated())
 			{
-				final ProductPlanning productPlanning = productPlanningDAO.getById(requestedEvent.getProductPlanningId());
-				if (productPlanning.isCreatePlan())
-				{
-					C_PurchaseCandidates_GeneratePurchaseOrders.enqueue(
-							ImmutableList.of(newPurchaseCandidateId),
-							/* docTypeId= */ null,
-							productPlanning.isDocComplete());
-				}
+				scheduleGeneratePurchaseOrderIfNeeded(requestedEvent.getProductPlanningId(), newPurchaseCandidateId);
 			}
 		}
 		finally
 		{
 			INTERCEPTOR_SHALL_POST_EVENT_FOR_PURCHASE_CANDIDATE_RECORD.set(true);
 		}
+	}
+
+	/**
+	 * If PP_Product_Planning.IsCreatePlan=Y, auto-enqueue the purchase candidate for C_Order generation.
+	 * IsDocComplete controls whether the generated C_Order is completed (CO) or left as draft (DR).
+	 */
+	private void scheduleGeneratePurchaseOrderIfNeeded(
+			@Nullable final ProductPlanningId productPlanningId,
+			@NonNull final PurchaseCandidateId purchaseCandidateId)
+	{
+		if (productPlanningId == null)
+		{
+			return;
+		}
+		final ProductPlanning productPlanning = productPlanningDAO.getById(productPlanningId);
+		if (!productPlanning.isCreatePlan())
+		{
+			return;
+		}
+		C_PurchaseCandidates_GeneratePurchaseOrders.enqueue(
+				ImmutableList.of(purchaseCandidateId),
+				/* docTypeId= */ null,
+				productPlanning.isDocComplete());
 	}
 
 	@VisibleForTesting
