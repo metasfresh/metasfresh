@@ -34,9 +34,6 @@ import de.metas.common.util.StringUtils;
 import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
-import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
-import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
-import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -51,6 +48,7 @@ import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.document.DocBaseType;
@@ -83,8 +81,6 @@ import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOutLine;
-import de.metas.material.MovementType;
-import de.metas.order.OrderLineId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
@@ -119,6 +115,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Project;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -161,6 +158,7 @@ public class M_InOut_StepDef
 	private final AD_Message_StepDefData messageTable;
 	private final C_DocType_StepDefData docTypeTable;
 	private final M_HU_StepDefData huTable;
+	private final C_Project_StepDefData projectTable;
 	private final TestContext restTestContext;
 
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
@@ -267,6 +265,12 @@ public class M_InOut_StepDef
 
 		row.getAsOptionalString(I_M_InOut.COLUMNNAME_ExternalId).
 				ifPresent(externalId -> softly.assertThat(inout.getExternalId()).isEqualTo(externalId));
+
+		row.getAsOptionalIdentifier(I_M_InOut.COLUMNNAME_C_Project_ID)
+				.ifPresent(projectIdentifier -> {
+					final I_C_Project project = projectTable.get(projectIdentifier);
+					softly.assertThat(inout.getC_Project_ID()).as("C_Project_ID").isEqualTo(project.getC_Project_ID());
+				});
 
 		softly.assertAll();
 	}
@@ -972,7 +976,7 @@ public class M_InOut_StepDef
 	}
 
 	@NonNull
-	private Set<InOutLineId> getShipmentLinesForShipmentIdentifiers(@NonNull final List<String> shipmentIdentifiers)
+	private Set<InOutLineId> getShipmentLinesForShipmentIdentifiers(@NonNull final List<StepDefDataIdentifier> shipmentIdentifiers)
 	{
 		final Set<Integer> shipmentIds = shipmentIdentifiers.stream()
 				.map(inoutTable::get)
