@@ -34,7 +34,7 @@ Feature: Product Import via standard AD_ImpFormat configurations
     When the following data is imported via data import config "ProdStd":
       """
       stdProd001	Widget Alpha	I	Standard	PCE	1.5		Alpha widget
-      stdProd002	Consulting Svc	S	Standard	HUR
+      stdProd002	Consulting Svc	S	Standard	PCE
       stdProd003	Basic Product		Standard	PCE
       """
     Then load imported I_Product records by Value:
@@ -50,7 +50,9 @@ Feature: Product Import via standard AD_ImpFormat configurations
 
   @from:cucumber
   Scenario: Standard format "Product Prices Standard" (540062) with header row skip and product reactivation
-    Given metasfresh contains M_Products:
+    Given no product with value 'prcProd001' exists
+    And no product with value 'prcProd002' exists
+    And metasfresh contains M_Products:
       | Identifier | Value      | Name            |
       | prod_1     | prcProd001 | Price Product 1 |
       | prod_2     | prcProd002 | Price Product 2 |
@@ -58,20 +60,13 @@ Feature: Product Import via standard AD_ImpFormat configurations
       | M_Product_ID.Identifier | IsActive |
       | prod_2                  | N        |
     And AD_ImpFormat "ProdPrices" for table "I_Product" with format "T" and skipFirstNRows 1 and columns:
-      | ColumnName               | DataType |
-      | Value                    | S        |
-      | Name                     | S        |
-      | C_TaxCategory_Name       | S        |
-      | M_PriceList_Version_Name | S        |
-      | IsScalePrice             | S        |
-      | Qty                      | N        |
-      | PriceList                | N        |
-      | PriceStd                 | N        |
-      | PriceLimit               | N        |
+      | ColumnName | DataType |
+      | Value      | S        |
+      | Name       | S        |
     And C_DataImport config "ProdPrices" using AD_ImpFormat "ProdPrices"
     When the following data is imported via data import config "ProdPrices":
       """
-      Value	Name	C_TaxCategory_Name	M_PriceList_Version_Name	IsScalePrice	Qty	PriceList	PriceStd	PriceLimit
+      Value	Name
       prcProd001	Price Product 1
       prcProd002	Price Product 2
       """

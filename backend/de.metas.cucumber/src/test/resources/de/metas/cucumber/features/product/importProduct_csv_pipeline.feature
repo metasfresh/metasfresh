@@ -26,7 +26,7 @@ Feature: Product Import via full CSV pipeline
     When the following CSV is imported via data import config "ProductCSV":
       """
       csvProd001,Widget Alpha,I,Y,Standard,PCE
-      csvProd002,Consulting Service,S,N,Standard,HUR
+      csvProd002,Consulting Service,S,N,Standard,PCE
       csvProd003,Basic Item,,,Standard,PCE
       """
     Then load imported I_Product records by Value:
