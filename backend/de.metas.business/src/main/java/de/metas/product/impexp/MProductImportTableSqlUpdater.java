@@ -90,6 +90,8 @@ public class MProductImportTableSqlUpdater
 
 		dbUpdateIProductFromProduct(selection);
 
+		dbUpdateIsStockedDefault(selection);
+
 		dbUpdateUOM(selection);
 
 		dbUpdateQtyCUUOM(selection);
@@ -309,6 +311,26 @@ public class MProductImportTableSqlUpdater
 				logger.debug("{} default from existing Product={}", numField, no);
 			}
 		}
+	}
+
+	/**
+	 * gh#27540: Default IsStocked based on ProductType where not explicitly provided.
+	 * Only Item (I) is considered stocked; all other types (S, E, R, F, N, O) are not.
+	 * <p>
+	 * This is kept in sync with {@link de.metas.product.impl.ProductBL#isStocked(org.compiere.model.I_M_Product)}
+	 * which returns {@code product.isStocked() && productType.isItem()}.
+	 *
+	 * @see de.metas.product.ProductType#isItem()
+	 */
+	private void dbUpdateIsStockedDefault(@NonNull final ImportRecordsSelection selection)
+	{
+		final String sql = "UPDATE " + targetTableName + " i"
+				+ " SET IsStocked = CASE WHEN ProductType = 'I' THEN 'Y' ELSE 'N' END"
+				+ " WHERE IsStocked IS NULL"
+				+ " AND " + COLUMNNAME_I_IsImported + " <> 'Y'"
+				+ selection.toSqlWhereClause("i");
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
+		logger.info("Set IsStocked default based on ProductType={}", no);
 	}
 
 	private void dbUpdateUOM(@NonNull final ImportRecordsSelection selection)
