@@ -22,6 +22,7 @@ import de.metas.acct.accounts.BPartnerVendorAccountType;
 import de.metas.acct.accounts.CashAccountType;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.allocation.api.WriteOffType;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.accounting.BankAccountAcctType;
 import de.metas.bpartner.BPartnerId;
@@ -41,6 +42,7 @@ import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
@@ -122,6 +124,8 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		m_WriteOffAmt = Money.of(line.getWriteOffAmt(), doc.getCurrencyId());
 		m_OverUnderAmt = line.getOverUnderAmt();
 		m_PaymentWriteOffAmt = line.getPaymentWriteOffAmt();
+
+		this.writeOffType = WriteOffType.ofNullableCodeOrWriteOff(line.getWriteOffType());
 	}    // DocLine_Allocation
 
 	private final int m_C_Invoice_ID;
@@ -147,6 +151,8 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 	private final Money m_WriteOffAmt;
 	private final BigDecimal m_OverUnderAmt;
 	private final BigDecimal m_PaymentWriteOffAmt;
+
+	@NonNull @Getter private final WriteOffType writeOffType;
 
 	/**
 	 * String Representation
@@ -543,6 +549,32 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		}
 
 		return getAccountProvider().getBankAccountAccountIfSet(acctSchemaId, bankAccountId, BankAccountAcctType.Payment_WriteOff_Acct);
+	}
+
+	public boolean isBankFeeWriteOff()
+	{
+		return writeOffType.isBankFee();
+	}
+
+	public Optional<Account> getBankFeeAccount(final AcctSchemaId acctSchemaId)
+	{
+		// Try payment's bank account first
+		final I_C_Payment payment = getC_Payment();
+		if (payment != null)
+		{
+			final BankAccountId bankAccountId = BankAccountId.ofRepoIdOrNull(payment.getC_BP_BankAccount_ID());
+			if (bankAccountId != null)
+			{
+				final Account acct = getAccountProvider().getBankAccountAccountIfSet(acctSchemaId, bankAccountId, BankAccountAcctType.PayBankFee_Acct).orElse(null);
+				if (acct != null)
+				{
+					return Optional.of(acct);
+				}
+			}
+		}
+
+		// Fallback: schema default
+		return getAccountProvider().getAcctSchemaDefaultPayBankFeeAccount(acctSchemaId);
 	}
 
 	public final CurrencyConversionContext getInvoiceCurrencyConversionCtx()
