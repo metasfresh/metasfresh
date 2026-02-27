@@ -17,7 +17,10 @@ Feature: Product Import via standard AD_ImpFormat configurations
 
   @from:cucumber
   Scenario: Standard format "Produkte Standard" (531097) creates products with correct IsStocked defaults
-    Given AD_ImpFormat "ProdStd" for table "I_Product" with format "T" and skipFirstNRows 0 and columns:
+    Given no product with value 'stdProd001' exists
+    And no product with value 'stdProd002' exists
+    And no product with value 'stdProd003' exists
+    And AD_ImpFormat "ProdStd" for table "I_Product" with format "T" and skipFirstNRows 0 and columns:
       | ColumnName               | DataType |
       | Value                    | S        |
       | Name                     | S        |

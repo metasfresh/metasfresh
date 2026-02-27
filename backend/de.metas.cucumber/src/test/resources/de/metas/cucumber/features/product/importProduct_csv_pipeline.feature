@@ -14,7 +14,8 @@ Feature: Product Import via full CSV pipeline
 
   @from:cucumber
   Scenario: CSV import defaults IsStocked=Y and ProductType=Item
-    Given AD_ImpFormat "DefCSV1" for table "I_Product" with columns:
+    Given no product with value 'defProd001' exists
+    And AD_ImpFormat "DefCSV1" for table "I_Product" with columns:
       | ColumnName            | DataType |
       | Value                 | S        |
       | Name                  | S        |
@@ -34,7 +35,8 @@ Feature: Product Import via full CSV pipeline
 
   @from:cucumber
   Scenario: CSV import respects explicit IsStocked=N
-    Given AD_ImpFormat "DefCSV2" for table "I_Product" with columns:
+    Given no product with value 'defProd002' exists
+    And AD_ImpFormat "DefCSV2" for table "I_Product" with columns:
       | ColumnName            | DataType |
       | Value                 | S        |
       | Name                  | S        |
@@ -55,7 +57,8 @@ Feature: Product Import via full CSV pipeline
 
   @from:cucumber
   Scenario: CSV import defaults IsStocked=N for Service products
-    Given AD_ImpFormat "DefCSV3" for table "I_Product" with columns:
+    Given no product with value 'defProd003' exists
+    And AD_ImpFormat "DefCSV3" for table "I_Product" with columns:
       | ColumnName            | DataType |
       | Value                 | S        |
       | Name                  | S        |
@@ -101,7 +104,10 @@ Feature: Product Import via full CSV pipeline
 
   @from:cucumber
   Scenario: CSV import creates multiple products with correct IsStocked/ProductType defaults
-    Given AD_ImpFormat "ProductCSV" for table "I_Product" with columns:
+    Given no product with value 'csvProd001' exists
+    And no product with value 'csvProd002' exists
+    And no product with value 'csvProd003' exists
+    And AD_ImpFormat "ProductCSV" for table "I_Product" with columns:
       | ColumnName            | DataType |
       | Value                 | S        |
       | Name                  | S        |
