@@ -56,7 +56,7 @@ Feature: EDI DESADV export via External System
   @allure.label.feature:F00350_EDI
   @F00350
   Scenario: create a shipment and export DESADV via external system
-
+    And RabbitMQ MF_TO_ExternalSystem queue is purged
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised | POReference   |
       | o_1        | true    | customer1     | 2025-04-17  | 2025-04-18Z  | testReference |
@@ -124,7 +124,7 @@ Feature: EDI DESADV export via External System
   @allure.label.feature:F00350_EDI
   @F00350
   Scenario: create a shipment and enqueue single shipment to export DESADV via external system
-
+    And RabbitMQ MF_TO_ExternalSystem queue is purged
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised | POReference    |
       | o_2        | true    | customer1     | 2025-04-17  | 2025-04-18Z  | testReference2 |
