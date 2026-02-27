@@ -48,22 +48,29 @@ const executeAfterPromise = (promise, afterCallback) => {
  * Play a short beep sound using the Web Audio API.
  * Used for error feedback in fast-entry scenarios where the user doesn't watch the screen.
  */
+let beepAudioCtx = null;
 const playBeep = () => {
   try {
-    const audioContext = new (window.AudioContext ||
-      window.webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
+    if (!beepAudioCtx) {
+      beepAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
 
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
+    // Resume suspended context (Chrome autoplay policy)
+    if (beepAudioCtx.state === 'suspended') {
+      beepAudioCtx.resume();
+    }
 
+    const gainNode = beepAudioCtx.createGain();
+    gainNode.connect(beepAudioCtx.destination);
+    gainNode.gain.value = 0.3;
+
+    const oscillator = beepAudioCtx.createOscillator();
     oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    oscillator.frequency.setValueAtTime(800, beepAudioCtx.currentTime);
+    oscillator.connect(gainNode);
 
     oscillator.start();
-    oscillator.stop(audioContext.currentTime + 0.15);
+    oscillator.stop(beepAudioCtx.currentTime + 0.08);
   } catch (e) {
     // eslint-disable-next-line no-console
     console.warn('Could not play beep sound:', e);
