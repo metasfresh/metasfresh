@@ -23,7 +23,10 @@ import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.i18n.AdMessageKey;
+import de.metas.manufacturing.config.MobileUIManufacturingConfig;
 import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
+import de.metas.manufacturing.config.ReceiveUnitType;
+import de.metas.manufacturing.job.model.FinishedGoodsReceiveLine;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivity;
 import de.metas.manufacturing.job.model.ManufacturingJobActivityId;
@@ -61,6 +64,7 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
@@ -489,6 +493,11 @@ public class ManufacturingJobService
 			@NonNull final ManufacturingJob job,
 			@NonNull final ZonedDateTime date)
 	{
+		final MobileUIManufacturingConfig config = mobileUIManufacturingConfigRepository.getConfig(job.getResponsibleId(), ClientId.METASFRESH);
+		@NonNull final ReceiveUnitType receiveUnitType = config.getReceiveUnitTypeEffective();
+
+		final FinishedGoodsReceiveLine receiveLine = job.getFinishedGoodsReceiveLineById(receiveFrom.getFinishedGoodsReceiveLineId());
+
 		return newReceiveGoodsCommand()
 				.job(job)
 				.finishedGoodsReceiveLineId(receiveFrom.getFinishedGoodsReceiveLineId())
@@ -503,6 +512,8 @@ public class ManufacturingJobService
 				.lotNo(receiveFrom.getLotNo())
 				.catchWeight(extractTargetCatchWeight(receiveFrom).orElse(null))
 				.barcode(receiveFrom.getBarcode())
+				.receiveUnitType(receiveUnitType)
+				.tuPIItemProductIdForTUMode(receiveLine.getTuPIItemProductId())
 				.build().execute();
 	}
 
