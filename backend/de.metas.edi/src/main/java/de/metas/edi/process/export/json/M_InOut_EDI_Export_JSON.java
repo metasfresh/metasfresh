@@ -23,15 +23,15 @@
 package de.metas.edi.process.export.json;
 
 import de.metas.common.util.Check;
+import de.metas.edi.api.impl.EDIInOutDAO;
 import de.metas.edi.model.I_EDI_Document_Extension;
 import de.metas.edi.model.I_M_InOut;
-import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.postgrest.process.PostgRESTProcessExecutor;
 import de.metas.process.Param;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 
 /**
  * Exports one particular invoice to JSON.
@@ -42,7 +42,7 @@ public class M_InOut_EDI_Export_JSON extends EDI_Export_JSON
 {
 	public static final String PARAM_M_InOut_ID = "M_InOut_ID";
 	
-	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
+	private final EDIInOutDAO ediInOutDAO = SpringContextHolder.instance.getBean(EDIInOutDAO.class);
 
 	@Param(parameterName = PARAM_M_InOut_ID, mandatory = true)
 	private int m_inout_id;
@@ -50,7 +50,7 @@ public class M_InOut_EDI_Export_JSON extends EDI_Export_JSON
 	@Override
 	protected I_EDI_Document_Extension loadRecordOutOfTrx()
 	{
-		final I_M_InOut record = inOutDAO.getByIdOutOfTrx(InOutId.ofRepoId(m_inout_id), I_M_InOut.class);
+		final I_M_InOut record = ediInOutDAO.getByIdOutOfTrx(InOutId.ofRepoId(m_inout_id));
 		return Check.assumeNotNull(record, "M_InOut with ID={} shall not be null", m_inout_id);
 	}
 
@@ -58,6 +58,6 @@ public class M_InOut_EDI_Export_JSON extends EDI_Export_JSON
 	protected void saveRecord(@NonNull final I_EDI_Document_Extension record)
 	{
 		final I_M_InOut inOutRecord = InterfaceWrapperHelper.create(record, I_M_InOut.class);
-		inOutDAO.save(inOutRecord);
+		ediInOutDAO.saveOutOfTrx(inOutRecord); //Should be saved before possible externalSystemInvocation could return an error
 	}
 }

@@ -1,34 +1,27 @@
-package de.metas.edi.model;
 
 /*
  * #%L
- * de.metas.edi
+ * de.metas.externalsystem
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-public interface I_C_Invoice extends de.metas.invoicecandidate.model.I_C_Invoice, I_EDI_Document_Extension
-{
-	// @formatter:off
-	String COLUMNNAME_EDI_AD_PInstance_ID = "EDI_AD_PInstance_ID";
-
-	void setEDI_AD_PInstance_ID (int EDI_AD_PInstance_ID);
-	int getEDI_AD_PInstance_ID();
-	// @formatter:on
-}
+-- Column: ExternalSystem_Outbound_Endpoint.OutboundHttpMethod
+-- 2026-02-26T08:59:15.150Z
+UPDATE AD_Column SET AD_Reference_ID=17, AD_Reference_Value_ID=541306,Updated=TO_TIMESTAMP('2026-02-26 08:59:15.150000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591479
+;
