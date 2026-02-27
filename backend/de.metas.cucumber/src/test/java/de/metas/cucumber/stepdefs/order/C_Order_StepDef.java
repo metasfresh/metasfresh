@@ -425,6 +425,11 @@ public class C_Order_StepDef
 				.map(shipperTable::extractIdFromRecord)
 				.map(ShipperId::getRepoId)
 				.ifPresent(order::setM_Shipper_ID);
+		tableRow.getAsOptionalIdentifier(COLUMNNAME_C_Project_ID)
+				.map(projectTable::get)
+				.map(projectTable::extractIdFromRecord)
+				.map(ProjectId::getRepoId)
+				.ifPresent(order::setC_Project_ID);
 
 		saveRecord(order);
 

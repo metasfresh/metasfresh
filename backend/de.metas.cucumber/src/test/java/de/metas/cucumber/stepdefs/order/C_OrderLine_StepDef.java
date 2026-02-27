@@ -243,6 +243,12 @@ public class C_OrderLine_StepDef
 		tableRow.getAsOptionalString(I_C_OrderLine.COLUMNNAME_ExternalId)
 				.ifPresent(orderLine::setExternalId);
 
+		tableRow.getAsOptionalIdentifier(COLUMNNAME_C_Project_ID)
+				.map(projectTable::get)
+				.map(projectTable::extractIdFromRecord)
+				.map(ProjectId::getRepoId)
+				.ifPresent(orderLine::setC_Project_ID);
+
 		saveRecord(orderLine);
 
 		tableRow.getAsOptionalIdentifier()
