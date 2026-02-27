@@ -51,7 +51,7 @@ import java.util.stream.Collectors;
 
 /**
  * Packing Material Document Line candidate.
- *
+ * <p>
  * Use this class to create actual packing material lines for your particular document (e.g. shipment, material receipt etc).
  *
  * @author tsa
@@ -62,9 +62,9 @@ public final class HUPackingMaterialDocumentLineCandidate
 	/**
 	 * Creates a packing material line for given locator, empties product and empties count.
 	 *
-	 * @param locator on which locator the empties are
+	 * @param locator        on which locator the empties are
 	 * @param emptiesProduct empties product (e.g. IFCO)
-	 * @param emptiesCount how many empties we have (e.g. 5 IFCOs)
+	 * @param emptiesCount   how many empties we have (e.g. 5 IFCOs)
 	 * @return packing material line
 	 */
 	public static HUPackingMaterialDocumentLineCandidate of(final I_M_Locator locator, final I_M_Product emptiesProduct, final int emptiesCount)
@@ -199,6 +199,7 @@ public final class HUPackingMaterialDocumentLineCandidate
 		return CollectionUtils.singleElementOrNull(sources.stream()
 				.map(IHUPackingMaterialCollectorSource::getProjectId)
 				.filter(Objects::nonNull)
+				.distinct()
 				.collect(Collectors.toList()));
 	}
 

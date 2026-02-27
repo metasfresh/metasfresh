@@ -25,7 +25,6 @@ package de.metas.handlingunits.order.api.impl;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingMaterial;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IPackingMaterialDocumentLineSource;
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_C_OrderLine;
@@ -50,7 +49,6 @@ import java.util.List;
 	//
 	// Services
 	private final transient IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
-	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	private final I_C_OrderLine orderLine;
 
@@ -129,7 +127,7 @@ import java.util.List;
 
 	@Override
 	@Nullable
-	public ProjectId getProjectId() { return ProjectId.ofRepoIdOrNull(orderLine.getC_Project_ID());}
+	public ProjectId getProjectId() {return ProjectId.ofRepoIdOrNull(orderLine.getC_Project_ID());}
 
 	@Override
 	public String toString()

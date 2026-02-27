@@ -8,7 +8,6 @@ Feature: C_Project_ID propagates through sales order fulfillment workflow
     And metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config de.metas.report.jasper.IsMockReportService
     And metasfresh contains M_PricingSystems
-
       | Identifier |
       | ps_1       |
     And metasfresh contains M_PriceLists
@@ -68,9 +67,6 @@ Feature: C_Project_ID propagates through sales order fulfillment workflow
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID | C_Project_ID |
       | ic_1                   | project_1    |
-
-## cleanup
-    And set project type Sales/Purchase Order to inactive
 
   @from:cucumber
   Scenario: C_Project_ID propagates to packing material invoice candidates

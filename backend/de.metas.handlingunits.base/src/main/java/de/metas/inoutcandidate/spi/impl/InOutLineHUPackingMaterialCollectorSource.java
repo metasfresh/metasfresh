@@ -31,7 +31,7 @@ import javax.annotation.Nullable;
  * #L%
  */
 
-@EqualsAndHashCode(of= {"productId", "recordId", "projectId"})
+@EqualsAndHashCode(of = { "productId", "recordId" })
 public class InOutLineHUPackingMaterialCollectorSource implements IHUPackingMaterialCollectorSource
 {
 	public static InOutLineHUPackingMaterialCollectorSource of(final I_M_InOutLine inoutLine)
@@ -86,7 +86,5 @@ public class InOutLineHUPackingMaterialCollectorSource implements IHUPackingMate
 	{
 		return inoutLine;
 	}
-
-
 
 }

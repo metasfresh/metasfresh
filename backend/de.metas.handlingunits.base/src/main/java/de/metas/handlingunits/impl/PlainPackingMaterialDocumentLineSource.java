@@ -69,7 +69,7 @@ public class PlainPackingMaterialDocumentLineSource implements IPackingMaterialD
 	BigDecimal qty;
 	@Nullable ProductId lUProductId;
 	BigDecimal qtyLU;
-	ProjectId projectId;
+	@Nullable ProjectId projectId;
 
 	private PlainPackingMaterialDocumentLineSource(@NonNull final I_M_HU_PackingMaterial packingMaterial,
 												   final int qty,

@@ -99,5 +99,4 @@ import java.math.BigDecimal;
 		orderLine.setQtyEntered(qtyEntered.toBigDecimal());
 	}
 
-
 }
