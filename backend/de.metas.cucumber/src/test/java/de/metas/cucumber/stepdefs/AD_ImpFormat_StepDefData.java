@@ -20,15 +20,14 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.product;
+package de.metas.cucumber.stepdefs;
 
-import de.metas.cucumber.stepdefs.StepDefData;
-import org.compiere.model.I_I_Product;
+import org.compiere.model.I_AD_ImpFormat;
 
-public class I_Product_StepDefData extends StepDefData<I_I_Product>
+public class AD_ImpFormat_StepDefData extends StepDefData<I_AD_ImpFormat>
 {
-	public I_Product_StepDefData()
+	public AD_ImpFormat_StepDefData()
 	{
-		super(I_I_Product.class);
+		super(I_AD_ImpFormat.class);
 	}
 }

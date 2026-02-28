@@ -1,7 +1,7 @@
 @from:cucumber
 @ghActions:run_on_executor3
 Feature: Product import with InvoicableQtyBasedOn
-  As a user importing products
+  As a user importing products via CSV
   I want to specify InvoicableQtyBasedOn (CatchWeight or Nominal) during product import
   So that the imported product prices have the correct invoicing basis
 
@@ -11,24 +11,39 @@ Feature: Product import with InvoicableQtyBasedOn
     And metasfresh has date and time 2022-05-17T13:30:13+01:00[Europe/Berlin]
 
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                    | Value                    |
-      | ps_import  | PS_ProductImportTest    | PS_ProductImportTest     |
+      | Identifier |
+      | ps_import  |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                 | SOTrx | IsTaxIncluded | PricePrecision |
-      | pl_import  | ps_import                     | DE                        | EUR                 | PL_ProductImportTest | true  | false         | 2              |
+      | Identifier | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
+      | pl_import  | ps_import          | DE                    | EUR                 | true  |
     And metasfresh contains M_PriceList_Versions
-      | Identifier  | M_PriceList_ID.Identifier | Name                  | ValidFrom  |
-      | plv_import  | pl_import                 | PLV_ProductImportTest | 2022-01-01 |
+      | Identifier | M_PriceList_ID |
+      | plv_import | pl_import      |
+
+    And metasfresh contains AD_ImpFormat:
+      | Identifier | TableName |
+      | impFmt     | I_Product |
+    And AD_ImpFormat identified by "impFmt" has columns:
+      | ColumnName             | DataType |
+      | Value                  | S        |
+      | Name                   | S        |
+      | X12DE355               | S        |
+      | M_PriceList_Version_ID | N        |
+      | PriceStd               | N        |
+      | InvoicableQtyBasedOn   | S        |
+      | QtyCU_UOM_Code         | S        |
+    And metasfresh contains C_DataImport:
+      | Identifier | AD_ImpFormat_ID |
+      | dataImp    | impFmt          |
 
   @from:cucumber
   Scenario: Product import sets InvoicableQtyBasedOn to CatchWeight on M_ProductPrice
     Given metasfresh contains M_Products:
-      | Identifier       | Name                    |
-      | product_cw_test  | ProductImport_CW_Test   |
-    And metasfresh contains I_Product:
-      | Identifier | Value                 | Name                  | M_Product_ID    | M_PriceList_Version_ID | C_TaxCategory_ID.InternalName | C_UOM_ID.X12DE355 | QtyCU_UOM_ID.X12DE355 | PriceStd | InvoicableQtyBasedOn |
-      | ip_cw      | ProductImport_CW_Test | ProductImport_CW_Test | product_cw_test | plv_import             | Normal                        | PCE                | PCE                   | 10.00    | CatchWeight          |
-    When the ProductImportProcess is run
+      | Identifier      | Value                          | Name                           |
+      | product_cw_test | ProductImportCW_InvQtyBasedOn  | ProductImportCW_InvQtyBasedOn  |
+    When the following CSV data is imported using C_DataImport identified by "dataImp":
+      | Value                         | Name                          | X12DE355 | M_PriceList_Version_ID | PriceStd | InvoicableQtyBasedOn | QtyCU_UOM_Code |
+      | ProductImportCW_InvQtyBasedOn | ProductImportCW_InvQtyBasedOn | PCE      | plv_import             | 10.00    | CatchWeight          | Stk            |
     Then M_ProductPrice is found:
       | M_Product_ID    | M_PriceList_Version_ID | InvoicableQtyBasedOn | PriceStd |
       | product_cw_test | plv_import             | CatchWeight          | 10.00    |
@@ -36,12 +51,11 @@ Feature: Product import with InvoicableQtyBasedOn
   @from:cucumber
   Scenario: Product import sets InvoicableQtyBasedOn to Nominal on M_ProductPrice
     Given metasfresh contains M_Products:
-      | Identifier        | Name                     |
-      | product_nom_test  | ProductImport_Nom_Test   |
-    And metasfresh contains I_Product:
-      | Identifier | Value                    | Name                     | M_Product_ID     | M_PriceList_Version_ID | C_TaxCategory_ID.InternalName | C_UOM_ID.X12DE355 | PriceStd | InvoicableQtyBasedOn |
-      | ip_nom     | ProductImport_Nom_Test   | ProductImport_Nom_Test   | product_nom_test | plv_import             | Normal                        | PCE                | 25.00    | Nominal              |
-    When the ProductImportProcess is run
+      | Identifier       | Value                           | Name                            |
+      | product_nom_test | ProductImportNom_InvQtyBasedOn  | ProductImportNom_InvQtyBasedOn  |
+    When the following CSV data is imported using C_DataImport identified by "dataImp":
+      | Value                          | Name                           | X12DE355 | M_PriceList_Version_ID | PriceStd | InvoicableQtyBasedOn |
+      | ProductImportNom_InvQtyBasedOn | ProductImportNom_InvQtyBasedOn | PCE      | plv_import             | 25.00    | Nominal              |
     Then M_ProductPrice is found:
       | M_Product_ID     | M_PriceList_Version_ID | InvoicableQtyBasedOn | PriceStd |
       | product_nom_test | plv_import             | Nominal              | 25.00    |
@@ -49,12 +63,11 @@ Feature: Product import with InvoicableQtyBasedOn
   @from:cucumber
   Scenario: Product import defaults InvoicableQtyBasedOn to Nominal when not specified
     Given metasfresh contains M_Products:
-      | Identifier        | Name                      |
-      | product_def_test  | ProductImport_Def_Test    |
-    And metasfresh contains I_Product:
-      | Identifier | Value                     | Name                      | M_Product_ID     | M_PriceList_Version_ID | C_TaxCategory_ID.InternalName | C_UOM_ID.X12DE355 | PriceStd |
-      | ip_def     | ProductImport_Def_Test    | ProductImport_Def_Test    | product_def_test | plv_import             | Normal                        | PCE                | 15.00    |
-    When the ProductImportProcess is run
+      | Identifier       | Value                           | Name                            |
+      | product_def_test | ProductImportDef_InvQtyBasedOn  | ProductImportDef_InvQtyBasedOn  |
+    When the following CSV data is imported using C_DataImport identified by "dataImp":
+      | Value                          | Name                           | X12DE355 | M_PriceList_Version_ID | PriceStd |
+      | ProductImportDef_InvQtyBasedOn | ProductImportDef_InvQtyBasedOn | PCE      | plv_import             | 15.00    |
     Then M_ProductPrice is found:
       | M_Product_ID     | M_PriceList_Version_ID | InvoicableQtyBasedOn | PriceStd |
       | product_def_test | plv_import             | Nominal              | 15.00    |
