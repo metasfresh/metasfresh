@@ -29,7 +29,7 @@ import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.pricing.M_PriceList_Version_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_ProductPrice_StepDefData;
 import de.metas.impexp.processing.IImportProcessFactory;
-import de.metas.impexp.processing.ImportRecordsRequest;
+import de.metas.impexp.ImportRecordsRequest;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxBL;
