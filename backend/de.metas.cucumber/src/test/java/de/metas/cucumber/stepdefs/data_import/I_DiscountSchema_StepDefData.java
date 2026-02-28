@@ -1,4 +1,4 @@
-package de.metas.cucumber.stepdefs.importorder;
+package de.metas.cucumber.stepdefs.data_import;
 
 import de.metas.cucumber.stepdefs.StepDefData;
 import org.compiere.model.I_I_DiscountSchema;

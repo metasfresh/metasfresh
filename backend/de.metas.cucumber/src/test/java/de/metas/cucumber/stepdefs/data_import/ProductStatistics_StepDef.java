@@ -1,4 +1,4 @@
-package de.metas.cucumber.stepdefs.importorder;
+package de.metas.cucumber.stepdefs.data_import;
 
 import io.cucumber.java.en.Then;
 import org.adempiere.ad.trx.api.ITrx;

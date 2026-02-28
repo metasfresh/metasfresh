@@ -1,4 +1,4 @@
-package de.metas.cucumber.stepdefs.importorder;
+package de.metas.cucumber.stepdefs.data_import;
 
 import de.metas.cucumber.stepdefs.C_BPartner_StepDef;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
