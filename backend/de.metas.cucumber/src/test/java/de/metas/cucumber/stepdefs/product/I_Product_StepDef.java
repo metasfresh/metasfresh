@@ -93,7 +93,7 @@ public class I_Product_StepDef
 	private void createI_Product(@NonNull final DataTableRow row)
 	{
 		final I_I_Product importRecord = InterfaceWrapperHelper.newInstance(I_I_Product.class);
-		importRecord.setAD_Org_ID(ORG_ID);
+		importRecord.setAD_Org_ID(ORG_ID.getRepoId());
 
 		importRecord.setValue(row.getAsString(I_I_Product.COLUMNNAME_Value));
 		importRecord.setName(row.getAsString(I_I_Product.COLUMNNAME_Name));
