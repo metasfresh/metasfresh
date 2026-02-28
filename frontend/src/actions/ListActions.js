@@ -31,3 +31,12 @@ export function setPagination(page, windowType) {
     windowType,
   };
 }
+
+export function setListSelected(rowId, viewId, windowType) {
+  return {
+    type: types.SET_LIST_SELECTED,
+    rowId,
+    viewId,
+    windowType,
+  };
+}

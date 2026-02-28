@@ -13,6 +13,7 @@ export const initialState = {
     id: '',
     windowType: null,
   },
+  selectedRow: null,
 };
 
 export default function listHandler(state = initialState, action) {
@@ -45,6 +46,15 @@ export default function listHandler(state = initialState, action) {
           page: action.page,
           windowType: action.windowType,
         }),
+      });
+
+    case types.SET_LIST_SELECTED:
+      return Object.assign({}, state, {
+        selectedRow: {
+          rowId: action.rowId,
+          viewId: action.viewId,
+          windowType: action.windowType,
+        },
       });
 
     default:
