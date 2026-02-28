@@ -26,8 +26,8 @@ Feature: Product import with InvoicableQtyBasedOn
       | Identifier       | Name                    |
       | product_cw_test  | ProductImport_CW_Test   |
     And metasfresh contains I_Product:
-      | Identifier | Value                 | Name                  | M_Product_ID    | M_PriceList_Version_ID | C_TaxCategory_ID.InternalName | C_UOM_ID.X12DE355 | PriceStd | InvoicableQtyBasedOn |
-      | ip_cw      | ProductImport_CW_Test | ProductImport_CW_Test | product_cw_test | plv_import             | Normal                        | PCE                | 10.00    | CatchWeight          |
+      | Identifier | Value                 | Name                  | M_Product_ID    | M_PriceList_Version_ID | C_TaxCategory_ID.InternalName | C_UOM_ID.X12DE355 | QtyCU_UOM_ID.X12DE355 | PriceStd | InvoicableQtyBasedOn |
+      | ip_cw      | ProductImport_CW_Test | ProductImport_CW_Test | product_cw_test | plv_import             | Normal                        | PCE                | PCE                   | 10.00    | CatchWeight          |
     When the ProductImportProcess is run
     Then M_ProductPrice is found:
       | M_Product_ID    | M_PriceList_Version_ID | InvoicableQtyBasedOn | PriceStd |

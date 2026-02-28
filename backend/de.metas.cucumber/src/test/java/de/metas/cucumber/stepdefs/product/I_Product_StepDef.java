@@ -80,8 +80,8 @@ public class I_Product_StepDef
 	 * M_Product_ID (optional, identifier ref to existing product),
 	 * M_PriceList_Version_ID (required, identifier ref),
 	 * C_TaxCategory_ID.InternalName (required),
-	 * C_UOM_ID.X12DE355 (required), PriceStd (required),
-	 * PriceList (optional), PriceLimit (optional),
+	 * C_UOM_ID.X12DE355 (required), QtyCU_UOM_ID.X12DE355 (optional, required for CatchWeight),
+	 * PriceStd (required), PriceList (optional), PriceLimit (optional),
 	 * InvoicableQtyBasedOn (optional, CatchWeight or Nominal),
 	 * ProductType (optional, default Item)
 	 */
@@ -120,6 +120,10 @@ public class I_Product_StepDef
 		// UOM
 		final UomId uomId = uomDAO.getUomIdByX12DE355(row.getAsUOMCode("C_UOM_ID"));
 		importRecord.setC_UOM_ID(uomId.getRepoId());
+
+		// Catch weight UOM (required for CatchWeight products)
+		row.getAsOptionalUOMCode(I_I_Product.COLUMNNAME_QtyCU_UOM_ID)
+				.ifPresent(code -> importRecord.setQtyCU_UOM_ID(uomDAO.getUomIdByX12DE355(code).getRepoId()));
 
 		// Prices
 		importRecord.setPriceStd(row.getAsBigDecimal(I_I_Product.COLUMNNAME_PriceStd));
