@@ -110,7 +110,11 @@ public final class Evaluatees
 		for (final ITableRecordReference recordRef : recordRefs)
 		{
 			final Object record = recordRef.getModel(ctxAware);
-			result.add(InterfaceWrapperHelper.getEvaluatee(record));
+			final Evaluatee evaluatee = InterfaceWrapperHelper.getEvaluatee(record);
+			if (evaluatee != null)
+			{
+				result.add(evaluatee);
+			}
 		}
 		return result.build();
 	}
