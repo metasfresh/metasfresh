@@ -17,6 +17,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -91,6 +92,27 @@ public final class Evaluatees
 	{
 		final Object record = recordRef.getModel(PlainContextAware.newWithThreadInheritedTrx(Env.getCtx()));
 		return InterfaceWrapperHelper.getEvaluatee(record);
+	}
+
+	/**
+	 * Batch-convert multiple {@link ITableRecordReference}s to {@link Evaluatee}s.
+	 * Shares the context across all loads to reduce overhead.
+	 */
+	public static List<Evaluatee> ofTableRecordReferences(@NonNull final Collection<? extends ITableRecordReference> recordRefs)
+	{
+		if (recordRefs.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final PlainContextAware ctxAware = PlainContextAware.newWithThreadInheritedTrx(Env.getCtx());
+		final ImmutableList.Builder<Evaluatee> result = ImmutableList.builder();
+		for (final ITableRecordReference recordRef : recordRefs)
+		{
+			final Object record = recordRef.getModel(ctxAware);
+			result.add(InterfaceWrapperHelper.getEvaluatee(record));
+		}
+		return result.build();
 	}
 
 	public static Evaluatee2 ofRangeAwareParams(@NonNull final IRangeAwareParams params)

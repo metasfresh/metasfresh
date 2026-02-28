@@ -96,14 +96,7 @@ public class ExecuteUpdateSQL extends JavaProcess
 
 		//
 		// 2: selected included records (e.g. tab rows selected when invoking an IncludedTabTopAction)
-		for (final TableRecordReference includedRecordRef : getProcessInfo().getSelectedIncludedRecords())
-		{
-			final Evaluatee evalCtx = Evaluatees.ofTableRecordReference(includedRecordRef);
-			if (evalCtx != null)
-			{
-				contexts.add(evalCtx);
-			}
-		}
+		contexts.addAll(Evaluatees.ofTableRecordReferences(getProcessInfo().getSelectedIncludedRecords()));
 
 		//
 		// 3: underlying (header) record

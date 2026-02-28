@@ -107,6 +107,7 @@ public interface IADTableDAO extends ISingletonService
 	/**
 	 * @param tableName, can be case insensitive
 	 * @return AD_Table_ID or -1
+	 * @apiNote Consider using {@link #retrieveAdTableId(String)} instead to get a typed {@link AdTableId}.
 	 */
 	int retrieveTableId(@Nullable String tableName);
 

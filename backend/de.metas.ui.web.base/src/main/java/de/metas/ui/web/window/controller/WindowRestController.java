@@ -886,26 +886,12 @@ public class WindowRestController
 				: WebuiRelatedProcessDescriptor::isEnabled;
 
 		return documentCollection.forDocumentReadonly(documentPath, document -> {
-			// Resolve the included tab's table name so process discovery can also find
-			// processes registered against the tab's own table (gh#28433)
-			final String includedTabTableName;
-			if (displayPlace == DisplayPlace.IncludedTabTopActionsMenu && selectedTabId != null)
-			{
-				includedTabTableName = document.getEntityDescriptor()
-						.getIncludedEntityByDetailId(selectedTabId)
-						.getTableNameOrNull();
-			}
-			else
-			{
-				includedTabTableName = null;
-			}
-
 			final DocumentPreconditionsAsContext preconditionsContext = DocumentPreconditionsAsContext.builder()
 					.document(document)
 					.selectedTabId(selectedTabId)
 					.selectedIncludedRecords(selectedIncludedRecords)
 					.displayPlace(displayPlace)
-					.includedTabTableName(includedTabTableName)
+					.includedTabTableName(getIncludedTabTableName(document, selectedTabId, displayPlace))
 					.build();
 
 			return processRestController.streamDocumentRelatedProcesses(preconditionsContext)
@@ -913,6 +899,25 @@ public class WindowRestController
 					.filter(isEnabled)
 					.collect(JSONDocumentActionsList.collect(newJSONOptions().build()));
 		});
+	}
+
+	/**
+	 * Resolve the included tab's table name so process discovery can also find
+	 * processes registered against the tab's own table (gh#28433).
+	 */
+	@Nullable
+	private static String getIncludedTabTableName(
+			@NonNull final Document document,
+			@Nullable final DetailId selectedTabId,
+			@NonNull final DisplayPlace displayPlace)
+	{
+		if (displayPlace == DisplayPlace.IncludedTabTopActionsMenu && selectedTabId != null)
+		{
+			return document.getEntityDescriptor()
+					.getIncludedEntityByDetailId(selectedTabId)
+					.getTableNameOrNull();
+		}
+		return null;
 	}
 
 	/**

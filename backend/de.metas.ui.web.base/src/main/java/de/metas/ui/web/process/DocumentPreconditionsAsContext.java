@@ -59,7 +59,6 @@ public final class DocumentPreconditionsAsContext implements WebuiPreconditionsC
 	@Getter
 	private final DisplayPlace displayPlace;
 
-	@Getter
 	@Nullable
 	private final String includedTabTableName;
 
@@ -148,5 +147,12 @@ public final class DocumentPreconditionsAsContext implements WebuiPreconditionsC
 	public OptionalBoolean isProcessedDocument()
 	{
 		return OptionalBoolean.ofBoolean(document.isProcessed());
+	}
+
+	@Nullable
+	@Override
+	public String getIncludedTabTableName()
+	{
+		return includedTabTableName;
 	}
 }

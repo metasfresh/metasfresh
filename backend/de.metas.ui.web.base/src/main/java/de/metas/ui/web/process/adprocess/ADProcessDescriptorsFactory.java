@@ -134,7 +134,7 @@ import java.util.stream.Stream;
 			final String includedTabTableName = preconditionsContext.getIncludedTabTableName();
 			if (!Check.isEmpty(includedTabTableName))
 			{
-				final AdTableId includedTabTableId = AdTableId.ofRepoId(adTableDAO.retrieveTableId(includedTabTableName));
+				final AdTableId includedTabTableId = adTableDAO.retrieveAdTableId(includedTabTableName);
 				if (!Objects.equals(adTableId, includedTabTableId))
 				{
 					final Stream<RelatedProcessDescriptor> tabTableProcessDescriptors = adProcessService.getRelatedProcessDescriptors(includedTabTableId, adWindowId, adTabId)
