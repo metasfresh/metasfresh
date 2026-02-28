@@ -90,7 +90,6 @@ public class PurchaseCandidateAdvisedEventCreator implements SupplyRequiredAdvis
 		final PurchaseCandidateAdvisedEvent event = PurchaseCandidateAdvisedEvent.builder()
 				.eventDescriptor(supplyRequiredDescriptor.newEventDescriptor())
 				.supplyRequiredDescriptor(supplyRequiredDescriptor)
-				.directlyCreatePurchaseCandidate(productPlanning.isCreatePlan())
 				.productPlanningId(ProductPlanningId.toRepoId(productPlanning.getId()))
 				.vendorId(defaultVendorProductInfo.get().getVendorId().getRepoId())
 				.build();
