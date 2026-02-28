@@ -206,7 +206,7 @@ final class HUReportProcessInstance implements IProcessInstanceController
 		return getHUsToProcess(husToCheck);
 	}
 
-	private static List<HUToReport> getHUsToProcess(@NonNull final Set<HUToReport> husToCheck)
+	static List<HUToReport> getHUsToProcess(@NonNull final Set<HUToReport> husToCheck)
 	{
 		if (husToCheck.isEmpty())
 		{
