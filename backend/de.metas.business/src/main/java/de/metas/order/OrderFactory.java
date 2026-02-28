@@ -12,6 +12,7 @@ import de.metas.document.location.DocumentLocation;
 import de.metas.externalsystem.ExternalSystemId;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.lang.SOTrx;
+import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.IOrgDAO;
@@ -24,6 +25,7 @@ import de.metas.project.ProjectId;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
@@ -32,6 +34,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
@@ -75,6 +78,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  */
 public class OrderFactory
 {
+	private static final Logger logger = LogManager.getLogger(OrderFactory.class);
 
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
@@ -380,6 +384,42 @@ public class OrderFactory
 	{
 		assertNotBuilt();
 		order.setC_Campaign_ID(campaignId);
+		return this;
+	}
+
+	/**
+	 * Copies the delivery address from the given sales order to this purchase order's dropship fields.
+	 * Used when a purchase order is automatically generated from purchase candidates that originated from a sales order (Streckengeschäft / dropship).
+	 */
+	public OrderFactory dropShipFromSalesOrder(@NonNull final org.compiere.model.I_C_Order salesOrder)
+	{
+		assertNotBuilt();
+		order.setIsDropShip(true);
+
+		if (salesOrder.getDropShip_BPartner_ID() > 0)
+		{
+			OrderDocumentLocationAdapterFactory
+					.deliveryLocationAdapter(order)
+					.setFromDeliveryLocation(salesOrder);
+		}
+		else
+		{
+			OrderDocumentLocationAdapterFactory
+					.deliveryLocationAdapter(order)
+					.setFromShipLocation(salesOrder);
+		}
+
+		final WarehouseId dropshipWarehouseId = orgDAO.getOrgDropshipWarehouseId(getOrgId());
+		if (dropshipWarehouseId != null)
+		{
+			order.setM_Warehouse_ID(dropshipWarehouseId.getRepoId());
+		}
+		else
+		{
+			logger.warn("No dropship warehouse configured for org {}. Keeping the current warehouse.", getOrgId());
+			Loggables.addLog("@Missing@ @AD_OrgInfo@ @DropShip_Warehouse_ID@");
+		}
+
 		return this;
 	}
 

@@ -8,6 +8,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.i18n.ADMessageAndParams;
 import de.metas.i18n.AdMessageKey;
+import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderFactory;
@@ -27,6 +28,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.time.ZoneId;
@@ -65,6 +67,8 @@ import java.util.Set;
  */
 /* package */ final class PurchaseOrderFromItemFactory
 {
+	private static final Logger logger = LogManager.getLogger(PurchaseOrderFromItemFactory.class);
+
 	@VisibleForTesting
 	final static AdMessageKey MSG_Different_DatePromised = //
 			AdMessageKey.of("de.metas.purchasecandidate.Event_PurchaseOrderCreated_Different_DatePromised");
@@ -141,6 +145,8 @@ import java.util.Set;
 
 	public I_C_Order createAndComplete()
 	{
+		applyDropShipFromSalesOrderIfNeeded();
+
 		final I_C_Order order = orderFactory.createAndComplete();
 
 		purchaseItem2OrderLine
@@ -163,6 +169,26 @@ import java.util.Set;
 		userNotifications.notifyOrderCompleted(request);
 
 		return order;
+	}
+
+	private void applyDropShipFromSalesOrderIfNeeded()
+	{
+		// All items in this factory share the same vendor/org/warehouse/date aggregation key.
+		// We take the first SO reference to determine the delivery address.
+		final OrderId salesOrderId = purchaseItem2OrderLine.keySet().stream()
+				.map(PurchaseOrderItem::getSalesOrderId)
+				.filter(Objects::nonNull)
+				.findFirst()
+				.orElse(null);
+
+		if (salesOrderId == null)
+		{
+			return;
+		}
+
+		final I_C_Order salesOrder = ordersRepo.getById(salesOrderId);
+		logger.debug("Applying dropship info from sales order {} to purchase order", salesOrderId);
+		orderFactory.dropShipFromSalesOrder(salesOrder);
 	}
 
 	private void updatePurchaseCandidateFromOrderLineBuilder(
