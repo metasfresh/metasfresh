@@ -51,6 +51,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
+import static de.metas.cucumber.stepdefs.StepDefConstants.PRODUCT_CATEGORY_STANDARD_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -133,9 +134,13 @@ public class I_Product_StepDef
 		row.getAsOptionalString(I_I_Product.COLUMNNAME_ProductType)
 				.ifPresent(importRecord::setProductType);
 
-		// Product category
+		// Product category — default to standard if not specified
 		row.getAsOptionalString(I_I_Product.COLUMNNAME_ProductCategory_Value)
 				.ifPresent(importRecord::setProductCategory_Value);
+		if (importRecord.getM_Product_Category_ID() <= 0 && importRecord.getProductCategory_Value() == null)
+		{
+			importRecord.setM_Product_Category_ID(PRODUCT_CATEGORY_STANDARD_ID.getRepoId());
+		}
 
 		saveRecord(importRecord);
 
