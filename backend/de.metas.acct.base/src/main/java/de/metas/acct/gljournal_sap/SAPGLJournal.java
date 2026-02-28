@@ -233,6 +233,7 @@ public class SAPGLJournal
 				.taxId(taxId)
 				.orgId(baseLine.getOrgId())
 				.dimension(baseLine.getDimension())
+				.description(baseLine.getDescription())
 				.isTaxIncluded(false) // tax can't be included for generated tax lines
 				.build();
 	}

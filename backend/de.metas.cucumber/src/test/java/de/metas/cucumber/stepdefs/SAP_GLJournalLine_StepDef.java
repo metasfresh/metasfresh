@@ -42,6 +42,7 @@ import java.util.Map;
 import static de.metas.acct.model.I_SAP_GLJournalLine.COLUMNNAME_Amount;
 import static de.metas.acct.model.I_SAP_GLJournalLine.COLUMNNAME_C_Tax_ID;
 import static de.metas.acct.model.I_SAP_GLJournalLine.COLUMNNAME_C_ValidCombination_ID;
+import static de.metas.acct.model.I_SAP_GLJournalLine.COLUMNNAME_Description;
 import static de.metas.acct.model.I_SAP_GLJournalLine.COLUMNNAME_IsTaxIncluded;
 import static de.metas.acct.model.I_SAP_GLJournalLine.COLUMNNAME_Line;
 import static de.metas.acct.model.I_SAP_GLJournalLine.COLUMNNAME_M_SectionCode_ID;
@@ -136,6 +137,13 @@ public class SAP_GLJournalLine_StepDef
 			final boolean isTaxIncluded = DataTableUtil.extractBooleanForColumnName(tableRow, "OPT." + COLUMNNAME_IsTaxIncluded);
 			glJournalLine.setIsTaxIncluded(isTaxIncluded);
 
+			// OPT.Description
+			final String description = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_Description);
+			if (EmptyUtil.isNotBlank(description))
+			{
+				glJournalLine.setDescription(description);
+			}
+
 			// OPT.Parent_ID
 			final String parentIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_Parent_ID);
 			if (EmptyUtil.isNotBlank(parentIdentifier))
@@ -190,6 +198,17 @@ public class SAP_GLJournalLine_StepDef
 		assertThat(generatedLine).as("No generated line").isNotNull();
 		assertThat(generatedLine.getPostingSign()).isEqualTo(postingSign);
 		assertThat(generatedLine.getAmount()).isEqualByComparingTo(amount);
+
+		// OPT.Description
+		final String expectedDescription = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_Description);
+		if (EmptyUtil.isNotBlank(expectedDescription))
+		{
+			assertThat(generatedLine.getDescription()).isEqualTo(expectedDescription);
+		}
+		else if (expectedDescription != null) // column present but blank → assert no description
+		{
+			assertThat(generatedLine.getDescription()).isNullOrEmpty();
+		}
 	}
 
 	@Given("base tax line updated:")
