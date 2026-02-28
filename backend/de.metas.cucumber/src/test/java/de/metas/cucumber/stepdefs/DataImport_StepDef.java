@@ -87,7 +87,10 @@ public class DataImport_StepDef
 	private void createAD_ImpFormat(@NonNull final DataTableRow row)
 	{
 		final String tableName = row.getAsString("TableName");
+		logger.info("createAD_ImpFormat: tableName={}", tableName);
+
 		final int adTableId = tableDAO.retrieveTableId(tableName);
+		logger.info("createAD_ImpFormat: adTableId={}", adTableId);
 
 		final I_AD_ImpFormat format = InterfaceWrapperHelper.newInstance(I_AD_ImpFormat.class);
 		format.setAD_Table_ID(adTableId);
@@ -96,6 +99,7 @@ public class DataImport_StepDef
 		format.setName("ImpFormat_" + tableName + "_" + System.nanoTime());
 
 		saveRecord(format);
+		logger.info("createAD_ImpFormat: saved AD_ImpFormat_ID={}", format.getAD_ImpFormat_ID());
 
 		row.getAsIdentifier().putOrReplace(impFormatTable, format);
 	}
@@ -109,8 +113,10 @@ public class DataImport_StepDef
 	@And("AD_ImpFormat identified by {string} has columns:")
 	public void ad_impformat_has_columns(@NonNull final String formatIdentifier, @NonNull final DataTable dataTable)
 	{
+		logger.info("ad_impformat_has_columns: formatIdentifier={}", formatIdentifier);
 		final I_AD_ImpFormat format = impFormatTable.get(StepDefDataIdentifier.ofString(formatIdentifier));
 		final String tableName = tableDAO.retrieveTableName(format.getAD_Table_ID());
+		logger.info("ad_impformat_has_columns: tableName={}, columnCount={}", tableName, DataTableRows.of(dataTable).toList().size());
 
 		final List<DataTableRow> rows = DataTableRows.of(dataTable).toList();
 		for (int i = 0; i < rows.size(); i++)
@@ -169,6 +175,7 @@ public class DataImport_StepDef
 	@When("the following CSV data is imported using C_DataImport identified by {string}:")
 	public void import_csv_data(@NonNull final String dataImportIdentifier, @NonNull final DataTable dataTable)
 	{
+		logger.info("import_csv_data: dataImportIdentifier={}", dataImportIdentifier);
 		final I_C_DataImport config = dataImportTable.get(StepDefDataIdentifier.ofString(dataImportIdentifier));
 		final DataImportConfigId configId = DataImportConfigId.ofRepoId(config.getC_DataImport_ID());
 
