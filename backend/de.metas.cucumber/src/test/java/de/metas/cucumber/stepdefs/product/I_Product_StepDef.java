@@ -52,7 +52,7 @@ public class I_Product_StepDef
 	@NonNull private final M_PriceList_Version_StepDefData priceListVersionTable;
 	@NonNull private final M_ProductPrice_StepDefData productPriceTable;
 
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	/**
 	 * Verifies that M_ProductPrice records were created/updated with the expected InvoicableQtyBasedOn value.

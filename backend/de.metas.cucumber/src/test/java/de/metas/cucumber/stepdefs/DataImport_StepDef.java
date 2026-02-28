@@ -26,6 +26,7 @@ import de.metas.cucumber.stepdefs.pricing.M_PriceList_Version_StepDefData;
 import de.metas.impexp.DataImportRequest;
 import de.metas.impexp.DataImportService;
 import de.metas.impexp.config.DataImportConfigId;
+import de.metas.logging.LogManager;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -42,11 +43,13 @@ import org.compiere.model.I_AD_ImpFormat;
 import org.compiere.model.I_AD_ImpFormat_Row;
 import org.compiere.model.I_C_DataImport;
 import org.compiere.model.I_M_PriceList_Version;
+import org.slf4j.Logger;
 import org.springframework.core.io.ByteArrayResource;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
@@ -59,14 +62,16 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @RequiredArgsConstructor
 public class DataImport_StepDef
 {
+	private static final Logger logger = LogManager.getLogger(DataImport_StepDef.class);
+
 	@NonNull private final AD_ImpFormat_StepDefData impFormatTable;
 	@NonNull private final C_DataImport_StepDefData dataImportTable;
 	@NonNull private final M_PriceList_Version_StepDefData priceListVersionTable;
 	@NonNull private final M_Product_StepDefData productTable;
 
-	@NonNull private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	@NonNull private final DataImportService dataImportService = SpringContextHolder.instance.getBean(DataImportService.class);
+	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final Supplier<DataImportService> dataImportServiceSupplier = SpringContextHolder.instance.lazyBean(DataImportService.class);
 
 	/**
 	 * Creates an AD_ImpFormat record (CSV format, UTF-8).
@@ -76,6 +81,7 @@ public class DataImport_StepDef
 	@And("metasfresh contains AD_ImpFormat:")
 	public void metasfresh_contains_ad_impformat(@NonNull final DataTable dataTable)
 	{
+		logger.info("Creating AD_ImpFormat records...");
 		DataTableRows.of(dataTable).forEach(this::createAD_ImpFormat);
 	}
 
@@ -191,7 +197,7 @@ public class DataImport_StepDef
 		final String csvContent = String.join("\n", csvLines);
 
 		// Run the full import pipeline
-		dataImportService.importDataFromResource(DataImportRequest.builder()
+		dataImportServiceSupplier.get().importDataFromResource(DataImportRequest.builder()
 				.data(new ByteArrayResource(csvContent.getBytes(StandardCharsets.UTF_8)))
 				.dataImportConfigId(configId)
 				.clientId(ClientId.METASFRESH)
