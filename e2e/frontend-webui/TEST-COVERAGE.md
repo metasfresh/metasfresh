@@ -272,7 +272,7 @@ npm run test:report
 1. **Enter-key selects product and advances focus to Qty** - Type product → Enter → verify product resolved → fill qty → submit → verify order line created
 2. **Mouse-click selects product in batch entry** (regression) - Type product → mouse click dropdown option → verify product resolved → fill qty → submit → verify order line created
 3. **Add two lines in sequence via Enter-key** - Add first line via Enter workflow → quick input stays open → add second line → verify both lines in grid
-4. **Invalid product: Enter keeps focus on product field** - Type non-existent product → Enter → beep plays → product field retains invalid text → no order line created
+4. **Invalid product: no beep when sysconfig disabled (default)** - Type non-existent product → Enter → verify beep does NOT play (sysconfig default N) → product field retains invalid text → no order line created
 5. **Regular form lookup: customer selection still works** (regression) - Select customer via BPartner composed lookup in SO header → verify record saved with customer
 
 **Key Validations**:
