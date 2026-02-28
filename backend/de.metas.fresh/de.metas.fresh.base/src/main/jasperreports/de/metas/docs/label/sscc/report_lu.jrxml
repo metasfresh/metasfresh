@@ -31,6 +31,16 @@
 		<![CDATA[SELECT	T_Selection_ID as LU_ID
 FROM	T_Selection
 WHERE	AD_PInstance_ID = $P{AD_PInstance_ID}
+	AND EXISTS (
+		SELECT 1
+		FROM M_HU_Attribute hua
+		JOIN M_Attribute a ON hua.M_Attribute_ID = a.M_Attribute_ID AND a.IsActive = 'Y'
+		WHERE hua.M_HU_ID = T_Selection.T_Selection_ID
+			AND a.Value = 'SSCC18'
+			AND hua.Value IS NOT NULL
+			AND hua.Value <> ''
+			AND hua.IsActive = 'Y'
+	)
 ;]]>
 	</queryString>
 	<field name="lu_id" class="java.math.BigDecimal"/>
