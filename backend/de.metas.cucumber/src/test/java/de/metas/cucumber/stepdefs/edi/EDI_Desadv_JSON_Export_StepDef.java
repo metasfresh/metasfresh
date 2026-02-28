@@ -14,12 +14,44 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Step definitions for verifying DESADV JSON export results,
+ * specifically compensation group (Mischkarton) merging behavior.
+ * <p>
+ * Uses the last REST API response from {@link TestContext} to inspect
+ * the PostgREST JSON output of {@code get_desadv_packs_json_fn}.
+ */
 @RequiredArgsConstructor
 public class EDI_Desadv_JSON_Export_StepDef
 {
 	private final @NonNull TestContext testContext;
 	private final ObjectMapper objectMapper = new ObjectMapper();
 
+	/**
+	 * Verifies that the DESADV JSON export correctly merges compensation group sub-articles
+	 * into the main article's packing entry.
+	 * <p>
+	 * Inspects the {@code Packings[].LineItems[]} in the last API response and counts:
+	 * <ul>
+	 *     <li>Total packings (should be reduced after merging)</li>
+	 *     <li>Main articles ({@code IsSubArticle=false}): must have {@code MainArticleLine=null}</li>
+	 *     <li>Sub-articles ({@code IsSubArticle=true}): must have {@code MainArticleLine > 0}</li>
+	 * </ul>
+	 * <p>
+	 * DataTable columns:
+	 * <ul>
+	 *     <li>{@code PackingCount} (required) — expected number of packing entries after merging</li>
+	 *     <li>{@code MainArticleCount} (required) — expected number of main article line items</li>
+	 *     <li>{@code SubArticleCount} (required) — expected number of sub-article line items</li>
+	 * </ul>
+	 * <p>
+	 * Example usage:
+	 * <pre>
+	 * Then verify DESADV JSON export has compensation group packing:
+	 *   | PackingCount | MainArticleCount | SubArticleCount |
+	 *   | 1            | 1                | 2               |
+	 * </pre>
+	 */
 	@Then("verify DESADV JSON export has compensation group packing:")
 	public void verifyCompensationGroupPacking(@NonNull final DataTable dataTable) throws Exception
 	{
