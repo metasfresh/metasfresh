@@ -88,6 +88,10 @@ public class C_PurchaseCandidate_StepDef
 		this.orderTable = orderTable;
 	}
 
+	/**
+	 * Asserts that no {@code C_PurchaseCandidate} record exists for the given order line identifier.
+	 * Fails immediately if any candidate is found (no polling).
+	 */
 	@And("^no C_PurchaseCandidate found for orderLine (.*)$")
 	public void validate_no_C_PurchaseCandidate_found(@NonNull final String orderLineIdentifier)
 	{
@@ -104,6 +108,10 @@ public class C_PurchaseCandidate_StepDef
 		}
 	}
 
+	/**
+	 * Polls (up to {@code timeoutSec} seconds) until a {@code C_PurchaseCandidate} matching the given order line and optional quantity appears.
+	 * Stores the found record under the row's identifier for use in later validation steps.
+	 */
 	@And("^after not more than (.*)s, C_PurchaseCandidate found for orderLine (.*)$")
 	public void validate_C_PurchaseCandidate_found_for_OrderLine(
 			final int timeoutSec,
@@ -120,6 +128,14 @@ public class C_PurchaseCandidate_StepDef
 		});
 	}
 
+	/**
+	 * Enqueues the specified {@code C_PurchaseCandidate} records for asynchronous purchase order generation via
+	 * {@link C_PurchaseCandidates_GeneratePurchaseOrders}. The generated work packages are processed by the
+	 * async processor and result in {@code C_Order} (purchase) records and {@code C_PurchaseCandidate_Alloc} links.
+	 * <p>
+	 * Note: since {@code PP_Product_Planning.IsCreatePlan=Y} now triggers auto-enqueue, this manual step is only
+	 * needed when the auto-enqueue path is not active (e.g. for testing the UI workflow explicitly).
+	 */
 	@And("the following C_PurchaseCandidates are enqueued for generating C_Orders")
 	public void enqueueC_PurchaseCandidates(@NonNull final DataTable dataTable)
 	{
@@ -145,6 +161,11 @@ public class C_PurchaseCandidate_StepDef
 		return PurchaseCandidateId.ofRepoId(purchaseCandidateRecord.getC_PurchaseCandidate_ID());
 	}
 
+	/**
+	 * Polls (up to {@code timeoutSec} seconds, checking every 500 ms) until a {@code C_PurchaseCandidate}
+	 * matching the given {@code C_OrderSO_ID}, {@code C_OrderLineSO_ID}, and {@code M_Product_ID} appears.
+	 * Stores each found record under its row identifier for use in later validation steps.
+	 */
 	@And("^after not more than (.*)s, C_PurchaseCandidates are found$")
 	public void find_purchase_candidates(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
@@ -155,6 +176,11 @@ public class C_PurchaseCandidate_StepDef
 		}
 	}
 
+	/**
+	 * Synchronously validates the state of previously-found {@code C_PurchaseCandidate} records.
+	 * Supported optional columns: {@code OPT.QtyToPurchase}.
+	 * The candidate must have been stored via a prior "C_PurchaseCandidates are found" step.
+	 */
 	@And("C_PurchaseCandidates are validated")
 	public void validate_purchase_candidates(@NonNull final DataTable dataTable)
 	{
