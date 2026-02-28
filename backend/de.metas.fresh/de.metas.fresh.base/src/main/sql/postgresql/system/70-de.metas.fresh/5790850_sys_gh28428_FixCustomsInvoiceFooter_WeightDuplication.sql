@@ -84,6 +84,10 @@ FROM (SELECT (CASE
                INNER JOIN C_Customs_Invoice ci ON ci.c_customs_invoice_ID = il.c_customs_invoice_ID
                LEFT OUTER JOIN C_UOM uom ON uom.C_UOM_ID = 540017 -- harcoded kg
                LEFT OUTER JOIN C_UOM_Trl uomt ON uomt.c_UOM_ID = uom.C_UOM_ID AND uomt.AD_Language = p_AD_Language
+               LEFT OUTER JOIN C_Incoterms inc ON ci.c_incoterms_id = inc.c_incoterms_id
+               LEFT OUTER JOIN C_Incoterms_trl inc_trl ON inc.c_incoterms_id = inc_trl.c_incoterms_id AND inc_trl.ad_language = p_AD_Language
+               LEFT OUTER JOIN AD_Ref_List modt ON modt.AD_Reference_ID = 542040 AND modt.value = ci.ModeOfTransport
+               LEFT OUTER JOIN AD_Ref_List_Trl modt_trl ON modt.ad_ref_list_id = modt_trl.ad_ref_list_id AND modt_trl.ad_language = p_AD_Language
       WHERE il.C_Customs_Invoice_Id = p_c_customs_invoice_ID) AS d
 GROUP BY UOM, QtyPattern, country, containernumber, sealnumber, Incoterms, ModeOfTransport;
 $BODY$
