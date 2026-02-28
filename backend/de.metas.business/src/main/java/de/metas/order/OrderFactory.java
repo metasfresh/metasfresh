@@ -409,14 +409,22 @@ public class OrderFactory
 					.setFromShipLocation(salesOrder);
 		}
 
-		final WarehouseId dropshipWarehouseId = orgDAO.getOrgDropshipWarehouseId(getOrgId());
-		if (dropshipWarehouseId != null)
+		try
 		{
-			order.setM_Warehouse_ID(dropshipWarehouseId.getRepoId());
+			final WarehouseId dropshipWarehouseId = orgDAO.getOrgDropshipWarehouseId(getOrgId());
+			if (dropshipWarehouseId != null)
+			{
+				order.setM_Warehouse_ID(dropshipWarehouseId.getRepoId());
+			}
+			else
+			{
+				logger.warn("No dropship warehouse configured for org {}. Keeping the current warehouse.", getOrgId());
+				Loggables.addLog("@Missing@ @AD_OrgInfo@ @DropShip_Warehouse_ID@");
+			}
 		}
-		else
+		catch (final Exception ex)
 		{
-			logger.warn("No dropship warehouse configured for org {}. Keeping the current warehouse.", getOrgId());
+			logger.warn("Failed to retrieve dropship warehouse for org {}. Keeping the current warehouse.", getOrgId(), ex);
 			Loggables.addLog("@Missing@ @AD_OrgInfo@ @DropShip_Warehouse_ID@");
 		}
 
