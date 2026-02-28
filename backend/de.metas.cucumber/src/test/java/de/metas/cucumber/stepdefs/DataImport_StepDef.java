@@ -41,6 +41,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_ImpFormat;
 import org.compiere.model.I_AD_ImpFormat_Row;
 import org.compiere.model.I_C_DataImport;
+import org.compiere.model.X_C_DataImport;
 import org.compiere.model.I_M_PriceList_Version;
 import org.springframework.core.io.ByteArrayResource;
 
@@ -122,6 +123,7 @@ public class DataImport_StepDef
 			formatRow.setDataType(dataType);
 			formatRow.setStartNo(i + 1); // 1-based CSV column position
 			formatRow.setSeqNo((i + 1) * 10); // SeqNo for ordering
+			formatRow.setDecimalPoint("."); // mandatory column
 
 			saveRecord(formatRow);
 		}
@@ -145,6 +147,7 @@ public class DataImport_StepDef
 
 		final I_C_DataImport config = InterfaceWrapperHelper.newInstance(I_C_DataImport.class);
 		config.setAD_ImpFormat_ID(format.getAD_ImpFormat_ID());
+		config.setDataImport_ConfigType(X_C_DataImport.DATAIMPORT_CONFIGTYPE_Standard);
 		config.setInternalName("DataImport_" + System.nanoTime());
 
 		saveRecord(config);
