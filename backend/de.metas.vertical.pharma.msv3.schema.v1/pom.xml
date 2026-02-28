@@ -15,33 +15,6 @@
 	<version>10.0.0</version>
 	<packaging>jar</packaging>
 
-	<build>
-		<plugins>
-			<!-- Adds src/main/java-xjc as a compile source root without regenerating.
-			     To regenerate after a WSDL/XSD change: mvn generate-sources -Pregenerate-jaxb-sources
-			     Or: ./misc/dev-support/scripts/regenerate-jaxb-sources.sh -->
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>build-helper-maven-plugin</artifactId>
-				<version>3.3.0</version>
-				<executions>
-					<execution>
-						<id>add-jaxb-sources</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>add-source</goal>
-						</goals>
-						<configuration>
-							<sources>
-								<source>src/main/java-xjc</source>
-							</sources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
-
 	<profiles>
 		<profile>
 			<!--
