@@ -175,6 +175,8 @@ class Lookup extends Component {
     );
 
     const lookupInputs = wrapperEl.querySelectorAll('input');
+    if (lookupInputs.length === 0) return;
+
     const lastLookupInput = lookupInputs[lookupInputs.length - 1];
     const currentIndex = allInputs.indexOf(lastLookupInput);
 

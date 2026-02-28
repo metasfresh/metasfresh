@@ -57,7 +57,7 @@ const playBeep = () => {
 
     // Resume suspended context (Chrome autoplay policy)
     if (beepAudioCtx.state === 'suspended') {
-      beepAudioCtx.resume();
+      beepAudioCtx.resume().catch(() => {}); // best-effort
     }
 
     const gainNode = beepAudioCtx.createGain();
@@ -283,6 +283,13 @@ export class RawLookup extends Component {
       ? mainProperty.parameterName
       : mainProperty.field;
 
+    // NOTE: When onChange returns a Promise (async path, typical for regular documents),
+    // the callback inside executeAfterPromise runs AFTER this.focus() below.
+    // In that case shouldKeepFocus is always true at the this.focus() call site,
+    // preserving the original behavior (always refocus). The "don't refocus" path
+    // only takes effect when onChange is synchronous (returns null/undefined).
+    // For quick input, focus advance is handled by a completely different code path
+    // (resolveAndSelectOnEnter → handleAutoSelectAndAdvance → focusNextFieldInForm).
     let shouldKeepFocus = true;
 
     executeAfterPromise(
