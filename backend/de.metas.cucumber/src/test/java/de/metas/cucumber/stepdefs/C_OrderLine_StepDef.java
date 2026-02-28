@@ -60,6 +60,7 @@ import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_Order_CompensationGroup;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
@@ -106,6 +107,7 @@ public class C_OrderLine_StepDef
 	private final @NonNull C_Tax_StepDefData taxTable;
 	private final @NonNull M_Warehouse_StepDefData warehouseTable;
 	private final @NonNull IdentifierIds_StepDefData identifierIdsTable;
+	private final @NonNull C_Order_CompensationGroup_StepDefData compGroupTable;
 
 	@Given("metasfresh contains C_OrderLines:")
 	public void metasfresh_contains_c_order_lines(@NonNull final DataTable dataTable)
@@ -199,6 +201,12 @@ public class C_OrderLine_StepDef
 
 					tableRow.getAsOptionalString(I_C_OrderLine.COLUMNNAME_Description)
 							.ifPresent(orderLine::setDescription);
+
+					tableRow.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_Order_CompensationGroup_ID)
+							.ifPresent(compGroupIdentifier -> {
+								final I_C_Order_CompensationGroup compGroup = compGroupTable.get(compGroupIdentifier);
+								orderLine.setC_Order_CompensationGroup_ID(compGroup.getC_Order_CompensationGroup_ID());
+							});
 
 					saveRecord(orderLine);
 

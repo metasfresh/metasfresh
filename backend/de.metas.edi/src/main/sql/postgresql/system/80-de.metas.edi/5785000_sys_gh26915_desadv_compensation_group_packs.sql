@@ -1,7 +1,12 @@
--- Function for desadv packs
--- Handles compensation group sub-articles: sub-article pack items are merged
--- into the main article's pack, adding IsSubArticle and MainArticleLine to each LineItem.
--- Packs NOT in a compensation group are output as before (backward-compatible).
+-- gh#26915: DESADV Mischkarton - merge sub-article packs into main article packs
+-- Sub-articles in compensation groups are now nested within the main article's pack,
+-- adding IsSubArticle and MainArticleLine fields to each LineItem.
+-- Backward compatible: packs NOT in a compensation group are unchanged.
+--
+-- Also inlines the edi_desadv_line_object_v logic in the LATERAL join,
+-- using pack_item.m_inoutline_id to disambiguate orderline/order context
+-- (avoids row multiplication when a desadv line is linked to multiple orders).
+
 CREATE OR REPLACE FUNCTION "de.metas.edi".get_desadv_packs_json_fn(p_edi_desadv_id NUMERIC)
     RETURNS JSONB
 AS
