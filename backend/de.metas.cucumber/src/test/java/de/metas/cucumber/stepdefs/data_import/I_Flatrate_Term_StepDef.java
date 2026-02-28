@@ -1,4 +1,4 @@
-package de.metas.cucumber.stepdefs.importorder;
+package de.metas.cucumber.stepdefs.data_import;
 
 import de.metas.contracts.flatrate.process.C_Flatrate_Term_Import;
 import de.metas.contracts.model.I_I_Flatrate_Term;
