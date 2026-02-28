@@ -108,6 +108,13 @@ public class DataImport_StepDef
 		final I_AD_ImpFormat format = impFormatTable.get(StepDefDataIdentifier.ofString(formatIdentifier));
 		final String tableName = tableDAO.retrieveTableName(format.getAD_Table_ID());
 
+		// Delete any pre-existing rows that may collide with the newly assigned format ID
+		// (the preloaded DB may contain AD_ImpFormat_Row records at this ID range)
+		queryBL.createQueryBuilder(I_AD_ImpFormat_Row.class)
+				.addEqualsFilter(I_AD_ImpFormat_Row.COLUMNNAME_AD_ImpFormat_ID, format.getAD_ImpFormat_ID())
+				.create()
+				.delete();
+
 		final List<DataTableRow> rows = DataTableRows.of(dataTable).toList();
 		for (int i = 0; i < rows.size(); i++)
 		{
