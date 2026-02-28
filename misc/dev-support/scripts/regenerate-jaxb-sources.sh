@@ -47,7 +47,8 @@ echo ""
 
 for MODULE in "${MODULES[@]}"; do
     echo "==> ${MODULE}"
-    if (cd "${REPO_ROOT}/${MODULE}" && ${MVN} generate-sources -P"${PROFILE}" -q); then
+    # shellcheck disable=SC2086  # MVN is intentionally unquoted to allow "mvn -s settings.xml" style overrides
+    if (cd "${REPO_ROOT}/${MODULE}" && ${MVN} generate-sources -P"${PROFILE}" -q --no-transfer-progress); then
         echo "    OK"
     else
         echo "    FAILED"
@@ -60,7 +61,7 @@ if [[ ${#FAILED[@]} -eq 0 ]]; then
     echo "All modules regenerated successfully."
     echo ""
     echo "Next steps:"
-    echo "  1. Review the changes: git diff --stat '**/java-xjc*'"
+    echo "  1. Review the changes: git diff --name-only | grep java-xjc"
     echo "  2. Commit the changed java-xjc files together with the XSD change in a single commit."
 else
     echo "The following modules failed to regenerate:"

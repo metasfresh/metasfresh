@@ -17,12 +17,16 @@ permissions:
 jobs:
   check-jaxb-sync:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Check that java-xjc sources were updated alongside schema changes
+        # Note: this is a coarse-grained check — it verifies that *any* java-xjc path changed
+        # when schemas changed, but does not correlate specific modules. A schema change in module
+        # A satisfied by a java-xjc update in module B would still pass. Good enough as a guardrail.
         run: |
           BASE_SHA="${{ github.event.pull_request.base.sha }}"
           HEAD_SHA="${{ github.event.pull_request.head.sha }}"
