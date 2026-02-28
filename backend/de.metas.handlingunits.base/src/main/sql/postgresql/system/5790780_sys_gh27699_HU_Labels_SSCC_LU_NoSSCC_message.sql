@@ -13,7 +13,7 @@ WHERE NOT EXISTS (SELECT 1 FROM AD_Message WHERE Value = 'HU_Labels_SSCC_LU.NoSS
 -- Translation: de_DE / de_CH
 INSERT INTO AD_Message_Trl (AD_Message_ID, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, IsTranslated, MsgText)
 SELECT m.AD_Message_ID, 'de_DE', 0, 0, 'Y', now(), 100, now(), 100, 'Y',
-       'Keine der ausgewaehlten Handling Units hat ein SSCC18-Merkmal. SSCC-Etiketten koennen nur fuer HUs gedruckt werden, denen eine SSCC zugewiesen wurde.'
+       'Keine der ausgewählten Handling Units hat ein SSCC18-Merkmal. SSCC-Etiketten können nur für HUs gedruckt werden, denen eine SSCC zugewiesen wurde.'
 FROM AD_Message m
 WHERE m.Value = 'HU_Labels_SSCC_LU.NoSSCC'
   AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl t WHERE t.AD_Message_ID = m.AD_Message_ID AND t.AD_Language = 'de_DE')
@@ -21,7 +21,7 @@ WHERE m.Value = 'HU_Labels_SSCC_LU.NoSSCC'
 
 INSERT INTO AD_Message_Trl (AD_Message_ID, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, IsTranslated, MsgText)
 SELECT m.AD_Message_ID, 'de_CH', 0, 0, 'Y', now(), 100, now(), 100, 'Y',
-       'Keine der ausgewaehlten Handling Units hat ein SSCC18-Merkmal. SSCC-Etiketten koennen nur fuer HUs gedruckt werden, denen eine SSCC zugewiesen wurde.'
+       'Keine der ausgewählten Handling Units hat ein SSCC18-Merkmal. SSCC-Etiketten können nur für HUs gedruckt werden, denen eine SSCC zugewiesen wurde.'
 FROM AD_Message m
 WHERE m.Value = 'HU_Labels_SSCC_LU.NoSSCC'
   AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl t WHERE t.AD_Message_ID = m.AD_Message_ID AND t.AD_Language = 'de_CH')
@@ -49,7 +49,7 @@ WHERE trl.AD_Process_ID = base.AD_Process_ID
 
 -- German
 UPDATE AD_Process_Trl
-SET Description = 'Druckt SSCC-Etiketten fuer ausgewaehlte LUs. HUs ohne SSCC18-Merkmal werden automatisch uebersprungen. Wenn keine der ausgewaehlten HUs eine SSCC hat, wird ein Fehler angezeigt.',
+SET Description = 'Druckt SSCC-Etiketten für ausgewählte LUs. HUs ohne SSCC18-Merkmal werden automatisch übersprungen. Wenn keine der ausgewählten HUs eine SSCC hat, wird ein Fehler angezeigt.',
     IsTranslated = 'Y',
     Updated = now(),
     UpdatedBy = 100
