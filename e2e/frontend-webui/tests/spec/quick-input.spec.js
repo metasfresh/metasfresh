@@ -19,7 +19,8 @@ import { waitForTabAllowsNew } from '../utils/WebAPIValidation';
  * 1. Enter-key focus advance: Product → Enter → focus advances to Qty
  * 2. Mouse-click selection regression: Product → mouse click → line created
  * 3. Multiple lines in sequence: Add two lines via Enter-key workflow
- * 4. Regular form lookup regression: Customer selection in header (non-quick-input)
+ * 4. Invalid product: no beep when sysconfig disabled (default behavior)
+ * 5. Regular form lookup regression: Customer selection in header (non-quick-input)
  */
 
 // ============================================================================
