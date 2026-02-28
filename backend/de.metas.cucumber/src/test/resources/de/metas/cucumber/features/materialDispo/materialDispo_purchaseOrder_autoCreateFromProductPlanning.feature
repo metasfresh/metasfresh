@@ -200,7 +200,7 @@ Feature: PP_Product_Planning.IsCreatePlan / IsDocComplete automatically create/c
 
     And after not more than 90s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
-      | cp_1       | p_1                     | 2021-04-16  | 5                               | 5                       | 5                       | 5                            | 0                             | 0                              | 0                              | 0                          | 0                                  |
+      | cp_1       | p_1                     | 2021-04-16  | 5                               | 5                       | 0                       | 5                            | -5                            | 5                              | 0                              | 0                          | 0                                  |
 
     And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
@@ -276,7 +276,7 @@ Feature: PP_Product_Planning.IsCreatePlan / IsDocComplete automatically create/c
 
     And after not more than 90s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
-      | cp_1       | p_1                     | 2021-04-16  | 5                               | 5                       | 5                       | 5                            | 0                             | 0                              | 0                              | 0                          | 0                                  |
+      | cp_1       | p_1                     | 2021-04-16  | 5                               | 5                       | 0                       | 5                            | -5                            | 5                              | 0                              | 0                          | 0                                  |
 
     And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
       | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
