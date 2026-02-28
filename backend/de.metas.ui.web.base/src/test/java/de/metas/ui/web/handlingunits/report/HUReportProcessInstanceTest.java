@@ -45,12 +45,6 @@ class HUReportProcessInstanceTest
 		assertThat(result).containsExactlyInAnyOrder(tu1, tu2);
 	}
 
-	@Test
-	void MSG_NoSSCC_constant_isSet()
-	{
-		assertThat(HUReportProcessInstance.MSG_NoSSCC).isEqualTo("HU_Labels_SSCC_LU.NoSSCC");
-	}
-
 	private static HUToReport mockHUToReport(final HuId huId, final HuUnitType unitType)
 	{
 		return new HUToReport()

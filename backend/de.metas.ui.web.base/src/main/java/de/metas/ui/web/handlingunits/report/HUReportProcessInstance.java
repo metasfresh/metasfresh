@@ -1,5 +1,6 @@
 package de.metas.ui.web.handlingunits.report;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
@@ -206,6 +207,7 @@ final class HUReportProcessInstance implements IProcessInstanceController
 		return getHUsToProcess(husToCheck);
 	}
 
+	@VisibleForTesting
 	static List<HUToReport> getHUsToProcess(@NonNull final Set<HUToReport> husToCheck)
 	{
 		if (husToCheck.isEmpty())
