@@ -49,7 +49,6 @@ import org.springframework.core.io.ByteArrayResource;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
@@ -71,7 +70,7 @@ public class DataImport_StepDef
 
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final Supplier<DataImportService> dataImportServiceSupplier = SpringContextHolder.instance.lazyBean(DataImportService.class);
+	private final SpringContextHolder.Lazy<DataImportService> dataImportServiceSupplier = SpringContextHolder.lazyBean(DataImportService.class);
 
 	/**
 	 * Creates an AD_ImpFormat record (CSV format, UTF-8).
