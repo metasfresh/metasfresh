@@ -59,12 +59,17 @@ public final class DocumentPreconditionsAsContext implements WebuiPreconditionsC
 	@Getter
 	private final DisplayPlace displayPlace;
 
+	@Getter
+	@Nullable
+	private final String includedTabTableName;
+
 	@Builder
 	private DocumentPreconditionsAsContext(
 			@NonNull final Document document,
 			@Nullable final DetailId selectedTabId,
 			@Nullable final Set<TableRecordReference> selectedIncludedRecords,
-			@Nullable final DisplayPlace displayPlace)
+			@Nullable final DisplayPlace displayPlace,
+			@Nullable final String includedTabTableName)
 	{
 		this.document = document;
 		tableName = document.getEntityDescriptor().getTableName();
@@ -73,6 +78,7 @@ public final class DocumentPreconditionsAsContext implements WebuiPreconditionsC
 		this.selectedIncludedRecords = selectedIncludedRecords != null ? ImmutableSet.copyOf(selectedIncludedRecords) : ImmutableSet.of();
 
 		this.displayPlace = displayPlace;
+		this.includedTabTableName = includedTabTableName;
 	}
 
 	@Override

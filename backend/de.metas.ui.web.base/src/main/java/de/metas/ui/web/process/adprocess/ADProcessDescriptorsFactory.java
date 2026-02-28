@@ -39,6 +39,7 @@ import de.metas.ui.web.window.descriptor.factory.standard.DescriptorsFactoryHelp
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import java.util.Objects;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.callout.api.ICalloutField;
@@ -128,6 +129,19 @@ import java.util.stream.Stream;
 			final Stream<RelatedProcessDescriptor> tableRelatedProcessDescriptors = adProcessService.getRelatedProcessDescriptors(adTableId, adWindowId, adTabId)
 					.stream();
 			relatedProcessDescriptors = Stream.concat(relatedProcessDescriptors, tableRelatedProcessDescriptors);
+
+			// Also fetch processes registered against the included tab's own table (gh#28433)
+			final String includedTabTableName = preconditionsContext.getIncludedTabTableName();
+			if (!Check.isEmpty(includedTabTableName))
+			{
+				final AdTableId includedTabTableId = AdTableId.ofRepoId(adTableDAO.retrieveTableId(includedTabTableName));
+				if (!Objects.equals(adTableId, includedTabTableId))
+				{
+					final Stream<RelatedProcessDescriptor> tabTableProcessDescriptors = adProcessService.getRelatedProcessDescriptors(includedTabTableId, adWindowId, adTabId)
+							.stream();
+					relatedProcessDescriptors = Stream.concat(relatedProcessDescriptors, tabTableProcessDescriptors);
+				}
+			}
 		}
 
 		return relatedProcessDescriptors

@@ -36,6 +36,12 @@ public interface WebuiPreconditionsContext extends IProcessPreconditionsContext
 	@Nullable
 	DisplayPlace getDisplayPlace();
 
+	/**
+	 * @return the table name of the included tab (if this context is for an included tab top action), or {@code null}
+	 */
+	@Nullable
+	default String getIncludedTabTableName() { return null; }
+
 	default boolean isConsiderTableRelatedProcessDescriptors(@NonNull ProcessHandlerType processHandlerType) {return true;}
 
 	default List<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors()

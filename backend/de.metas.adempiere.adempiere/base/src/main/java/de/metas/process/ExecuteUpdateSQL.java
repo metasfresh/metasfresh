@@ -95,7 +95,18 @@ public class ExecuteUpdateSQL extends JavaProcess
 		contexts.add(Evaluatees.ofRangeAwareParams(getParameterAsIParams()));
 
 		//
-		// 2: underlying record
+		// 2: selected included records (e.g. tab rows selected when invoking an IncludedTabTopAction)
+		for (final TableRecordReference includedRecordRef : getProcessInfo().getSelectedIncludedRecords())
+		{
+			final Evaluatee evalCtx = Evaluatees.ofTableRecordReference(includedRecordRef);
+			if (evalCtx != null)
+			{
+				contexts.add(evalCtx);
+			}
+		}
+
+		//
+		// 3: underlying (header) record
 		final String recordTableName = getTableName();
 		final int recordId = getRecord_ID();
 		if (recordTableName != null && recordId > 0)
@@ -109,7 +120,7 @@ public class ExecuteUpdateSQL extends JavaProcess
 		}
 
 		//
-		// 3: global context
+		// 4: global context
 		contexts.add(Evaluatees.ofCtx(getCtx()));
 
 		return Evaluatees.compose(contexts);

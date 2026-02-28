@@ -886,11 +886,26 @@ public class WindowRestController
 				: WebuiRelatedProcessDescriptor::isEnabled;
 
 		return documentCollection.forDocumentReadonly(documentPath, document -> {
+			// Resolve the included tab's table name so process discovery can also find
+			// processes registered against the tab's own table (gh#28433)
+			final String includedTabTableName;
+			if (displayPlace == DisplayPlace.IncludedTabTopActionsMenu && selectedTabId != null)
+			{
+				includedTabTableName = document.getEntityDescriptor()
+						.getIncludedEntityByDetailId(selectedTabId)
+						.getTableNameOrNull();
+			}
+			else
+			{
+				includedTabTableName = null;
+			}
+
 			final DocumentPreconditionsAsContext preconditionsContext = DocumentPreconditionsAsContext.builder()
 					.document(document)
 					.selectedTabId(selectedTabId)
 					.selectedIncludedRecords(selectedIncludedRecords)
 					.displayPlace(displayPlace)
+					.includedTabTableName(includedTabTableName)
 					.build();
 
 			return processRestController.streamDocumentRelatedProcesses(preconditionsContext)
