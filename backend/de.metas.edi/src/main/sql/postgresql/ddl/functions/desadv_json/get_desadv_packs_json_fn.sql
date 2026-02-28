@@ -73,34 +73,25 @@ BEGIN
              WHERE ep.edi_desadv_id = p_edi_desadv_id
                AND ep.isactive = 'Y'
          ),
-         pack_batched AS (
-             -- Assign batch numbers within each comp group:
-             -- each main-article pack starts a new batch; sub-article packs inherit
-             SELECT pwr.*,
-                    CASE
-                        WHEN comp_group_id IS NOT NULL THEN
-                            SUM(CASE WHEN is_main_article THEN 1 ELSE 0 END)
-                                OVER (PARTITION BY comp_group_id ORDER BY seqno)
-                        ELSE NULL
-                        END AS batch_no
-             FROM pack_with_role pwr
-         ),
          main_packs AS (
-             -- Identify the main pack in each (comp_group, batch)
-             SELECT comp_group_id, batch_no, edi_desadv_pack_id AS main_pack_id
-             FROM pack_batched
+             -- Identify the main pack per compensation group
+             -- (the pack containing the main article item, i.e. lowest order_line).
+             -- Uses DISTINCT ON to pick one main pack per group regardless of seqno ordering.
+             SELECT DISTINCT ON (comp_group_id)
+                 comp_group_id, edi_desadv_pack_id AS main_pack_id
+             FROM pack_with_role
              WHERE is_main_article
+             ORDER BY comp_group_id, seqno
          ),
          items_assigned AS (
-             -- Sub-article items are reassigned to the main pack in their batch
-             SELECT pb.*,
+             -- Sub-article items are reassigned to the main pack in their compensation group
+             SELECT pwr.*,
                     CASE
-                        WHEN pb.is_sub_article THEN mp.main_pack_id
-                        ELSE pb.edi_desadv_pack_id
+                        WHEN pwr.is_sub_article THEN mp.main_pack_id
+                        ELSE pwr.edi_desadv_pack_id
                         END AS effective_pack_id
-             FROM pack_batched pb
-                      LEFT JOIN main_packs mp
-                                ON mp.comp_group_id = pb.comp_group_id AND mp.batch_no = pb.batch_no
+             FROM pack_with_role pwr
+                      LEFT JOIN main_packs mp ON mp.comp_group_id = pwr.comp_group_id
          ),
          pack_header AS (
              -- Use the main pack's header info (SSCC, packaging code) for each effective_pack_id
