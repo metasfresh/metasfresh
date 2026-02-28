@@ -11,6 +11,9 @@ on:
       - '**/*.xsd'
       - '**/*.wsdl'
 
+permissions:
+  contents: read
+
 jobs:
   check-jaxb-sync:
     runs-on: ubuntu-latest
