@@ -1,6 +1,5 @@
 package de.metas.ui.web.handlingunits.report;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
@@ -12,6 +11,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.report.HUReportExecutor;
 import de.metas.handlingunits.report.HUReportExecutorResult;
 import de.metas.handlingunits.report.HUToReport;
+import de.metas.i18n.AdMessageKey;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.report.PrintCopies;
@@ -45,7 +45,6 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.model.I_AD_Process;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -84,8 +83,13 @@ final class HUReportProcessInstance implements IProcessInstanceController
 	public static final String PARAM_AD_Process_ID = "AD_Process_ID";
 	public static final String PARAM_IsPrintPreview = "IsPrintPreview";
 
+	/** Hardcoded: only the SSCC label report (AD_Process.Value='HU_Labels_SSCC_LU') triggers SSCC filtering */
 	private static final String SSCC_LABEL_PROCESS_VALUE = "HU_Labels_SSCC_LU";
-	static final String MSG_NoSSCC = "HU_Labels_SSCC_LU.NoSSCC";
+	static final AdMessageKey MSG_NoSSCC = AdMessageKey.of("HU_Labels_SSCC_LU.NoSSCC");
+
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
+	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
 	private final DocumentId instanceId;
 	private final ViewRowIdsSelection viewRowIdsSelection;
@@ -207,8 +211,7 @@ final class HUReportProcessInstance implements IProcessInstanceController
 		return getHUsToProcess(husToCheck);
 	}
 
-	@VisibleForTesting
-	static List<HUToReport> getHUsToProcess(@NonNull final Set<HUToReport> husToCheck)
+	private static List<HUToReport> getHUsToProcess(@NonNull final Set<HUToReport> husToCheck)
 	{
 		if (husToCheck.isEmpty())
 		{
@@ -316,25 +319,19 @@ final class HUReportProcessInstance implements IProcessInstanceController
 			return husToReport;
 		}
 
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
-
 		final List<HUToReport> husWithSSCC = husToReport.stream()
-				.filter(huToReport -> hasSSCC18Attribute(huToReport.getHUId(), handlingUnitsDAO, huAttributesBL))
+				.filter(huToReport -> hasSSCC18Attribute(huToReport.getHUId()))
 				.collect(ImmutableList.toImmutableList());
 
 		if (husWithSSCC.isEmpty())
 		{
-			throw new AdempiereException("@" + MSG_NoSSCC + "@");
+			throw new AdempiereException(MSG_NoSSCC);
 		}
 
 		return husWithSSCC;
 	}
 
-	private static boolean hasSSCC18Attribute(
-			@NonNull final HuId huId,
-			@NonNull final IHandlingUnitsDAO handlingUnitsDAO,
-			@NonNull final IHUAttributesBL huAttributesBL)
+	private boolean hasSSCC18Attribute(@NonNull final HuId huId)
 	{
 		final I_M_HU hu = handlingUnitsDAO.getById(huId);
 		final String sscc = huAttributesBL.getHUAttributeValue(hu, AttributeConstants.ATTR_SSCC18_Value);
@@ -343,8 +340,7 @@ final class HUReportProcessInstance implements IProcessInstanceController
 
 	private boolean isSSCCLabelReport()
 	{
-		final I_AD_Process process = Services.get(IADProcessDAO.class).getById(reportAdProcessId);
-		return SSCC_LABEL_PROCESS_VALUE.equals(process.getValue());
+		return SSCC_LABEL_PROCESS_VALUE.equals(adProcessDAO.getById(reportAdProcessId).getValue());
 	}
 
 	@Override
