@@ -26,7 +26,6 @@ import de.metas.cucumber.stepdefs.pricing.M_PriceList_Version_StepDefData;
 import de.metas.impexp.DataImportRequest;
 import de.metas.impexp.DataImportService;
 import de.metas.impexp.config.DataImportConfigId;
-import de.metas.logging.LogManager;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -43,7 +42,6 @@ import org.compiere.model.I_AD_ImpFormat;
 import org.compiere.model.I_AD_ImpFormat_Row;
 import org.compiere.model.I_C_DataImport;
 import org.compiere.model.I_M_PriceList_Version;
-import org.slf4j.Logger;
 import org.springframework.core.io.ByteArrayResource;
 
 import java.nio.charset.StandardCharsets;
@@ -61,8 +59,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @RequiredArgsConstructor
 public class DataImport_StepDef
 {
-	private static final Logger logger = LogManager.getLogger(DataImport_StepDef.class);
-
 	@NonNull private final AD_ImpFormat_StepDefData impFormatTable;
 	@NonNull private final C_DataImport_StepDefData dataImportTable;
 	@NonNull private final M_PriceList_Version_StepDefData priceListVersionTable;
@@ -80,39 +76,23 @@ public class DataImport_StepDef
 	@And("metasfresh contains AD_ImpFormat:")
 	public void metasfresh_contains_ad_impformat(@NonNull final DataTable dataTable)
 	{
-		logger.info("Creating AD_ImpFormat records...");
 		DataTableRows.of(dataTable).forEach(this::createAD_ImpFormat);
 	}
 
 	private void createAD_ImpFormat(@NonNull final DataTableRow row)
 	{
 		final String tableName = row.getAsString("TableName");
-		logger.info("createAD_ImpFormat: tableName={}", tableName);
-
 		final int adTableId = tableDAO.retrieveTableId(tableName);
-		logger.info("createAD_ImpFormat: adTableId={}", adTableId);
 
-		try
-		{
-			logger.info("createAD_ImpFormat: calling newInstance(I_AD_ImpFormat.class)...");
-			final I_AD_ImpFormat format = InterfaceWrapperHelper.newInstance(I_AD_ImpFormat.class);
-			logger.info("createAD_ImpFormat: newInstance OK, setting fields...");
-			format.setAD_Table_ID(adTableId);
-			format.setFormatType("C"); // CSV
-			format.setFileCharset(StandardCharsets.UTF_8.name());
-			format.setName("ImpFormat_" + tableName + "_" + System.nanoTime());
-			logger.info("createAD_ImpFormat: fields set, calling saveRecord...");
+		final I_AD_ImpFormat format = InterfaceWrapperHelper.newInstance(I_AD_ImpFormat.class);
+		format.setAD_Table_ID(adTableId);
+		format.setFormatType("C"); // CSV
+		format.setFileCharset("utf-8"); // must match AD_Ref_List value (lowercase)
+		format.setName("ImpFormat_" + tableName + "_" + System.nanoTime());
 
-			saveRecord(format);
-			logger.info("createAD_ImpFormat: saved AD_ImpFormat_ID={}", format.getAD_ImpFormat_ID());
+		saveRecord(format);
 
-			row.getAsIdentifier().putOrReplace(impFormatTable, format);
-		}
-		catch (final Exception e)
-		{
-			logger.error("createAD_ImpFormat: FAILED for tableName={}, adTableId={}", tableName, adTableId, e);
-			throw e;
-		}
+		row.getAsIdentifier().putOrReplace(impFormatTable, format);
 	}
 
 	/**
@@ -124,10 +104,8 @@ public class DataImport_StepDef
 	@And("AD_ImpFormat identified by {string} has columns:")
 	public void ad_impformat_has_columns(@NonNull final String formatIdentifier, @NonNull final DataTable dataTable)
 	{
-		logger.info("ad_impformat_has_columns: formatIdentifier={}", formatIdentifier);
 		final I_AD_ImpFormat format = impFormatTable.get(StepDefDataIdentifier.ofString(formatIdentifier));
 		final String tableName = tableDAO.retrieveTableName(format.getAD_Table_ID());
-		logger.info("ad_impformat_has_columns: tableName={}, columnCount={}", tableName, DataTableRows.of(dataTable).toList().size());
 
 		final List<DataTableRow> rows = DataTableRows.of(dataTable).toList();
 		for (int i = 0; i < rows.size(); i++)
@@ -186,7 +164,6 @@ public class DataImport_StepDef
 	@When("the following CSV data is imported using C_DataImport identified by {string}:")
 	public void import_csv_data(@NonNull final String dataImportIdentifier, @NonNull final DataTable dataTable)
 	{
-		logger.info("import_csv_data: dataImportIdentifier={}", dataImportIdentifier);
 		final I_C_DataImport config = dataImportTable.get(StepDefDataIdentifier.ofString(dataImportIdentifier));
 		final DataImportConfigId configId = DataImportConfigId.ofRepoId(config.getC_DataImport_ID());
 
