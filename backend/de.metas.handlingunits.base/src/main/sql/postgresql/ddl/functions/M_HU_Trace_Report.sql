@@ -354,8 +354,8 @@ WHERE t.hutracetype IN ('MATERIAL_RECEIPT')
   AND shipment_io.docstatus IN ('CO', 'CL')
   -- Ensure this product was NOT manufactured (no production order)
   AND NOT EXISTS (
-      SELECT 1 FROM M_HU_Trace pt 
-      WHERE pt.lotnumber = t.lotnumber 
+      SELECT 1 FROM M_HU_Trace pt
+      WHERE pt.lotnumber IS NOT DISTINCT FROM t.lotnumber
       AND pt.m_product_id = t.m_product_id
       AND pt.hutracetype IN ('PRODUCTION_ISSUE', 'PRODUCTION_RECEIPT')
   )

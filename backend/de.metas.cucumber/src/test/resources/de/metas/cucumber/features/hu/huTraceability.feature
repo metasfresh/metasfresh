@@ -2,7 +2,6 @@
 @allure.label.epic:E0370_Intralogistic_HUs
 @allure.label.feature:F5000_Handling_Unit
 @F5000
-@ignore
 @ghActions:run_on_executor5
 Feature: HU Traceability Report — SQL correctness tests
   Verifies that the M_HU_Trace_Report SQL function returns the correct rows
