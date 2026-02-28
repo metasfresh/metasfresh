@@ -92,16 +92,27 @@ public class DataImport_StepDef
 		final int adTableId = tableDAO.retrieveTableId(tableName);
 		logger.info("createAD_ImpFormat: adTableId={}", adTableId);
 
-		final I_AD_ImpFormat format = InterfaceWrapperHelper.newInstance(I_AD_ImpFormat.class);
-		format.setAD_Table_ID(adTableId);
-		format.setFormatType("C"); // CSV
-		format.setFileCharset(StandardCharsets.UTF_8.name());
-		format.setName("ImpFormat_" + tableName + "_" + System.nanoTime());
+		try
+		{
+			logger.info("createAD_ImpFormat: calling newInstance(I_AD_ImpFormat.class)...");
+			final I_AD_ImpFormat format = InterfaceWrapperHelper.newInstance(I_AD_ImpFormat.class);
+			logger.info("createAD_ImpFormat: newInstance OK, setting fields...");
+			format.setAD_Table_ID(adTableId);
+			format.setFormatType("C"); // CSV
+			format.setFileCharset(StandardCharsets.UTF_8.name());
+			format.setName("ImpFormat_" + tableName + "_" + System.nanoTime());
+			logger.info("createAD_ImpFormat: fields set, calling saveRecord...");
 
-		saveRecord(format);
-		logger.info("createAD_ImpFormat: saved AD_ImpFormat_ID={}", format.getAD_ImpFormat_ID());
+			saveRecord(format);
+			logger.info("createAD_ImpFormat: saved AD_ImpFormat_ID={}", format.getAD_ImpFormat_ID());
 
-		row.getAsIdentifier().putOrReplace(impFormatTable, format);
+			row.getAsIdentifier().putOrReplace(impFormatTable, format);
+		}
+		catch (final Exception e)
+		{
+			logger.error("createAD_ImpFormat: FAILED for tableName={}, adTableId={}", tableName, adTableId, e);
+			throw e;
+		}
 	}
 
 	/**
