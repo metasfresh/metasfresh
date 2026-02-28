@@ -90,7 +90,6 @@ public class PurchaseCandidateAdvisedEventCreator implements SupplyRequiredAdvis
 		final PurchaseCandidateAdvisedEvent event = PurchaseCandidateAdvisedEvent.builder()
 				.eventDescriptor(supplyRequiredDescriptor.newEventDescriptor())
 				.supplyRequiredDescriptor(supplyRequiredDescriptor)
-				.directlyCreatePurchaseCandidate(true) // deprecated field; always true — PO creation is now gated by PP_Product_Planning.IsCreatePlan in PurchaseCandidateRequestedHandler
 				.productPlanningId(ProductPlanningId.toRepoId(productPlanning.getId()))
 				.vendorId(defaultVendorProductInfo.get().getVendorId().getRepoId())
 				.build();
