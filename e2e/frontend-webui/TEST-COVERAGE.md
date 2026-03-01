@@ -500,6 +500,111 @@ npm run test:report
 
 ---
 
+### 15. Grid Filtering & Column Sorting
+**File**: `tests/spec/grid-filtering.spec.js`
+**Status**: ✅ Passing
+**Duration**: ~20 seconds
+
+**Features Tested**:
+- F14030: Filtering & Sorting
+
+**Epic**: E0193: User Interface
+
+**Workflow**:
+1. Navigate to Sales Order list view
+2. Verify 17 column headers with `data-testid="column-{fieldName}"` attributes
+3. Click sortable column — verify URL sort parameter (ASC/DESC toggle)
+4. Discover filter buttons ("Filter by: Date", "Filter")
+5. Open filter dropdown, verify filter menu appears
+6. Verify pagination controls and grid row interaction
+7. Double-click row — verify navigation to detail view
+
+**Key Discoveries**:
+- Column headers: `data-testid="column-DocumentNo"`, `column-C_BPartner_ID`, etc.
+- Sort URL format: `?sort=+FieldName` (ASC), `?sort=-FieldName` (DESC)
+- 2 filter buttons + inline filters present on SO list view
+
+---
+
+### 16. Document Clone (Alt+W)
+**File**: `tests/spec/document-clone.spec.js`
+**Status**: ✅ Passing
+**Duration**: ~22 seconds
+
+**Features Tested**:
+- F14040: Document Actions (Clone)
+
+**Epic**: E0193: User Interface
+
+**Workflow**:
+1. Create SO with customer (saved document required for clone)
+2. Press Alt+W to clone
+3. Verify URL changes to new record ID
+4. Verify cloned document has different document number
+
+**Key Validation**: Clone fails on empty/unsaved documents — requires at least a customer set.
+
+---
+
+### 17. SubHeader Actions & Change Log
+**File**: `tests/spec/subheader-actions.spec.js`
+**Status**: ✅ Passing
+**Duration**: ~36 seconds
+
+**Features Tested**:
+- F14040: Document Actions (SubHeader)
+
+**Epic**: E0193: User Interface
+
+**Workflow**:
+1. Open SubHeader via Alt+1
+2. Verify 7 action icons: Clone (meta-icon-duplicate), Print (meta-icon-print),
+   Email (meta-icon-mail), Delete (meta-icon-delete), Letter (meta-icon-letter),
+   Edit (meta-icon-edit), Comments (meta-icon-message)
+3. Verify breadcrumb: `/Sales/Sales Order/{docNo}`
+4. Add order line, right-click — verify context menu has Change Log option
+
+---
+
+### 18. Included Tabs & Batch Entry
+**File**: `tests/spec/included-tabs.spec.js`
+**Status**: ✅ Passing
+**Duration**: ~32 seconds
+
+**Features Tested**:
+- F14050: Included Tabs
+
+**Epic**: E0193: User Interface
+
+**Key Discoveries**:
+- Sales Order tabs: Order Line (AD_Tab-187), Order Tax (AD_Tab-236), Order Cost (AD_Tab-546846)
+- Business Partner tabs: **19 tabs** (Customer, Vendor, Manufacturer, Location, Contact, Bank Account, etc.)
+- Tab `data-testid` format: `tab-AD_Tab-{tabId}`
+- Batch entry toggle opens/closes quick input container with Product and Quantity fields
+
+---
+
+### 19. List View Actions (Row Selection, Alt+B, Alt+A)
+**File**: `tests/spec/list-view-actions.spec.js`
+**Status**: ✅ Passing
+**Duration**: ~15 seconds
+
+**Features Tested**:
+- F14060: List View Actions
+
+**Epic**: E0193: User Interface
+
+**Workflow**:
+1. Navigate to SO list view
+2. Click row — selection tracked via row classes
+3. Ctrl+click second row — multi-select (`row-selected` class)
+4. Alt+B — opens selected row in new browser tab (verified URL)
+5. Alt+A — selects ALL rows (verified 15/15 selected)
+
+**Key Discovery**: First clicked row doesn't get `row-selected` class (uses `row-{id}` pattern), but multi-selected rows do.
+
+---
+
 ## Test Architecture
 
 ### Page Objects
@@ -555,18 +660,19 @@ npm run test:report
 ## Coverage Gaps
 
 Areas **NOT yet covered** by E2E tests:
-- Advanced search and filtering (column filters, saved filters)
+- Saved/bookmarked filters (static filters)
 - Sales quotation to sales order conversion
 - Credit memo creation
 - Error handling scenarios (invalid input, permission denied)
 - Permission-based UI changes
-- Multi-product order lines
 - BOM / Manufacturing workflows
+- Data export (Excel/CSV from grid views)
+- Import functionality
 
 ## Test Quality Metrics
 
-- **Total test specs**: 14 files
-- **Total test cases**: 22+ (14 specs, most with en_US + de_DE, receipt.spec.js has 2 tests per language)
+- **Total test specs**: 19 files
+- **Total test cases**: 27+ (19 specs, most with en_US + de_DE, receipt.spec.js has 2 tests per language)
 - **Language coverage**: en_US, de_DE
 - **Success rate**: 100% passing
 - **Average execution time**: ~40 seconds per test
