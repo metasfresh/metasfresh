@@ -184,10 +184,12 @@ public class WEBUI_C_OrderLineSO_Launch_HUEditor
 		callMaterialCockpitSelectionFunction(functionName, selectionId);
 
 		final DocumentFilter selectionFilter = MaterialCockpitV2SelectionFilterConverter.createSelectionFilter(selectionId);
-		
+		final OrderLineId orderLineId = getSingleOrderLineId();
+
 		final IView view = viewsRepo.createView(CreateViewRequest
 				.builder(WindowId.of(adWindowId))
 				.addStickyFilters(selectionFilter)
+				.setParameter(VIEW_PARAM_PARENT_SALES_ORDER_LINE_ID, orderLineId)
 				.build());
 
 		return view.getViewId();

@@ -1,0 +1,72 @@
+package de.metas.ui.web.material.cockpit.v2.reservation;
+
+import de.metas.order.OrderLineId;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_M_QtyReservation;
+import org.springframework.stereotype.Repository;
+
+import java.math.BigDecimal;
+
+import static org.adempiere.model.InterfaceWrapperHelper.deleteRecord;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+
+@Repository
+public class QtyReservationRepository
+{
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	public QtyReservationId createReservation(@NonNull final CreateQtyReservationRequest request)
+	{
+		final I_M_QtyReservation record = newInstance(I_M_QtyReservation.class);
+		record.setC_OrderLine_ID(request.getOrderLineId().getRepoId());
+		record.setM_Product_ID(request.getProductId().getRepoId());
+		record.setM_Warehouse_ID(request.getWarehouseId().getRepoId());
+		if (request.getVendorBPartnerId() != null)
+		{
+			record.setC_BPartner_Vendor_ID(request.getVendorBPartnerId());
+		}
+		record.setSupplyType(request.getSupplyType());
+		record.setDatePromised(request.getDatePromised());
+		record.setC_UOM_ID(request.getUomId().getRepoId());
+		record.setQtyTU(request.getQtyTU());
+		record.setQty(request.getQty());
+		record.setAttributesKey(request.getAttributesKey());
+		saveRecord(record);
+
+		return QtyReservationId.ofRepoId(record.getM_QtyReservation_ID());
+	}
+
+	public void deleteById(@NonNull final QtyReservationId reservationId)
+	{
+		final I_M_QtyReservation record = queryBL
+				.createQueryBuilder(I_M_QtyReservation.class)
+				.addEqualsFilter(I_M_QtyReservation.COLUMNNAME_M_QtyReservation_ID, reservationId.getRepoId())
+				.create()
+				.firstOnlyNotNull(I_M_QtyReservation.class);
+
+		deleteRecord(record);
+	}
+
+	public void deleteByOrderLineId(@NonNull final OrderLineId orderLineId)
+	{
+		queryBL.createQueryBuilder(I_M_QtyReservation.class)
+				.addEqualsFilter(I_M_QtyReservation.COLUMNNAME_C_OrderLine_ID, orderLineId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.delete();
+	}
+
+	public BigDecimal getReservedQtyTU(@NonNull final OrderLineId orderLineId)
+	{
+		final BigDecimal result = queryBL.createQueryBuilder(I_M_QtyReservation.class)
+				.addEqualsFilter(I_M_QtyReservation.COLUMNNAME_C_OrderLine_ID, orderLineId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.aggregate(I_M_QtyReservation.COLUMNNAME_QtyTU, BigDecimal.class, IQueryBL.Aggregate.SUM);
+
+		return result != null ? result : BigDecimal.ZERO;
+	}
+}
