@@ -181,7 +181,9 @@ Ensures the complete order-to-cash flow works correctly across UI languages.
             expect(soDocumentNo.length).toBeGreaterThan(0);
 
             // Add document number as parameter for easy identification
-            allure.parameter('Document No', soDocumentNo);
+            // excluded: true prevents this dynamic value from affecting Allure's historyId,
+            // so failed retry attempts are properly linked to the successful retry
+            allure.parameter('Document No', soDocumentNo, { excluded: true });
 
             console.log(`[${language}] Sales Order created: ${soDocumentNo}`);
 
