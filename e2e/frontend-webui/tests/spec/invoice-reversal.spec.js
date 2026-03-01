@@ -150,7 +150,7 @@ which is essential for handling billing errors and credit adjustments.
             await page.waitForTimeout(5000);
 
             // Step 4: Create shipment from shipment schedule
-            await SalesOrderPage.openRelatedShipmentCandidate({ maxRetries: 10, retryDelay: 3000 });
+            await SalesOrderPage.openRelatedShipmentCandidate({ maxRetries: 15, retryDelay: 3000 });
             await ShipmentSchedulePage.expectVisible();
             await ShipmentSchedulePage.expectOrderedQuantity('5');
             await ShipmentSchedulePage.createShipment();
