@@ -18,8 +18,8 @@ Feature: SAP GL Journal - copy description from base line to generated tax line
   @from:cucumber
   @Id:S0320_300
   Scenario: Generated tax line inherits description from base line
-  - Base line has a description
-  - After generating tax lines, the tax line should have the same description as its base line
+    - Base line has a description
+    - After generating tax lines, the tax line should have the same description as its base line
 
     Given metasfresh contains SAP_GLJournal:
       | Identifier              | Description             | DocBaseType | PostingType | DocStatus | DateDoc    | DateAcct   | C_AcctSchema_ID.Identifier | C_ConversionType_ID | GL_Category_ID |
@@ -40,8 +40,8 @@ Feature: SAP GL Journal - copy description from base line to generated tax line
   @from:cucumber
   @Id:S0320_400
   Scenario: Generated tax line has no description when base line has no description
-  - Base line has no description
-  - After generating tax lines, the tax line should also have no description
+    - Base line has no description
+    - After generating tax lines, the tax line should also have no description
 
     Given metasfresh contains SAP_GLJournal:
       | Identifier              | Description             | DocBaseType | PostingType | DocStatus | DateDoc    | DateAcct   | C_AcctSchema_ID.Identifier | C_ConversionType_ID | GL_Category_ID |

@@ -126,12 +126,12 @@ public class SAP_GLJournalLine_StepDef
 
 			// OPT.C_Tax_ID.Identifier
 			final String taxIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_C_Tax_ID + "." + TABLECOLUMN_IDENTIFIER);
-			assertThat(taxIdentifier).isNotBlank();
-
-			final I_C_Tax tax = taxTable.get(taxIdentifier);
-			assertThat(tax).isNotNull();
-
-			glJournalLine.setC_Tax_ID(tax.getC_Tax_ID());
+			if (EmptyUtil.isNotBlank(taxIdentifier))
+			{
+				final I_C_Tax tax = taxTable.get(taxIdentifier);
+				assertThat(tax).isNotNull();
+				glJournalLine.setC_Tax_ID(tax.getC_Tax_ID());
+			}
 
 			// OPT.IsTaxIncluded
 			final boolean isTaxIncluded = DataTableUtil.extractBooleanForColumnName(tableRow, "OPT." + COLUMNNAME_IsTaxIncluded);
