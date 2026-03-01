@@ -1086,7 +1086,9 @@ public class DesadvBL
 
 		if (allProcessed && fulfillmentPercent.compareTo(BigDecimal.valueOf(100)) >= 0)
 		{
-			desadv.setEDI_ExportStatus(EDIExportStatus.Sent.getCode());
+			final boolean containsSentInOuts = allInOuts.stream().anyMatch(inOut -> EDIExportStatus.ofCode(inOut.getEDI_ExportStatus()).isSent());
+			final EDIExportStatus ediExportStatus = containsSentInOuts ? EDIExportStatus.Sent : EDIExportStatus.DontSend;
+			desadv.setEDI_ExportStatus(ediExportStatus.getCode());
 			desadv.setEDIErrorMsg(null);
 			desadvDAO.save(desadv);
 			logger.info("DESADV {} auto-closed to Sent (all InOuts sent/don't send, fulfillment {}%)", desadvId, fulfillmentPercent);
