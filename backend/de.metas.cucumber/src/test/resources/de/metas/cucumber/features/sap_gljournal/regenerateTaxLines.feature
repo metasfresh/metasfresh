@@ -30,8 +30,8 @@ Feature: Regenerate tax lines for SAP GL Journal
       | sap_gljournal_S0320_100 | sap_gljournal_S0320_100 | GLJ         | A           | DR        | 2023-02-10 | 2023-02-10 | acctSchema_1               | 114                 | 1000001        |
 
     And metasfresh contains SAP_GLJournalLines:
-      | Identifier                     | Line | SAP_GLJournal_ID.Identifier | PostingSign | C_ValidCombination_ID | Amount | AmtAcct | M_SectionCode_ID.Identifier | OPT.C_Tax_ID.Identifier | OPT.IsTaxIncluded |
-      | sap_gljournalLine_S0320_100_10 | 10   | sap_gljournal_S0320_100     | C           | 1000343               | 107.7  | 107.7   | testSection_S0320           | tax_S0320               | true              |
+      | Identifier                     | Line | SAP_GLJournal_ID.Identifier | PostingSign | C_ValidCombination_ID | Amount | AmtAcct | OPT.M_SectionCode_ID.Identifier | OPT.C_Tax_ID.Identifier | OPT.IsTaxIncluded |
+      | sap_gljournalLine_S0320_100_10 | 10   | sap_gljournal_S0320_100     | C           | 1000343               | 107.7  | 107.7   | testSection_S0320               | tax_S0320               | true              |
 
     When regenerate tax lines:
       | SAP_GLJournal_ID.Identifier |
@@ -57,8 +57,8 @@ Feature: Regenerate tax lines for SAP GL Journal
       | sap_gljournal_S0320_200 | sap_gljournal_S0320_200_test | GLJ         | A           | DR        | 2023-02-10 | 2023-02-10 | acctSchema_1               | 114                 | 1000001        |
 
     And metasfresh contains SAP_GLJournalLines:
-      | Identifier                     | Line | SAP_GLJournal_ID.Identifier | PostingSign | C_ValidCombination_ID | Amount | M_SectionCode_ID.Identifier | OPT.C_Tax_ID.Identifier | OPT.IsTaxIncluded |
-      | sap_gljournalLine_S0320_200_10 | 10   | sap_gljournal_S0320_200     | C           | 1000343               | 100    | testSection_S0320           | tax_S0320               | false             |
+      | Identifier                     | Line | SAP_GLJournal_ID.Identifier | PostingSign | C_ValidCombination_ID | Amount | OPT.M_SectionCode_ID.Identifier | OPT.C_Tax_ID.Identifier | OPT.IsTaxIncluded |
+      | sap_gljournalLine_S0320_200_10 | 10   | sap_gljournal_S0320_200     | C           | 1000343               | 100    | testSection_S0320               | tax_S0320               | false             |
 
     When regenerate tax lines:
       | SAP_GLJournal_ID.Identifier |

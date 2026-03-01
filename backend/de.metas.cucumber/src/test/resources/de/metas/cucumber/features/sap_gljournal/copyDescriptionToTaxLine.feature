@@ -15,10 +15,6 @@ Feature: SAP GL Journal - copy description from base line to generated tax line
       | Identifier    | C_TaxCategory_ID.InternalName | Name               | ValidFrom  | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
       | tax_desc_copy | Normal                        | TaxName_desc_copy  | 2023-02-01 | 7.7  | DE                       | DE                        |
 
-    And metasfresh contains M_SectionCode:
-      | M_SectionCode_ID.Identifier | Value            |
-      | section_desc_copy           | testSection_desc |
-
   @from:cucumber
   @Id:S0320_300
   Scenario: Generated tax line inherits description from base line
@@ -30,8 +26,8 @@ Feature: SAP GL Journal - copy description from base line to generated tax line
       | sap_gljournal_S0320_300 | sap_gljournal_S0320_300 | GLJ         | A           | DR        | 2023-02-10 | 2023-02-10 | acctSchema_desc            | 114                 | 1000001        |
 
     And metasfresh contains SAP_GLJournalLines:
-      | Identifier                     | Line | SAP_GLJournal_ID.Identifier | PostingSign | C_ValidCombination_ID | Amount | M_SectionCode_ID.Identifier | OPT.C_Tax_ID.Identifier | OPT.IsTaxIncluded | OPT.Description    |
-      | sap_gljournalLine_S0320_300_10 | 10   | sap_gljournal_S0320_300     | C           | 1000343               | 100    | section_desc_copy           | tax_desc_copy           | false             | Office supplies Q1 |
+      | Identifier                     | Line | SAP_GLJournal_ID.Identifier | PostingSign | C_ValidCombination_ID | Amount | OPT.C_Tax_ID.Identifier | OPT.IsTaxIncluded | OPT.Description    |
+      | sap_gljournalLine_S0320_300_10 | 10   | sap_gljournal_S0320_300     | C           | 1000343               | 100    | tax_desc_copy           | false             | Office supplies Q1 |
 
     When regenerate tax lines:
       | SAP_GLJournal_ID.Identifier |
@@ -52,8 +48,8 @@ Feature: SAP GL Journal - copy description from base line to generated tax line
       | sap_gljournal_S0320_400 | sap_gljournal_S0320_400 | GLJ         | A           | DR        | 2023-02-10 | 2023-02-10 | acctSchema_desc            | 114                 | 1000001        |
 
     And metasfresh contains SAP_GLJournalLines:
-      | Identifier                     | Line | SAP_GLJournal_ID.Identifier | PostingSign | C_ValidCombination_ID | Amount | M_SectionCode_ID.Identifier | OPT.C_Tax_ID.Identifier | OPT.IsTaxIncluded |
-      | sap_gljournalLine_S0320_400_10 | 10   | sap_gljournal_S0320_400     | C           | 1000343               | 100    | section_desc_copy           | tax_desc_copy           | false             |
+      | Identifier                     | Line | SAP_GLJournal_ID.Identifier | PostingSign | C_ValidCombination_ID | Amount | OPT.C_Tax_ID.Identifier | OPT.IsTaxIncluded |
+      | sap_gljournalLine_S0320_400_10 | 10   | sap_gljournal_S0320_400     | C           | 1000343               | 100    | tax_desc_copy           | false             |
 
     When regenerate tax lines:
       | SAP_GLJournal_ID.Identifier |

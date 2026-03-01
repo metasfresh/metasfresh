@@ -115,14 +115,14 @@ public class SAP_GLJournalLine_StepDef
 			glJournalLine.setAmount(amount);
 			glJournalLine.setAmtAcct(amount);  // same amount, as same currency is used
 
-			// M_SectionCode_ID.Identifier
-			final String sectionCodeIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_SectionCode_ID + "." + TABLECOLUMN_IDENTIFIER);
-			assertThat(sectionCodeIdentifier).isNotBlank();
-
-			final I_M_SectionCode sectionCode = sectionCodeTable.get(sectionCodeIdentifier);
-			assertThat(sectionCode).isNotNull();
-
-			glJournalLine.setM_SectionCode(sectionCode);
+			// OPT.M_SectionCode_ID.Identifier
+			final String sectionCodeIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_SectionCode_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (EmptyUtil.isNotBlank(sectionCodeIdentifier))
+			{
+				final I_M_SectionCode sectionCode = sectionCodeTable.get(sectionCodeIdentifier);
+				assertThat(sectionCode).isNotNull();
+				glJournalLine.setM_SectionCode(sectionCode);
+			}
 
 			// OPT.C_Tax_ID.Identifier
 			final String taxIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_C_Tax_ID + "." + TABLECOLUMN_IDENTIFIER);
