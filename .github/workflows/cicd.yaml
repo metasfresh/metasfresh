@@ -1845,7 +1845,7 @@ jobs:
   # =============================================================================
   # Merge Frontend Playwright Allure Results from Sharded Runners
   # =============================================================================
-  frontend-allure-report:
+  frontend_allure_report:
     name: frontend allure report
     runs-on: ubuntu-latest
     needs: [ init, frontend_webui_test ]
@@ -1860,7 +1860,19 @@ jobs:
           path: allure-results-merged
           merge-multiple: true
 
+      - name: Check if results exist
+        id: check_results
+        run: |
+          if [ -d "allure-results-merged" ] && [ "$(ls -A allure-results-merged 2>/dev/null)" ]; then
+            echo "has_results=true" >> $GITHUB_OUTPUT
+            echo "Found $(find allure-results-merged -name '*.json' -type f | wc -l) JSON result files"
+          else
+            echo "has_results=false" >> $GITHUB_OUTPUT
+            echo "No Allure results found - skipping report generation"
+          fi
+
       - name: Generate Allure Report for Frontend
+        if: steps.check_results.outputs.has_results == 'true'
         uses: ./.github/actions/generate-allure-report
         with:
           results-dir: allure-results-merged
@@ -1875,7 +1887,7 @@ jobs:
   publish-test-reports:
     name: publish test reports
     runs-on: ubuntu-latest
-    needs: [ init, cucumber-allure-report, mobile_test, frontend-allure-report ]
+    needs: [ init, cucumber-allure-report, mobile_test, frontend_allure_report ]
     if: always() && needs.init.result == 'success'
     steps:
       - name: Check for report server secret
