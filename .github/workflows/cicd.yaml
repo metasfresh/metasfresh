@@ -2040,6 +2040,154 @@ jobs:
               json.dump(data, f, indent=2)
           PYEOF
 
+      - name: Update landing page
+        if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true' && steps.inventory.outputs.count != '0'
+        run: |
+          ssh reports-server "cat > /var/www/test-reports/index.html" <<'HTMLEOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Test Reports - metasfresh</title>
+              <style>
+                  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 40px; background: #f5f5f5; }
+                  .container { max-width: 1200px; margin: 0 auto; }
+                  h1 { color: #333; }
+                  .branch { background: white; border-radius: 8px; padding: 20px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+                  .branch h2 { margin-top: 0; color: #0066cc; }
+                  .builds { display: grid; gap: 10px; }
+                  .build { padding: 10px; background: #f9f9f9; border-radius: 4px; }
+                  .build-header { font-weight: bold; margin-bottom: 5px; }
+                  .timestamp { color: #666; font-size: 0.9em; margin-left: 10px; }
+                  .report-links { margin-top: 5px; }
+                  .report-links a { color: #0066cc; text-decoration: none; margin-right: 15px; }
+                  .report-links a:hover { text-decoration: underline; }
+                  .loading { color: #666; }
+                  .error { color: #cc0000; }
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <h1>📊 Test Reports</h1>
+                  <div id="branches"><p class="loading">Loading reports...</p></div>
+              </div>
+              <script>
+                  function createTextElement(tag, text, className) {
+                      const el = document.createElement(tag);
+                      el.textContent = text;
+                      if (className) el.className = className;
+                      return el;
+                  }
+
+                  function createLink(href, text) {
+                      const a = document.createElement('a');
+                      a.href = href;
+                      a.textContent = text;
+                      return a;
+                  }
+
+                  function createBuildElement(branchName, build) {
+                      const buildDiv = document.createElement('div');
+                      buildDiv.className = 'build';
+
+                      const header = document.createElement('div');
+                      header.className = 'build-header';
+
+                      const versionSpan = document.createElement('span');
+                      versionSpan.textContent = build.version;
+                      header.appendChild(versionSpan);
+
+                      const timestampSpan = document.createElement('span');
+                      timestampSpan.className = 'timestamp';
+                      timestampSpan.textContent = new Date(build.timestamp).toLocaleString();
+                      header.appendChild(timestampSpan);
+
+                      buildDiv.appendChild(header);
+
+                      const linksDiv = document.createElement('div');
+                      linksDiv.className = 'report-links';
+
+                      const basePath = '/branches/' + encodeURIComponent(branchName) + '/builds/' + encodeURIComponent(build.version);
+
+                      const reports = [
+                          { name: 'Frontend', path: '/allure/frontend-webui/' },
+                          { name: 'Mobile', path: '/allure/mobile-webui/' },
+                          { name: 'Cucumber', path: '/allure/cucumber/' }
+                      ];
+
+                      reports.forEach(function(report) {
+                          const link = createLink(basePath + report.path, report.name);
+                          linksDiv.appendChild(link);
+                      });
+
+                      buildDiv.appendChild(linksDiv);
+                      return buildDiv;
+                  }
+
+                  function createBranchElement(branchData) {
+                      const branchDiv = document.createElement('div');
+                      branchDiv.className = 'branch';
+
+                      const heading = createTextElement('h2', branchData.branch);
+                      branchDiv.appendChild(heading);
+
+                      const buildsDiv = document.createElement('div');
+                      buildsDiv.className = 'builds';
+
+                      // Show newest 10 builds (metadata is already sorted newest-first)
+                      const builds = branchData.builds.slice(0, 10);
+                      builds.forEach(function(build) {
+                          buildsDiv.appendChild(createBuildElement(branchData.branch, build));
+                      });
+
+                      branchDiv.appendChild(buildsDiv);
+                      return branchDiv;
+                  }
+
+                  async function loadReports() {
+                      const container = document.getElementById('branches');
+
+                      try {
+                          const response = await fetch('/_metadata/');
+                          if (!response.ok) throw new Error('Failed to load metadata');
+
+                          const files = await response.json();
+                          const jsonFiles = files.filter(function(f) {
+                              return f.name.endsWith('.json');
+                          });
+
+                          if (jsonFiles.length === 0) {
+                              container.textContent = 'No reports available yet.';
+                              return;
+                          }
+
+                          container.textContent = '';
+
+                          for (const file of jsonFiles) {
+                              try {
+                                  const branchResponse = await fetch('/_metadata/' + file.name);
+                                  if (branchResponse.ok) {
+                                      const branchData = await branchResponse.json();
+                                      container.appendChild(createBranchElement(branchData));
+                                  }
+                              } catch (e) {
+                                  console.error('Error loading branch:', file.name, e);
+                              }
+                          }
+                      } catch (error) {
+                          container.textContent = '';
+                          const errorP = createTextElement('p', 'Error loading reports: ' + error.message, 'error');
+                          container.appendChild(errorP);
+                      }
+                  }
+
+                  loadReports();
+              </script>
+          </body>
+          </html>
+          HTMLEOF
+
       - name: Produce summary
         if: always()
         env:
