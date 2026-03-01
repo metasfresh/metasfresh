@@ -9,7 +9,7 @@ import { ShipmentSchedulePage } from '../utils/pages/ShipmentSchedulePage';
 import { InvoiceCandidatePage } from '../utils/pages/InvoiceCandidatePage';
 import { PurchaseOrderPage } from '../utils/pages/PurchaseOrderPage';
 import { ReceiptCandidatesPage } from '../utils/pages/ReceiptCandidatesPage';
-import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { SALES_ORDER_WINDOW_ID, PURCHASE_ORDER_WINDOW_ID } from '../utils/WindowIds';
 import {
   openReferencesPanel,
@@ -130,194 +130,6 @@ async function navigateToRecord(page, windowId, recordId) {
   await page.waitForTimeout(500);
 }
 
-/**
- * Helper: Check if at least one order line exists in the grid.
- */
-async function hasOrderLines(page) {
-  await page.waitForTimeout(500);
-  const gridRows = page.locator('table tbody tr');
-  const rowCount = await gridRows.count();
-  return rowCount > 0;
-}
-
-/**
- * Helper: Add an order line with retry logic.
- * Inline implementation to avoid relying on page object batch entry timing.
- */
-async function addOrderLineWithRetry(page, { product, quantity, recordId, windowId, tabId, label, maxAttempts = 3 }) {
-  return await test.step(`${label} - Add order line with retry`, async () => {
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      console.log(`[${label}] addOrderLine attempt ${attempt}/${maxAttempts}`);
-
-      // Scroll down to ensure batch entry button is visible
-      const batchEntryButton = page.getByTestId('batch-entry-toggle');
-      await batchEntryButton.scrollIntoViewIfNeeded();
-      await batchEntryButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-
-      // Click batch entry toggle
-      await batchEntryButton.click();
-      await page.waitForTimeout(500);
-
-      // Wait for batch entry form
-      const quickInputVisible = await page
-        .locator('.quick-input-container')
-        .waitFor({ state: 'visible', timeout: 5000 })
-        .then(() => true)
-        .catch(() => false);
-
-      if (!quickInputVisible) {
-        console.log(`[${label}] Quick input container not visible, retrying...`);
-        await page.keyboard.press('Escape');
-        await page.waitForTimeout(1000);
-        continue;
-      }
-
-      // Fill product
-      const productInput = page.locator('#lookup_M_Product_ID input.input-field');
-      await productInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      await productInput.click();
-      await page.waitForTimeout(500);
-      await productInput.fill(product);
-      await page.waitForTimeout(1000);
-
-      // Wait for dropdown spinner to clear
-      await page
-        .locator('#lookup_M_Product_ID .rotating, #lookup_M_Product_ID .spinner')
-        .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
-        .catch(() => {});
-      await page.waitForTimeout(500);
-
-      // Click the dropdown option
-      const dropdownOption = page.locator('.input-dropdown-list-option').getByText(product).first();
-      const optionVisible = await dropdownOption
-        .waitFor({ state: 'visible', timeout: 5000 })
-        .then(() => true)
-        .catch(() => false);
-
-      if (!optionVisible) {
-        console.log(`[${label}] Product dropdown option not visible, closing and retrying...`);
-        await page.keyboard.press('Escape');
-        await page.waitForTimeout(500);
-        // Close batch entry
-        await batchEntryButton.click().catch(() => {});
-        await page.waitForTimeout(1000);
-        // Reload page
-        await page.keyboard.press('F5');
-        await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
-        await page.waitForTimeout(2000);
-        continue;
-      }
-
-      await dropdownOption.click();
-      await page.waitForTimeout(1000);
-
-      // Fill quantity — target the spinbutton inside .quick-input-container specifically
-      const quantityInput = page.locator('.quick-input-container').getByRole('spinbutton');
-      await quantityInput.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
-      await quantityInput.click();
-      await quantityInput.fill(quantity.toString());
-      await page.waitForTimeout(300);
-
-      // Press Enter to submit the line
-      await page.keyboard.press('Enter');
-      await page.waitForTimeout(2000);
-
-      // Wait for spinners
-      await page
-        .locator('.rotating, .indicator-pending')
-        .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
-        .catch(() => {});
-
-      // Close batch entry
-      await batchEntryButton.click();
-      await page.waitForTimeout(1000);
-
-      // Check if line was added
-      const hasLines = await hasOrderLines(page);
-      if (hasLines) {
-        console.log(`[${label}] Order line added successfully on attempt ${attempt}`);
-        return true;
-      }
-
-      console.log(`[${label}] No order lines found after attempt ${attempt}, reloading page...`);
-      // Reload the page and retry
-      await page.keyboard.press('F5');
-      await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
-      await page.waitForTimeout(2000);
-    }
-
-    throw new Error(`${label} - Failed to add order line after ${maxAttempts} attempts`);
-  });
-}
-
-/**
- * Helper: Complete a document and verify the status actually changed.
- * Uses innerText() to avoid picking up hidden dropdown text.
- * Retries the complete action if status remains "Drafted".
- */
-async function completeAndVerify(page, label, maxAttempts = 3) {
-  return await test.step(`${label} - Complete and verify`, async () => {
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      // Use innerText to get only visible text (excludes hidden dropdown options)
-      const statusButton = page.getByTestId('status-button');
-      const statusText = await statusButton.innerText().catch(() => '');
-
-      // Check if already completed (innerText should show just "Drafted" or "Completed")
-      if (statusText && !statusText.toLowerCase().includes('draft')) {
-        console.log(`${label} already completed (status: "${statusText.trim()}")`);
-        return;
-      }
-
-      console.log(`${label} completion attempt ${attempt}/${maxAttempts} (status: "${statusText.trim()}")`);
-
-      // Click status button to open dropdown
-      await statusButton.click();
-
-      // Wait for dropdown to fully render
-      const coOption = page.getByTestId('status-CO');
-      const coVisible = await coOption
-        .waitFor({ state: 'visible', timeout: 5000 })
-        .then(() => true)
-        .catch(() => false);
-
-      if (!coVisible) {
-        console.log(`${label} - status-CO not visible, closing and retrying...`);
-        await page.keyboard.press('Escape');
-        await page.waitForTimeout(1000);
-        continue;
-      }
-
-      // Click Complete
-      await coOption.click();
-
-      // Wait for completion processing
-      await page.waitForTimeout(3000);
-      await page
-        .locator('.rotating, .indicator-pending')
-        .waitFor({ state: 'detached', timeout: VERY_SLOW_ACTION_TIMEOUT })
-        .catch(() => {});
-
-      // Wait for status to update and re-check
-      await page.waitForTimeout(1000);
-      const newStatus = await statusButton.innerText().catch(() => '');
-
-      if (newStatus && !newStatus.toLowerCase().includes('draft')) {
-        console.log(`${label} completed successfully (status: "${newStatus.trim()}")`);
-        return;
-      }
-
-      console.log(`${label} still Drafted after attempt ${attempt} (status: "${newStatus.trim()}"), retrying...`);
-
-      // Refresh page before next attempt to reset UI state
-      await page.keyboard.press('F5');
-      await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
-      await page.waitForTimeout(2000);
-    }
-
-    throw new Error(`${label} - Failed to complete document after ${maxAttempts} attempts`);
-  });
-}
-
 // =====================================================================
 // TEST: Sales Order Alt+6 References
 // =====================================================================
@@ -326,13 +138,9 @@ test.describe('Document References - Sales Side (Alt+6)', () => {
   test('Verify ALL Alt+6 references after complete O2C flow', async ({ page }) => {
     allure.epic('E0100: Sales');
     allure.tag('F00100: Sales Order');
-    allure.tag('F00100');
     allure.tag('F00130: Shipment Schedule');
-    allure.tag('F00130');
     allure.tag('F00150: Sales Shipment');
-    allure.tag('F00150');
     allure.tag('F00200: Sales Invoice');
-    allure.tag('F00200');
     allure.story('Alt+6 Document References: Complete Sales Flow');
     allure.severity('critical');
 
@@ -387,15 +195,12 @@ Each reference is verified for:
     await SalesOrderPage.goto();
     await SalesOrderPage.clickNew();
     const soRecordId = await SalesOrderPage.selectCustomer(masterdata.bpartners.CUSTOMER1.bpartnerCode);
-    await addOrderLineWithRetry(page, {
+    await SalesOrderPage.addOrderLine({
       product: masterdata.products.Product1.productCode,
       quantity: '8',
       recordId: soRecordId,
-      windowId: SALES_ORDER_WINDOW_ID,
-      tabId: 'AD_Tab-187',
-      label: 'SO',
     });
-    await completeAndVerify(page, 'Sales Order');
+    await SalesOrderPage.complete();
     const soDocumentNo = await SalesOrderPage.getDocumentNo();
     allure.parameter('SO Document No', soDocumentNo, { excluded: true });
     console.log(`Sales Order completed: ${soDocumentNo} (record=${soRecordId})`);
@@ -469,7 +274,7 @@ Each reference is verified for:
     for (const expected of expectedSORefs) {
       const found = soRefsFinal.some((r) => r.dataCy === expected.dataCy);
       const status = found ? 'PASS' : 'MISSING';
-      console.log(`${found ? '✓' : '✗'} SO → ${expected.label}: ${status}`);
+      console.log(`${found ? '[PASS]' : '[FAIL]'} SO → ${expected.label}: ${status}`);
       refResults.push({ reference: `SO → ${expected.label}`, dataCy: expected.dataCy, status });
       expect(found).toBe(true);
     }
@@ -494,7 +299,7 @@ Each reference is verified for:
       'Click SO → Shipment'
     );
     expect(shipmentUrl).toContain('/window/');
-    console.log('✓ SO → Shipment navigation works');
+    console.log('[PASS] SO → Shipment navigation works');
 
     // Open shipment detail view
     const shipmentFirstRow = page.locator('tbody tr').first();
@@ -508,14 +313,14 @@ Each reference is verified for:
 
     if (shipmentRefs.length > 0) {
       const hasShipmentToSO = shipmentRefs.some((r) => r.dataCy === REFERENCE_DATA_CY.SHIPMENT_TO_SALES_ORDER);
-      console.log(`${hasShipmentToSO ? '✓' : '⚠'} Shipment → Sales Order: ${hasShipmentToSO ? 'PASS' : 'NOT FOUND'}`);
+      console.log(`${hasShipmentToSO ? '[PASS]' : '[WARN]'} Shipment → Sales Order: ${hasShipmentToSO ? 'PASS' : 'NOT FOUND'}`);
       refResults.push({ reference: 'Shipment → Sales Order', dataCy: REFERENCE_DATA_CY.SHIPMENT_TO_SALES_ORDER, status: hasShipmentToSO ? 'PASS' : 'NOT FOUND' });
 
       const hasShipmentToSchedule = shipmentRefs.some((r) => r.dataCy === REFERENCE_DATA_CY.SHIPMENT_TO_SHIPMENT_SCHEDULE);
-      console.log(`${hasShipmentToSchedule ? '✓' : '⚠'} Shipment → Shipment Schedule: ${hasShipmentToSchedule ? 'PASS' : 'NOT FOUND'}`);
+      console.log(`${hasShipmentToSchedule ? '[PASS]' : '[WARN]'} Shipment → Shipment Schedule: ${hasShipmentToSchedule ? 'PASS' : 'NOT FOUND'}`);
       refResults.push({ reference: 'Shipment → Shipment Schedule', dataCy: REFERENCE_DATA_CY.SHIPMENT_TO_SHIPMENT_SCHEDULE, status: hasShipmentToSchedule ? 'PASS' : 'NOT FOUND' });
     } else {
-      console.log('⚠ No Shipment references loaded (SSE intermittent)');
+      console.log('[WARN] No Shipment references loaded (SSE intermittent)');
     }
 
     // ======================================================================
@@ -529,7 +334,7 @@ Each reference is verified for:
       'Click SO → Customer Invoice'
     );
     expect(invoiceUrl).toContain('/window/');
-    console.log('✓ SO → Customer Invoice navigation works');
+    console.log('[PASS] SO → Customer Invoice navigation works');
 
     // Open invoice detail view
     const invoiceFirstRow = page.locator('tbody tr').first();
@@ -550,11 +355,11 @@ Each reference is verified for:
 
       for (const expected of expectedInvoiceRefs) {
         const found = invoiceRefs.some((r) => r.dataCy === expected.dataCy);
-        console.log(`${found ? '✓' : '⚠'} Invoice → ${expected.label}: ${found ? 'PASS' : 'NOT FOUND'}`);
+        console.log(`${found ? '[PASS]' : '[WARN]'} Invoice → ${expected.label}: ${found ? 'PASS' : 'NOT FOUND'}`);
         refResults.push({ reference: `Invoice → ${expected.label}`, dataCy: expected.dataCy, status: found ? 'PASS' : 'NOT FOUND' });
       }
     } else {
-      console.log('⚠ No Invoice references loaded (SSE intermittent)');
+      console.log('[WARN] No Invoice references loaded (SSE intermittent)');
     }
 
     // Take final screenshot
@@ -580,13 +385,9 @@ test.describe('Document References - Purchase Side (Alt+6)', () => {
   test('Verify ALL Alt+6 references after complete P2P flow', async ({ page }) => {
     allure.epic('E0140: Purchasing');
     allure.tag('F00600: Purchase Order');
-    allure.tag('F00600');
     allure.tag('F65010: Material Receipt Candidates');
-    allure.tag('F65010');
     allure.tag('F00700: Invoice Candidate');
-    allure.tag('F00700');
     allure.tag('F00710: Vendor Invoice');
-    allure.tag('F00710');
     allure.story('Alt+6 Document References: Complete Purchase Flow');
     allure.severity('critical');
 
@@ -636,15 +437,12 @@ Systematically verifies ALL Alt+6 references across the purchase flow:
     await PurchaseOrderPage.goto();
     await PurchaseOrderPage.clickNew();
     const poRecordId = await PurchaseOrderPage.selectBusinessPartner(masterdata.bpartners.VENDOR1.bpartnerCode);
-    await addOrderLineWithRetry(page, {
+    await PurchaseOrderPage.addOrderLine({
       product: masterdata.products.Product1.productCode,
       quantity: '5',
       recordId: poRecordId,
-      windowId: PURCHASE_ORDER_WINDOW_ID,
-      tabId: 'AD_Tab-293',
-      label: 'PO',
     });
-    await completeAndVerify(page, 'Purchase Order');
+    await PurchaseOrderPage.complete();
     const poDocumentNo = await PurchaseOrderPage.getDocumentNo();
     allure.parameter('PO Document No', poDocumentNo, { excluded: true });
     console.log(`Purchase Order completed: ${poDocumentNo} (record=${poRecordId})`);
@@ -657,9 +455,9 @@ Systematically verifies ALL Alt+6 references across the purchase flow:
     // ======================================================================
     const poRefsInitial = await collectReferences(page, 'PO references (initial)', 5, 3000);
     if (poRefsInitial.length > 0) {
-      console.log(`✓ Found ${poRefsInitial.length} initial references`);
+      console.log(`[PASS] Found ${poRefsInitial.length} initial references`);
     } else {
-      console.log('⚠ No initial references loaded (SSE intermittent) — continuing with navigation');
+      console.log('[WARN] No initial references loaded (SSE intermittent) — continuing with navigation');
     }
 
     // ======================================================================
@@ -730,7 +528,7 @@ Systematically verifies ALL Alt+6 references across the purchase flow:
     const poRefResults = [];
     for (const expected of expectedPORefs) {
       const found = poRefsFinal.some((r) => r.dataCy === expected.dataCy);
-      console.log(`${found ? '✓' : '✗'} PO → ${expected.label}: ${found ? 'PASS' : 'MISSING'}`);
+      console.log(`${found ? '[PASS]' : '[FAIL]'} PO → ${expected.label}: ${found ? 'PASS' : 'MISSING'}`);
       poRefResults.push({ reference: `PO → ${expected.label}`, dataCy: expected.dataCy, status: found ? 'PASS' : 'MISSING' });
       expect(found).toBe(true);
     }
@@ -756,7 +554,7 @@ Systematically verifies ALL Alt+6 references across the purchase flow:
     );
 
     if (receiptUrl) {
-      console.log('✓ PO → Material Receipt navigation works');
+      console.log('[PASS] PO → Material Receipt navigation works');
 
       // Open receipt detail view
       const receiptFirstRow = page.locator('tbody tr').first();
@@ -773,7 +571,7 @@ Systematically verifies ALL Alt+6 references across the purchase flow:
         const hasReceiptToPO = receiptRefs.some(
           (r) => r.dataCy === REFERENCE_DATA_CY.RECEIPT_TO_PURCHASE_ORDER
         );
-        console.log(`${hasReceiptToPO ? '✓' : '⚠'} Receipt → Purchase Order: ${hasReceiptToPO ? 'PASS' : 'NOT FOUND'}`);
+        console.log(`${hasReceiptToPO ? '[PASS]' : '[WARN]'} Receipt → Purchase Order: ${hasReceiptToPO ? 'PASS' : 'NOT FOUND'}`);
         poRefResults.push({
           reference: 'Receipt → Purchase Order',
           dataCy: REFERENCE_DATA_CY.RECEIPT_TO_PURCHASE_ORDER,

@@ -309,9 +309,12 @@ export class SalesOrderPage {
           .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
           .catch(() => {});
 
-        // Close the batch entry modal
-        await page.getByTestId('batch-entry-toggle').click();
-        await page.waitForTimeout(1000);
+        // Close the batch entry modal (only if still open)
+        const isStillOpen = await page.locator('.quick-input-container').isVisible().catch(() => false);
+        if (isStillOpen) {
+          await page.getByTestId('batch-entry-toggle').click();
+          await page.waitForTimeout(1000);
+        }
 
         // Verify that at least one order line was added
         const gridRows = page.locator('table tbody tr');
@@ -333,29 +336,44 @@ export class SalesOrderPage {
 
   /**
    * Complete the sales order.
+   * Retries up to maxAttempts times, using language-independent data-testid selectors
+   * to detect whether the Complete (CO) action is still available.
+   *
+   * @param {Object} options - Configuration options
+   * @param {number} options.maxAttempts - Maximum retry attempts (default: 3)
    */
   static async complete({ maxAttempts = 3 } = {}) {
     return await test.step('SalesOrderPage - Complete order', async () => {
       const page = getPage();
 
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-        // Check current status — skip if already completed
-        const statusButton = page.getByTestId('status-button');
-        const statusText = await statusButton.innerText().catch(() => '');
+        const coOption = page.getByTestId('status-CO');
 
-        if (statusText && !statusText.toLowerCase().includes('draft') && !statusText.toLowerCase().includes('entwurf')) {
-          console.log(`Order already completed (status: "${statusText}")`);
+        // Check if dropdown is already open from a previous failed attempt
+        const isAlreadyOpen = await coOption.isVisible().catch(() => false);
+        if (!isAlreadyOpen) {
+          // Click the document status button to open the action dropdown
+          await page.getByTestId('status-button').click();
+          await page.waitForTimeout(500);
+        }
+
+        // Language-independent: check if Complete action is available
+        const coVisible = await coOption
+          .waitFor({ state: 'visible', timeout: 5000 })
+          .then(() => true)
+          .catch(() => false);
+
+        if (!coVisible) {
+          // No CO action means document is already completed (or non-completable)
+          console.log(`Complete action (status-CO) not available — document likely already completed`);
+          await page.keyboard.press('Escape');
           return;
         }
 
-        console.log(`Complete attempt ${attempt}/${maxAttempts} (current status: "${statusText}")`);
-
-        // Click the document status button to open the action dropdown
-        await statusButton.click();
-        await page.waitForTimeout(500);
+        console.log(`Complete attempt ${attempt}/${maxAttempts}`);
 
         // Click "Complete" action (CO = Complete document action key)
-        await page.getByTestId('status-CO').click();
+        await coOption.click();
 
         // Wait for the completion process
         await page.waitForTimeout(3000);
@@ -366,14 +384,18 @@ export class SalesOrderPage {
           .waitFor({ state: 'detached', timeout: VERY_SLOW_ACTION_TIMEOUT })
           .catch(() => {});
 
-        // Verify status changed
-        const newStatusText = await statusButton.innerText().catch(() => '');
-        if (newStatusText && !newStatusText.toLowerCase().includes('draft') && !newStatusText.toLowerCase().includes('entwurf')) {
-          console.log(`Order completed successfully (status: "${newStatusText}")`);
+        // Language-independent verification: open dropdown and check if CO is still there
+        await page.getByTestId('status-button').click();
+        await page.waitForTimeout(500);
+        const stillHasCO = await coOption.isVisible().catch(() => false);
+        await page.keyboard.press('Escape');
+
+        if (!stillHasCO) {
+          console.log(`Order completed successfully on attempt ${attempt}`);
           return;
         }
 
-        console.log(`Status still "${newStatusText}" after attempt ${attempt}, retrying...`);
+        console.log(`Order still shows CO action after attempt ${attempt}, retrying...`);
         await page.waitForTimeout(2000);
       }
 

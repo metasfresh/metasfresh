@@ -46,11 +46,8 @@ testCases.forEach(({ language, label }) => {
             // === ALLURE METADATA ===
             allure.epic('E0100: Sales');
             allure.tag('F00100: Sales Order');
-            allure.tag('F00100');
             allure.tag('F00200: Sales Invoice');
-            allure.tag('F00200');
             allure.tag('F00210: Invoice Reversal');
-            allure.tag('F00210');
             allure.story('Invoice Reversal: SO -> Ship -> Invoice -> Reverse-Correct');
             allure.severity('critical');
             allure.parameter('Language', language);
@@ -210,16 +207,24 @@ which is essential for handling billing errors and credit adjustments.
 
             console.log(`[${language}] Invoice ${invoiceDocNo} reversed`);
 
-            // Step 9: Verify reversal — the document number field should still be visible
-            // After reversal, the document should show as "Reversed" status
+            // Step 9: Verify reversal — language-independent checks
             const docNoAfterReversal = await page.locator('.form-field-DocumentNo input, input[name="DocumentNo"]')
                 .first()
                 .inputValue()
                 .catch(() => '');
 
-            // The original document should still be visible (now with Reversed status)
+            // The document number field should still be visible
             expect(docNoAfterReversal).toBeTruthy();
             console.log(`[${language}] Document after reversal: ${docNoAfterReversal}`);
+
+            // Language-independent verification: after reversal, Reverse-Correct (RC) should no longer be available
+            await page.getByTestId('status-button').click();
+            await page.waitForTimeout(500);
+            const rcStillAvailable = await page.getByTestId('status-RC').isVisible().catch(() => false);
+            await page.keyboard.press('Escape');
+
+            expect(rcStillAvailable).toBe(false);
+            console.log(`[${language}] Reverse-Correct action no longer available: PASS`);
 
             // Verify the page did not show an error (no error toast)
             const screenshotBuffer = await page.screenshot();

@@ -5,7 +5,7 @@ import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
-import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
 
 /**
@@ -16,100 +16,6 @@ import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
  * opens a context menu with "Zoom Into" (meta-icon-share) that opens
  * the referenced record in a new tab.
  */
-
-/**
- * Helper: Add an order line with retry (inline to avoid dependency on specific page object).
- */
-async function addOrderLineWithRetry(page, { product, quantity, label, maxAttempts = 3 }) {
-  return await test.step(`${label} - Add order line with retry`, async () => {
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      console.log(`[${label}] addOrderLine attempt ${attempt}/${maxAttempts}`);
-
-      const batchEntryButton = page.getByTestId('batch-entry-toggle');
-      await batchEntryButton.scrollIntoViewIfNeeded();
-      await batchEntryButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      await batchEntryButton.click();
-      await page.waitForTimeout(500);
-
-      const quickInputVisible = await page
-        .locator('.quick-input-container')
-        .waitFor({ state: 'visible', timeout: 5000 })
-        .then(() => true)
-        .catch(() => false);
-
-      if (!quickInputVisible) {
-        console.log(`[${label}] Quick input not visible, retrying...`);
-        await page.keyboard.press('Escape');
-        await page.waitForTimeout(1000);
-        continue;
-      }
-
-      const productInput = page.locator('#lookup_M_Product_ID input.input-field');
-      await productInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      await productInput.click();
-      await page.waitForTimeout(500);
-      await productInput.fill(product);
-      await page.waitForTimeout(1000);
-
-      await page
-        .locator('#lookup_M_Product_ID .rotating, #lookup_M_Product_ID .spinner')
-        .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
-        .catch(() => {});
-      await page.waitForTimeout(500);
-
-      const dropdownOption = page.locator('.input-dropdown-list-option').getByText(product).first();
-      const optionVisible = await dropdownOption
-        .waitFor({ state: 'visible', timeout: 5000 })
-        .then(() => true)
-        .catch(() => false);
-
-      if (!optionVisible) {
-        console.log(`[${label}] Product dropdown not visible, retrying...`);
-        await page.keyboard.press('Escape');
-        await page.waitForTimeout(500);
-        await batchEntryButton.click().catch(() => {});
-        await page.waitForTimeout(1000);
-        await page.keyboard.press('F5');
-        await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
-        await page.waitForTimeout(2000);
-        continue;
-      }
-
-      await dropdownOption.click();
-      await page.waitForTimeout(1000);
-
-      const quantityInput = page.locator('.quick-input-container').getByRole('spinbutton');
-      await quantityInput.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
-      await quantityInput.click();
-      await quantityInput.fill(quantity.toString());
-      await page.waitForTimeout(300);
-
-      await page.keyboard.press('Enter');
-      await page.waitForTimeout(2000);
-
-      await page
-        .locator('.rotating, .indicator-pending')
-        .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
-        .catch(() => {});
-
-      await batchEntryButton.click();
-      await page.waitForTimeout(1000);
-
-      const gridRows = page.locator('table tbody tr');
-      const rowCount = await gridRows.count();
-      if (rowCount > 0) {
-        console.log(`[${label}] Order line added on attempt ${attempt}`);
-        return true;
-      }
-
-      console.log(`[${label}] No lines after attempt ${attempt}, reloading...`);
-      await page.keyboard.press('F5');
-      await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
-      await page.waitForTimeout(2000);
-    }
-    throw new Error(`${label} - Failed to add order line after ${maxAttempts} attempts`);
-  });
-}
 
 // =====================================================================
 // TEST: Right-Click Zoom-Into on Grid Cells
@@ -174,10 +80,10 @@ Verifies:
     await SalesOrderPage.clickNew();
     const soRecordId = await SalesOrderPage.selectCustomer(masterdata.bpartners.CUSTOMER1.bpartnerCode);
 
-    await addOrderLineWithRetry(page, {
+    await SalesOrderPage.addOrderLine({
       product: masterdata.products.Product1.productCode,
       quantity: '3',
-      label: 'SO',
+      recordId: soRecordId,
     });
 
     const soDocumentNo = await SalesOrderPage.getDocumentNo();
@@ -276,7 +182,7 @@ Verifies:
           const newPage = await popupPromise;
           await newPage.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
           const newUrl = newPage.url();
-          console.log(`✓ Zoom-Into opened new tab: ${newUrl}`);
+          console.log(`[PASS] Zoom-Into opened new tab: ${newUrl}`);
 
           // Verify URL is a window/record detail view
           expect(newUrl).toMatch(/\/window\/\d+\/\d+/);
@@ -293,7 +199,7 @@ Verifies:
           await newPage.close();
           console.log('New tab closed, back to original page');
         } catch {
-          console.log('⚠ No new tab opened — zoom may have failed or navigated in same tab');
+          console.log('[WARN] No new tab opened — zoom may have failed or navigated in same tab');
 
           // Check if we navigated in the same tab
           const currentUrl = page.url();
@@ -304,12 +210,12 @@ Verifies:
           }
         }
       } else {
-        console.log('⚠ "Zoom Into" not available in context menu for this cell');
+        console.log('[WARN] "Zoom Into" not available in context menu for this cell');
         // Close context menu
         await page.keyboard.press('Escape');
       }
     } else {
-      console.log('⚠ No context menu appeared on right-click');
+      console.log('[WARN] No context menu appeared on right-click');
     }
 
     // ======================================================================

@@ -305,13 +305,13 @@ Tests keyboard shortcuts defined in keymap.js on a Sales Order detail view:
 
     const resultsHtml = `<table border="1">
       <tr><th>Shortcut</th><th>Action</th><th>Works</th></tr>
-      ${results.map((r) => `<tr><td><code>${r.shortcut}</code></td><td>${r.action}</td><td>${r.works ? '✓' : '✗'}</td></tr>`).join('\n')}
+      ${results.map((r) => `<tr><td><code>${r.shortcut}</code></td><td>${r.action}</td><td>${r.works ? 'PASS' : 'FAIL'}</td></tr>`).join('\n')}
     </table>`;
     allure.attachment('Keyboard Shortcuts Results', resultsHtml, 'text/html');
 
     console.log('\n=== Keyboard Shortcuts Summary ===');
     results.forEach((r) => {
-      console.log(`${r.works ? '✓' : '✗'} ${r.shortcut}: ${r.action}`);
+      console.log(`${r.works ? '[PASS]' : '[FAIL]'} ${r.shortcut}: ${r.action}`);
     });
 
     // Core shortcuts must work

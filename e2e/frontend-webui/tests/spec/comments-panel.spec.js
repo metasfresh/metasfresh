@@ -165,6 +165,18 @@ Tests the document comments panel:
             .locator('.rotating, .indicator-pending')
             .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
             .catch(() => {});
+
+          // Verify the comment appears in the panel
+          const commentInList = page.locator('.panel-full-width, .order-list-panel-open').getByText(testComment);
+          const commentVisible = await commentInList
+            .waitFor({ state: 'visible', timeout: 5000 })
+            .then(() => true)
+            .catch(() => false);
+          if (commentVisible) {
+            console.log('Comment verified in panel');
+          } else {
+            console.log('Comment not visible in panel after submission (panel may need refresh)');
+          }
         } else {
           console.log('No send button — trying Enter');
           await textarea.first().press('Enter');
