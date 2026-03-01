@@ -1843,7 +1843,7 @@ jobs:
       - name: Check for report server secret
         id: check-secret
         run: |
-          if [ -z "${{ secrets.REPORTS_SERVER_SSH_KEY_MISSING }}" ]; then
+          if [ -z "${{ secrets.REPORTS_SERVER_SSH_KEY }}" ]; then
             echo "available=false" >> $GITHUB_OUTPUT
             echo "::warning::REPORTS_SERVER_SSH_KEY not configured — skipping report upload"
           else
@@ -1854,7 +1854,7 @@ jobs:
         if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true'
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.REPORTS_SERVER_SSH_KEY_MISSING }}" > ~/.ssh/reports_key
+          echo "${{ secrets.REPORTS_SERVER_SSH_KEY }}" > ~/.ssh/reports_key
           chmod 600 ~/.ssh/reports_key
           ssh-keyscan -H test-reports.metasfresh.com >> ~/.ssh/known_hosts 2>/dev/null
           cat >> ~/.ssh/config <<EOF
