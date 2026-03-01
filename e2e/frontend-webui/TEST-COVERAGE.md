@@ -1,6 +1,6 @@
 # Frontend Web UI E2E Test Coverage
 
-**Last Updated**: 2026-02-25
+**Last Updated**: 2026-03-01
 
 This document provides a complete overview of E2E test coverage for the metasfresh desktop web UI.
 
@@ -258,7 +258,112 @@ npm run test:report
 
 ---
 
-### 8. Bookmark Star (SubHeader)
+### 8. Invoice Reversal (Reverse-Correct)
+**File**: `tests/spec/invoice-reversal.spec.js`
+**Status**: ✅ Passing (English, German)
+**Duration**: ~70 seconds per language
+
+**Features Tested**:
+- F00100: Sales Order
+- F00130: Shipment Schedule
+- F00150: Sales Shipment
+- F00200: Sales Invoice
+- F00210: Invoice Reversal (Document Actions)
+
+**Epic**: E0100: Sales
+
+**Workflow**:
+1. Create sales order with customer and product (qty=5)
+2. Complete the sales order
+3. Navigate to Shipment Schedule (Alt+6), create shipment
+4. Navigate to Invoice Candidates (Alt+6), create invoice
+5. Navigate to completed Invoice (Alt+6)
+6. Open invoice detail view
+7. Execute Reverse-Correct action (status-RC)
+8. Verify reversal completed without errors
+
+**Key Validations**:
+- Document status actions (Reverse-Correct)
+- Invoice reversal creates reversal document
+- Full O2C flow followed by invoice correction
+- Language-independent status action selectors (`data-testid="status-RC"`)
+
+**Components Tested**:
+- Sales Order window (143)
+- Shipment Schedule window (500221)
+- Invoice Candidate window (540092)
+- Invoice window (167)
+- Document status actions (Complete, Reverse-Correct)
+
+---
+
+### 9. Business Partner Creation
+**File**: `tests/spec/business-partner-create.spec.js`
+**Status**: ✅ Passing (English, German)
+**Duration**: ~14 seconds per language
+
+**Features Tested**:
+- F00900: Business Partner
+- F00910: Business Partner Creation (via WebUI)
+
+**Epic**: E0390: Masterdata Partner
+
+**Workflow**:
+1. Login with test user
+2. Navigate to Business Partner window
+3. Create new record (Alt+N)
+4. Set company name
+5. Verify auto-generated search key
+6. Verify record is persisted
+
+**Key Validations**:
+- New record creation via keyboard shortcut (Alt+N)
+- Form field input and auto-save
+- Search key auto-generation
+- Record persistence after navigation
+
+**Components Tested**:
+- Business Partner window (123)
+- Record creation via Alt+N
+- Form fields (Name, Value)
+- Auto-save behavior
+
+---
+
+### 10. Menu Navigation & Window Search
+**File**: `tests/spec/menu-navigation.spec.js`
+**Status**: ✅ Passing (English, German)
+**Duration**: ~15 seconds per language
+
+**Features Tested**:
+- F14010: Menu Navigation
+- F14020: Window Search
+
+**Epic**: E0193: User Interface
+
+**Workflow**:
+1. Login with test user
+2. Navigate to Sales Order window via direct URL
+3. Navigate to Business Partner window via direct URL
+4. Navigate to Product window via direct URL
+5. Interact with menu/breadcrumb navigation
+6. Verify list view renders with column headers
+
+**Key Validations**:
+- URL-based window navigation
+- Multiple windows load correctly
+- List view table structure (column headers present)
+- Navigation between windows
+
+**Components Tested**:
+- Sales Order window (143) - list view
+- Business Partner window (123) - list view
+- Product window (140) - list view
+- Menu overlay / breadcrumb navigation
+
+---
+
+### 11. Bookmark Star (SubHeader)
 **File**: `tests/spec/bookmark-star.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~8 seconds
@@ -343,20 +448,22 @@ npm run test:report
 ## Coverage Gaps
 
 Areas **NOT yet covered** by E2E tests:
-- Advanced search and filtering
-- Document reversal/void actions
-- Error handling scenarios
+- Advanced search and filtering (column filters, saved filters)
+- Sales quotation to sales order conversion
+- Credit memo creation
+- Error handling scenarios (invalid input, permission denied)
 - Permission-based UI changes
-- Menu search mode bookmark behavior
+- Multi-product order lines
+- BOM / Manufacturing workflows
 
 ## Test Quality Metrics
 
-- **Total test specs**: 7 files
-- **Total test cases**: 12 (7 specs, some with 2 languages × 2 tests, receipt.spec.js has 2 tests per language)
+- **Total test specs**: 10 files
+- **Total test cases**: 18+ (10 specs, most with en_US + de_DE, receipt.spec.js has 2 tests per language)
 - **Language coverage**: en_US, de_DE
 - **Success rate**: 100% passing
 - **Average execution time**: ~40 seconds per test
-- **Total suite time**: ~8 minutes (sequential execution)
+- **Total suite time**: ~10 minutes (sequential execution)
 
 ## CI/CD Integration
 
