@@ -436,6 +436,70 @@ npm run test:report
 
 ---
 
+### 13. Zoom-Into (Right-Click Context Menu)
+**File**: `tests/spec/zoom-into.spec.js`
+**Status**: ✅ Passing
+**Duration**: ~30 seconds
+
+**Features Tested**:
+- F14010: Navigation (Right-Click Zoom)
+
+**Epic**: E0193: User Interface
+
+**Workflow**:
+1. Create SO with order line (product + quantity)
+2. Right-click on Product cell in order line grid
+3. Verify context menu appears with "Zoom Into" option (meta-icon-share icon)
+4. Click "Zoom Into" — verify new tab opens to Product window (/window/140/{id})
+5. Close new tab, return to original page
+
+**Key Validations**:
+- Context menu appears on right-click with correct items
+- "Zoom Into" identified by `.meta-icon-share` icon (language-independent)
+- New tab opens with correct window/record URL pattern
+- Context menu also shows: Advanced edit (Alt+E), Delete (Alt+Y), Change Log
+
+**Components Tested**:
+- Grid cell context menu (`.context-menu`)
+- Context menu items (`.context-menu-item`)
+- New tab navigation via `page.context().waitForEvent('page')`
+
+---
+
+### 14. Keyboard Shortcuts
+**File**: `tests/spec/keyboard-shortcuts.spec.js`
+**Status**: ✅ Passing
+**Duration**: ~24 seconds
+
+**Features Tested**:
+- F14020: Keyboard Shortcuts (all from keymap.js)
+
+**Epic**: E0193: User Interface
+
+**Shortcuts Verified**:
+| Shortcut | keymap.js Name | Action | Selector |
+|----------|----------------|--------|----------|
+| Alt+N | NEW_DOCUMENT | Create new record | URL changes to /window/{id}/{recordId} |
+| Alt+6 | OPEN_SIDEBAR_MENU_1 | Open references panel | `.order-list-panel-open` |
+| Alt+E | OPEN_ADVANCED_EDIT | Advanced edit modal | `.panel-modal, .modal-content` |
+| Alt+P | OPEN_PRINT_RAPORT | Print/PDF dialog | `.modal-content, .panel-modal` |
+| Alt+1 | OPEN_ACTIONS_MENU | Toggle subheader | `.subheader-container` |
+| Alt+3 | OPEN_INBOX_MENU | Open inbox/notifications | `.inbox` |
+| Alt+I | DOC_STATUS | Document status dropdown | `[data-testid="status-CO"]` |
+
+**Key Discovery** (docs vs reality):
+- docs.metasfresh.org says Alt+1..5 are for tab navigation — **WRONG**. Alt+1..7 are header menu toggles.
+- Alt+I is DOC_STATUS (status dropdown), NOT sidebar/inbox toggle.
+- Alt+3 is the inbox toggle, not Alt+I.
+
+**Components Tested**:
+- Header menus and subheader (`.subheader-container`)
+- Inbox panel (`.inbox`)
+- Document status dropdown (`.js-dropdown-toggler`)
+- Print/PDF modal, Advanced edit modal
+
+---
+
 ## Test Architecture
 
 ### Page Objects
@@ -501,8 +565,8 @@ Areas **NOT yet covered** by E2E tests:
 
 ## Test Quality Metrics
 
-- **Total test specs**: 12 files
-- **Total test cases**: 20+ (12 specs, most with en_US + de_DE, receipt.spec.js has 2 tests per language)
+- **Total test specs**: 14 files
+- **Total test cases**: 22+ (14 specs, most with en_US + de_DE, receipt.spec.js has 2 tests per language)
 - **Language coverage**: en_US, de_DE
 - **Success rate**: 100% passing
 - **Average execution time**: ~40 seconds per test
