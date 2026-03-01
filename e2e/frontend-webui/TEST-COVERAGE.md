@@ -394,6 +394,48 @@ npm run test:report
 
 ---
 
+### 12. Document References (Alt+6) - Complete O2C and P2P
+**File**: `tests/spec/document-references.spec.js`
+**Status**: ✅ Passing
+**Duration**: ~2.8 minutes (both tests)
+
+**Features Tested**:
+- F00100: Sales Order, F00130: Shipment Schedule, F00150: Shipment, F00200: Invoice
+- F00600: Purchase Order, F65010: Material Receipt Candidates, F00700: Invoice Candidate, F00710: Vendor Invoice
+
+**Epics**: E0100 (Sales), E0140 (Purchasing)
+
+**Tests**:
+
+**12a. Sales Side (O2C Flow)**:
+1. Create SO → add order line → complete (with retry verification)
+2. Navigate via Alt+6 to Shipment Schedule → create shipment
+3. Navigate via Alt+6 to Invoice Candidates → create invoice
+4. Verify ALL Alt+6 references on completed SO (expects 4 core: Shipment Schedule, Shipment, Invoice Candidates, Customer Invoice)
+5. Click through to Shipment → verify its Alt+6 references
+6. Click through to Invoice → verify its Alt+6 references (Sales Order, Shipment, Invoice Candidate)
+
+**12b. Purchase Side (P2P Flow)**:
+1. Create PO → add order line → complete (with retry verification)
+2. Navigate via Alt+6 to Receipt Candidates → create material receipt
+3. Navigate via Alt+6 to Invoice Candidates → create vendor invoice
+4. Verify ALL Alt+6 references on completed PO (expects 4 core: Receipt Candidates, Material Receipt, Invoice Candidates, Vendor Invoice)
+5. Click through to Material Receipt → verify its Alt+6 references
+
+**Key Validations**:
+- ALL Alt+6 references present after complete document flow
+- Reference navigation (click-through) works correctly
+- Additional/undocumented references are discovered and logged
+- Robust batch entry with retry (verifies grid row exists after addOrderLine)
+- Robust completion with status verification (checks innerText, retries on failure)
+
+**Components Tested**:
+- Alt+6 references panel (SSE-based, `data-cy="reference-{InternalName}"`)
+- DocumentReferences.js utility (openReferencesPanel, openRelatedDocument, getVisibleReferences)
+- Batch entry (quick-input-container), document status actions (status-button, status-CO)
+
+---
+
 ## Test Architecture
 
 ### Page Objects
@@ -416,6 +458,7 @@ npm run test:report
 - **Backend.js** - Test data creation via `/api/v2/frontendTesting`
 - **WebAPIValidation.js** - Record state validation via WebAPI
 - **PaymentValidation.js** - Payment allocation and IsPaid/IsAllocated flag validation
+- **DocumentReferences.js** - Alt+6 reference panel operations, reference constants, SSE resilience
 - **common.js** - Shared timeouts and helpers
 - **WindowIds.js** - Window ID constants
 
@@ -458,8 +501,8 @@ Areas **NOT yet covered** by E2E tests:
 
 ## Test Quality Metrics
 
-- **Total test specs**: 10 files
-- **Total test cases**: 18+ (10 specs, most with en_US + de_DE, receipt.spec.js has 2 tests per language)
+- **Total test specs**: 12 files
+- **Total test cases**: 20+ (12 specs, most with en_US + de_DE, receipt.spec.js has 2 tests per language)
 - **Language coverage**: en_US, de_DE
 - **Success rate**: 100% passing
 - **Average execution time**: ~40 seconds per test
