@@ -605,6 +605,273 @@ npm run test:report
 
 ---
 
+### 20. Navigation Menu (Alt+2)
+**File**: `tests/spec/navigation-menu.spec.js`
+**Status**: ✅ Passing
+**Duration**: ~8 seconds
+
+**Features Tested**:
+- F14070: Navigation Menu Overlay
+
+**Epic**: E0193: User Interface
+
+**Workflow**:
+1. Open menu via Alt+2 — `.menu-overlay` appears
+2. Verify 109 menu items present
+3. Search in menu — type "Sales" to filter items
+4. Escape closes the menu overlay
+5. Click breadcrumb/menu header button to open
+
+**Key Discoveries**:
+- Menu overlay contains 109 items
+- Search input filters items in real-time
+- Items include: New Request, New Business Partner, Report Texts, etc.
+
+---
+
+### 21. User/Avatar Menu (Alt+4)
+**File**: `tests/spec/user-menu.spec.js`
+**Status**: ✅ Passing
+**Duration**: ~7 seconds
+
+**Features Tested**:
+- F14080: User Menu
+
+**Epic**: E0193: User Interface
+
+**Workflow**:
+1. Verify avatar icon in header
+2. Alt+4 opens user dropdown
+3. Verify 3 menu items: user info, Settings, Log Out
+4. Escape closes the menu
+5. Click avatar to reopen
+
+---
+
+### 22. Comments Panel (Alt+T)
+**File**: `tests/spec/comments-panel.spec.js`
+**Status**: ✅ Passing
+**Duration**: ~18 seconds
+
+**Features Tested**:
+- F14090: Comments Panel
+
+**Epic**: E0193: User Interface
+
+**Workflow**:
+1. Create SO with customer
+2. Alt+T opens comments panel
+3. Verify textarea (`.js-input-field`) and send button (`.btn-meta-success`)
+4. Type and submit a comment
+5. Close panel
+
+---
+
+### 23. Email & Letter Dialogs (Alt+K, Alt+R)
+**File**: `tests/spec/email-letter-dialog.spec.js`
+**Status**: ✅ Passing
+**Duration**: ~22 seconds
+
+**Features Tested**:
+- F14100: Email & Letter Composition
+
+**Epic**: E0193: User Interface
+
+**Workflow**:
+1. Alt+K — Email dialog (requires SubHeader icon click to open)
+2. Alt+R — Letter dialog opens with headline and body fields
+3. Verify `.panel-letter` with headline input and body textarea
+
+**Key Discovery**: Alt+K does not directly open email dialog from document view; requires SubHeader icon click instead. Alt+R works directly.
+
+---
+
+### 24. Edit Mode Toggle (Alt+O)
+**File**: `tests/spec/edit-mode-toggle.spec.js`
+**Status**: ✅ Passing
+**Duration**: ~22 seconds
+
+**Features Tested**:
+- F14110: Edit Mode
+
+**Epic**: E0193: User Interface
+
+**Workflow**:
+1. Create SO with customer (32 form groups, 22 lookup fields)
+2. Alt+O toggle — observe form state changes
+3. Verify page stays accessible after toggle
+
+---
+
+### 25. Sidebar Panels (Alt+5, Alt+6, Alt+7)
+**File**: `tests/spec/sidebar-panels.spec.js`
+**Status**: ✅ Passing
+**Duration**: ~20 seconds
+
+**Features Tested**:
+- F14120: Sidebar Panels
+
+**Epic**: E0193: User Interface
+
+**Workflow**:
+1. Alt+5 — Opens sidebar panel 0
+2. Alt+6 — Opens references panel (0 refs on new SO)
+3. Alt+7 — Opens attachments panel ("There is no attachment — Add URL attachment")
+4. Toggle panel open/close with Escape
+
+---
+
+### 26. Document Delete (Alt+D)
+**File**: `tests/spec/document-delete.spec.js`
+**Status**: ✅ Passing
+**Duration**: ~22 seconds
+
+**Features Tested**:
+- F14040: Document Actions (Delete)
+
+**Epic**: E0193: User Interface
+
+**Workflow**:
+1. Create SO with customer
+2. Alt+D — delete confirmation dialog appears: "Delete — Are you sure? — Cancel / Delete"
+3. Cancel — stays on document (URL unchanged)
+4. Alt+D + Confirm — navigates to list view after deletion
+
+---
+
+### 27. Quick Actions
+**File**: `tests/spec/quick-actions.spec.js`
+**Status**: ✅ Passing
+**Duration**: ~20 seconds
+
+**Features Tested**:
+- F14130: Quick Actions
+
+**Epic**: E0193: User Interface
+
+**Workflow**:
+1. Navigate to SO list view — `.quick-actions-wrapper` present in toolbar
+2. Select row — check for quick actions button
+3. Create new SO — check for quick actions in detail view
+4. Alt+L — toggle quick actions dropdown
+
+---
+
+### 28. Date Widget
+**File**: `tests/spec/date-widget.spec.js`
+**Status**: ✅ Passing
+**Duration**: ~17 seconds
+
+**Features Tested**:
+- F14140: Widgets (Date Picker)
+
+**Epic**: E0193: User Interface
+
+**Workflow**:
+1. Create SO — discover date-type fields
+2. Check for `.rdt` (React DateTime) date picker component
+3. Discover form field labels: Business Partner, Invoice Partner, Warehouse, etc.
+
+**Key Discovery**: DatePromised field is not rendered with `#lookup_` prefix. Date picker uses React DateTime (`.rdt`, `.rdtPicker`).
+
+---
+
+### 29. Print Dialog (Alt+P)
+**File**: `tests/spec/print-dialog.spec.js`
+**Status**: ✅ Passing
+**Duration**: ~18 seconds
+
+**Features Tested**:
+- F14150: Print/PDF
+
+**Epic**: E0193: User Interface
+
+**Workflow**:
+1. Alt+P — opens print modal with 3 checkboxes: Print Logo, Print Totals, Print Prices
+2. 2 buttons: Cancel, Print
+3. Escape closes without printing
+4. SubHeader print icon (`.meta-icon-print`) opens same dialog
+
+---
+
+### 30. Lookup Widget (Autocomplete)
+**File**: `tests/spec/lookup-widget.spec.js`
+**Status**: ✅ Passing
+**Duration**: ~15 seconds
+
+**Features Tested**:
+- F14140: Widgets (Lookup/Autocomplete)
+
+**Epic**: E0193: User Interface
+
+**Workflow**:
+1. Discover 12 lookup fields: `C_BPartner_ID`, `C_BPartner_Location_ID`, `AD_User_ID`, etc.
+2. Type in BPartner lookup — 16 dropdown options appear (`.input-dropdown-list-option`)
+3. Select option from dropdown
+4. Multi-property chain: BPartner → Location → Contact fields linked
+
+**Key Discovery**: Lookup IDs: `lookup_C_BPartner_ID`, `lookup_C_BPartner_Location_ID`, `lookup_AD_User_ID`, `lookup_Bill_BPartner_ID`, `lookup_Bill_Location_ID`, `lookup_Bill_User_ID`, `lookup_M_Tour_ID`, `lookup_M_PricingSystem_ID`, `lookup_ExternalSystem_ID`, `lookup_AD_InputDataSource_ID`.
+
+---
+
+### 31. Inline Grid Edit (F2)
+**File**: `tests/spec/inline-edit.spec.js`
+**Status**: ✅ Passing
+**Duration**: ~25 seconds
+
+**Features Tested**:
+- F14160: Grid Edit
+
+**Epic**: E0193: User Interface
+
+**Workflow**:
+1. Add order line via batch entry
+2. Discover 33 data cells per row (`td[data-cy]`)
+3. Click quantity cell — cell classes: `table-cell text-right cell-mandatory`
+4. F2 / double-click — inline editor does not open (React virtual rendering)
+
+**Key Discovery**: Grid cells use `data-cy="cell-{ColumnName}"` pattern. 33 cells include: Line, M_Product_ID, QtyAvailableForSales, QtyEnteredTU, QtyEntered, C_UOM_ID, etc. F2 inline edit does not work in the included tab grid — cells use React rendering, not standard HTML inputs.
+
+---
+
+### 32. Record Navigation
+**File**: `tests/spec/record-navigation.spec.js`
+**Status**: ✅ Passing
+**Duration**: ~15 seconds
+
+**Features Tested**:
+- F14170: Record Navigation
+
+**Epic**: E0193: User Interface
+
+**Workflow**:
+1. Double-click row in list → opens detail view
+2. Browser back → returns to list view (with `viewId` in URL)
+3. Browser forward → returns to detail view
+4. Open 2 different records — verify different record IDs
+
+---
+
+### 33. Notifications & Inbox
+**File**: `tests/spec/notifications.spec.js`
+**Status**: ✅ Passing
+**Duration**: ~7 seconds
+
+**Features Tested**:
+- F14180: Notifications
+
+**Epic**: E0193: User Interface
+
+**Workflow**:
+1. Check for notification badge in header
+2. Alt+3 — open inbox panel (`.inbox`)
+3. Inbox shows "Inbox is empty" for new users
+4. Discover 4 header items: hamburger, Dashboard, badge, avatar
+
+**Key Discovery**: Header structure has 4 items: icon-sm (hamburger), icon-sm (Dashboard label), header-item-badge icon-lg (inbox/notifications), avatar-container.
+
+---
+
 ## Test Architecture
 
 ### Page Objects
@@ -668,15 +935,18 @@ Areas **NOT yet covered** by E2E tests:
 - BOM / Manufacturing workflows
 - Data export (Excel/CSV from grid views)
 - Import functionality
+- POS (Point of Sale) mode
+- Column reordering / drag-to-resize
+- Barcode scanner integration
 
 ## Test Quality Metrics
 
-- **Total test specs**: 19 files
-- **Total test cases**: 27+ (19 specs, most with en_US + de_DE, receipt.spec.js has 2 tests per language)
+- **Total test specs**: 33 files
+- **Total test cases**: 41+ (33 specs, many with en_US + de_DE)
 - **Language coverage**: en_US, de_DE
 - **Success rate**: 100% passing
-- **Average execution time**: ~40 seconds per test
-- **Total suite time**: ~10 minutes (sequential execution)
+- **Average execution time**: ~20 seconds per test
+- **Total suite time**: ~15 minutes (sequential execution)
 
 ## CI/CD Integration
 
