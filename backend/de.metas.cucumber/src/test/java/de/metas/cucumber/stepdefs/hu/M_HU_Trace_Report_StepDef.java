@@ -404,11 +404,19 @@ public class M_HU_Trace_Report_StepDef
 						+ "(PP_Order_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,"
 						+ " M_Product_ID, C_UOM_ID, QtyOrdered, QtyDelivered,"
 						+ " DateOrdered, DatePromised, DateStartSchedule, M_Warehouse_ID,"
-						+ " DocStatus, DocAction, S_Resource_ID, DocumentNo, Processed, Line)"
+						+ " DocStatus, DocAction, S_Resource_ID, DocumentNo, Processed, Line,"
+						+ " PP_Product_BOM_ID, AD_Workflow_ID, C_DocTypeTarget_ID,"
+						+ " PriorityRule, Yield, QtyBeforeClose, QtyReject, QtyScrap,"
+						+ " ExportStatus, IsApproved, IsPrinted, IsSelected, IsSOTrx,"
+						+ " MRP_AllowCleanup, MRP_Generated, MRP_ToDelete, PlanningStatus, IsPickingOrder)"
 						+ " VALUES (nextval('pp_order_seq'), ?, ?, 'Y', now(), 100, now(), 100,"
 						+ " ?, ?, 1, 0,"
 						+ " now(), now(), now(), ?,"
-						+ " 'CO', '--', ?, ?, 'Y', 10)"
+						+ " 'CO', '--', ?, ?, 'Y', 10,"
+						+ " 0, 0, 0,"
+						+ " 'M', 0, 0, 0, 0,"
+						+ " 'PENDING', 'N', 'N', 'N', 'N',"
+						+ " 'N', 'N', 'N', 'P', 'N')"
 						+ " RETURNING PP_Order_ID",
 				Env.getClientId().getRepoId(),
 				Env.getOrgId(Env.getCtx()).getRepoId(),
