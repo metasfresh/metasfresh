@@ -38,13 +38,12 @@ jobs:
       - name: Set Merge Gate commit status
         env:
           GH_TOKEN: ${{ github.token }}
+          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+          REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+          BRANCH: ${{ github.event.workflow_run.head_branch }}
         run: |
-          CONCLUSION="${{ github.event.workflow_run.conclusion }}"
-          SHA="${{ github.event.workflow_run.head_sha }}"
-          REPO="${{ github.repository }}"
-          RUN_URL="${{ github.event.workflow_run.html_url }}"
-          BRANCH="${{ github.event.workflow_run.head_branch }}"
-
           echo "cicd workflow on branch '$BRANCH' finished with conclusion: $CONCLUSION"
           echo "Setting commit status on SHA: $SHA"
 
