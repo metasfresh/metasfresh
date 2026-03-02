@@ -44,6 +44,7 @@ import de.metas.common.rest_api.v2.attachment.JsonAttachmentRequest;
 import de.metas.common.rest_api.v2.attachment.JsonAttachmentSourceType;
 import de.metas.common.rest_api.v2.attachment.JsonTableRecordReference;
 import de.metas.common.util.Check;
+import de.metas.common.util.StringUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.camel.Exchange;
@@ -277,12 +278,9 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 	@NonNull
 	private static MediaType resolveContentType(@NonNull final JsonExternalSystemOutboundEndpoint endpointParameters)
 	{
-		final String contentType = endpointParameters.getContentType();
-		if (Check.isBlank(contentType))
-		{
-			return MediaType.APPLICATION_JSON;
-		}
-		return MediaType.parseMediaType(contentType);
+		return StringUtils.trimBlankToOptional(endpointParameters.getContentType())
+				.map(MediaType::parseMediaType)
+				.orElse(MediaType.APPLICATION_JSON);
 	}
 
 	@NonNull
