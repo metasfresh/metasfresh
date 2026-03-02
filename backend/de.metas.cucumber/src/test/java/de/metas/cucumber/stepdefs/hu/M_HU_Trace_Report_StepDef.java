@@ -397,13 +397,22 @@ public class M_HU_Trace_Report_StepDef
 	 */
 	private I_PP_Order createMinimalPpOrder(@NonNull final ProductId productId)
 	{
+		final int warehouseId = StepDefConstants.WAREHOUSE_ID.getRepoId();
+
+		// Look up the default locator for the warehouse (normally auto-filled by model validator)
+		final int locatorId = DB.getSQLValueEx(
+				ITrx.TRXNAME_None,
+				"SELECT MIN(m_locator_id) FROM m_locator WHERE m_warehouse_id = ? AND isactive = 'Y'",
+				warehouseId);
+		assertThat(locatorId).as("Expected at least one active M_Locator for warehouse %s", warehouseId).isGreaterThan(0);
+
 		final String documentNo = "TEST-TRACE-" + System.nanoTime();
 		final int ppOrderId = DB.getSQLValueEx(
 				ITrx.TRXNAME_None,
 				"INSERT INTO PP_Order "
 						+ "(PP_Order_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,"
 						+ " M_Product_ID, C_UOM_ID, QtyOrdered, QtyDelivered,"
-						+ " DateOrdered, DatePromised, DateStartSchedule, M_Warehouse_ID,"
+						+ " DateOrdered, DatePromised, DateStartSchedule, M_Warehouse_ID, M_Locator_ID,"
 						+ " DocStatus, DocAction, S_Resource_ID, DocumentNo, Processed, Line,"
 						+ " PP_Product_BOM_ID, AD_Workflow_ID, C_DocTypeTarget_ID,"
 						+ " PriorityRule, Yield, QtyBeforeClose, QtyReject, QtyScrap,"
@@ -411,7 +420,7 @@ public class M_HU_Trace_Report_StepDef
 						+ " MRP_AllowCleanup, MRP_Generated, MRP_ToDelete, PlanningStatus, IsPickingOrder)"
 						+ " VALUES (nextval('pp_order_seq'), ?, ?, 'Y', now(), 100, now(), 100,"
 						+ " ?, ?, 1, 0,"
-						+ " now(), now(), now(), ?,"
+						+ " now(), now(), now(), ?, ?,"
 						+ " 'CO', '--', ?, ?, 'Y', 10,"
 						+ " 0, 0, 0,"
 						+ " 'M', 0, 0, 0, 0,"
@@ -422,7 +431,8 @@ public class M_HU_Trace_Report_StepDef
 				Env.getOrgId(Env.getCtx()).getRepoId(),
 				productId.getRepoId(),
 				StepDefConstants.PCE_UOM_ID.getRepoId(),
-				StepDefConstants.WAREHOUSE_ID.getRepoId(),
+				warehouseId,
+				locatorId,
 				StepDefConstants.PLANT_ID.getRepoId(),
 				documentNo);
 
