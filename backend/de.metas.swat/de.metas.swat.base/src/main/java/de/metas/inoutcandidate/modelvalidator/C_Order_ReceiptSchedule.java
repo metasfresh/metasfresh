@@ -23,6 +23,7 @@ package de.metas.inoutcandidate.modelvalidator;
  */
 
 import de.metas.document.exception.DocumentActionException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
@@ -94,6 +95,12 @@ public class C_Order_ReceiptSchedule
 			}
 
 			receiptScheduleBL.reopen(receiptSchedule);
+
+			// Immediately sync QtyOrdered from the order line because the user may have
+			// changed it during reactivation. The async producer will update all other
+			// fields later, but QtyOrdered must be correct now for material disposition.
+			receiptSchedule.setQtyOrdered(orderLine.getQtyOrdered());
+			InterfaceWrapperHelper.save(receiptSchedule);
 		}
 	}
 
