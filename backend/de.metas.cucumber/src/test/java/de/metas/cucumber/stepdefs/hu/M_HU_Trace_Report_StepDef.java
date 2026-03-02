@@ -88,7 +88,7 @@ public class M_HU_Trace_Report_StepDef
 
 	private final HUTraceRepository huTraceRepository = SpringContextHolder.instance.getBean(HUTraceRepository.class);
 
-	/** Maps scenario name → list of (detail_type) values returned by the report */
+	/** Maps scenario name → list of HUTraceType (section name) values returned by the report */
 	private final Map<String, List<String>> reportResultsByScenario = new HashMap<>();
 
 	// =====================================================================================
@@ -133,7 +133,12 @@ public class M_HU_Trace_Report_StepDef
 
 	/**
 	 * Invokes the {@code M_HU_Trace_Report(?)} SQL function for the product associated with the given
-	 * scenario and stores the returned {@code detail_type} values for later assertion.
+	 * scenario and stores the returned {@code HUTraceType} section names (e.g. {@code PRODUCTION_RECEIPT_DETAL},
+	 * {@code DIRECT_SALE_DETAIL}) for later assertion.
+	 *
+	 * <p>Note: the SQL function has two different columns — {@code HUTraceType} (the section name)
+	 * and {@code detail_type} (the sub-record's trace type). We read {@code HUTraceType} because
+	 * the feature file assertions reference section names.
 	 */
 	@And("M_HU_Trace_Report is invoked for scenario {string}")
 	public void invokeReport(@NonNull final String scenarioName)
@@ -151,7 +156,7 @@ public class M_HU_Trace_Report_StepDef
 		assertThat(pInstanceId).as("Expected traces to be found for product %s", productId).isNotNull();
 
 		final List<String> detailTypes = new ArrayList<>();
-		final String sql = "SELECT detail_type FROM M_HU_Trace_Report(?)";
+		final String sql = "SELECT HUTraceType FROM M_HU_Trace_Report(?)";
 		try (final PreparedStatement pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None))
 		{
 			pstmt.setInt(1, pInstanceId.getRepoId());
@@ -159,10 +164,10 @@ public class M_HU_Trace_Report_StepDef
 			{
 				while (rs.next())
 				{
-					final String detailType = rs.getString("detail_type");
-					if (detailType != null)
+					final String huTraceType = rs.getString("HUTraceType");
+					if (huTraceType != null)
 					{
-						detailTypes.add(detailType);
+						detailTypes.add(huTraceType);
 					}
 				}
 			}
@@ -177,7 +182,7 @@ public class M_HU_Trace_Report_StepDef
 
 	/**
 	 * Asserts that the previously invoked {@code M_HU_Trace_Report} result for the given scenario
-	 * contains a row with the specified {@code detail_type} value.
+	 * contains a row with the specified {@code HUTraceType} section name.
 	 */
 	@Then("M_HU_Trace_Report result for scenario {string} contains detail_type row {string}")
 	public void assertDetailTypePresent(@NonNull final String scenarioName, @NonNull final String expectedDetailType)
@@ -372,6 +377,11 @@ public class M_HU_Trace_Report_StepDef
 	 *
 	 * <p>Only the fields required by the M_HU_Trace_Report SQL function are set.
 	 * Non-critical FK columns (C_BPartner_ID, etc.) use test defaults where possible.
+	 *
+	 * <p>Uses direct SQL to force DocStatus after saving because M_InOut model interceptors
+	 * enforce the DocAction workflow — setting DocStatus='CO' on the model object gets
+	 * overridden during save. Our test only needs the M_InOut as a FK reference for the
+	 * SQL function's JOIN conditions.
 	 */
 	private I_M_InOut createMinimalInOut(
 			@NonNull final I_C_DocType docType,
@@ -388,6 +398,14 @@ public class M_HU_Trace_Report_StepDef
 		// MovementType must match IsSOTrx: 'C-' for customer shipment, 'V+' for vendor receipt
 		inOut.setMovementType(docType.isSOTrx() ? "C-" : "V+");
 		saveRecord(inOut);
+
+		// Force DocStatus and Processed via SQL — model validators enforce the DocAction
+		// workflow, so DocStatus='CO' set on the model object may be reset during save.
+		DB.executeUpdateAndSaveErrorOnFail(
+				"UPDATE M_InOut SET DocStatus = ?, Processed = 'Y' WHERE M_InOut_ID = ?",
+				new Object[] { docStatus, inOut.getM_InOut_ID() },
+				ITrx.TRXNAME_None);
+
 		return inOut;
 	}
 
