@@ -80,6 +80,7 @@ public class C_Order_ReceiptSchedule
 			return;
 		}
 
+		final IOrderBL orderBL = Services.get(IOrderBL.class);
 		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 		final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
 		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
@@ -93,6 +94,14 @@ public class C_Order_ReceiptSchedule
 			{
 				continue;
 			}
+
+			// Reopen the order line BEFORE the receipt schedule.
+			// During reopen(), the M_ReceiptSchedule interceptor fires propagateQtysToOrderLine
+			// which loads the order line from DB and triggers C_OrderLine.updateQtyReserved.
+			// IsDeliveryClosed must already be false at that point, otherwise QtyReserved is
+			// temporarily set to 0 and downstream interceptors (C_Order.updateReserved) may
+			// pick up the stale value.
+			orderBL.reopenLine(orderLine);
 
 			receiptScheduleBL.reopen(receiptSchedule);
 
