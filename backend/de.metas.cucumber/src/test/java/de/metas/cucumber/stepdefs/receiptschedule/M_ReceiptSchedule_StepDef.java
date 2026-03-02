@@ -180,6 +180,12 @@ public class M_ReceiptSchedule_StepDef
 		final boolean processed = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_M_ReceiptSchedule.COLUMNNAME_Processed, false);
 		softly.assertThat(receiptSchedule.isProcessed()).isEqualTo(processed);
 
+		final Boolean isClosed = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + I_M_ReceiptSchedule.COLUMNNAME_IsClosed);
+		if (isClosed != null)
+		{
+			softly.assertThat(receiptSchedule.isIsClosed()).as("IsClosed").isEqualTo(isClosed);
+		}
+
 		row.getAsOptionalString(COLUMNNAME_ExternalHeaderId)
 						.ifPresent(externalHeaderId -> softly.assertThat(receiptSchedule.getExternalHeaderId()).as(COLUMNNAME_ExternalHeaderId).isEqualTo(externalHeaderId));
 

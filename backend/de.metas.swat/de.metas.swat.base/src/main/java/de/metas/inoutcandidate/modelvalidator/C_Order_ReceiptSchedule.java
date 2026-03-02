@@ -66,6 +66,37 @@ public class C_Order_ReceiptSchedule
 				&& !orderBL.isMediated(order);
 	}
 
+	/**
+	 * On COMPLETE: first reopen any previously closed receipt schedules, then create new ones for order lines that don't have one yet.
+	 * <p>
+	 * Declaration order matters: reopenReceiptSchedules runs before createReceiptSchedules.
+	 */
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
+	public void reopenReceiptSchedules(final I_C_Order order)
+	{
+		if (!isEligibleForReceiptSchedule(order))
+		{
+			return;
+		}
+
+		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+		final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
+		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
+
+		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order);
+		for (final I_C_OrderLine orderLine : orderLines)
+		{
+			final I_M_ReceiptSchedule receiptSchedule = receiptScheduleDAO.retrieveForRecord(orderLine);
+
+			if (receiptSchedule == null || !receiptScheduleBL.isClosed(receiptSchedule))
+			{
+				continue;
+			}
+
+			receiptScheduleBL.reopen(receiptSchedule);
+		}
+	}
+
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void createReceiptSchedules(final I_C_Order order)
 	{
@@ -97,20 +128,34 @@ public class C_Order_ReceiptSchedule
 		}
 	}
 
-	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REACTIVATE,
-			ModelValidator.TIMING_AFTER_VOID })
-	public void inactivateReceiptSchedules(final I_C_Order order)
+	/**
+	 * On REACTIVATE and VOID: close receipt schedules instead of deleting them.
+	 * This preserves user modifications (delivery dates, override columns, transport orders).
+	 */
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REACTIVATE, ModelValidator.TIMING_AFTER_VOID })
+	public void closeReceiptSchedulesOnReactivateOrVoid(final I_C_Order order)
 	{
 		if (!isEligibleForReceiptSchedule(order))
 		{
 			return;
 		}
 
-		// NOTE: we are doing the inactivation synchronously because we need to have it done right away
-		final IReceiptScheduleProducer producer = Services.get(IReceiptScheduleProducerFactory.class)
-				.createProducer(I_C_Order.Table_Name, false);
+		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+		final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
+		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 
-		producer.inactivateReceiptSchedules(order);
+		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order);
+		for (final I_C_OrderLine orderLine : orderLines)
+		{
+			final I_M_ReceiptSchedule receiptSchedule = receiptScheduleDAO.retrieveForRecord(orderLine);
+
+			if (receiptSchedule == null || receiptScheduleBL.isClosed(receiptSchedule))
+			{
+				continue;
+			}
+
+			receiptScheduleBL.close(receiptSchedule);
+		}
 	}
 
 	/**

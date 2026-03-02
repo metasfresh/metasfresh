@@ -122,6 +122,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 
 		receiptSchedule.setAD_Org_ID(line.getAD_Org_ID());
 		receiptSchedule.setIsActive(true); // make sure it's active
+		receiptSchedule.setIsClosed(false); // make sure it's not closed (belt-and-suspenders for reopen-on-complete path)
 
 		//
 		// Source Document Line link

@@ -315,6 +315,7 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 				.createQueryBuilder(I_M_ReceiptSchedule.class, ctx, ITrx.TRXNAME_None)
 				.filter(userSelectionFilter)
 				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_Processed, false)
+				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_IsClosed, false)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient();
 
@@ -329,6 +330,7 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_C_Order_ID, orderId)
 				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_Processed, false)
+				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_IsClosed, false)
 				.addInArrayFilter(I_M_ReceiptSchedule.COLUMNNAME_ExportStatus, APIExportStatus.EXPORTED_STATES)
 				.create()
 				.anyMatch();

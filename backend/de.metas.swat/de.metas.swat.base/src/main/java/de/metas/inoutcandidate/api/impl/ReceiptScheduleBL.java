@@ -482,7 +482,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	@Override
 	public void close(@NonNull final I_M_ReceiptSchedule rs)
 	{
-		// Make sure receipt schedule was not already processed
+		// Make sure receipt schedule was not already closed
 		if (isClosed(rs))
 		{
 			throw new AdempiereException("@Closed@=@Y@ (" + rs + ")");
@@ -490,7 +490,8 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 
 		listeners.onBeforeClose(rs);
 
-		// Mark the receipt schedule as closed (i.e. processed)
+		// Mark the receipt schedule as closed
+		rs.setIsClosed(true);
 		rs.setProcessed(true);
 		InterfaceWrapperHelper.save(rs);
 
@@ -498,14 +499,14 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 		// Services.get(IReceiptScheduleQtysBL.class).onReceiptScheduleChanged(receiptSchedule);
 
 		listeners.onAfterClose(rs);
-		InterfaceWrapperHelper.save(rs); // see javadoc on why we same two times
+		InterfaceWrapperHelper.save(rs); // see javadoc on why we save two times
 	}
 
 	@Override
 	public void reopen(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
 		//
-		// Make sure receipt schedule is closed/processed
+		// Make sure receipt schedule is closed
 		if (!isClosed(receiptSchedule))
 		{
 			throw new AdempiereException("@Closed@=@N@ (" + receiptSchedule + ")");
@@ -514,7 +515,8 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 		listeners.onBeforeReopen(receiptSchedule);
 		InterfaceWrapperHelper.refresh(receiptSchedule); // because
 
-		// Mark the receipt schedule as not closed (i.e. not processed)
+		// Mark the receipt schedule as not closed
+		receiptSchedule.setIsClosed(false);
 		receiptSchedule.setProcessed(false);
 		InterfaceWrapperHelper.save(receiptSchedule);
 
@@ -528,7 +530,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	@Override
 	public boolean isClosed(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
-		return receiptSchedule.isProcessed();
+		return receiptSchedule.isIsClosed();
 	}
 
 	@Override
