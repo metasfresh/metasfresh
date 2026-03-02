@@ -2232,3 +2232,91 @@ jobs:
           CICD_DISPATCH_WORKFLOW_FILE: ${{ fromJson(vars.CICD_DISPATCH_CONFIG).workflow_file }}
         run: |
           gh workflow run "${CICD_DISPATCH_WORKFLOW_FILE}" --repo "${CICD_DISPATCH_REPO}" -f "cicd_run_id=${CICD_RUN_ID}" -f "tag_fixed=${TAG_FIXED}" -f "source_branch=${SOURCE_BRANCH}"
+
+  # ===========================================================================
+  # Merge Gate — single check for Mergify merge conditions
+  # ===========================================================================
+  # Aggregates results from ALL build and test jobs into one check named
+  # "Merge Gate". Mergify uses `check-success=Merge Gate` to decide whether
+  # a PR can be merged.
+  #
+  # Every job listed in `needs` MUST finish with result 'success'.
+  # Skipped, cancelled, or failed jobs cause the gate to fail.
+  # This prevents "false green" builds where tests were skipped.
+  # ===========================================================================
+  merge-gate:
+    name: Merge Gate
+    if: always()
+    runs-on: ubuntu-latest
+    needs:
+      # Build jobs
+      - init
+      - migration-cli
+      - java
+      - frontend
+      - backend
+      - db-images
+      - db-apply-migrations
+      - procurement
+      - compatibility-images
+      - cucumber-build
+      # Test jobs
+      - test-frontend
+      - junit
+      - cucumber-run
+      - health_check
+      - mobile_test
+      - frontend_webui_test
+    steps:
+      - name: Evaluate all job results
+        run: |
+          echo "## Merge Gate" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Status | Job | Result |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-----|--------|" >> $GITHUB_STEP_SUMMARY
+
+          ALL_OK=true
+
+          check_job() {
+            local name="$1"
+            local result="$2"
+            if [[ "$result" == "success" ]]; then
+              echo "| :white_check_mark: | $name | $result |" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "| :x: | $name | **$result** |" >> $GITHUB_STEP_SUMMARY
+              ALL_OK=false
+            fi
+          }
+
+          # Build jobs
+          check_job "init"               "${{ needs.init.result }}"
+          check_job "migration-cli"      "${{ needs.migration-cli.result }}"
+          check_job "java"               "${{ needs.java.result }}"
+          check_job "frontend"           "${{ needs.frontend.result }}"
+          check_job "backend"            "${{ needs.backend.result }}"
+          check_job "db-images"          "${{ needs.db-images.result }}"
+          check_job "db-apply-migrations" "${{ needs.db-apply-migrations.result }}"
+          check_job "procurement"        "${{ needs.procurement.result }}"
+          check_job "compatibility-images" "${{ needs.compatibility-images.result }}"
+          check_job "cucumber-build"     "${{ needs.cucumber-build.result }}"
+
+          # Test jobs
+          check_job "test-frontend"      "${{ needs.test-frontend.result }}"
+          check_job "junit"              "${{ needs.junit.result }}"
+          check_job "cucumber-run"       "${{ needs.cucumber-run.result }}"
+          check_job "health_check"       "${{ needs.health_check.result }}"
+          check_job "mobile_test"        "${{ needs.mobile_test.result }}"
+          check_job "frontend_webui_test" "${{ needs.frontend_webui_test.result }}"
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [[ "$ALL_OK" != "true" ]]; then
+            echo ":x: **Merge gate FAILED** — one or more required jobs did not succeed." >> $GITHUB_STEP_SUMMARY
+            echo ""
+            echo "FAILED: One or more required jobs did not succeed"
+            exit 1
+          fi
+
+          echo ":white_check_mark: **Merge gate PASSED** — all 16 required jobs succeeded." >> $GITHUB_STEP_SUMMARY
+          echo ""
+          echo "PASSED: All 16 required jobs succeeded"
