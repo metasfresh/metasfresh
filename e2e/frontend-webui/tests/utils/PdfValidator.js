@@ -95,6 +95,11 @@ class PdfValidator {
 
       // Extract and normalize text (replace multiple whitespaces with single space)
       const text = pdfData.text.replace(/\s+/g, ' ');
+      // Also create a whitespace-stripped version for substring matching.
+      // PDF text extraction often inserts spaces in the middle of long strings
+      // (e.g., "Product1_20260301T08032 7689" instead of "Product1_20260301T080327689")
+      // because the PDF renderer splits text across line fragments.
+      const textNoSpaces = pdfData.text.replace(/\s+/g, '');
 
       // Log first 1000 chars for debugging
       console.log('PDF text preview:', text.substring(0, 1000));
@@ -122,7 +127,7 @@ class PdfValidator {
 
       // Validate customer name/code (if provided)
       if (customerName) {
-        if (!text.includes(customerName)) {
+        if (!text.includes(customerName) && !textNoSpaces.includes(customerName)) {
           errors.push(
             `Customer Name Validation Failed:\n` +
               `  Field: Customer Name/Code\n` +
@@ -136,7 +141,7 @@ class PdfValidator {
 
       // Validate product code (if provided)
       if (productCode) {
-        if (!text.includes(productCode)) {
+        if (!text.includes(productCode) && !textNoSpaces.includes(productCode)) {
           errors.push(
             `Product Code Validation Failed:\n` +
               `  Field: Product Code\n` +
@@ -153,15 +158,20 @@ class PdfValidator {
         if (!productCode) {
           errors.push('Quantity validation requires productCode to be specified');
         } else {
-          const productCodeIndex = text.indexOf(productCode);
+          let productCodeIndex = text.indexOf(productCode);
+          // Fall back to whitespace-stripped text if not found (PDF line-wrapping)
+          const qtySearchText = productCodeIndex !== -1 ? text : textNoSpaces;
+          if (productCodeIndex === -1) {
+            productCodeIndex = textNoSpaces.indexOf(productCode);
+          }
           if (productCodeIndex === -1) {
             errors.push('Product code not found in PDF text for quantity validation');
           } else {
             // Get text around the product (500 chars before and after should cover the order line)
             // Quantity may appear before or after the product code depending on PDF layout
             const startIndex = Math.max(0, productCodeIndex - 200);
-            const endIndex = Math.min(text.length, productCodeIndex + 500);
-            const productLineText = text.substring(startIndex, endIndex);
+            const endIndex = Math.min(qtySearchText.length, productCodeIndex + 500);
+            const productLineText = qtySearchText.substring(startIndex, endIndex);
 
             // Try to match quantity with or without decimal places
             // Handles: "10", "10.00", "10,00", "1010" (position+qty), "10 Stk"

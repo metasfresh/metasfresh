@@ -137,6 +137,11 @@ public class PickingJobHUService
 		return huAttributesBL.getAttributeValue(hu, attributeCode);
 	}
 
+	public Optional<IAttributeValue> getAttributeValueIfExists(@NonNull final I_M_HU hu, @NonNull final AttributeCode attributeCode)
+	{
+		return huAttributesBL.getAttributeValueIfExists(hu, attributeCode);
+	}
+
 	public boolean isLoadingUnit(final I_M_HU hu) {return handlingUnitsBL.isLoadingUnit(hu);}
 
 	public boolean isTransportUnit(final I_M_HU hu) {return handlingUnitsBL.isTransportUnit(hu);}

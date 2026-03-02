@@ -62,6 +62,24 @@ export class RawWidget extends PureComponent {
     this.mounted = false;
   }
 
+  componentDidUpdate(prevProps) {
+    // Reset cachedValue when the field value changes from an external source
+    // (PATCH response, modal sync via mapDataToState, etc.) but NOT from the
+    // user's own typing. When the user is actively editing, isFocused is true
+    // and the value change comes from their handleChange → updatePropertyValue.
+    if (
+      !this.state.isFocused &&
+      this.props.widgetData &&
+      this.props.widgetData[0] &&
+      prevProps.widgetData &&
+      prevProps.widgetData[0] &&
+      JSON.stringify(this.props.widgetData[0].value) !==
+        JSON.stringify(prevProps.widgetData[0].value)
+    ) {
+      this.resetCachedValue();
+    }
+  }
+
   focus = () => {
     const { rawWidget } = this;
 
