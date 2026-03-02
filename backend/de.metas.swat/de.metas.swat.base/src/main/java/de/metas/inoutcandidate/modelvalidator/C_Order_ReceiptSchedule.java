@@ -156,6 +156,7 @@ public class C_Order_ReceiptSchedule
 			return;
 		}
 
+		final IOrderBL orderBL = Services.get(IOrderBL.class);
 		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 		final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
 		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
@@ -171,6 +172,13 @@ public class C_Order_ReceiptSchedule
 			}
 
 			receiptScheduleBL.close(receiptSchedule);
+
+			// close() fires the OrderLineReceiptScheduleListener which calls closeLine(),
+			// setting IsDeliveryClosed=true on the order line (via the receipt schedule's FK-cached PO).
+			// During PO reactivation/void the receipt schedule is only "parked" — the order line
+			// itself must stay open for editing. Undo the closeLine side-effect.
+			InterfaceWrapperHelper.refresh(orderLine);
+			orderBL.reopenLine(orderLine);
 		}
 	}
 
