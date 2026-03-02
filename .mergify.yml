@@ -1,3 +1,16 @@
+# =============================================================================
+# ops:* Label Reference
+# =============================================================================
+# ops:auto_squash_merge      — Auto-merge using squash method after CI passes.
+#                               Requires review approval OR ops:without_review_approval.
+# ops:auto_merge_commit      — Auto-merge using merge commit method after CI passes.
+#                               Requires review approval OR ops:without_review_approval.
+# ops:without_review_approval — Skip the review approval requirement for auto-merge.
+#                               Must be combined with ops:auto_squash_merge or ops:auto_merge_commit.
+# ops:auto_ported            — Informational: PR was auto-created by auto-port.yml workflow.
+# ops:no_auto_port           — (reserved for future use)
+# =============================================================================
+
 merge_protections:
   - name: default
     if:
@@ -104,6 +117,7 @@ pull_request_rules:
               - base=soft_panda_release
               - base=vampire_textbook_release
               - base=science_vessel_release
+              - base=memorable_shiny_release
 
     actions:
       label:
