@@ -39,6 +39,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.model.ShipmentScheduleCloseReason;
 import de.metas.inoutcandidate.model.I_M_Picking_Job_Schedule;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
@@ -229,6 +230,7 @@ public class ShipmentScheduleEnqueuer
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsOnTheFlyPickToPackingInstructions, workPackageParameters.isOnTheFlyPickToPackingInstructions())
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments, workPackageParameters.isCompleteShipments())
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsCloseShipmentSchedules, workPackageParameters.isCloseShipmentSchedules())
+							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_CloseReason, ShipmentScheduleCloseReason.toCodeOrNull(workPackageParameters.getCloseReason()))
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday, workPackageParameters.isShipmentDateToday());
 
 					// Create a new locker which will grab the locked shipment candidates from 'mainLock'

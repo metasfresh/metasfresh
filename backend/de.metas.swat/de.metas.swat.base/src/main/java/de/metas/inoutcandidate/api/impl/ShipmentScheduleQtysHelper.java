@@ -6,6 +6,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.model.ShipmentScheduleCloseReason;
 import de.metas.logging.LogManager;
 import de.metas.order.DeliveryRule;
 import de.metas.util.Services;
@@ -112,7 +113,16 @@ import java.math.BigDecimal;
 		}
 		if (sched.isClosed())
 		{
-			statusMessages.append(Services.get(IMsgBL.class).getMsg(Env.getCtx(), MSG_ClosedStatus) + "\n");
+			final ShipmentScheduleCloseReason closeReason = ShipmentScheduleCloseReason.ofNullableCode(sched.getCloseReason());
+			final String closedMsg = Services.get(IMsgBL.class).getMsg(Env.getCtx(), MSG_ClosedStatus);
+			if (closeReason != null)
+			{
+				statusMessages.append(closedMsg).append(" (").append(closeReason.getCode()).append(")").append("\n");
+			}
+			else
+			{
+				statusMessages.append(closedMsg).append("\n");
+			}
 		}
 		logger.debug("isClosed={}; isDeliveryStop={}; -> set QtyToDeliver to zero", sched.isClosed(), sched.isDeliveryStop());
 		sched.setQtyToDeliver(BigDecimal.ZERO);

@@ -10,6 +10,7 @@ import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.subscription.impl.SubscriptionService;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.model.ShipmentScheduleCloseReason;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -115,7 +116,7 @@ public class InsertPause
 
 			if (sp.getM_ShipmentSchedule_ID() > 0)
 			{
-				Services.get(IShipmentScheduleBL.class).closeShipmentSchedule(ShipmentScheduleId.ofRepoId(sp.getM_ShipmentSchedule_ID()));
+				Services.get(IShipmentScheduleBL.class).closeShipmentSchedule(ShipmentScheduleId.ofRepoId(sp.getM_ShipmentSchedule_ID()), ShipmentScheduleCloseReason.ContractPause);
 			}
 
 			final boolean notYetDone = !Objects.equals(sp.getStatus(), X_C_SubscriptionProgress.STATUS_Done);

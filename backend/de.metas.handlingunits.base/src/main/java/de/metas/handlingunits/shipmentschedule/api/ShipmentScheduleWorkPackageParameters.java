@@ -28,6 +28,7 @@ import de.metas.async.AsyncBatchId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.model.ShipmentScheduleCloseReason;
 import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.process.PInstanceId;
@@ -52,6 +53,7 @@ public class ShipmentScheduleWorkPackageParameters
 	public static final String PARAM_IsOnTheFlyPickToPackingInstructions = "IsOnTheFlyPickToPackingInstructions";
 	public static final String PARAM_IsCompleteShipments = "IsCompleteShipments";
 	public static final String PARAM_IsCloseShipmentSchedules = "IsCloseShipmentSchedules";
+	public static final String PARAM_CloseReason = "CloseReason";
 	public static final String PARAM_IsShipmentDateToday = "IsShipToday";
 	public static final String PARAM_PREFIX_AdvisedShipmentDocumentNo = "Advised_ShipmentDocumentNo_For_M_ShipmentSchedule_ID_"; // (param name can have 255 chars)
 	public static final String PARAM_QtyToDeliver_Override = "QtyToDeliver_Override_For_M_ShipmentSchedule_ID";
@@ -76,6 +78,7 @@ public class ShipmentScheduleWorkPackageParameters
 
 	boolean completeShipments;
 	boolean isCloseShipmentSchedules;
+	@Nullable ShipmentScheduleCloseReason closeReason;
 	boolean isShipmentDateToday;
 
 	/**

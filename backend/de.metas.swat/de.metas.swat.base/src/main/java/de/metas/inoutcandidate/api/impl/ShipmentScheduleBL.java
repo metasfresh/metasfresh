@@ -32,6 +32,7 @@ import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.location.ShipmentScheduleLocationsUpdater;
 import de.metas.inoutcandidate.location.adapter.ShipmentScheduleDocumentLocationAdapterFactory;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.model.ShipmentScheduleCloseReason;
 import de.metas.lang.SOTrx;
 import de.metas.lock.api.ILockManager;
 import de.metas.logging.LogManager;
@@ -101,6 +102,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.annotation.Nullable;
 
 import static org.adempiere.model.InterfaceWrapperHelper.createOld;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
@@ -317,6 +320,13 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public void closeShipmentSchedule(@NonNull final I_M_ShipmentSchedule scheduleRecord)
 	{
+		closeShipmentSchedule(scheduleRecord, null);
+	}
+
+	@Override
+	public void closeShipmentSchedule(@NonNull final I_M_ShipmentSchedule scheduleRecord, @Nullable final ShipmentScheduleCloseReason reason)
+	{
+		scheduleRecord.setCloseReason(ShipmentScheduleCloseReason.toCodeOrNull(reason));
 		scheduleRecord.setIsClosed(true);
 		save(scheduleRecord);
 	}
@@ -324,13 +334,24 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public void closeShipmentSchedule(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
-		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulePA.getById(shipmentScheduleId);
+		closeShipmentSchedule(shipmentScheduleId, null);
+	}
 
-		closeShipmentSchedule(shipmentSchedule);
+	@Override
+	public void closeShipmentSchedule(@NonNull final ShipmentScheduleId shipmentScheduleId, @Nullable final ShipmentScheduleCloseReason reason)
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulePA.getById(shipmentScheduleId);
+		closeShipmentSchedule(shipmentSchedule, reason);
 	}
 
 	@Override
 	public void closeShipmentSchedules(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		closeShipmentSchedules(shipmentScheduleIds, null);
+	}
+
+	@Override
+	public void closeShipmentSchedules(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds, @Nullable final ShipmentScheduleCloseReason reason)
 	{
 		if (shipmentScheduleIds.isEmpty())
 		{
@@ -338,7 +359,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		}
 
 		final Collection<I_M_ShipmentSchedule> shipmentSchedules = shipmentSchedulePA.getByIds(shipmentScheduleIds).values();
-		shipmentSchedules.forEach(this::closeShipmentSchedule);
+		shipmentSchedules.forEach(sched -> closeShipmentSchedule(sched, reason));
 	}
 
 	@Override
@@ -346,6 +367,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	{
 		Check.errorUnless(shipmentScheduleRecord.isClosed(), "The given shipmentSchedule is not closed; shipmentSchedule={}", shipmentScheduleRecord);
 
+		shipmentScheduleRecord.setCloseReason(null);
 		shipmentScheduleRecord.setIsClosed(false);
 		save(shipmentScheduleRecord);
 
@@ -645,6 +667,12 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public void closeShipmentSchedulesFor(@NonNull final ImmutableList<TableRecordReference> recordRefs)
 	{
+		closeShipmentSchedulesFor(recordRefs, null);
+	}
+
+	@Override
+	public void closeShipmentSchedulesFor(@NonNull final ImmutableList<TableRecordReference> recordRefs, @Nullable final ShipmentScheduleCloseReason reason)
+	{
 		final ImmutableList<I_M_ShipmentSchedule> records = shipmentSchedulePA.getByReferences(recordRefs);
 		for (final I_M_ShipmentSchedule record : records)
 		{
@@ -658,7 +686,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 						MSG_SHIPMENT_SCHEDULE_ALREADY_PROCESSED, record.getM_ShipmentSchedule_ID())
 						.markAsUserValidationError();
 			}
-			closeShipmentSchedule(record);
+			closeShipmentSchedule(record, reason);
 		}
 	}
 
@@ -716,7 +744,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 						{
 							logger.debug("inoutLine.MovementQty={} is < shipmentSchedule.qtyOrdered={}; -> closing shipment schedule",
 									iolrecord.getMovementQty(), shipmentScheduleRecord.getQtyOrdered());
-							closeShipmentSchedule(shipmentScheduleRecord);
+							closeShipmentSchedule(shipmentScheduleRecord, ShipmentScheduleCloseReason.PartiallyShipped);
 						}
 						else
 						{

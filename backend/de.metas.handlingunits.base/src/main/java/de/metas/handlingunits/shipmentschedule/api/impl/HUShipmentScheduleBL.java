@@ -51,6 +51,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.api.ShipmentScheduleLoadingCache;
+import de.metas.inoutcandidate.model.ShipmentScheduleCloseReason;
 import de.metas.inoutcandidate.api.impl.HUShipmentScheduleHeaderAggregationKeyBuilder;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.logging.LogManager;
@@ -781,9 +782,21 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	}
 
 	@Override
+	public void closeShipmentSchedule(final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule, @Nullable final ShipmentScheduleCloseReason reason)
+	{
+		shipmentScheduleBL.closeShipmentSchedule(shipmentSchedule, reason);
+	}
+
+	@Override
 	public void closeShipmentSchedules(final Set<ShipmentScheduleId> shipmentScheduleIds)
 	{
 		shipmentScheduleBL.closeShipmentSchedules(shipmentScheduleIds);
+	}
+
+	@Override
+	public void closeShipmentSchedules(final Set<ShipmentScheduleId> shipmentScheduleIds, @Nullable final ShipmentScheduleCloseReason reason)
+	{
+		shipmentScheduleBL.closeShipmentSchedules(shipmentScheduleIds, reason);
 	}
 
 	@Override

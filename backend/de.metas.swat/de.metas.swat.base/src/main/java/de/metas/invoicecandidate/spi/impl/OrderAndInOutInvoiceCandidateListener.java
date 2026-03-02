@@ -4,6 +4,7 @@ import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.model.ShipmentScheduleCloseReason;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateListener;
 import de.metas.util.Services;
@@ -38,7 +39,7 @@ public final class OrderAndInOutInvoiceCandidateListener implements IInvoiceCand
 		shipmentSchedulesRepo.retrieveForInvoiceCandidate(candidate)
 				.stream()
 				.filter(shipmentSchedule -> !shipmentSchedule.isClosed())
-				.forEach(shipmentSchedulesService::closeShipmentSchedule);
+				.forEach(shipmentSchedule -> shipmentSchedulesService.closeShipmentSchedule(shipmentSchedule, ShipmentScheduleCloseReason.InvoiceCandidateClosed));
 	}
 
 	private void closeReceiptCandidates(final I_C_Invoice_Candidate candidate)

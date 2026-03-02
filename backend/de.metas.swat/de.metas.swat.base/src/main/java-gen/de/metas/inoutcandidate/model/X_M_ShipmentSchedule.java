@@ -346,9 +346,39 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public int getCatch_UOM_ID() 
+	public int getCatch_UOM_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_Catch_UOM_ID);
+	}
+
+	/** Manual = Manual */
+	public static final String CLOSEREASON_Manual = "Manual";
+	/** OrderReactivated = OrderReactivated */
+	public static final String CLOSEREASON_OrderReactivated = "OrderReactivated";
+	/** PartiallyShipped = PartiallyShipped */
+	public static final String CLOSEREASON_PartiallyShipped = "PartiallyShipped";
+	/** InvoiceCandidateClosed = InvoiceCandidateClosed */
+	public static final String CLOSEREASON_InvoiceCandidateClosed = "InvoiceCandidateClosed";
+	/** FlatrateTerm = FlatrateTerm */
+	public static final String CLOSEREASON_FlatrateTerm = "FlatrateTerm";
+	/** ContractPause = ContractPause */
+	public static final String CLOSEREASON_ContractPause = "ContractPause";
+	/** ShipmentProcessed = ShipmentProcessed */
+	public static final String CLOSEREASON_ShipmentProcessed = "ShipmentProcessed";
+	/** PickingRejected = PickingRejected */
+	public static final String CLOSEREASON_PickingRejected = "PickingRejected";
+	/** OutOfStock = OutOfStock */
+	public static final String CLOSEREASON_OutOfStock = "OutOfStock";
+	@Override
+	public void setCloseReason (final @Nullable java.lang.String CloseReason)
+	{
+		set_Value (COLUMNNAME_CloseReason, CloseReason);
+	}
+
+	@Override
+	public java.lang.String getCloseReason()
+	{
+		return get_ValueAsString(COLUMNNAME_CloseReason);
 	}
 
 	@Override

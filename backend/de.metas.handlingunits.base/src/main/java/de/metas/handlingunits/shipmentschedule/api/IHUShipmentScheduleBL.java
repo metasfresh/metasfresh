@@ -13,6 +13,7 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.ShipmentScheduleLoadingCache;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.model.ShipmentScheduleCloseReason;
 import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -40,7 +41,11 @@ public interface IHUShipmentScheduleBL extends ISingletonService
 
 	void closeShipmentSchedule(I_M_ShipmentSchedule shipmentSchedule);
 
+	void closeShipmentSchedule(I_M_ShipmentSchedule shipmentSchedule, @Nullable ShipmentScheduleCloseReason reason);
+
 	void closeShipmentSchedules(Set<ShipmentScheduleId> shipmentScheduleIds);
+
+	void closeShipmentSchedules(Set<ShipmentScheduleId> shipmentScheduleIds, @Nullable ShipmentScheduleCloseReason reason);
 
 	/**
 	 * Add QtyPicked to the current QtyPicked of given shipment schedule.

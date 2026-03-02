@@ -33,6 +33,7 @@ import org.adempiere.exceptions.AdempiereException;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.model.ShipmentScheduleCloseReason;
 import de.metas.process.JavaProcess;
 import de.metas.util.Services;
 
@@ -63,7 +64,7 @@ public class M_ShipmentSchedule_CloseShipmentSchedules extends JavaProcess
 		{
 			final I_M_ShipmentSchedule schedule = schedulesToUpdateIterator.next();
 
-			shipmentScheduleBL.closeShipmentSchedule(schedule);
+			shipmentScheduleBL.closeShipmentSchedule(schedule, ShipmentScheduleCloseReason.Manual);
 		}
 
 		return MSG_OK;

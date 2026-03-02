@@ -47,6 +47,7 @@ import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTy
 import de.metas.handlingunits.shipmentschedule.api.QtyToDeliverMap;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
+import de.metas.inoutcandidate.model.ShipmentScheduleCloseReason;
 import de.metas.handlingunits.shipmentschedule.api.ShippingInfoCache;
 import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternalInfo;
 import de.metas.inout.IInOutDAO;
@@ -223,7 +224,7 @@ public class JsonShipmentService
 			if (request.getCloseShipmentSchedule())
 			{
 				loggable.addLog("processShipmentSchedules - start closing shipmentSchedules");
-				shipmentScheduleBL.closeShipmentSchedules(generateShipmentRequest.getScheduleIds().getShipmentScheduleIds());
+				shipmentScheduleBL.closeShipmentSchedules(generateShipmentRequest.getScheduleIds().getShipmentScheduleIds(), ShipmentScheduleCloseReason.ShipmentProcessed);
 				loggable.addLog("processShipmentSchedules - finished closing shipmentSchedules");
 			}
 		}

@@ -26,6 +26,7 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_Picking_Job_Schedule;
+import de.metas.inoutcandidate.model.ShipmentScheduleCloseReason;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.util.Loggables;
@@ -248,7 +249,9 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		shipmentScheduleIdsToClose.addAll(schedules.getShipmentScheduleIdsWithoutJobSchedules());
 		shipmentScheduleIdsToClose.addAll(pickingJobScheduleService.getShipmentScheduleIdsWithAllJobSchedulesProcessedOrMissing(schedules.getShipmentScheduleIdsWithJobSchedules()));
 
-		shipmentScheduleBL.closeShipmentSchedules(shipmentScheduleIdsToClose);
+		final ShipmentScheduleCloseReason closeReason = ShipmentScheduleCloseReason.ofNullableCode(
+				getParameters().getParameterAsString(ShipmentScheduleWorkPackageParameters.PARAM_CloseReason));
+		shipmentScheduleBL.closeShipmentSchedules(shipmentScheduleIdsToClose, closeReason);
 	}
 
 }

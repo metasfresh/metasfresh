@@ -8,6 +8,7 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
+import de.metas.inoutcandidate.model.ShipmentScheduleCloseReason;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
@@ -50,7 +51,7 @@ public class C_Order_ShipmentSchedule
 				.map(orderLineId -> TableRecordReference.of(I_C_OrderLine.Table_Name, orderLineId))
 				.collect(ImmutableList.toImmutableList());
 
-		shipmentScheduleBL.closeShipmentSchedulesFor(orderLineRecordRefs);
+		shipmentScheduleBL.closeShipmentSchedulesFor(orderLineRecordRefs, ShipmentScheduleCloseReason.OrderReactivated);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)

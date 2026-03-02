@@ -45,6 +45,7 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ShipmentSchedule;
 import de.metas.inoutcandidate.ShipmentScheduleRepository;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.model.ShipmentScheduleCloseReason;
 import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSegment;
 import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleSegments;
 import de.metas.inventory.HUAggregationType;
@@ -240,7 +241,7 @@ public class WarehouseService
 		final List<ShipmentScheduleId> closedShipmentScheduleIds = shipmentScheduleRepository.streamFromSegment(shipmentScheduleSegment)
 				.filter(shipmentSchedule -> !shipmentSchedule.isProcessed())
 				.map(ShipmentSchedule::getId)
-				.peek(shipmentScheduleBL::closeShipmentSchedule)
+				.peek(id -> shipmentScheduleBL.closeShipmentSchedule(id, ShipmentScheduleCloseReason.OutOfStock))
 				.collect(ImmutableList.toImmutableList());
 
 		Loggables.addLog("WarehouseService.closeShipmentSchedules: Just closed from warehouse: {} the following shipmentSchedules: {}",

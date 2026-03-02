@@ -32,6 +32,7 @@ import de.metas.inoutcandidate.api.impl.ShipmentScheduleHeaderAggregationKeyBuil
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.model.ShipmentScheduleCloseReason;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
@@ -49,6 +50,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Map;
@@ -114,9 +116,15 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 */
 	void closeShipmentSchedule(I_M_ShipmentSchedule schedule);
 
+	void closeShipmentSchedule(I_M_ShipmentSchedule schedule, @Nullable ShipmentScheduleCloseReason reason);
+
 	void closeShipmentSchedule(ShipmentScheduleId shipmentScheduleId);
 
+	void closeShipmentSchedule(ShipmentScheduleId shipmentScheduleId, @Nullable ShipmentScheduleCloseReason reason);
+
 	void closeShipmentSchedules(@NonNull Set<ShipmentScheduleId> shipmentScheduleIds);
+
+	void closeShipmentSchedules(@NonNull Set<ShipmentScheduleId> shipmentScheduleIds, @Nullable ShipmentScheduleCloseReason reason);
 
 	/**
 	 * Reopen the closed shipment schedule given as parameter
@@ -124,6 +132,8 @@ public interface IShipmentScheduleBL extends ISingletonService
 	void openShipmentSchedule(I_M_ShipmentSchedule shipmentScheduleRecord);
 
 	void closeShipmentSchedulesFor(ImmutableList<TableRecordReference> orderLineRecordRefs);
+
+	void closeShipmentSchedulesFor(ImmutableList<TableRecordReference> orderLineRecordRefs, @Nullable ShipmentScheduleCloseReason reason);
 
 	void openShipmentSchedulesFor(ImmutableList<TableRecordReference> recordRefs);
 

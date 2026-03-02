@@ -4,6 +4,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.model.ShipmentScheduleCloseReason;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateListener;
 import de.metas.util.Services;
@@ -52,7 +53,7 @@ public class FlatrateTermInvoiceCandidateListener implements IInvoiceCandidateLi
 				.create()
 				.list(I_M_ShipmentSchedule.class);
 
-		shipmentSchedules.forEach(shipmentSchedule -> Services.get(IShipmentScheduleBL.class).closeShipmentSchedule(shipmentSchedule));
+		shipmentSchedules.forEach(shipmentSchedule -> Services.get(IShipmentScheduleBL.class).closeShipmentSchedule(shipmentSchedule, ShipmentScheduleCloseReason.FlatrateTerm));
 	}
 
 }

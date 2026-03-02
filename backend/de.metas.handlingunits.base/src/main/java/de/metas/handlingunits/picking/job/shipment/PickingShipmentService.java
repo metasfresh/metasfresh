@@ -11,6 +11,7 @@ import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.handlingunits.shipmentschedule.api.GenerateShipmentsForSchedulesRequest;
 import de.metas.handlingunits.shipmentschedule.api.IShipmentService;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
+import de.metas.inoutcandidate.model.ShipmentScheduleCloseReason;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.compiere.Adempiere;
@@ -106,6 +107,7 @@ public class PickingShipmentService
 				.onTheFlyPickToPackingInstructions(true)
 				.isCompleteShipment(createShipmentPolicy.isCreateAndCompleteShipment())
 				.isCloseShipmentSchedules(createShipmentPolicy.isCloseShipmentSchedules())
+				.closeReason(ShipmentScheduleCloseReason.ShipmentProcessed)
 				// since we are not going to immediately create invoices, we want to move on and to not wait for shipments
 				.waitForShipments(false)
 				.build());

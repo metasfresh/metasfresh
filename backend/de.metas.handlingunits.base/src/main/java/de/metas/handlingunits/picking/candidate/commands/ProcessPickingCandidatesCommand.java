@@ -24,6 +24,7 @@ import de.metas.handlingunits.pporder.api.IssueCandidateGeneratedBy;
 import de.metas.handlingunits.shipmentschedule.api.AddQtyPickedRequest;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.util.CatchWeightHelper;
+import de.metas.inoutcandidate.model.ShipmentScheduleCloseReason;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -269,7 +270,7 @@ public class ProcessPickingCandidatesCommand
 			return;
 		}
 
-		huShipmentScheduleBL.closeShipmentSchedule(shipmentSchedule);
+		huShipmentScheduleBL.closeShipmentSchedule(shipmentSchedule, ShipmentScheduleCloseReason.PickingRejected);
 
 		//
 		// Close related invoices candidates too

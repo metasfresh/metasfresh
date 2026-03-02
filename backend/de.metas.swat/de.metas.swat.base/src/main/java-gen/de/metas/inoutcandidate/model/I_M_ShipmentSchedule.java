@@ -470,6 +470,27 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_Catch_UOM_ID = "Catch_UOM_ID";
 
 	/**
+	 * Set Close Reason.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCloseReason (@Nullable java.lang.String CloseReason);
+
+	/**
+	 * Get Close Reason.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCloseReason();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_CloseReason = new ModelColumn<>(I_M_ShipmentSchedule.class, "CloseReason", null);
+	String COLUMNNAME_CloseReason = "CloseReason";
+
+	/**
 	 * Set Business Partner.
 	 *
 	 * <br>Type: Search

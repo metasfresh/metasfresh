@@ -30,6 +30,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternalInfo;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ShipmentSchedule;
+import de.metas.inoutcandidate.model.ShipmentScheduleCloseReason;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import lombok.Builder;
 import lombok.NonNull;
@@ -61,6 +62,7 @@ public class GenerateShipmentsRequest
 
 	@NonNull Boolean isCompleteShipment;
 	boolean isCloseShipmentSchedules;
+	@Nullable ShipmentScheduleCloseReason closeReason;
 
 	@Nullable Boolean isShipDateToday;
 

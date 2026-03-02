@@ -156,6 +156,7 @@ public class ShipmentService implements IShipmentService
 				.isShipDateToday(request.getIsShipDateToday())
 				.isCompleteShipment(request.getIsCompleteShipment())
 				.isCloseShipmentSchedules(request.isCloseShipmentSchedules())
+				.closeReason(request.getCloseReason())
 				.waitForShipments(request.isWaitForShipments());
 
 		groupSchedulesByAsyncBatch(allScheduleIds)
@@ -339,6 +340,7 @@ public class ShipmentService implements IShipmentService
 				.onTheFlyPickToPackingInstructions(request.isOnTheFlyPickToPackingInstructions())
 				.completeShipments(request.getIsCompleteShipment())
 				.isCloseShipmentSchedules(request.isCloseShipmentSchedules())
+				.closeReason(request.getCloseReason())
 				.isShipmentDateToday(Boolean.TRUE.equals(request.getIsShipDateToday()))
 				.advisedShipmentDocumentNos(request.extractShipmentDocumentNos())
 				.qtysToDeliverOverride(request.getScheduleToQuantityToDeliverOverride())
