@@ -1,13 +1,24 @@
+# ===========================================================================
+# Auto-port to new_dawn_uat chain
+# ===========================================================================
+# Automatically creates merge PRs to propagate changes through the branch
+# chain: *_hotfix → *_release → new_dawn_uat.
+#
+# Trigger: workflow_run (after cicd completes successfully on a _hotfix or
+# _release branch). This approach only requires the file on the DEFAULT
+# branch — no need to propagate auto-port.yml to every branch.
+#
+# Previous approach (pull_request: closed) failed because the workflow file
+# must exist on the PR's base branch, which it never did for non-default
+# branches.
+# ===========================================================================
+
 name: Auto-port to new_dawn_uat chain
 
-# Trigger on PR merge (not push) because pushes by GitHub Apps (Mergify)
-# don't trigger push-based workflows due to GitHub's anti-recursion protection.
 on:
-  pull_request:
-    types: [closed]
-    branches:
-      - '*_hotfix'
-      - '*_release'
+  workflow_run:
+    workflows: ["cicd"]
+    types: [completed]
 
 permissions:
   contents: write      # git push of merge branch
@@ -25,8 +36,11 @@ env:
 
 jobs:
   auto-port:
-    # Only run when the PR was actually merged (not just closed)
-    if: github.event.pull_request.merged == true
+    # Only run when cicd succeeded on a _hotfix or _release branch
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      (endsWith(github.event.workflow_run.head_branch, '_hotfix') ||
+       endsWith(github.event.workflow_run.head_branch, '_release'))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -35,9 +49,10 @@ jobs:
 
       - name: Determine target branch
         id: target
+        env:
+          BRANCH: ${{ github.event.workflow_run.head_branch }}
         run: |
-          BRANCH="${{ github.event.pull_request.base.ref }}"
-          echo "Triggered by PR merge into $BRANCH"
+          echo "Triggered by successful cicd on $BRANCH"
 
           # Extract group name and suffix
           if [[ "$BRANCH" =~ ^(.+)_(hotfix|release)$ ]]; then
@@ -92,9 +107,11 @@ jobs:
       - name: Check for existing merge PR
         id: check
         if: steps.target.outputs.skip != 'true' && steps.target.outputs.target != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SOURCE: ${{ steps.target.outputs.source }}
+          TARGET: ${{ steps.target.outputs.target }}
         run: |
-          SOURCE="${{ steps.target.outputs.source }}"
-          TARGET="${{ steps.target.outputs.target }}"
           MERGE_BRANCH="merge/${SOURCE}-to-${TARGET}"
 
           EXISTING=$(gh pr list \
@@ -109,17 +126,16 @@ jobs:
           if [[ -n "$EXISTING" ]]; then
             echo "PR #$EXISTING already exists, will update merge branch"
           fi
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create or update merge branch and PR
         if: steps.target.outputs.skip != 'true' && steps.target.outputs.target != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SOURCE: ${{ steps.target.outputs.source }}
+          TARGET: ${{ steps.target.outputs.target }}
+          MERGE_BRANCH: ${{ steps.check.outputs.merge_branch }}
+          EXISTING_PR: ${{ steps.check.outputs.existing_pr }}
         run: |
-          SOURCE="${{ steps.target.outputs.source }}"
-          TARGET="${{ steps.target.outputs.target }}"
-          MERGE_BRANCH="${{ steps.check.outputs.merge_branch }}"
-          EXISTING_PR="${{ steps.check.outputs.existing_pr }}"
-
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
@@ -171,5 +187,3 @@ jobs:
               exit 1
             fi
           fi
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
