@@ -131,6 +131,10 @@ public class M_HU_Trace_Report_StepDef
 	// Invoke + assert steps
 	// =====================================================================================
 
+	/**
+	 * Invokes the {@code M_HU_Trace_Report(?)} SQL function for the product associated with the given
+	 * scenario and stores the returned {@code detail_type} values for later assertion.
+	 */
 	@And("M_HU_Trace_Report is invoked for scenario {string}")
 	public void invokeReport(@NonNull final String scenarioName)
 	{
@@ -171,6 +175,10 @@ public class M_HU_Trace_Report_StepDef
 		reportResultsByScenario.put(scenarioName, ImmutableList.copyOf(detailTypes));
 	}
 
+	/**
+	 * Asserts that the previously invoked {@code M_HU_Trace_Report} result for the given scenario
+	 * contains a row with the specified {@code detail_type} value.
+	 */
 	@Then("M_HU_Trace_Report result for scenario {string} contains detail_type row {string}")
 	public void assertDetailTypePresent(@NonNull final String scenarioName, @NonNull final String expectedDetailType)
 	{
