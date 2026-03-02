@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- W3C Schema generiert von XMLSpy v2024 (x64) (http://www.altova.com) -->
+<xs:schema targetNamespace="http://migros.net/migros/" xmlns:migros="http://migros.net/migros/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:element name="ArticleAttrExpiryDate" type="xs:dateTime"/>
+	<xs:element name="LUAttrCoolingStatus" type="migros:T_LUAttrCoolingStatus"/>
+	<xs:element name="LUAttrDeliveryTime" type="xs:dateTime"/>
+	<xs:element name="LUAttrHazardStatement" type="migros:T_LUAttrHazardStatement"/>
+	<xs:element name="LUAttrHeightCMT" type="xs:byte"/>
+	<xs:element name="LUAttrPromotion" type="migros:T_LUAttrPromotion"/>
+	<xs:element name="LUAttrWeigthKGM" type="xs:decimal"/>
+	<xs:simpleType name="T_ArticleAttrExpiryDate">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="01.08.2023 22:00:00"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="T_LUAttrCoolingStatus">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="K"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="T_LUAttrHazardStatement">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="H300"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="T_LUAttrPromotion">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value=" AKTION "/>
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>

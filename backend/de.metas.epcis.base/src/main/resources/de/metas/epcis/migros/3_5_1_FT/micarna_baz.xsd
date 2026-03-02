@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- W3C Schema generiert von XMLSpy v2024 (x64) (http://www.altova.com) -->
+<xs:schema targetNamespace="http://migros.net/micarna_baz/" xmlns:micarna_baz="http://migros.net/micarna_baz/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:element name="TUAttrPromotion" type="xs:string"/>
+	<xs:element name="GM_Price_LU" type="xs:string"/>
+	<xs:element name="GM_Price_VD" type="xs:string"/>
+	<xs:element name="GM_Price_VS" type="xs:string"/>
+	<xs:element name="GM_Price_GE" type="xs:string"/>
+	<xs:element name="GM_Price_ZH" type="xs:string"/>
+	<xs:element name="GM_Price_NF" type="xs:string"/>
+	<xs:element name="GM_Price_OS" type="xs:string"/>
+	<xs:element name="GM_Price_TI" type="xs:string"/>
+	<xs:element name="GM_Price_AA" type="xs:string"/>
+	<xs:element name="GM_Price_BS" type="xs:string"/>
+	<xs:element name="GM_Price_xx" type="xs:string"/>
+	<xs:element name="mixedState_LU" type="xs:string"/>
+	<xs:element name="substitute_product" type="xs:string"/>
+	<xs:element name="LUAttrPromotion" type="xs:string"/>
+	<xs:element name="original_missing_Product" type="xs:string"/>
+	
+</xs:schema>

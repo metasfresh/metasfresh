@@ -1,0 +1,488 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+
+<!-- EPCIS QUERY SERVICE DEFINITIONS -->
+<wsdl:definitions
+    targetNamespace="urn:epcglobal:epcis:wsdl:1"
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:apachesoap="http://xml.apache.org/xml-soap"
+    xmlns:epcis="urn:epcglobal:epcis:xsd:1"
+    xmlns:epcisq="urn:epcglobal:epcis-query:xsd:1"
+    xmlns:epcglobal="urn:epcglobal:xsd:1"
+    xmlns:impl="urn:epcglobal:epcis:wsdl:1"
+    xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" 
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+  <wsdl:documentation>
+    <epcglobal:copyright>
+       Copyright (C) 2006-2016 GS1 AISBL, All Rights Reserved
+    </epcglobal:copyright>
+    <epcglobal:disclaimer>
+THIS DOCUMENT IS PROVIDED “AS IS” WITH NO WARRANTIES WHATSOEVER, INCLUDING ANY WARRANTY OF MERCHANTABILITY, NONINFRINGMENT, FITNESS FOR PARTICULAR PURPOSE, OR ANY WARRANTY OTHER WISE ARISING OUT OF THIS SPECIFICATION. GS1 disclaims all liability for any damages arising from use or misuse of this Standard, whether special, indirect, consequential, or compensatory damages, and including liability for infringement of any intellectual property rights, relating to use of information in or reliance upon this document.
+GS1 retains the right to make changes to this document at any time, without notice. GS1 makes no warranty for the use of this document and assumes no responsibility for any errors which may appear in the document, nor does it make a commitment to update the information contained herein.
+    </epcglobal:disclaimer>
+    <epcglobal:specification>
+    </epcglobal:specification>
+  </wsdl:documentation>
+
+  <!-- EPCISSERVICE TYPES -->
+  <wsdl:types>
+     <xsd:schema targetNamespace="urn:epcglobal:epcis:wsdl:1"
+                 xmlns:impl="urn:epcglobal:epcis:wsdl:1"
+                 xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+       <xsd:import 
+            namespace="urn:epcglobal:xsd:1" 
+            schemaLocation="EPCglobal.xsd"/>
+       <xsd:import
+            namespace="urn:epcglobal:epcis:xsd:1" 
+            schemaLocation="EPCglobal-epcis-1_1.xsd"/>
+       <xsd:import
+            namespace="urn:epcglobal:epcis-query:xsd:1" 
+            schemaLocation="EPCglobal-epcis-query-1_1.xsd"/>
+    </xsd:schema>
+  </wsdl:types>
+
+  <!-- EPCIS QUERY SERVICE MESSAGES -->
+
+  <wsdl:message name="getQueryNamesRequest">
+      <wsdl:part name="parms" element="epcisq:GetQueryNames"/>
+  </wsdl:message>
+  <wsdl:message name="getQueryNamesResponse">
+      <wsdl:part name="getQueryNamesReturn" element="epcisq:GetQueryNamesResult"/>
+  </wsdl:message>
+
+  <wsdl:message name="subscribeRequest">
+    <wsdl:part name="parms" element="epcisq:Subscribe"/>
+  </wsdl:message>
+  <wsdl:message name="subscribeResponse">
+      <wsdl:part name="subscribeReturn" element="epcisq:SubscribeResult"/>   
+  </wsdl:message>
+
+  <wsdl:message name="unsubscribeRequest">
+      <wsdl:part name="parms" element="epcisq:Unsubscribe"/>
+  </wsdl:message>
+  <wsdl:message name="unsubscribeResponse">
+      <wsdl:part name="unsubscribeReturn" element="epcisq:UnsubscribeResult"/>   
+  </wsdl:message>
+
+  <wsdl:message name="getSubscriptionIDsRequest">
+      <wsdl:part name="parms" element="epcisq:GetSubscriptionIDs"/>
+  </wsdl:message>
+  <wsdl:message name="getSubscriptionIDsResponse">
+      <wsdl:part name="getSubscriptionIDsReturn" element="epcisq:GetSubscriptionIDsResult"/>
+  </wsdl:message>
+
+  <wsdl:message name="pollRequest">
+      <wsdl:part name="parms" element="epcisq:Poll"/>
+  </wsdl:message>
+  <wsdl:message name="pollResponse">
+      <wsdl:part name="pollReturn" element="epcisq:QueryResults"/>
+  </wsdl:message>
+
+  <wsdl:message name="getStandardVersionRequest">
+      <wsdl:part name="parms" element="epcisq:GetStandardVersion"/>
+  </wsdl:message>
+  <wsdl:message name="getStandardVersionResponse">
+      <wsdl:part name="getStandardVersionReturn" element="epcisq:GetStandardVersionResult"/>
+  </wsdl:message>
+
+  <wsdl:message name="getVendorVersionRequest">
+      <wsdl:part name="parms" element="epcisq:GetVendorVersion"/>
+  </wsdl:message>
+  <wsdl:message name="getVendorVersionResponse">
+      <wsdl:part name="getVendorVersionReturn" element="epcisq:GetVendorVersionResult"/>
+  </wsdl:message>
+
+  <!-- EPCISSERVICE FAULT EXCEPTIONS -->
+  <wsdl:message name="DuplicateNameExceptionResponse">
+      <wsdl:part name="fault" element="epcisq:DuplicateNameException"/>
+  </wsdl:message>
+      <!-- QueryValidationException not implemented in EPCIS 1.0
+  <wsdl:message name="QueryValidationExceptionResponse">
+      <wsdl:part name="fault" element="epcisq:QueryValidationException"/>
+  </wsdl:message>
+      -->
+  <wsdl:message name="InvalidURIExceptionResponse">
+      <wsdl:part name="fault" element="epcisq:InvalidURIException"/>
+  </wsdl:message>
+  <wsdl:message name="NoSuchNameExceptionResponse">
+      <wsdl:part name="fault" element="epcisq:NoSuchNameException"/>
+  </wsdl:message>
+  <wsdl:message name="NoSuchSubscriptionExceptionResponse">
+      <wsdl:part name="fault" element="epcisq:NoSuchSubscriptionException"/>
+  </wsdl:message>
+  <wsdl:message name="DuplicateSubscriptionExceptionResponse">
+      <wsdl:part name="fault" element="epcisq:DuplicateSubscriptionException"/>
+  </wsdl:message>
+  <wsdl:message name="QueryParameterExceptionResponse">
+      <wsdl:part name="fault" element="epcisq:QueryParameterException"/>
+  </wsdl:message>
+  <wsdl:message name="QueryTooLargeExceptionResponse">
+      <wsdl:part name="fault" element="epcisq:QueryTooLargeException"/>
+  </wsdl:message>
+  <wsdl:message name="QueryTooComplexExceptionResponse">
+      <wsdl:part name="fault" element="epcisq:QueryTooComplexException"/>
+  </wsdl:message>
+  <wsdl:message name="SubscriptionControlsExceptionResponse">
+      <wsdl:part name="fault" element="epcisq:SubscriptionControlsException"/>
+  </wsdl:message>
+  <wsdl:message name="SubscribeNotPermittedExceptionResponse">
+      <wsdl:part name="fault" element="epcisq:SubscribeNotPermittedException"/>
+  </wsdl:message>
+  <wsdl:message name="SecurityExceptionResponse">
+      <wsdl:part name="fault" element="epcisq:SecurityException"/>
+  </wsdl:message>
+  <wsdl:message name="ValidationExceptionResponse">
+      <wsdl:part name="fault" element="epcisq:ValidationException"/>
+  </wsdl:message>
+  <wsdl:message name="ImplementationExceptionResponse">
+      <wsdl:part name="fault" element="epcisq:ImplementationException"/>
+  </wsdl:message>
+
+  <!-- EPCISSERVICE PORTTYPE -->
+  <wsdl:portType name="EPCISServicePortType">
+
+    <wsdl:operation name="getQueryNames">
+      <wsdl:input message="impl:getQueryNamesRequest" name="getQueryNamesRequest"/>
+      <wsdl:output message="impl:getQueryNamesResponse" name="getQueryNamesResponse"/>
+      <wsdl:fault message="impl:SecurityExceptionResponse" name="SecurityExceptionFault"/>
+      <wsdl:fault message="impl:ValidationExceptionResponse" name="ValidationExceptionFault"/>
+      <wsdl:fault message="impl:ImplementationExceptionResponse" name="ImplementationExceptionFault"/>
+    </wsdl:operation>
+
+    <wsdl:operation name="subscribe">
+      <wsdl:input message="impl:subscribeRequest" name="subscribeRequest"/>
+      <wsdl:output message="impl:subscribeResponse" name="subscribeResponse"/>
+      <wsdl:fault message="impl:NoSuchNameExceptionResponse" name="NoSuchNameExceptionFault"/>
+      <wsdl:fault message="impl:InvalidURIExceptionResponse" name="InvalidURIExceptionFault"/>
+      <wsdl:fault message="impl:DuplicateSubscriptionExceptionResponse" name="DuplicateSubscriptionExceptionFault"/>
+      <wsdl:fault message="impl:QueryParameterExceptionResponse" name="QueryParameterExceptionFault"/>
+      <wsdl:fault message="impl:QueryTooComplexExceptionResponse" name="QueryTooComplexExceptionFault"/>
+      <wsdl:fault message="impl:SubscriptionControlsExceptionResponse" name="SubscriptionControlsExceptionFault"/>
+      <wsdl:fault message="impl:SubscribeNotPermittedExceptionResponse" name="SubscribeNotPermittedExceptionFault"/>
+      <wsdl:fault message="impl:SecurityExceptionResponse" name="SecurityExceptionFault"/>
+      <wsdl:fault message="impl:ValidationExceptionResponse" name="ValidationExceptionFault"/>
+      <wsdl:fault message="impl:ImplementationExceptionResponse" name="ImplementationExceptionFault"/>
+    </wsdl:operation>
+
+    <wsdl:operation name="unsubscribe">
+      <wsdl:input message="impl:unsubscribeRequest" name="unsubscribeRequest"/>
+      <wsdl:output message="impl:unsubscribeResponse" name="unsubscribeResponse"/>
+      <wsdl:fault message="impl:NoSuchSubscriptionExceptionResponse" name="NoSuchSubscriptionExceptionFault"/>
+      <wsdl:fault message="impl:SecurityExceptionResponse" name="SecurityExceptionFault"/>
+      <wsdl:fault message="impl:ValidationExceptionResponse" name="ValidationExceptionFault"/>
+      <wsdl:fault message="impl:ImplementationExceptionResponse" name="ImplementationExceptionFault"/>
+    </wsdl:operation>
+
+    <wsdl:operation name="getSubscriptionIDs">
+      <wsdl:input message="impl:getSubscriptionIDsRequest" name="getSubscriptionIDsRequest"/>
+      <wsdl:output message="impl:getSubscriptionIDsResponse" name="getSubscriptionIDsResponse"/>
+      <wsdl:fault message="impl:NoSuchNameExceptionResponse" name="NoSuchNameExceptionFault"/>
+      <wsdl:fault message="impl:SecurityExceptionResponse" name="SecurityExceptionFault"/>
+      <wsdl:fault message="impl:ValidationExceptionResponse" name="ValidationExceptionFault"/>
+      <wsdl:fault message="impl:ImplementationExceptionResponse" name="ImplementationExceptionFault"/>
+    </wsdl:operation>
+
+    <wsdl:operation name="poll">
+      <wsdl:input message="impl:pollRequest" name="pollRequest"/>
+      <wsdl:output message="impl:pollResponse" name="pollResponse"/>
+      <wsdl:fault message="impl:QueryParameterExceptionResponse" name="QueryParameterExceptionFault"/>
+      <wsdl:fault message="impl:QueryTooLargeExceptionResponse" name="QueryTooLargeExceptionFault"/>
+      <wsdl:fault message="impl:QueryTooComplexExceptionResponse" name="QueryTooComplexExceptionFault"/>
+      <wsdl:fault message="impl:NoSuchNameExceptionResponse" name="NoSuchNameExceptionFault"/>
+      <wsdl:fault message="impl:SecurityExceptionResponse" name="SecurityExceptionFault"/>
+      <wsdl:fault message="impl:ValidationExceptionResponse" name="ValidationExceptionFault"/>
+      <wsdl:fault message="impl:ImplementationExceptionResponse" name="ImplementationExceptionFault"/>
+    </wsdl:operation>
+
+    <wsdl:operation name="getStandardVersion">
+      <wsdl:input message="impl:getStandardVersionRequest" name="getStandardVersionRequest"/>
+      <wsdl:output message="impl:getStandardVersionResponse" name="getStandardVersionResponse"/>
+      <wsdl:fault message="impl:SecurityExceptionResponse" name="SecurityExceptionFault"/>
+      <wsdl:fault message="impl:ValidationExceptionResponse" name="ValidationExceptionFault"/>
+      <wsdl:fault message="impl:ImplementationExceptionResponse" name="ImplementationExceptionFault"/>
+    </wsdl:operation>       
+
+    <wsdl:operation name="getVendorVersion">
+      <wsdl:input message="impl:getVendorVersionRequest" name="getVendorVersionRequest"/>
+      <wsdl:output message="impl:getVendorVersionResponse" name="getVendorVersionResponse"/>
+      <wsdl:fault message="impl:SecurityExceptionResponse" name="SecurityExceptionFault"/>
+      <wsdl:fault message="impl:ValidationExceptionResponse" name="ValidationExceptionFault"/>
+      <wsdl:fault message="impl:ImplementationExceptionResponse" name="ImplementationExceptionFault"/>
+    </wsdl:operation>        
+  </wsdl:portType>
+
+  <!-- EPCISSERVICE BINDING -->
+  <wsdl:binding name="EPCISServiceBinding" type="impl:EPCISServicePortType">
+    <wsdlsoap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+    <wsdl:operation name="getQueryNames">
+        <wsdlsoap:operation soapAction=""/>
+        <wsdl:input name="getQueryNamesRequest">
+            <wsdlsoap:body
+                use="literal"/>
+        </wsdl:input>
+        <wsdl:output name="getQueryNamesResponse">
+            <wsdlsoap:body
+                use="literal"/>
+        </wsdl:output>
+        <wsdl:fault name="SecurityExceptionFault">
+            <wsdlsoap:fault
+                name="SecurityExceptionFault"
+                use="literal"/>
+        </wsdl:fault>
+        <wsdl:fault name="ValidationExceptionFault">
+            <wsdlsoap:fault
+                name="ValidationExceptionFault"
+                use="literal"/>
+        </wsdl:fault>
+        <wsdl:fault name="ImplementationExceptionFault">
+            <wsdlsoap:fault
+                name="ImplementationExceptionFault"
+                use="literal"/>
+        </wsdl:fault>
+    </wsdl:operation>
+
+    <wsdl:operation name="subscribe">
+        <wsdlsoap:operation soapAction=""/>
+        <wsdl:input name="subscribeRequest">
+            <wsdlsoap:body
+                use="literal"/>
+        </wsdl:input>
+        <wsdl:output name="subscribeResponse">
+            <wsdlsoap:body
+                use="literal"/>
+        </wsdl:output>
+        <wsdl:fault name="NoSuchNameExceptionFault">
+            <wsdlsoap:fault
+                name="NoSuchNameExceptionFault"
+                use="literal"/>
+        </wsdl:fault>
+        <wsdl:fault name="InvalidURIExceptionFault">
+            <wsdlsoap:fault
+                name="InvalidURIExceptionFault"
+                use="literal"/>
+        </wsdl:fault>
+        <wsdl:fault name="DuplicateSubscriptionExceptionFault">
+            <wsdlsoap:fault
+                name="DuplicateSubscriptionExceptionFault"
+                use="literal"/>
+        </wsdl:fault>
+        <wsdl:fault name="QueryParameterExceptionFault">
+            <wsdlsoap:fault
+                name="QueryParameterExceptionFault"
+                use="literal"/>
+        </wsdl:fault>
+        <wsdl:fault name="QueryTooComplexExceptionFault">
+            <wsdlsoap:fault
+                name="QueryTooComplexExceptionFault"
+                use="literal"/>
+        </wsdl:fault>
+        <wsdl:fault name="SubscribeNotPermittedExceptionFault">
+            <wsdlsoap:fault
+                name="SubscribeNotPermittedExceptionFault"
+                use="literal"/>
+        </wsdl:fault>
+        <wsdl:fault name="SubscriptionControlsExceptionFault">
+            <wsdlsoap:fault
+                name="SubscriptionControlsExceptionFault"
+                use="literal"/>
+        </wsdl:fault>
+        <wsdl:fault name="SecurityExceptionFault">
+            <wsdlsoap:fault
+                name="SecurityExceptionFault"
+                use="literal"/>
+        </wsdl:fault>
+        <wsdl:fault name="ValidationExceptionFault">
+            <wsdlsoap:fault
+                name="ValidationExceptionFault"
+                use="literal"/>
+        </wsdl:fault>
+        <wsdl:fault name="ImplementationExceptionFault">
+            <wsdlsoap:fault
+                name="ImplementationExceptionFault"
+                use="literal"/>
+        </wsdl:fault>
+    </wsdl:operation>
+
+    <wsdl:operation name="unsubscribe">
+        <wsdlsoap:operation soapAction=""/>
+        <wsdl:input name="unsubscribeRequest">
+            <wsdlsoap:body
+                use="literal"/>
+        </wsdl:input>
+        <wsdl:output name="unsubscribeResponse">
+            <wsdlsoap:body
+                use="literal"/>
+        </wsdl:output>
+        <wsdl:fault name="NoSuchSubscriptionExceptionFault">
+            <wsdlsoap:fault
+                name="NoSuchSubscriptionExceptionFault"
+                use="literal"/>
+        </wsdl:fault>
+        <wsdl:fault name="SecurityExceptionFault">
+            <wsdlsoap:fault
+                name="SecurityExceptionFault"
+                use="literal"/>
+        </wsdl:fault>
+        <wsdl:fault name="ValidationExceptionFault">
+            <wsdlsoap:fault
+                name="ValidationExceptionFault"
+                use="literal"/>
+        </wsdl:fault>
+        <wsdl:fault name="ImplementationExceptionFault">
+            <wsdlsoap:fault
+                name="ImplementationExceptionFault"
+                use="literal"/>
+        </wsdl:fault>
+    </wsdl:operation>
+
+    <wsdl:operation name="getSubscriptionIDs">
+        <wsdlsoap:operation soapAction=""/>
+        <wsdl:input name="getSubscriptionIDsRequest">
+            <wsdlsoap:body
+                use="literal"/>
+        </wsdl:input>
+        <wsdl:output name="getSubscriptionIDsResponse">
+            <wsdlsoap:body
+                use="literal"/>
+        </wsdl:output>
+        <wsdl:fault name="NoSuchNameExceptionFault">
+            <wsdlsoap:fault
+                name="NoSuchNameExceptionFault"
+                use="literal"/>
+        </wsdl:fault>
+        <wsdl:fault name="SecurityExceptionFault">
+            <wsdlsoap:fault
+                name="SecurityExceptionFault"
+                use="literal"/>
+        </wsdl:fault>
+        <wsdl:fault name="ValidationExceptionFault">
+            <wsdlsoap:fault
+                name="ValidationExceptionFault"
+                use="literal"/>
+        </wsdl:fault>
+        <wsdl:fault name="ImplementationExceptionFault">
+            <wsdlsoap:fault
+                name="ImplementationExceptionFault"
+                use="literal"/>
+        </wsdl:fault>
+    </wsdl:operation>
+
+    <wsdl:operation name="poll">
+        <wsdlsoap:operation soapAction=""/>
+        <wsdl:input name="pollRequest">
+            <wsdlsoap:body
+                use="literal"/>
+        </wsdl:input>
+        <wsdl:output name="pollResponse">
+            <wsdlsoap:body
+                use="literal"/>
+        </wsdl:output>
+        <wsdl:fault name="QueryParameterExceptionFault">
+            <wsdlsoap:fault
+                name="QueryParameterExceptionFault"
+                use="literal"/>
+        </wsdl:fault>
+        <wsdl:fault name="QueryTooComplexExceptionFault">
+            <wsdlsoap:fault
+                name="QueryTooComplexExceptionFault"
+                use="literal"/>
+        </wsdl:fault>
+        <wsdl:fault name="QueryTooLargeExceptionFault">
+            <wsdlsoap:fault
+                name="QueryTooLargeExceptionFault"
+                use="literal"/>
+        </wsdl:fault>
+        <wsdl:fault name="NoSuchNameExceptionFault">
+            <wsdlsoap:fault
+                name="NoSuchNameExceptionFault"
+                use="literal"/>
+        </wsdl:fault>
+        <wsdl:fault name="SecurityExceptionFault">
+            <wsdlsoap:fault
+                name="SecurityExceptionFault"
+                use="literal"/>
+        </wsdl:fault>
+        <wsdl:fault name="ValidationExceptionFault">
+            <wsdlsoap:fault
+                name="ValidationExceptionFault"
+                use="literal"/>
+        </wsdl:fault>
+        <wsdl:fault name="ImplementationExceptionFault">
+            <wsdlsoap:fault
+                name="ImplementationExceptionFault"
+                use="literal"/>
+        </wsdl:fault>
+    </wsdl:operation>
+
+    <wsdl:operation name="getStandardVersion">
+        <wsdlsoap:operation soapAction=""/>
+        <wsdl:input name="getStandardVersionRequest">
+            <wsdlsoap:body
+                use="literal"/>
+        </wsdl:input>
+        <wsdl:output name="getStandardVersionResponse">
+            <wsdlsoap:body
+                use="literal"/>
+        </wsdl:output>
+        <wsdl:fault name="SecurityExceptionFault">
+            <wsdlsoap:fault
+                name="SecurityExceptionFault"
+                use="literal"/>
+        </wsdl:fault>
+        <wsdl:fault name="ValidationExceptionFault">
+            <wsdlsoap:fault
+                name="ValidationExceptionFault"
+                use="literal"/>
+        </wsdl:fault>
+        <wsdl:fault name="ImplementationExceptionFault">
+            <wsdlsoap:fault
+                name="ImplementationExceptionFault"
+                use="literal"/>
+        </wsdl:fault>
+    </wsdl:operation>
+
+    <wsdl:operation name="getVendorVersion">
+        <wsdlsoap:operation soapAction=""/>
+        <wsdl:input name="getVendorVersionRequest">
+            <wsdlsoap:body
+                use="literal"/>
+        </wsdl:input>
+        <wsdl:output name="getVendorVersionResponse">
+            <wsdlsoap:body
+                use="literal"/>
+        </wsdl:output>
+        <wsdl:fault name="SecurityExceptionFault">
+            <wsdlsoap:fault
+                name="SecurityExceptionFault"
+                use="literal"/>
+        </wsdl:fault>
+        <wsdl:fault name="ValidationExceptionFault">
+            <wsdlsoap:fault
+                name="ValidationExceptionFault"
+                use="literal"/>
+        </wsdl:fault>
+        <wsdl:fault name="ImplementationExceptionFault">
+            <wsdlsoap:fault
+                name="ImplementationExceptionFault"
+                use="literal"/>
+        </wsdl:fault>
+    </wsdl:operation>
+
+  </wsdl:binding>
+
+  <!-- EPCISSERVICE -->
+  <wsdl:service name="EPCglobalEPCISService">
+    <wsdl:port binding="impl:EPCISServiceBinding" name="EPCglobalEPCISServicePort">
+    <!-- The address shown below is an example; an implementation MAY specify
+         any port it wishes
+     -->
+      <wsdlsoap:address
+         location="http://localhost:6060/axis/services/EPCglobalEPCISService"/>
+    </wsdl:port>
+  </wsdl:service>
+
+</wsdl:definitions>

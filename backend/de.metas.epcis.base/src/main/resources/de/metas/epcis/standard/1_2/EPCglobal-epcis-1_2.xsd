@@ -1,0 +1,640 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:epcis="urn:epcglobal:epcis:xsd:1" xmlns:sbdh="http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader" xmlns:epcglobal="urn:epcglobal:xsd:1" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:epcglobal:epcis:xsd:1" elementFormDefault="unqualified" attributeFormDefault="unqualified" version="1.2">
+  <xsd:annotation>
+    <xsd:documentation xml:lang="en">
+      <epcglobal:copyright>Copyright (C) 2006-2016 GS1 AISBL, All Rights Reserved.</epcglobal:copyright>
+      <epcglobal:disclaimer>
+THIS DOCUMENT IS PROVIDED “AS IS” WITH NO WARRANTIES WHATSOEVER, INCLUDING ANY WARRANTY OF MERCHANTABILITY, NONINFRINGMENT, FITNESS FOR PARTICULAR PURPOSE, OR ANY WARRANTY OTHER WISE ARISING OUT OF THIS SPECIFICATION. GS1 disclaims all liability for any damages arising from use or misuse of this Standard, whether special, indirect, consequential, or compensatory damages, and including liability for infringement of any intellectual property rights, relating to use of information in or reliance upon this document.
+
+GS1 retains the right to make changes to this document at any time, without notice. GS1 makes no warranty for the use of this document and assumes no responsibility for any errors which may appear in the document, nor does it make a commitment to update the information contained herein.
+      </epcglobal:disclaimer>
+      <epcglobal:specification>EPC INFORMATION SERVICE (EPCIS) Version 1.2</epcglobal:specification>
+    </xsd:documentation>
+  </xsd:annotation>
+  <xsd:import namespace="urn:epcglobal:xsd:1" schemaLocation="./EPCglobal.xsd"/>
+  <xsd:import namespace="http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader" schemaLocation="./StandardBusinessDocumentHeader.xsd"/>
+  <!-- EPCIS CORE ELEMENTS -->
+  <xsd:element name="EPCISDocument" type="epcis:EPCISDocumentType"/>
+  <xsd:complexType name="EPCISDocumentType">
+    <xsd:annotation>
+      <xsd:documentation xml:lang="en">
+      document that contains a Header and a Body.
+              </xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexContent>
+      <xsd:extension base="epcglobal:Document">
+        <xsd:sequence>
+          <xsd:element name="EPCISHeader" type="epcis:EPCISHeaderType" minOccurs="0"/>
+          <xsd:element name="EPCISBody" type="epcis:EPCISBodyType"/>
+          <xsd:element name="extension" type="epcis:EPCISDocumentExtensionType" minOccurs="0"/>
+          <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:anyAttribute processContents="lax"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="EPCISDocumentExtensionType">
+    <xsd:sequence>
+      <xsd:any namespace="##local" processContents="lax" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="EPCISHeaderType">
+    <xsd:annotation>
+      <xsd:documentation xml:lang="en">
+      specific header(s) including the Standard Business Document Header.
+              </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element ref="sbdh:StandardBusinessDocumentHeader"/>
+      <xsd:element name="extension" type="epcis:EPCISHeaderExtensionType" minOccurs="0"/>
+      <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+  <xsd:complexType name="EPCISHeaderExtensionType">
+    <xsd:sequence>
+      <xsd:element name="EPCISMasterData" type="epcis:EPCISMasterDataType" minOccurs="0"/>
+      <xsd:element name="extension" type="epcis:EPCISHeaderExtension2Type" minOccurs="0"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+  <xsd:complexType name="EPCISHeaderExtension2Type">
+    <xsd:sequence>
+      <xsd:any namespace="##local" processContents="lax" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+  
+  <!-- Since 1.2 -->
+  <xsd:complexType name="EPCISMasterDataType">
+    <xsd:sequence>
+      <xsd:element name="VocabularyList" type="epcis:VocabularyListType" />
+      <xsd:element name="extension" type="epcis:EPCISMasterDataExtensionType"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="EPCISMasterDataExtensionType">
+    <xsd:sequence>
+      <xsd:any namespace="##local" processContents="lax" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <!-- MasterData CORE ELEMENT TYPES -->
+  <xsd:complexType name="VocabularyListType">
+    <xsd:sequence>
+      <xsd:element name="Vocabulary" type="epcis:VocabularyType" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="VocabularyType">
+    <xsd:sequence>
+      <xsd:element name="VocabularyElementList" type="epcis:VocabularyElementListType" minOccurs="0"/>
+      <xsd:element name="extension" type="epcis:VocabularyExtensionType" minOccurs="0"/>
+      <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:attribute name="type" type="xsd:anyURI" use="required"/>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="VocabularyElementListType">
+    <xsd:sequence>
+      <xsd:element name="VocabularyElement" type="epcis:VocabularyElementType" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <!-- Implementations SHALL treat a <children list containing zero elements
+       in the same way as if the <children> element were omitted altogether.
+  -->
+  <xsd:complexType name="VocabularyElementType">
+    <xsd:sequence>
+      <xsd:element name="attribute" type="epcis:AttributeType" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="children" type="epcis:IDListType" minOccurs="0"/>
+      <xsd:element name="extension" type="epcis:VocabularyElementExtensionType" minOccurs="0"/>
+      <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:attribute name="id" type="xsd:anyURI" use="required"/>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="AttributeType">
+    <xsd:complexContent mixed="true">
+      <xsd:extension base="xsd:anyType">
+        <xsd:attribute name="id" type="xsd:anyURI" use="required"/>
+        <xsd:anyAttribute processContents="lax"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+
+  <xsd:complexType name="IDListType">
+    <xsd:sequence>
+      <xsd:element name="id" type="xsd:anyURI" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="VocabularyExtensionType">
+    <xsd:sequence>
+      <xsd:any namespace="##local" processContents="lax" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="VocabularyElementExtensionType">
+    <xsd:sequence>
+      <xsd:any namespace="##local" processContents="lax" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="EPCISBodyType">
+    <xsd:annotation>
+      <xsd:documentation xml:lang="en">
+      specific body that contains EPCIS related Events.
+              </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="EventList" type="epcis:EventListType" minOccurs="0"/>
+      <xsd:element name="extension" type="epcis:EPCISBodyExtensionType" minOccurs="0"/>
+      <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+  <xsd:complexType name="EPCISBodyExtensionType">
+    <xsd:sequence>
+      <xsd:any namespace="##local" processContents="lax" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <!-- EPCIS CORE ELEMENT TYPES -->
+  <xsd:complexType name="EventListType">
+    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+      <xsd:element name="ObjectEvent" type="epcis:ObjectEventType" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="AggregationEvent" type="epcis:AggregationEventType" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="QuantityEvent" type="epcis:QuantityEventType" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="TransactionEvent" type="epcis:TransactionEventType" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="extension" type="epcis:EPCISEventListExtensionType"/>
+      <xsd:any namespace="##other" processContents="lax"/>
+    </xsd:choice>
+    <!-- Note: the use of "unbounded" in both the xsd:choice element
+                    and the enclosed xsd:element elements is, strictly speaking,
+                    redundant. However, this was found to avoid problems with
+                    certain XML processing tools, and so is retained here.
+                -->
+  </xsd:complexType>
+  <!-- Modified in 1.1 -->
+  <xsd:complexType name="EPCISEventListExtensionType">
+    <xsd:choice>
+      <xsd:element name="TransformationEvent" type="epcis:TransformationEventType"/>
+      <xsd:element name="extension" type="epcis:EPCISEventListExtension2Type"/>
+    </xsd:choice>
+  </xsd:complexType>
+  <!-- Since 1.1 -->
+  <xsd:complexType name="EPCISEventListExtension2Type">
+    <xsd:sequence>
+      <xsd:any namespace="##local" processContents="lax" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="EPCListType">
+    <xsd:sequence>
+      <xsd:element name="epc" type="epcglobal:EPC" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:simpleType name="ActionType">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="ADD"/>
+      <xsd:enumeration value="OBSERVE"/>
+      <xsd:enumeration value="DELETE"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+  <xsd:simpleType name="ParentIDType">
+    <xsd:restriction base="xsd:anyURI"/>
+  </xsd:simpleType>
+  <!-- Standard Vocabulary -->
+  <xsd:simpleType name="BusinessStepIDType">
+    <xsd:restriction base="xsd:anyURI"/>
+  </xsd:simpleType>
+  <!-- Standard Vocabulary -->
+  <xsd:simpleType name="DispositionIDType">
+    <xsd:restriction base="xsd:anyURI"/>
+  </xsd:simpleType>
+  <!-- User Vocabulary -->
+  <xsd:simpleType name="EPCClassType">
+    <xsd:restriction base="xsd:anyURI"/>
+  </xsd:simpleType>
+  <!-- Standard Vocabulary -->
+  <!-- Since 1.1 -->
+  <xsd:simpleType name="UOMType">
+    <xsd:restriction base="xsd:string"/>
+  </xsd:simpleType>
+  <!-- Since 1.1 -->
+  <xsd:complexType name="QuantityElementType">
+    <xsd:sequence>
+      <xsd:element name="epcClass" type="epcis:EPCClassType"/>
+      <xsd:sequence minOccurs="0">
+        <xsd:element name="quantity" type="xsd:decimal"/>
+        <xsd:element name="uom" type="epcis:UOMType" minOccurs="0"/>
+      </xsd:sequence>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="QuantityListType">
+    <xsd:sequence>
+      <xsd:element name="quantityElement" type="epcis:QuantityElementType" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <!-- User Vocabulary -->
+  <xsd:simpleType name="ReadPointIDType">
+    <xsd:restriction base="xsd:anyURI"/>
+  </xsd:simpleType>
+  <xsd:complexType name="ReadPointType">
+    <xsd:sequence>
+      <xsd:element name="id" type="epcis:ReadPointIDType"/>
+      <xsd:element name="extension" type="epcis:ReadPointExtensionType" minOccurs="0"/>
+      <!-- The wildcard below provides the extension mechanism described in Section 9.4 -->
+      <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="ReadPointExtensionType">
+    <xsd:sequence>
+      <xsd:any namespace="##local" processContents="lax" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+  <!-- User Vocabulary -->
+  <xsd:simpleType name="BusinessLocationIDType">
+    <xsd:restriction base="xsd:anyURI"/>
+  </xsd:simpleType>
+  <xsd:complexType name="BusinessLocationType">
+    <xsd:sequence>
+      <xsd:element name="id" type="epcis:BusinessLocationIDType"/>
+      <xsd:element name="extension" type="epcis:BusinessLocationExtensionType" minOccurs="0"/>
+      <!-- The wildcard below provides the extension mechanism described in Section 9.4 -->
+      <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="BusinessLocationExtensionType">
+    <xsd:sequence>
+      <xsd:any namespace="##local" processContents="lax" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+  <!-- User Vocabulary -->
+  <xsd:simpleType name="BusinessTransactionIDType">
+    <xsd:restriction base="xsd:anyURI"/>
+  </xsd:simpleType>
+  <!-- Standard Vocabulary -->
+  <xsd:simpleType name="BusinessTransactionTypeIDType">
+    <xsd:restriction base="xsd:anyURI"/>
+  </xsd:simpleType>
+  <xsd:complexType name="BusinessTransactionType">
+    <xsd:simpleContent>
+      <xsd:extension base="epcis:BusinessTransactionIDType">
+        <xsd:attribute name="type" type="epcis:BusinessTransactionTypeIDType" use="optional"/>
+      </xsd:extension>
+    </xsd:simpleContent>
+  </xsd:complexType>
+  <xsd:complexType name="BusinessTransactionListType">
+    <xsd:sequence>
+      <xsd:element name="bizTransaction" type="epcis:BusinessTransactionType" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <!-- User Vocabulary -->
+  <!-- Since 1.1 -->
+  <xsd:simpleType name="SourceDestIDType">
+    <xsd:restriction base="xsd:anyURI"/>
+  </xsd:simpleType>
+  <!-- Standard Vocabulary -->
+  <!-- Since 1.1 -->
+  <xsd:simpleType name="SourceDestTypeIDType">
+    <xsd:restriction base="xsd:anyURI"/>
+  </xsd:simpleType>
+  <!-- Since 1.1 -->
+  <xsd:complexType name="SourceDestType">
+    <xsd:simpleContent>
+      <xsd:extension base="epcis:SourceDestIDType">
+        <xsd:attribute name="type" type="epcis:SourceDestTypeIDType" use="required"/>
+      </xsd:extension>
+    </xsd:simpleContent>
+  </xsd:complexType>
+  <xsd:complexType name="SourceListType">
+    <xsd:sequence>
+      <xsd:element name="source" type="epcis:SourceDestType" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="DestinationListType">
+    <xsd:sequence>
+      <xsd:element name="destination" type="epcis:SourceDestType" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <!-- User Vocabulary -->
+  <!-- Since 1.1 -->
+  <xsd:simpleType name="TransformationIDType">
+    <xsd:restriction base="xsd:anyURI"/>
+  </xsd:simpleType>
+
+  <!-- Since 1.1 -->
+  <xsd:complexType name="ILMDType">
+    <xsd:sequence>
+      <xsd:element name="extension" type="epcis:ILMDExtensionType" minOccurs="0"/>
+      <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+  <xsd:complexType name="ILMDExtensionType">
+    <xsd:sequence>
+      <xsd:any namespace="##local" processContents="lax" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <!-- User Vocabulary -->
+  <!-- Since 1.2 -->
+  <xsd:simpleType name="EventIDType">
+    <xsd:restriction base="xsd:anyURI"/>
+  </xsd:simpleType>
+
+  <!-- Standard Vocabulary -->
+  <!-- Since 1.2 -->
+  <xsd:simpleType name="ErrorReasonIDType">
+    <xsd:restriction base="xsd:anyURI"/>
+  </xsd:simpleType>
+
+  <!-- Since 1.2 -->
+  <xsd:complexType name="CorrectiveEventIDsType">
+    <xsd:sequence>
+      <xsd:element name="correctiveEventID" type="epcis:EventIDType" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <!-- Since 1.2 -->
+  <xsd:complexType name="ErrorDeclarationType">
+    <xsd:sequence>
+      <xsd:element name="declarationTime" type="xsd:dateTime"/>
+      <xsd:element name="reason" type="epcis:ErrorReasonIDType" minOccurs="0"/>
+      <xsd:element name="correctiveEventIDs" type="epcis:CorrectiveEventIDsType" minOccurs="0"/>          
+      <xsd:element name="extension" type="epcis:ErrorDeclarationExtensionType" minOccurs="0"/>
+      <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="ErrorDeclarationExtensionType">
+    <xsd:sequence>
+      <xsd:any namespace="##local" processContents="lax" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+
+
+  <!-- items listed alphabetically by name -->
+  <!-- Some element types accommodate extensibility in the manner of
+        "Versioning XML Vocabularies" by David Orchard (see
+        http://www.xml.com/pub/a/2003/12/03/versioning.html).
+
+        In this approach, an optional <extension> element is defined
+        for each extensible element type, where an <extension> element
+        may contain future elements defined in the target namespace.
+
+        In addition to the optional <extension> element, extensible element
+        types are declared with a final xsd:any wildcard to accommodate
+        future elements defined by third parties (as denoted by the ##other
+        namespace).
+
+        Finally, the xsd:anyAttribute facility is used to allow arbitrary
+        attributes to be added to extensible element types. -->
+  <xsd:complexType name="EPCISEventType" abstract="true">
+    <xsd:annotation>
+      <xsd:documentation xml:lang="en">
+      base type for all EPCIS events.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:sequence>
+      <xsd:element name="eventTime" type="xsd:dateTime"/>
+      <xsd:element name="recordTime" type="xsd:dateTime" minOccurs="0"/>
+      <xsd:element name="eventTimeZoneOffset" type="xsd:string"/>
+      <xsd:element name="baseExtension" type="epcis:EPCISEventExtensionType" minOccurs="0"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="EPCISEventExtensionType">
+    <xsd:sequence>
+      <xsd:element name="eventID" type="epcis:EventIDType" minOccurs="0"/>
+      <xsd:element name="errorDeclaration" type="epcis:ErrorDeclarationType" minOccurs="0"/>
+      <xsd:element name="extension" type="epcis:EPCISEventExtension2Type" minOccurs="0"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="EPCISEventExtension2Type">
+    <xsd:sequence>
+      <xsd:any namespace="##local" processContents="lax" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="ObjectEventType">
+    <xsd:annotation>
+      <xsd:documentation xml:lang="en">
+      Object Event captures information about an event pertaining to one or more
+      objects identified by EPCs.
+             </xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexContent>
+      <xsd:extension base="epcis:EPCISEventType">
+        <xsd:sequence>
+          <xsd:element name="epcList" type="epcis:EPCListType"/>
+          <xsd:element name="action" type="epcis:ActionType"/>
+          <xsd:element name="bizStep" type="epcis:BusinessStepIDType" minOccurs="0"/>
+          <xsd:element name="disposition" type="epcis:DispositionIDType" minOccurs="0"/>
+          <xsd:element name="readPoint" type="epcis:ReadPointType" minOccurs="0"/>
+          <xsd:element name="bizLocation" type="epcis:BusinessLocationType" minOccurs="0"/>
+          <xsd:element name="bizTransactionList" type="epcis:BusinessTransactionListType" minOccurs="0"/>
+          <xsd:element name="extension" type="epcis:ObjectEventExtensionType" minOccurs="0"/>
+          <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:anyAttribute processContents="lax"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <!-- Modified in 1.1 -->
+  <xsd:complexType name="ObjectEventExtensionType">
+    <xsd:sequence>
+      <xsd:element name="quantityList" type="epcis:QuantityListType" minOccurs="0"/>
+      <xsd:element name="sourceList" type="epcis:SourceListType" minOccurs="0"/>
+      <xsd:element name="destinationList" type="epcis:DestinationListType" minOccurs="0"/>
+      <xsd:element name="ilmd" type="epcis:ILMDType" minOccurs="0"/>
+      <xsd:element name="extension" type="epcis:ObjectEventExtension2Type" minOccurs="0"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+  <!-- Since 1.1 -->
+  <xsd:complexType name="ObjectEventExtension2Type">
+    <xsd:sequence>
+      <xsd:any namespace="##local" processContents="lax" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="AggregationEventType">
+    <xsd:annotation>
+      <xsd:documentation xml:lang="en">
+      Aggregation Event captures an event that applies to objects that
+      have a physical association with one another.
+             </xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexContent>
+      <xsd:extension base="epcis:EPCISEventType">
+        <xsd:sequence>
+          <xsd:element name="parentID" type="epcis:ParentIDType" minOccurs="0"/>
+          <xsd:element name="childEPCs" type="epcis:EPCListType"/>
+          <xsd:element name="action" type="epcis:ActionType"/>
+          <xsd:element name="bizStep" type="epcis:BusinessStepIDType" minOccurs="0"/>
+          <xsd:element name="disposition" type="epcis:DispositionIDType" minOccurs="0"/>
+          <xsd:element name="readPoint" type="epcis:ReadPointType" minOccurs="0"/>
+          <xsd:element name="bizLocation" type="epcis:BusinessLocationType" minOccurs="0"/>
+          <xsd:element name="bizTransactionList" type="epcis:BusinessTransactionListType" minOccurs="0"/>
+          <xsd:element name="extension" type="epcis:AggregationEventExtensionType" minOccurs="0"/>
+          <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:anyAttribute processContents="lax"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <!-- Modified in 1.1 -->
+  <xsd:complexType name="AggregationEventExtensionType">
+    <xsd:sequence>
+      <xsd:element name="childQuantityList" type="epcis:QuantityListType" minOccurs="0"/>
+      <xsd:element name="sourceList" type="epcis:SourceListType" minOccurs="0"/>
+      <xsd:element name="destinationList" type="epcis:DestinationListType" minOccurs="0"/>
+      <xsd:element name="extension" type="epcis:AggregationEventExtension2Type" minOccurs="0"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+  <!-- Since 1.1 -->
+  <xsd:complexType name="AggregationEventExtension2Type">
+    <xsd:sequence>
+      <xsd:any namespace="##local" processContents="lax" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="QuantityEventType">
+    <xsd:annotation>
+      <xsd:documentation xml:lang="en">
+      Quantity Event captures an event that takes place with respect to a specified quantity of
+      object class.
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexContent>
+      <xsd:extension base="epcis:EPCISEventType">
+        <xsd:sequence>
+          <xsd:element name="epcClass" type="epcis:EPCClassType"/>
+          <xsd:element name="quantity" type="xsd:int"/>
+          <xsd:element name="bizStep" type="epcis:BusinessStepIDType" minOccurs="0"/>
+          <xsd:element name="disposition" type="epcis:DispositionIDType" minOccurs="0"/>
+          <xsd:element name="readPoint" type="epcis:ReadPointType" minOccurs="0"/>
+          <xsd:element name="bizLocation" type="epcis:BusinessLocationType" minOccurs="0"/>
+          <xsd:element name="bizTransactionList" type="epcis:BusinessTransactionListType" minOccurs="0"/>
+          <xsd:element name="extension" type="epcis:QuantityEventExtensionType" minOccurs="0"/>
+          <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:anyAttribute processContents="lax"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:complexType name="QuantityEventExtensionType">
+    <xsd:sequence>
+      <xsd:any namespace="##local" processContents="lax" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="TransactionEventType">
+    <xsd:annotation>
+      <xsd:documentation xml:lang="en">
+      Transaction Event describes the association or disassociation of physical objects to one or more business
+      transactions.
+             </xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexContent>
+      <xsd:extension base="epcis:EPCISEventType">
+        <xsd:sequence>
+          <xsd:element name="bizTransactionList" type="epcis:BusinessTransactionListType"/>
+          <xsd:element name="parentID" type="epcis:ParentIDType" minOccurs="0"/>
+          <xsd:element name="epcList" type="epcis:EPCListType"/>
+          <xsd:element name="action" type="epcis:ActionType"/>
+          <xsd:element name="bizStep" type="epcis:BusinessStepIDType" minOccurs="0"/>
+          <xsd:element name="disposition" type="epcis:DispositionIDType" minOccurs="0"/>
+          <xsd:element name="readPoint" type="epcis:ReadPointType" minOccurs="0"/>
+          <xsd:element name="bizLocation" type="epcis:BusinessLocationType" minOccurs="0"/>
+          <xsd:element name="extension" type="epcis:TransactionEventExtensionType" minOccurs="0"/>
+          <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:anyAttribute processContents="lax"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <!-- Modified in 1.1 -->
+  <xsd:complexType name="TransactionEventExtensionType">
+    <xsd:sequence>
+      <xsd:element name="quantityList" type="epcis:QuantityListType" minOccurs="0"/>
+      <xsd:element name="sourceList" type="epcis:SourceListType" minOccurs="0"/>
+      <xsd:element name="destinationList" type="epcis:DestinationListType" minOccurs="0"/>
+      <xsd:element name="extension" type="epcis:TransactionEventExtension2Type" minOccurs="0"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+  <!-- Since 1.1 -->
+  <xsd:complexType name="TransactionEventExtension2Type">
+    <xsd:sequence>
+      <xsd:any namespace="##local" processContents="lax" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+
+  <!-- Since 1.1 -->
+  <xsd:complexType name="TransformationEventType">
+    <xsd:annotation>
+      <xsd:documentation xml:lang="en">
+      Transformation Event captures an event in which inputs are consumed
+      and outputs are produced
+             </xsd:documentation>
+    </xsd:annotation>
+    <xsd:complexContent>
+      <xsd:extension base="epcis:EPCISEventType">
+        <xsd:sequence>
+          <xsd:element name="inputEPCList" type="epcis:EPCListType" minOccurs="0"/>
+          <xsd:element name="inputQuantityList" type="epcis:QuantityListType" minOccurs="0"/>
+          <xsd:element name="outputEPCList" type="epcis:EPCListType" minOccurs="0"/>
+          <xsd:element name="outputQuantityList" type="epcis:QuantityListType" minOccurs="0"/>
+          <xsd:element name="transformationID" type="epcis:TransformationIDType" minOccurs="0"/>
+          <xsd:element name="bizStep" type="epcis:BusinessStepIDType" minOccurs="0"/>
+          <xsd:element name="disposition" type="epcis:DispositionIDType" minOccurs="0"/>
+          <xsd:element name="readPoint" type="epcis:ReadPointType" minOccurs="0"/>
+          <xsd:element name="bizLocation" type="epcis:BusinessLocationType" minOccurs="0"/>
+          <xsd:element name="bizTransactionList" type="epcis:BusinessTransactionListType" minOccurs="0"/>
+          <xsd:element name="sourceList" type="epcis:SourceListType" minOccurs="0"/>
+          <xsd:element name="destinationList" type="epcis:DestinationListType" minOccurs="0"/>
+          <xsd:element name="ilmd" type="epcis:ILMDType" minOccurs="0"/>
+          <xsd:element name="extension" type="epcis:TransformationEventExtensionType" minOccurs="0"/>
+          <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:anyAttribute processContents="lax"/>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <!-- Since 1.1 -->
+  <xsd:complexType name="TransformationEventExtensionType">
+    <xsd:sequence>
+      <xsd:any namespace="##local" processContents="lax" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:anyAttribute processContents="lax"/>
+  </xsd:complexType>
+</xsd:schema>

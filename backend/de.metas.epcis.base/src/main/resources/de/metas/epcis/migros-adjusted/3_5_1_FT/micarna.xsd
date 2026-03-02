@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- W3C Schema generiert von XMLSpy v2024 (x64) (http://www.altova.com) -->
+<xs:schema targetNamespace="http://migros.net/micarna/" xmlns:micarna="http://migros.net/micarna/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+<xs:element name="TUAttrWeigthKGM" type="xs:string"/>
+
+</xs:schema>
+

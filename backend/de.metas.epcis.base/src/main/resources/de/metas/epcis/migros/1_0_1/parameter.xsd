@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- W3C Schema generiert von XMLSpy v2024 (x64) (http://www.altova.com) -->
+<xs:schema xmlns:migros="http://migros.net/migros/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:import namespace="http://migros.net/migros/" schemaLocation="mhd.xsd"/>
+	<xs:element name="EPCISBody" type="T_EPCISBody"/>
+	<xs:element name="EventList" type="T_EventList"/>
+	<xs:element name="ObjectEvent" type="T_ObjectEvent"/>
+	<xs:element name="action" type="T_action"/>
+	<xs:element name="bizLocation">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="id">
+					<xs:simpleType>
+						<xs:restriction base="xs:string">
+							<xs:length value="50"/>
+							<xs:pattern value=".*urn:epc:id:sgln:.*"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="bizStep" type="xs:string" fixed="urn:epcglobal:cbv:bizstep:other"/>
+	<xs:element name="epc" type="xs:anyURI"/>
+	<xs:element name="epcClass">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:pattern value=".*urn:epc:class:lgtin:.*"/>
+				<xs:pattern value=".*urn:epc:idpat:sgtin:.*"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="epcList">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="epc">
+					<xs:simpleType>
+						<xs:restriction base="xs:string">
+							<xs:length value="33"/>
+							<xs:pattern value=".*urn:epc:id:sgtin:.*0"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="eventTime" type="xs:dateTime"/>
+	<xs:element name="eventTimeZoneOffset" type="T_eventTimeZoneOffset"/>
+	<xs:element name="extension" type="T_extension"/>
+	<xs:element name="id" type="xs:anyURI"/>
+	<xs:element name="ilmd" type="T_ilmd"/>
+	<xs:element name="quantity" type="xs:byte"/>
+	<xs:element name="quantityElement" type="T_quantityElement"/>
+	<xs:element name="quantityList" type="T_quantityList"/>
+	<xs:element name="readPoint">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="id">
+					<xs:simpleType>
+						<xs:restriction base="xs:string">
+							<xs:length value="50"/>
+							<xs:pattern value=".*urn:epc:id:sgln:.*"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="recordTime" type="xs:dateTime"/>
+	<xs:complexType name="T_EPCISBody">
+		<xs:sequence>
+			<xs:element ref="EventList"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="T_EventList">
+		<xs:sequence>
+			<xs:element ref="ObjectEvent"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="T_ObjectEvent">
+		<xs:sequence>
+			<xs:element ref="eventTime"/>
+			<xs:element ref="recordTime"/>
+			<xs:element ref="eventTimeZoneOffset"/>
+			<xs:element ref="epcList"/>
+			<xs:element ref="action"/>
+			<xs:element ref="bizStep"/>
+			<xs:element ref="readPoint"/>
+			<xs:element ref="bizLocation"/>
+			<xs:element ref="extension"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="T_bizLocation">
+		<xs:sequence>
+			<xs:element ref="id"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="T_epcList">
+		<xs:sequence>
+			<xs:element ref="epc"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="T_extension">
+		<xs:sequence>
+			<xs:element ref="quantityList"/>
+			<xs:element ref="ilmd"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="T_ilmd">
+		<xs:sequence>
+			<xs:element ref="migros:ArticleAttrSaleBeforeDate" minOccurs="0"/>
+			<xs:element ref="migros:ArticleAttrExpiryDate"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="T_quantityElement">
+		<xs:sequence>
+			<xs:element ref="epcClass"/>
+			<xs:element ref="quantity" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="T_quantityList">
+		<xs:sequence>
+			<xs:element ref="quantityElement"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="T_readPoint">
+		<xs:sequence>
+			<xs:element ref="id"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="T_action">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="ADD"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="T_eventTimeZoneOffset">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="+01:00"/>
+			<xs:enumeration value="+02:00"/>
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- W3C Schema generiert von XMLSpy v2024 (x64) (http://www.altova.com) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:ns1="http://migros.net/migros/" targetNamespace="http://migros.net/migros/">
+	<xs:element name="ArticleAttrExpiryDate" type="xs:dateTime"/>
+	<xs:element name="ArticleAttrSaleBeforeDate" type="xs:dateTime"/>
+</xs:schema>

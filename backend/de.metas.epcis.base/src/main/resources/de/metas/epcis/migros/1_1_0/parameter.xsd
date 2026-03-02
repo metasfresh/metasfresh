@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- W3C Schema generiert von XMLSpy v2024 (x64) (http://www.altova.com) -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:element name="AggregationEvent" type="T_AggregationEvent"/>
+	<xs:element name="EPCISBody" type="T_EPCISBody"/>
+	<xs:element name="EventList" type="T_EventList"/>
+	<xs:element name="action" type="T_action"/>
+	<xs:element name="bizLocation">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="id">
+					<xs:simpleType>
+						<xs:restriction base="xs:string">
+						<xs:pattern value=".*urn:epc:id:sgln:.*"/>
+							<xs:length value="50"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="bizStep" type="xs:string" fixed="urn:epcglobal:cbv:bizstep:decommissioning"/>
+	<xs:element name="childEPCs" type="T_childEPCs"/>
+	<xs:element name="disposition" type="xs:string" fixed="urn:epcglobal:cbv:disp:in_progress"/>
+	<xs:element name="eventTime" type="xs:dateTime"/>
+	<xs:element name="eventTimeZoneOffset" type="T_eventTimeZoneOffset"/>
+	<xs:element name="id" type="xs:anyURI"/>
+	<xs:element name="parentID">
+		<xs:simpleType>
+			<xs:restriction base="xs:string">
+				<xs:pattern value=".*urn:epc:id:grai:.*"/>
+				<xs:length value="42"/>
+			</xs:restriction>
+		</xs:simpleType>
+	</xs:element>
+	<xs:element name="readPoint">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="id">
+					<xs:simpleType>
+						<xs:restriction base="xs:string">
+						<xs:pattern value=".*urn:epc:id:sgln:.*"/>
+							<xs:length value="50"/>
+						</xs:restriction>
+					</xs:simpleType>
+				</xs:element>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	<xs:element name="recordTime" type="xs:dateTime"/>
+	<xs:complexType name="T_AggregationEvent">
+		<xs:sequence>
+			<xs:element ref="eventTime"/>
+			<xs:element ref="recordTime"/>
+			<xs:element ref="eventTimeZoneOffset"/>
+			<xs:element ref="parentID"/>
+			<xs:element ref="childEPCs"/>
+			<xs:element ref="action"/>
+			<xs:element ref="bizStep"/>
+			<xs:element ref="disposition"/>
+			<xs:element ref="readPoint"/>
+			<xs:element ref="bizLocation"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="T_EPCISBody">
+		<xs:sequence>
+			<xs:element ref="EventList"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="T_EventList">
+		<xs:sequence>
+			<xs:element ref="AggregationEvent"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="T_bizLocation">
+		<xs:sequence>
+			<xs:element ref="id"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:complexType name="T_childEPCs">
+	</xs:complexType>
+	<xs:complexType name="T_readPoint">
+		<xs:sequence>
+			<xs:element ref="id"/>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:simpleType name="T_action">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="DELETE"/>
+		</xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="T_eventTimeZoneOffset">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="+01:00"/>
+			<xs:enumeration value="+02:00"/>
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>
