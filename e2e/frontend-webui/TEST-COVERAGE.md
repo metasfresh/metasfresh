@@ -1,6 +1,6 @@
 # Frontend Web UI E2E Test Coverage
 
-**Last Updated**: 2026-03-01
+**Last Updated**: 2026-03-02
 
 This document provides a complete overview of E2E test coverage for the metasfresh desktop web UI.
 
@@ -258,7 +258,53 @@ npm run test:report
 
 ---
 
-### 8. Invoice Reversal (Reverse-Correct)
+### 8. Quick Input (Batch Entry) Focus & Selection
+**File**: `tests/spec/quick-input.spec.js`
+**Status**: ✅ Passing (English, German)
+**Duration**: ~20 seconds per test per language
+
+**Features Tested**:
+- F00100: Sales Order
+
+**Epic**: E0100: Sales
+
+**Tests**:
+1. **Enter-key selects product and advances focus to Qty** - Type product → Enter → verify product resolved → fill qty → submit → verify order line created
+2. **Mouse-click selects product in batch entry** (regression) - Type product → mouse click dropdown option → verify product resolved → fill qty → submit → verify order line created
+3. **Add two lines in sequence via Enter-key** - Add first line via Enter workflow → quick input stays open → add second line → verify both lines in grid
+4. **Invalid product: no beep when sysconfig disabled (default)** - Type non-existent product → Enter → verify beep does NOT play (sysconfig default N) → product field retains invalid text → no order line created
+5. **Regular form lookup: customer selection still works** (regression) - Select customer via BPartner composed lookup in SO header → verify record saved with customer
+
+**Key Validations**:
+- Enter-key selection advances focus from product to quantity field
+- Mouse-click selection still works after focus-advance code change
+- Quick input resets properly for consecutive line entry
+- Invalid product triggers beep, focus stays on product field
+- Regular form (non-quick-input) lookup behavior unchanged
+- Grid row count verification (`table tbody tr`)
+
+**Components Tested**:
+- Sales Order window (143)
+- Order Lines tab (batch entry / quick input)
+- Lookup widget: Enter-key resolution (RawLookup.resolveAndSelectOnEnter)
+- Lookup widget: Mouse-click selection (RawLookup.handleSelect_RegularItem)
+- Lookup widget: Composed lookup (BPartner + Location + Contact)
+- Lookup widget: Invalid product beep (RawLookup.playBeep)
+- Focus advance mechanism (RawLookup.focusNextFieldInForm + Lookup.focusNextFormField)
+
+**Regression Coverage**:
+This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management changes:
+- `resolveAndSelectOnEnter` path (quick input, Enter) → Tests 1, 3, 4
+- `shouldKeepFocus = false` path (quick input, mouse click) → Test 2
+- `shouldKeepFocus = true` path (regular form, onChange returns Promise) → Test 5
+- `focusNextFieldInForm()` with retry (Enter in quick input) → Tests 1, 3
+- `focusNextFormField()` called inside `<form>` (mouse click) → Test 2
+- `focusNextFormField()` no-op outside `<form>` → Test 5
+- `playBeep()` on invalid product → Test 4
+
+---
+
+### 9. Invoice Reversal (Reverse-Correct)
 **File**: `tests/spec/invoice-reversal.spec.js`
 **Status**: ✅ Passing (English, German)
 **Duration**: ~70 seconds per language
@@ -297,7 +343,7 @@ npm run test:report
 
 ---
 
-### 9. Business Partner Creation
+### 10. Business Partner Creation
 **File**: `tests/spec/business-partner-create.spec.js`
 **Status**: ✅ Passing (English, German)
 **Duration**: ~14 seconds per language
@@ -330,7 +376,7 @@ npm run test:report
 
 ---
 
-### 10. Menu Navigation & Window Search
+### 11. Menu Navigation & Window Search
 **File**: `tests/spec/menu-navigation.spec.js`
 **Status**: ✅ Passing (English, German)
 **Duration**: ~15 seconds per language
@@ -363,7 +409,7 @@ npm run test:report
 
 ---
 
-### 11. Bookmark Star (SubHeader)
+### 12. Bookmark Star (SubHeader)
 **File**: `tests/spec/bookmark-star.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~8 seconds
@@ -394,7 +440,7 @@ npm run test:report
 
 ---
 
-### 12. Document References (Alt+6) - Complete O2C and P2P
+### 13. Document References (Alt+6) - Complete O2C and P2P
 **File**: `tests/spec/document-references.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~2.8 minutes (both tests)
@@ -407,7 +453,7 @@ npm run test:report
 
 **Tests**:
 
-**12a. Sales Side (O2C Flow)**:
+**13a. Sales Side (O2C Flow)**:
 1. Create SO → add order line → complete (with retry verification)
 2. Navigate via Alt+6 to Shipment Schedule → create shipment
 3. Navigate via Alt+6 to Invoice Candidates → create invoice
@@ -415,7 +461,7 @@ npm run test:report
 5. Click through to Shipment → verify its Alt+6 references
 6. Click through to Invoice → verify its Alt+6 references (Sales Order, Shipment, Invoice Candidate)
 
-**12b. Purchase Side (P2P Flow)**:
+**13b. Purchase Side (P2P Flow)**:
 1. Create PO → add order line → complete (with retry verification)
 2. Navigate via Alt+6 to Receipt Candidates → create material receipt
 3. Navigate via Alt+6 to Invoice Candidates → create vendor invoice
@@ -436,7 +482,7 @@ npm run test:report
 
 ---
 
-### 13. Zoom-Into (Right-Click Context Menu)
+### 14. Zoom-Into (Right-Click Context Menu)
 **File**: `tests/spec/zoom-into.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~30 seconds
@@ -466,7 +512,7 @@ npm run test:report
 
 ---
 
-### 14. Keyboard Shortcuts
+### 15. Keyboard Shortcuts
 **File**: `tests/spec/keyboard-shortcuts.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~24 seconds
@@ -500,7 +546,7 @@ npm run test:report
 
 ---
 
-### 15. Grid Filtering & Column Sorting
+### 16. Grid Filtering & Column Sorting
 **File**: `tests/spec/grid-filtering.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~20 seconds
@@ -526,7 +572,7 @@ npm run test:report
 
 ---
 
-### 16. Document Clone (Alt+W)
+### 17. Document Clone (Alt+W)
 **File**: `tests/spec/document-clone.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~22 seconds
@@ -546,7 +592,7 @@ npm run test:report
 
 ---
 
-### 17. SubHeader Actions & Change Log
+### 18. SubHeader Actions & Change Log
 **File**: `tests/spec/subheader-actions.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~36 seconds
@@ -566,7 +612,7 @@ npm run test:report
 
 ---
 
-### 18. Included Tabs & Batch Entry
+### 19. Included Tabs & Batch Entry
 **File**: `tests/spec/included-tabs.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~32 seconds
@@ -584,7 +630,7 @@ npm run test:report
 
 ---
 
-### 19. List View Actions (Row Selection, Alt+B, Alt+A)
+### 20. List View Actions (Row Selection, Alt+B, Alt+A)
 **File**: `tests/spec/list-view-actions.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~15 seconds
@@ -605,7 +651,7 @@ npm run test:report
 
 ---
 
-### 20. Navigation Menu (Alt+2)
+### 21. Navigation Menu (Alt+2)
 **File**: `tests/spec/navigation-menu.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~8 seconds
@@ -629,7 +675,7 @@ npm run test:report
 
 ---
 
-### 21. User/Avatar Menu (Alt+4)
+### 22. User/Avatar Menu (Alt+4)
 **File**: `tests/spec/user-menu.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~7 seconds
@@ -648,7 +694,7 @@ npm run test:report
 
 ---
 
-### 22. Comments Panel (Alt+T)
+### 23. Comments Panel (Alt+T)
 **File**: `tests/spec/comments-panel.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~18 seconds
@@ -667,7 +713,7 @@ npm run test:report
 
 ---
 
-### 23. Email & Letter Dialogs (Alt+K, Alt+R)
+### 24. Email & Letter Dialogs (Alt+K, Alt+R)
 **File**: `tests/spec/email-letter-dialog.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~22 seconds
@@ -686,7 +732,7 @@ npm run test:report
 
 ---
 
-### 24. Edit Mode Toggle (Alt+O)
+### 25. Edit Mode Toggle (Alt+O)
 **File**: `tests/spec/edit-mode-toggle.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~22 seconds
@@ -703,7 +749,7 @@ npm run test:report
 
 ---
 
-### 25. Sidebar Panels (Alt+5, Alt+6, Alt+7)
+### 26. Sidebar Panels (Alt+5, Alt+6, Alt+7)
 **File**: `tests/spec/sidebar-panels.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~20 seconds
@@ -721,7 +767,7 @@ npm run test:report
 
 ---
 
-### 26. Document Delete (Alt+D)
+### 27. Document Delete (Alt+D)
 **File**: `tests/spec/document-delete.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~22 seconds
@@ -739,7 +785,7 @@ npm run test:report
 
 ---
 
-### 27. Quick Actions
+### 28. Quick Actions
 **File**: `tests/spec/quick-actions.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~20 seconds
@@ -757,7 +803,7 @@ npm run test:report
 
 ---
 
-### 28. Date Widget
+### 29. Date Widget
 **File**: `tests/spec/date-widget.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~17 seconds
@@ -776,7 +822,7 @@ npm run test:report
 
 ---
 
-### 29. Print Dialog (Alt+P)
+### 30. Print Dialog (Alt+P)
 **File**: `tests/spec/print-dialog.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~18 seconds
@@ -794,7 +840,7 @@ npm run test:report
 
 ---
 
-### 30. Lookup Widget (Autocomplete)
+### 31. Lookup Widget (Autocomplete)
 **File**: `tests/spec/lookup-widget.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~15 seconds
@@ -814,7 +860,7 @@ npm run test:report
 
 ---
 
-### 31. Inline Grid Edit (F2)
+### 32. Inline Grid Edit (F2)
 **File**: `tests/spec/inline-edit.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~25 seconds
@@ -834,7 +880,7 @@ npm run test:report
 
 ---
 
-### 32. Record Navigation
+### 33. Record Navigation
 **File**: `tests/spec/record-navigation.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~15 seconds
@@ -852,7 +898,7 @@ npm run test:report
 
 ---
 
-### 33. Notifications & Inbox
+### 34. Notifications & Inbox
 **File**: `tests/spec/notifications.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~7 seconds
@@ -898,6 +944,9 @@ npm run test:report
 - **common.js** - Shared timeouts and helpers
 - **WindowIds.js** - Window ID constants
 
+### Inline Test Helpers
+- **quick-input.spec.js** uses inline helpers (`createMasterdata`, `setupOrderWithBatchEntry`, `typeProductAndWaitForDropdown`, `expectOrderLineInGrid`) instead of a dedicated Page Object, since the test-specific batch entry interactions (Enter-key vs mouse-click, grid row counting) are specialized and not reusable across other test suites.
+
 ### Test Data Strategy
 - All test data created via Backend API
 - Unique identifiers per test run (timestamps)
@@ -941,12 +990,12 @@ Areas **NOT yet covered** by E2E tests:
 
 ## Test Quality Metrics
 
-- **Total test specs**: 33 files
-- **Total test cases**: 41+ (33 specs, many with en_US + de_DE)
+- **Total test specs**: 34 files
+- **Total test cases**: 46+ (34 specs, many with en_US + de_DE; quick-input has 5 tests × 2 languages)
 - **Language coverage**: en_US, de_DE
 - **Success rate**: 100% passing
 - **Average execution time**: ~20 seconds per test
-- **Total suite time**: ~15 minutes (sequential execution)
+- **Total suite time**: ~16 minutes (sequential execution)
 
 ## CI/CD Integration
 
