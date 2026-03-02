@@ -403,11 +403,11 @@ public class M_HU_Trace_Report_StepDef
 				"INSERT INTO PP_Order "
 						+ "(AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,"
 						+ " M_Product_ID, C_UOM_ID, QtyOrdered, QtyDelivered,"
-						+ " DateOrdered, DatePromised, M_Warehouse_ID,"
+						+ " DateOrdered, DatePromised, DateStartSchedule, M_Warehouse_ID,"
 						+ " DocStatus, DocAction, S_Resource_ID, DocumentNo, Processed)"
 						+ " VALUES (?, ?, 'Y', now(), 100, now(), 100,"
 						+ " ?, ?, 1, 0,"
-						+ " now(), now(), ?,"
+						+ " now(), now(), now(), ?,"
 						+ " 'CO', '--', ?, ?, 'Y')"
 						+ " RETURNING PP_Order_ID",
 				Env.getClientId().getRepoId(),
