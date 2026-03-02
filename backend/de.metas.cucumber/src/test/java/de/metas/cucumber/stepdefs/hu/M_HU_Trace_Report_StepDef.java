@@ -401,7 +401,7 @@ public class M_HU_Trace_Report_StepDef
 
 		// Force DocStatus and Processed via SQL — model validators enforce the DocAction
 		// workflow, so DocStatus='CO' set on the model object may be reset during save.
-		DB.executeUpdateAndSaveErrorOnFail(
+		DB.executeUpdateAndThrowExceptionOnFail(
 				"UPDATE M_InOut SET DocStatus = ?, Processed = 'Y' WHERE M_InOut_ID = ?",
 				new Object[] { docStatus, inOut.getM_InOut_ID() },
 				ITrx.TRXNAME_None);
