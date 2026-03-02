@@ -29,31 +29,19 @@ WHERE AD_Element_ID = 584594 AND AD_Language = 'en_US';
 
 
 -- ==========================================================================
--- 2. AD_Element for SupplyType
+-- 2. AD_Element for SupplyType — reuse existing AD_Element_ID=584567
 -- ==========================================================================
-INSERT INTO AD_Element (AD_Element_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
-                        ColumnName, Name, PrintName, EntityType)
-VALUES (584595, 0, 0, 'Y', TO_TIMESTAMP('2026-03-01 10:00', 'YYYY-MM-DD HH24:MI'), 0, TO_TIMESTAMP('2026-03-01 10:00', 'YYYY-MM-DD HH24:MI'), 0,
-        'SupplyType', 'Supply Type', 'Supply Type', 'D');
-
-INSERT INTO AD_Element_Trl (AD_Element_ID, AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, IsTranslated,
-                            Name, PrintName)
-SELECT 584595, AD_Language, 0, 0, 'Y', TO_TIMESTAMP('2026-03-01 10:00', 'YYYY-MM-DD HH24:MI'), 0, TO_TIMESTAMP('2026-03-01 10:00', 'YYYY-MM-DD HH24:MI'), 0, 'N',
-       'Supply Type', 'Supply Type'
-FROM AD_Language WHERE IsActive = 'Y' AND IsSystemLanguage = 'Y'
-ON CONFLICT DO NOTHING;
+UPDATE AD_Element_Trl SET Name = 'Versorgungsart', PrintName = 'Versorgungsart', IsTranslated = 'Y',
+                          Updated = TO_TIMESTAMP('2026-03-01 10:00', 'YYYY-MM-DD HH24:MI'), UpdatedBy = 0
+WHERE AD_Element_ID = 584567 AND AD_Language = 'de_DE';
 
 UPDATE AD_Element_Trl SET Name = 'Versorgungsart', PrintName = 'Versorgungsart', IsTranslated = 'Y',
                           Updated = TO_TIMESTAMP('2026-03-01 10:00', 'YYYY-MM-DD HH24:MI'), UpdatedBy = 0
-WHERE AD_Element_ID = 584595 AND AD_Language = 'de_DE';
-
-UPDATE AD_Element_Trl SET Name = 'Versorgungsart', PrintName = 'Versorgungsart', IsTranslated = 'Y',
-                          Updated = TO_TIMESTAMP('2026-03-01 10:00', 'YYYY-MM-DD HH24:MI'), UpdatedBy = 0
-WHERE AD_Element_ID = 584595 AND AD_Language = 'de_CH';
+WHERE AD_Element_ID = 584567 AND AD_Language = 'de_CH';
 
 UPDATE AD_Element_Trl SET Name = 'Supply Type', PrintName = 'Supply Type', IsTranslated = 'Y',
                           Updated = TO_TIMESTAMP('2026-03-01 10:00', 'YYYY-MM-DD HH24:MI'), UpdatedBy = 0
-WHERE AD_Element_ID = 584595 AND AD_Language = 'en_US';
+WHERE AD_Element_ID = 584567 AND AD_Language = 'en_US';
 
 
 -- ==========================================================================
@@ -248,7 +236,7 @@ INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive, Created,
                        IsKey, IsMandatory, IsUpdateable, IsIdentifier, SeqNo,
                        FieldLength, EntityType, Version, PersonalDataCategory)
 VALUES (592106, 0, 0, 'Y', TO_TIMESTAMP('2026-03-01 10:00', 'YYYY-MM-DD HH24:MI'), 0, TO_TIMESTAMP('2026-03-01 10:00', 'YYYY-MM-DD HH24:MI'), 0,
-        542583, 584595, 17, 542060, 'SupplyType', 'Supply Type',
+        542583, 584567, 17, 542060, 'SupplyType', 'Supply Type',
         'N', 'Y', 'Y', 'N', 0,
         2, 'D', 0, 'NP');
 
