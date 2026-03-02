@@ -125,7 +125,14 @@ jobs:
             git checkout "origin/$TARGET" -b "$MERGE_BRANCH"
             if git merge "origin/$SOURCE" --no-edit; then
               git push --force-with-lease origin "$MERGE_BRANCH"
-              echo "Updated merge branch for existing PR #$EXISTING_PR"
+
+              # Ensure auto-merge labels are present (may be missing on pre-existing manual PRs)
+              gh label create "ops:auto_ported" --color "0075ca" --description "PR auto-created by auto-port workflow" 2>/dev/null || true
+              gh pr edit "$EXISTING_PR" \
+                --add-label "ops:auto_merge_commit" \
+                --add-label "ops:without_review_approval" \
+                --add-label "ops:auto_ported"
+              echo "Updated merge branch and labels for existing PR #$EXISTING_PR"
             else
               git merge --abort
               echo "::error::Merge conflict updating $MERGE_BRANCH. Manual resolution needed."
