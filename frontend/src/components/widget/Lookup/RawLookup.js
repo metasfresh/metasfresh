@@ -15,7 +15,7 @@ import {
 import { getViewAttributeTypeahead } from '../../../api';
 import { openModal } from '../../../actions/WindowActions';
 import SelectionDropdown from '../SelectionDropdown';
-import { isBlank } from '../../../utils';
+import { isBlank, doThen } from '../../../utils';
 import { getViewFieldTypeahead } from '../../../api/view';
 import { getSettingFromStateAsBoolean } from '../../../utils/settings';
 
@@ -34,14 +34,6 @@ const computeInputTextFromSelectedItem = (
   return keyCaptionItem && !isNoneItem(keyCaptionItem)
     ? keyCaptionItem.caption
     : fallbackTextIfNullOrNone;
-};
-
-const executeAfterPromise = (promise, afterCallback) => {
-  if (promise) {
-    promise.then(afterCallback);
-  } else {
-    afterCallback();
-  }
 };
 
 /**
@@ -292,15 +284,12 @@ export class RawLookup extends Component {
     // (resolveAndSelectOnEnter → handleAutoSelectAndAdvance → focusNextFieldInForm).
     let shouldKeepFocus = true;
 
-    executeAfterPromise(
-      onChange(fieldName, selectedItemNorm), //
-      () => {
-        const hasNextSubField = setNextProperty(fieldName);
-        if (!hasNextSubField) {
-          shouldKeepFocus = false;
-        }
+    doThen(onChange(fieldName, selectedItemNorm), () => {
+      const hasNextSubField = setNextProperty(fieldName);
+      if (!hasNextSubField) {
+        shouldKeepFocus = false;
       }
-    );
+    });
 
     // see FiltersItem.updateItems
     updateItems &&
@@ -419,13 +408,7 @@ export class RawLookup extends Component {
           item.key !== KEY_AdvancedSearch &&
           !isNoneItem(item)
       );
-      if (regularItems.length > 0) {
-        this.handleAutoSelectAndAdvance(regularItems[0]);
-      } else {
-        if (this.props.beepOnInvalidProduct) {
-          playBeep();
-        }
-      }
+      this.resolveItems(regularItems);
       return;
     }
 
@@ -433,19 +416,34 @@ export class RawLookup extends Component {
     this.buildTypeaheadRequestForQuery(query)
       .then((response) => {
         const values = response.data.values || [];
-        if (values.length > 0) {
-          this.handleAutoSelectAndAdvance(values[0]);
-        } else {
-          if (this.props.beepOnInvalidProduct) {
-            playBeep();
-          }
-        }
+        this.resolveItems(values);
       })
       .catch(() => {
         if (this.props.beepOnInvalidProduct) {
           playBeep();
         }
       });
+  };
+
+  /**
+   * @method resolveItems
+   * @summary Given the typeahead results, auto-select if exactly one match,
+   * beep if no match, or beep and keep dropdown open if multiple matches.
+   */
+  resolveItems = (items) => {
+    if (items.length === 1) {
+      this.handleAutoSelectAndAdvance(items[0]);
+    } else if (items.length > 1) {
+      // Multiple matches: beep and keep dropdown open so user can pick
+      if (this.props.beepOnInvalidProduct) {
+        playBeep();
+      }
+    } else {
+      // No match
+      if (this.props.beepOnInvalidProduct) {
+        playBeep();
+      }
+    }
   };
 
   /**
@@ -537,7 +535,7 @@ export class RawLookup extends Component {
     this.inputSearch.value = computeInputTextFromSelectedItem(selectedItem);
     this.setState({ inputTextOnFocus: this.inputSearch.value });
 
-    handleInputEmptyStatus && handleInputEmptyStatus(false);
+    handleInputEmptyStatus?.(false);
 
     this.handleDropdownBlur();
 
@@ -545,13 +543,9 @@ export class RawLookup extends Component {
     // and React re-renders. We intentionally skip setNextProperty here
     // because it manages focus within composed lookups (e.g. BPartner →
     // Location → Contact) and would call onBlurWidget, stealing focus.
-    const promise = onChange(fieldName, selectedItem);
-    const doFocus = () => this.focusNextFieldInForm();
-    if (promise && typeof promise.then === 'function') {
-      promise.then(doFocus, doFocus);
-    } else {
-      doFocus();
-    }
+    doThen(onChange(fieldName, selectedItem), () =>
+      this.focusNextFieldInForm()
+    );
   };
 
   /**
@@ -568,6 +562,10 @@ export class RawLookup extends Component {
 
     const form = this.inputSearch.closest('form');
     if (!form) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        'RawLookup.focusNextFieldInForm: no parent <form> found. Focus advance requires the quick input to be wrapped in a <form> element (see TableQuickInput).'
+      );
       return;
     }
 
@@ -577,6 +575,12 @@ export class RawLookup extends Component {
       )
     );
     const idx = inputs.indexOf(this.inputSearch);
+    if (idx < 0) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        'RawLookup.focusNextFieldInForm: current input not found in form input list. This may indicate a DOM structure issue.'
+      );
+    }
     if (idx >= 0 && idx < inputs.length - 1) {
       const nextInput = inputs[idx + 1];
       nextInput.focus();
