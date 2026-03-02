@@ -27,13 +27,6 @@ public class X_M_QtyReservation extends PO implements I_M_QtyReservation
 		super(ctx, rs, trxName);
 	}
 
-	/** AccessLevel = 3 - Client - Org */
-	@Override
-	protected int get_AccessLevel()
-	{
-		return accessLevel.intValue();
-	}
-
 	/** Load Meta Data */
 	@Override
 	protected POInfo initPO(final Properties ctx)

@@ -1127,7 +1127,19 @@ public final class DefaultView implements IEditableView
 
 		private ImmutableMap<String, Object> getParameters()
 		{
-			return parameters != null ? ImmutableMap.copyOf(parameters) : ImmutableMap.of();
+			if (parameters == null || parameters.isEmpty())
+			{
+				return ImmutableMap.of();
+			}
+
+			final ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder();
+			parameters.forEach((key, value) -> {
+				if (value != null)
+				{
+					builder.put(key, value);
+				}
+			});
+			return builder.build();
 		}
 
 		public Builder applySecurityRestrictions(final boolean applySecurityRestrictions)

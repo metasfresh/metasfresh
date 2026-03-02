@@ -1,10 +1,13 @@
 package de.metas.ui.web.material.cockpit.v2.reservation;
 
+import de.metas.handlingunits.QtyTU;
 import de.metas.order.OrderLineId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_M_QtyReservation;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -26,14 +29,17 @@ public class QtyReservationRepository
 		record.setM_Warehouse_ID(request.getWarehouseId().getRepoId());
 		if (request.getVendorBPartnerId() != null)
 		{
-			record.setC_BPartner_Vendor_ID(request.getVendorBPartnerId());
+			record.setC_BPartner_Vendor_ID(request.getVendorBPartnerId().getRepoId());
 		}
-		record.setSupplyType(request.getSupplyType());
-		record.setDatePromised(request.getDatePromised());
+		record.setSupplyType(request.getSupplyType().getCode());
+		if (request.getDatePromised() != null)
+		{
+			record.setDatePromised(TimeUtil.asTimestamp(request.getDatePromised()));
+		}
 		record.setC_UOM_ID(request.getUomId().getRepoId());
-		record.setQtyTU(request.getQtyTU());
+		record.setQtyTU(request.getQtyTU().toBigDecimal());
 		record.setQty(request.getQty());
-		record.setAttributesKey(request.getAttributesKey());
+		record.setAttributesKey(request.getAttributesKey() != null ? request.getAttributesKey().getAsString() : null);
 		saveRecord(record);
 
 		return QtyReservationId.ofRepoId(record.getM_QtyReservation_ID());
@@ -59,14 +65,14 @@ public class QtyReservationRepository
 				.delete();
 	}
 
-	public BigDecimal getReservedQtyTU(@NonNull final OrderLineId orderLineId)
+	public QtyTU getReservedQtyTU(@NonNull final OrderLineId orderLineId)
 	{
 		final BigDecimal result = queryBL.createQueryBuilder(I_M_QtyReservation.class)
 				.addEqualsFilter(I_M_QtyReservation.COLUMNNAME_C_OrderLine_ID, orderLineId)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.aggregate(I_M_QtyReservation.COLUMNNAME_QtyTU, BigDecimal.class, IQueryBL.Aggregate.SUM);
+				.aggregate(I_M_QtyReservation.COLUMNNAME_QtyTU, IQuery.Aggregate.SUM, BigDecimal.class);
 
-		return result != null ? result : BigDecimal.ZERO;
+		return result != null ? QtyTU.ofBigDecimal(result) : QtyTU.ZERO;
 	}
 }

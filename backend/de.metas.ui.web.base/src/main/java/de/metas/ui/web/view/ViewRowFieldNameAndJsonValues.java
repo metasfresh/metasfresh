@@ -14,6 +14,8 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
+
 import java.math.BigDecimal;
 
 /*
@@ -165,5 +167,12 @@ public final class ViewRowFieldNameAndJsonValues
 	{
 		final Object valueObj = map.get(fieldName);
 		return valueObj == null || JSONNullValue.isNull(valueObj) || valueObj.toString().isEmpty();
+	}
+
+	@Nullable
+	public Object get(@NonNull final String fieldName)
+	{
+		final Object valueObj = map.get(fieldName);
+		return JSONNullValue.isNull(valueObj) ? null : valueObj;
 	}
 }
