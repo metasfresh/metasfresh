@@ -115,6 +115,29 @@ public interface I_ExternalSystem_Outbound_Endpoint
 	String COLUMNNAME_ClientId = "ClientId";
 
 	/**
+	 * Set Content Type.
+	 * HTTP Content-Type header value (e.g. application/json, application/xml)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setContentType (@Nullable String ContentType);
+
+	/**
+	 * Get Content Type.
+	 * HTTP Content-Type header value (e.g. application/json, application/xml)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable String getContentType();
+
+	ModelColumn<I_ExternalSystem_Outbound_Endpoint, Object> COLUMN_ContentType = new ModelColumn<>(I_ExternalSystem_Outbound_Endpoint.class, "ContentType", null);
+	String COLUMNNAME_ContentType = "ContentType";
+
+	/**
 	 * Set Client Secret.
 	 *
 	 * <br>Type: String

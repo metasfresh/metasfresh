@@ -56,6 +56,8 @@ public class ExternalSystemOutboundEndpoint
 	
 	@Nullable String sasSignature;
 
+	@Nullable String contentType;
+
 	@NonNull
 	public JsonExternalSystemOutboundEndpoint toJson()
 	{
@@ -70,6 +72,7 @@ public class ExternalSystemOutboundEndpoint
 				.user(user)
 				.password(password)
 				.sasSignature(sasSignature)
+				.contentType(contentType)
 				.build();
 	}
 }
