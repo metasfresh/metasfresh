@@ -71,6 +71,8 @@ jobs:
           if echo " $FORCE_EXCLUDE " | grep -q " $GROUP "; then
             echo "::notice::Group $GROUP is force-excluded, skipping auto-port"
             echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "## Auto-port: Skipped" >> "$GITHUB_STEP_SUMMARY"
+            echo "Group \`$GROUP\` is in FORCE_EXCLUDE list." >> "$GITHUB_STEP_SUMMARY"
             exit 0
           fi
 
@@ -85,6 +87,8 @@ jobs:
             if git ls-remote --exit-code --heads origin "${GROUP}_uat" &>/dev/null; then
               echo "::notice::Group $GROUP has its own _uat branch, skipping auto-port"
               echo "skip=true" >> "$GITHUB_OUTPUT"
+              echo "## Auto-port: Skipped" >> "$GITHUB_STEP_SUMMARY"
+              echo "Group \`$GROUP\` has its own \`${GROUP}_uat\` branch." >> "$GITHUB_STEP_SUMMARY"
               exit 0
             fi
           fi
@@ -103,6 +107,21 @@ jobs:
           echo "source=$BRANCH" >> "$GITHUB_OUTPUT"
           echo "target=$TARGET" >> "$GITHUB_OUTPUT"
           echo "Porting: $BRANCH → $TARGET"
+
+          # Step summary
+          {
+            echo "## Auto-port: Determine target"
+            echo ""
+            echo "| Field | Value |"
+            echo "|-------|-------|"
+            echo "| Source branch | \`$BRANCH\` |"
+            echo "| Group | \`$GROUP\` |"
+            echo "| Suffix | \`$SUFFIX\` |"
+            echo "| Target | \`$TARGET\` |"
+            if [[ "$FORCE_INCLUDED" == "true" ]]; then
+              echo "| Force-included | yes |"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Check for existing merge PR
         id: check
@@ -155,16 +174,43 @@ jobs:
                 --add-label "ops:without_review_approval" \
                 --add-label "ops:auto_ported"
               echo "Updated merge branch and labels for existing PR #$EXISTING_PR"
+
+              # Step summary
+              {
+                echo "## Auto-port: Updated existing PR"
+                echo ""
+                echo "| Field | Value |"
+                echo "|-------|-------|"
+                echo "| Source | \`$SOURCE\` |"
+                echo "| Target | \`$TARGET\` |"
+                echo "| Merge branch | \`$MERGE_BRANCH\` |"
+                echo "| Existing PR | #$EXISTING_PR |"
+                echo "| Action | Updated merge branch and ensured auto-merge labels |"
+              } >> "$GITHUB_STEP_SUMMARY"
             else
               git merge --abort
               echo "::error::Merge conflict updating $MERGE_BRANCH. Manual resolution needed."
+              {
+                echo "## Auto-port: Merge conflict"
+                echo ""
+                echo "**Manual resolution needed.**"
+                echo ""
+                echo "| Field | Value |"
+                echo "|-------|-------|"
+                echo "| Source | \`$SOURCE\` |"
+                echo "| Target | \`$TARGET\` |"
+                echo "| Merge branch | \`$MERGE_BRANCH\` |"
+                echo "| Existing PR | #$EXISTING_PR |"
+              } >> "$GITHUB_STEP_SUMMARY"
               exit 1
             fi
           else
             # Create new merge branch: start from target, merge source
             git checkout "origin/$TARGET" -b "$MERGE_BRANCH"
             if git merge "origin/$SOURCE" --no-edit; then
-              git push origin "$MERGE_BRANCH"
+              # Use --force in case branch exists from a previous failed run
+              # (branch was pushed but PR creation failed)
+              git push --force origin "$MERGE_BRANCH"
 
               # Ensure labels exist
               gh label create "ops:auto_ported" --color "0075ca" --description "PR auto-created by auto-port workflow" 2>/dev/null || true
@@ -172,18 +218,42 @@ jobs:
               PR_BODY="Automatic merge of \`${SOURCE}\` into \`${TARGET}\`."
               PR_BODY="${PR_BODY}"$'\n\n'"Created by the auto-port workflow."
 
-              gh pr create \
+              PR_URL=$(gh pr create \
                 --base "$TARGET" \
                 --head "$MERGE_BRANCH" \
                 --title "merge/${SOURCE}-to-${TARGET}" \
                 --label "ops:auto_merge_commit" \
                 --label "ops:without_review_approval" \
                 --label "ops:auto_ported" \
-                --body "$PR_BODY"
+                --body "$PR_BODY")
               echo "Created merge PR: $MERGE_BRANCH → $TARGET"
+
+              # Step summary
+              {
+                echo "## Auto-port: Created merge PR"
+                echo ""
+                echo "| Field | Value |"
+                echo "|-------|-------|"
+                echo "| Source | \`$SOURCE\` |"
+                echo "| Target | \`$TARGET\` |"
+                echo "| Merge branch | \`$MERGE_BRANCH\` |"
+                echo "| PR | $PR_URL |"
+                echo "| Labels | \`ops:auto_merge_commit\`, \`ops:without_review_approval\`, \`ops:auto_ported\` |"
+              } >> "$GITHUB_STEP_SUMMARY"
             else
               git merge --abort
               echo "::error::Merge conflict: $SOURCE → $TARGET. Manual resolution needed."
+              {
+                echo "## Auto-port: Merge conflict"
+                echo ""
+                echo "**Manual resolution needed.**"
+                echo ""
+                echo "| Field | Value |"
+                echo "|-------|-------|"
+                echo "| Source | \`$SOURCE\` |"
+                echo "| Target | \`$TARGET\` |"
+                echo "| Merge branch | \`$MERGE_BRANCH\` |"
+              } >> "$GITHUB_STEP_SUMMARY"
               exit 1
             fi
           fi
