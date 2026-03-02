@@ -304,7 +304,40 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 ---
 
-### 9. Invoice Reversal (Reverse-Correct)
+### 9. Quick Input Multiple Matches
+**File**: `tests/spec/quick-input-multiple-matches.spec.js`
+**Status**: New (untested)
+**Duration**: ~20 seconds per test per language
+
+**Features Tested**:
+- F00100: Sales Order
+
+**Epic**: E0100: Sales
+
+**Tests**:
+1. **Multiple matches keep dropdown open** - Type shared prefix matching 2 products -> Enter -> dropdown stays open with 2 options -> click to select manually -> verify order line created
+2. **Single match auto-selects and advances (regression)** - Type full unique product code -> Enter -> auto-selects and advances focus -> fill qty -> verify order line created
+
+**Key Validations**:
+- Multiple typeahead matches: Enter does NOT auto-select, dropdown stays open
+- Product input retains typed text when multiple matches exist
+- Manual click-to-select from open dropdown works
+- Single match: Enter auto-selects via handleAutoSelectAndAdvance
+- Qty field interactable after product selection
+
+**Components Tested**:
+- Sales Order window (143)
+- Order Lines tab (batch entry / quick input)
+- Lookup widget: resolveItems() multiple-match path (RawLookup.js)
+- Lookup widget: resolveItems() single-match path (regression)
+
+**Code Path Coverage**:
+- `resolveItems(items)` where `items.length > 1` -> keep dropdown open (Test 1)
+- `resolveItems(items)` where `items.length === 1` -> `handleAutoSelectAndAdvance` (Test 2)
+
+---
+
+### 10. Invoice Reversal (Reverse-Correct)
 **File**: `tests/spec/invoice-reversal.spec.js`
 **Status**: ✅ Passing (English, German)
 **Duration**: ~70 seconds per language
@@ -343,7 +376,7 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 ---
 
-### 10. Business Partner Creation
+### 11. Business Partner Creation
 **File**: `tests/spec/business-partner-create.spec.js`
 **Status**: ✅ Passing (English, German)
 **Duration**: ~14 seconds per language
@@ -376,7 +409,7 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 ---
 
-### 11. Menu Navigation & Window Search
+### 12. Menu Navigation & Window Search
 **File**: `tests/spec/menu-navigation.spec.js`
 **Status**: ✅ Passing (English, German)
 **Duration**: ~15 seconds per language
@@ -409,7 +442,7 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 ---
 
-### 12. Bookmark Star (SubHeader)
+### 13. Bookmark Star (SubHeader)
 **File**: `tests/spec/bookmark-star.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~8 seconds
@@ -440,7 +473,7 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 ---
 
-### 13. Document References (Alt+6) - Complete O2C and P2P
+### 14. Document References (Alt+6) - Complete O2C and P2P
 **File**: `tests/spec/document-references.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~2.8 minutes (both tests)
@@ -482,7 +515,7 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 ---
 
-### 14. Zoom-Into (Right-Click Context Menu)
+### 15. Zoom-Into (Right-Click Context Menu)
 **File**: `tests/spec/zoom-into.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~30 seconds
@@ -512,7 +545,7 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 ---
 
-### 15. Keyboard Shortcuts
+### 16. Keyboard Shortcuts
 **File**: `tests/spec/keyboard-shortcuts.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~24 seconds
@@ -546,7 +579,7 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 ---
 
-### 16. Grid Filtering & Column Sorting
+### 17. Grid Filtering & Column Sorting
 **File**: `tests/spec/grid-filtering.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~20 seconds
@@ -572,7 +605,7 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 ---
 
-### 17. Document Clone (Alt+W)
+### 18. Document Clone (Alt+W)
 **File**: `tests/spec/document-clone.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~22 seconds
@@ -592,7 +625,7 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 ---
 
-### 18. SubHeader Actions & Change Log
+### 19. SubHeader Actions & Change Log
 **File**: `tests/spec/subheader-actions.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~36 seconds
@@ -612,7 +645,7 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 ---
 
-### 19. Included Tabs & Batch Entry
+### 20. Included Tabs & Batch Entry
 **File**: `tests/spec/included-tabs.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~32 seconds
@@ -630,7 +663,7 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 ---
 
-### 20. List View Actions (Row Selection, Alt+B, Alt+A)
+### 21. List View Actions (Row Selection, Alt+B, Alt+A)
 **File**: `tests/spec/list-view-actions.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~15 seconds
@@ -651,7 +684,7 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 ---
 
-### 21. Navigation Menu (Alt+2)
+### 22. Navigation Menu (Alt+2)
 **File**: `tests/spec/navigation-menu.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~8 seconds
@@ -675,7 +708,7 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 ---
 
-### 22. User/Avatar Menu (Alt+4)
+### 23. User/Avatar Menu (Alt+4)
 **File**: `tests/spec/user-menu.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~7 seconds
@@ -694,7 +727,7 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 ---
 
-### 23. Comments Panel (Alt+T)
+### 24. Comments Panel (Alt+T)
 **File**: `tests/spec/comments-panel.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~18 seconds
@@ -713,7 +746,7 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 ---
 
-### 24. Email & Letter Dialogs (Alt+K, Alt+R)
+### 25. Email & Letter Dialogs (Alt+K, Alt+R)
 **File**: `tests/spec/email-letter-dialog.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~22 seconds
@@ -732,7 +765,7 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 ---
 
-### 25. Edit Mode Toggle (Alt+O)
+### 26. Edit Mode Toggle (Alt+O)
 **File**: `tests/spec/edit-mode-toggle.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~22 seconds
@@ -749,7 +782,7 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 ---
 
-### 26. Sidebar Panels (Alt+5, Alt+6, Alt+7)
+### 27. Sidebar Panels (Alt+5, Alt+6, Alt+7)
 **File**: `tests/spec/sidebar-panels.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~20 seconds
@@ -767,7 +800,7 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 ---
 
-### 27. Document Delete (Alt+D)
+### 28. Document Delete (Alt+D)
 **File**: `tests/spec/document-delete.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~22 seconds
@@ -785,7 +818,7 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 ---
 
-### 28. Quick Actions
+### 29. Quick Actions
 **File**: `tests/spec/quick-actions.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~20 seconds
@@ -803,7 +836,7 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 ---
 
-### 29. Date Widget
+### 30. Date Widget
 **File**: `tests/spec/date-widget.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~17 seconds
@@ -822,7 +855,7 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 ---
 
-### 30. Print Dialog (Alt+P)
+### 31. Print Dialog (Alt+P)
 **File**: `tests/spec/print-dialog.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~18 seconds
@@ -840,7 +873,7 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 ---
 
-### 31. Lookup Widget (Autocomplete)
+### 32. Lookup Widget (Autocomplete)
 **File**: `tests/spec/lookup-widget.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~15 seconds
@@ -860,7 +893,7 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 ---
 
-### 32. Inline Grid Edit (F2)
+### 33. Inline Grid Edit (F2)
 **File**: `tests/spec/inline-edit.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~25 seconds
@@ -880,7 +913,7 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 ---
 
-### 33. Record Navigation
+### 34. Record Navigation
 **File**: `tests/spec/record-navigation.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~15 seconds
@@ -898,7 +931,7 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 ---
 
-### 34. Notifications & Inbox
+### 35. Notifications & Inbox
 **File**: `tests/spec/notifications.spec.js`
 **Status**: ✅ Passing
 **Duration**: ~7 seconds
@@ -946,6 +979,7 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 ### Inline Test Helpers
 - **quick-input.spec.js** uses inline helpers (`createMasterdata`, `setupOrderWithBatchEntry`, `typeProductAndWaitForDropdown`, `expectOrderLineInGrid`) instead of a dedicated Page Object, since the test-specific batch entry interactions (Enter-key vs mouse-click, grid row counting) are specialized and not reusable across other test suites.
+- **quick-input-multiple-matches.spec.js** uses the same inline helper pattern (`createMasterdataWithSharedPrefix`, `setupOrderWithBatchEntry`, `typeProductAndWaitForDropdown`, `expectOrderLineInGrid`) for testing the multiple-match typeahead scenario.
 
 ### Test Data Strategy
 - All test data created via Backend API
@@ -990,8 +1024,8 @@ Areas **NOT yet covered** by E2E tests:
 
 ## Test Quality Metrics
 
-- **Total test specs**: 34 files
-- **Total test cases**: 46+ (34 specs, many with en_US + de_DE; quick-input has 5 tests × 2 languages)
+- **Total test specs**: 35 files
+- **Total test cases**: 50+ (35 specs, many with en_US + de_DE; quick-input has 5 tests × 2 languages; quick-input-multiple-matches has 2 tests × 2 languages)
 - **Language coverage**: en_US, de_DE
 - **Success rate**: 100% passing
 - **Average execution time**: ~20 seconds per test
