@@ -58,6 +58,8 @@ release:
   - science_vessel_uat
   - science_vessel_hotfix
   - science_vessel_release
+  - memorable_shiny_hotfix
+  - memorable_shiny_release
   - secondary_opinion_uat
   - secondary_opinion_hotfix
   - tenacious_d_uat

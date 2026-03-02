@@ -1,0 +1,162 @@
+name: Auto-port to new_dawn_uat chain
+
+on:
+  push:
+    branches:
+      - '*_hotfix'
+      - '*_release'
+
+permissions:
+  contents: write      # git push of merge branch
+  pull-requests: write # gh pr create + gh pr list
+
+env:
+  # Groups to ALWAYS exclude (independent branch lines, never port to new_dawn_uat)
+  FORCE_EXCLUDE: "inner_silence temporary_test202412"
+  # Groups to ALWAYS include (have _uat on remote but should still port to new_dawn_uat)
+  FORCE_INCLUDE: "science_vessel"
+
+  # NOTE: For auto-merge to work, the target branch must be listed in .mergify.yml
+  # under *ALL_BASE_BRANCHES (UAT, HOTFIX, or RELEASE lists). If you onboard a new
+  # group with a _release branch, add it to PROJECT_BRANCHES_RELEASE in .mergify.yml.
+
+jobs:
+  auto-port:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine target branch
+        id: target
+        run: |
+          BRANCH="${GITHUB_REF_NAME}"
+
+          # Extract group name and suffix
+          if [[ "$BRANCH" =~ ^(.+)_(hotfix|release)$ ]]; then
+            GROUP="${BASH_REMATCH[1]}"
+            SUFFIX="${BASH_REMATCH[2]}"
+          else
+            echo "::notice::Branch $BRANCH doesn't match *_hotfix or *_release pattern, skipping"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "group=$GROUP" >> "$GITHUB_OUTPUT"
+          echo "suffix=$SUFFIX" >> "$GITHUB_OUTPUT"
+
+          # Check force-exclude
+          if echo " $FORCE_EXCLUDE " | grep -q " $GROUP "; then
+            echo "::notice::Group $GROUP is force-excluded, skipping auto-port"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Check force-include flag
+          FORCE_INCLUDED=false
+          if echo " $FORCE_INCLUDE " | grep -q " $GROUP "; then
+            FORCE_INCLUDED=true
+          fi
+
+          # Dynamic UAT detection (skip groups with their own _uat)
+          if [[ "$FORCE_INCLUDED" != "true" ]]; then
+            if git ls-remote --exit-code --heads origin "${GROUP}_uat" &>/dev/null; then
+              echo "::notice::Group $GROUP has its own _uat branch, skipping auto-port"
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          fi
+
+          # Determine target
+          if [[ "$SUFFIX" == "release" ]]; then
+            TARGET="new_dawn_uat"
+          elif [[ "$SUFFIX" == "hotfix" ]]; then
+            if git ls-remote --exit-code --heads origin "${GROUP}_release" &>/dev/null; then
+              TARGET="${GROUP}_release"
+            else
+              TARGET="new_dawn_uat"
+            fi
+          fi
+
+          echo "source=$BRANCH" >> "$GITHUB_OUTPUT"
+          echo "target=$TARGET" >> "$GITHUB_OUTPUT"
+          echo "Porting: $BRANCH → $TARGET"
+
+      - name: Check for existing merge PR
+        id: check
+        if: steps.target.outputs.skip != 'true' && steps.target.outputs.target != ''
+        run: |
+          SOURCE="${{ steps.target.outputs.source }}"
+          TARGET="${{ steps.target.outputs.target }}"
+          MERGE_BRANCH="merge/${SOURCE}-to-${TARGET}"
+
+          EXISTING=$(gh pr list \
+            --base "$TARGET" \
+            --head "$MERGE_BRANCH" \
+            --state open \
+            --json number --jq '.[0].number // empty')
+
+          echo "merge_branch=$MERGE_BRANCH" >> "$GITHUB_OUTPUT"
+          echo "existing_pr=$EXISTING" >> "$GITHUB_OUTPUT"
+
+          if [[ -n "$EXISTING" ]]; then
+            echo "PR #$EXISTING already exists, will update merge branch"
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create or update merge branch and PR
+        if: steps.target.outputs.skip != 'true' && steps.target.outputs.target != ''
+        run: |
+          SOURCE="${{ steps.target.outputs.source }}"
+          TARGET="${{ steps.target.outputs.target }}"
+          MERGE_BRANCH="${{ steps.check.outputs.merge_branch }}"
+          EXISTING_PR="${{ steps.check.outputs.existing_pr }}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          if [[ -n "$EXISTING_PR" ]]; then
+            # Fetch current remote state of merge branch for force-with-lease protection
+            git fetch origin "$MERGE_BRANCH" || true
+
+            # Update existing merge branch: start from target, merge source
+            git checkout "origin/$TARGET" -b "$MERGE_BRANCH"
+            if git merge "origin/$SOURCE" --no-edit; then
+              git push --force-with-lease origin "$MERGE_BRANCH"
+              echo "Updated merge branch for existing PR #$EXISTING_PR"
+            else
+              git merge --abort
+              echo "::error::Merge conflict updating $MERGE_BRANCH. Manual resolution needed."
+              exit 1
+            fi
+          else
+            # Create new merge branch: start from target, merge source
+            git checkout "origin/$TARGET" -b "$MERGE_BRANCH"
+            if git merge "origin/$SOURCE" --no-edit; then
+              git push origin "$MERGE_BRANCH"
+
+              # Ensure labels exist
+              gh label create "ops:auto_ported" --color "0075ca" --description "PR auto-created by auto-port workflow" 2>/dev/null || true
+
+              PR_BODY="Automatic merge of \`${SOURCE}\` into \`${TARGET}\`."
+              PR_BODY="${PR_BODY}"$'\n\n'"Created by the auto-port workflow."
+
+              gh pr create \
+                --base "$TARGET" \
+                --head "$MERGE_BRANCH" \
+                --title "merge/${SOURCE}-to-${TARGET}" \
+                --label "ops:auto_merge_commit" \
+                --label "ops:without_review_approval" \
+                --label "ops:auto_ported" \
+                --body "$PR_BODY"
+              echo "Created merge PR: $MERGE_BRANCH → $TARGET"
+            else
+              git merge --abort
+              echo "::error::Merge conflict: $SOURCE → $TARGET. Manual resolution needed."
+              exit 1
+            fi
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
