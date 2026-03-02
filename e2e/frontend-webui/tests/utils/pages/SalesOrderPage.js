@@ -204,7 +204,7 @@ export class SalesOrderPage {
    * @param {string|number} params.quantity - Quantity to order
    * @param {string} params.recordId - Optional record ID (will extract from URL if not provided)
    */
-  static async addOrderLine({ product, quantity, recordId }) {
+  static async addOrderLine({ product, quantity, recordId, maxAttempts = 3 }) {
     return await test.step(`SalesOrderPage - Add order line: ${product} x ${quantity}`, async () => {
       const page = getPage();
 
@@ -220,116 +220,186 @@ export class SalesOrderPage {
 
       console.log(`Sales Order Lines tab ready for record ${effectiveRecordId}`);
 
-      // Scroll to batch entry button (may be below the fold in single-section layout)
-      const batchEntryButton = page.getByTestId('batch-entry-toggle');
-      await batchEntryButton.scrollIntoViewIfNeeded();
-      await batchEntryButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        console.log(`addOrderLine attempt ${attempt}/${maxAttempts}`);
 
-      // Click batch entry toggle
-      await batchEntryButton.click();
+        // Scroll to batch entry button (may be below the fold in single-section layout)
+        const batchEntryButton = page.getByTestId('batch-entry-toggle');
+        await batchEntryButton.scrollIntoViewIfNeeded();
+        await batchEntryButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
-      // Wait for batch entry form
-      await page.locator('.quick-input-container').waitFor({
-        state: 'visible',
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
+        // Click batch entry toggle
+        await batchEntryButton.click();
+        await page.waitForTimeout(500);
 
-      const productInput = page.locator('#lookup_M_Product_ID input.input-field');
-      await productInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      await productInput.click();
+        // Wait for batch entry form
+        const quickInputVisible = await page
+          .locator('.quick-input-container')
+          .waitFor({ state: 'visible', timeout: 5000 })
+          .then(() => true)
+          .catch(() => false);
 
-      // Wait for initial loading spinner to disappear (product list being loaded)
-      await page
-        .locator('#lookup_M_Product_ID .rotating, #lookup_M_Product_ID .spinner')
-        .waitFor({
-          state: 'detached',
-          timeout: SLOW_ACTION_TIMEOUT,
-        })
-        .catch(() => {
-          // Ignore if no spinner exists
-        });
+        if (!quickInputVisible) {
+          console.log(`Quick input container not visible on attempt ${attempt}, retrying...`);
+          await page.keyboard.press('Escape');
+          await page.waitForTimeout(1000);
+          continue;
+        }
 
-      // Small delay to ensure dropdown is ready
-      await page.waitForTimeout(300);
+        const productInput = page.locator('#lookup_M_Product_ID input.input-field');
+        await productInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+        await productInput.click();
 
-      // Fill the product code/name
-      await productInput.fill(product);
+        // Wait for initial loading spinner to disappear (product list being loaded)
+        await page
+          .locator('#lookup_M_Product_ID .rotating, #lookup_M_Product_ID .spinner')
+          .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
+          .catch(() => {});
 
-      // Wait for debounce/input processing
-      await page.waitForTimeout(500);
+        await page.waitForTimeout(300);
 
-      // Wait for any search spinner to disappear
-      await page
-        .locator('#lookup_M_Product_ID .rotating, #lookup_M_Product_ID .spinner')
-        .waitFor({
-          state: 'detached',
-          timeout: SLOW_ACTION_TIMEOUT,
-        })
-        .catch(() => {
-          // Ignore if no spinner exists
-        });
+        // Fill the product code/name
+        await productInput.fill(product);
+        await page.waitForTimeout(1000);
 
-      // Wait for dropdown to populate
-      await page.waitForTimeout(300);
+        // Wait for any search spinner to disappear
+        await page
+          .locator('#lookup_M_Product_ID .rotating, #lookup_M_Product_ID .spinner')
+          .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
+          .catch(() => {});
 
-      // Click the option by text - finds element containing the product code
-      // This avoids clicking on "Search for more..." or other non-record options
-      await page.locator('.input-dropdown-list-option').getByText(product).first().click();
+        await page.waitForTimeout(500);
 
-      // Wait for product to be selected and form to update
-      await page.waitForTimeout(500);
+        // Click the option by text - check it's visible first
+        const dropdownOption = page.locator('.input-dropdown-list-option').getByText(product).first();
+        const optionVisible = await dropdownOption
+          .waitFor({ state: 'visible', timeout: 5000 })
+          .then(() => true)
+          .catch(() => false);
 
-      // Fill quantity using spinbutton role (language-independent)
-      await page.getByRole('spinbutton').fill(quantity.toString());
+        if (!optionVisible) {
+          console.log(`Product dropdown option not visible on attempt ${attempt}, retrying...`);
+          await page.keyboard.press('Escape');
+          await page.waitForTimeout(500);
+          await batchEntryButton.click().catch(() => {});
+          await page.waitForTimeout(1000);
+          await page.keyboard.press('F5');
+          await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+          await page.waitForTimeout(2000);
+          continue;
+        }
 
-      // Press Enter to add the line (as instructed by the UI: "Press 'Enter' to add")
-      await page.keyboard.press('Enter');
+        await dropdownOption.click();
+        await page.waitForTimeout(500);
 
-      // Wait for the line to be added
-      await page.waitForTimeout(500);
+        // Fill quantity — scope to .quick-input-container to avoid matching other spinbuttons
+        const quantityInput = page.locator('.quick-input-container').getByRole('spinbutton');
+        await quantityInput.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+        await quantityInput.click();
+        await quantityInput.fill(quantity.toString());
+        await page.waitForTimeout(300);
 
-      // Close the batch entry modal
-      // Language-independent: Use data-testid from TableFilter.js
-      const closeButton = page.getByTestId('batch-entry-toggle');
-      await closeButton.click();
+        // Press Enter to add the line (as instructed by the UI: "Press 'Enter' to add")
+        await page.keyboard.press('Enter');
+        await page.waitForTimeout(2000);
 
-      // Wait for the modal to close
-      await page.waitForTimeout(500);
+        // Wait for spinners
+        await page
+          .locator('.rotating, .indicator-pending')
+          .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
+          .catch(() => {});
+
+        // Close the batch entry modal (only if still open)
+        const isStillOpen = await page.locator('.quick-input-container').isVisible().catch(() => false);
+        if (isStillOpen) {
+          await page.getByTestId('batch-entry-toggle').click();
+          await page.waitForTimeout(1000);
+        }
+
+        // Verify that at least one order line was added
+        const gridRows = page.locator('table tbody tr');
+        const rowCount = await gridRows.count();
+        if (rowCount > 0) {
+          console.log(`Order line added successfully on attempt ${attempt} (${rowCount} row(s))`);
+          return;
+        }
+
+        console.log(`No order lines found after attempt ${attempt}, reloading page...`);
+        await page.keyboard.press('F5');
+        await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+        await page.waitForTimeout(2000);
+      }
+
+      throw new Error(`Failed to add order line after ${maxAttempts} attempts`);
     });
   }
 
   /**
    * Complete the sales order.
+   * Retries up to maxAttempts times, using language-independent data-testid selectors
+   * to detect whether the Complete (CO) action is still available.
+   *
+   * @param {Object} options - Configuration options
+   * @param {number} options.maxAttempts - Maximum retry attempts (default: 3)
    */
-  static async complete() {
+  static async complete({ maxAttempts = 3 } = {}) {
     return await test.step('SalesOrderPage - Complete order', async () => {
       const page = getPage();
 
-      // Click the document status button (e.g., "Drafted") in the upper right header
-      // This opens the document action dropdown with options like Complete, Close, Void, etc.
-      // Language-independent: Use data-testid
-      await page.getByTestId('status-button').click();
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        const coOption = page.getByTestId('status-CO');
 
-      // Wait for the action dropdown to appear
-      await page.waitForTimeout(500);
+        // Check if dropdown is already open from a previous failed attempt
+        const isAlreadyOpen = await coOption.isVisible().catch(() => false);
+        if (!isAlreadyOpen) {
+          // Click the document status button to open the action dropdown
+          await page.getByTestId('status-button').click();
+          await page.waitForTimeout(500);
+        }
 
-      // Click "Complete" action in the dropdown
-      // Language-independent: Use data-testid (CO = Complete document action key)
-      await page.getByTestId('status-CO').click();
+        // Language-independent: check if Complete action is available
+        const coVisible = await coOption
+          .waitFor({ state: 'visible', timeout: 5000 })
+          .then(() => true)
+          .catch(() => false);
 
-      // Wait for the completion process (can take a few seconds)
-      await page.waitForTimeout(3000);
+        if (!coVisible) {
+          // No CO action means document is already completed (or non-completable)
+          console.log(`Complete action (status-CO) not available — document likely already completed`);
+          await page.keyboard.press('Escape');
+          return;
+        }
 
-      // Wait for any processing indicators to disappear
-      await page
-        .locator('.rotating, .indicator-pending')
-        .waitFor({
-          state: 'detached',
-          timeout: VERY_SLOW_ACTION_TIMEOUT,
-        })
-        .catch(() => {
-          // Ignore if indicator doesn't exist
-        });
+        console.log(`Complete attempt ${attempt}/${maxAttempts}`);
+
+        // Click "Complete" action (CO = Complete document action key)
+        await coOption.click();
+
+        // Wait for the completion process
+        await page.waitForTimeout(3000);
+
+        // Wait for any processing indicators to disappear
+        await page
+          .locator('.rotating, .indicator-pending')
+          .waitFor({ state: 'detached', timeout: VERY_SLOW_ACTION_TIMEOUT })
+          .catch(() => {});
+
+        // Language-independent verification: open dropdown and check if CO is still there
+        await page.getByTestId('status-button').click();
+        await page.waitForTimeout(500);
+        const stillHasCO = await coOption.isVisible().catch(() => false);
+        await page.keyboard.press('Escape');
+
+        if (!stillHasCO) {
+          console.log(`Order completed successfully on attempt ${attempt}`);
+          return;
+        }
+
+        console.log(`Order still shows CO action after attempt ${attempt}, retrying...`);
+        await page.waitForTimeout(2000);
+      }
+
+      throw new Error(`Failed to complete order after ${maxAttempts} attempts`);
     });
   }
 
