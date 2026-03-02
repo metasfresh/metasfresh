@@ -404,11 +404,11 @@ public class M_HU_Trace_Report_StepDef
 						+ "(AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,"
 						+ " M_Product_ID, C_UOM_ID, QtyOrdered, QtyDelivered,"
 						+ " DateOrdered, DatePromised, DateStartSchedule, M_Warehouse_ID,"
-						+ " DocStatus, DocAction, S_Resource_ID, DocumentNo, Processed)"
+						+ " DocStatus, DocAction, S_Resource_ID, DocumentNo, Processed, Line)"
 						+ " VALUES (?, ?, 'Y', now(), 100, now(), 100,"
 						+ " ?, ?, 1, 0,"
 						+ " now(), now(), now(), ?,"
-						+ " 'CO', '--', ?, ?, 'Y')"
+						+ " 'CO', '--', ?, ?, 'Y', 10)"
 						+ " RETURNING PP_Order_ID",
 				Env.getClientId().getRepoId(),
 				Env.getOrgId(Env.getCtx()).getRepoId(),
