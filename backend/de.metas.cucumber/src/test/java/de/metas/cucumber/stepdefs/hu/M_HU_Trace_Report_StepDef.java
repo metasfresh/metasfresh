@@ -414,6 +414,14 @@ public class M_HU_Trace_Report_StepDef
 				warehouseId);
 		assertThat(locatorId).as("Expected at least one active M_Locator for warehouse %s", warehouseId).isGreaterThan(0);
 
+		// Look up valid FK references needed by PP_Order (can't use 0 — FK constraints)
+		final int bomId = DB.getSQLValueEx(ITrx.TRXNAME_None,
+				"SELECT MIN(pp_product_bom_id) FROM pp_product_bom WHERE isactive = 'Y'");
+		final int workflowId = DB.getSQLValueEx(ITrx.TRXNAME_None,
+				"SELECT MIN(ad_workflow_id) FROM ad_workflow WHERE isactive = 'Y'");
+		final int docTypeId = DB.getSQLValueEx(ITrx.TRXNAME_None,
+				"SELECT MIN(c_doctype_id) FROM c_doctype WHERE docbasetype = 'MOP' AND isactive = 'Y'");
+
 		final String documentNo = "TEST-TRACE-" + System.nanoTime();
 		final int ppOrderId = DB.getSQLValueEx(
 				ITrx.TRXNAME_None,
@@ -430,7 +438,7 @@ public class M_HU_Trace_Report_StepDef
 						+ " ?, ?, 1, 0,"
 						+ " now(), now(), now(), ?, ?,"
 						+ " 'CO', '--', ?, ?, 'Y', 10,"
-						+ " 0, 0, 0,"
+						+ " ?, ?, ?,"
 						+ " 'M', 0, 0, 0, 0,"
 						+ " 'PENDING', 'N', 'N', 'N', 'N',"
 						+ " 'N', 'N', 'N', 'P', 'N')"
@@ -442,7 +450,10 @@ public class M_HU_Trace_Report_StepDef
 				warehouseId,
 				locatorId,
 				StepDefConstants.PLANT_ID.getRepoId(),
-				documentNo);
+				documentNo,
+				bomId > 0 ? bomId : 1,
+				workflowId > 0 ? workflowId : 1,
+				docTypeId > 0 ? docTypeId : 1);
 
 		return InterfaceWrapperHelper.loadOutOfTrx(ppOrderId, I_PP_Order.class);
 	}
