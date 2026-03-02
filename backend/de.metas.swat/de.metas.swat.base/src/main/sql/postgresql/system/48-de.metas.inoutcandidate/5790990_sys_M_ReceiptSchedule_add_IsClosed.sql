@@ -34,6 +34,10 @@ AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language
 
 -- AD_UI_Element to display the field in WebUI
 -- AD_UI_Element_ID=648454, placed in org group (AD_UI_ElementGroup_ID=540134), after Processed at SeqNo=50
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNo_SideList,Updated,UpdatedBy)
-VALUES (0,774763,0,540526,648454,540134,TO_TIMESTAMP('2026-03-02 12:00:00','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','Geschlossen',50,0,TO_TIMESTAMP('2026-03-02 12:00:00','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNo_SideList,Updated,UpdatedBy)
+VALUES (0,774763,0,540526,648454,540134,'F',TO_TIMESTAMP('2026-03-02 12:00:00','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','Geschlossen',50,0,TO_TIMESTAMP('2026-03-02 12:00:00','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- Propagate element translations to the new AD_Field_Trl rows
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(2723)
 ;
