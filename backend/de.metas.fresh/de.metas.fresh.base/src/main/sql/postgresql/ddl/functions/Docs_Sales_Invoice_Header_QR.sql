@@ -14,7 +14,7 @@ SELECT 'BCD' || E'\n' ||
        COALESCE(org_ba.org_bank_swift, '') || E'\n' ||
        COALESCE(org_bp.name, '') || E'\n' ||
        COALESCE(REPLACE(org_ba.org_bank_iban, ' ', ''), '') || E'\n' ||
-       cur.iso_code || i.grandtotal || E'\n' ||
+       cur.iso_code || TO_CHAR(i.grandtotal, 'FM999999999990.00') || E'\n' ||
        E'\n' ||
        i.documentno AS QR_Code
 
