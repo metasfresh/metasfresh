@@ -6,11 +6,19 @@ on:
       - '*_hotfix'
       - '*_release'
 
+permissions:
+  contents: write      # git push of merge branch
+  pull-requests: write # gh pr create + gh pr list
+
 env:
   # Groups to ALWAYS exclude (independent branch lines, never port to new_dawn_uat)
   FORCE_EXCLUDE: "inner_silence temporary_test202412"
   # Groups to ALWAYS include (have _uat on remote but should still port to new_dawn_uat)
   FORCE_INCLUDE: "science_vessel"
+
+  # NOTE: For auto-merge to work, the target branch must be listed in .mergify.yml
+  # under *ALL_BASE_BRANCHES (UAT, HOTFIX, or RELEASE lists). If you onboard a new
+  # group with a _release branch, add it to PROJECT_BRANCHES_RELEASE in .mergify.yml.
 
 jobs:
   auto-port:
@@ -30,7 +38,8 @@ jobs:
             GROUP="${BASH_REMATCH[1]}"
             SUFFIX="${BASH_REMATCH[2]}"
           else
-            echo "Branch $BRANCH doesn't match *_hotfix or *_release pattern"
+            echo "::notice::Branch $BRANCH doesn't match *_hotfix or *_release pattern, skipping"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -39,7 +48,8 @@ jobs:
 
           # Check force-exclude
           if echo " $FORCE_EXCLUDE " | grep -q " $GROUP "; then
-            echo "Group $GROUP is force-excluded, skipping"
+            echo "::notice::Group $GROUP is force-excluded, skipping auto-port"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
@@ -52,7 +62,8 @@ jobs:
           # Dynamic UAT detection (skip groups with their own _uat)
           if [[ "$FORCE_INCLUDED" != "true" ]]; then
             if git ls-remote --exit-code --heads origin "${GROUP}_uat" &>/dev/null; then
-              echo "Group $GROUP has its own _uat branch, skipping"
+              echo "::notice::Group $GROUP has its own _uat branch, skipping auto-port"
+              echo "skip=true" >> "$GITHUB_OUTPUT"
               exit 0
             fi
           fi
@@ -74,7 +85,7 @@ jobs:
 
       - name: Check for existing merge PR
         id: check
-        if: steps.target.outputs.target != ''
+        if: steps.target.outputs.skip != 'true' && steps.target.outputs.target != ''
         run: |
           SOURCE="${{ steps.target.outputs.source }}"
           TARGET="${{ steps.target.outputs.target }}"
@@ -96,7 +107,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create or update merge branch and PR
-        if: steps.target.outputs.target != ''
+        if: steps.target.outputs.skip != 'true' && steps.target.outputs.target != ''
         run: |
           SOURCE="${{ steps.target.outputs.source }}"
           TARGET="${{ steps.target.outputs.target }}"
@@ -107,7 +118,10 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
           if [[ -n "$EXISTING_PR" ]]; then
-            # Update existing merge branch: reset to target, re-merge source
+            # Fetch current remote state of merge branch for force-with-lease protection
+            git fetch origin "$MERGE_BRANCH" || true
+
+            # Update existing merge branch: start from target, merge source
             git checkout "origin/$TARGET" -b "$MERGE_BRANCH"
             if git merge "origin/$SOURCE" --no-edit; then
               git push --force-with-lease origin "$MERGE_BRANCH"
@@ -122,6 +136,9 @@ jobs:
             git checkout "origin/$TARGET" -b "$MERGE_BRANCH"
             if git merge "origin/$SOURCE" --no-edit; then
               git push origin "$MERGE_BRANCH"
+
+              # Ensure labels exist
+              gh label create "ops:auto_ported" --color "0075ca" --description "PR auto-created by auto-port workflow" 2>/dev/null || true
 
               PR_BODY="Automatic merge of \`${SOURCE}\` into \`${TARGET}\`."
               PR_BODY="${PR_BODY}"$'\n\n'"Created by the auto-port workflow."
