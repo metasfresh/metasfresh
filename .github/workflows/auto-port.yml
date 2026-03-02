@@ -107,9 +107,11 @@ jobs:
       - name: Check for existing merge PR
         id: check
         if: steps.target.outputs.skip != 'true' && steps.target.outputs.target != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SOURCE: ${{ steps.target.outputs.source }}
+          TARGET: ${{ steps.target.outputs.target }}
         run: |
-          SOURCE="${{ steps.target.outputs.source }}"
-          TARGET="${{ steps.target.outputs.target }}"
           MERGE_BRANCH="merge/${SOURCE}-to-${TARGET}"
 
           EXISTING=$(gh pr list \
@@ -124,17 +126,16 @@ jobs:
           if [[ -n "$EXISTING" ]]; then
             echo "PR #$EXISTING already exists, will update merge branch"
           fi
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create or update merge branch and PR
         if: steps.target.outputs.skip != 'true' && steps.target.outputs.target != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SOURCE: ${{ steps.target.outputs.source }}
+          TARGET: ${{ steps.target.outputs.target }}
+          MERGE_BRANCH: ${{ steps.check.outputs.merge_branch }}
+          EXISTING_PR: ${{ steps.check.outputs.existing_pr }}
         run: |
-          SOURCE="${{ steps.target.outputs.source }}"
-          TARGET="${{ steps.target.outputs.target }}"
-          MERGE_BRANCH="${{ steps.check.outputs.merge_branch }}"
-          EXISTING_PR="${{ steps.check.outputs.existing_pr }}"
-
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
@@ -186,5 +187,3 @@ jobs:
               exit 1
             fi
           fi
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
