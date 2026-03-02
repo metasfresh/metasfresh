@@ -401,11 +401,11 @@ public class M_HU_Trace_Report_StepDef
 		final int ppOrderId = DB.getSQLValueEx(
 				ITrx.TRXNAME_None,
 				"INSERT INTO PP_Order "
-						+ "(AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,"
+						+ "(PP_Order_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,"
 						+ " M_Product_ID, C_UOM_ID, QtyOrdered, QtyDelivered,"
 						+ " DateOrdered, DatePromised, DateStartSchedule, M_Warehouse_ID,"
 						+ " DocStatus, DocAction, S_Resource_ID, DocumentNo, Processed, Line)"
-						+ " VALUES (?, ?, 'Y', now(), 100, now(), 100,"
+						+ " VALUES (nextval('pp_order_seq'), ?, ?, 'Y', now(), 100, now(), 100,"
 						+ " ?, ?, 1, 0,"
 						+ " now(), now(), now(), ?,"
 						+ " 'CO', '--', ?, ?, 'Y', 10)"
