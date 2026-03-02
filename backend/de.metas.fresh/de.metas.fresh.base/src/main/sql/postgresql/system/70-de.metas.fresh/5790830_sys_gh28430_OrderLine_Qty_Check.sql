@@ -20,12 +20,12 @@
  * #L%
  */
 
-ALTER TABLE C_OrderLine
-    ADD CONSTRAINT chk_qtyentered_nonnegative
-        CHECK (QtyEntered >= 0) NOT VALID
+-- Column: C_OrderLine.QtyEntered
+-- 2026-03-02T10:57:26.842Z
+UPDATE AD_Column SET ValueMin='0',Updated=TO_TIMESTAMP('2026-03-02 10:57:26.842000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=12876
 ;
 
-ALTER TABLE C_OrderLine
-    ADD CONSTRAINT chk_qtyenteredtu_nonnegative
-        CHECK (QtyEnteredTU >= 0) NOT VALID
+-- Column: C_OrderLine.QtyEnteredTU
+-- 2026-03-02T11:02:41.310Z
+UPDATE AD_Column SET ValueMin='0',Updated=TO_TIMESTAMP('2026-03-02 11:02:41.310000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=550442
 ;
