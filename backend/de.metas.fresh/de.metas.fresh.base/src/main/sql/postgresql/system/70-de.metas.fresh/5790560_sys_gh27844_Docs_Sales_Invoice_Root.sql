@@ -40,7 +40,7 @@ SELECT i.AD_Org_ID,
                THEN 'Y'
                ELSE 'N'
        END                                                                                                                                            AS isCreditMemo,
-      IsFactoring,
+       IsFactoring,
        report.IsHiddenReportElement(i.C_DocTypeTarget_ID, 'Invoice_Header_QR') AS isHeaderQRHidden
 FROM C_Invoice i
          INNER JOIN C_DocType dt ON i.C_DocType_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
