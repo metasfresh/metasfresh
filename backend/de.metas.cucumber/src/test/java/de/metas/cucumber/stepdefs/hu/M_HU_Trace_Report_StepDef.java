@@ -52,6 +52,7 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_InOut;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Order;
 
 import java.math.BigDecimal;
@@ -308,6 +309,7 @@ public class M_HU_Trace_Report_StepDef
 				.createQueryBuilder(I_C_DocType.class)
 				.addEqualsFilter(I_C_DocType.COLUMNNAME_DocBaseType, docBaseType)
 				.addEqualsFilter(I_C_DocType.COLUMNNAME_IsActive, true)
+				.orderBy(I_C_DocType.COLUMNNAME_C_DocType_ID)
 				.create()
 				.first(I_C_DocType.class);
 		assertThat(docType)
@@ -328,6 +330,7 @@ public class M_HU_Trace_Report_StepDef
 				.createQueryBuilder(I_M_HU_PI_Version.class)
 				.addEqualsFilter(I_M_HU_PI_Version.COLUMNNAME_M_HU_PI_ID, 101)
 				.addEqualsFilter(I_M_HU_PI_Version.COLUMNNAME_IsCurrent, true)
+				.orderBy(I_M_HU_PI_Version.COLUMNNAME_M_HU_PI_Version_ID)
 				.create()
 				.first(I_M_HU_PI_Version.class);
 
@@ -372,6 +375,7 @@ public class M_HU_Trace_Report_StepDef
 		inOut.setMovementDate(Timestamp.from(Instant.now()));
 		inOut.setM_Warehouse_ID(StepDefConstants.WAREHOUSE_ID.getRepoId());
 		inOut.setC_BPartner_ID(StepDefConstants.METASFRESH_AG_BPARTNER_ID.getRepoId());
+		inOut.setC_BPartner_Location_ID(StepDefConstants.METASFRESH_AG_BPARTNER_LOCATION_ID.getRepoId());
 		inOut.setIsSOTrx(docType.isSOTrx());
 		// MovementType must match IsSOTrx: 'C-' for customer shipment, 'V+' for vendor receipt
 		inOut.setMovementType(docType.isSOTrx() ? "C-" : "V+");
@@ -386,24 +390,35 @@ public class M_HU_Trace_Report_StepDef
 	 * <ul>
 	 *   <li>{@code po.docstatus IN ('CO', 'CL')}</li>
 	 * </ul>
-	 * All other PP_Order fields are set to reasonable defaults.
+	 *
+	 * <p>Uses direct SQL because the PP_Order model validator requires PP_Product_BOM_ID &gt; 0,
+	 * but the SQL report function only needs PP_Order_ID for its JOIN condition.
+	 * Creating a full BOM hierarchy would be disproportionate to the test's purpose.
 	 */
 	private I_PP_Order createMinimalPpOrder(@NonNull final ProductId productId)
 	{
-		final I_PP_Order ppOrder = newInstance(I_PP_Order.class);
-		ppOrder.setM_Product_ID(productId.getRepoId());
-		ppOrder.setC_UOM_ID(StepDefConstants.PCE_UOM_ID.getRepoId());
-		ppOrder.setQtyOrdered(BigDecimal.ONE);
-		ppOrder.setQtyDelivered(BigDecimal.ZERO);
-		ppOrder.setDateOrdered(Timestamp.from(Instant.now()));
-		ppOrder.setDatePromised(Timestamp.from(Instant.now()));
-		ppOrder.setM_Warehouse_ID(StepDefConstants.WAREHOUSE_ID.getRepoId());
-		ppOrder.setDocStatus("CO");
-		ppOrder.setDocAction("--");
-		ppOrder.setS_Resource_ID(StepDefConstants.PLANT_ID.getRepoId());
-		ppOrder.setDocumentNo("TEST-TRACE-" + System.nanoTime());
-		saveRecord(ppOrder);
-		return ppOrder;
+		final String documentNo = "TEST-TRACE-" + System.nanoTime();
+		final int ppOrderId = DB.getSQLValueEx(
+				ITrx.TRXNAME_None,
+				"INSERT INTO PP_Order "
+						+ "(AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,"
+						+ " M_Product_ID, C_UOM_ID, QtyOrdered, QtyDelivered,"
+						+ " DateOrdered, DatePromised, M_Warehouse_ID,"
+						+ " DocStatus, DocAction, S_Resource_ID, DocumentNo, Processed)"
+						+ " VALUES (?, ?, 'Y', now(), 100, now(), 100,"
+						+ " ?, ?, 1, 0,"
+						+ " now(), now(), ?,"
+						+ " 'CO', '--', ?, ?, 'Y')"
+						+ " RETURNING PP_Order_ID",
+				Env.getClientId().getRepoId(),
+				Env.getOrgId(Env.getCtx()).getRepoId(),
+				productId.getRepoId(),
+				StepDefConstants.PCE_UOM_ID.getRepoId(),
+				StepDefConstants.WAREHOUSE_ID.getRepoId(),
+				StepDefConstants.PLANT_ID.getRepoId(),
+				documentNo);
+
+		return InterfaceWrapperHelper.loadOutOfTrx(ppOrderId, I_PP_Order.class);
 	}
 
 	/**
