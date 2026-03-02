@@ -10,6 +10,7 @@ import de.metas.money.CurrencyId;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.user.UserId;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem.PurchaseErrorItemBuilder;
@@ -182,7 +183,11 @@ public class PurchaseCandidate
 			final boolean isTaxIncluded,
 			@Nullable final TaxCategoryId taxCategoryId,
 			@Nullable final CurrencyId currencyId,
-			final boolean simulated)
+			final boolean simulated,
+			final boolean isDropShip,
+			@Nullable final BPartnerId dropShipBPartnerId,
+			@Nullable final Integer dropShipLocationRepoId,
+			@Nullable final UserId dropShipUserId)
 	{
 		this.id = id;
 		this.priceInternal = priceInternal;
@@ -210,6 +215,10 @@ public class PurchaseCandidate
 				.poReference(poReference)
 				.source(source)
 				.externalPurchaseOrderUrl(externalPurchaseOrderUrl)
+				.isDropShip(isDropShip)
+				.dropShipBPartnerId(dropShipBPartnerId)
+				.dropShipLocationRepoId(dropShipLocationRepoId)
+				.dropShipUserId(dropShipUserId)
 				.build();
 
 		state = PurchaseCandidateState.builder()
@@ -424,9 +433,29 @@ public class PurchaseCandidate
 
 
 	public @Nullable
-	String getExternalPurchaseOrderUrl()	
+	String getExternalPurchaseOrderUrl()
 	{
 		return getImmutableFields().getExternalPurchaseOrderUrl();
+	}
+
+	public boolean isDropShip()
+	{
+		return getImmutableFields().isDropShip();
+	}
+
+	public @Nullable BPartnerId getDropShipBPartnerId()
+	{
+		return getImmutableFields().getDropShipBPartnerId();
+	}
+
+	public @Nullable Integer getDropShipLocationRepoId()
+	{
+		return getImmutableFields().getDropShipLocationRepoId();
+	}
+
+	public @Nullable UserId getDropShipUserId()
+	{
+		return getImmutableFields().getDropShipUserId();
 	}
 
 	public boolean hasChanges()

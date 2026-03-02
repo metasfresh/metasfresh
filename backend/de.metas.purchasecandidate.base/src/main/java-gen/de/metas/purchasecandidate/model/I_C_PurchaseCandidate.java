@@ -309,6 +309,89 @@ public interface I_C_PurchaseCandidate
 	String COLUMNNAME_DemandReference = "DemandReference";
 
 	/**
+	 * Set Drop Shipment.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDropShip (boolean IsDropShip);
+
+	/**
+	 * Get Drop Shipment.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDropShip();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_IsDropShip = new ModelColumn<>(I_C_PurchaseCandidate.class, "IsDropShip", null);
+	String COLUMNNAME_IsDropShip = "IsDropShip";
+
+	/**
+	 * Set Drop Shipment Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDropShip_BPartner_ID (int DropShip_BPartner_ID);
+
+	/**
+	 * Get Drop Shipment Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getDropShip_BPartner_ID();
+
+	ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_C_BPartner> COLUMN_DropShip_BPartner_ID = new ModelColumn<>(I_C_PurchaseCandidate.class, "DropShip_BPartner_ID", org.compiere.model.I_C_BPartner.class);
+	String COLUMNNAME_DropShip_BPartner_ID = "DropShip_BPartner_ID";
+
+	/**
+	 * Set Drop Shipment Location / Address.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDropShip_Location_ID (int DropShip_Location_ID);
+
+	/**
+	 * Get Drop Shipment Location / Address.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getDropShip_Location_ID();
+
+	ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_C_BPartner_Location> COLUMN_DropShip_Location_ID = new ModelColumn<>(I_C_PurchaseCandidate.class, "DropShip_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
+	String COLUMNNAME_DropShip_Location_ID = "DropShip_Location_ID";
+
+	/**
+	 * Set Drop Shipment Contact.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDropShip_User_ID (int DropShip_User_ID);
+
+	/**
+	 * Get Drop Shipment Contact.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getDropShip_User_ID();
+
+	String COLUMNNAME_DropShip_User_ID = "DropShip_User_ID";
+
+	/**
 	 * Set Discount %.
 	 * Discount in percent
 	 *

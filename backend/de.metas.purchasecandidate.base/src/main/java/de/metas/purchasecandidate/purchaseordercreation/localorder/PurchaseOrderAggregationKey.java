@@ -7,6 +7,7 @@ import de.metas.mforecast.impl.ForecastLineId;
 import de.metas.organization.OrgId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
+import de.metas.user.UserId;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -62,6 +63,11 @@ public class PurchaseOrderAggregationKey implements Comparable<PurchaseOrderAggr
 	Dimension dimension;
 	String externalPurchaseOrderUrl;
 
+	boolean isDropShip;
+	@Nullable BPartnerId dropShipBPartnerId;
+	@Nullable Integer dropShipLocationRepoId;
+	@Nullable UserId dropShipUserId;
+
 	private static final Comparator<PurchaseOrderAggregationKey> COMPARATOR = Comparator.comparing(PurchaseOrderAggregationKey::getOrgId)
 			.thenComparing(PurchaseOrderAggregationKey::getWarehouseId)
 			.thenComparing(PurchaseOrderAggregationKey::getVendorId)
@@ -71,7 +77,9 @@ public class PurchaseOrderAggregationKey implements Comparable<PurchaseOrderAggr
 			.thenComparing(PurchaseOrderAggregationKey::getPoReference, Comparator.nullsFirst(Comparator.naturalOrder()))
 			.thenComparing(PurchaseOrderAggregationKey::getExternalId, Comparator.nullsFirst(Comparator.naturalOrder()))
 			.thenComparing(PurchaseOrderAggregationKey::getExternalSystemId, Comparator.nullsFirst(Comparator.naturalOrder()))
-			.thenComparing(PurchaseOrderAggregationKey::getExternalPurchaseOrderUrl, Comparator.nullsFirst(Comparator.naturalOrder()));
+			.thenComparing(PurchaseOrderAggregationKey::getExternalPurchaseOrderUrl, Comparator.nullsFirst(Comparator.naturalOrder()))
+			.thenComparing(PurchaseOrderAggregationKey::getDropShipLocationRepoId, Comparator.nullsFirst(Comparator.naturalOrder()))
+			.thenComparing(PurchaseOrderAggregationKey::getDropShipUserId, Comparator.nullsFirst(Comparator.naturalOrder()));
 
 	public static PurchaseOrderAggregationKey fromPurchaseOrderItem(@NonNull final PurchaseOrderItem purchaseOrderItem)
 	{
@@ -87,6 +95,10 @@ public class PurchaseOrderAggregationKey implements Comparable<PurchaseOrderAggr
 				.dimension(purchaseOrderItem.getDimension())
 				.externalPurchaseOrderUrl(purchaseOrderItem.getExternalPurchaseOrderUrl())
 				.poReference(purchaseOrderItem.getPOReference())
+				.isDropShip(purchaseOrderItem.isDropShip())
+				.dropShipBPartnerId(purchaseOrderItem.getDropShipBPartnerId())
+				.dropShipLocationRepoId(purchaseOrderItem.getDropShipLocationRepoId())
+				.dropShipUserId(purchaseOrderItem.getDropShipUserId())
 				.build();
 	}
 
@@ -104,6 +116,10 @@ public class PurchaseOrderAggregationKey implements Comparable<PurchaseOrderAggr
 				.forecastLineId(purchaseCandidate.getForecastLineId())
 				.dimension(purchaseCandidate.getDimension())
 				.externalPurchaseOrderUrl(purchaseCandidate.getExternalPurchaseOrderUrl())
+				.isDropShip(purchaseCandidate.isDropShip())
+				.dropShipBPartnerId(purchaseCandidate.getDropShipBPartnerId())
+				.dropShipLocationRepoId(purchaseCandidate.getDropShipLocationRepoId())
+				.dropShipUserId(purchaseCandidate.getDropShipUserId())
 				.build();
 	}
 

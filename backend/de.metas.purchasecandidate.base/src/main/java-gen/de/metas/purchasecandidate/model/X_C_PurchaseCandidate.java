@@ -207,6 +207,63 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+	public void setIsDropShip (final boolean IsDropShip)
+	{
+		set_Value (COLUMNNAME_IsDropShip, IsDropShip);
+	}
+
+	@Override
+	public boolean isDropShip()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsDropShip);
+	}
+
+	@Override
+	public void setDropShip_BPartner_ID (final int DropShip_BPartner_ID)
+	{
+		if (DropShip_BPartner_ID < 1)
+			set_Value (COLUMNNAME_DropShip_BPartner_ID, null);
+		else
+			set_Value (COLUMNNAME_DropShip_BPartner_ID, DropShip_BPartner_ID);
+	}
+
+	@Override
+	public int getDropShip_BPartner_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_DropShip_BPartner_ID);
+	}
+
+	@Override
+	public void setDropShip_Location_ID (final int DropShip_Location_ID)
+	{
+		if (DropShip_Location_ID < 1)
+			set_Value (COLUMNNAME_DropShip_Location_ID, null);
+		else
+			set_Value (COLUMNNAME_DropShip_Location_ID, DropShip_Location_ID);
+	}
+
+	@Override
+	public int getDropShip_Location_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_DropShip_Location_ID);
+	}
+
+	@Override
+	public void setDropShip_User_ID (final int DropShip_User_ID)
+	{
+		if (DropShip_User_ID < 1)
+			set_Value (COLUMNNAME_DropShip_User_ID, null);
+		else
+			set_Value (COLUMNNAME_DropShip_User_ID, DropShip_User_ID);
+	}
+
+	@Override
+	public int getDropShip_User_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_DropShip_User_ID);
+	}
+
+	@Override
 	public void setDemandReference (final String DemandReference)
 	{
 		set_Value (COLUMNNAME_DemandReference, DemandReference);

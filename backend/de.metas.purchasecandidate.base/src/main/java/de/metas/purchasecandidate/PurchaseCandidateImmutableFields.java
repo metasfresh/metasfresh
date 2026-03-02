@@ -7,6 +7,7 @@ import de.metas.mforecast.impl.ForecastLineId;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.user.UserId;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -90,4 +91,15 @@ class PurchaseCandidateImmutableFields
 
 	@Nullable
 	String externalPurchaseOrderUrl;
+
+	boolean isDropShip;
+
+	@Nullable
+	BPartnerId dropShipBPartnerId;
+
+	@Nullable
+	Integer dropShipLocationRepoId;
+
+	@Nullable
+	UserId dropShipUserId;
 }

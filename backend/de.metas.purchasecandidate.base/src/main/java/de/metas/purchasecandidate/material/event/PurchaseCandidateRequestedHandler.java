@@ -37,9 +37,11 @@ import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.mforecast.impl.ForecastLineId;
+import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
+import de.metas.user.UserId;
 import de.metas.product.Product;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
@@ -81,6 +83,7 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 
 	private final IPurchaseCandidateBL purchaseCandidateBL = Services.get(IPurchaseCandidateBL.class);
 	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	@Override
 	public Collection<Class<? extends PurchaseCandidateRequestedEvent>> getHandledEventType()
@@ -120,6 +123,33 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 				.userElementString7(event.getUserElementString7())
 				.build();
 
+		// Extract dropship info from the sales order, if present
+		boolean isDropShip = false;
+		BPartnerId dropShipBPartnerId = null;
+		Integer dropShipLocationRepoId = null;
+		UserId dropShipUserId = null;
+		if (orderAndLineIdOrNull != null)
+		{
+			final org.compiere.model.I_C_Order salesOrder = orderDAO.getById(orderAndLineIdOrNull.getOrderId());
+			if (salesOrder.isDropShip())
+			{
+				isDropShip = true;
+				if (salesOrder.getDropShip_BPartner_ID() > 0)
+				{
+					dropShipBPartnerId = BPartnerId.ofRepoId(salesOrder.getDropShip_BPartner_ID());
+					dropShipLocationRepoId = salesOrder.getDropShip_Location_ID() > 0 ? salesOrder.getDropShip_Location_ID() : null;
+					dropShipUserId = UserId.ofRepoIdOrNull(salesOrder.getDropShip_User_ID());
+				}
+				else
+				{
+					// Dropship flag set but no explicit dropship partner => use the SO's ship-to address
+					dropShipBPartnerId = BPartnerId.ofRepoId(salesOrder.getC_BPartner_ID());
+					dropShipLocationRepoId = salesOrder.getC_BPartner_Location_ID() > 0 ? salesOrder.getC_BPartner_Location_ID() : null;
+					dropShipUserId = UserId.ofRepoIdOrNull(salesOrder.getAD_User_ID());
+				}
+			}
+		}
+
 		final ZonedDateTime datePromised = TimeUtil.asZonedDateTime(materialDescriptor.getDate());
 		final PurchaseCandidate newPurchaseCandidate = PurchaseCandidate
 				.builder()
@@ -142,6 +172,10 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 				.warehouseId(materialDescriptor.getWarehouseId())
 				.forecastLineId(ForecastLineId.ofRepoIdOrNull(event.getForecastId(), event.getForecastLineId()))
 				.simulated(event.isSimulated())
+				.isDropShip(isDropShip)
+				.dropShipBPartnerId(dropShipBPartnerId)
+				.dropShipLocationRepoId(dropShipLocationRepoId)
+				.dropShipUserId(dropShipUserId)
 				.build();
 
 		purchaseCandidateBL.updateCandidatePricingDiscount(newPurchaseCandidate);

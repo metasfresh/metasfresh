@@ -388,26 +388,20 @@ public class OrderFactory
 	}
 
 	/**
-	 * Copies the delivery address from the given sales order to this purchase order's dropship fields.
-	 * Used when a purchase order is automatically generated from purchase candidates that originated from a sales order (Streckengeschäft / dropship).
+	 * Sets dropship fields on the purchase order from explicit partner/location/user IDs.
+	 * Used when dropship info is stored on the purchase candidate's aggregation key.
 	 */
-	public OrderFactory dropShipFromSalesOrder(@NonNull final org.compiere.model.I_C_Order salesOrder)
+	public OrderFactory dropShip(
+			@Nullable final BPartnerId dropShipBPartnerId,
+			final int dropShipLocationRepoId,
+			@Nullable final UserId dropShipUserId)
 	{
 		assertNotBuilt();
 		order.setIsDropShip(true);
 
-		if (salesOrder.getDropShip_BPartner_ID() > 0)
-		{
-			OrderDocumentLocationAdapterFactory
-					.deliveryLocationAdapter(order)
-					.setFromDeliveryLocation(salesOrder);
-		}
-		else
-		{
-			OrderDocumentLocationAdapterFactory
-					.deliveryLocationAdapter(order)
-					.setFromShipLocation(salesOrder);
-		}
+		order.setDropShip_BPartner_ID(BPartnerId.toRepoId(dropShipBPartnerId));
+		order.setDropShip_Location_ID(dropShipLocationRepoId > 0 ? dropShipLocationRepoId : 0);
+		order.setDropShip_User_ID(UserId.toRepoId(dropShipUserId));
 
 		try
 		{

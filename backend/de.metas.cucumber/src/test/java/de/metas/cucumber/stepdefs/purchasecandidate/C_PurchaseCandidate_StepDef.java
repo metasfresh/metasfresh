@@ -23,6 +23,8 @@
 package de.metas.cucumber.stepdefs.purchasecandidate;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.IdentifierIds_StepDefData;
@@ -70,19 +72,25 @@ public class C_PurchaseCandidate_StepDef
 	private final C_OrderLine_StepDefData orderLineTable;
 	private final M_Product_StepDefData productTable;
 	private final C_Order_StepDefData orderTable;
+	private final C_BPartner_StepDefData bpartnerTable;
+	private final C_BPartner_Location_StepDefData bpartnerLocationTable;
 
 	public C_PurchaseCandidate_StepDef(
 			@NonNull final IdentifierIds_StepDefData identifierIdsTable,
 			@NonNull final C_PurchaseCandidate_StepDefData purchaseCandidateTable,
 			@NonNull final C_OrderLine_StepDefData orderLineTable,
 			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final C_Order_StepDefData orderTable)
+			@NonNull final C_Order_StepDefData orderTable,
+			@NonNull final C_BPartner_StepDefData bpartnerTable,
+			@NonNull final C_BPartner_Location_StepDefData bpartnerLocationTable)
 	{
 		this.identifierIdsTable = identifierIdsTable;
 		this.purchaseCandidateTable = purchaseCandidateTable;
 		this.orderLineTable = orderLineTable;
 		this.productTable = productTable;
 		this.orderTable = orderTable;
+		this.bpartnerTable = bpartnerTable;
+		this.bpartnerLocationTable = bpartnerLocationTable;
 	}
 
 	@And("^no C_PurchaseCandidate found for orderLine (.*)$")
@@ -253,6 +261,23 @@ public class C_PurchaseCandidate_StepDef
 
 		row.getAsOptionalBigDecimal(I_C_PurchaseCandidate.COLUMNNAME_QtyToPurchase)
 				.ifPresent(qtyToPurchase -> assertThat(purchaseCandidateRecord.getQtyToPurchase()).isEqualTo(qtyToPurchase));
+
+		row.getAsOptionalBoolean(I_C_PurchaseCandidate.COLUMNNAME_IsDropShip)
+				.ifPresent(isDropShip -> assertThat(purchaseCandidateRecord.isDropShip())
+						.as("IsDropShip")
+						.isEqualTo(isDropShip));
+
+		row.getAsOptionalIdentifier(I_C_PurchaseCandidate.COLUMNNAME_DropShip_BPartner_ID)
+				.map(bpartnerTable::getId)
+				.ifPresent(bpartnerId -> assertThat(purchaseCandidateRecord.getDropShip_BPartner_ID())
+						.as("DropShip_BPartner_ID")
+						.isEqualTo(bpartnerId.getRepoId()));
+
+		row.getAsOptionalIdentifier(I_C_PurchaseCandidate.COLUMNNAME_DropShip_Location_ID)
+				.map(bpartnerLocationTable::getId)
+				.ifPresent(locationId -> assertThat(purchaseCandidateRecord.getDropShip_Location_ID())
+						.as("DropShip_Location_ID")
+						.isEqualTo(locationId.getRepoId()));
 	}
 
 	private void findPurchaseCandidate(final int timeoutSec, @NonNull final DataTableRow row) throws InterruptedException

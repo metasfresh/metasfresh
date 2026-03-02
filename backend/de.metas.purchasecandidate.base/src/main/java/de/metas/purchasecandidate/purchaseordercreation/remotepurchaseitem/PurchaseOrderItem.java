@@ -8,6 +8,7 @@ import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.user.UserId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGatewayInvoker;
@@ -289,5 +290,28 @@ public class PurchaseOrderItem implements PurchaseItem
 	public String getPOReference()
 	{
 		return purchaseCandidate.getPOReference();
+	}
+
+	public boolean isDropShip()
+	{
+		return purchaseCandidate.isDropShip();
+	}
+
+	@Nullable
+	public BPartnerId getDropShipBPartnerId()
+	{
+		return purchaseCandidate.getDropShipBPartnerId();
+	}
+
+	@Nullable
+	public Integer getDropShipLocationRepoId()
+	{
+		return purchaseCandidate.getDropShipLocationRepoId();
+	}
+
+	@Nullable
+	public UserId getDropShipUserId()
+	{
+		return purchaseCandidate.getDropShipUserId();
 	}
 }
