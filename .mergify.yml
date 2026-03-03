@@ -11,35 +11,31 @@
 # ops:no_auto_port           — (reserved for future use)
 # =============================================================================
 
-# Transition: "Merge Gate" is the new CI gate (added in cicd.yaml).
-# Branches that already have it use "Merge Gate"; older branches fall back
-# to "testspace-analytics". Once all active branches carry the gate job,
-# remove the testspace-analytics fallback.
+# "Merge Gate" is the CI gate — a workflow_run-based commit status set by
+# merge-gate.yaml after each cicd completion. It maps the cicd workflow
+# conclusion to success/failure. Since it runs from the default branch,
+# it fires for ALL branches automatically.
+#
+# testspace-analytics fallback removed: it could succeed even when tests
+# failed (it only checks upload, not test results), allowing broken PRs
+# to merge.
 merge_protections:
   - name: default
     if:
-      - or:
-          - check-success=Merge Gate
-          - check-success=testspace-analytics
+      - check-success=Merge Gate
     success_conditions:
-      - or:
-          - check-success=Merge Gate
-          - check-success=testspace-analytics
+      - check-success=Merge Gate
 
 queue_rules:
   - name: squash-queue
     merge_method: squash
     merge_conditions:
-      - or:
-          - check-success=Merge Gate
-          - check-success=testspace-analytics
+      - check-success=Merge Gate
 
   - name: merge-queue
     merge_method: merge
     merge_conditions:
-      - or:
-          - check-success=Merge Gate
-          - check-success=testspace-analytics
+      - check-success=Merge Gate
 
 pull_request_rules:
 
