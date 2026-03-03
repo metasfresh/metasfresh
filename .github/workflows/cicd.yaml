@@ -1895,6 +1895,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [ init, cucumber-allure-report, mobile_test, frontend_allure_report ]
     if: always() && needs.init.result == 'success'
+    permissions:
+      actions: write    # trigger reports-cleanup workflow when disk space is low
+      contents: read
     steps:
       - name: Check for report server secret
         id: check-secret
@@ -2193,6 +2196,23 @@ jobs:
           </body>
           </html>
           HTMLEOF
+
+      - name: Check disk space and trigger cleanup
+        if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true' && steps.inventory.outputs.count != '0'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          AVAIL_KB=$(ssh reports-server "df --output=avail /var/www/test-reports | tail -1 | tr -d ' '")
+          AVAIL_MB=$((AVAIL_KB / 1024))
+          AVAIL_GB=$(echo "scale=1; $AVAIL_KB / 1048576" | bc)
+          echo "Available disk space: ${AVAIL_GB} GB (${AVAIL_MB} MB)"
+
+          THRESHOLD_KB=2097152  # 2 GB
+          if [ "$AVAIL_KB" -lt "$THRESHOLD_KB" ]; then
+            echo "::warning::Disk space below 2 GB (${AVAIL_GB} GB) — triggering reports-cleanup workflow"
+            gh workflow run reports-cleanup.yml --repo "$GITHUB_REPOSITORY"
+          fi
 
       - name: Produce summary
         if: always()
