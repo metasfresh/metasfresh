@@ -79,7 +79,8 @@ public class PurchaseOrderAggregationKey implements Comparable<PurchaseOrderAggr
 			.thenComparing(PurchaseOrderAggregationKey::getExternalId, Comparator.nullsFirst(Comparator.naturalOrder()))
 			.thenComparing(PurchaseOrderAggregationKey::getExternalSystemId, Comparator.nullsFirst(Comparator.naturalOrder()))
 			.thenComparing(PurchaseOrderAggregationKey::getExternalPurchaseOrderUrl, Comparator.nullsFirst(Comparator.naturalOrder()))
-			.thenComparing(key -> BPartnerId.toRepoId(key.getDropShipBPartnerId()))
+			.thenComparing(PurchaseOrderAggregationKey::isDropShip)
+			.thenComparing(key -> key.getDropShipBPartnerId() != null ? key.getDropShipBPartnerId().getRepoId() : null, Comparator.nullsFirst(Comparator.naturalOrder()))
 			.thenComparing(key -> BPartnerLocationId.toRepoIdOrNull(key.getDropShipLocationId()), Comparator.nullsFirst(Comparator.naturalOrder()))
 			.thenComparing(PurchaseOrderAggregationKey::getDropShipUserId, Comparator.nullsFirst(Comparator.naturalOrder()));
 
