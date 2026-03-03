@@ -550,6 +550,28 @@ public class InOutDAO implements IInOutDAO
 		return toSqlQuery(query).create().stream();
 	}
 
+	@Override
+	public List<I_M_InOutLine> retrieveProcessedLinesForOrderLineId(@NonNull final OrderLineId orderLineId)
+	{
+		return retrieveProcessedLinesForOrderLineIds(Set.of(orderLineId));
+	}
+
+	@Override
+	public List<I_M_InOutLine> retrieveProcessedLinesForOrderLineIds(@NonNull final Set<OrderLineId> orderLineIds)
+	{
+		if (orderLineIds.isEmpty())
+		{
+			return List.of();
+		}
+
+		return queryBL.createQueryBuilder(I_M_InOutLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_InOutLine.COLUMN_C_OrderLine_ID, orderLineIds)
+				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_Processed, true)
+				.create()
+				.list();
+	}
+
 	private IQueryBuilder<I_M_InOut> toSqlQuery(@NonNull final InOutQuery query)
 	{
 		final IQueryBuilder<I_M_InOut> sqlQueryBuilder = queryBL.createQueryBuilder(I_M_InOut.class)

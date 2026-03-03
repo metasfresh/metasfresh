@@ -231,6 +231,23 @@ public interface I_M_QtyReservation
 	String COLUMNNAME_Qty = "Qty";
 
 	/**
+	 * Set Delivered Qty.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setQtyDelivered(BigDecimal QtyDelivered);
+
+	/**
+	 * Get Delivered Qty.
+	 */
+	BigDecimal getQtyDelivered();
+
+	ModelColumn<I_M_QtyReservation, Object> COLUMN_QtyDelivered = new ModelColumn<>(I_M_QtyReservation.class, "QtyDelivered", null);
+	String COLUMNNAME_QtyDelivered = "QtyDelivered";
+
+	/**
 	 * Set QtyTU.
 	 *
 	 * <br>Type: Quantity

@@ -148,10 +148,10 @@ public class QtyReservationAllocationContext
 					reservation.getWarehouseId(),
 					reservation.getAttributesKey());
 
-			final Quantity qty = reservation.getQty();
-			qtyByOrderLine.merge(reservation.getOrderLineId(), qty, Quantity::add);
+			final Quantity effectiveQty = reservation.getEffectiveQty();
+			qtyByOrderLine.merge(reservation.getOrderLineId(), effectiveQty, Quantity::add);
 			keyByOrderLine.put(reservation.getOrderLineId(), matchingKey);
-			remainingByKey.merge(matchingKey, qty, Quantity::add);
+			remainingByKey.merge(matchingKey, effectiveQty, Quantity::add);
 		}
 
 		for (final Map.Entry<OrderLineId, Quantity> entry : qtyByOrderLine.entrySet())

@@ -149,4 +149,8 @@ public interface IInOutDAO extends ISingletonService
 	ImmutableList<InOutId> retrieveShipmentsWithoutShipperTransportation(@NonNull Timestamp date);
 
 	Stream<I_M_InOut> retrieveByQuery(@NonNull de.metas.inout.InOutQuery query);
+
+	List<I_M_InOutLine> retrieveProcessedLinesForOrderLineId(@NonNull OrderLineId orderLineId);
+
+	List<I_M_InOutLine> retrieveProcessedLinesForOrderLineIds(@NonNull Set<OrderLineId> orderLineIds);
 }

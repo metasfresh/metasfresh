@@ -22,10 +22,12 @@ package de.metas.inoutcandidate.modelvalidator;
  * #L%
  */
 
+import de.metas.inout.InOutId;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.qty_reservation.QtyReservationService;
 import de.metas.logging.TableRecordMDC;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -33,6 +35,7 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
 import org.slf4j.MDC.MDCCloseable;
 
@@ -41,6 +44,7 @@ public class M_InOut_Shipment
 {
 	final ITrxManager trxManager = Services.get(ITrxManager.class);
 	final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL = Services.get(IShipmentScheduleInvalidateBL.class);
+	@NonNull private final QtyReservationService qtyReservationService = SpringContextHolder.instance.getBean(QtyReservationService.class);
 
 	@DocValidate(timings = {
 			ModelValidator.TIMING_AFTER_REACTIVATE,
@@ -62,8 +66,6 @@ public class M_InOut_Shipment
 
 	/**
 	 * Note: a deletion of an InOut in the GUI doesn't cause M_InOutLine's model validator to be fired
-	 *
-	 * @param shipment
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void onDelete(final I_M_InOut inoutRecord)
@@ -105,5 +107,15 @@ public class M_InOut_Shipment
 		{
 			Services.get(IShipmentScheduleBL.class).closePartiallyShipped_ShipmentSchedules(inoutRecord);
 		}
+	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE, ModelValidator.TIMING_AFTER_REACTIVATE })
+	public void updateQtyReservationDelivered(@NonNull final I_M_InOut inoutRecord)
+	{
+		if (!inoutRecord.isSOTrx())
+		{
+			return;
+		}
+		qtyReservationService.updateQtyDeliveredFromShipment(InOutId.ofRepoId(inoutRecord.getM_InOut_ID()));
 	}
 }

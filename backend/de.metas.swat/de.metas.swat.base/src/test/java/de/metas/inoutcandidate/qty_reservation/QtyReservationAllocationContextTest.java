@@ -143,6 +143,31 @@ class QtyReservationAllocationContextTest
 	}
 
 	@Test
+	void ofMethod_usesEffectiveQty_whenQtyDeliveredIsSet()
+	{
+		// Reservation: Qty=100, QtyDelivered=60 → effectiveQty=40
+		final QtyReservation reservation = QtyReservation.builder()
+				.orderLineId(OL_RESERVED_1)
+				.productId(PRODUCT_1)
+				.warehouseId(WAREHOUSE_1)
+				.attributesKey(AttributesKey.NONE)
+				.qty(Quantity.of(new BigDecimal("100"), uom))
+				.qtyDelivered(Quantity.of(new BigDecimal("60"), uom))
+				.build();
+
+		final QtyReservationAllocationContext ctx = QtyReservationAllocationContext.of(
+				com.google.common.collect.ImmutableList.of(reservation));
+
+		// The context should use effective qty (40), not the original qty (100)
+		assertThat(ctx.getMyReservedQty(OL_RESERVED_1))
+				.isEqualByComparingTo(new BigDecimal("40"));
+
+		// Non-reserved schedule should see 40 reserved by others (not 100)
+		assertThat(ctx.getReservedByOthers(OL_NOT_RESERVED, KEY_1))
+				.isEqualByComparingTo(new BigDecimal("40"));
+	}
+
+	@Test
 	void differentKeys_doNotInterfere()
 	{
 		final StockMatchingKey key2 = StockMatchingKey.of(ProductId.ofRepoId(999), WAREHOUSE_1, AttributesKey.NONE);

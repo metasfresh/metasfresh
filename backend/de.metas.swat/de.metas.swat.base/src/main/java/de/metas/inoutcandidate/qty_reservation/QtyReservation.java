@@ -22,4 +22,14 @@ public class QtyReservation
 	@NonNull WarehouseId warehouseId;
 	@NonNull AttributesKey attributesKey;
 	@NonNull Quantity qty;
+	@NonNull Quantity qtyDelivered;
+
+	/**
+	 * @return the effective (unfulfilled) reservation: {@code qty - qtyDelivered}, clamped to zero.
+	 */
+	@NonNull
+	public Quantity getEffectiveQty()
+	{
+		return qty.subtract(qtyDelivered).toZeroIfNegative();
+	}
 }

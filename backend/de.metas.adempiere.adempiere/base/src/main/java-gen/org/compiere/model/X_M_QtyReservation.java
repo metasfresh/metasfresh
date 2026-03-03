@@ -188,6 +188,19 @@ public class X_M_QtyReservation extends PO implements I_M_QtyReservation
 	}
 
 	@Override
+	public void setQtyDelivered(final BigDecimal QtyDelivered)
+	{
+		set_Value(COLUMNNAME_QtyDelivered, QtyDelivered);
+	}
+
+	@Override
+	public BigDecimal getQtyDelivered()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyDelivered);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setQtyTU(final BigDecimal QtyTU)
 	{
 		set_Value(COLUMNNAME_QtyTU, QtyTU);
