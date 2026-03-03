@@ -224,8 +224,8 @@ public class M_HU_Trace_Report_StepDef
 		scenarioProductIds.put(scenarioName, productId);
 
 		// Load standard C_DocTypes (receipt = isSOTrx='N', shipment = isSOTrx='Y')
-		final I_C_DocType receiptDocType = loadDocType("MMR");
-		final I_C_DocType shipmentDocType = loadDocType("MMS");
+		final I_C_DocType receiptDocType = loadDocType("MMR", false);
+		final I_C_DocType shipmentDocType = loadDocType("MMS", true);
 
 		// Create a VHU for the receipt trace
 		final I_M_HU receiptVhu = createVhu();
@@ -312,21 +312,28 @@ public class M_HU_Trace_Report_StepDef
 	// =====================================================================================
 
 	/**
-	 * Loads the first active C_DocType with the given DocBaseType.
+	 * Loads the first active C_DocType with the given DocBaseType and IsSOTrx flag.
+	 *
+	 * <p>Filtering by IsSOTrx is critical because metasfresh has multiple doctypes per
+	 * DocBaseType (e.g. MMR has both standard material receipt with isSOTrx='N' and
+	 * customer return receipt with isSOTrx='Y'). Section 6 of M_HU_Trace_Report
+	 * checks {@code receipt_dt.isSOTrx = 'N'} and {@code shipment_dt.isSOTrx = 'Y'}.
 	 *
 	 * @param docBaseType e.g. "MMR" (Material Receipt) or "MMS" (Material Shipment)
+	 * @param isSOTrx     true for sales transactions, false for purchase transactions
 	 */
-	private I_C_DocType loadDocType(@NonNull final String docBaseType)
+	private I_C_DocType loadDocType(@NonNull final String docBaseType, final boolean isSOTrx)
 	{
 		final I_C_DocType docType = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_DocType.class)
 				.addEqualsFilter(I_C_DocType.COLUMNNAME_DocBaseType, docBaseType)
+				.addEqualsFilter(I_C_DocType.COLUMNNAME_IsSOTrx, isSOTrx)
 				.addEqualsFilter(I_C_DocType.COLUMNNAME_IsActive, true)
 				.orderBy(I_C_DocType.COLUMNNAME_C_DocType_ID)
 				.create()
 				.first(I_C_DocType.class);
 		assertThat(docType)
-				.as("Expected at least one active C_DocType with DocBaseType='%s'", docBaseType)
+				.as("Expected at least one active C_DocType with DocBaseType='%s' and IsSOTrx='%s'", docBaseType, isSOTrx ? "Y" : "N")
 				.isNotNull();
 		return docType;
 	}
