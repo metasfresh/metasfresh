@@ -38,7 +38,7 @@ public class C_Order_ShipmentSchedule
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final @NonNull AdMessageKey ERR_NoReactivationIfNotVoidedNotReversedShipments = AdMessageKey.of("ERR_NoReactivationIfNotVoidedNotReversedShipments");
 
-	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REACTIVATE, ModelValidator.TIMING_AFTER_VOID })
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_REACTIVATE)
 	public void closeExistingScheds(@NonNull final I_C_Order orderRecord)
 	{
 		if (!isEligibleForShipmentSchedule(orderRecord))
