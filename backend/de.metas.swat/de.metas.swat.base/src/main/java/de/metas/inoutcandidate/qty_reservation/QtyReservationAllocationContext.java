@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.warehouse.WarehouseId;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -167,14 +168,7 @@ public class QtyReservationAllocationContext
 			return qtyOnHandBeforeAllocation;
 		}
 
-		final AttributesKey attributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(olAndSched.getAttributeSetInstanceId())
-				.orElse(AttributesKey.NONE);
-
-		final StockMatchingKey matchingKey = StockMatchingKey.of(
-				olAndSched.getProductId(),
-				olAndSched.getWarehouseId(),
-				attributesKey);
-
+		final StockMatchingKey matchingKey = extractMatchingKey(olAndSched);
 		final BigDecimal reservedByOthers = getReservedByOthers(orderLineId, matchingKey);
 		final BigDecimal effectiveQtyOnHand = qtyOnHandBeforeAllocation.subtract(reservedByOthers).max(BigDecimal.ZERO);
 
@@ -185,6 +179,17 @@ public class QtyReservationAllocationContext
 		}
 
 		return effectiveQtyOnHand;
+	}
+
+	private static StockMatchingKey extractMatchingKey(final @NotNull OlAndSched olAndSched)
+	{
+		final AttributesKey attributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(olAndSched.getAttributeSetInstanceId())
+				.orElse(AttributesKey.NONE);
+
+		return StockMatchingKey.of(
+				olAndSched.getProductId(),
+				olAndSched.getWarehouseId(),
+				attributesKey);
 	}
 
 	// --------------------------------------------------------------------------------------------
