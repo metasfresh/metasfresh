@@ -124,6 +124,8 @@ public class C_Order_ReceiptSchedule
 		// services
 		final IReceiptScheduleProducerFactory receiptScheduleProducerFactory = Services.get(IReceiptScheduleProducerFactory.class);
 		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+		final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
+		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 
 		//
 		// Generate receipt schedules from this order.
@@ -139,6 +141,17 @@ public class C_Order_ReceiptSchedule
 		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order);
 		for (final I_C_OrderLine orderLine : orderLines)
 		{
+			// Skip order lines that already have an active, non-closed receipt schedule.
+			// These were reopened by reopenReceiptSchedules() (which runs before this method).
+			// Running the async workpackage on them would trigger cloneOrCreateASI() in the producer,
+			// which may change the M_AttributeSetInstance_ID and shift cockpit quantities
+			// to a different storageAttributesKey.
+			final I_M_ReceiptSchedule existingSchedule = receiptScheduleDAO.retrieveForRecord(orderLine);
+			if (existingSchedule != null && existingSchedule.isActive() && !receiptScheduleBL.isClosed(existingSchedule))
+			{
+				continue;
+			}
+
 			final List<I_M_ReceiptSchedule> previousSchedules = Collections.emptyList();
 			receiptScheduleProducer.createOrUpdateReceiptSchedules(orderLine, previousSchedules);
 		}
