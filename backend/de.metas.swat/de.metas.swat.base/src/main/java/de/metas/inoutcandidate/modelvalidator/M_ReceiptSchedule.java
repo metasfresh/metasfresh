@@ -151,9 +151,7 @@ public class M_ReceiptSchedule
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void updateHeaderAggregationKey(final I_M_ReceiptSchedule sched)
 	{
-		// IsClosed=true always implies Processed=true (see ReceiptScheduleBL.close/reopen),
-		// so checking isProcessed() alone is sufficient.
-		if (sched.isProcessed())
+		if (sched.isProcessed() || sched.isIsClosed())
 		{
 			return;
 		}

@@ -23,7 +23,6 @@ package de.metas.inoutcandidate.modelvalidator;
  */
 
 import de.metas.document.exception.DocumentActionException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
@@ -37,6 +36,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
@@ -256,8 +256,9 @@ public class C_Order_ReceiptSchedule
 		{
 			final I_M_ReceiptSchedule receiptSchedule = receiptScheduleDAO.retrieveForRecord(orderLine);
 
-			// Throw exception if at least one processed receipt schedule is linked to a line of this order
-			if (receiptSchedule != null && receiptSchedule.isProcessed())
+			// Return true only for schedules processed from REAL receipt activity,
+			// not schedules that are merely "parked" (IsClosed=Y) due to PO reactivation/void.
+			if (receiptSchedule != null && receiptSchedule.isProcessed() && !receiptSchedule.isIsClosed())
 			{
 				return true;
 			}

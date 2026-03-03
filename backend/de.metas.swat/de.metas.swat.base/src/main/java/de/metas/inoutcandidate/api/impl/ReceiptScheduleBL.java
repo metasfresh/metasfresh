@@ -513,7 +513,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 		}
 
 		listeners.onBeforeReopen(receiptSchedule);
-		InterfaceWrapperHelper.refresh(receiptSchedule); // because
+		InterfaceWrapperHelper.refresh(receiptSchedule); // reload from DB because listeners may have changed the record
 
 		// Mark the receipt schedule as not closed
 		receiptSchedule.setIsClosed(false);
