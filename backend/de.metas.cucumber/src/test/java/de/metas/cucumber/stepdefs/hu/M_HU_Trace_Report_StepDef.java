@@ -399,11 +399,13 @@ public class M_HU_Trace_Report_StepDef
 		inOut.setMovementType(docType.isSOTrx() ? "C-" : "V+");
 		saveRecord(inOut);
 
-		// Force DocStatus and Processed via SQL — model validators enforce the DocAction
-		// workflow, so DocStatus='CO' set on the model object may be reset during save.
+		// Force DocStatus, Processed, and C_DocType_ID via SQL — model validators enforce
+		// the DocAction workflow and may reset DocStatus and C_DocType_ID during save.
+		// Section 6 of M_HU_Trace_Report JOINs C_DocType and checks isSOTrx, so
+		// C_DocType_ID must match the intended document type.
 		DB.executeUpdateAndThrowExceptionOnFail(
-				"UPDATE M_InOut SET DocStatus = ?, Processed = 'Y' WHERE M_InOut_ID = ?",
-				new Object[] { docStatus, inOut.getM_InOut_ID() },
+				"UPDATE M_InOut SET DocStatus = ?, Processed = 'Y', C_DocType_ID = ? WHERE M_InOut_ID = ?",
+				new Object[] { docStatus, docType.getC_DocType_ID(), inOut.getM_InOut_ID() },
 				ITrx.TRXNAME_None);
 
 		return inOut;
