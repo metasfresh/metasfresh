@@ -5,11 +5,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.pair.ImmutablePair;
 import de.metas.common.util.time.SystemTime;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.inventory.InventoryLine;
 import de.metas.handlingunits.inventory.InventoryLineHU;
 import de.metas.handlingunits.inventory.InventoryRepository;
-import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -227,6 +227,11 @@ public class HUTraceEventsServiceTests
 		vhu.setHUStatus(huStatus);
 		saveRecord(vhu);
 		return vhu;
+	}
+
+	private I_M_HU createVHU()
+	{
+		return createVHU(X_M_HU.HUSTATUS_Active);
 	}
 
 	private List<I_M_HU_Trace> retrieveAllHUTraceRecords()
@@ -462,10 +467,10 @@ public class HUTraceEventsServiceTests
 		inventoryLineRecord.setC_UOM_ID(uom.getC_UOM_ID());
 		save(inventoryLineRecord);
 
-		final InventoryService inventoryServiceMock = Mockito.mock(InventoryService.class);
-		Mockito.doReturn(inventoryLine).when(inventoryServiceMock).toInventoryLine(inventoryLineRecord);
+		final InventoryRepository inventoryRepoMock = Mockito.mock(InventoryRepository.class);
+		Mockito.doReturn(inventoryLine).when(inventoryRepoMock).toInventoryLine(inventoryLineRecord);
 
-		final HUTraceEventsService svc = new HUTraceEventsService(new HUTraceRepository(), huAccessService, inventoryServiceMock);
+		final HUTraceEventsService svc = new HUTraceEventsService(new HUTraceRepository(), huAccessService, inventoryRepoMock);
 
 		// VHU has no parent → retrieveTopLevelHuId returns its own ID
 		Mockito.doReturn(vhu.getM_HU_ID()).when(huAccessService).retrieveTopLevelHuId(Mockito.any(I_M_HU.class));
@@ -513,10 +518,10 @@ public class HUTraceEventsServiceTests
 		inventoryLineRecord.setC_UOM_ID(uom.getC_UOM_ID());
 		save(inventoryLineRecord);
 
-		final InventoryService inventoryServiceMock = Mockito.mock(InventoryService.class);
-		Mockito.doReturn(inventoryLine).when(inventoryServiceMock).toInventoryLine(inventoryLineRecord);
+		final InventoryRepository inventoryRepoMock = Mockito.mock(InventoryRepository.class);
+		Mockito.doReturn(inventoryLine).when(inventoryRepoMock).toInventoryLine(inventoryLineRecord);
 
-		final HUTraceEventsService svc = new HUTraceEventsService(new HUTraceRepository(), huAccessService, inventoryServiceMock);
+		final HUTraceEventsService svc = new HUTraceEventsService(new HUTraceRepository(), huAccessService, inventoryRepoMock);
 
 		// VHU has no parent → retrieveTopLevelHuId returns its own ID
 		Mockito.doReturn(vhu.getM_HU_ID()).when(huAccessService).retrieveTopLevelHuId(Mockito.any(I_M_HU.class));
