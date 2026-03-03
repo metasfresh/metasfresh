@@ -28,6 +28,7 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.ad.dao.IQueryBL;
+import de.metas.material.event.commons.AttributesKey;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -724,6 +725,7 @@ public class HUTraceEventsServiceTests
 		return InventoryLine.builder()
 				.orgId(OrgId.ofRepoId(10))
 				.productId(productId)
+				.storageAttributesKey(AttributesKey.NONE)
 				.locatorId(LocatorId.ofRepoId(1, 100))
 				.asiId(AttributeSetInstanceId.NONE)
 				.inventoryLineHU(inventoryLineHU)
