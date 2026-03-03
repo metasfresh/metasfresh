@@ -140,15 +140,16 @@ public class M_ReceiptSchedule_PostMaterialEvent
 			return createCreatedEvent(receiptSchedule);
 		}
 
+		final boolean justClosed = isJustClosed(receiptSchedule);
 		final boolean deleted = timing.isDelete()
 				|| ModelChangeUtil.isJustDeactivated(receiptSchedule)
-				|| isJustClosed(receiptSchedule);
+				|| justClosed;
 		if (deleted)
 		{
 			// When the receipt schedule is just closed, the M_ReceiptSchedule interceptor
 			// may have already zeroed QtyToMove (because Processed=true triggers recalculation).
 			// Use the OLD values so the event deltas correctly reverse the cockpit quantities.
-			final I_M_ReceiptSchedule scheduleForEvent = isJustClosed(receiptSchedule)
+			final I_M_ReceiptSchedule scheduleForEvent = justClosed
 					? InterfaceWrapperHelper.createOld(receiptSchedule, I_M_ReceiptSchedule.class)
 					: receiptSchedule;
 			return createDeletedEvent(scheduleForEvent);

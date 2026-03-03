@@ -114,9 +114,15 @@ public class C_Order_ReceiptSchedule
 			// pick up the stale value.
 			orderBL.reopenLine(orderLine);
 
-			// Combine reopen + QtyOrdered + ASI sync into ONE save so that the interceptor fires
-			// a single ReceiptScheduleCreatedEvent with the final (possibly updated) quantities
-			// and the correct storageAttributesKey (derived from the ASI).
+			// IMPORTANT: We bypass IReceiptScheduleBL.reopen() intentionally to combine reopen +
+			// QtyOrdered + ASI sync into ONE save. This produces exactly one ReceiptScheduleCreatedEvent
+			// with the final (possibly updated) quantities and the correct storageAttributesKey.
+			// Calling reopen() + save() would produce two events: CreatedEvent(old qty) + UpdatedEvent(delta).
+			//
+			// Bypassed listener callbacks:
+			// - onBeforeReopen: currently no-op in all known implementations
+			//   (OrderLineReceiptScheduleListener, HUReceiptScheduleListener use the default adapter)
+			// - onAfterReopen: manually replicated below (reopenLine + openDeliveryInvoiceCandidates)
 			receiptSchedule.setIsClosed(false);
 			receiptSchedule.setProcessed(false);
 			receiptSchedule.setQtyOrdered(orderLine.getQtyOrdered());

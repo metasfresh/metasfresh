@@ -479,6 +479,7 @@ Feature: Purchase order
     And set sys config boolean value false for sys config PO_AllowReactivationIfReceiptsCreated
 
   @from:cucumber
+  @Id:S0156_600
   @allure.label.epic:E0140_Purchasing
   @allure.label.feature:F00600_Purchase_Order
   @F00600
