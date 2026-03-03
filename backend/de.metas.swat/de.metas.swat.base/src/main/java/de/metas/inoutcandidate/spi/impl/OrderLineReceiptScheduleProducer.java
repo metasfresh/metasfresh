@@ -117,12 +117,19 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 
 			receiptSchedule = InterfaceWrapperHelper.newInstance(I_M_ReceiptSchedule.class, line);
 		}
+		else if (receiptScheduleBL.isClosed(receiptSchedule))
+		{
+			// Don't update a closed receipt schedule (e.g., closed due to PO reactivation/void).
+			// It will be properly reopened when the order is re-completed (via reopenReceiptSchedules).
+			// Updating it here would change the M_AttributeSetInstance_ID (via cloneOrCreateASI),
+			// causing cockpit quantities to shift to a different storageAttributesKey bucket.
+			return null;
+		}
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(receiptSchedule);
 
 		receiptSchedule.setAD_Org_ID(line.getAD_Org_ID());
 		receiptSchedule.setIsActive(true); // make sure it's active
-		receiptSchedule.setIsClosed(false); // make sure it's not closed (belt-and-suspenders for reopen-on-complete path)
 
 		//
 		// Source Document Line link
