@@ -57,14 +57,8 @@ import de.metas.inoutcandidate.spi.impl.ShipmentScheduleOrderReferenceProvider;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.material.cockpit.stock.StockRepository;
-import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.DeliveryRule;
 import de.metas.order.OrderLineId;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.keys.AttributesKeys;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.picking.job_schedule.model.PickingJobScheduleCollection;
@@ -107,6 +101,7 @@ import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -287,7 +282,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 				final BigDecimal qtyDelivered = shipmentScheduleAllocDAO.retrieveQtyDelivered(sched);
 				sched.setQtyDelivered(qtyDelivered);
-				
+
 				//
 				// QtyPickList (i.e. qtyUnconfirmedShipments) is the sum of
 				// * MovementQtys from all draft shipment lines which are pointing to shipment schedule's order line
@@ -560,35 +555,12 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			//
 			// Cap effective stock by subtracting reservations held by other order lines.
 			// The schedule record keeps the real QtyOnHand; only the allocation decision uses the capped value.
-			final BigDecimal effectiveQtyOnHand;
-			final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(sched.getC_OrderLine_ID());
-			if (reservationCtx.isEmpty())
-			{
-				effectiveQtyOnHand = qtyOnHandBeforeAllocation;
-			}
-			else
-			{
-				final AttributesKey attributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(
-						AttributeSetInstanceId.ofRepoIdOrNone(sched.getM_AttributeSetInstance_ID()))
-						.orElse(AttributesKey.NONE);
-
-				final QtyReservationAllocationContext.StockMatchingKey matchingKey = QtyReservationAllocationContext.StockMatchingKey.of(
-						productId,
-						WarehouseId.ofRepoId(sched.getM_Warehouse_ID()),
-						attributesKey);
-
-				final BigDecimal reservedByOthers = reservationCtx.getReservedByOthers(orderLineId, matchingKey);
-				effectiveQtyOnHand = qtyOnHandBeforeAllocation.subtract(reservedByOthers).max(BigDecimal.ZERO);
-
-				if (reservedByOthers.signum() > 0)
-				{
-					logger.debug("Reservation cap: rawQtyOnHand={}, reservedByOthers={}, effectiveQtyOnHand={}",
-							qtyOnHandBeforeAllocation, reservedByOthers, effectiveQtyOnHand);
-				}
-			}
+			final BigDecimal effectiveQtyOnHand = reservationCtx.reserve(olAndSched, qtyOnHandBeforeAllocation);
 
 			final CompleteStatus completeStatus = computeCompleteStatus(qtyToDeliver, effectiveQtyOnHand);
 
+			final OrderLineId orderLineId = olAndSched.getSalesOrderLineId().orElse(null);
+			
 			//
 			// Delivery rule: Force
 			if (deliveryRule.isForce())

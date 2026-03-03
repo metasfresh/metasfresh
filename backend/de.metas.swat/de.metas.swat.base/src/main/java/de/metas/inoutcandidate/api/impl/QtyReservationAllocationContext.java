@@ -4,8 +4,9 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.inoutcandidate.api.OlAndSched;
-import de.metas.order.OrderLineId;
+import de.metas.logging.LogManager;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.Getter;
@@ -13,8 +14,10 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_QtyReservation;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -31,10 +34,7 @@ import java.util.Map;
  */
 class QtyReservationAllocationContext
 {
-	private static final QtyReservationAllocationContext EMPTY = new QtyReservationAllocationContext(
-			ImmutableMap.of(),
-			new HashMap<>()
-	);
+	private static final Logger logger = LogManager.getLogger(QtyReservationAllocationContext.class);
 
 	private final ImmutableMap<OrderLineId, ReservationDetail> byOrderLine;
 	private final Map<StockMatchingKey, BigDecimal> remainingByKey;
@@ -46,6 +46,18 @@ class QtyReservationAllocationContext
 		this.byOrderLine = byOrderLine;
 		this.remainingByKey = remainingByKey;
 	}
+
+	/**
+	 * empty constructor
+	 */
+	private QtyReservationAllocationContext()
+	{
+		this.byOrderLine = ImmutableMap.of();
+		this.remainingByKey = ImmutableMap.of();
+	}
+
+	@NonNull
+	private static QtyReservationAllocationContext empty() {return new QtyReservationAllocationContext();}
 
 	boolean isEmpty()
 	{
@@ -119,7 +131,7 @@ class QtyReservationAllocationContext
 
 		if (productRepoIds.isEmpty())
 		{
-			return EMPTY;
+			return empty();
 		}
 
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -132,7 +144,7 @@ class QtyReservationAllocationContext
 
 		if (reservations.isEmpty())
 		{
-			return EMPTY;
+			return empty();
 		}
 
 		final ImmutableMap.Builder<OrderLineId, ReservationDetail> byOrderLineBuilder = ImmutableMap.builder();
@@ -167,6 +179,39 @@ class QtyReservationAllocationContext
 		}
 
 		return new QtyReservationAllocationContext(byOrderLineBuilder.build(), remainingByKey);
+	}
+
+	public BigDecimal reserve(@NonNull final OlAndSched olAndSched, @NonNull final BigDecimal qtyOnHandBeforeAllocation)
+	{
+		if (isEmpty())
+		{
+			return qtyOnHandBeforeAllocation;
+		}
+
+		final OrderLineId orderLineId = olAndSched.getSalesOrderLineId().orElse(null);
+		if (orderLineId == null)
+		{
+			return qtyOnHandBeforeAllocation;
+		}
+
+		final AttributesKey attributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(olAndSched.getAttributeSetInstanceId())
+				.orElse(AttributesKey.NONE);
+
+		final StockMatchingKey matchingKey = StockMatchingKey.of(
+				olAndSched.getProductId(),
+				olAndSched.getWarehouseId(),
+				attributesKey);
+
+		final BigDecimal reservedByOthers = getReservedByOthers(orderLineId, matchingKey);
+		final BigDecimal effectiveQtyOnHand = qtyOnHandBeforeAllocation.subtract(reservedByOthers).max(BigDecimal.ZERO);
+
+		if (reservedByOthers.signum() > 0)
+		{
+			logger.debug("Reservation cap: rawQtyOnHand={}, reservedByOthers={}, effectiveQtyOnHand={}",
+					qtyOnHandBeforeAllocation, reservedByOthers, effectiveQtyOnHand);
+		}
+
+		return effectiveQtyOnHand;
 	}
 
 	// --------------------------------------------------------------------------------------------

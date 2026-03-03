@@ -27,12 +27,14 @@ import de.metas.impexp.InputDataSourceId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.OrderLineId;
 import de.metas.order.model.I_C_Order;
 import de.metas.product.ProductId;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
@@ -42,7 +44,7 @@ import java.math.BigDecimal;
 import java.util.Optional;
 
 /**
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  *
  */
@@ -104,6 +106,11 @@ public final class OlAndSched
 		return ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
 	}
 
+	public AttributeSetInstanceId getAttributeSetInstanceId()
+	{
+		return AttributeSetInstanceId.ofRepoIdOrNone(shipmentSchedule.getM_AttributeSetInstance_ID());
+	}
+
 	public WarehouseId getWarehouseId()
 	{
 		return Services.get(IShipmentScheduleEffectiveBL.class).getWarehouseId(shipmentSchedule);
@@ -133,6 +140,11 @@ public final class OlAndSched
 	public I_M_ShipmentSchedule getSched()
 	{
 		return shipmentSchedule;
+	}
+
+	public Optional<OrderLineId> getSalesOrderLineId()
+	{
+		return OrderLineId.optionalOfRepoId(getSched().getC_OrderLine_ID());
 	}
 
 	public ShipmentScheduleId getShipmentScheduleId()
@@ -167,7 +179,7 @@ public final class OlAndSched
 	@Nullable
 	public InputDataSourceId getSalesOrderADInputDatasourceID()
 	{
-		if(!salesOrder.isPresent())
+		if (!salesOrder.isPresent())
 		{
 			return null;
 		}
