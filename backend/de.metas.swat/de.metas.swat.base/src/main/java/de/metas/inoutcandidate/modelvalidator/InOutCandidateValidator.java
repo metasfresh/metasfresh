@@ -55,6 +55,7 @@ public final class InOutCandidateValidator extends AbstractModelInterceptor
 		engine.addModelValidator(new C_BPartner_ShipmentSchedule(), client);
 
 		engine.addModelValidator(new M_ShipmentSchedule_QtyPicked(), client); // task 08123
+		engine.addModelValidator(new M_QtyReservation(), client);
 
 		engine.addModelChange(org.compiere.model.I_M_Product.Table_Name, this);
 

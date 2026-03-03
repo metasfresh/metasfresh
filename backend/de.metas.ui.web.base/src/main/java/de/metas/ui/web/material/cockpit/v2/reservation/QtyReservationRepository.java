@@ -62,7 +62,8 @@ public class QtyReservationRepository
 				.addEqualsFilter(I_M_QtyReservation.COLUMNNAME_C_OrderLine_ID, orderLineId)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.delete();
+				.stream()
+				.forEach(record -> deleteRecord(record));
 	}
 
 	public QtyTU getReservedQtyTU(@NonNull final OrderLineId orderLineId)
