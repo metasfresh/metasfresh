@@ -41,6 +41,8 @@ import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.List;
@@ -48,6 +50,7 @@ import java.util.List;
 @Validator(I_C_Order.class)
 public class C_Order_ReceiptSchedule
 {
+	private static final Logger logger = LoggerFactory.getLogger(C_Order_ReceiptSchedule.class);
 	private static final AdMessageKey ERR_NoReactivationIfReceiptsCreated = AdMessageKey.of("ERR_NoReactivationIfReceiptsCreated");
 	private static final AdMessageKey ERR_NoReactivationIfProcessedReceiptSchedules = AdMessageKey.of("ERR_NoReactivationIfProcessedReceiptSchedules");
 	private static final AdMessageKey ERR_NoVoidIfProcessedReceiptSchedules = AdMessageKey.of("ERR_NoVoidIfProcessedReceiptSchedules");
@@ -149,9 +152,21 @@ public class C_Order_ReceiptSchedule
 			final I_M_ReceiptSchedule existingSchedule = receiptScheduleDAO.retrieveForRecord(orderLine);
 			if (existingSchedule != null && existingSchedule.isActive() && !receiptScheduleBL.isClosed(existingSchedule))
 			{
+				logger.warn("*** createReceiptSchedules: SKIPPING workpackage for C_OrderLine_ID={}"
+								+ " | existing M_ReceiptSchedule_ID={}, IsActive={}, IsClosed={}, ASI_ID={}",
+						orderLine.getC_OrderLine_ID(),
+						existingSchedule.getM_ReceiptSchedule_ID(),
+						existingSchedule.isActive(),
+						existingSchedule.isIsClosed(),
+						existingSchedule.getM_AttributeSetInstance_ID());
 				continue;
 			}
 
+			logger.warn("*** createReceiptSchedules: CREATING workpackage for C_OrderLine_ID={}"
+							+ " | existingSchedule={}",
+					orderLine.getC_OrderLine_ID(),
+					existingSchedule == null ? "null" : "RS_ID=" + existingSchedule.getM_ReceiptSchedule_ID()
+							+ " IsActive=" + existingSchedule.isActive() + " IsClosed=" + existingSchedule.isIsClosed());
 			final List<I_M_ReceiptSchedule> previousSchedules = Collections.emptyList();
 			receiptScheduleProducer.createOrUpdateReceiptSchedules(orderLine, previousSchedules);
 		}

@@ -29,6 +29,8 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -61,6 +63,8 @@ import java.util.Objects;
 @Component
 public class M_ReceiptSchedule_PostMaterialEvent
 {
+	private static final Logger logger = LoggerFactory.getLogger(M_ReceiptSchedule_PostMaterialEvent.class);
+
 	private final PostMaterialEventService postMaterialEventService;
 	private final ModelProductDescriptorExtractor productDescriptorFactory;
 	private final PurchaseCandidateRepository purchaseCandidateRepository;
@@ -100,7 +104,31 @@ public class M_ReceiptSchedule_PostMaterialEvent
 			@NonNull final I_M_ReceiptSchedule schedule,
 			@NonNull final ModelChangeType timing)
 	{
+		final I_M_ReceiptSchedule oldSchedule = InterfaceWrapperHelper.createOld(schedule, I_M_ReceiptSchedule.class);
+		logger.warn("*** createAndFireEvent M_ReceiptSchedule_ID={}, timing={}"
+						+ " | IsClosed: {}→{}, Processed: {}→{}, IsActive: {}→{}"
+						+ " | QtyOrdered: {}→{}, QtyToMove: {}→{}, QtyMoved: {}→{}"
+						+ " | ASI_ID: {}→{}",
+				schedule.getM_ReceiptSchedule_ID(), timing,
+				oldSchedule.isIsClosed(), schedule.isIsClosed(),
+				oldSchedule.isProcessed(), schedule.isProcessed(),
+				oldSchedule.isActive(), schedule.isActive(),
+				oldSchedule.getQtyOrdered(), schedule.getQtyOrdered(),
+				oldSchedule.getQtyToMove(), schedule.getQtyToMove(),
+				oldSchedule.getQtyMoved(), schedule.getQtyMoved(),
+				oldSchedule.getM_AttributeSetInstance_ID(), schedule.getM_AttributeSetInstance_ID());
+
 		final AbstractReceiptScheduleEvent event = createReceiptScheduleEvent(schedule, timing);
+
+		logger.warn("*** Enqueuing event: {} | M_ReceiptSchedule_ID={}"
+						+ " | orderedQtyDelta={}, reservedQtyDelta={}"
+						+ " | event.materialDescriptor.storageAttributesKey={}, event.materialDescriptor.quantity={}",
+				event.getClass().getSimpleName(),
+				schedule.getM_ReceiptSchedule_ID(),
+				event.getOrderedQuantityDelta(),
+				event.getReservedQuantityDelta(),
+				event.getMaterialDescriptor().getStorageAttributesKey(),
+				event.getMaterialDescriptor().getQuantity());
 
 		postMaterialEventService.enqueueEventAfterNextCommit(event);
 	}
