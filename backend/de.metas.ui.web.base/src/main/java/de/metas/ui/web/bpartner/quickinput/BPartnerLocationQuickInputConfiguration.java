@@ -98,7 +98,8 @@ public class BPartnerLocationQuickInputConfiguration
 				.getValueAsId(BPartnerId.class)
 				.orElse(null);
 
-		// Fallback to main C_BPartner_ID when the specific field is empty
+		// Fallback to main C_BPartner_ID when the specific field is empty.
+		// NOTE: this class is only used for Sales/Purchase Order location quick input (see getBPartnerFieldName switch).
 		if (bpartnerId == null && !I_C_Order.COLUMNNAME_C_BPartner_ID.equals(bpartnerFieldName))
 		{
 			bpartnerId = triggeringDocument.getFieldView(I_C_Order.COLUMNNAME_C_BPartner_ID)

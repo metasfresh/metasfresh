@@ -1,7 +1,6 @@
 import { expect } from '@playwright/test';
 import { test } from '../../playwright.config';
 import { getPage, SLOW_ACTION_TIMEOUT, step } from '../utils/common';
-import { SALES_ORDER_WINDOW_ID } from '../utils/WindowIds';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
@@ -48,17 +47,66 @@ test.describe('One-time address creation', () => {
     await DashboardPage.expectVisible();
   });
 
+  /**
+   * Fill address fields and check IsOneTime inside the quick input modal.
+   * Uses modal-scoped selectors because BooleanWidget/AddressWidget
+   * operate on the global page scope, not within a modal overlay.
+   */
+  async function fillAddressInModal(modalScope, { street, postal, city }) {
+    const page = getPage();
+
+    const streetInput = modalScope
+      .locator('.form-field-Address1 input, #lookup_Address1 input')
+      .first();
+    if ((await streetInput.count()) > 0) {
+      await streetInput.fill(street);
+      await page.waitForTimeout(300);
+    }
+
+    const postalInput = modalScope
+      .locator('.form-field-Postal input, #lookup_Postal input')
+      .first();
+    if ((await postalInput.count()) > 0) {
+      await postalInput.fill(postal);
+      await page.waitForTimeout(300);
+    }
+
+    const cityInput = modalScope
+      .locator('.form-field-City input, #lookup_City input')
+      .first();
+    if ((await cityInput.count()) > 0) {
+      await cityInput.fill(city);
+      await page.waitForTimeout(300);
+    }
+
+    // Check IsOneTime checkbox — must use modal-scoped selector because
+    // BooleanWidget.setTrue() operates on global page scope and would
+    // not reliably target the checkbox inside the modal overlay.
+    const isOneTimeCheckbox = modalScope
+      .locator(
+        '#lookup_IsOneTime input[type="checkbox"], .form-field-IsOneTime input[type="checkbox"]'
+      )
+      .first();
+    if ((await isOneTimeCheckbox.count()) > 0) {
+      await isOneTimeCheckbox.evaluate((el) => {
+        if (!el.checked) el.click();
+      });
+      await page.waitForTimeout(500);
+    }
+  }
+
   test('Create one-time address from DropShip location without DropShip BPartner', async () => {
+    test.setTimeout(120000);
+
     await step(
       'Create one-time address from DropShip_Location_ID without DropShip_BPartner_ID',
       async () => {
         const page = getPage();
-        test.setTimeout(120000);
 
         // Step 1: Create a new Sales Order and select customer
         await SalesOrderPage.goto();
         await SalesOrderPage.clickNew();
-        const recordId = await SalesOrderPage.selectCustomer(
+        await SalesOrderPage.selectCustomer(
           masterdata.bpartners.CUSTOMER.bpartnerCode
         );
 
@@ -66,10 +114,9 @@ test.describe('One-time address creation', () => {
         await BooleanWidget.setTrue('IsDropShip');
         await page.waitForTimeout(1000);
 
-        // Verify DropShip fields appeared (DropShip_Location_ID should be visible)
-        const dropShipLocationField = page.locator(
-          '#lookup_DropShip_Location_ID, .form-field-DropShip_Location_ID'
-        );
+        // Verify DropShip fields appeared
+        const dropShipLocationField =
+          WidgetCommon.getFieldContainer('DropShip_Location_ID');
         await dropShipLocationField.waitFor({
           state: 'visible',
           timeout: SLOW_ACTION_TIMEOUT,
@@ -102,68 +149,24 @@ test.describe('One-time address creation', () => {
         });
         await page.waitForTimeout(1000);
 
-        // Step 7: Fill address fields inside the modal
+        // Step 7: Fill address fields and check IsOneTime inside the modal
         const modalScope = page.locator('.panel-modal').first();
+        await fillAddressInModal(modalScope, {
+          street: 'Test Street 123',
+          postal: '12345',
+          city: 'Test City',
+        });
 
-        // Fill street (Address1)
-        const streetInput = modalScope
-          .locator('.form-field-Address1 input, #lookup_Address1 input')
-          .first();
-        if ((await streetInput.count()) > 0) {
-          await streetInput.fill('Test Street 123');
-          await page.waitForTimeout(300);
-        }
-
-        // Fill postal code
-        const postalInput = modalScope
-          .locator('.form-field-Postal input, #lookup_Postal input')
-          .first();
-        if ((await postalInput.count()) > 0) {
-          await postalInput.fill('12345');
-          await page.waitForTimeout(300);
-        }
-
-        // Fill city
-        const cityInput = modalScope
-          .locator('.form-field-City input, #lookup_City input')
-          .first();
-        if ((await cityInput.count()) > 0) {
-          await cityInput.fill('Test City');
-          await page.waitForTimeout(300);
-        }
-
-        // Step 8: Check IsOneTime checkbox inside the modal
-        const isOneTimeCheckbox = modalScope
-          .locator(
-            '#lookup_IsOneTime input[type="checkbox"], .form-field-IsOneTime input[type="checkbox"]'
-          )
-          .first();
-        if ((await isOneTimeCheckbox.count()) > 0) {
-          await isOneTimeCheckbox.evaluate((el) => {
-            if (!el.checked) el.click();
-          });
-          await page.waitForTimeout(500);
-        }
-
-        // Step 9: Click "Done" button to submit the new location
+        // Step 8: Click "Done" button to submit the new location
         // For window-type modals, the "Done" button has data-testid="process-modal-cancel-button"
         const doneButton = page.getByTestId('process-modal-cancel-button');
         await doneButton.waitFor({
           state: 'visible',
           timeout: SLOW_ACTION_TIMEOUT,
         });
-
-        // Intercept API responses to verify no 500 error
-        const responsePromise = page.waitForResponse(
-          (response) =>
-            response.url().includes('/rest/api/window') &&
-            response.url().includes('NEW'),
-          { timeout: SLOW_ACTION_TIMEOUT }
-        );
-
         await doneButton.click();
 
-        // Step 10: Verify modal closes successfully (no HTTP 500)
+        // Step 9: Verify modal closes successfully (no HTTP 500)
         await modal.waitFor({
           state: 'detached',
           timeout: SLOW_ACTION_TIMEOUT,
@@ -173,7 +176,7 @@ test.describe('One-time address creation', () => {
         await WidgetCommon.waitForSaveComplete();
         await page.waitForTimeout(2000);
 
-        // Step 11: Verify DropShip_Location_ID is now populated
+        // Step 10: Verify DropShip_Location_ID is now populated
         const dropShipLocationValue = await dropShipLocationField
           .locator('.lookup-widget-value, .input-field')
           .first()
@@ -182,12 +185,10 @@ test.describe('One-time address creation', () => {
 
         console.log('DropShip_Location_ID value:', dropShipLocationValue);
 
-        // Step 12: Verify DropShip_BPartner_ID was auto-filled by the interceptor
-        const dropShipBPartnerField = page.locator(
-          '#lookup_DropShip_BPartner_ID, .form-field-DropShip_BPartner_ID'
-        );
+        // Step 11: Verify DropShip_BPartner_ID was auto-filled by the interceptor
+        const dropShipBPartnerField =
+          WidgetCommon.getFieldContainer('DropShip_BPartner_ID');
 
-        // The interceptor should have auto-filled DropShip_BPartner_ID from C_BPartner_ID
         const bpartnerValue = await dropShipBPartnerField
           .locator('.lookup-widget-value, .input-field')
           .first()
@@ -195,30 +196,32 @@ test.describe('One-time address creation', () => {
           .catch(() => '');
 
         console.log('DropShip_BPartner_ID value:', bpartnerValue);
-        // It should contain the customer name (auto-filled from C_BPartner_ID)
-        expect(bpartnerValue.length).toBeGreaterThan(0);
+        // Should contain the customer code (auto-filled from C_BPartner_ID)
+        expect(bpartnerValue).toContain(
+          masterdata.bpartners.CUSTOMER.bpartnerCode
+        );
       }
     );
   });
 
   test('Create one-time address from main location field', async () => {
+    test.setTimeout(120000);
+
     await step(
       'Create one-time address from C_BPartner_Location_ID',
       async () => {
         const page = getPage();
-        test.setTimeout(120000);
 
         // Step 1: Create a new Sales Order and select customer
         await SalesOrderPage.goto();
         await SalesOrderPage.clickNew();
-        const recordId = await SalesOrderPage.selectCustomer(
+        await SalesOrderPage.selectCustomer(
           masterdata.bpartners.CUSTOMER.bpartnerCode
         );
 
         // Step 2: Click on C_BPartner_Location_ID input to open dropdown
-        const locationField = page.locator(
-          '#lookup_C_BPartner_Location_ID, .form-field-C_BPartner_Location_ID'
-        );
+        const locationField =
+          WidgetCommon.getFieldContainer('C_BPartner_Location_ID');
         await locationField.waitFor({
           state: 'visible',
           timeout: SLOW_ACTION_TIMEOUT,
@@ -248,47 +251,15 @@ test.describe('One-time address creation', () => {
         });
         await page.waitForTimeout(1000);
 
-        // Step 5: Fill address fields inside the modal
+        // Step 5: Fill address fields and check IsOneTime inside the modal
         const modalScope = page.locator('.panel-modal').first();
+        await fillAddressInModal(modalScope, {
+          street: 'Main Street 456',
+          postal: '54321',
+          city: 'Main City',
+        });
 
-        const streetInput = modalScope
-          .locator('.form-field-Address1 input, #lookup_Address1 input')
-          .first();
-        if ((await streetInput.count()) > 0) {
-          await streetInput.fill('Main Street 456');
-          await page.waitForTimeout(300);
-        }
-
-        const postalInput = modalScope
-          .locator('.form-field-Postal input, #lookup_Postal input')
-          .first();
-        if ((await postalInput.count()) > 0) {
-          await postalInput.fill('54321');
-          await page.waitForTimeout(300);
-        }
-
-        const cityInput = modalScope
-          .locator('.form-field-City input, #lookup_City input')
-          .first();
-        if ((await cityInput.count()) > 0) {
-          await cityInput.fill('Main City');
-          await page.waitForTimeout(300);
-        }
-
-        // Step 6: Check IsOneTime checkbox inside the modal
-        const isOneTimeCheckbox = modalScope
-          .locator(
-            '#lookup_IsOneTime input[type="checkbox"], .form-field-IsOneTime input[type="checkbox"]'
-          )
-          .first();
-        if ((await isOneTimeCheckbox.count()) > 0) {
-          await isOneTimeCheckbox.evaluate((el) => {
-            if (!el.checked) el.click();
-          });
-          await page.waitForTimeout(500);
-        }
-
-        // Step 7: Click "Done" button
+        // Step 6: Click "Done" button
         const doneButton = page.getByTestId('process-modal-cancel-button');
         await doneButton.waitFor({
           state: 'visible',
@@ -296,7 +267,7 @@ test.describe('One-time address creation', () => {
         });
         await doneButton.click();
 
-        // Step 8: Verify modal closes successfully (no error)
+        // Step 7: Verify modal closes successfully (no error)
         await modal.waitFor({
           state: 'detached',
           timeout: SLOW_ACTION_TIMEOUT,
@@ -305,7 +276,7 @@ test.describe('One-time address creation', () => {
         await WidgetCommon.waitForSaveComplete();
         await page.waitForTimeout(2000);
 
-        // Step 9: Verify C_BPartner_Location_ID is populated
+        // Step 8: Verify C_BPartner_Location_ID is populated
         const locationValue = await locationField
           .locator('.lookup-widget-value, .input-field')
           .first()
@@ -313,7 +284,7 @@ test.describe('One-time address creation', () => {
           .catch(() => '');
 
         console.log('C_BPartner_Location_ID value:', locationValue);
-        expect(locationValue.length).toBeGreaterThan(0);
+        expect(locationValue.trim().length).toBeGreaterThan(0);
       }
     );
   });
