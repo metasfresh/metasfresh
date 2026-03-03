@@ -93,6 +93,7 @@ public class M_ReceiptSchedule_PostMaterialEvent
 			I_M_ReceiptSchedule.COLUMNNAME_M_AttributeSetInstance_ID,
 			I_M_ReceiptSchedule.COLUMNNAME_MovementDate, // this is the actual order's datePromised
 			I_M_ReceiptSchedule.COLUMNNAME_IsActive, /* IsActive=N shall be threaded like a deletion */
+			I_M_ReceiptSchedule.COLUMNNAME_IsClosed, /* IsClosed=Y shall be treated like a deletion (lowers supply to already-received qty) */
 			I_M_ReceiptSchedule.COLUMNNAME_Processed,
 			I_M_ReceiptSchedule.COLUMNNAME_QtyOrderedOverUnder})
 	public void createAndFireEvent(
@@ -109,19 +110,45 @@ public class M_ReceiptSchedule_PostMaterialEvent
 			@NonNull final I_M_ReceiptSchedule receiptSchedule,
 			@NonNull final ModelChangeType timing)
 	{
-		final boolean created = timing.isNew() || ModelChangeUtil.isJustActivated(receiptSchedule);
+		final boolean created = timing.isNew()
+				|| ModelChangeUtil.isJustActivated(receiptSchedule)
+				|| isJustReopened(receiptSchedule);
 		if (created)
 		{
 			return createCreatedEvent(receiptSchedule);
 		}
 
-		final boolean deleted = timing.isDelete() || ModelChangeUtil.isJustDeactivated(receiptSchedule);
+		final boolean deleted = timing.isDelete()
+				|| ModelChangeUtil.isJustDeactivated(receiptSchedule)
+				|| isJustClosed(receiptSchedule);
 		if (deleted)
 		{
 			return createDeletedEvent(receiptSchedule);
 		}
 
 		return createUpdatedEvent(receiptSchedule);
+	}
+
+	/** IsClosed changed from false to true — treat as deletion from material dispo perspective (lowers supply to already-received qty). */
+	private static boolean isJustClosed(@NonNull final I_M_ReceiptSchedule receiptSchedule)
+	{
+		if (!receiptSchedule.isIsClosed())
+		{
+			return false;
+		}
+		final I_M_ReceiptSchedule old = InterfaceWrapperHelper.createOld(receiptSchedule, I_M_ReceiptSchedule.class);
+		return !old.isIsClosed();
+	}
+
+	/** IsClosed changed from true to false — treat as creation from material dispo perspective (restores supply). */
+	private static boolean isJustReopened(@NonNull final I_M_ReceiptSchedule receiptSchedule)
+	{
+		if (receiptSchedule.isIsClosed())
+		{
+			return false;
+		}
+		final I_M_ReceiptSchedule old = InterfaceWrapperHelper.createOld(receiptSchedule, I_M_ReceiptSchedule.class);
+		return old.isIsClosed();
 	}
 
 	private AbstractReceiptScheduleEvent createCreatedEvent(
