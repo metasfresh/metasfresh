@@ -92,9 +92,25 @@ public class BPartnerLocationQuickInputConfiguration
 
 		final String bpartnerFieldName = getBPartnerFieldName(request.getTriggeringField());
 		final Document triggeringDocument = documentCollection.getDocumentReadonly(request.getTriggeringDocumentPath());
-		return triggeringDocument.getFieldView(bpartnerFieldName)
+
+		// Try the specific BPartner field first (e.g., DropShip_BPartner_ID)
+		BPartnerId bpartnerId = triggeringDocument.getFieldView(bpartnerFieldName)
 				.getValueAsId(BPartnerId.class)
-				.orElseThrow(() -> new AdempiereException("No bpartner ID found"));
+				.orElse(null);
+
+		// Fallback to main C_BPartner_ID when the specific field is empty
+		if (bpartnerId == null && !I_C_Order.COLUMNNAME_C_BPartner_ID.equals(bpartnerFieldName))
+		{
+			bpartnerId = triggeringDocument.getFieldView(I_C_Order.COLUMNNAME_C_BPartner_ID)
+					.getValueAsId(BPartnerId.class)
+					.orElse(null);
+		}
+
+		if (bpartnerId == null)
+		{
+			throw new AdempiereException("No bpartner ID found");
+		}
+		return bpartnerId;
 	}
 
 	@NonNull

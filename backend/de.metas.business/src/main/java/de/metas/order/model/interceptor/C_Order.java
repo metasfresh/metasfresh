@@ -512,9 +512,35 @@ public class C_Order
 			return;
 		}
 
+		// Auto-fill DropShip_BPartner_ID from C_BPartner_ID when location is set but BPartner is empty
+		if (order.getDropShip_BPartner_ID() <= 0 && order.getC_BPartner_ID() > 0)
+		{
+			order.setDropShip_BPartner_ID(order.getC_BPartner_ID());
+		}
+
 		orderBL.setPriceList(order);
 
 		orderBL.setShipperId(order);
+	}
+
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE,
+	}, ifColumnsChanged = {
+			I_C_Order.COLUMNNAME_HandOver_Location_ID
+	})
+	public void onHandOverLocation(final I_C_Order order)
+	{
+		if (order.getHandOver_Location_ID() <= 0)
+		{
+			return;
+		}
+
+		// Auto-fill HandOver_Partner_ID from C_BPartner_ID when location is set but partner is empty
+		if (order.getHandOver_Partner_ID() <= 0 && order.getC_BPartner_ID() > 0)
+		{
+			order.setHandOver_Partner_ID(order.getC_BPartner_ID());
+		}
 	}
 
 	@ModelChange(timings = {
