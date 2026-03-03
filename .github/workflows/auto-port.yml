@@ -158,6 +158,28 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
+          # -----------------------------------------------------------
+          # Helper: detect DDL/migration script changes in the merge diff.
+          # Sets HAS_DDL=true and DDL_FILES if SQL migration or DDL
+          # reference files are part of the diff vs the target branch.
+          # When DDL changes are present, auto-merge labels are omitted
+          # because a human must verify that migration scripts are correct
+          # for the target branch's DB schema.
+          # -----------------------------------------------------------
+          detect_ddl_changes() {
+            DDL_FILES=$(git diff --name-only "origin/$TARGET"..HEAD -- \
+              '*/sql/postgresql/system/' \
+              '*/sql/postgresql/ddl/' \
+            | head -50)
+            if [[ -n "$DDL_FILES" ]]; then
+              HAS_DDL=true
+              DDL_COUNT=$(echo "$DDL_FILES" | wc -l)
+              echo "::warning::Found $DDL_COUNT DDL/migration file(s) — auto-merge disabled, human review required"
+            else
+              HAS_DDL=false
+            fi
+          }
+
           if [[ -n "$EXISTING_PR" ]]; then
             # Fetch current remote state of merge branch for force-with-lease protection
             git fetch origin "$MERGE_BRANCH" || true
@@ -167,13 +189,34 @@ jobs:
             if git merge "origin/$SOURCE" --no-edit; then
               git push --force-with-lease origin "$MERGE_BRANCH"
 
-              # Ensure auto-merge labels are present (may be missing on pre-existing manual PRs)
+              detect_ddl_changes
+
               gh label create "ops:auto_ported" --color "0075ca" --description "PR auto-created by auto-port workflow" 2>/dev/null || true
-              gh pr edit "$EXISTING_PR" \
-                --add-label "ops:auto_merge_commit" \
-                --add-label "ops:without_review_approval" \
-                --add-label "ops:auto_ported"
-              echo "Updated merge branch and labels for existing PR #$EXISTING_PR"
+
+              if [[ "$HAS_DDL" == "true" ]]; then
+                # DDL changes: remove auto-merge labels (may exist from previous non-DDL update)
+                gh pr edit "$EXISTING_PR" \
+                  --remove-label "ops:auto_merge_commit" \
+                  --remove-label "ops:without_review_approval" \
+                  --add-label "ops:auto_ported" 2>/dev/null || true
+
+                # Post/update review comment
+                DDL_COMMENT="## ⚠️ DDL/migration changes detected — manual review required"
+                DDL_COMMENT="${DDL_COMMENT}"$'\n\n'"This auto-port merge contains SQL migration scripts or DDL reference file changes."
+                DDL_COMMENT="${DDL_COMMENT}"$'\n'"Auto-merge has been **disabled**. A developer must verify that the migration scripts are correct for \`${TARGET}\`'s database schema before merging."
+                DDL_COMMENT="${DDL_COMMENT}"$'\n\n'"<details><summary>Changed DDL/migration files</summary>"$'\n\n'"\`\`\`"$'\n'"${DDL_FILES}"$'\n'"\`\`\`"$'\n'"</details>"
+                gh pr comment "$EXISTING_PR" --body "$DDL_COMMENT"
+
+                echo "Removed auto-merge labels and posted DDL review comment on PR #$EXISTING_PR"
+                LABEL_INFO="\`ops:auto_ported\` only (DDL review needed)"
+              else
+                gh pr edit "$EXISTING_PR" \
+                  --add-label "ops:auto_merge_commit" \
+                  --add-label "ops:without_review_approval" \
+                  --add-label "ops:auto_ported"
+                echo "Updated merge branch and labels for existing PR #$EXISTING_PR"
+                LABEL_INFO="\`ops:auto_merge_commit\`, \`ops:without_review_approval\`, \`ops:auto_ported\`"
+              fi
 
               # Step summary
               {
@@ -185,7 +228,10 @@ jobs:
                 echo "| Target | \`$TARGET\` |"
                 echo "| Merge branch | \`$MERGE_BRANCH\` |"
                 echo "| Existing PR | #$EXISTING_PR |"
-                echo "| Action | Updated merge branch and ensured auto-merge labels |"
+                echo "| Labels | $LABEL_INFO |"
+                if [[ "$HAS_DDL" == "true" ]]; then
+                  echo "| ⚠️ DDL changes | $DDL_COUNT file(s) — auto-merge disabled |"
+                fi
               } >> "$GITHUB_STEP_SUMMARY"
             else
               git merge --abort
@@ -212,20 +258,43 @@ jobs:
               # (branch was pushed but PR creation failed)
               git push --force origin "$MERGE_BRANCH"
 
-              # Ensure labels exist
+              detect_ddl_changes
+
               gh label create "ops:auto_ported" --color "0075ca" --description "PR auto-created by auto-port workflow" 2>/dev/null || true
 
-              PR_BODY="Automatic merge of \`${SOURCE}\` into \`${TARGET}\`."
-              PR_BODY="${PR_BODY}"$'\n\n'"Created by the auto-port workflow."
+              if [[ "$HAS_DDL" == "true" ]]; then
+                # DDL changes: create PR WITHOUT auto-merge labels
+                PR_BODY="Automatic merge of \`${SOURCE}\` into \`${TARGET}\`."
+                PR_BODY="${PR_BODY}"$'\n\n'"⚠️ **DDL/migration changes detected** — auto-merge disabled."
+                PR_BODY="${PR_BODY}"$'\n'"A developer must verify that the migration scripts are correct for \`${TARGET}\`'s database schema before merging."
+                PR_BODY="${PR_BODY}"$'\n\n'"<details><summary>Changed DDL/migration files</summary>"$'\n\n'"\`\`\`"$'\n'"${DDL_FILES}"$'\n'"\`\`\`"$'\n'"</details>"
+                PR_BODY="${PR_BODY}"$'\n\n'"Created by the auto-port workflow."
 
-              PR_URL=$(gh pr create \
-                --base "$TARGET" \
-                --head "$MERGE_BRANCH" \
-                --title "merge/${SOURCE}-to-${TARGET}" \
-                --label "ops:auto_merge_commit" \
-                --label "ops:without_review_approval" \
-                --label "ops:auto_ported" \
-                --body "$PR_BODY")
+                PR_URL=$(gh pr create \
+                  --base "$TARGET" \
+                  --head "$MERGE_BRANCH" \
+                  --title "merge/${SOURCE}-to-${TARGET}" \
+                  --label "ops:auto_ported" \
+                  --body "$PR_BODY")
+
+                LABEL_INFO="\`ops:auto_ported\` only (DDL review needed)"
+              else
+                # No DDL changes: create PR with auto-merge labels
+                PR_BODY="Automatic merge of \`${SOURCE}\` into \`${TARGET}\`."
+                PR_BODY="${PR_BODY}"$'\n\n'"Created by the auto-port workflow."
+
+                PR_URL=$(gh pr create \
+                  --base "$TARGET" \
+                  --head "$MERGE_BRANCH" \
+                  --title "merge/${SOURCE}-to-${TARGET}" \
+                  --label "ops:auto_merge_commit" \
+                  --label "ops:without_review_approval" \
+                  --label "ops:auto_ported" \
+                  --body "$PR_BODY")
+
+                LABEL_INFO="\`ops:auto_merge_commit\`, \`ops:without_review_approval\`, \`ops:auto_ported\`"
+              fi
+
               echo "Created merge PR: $MERGE_BRANCH → $TARGET"
 
               # Step summary
@@ -238,7 +307,10 @@ jobs:
                 echo "| Target | \`$TARGET\` |"
                 echo "| Merge branch | \`$MERGE_BRANCH\` |"
                 echo "| PR | $PR_URL |"
-                echo "| Labels | \`ops:auto_merge_commit\`, \`ops:without_review_approval\`, \`ops:auto_ported\` |"
+                echo "| Labels | $LABEL_INFO |"
+                if [[ "$HAS_DDL" == "true" ]]; then
+                  echo "| ⚠️ DDL changes | $DDL_COUNT file(s) — auto-merge disabled |"
+                fi
               } >> "$GITHUB_STEP_SUMMARY"
             else
               git merge --abort
