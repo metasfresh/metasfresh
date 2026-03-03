@@ -57,7 +57,14 @@ import de.metas.inoutcandidate.spi.impl.ShipmentScheduleOrderReferenceProvider;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.material.cockpit.stock.StockRepository;
+import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.DeliveryRule;
+import de.metas.order.OrderLineId;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.picking.job_schedule.model.PickingJobScheduleCollection;
@@ -491,10 +498,18 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		final ShipmentScheduleQtyOnHandStorage qtyOnHands = shipmentScheduleQtyOnHandStorageFactory.ofOlAndScheds(lines);
 
 		//
+		// Load qty-reservations so that non-reserved schedules only see unreserved stock
+		final QtyReservationAllocationContext reservationCtx = QtyReservationAllocationContext.load(lines);
+		if (!reservationCtx.isEmpty())
+		{
+			logger.debug("Loaded reservation context for {} order lines", lines.size());
+		}
+
+		//
 		// Iterate and try to allocate the QtyOnHand
 		for (final OlAndSched olAndSched : lines)
 		{
-			processSingleOlAndSched(olAndSched, shipmentSchedulesDuringUpdate, qtyOnHands);
+			processSingleOlAndSched(olAndSched, shipmentSchedulesDuringUpdate, qtyOnHands, reservationCtx);
 		}
 		return shipmentSchedulesDuringUpdate;
 	} // generate
@@ -502,7 +517,8 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	private void processSingleOlAndSched(
 			final @NonNull OlAndSched olAndSched,
 			final @NonNull ShipmentSchedulesDuringUpdate shipmentSchedulesDuringUpdate,
-			final @NonNull ShipmentScheduleQtyOnHandStorage shipmentScheduleQtyOnHandStorage)
+			final @NonNull ShipmentScheduleQtyOnHandStorage shipmentScheduleQtyOnHandStorage,
+			final @NonNull QtyReservationAllocationContext reservationCtx)
 	{
 		try (final MDCCloseable ignored = ShipmentSchedulesMDC.putShipmentScheduleId(olAndSched.getShipmentScheduleId()))
 		{
@@ -541,7 +557,37 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			logger.debug("totalQtyAvailable={} from storages={}", qtyOnHandBeforeAllocation, storages);
 			sched.setQtyOnHand(qtyOnHandBeforeAllocation);
 
-			final CompleteStatus completeStatus = computeCompleteStatus(qtyToDeliver, qtyOnHandBeforeAllocation);
+			//
+			// Cap effective stock by subtracting reservations held by other order lines.
+			// The schedule record keeps the real QtyOnHand; only the allocation decision uses the capped value.
+			final BigDecimal effectiveQtyOnHand;
+			final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(sched.getC_OrderLine_ID());
+			if (reservationCtx.isEmpty())
+			{
+				effectiveQtyOnHand = qtyOnHandBeforeAllocation;
+			}
+			else
+			{
+				final AttributesKey attributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(
+						AttributeSetInstanceId.ofRepoIdOrNone(sched.getM_AttributeSetInstance_ID()))
+						.orElse(AttributesKey.NONE);
+
+				final QtyReservationAllocationContext.StockMatchingKey matchingKey = QtyReservationAllocationContext.StockMatchingKey.of(
+						productId,
+						WarehouseId.ofRepoId(sched.getM_Warehouse_ID()),
+						attributesKey);
+
+				final BigDecimal reservedByOthers = reservationCtx.getReservedByOthers(orderLineId, matchingKey);
+				effectiveQtyOnHand = qtyOnHandBeforeAllocation.subtract(reservedByOthers).max(BigDecimal.ZERO);
+
+				if (reservedByOthers.signum() > 0)
+				{
+					logger.debug("Reservation cap: rawQtyOnHand={}, reservedByOthers={}, effectiveQtyOnHand={}",
+							qtyOnHandBeforeAllocation, reservedByOthers, effectiveQtyOnHand);
+				}
+			}
+
+			final CompleteStatus completeStatus = computeCompleteStatus(qtyToDeliver, effectiveQtyOnHand);
 
 			//
 			// Delivery rule: Force
@@ -554,6 +600,8 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 						true, // force
 						completeStatus,
 						shipmentSchedulesDuringUpdate);
+
+				consumeReservationAfterAllocation(reservationCtx, orderLineId, qtyToDeliver);
 			}
 			//
 			// Delivery rule: Complete Order/Line or Availability or Manual
@@ -561,11 +609,11 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 					|| deliveryRule.isAvailability()
 					|| deliveryRule.isManual())
 			{
-				if (qtyOnHandBeforeAllocation.signum() > 0 || qtyToDeliver.signum() < 0)
+				if (effectiveQtyOnHand.signum() > 0 || qtyToDeliver.signum() < 0)
 				{
 					//
 					// if there is anything at all to deliver, create a new inOutLine
-					final BigDecimal qtyToDeliverEffective = qtyToDeliver.min(qtyOnHandBeforeAllocation);
+					final BigDecimal qtyToDeliverEffective = qtyToDeliver.min(effectiveQtyOnHand);
 
 					// we invoke createLine even if ruleComplete is true and fullLine is false,
 					// because we want the quantity to be allocated.
@@ -577,11 +625,13 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 							false, // force
 							completeStatus,
 							shipmentSchedulesDuringUpdate);
+
+					consumeReservationAfterAllocation(reservationCtx, orderLineId, qtyToDeliverEffective);
 				}
 				else
 				{
-					logger.debug("No qtyOnHand to deliver[SKIP] - OnHand={}, ToDeliver={}, FullLine={}",
-							qtyOnHandBeforeAllocation, qtyToDeliver, completeStatus);
+					logger.debug("No qtyOnHand to deliver[SKIP] - OnHand={}, effectiveOnHand={}, ToDeliver={}, FullLine={}",
+							qtyOnHandBeforeAllocation, effectiveQtyOnHand, qtyToDeliver, completeStatus);
 				}
 			}
 			//
@@ -590,9 +640,21 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			{
 				throw new AdempiereException("Unsupported delivery rule: " + deliveryRule)
 						.setParameter("qtyOnHandBeforeAllocation", qtyOnHandBeforeAllocation)
+						.setParameter("effectiveQtyOnHand", effectiveQtyOnHand)
 						.setParameter("qtyToDeliver", qtyToDeliver)
 						.appendParametersToMessage();
 			}
+		}
+	}
+
+	private static void consumeReservationAfterAllocation(
+			@NonNull final QtyReservationAllocationContext reservationCtx,
+			@Nullable final OrderLineId orderLineId,
+			@NonNull final BigDecimal allocatedQty)
+	{
+		if (!reservationCtx.isEmpty() && orderLineId != null && allocatedQty.signum() > 0)
+		{
+			reservationCtx.consumeReservation(orderLineId, allocatedQty);
 		}
 	}
 
