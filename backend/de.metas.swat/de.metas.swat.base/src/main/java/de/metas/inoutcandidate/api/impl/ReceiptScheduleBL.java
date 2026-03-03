@@ -518,12 +518,14 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 		// Mark the receipt schedule as not closed
 		receiptSchedule.setIsClosed(false);
 		receiptSchedule.setProcessed(false);
+
 		InterfaceWrapperHelper.save(receiptSchedule);
 
 		// this is already called by a model validator when the receipt schedule is saved
 		// Services.get(IReceiptScheduleQtysBL.class).onReceiptScheduleChanged(receiptSchedule);
 
 		listeners.onAfterReopen(receiptSchedule);
+
 		InterfaceWrapperHelper.save(receiptSchedule);
 	}
 

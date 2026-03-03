@@ -109,7 +109,7 @@ public class ReceiptScheduleEventHandler
 			@NonNull final MainDataRecordIdentifier identifier,
 			@NonNull final ZoneId timeZone)
 	{
-		logger.warn("*** cockpit ReceiptScheduleEventHandler: event={}, receiptScheduleId={}"
+		logger.debug("ReceiptScheduleEventHandler: event={}, receiptScheduleId={}"
 						+ " | orderedQtyDelta={}, reservedQtyDelta={}"
 						+ " | materialDescriptor.qty={}, reservedQty={}"
 						+ " | identifier={}",

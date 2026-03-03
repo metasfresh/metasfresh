@@ -104,31 +104,25 @@ public class M_ReceiptSchedule_PostMaterialEvent
 			@NonNull final I_M_ReceiptSchedule schedule,
 			@NonNull final ModelChangeType timing)
 	{
-		final I_M_ReceiptSchedule oldSchedule = InterfaceWrapperHelper.createOld(schedule, I_M_ReceiptSchedule.class);
-		logger.warn("*** createAndFireEvent M_ReceiptSchedule_ID={}, timing={}"
-						+ " | IsClosed: {}→{}, Processed: {}→{}, IsActive: {}→{}"
-						+ " | QtyOrdered: {}→{}, QtyToMove: {}→{}, QtyMoved: {}→{}"
-						+ " | ASI_ID: {}→{}",
-				schedule.getM_ReceiptSchedule_ID(), timing,
-				oldSchedule.isIsClosed(), schedule.isIsClosed(),
-				oldSchedule.isProcessed(), schedule.isProcessed(),
-				oldSchedule.isActive(), schedule.isActive(),
-				oldSchedule.getQtyOrdered(), schedule.getQtyOrdered(),
-				oldSchedule.getQtyToMove(), schedule.getQtyToMove(),
-				oldSchedule.getQtyMoved(), schedule.getQtyMoved(),
-				oldSchedule.getM_AttributeSetInstance_ID(), schedule.getM_AttributeSetInstance_ID());
-
 		final AbstractReceiptScheduleEvent event = createReceiptScheduleEvent(schedule, timing);
 
-		logger.warn("*** Enqueuing event: {} | M_ReceiptSchedule_ID={}"
-						+ " | orderedQtyDelta={}, reservedQtyDelta={}"
-						+ " | event.materialDescriptor.storageAttributesKey={}, event.materialDescriptor.quantity={}",
-				event.getClass().getSimpleName(),
-				schedule.getM_ReceiptSchedule_ID(),
-				event.getOrderedQuantityDelta(),
-				event.getReservedQuantityDelta(),
-				event.getMaterialDescriptor().getStorageAttributesKey(),
-				event.getMaterialDescriptor().getQuantity());
+		if (logger.isDebugEnabled())
+		{
+			final I_M_ReceiptSchedule oldSchedule = InterfaceWrapperHelper.createOld(schedule, I_M_ReceiptSchedule.class);
+			logger.debug("createAndFireEvent M_ReceiptSchedule_ID={}, timing={}"
+							+ " | IsClosed: {}>{}, Processed: {}>{}, IsActive: {}>{}"
+							+ " | QtyOrdered: {}>{}, QtyToMove: {}>{}"
+							+ " | event={}, orderedQtyDelta={}, reservedQtyDelta={}",
+					schedule.getM_ReceiptSchedule_ID(), timing,
+					oldSchedule.isIsClosed(), schedule.isIsClosed(),
+					oldSchedule.isProcessed(), schedule.isProcessed(),
+					oldSchedule.isActive(), schedule.isActive(),
+					oldSchedule.getQtyOrdered(), schedule.getQtyOrdered(),
+					oldSchedule.getQtyToMove(), schedule.getQtyToMove(),
+					event.getClass().getSimpleName(),
+					event.getOrderedQuantityDelta(),
+					event.getReservedQuantityDelta());
+		}
 
 		postMaterialEventService.enqueueEventAfterNextCommit(event);
 	}

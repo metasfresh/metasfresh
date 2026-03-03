@@ -30,8 +30,10 @@ import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
+import de.metas.order.OrderLineId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
@@ -74,6 +76,11 @@ public class C_Order_ReceiptSchedule
 	 * On COMPLETE: first reopen any previously closed receipt schedules, then create new ones for order lines that don't have one yet.
 	 * <p>
 	 * Declaration order matters: reopenReceiptSchedules runs before createReceiptSchedules.
+	 * <p>
+	 * We reopen the receipt schedule and sync QtyOrdered in a SINGLE save to produce
+	 * exactly one ReceiptScheduleCreatedEvent with the final quantities. Two separate saves
+	 * would produce CreatedEvent(old qty) + UpdatedEvent(delta), and those two events
+	 * would need to sum correctly in the cockpit — fragile and error-prone.
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void reopenReceiptSchedules(final I_C_Order order)
@@ -87,6 +94,7 @@ public class C_Order_ReceiptSchedule
 		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 		final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
 		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
+		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order);
 		for (final I_C_OrderLine orderLine : orderLines)
@@ -99,20 +107,31 @@ public class C_Order_ReceiptSchedule
 			}
 
 			// Reopen the order line BEFORE the receipt schedule.
-			// During reopen(), the M_ReceiptSchedule interceptor fires propagateQtysToOrderLine
+			// During save, the M_ReceiptSchedule interceptor fires propagateQtysToOrderLine
 			// which loads the order line from DB and triggers C_OrderLine.updateQtyReserved.
 			// IsDeliveryClosed must already be false at that point, otherwise QtyReserved is
 			// temporarily set to 0 and downstream interceptors (C_Order.updateReserved) may
 			// pick up the stale value.
 			orderBL.reopenLine(orderLine);
 
-			receiptScheduleBL.reopen(receiptSchedule);
-
-			// Immediately sync QtyOrdered from the order line because the user may have
-			// changed it during reactivation. The async producer will update all other
-			// fields later, but QtyOrdered must be correct now for material disposition.
+			// Combine reopen + QtyOrdered + ASI sync into ONE save so that the interceptor fires
+			// a single ReceiptScheduleCreatedEvent with the final (possibly updated) quantities
+			// and the correct storageAttributesKey (derived from the ASI).
+			receiptSchedule.setIsClosed(false);
+			receiptSchedule.setProcessed(false);
 			receiptSchedule.setQtyOrdered(orderLine.getQtyOrdered());
+			receiptSchedule.setM_AttributeSetInstance_ID(orderLine.getM_AttributeSetInstance_ID());
+
+			logger.debug("reopenReceiptSchedules: saving M_ReceiptSchedule_ID={} | IsClosed={}, Processed={}, QtyOrdered={}, ASI_ID={}",
+					receiptSchedule.getM_ReceiptSchedule_ID(),
+					receiptSchedule.isIsClosed(), receiptSchedule.isProcessed(), receiptSchedule.getQtyOrdered(),
+					receiptSchedule.getM_AttributeSetInstance_ID());
+
 			InterfaceWrapperHelper.save(receiptSchedule);
+
+			// Fire the side effects that ReceiptScheduleBL.reopen()'s onAfterReopen listener would have done.
+			// orderBL.reopenLine(orderLine) was already called above.
+			invoiceCandBL.openDeliveryInvoiceCandidatesByOrderLineId(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()));
 		}
 	}
 
@@ -127,8 +146,6 @@ public class C_Order_ReceiptSchedule
 		// services
 		final IReceiptScheduleProducerFactory receiptScheduleProducerFactory = Services.get(IReceiptScheduleProducerFactory.class);
 		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-		final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
-		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 
 		//
 		// Generate receipt schedules from this order.
@@ -141,32 +158,16 @@ public class C_Order_ReceiptSchedule
 		final IReceiptScheduleProducer receiptScheduleProducer = receiptScheduleProducerFactory.createProducer(I_C_OrderLine.Table_Name, createReceiptSchedulesAsync);
 
 		// Iterate order lines and call the producer for each of them.
+		// NOTE: we intentionally do NOT skip order lines that already have a reopened receipt schedule.
+		// The async workpackage will find the existing schedule and run the update path, which
+		// synchronises M_AttributeSetInstance_ID (via cloneOrCreateASI) and other fields from the
+		// order line. If the ASI hasn't changed, the storageAttributesKey stays the same and the
+		// resulting ReceiptScheduleUpdatedEvent has zero deltas (no-op). If the ASI DID change
+		// (e.g. user changed it during reactivation), the event correctly moves cockpit quantities
+		// from the old to the new storageAttributesKey bucket.
 		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order);
 		for (final I_C_OrderLine orderLine : orderLines)
 		{
-			// Skip order lines that already have an active, non-closed receipt schedule.
-			// These were reopened by reopenReceiptSchedules() (which runs before this method).
-			// Running the async workpackage on them would trigger cloneOrCreateASI() in the producer,
-			// which may change the M_AttributeSetInstance_ID and shift cockpit quantities
-			// to a different storageAttributesKey.
-			final I_M_ReceiptSchedule existingSchedule = receiptScheduleDAO.retrieveForRecord(orderLine);
-			if (existingSchedule != null && existingSchedule.isActive() && !receiptScheduleBL.isClosed(existingSchedule))
-			{
-				logger.warn("*** createReceiptSchedules: SKIPPING workpackage for C_OrderLine_ID={}"
-								+ " | existing M_ReceiptSchedule_ID={}, IsActive={}, IsClosed={}, ASI_ID={}",
-						orderLine.getC_OrderLine_ID(),
-						existingSchedule.getM_ReceiptSchedule_ID(),
-						existingSchedule.isActive(),
-						existingSchedule.isIsClosed(),
-						existingSchedule.getM_AttributeSetInstance_ID());
-				continue;
-			}
-
-			logger.warn("*** createReceiptSchedules: CREATING workpackage for C_OrderLine_ID={}"
-							+ " | existingSchedule={}",
-					orderLine.getC_OrderLine_ID(),
-					existingSchedule == null ? "null" : "RS_ID=" + existingSchedule.getM_ReceiptSchedule_ID()
-							+ " IsActive=" + existingSchedule.isActive() + " IsClosed=" + existingSchedule.isIsClosed());
 			final List<I_M_ReceiptSchedule> previousSchedules = Collections.emptyList();
 			receiptScheduleProducer.createOrUpdateReceiptSchedules(orderLine, previousSchedules);
 		}
