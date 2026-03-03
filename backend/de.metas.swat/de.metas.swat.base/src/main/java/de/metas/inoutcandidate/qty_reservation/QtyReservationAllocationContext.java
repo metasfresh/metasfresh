@@ -1,22 +1,18 @@
-package de.metas.inoutcandidate.api.impl;
+package de.metas.inoutcandidate.qty_reservation;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.logging.LogManager;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
-import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_M_QtyReservation;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -32,7 +28,7 @@ import java.util.Map;
  * This context is mutable: as reserved schedules consume stock, the remaining reserved qty decreases,
  * making more stock available for subsequent non-reserved schedules.
  */
-class QtyReservationAllocationContext
+public class QtyReservationAllocationContext
 {
 	private static final Logger logger = LogManager.getLogger(QtyReservationAllocationContext.class);
 
@@ -59,12 +55,12 @@ class QtyReservationAllocationContext
 	@NonNull
 	private static QtyReservationAllocationContext empty() {return new QtyReservationAllocationContext();}
 
-	boolean isEmpty()
+	public boolean isEmpty()
 	{
 		return byOrderLine.isEmpty();
 	}
 
-	BigDecimal getMyReservedQty(@Nullable final OrderLineId orderLineId)
+	public BigDecimal getMyReservedQty(@Nullable final OrderLineId orderLineId)
 	{
 		if (orderLineId == null)
 		{
@@ -74,7 +70,7 @@ class QtyReservationAllocationContext
 		return detail != null ? detail.getRemainingQty() : BigDecimal.ZERO;
 	}
 
-	BigDecimal getReservedByOthers(@Nullable final OrderLineId orderLineId, @NonNull final StockMatchingKey key)
+	public BigDecimal getReservedByOthers(@Nullable final OrderLineId orderLineId, @NonNull final StockMatchingKey key)
 	{
 		final BigDecimal totalRemaining = remainingByKey.getOrDefault(key, BigDecimal.ZERO);
 		final BigDecimal myReserved = getMyReservedQty(orderLineId);
@@ -82,7 +78,7 @@ class QtyReservationAllocationContext
 		return reservedByOthers.max(BigDecimal.ZERO);
 	}
 
-	void consumeReservation(@Nullable final OrderLineId orderLineId, @NonNull final BigDecimal consumed)
+	public void consumeReservation(@Nullable final OrderLineId orderLineId, @NonNull final BigDecimal consumed)
 	{
 		if (orderLineId == null || consumed.signum() <= 0)
 		{
@@ -109,7 +105,7 @@ class QtyReservationAllocationContext
 	}
 
 	@VisibleForTesting
-	static QtyReservationAllocationContext createForTesting(
+	public static QtyReservationAllocationContext createForTesting(
 			@NonNull final ImmutableMap<OrderLineId, ReservationDetail> byOrderLine,
 			@NonNull final Map<StockMatchingKey, BigDecimal> remainingByKey)
 	{
@@ -117,31 +113,10 @@ class QtyReservationAllocationContext
 	}
 
 	/**
-	 * Load reservation context from DB for the given shipment schedule lines.
-	 * <p>
-	 * Loads ALL active reservations (Qty > 0) for the products and warehouses involved,
-	 * not just those for order lines in this batch. This ensures that reservations held by
-	 * order lines outside this revalidation batch are also accounted for.
+	 * Build allocation context from pre-loaded domain objects.
 	 */
-	static QtyReservationAllocationContext load(@NonNull final Collection<OlAndSched> lines)
+	public static QtyReservationAllocationContext of(@NonNull final Collection<QtyReservation> reservations)
 	{
-		final ImmutableSet<Integer> productRepoIds = lines.stream()
-				.map(ols -> ols.getProductId().getRepoId())
-				.collect(ImmutableSet.toImmutableSet());
-
-		if (productRepoIds.isEmpty())
-		{
-			return empty();
-		}
-
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final java.util.List<I_M_QtyReservation> reservations = queryBL.createQueryBuilder(I_M_QtyReservation.class)
-				.addOnlyActiveRecordsFilter()
-				.addCompareFilter(I_M_QtyReservation.COLUMNNAME_Qty, org.adempiere.ad.dao.impl.CompareQueryFilter.Operator.GREATER, BigDecimal.ZERO)
-				.addInArrayFilter(I_M_QtyReservation.COLUMNNAME_M_Product_ID, productRepoIds)
-				.create()
-				.list();
-
 		if (reservations.isEmpty())
 		{
 			return empty();
@@ -155,19 +130,17 @@ class QtyReservationAllocationContext
 		final Map<OrderLineId, BigDecimal> qtyByOrderLine = new HashMap<>();
 		final Map<OrderLineId, StockMatchingKey> keyByOrderLine = new HashMap<>();
 
-		for (final I_M_QtyReservation reservation : reservations)
+		for (final QtyReservation reservation : reservations)
 		{
-			final OrderLineId orderLineId = OrderLineId.ofRepoId(reservation.getC_OrderLine_ID());
-			final ProductId productId = ProductId.ofRepoId(reservation.getM_Product_ID());
-			final WarehouseId warehouseId = WarehouseId.ofRepoId(reservation.getM_Warehouse_ID());
-			final AttributesKey attributesKey = AttributesKey.ofString(reservation.getAttributesKey());
-			final BigDecimal qty = reservation.getQty();
+			final StockMatchingKey matchingKey = StockMatchingKey.of(
+					reservation.getProductId(),
+					reservation.getWarehouseId(),
+					reservation.getAttributesKey());
 
-			final StockMatchingKey matchingKey = StockMatchingKey.of(productId, warehouseId, attributesKey);
-
-			qtyByOrderLine.merge(orderLineId, qty, BigDecimal::add);
-			keyByOrderLine.put(orderLineId, matchingKey);
-			remainingByKey.merge(matchingKey, qty, BigDecimal::add);
+			final BigDecimal qtyBD = reservation.getQty().toBigDecimal();
+			qtyByOrderLine.merge(reservation.getOrderLineId(), qtyBD, BigDecimal::add);
+			keyByOrderLine.put(reservation.getOrderLineId(), matchingKey);
+			remainingByKey.merge(matchingKey, qtyBD, BigDecimal::add);
 		}
 
 		for (final Map.Entry<OrderLineId, BigDecimal> entry : qtyByOrderLine.entrySet())
@@ -225,7 +198,7 @@ class QtyReservationAllocationContext
 	 * and from the M_QtyReservation record's AttributesKey column.
 	 */
 	@Value(staticConstructor = "of")
-	static class StockMatchingKey
+	public static class StockMatchingKey
 	{
 		@NonNull ProductId productId;
 		@NonNull WarehouseId warehouseId;
@@ -234,7 +207,7 @@ class QtyReservationAllocationContext
 
 	@Getter
 	@RequiredArgsConstructor
-	static class ReservationDetail
+	public static class ReservationDetail
 	{
 		@NonNull private final StockMatchingKey key;
 		@NonNull private BigDecimal remainingQty;

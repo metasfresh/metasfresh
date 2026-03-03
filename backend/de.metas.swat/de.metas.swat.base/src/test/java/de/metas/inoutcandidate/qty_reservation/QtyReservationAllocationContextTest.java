@@ -1,7 +1,7 @@
-package de.metas.inoutcandidate.api.impl;
+package de.metas.inoutcandidate.qty_reservation;
 
-import de.metas.inoutcandidate.api.impl.QtyReservationAllocationContext.ReservationDetail;
-import de.metas.inoutcandidate.api.impl.QtyReservationAllocationContext.StockMatchingKey;
+import de.metas.inoutcandidate.qty_reservation.QtyReservationAllocationContext.ReservationDetail;
+import de.metas.inoutcandidate.qty_reservation.QtyReservationAllocationContext.StockMatchingKey;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;

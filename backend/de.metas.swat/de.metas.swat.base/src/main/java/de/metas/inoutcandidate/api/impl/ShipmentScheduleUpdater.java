@@ -48,6 +48,8 @@ import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSegment;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.picking_bom.PickingBOMService;
+import de.metas.inoutcandidate.qty_reservation.QtyReservationAllocationContext;
+import de.metas.inoutcandidate.qty_reservation.QtyReservationRepository;
 import de.metas.inoutcandidate.picking_bom.PickingBOMsReversedIndex;
 import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
@@ -134,6 +136,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IProductBL productsService = Services.get(IProductBL.class);
 	private final IBPartnerProductDAO bpartnerProductDAO = Services.get(IBPartnerProductDAO.class);
+	@NonNull private final QtyReservationRepository qtyReservationRepository;
 	@NonNull private final ShipmentScheduleQtyOnHandStorageFactory shipmentScheduleQtyOnHandStorageFactory;
 	@NonNull private final ShipmentScheduleReferencedLineFactory shipmentScheduleReferencedLineFactory;
 	@NonNull private final PickingBOMService pickingBOMService;
@@ -157,6 +160,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		final PickingBOMService pickingBOMService = new PickingBOMService();
 
 		return new ShipmentScheduleUpdater(
+				new QtyReservationRepository(),
 				shipmentScheduleQtyOnHandStorageFactory,
 				shipmentScheduleReferencedLineFactory,
 				pickingBOMService,
@@ -494,7 +498,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 		//
 		// Load qty-reservations so that non-reserved schedules only see unreserved stock
-		final QtyReservationAllocationContext reservationCtx = QtyReservationAllocationContext.load(lines);
+		final QtyReservationAllocationContext reservationCtx = loadReservationContext(lines);
 		if (!reservationCtx.isEmpty())
 		{
 			logger.debug("Loaded reservation context for {} order lines", lines.size());
@@ -508,6 +512,16 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		}
 		return shipmentSchedulesDuringUpdate;
 	} // generate
+
+	@NonNull
+	private QtyReservationAllocationContext loadReservationContext(@NonNull final List<OlAndSched> lines)
+	{
+		final ImmutableSet<ProductId> productIds = lines.stream()
+				.map(OlAndSched::getProductId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return QtyReservationAllocationContext.of(qtyReservationRepository.getActiveByProductIds(productIds));
+	}
 
 	private void processSingleOlAndSched(
 			final @NonNull OlAndSched olAndSched,

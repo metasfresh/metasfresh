@@ -1,0 +1,25 @@
+package de.metas.inoutcandidate.qty_reservation;
+
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.order.OrderLineId;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.warehouse.WarehouseId;
+
+/**
+ * Domain object representing a single qty reservation for a sales order line.
+ * Loaded from the {@code M_QtyReservation} table via {@link QtyReservationRepository}.
+ */
+@Value
+@Builder
+public class QtyReservation
+{
+	@NonNull OrderLineId orderLineId;
+	@NonNull ProductId productId;
+	@NonNull WarehouseId warehouseId;
+	@NonNull AttributesKey attributesKey;
+	@NonNull Quantity qty;
+}
