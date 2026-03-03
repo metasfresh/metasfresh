@@ -119,8 +119,7 @@ public class SAP_GLJournalLine_StepDef
 
 		// IsTaxIncluded
 		row.getAsOptionalBoolean(COLUMNNAME_IsTaxIncluded)
-				.ifTrue(() -> glJournalLine.setIsTaxIncluded(true))
-				.ifFalse(() -> glJournalLine.setIsTaxIncluded(false));
+				.ifPresent(glJournalLine::setIsTaxIncluded);
 
 		// Description
 		row.getAsOptionalString(COLUMNNAME_Description)
@@ -184,6 +183,8 @@ public class SAP_GLJournalLine_StepDef
 				assertThat(generatedLine.getDescription()).isNullOrEmpty();
 			}
 		});
+
+		glJournalLineTable.putOrReplace(row.getAsIdentifier(), generatedLine);
 	}
 
 	@Given("base tax line updated:")
