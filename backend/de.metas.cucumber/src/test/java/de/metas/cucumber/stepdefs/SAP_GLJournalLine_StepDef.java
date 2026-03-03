@@ -26,7 +26,6 @@ import de.metas.acct.gljournal_sap.SAPGLJournalId;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalLoaderAndSaver;
 import de.metas.acct.model.I_SAP_GLJournal;
 import de.metas.acct.model.I_SAP_GLJournalLine;
-import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.sectioncode.M_SectionCode_StepDefData;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
@@ -37,7 +36,6 @@ import org.compiere.model.I_M_SectionCode;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static de.metas.acct.model.I_SAP_GLJournalLine.COLUMNNAME_Amount;
 import static de.metas.acct.model.I_SAP_GLJournalLine.COLUMNNAME_C_Tax_ID;
@@ -47,12 +45,11 @@ import static de.metas.acct.model.I_SAP_GLJournalLine.COLUMNNAME_IsTaxIncluded;
 import static de.metas.acct.model.I_SAP_GLJournalLine.COLUMNNAME_Line;
 import static de.metas.acct.model.I_SAP_GLJournalLine.COLUMNNAME_M_SectionCode_ID;
 import static de.metas.acct.model.I_SAP_GLJournalLine.COLUMNNAME_Parent_ID;
+import static de.metas.acct.model.I_SAP_GLJournalLine.COLUMNNAME_PostingSign;
 import static de.metas.acct.model.I_SAP_GLJournalLine.COLUMNNAME_SAP_GLJournal_ID;
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
-import static de.metas.acct.model.I_SAP_GLJournalLine.COLUMNNAME_PostingSign;
 
 public class SAP_GLJournalLine_StepDef
 {
@@ -76,112 +73,89 @@ public class SAP_GLJournalLine_StepDef
 	@Given("metasfresh contains SAP_GLJournalLines:")
 	public void metasfresh_contains_sap_gl_journal_lines(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
+		for (final DataTableRow row : DataTableRow.toRows(dataTable))
 		{
-			final I_SAP_GLJournalLine glJournalLine = newInstance(I_SAP_GLJournalLine.class);
-
-			glJournalLine.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
-
-			// Line
-			final Integer line = DataTableUtil.extractIntForColumnName(tableRow, COLUMNNAME_Line);
-			assertThat(line).isNotNull();
-
-			glJournalLine.setLine(line);
-
-			// SAP_GLJournal_ID.Identifier
-			final String sapGlJournalIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_SAP_GLJournal_ID + "." + TABLECOLUMN_IDENTIFIER);
-			assertThat(sapGlJournalIdentifier).isNotBlank();
-
-			final I_SAP_GLJournal header = glJournalTable.get(sapGlJournalIdentifier);
-			glJournalLine.setSAP_GLJournal(header);
-
-			// PostingSign
-			final String postingSign = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_PostingSign);
-			assertThat(postingSign).isNotBlank();
-
-			glJournalLine.setPostingSign(postingSign);
-
-			// C_ValidCombination_ID
-			final String c_ValidCombination_ID = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_ValidCombination_ID);
-			assertThat(c_ValidCombination_ID).isNotBlank();
-
-			glJournalLine.setC_ValidCombination_ID(Integer.valueOf(c_ValidCombination_ID));
-
-			// Amount
-			final BigDecimal amount = DataTableUtil.extractBigDecimalForColumnName(tableRow, COLUMNNAME_Amount);
-			assertThat(amount).isNotNull();
-
-			glJournalLine.setAmount(amount);
-			glJournalLine.setAmtAcct(amount);  // same amount, as same currency is used
-
-			// OPT.M_SectionCode_ID.Identifier
-			final String sectionCodeIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_SectionCode_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (EmptyUtil.isNotBlank(sectionCodeIdentifier))
-			{
-				final I_M_SectionCode sectionCode = sectionCodeTable.get(sectionCodeIdentifier);
-				assertThat(sectionCode).isNotNull();
-				glJournalLine.setM_SectionCode(sectionCode);
-			}
-
-			// OPT.C_Tax_ID.Identifier
-			final String taxIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_C_Tax_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (EmptyUtil.isNotBlank(taxIdentifier))
-			{
-				final I_C_Tax tax = taxTable.get(taxIdentifier);
-				assertThat(tax).isNotNull();
-				glJournalLine.setC_Tax_ID(tax.getC_Tax_ID());
-			}
-
-			// OPT.IsTaxIncluded
-			final boolean isTaxIncluded = DataTableUtil.extractBooleanForColumnName(tableRow, "OPT." + COLUMNNAME_IsTaxIncluded);
-			glJournalLine.setIsTaxIncluded(isTaxIncluded);
-
-			// OPT.Description
-			final String description = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_Description);
-			if (EmptyUtil.isNotBlank(description))
-			{
-				glJournalLine.setDescription(description);
-			}
-
-			// OPT.Parent_ID
-			final String parentIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_Parent_ID);
-			if (EmptyUtil.isNotBlank(parentIdentifier))
-			{
-				final I_SAP_GLJournalLine parent = glJournalLineTable.get(parentIdentifier);
-				assertThat(parent).isNotNull();
-
-				glJournalLine.setParent(parent);
-			}
-
-			saveRecord(glJournalLine);
-
-			glJournalLineTable.putOrReplace(DataTableUtil.extractRecordIdentifier(tableRow, I_SAP_GLJournalLine.COLUMNNAME_SAP_GLJournalLine_ID), glJournalLine);
+			createGLJournalLine(row);
 		}
+	}
+
+	private void createGLJournalLine(@NonNull final DataTableRow row)
+	{
+		final I_SAP_GLJournalLine glJournalLine = newInstance(I_SAP_GLJournalLine.class);
+
+		glJournalLine.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
+
+		// Line
+		glJournalLine.setLine(row.getAsInt(COLUMNNAME_Line));
+
+		// SAP_GLJournal_ID
+		final I_SAP_GLJournal header = glJournalTable.get(row.getAsIdentifier(COLUMNNAME_SAP_GLJournal_ID));
+		glJournalLine.setSAP_GLJournal(header);
+
+		// PostingSign
+		glJournalLine.setPostingSign(row.getAsString(COLUMNNAME_PostingSign));
+
+		// C_ValidCombination_ID
+		glJournalLine.setC_ValidCombination_ID(row.getAsInt(COLUMNNAME_C_ValidCombination_ID));
+
+		// Amount
+		final BigDecimal amount = row.getAsBigDecimal(COLUMNNAME_Amount);
+		glJournalLine.setAmount(amount);
+		glJournalLine.setAmtAcct(amount);  // same amount, as same currency is used
+
+		// M_SectionCode_ID
+		row.getAsOptionalIdentifier(COLUMNNAME_M_SectionCode_ID).ifPresent(sectionCodeIdentifier -> {
+			final I_M_SectionCode sectionCode = sectionCodeTable.get(sectionCodeIdentifier);
+			assertThat(sectionCode).isNotNull();
+			glJournalLine.setM_SectionCode(sectionCode);
+		});
+
+		// C_Tax_ID
+		row.getAsOptionalIdentifier(COLUMNNAME_C_Tax_ID).ifPresent(taxIdentifier -> {
+			final I_C_Tax tax = taxTable.get(taxIdentifier);
+			assertThat(tax).isNotNull();
+			glJournalLine.setC_Tax_ID(tax.getC_Tax_ID());
+		});
+
+		// IsTaxIncluded
+		row.getAsOptionalBoolean(COLUMNNAME_IsTaxIncluded)
+				.ifTrue(() -> glJournalLine.setIsTaxIncluded(true))
+				.ifFalse(() -> glJournalLine.setIsTaxIncluded(false));
+
+		// Description
+		row.getAsOptionalString(COLUMNNAME_Description)
+				.ifPresent(glJournalLine::setDescription);
+
+		// Parent_ID
+		row.getAsOptionalIdentifier(COLUMNNAME_Parent_ID).ifPresent(parentIdentifier -> {
+			final I_SAP_GLJournalLine parent = glJournalLineTable.get(parentIdentifier);
+			assertThat(parent).isNotNull();
+			glJournalLine.setParent(parent);
+		});
+
+		saveRecord(glJournalLine);
+
+		glJournalLineTable.putOrReplace(row.getAsIdentifier(), glJournalLine);
 	}
 
 	@Given("validate generated lines:")
 	public void validate_tax_lines(@NonNull final DataTable dataTable)
 	{
-		final Map<String, String> row = dataTable.asMaps().get(0);
+		final DataTableRow row = DataTableRow.singleRow(dataTable);
 
-		final I_SAP_GLJournal header = extractHeader(row);
+		final I_SAP_GLJournal header = glJournalTable.get(row.getAsIdentifier(COLUMNNAME_SAP_GLJournal_ID));
 		assertThat(header).as("Record not found").isNotNull();
 
 		// Amount
-		final BigDecimal amount = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_Amount);
-		assertThat(amount).as("Please provide a valid amount").isNotNull();
+		final BigDecimal amount = row.getAsBigDecimal(COLUMNNAME_Amount);
 
 		// ParentID
-		final String parentLineIdentifier = DataTableUtil.extractStringForColumnName(row, "OPT." + COLUMNNAME_Parent_ID);
-		assertThat(parentLineIdentifier).as("%s is mandatory in this context", COLUMNNAME_Parent_ID).isNotBlank();
-
-		// PostingSign
-		final String postingSign = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_PostingSign);
-		assertThat(postingSign).as("%s is mandatory in this context", COLUMNNAME_PostingSign).isNotBlank();
-
+		final StepDefDataIdentifier parentLineIdentifier = row.getAsIdentifier(COLUMNNAME_Parent_ID);
 		final I_SAP_GLJournalLine parentLine = glJournalLineTable.get(parentLineIdentifier);
 		assertThat(parentLine).as("No record found").isNotNull();
+
+		// PostingSign
+		final String postingSign = row.getAsString(COLUMNNAME_PostingSign);
 
 		// validate
 		final SAPGLJournalLoaderAndSaver loaderAndSaver = new SAPGLJournalLoaderAndSaver();
@@ -199,34 +173,33 @@ public class SAP_GLJournalLine_StepDef
 		assertThat(generatedLine.getPostingSign()).isEqualTo(postingSign);
 		assertThat(generatedLine.getAmount()).isEqualByComparingTo(amount);
 
-		// OPT.Description
-		final String expectedDescription = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_Description);
-		if (EmptyUtil.isNotBlank(expectedDescription))
-		{
-			assertThat(generatedLine.getDescription()).isEqualTo(expectedDescription);
-		}
-		else if (expectedDescription != null) // column present but blank → assert no description
-		{
-			assertThat(generatedLine.getDescription()).isNullOrEmpty();
-		}
+		// Description
+		row.getAsOptionalString(COLUMNNAME_Description).ifPresent(expectedDescription -> {
+			if (!expectedDescription.isEmpty())
+			{
+				assertThat(generatedLine.getDescription()).isEqualTo(expectedDescription);
+			}
+			else
+			{
+				assertThat(generatedLine.getDescription()).isNullOrEmpty();
+			}
+		});
 	}
 
 	@Given("base tax line updated:")
 	public void base_tax_line_updated(@NonNull final DataTable dataTable)
 	{
-		final Map<String, String> row = dataTable.asMaps().get(0);
+		final DataTableRow row = DataTableRow.singleRow(dataTable);
 
-		final I_SAP_GLJournal header = extractHeader(row);
+		final I_SAP_GLJournal header = glJournalTable.get(row.getAsIdentifier(COLUMNNAME_SAP_GLJournal_ID));
 		assertThat(header).as("Record not found").isNotNull();
 
 		// PostingSign
-		final String postingSign = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_PostingSign);
-		assertThat(postingSign).as("%s is mandatory in this context", COLUMNNAME_PostingSign).isNotBlank();
+		final String postingSign = row.getAsString(COLUMNNAME_PostingSign);
 
-		final BigDecimal amount = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_Amount);
-		assertThat(amount).as("Please provide a valid amount").isNotNull();
+		final BigDecimal amount = row.getAsBigDecimal(COLUMNNAME_Amount);
 
-		final boolean isTaxIncluded = DataTableUtil.extractBooleanForColumnName(row, "OPT." + COLUMNNAME_IsTaxIncluded);
+		final boolean isTaxIncluded = row.getAsOptionalBoolean(COLUMNNAME_IsTaxIncluded).toBooleanOrNull();
 
 		//
 		// validate
@@ -245,14 +218,4 @@ public class SAP_GLJournalLine_StepDef
 		assertThat(baseLine.getAmount()).isEqualByComparingTo(amount);
 		assertThat(baseLine.isTaxIncluded()).isEqualTo(isTaxIncluded);
 	}
-
-	private I_SAP_GLJournal extractHeader(@NonNull final Map<String, String> row)
-	{
-		final String headerIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_SAP_GLJournal_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-		assertThat(headerIdentifier).as("%s is mandatory in this context", COLUMNNAME_SAP_GLJournal_ID).isNotBlank();
-
-		return glJournalTable.get(headerIdentifier);
-	}
-
 }
