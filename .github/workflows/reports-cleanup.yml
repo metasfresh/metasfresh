@@ -73,6 +73,7 @@ jobs:
           BRANCHES_DIR = REPORTS_ROOT / "branches"
           METADATA_DIR = REPORTS_ROOT / "_metadata"
 
+          MAX_BUILDS_PER_BRANCH = 3
           MAX_BRANCH_AGE_DAYS = 30
           MAX_ORPHAN_BUILD_AGE_DAYS = 7
 
@@ -161,6 +162,24 @@ jobs:
                       )
                       freed += size
                       continue
+
+              # --- Enforce per-branch build cap ---
+              if metadata_file.exists() and len(data.get("builds", [])) > MAX_BUILDS_PER_BRANCH:
+                  builds_list = data["builds"]
+                  evicted = builds_list[MAX_BUILDS_PER_BRANCH:]
+                  data["builds"] = builds_list[:MAX_BUILDS_PER_BRANCH]
+                  metadata_file.write_text(json.dumps(data, indent=2))
+                  for ev in evicted:
+                      ev_ver = ev.get("version", "")
+                      ev_path = builds_dir / ev_ver
+                      if ev_path.is_dir():
+                          size = dir_size(ev_path)
+                          shutil.rmtree(ev_path)
+                          removed_builds.append(
+                              f"{branch}/{ev_ver} (over cap, {fmt(size)})"
+                          )
+                          freed += size
+                      known_versions.discard(ev_ver)
 
               # --- Prune orphaned builds within active branches ---
               if builds_dir.exists():

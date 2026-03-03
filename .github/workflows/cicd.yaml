@@ -2006,20 +2006,23 @@ jobs:
           </body></html>
           EOF
 
-      - name: Update branch metadata
+      - name: Update branch metadata and prune old builds
         if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true' && steps.inventory.outputs.count != '0'
         env:
           BRANCH: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
           VERSION: ${{ needs.init.outputs.tag-fixed }}
         run: |
           ssh reports-server "python3 - '${BRANCH}' '${VERSION}'" <<'PYEOF'
-          import json, sys, os
+          import json, sys, os, shutil
           from datetime import datetime, timezone
+
+          MAX_BUILDS_PER_BRANCH = 3
 
           branch = sys.argv[1]
           version = sys.argv[2]
           metadata_dir = "/var/www/test-reports/_metadata"
           metadata_file = os.path.join(metadata_dir, f"{branch}.json")
+          builds_dir = f"/var/www/test-reports/branches/{branch}/builds"
 
           os.makedirs(metadata_dir, exist_ok=True)
 
@@ -2042,11 +2045,21 @@ jobs:
               "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
           })
 
-          # Keep only last 20 builds
-          data["builds"] = data["builds"][:20]
+          # Cap metadata and collect evicted versions
+          evicted = [b["version"] for b in data["builds"][MAX_BUILDS_PER_BRANCH:]]
+          data["builds"] = data["builds"][:MAX_BUILDS_PER_BRANCH]
 
           with open(metadata_file, "w") as f:
               json.dump(data, f, indent=2)
+
+          # Delete build directories for evicted versions
+          for ver in evicted:
+              build_path = os.path.join(builds_dir, ver)
+              if os.path.isdir(build_path):
+                  shutil.rmtree(build_path)
+                  print(f"Pruned old build: {branch}/{ver}")
+
+          print(f"Kept {len(data['builds'])} build(s), pruned {len(evicted)} old build(s)")
           PYEOF
 
       - name: Update landing page
@@ -2144,8 +2157,8 @@ jobs:
                       const buildsDiv = document.createElement('div');
                       buildsDiv.className = 'builds';
 
-                      // Show newest 10 builds (metadata is already sorted newest-first)
-                      const builds = branchData.builds.slice(0, 10);
+                      // Show all builds (metadata is capped to 3 per branch at publish time)
+                      const builds = branchData.builds;
                       builds.forEach(function(build) {
                           buildsDiv.appendChild(createBuildElement(branchData.branch, build));
                       });
