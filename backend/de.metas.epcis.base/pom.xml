@@ -96,36 +96,6 @@
                             </schemaIncludes>
                         </configuration>
                     </execution>
-                    <execution>
-                        <id>migros-adjusted-3-5-1-ft</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <generatePackage>de.metas.epcis.migros.adjusted.v3_5_1_ft</generatePackage>
-                            <schemaDirectory>${project.basedir}/src/main/resources/de/metas/epcis/migros-adjusted/3_5_1_FT</schemaDirectory>
-                            <generateDirectory>${project.basedir}/src/main/java-xjc</generateDirectory>
-                            <schemaIncludes>
-                                <schemaInclude>3_5_1_FT.xsd</schemaInclude>
-                            </schemaIncludes>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>migros-adjusted-3-5-1-cd</id>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <generatePackage>de.metas.epcis.migros.adjusted.v3_5_1_cd</generatePackage>
-                            <schemaDirectory>${project.basedir}/src/main/resources/de/metas/epcis/migros-adjusted/3_5_1_CD</schemaDirectory>
-                            <generateDirectory>${project.basedir}/src/main/java-xjc</generateDirectory>
-                            <schemaIncludes>
-                                <schemaInclude>3_5_1_CD.xsd</schemaInclude>
-                            </schemaIncludes>
-                        </configuration>
-                    </execution>
                 </executions>
             </plugin>
             <!-- JAX-WS WSDL to Java Code Generation -->
