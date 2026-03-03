@@ -1,6 +1,7 @@
 package de.metas.purchasecandidate;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.dimension.Dimension;
 import de.metas.externalsystem.ExternalSystemId;
 import de.metas.mforecast.impl.ForecastLineId;
@@ -98,7 +99,7 @@ class PurchaseCandidateImmutableFields
 	BPartnerId dropShipBPartnerId;
 
 	@Nullable
-	Integer dropShipLocationRepoId;
+	BPartnerLocationId dropShipLocationId;
 
 	@Nullable
 	UserId dropShipUserId;

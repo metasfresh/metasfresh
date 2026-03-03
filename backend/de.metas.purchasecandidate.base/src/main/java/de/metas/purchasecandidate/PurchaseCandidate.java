@@ -2,6 +2,7 @@ package de.metas.purchasecandidate;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.dimension.Dimension;
 import de.metas.error.AdIssueId;
 import de.metas.externalsystem.ExternalSystemId;
@@ -186,7 +187,7 @@ public class PurchaseCandidate
 			final boolean simulated,
 			final boolean isDropShip,
 			@Nullable final BPartnerId dropShipBPartnerId,
-			@Nullable final Integer dropShipLocationRepoId,
+			@Nullable final BPartnerLocationId dropShipLocationId,
 			@Nullable final UserId dropShipUserId)
 	{
 		this.id = id;
@@ -217,7 +218,7 @@ public class PurchaseCandidate
 				.externalPurchaseOrderUrl(externalPurchaseOrderUrl)
 				.isDropShip(isDropShip)
 				.dropShipBPartnerId(dropShipBPartnerId)
-				.dropShipLocationRepoId(dropShipLocationRepoId)
+				.dropShipLocationId(dropShipLocationId)
 				.dropShipUserId(dropShipUserId)
 				.build();
 
@@ -448,9 +449,9 @@ public class PurchaseCandidate
 		return getImmutableFields().getDropShipBPartnerId();
 	}
 
-	public @Nullable Integer getDropShipLocationRepoId()
+	public @Nullable BPartnerLocationId getDropShipLocationId()
 	{
-		return getImmutableFields().getDropShipLocationRepoId();
+		return getImmutableFields().getDropShipLocationId();
 	}
 
 	public @Nullable UserId getDropShipUserId()

@@ -1,6 +1,7 @@
 package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.dimension.Dimension;
 import de.metas.externalsystem.ExternalSystemId;
 import de.metas.mforecast.impl.ForecastLineId;
@@ -65,7 +66,7 @@ public class PurchaseOrderAggregationKey implements Comparable<PurchaseOrderAggr
 
 	boolean isDropShip;
 	@Nullable BPartnerId dropShipBPartnerId;
-	@Nullable Integer dropShipLocationRepoId;
+	@Nullable BPartnerLocationId dropShipLocationId;
 	@Nullable UserId dropShipUserId;
 
 	private static final Comparator<PurchaseOrderAggregationKey> COMPARATOR = Comparator.comparing(PurchaseOrderAggregationKey::getOrgId)
@@ -78,7 +79,7 @@ public class PurchaseOrderAggregationKey implements Comparable<PurchaseOrderAggr
 			.thenComparing(PurchaseOrderAggregationKey::getExternalId, Comparator.nullsFirst(Comparator.naturalOrder()))
 			.thenComparing(PurchaseOrderAggregationKey::getExternalSystemId, Comparator.nullsFirst(Comparator.naturalOrder()))
 			.thenComparing(PurchaseOrderAggregationKey::getExternalPurchaseOrderUrl, Comparator.nullsFirst(Comparator.naturalOrder()))
-			.thenComparing(PurchaseOrderAggregationKey::getDropShipLocationRepoId, Comparator.nullsFirst(Comparator.naturalOrder()))
+			.thenComparing(key -> BPartnerLocationId.toRepoIdOrNull(key.getDropShipLocationId()), Comparator.nullsFirst(Comparator.naturalOrder()))
 			.thenComparing(PurchaseOrderAggregationKey::getDropShipUserId, Comparator.nullsFirst(Comparator.naturalOrder()));
 
 	public static PurchaseOrderAggregationKey fromPurchaseOrderItem(@NonNull final PurchaseOrderItem purchaseOrderItem)
@@ -97,7 +98,7 @@ public class PurchaseOrderAggregationKey implements Comparable<PurchaseOrderAggr
 				.poReference(purchaseOrderItem.getPOReference())
 				.isDropShip(purchaseOrderItem.isDropShip())
 				.dropShipBPartnerId(purchaseOrderItem.getDropShipBPartnerId())
-				.dropShipLocationRepoId(purchaseOrderItem.getDropShipLocationRepoId())
+				.dropShipLocationId(purchaseOrderItem.getDropShipLocationId())
 				.dropShipUserId(purchaseOrderItem.getDropShipUserId())
 				.build();
 	}
@@ -118,7 +119,7 @@ public class PurchaseOrderAggregationKey implements Comparable<PurchaseOrderAggr
 				.externalPurchaseOrderUrl(purchaseCandidate.getExternalPurchaseOrderUrl())
 				.isDropShip(purchaseCandidate.isDropShip())
 				.dropShipBPartnerId(purchaseCandidate.getDropShipBPartnerId())
-				.dropShipLocationRepoId(purchaseCandidate.getDropShipLocationRepoId())
+				.dropShipLocationId(purchaseCandidate.getDropShipLocationId())
 				.dropShipUserId(purchaseCandidate.getDropShipUserId())
 				.build();
 	}

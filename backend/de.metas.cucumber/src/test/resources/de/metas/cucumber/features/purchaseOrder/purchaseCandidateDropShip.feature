@@ -10,14 +10,14 @@ Feature: Dropship fields propagated from SO to Purchase Candidate and Purchase O
     And AD_Scheduler for classname 'de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs' is disabled
 
     And load M_AttributeSet:
-      | M_AttributeSet_ID.Identifier | Name               |
+      | Identifier                     | Name               |
       | attributeSet_convenienceSalate | Convenience Salate |
     And load M_Product_Category:
-      | M_Product_Category_ID.Identifier | Name     | Value    |
-      | standard_category                | Standard | Standard |
+      | Identifier        | Name     | Value    |
+      | standard_category | Standard | Standard |
     And update M_Product_Category:
-      | M_Product_Category_ID.Identifier | M_AttributeSet_ID              |
-      | standard_category                | attributeSet_convenienceSalate |
+      | Identifier        | M_AttributeSet_ID              |
+      | standard_category | attributeSet_convenienceSalate |
 
   @from:cucumber
   Scenario: Dropship SO creates purchase candidate and PO with dropship fields

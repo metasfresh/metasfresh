@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
@@ -411,7 +412,7 @@ public class PurchaseCandidateRepository
 
 		record.setIsDropShip(purchaseCandidate.isDropShip());
 		record.setDropShip_BPartner_ID(BPartnerId.toRepoId(purchaseCandidate.getDropShipBPartnerId()));
-		record.setDropShip_Location_ID(purchaseCandidate.getDropShipLocationRepoId() != null ? purchaseCandidate.getDropShipLocationRepoId() : -1);
+		record.setDropShip_Location_ID(BPartnerLocationId.toRepoId(purchaseCandidate.getDropShipLocationId()));
 		record.setDropShip_User_ID(UserId.toRepoId(purchaseCandidate.getDropShipUserId()));
 
 		record.setIsSimulated(purchaseCandidate.isSimulated());
@@ -527,7 +528,7 @@ public class PurchaseCandidateRepository
 				//
 				.isDropShip(record.isDropShip())
 				.dropShipBPartnerId(BPartnerId.ofRepoIdOrNull(record.getDropShip_BPartner_ID()))
-				.dropShipLocationRepoId(record.getDropShip_Location_ID() > 0 ? record.getDropShip_Location_ID() : null)
+				.dropShipLocationId(BPartnerLocationId.ofRepoIdOrNull(BPartnerId.ofRepoIdOrNull(record.getDropShip_BPartner_ID()), record.getDropShip_Location_ID() > 0 ? record.getDropShip_Location_ID() : null))
 				.dropShipUserId(UserId.ofRepoIdOrNull(record.getDropShip_User_ID()))
 				//
 				.build();

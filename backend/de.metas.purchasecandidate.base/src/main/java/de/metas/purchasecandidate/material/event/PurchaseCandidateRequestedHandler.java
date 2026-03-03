@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.Profiles;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.dimension.Dimension;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.PostMaterialEventService;
@@ -126,7 +127,7 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 		// Extract dropship info from the sales order, if present
 		boolean isDropShip = false;
 		BPartnerId dropShipBPartnerId = null;
-		Integer dropShipLocationRepoId = null;
+		BPartnerLocationId dropShipLocationId = null;
 		UserId dropShipUserId = null;
 		if (orderAndLineIdOrNull != null)
 		{
@@ -137,14 +138,14 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 				if (salesOrder.getDropShip_BPartner_ID() > 0)
 				{
 					dropShipBPartnerId = BPartnerId.ofRepoId(salesOrder.getDropShip_BPartner_ID());
-					dropShipLocationRepoId = salesOrder.getDropShip_Location_ID() > 0 ? salesOrder.getDropShip_Location_ID() : null;
+					dropShipLocationId = BPartnerLocationId.ofRepoIdOrNull(dropShipBPartnerId, salesOrder.getDropShip_Location_ID() > 0 ? salesOrder.getDropShip_Location_ID() : null);
 					dropShipUserId = UserId.ofRepoIdOrNull(salesOrder.getDropShip_User_ID());
 				}
 				else
 				{
 					// Dropship flag set but no explicit dropship partner => use the SO's ship-to address
 					dropShipBPartnerId = BPartnerId.ofRepoId(salesOrder.getC_BPartner_ID());
-					dropShipLocationRepoId = salesOrder.getC_BPartner_Location_ID() > 0 ? salesOrder.getC_BPartner_Location_ID() : null;
+					dropShipLocationId = BPartnerLocationId.ofRepoIdOrNull(dropShipBPartnerId, salesOrder.getC_BPartner_Location_ID() > 0 ? salesOrder.getC_BPartner_Location_ID() : null);
 					dropShipUserId = UserId.ofRepoIdOrNull(salesOrder.getAD_User_ID());
 				}
 			}
@@ -174,7 +175,7 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 				.simulated(event.isSimulated())
 				.isDropShip(isDropShip)
 				.dropShipBPartnerId(dropShipBPartnerId)
-				.dropShipLocationRepoId(dropShipLocationRepoId)
+				.dropShipLocationId(dropShipLocationId)
 				.dropShipUserId(dropShipUserId)
 				.build();
 

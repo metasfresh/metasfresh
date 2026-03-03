@@ -1,6 +1,7 @@
 package de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.dimension.Dimension;
 import de.metas.externalsystem.ExternalSystemId;
 import de.metas.mforecast.impl.ForecastLineId;
@@ -304,9 +305,9 @@ public class PurchaseOrderItem implements PurchaseItem
 	}
 
 	@Nullable
-	public Integer getDropShipLocationRepoId()
+	public BPartnerLocationId getDropShipLocationId()
 	{
-		return purchaseCandidate.getDropShipLocationRepoId();
+		return purchaseCandidate.getDropShipLocationId();
 	}
 
 	@Nullable
