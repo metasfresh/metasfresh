@@ -456,7 +456,6 @@ public class HUTraceEventsServiceTests
 				.huId(HuId.ofRepoId(vhu.getM_HU_ID()))
 				.qtyBook(Quantity.of(BigDecimal.ZERO, uom))
 				.qtyCount(Quantity.of(new BigDecimal("3"), uom))
-				.isCounted(true)
 				.build();
 
 		final InventoryLine inventoryLine = buildTestInventoryLine(inventoryLineHU, product);
@@ -506,7 +505,6 @@ public class HUTraceEventsServiceTests
 		final InventoryLineHU inventoryLineHU = InventoryLineHU.builder()
 				.huId(HuId.ofRepoId(vhu.getM_HU_ID()))
 				.qtyInternalUse(Quantity.of(new BigDecimal("4"), uom))
-				.isCounted(true)
 				.build();
 
 		final InventoryLine inventoryLine = buildTestInventoryLine(inventoryLineHU, product);
