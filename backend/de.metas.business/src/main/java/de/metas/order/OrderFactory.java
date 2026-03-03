@@ -393,14 +393,14 @@ public class OrderFactory
 	 */
 	public OrderFactory dropShip(
 			@Nullable final BPartnerId dropShipBPartnerId,
-			final int dropShipLocationRepoId,
+			@Nullable final BPartnerLocationId dropShipLocationId,
 			@Nullable final UserId dropShipUserId)
 	{
 		assertNotBuilt();
 		order.setIsDropShip(true);
 
 		order.setDropShip_BPartner_ID(BPartnerId.toRepoId(dropShipBPartnerId));
-		order.setDropShip_Location_ID(dropShipLocationRepoId > 0 ? dropShipLocationRepoId : 0);
+		order.setDropShip_Location_ID(BPartnerLocationId.toRepoId(dropShipLocationId));
 		order.setDropShip_User_ID(UserId.toRepoId(dropShipUserId));
 
 		try

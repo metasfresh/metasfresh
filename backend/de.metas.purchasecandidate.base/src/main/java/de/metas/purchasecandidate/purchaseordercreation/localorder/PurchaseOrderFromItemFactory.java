@@ -4,7 +4,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.i18n.ADMessageAndParams;
@@ -112,7 +111,7 @@ import java.util.Set;
 		{
 			orderFactory.dropShip(
 					orderAggregationKey.getDropShipBPartnerId(),
-					BPartnerLocationId.toRepoId(orderAggregationKey.getDropShipLocationId()),
+					orderAggregationKey.getDropShipLocationId(),
 					orderAggregationKey.getDropShipUserId());
 		}
 

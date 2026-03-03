@@ -389,6 +389,7 @@ public interface I_C_PurchaseCandidate
 	 */
 	int getDropShip_User_ID();
 
+	ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_AD_User> COLUMN_DropShip_User_ID = new ModelColumn<>(I_C_PurchaseCandidate.class, "DropShip_User_ID", org.compiere.model.I_AD_User.class);
 	String COLUMNNAME_DropShip_User_ID = "DropShip_User_ID";
 
 	/**
