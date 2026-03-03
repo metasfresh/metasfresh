@@ -1,11 +1,16 @@
 package de.metas.inoutcandidate.qty_reservation;
 
+import de.metas.business.BusinessTestHelper;
 import de.metas.inoutcandidate.qty_reservation.QtyReservationAllocationContext.ReservationDetail;
 import de.metas.inoutcandidate.qty_reservation.QtyReservationAllocationContext.StockMatchingKey;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_UOM;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -21,6 +26,15 @@ class QtyReservationAllocationContextTest
 	private static final OrderLineId OL_RESERVED_1 = OrderLineId.ofRepoId(10);
 	private static final OrderLineId OL_RESERVED_2 = OrderLineId.ofRepoId(20);
 	private static final OrderLineId OL_NOT_RESERVED = OrderLineId.ofRepoId(30);
+
+	private static I_C_UOM uom;
+
+	@BeforeAll
+	static void beforeAll()
+	{
+		AdempiereTestHelper.get().init();
+		uom = BusinessTestHelper.createUOM("testUOM");
+	}
 
 	@Test
 	void emptyContext_returnsZeroForEverything()
@@ -156,19 +170,18 @@ class QtyReservationAllocationContextTest
 	{
 		OrderLineId orderLineId;
 		StockMatchingKey key;
-		BigDecimal qty;
+		Quantity qty;
 	}
 
 	private static ReservationSpec reservation(final OrderLineId orderLineId, final StockMatchingKey key, final BigDecimal qty)
 	{
-		return new ReservationSpec(orderLineId, key, qty);
+		return new ReservationSpec(orderLineId, key, Quantity.of(qty, uom));
 	}
 
 	private static QtyReservationAllocationContext buildContext(final ReservationSpec... specs)
 	{
 		if (specs.length == 0)
 		{
-			// Use reflection-free approach: just create a context that behaves as empty
 			return QtyReservationAllocationContext.createForTesting(
 					com.google.common.collect.ImmutableMap.of(),
 					new java.util.HashMap<>()
@@ -176,19 +189,19 @@ class QtyReservationAllocationContextTest
 		}
 
 		final com.google.common.collect.ImmutableMap.Builder<OrderLineId, ReservationDetail> byOrderLine = com.google.common.collect.ImmutableMap.builder();
-		final java.util.Map<StockMatchingKey, BigDecimal> remainingByKey = new java.util.HashMap<>();
+		final java.util.Map<StockMatchingKey, Quantity> remainingByKey = new java.util.HashMap<>();
 
-		final java.util.Map<OrderLineId, BigDecimal> qtyByOL = new java.util.HashMap<>();
+		final java.util.Map<OrderLineId, Quantity> qtyByOL = new java.util.HashMap<>();
 		final java.util.Map<OrderLineId, StockMatchingKey> keyByOL = new java.util.HashMap<>();
 
 		for (final ReservationSpec spec : specs)
 		{
-			qtyByOL.merge(spec.getOrderLineId(), spec.getQty(), BigDecimal::add);
+			qtyByOL.merge(spec.getOrderLineId(), spec.getQty(), Quantity::add);
 			keyByOL.put(spec.getOrderLineId(), spec.getKey());
-			remainingByKey.merge(spec.getKey(), spec.getQty(), BigDecimal::add);
+			remainingByKey.merge(spec.getKey(), spec.getQty(), Quantity::add);
 		}
 
-		for (final java.util.Map.Entry<OrderLineId, BigDecimal> entry : qtyByOL.entrySet())
+		for (final java.util.Map.Entry<OrderLineId, Quantity> entry : qtyByOL.entrySet())
 		{
 			byOrderLine.put(entry.getKey(), new ReservationDetail(keyByOL.get(entry.getKey()), entry.getValue()));
 		}

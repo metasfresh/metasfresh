@@ -7,6 +7,7 @@ import de.metas.logging.LogManager;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -34,11 +35,11 @@ public class QtyReservationAllocationContext
 	private static final Logger logger = LogManager.getLogger(QtyReservationAllocationContext.class);
 
 	private final ImmutableMap<OrderLineId, ReservationDetail> byOrderLine;
-	private final Map<StockMatchingKey, BigDecimal> remainingByKey;
+	private final Map<StockMatchingKey, Quantity> remainingByKey;
 
 	private QtyReservationAllocationContext(
 			@NonNull final ImmutableMap<OrderLineId, ReservationDetail> byOrderLine,
-			@NonNull final Map<StockMatchingKey, BigDecimal> remainingByKey)
+			@NonNull final Map<StockMatchingKey, Quantity> remainingByKey)
 	{
 		this.byOrderLine = byOrderLine;
 		this.remainingByKey = remainingByKey;
@@ -61,6 +62,7 @@ public class QtyReservationAllocationContext
 		return byOrderLine.isEmpty();
 	}
 
+	@NonNull
 	public BigDecimal getMyReservedQty(@Nullable final OrderLineId orderLineId)
 	{
 		if (orderLineId == null)
@@ -68,14 +70,19 @@ public class QtyReservationAllocationContext
 			return BigDecimal.ZERO;
 		}
 		final ReservationDetail detail = byOrderLine.get(orderLineId);
-		return detail != null ? detail.getRemainingQty() : BigDecimal.ZERO;
+		return detail != null ? detail.getRemainingQty().toBigDecimal() : BigDecimal.ZERO;
 	}
 
+	@NonNull
 	public BigDecimal getReservedByOthers(@Nullable final OrderLineId orderLineId, @NonNull final StockMatchingKey key)
 	{
-		final BigDecimal totalRemaining = remainingByKey.getOrDefault(key, BigDecimal.ZERO);
+		final Quantity totalRemaining = remainingByKey.get(key);
+		if (totalRemaining == null)
+		{
+			return BigDecimal.ZERO;
+		}
 		final BigDecimal myReserved = getMyReservedQty(orderLineId);
-		final BigDecimal reservedByOthers = totalRemaining.subtract(myReserved);
+		final BigDecimal reservedByOthers = totalRemaining.toBigDecimal().subtract(myReserved);
 		return reservedByOthers.max(BigDecimal.ZERO);
 	}
 
@@ -92,7 +99,7 @@ public class QtyReservationAllocationContext
 			return;
 		}
 
-		final BigDecimal actualConsumed = consumed.min(detail.getRemainingQty());
+		final BigDecimal actualConsumed = consumed.min(detail.getRemainingQty().toBigDecimal());
 		if (actualConsumed.signum() <= 0)
 		{
 			return;
@@ -100,15 +107,18 @@ public class QtyReservationAllocationContext
 
 		detail.subtractRemainingQty(actualConsumed);
 
-		remainingByKey.merge(detail.getKey(), actualConsumed.negate(), BigDecimal::add);
-		// Ensure non-negative
-		remainingByKey.computeIfPresent(detail.getKey(), (k, v) -> v.max(BigDecimal.ZERO));
+		final Quantity currentRemaining = remainingByKey.get(detail.getKey());
+		if (currentRemaining != null)
+		{
+			final Quantity newRemaining = currentRemaining.subtract(actualConsumed).toZeroIfNegative();
+			remainingByKey.put(detail.getKey(), newRemaining);
+		}
 	}
 
 	@VisibleForTesting
 	public static QtyReservationAllocationContext createForTesting(
 			@NonNull final ImmutableMap<OrderLineId, ReservationDetail> byOrderLine,
-			@NonNull final Map<StockMatchingKey, BigDecimal> remainingByKey)
+			@NonNull final Map<StockMatchingKey, Quantity> remainingByKey)
 	{
 		return new QtyReservationAllocationContext(byOrderLine, remainingByKey);
 	}
@@ -124,11 +134,11 @@ public class QtyReservationAllocationContext
 		}
 
 		final ImmutableMap.Builder<OrderLineId, ReservationDetail> byOrderLineBuilder = ImmutableMap.builder();
-		final Map<StockMatchingKey, BigDecimal> remainingByKey = new HashMap<>();
+		final Map<StockMatchingKey, Quantity> remainingByKey = new HashMap<>();
 
 		// Group reservations by order line.
 		// Note: there should be at most one reservation per order line, but we sum just in case.
-		final Map<OrderLineId, BigDecimal> qtyByOrderLine = new HashMap<>();
+		final Map<OrderLineId, Quantity> qtyByOrderLine = new HashMap<>();
 		final Map<OrderLineId, StockMatchingKey> keyByOrderLine = new HashMap<>();
 
 		for (final QtyReservation reservation : reservations)
@@ -138,13 +148,13 @@ public class QtyReservationAllocationContext
 					reservation.getWarehouseId(),
 					reservation.getAttributesKey());
 
-			final BigDecimal qtyBD = reservation.getQty().toBigDecimal();
-			qtyByOrderLine.merge(reservation.getOrderLineId(), qtyBD, BigDecimal::add);
+			final Quantity qty = reservation.getQty();
+			qtyByOrderLine.merge(reservation.getOrderLineId(), qty, Quantity::add);
 			keyByOrderLine.put(reservation.getOrderLineId(), matchingKey);
-			remainingByKey.merge(matchingKey, qtyBD, BigDecimal::add);
+			remainingByKey.merge(matchingKey, qty, Quantity::add);
 		}
 
-		for (final Map.Entry<OrderLineId, BigDecimal> entry : qtyByOrderLine.entrySet())
+		for (final Map.Entry<OrderLineId, Quantity> entry : qtyByOrderLine.entrySet())
 		{
 			byOrderLineBuilder.put(
 					entry.getKey(),
@@ -215,11 +225,11 @@ public class QtyReservationAllocationContext
 	public static class ReservationDetail
 	{
 		@NonNull private final StockMatchingKey key;
-		@NonNull private BigDecimal remainingQty;
+		@NonNull private Quantity remainingQty;
 
 		void subtractRemainingQty(@NonNull final BigDecimal qty)
 		{
-			this.remainingQty = this.remainingQty.subtract(qty).max(BigDecimal.ZERO);
+			this.remainingQty = this.remainingQty.subtract(qty).toZeroIfNegative();
 		}
 	}
 }
