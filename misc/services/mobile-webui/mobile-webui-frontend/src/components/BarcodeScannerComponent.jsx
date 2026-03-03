@@ -121,9 +121,7 @@ const BarcodeScannerComponent = ({
       if (isShowVideo) {
         videoRef?.current?.scrollIntoView({ behaviour: 'smooth', block: 'center', inline: 'end' });
       }
-      if (!isInputTextReadonly) {
-        inputTextRef?.current?.focus();
-      }
+      inputTextRef?.current?.focus();
     } /* no deps, call it on each render */
   );
 
@@ -222,8 +220,6 @@ const BarcodeScannerComponent = ({
   );
 
   const handleInputTextChanged = (e) => {
-    if (isInputTextReadonly) return;
-
     const scannedBarcode = e.target.value;
 
     if (
@@ -240,8 +236,6 @@ const BarcodeScannerComponent = ({
   }, [textChangedDebounceMillis]);
 
   const handleInputTextKeyPress = (e) => {
-    if (isInputTextReadonly) return;
-
     if (e.key === 'Enter') {
       const scannedBarcode = e.target.value;
 
@@ -271,7 +265,7 @@ const BarcodeScannerComponent = ({
           className="input-text"
           type={isShowInputText ? 'text' : 'hidden'}
           placeholder={inputPlaceholderText || trl('components.BarcodeScannerComponent.scanTextPlaceholder')}
-          readOnly={isInputTextReadonly}
+          inputMode={isInputTextReadonly ? 'none' : undefined}
           onFocus={handleInputTextFocus}
           onBlur={handleInputTextBlur}
           onChange={handleInputTextChangedDebounced}

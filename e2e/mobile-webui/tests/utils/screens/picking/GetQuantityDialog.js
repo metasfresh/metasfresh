@@ -28,6 +28,27 @@ export const GetQuantityDialog = {
         await page.locator('#qty-input').type(`${qty}`);
     }),
 
+    expectLotNoVisible: async () => await test.step(`${NAME} - Expect LotNo visible`, async () => {
+        await expect(page.getByTestId('lotNo')).toBeVisible();
+    }),
+
+    expectLotNoNotVisible: async () => await test.step(`${NAME} - Expect LotNo not visible`, async () => {
+        await expect(page.getByTestId('lotNo')).not.toBeVisible();
+    }),
+
+    expectBestBeforeDateVisible: async () => await test.step(`${NAME} - Expect BestBeforeDate visible`, async () => {
+        await expect(page.getByTestId('bestBeforeDate')).toBeVisible();
+    }),
+
+    expectBestBeforeDateNotVisible: async () => await test.step(`${NAME} - Expect BestBeforeDate not visible`, async () => {
+        await expect(page.getByTestId('bestBeforeDate')).not.toBeVisible();
+    }),
+
+    typeLotNo: async (lotNo) => await test.step(`${NAME} - Type LotNo '${lotNo}'`, async () => {
+        const field = page.getByTestId('lotNo');
+        await clickAndType(field, lotNo);
+    }),
+
     typeCatchWeight: async (qty) => await test.step(`${NAME} - Type CatchWeight '${qty}'`, async () => {
         // Replace `.` with locale-appropriate decimal, e.g., `,` for some regions
         const correctedQty = `${qty}`.replace('.', (1.1).toLocaleString().substring(1, 2));
@@ -98,7 +119,7 @@ export const GetQuantityDialog = {
         await expectMissingOrDisabled(page.getByTestId('confirmDoneAndCloseTarget-button'));
     }),
 
-    fillAndPressDone: async ({ switchToManualInput, expectQtyEntered, qtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason, expectedError }) => await test.step(`${NAME} - Fill dialog`, async () => {
+    fillAndPressDone: async ({ switchToManualInput, expectQtyEntered, qtyEntered, lotNo, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason, expectedError }) => await test.step(`${NAME} - Fill dialog`, async () => {
         await GetQuantityDialog.waitForDialog();
 
         // run this first!
@@ -111,6 +132,9 @@ export const GetQuantityDialog = {
         }
         if (qtyEntered != null) {
             await GetQuantityDialog.typeQtyEntered(qtyEntered);
+        }
+        if (lotNo != null) {
+            await GetQuantityDialog.typeLotNo(lotNo);
         }
         if (catchWeight != null) {
             await GetQuantityDialog.typeCatchWeight(catchWeight);

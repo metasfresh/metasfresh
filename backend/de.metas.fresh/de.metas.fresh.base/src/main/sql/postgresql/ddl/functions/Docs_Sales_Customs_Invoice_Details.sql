@@ -33,7 +33,7 @@ SELECT data.Name,
        SUM(data.bruttoweight) AS bruttoweight,
        data.Description,
        data.SSCC18,
-       data.PriceActual
+       ROUND(SUM(data.linenetamt) / NULLIF(SUM(data.InvoicedQty), 0), 2)
 FROM (SELECT il.lineno,
              COALESCE(ct.Name, ct.Value, p.Value)                                                                      AS Name,
              il.InvoicedQty,
@@ -70,8 +70,8 @@ FROM (SELECT il.lineno,
       GROUP BY ct.Name, ct.value, COALESCE(uomt.UOMSymbol, uom.UOMSymbol), uom.StdPrecision, c.cursymbol, i.DocumentNo,
                ct.Seqno, il.c_customs_invoice_line_id, p.Value, ct.description
       ORDER BY ct.Seqno, ct.value, ct.Name) AS data
-GROUP BY data.Name, data.CustomsTariff, data.UOM, data.QtyPattern, data.cursymbol, data.CustomInvoiceDocNo, data.lineno, data.Description, data.SSCC18, data.PriceActual
-ORDER BY data.lineno, data.CustomsTariff, data.Name
+GROUP BY data.Name, data.CustomsTariff, data.UOM, data.QtyPattern, data.cursymbol, data.CustomInvoiceDocNo, data.Description, data.SSCC18
+ORDER BY data.CustomsTariff, data.Name
 
 $BODY$
 ;

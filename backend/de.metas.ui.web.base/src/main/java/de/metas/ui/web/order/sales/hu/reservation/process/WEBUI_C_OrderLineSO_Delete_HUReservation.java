@@ -72,7 +72,7 @@ public class WEBUI_C_OrderLineSO_Delete_HUReservation
 	{
 		final RetrieveHUsQtyRequest request = WEBUI_C_OrderLineSO_Util.createHuQuantityRequest(
 				streamSelectedHUIds(Select.ALL), productId);
-		return huReservationService.retrieveUnreservableQty(request);
+		return huReservationService.retrieveActualReservedQty(request);
 	}
 
 	@Override

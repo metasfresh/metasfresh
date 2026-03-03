@@ -425,6 +425,11 @@ public class C_Order_StepDef
 				.map(shipperTable::extractIdFromRecord)
 				.map(ShipperId::getRepoId)
 				.ifPresent(order::setM_Shipper_ID);
+		tableRow.getAsOptionalIdentifier(COLUMNNAME_C_Project_ID)
+				.map(projectTable::get)
+				.map(projectTable::extractIdFromRecord)
+				.map(ProjectId::getRepoId)
+				.ifPresent(order::setC_Project_ID);
 
 		saveRecord(order);
 
@@ -726,7 +731,8 @@ public class C_Order_StepDef
 
 		row.getAsOptionalString(COLUMNNAME_DocBaseType)
 				.ifPresent(docBaseType -> {
-					final I_C_DocType docType = docTypeDAO.getById(DocTypeId.ofRepoId(order.getC_DocType_ID()));
+					final int docTypeRepoId = CoalesceUtil.firstGreaterThanZero(order.getC_DocType_ID(), order.getC_DocTypeTarget_ID());
+					final I_C_DocType docType = docTypeDAO.getById(DocTypeId.ofRepoId(docTypeRepoId));
 					softly.assertThat(docType.getDocBaseType()).as("DocBaseType for Identifier=%s", identifierStr).isEqualTo(docBaseType);
 				});
 

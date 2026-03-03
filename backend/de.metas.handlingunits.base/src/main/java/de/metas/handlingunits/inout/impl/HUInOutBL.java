@@ -58,6 +58,7 @@ import de.metas.material.MovementType;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -134,7 +135,9 @@ public class HUInOutBL implements IHUInOutBL
 		final BigDecimal qtyEntered = candidate.getQty();
 		final BigDecimal qty = candidate.getQtyInStockingUOM();
 		final I_M_Material_Tracking materialTracking = candidate.getM_MaterialTracking();
+		final ProjectId projectId = candidate.getUniqueProjectIdOrNull();
 
+		inoutLineHU.setC_Project_ID(ProjectId.toRepoId(projectId));
 		inoutLineHU.setM_Material_Tracking(materialTracking); // task 07734
 		inoutLineHU.setM_Product_ID(productId);
 		inoutLineHU.setC_UOM_ID(uom.getC_UOM_ID());
@@ -148,6 +151,7 @@ public class HUInOutBL implements IHUInOutBL
 
 		// NOTE: packing material lines shall have no order line set (07969). This will prevent generating ICs.
 		inoutLineHU.setC_OrderLine(null);
+
 
 		InterfaceWrapperHelper.save(inoutLineHU);
 	}

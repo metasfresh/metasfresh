@@ -86,6 +86,9 @@ import java.math.BigDecimal;
 	private void updateExistingProductNotSave(@NonNull final I_M_Product product,
 											  @NonNull final I_I_Product from)
 	{
+		// gh#27540: reactivate inactive products when they are re-imported
+		product.setIsActive(true);
+
 		product.setValue(from.getValue());
 		if (from.isUpdateName())
 		{

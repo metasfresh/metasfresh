@@ -3,8 +3,6 @@ package de.metas.edi.api.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.business.BusinessTestHelper;
-import de.metas.edi.api.impl.pack.EDIDesadvPackRepository;
-import de.metas.edi.api.impl.pack.EDIDesadvPackService;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_C_OrderLine;
 import de.metas.edi.model.I_M_InOut;
@@ -18,7 +16,6 @@ import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
-import de.metas.handlingunits.generichumodel.HURepository;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -219,8 +216,7 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 		inOutLineRecord.setM_InOut_ID(inOutRecord.getM_InOut_ID());
 		saveRecord(inOutLineRecord);
 
-		final HURepository huRepository = new HURepository();
-		desadvBL = new DesadvBL(new EDIDesadvPackService(huRepository, new EDIDesadvPackRepository()), new EDIDesadvInOutLineDAO());
+		desadvBL = DesadvBL.newInstanceForUnitTesting();
 
 		bestBeforeAttrRecord = huTestHelper.attr_BestBeforeDate;
 	}

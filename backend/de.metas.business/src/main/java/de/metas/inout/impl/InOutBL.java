@@ -150,7 +150,7 @@ public class InOutBL implements IInOutBL
 	@Override
 	public <T extends I_M_InOut> T getById(@NonNull final InOutId inoutId, @NonNull final Class<T> modelClass)
 	{
-	   return inOutDAO.getById(inoutId, modelClass);
+		return inOutDAO.getById(inoutId, modelClass);
 	}
 
 	@Override

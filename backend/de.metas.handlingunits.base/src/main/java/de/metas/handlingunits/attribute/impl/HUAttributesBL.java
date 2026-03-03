@@ -423,4 +423,20 @@ public class HUAttributesBL implements IHUAttributesBL
 		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu);
 		return attributeStorage.getAttributeValue(attributeCode);
 	}
+
+	@Override
+	public Optional<IAttributeValue> getAttributeValueIfExists(@NonNull final I_M_HU hu, @NonNull final AttributeCode attributeCode)
+	{
+		final IMutableHUContext huContext = handlingUnitsBL.createMutableHUContext(PlainContextAware.newWithThreadInheritedTrx());
+
+		final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
+		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu);
+		if (!attributeStorage.hasAttribute(attributeCode))
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(attributeStorage.getAttributeValue(attributeCode));
+	}
+
 }

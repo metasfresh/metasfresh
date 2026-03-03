@@ -75,7 +75,6 @@ public interface IHUAttributesBL extends ISingletonService
 
 	void updateHUAttribute(@NonNull final I_M_HU destHU, @NonNull final I_M_HU sourceHU, @NonNull final AttributeCode attributeCode);
 
-
 	void updateHUAttribute(@NonNull final IHUContext huContext, @NonNull final I_M_HU destHU, @NonNull final I_M_HU sourceHU, @NonNull final AttributeCode attributeCode);
 
 	/**
@@ -118,4 +117,6 @@ public interface IHUAttributesBL extends ISingletonService
 
 	@Nullable
 	IAttributeValue getAttributeValue(@NonNull I_M_HU hu, @NonNull AttributeCode attributeCode);
+
+	Optional<IAttributeValue> getAttributeValueIfExists(@NonNull I_M_HU hu, @NonNull AttributeCode attributeCode);
 }
