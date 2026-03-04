@@ -506,6 +506,20 @@ public class C_Order
 	})
 	public void onDropShipLocation(final I_C_Order order)
 	{
+		if (order.getDropShip_Location_ID() <= 0)
+		{
+			// nothing to do
+			return;
+		}
+
+		orderBL.setPriceList(order);
+
+		orderBL.setShipperId(order);
+	}
+
+	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_DropShip_Location_ID)
+	public void onDropShipLocationCallout(final I_C_Order order)
+	{
 		// NOTE: this method also fires on C_BPartner_Location_ID changes (see @ModelChange above),
 		// but the guard below ensures we only proceed when DropShip_Location_ID is actually set.
 		if (order.getDropShip_Location_ID() <= 0)
@@ -524,10 +538,6 @@ public class C_Order
 		{
 			order.setDropShip_BPartner_ID(order.getC_BPartner_ID());
 		}
-
-		orderBL.setPriceList(order);
-
-		orderBL.setShipperId(order);
 	}
 
 	@ModelChange(timings = {
