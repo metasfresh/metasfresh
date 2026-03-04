@@ -1,6 +1,8 @@
 package de.metas.inoutcandidate.api.impl;
 
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -50,6 +52,8 @@ import java.math.BigDecimal;
 
 	@VisibleForTesting
 	static final String MSG_ClosedStatus = "ShipmentSchedule_Closed_Status";
+
+	private static final ReferenceId CLOSEREASON_AD_Reference_ID = ReferenceId.ofRepoId(542061);
 
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleQtysHelper.class);
 
@@ -117,7 +121,8 @@ import java.math.BigDecimal;
 			final String closedMsg = Services.get(IMsgBL.class).getMsg(Env.getCtx(), MSG_ClosedStatus);
 			if (closeReason != null)
 			{
-				statusMessages.append(closedMsg).append(" (").append(closeReason.getCode()).append(")").append("\n");
+				final String closeReasonLabel = ADReferenceService.get().retrieveListNameTrl(Env.getCtx(), CLOSEREASON_AD_Reference_ID, closeReason.getCode());
+				statusMessages.append(closedMsg).append(" (").append(closeReasonLabel).append(")").append("\n");
 			}
 			else
 			{

@@ -47,7 +47,7 @@ WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t
 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
 ;
 
-UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Manuell', Updated=TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Ref_List_ID=544135 AND AD_Language IN ('de_DE', 'de_CH')
 ;
 
@@ -67,7 +67,7 @@ WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t
 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
 ;
 
-UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Bestellung reaktiviert', Updated=TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Ref_List_ID=544136 AND AD_Language IN ('de_DE', 'de_CH')
 ;
 
@@ -87,7 +87,7 @@ WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t
 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
 ;
 
-UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Teilweise geliefert', Updated=TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Ref_List_ID=544137 AND AD_Language IN ('de_DE', 'de_CH')
 ;
 
@@ -107,7 +107,7 @@ WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t
 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
 ;
 
-UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Rechnungskandidat geschlossen', Updated=TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Ref_List_ID=544138 AND AD_Language IN ('de_DE', 'de_CH')
 ;
 
@@ -127,7 +127,7 @@ WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t
 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
 ;
 
-UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Pauschalvertrag', Updated=TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Ref_List_ID=544139 AND AD_Language IN ('de_DE', 'de_CH')
 ;
 
@@ -147,7 +147,7 @@ WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t
 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
 ;
 
-UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Vertragspause', Updated=TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Ref_List_ID=544140 AND AD_Language IN ('de_DE', 'de_CH')
 ;
 
@@ -167,7 +167,7 @@ WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t
 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
 ;
 
-UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Lieferung verarbeitet', Updated=TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Ref_List_ID=544141 AND AD_Language IN ('de_DE', 'de_CH')
 ;
 
@@ -187,7 +187,7 @@ WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t
 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
 ;
 
-UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Kommissionierung abgelehnt', Updated=TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Ref_List_ID=544142 AND AD_Language IN ('de_DE', 'de_CH')
 ;
 
@@ -207,7 +207,7 @@ WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t
 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
 ;
 
-UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Nicht auf Lager', Updated=TO_TIMESTAMP('2026-03-02 10:00:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Ref_List_ID=544143 AND AD_Language IN ('de_DE', 'de_CH')
 ;
 
