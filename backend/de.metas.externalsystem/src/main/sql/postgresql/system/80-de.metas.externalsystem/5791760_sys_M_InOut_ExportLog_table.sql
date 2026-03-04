@@ -304,31 +304,20 @@ VALUES (592163, 0, 0, 'Y', TO_TIMESTAMP('2026-03-04 13:00', 'YYYY-MM-DD HH24:MI'
 -- =============================================
 -- 5. Physical table
 -- =============================================
-SELECT db_alter_table('M_InOut_ExternalSystem_ScriptedAdapter_ExportLog',
-                      'ADD COLUMN IF NOT EXISTS M_InOut_ExternalSystem_ScriptedAdapter_ExportLog_ID BIGSERIAL PRIMARY KEY');
-SELECT db_alter_table('M_InOut_ExternalSystem_ScriptedAdapter_ExportLog',
-                      'ADD COLUMN IF NOT EXISTS AD_Client_ID NUMERIC(10) NOT NULL');
-SELECT db_alter_table('M_InOut_ExternalSystem_ScriptedAdapter_ExportLog',
-                      'ADD COLUMN IF NOT EXISTS AD_Org_ID NUMERIC(10) NOT NULL');
-SELECT db_alter_table('M_InOut_ExternalSystem_ScriptedAdapter_ExportLog',
-                      'ADD COLUMN IF NOT EXISTS IsActive CHAR(1) NOT NULL DEFAULT ''Y''');
-SELECT db_alter_table('M_InOut_ExternalSystem_ScriptedAdapter_ExportLog',
-                      'ADD COLUMN IF NOT EXISTS Created TIMESTAMP NOT NULL DEFAULT now()');
-SELECT db_alter_table('M_InOut_ExternalSystem_ScriptedAdapter_ExportLog',
-                      'ADD COLUMN IF NOT EXISTS CreatedBy NUMERIC(10) NOT NULL');
-SELECT db_alter_table('M_InOut_ExternalSystem_ScriptedAdapter_ExportLog',
-                      'ADD COLUMN IF NOT EXISTS Updated TIMESTAMP NOT NULL DEFAULT now()');
-SELECT db_alter_table('M_InOut_ExternalSystem_ScriptedAdapter_ExportLog',
-                      'ADD COLUMN IF NOT EXISTS UpdatedBy NUMERIC(10) NOT NULL');
-SELECT db_alter_table('M_InOut_ExternalSystem_ScriptedAdapter_ExportLog',
-                      'ADD COLUMN IF NOT EXISTS M_InOut_ID NUMERIC(10) NOT NULL');
-SELECT db_alter_table('M_InOut_ExternalSystem_ScriptedAdapter_ExportLog',
-                      'ADD COLUMN IF NOT EXISTS ExternalSystem_Config_ScriptedExportConversion_ID NUMERIC(10) NOT NULL');
-SELECT db_alter_table('M_InOut_ExternalSystem_ScriptedAdapter_ExportLog',
-                      'ADD COLUMN IF NOT EXISTS ExternalSystemScriptedAdapterExportStatus VARCHAR(1) NOT NULL DEFAULT ''P''');
-SELECT db_alter_table('M_InOut_ExternalSystem_ScriptedAdapter_ExportLog',
-                      'ADD COLUMN IF NOT EXISTS ErrorMsg TEXT');
-SELECT db_alter_table('M_InOut_ExternalSystem_ScriptedAdapter_ExportLog',
-                      'ADD COLUMN IF NOT EXISTS SendDate TIMESTAMP');
-SELECT db_alter_table('M_InOut_ExternalSystem_ScriptedAdapter_ExportLog',
-                      'ADD COLUMN IF NOT EXISTS AD_PInstance_ID NUMERIC(10)');
+CREATE TABLE IF NOT EXISTS M_InOut_ExternalSystem_ScriptedAdapter_ExportLog
+(
+    M_InOut_ExternalSystem_ScriptedAdapter_ExportLog_ID BIGSERIAL PRIMARY KEY,
+    AD_Client_ID                                         NUMERIC(10)  NOT NULL,
+    AD_Org_ID                                            NUMERIC(10)  NOT NULL,
+    IsActive                                             CHAR(1)      NOT NULL DEFAULT 'Y',
+    Created                                              TIMESTAMP    NOT NULL DEFAULT now(),
+    CreatedBy                                            NUMERIC(10)  NOT NULL,
+    Updated                                              TIMESTAMP    NOT NULL DEFAULT now(),
+    UpdatedBy                                            NUMERIC(10)  NOT NULL,
+    M_InOut_ID                                           NUMERIC(10)  NOT NULL,
+    ExternalSystem_Config_ScriptedExportConversion_ID    NUMERIC(10)  NOT NULL,
+    ExternalSystemScriptedAdapterExportStatus            VARCHAR(1)   NOT NULL DEFAULT 'P',
+    ErrorMsg                                             TEXT,
+    SendDate                                             TIMESTAMP,
+    AD_PInstance_ID                                      NUMERIC(10)
+);

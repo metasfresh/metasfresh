@@ -49,7 +49,7 @@ VALUES (592116, 0, 0, 'Y', TO_TIMESTAMP('2026-03-04 10:00', 'YYYY-MM-DD HH24:MI'
         'NP');
 
 -- 4. Physical column + populate existing rows + make NOT NULL
-SELECT db_alter_table('ExternalSystem_Outbound_Endpoint', 'ADD COLUMN IF NOT EXISTS ContentType VARCHAR(40)');
+SELECT db_alter_table('ExternalSystem_Outbound_Endpoint', 'ALTER TABLE public.ExternalSystem_Outbound_Endpoint ADD COLUMN IF NOT EXISTS ContentType VARCHAR(40)');
 
 UPDATE ExternalSystem_Outbound_Endpoint SET ContentType = 'application/json' WHERE ContentType IS NULL;
 
@@ -58,7 +58,7 @@ INSERT INTO t_alter_column VALUES ('ExternalSystem_Outbound_Endpoint', 'ContentT
 -- 5. AD_Field on the Outbound Endpoint window/tab
 INSERT INTO AD_Field (AD_Field_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
                       AD_Column_ID, AD_Tab_ID, Name, Description, EntityType,
-                      IsDisplayed, IsReadOnly, IsSameLine, IsCentrallyMaintained, IsFieldOnly)
+                      IsDisplayed, IsReadOnly, IsSameLine, IsFieldOnly)
 VALUES (774765, 0, 0, 'Y', TO_TIMESTAMP('2026-03-04 10:00', 'YYYY-MM-DD HH24:MI'), 100, TO_TIMESTAMP('2026-03-04 10:00', 'YYYY-MM-DD HH24:MI'), 100,
         592116, 548506, 'Content type', 'HTTP Content-Type header value (e.g. application/json, application/xml)', 'de.metas.externalsystem',
-        'Y', 'N', 'N', 'Y', 'N');
+        'Y', 'N', 'N', 'N');

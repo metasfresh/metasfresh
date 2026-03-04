@@ -19,7 +19,7 @@ VALUES (592148, 0, 0, 'Y', TO_TIMESTAMP('2026-03-04 12:00', 'YYYY-MM-DD HH24:MI'
         'NP');
 
 -- Physical column
-SELECT db_alter_table('ExternalSystem_Config_ScriptedExportConversion', 'ADD COLUMN IF NOT EXISTS SeqNo INTEGER');
+SELECT db_alter_table('ExternalSystem_Config_ScriptedExportConversion', 'ALTER TABLE public.ExternalSystem_Config_ScriptedExportConversion ADD COLUMN IF NOT EXISTS SeqNo INTEGER');
 
 -- Backfill existing TriggerOnComplete records
 UPDATE ExternalSystem_Config_ScriptedExportConversion
@@ -31,7 +31,7 @@ WHERE SeqNo IS NULL
 -- AD_Field on standalone window tab (548471)
 INSERT INTO AD_Field (AD_Field_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
                       AD_Column_ID, AD_Tab_ID, Name, Description, EntityType,
-                      IsDisplayed, IsReadOnly, IsSameLine, IsCentrallyMaintained, IsFieldOnly)
+                      IsDisplayed, IsReadOnly, IsSameLine, IsFieldOnly)
 VALUES (774820, 0, 0, 'Y', TO_TIMESTAMP('2026-03-04 12:00', 'YYYY-MM-DD HH24:MI'), 100, TO_TIMESTAMP('2026-03-04 12:00', 'YYYY-MM-DD HH24:MI'), 100,
         592148, 548471, 'Reihenfolge', 'Zur Bestimmung der Reihenfolge der Einträge', 'de.metas.externalsystem',
-        'Y', 'N', 'N', 'Y', 'N');
+        'Y', 'N', 'N', 'N');

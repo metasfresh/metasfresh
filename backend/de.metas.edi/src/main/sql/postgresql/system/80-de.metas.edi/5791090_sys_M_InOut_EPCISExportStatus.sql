@@ -71,12 +71,12 @@ VALUES (592117, 0, 0, 'Y', TO_TIMESTAMP('2026-03-02 10:00', 'YYYY-MM-DD HH24:MI'
         'NP');
 
 -- Physical column
-SELECT db_alter_table('M_InOut', 'ADD COLUMN IF NOT EXISTS EPCISExportStatus CHAR(1)');
+SELECT db_alter_table('M_InOut', 'ALTER TABLE public.M_InOut ADD COLUMN IF NOT EXISTS EPCISExportStatus CHAR(1)');
 
 -- AD_Field on Shipment window (Lieferung, AD_Window_ID=169, AD_Tab_ID=257)
 INSERT INTO AD_Field (AD_Field_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
                       AD_Column_ID, AD_Tab_ID, Name, EntityType,
-                      IsDisplayed, IsReadOnly, IsSameLine, IsCentrallyMaintained, IsFieldOnly)
+                      IsDisplayed, IsReadOnly, IsSameLine, IsFieldOnly)
 VALUES (774766, 0, 0, 'Y', TO_TIMESTAMP('2026-03-02 10:00', 'YYYY-MM-DD HH24:MI'), 100, TO_TIMESTAMP('2026-03-02 10:00', 'YYYY-MM-DD HH24:MI'), 100,
         592117, 257, 'EPCIS Export Status', 'de.metas.esb.edi',
-        'Y', 'Y', 'N', 'Y', 'N');
+        'Y', 'Y', 'N', 'N');

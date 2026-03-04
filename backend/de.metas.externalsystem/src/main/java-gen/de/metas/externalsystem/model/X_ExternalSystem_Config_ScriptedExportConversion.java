@@ -245,6 +245,30 @@ public class X_ExternalSystem_Config_ScriptedExportConversion extends org.compie
 	}
 
 	@Override
+	public void setExternalSystemErrorContext (final @Nullable java.lang.String ExternalSystemErrorContext)
+	{
+		set_Value (COLUMNNAME_ExternalSystemErrorContext, ExternalSystemErrorContext);
+	}
+
+	@Override
+	public java.lang.String getExternalSystemErrorContext()
+	{
+		return get_ValueAsString(COLUMNNAME_ExternalSystemErrorContext);
+	}
+
+	@Override
+	public void setSeqNo (final int SeqNo)
+	{
+		set_Value (COLUMNNAME_SeqNo, SeqNo);
+	}
+
+	@Override
+	public int getSeqNo()
+	{
+		return get_ValueAsInt(COLUMNNAME_SeqNo);
+	}
+
+	@Override
 	public void setScriptIdentifier (final java.lang.String ScriptIdentifier)
 	{
 		set_Value (COLUMNNAME_ScriptIdentifier, ScriptIdentifier);
