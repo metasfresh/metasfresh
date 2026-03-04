@@ -1,5 +1,18 @@
 -- Run mode: SWING_CLIENT
 
+-- AD_Element: IsReadyForPOCreation
+-- 2026-03-04T15:59:59.000Z
+INSERT INTO AD_Element (AD_Client_ID, AD_Element_ID, AD_Org_ID, ColumnName, Created, CreatedBy, EntityType, IsActive, Name, PrintName, Updated, UpdatedBy)
+VALUES (0, 584618, 0, 'IsReadyForPOCreation', TO_TIMESTAMP('2026-03-04 15:59:59', 'YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', 100, 'de.metas.purchasecandidate', 'Y', 'Ready for PO Creation', 'Ready for PO Creation', TO_TIMESTAMP('2026-03-04 15:59:59', 'YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', 100)
+;
+
+INSERT INTO AD_Element_Trl (AD_Language, AD_Element_ID, Name, PrintName, IsTranslated, AD_Client_ID, AD_Org_ID, Created, Createdby, Updated, UpdatedBy, IsActive)
+SELECT l.AD_Language, t.AD_Element_ID, t.Name, t.PrintName, 'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.Createdby, t.Updated, t.UpdatedBy, 'Y'
+FROM AD_Language l, AD_Element t
+WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') AND t.AD_Element_ID = 584618
+  AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Element_ID = t.AD_Element_ID)
+;
+
 -- Column: C_PurchaseCandidate.IsReadyForPOCreation
 -- 2026-03-04T16:00:00.000Z
 -- AD_Element_ID=584618, AD_Column_ID=592168
