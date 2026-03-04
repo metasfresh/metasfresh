@@ -22,22 +22,41 @@
 
 package de.metas.externalsystem.scriptedexportconversion.exportlog;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 @Value
 public class ExternalSystemScriptedAdapterExportLogId implements RepoIdAware
 {
 	int repoId;
 
+	@JsonCreator
+	@NonNull
 	public static ExternalSystemScriptedAdapterExportLogId ofRepoId(final int repoId)
 	{
 		return new ExternalSystemScriptedAdapterExportLogId(repoId);
 	}
 
+	@Nullable
+	public static ExternalSystemScriptedAdapterExportLogId ofRepoIdOrNull(@Nullable final Integer repoId)
+	{
+		return repoId != null && repoId > 0 ? new ExternalSystemScriptedAdapterExportLogId(repoId) : null;
+	}
+
+	@JsonValue
+	public int toJson()
+	{
+		return getRepoId();
+	}
+
 	private ExternalSystemScriptedAdapterExportLogId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "M_InOut_ExternalSystem_ScriptedAdapter_ExportLog_ID");
 	}
 }

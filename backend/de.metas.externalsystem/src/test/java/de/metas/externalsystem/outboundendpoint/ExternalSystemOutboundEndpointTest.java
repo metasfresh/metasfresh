@@ -47,6 +47,7 @@ class ExternalSystemOutboundEndpointTest
 				.user("test@example.com")
 				.password("test-password")
 				.sasSignature("test-signature")
+				.contentType("application/json")
 				.build();
 
 		// when
