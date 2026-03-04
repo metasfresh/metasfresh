@@ -6,12 +6,14 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.externalsystem.ExternalSystemId;
 import de.metas.externalsystem.ExternalSystemIdWithExternalIds;
 import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.user.UserId;
 import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
@@ -407,6 +409,12 @@ public class PurchaseCandidateRepository
 			record.setC_Currency_ID(purchaseCandidate.getCurrencyId().getRepoId());
 		}
 		record.setExternalPurchaseOrderURL(purchaseCandidate.getExternalPurchaseOrderUrl());
+
+		record.setIsDropShip(purchaseCandidate.isDropShip());
+		record.setDropShip_BPartner_ID(BPartnerId.toRepoId(purchaseCandidate.getDropShipBPartnerId()));
+		record.setDropShip_Location_ID(BPartnerLocationId.toRepoId(purchaseCandidate.getDropShipLocationId()));
+		record.setDropShip_User_ID(UserId.toRepoId(purchaseCandidate.getDropShipUserId()));
+
 		record.setIsSimulated(purchaseCandidate.isSimulated());
 
 		if (purchaseCandidate.isSimulated())
@@ -517,6 +525,11 @@ public class PurchaseCandidateRepository
 				.taxCategoryId(TaxCategoryId.ofRepoIdOrNull(record.getC_TaxCategory_ID()))
 				.currencyId(CurrencyId.ofRepoIdOrNull(record.getC_Currency_ID()))
 				.externalPurchaseOrderUrl(record.getExternalPurchaseOrderURL())
+				//
+				.isDropShip(record.isDropShip())
+				.dropShipBPartnerId(BPartnerId.ofRepoIdOrNull(record.getDropShip_BPartner_ID()))
+				.dropShipLocationId(BPartnerLocationId.ofRepoIdOrNull(BPartnerId.ofRepoIdOrNull(record.getDropShip_BPartner_ID()), record.getDropShip_Location_ID() > 0 ? record.getDropShip_Location_ID() : null))
+				.dropShipUserId(UserId.ofRepoIdOrNull(record.getDropShip_User_ID()))
 				//
 				.build();
 

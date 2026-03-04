@@ -1,12 +1,14 @@
 package de.metas.purchasecandidate;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.dimension.Dimension;
 import de.metas.externalsystem.ExternalSystemId;
 import de.metas.mforecast.impl.ForecastLineId;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.user.UserId;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -90,4 +92,15 @@ class PurchaseCandidateImmutableFields
 
 	@Nullable
 	String externalPurchaseOrderUrl;
+
+	boolean isDropShip;
+
+	@Nullable
+	BPartnerId dropShipBPartnerId;
+
+	@Nullable
+	BPartnerLocationId dropShipLocationId;
+
+	@Nullable
+	UserId dropShipUserId;
 }
