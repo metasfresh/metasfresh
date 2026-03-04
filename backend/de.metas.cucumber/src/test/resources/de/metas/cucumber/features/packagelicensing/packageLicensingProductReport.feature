@@ -1,6 +1,6 @@
 @from:cucumber
 @ghActions:run_on_executor5
-Feature: Package Licensing Product Report (gh#28225)
+Feature: Package Licensing Product Report (gh#28225, gh#28487)
   Verifies that the SQL function report.Package_Licensing_Product_Report()
   returns the correct product master data for packaging licensing.
 
@@ -19,7 +19,7 @@ Feature: Package Licensing Product Report (gh#28225)
       | p_plr_2                 | 101          | Tiernahrung      | PPK                        | 0.200                |                            |                      |
     When the Package Licensing Product Report is executed without country filter
     Then the Package Licensing Product Report result contains:
-      | ProductName     | ProductGroup | SmallPackagingMaterial | SmallPackagingWeight | OverpackMaterial | OverpackWeight |
+      | ProductName     | MaterialType | SmallPackagingMaterial | SmallPackagingWeight | OverpackMaterial | OverpackWeight |
       | PLR Test Prod 1 | Lebensmittel | Glas                   | 0.150                | Kunststoffe      | 0.030          |
       | PLR Test Prod 2 | Tiernahrung  | PPK                    | 0.200                |                  |                |
 
@@ -35,6 +35,25 @@ Feature: Package Licensing Product Report (gh#28225)
       | p_plr_4                 | 108          | Lebensmittel AT  | Glas AT                    | 0.100                | Kunststoffe AT             | 0.020                |
     When the Package Licensing Product Report is executed with C_Country_ID 101
     Then the Package Licensing Product Report result contains:
-      | ProductName     | ProductGroup    | SmallPackagingMaterial | SmallPackagingWeight | OverpackMaterial | OverpackWeight |
+      | ProductName     | MaterialType    | SmallPackagingMaterial | SmallPackagingWeight | OverpackMaterial | OverpackWeight |
       | PLR Test Prod 3 | Lebensmittel DE | Glas DE                | 0.100                | Kunststoffe DE   | 0.020          |
       | PLR Test Prod 4 |                 |                        | 0.100                |                  | 0.020          |
+
+  @Id:S28487_10
+  Scenario: S28487_10 - Report returns new columns (ProductCategory, MaterialType, PackagingInstructionFactor, DeliveredQtyLast12Months)
+    Given metasfresh contains M_Products:
+      | Identifier | Name            |
+      | p_plr_5    | PLR Test Prod 5 |
+    And package licensing test data is set up:
+      | M_Product_ID.Identifier | C_Country_ID | ProductGroupName | ProductCategoryName | SmallPackagingMaterialName | SmallPackagingWeight | OuterPackagingMaterialName | OuterPackagingWeight |
+      | p_plr_5                 | 101          | Lebensmittel     | PLR Test Category   | Glas                       | 0.150                | Kunststoffe                | 0.030                |
+    And package licensing packaging instruction test data is set up:
+      | M_Product_ID.Identifier | Qty | IsDefaultForProduct |
+      | p_plr_5                 | 12  | Y                   |
+    And package licensing shipment test data is set up:
+      | M_Product_ID.Identifier | MovementQty |
+      | p_plr_5                 | 100         |
+    When the Package Licensing Product Report is executed without country filter
+    Then the Package Licensing Product Report result contains:
+      | ProductName     | MaterialType | ProductCategory   | SmallPackagingMaterial | SmallPackagingWeight | OverpackMaterial | OverpackWeight | PackagingInstructionFactor | DeliveredQtyLast12Months |
+      | PLR Test Prod 5 | Lebensmittel | PLR Test Category | Glas                   | 0.150                | Kunststoffe      | 0.030          | 12                         | 100                      |

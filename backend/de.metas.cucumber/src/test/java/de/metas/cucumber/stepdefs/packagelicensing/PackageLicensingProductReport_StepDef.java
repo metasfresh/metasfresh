@@ -39,6 +39,7 @@ import java.util.stream.Collectors;
  * directly covers the actual business logic without needing to parse Excel output.
  *
  * @see <a href="https://github.com/metasfresh/metasfresh/issues/28225">gh#28225</a>
+ * @see <a href="https://github.com/metasfresh/metasfresh/issues/28487">gh#28487</a>
  */
 @RequiredArgsConstructor
 public class PackageLicensingProductReport_StepDef
@@ -64,6 +65,7 @@ public class PackageLicensingProductReport_StepDef
 	 *   <li>{@code SmallPackagingWeight} (optional) — sets M_Product.SmallPackagingWeight</li>
 	 *   <li>{@code OuterPackagingMaterialName} (optional) — creates M_PackageLicensing_MaterialGroup and links via M_Product_OuterPackagingMaterial</li>
 	 *   <li>{@code OuterPackagingWeight} (optional) — sets M_Product.OuterPackagingWeight</li>
+	 *   <li>{@code ProductCategoryName} (optional) — creates M_Product_Category and assigns it to the product</li>
 	 * </ul>
 	 */
 	@And("package licensing test data is set up:")
@@ -113,6 +115,15 @@ public class PackageLicensingProductReport_StepDef
 		{
 			DB.executeUpdateAndThrowExceptionOnFail(
 					"UPDATE M_Product SET OuterPackagingWeight=" + outerPackagingWeight + " WHERE M_Product_ID=" + productId,
+					ITrx.TRXNAME_None);
+		}
+
+		final String productCategoryName = row.getAsOptionalString("ProductCategoryName").orElse(null);
+		if (productCategoryName != null && !productCategoryName.isEmpty())
+		{
+			final int categoryId = insertProductCategory(productCategoryName);
+			DB.executeUpdateAndThrowExceptionOnFail(
+					"UPDATE M_Product SET M_Product_Category_ID=" + categoryId + " WHERE M_Product_ID=" + productId,
 					ITrx.TRXNAME_None);
 		}
 	}
@@ -174,6 +185,122 @@ public class PackageLicensingProductReport_StepDef
 				ITrx.TRXNAME_None);
 	}
 
+	private int insertProductCategory(@NonNull final String name)
+	{
+		final int id = DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT nextval('M_PRODUCT_CATEGORY_SEQ')");
+		DB.executeUpdateAndThrowExceptionOnFail(
+				"INSERT INTO M_Product_Category "
+						+ "(M_Product_Category_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, Value, Name, IsDefault, IsSelfService, PlannedMargin, MMPolicy) "
+						+ "VALUES (" + id + ", " + Env.getAD_Client_ID(Env.getCtx()) + ", " + Env.getAD_Org_ID(Env.getCtx()) + ", 'Y', now(), 100, now(), 100, "
+						+ sqlQuote(name) + ", " + sqlQuote(name) + ", 'N', 'N', 0, 'F')",
+				ITrx.TRXNAME_None);
+		return id;
+	}
+
+	/**
+	 * Sets up M_HU_PI_Item_Product records for packaging instruction factor testing.
+	 *
+	 * <pre>
+	 * | M_Product_ID.Identifier | Qty | IsDefaultForProduct |
+	 * | p_1                     | 12  | Y                   |
+	 * </pre>
+	 */
+	@And("package licensing packaging instruction test data is set up:")
+	public void setupPackagingInstructionTestData(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::setupPackagingInstructionForProduct);
+	}
+
+	private void setupPackagingInstructionForProduct(@NonNull final DataTableRow row)
+	{
+		final I_M_Product product = productTable.get(row.getAsIdentifier("M_Product_ID"));
+		final int productId = product.getM_Product_ID();
+		final BigDecimal qty = row.getAsBigDecimal("Qty");
+		final String isDefault = row.getAsOptionalString("IsDefaultForProduct").orElse("N");
+
+		final int piItemId = DB.getSQLValueEx(ITrx.TRXNAME_None,
+				"SELECT M_HU_PI_Item_ID FROM M_HU_PI_Item WHERE IsActive='Y' ORDER BY M_HU_PI_Item_ID LIMIT 1");
+
+		final int id = DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT nextval('M_HU_PI_ITEM_PRODUCT_SEQ')");
+		DB.executeUpdateAndThrowExceptionOnFail(
+				"INSERT INTO M_HU_PI_Item_Product "
+						+ "(M_HU_PI_Item_Product_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, "
+						+ "M_HU_PI_Item_ID, M_Product_ID, Qty, IsDefaultForProduct, IsInfiniteCapacity, IsAllowAnyProduct, ValidFrom, IsOrderInTUOMWhenMatched) "
+						+ "VALUES (" + id + ", " + Env.getAD_Client_ID(Env.getCtx()) + ", " + Env.getAD_Org_ID(Env.getCtx()) + ", 'Y', now(), 100, now(), 100, "
+						+ piItemId + ", " + productId + ", " + qty + ", " + sqlQuote(isDefault) + ", 'N', 'N', '1970-01-01', 'N')",
+				ITrx.TRXNAME_None);
+	}
+
+	/**
+	 * Sets up M_InOut + M_InOutLine records for delivered quantity testing.
+	 * Creates a completed customer shipment (MovementType='C-', DocStatus='CO') with the given movement quantity.
+	 *
+	 * <pre>
+	 * | M_Product_ID.Identifier | MovementQty |
+	 * | p_1                     | 100         |
+	 * </pre>
+	 */
+	@And("package licensing shipment test data is set up:")
+	public void setupShipmentTestData(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::setupShipmentForProduct);
+	}
+
+	private void setupShipmentForProduct(@NonNull final DataTableRow row)
+	{
+		final I_M_Product product = productTable.get(row.getAsIdentifier("M_Product_ID"));
+		final int productId = product.getM_Product_ID();
+		final BigDecimal movementQty = row.getAsBigDecimal("MovementQty");
+
+		final int clientId = Env.getAD_Client_ID(Env.getCtx());
+		final int orgId = Env.getAD_Org_ID(Env.getCtx());
+
+		// Look up required FK references from existing data
+		final int docTypeId = DB.getSQLValueEx(ITrx.TRXNAME_None,
+				"SELECT C_DocType_ID FROM C_DocType WHERE DocBaseType='MMS' AND IsActive='Y' AND AD_Client_ID=" + clientId + " ORDER BY C_DocType_ID LIMIT 1");
+		final int bPartnerId = DB.getSQLValueEx(ITrx.TRXNAME_None,
+				"SELECT C_BPartner_ID FROM C_BPartner WHERE IsActive='Y' AND AD_Client_ID=" + clientId + " ORDER BY C_BPartner_ID LIMIT 1");
+		final int bPartnerLocationId = DB.getSQLValueEx(ITrx.TRXNAME_None,
+				"SELECT C_BPartner_Location_ID FROM C_BPartner_Location WHERE C_BPartner_ID=" + bPartnerId + " AND IsActive='Y' LIMIT 1");
+		final int warehouseId = DB.getSQLValueEx(ITrx.TRXNAME_None,
+				"SELECT M_Warehouse_ID FROM M_Warehouse WHERE IsActive='Y' AND AD_Client_ID=" + clientId + " ORDER BY M_Warehouse_ID LIMIT 1");
+		final int uomId = DB.getSQLValueEx(ITrx.TRXNAME_None,
+				"SELECT C_UOM_ID FROM C_UOM WHERE IsActive='Y' ORDER BY C_UOM_ID LIMIT 1");
+
+		// Insert M_InOut (completed customer shipment)
+		final int inOutId = DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT nextval('M_INOUT_SEQ')");
+		final String documentNo = "PLR-TEST-" + inOutId;
+		DB.executeUpdateAndThrowExceptionOnFail(
+				"INSERT INTO M_InOut "
+						+ "(M_InOut_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, "
+						+ "IsSOTrx, DocumentNo, DocAction, DocStatus, Posted, Processed, C_DocType_ID, IsPrinted, "
+						+ "MovementType, MovementDate, DateAcct, C_BPartner_ID, C_BPartner_Location_ID, M_Warehouse_ID, "
+						+ "DeliveryRule, FreightCostRule, DeliveryViaRule, PriorityRule, SendEMail, "
+						+ "IsInTransit, IsApproved, IsInDispute, IsUseBPartnerAddress, "
+						+ "EDI_ExportStatus, IsEdiEnabled, IsManual, IsInOutApprovedForInvoicing, IsExportedToCustomsInvoice, IsFillUpSpareParts) "
+						+ "VALUES (" + inOutId + ", " + clientId + ", " + orgId + ", 'Y', now(), 100, now(), 100, "
+						+ "'Y', " + sqlQuote(documentNo) + ", 'CO', 'CO', 'N', 'Y', " + docTypeId + ", 'N', "
+						+ "'C-', CURRENT_DATE, CURRENT_DATE, " + bPartnerId + ", " + bPartnerLocationId + ", " + warehouseId + ", "
+						+ "'A', 'I', 'P', '5', 'N', "
+						+ "'N', 'Y', 'N', 'N', "
+						+ "'P', 'N', 'N', 'N', 'N', 'N')",
+				ITrx.TRXNAME_None);
+
+		// Insert M_InOutLine
+		final int inOutLineId = DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT nextval('M_INOUTLINE_SEQ')");
+		DB.executeUpdateAndThrowExceptionOnFail(
+				"INSERT INTO M_InOutLine "
+						+ "(M_InOutLine_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, "
+						+ "Line, M_InOut_ID, M_Product_ID, C_UOM_ID, MovementQty, QtyEntered, IsInvoiced, IsDescription, "
+						+ "Processed, IsIndividualDescription, IsInDispute, QualityDiscountPercent, "
+						+ "IsPackagingMaterial, IsManualPackingMaterial, IsHUPrepared, IsWarrantyCase) "
+						+ "VALUES (" + inOutLineId + ", " + clientId + ", " + orgId + ", 'Y', now(), 100, now(), 100, "
+						+ "10, " + inOutId + ", " + productId + ", " + uomId + ", " + movementQty + ", " + movementQty + ", 'N', 'N', "
+						+ "'Y', 'N', 'N', 0, "
+						+ "'N', 'N', 'N', 'N')",
+				ITrx.TRXNAME_None);
+	}
+
 	@When("the Package Licensing Product Report is executed without country filter")
 	public void executeReportWithoutCountryFilter() throws SQLException
 	{
@@ -209,11 +336,14 @@ public class PackageLicensingProductReport_StepDef
 					final Map<String, String> row = new LinkedHashMap<>();
 					row.put("ProductNo", rs.getString("ProductNo"));
 					row.put("ProductName", rs.getString("ProductName"));
-					row.put("ProductGroup", rs.getString("ProductGroup"));
+					row.put("ProductCategory", rs.getString("ProductCategory"));
+					row.put("MaterialType", rs.getString("MaterialType"));
 					row.put("SmallPackagingMaterial", rs.getString("SmallPackagingMaterial"));
 					row.put("SmallPackagingWeight", bigDecimalToString(rs.getBigDecimal("SmallPackagingWeight")));
 					row.put("OverpackMaterial", rs.getString("OverpackMaterial"));
 					row.put("OverpackWeight", bigDecimalToString(rs.getBigDecimal("OverpackWeight")));
+					row.put("PackagingInstructionFactor", bigDecimalToString(rs.getBigDecimal("PackagingInstructionFactor")));
+					row.put("DeliveredQtyLast12Months", bigDecimalToString(rs.getBigDecimal("DeliveredQtyLast12Months")));
 					reportResults.add(row);
 				}
 			}
@@ -233,20 +363,23 @@ public class PackageLicensingProductReport_StepDef
 	/**
 	 * Verifies the report results contain exactly the expected rows (matched by ProductName).
 	 * Empty cells in the expected table assert that the actual value is null/empty.
+	 * Columns not present in the expected table are not checked.
 	 *
 	 * <pre>
-	 * | ProductName     | ProductGroup | SmallPackagingMaterial | SmallPackagingWeight | OverpackMaterial | OverpackWeight |
-	 * | PLR Test Prod 1 | Lebensmittel | Glas                   | 0.150                | Kunststoffe      | 0.030          |
-	 * | PLR Test Prod 2 |              |                        | 0.200                |                  |                |
+	 * | ProductName     | MaterialType | ProductCategory   | SmallPackagingMaterial | SmallPackagingWeight | OverpackMaterial | OverpackWeight | PackagingInstructionFactor | DeliveredQtyLast12Months |
+	 * | PLR Test Prod 1 | Lebensmittel | Test Category     | Glas                   | 0.150                | Kunststoffe      | 0.030          | 12                         | 100                      |
 	 * </pre>
 	 *
 	 * <ul>
 	 *   <li>{@code ProductName} — required; used to match actual report rows</li>
-	 *   <li>{@code ProductGroup} (optional) — expected M_PackageLicensing_ProductGroup name; empty = assert null</li>
+	 *   <li>{@code MaterialType} (optional) — expected comma-separated product group names; empty = assert null</li>
+	 *   <li>{@code ProductCategory} (optional) — expected product category name; empty = assert null</li>
 	 *   <li>{@code SmallPackagingMaterial} (optional) — expected small packaging material name; empty = assert null</li>
 	 *   <li>{@code SmallPackagingWeight} (optional) — expected weight as decimal; empty = assert null</li>
 	 *   <li>{@code OverpackMaterial} (optional) — expected outer packaging material name; empty = assert null</li>
 	 *   <li>{@code OverpackWeight} (optional) — expected weight as decimal; empty = assert null</li>
+	 *   <li>{@code PackagingInstructionFactor} (optional) — expected PI quantity; empty = assert null</li>
+	 *   <li>{@code DeliveredQtyLast12Months} (optional) — expected delivered quantity; empty = assert null</li>
 	 * </ul>
 	 *
 	 * Also asserts that no row multiplication occurred (exactly one result row per expected product).
@@ -284,11 +417,14 @@ public class PackageLicensingProductReport_StepDef
 				continue;
 			}
 
-			assertOptionalColumn(softly, expectedRow, actualRow, "ProductGroup");
-			assertOptionalColumn(softly, expectedRow, actualRow, "SmallPackagingMaterial");
-			assertOptionalBigDecimalColumn(softly, expectedRow, actualRow, "SmallPackagingWeight");
-			assertOptionalColumn(softly, expectedRow, actualRow, "OverpackMaterial");
-			assertOptionalBigDecimalColumn(softly, expectedRow, actualRow, "OverpackWeight");
+			assertOptionalColumnIfPresent(softly, expectedRow, actualRow, "MaterialType");
+			assertOptionalColumnIfPresent(softly, expectedRow, actualRow, "ProductCategory");
+			assertOptionalColumnIfPresent(softly, expectedRow, actualRow, "SmallPackagingMaterial");
+			assertOptionalBigDecimalColumnIfPresent(softly, expectedRow, actualRow, "SmallPackagingWeight");
+			assertOptionalColumnIfPresent(softly, expectedRow, actualRow, "OverpackMaterial");
+			assertOptionalBigDecimalColumnIfPresent(softly, expectedRow, actualRow, "OverpackWeight");
+			assertOptionalBigDecimalColumnIfPresent(softly, expectedRow, actualRow, "PackagingInstructionFactor");
+			assertOptionalBigDecimalColumnIfPresent(softly, expectedRow, actualRow, "DeliveredQtyLast12Months");
 		}
 
 		softly.assertThat(matchingResults)
@@ -298,12 +434,17 @@ public class PackageLicensingProductReport_StepDef
 		softly.assertAll();
 	}
 
-	private static void assertOptionalColumn(
+	private static void assertOptionalColumnIfPresent(
 			@NonNull final SoftAssertions softly,
 			@NonNull final Map<String, String> expectedRow,
 			@NonNull final Map<String, String> actualRow,
 			@NonNull final String columnName)
 	{
+		if (!expectedRow.containsKey(columnName))
+		{
+			return; // column not in expected table, skip
+		}
+
 		final String expectedValue = expectedRow.get(columnName);
 		if (expectedValue != null && !expectedValue.isEmpty())
 		{
@@ -319,12 +460,17 @@ public class PackageLicensingProductReport_StepDef
 		}
 	}
 
-	private static void assertOptionalBigDecimalColumn(
+	private static void assertOptionalBigDecimalColumnIfPresent(
 			@NonNull final SoftAssertions softly,
 			@NonNull final Map<String, String> expectedRow,
 			@NonNull final Map<String, String> actualRow,
 			@NonNull final String columnName)
 	{
+		if (!expectedRow.containsKey(columnName))
+		{
+			return; // column not in expected table, skip
+		}
+
 		final String expectedValue = expectedRow.get(columnName);
 		if (expectedValue != null && !expectedValue.isEmpty())
 		{
