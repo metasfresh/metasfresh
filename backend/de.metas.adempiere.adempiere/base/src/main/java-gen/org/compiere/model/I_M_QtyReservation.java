@@ -265,6 +265,23 @@ public interface I_M_QtyReservation
 	String COLUMNNAME_QtyTU = "QtyTU";
 
 	/**
+	 * Set Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setProcessed(boolean Processed);
+
+	/**
+	 * Get Processed.
+	 */
+	boolean isProcessed();
+
+	ModelColumn<I_M_QtyReservation, Object> COLUMN_Processed = new ModelColumn<>(I_M_QtyReservation.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
+
+	/**
 	 * Set Supply Type.
 	 *
 	 * <br>Type: List

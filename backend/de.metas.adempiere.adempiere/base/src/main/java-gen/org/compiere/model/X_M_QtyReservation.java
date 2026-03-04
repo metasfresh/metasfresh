@@ -214,6 +214,18 @@ public class X_M_QtyReservation extends PO implements I_M_QtyReservation
 	}
 
 	@Override
+	public void setProcessed(final boolean Processed)
+	{
+		set_Value(COLUMNNAME_Processed, Processed);
+	}
+
+	@Override
+	public boolean isProcessed()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_Processed);
+	}
+
+	@Override
 	public void setSupplyType(final String SupplyType)
 	{
 		set_Value(COLUMNNAME_SupplyType, SupplyType);

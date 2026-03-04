@@ -14,7 +14,7 @@ import org.adempiere.warehouse.WarehouseId;
  * Loaded from the {@code M_QtyReservation} table via {@link QtyReservationRepository}.
  */
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class QtyReservation
 {
 	@NonNull OrderLineId orderLineId;
@@ -24,6 +24,12 @@ public class QtyReservation
 	@NonNull Quantity qty;
 	@NonNull Quantity qtyDelivered;
 
+	@NonNull
+	public QtyReservation withQtyDelivered(@NonNull final Quantity newQtyDelivered)
+	{
+		return toBuilder().qtyDelivered(newQtyDelivered).build();
+	}
+
 	/**
 	 * @return the effective (unfulfilled) reservation: {@code qty - qtyDelivered}, clamped to zero.
 	 */
@@ -31,5 +37,13 @@ public class QtyReservation
 	public Quantity getEffectiveQty()
 	{
 		return qty.subtract(qtyDelivered).toZeroIfNegative();
+	}
+
+	/**
+	 * @return {@code true} if the reservation is fully delivered (effective qty is zero).
+	 */
+	public boolean isFullyDelivered()
+	{
+		return getEffectiveQty().isZero();
 	}
 }
