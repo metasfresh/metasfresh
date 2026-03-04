@@ -6,17 +6,14 @@ import com.google.common.collect.Multimaps;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.api.IWorkpackageParamDAO;
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
+import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Param;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.bpartner.BPartnerId;
-import de.metas.lock.api.ILockCommand;
-import de.metas.lock.api.ILockManager;
-import de.metas.lock.api.LockOwner;
 import de.metas.order.OrderId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
-import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import de.metas.purchasecandidate.purchaseordercreation.PurchaseCandidateToOrderWorkflow;
 import de.metas.purchasecandidate.purchaseordercreation.localorder.PurchaseOrderFromItemsAggregator;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.VendorGatewayInvokerFactory;
@@ -25,11 +22,10 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.IQuery;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
-import org.compiere.util.Env;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.IQuery;
+import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -111,10 +107,22 @@ public class C_PurchaseCandidates_GeneratePurchaseOrdersForSalesOrder extends Wo
 				.addEqualsFilter(I_C_Queue_WorkPackage_Param.COLUMNNAME_P_Number, BigDecimal.valueOf(salesOrderId.getRepoId()))
 				.create();
 
-		// Main query: find unprocessed WP with matching parameter
+		// Sub-query: restrict to our processor type
+		final IQuery<I_C_Queue_PackageProcessor> processorQuery = queryBL
+				.createQueryBuilder(I_C_Queue_PackageProcessor.class)
+				.addEqualsFilter(
+						I_C_Queue_PackageProcessor.COLUMNNAME_Classname,
+						C_PurchaseCandidates_GeneratePurchaseOrdersForSalesOrder.class.getName())
+				.create();
+
+		// Main query: find unprocessed WP with matching parameter and our processor
 		return queryBL
 				.createQueryBuilder(I_C_Queue_WorkPackage.class)
 				.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_Processed, false)
+				.addInSubQueryFilter(
+						I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_PackageProcessor_ID,
+						I_C_Queue_PackageProcessor.COLUMNNAME_C_Queue_PackageProcessor_ID,
+						processorQuery)
 				.addInSubQueryFilter(
 						I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID,
 						I_C_Queue_WorkPackage_Param.COLUMNNAME_C_Queue_WorkPackage_ID,
@@ -155,7 +163,7 @@ public class C_PurchaseCandidates_GeneratePurchaseOrdersForSalesOrder extends Wo
 
 		if (sinceLastCandidate < quietPeriodMs && sinceWPCreated < maxWaitMs)
 		{
-			final int deferMs = (int)Math.min(quietPeriodMs - sinceLastCandidate, maxWaitMs - sinceWPCreated);
+			final int deferMs = Math.max(1, (int)Math.min(quietPeriodMs - sinceLastCandidate, maxWaitMs - sinceWPCreated));
 			throw WorkpackageSkipRequestException.createWithTimeout(
 					"Debouncing: last candidate " + sinceLastCandidate + "ms ago, "
 							+ "quiet period " + quietPeriodMs + "ms, "
@@ -176,9 +184,6 @@ public class C_PurchaseCandidates_GeneratePurchaseOrdersForSalesOrder extends Wo
 			final List<PurchaseCandidate> vendorCandidates = ImmutableList.copyOf(entry.getValue());
 			loggable.addLog("Creating PO for vendor {} with {} lines", entry.getKey(), vendorCandidates.size());
 
-			// Lock candidates to prevent double-processing
-			lockCandidates(vendorCandidates);
-
 			final PurchaseOrderFromItemsAggregator aggregator =
 					PurchaseOrderFromItemsAggregator.newInstance(/* docTypeId */ null, isCompleteDoc);
 
@@ -191,24 +196,5 @@ public class C_PurchaseCandidates_GeneratePurchaseOrdersForSalesOrder extends Wo
 		}
 
 		return Result.SUCCESS;
-	}
-
-	private void lockCandidates(@NonNull final List<PurchaseCandidate> candidates)
-	{
-		final LockOwner lockOwner = LockOwner.newOwner(C_PurchaseCandidates_GeneratePurchaseOrdersForSalesOrder.class.getSimpleName());
-		final ILockCommand lockCommand = Services.get(ILockManager.class).lock()
-				.setOwner(lockOwner)
-				.setAutoCleanup(false);
-
-		for (final PurchaseCandidate candidate : candidates)
-		{
-			if (candidate.getId() != null)
-			{
-				lockCommand.addRecordByModel(
-						TableRecordReference.of(I_C_PurchaseCandidate.Table_Name, candidate.getId().getRepoId()));
-			}
-		}
-
-		lockCommand.acquire();
 	}
 }

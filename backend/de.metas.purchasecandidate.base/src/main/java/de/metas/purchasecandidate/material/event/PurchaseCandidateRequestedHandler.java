@@ -151,6 +151,10 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 			}
 		}
 
+		// Load product planning once (used for lead time, isCreatePlan, isDocComplete)
+		final ProductPlanningId productPlanningId = event.getProductPlanningId();
+		final ProductPlanning productPlanning = productPlanningId != null ? productPlanningDAO.getById(productPlanningId) : null;
+
 		final ZonedDateTime datePromised = TimeUtil.asZonedDateTime(materialDescriptor.getDate());
 		final PurchaseCandidate newPurchaseCandidate = PurchaseCandidate
 				.builder()
@@ -158,7 +162,7 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 				.vendorId(vendorProductInfos.getVendorId()) // mandatory
 				.vendorProductNo(vendorProductInfos.getVendorProductNo()) // mandatory
 				.purchaseDatePromised(datePromised)
-				.purchaseDateOrdered(computePurchaseDateOrderedOrNull(datePromised, event.getProductPlanningId()))
+				.purchaseDateOrdered(computePurchaseDateOrderedOrNull(datePromised, productPlanning))
 
 				.dimension(dimension)
 				.orgId(orgId)
@@ -180,23 +184,23 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 				.build();
 
 		purchaseCandidateBL.updateCandidatePricingDiscount(newPurchaseCandidate);
-		saveCandidateAndPostCreatedEvent(event, newPurchaseCandidate);
+		saveCandidateAndPostCreatedEvent(event, newPurchaseCandidate, productPlanning);
 	}
 
 	@Nullable
-	private ZonedDateTime computePurchaseDateOrderedOrNull(@NonNull final ZonedDateTime datePromised, @Nullable final ProductPlanningId productPlanningId)
+	private ZonedDateTime computePurchaseDateOrderedOrNull(@NonNull final ZonedDateTime datePromised, @Nullable final ProductPlanning productPlanning)
 	{
-		if (productPlanningId == null)
+		if (productPlanning == null)
 		{
 			return null;
 		}
-		final int leadTimeDays = productPlanningDAO.getById(productPlanningId).getLeadTimeDays();
-		return datePromised.minusDays(leadTimeDays);
+		return datePromised.minusDays(productPlanning.getLeadTimeDays());
 	}
 
 	private void saveCandidateAndPostCreatedEvent(
 			@NonNull final PurchaseCandidateRequestedEvent requestedEvent,
-			@NonNull final PurchaseCandidate newPurchaseCandidate)
+			@NonNull final PurchaseCandidate newPurchaseCandidate,
+			@Nullable final ProductPlanning productPlanning)
 	{
 		try
 		{
@@ -205,14 +209,9 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 			// Determine if this candidate should be marked ready for aggregated PO creation
 			final OrderAndLineId salesOrderAndLineId = newPurchaseCandidate.getSalesOrderAndLineIdOrNull();
 			final OrderId salesOrderId = salesOrderAndLineId != null ? salesOrderAndLineId.getOrderId() : null;
-			final ProductPlanningId productPlanningId = requestedEvent.getProductPlanningId();
-			if (productPlanningId != null && salesOrderId != null)
+			if (productPlanning != null && salesOrderId != null && productPlanning.isCreatePlan())
 			{
-				final ProductPlanning pp = productPlanningDAO.getById(productPlanningId);
-				if (pp.isCreatePlan())
-				{
-					newPurchaseCandidate.setReadyForPOCreation(true);
-				}
+				newPurchaseCandidate.setReadyForPOCreation(true);
 			}
 
 			final PurchaseCandidateId newPurchaseCandidateId = purchaseCandidateRepository.save(newPurchaseCandidate);
@@ -224,7 +223,7 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 
 			if (!newPurchaseCandidate.isSimulated())
 			{
-				scheduleGeneratePurchaseOrderIfNeeded(productPlanningId, newPurchaseCandidateId, salesOrderId);
+				scheduleGeneratePurchaseOrderIfNeeded(productPlanning, newPurchaseCandidateId, salesOrderId);
 			}
 		}
 		finally
@@ -243,16 +242,11 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 	 * For forecast-driven candidates (salesOrderId == null): uses the existing per-candidate processor.
 	 */
 	private void scheduleGeneratePurchaseOrderIfNeeded(
-			@Nullable final ProductPlanningId productPlanningId,
+			@Nullable final ProductPlanning productPlanning,
 			@NonNull final PurchaseCandidateId purchaseCandidateId,
 			@Nullable final OrderId salesOrderId)
 	{
-		if (productPlanningId == null)
-		{
-			return;
-		}
-		final ProductPlanning productPlanning = productPlanningDAO.getById(productPlanningId);
-		if (!productPlanning.isCreatePlan())
+		if (productPlanning == null || !productPlanning.isCreatePlan())
 		{
 			return;
 		}
