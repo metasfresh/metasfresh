@@ -136,6 +136,15 @@ public class PurchaseCandidate
 
 	private boolean simulated;
 
+	/**
+	 * Set to {@code true} when this candidate should be auto-processed into a purchase order
+	 * by the debouncer processor ({@code C_PurchaseCandidates_GeneratePurchaseOrdersForSalesOrder}).
+	 * <p>
+	 * This distinguishes candidates meant for automatic PO creation ({@code PP_Product_Planning.IsCreatePlan=Y}
+	 * with a linked sales order) from candidates that should remain available for manual PO creation.
+	 * Without this flag, the debouncer would sweep up all unprocessed candidates for a sales order,
+	 * including those whose product planning does not have {@code IsCreatePlan=Y}.
+	 */
 	private boolean readyForPOCreation;
 
 	@Builder

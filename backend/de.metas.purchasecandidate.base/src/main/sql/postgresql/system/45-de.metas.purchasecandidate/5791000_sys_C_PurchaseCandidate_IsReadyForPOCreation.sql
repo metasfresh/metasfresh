@@ -2,8 +2,8 @@
 
 -- AD_Element: IsReadyForPOCreation
 -- 2026-03-04T15:59:59.000Z
-INSERT INTO AD_Element (AD_Client_ID, AD_Element_ID, AD_Org_ID, ColumnName, Created, CreatedBy, EntityType, IsActive, Name, PrintName, Updated, UpdatedBy)
-VALUES (0, 584618, 0, 'IsReadyForPOCreation', TO_TIMESTAMP('2026-03-04 15:59:59', 'YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', 100, 'de.metas.purchasecandidate', 'Y', 'Ready for PO Creation', 'Ready for PO Creation', TO_TIMESTAMP('2026-03-04 15:59:59', 'YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', 100)
+INSERT INTO AD_Element (AD_Client_ID, AD_Element_ID, AD_Org_ID, ColumnName, Created, CreatedBy, Description, EntityType, IsActive, Name, PrintName, Updated, UpdatedBy)
+VALUES (0, 584618, 0, 'IsReadyForPOCreation', TO_TIMESTAMP('2026-03-04 15:59:59', 'YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', 100, 'Set to Y when PP_Product_Planning.IsCreatePlan=Y and a sales order is linked. Marks candidates for automatic PO creation by the debouncer processor. Candidates without this flag remain available for manual PO creation.', 'de.metas.purchasecandidate', 'Y', 'Ready for PO Creation', 'Ready for PO Creation', TO_TIMESTAMP('2026-03-04 15:59:59', 'YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', 100)
 ;
 
 INSERT INTO AD_Element_Trl (AD_Language, AD_Element_ID, Name, PrintName, IsTranslated, AD_Client_ID, AD_Org_ID, Created, Createdby, Updated, UpdatedBy, IsActive)
@@ -19,7 +19,7 @@ WHERE l.IsActive = 'Y' AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y') 
 INSERT INTO AD_Column (AD_Client_ID, AD_Column_ID, AD_Element_ID, AD_Org_ID, AD_Reference_ID, AD_Table_ID, CloningStrategy, ColumnName, Created, CreatedBy, DDL_NoForeignKey, DefaultValue, Description, EntityType, FacetFilterSeqNo, FieldLength, IsActive, IsAdvancedText, IsAllowLogging, IsAlwaysUpdateable, IsAutoApplyValidationRule, IsAutocomplete, IsCalculated, IsDimension,
                        IsDLMPartitionBoundary, IsEncrypted, IsExcludeFromZoomTargets, IsFacetFilter, IsForceIncludeInGeneratedModel, IsGenericZoomKeyColumn, IsGenericZoomOrigin, IsIdentifier, IsKey, IsLazyLoading, IsMandatory, IsParent, IsRestAPICustomColumn, IsSelectionColumn, IsShowFilterInactiveValues, IsShowFilterIncrementButtons, IsShowFilterInline, IsStaleable, IsSyncDatabase, IsTranslated,
                        IsUpdateable, IsUseDocSequence, MaxFacetsToFetch, Name, PersonalDataCategory, SelectionColumnSeqNo, SeqNo, Updated, UpdatedBy, Version)
-VALUES (0, 592168, 584618, 0, 20, 540861, 'XX', 'IsReadyForPOCreation', TO_TIMESTAMP('2026-03-04 16:00:00', 'YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', 100, 'N', 'N', 'Flag set to Y when a candidate should be auto-processed into a PO', 'de.metas.purchasecandidate', 0, 1,
+VALUES (0, 592168, 584618, 0, 20, 540861, 'XX', 'IsReadyForPOCreation', TO_TIMESTAMP('2026-03-04 16:00:00', 'YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', 100, 'N', 'N', 'Set to Y when PP_Product_Planning.IsCreatePlan=Y and a sales order is linked. Marks candidates for automatic PO creation by the debouncer processor. Candidates without this flag remain available for manual PO creation.', 'de.metas.purchasecandidate', 0, 1,
         'Y', 'N', 'Y', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'Y', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'Y', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'Y', 'N', 0, 'Ready for PO Creation', 'NP', 0, 0,
         TO_TIMESTAMP('2026-03-04 16:00:00', 'YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', 100, 0)
 ;
