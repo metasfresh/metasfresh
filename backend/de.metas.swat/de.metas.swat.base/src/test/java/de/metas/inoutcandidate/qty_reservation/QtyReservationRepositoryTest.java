@@ -2,6 +2,7 @@ package de.metas.inoutcandidate.qty_reservation;
 
 import de.metas.business.BusinessTestHelper;
 import de.metas.order.OrderLineId;
+import de.metas.quantity.Quantity;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
@@ -10,6 +11,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -27,65 +31,66 @@ class QtyReservationRepositoryTest
 	}
 
 	@Test
-	void spreadQtyDelivered_twoRecords_spreadCorrectly()
+	void updateByOrderLineIds_twoRecords_spreadCorrectly()
 	{
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(100);
 
-		// Record 1: OH (On Hand), Qty=60
 		createReservationRecord(orderLineId, "OH", new BigDecimal("60"));
-		// Record 2: PS (Planned Supply), Qty=40
 		createReservationRecord(orderLineId, "PS", new BigDecimal("40"));
 
 		// Spread 80 delivered across the two records
-		repo.spreadQtyDelivered(orderLineId, new BigDecimal("80"));
+		repo.updateByOrderLineIds(
+				Collections.singleton(orderLineId),
+				buildSpreadUpdater(orderLineId, new BigDecimal("80")));
 
-		// Verify: OH gets min(80, 60)=60, remaining=20; PS gets min(20, 40)=20
-		final java.util.List<I_M_QtyReservation> records = loadRecords(orderLineId);
+		final List<I_M_QtyReservation> records = loadRecords(orderLineId);
 		assertThat(records).hasSize(2);
 
-		// OH record (sorted first)
+		// OH record (sorted first): min(80, 60) = 60
 		assertThat(records.get(0).getSupplyType()).isEqualTo("OH");
 		assertThat(records.get(0).getQtyDelivered()).isEqualByComparingTo(new BigDecimal("60"));
 
-		// PS record (sorted second)
+		// PS record (sorted second): min(20, 40) = 20
 		assertThat(records.get(1).getSupplyType()).isEqualTo("PS");
 		assertThat(records.get(1).getQtyDelivered()).isEqualByComparingTo(new BigDecimal("20"));
 	}
 
 	@Test
-	void spreadQtyDelivered_deliveredLessThanFirstRecord()
+	void updateByOrderLineIds_deliveredLessThanFirstRecord()
 	{
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(101);
 
 		createReservationRecord(orderLineId, "OH", new BigDecimal("60"));
 		createReservationRecord(orderLineId, "PS", new BigDecimal("40"));
 
-		repo.spreadQtyDelivered(orderLineId, new BigDecimal("30"));
+		repo.updateByOrderLineIds(
+				Collections.singleton(orderLineId),
+				buildSpreadUpdater(orderLineId, new BigDecimal("30")));
 
-		final java.util.List<I_M_QtyReservation> records = loadRecords(orderLineId);
+		final List<I_M_QtyReservation> records = loadRecords(orderLineId);
 		assertThat(records.get(0).getQtyDelivered()).isEqualByComparingTo(new BigDecimal("30"));
 		assertThat(records.get(1).getQtyDelivered()).isEqualByComparingTo(BigDecimal.ZERO);
 	}
 
 	@Test
-	void spreadQtyDelivered_deliveredExceedsTotal_cappedAtRecordQty()
+	void updateByOrderLineIds_deliveredExceedsTotal_cappedAtRecordQty()
 	{
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(102);
 
 		createReservationRecord(orderLineId, "OH", new BigDecimal("60"));
 		createReservationRecord(orderLineId, "PS", new BigDecimal("40"));
 
-		// Total delivered exceeds total reservation (100)
-		repo.spreadQtyDelivered(orderLineId, new BigDecimal("120"));
+		repo.updateByOrderLineIds(
+				Collections.singleton(orderLineId),
+				buildSpreadUpdater(orderLineId, new BigDecimal("120")));
 
-		final java.util.List<I_M_QtyReservation> records = loadRecords(orderLineId);
-		// Each record capped at its own Qty
+		final List<I_M_QtyReservation> records = loadRecords(orderLineId);
 		assertThat(records.get(0).getQtyDelivered()).isEqualByComparingTo(new BigDecimal("60"));
 		assertThat(records.get(1).getQtyDelivered()).isEqualByComparingTo(new BigDecimal("40"));
 	}
 
 	@Test
-	void spreadQtyDelivered_zeroDelivered_allQtyDeliveredSetToZero()
+	void updateByOrderLineIds_zeroDelivered_allQtyDeliveredSetToZero()
 	{
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(103);
 
@@ -93,13 +98,52 @@ class QtyReservationRepositoryTest
 		rec.setQtyDelivered(new BigDecimal("50")); // pre-existing value
 		InterfaceWrapperHelper.save(rec);
 
-		repo.spreadQtyDelivered(orderLineId, BigDecimal.ZERO);
+		repo.updateByOrderLineIds(
+				Collections.singleton(orderLineId),
+				buildSpreadUpdater(orderLineId, BigDecimal.ZERO));
 
-		final java.util.List<I_M_QtyReservation> records = loadRecords(orderLineId);
+		final List<I_M_QtyReservation> records = loadRecords(orderLineId);
 		assertThat(records.get(0).getQtyDelivered()).isEqualByComparingTo(BigDecimal.ZERO);
 	}
 
+	@Test
+	void updateByOrderLineIds_operatorCalledInCorrectOrder_OHbeforePS()
+	{
+		final OrderLineId orderLineId = OrderLineId.ofRepoId(104);
+
+		createReservationRecord(orderLineId, "PS", new BigDecimal("40"));
+		createReservationRecord(orderLineId, "OH", new BigDecimal("60"));
+
+		final List<String> supplyTypeOrder = new ArrayList<>();
+
+		repo.updateByOrderLineIds(
+				Collections.singleton(orderLineId),
+				reservation -> {
+					supplyTypeOrder.add(reservation.getQty().toBigDecimal().toPlainString());
+					return reservation;
+				});
+
+		// OH (qty=60) should be processed before PS (qty=40), regardless of insertion order
+		assertThat(supplyTypeOrder).containsExactly("60", "40");
+	}
+
 	// --- helpers ---
+
+	private java.util.function.UnaryOperator<QtyReservation> buildSpreadUpdater(
+			final OrderLineId orderLineId,
+			final BigDecimal totalDelivered)
+	{
+		final BigDecimal[] remaining = { totalDelivered };
+
+		return reservation -> {
+			final BigDecimal recordQty = reservation.getQty().toBigDecimal();
+			final BigDecimal allocated = remaining[0].min(recordQty).max(BigDecimal.ZERO);
+			remaining[0] = remaining[0].subtract(allocated);
+
+			final Quantity allocatedQty = reservation.getQty().toZero().add(allocated);
+			return reservation.withQtyDelivered(allocatedQty);
+		};
+	}
 
 	private I_M_QtyReservation createReservationRecord(
 			final OrderLineId orderLineId,

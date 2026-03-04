@@ -40,6 +40,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -553,7 +554,7 @@ public class InOutDAO implements IInOutDAO
 	@Override
 	public List<I_M_InOutLine> retrieveProcessedLinesForOrderLineId(@NonNull final OrderLineId orderLineId)
 	{
-		return retrieveProcessedLinesForOrderLineIds(Set.of(orderLineId));
+		return retrieveProcessedLinesForOrderLineIds(Collections.singleton(orderLineId));
 	}
 
 	@Override
@@ -561,7 +562,7 @@ public class InOutDAO implements IInOutDAO
 	{
 		if (orderLineIds.isEmpty())
 		{
-			return List.of();
+			return ImmutableList.of();
 		}
 
 		return queryBL.createQueryBuilder(I_M_InOutLine.class)

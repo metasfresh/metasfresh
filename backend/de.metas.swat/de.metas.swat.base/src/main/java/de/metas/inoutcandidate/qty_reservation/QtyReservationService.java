@@ -1,22 +1,21 @@
 package de.metas.inoutcandidate.qty_reservation;
 
-import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.order.OrderLineId;
+import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_QtyReservation;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 /**
@@ -53,33 +52,35 @@ public class QtyReservationService
 			return;
 		}
 
-		//
-		// Bulk-load total delivered qty per order line (one SQL query)
 		final ImmutableMap<OrderLineId, BigDecimal> totalDeliveredByOrderLineId = computeTotalDeliveredByOrderLineIds(orderLineIds);
 
-		//
-		// Bulk-load all reservation records for all order line IDs (one SQL query),
-		// spread QtyDelivered, and batch-save
-		final ImmutableListMultimap<OrderLineId, I_M_QtyReservation> reservationsByOrderLineId = qtyReservationRepository.getRecordsByOrderLineIds(orderLineIds);
+		final UnaryOperator<QtyReservation> spreadUpdater = buildSpreadUpdater(totalDeliveredByOrderLineId);
+		qtyReservationRepository.updateByOrderLineIds(orderLineIds, spreadUpdater);
+	}
 
-		final List<I_M_QtyReservation> toSave = new ArrayList<>();
-		for (final OrderLineId orderLineId : orderLineIds)
-		{
-			final BigDecimal totalDelivered = totalDeliveredByOrderLineId.getOrDefault(orderLineId, BigDecimal.ZERO);
-			final List<I_M_QtyReservation> records = reservationsByOrderLineId.get(orderLineId);
+	/**
+	 * Builds a stateful {@link UnaryOperator} that spreads delivered quantities across reservations.
+	 * <p>
+	 * Each call consumes from a mutable remaining-qty map, so records processed earlier
+	 * (OH before PS) get priority. The operator must be called in the correct record order.
+	 */
+	@NonNull
+	private static UnaryOperator<QtyReservation> buildSpreadUpdater(
+			@NonNull final ImmutableMap<OrderLineId, BigDecimal> totalDeliveredByOrderLineId)
+	{
+		final HashMap<OrderLineId, BigDecimal> remainingByOrderLineId = new HashMap<>(totalDeliveredByOrderLineId);
 
-			BigDecimal remaining = totalDelivered;
-			for (final I_M_QtyReservation record : records)
-			{
-				final BigDecimal recordQty = record.getQty();
-				final BigDecimal allocated = remaining.min(recordQty).max(BigDecimal.ZERO);
-				record.setQtyDelivered(allocated);
-				toSave.add(record);
-				remaining = remaining.subtract(allocated);
-			}
-		}
+		return reservation -> {
+			final OrderLineId orderLineId = reservation.getOrderLineId();
+			final BigDecimal remaining = remainingByOrderLineId.getOrDefault(orderLineId, BigDecimal.ZERO);
+			final BigDecimal recordQty = reservation.getQty().toBigDecimal();
+			final BigDecimal allocated = remaining.min(recordQty).max(BigDecimal.ZERO);
 
-		InterfaceWrapperHelper.saveAll(toSave);
+			remainingByOrderLineId.put(orderLineId, remaining.subtract(allocated));
+
+			final Quantity allocatedQty = reservation.getQty().toZero().add(allocated);
+			return reservation.withQtyDelivered(allocatedQty);
+		};
 	}
 
 	/**
