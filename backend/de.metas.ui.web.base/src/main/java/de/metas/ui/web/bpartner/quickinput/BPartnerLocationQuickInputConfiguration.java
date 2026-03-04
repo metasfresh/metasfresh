@@ -103,6 +103,8 @@ public class BPartnerLocationQuickInputConfiguration
 		// all cases where the user triggers "New" on a location field without first setting
 		// the corresponding BPartner field.
 		// NOTE: C_BPartner_Location_ID maps directly to C_BPartner_ID, so this block is skipped for it.
+		// NOTE: For Bill_Location_ID, the fallback assumes Bill_BPartner_ID == C_BPartner_ID.
+		// If a separate billing partner is needed, the user must set Bill_BPartner_ID first.
 		if (bpartnerId == null && !I_C_Order.COLUMNNAME_C_BPartner_ID.equals(bpartnerFieldName))
 		{
 			bpartnerId = triggeringDocument.getFieldView(I_C_Order.COLUMNNAME_C_BPartner_ID)

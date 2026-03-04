@@ -1,6 +1,6 @@
 # Frontend Web UI E2E Test Coverage
 
-**Last Updated**: 2026-03-02
+**Last Updated**: 2026-03-04
 
 This document provides a complete overview of E2E test coverage for the metasfresh desktop web UI.
 
@@ -915,6 +915,30 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 4. Discover 4 header items: hamburger, Dashboard, badge, avatar
 
 **Key Discovery**: Header structure has 4 items: icon-sm (hamburger), icon-sm (Dashboard label), header-item-badge icon-lg (inbox/notifications), avatar-container.
+
+---
+
+### 35. One-time Address (Einmaladresse)
+**File**: `tests/spec/one-time-address.spec.js`
+**Status**: ✅ Passing
+**Duration**: ~60 seconds
+
+**Features Tested**:
+- F02300: Sales Order — One-time address quick input from location fields
+
+**Epic**: E0030: Sales
+
+**Workflow**:
+1. Create test customer via Backend API
+2. Navigate to Sales Order, create new order, select customer
+3. **Test 1 (DropShip)**: Enable IsDropShip, skip DropShip_BPartner_ID, click "New" on DropShip_Location_ID, fill address, check IsOneTime, submit — verify no HTTP 500 and DropShip_BPartner_ID auto-filled
+4. **Test 2 (Main)**: Click "New" on C_BPartner_Location_ID, fill address, check IsOneTime, submit — verify location is created
+
+**Components Tested**:
+- Quick input modal for BPartner location
+- BooleanWidget (IsDropShip checkbox)
+- WidgetCommon (field containers, save detection)
+- BPartnerLocationQuickInputConfiguration fallback logic
 
 ---
 

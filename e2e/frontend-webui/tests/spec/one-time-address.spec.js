@@ -101,6 +101,9 @@ test.describe('One-time address creation', () => {
 
   test('Create one-time address from DropShip location without DropShip BPartner', async ({ page }) => {
     test.setTimeout(120000);
+    allure.epic('E0030: Sales');
+    allure.tag('F02300: Sales Order');
+    allure.story('One-time Address Creation');
     allure.severity('critical');
     allure.description(
       'Bug fix: creating a one-time address from DropShip_Location_ID without ' +
@@ -210,6 +213,9 @@ test.describe('One-time address creation', () => {
 
   test('Create one-time address from main location field', async ({ page }) => {
     test.setTimeout(120000);
+    allure.epic('E0030: Sales');
+    allure.tag('F02300: Sales Order');
+    allure.story('One-time Address Creation');
     allure.severity('normal');
     allure.description(
       'Verify that creating a one-time address from the main C_BPartner_Location_ID ' +
