@@ -136,6 +136,8 @@ public class PurchaseCandidate
 
 	private boolean simulated;
 
+	private boolean readyForPOCreation;
+
 	@Builder
 	private PurchaseCandidate(
 			final PurchaseCandidateId id,
@@ -188,7 +190,8 @@ public class PurchaseCandidate
 			final boolean isDropShip,
 			@Nullable final BPartnerId dropShipBPartnerId,
 			@Nullable final BPartnerLocationId dropShipLocationId,
-			@Nullable final UserId dropShipUserId)
+			@Nullable final UserId dropShipUserId,
+			final boolean readyForPOCreation)
 	{
 		this.id = id;
 		this.priceInternal = priceInternal;
@@ -245,6 +248,7 @@ public class PurchaseCandidate
 		this.simulated = simulated;
 		this.isManualDiscount = isManualDiscount;
 		this.isManualPrice = isManualPrice;
+		this.readyForPOCreation = readyForPOCreation;
 
 		this.purchaseOrderItems = purchaseItems
 				.stream()
@@ -293,6 +297,7 @@ public class PurchaseCandidate
 		discountEff = from.discountEff;
 		currencyId = from.currencyId;
 		simulated = from.simulated;
+		readyForPOCreation = from.readyForPOCreation;
 	}
 
 	public PurchaseCandidate copy()

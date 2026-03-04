@@ -37,6 +37,7 @@ import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.purchasecandidate.async.C_PurchaseCandidates_GeneratePurchaseOrders;
+import de.metas.purchasecandidate.async.C_PurchaseCandidates_GeneratePurchaseOrdersForSalesOrder;
 import de.metas.mforecast.impl.ForecastLineId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
@@ -201,6 +202,19 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 		{
 			INTERCEPTOR_SHALL_POST_EVENT_FOR_PURCHASE_CANDIDATE_RECORD.set(false);
 
+			// Determine if this candidate should be marked ready for aggregated PO creation
+			final OrderAndLineId salesOrderAndLineId = newPurchaseCandidate.getSalesOrderAndLineIdOrNull();
+			final OrderId salesOrderId = salesOrderAndLineId != null ? salesOrderAndLineId.getOrderId() : null;
+			final ProductPlanningId productPlanningId = requestedEvent.getProductPlanningId();
+			if (productPlanningId != null && salesOrderId != null)
+			{
+				final ProductPlanning pp = productPlanningDAO.getById(productPlanningId);
+				if (pp.isCreatePlan())
+				{
+					newPurchaseCandidate.setReadyForPOCreation(true);
+				}
+			}
+
 			final PurchaseCandidateId newPurchaseCandidateId = purchaseCandidateRepository.save(newPurchaseCandidate);
 
 			final PurchaseCandidateCreatedEvent purchaseCandidateCreatedEvent = createCandidateCreatedEvent(requestedEvent,
@@ -210,7 +224,7 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 
 			if (!newPurchaseCandidate.isSimulated())
 			{
-				scheduleGeneratePurchaseOrderIfNeeded(requestedEvent.getProductPlanningId(), newPurchaseCandidateId);
+				scheduleGeneratePurchaseOrderIfNeeded(productPlanningId, newPurchaseCandidateId, salesOrderId);
 			}
 		}
 		finally
@@ -222,10 +236,16 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 	/**
 	 * If PP_Product_Planning.IsCreatePlan=Y, auto-enqueue the purchase candidate for C_Order generation.
 	 * IsDocComplete controls whether the generated C_Order is completed (CO) or left as draft (DR).
+	 * <p>
+	 * For SO-driven candidates (salesOrderId != null): uses the debouncer processor that aggregates
+	 * all candidates for the same SO into fewer purchase orders (one per vendor).
+	 * <p>
+	 * For forecast-driven candidates (salesOrderId == null): uses the existing per-candidate processor.
 	 */
 	private void scheduleGeneratePurchaseOrderIfNeeded(
 			@Nullable final ProductPlanningId productPlanningId,
-			@NonNull final PurchaseCandidateId purchaseCandidateId)
+			@NonNull final PurchaseCandidateId purchaseCandidateId,
+			@Nullable final OrderId salesOrderId)
 	{
 		if (productPlanningId == null)
 		{
@@ -236,10 +256,21 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 		{
 			return;
 		}
-		C_PurchaseCandidates_GeneratePurchaseOrders.enqueue(
-				ImmutableList.of(purchaseCandidateId),
-				/* docTypeId= */ null,
-				productPlanning.isDocComplete());
+
+		if (salesOrderId != null)
+		{
+			// SO-driven: debouncer creates WP or updates existing WP's timestamp
+			C_PurchaseCandidates_GeneratePurchaseOrdersForSalesOrder
+					.enqueueOrUpdateExisting(salesOrderId, productPlanning.isDocComplete());
+		}
+		else
+		{
+			// Forecast-driven: no natural grouping, use existing per-candidate behavior
+			C_PurchaseCandidates_GeneratePurchaseOrders.enqueue(
+					ImmutableList.of(purchaseCandidateId),
+					/* docTypeId= */ null,
+					productPlanning.isDocComplete());
+		}
 	}
 
 	@VisibleForTesting
