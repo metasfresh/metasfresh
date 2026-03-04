@@ -250,7 +250,7 @@ AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Languag
 
 -- 6) Check constraint for List reference column
 /* DDL */ SELECT public.db_alter_table('M_ShipmentSchedule',
-    $$ADD CONSTRAINT CloseReason_Check CHECK (CloseReason IS NULL OR CloseReason IN ('Manual','OrderReactivated','PartiallyShipped','InvoiceCandidateClosed','FlatrateTerm','ContractPause','ShipmentProcessed','PickingRejected','OutOfStock'))$$)
+    $$ALTER TABLE public.M_ShipmentSchedule ADD CONSTRAINT CloseReason_Check CHECK (CloseReason IS NULL OR CloseReason IN ('Manual','OrderReactivated','PartiallyShipped','InvoiceCandidateClosed','FlatrateTerm','ContractPause','ShipmentProcessed','PickingRejected','OutOfStock'))$$)
 ;
 
 -- 7) AD_Field on tab 500221
