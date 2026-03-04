@@ -39,8 +39,6 @@ import org.compiere.model.I_M_InOut;
  */
 public class M_InOut_GenerateVendorReturn extends JavaProcess implements IProcessPrecondition
 {
-	private static final String VENDOR_RETURN_WINDOW_ID = "53098";
-
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
@@ -129,10 +127,9 @@ public class M_InOut_GenerateVendorReturn extends JavaProcess implements IProces
 			InterfaceWrapperHelper.save(returnLine);
 		}
 
-		// Open the created vendor return in the Vendor Returns window (AD_Window_ID=53098)
+		// Open the created vendor return — let the framework resolve the correct window via zoom targets
 		getResult().setRecordToOpen(RecordsToOpen.builder()
 				.record(TableRecordReference.of(vendorReturn))
-				.adWindowId(VENDOR_RETURN_WINDOW_ID)
 				.target(OpenTarget.SingleDocument)
 				.build());
 

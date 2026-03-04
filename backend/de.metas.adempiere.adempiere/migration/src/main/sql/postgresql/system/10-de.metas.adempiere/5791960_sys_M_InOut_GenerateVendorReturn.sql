@@ -35,6 +35,17 @@ VALUES (0,0,585591,319,541629,TO_TIMESTAMP('2026-03-04 22:00','YYYY-MM-DD HH24:M
 INSERT INTO AD_Field (AD_Client_ID,AD_Org_ID,AD_Field_ID,AD_Tab_ID,AD_Column_ID,Created,CreatedBy,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SortNo,Updated,UpdatedBy)
 VALUES (0,0,774826,53276,591915,TO_TIMESTAMP('2026-03-04 22:00','YYYY-MM-DD HH24:MI'),100,'D','Y','Y','Y','N','N','N','Y','N','Ursprüngliche Lieferung',390,0,TO_TIMESTAMP('2026-03-04 22:00','YYYY-MM-DD HH24:MI'),100);
 
+-- AD_Field_Trl for Return_Origin_InOut_ID field
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive)
+SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y'
+FROM AD_Language l, AD_Field t
+WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=774826
+  AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID);
+
+-- English translation for the field
+UPDATE AD_Field_Trl SET Name='Original Delivery', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-03-04 22:00','YYYY-MM-DD HH24:MI'), UpdatedBy=100
+WHERE AD_Field_ID=774826 AND AD_Language='en_US';
+
 --
 -- 5. AD_SysConfig: VendorReturnsInOut.FailIfNoHUsAssigned (default Y)
 --

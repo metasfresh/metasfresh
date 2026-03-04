@@ -5,6 +5,7 @@ import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
+import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_InOutLine;
@@ -13,7 +14,7 @@ import de.metas.handlingunits.snapshot.ISnapshotProducer;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
-import de.metas.inout.InOutLineId;
+import de.metas.inout.IInOutBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -24,7 +25,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -48,10 +48,12 @@ public class VendorReturnFromReceiptHUHandler
 	@NonNull private final I_M_InOut vendorReturn;
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHUSnapshotDAO huSnapshotDAO = Services.get(IHUSnapshotDAO.class);
+	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 
 	public void execute()
 	{
@@ -62,8 +64,12 @@ public class VendorReturnFromReceiptHUHandler
 		final List<I_M_HU> allSplitHUs = new ArrayList<>();
 
 		final List<I_M_InOutLine> returnLines = InterfaceWrapperHelper.createList(
-				Services.get(de.metas.inout.IInOutBL.class).getLines(vendorReturn),
+				inOutBL.getLines(vendorReturn),
 				I_M_InOutLine.class);
+
+		final IHUStorageFactory storageFactory = handlingUnitsBL
+				.createMutableHUContext(context)
+				.getHUStorageFactory();
 
 		for (final I_M_InOutLine returnLine : returnLines)
 		{
@@ -84,7 +90,7 @@ public class VendorReturnFromReceiptHUHandler
 				continue;
 			}
 
-			final List<I_M_HU> splitHUs = splitHUsForReturnLine(returnLine, originInOutLineId, returnQty);
+			final List<I_M_HU> splitHUs = splitHUsForReturnLine(returnLine, originInOutLineId, returnQty, storageFactory);
 			if (splitHUs.isEmpty())
 			{
 				continue;
@@ -111,7 +117,6 @@ public class VendorReturnFromReceiptHUHandler
 		}
 
 		// Also assign all HUs to the header
-		final de.metas.handlingunits.inout.IHUInOutBL huInOutBL = Services.get(de.metas.handlingunits.inout.IHUInOutBL.class);
 		huInOutBL.setAssignedHandlingUnits(vendorReturn, allSplitHUs);
 
 		// Create snapshots and store the UUID
@@ -123,7 +128,8 @@ public class VendorReturnFromReceiptHUHandler
 	private List<I_M_HU> splitHUsForReturnLine(
 			@NonNull final I_M_InOutLine returnLine,
 			final int originInOutLineId,
-			@NonNull final BigDecimal returnQty)
+			@NonNull final BigDecimal returnQty,
+			@NonNull final IHUStorageFactory storageFactory)
 	{
 		// 1. Find HUs assigned to the origin receipt line
 		final List<I_M_HU_Assignment> assignments = huAssignmentDAO.retrieveHUAssignmentsForModel(
@@ -184,13 +190,14 @@ public class VendorReturnFromReceiptHUHandler
 		}
 
 		// 3. Split the return quantity from the source HUs
-		return splitQuantityFromHUs(sourceHUs, returnLine, returnQty);
+		return splitQuantityFromHUs(sourceHUs, returnLine, returnQty, storageFactory);
 	}
 
 	private List<I_M_HU> splitQuantityFromHUs(
 			@NonNull final List<I_M_HU> sourceHUs,
 			@NonNull final I_M_InOutLine returnLine,
-			@NonNull final BigDecimal returnQty)
+			@NonNull final BigDecimal returnQty,
+			@NonNull final IHUStorageFactory storageFactory)
 	{
 		final ProductId productId = ProductId.ofRepoId(returnLine.getM_Product_ID());
 		final HUTransformService huTransformService = HUTransformService.newInstance();
@@ -205,16 +212,13 @@ public class VendorReturnFromReceiptHUHandler
 			}
 
 			// Navigate to the VHU level if this is a TU
-			final I_M_HU cuHU = findCUForProduct(sourceHU, productId);
+			final I_M_HU cuHU = findCUForProduct(sourceHU, productId, storageFactory);
 			if (cuHU == null)
 			{
 				continue;
 			}
 
 			// Determine how much we can split from this HU
-			final IHUStorageFactory storageFactory = handlingUnitsBL
-					.createMutableHUContext(InterfaceWrapperHelper.getContextAware(returnLine))
-					.getHUStorageFactory();
 			final IHUStorage huStorage = storageFactory.getStorage(cuHU);
 			final IHUProductStorage productStorage = huStorage.getProductStorageOrNull(productId);
 			if (productStorage == null || productStorage.getQty().signum() <= 0)
@@ -222,7 +226,7 @@ public class VendorReturnFromReceiptHUHandler
 				continue;
 			}
 
-			final BigDecimal availableQty = productStorage.getQty();
+			final BigDecimal availableQty = productStorage.getQty().toBigDecimal();
 			final BigDecimal splitQty = remainingQty.min(availableQty);
 
 			final Quantity splitQuantity = Quantity.of(splitQty, productStorage.getC_UOM());
@@ -242,7 +246,10 @@ public class VendorReturnFromReceiptHUHandler
 		return allSplitHUs;
 	}
 
-	private I_M_HU findCUForProduct(@NonNull final I_M_HU hu, @NonNull final ProductId productId)
+	private I_M_HU findCUForProduct(
+			@NonNull final I_M_HU hu,
+			@NonNull final ProductId productId,
+			@NonNull final IHUStorageFactory storageFactory)
 	{
 		// If it's already a VHU (CU), return it directly
 		if (handlingUnitsBL.isVirtual(hu))
@@ -257,11 +264,6 @@ public class VendorReturnFromReceiptHUHandler
 		}
 
 		// If it's a TU, find the VHU inside
-		final IHUStorageFactory storageFactory = handlingUnitsBL
-				.createMutableHUContext(InterfaceWrapperHelper.getContextAware(hu))
-				.getHUStorageFactory();
-
-		// Try to get product storage directly from this HU level
 		final IHUStorage huStorage = storageFactory.getStorage(hu);
 		final IHUProductStorage productStorage = huStorage.getProductStorageOrNull(productId);
 		if (productStorage != null && productStorage.getQty().signum() > 0)
@@ -280,7 +282,7 @@ public class VendorReturnFromReceiptHUHandler
 					}
 				}
 				// Recurse for nested TUs
-				final I_M_HU found = findCUForProduct(childHU, productId);
+				final I_M_HU found = findCUForProduct(childHU, productId, storageFactory);
 				if (found != null)
 				{
 					return found;
