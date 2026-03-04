@@ -36,6 +36,7 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.OrderLineId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -95,6 +96,7 @@ public class C_Order_ReceiptSchedule
 		final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
 		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 
 		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order);
 		for (final I_C_OrderLine orderLine : orderLines)
@@ -126,7 +128,7 @@ public class C_Order_ReceiptSchedule
 			receiptSchedule.setIsClosed(false);
 			receiptSchedule.setProcessed(false);
 			receiptSchedule.setQtyOrdered(orderLine.getQtyOrdered());
-			receiptSchedule.setM_AttributeSetInstance_ID(orderLine.getM_AttributeSetInstance_ID());
+			attributeSetInstanceBL.cloneOrCreateASI(receiptSchedule, orderLine);
 
 			logger.debug("reopenReceiptSchedules: saving M_ReceiptSchedule_ID={} | IsClosed={}, Processed={}, QtyOrdered={}, ASI_ID={}",
 					receiptSchedule.getM_ReceiptSchedule_ID(),
