@@ -55,6 +55,22 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          # CRITICAL: Use a PAT instead of GITHUB_TOKEN for checkout.
+          # This makes `git push` authenticate with the PAT, which allows
+          # the push to trigger the cicd workflow on the merge branch.
+          # GITHUB_TOKEN pushes are blocked by GitHub's anti-recursion
+          # protection and will NOT trigger downstream workflows.
+          # Falls back to GITHUB_TOKEN if PAT is not configured (but cicd
+          # won't trigger, so Merge Gate won't appear and auto-merge won't work).
+          token: ${{ secrets.CICD_TRIGGER_DISPATCH || github.token }}
+
+      - name: Check push token
+        run: |
+          if [[ -z "${{ secrets.CICD_TRIGGER_DISPATCH }}" ]]; then
+            echo "::warning::CICD_TRIGGER_DISPATCH secret not configured — push will NOT trigger cicd workflow. Auto-merge will not work."
+          else
+            echo "PAT configured — push will trigger cicd workflow"
+          fi
 
       - name: Determine target branch
         id: target
