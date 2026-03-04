@@ -132,11 +132,8 @@ public class VendorReturnFromReceiptHUHandler
 			@NonNull final IHUStorageFactory storageFactory)
 	{
 		// 1. Find HUs assigned to the origin receipt line
-		final List<I_M_HU_Assignment> assignments = huAssignmentDAO.retrieveHUAssignmentsForModel(
-				InterfaceWrapperHelper.getCtx(returnLine),
-				org.compiere.model.I_M_InOutLine.Table_ID,
-				originInOutLineId,
-				org.compiere.util.Trx.TRXNAME_ThreadInherited);
+		final org.compiere.model.I_M_InOutLine originLine = InterfaceWrapperHelper.load(originInOutLineId, org.compiere.model.I_M_InOutLine.class);
+		final List<I_M_HU_Assignment> assignments = huAssignmentDAO.retrieveTopLevelHUAssignmentsForModel(originLine);
 
 		if (assignments.isEmpty())
 		{
