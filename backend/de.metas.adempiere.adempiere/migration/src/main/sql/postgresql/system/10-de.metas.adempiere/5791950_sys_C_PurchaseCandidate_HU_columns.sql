@@ -4,8 +4,13 @@
 -- Column: M_HU_PI_Item_Product_ID
 ALTER TABLE C_PurchaseCandidate ADD COLUMN IF NOT EXISTS M_HU_PI_Item_Product_ID NUMERIC(10);
 
-ALTER TABLE C_PurchaseCandidate ADD CONSTRAINT IF NOT EXISTS mhupiitemproduct_cpurchasecandidate
-    FOREIGN KEY (M_HU_PI_Item_Product_ID) REFERENCES M_HU_PI_Item_Product(M_HU_PI_Item_Product_ID);
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'mhupiitemproduct_cpurchasecandidate') THEN
+        ALTER TABLE C_PurchaseCandidate ADD CONSTRAINT mhupiitemproduct_cpurchasecandidate
+            FOREIGN KEY (M_HU_PI_Item_Product_ID) REFERENCES M_HU_PI_Item_Product(M_HU_PI_Item_Product_ID);
+    END IF;
+END $$;
 
 -- Column: QtyEnteredTU
 ALTER TABLE C_PurchaseCandidate ADD COLUMN IF NOT EXISTS QtyEnteredTU NUMERIC;
